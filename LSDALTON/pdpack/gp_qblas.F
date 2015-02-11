@@ -631,6 +631,21 @@ c
    50 continue
       return
       end
+#else
+      subroutine dummy_pdpack1()
+      implicit none
+      RETURN
+      end 
 #endif
+#else
+      subroutine dummy_pdpack2()
+      implicit none
+      RETURN
+      end 
 #endif
+#else
+      subroutine dummy_pdpack3()
+      implicit none
+      RETURN
+      end 
 #endif

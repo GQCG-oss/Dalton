@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsdt_tran1_r */
       SUBROUTINE CCSDT_TRAN1_R(XINT1,XINT2,XLAMDP0,XLAMDH0,
@@ -296,7 +295,7 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"

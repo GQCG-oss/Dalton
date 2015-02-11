@@ -13,9 +13,9 @@ module response_driver_module
   use precision
   use TYPEDEFTYPE, only: LSSETTING
   use matrix_module
-  use matrix_defop
-  use rsp_contribs
-  use rsp_equations
+  use lsdalton_matrix_defop
+  use lsdalton_rsp_contribs
+  use lsdalton_rsp_equations
   use RSPsolver, only: rsp_init, rsp_solver, rsp_molcfg  
   use RSPsymsolver, only: rsp_sym_init, rsp_sym_solver
   use matrix_operations, only: mat_write_to_disk, mat_read_from_disk
@@ -4384,7 +4384,7 @@ Contains
     faI = aimag(MyRspFunc%freq(A))
     fbR = real(MyRspFunc%freq(B))
     fbI = aimag(MyRspFunc%freq(B))
-    if( ( abs(faR-fbR) < 1e-9 ) .and. ( abs(faI-fbI) < 1e-9 ) ) frequencies_identical = .true.
+    if( (abs(faR-fbR) < 1e-9_realk) .and. (abs(faI-fbI) < 1e-9_realk)) frequencies_identical = .true.
 
     ! All true?
     if(operators_identical .and. components_identical &

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -648,11 +647,12 @@ C
       SUBROUTINE MOTOAO(XMO,XAO,CMO,XSYM,WRK,LWRK)
 #include "implicit.h"
 #include "inforb.h"
-      DIMENSION WRK(LWRK)
+      DIMENSION XMO(*), XAO(*), CMO(*), WRK(LWRK)
+      INTEGER   XSYM
       CALL QENTER('MOTOAO')
       KFREE = 1
       LFREE = LWRK
-      CALL MEMGET('REAL',KCX,NORBT*NBAST,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','MOTOAO',KCX,NORBT*NBAST,WRK,KFREE,LFREE)
       CALL MOTOAO1(XMO,XAO,WRK(KCX),CMO,XSYM)
       CALL MEMREL('MOTOAO',WRK,1,1,KFREE,LFREE)
       CALL QEXIT('MOTOAO')

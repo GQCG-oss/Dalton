@@ -65,7 +65,7 @@ SUBROUTINE rms_Diff(A, B, nrow,ncol,diff)
   implicit none
   INTEGER, intent(IN)      :: nrow,ncol
   REAL(realk), intent(IN)  :: A(nrow,ncol), B(nrow,ncol)
-  REAL(realk), intent(OUT) :: diff
+  REAL(realk), intent(INOUT) :: diff
 !
   REAL(realk)              :: tempRms(nrow,ncol)    
   REAL(realk),pointer      :: WORK
@@ -150,7 +150,8 @@ SUBROUTINE DGEMM_TS(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
   END IF
   IF (INFO.NE.0) THEN
      print *, 'INFO = ', INFO
-     stop 'DGEMM_TS: Something wrong with input!'
+     call lsquit('DGEMM_TS: Something wrong with input!',-1)
+!     stop 'DGEMM_TS: Something wrong with input!'
   END IF
 
   !     Quick return if possible.
@@ -293,5 +294,26 @@ subroutine capitalize_string(mystring)
   end if
 
 end subroutine capitalize_string
+
+!Case-insensitive string comparison
+!!$LOGICAL FUNCTION insensitveEQUIV(String1,String2) 
+!!$  CHARACTER(*), INTENT(IN)     :: String1,String2
+!!$  INTEGER :: i, n, m
+!!$  CHARACTER(*), PARAMETER :: LOWER_CASE = 'abcdefghijklmnopqrstuvwxyz' 
+!!$  CHARACTER(*), PARAMETER :: UPPER_CASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 
+!!$  LOGICAL :: equal
+!!$
+!!$  equal = .TRUE.
+!!$
+!!$  ! Convert case character by character 
+!!$  DO i = 1, MIN(LEN(String1),LEN(String2))
+!!$    ! If Sting1 is not in UPPER_CASE of LOWER_CASE INDEX returns 0, otherwise it
+!!$    ! returns the number corresponding to its position
+!!$    n = MAX(INDEX(UPPER_CASE, String1(i:i)),INDEX(LOWER_CASE, String1(i:i)))
+!!$    m = MAX(INDEX(UPPER_CASE, String2(i:i)),INDEX(LOWER_CASE, String2(i:i)))
+!!$    IF (n.NE.m) equal = .FALSE.
+!!$  END DO 
+!!$  insensitveEQUIV = equal
+!!$END FUNCTION insensitveEQUIV 
 
 END MODULE LS_UTIL

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sirorb */
       SUBROUTINE SIRORB(MAXITO,NITORB,CMO,GORB,DV,PV,FC,FV,FQ,
@@ -516,7 +515,6 @@ C
       KREDCI= KREDL + NMREDL
       KEVEC = KREDCI+ NMREDL
       KWRK1 = KEVEC + MREDL*MREDL
-      KIWRK1= KWRK1 + MREDL
 C
 C RECOVER CSF PART OF REDUCED HESSIAN
 C
@@ -540,8 +538,7 @@ C
 C DIAGONALIZE CSF PART OF REDUCED HESSIAN
 C
       CALL DUNIT(WRK(KEVEC),KCIDIM)
-      CALL JACO(WRK(KREDCI),WRK(KEVEC),KCIDIM,KCIDIM,KCIDIM,
-     *          WRK(KWRK1),WRK(KIWRK1))
+      CALL JACO_THR(WRK(KREDCI),WRK(KEVEC),KCIDIM,KCIDIM,KCIDIM,0.0D0)
 C
 C COUNT NUMBER OF NEGATIVE EIGENVALUES IN CSF PART OF REDUCED HESSIAN
 C
@@ -591,8 +588,7 @@ C ALLOCATE WORK SPACE
 C
       KREDC = 1
       KEVEC = KREDC + NREDL*(NREDL+1)/2
-      KBIG  = KEVEC + NREDL*NREDL
-      KJBIG = KBIG  + NREDL
+      KWRK  = KEVEC + NREDL*NREDL
 C
       K = 0
       DO 100 I=1,NREDL
@@ -610,7 +606,7 @@ C
  100  CONTINUE
       CALL DUNIT(WRK(KEVEC),K)
 C
-      CALL JACO(WRK,WRK(KEVEC),K,K,K,WRK(KBIG),WRK(KJBIG))
+      CALL JACO_THR(WRK,WRK(KEVEC),K,K,K,0.0D0)
       II = 0
       DO 300 I=1,K
          II = II + I

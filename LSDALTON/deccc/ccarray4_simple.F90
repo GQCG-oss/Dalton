@@ -12,31 +12,13 @@ module array4_simple_operations
   use dec_typedef_module
   use files!,only: lsopen,lsclose
   use LSTIMING!,only:lstimer
+  use reorder_frontend_module
 
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use array4_memory_manager
-  use reorder_frontend_module!,only:manual_4231_reordering,&
-                               !     &manual_2413_reordering,&
-                               !     &manual_3214_reordering,&
-                               !     &manual_1324_reordering,&
-                               !     &manual_1432_reordering,&
-                               !     &manual_2314_reordering,&
-                               !     &manual_2341_reordering,&
-                               !     &manual_4123_reordering,&
-                               !     &manual_4132_reordering,&
-                               !     &manual_1243_reordering,&
-                               !     &manual_2143_reordering,&
-                               !     &manual_1423_reordering,&
-                               !     &manual_1342_reordering,&
-                               !     &manual_4321_reordering,&
-                               !     &manual_2134_reordering,&
-                               !     &manual_2431_reordering,&
-                               !     &manual_3421_reordering,&
-                               !     &manual_3142_reordering
-  use dec_fragment_utils
-
+  use dec_tools_module
 
   !> Number of array
   integer(kind=long) :: ArrayNumber=0
@@ -207,7 +189,7 @@ contains
     CreatedArrays = CreatedArrays+1
 
     ! file
-    write(array%FileName,'("array_",i6.6,".data")') ArrayNumber
+    write(array%FileName,'("tensor_",i6.6,".data")') ArrayNumber
 
 
     ! Get file unit for array
@@ -596,7 +578,7 @@ contains
     real(realk) :: t0,t1
     call cpu_time(t0)
     call array4_write_data(array)
-    call array4_alloc(array)
+    call array4_dealloc(array)
     call cpu_time(t1)
     time_array4_write = time_array4_write + (t1-t0)
     return
@@ -1766,10 +1748,10 @@ contains
 
 
 
-  subroutine array_reorder_4d_debug(array_in,dims,max_dim,order,array_out)
+  subroutine array_reorder_4d_debug(tensor_in,dims,max_dim,order,tensor_out)
     implicit none
     integer :: max_dim
-    real(realk), dimension(max_dim):: array_in, array_out
+    real(realk), dimension(max_dim):: tensor_in, tensor_out
     integer, dimension(4), intent(in) :: order
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d
@@ -1804,7 +1786,7 @@ contains
             dim1b=dims(order(1))
             dim2b=dims(order(1))*dims(order(2))
             dim3b=dims(order(1))*dims(order(2))*dims(order(3))
-            array_out(i+(j-1)*dim1b+(k-1)*dim2b+(l-1)*dim3b) = array_in(a+(b-1)*dim1+(c-1)*dim2+(d-1)*dim3)
+            tensor_out(i+(j-1)*dim1b+(k-1)*dim2b+(l-1)*dim3b) = tensor_in(a+(b-1)*dim1+(c-1)*dim2+(d-1)*dim3)
            enddo
          enddo
       enddo
@@ -3190,21 +3172,19 @@ contains
     type(decfrag),intent(inout) :: MyFragment
     !> Occupied (true) or virtual (false) scheme
     logical,intent(in) :: occupied
-    type(array4) :: Arr_copy
+    type(array4) :: tensor_copy
     integer :: nEOS,i
     integer, pointer :: EOS_idx(:)
-
-
 
     ! Copy of original array
     ! **********************
 
     if(DECinfo%array4OnFile) then
        ! Copy array and use same file as for original array
-       Arr_copy = array4_duplicate_same_file(Arr)
+       tensor_copy = array4_duplicate_same_file(Arr)
     else
        ! Copy array elements stored in memory
-       Arr_copy = array4_duplicate(Arr)
+       tensor_copy = array4_duplicate(Arr)
     end if
 
     ! Free original array - but save file if arrays are stored on file
@@ -3227,9 +3207,9 @@ contains
        end do
 
        if(DECinfo%array4OnFile) then ! array values stored on file
-          call array4_extract_eos_indices_occ_file(Arr,Arr_copy,nEOS,EOS_idx)
+          call array4_extract_eos_indices_occ_file(Arr,tensor_copy,nEOS,EOS_idx)
        else ! array values are kept in memory
-          call array4_extract_eos_indices_occ_memory(Arr,Arr_copy,nEOS,EOS_idx)
+          call array4_extract_eos_indices_occ_memory(Arr,tensor_copy,nEOS,EOS_idx)
        end if
 
     else ! Virtual space partitioing
@@ -3244,9 +3224,9 @@ contains
        end do
 
        if(DECinfo%array4OnFile) then ! array values stored on file
-          call array4_extract_eos_indices_virt_file(Arr,Arr_copy,nEOS,EOS_idx)
+          call array4_extract_eos_indices_virt_file(Arr,tensor_copy,nEOS,EOS_idx)
        else ! array values are kept in memory
-          call array4_extract_eos_indices_virt_memory(Arr,Arr_copy,nEOS,EOS_idx)
+          call array4_extract_eos_indices_virt_memory(Arr,tensor_copy,nEOS,EOS_idx)
        end if
 
     end if
@@ -3254,7 +3234,7 @@ contains
 
     ! Free stuff
     call mem_dealloc(EOS_idx)
-    call array4_free(Arr_copy)
+    call array4_free(tensor_copy)
 
   end subroutine array4_extract_eos_indices
 
@@ -3262,22 +3242,22 @@ contains
 
 
   !> \brief Extract EOS indices from array4 for both occupied and virtual partitioning schemes:
-  !> 1. Arr_occEOS: The occupied orbitals not assigned to the central atom are removed while
+  !> 1. tensor_occEOS: The occupied orbitals not assigned to the central atom are removed while
   !>                the virtual indices are unchanged.
-  !> 2. Arr_virtEOS: The virtual orbitals not assigned to the central atom are removed while
+  !> 2. tensor_virtEOS: The virtual orbitals not assigned to the central atom are removed while
   !>                 the occupied indices are unchanged.
   !> \author Kasper Kristensen
   !> \date August 2011
-  subroutine array4_extract_eos_indices_both_schemes(Arr_orig,Arr_occEOS,Arr_virtEOS,MyFragment)
+  subroutine array4_extract_eos_indices_both_schemes(tensor_orig,tensor_occEOS,tensor_virtEOS,MyFragment)
 
 
     implicit none
     !> Array where occupied EOS indices are extracted
-    type(array4),intent(inout) :: Arr_occEOS
+    type(array4),intent(inout) :: tensor_occEOS
     !> Array where virtual EOS indices are extracted
-    type(array4),intent(inout) :: Arr_virtEOS
+    type(array4),intent(inout) :: tensor_virtEOS
     !> Original array with AOS fragment indices for both occ and virt spaces
-    type(array4),intent(in) :: Arr_orig
+    type(array4),intent(in) :: tensor_orig
     !> Atomic fragment
     type(decfrag),intent(inout) :: MyFragment
     integer :: nocc, nvirt
@@ -3290,26 +3270,29 @@ contains
     ! Extract virtual EOS indices and leave occupied indices untouched
     ! ****************************************************************
 
-    if(DECinfo%array4OnFile) then ! array values stored on file
-       call array4_extract_eos_indices_virt_file(Arr_virtEOS,Arr_orig,&
-            & nvirt,MyFragment%idxu(1:nvirt))
-    else ! array values are kept in memory
-       call array4_extract_eos_indices_virt_memory(Arr_virtEOS,Arr_orig,&
-            & nvirt,MyFragment%idxu(1:nvirt))
-    end if
 
+    IF(.NOT.DECinfo%OnlyOccPart)THEN
+       if(DECinfo%array4OnFile) then ! array values stored on file
+          call array4_extract_eos_indices_virt_file(tensor_virtEOS,tensor_orig,&
+               & nvirt,MyFragment%idxu(1:nvirt))
+       else ! array values are kept in memory
+          call array4_extract_eos_indices_virt_memory(tensor_virtEOS,tensor_orig,&
+               & nvirt,MyFragment%idxu(1:nvirt))
+       end if
+    ENDIF
 
     ! Extract occupied EOS indices and leave virtual indices untouched
     ! ****************************************************************
 
-    if(DECinfo%array4OnFile) then ! array values stored on file
-       call array4_extract_eos_indices_occ_file(Arr_occEOS,Arr_orig,&
-            & nocc, MyFragment%idxo(1:nocc))
-    else ! array values are kept in memory
-       call array4_extract_eos_indices_occ_memory(Arr_occEOS,Arr_orig,&
-            & nocc, MyFragment%idxo(1:nocc))
-    end if
-
+    IF(.NOT.DECinfo%OnlyVIRTPart)THEN
+       if(DECinfo%array4OnFile) then ! array values stored on file
+          call array4_extract_eos_indices_occ_file(tensor_occEOS,tensor_orig,&
+               & nocc, MyFragment%idxo(1:nocc))
+       else ! array values are kept in memory
+          call array4_extract_eos_indices_occ_memory(tensor_occEOS,tensor_orig,&
+               & nocc, MyFragment%idxo(1:nocc))
+       end if
+    ENDIF
 
   end subroutine array4_extract_eos_indices_both_schemes
 
@@ -3320,14 +3303,14 @@ contains
   !> and that the array values are kept in memory.
   !> \author Kasper Kristensen
   !> \date December 2010
-  subroutine array4_extract_eos_indices_virt_memory(Arr,Arr_copy,nEOS,EOS_idx)
+  subroutine array4_extract_eos_indices_virt_memory(Arr,tensor_copy,nEOS,EOS_idx)
 
 
     implicit none
     !> Array output where EOS indices are extracted
     type(array4),intent(inout) :: Arr
     !> Original array
-    type(array4),intent(in) :: Arr_copy
+    type(array4),intent(in) :: tensor_copy
     !> Number of EOS indices
     integer,intent(in) :: nEOS
     !> List of EOS indices in the total (EOS+buffer) list of orbitals
@@ -3339,8 +3322,8 @@ contains
 
     ! Initialize stuff
     ! ****************
-    nocc = Arr_copy%dims(2)  ! Total number of occupied orbitals
-    nvirt = Arr_copy%dims(1)  ! Total number of virtual orbitals
+    nocc = tensor_copy%dims(2)  ! Total number of occupied orbitals
+    nvirt = tensor_copy%dims(1)  ! Total number of virtual orbitals
     new_dims=[nEOS,nocc,nEOS,nocc] ! nEOS=Number of virtual EOS orbitals
 
 
@@ -3357,11 +3340,11 @@ contains
     end if
 
     ! 2. Array structure is (virt,occ,virt,occ)
-    if( (nvirt/=Arr_copy%dims(3)) .or. (nocc/=Arr_copy%dims(4)) ) then
-       write(DECinfo%output,*) 'Arr_copy%dims(1) = ', Arr_copy%dims(1)
-       write(DECinfo%output,*) 'Arr_copy%dims(2) = ', Arr_copy%dims(2)
-       write(DECinfo%output,*) 'Arr_copy%dims(3) = ', Arr_copy%dims(3)
-       write(DECinfo%output,*) 'Arr_copy%dims(4) = ', Arr_copy%dims(4)
+    if( (nvirt/=tensor_copy%dims(3)) .or. (nocc/=tensor_copy%dims(4)) ) then
+       write(DECinfo%output,*) 'tensor_copy%dims(1) = ', tensor_copy%dims(1)
+       write(DECinfo%output,*) 'tensor_copy%dims(2) = ', tensor_copy%dims(2)
+       write(DECinfo%output,*) 'tensor_copy%dims(3) = ', tensor_copy%dims(3)
+       write(DECinfo%output,*) 'tensor_copy%dims(4) = ', tensor_copy%dims(4)
        call lsquit('array4_extract_eos_indices_virt_memory: &
             & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
     end if
@@ -3393,14 +3376,14 @@ contains
     ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc)
     Arr=array4_init(new_dims)
 
-    ! Set Arr equal to the EOS indices of the original Arr array (Arr_copy)
+    ! Set Arr equal to the EOS indices of the original Arr array (tensor_copy)
     do j=1,nocc
        do b=1,nEOS
           bx=EOS_idx(b)
           do i=1,nocc
              do a=1,nEOS
                 ax=EOS_idx(a)
-                Arr%val(a,i,b,j) = Arr_copy%val(ax,i,bx,j)
+                Arr%val(a,i,b,j) = tensor_copy%val(ax,i,bx,j)
              end do
           end do
        end do
@@ -3415,14 +3398,14 @@ contains
   !> and that the array values are stored on file.
   !> \author Kasper Kristensen
   !> \date December 2010
-  subroutine array4_extract_eos_indices_virt_file(Arr,Arr_copy,nEOS,EOS_idx)
+  subroutine array4_extract_eos_indices_virt_file(Arr,tensor_copy,nEOS,EOS_idx)
 
 
     implicit none
     !> Array output where EOS indices are extracted
     type(array4),intent(inout) :: Arr
     !> Original array
-    type(array4),intent(in) :: Arr_copy
+    type(array4),intent(in) :: tensor_copy
     !> Number of EOS indices
     integer,intent(in) :: nEOS
     !> List of EOS indices in the total (EOS+buffer) list of orbitals
@@ -3434,8 +3417,8 @@ contains
 
     ! Initialize stuff
     ! ****************
-    nocc = Arr_copy%dims(2)  ! Total number of occupied orbitals
-    nvirt = Arr_copy%dims(1)  ! Total number of virtual orbitals
+    nocc = tensor_copy%dims(2)  ! Total number of occupied orbitals
+    nvirt = tensor_copy%dims(1)  ! Total number of virtual orbitals
     new_dims=[nEOS,nocc,nEOS,nocc] ! nEOS=Number of virtual EOS orbitals
 
 
@@ -3451,11 +3434,11 @@ contains
     end if
 
     ! 2. Array structure is (virt,occ,virt,occ)
-    if( (nvirt/=Arr_copy%dims(3)) .or. (nocc/=Arr_copy%dims(4)) ) then
-       write(DECinfo%output,*) 'Arr_copy%dims(1) = ', Arr_copy%dims(1)
-       write(DECinfo%output,*) 'Arr_copy%dims(2) = ', Arr_copy%dims(2)
-       write(DECinfo%output,*) 'Arr_copy%dims(3) = ', Arr_copy%dims(3)
-       write(DECinfo%output,*) 'Arr_copy%dims(4) = ', Arr_copy%dims(4)
+    if( (nvirt/=tensor_copy%dims(3)) .or. (nocc/=tensor_copy%dims(4)) ) then
+       write(DECinfo%output,*) 'tensor_copy%dims(1) = ', tensor_copy%dims(1)
+       write(DECinfo%output,*) 'tensor_copy%dims(2) = ', tensor_copy%dims(2)
+       write(DECinfo%output,*) 'tensor_copy%dims(3) = ', tensor_copy%dims(3)
+       write(DECinfo%output,*) 'tensor_copy%dims(4) = ', tensor_copy%dims(4)
        call lsquit('array4_extract_eos_indices_virt_file: &
             & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
     end if
@@ -3481,8 +3464,8 @@ contains
     end do
 
     ! 5. Currently only implemented for storing type 1
-    if(Arr_copy%storing_type /= 1) then
-       write(DECinfo%output,*) 'Array storing type: ', Arr_copy%storing_type
+    if(tensor_copy%storing_type /= 1) then
+       write(DECinfo%output,*) 'Array storing type: ', tensor_copy%storing_type
        call lsquit('array4_extract_eos_indices_virt_file: &
             & Only implemented for storing type 1!',DECinfo%output)
     end if
@@ -3491,7 +3474,7 @@ contains
     ! Extract virtual EOS indices and store in Arr
     ! ********************************************
 
-    ! Arr_copy contains all necessary information, and we can therefore free Arr
+    ! tensor_copy contains all necessary information, and we can therefore free Arr
     ! and re-initialize. This is done manually not to screw up array bookkeeping.
 
 
@@ -3510,13 +3493,13 @@ contains
     call mem_alloc(values,nvirt,nocc,nvirt)
 
     ! Open array file
-    call array4_open_file(Arr_copy)
+    call array4_open_file(tensor_copy)
 
 
     do j=1,nocc
 
        ! Read in (a,i,b,j) values for all AIB for given j
-       call array4_read_file_type1(Arr_copy,j,values,nvirt,nocc,nvirt)
+       call array4_read_file_type1(tensor_copy,j,values,nvirt,nocc,nvirt)
 
        do b=1,nEOS
           bx=EOS_idx(b) ! Only consider occupied EOS indices
@@ -3530,7 +3513,7 @@ contains
     end do
 
 
-    call array4_close_file(Arr_copy,'KEEP')
+    call array4_close_file(tensor_copy,'KEEP')
     call mem_dealloc(values)
 
 
@@ -3546,14 +3529,14 @@ contains
   !> and that the array values are kept in memory.
   !> \author Kasper Kristensen
   !> \date December 2010
-  subroutine array4_extract_eos_indices_occ_memory(Arr,Arr_copy,nEOS,EOS_idx)
+  subroutine array4_extract_eos_indices_occ_memory(Arr,tensor_copy,nEOS,EOS_idx)
 
 
     implicit none
     !> Array where EOS indices where are extracted
     type(array4),intent(inout) :: Arr
     !> Original array
-    type(array4),intent(in) :: Arr_copy
+    type(array4),intent(in) :: tensor_copy
     !> Number of EOS indices
     integer,intent(in) :: nEOS
     !> List of EOS indices in the total (EOS+buffer) list of orbitals
@@ -3564,8 +3547,8 @@ contains
 
     ! Initialize stuff
     ! ****************
-    nocc = Arr_copy%dims(2)  ! Total number of occupied orbitals
-    nvirt = Arr_copy%dims(1)  ! Total number of virtual orbitals
+    nocc = tensor_copy%dims(2)  ! Total number of occupied orbitals
+    nvirt = tensor_copy%dims(1)  ! Total number of virtual orbitals
     new_dims=[nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
 
 
@@ -3582,11 +3565,11 @@ contains
     end if
 
     ! 2. Array structure is (virt,occ,virt,occ)
-    if( (nvirt/=Arr_copy%dims(3)) .or. (nocc/=Arr_copy%dims(4)) ) then
-       write(DECinfo%output,*) 'Arr_copy%dims(1) = ', Arr_copy%dims(1)
-       write(DECinfo%output,*) 'Arr_copy%dims(2) = ', Arr_copy%dims(2)
-       write(DECinfo%output,*) 'Arr_copy%dims(3) = ', Arr_copy%dims(3)
-       write(DECinfo%output,*) 'Arr_copy%dims(4) = ', Arr_copy%dims(4)
+    if( (nvirt/=tensor_copy%dims(3)) .or. (nocc/=tensor_copy%dims(4)) ) then
+       write(DECinfo%output,*) 'tensor_copy%dims(1) = ', tensor_copy%dims(1)
+       write(DECinfo%output,*) 'tensor_copy%dims(2) = ', tensor_copy%dims(2)
+       write(DECinfo%output,*) 'tensor_copy%dims(3) = ', tensor_copy%dims(3)
+       write(DECinfo%output,*) 'tensor_copy%dims(4) = ', tensor_copy%dims(4)
        call lsquit('array4_extract_eos_indices_occ_memory: &
             & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
     end if
@@ -3619,14 +3602,14 @@ contains
     ! Initiate Arr with new dimensions (nvirt,nocc_EOS,nvirt,nocc_EOS)
     Arr=array4_init(new_dims)
 
-    ! Set Arr equal to the EOS indices of the original Arr array (Arr_copy)
+    ! Set Arr equal to the EOS indices of the original Arr array (tensor_copy)
     do j=1,nEOS
        jx=EOS_idx(j)
        do b=1,nvirt
           do i=1,nEOS
              ix=EOS_idx(i)
              do a=1,nvirt
-                Arr%val(a,i,b,j) = Arr_copy%val(a,ix,b,jx)
+                Arr%val(a,i,b,j) = tensor_copy%val(a,ix,b,jx)
              end do
           end do
        end do
@@ -3642,14 +3625,14 @@ contains
   !> The OUTPUT array values are stored in memory.
   !> \author Kasper Kristensen
   !> \date December 2010
-  subroutine array4_extract_eos_indices_occ_file(Arr,Arr_copy,nEOS,EOS_idx)
+  subroutine array4_extract_eos_indices_occ_file(Arr,tensor_copy,nEOS,EOS_idx)
 
 
     implicit none
     !> Array where EOS indices are extracted
     type(array4),intent(inout) :: Arr
     !> Original array
-    type(array4),intent(in) :: Arr_copy
+    type(array4),intent(in) :: tensor_copy
     !> Number of EOS indices
     integer,intent(in) :: nEOS
     !> List of EOS indices in the total (EOS+buffer) list of orbitals
@@ -3661,8 +3644,8 @@ contains
 
     ! Initialize stuff
     ! ****************
-    nocc = Arr_copy%dims(2)  ! Total number of occupied orbitals
-    nvirt = Arr_copy%dims(1)  ! Total number of virtual orbitals
+    nocc = tensor_copy%dims(2)  ! Total number of occupied orbitals
+    nvirt = tensor_copy%dims(1)  ! Total number of virtual orbitals
     new_dims=[nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
 
 
@@ -3678,11 +3661,11 @@ contains
     end if
 
     ! 2. Array structure is (virt,occ,virt,occ)
-    if( (nvirt/=Arr_copy%dims(3)) .or. (nocc/=Arr_copy%dims(4)) ) then
-       write(DECinfo%output,*) 'Arr_copy%dims(1) = ', Arr_copy%dims(1)
-       write(DECinfo%output,*) 'Arr_copy%dims(2) = ', Arr_copy%dims(2)
-       write(DECinfo%output,*) 'Arr_copy%dims(3) = ', Arr_copy%dims(3)
-       write(DECinfo%output,*) 'Arr_copy%dims(4) = ', Arr_copy%dims(4)
+    if( (nvirt/=tensor_copy%dims(3)) .or. (nocc/=tensor_copy%dims(4)) ) then
+       write(DECinfo%output,*) 'tensor_copy%dims(1) = ', tensor_copy%dims(1)
+       write(DECinfo%output,*) 'tensor_copy%dims(2) = ', tensor_copy%dims(2)
+       write(DECinfo%output,*) 'tensor_copy%dims(3) = ', tensor_copy%dims(3)
+       write(DECinfo%output,*) 'tensor_copy%dims(4) = ', tensor_copy%dims(4)
        call lsquit('array4_extract_eos_indices_occ_file: &
             & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
     end if
@@ -3708,8 +3691,8 @@ contains
     end do
 
     ! 5. Currently only implemented for storing type 1
-    if(Arr_copy%storing_type /= 1) then
-       write(DECinfo%output,*) 'Array storing type: ', Arr_copy%storing_type
+    if(tensor_copy%storing_type /= 1) then
+       write(DECinfo%output,*) 'Array storing type: ', tensor_copy%storing_type
        call lsquit('array4_extract_eos_indices_occ_file: &
             & Only implemented for storing type 1!',DECinfo%output)
     end if
@@ -3719,7 +3702,7 @@ contains
     ! *********************************************
 
 
-    ! Arr_copy now contains all necessary information, and we can therefore free Arr
+    ! tensor_copy now contains all necessary information, and we can therefore free Arr
     ! and re-initialize. This is done manually not to screw up array bookkeeping.
 
 
@@ -3738,14 +3721,14 @@ contains
     call mem_alloc(values,nvirt,nocc,nvirt)
 
     ! Open array file
-    call array4_open_file(Arr_copy)
+    call array4_open_file(tensor_copy)
 
 
     do j=1,nEOS
        jx=EOS_idx(j)
 
        ! Read in (A,I,B,JX) values for all AIB for given EOS index JX
-       call array4_read_file_type1(Arr_copy,jx,values,nvirt,nocc,nvirt)
+       call array4_read_file_type1(tensor_copy,jx,values,nvirt,nocc,nvirt)
 
        do b=1,nvirt
           do i=1,nEOS
@@ -3758,7 +3741,7 @@ contains
     end do
 
 
-    call array4_close_file(Arr_copy,'KEEP')
+    call array4_close_file(tensor_copy,'KEEP')
     call mem_dealloc(values)
 
 
@@ -3880,88 +3863,6 @@ contains
 
   end subroutine array4_print
 
-  !> Assuming that the last index in the array A contains core+valence indices,
-  !> remove the core indices. Only to be used for frozen core approx.
-  !> Assumes core indices are placed BEFORE valence indices!
-  !> \author Kasper Kristensen
-  !> \date December 2012
-  subroutine remove_core_orbitals_from_last_index(MyFragment,A,B)
-    implicit none
-    !> Atomic fragment
-    type(decfrag),intent(inout) :: MyFragment
-    !> Original array
-    type(array4),intent(in) :: A
-    !> New array where core indices for the last index are removed
-    type(array4),intent(inout) :: B
-    integer :: dims(4), i,j,k,l
-
-    ! Sanity check 1: Frozen core.
-    if(.not. DECinfo%frozencore) then
-       call lsquit('remove_core_orbitals_from_last_index: Only works for frozen core approx!',-1)
-    end if
-
-    ! Sanity check 2: Correct dimensions
-    if(A%dims(4) /= MyFragment%nocctot) then
-       print *, 'Array dim, #occ orbitals', A%dims(4), MyFragment%nocctot
-       call lsquit('remove_core_orbitals_from_last_index: Dimension mismatch!',-1)
-    end if
-
-    ! Init with new dimensions - same as before, except for last index which is only valence indices
-    dims(1) = A%dims(1)
-    dims(2) = A%dims(2)
-    dims(3) = A%dims(3)
-    dims(4) = MyFragment%noccAOS
-    B = array4_init_standard(dims) 
-
-
-    ! Copy elements from A to B, but only valence for last index
-    do l=1,B%dims(4)
-       do k=1,B%dims(3)
-          do j=1,B%dims(2)
-             do i=1,B%dims(1)
-                B%val(i,j,k,l) = A%val(i,j,k,l+MyFragment%ncore)
-             end do
-          end do
-       end do
-    end do
-
-
-  end subroutine remove_core_orbitals_from_last_index
-
-
-  !> \brief Calculate combined single+double amplitudes:
-  !> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
-  !> \author Kasper Kristensen
-  !> \date January 2012
-  subroutine get_combined_SingleDouble_amplitudes(t1,t2,u)
-    implicit none
-    !> Singles amplitudes t1(a,i)
-    type(array2),intent(in) :: t1
-    !> Doubles amplitudes t2(a,i,b,j)
-    type(array4),intent(in) :: t2
-    !> Combined single+double amplitudes
-    type(array4),intent(inout) :: u
-    integer :: i,j,a,b,nocc,nvirt
-
-    ! Number of occupied/virtual orbitals assuming index ordering given above
-    nocc=t1%dims(2)
-    nvirt=t1%dims(1)
-
-    ! Init combined amplitudes
-    u = array4_init(t2%dims)
-
-    do j=1,nocc
-       do b=1,nvirt
-          do i=1,nocc
-             do a=1,nvirt
-                u%val(a,i,b,j) = t2%val(a,i,b,j) + t1%val(a,i)*t1%val(b,j)
-             end do
-          end do
-       end do
-    end do
-
-
-  end subroutine get_combined_SingleDouble_amplitudes
 
   !> \brief Transform virtual orbital indices in local basis (or whatever the input basis is) 
   !> for doubles amplitudes to fragment-adapted orbital basis, leaving occupied indices untouched.
@@ -3988,7 +3889,7 @@ contains
     nocc = t2%dims(2)
     if(nvirt/=MyFragment%nunoccAOS .or. nocc/=MyFragment%noccAOS) then
        print *, 't2%dims', t2%dims
-       print *, 'nvirt,nocc', nvirt,nocc
+       print *, 'nvirt,nocc', MyFragment%nunoccAOS,MyFragment%noccAOS
        call lsquit('transform_virt_amp_to_FOs: Dimension mismatch for amplitudes and&
             & associated fragment',-1)
     end if

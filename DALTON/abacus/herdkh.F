@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C File : herdkh.F
 C
@@ -74,6 +73,8 @@ C
       CALL HERINI
       HAMILT = .FALSE.
       PVPINT = .TRUE.
+!     we do not need to save the following variables
+!     because HERINP has not been called yet.
       POTENE = .TRUE.
       KINENE = .TRUE.
       PROPRI = .FALSE.
@@ -204,7 +205,7 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "inftap.h"
-#include "ibtfun.h"
+
 C
       CALL QENTER('DKH_DRIV')
 C
@@ -213,7 +214,7 @@ C
       NBAST = 0
       DO 400 ISHELL = 1, KMAX
          DO 410 KB = 0,MAXREP
-            IF (IBTAND(KB,ISTBAO(ISHELL)) .EQ. 0)
+            IF (IAND(KB,ISTBAO(ISHELL)) .EQ. 0)
      *            NBAST = NBAST + KHKT(ISHELL)
   410    CONTINUE
   400 CONTINUE
@@ -311,7 +312,7 @@ C
       CALL DZERO(XMAT,N2BASX)
       DO I = 1, NBAST
          II = I*(I + 1)/2
-         IF (TRMAT1(II) .LT. 1.0D-6) THEN
+         IF (TRMAT1(II) .LT. 1.0D-8) THEN
             WRITE (LUPRI,*)
      &      ' >>> ERROR DKH_DRIV: Linear dependency in '//
      &      'primitive basis used in Douglas-Kroll-Hess ', I, TRMAT1(II)
@@ -752,7 +753,7 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "aosotr.h"
-#include "ibtfun.h"
+
 C
       ICNT   = 0
       IADR   = 0

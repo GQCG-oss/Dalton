@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,7 +23,6 @@
 !
 #define DFTQRC dft_qr_respons
 c#define DFTQRC dftqrcf
-#include "single.h"
 C
 #ifdef REVLOG
 C=========================================================================
@@ -60,6 +59,7 @@ C
 #include "wrkrsp.h"
 #include "infpri.h"
 #include "infspi.h"
+#include "gnrinf.h"
 C
       LOGICAL ATEST, TEST
       DATA TEST /.FALSE./
@@ -245,12 +245,16 @@ C
 C
 C
 #include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( D1 = 1.0D0 )
+C
+C infinp.h : HSROHF, DODFT, ?
 C
 #include "infdim.h"
 #include "maxorb.h"
 #include "maxash.h"
+#include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "infrsp.h"
@@ -258,9 +262,7 @@ C
 #include "infcr.h"
 #include "inftpa.h"
 #include "inftmo.h"
-#include "infinp.h"
 #include "pcmlog.h"
-#include "priunit.h"
 #include "infpp.h"
 #include "infsmo.h"
 #include "infhyp.h"
@@ -270,7 +272,6 @@ C
 #include "abslrs.h"
 #include "gnrinf.h"
 #include "infpar.h"
-#include "scbrhf.h"
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -306,17 +307,7 @@ C
 C
 C Fock matrices
 C
-C hj start TODO Mar 2004
-C TODO  hjaaj Mar 2004: calling Q3FOCK gives wrong result in
-C       test rsp_solvhyper, thus it has been disabled until
-C       the error has been found ...
-C     IF (TDHF .AND.  (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) ) THEN
-C hj end TODO Mar 2004
-C
-C ov rsp_solvhyper passes with Q3FOCK  Sep 2004
-C
-
-      IF (TDHF.AND.NASHT.EQ.0.OR.HSFOCK) THEN
+      IF (TDHF.AND.(NASHT.EQ.0.OR.HSROHF)) THEN ! excluding single open shell RHF with .OPEN SHELL
          IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
             CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
      &                 WRK(KZYMB),WRK(KZYMC),
@@ -324,19 +315,19 @@ C
      &                 ISYMA,ISYMB,ISYMC,
      &                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
          ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA
-     &             .OR.ABS_MCD.OR.ABSLRS_MCD.OR.ABSLRS_MCHD 
-     &             .OR. ABSLRS_NSCD) THEN
+     &        .OR.ABS_MCD.OR.ABSLRS_MCD.OR.ABSLRS_MCHD 
+     &        .OR.ABSLRS_NSCD) THEN
 
             DFTSAV=DODFT
             DODFT=.FALSE.
-            CALL Q3FOCK(
-     &         VECB,VECC,
+            CALL Q3FOCK( VECB,VECC,
      &         KZYVB,KZYVC, ISYMB,ISYMC, ISPINB,ISPINC,
      &         CMO, MJWOP, FC, FV,
      &         WRK(KFC),WRK(KFO),
-     &         WRK(KFREE),LFREE
-     &         )
+     &         WRK(KFREE),LFREE )
             DODFT=DFTSAV
+         ELSE
+            CALL QUIT('ERROR in E3INIT for HF or DFT')
          END IF
 C
          TRPLETSAVE=TRPLET
@@ -395,23 +386,23 @@ C
          END IF
       END IF
 
+      IF (PEQM) THEN
 #if defined (BUILD_PELIB)
-      if (peqm) then
-        if (.not. tdhf) then 
-            call quit('ERROR: MCSCF quadratic response not'//
-     &                ' implemented with the PE library.')
-        else if (nasht > 0) then
-            call quit('ERROR: quadratic response not implemented for'//
-     &                ' open shell systems with the PE library.')
-        else if (trplet) then
-            call quit('ERROR: triplets not implemented for quadratic'//
-     &                ' response with the PE library.')
-        endif
-        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
-     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-     &                 isyma, isymb, isymc, cmo, mjwop)
-      end if
+         IF (.NOT. TDHF) THEN
+            CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
+     &                ' implemented using the PE library.')
+         ELSE IF (NASHT > 0) THEN
+            CALL QUIT('ERROR: quadratic response not implemented for'//
+     &                ' open-shell systems using the PE library.')
+         ELSE IF (TRPLET) THEN
+            CALL QUIT('ERROR: triplets not implemented for quadratic'//
+     &                ' response using the PE library.')
+         ENDIF
+         CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
+     &                  UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+     &                  ISYMA, ISYMB, ISYMC, CMO, MJWOP)
 #endif
+      END IF
 
       IF (QM3) THEN
          IF (TDHF) THEN
@@ -456,6 +447,19 @@ C
          END IF
       END IF
 C
+      IF (QMNPMM) THEN
+         IF (TDHF) THEN
+            CALL QMNPMMQRO(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
+     *                        WRK(KZYMC),UDV,WRK(KFREE),LFREE, KZYVA,
+     *                        KZYVB,KZYVC, ISYMA,ISYMB,ISYMC,CMO,MJWOP,
+     *                        ISPINA,ISPINB,ISPINC)
+               CALL QMNPMMQRO(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
+     *                        WRK(KZYMB), UDV,WRK(KFREE),LFREE,KZYVA,
+     *                        KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
+     *                        ISPINA,ISPINC,ISPINB) 
+            END IF   
+       END IF
+C
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
          IF (TDHF) THEN
@@ -476,6 +480,7 @@ C
      *                 KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP,
      *                 WRK(KSYRLM))
          END IF
+C
 C
 Clf 10/06/2002
 C quadratic PCM response (for the time beeing without memory efficent SCF)
@@ -1262,7 +1267,7 @@ C
      *            PVDEN,H2,H2X,WRKO,KFREE,LFREE,
      *            LCON,LORB,IPRRSP,IGRSPI,ISPIN1,ISPIN2,
      *            IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2)
-         ELSE IF (DIRFCK) THEN
+         ELSE IF (DIRFCK .AND. NASHT.EQ.0) THEN
             DFTSAV = DFTADD
             DFTADD = .FALSE.
 c
@@ -2177,7 +2182,7 @@ C
 C
 C        If we are testing, control for the CREF component
 C
-         IF( ITEST ) THEN
+         IF( ITEST .AND. ISPIN1 .EQ. 0 .AND. ISPIN2 .EQ. 0 ) THEN
             IF (LREFST .AND. ISYMCI.EQ.ISYMJ) THEN
                T1 = DDOT(NZCVEC,VEC,1,WRK(KTRS),1)
                IF( IPRRSP .GT.  200) THEN
@@ -2263,7 +2268,7 @@ C
      *                 1,WRK(KTRS),1)
          END IF
 C
-         IF( ITEST ) THEN
+         IF( ITEST .AND. ISPIN1 .EQ. 0 .AND. ISPIN2 .EQ. 0 ) THEN
 C
             IF (LREFST .AND. ISYMCI.EQ.ISYMJ) THEN
                T1 = DDOT(NZCVEC,VEC(ICOFF),1,WRK(KTRS),1)
@@ -3958,7 +3963,7 @@ C
      *              OTRS,1)
       END IF
 C
-      IF( ITEST ) THEN
+      IF( ITEST .AND. .NOT.TRPLET ) THEN
          IF ( LREFST .AND. (ISYMCI .EQ .ISYMJ) ) THEN
             WRITE(LUPRI,'(//A,/A)')
      *          ' Sigma vector after Z part of linear transformation',
@@ -4012,13 +4017,13 @@ C
      *            NOH2,IH8SM,XINDX,ISPIN1,ISPIN2,WRK(KFREE),
      *            LFREE)
 C
-      IF (ISYMCI .EQ. ISYMJ .AND..NOT.TRPLET) THEN
+      IF (ISYMCI .EQ. ISYMJ .AND. .NOT.TRPLET) THEN
          IF ( NISHT .GT. 0 )
      *      CALL DAXPY(NZCVEC,OPINAC,VEC(ICOFF),1,
      *                 OTRS(ISOFF),1)
       END IF
 C
-      IF( ITEST ) THEN
+      IF( ITEST .AND. .NOT.TRPLET ) THEN
          IF ((IREFSY .EQ .ISYMJ).AND. LREFST ) THEN
             WRITE(LUPRI,'(//A,/A)')
      *          ' Sigma vector after Y part of linear transformation',
@@ -4100,7 +4105,7 @@ C
 #include "priunit.h"
 #include "qrinf.h"
 #include "inflin.h"
-#include <infrank.h>
+#include "infrank.h"
       LOGICAL LREFST, LORB, LCON, TRPSAVE
       PARAMETER (D1     = 1.0D0)
 C

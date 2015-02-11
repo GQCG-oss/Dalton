@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 
 C  /* Deck twoint */
       SUBROUTINE TWOINT(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
@@ -30,7 +29,7 @@ C  /* Deck twoint */
      &                  JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRINTD,
      &                  RETUR,ISHLA,I2TYP,JSTRSH,NPRIMS,NCONTS,
      &                  IORBSH,ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                  DINTSKP,RELCAL)
+     &                  DINTSKP,RELCAL,GENCNT)
 C
 C     Trygve Helgaker, University of Oslo, Norway, 1984
 C
@@ -63,7 +62,7 @@ C
       PARAMETER (D0 = 0.00 D00)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DIA2SO, ZFS2EL, DISTRI, SQ12EL, LONDON,
-     &        SUSCEP, DDFOCK, ADISTR,SOFOCK,RELCAL
+     &        SUSCEP, DDFOCK, ADISTR,SOFOCK,RELCAL,GENCNT
       DIMENSION HESSEE(*),DMAT(*), FMAT(*), GMAT(*), IREPDM(*),
      &        IFCTYP(*),DINTSKP(*),GABRAO(*),DMRAO(*),DMRSO(*),
      &        JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*),
@@ -171,7 +170,7 @@ C
      &            MAXDIS,SQ12EL,RETUR,NHTYP,IREPDM,IFCTYP,ISHLA,ADISTR,
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
-     &            RELCAL)
+     &            RELCAL,GENCNT)
       CALL GETTIM(TIMEND,DUMTIM)
       T2INT = TIMEND - T2INT
 C
@@ -264,7 +263,7 @@ C  /* Deck twocal */
      &            MAXDIS,SQ12EL,RETUR,NHTYP,IREPDM,IFCTYP,ISHLA,ADISTR,
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
-     &            RELCAL)
+     &            RELCAL,GENCNT)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -272,7 +271,7 @@ C  /* Deck twocal */
 #include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, DISTRI, SQ12EL,
-     &        SUSCEP, ADISTR, RELCAL
+     &        SUSCEP, ADISTR, RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), HESSEE(*),GMAT(*), IREPDM(*),
      &          IFCTYP(*), INDXAB(*), JSTRSH(*), NPRIMS(*), NCONTS(*),
      &          IORBSH(*),GABRAO(*),DMRAO(*), DMRSO(*),DINTSKP(*),
@@ -344,7 +343,7 @@ C
      &               NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,
      &               IPRNTD,NUMDIS,MAXDIS,SQ12EL,WORK(KINDHR),
      &               WORK(KINDSQ),WORK(KIODHR),IFCTYP,ADISTR,I2TYP,
-     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL)
+     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL,GENCNT)
       ELSE IF (ADISTR) THEN
 C
 C        All g_abcd for given index a
@@ -357,7 +356,7 @@ C
      &               NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &               RETUR,SQ12EL,WORK(KINDHR),WORK(KINDSQ),
      &               WORK(KIODHR),IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,
-     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL)
+     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL,GENCNT)
 C
       ELSE
 C
@@ -384,7 +383,7 @@ C
      &           WORK(KTKCPU),WORK(KWHICH),WORK(KIJS),
      &           IREPDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
      &           IORBSH,I2TYP,ICEDIF,IFTHRS,
-     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
          ELSE
 #endif
             CALL TWOLOP(WORK(KLAST),LWRK,HESSEE,FMAT,DMAT,NDMAT,
@@ -395,7 +394,7 @@ C
      &           SQ12EL,WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
      &           IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,NPRIMS,NCONTS,
      &           IORBSH,ICEDIF,IFTHRS,
-     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,WORK(KTFMAT))
+     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,WORK(KTFMAT),GENCNT)
 #if defined (VAR_MPI) || defined (VAR_PVM)
          END IF
 #endif
@@ -411,7 +410,7 @@ C  /* Deck twolop */
      &                  IPRNTC,IPRNTD,RETUR,SQ12EL,INDHER,INDHSQ,IODDHR,
      &                  IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,NPRIMS,NCONTS,
      &                  IORBSH,ICEDIF,IFTHRS,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,TFMAT)
+     &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,TFMAT,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -423,7 +422,7 @@ C
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR,
-     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL
+     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL, GENCNT
       DIMENSION DMAT(*), GMAT(*), HESSEE(*), IREPDM(*),
      &        IFCTYP(*), INDHSQ(*), IODDHR(*), INDHER(*),
      &        IORBSH(MXSHEL,MXAOVC), JSTRSH(*), NPRIMS(*), NCONTS(*),
@@ -432,7 +431,6 @@ C
 #include "twocom.h"
 #include "nuclei.h"
 #include "energy.h"
-#include "taymol.h"
 #include "taysol.h"
 #include "suscpt.h"
 #include "inforb.h"
@@ -767,7 +765,7 @@ C
      &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                        ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,DUMMY,
      &                        ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,
-     &                        DMRSO,IREPDM)
+     &                        DMRSO,IREPDM,GENCNT)
 
        ELSE
 #endif
@@ -779,7 +777,7 @@ C
      &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                        ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,DUMMY,
      &                        ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,
-     &                        DMRSO,IREPDM)
+     &                        DMRSO,IREPDM,GENCNT)
 #if defined (VAR_VECTOR)
        END IF
 #endif
@@ -860,7 +858,7 @@ C  /* Deck twodsa */
      &                  NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,
      &                  IPRNTC,IPRNTD,RETUR,SQ12EL,INDHER,INDHSQ,IODDHR,
      &                  IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,JSTRSH,NPRIMS,
-     &                  NCONTS,IORBSH,RELCAL)
+     &                  NCONTS,IORBSH,RELCAL,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -874,7 +872,7 @@ C      PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DOINDX,
-     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL
+     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), HESSEE(*), IREPDM(*),
      &        IFCTYP(*), INDHSQ(*), IODDHR(*), INDHER(*),
      &        IORBSH(MXSHEL,MXAOVC), JSTRSH(*), NPRIMS(*), NCONTS(*),
@@ -1186,7 +1184,7 @@ C
      &                     SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
      &                     JSTRSH,NPRIMS,NCONTS,IORBSH,WORK(KDSBUF),
      &                     IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                     IDUMMY)
+     &                     IDUMMY,GENCNT)
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
@@ -1208,7 +1206,7 @@ C  /* Deck twodis */
      &                  MULTE,NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,
      &                  IPRNTB,IPRNTC,IPRNTD,NUMDIS,MAXDIS,SQ12EL,
      &                  INDHER,INDHSQ,IODDHR,IFCTYP,ADISTR,I2TYP,JSTRSH,
-     &                  NPRIMS,NCONTS,IORBSH,RELCAL)
+     &                  NPRIMS,NCONTS,IORBSH,RELCAL,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1219,7 +1217,7 @@ C
       LOGICAL NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, DIA2SO,
      &        FIRST, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR, SOFOCK,
-     &        RELCAL, ZFS2EL
+     &        RELCAL, ZFS2EL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), HESSEE(*), IFCTYP(*),
      &        INDXAB(MAXDIS), INDHSQ(*), IODDHR(*),
      &        IORBSH(MXSHEL,MXAOVC), JSTRSH(*), NPRIMS(*), NCONTS(*),
@@ -1345,7 +1343,7 @@ C
      &            PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,THRESH,
      &            JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,SQ12EL,INDHSQ,
      &            IODDHR,INDHER,IFCTYP,ADISTR,I2TYP,
-     &            JSTRSH,NPRIMS,NCONTS,IORBSH,MBSAB)
+     &            JSTRSH,NPRIMS,NCONTS,IORBSH,MBSAB,GENCNT)
  999  ISHLAB = ISHLAB + 1
 C
  9999 CONTINUE
@@ -1361,7 +1359,7 @@ C  /* Deck dislop */
      &                  THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &                  SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
      &                  JSTRSH,NPRIMS,NCONTS,IORBSH,I2TYP,
-     &                  MBSAB)
+     &                  MBSAB,GENCNT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1373,14 +1371,13 @@ C
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, DIA2SO,
      &        FIRST, SQ12EL, DISTRI, LONDON, SUSCEP, ADISTR, SOFOCK,
-     &        ZFS2EL
+     &        ZFS2EL, GENCNT
       DIMENSION GMAT(*), DMAT(*), FMAT(*), HESSEE(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), IORBSH(MXSHEL,MXAOVC),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), WORK(LWORK)
 #include "twocom.h"
 #include "nuclei.h"
 #include "energy.h"
-#include "taymol.h"
 #include "inforb.h"
 #include "blocks.h"
 #include "symmet.h"
@@ -1494,7 +1491,7 @@ C
      &                  IODDHR,INDHER,IFCTYP,ADISTR,JSTRSH,NPRIMS,
      &                  NCONTS,IORBSH,DUMMY,
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                  IDUMMY)
+     &                  IDUMMY,GENCNT)
   200    CONTINUE
   100 CONTINUE
       CALL QEXIT('DISLOP')
@@ -1508,7 +1505,7 @@ C  /* Deck twoods */
      &                  NODV,NOPV,THRESH,IPRINT,FIRST,SQ12EL,INDHSQ,
      &                  IODDHR,INDHER,IFCTYP,ADISTR,JSTRSH,NPRIMS,
      &                  NCONTS,IORBSH,WRKBUF,ICEDIF,
-     &                  IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM)
+     &                  IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,GENCNT)
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -1518,7 +1515,7 @@ C  /* Deck twoods */
 #include "mxcent.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, NOCONT, SPNORB, FIRST,
      &        DDFOCK, DIRFCK, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR,
-     &        SOFOCK, DIA2SO, ZFS2EL
+     &        SOFOCK, DIA2SO, ZFS2EL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), HESSEE(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), WRKBUF(*), JSTRSH(*),
      &          NPRIMS(*), NCONTS(*), IORBSH(*), WORK(LWORK),
@@ -1530,10 +1527,6 @@ C  /* Deck twoods */
 #include "twosta.h"
 #include "drw2el.h"
 #include "expopt.h"
-#if defined (VAR_SPLITFILES)
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-#endif
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from TWOODS','*',103)
       IF (FINDPT.OR.DPTINT) THEN
@@ -1579,68 +1572,7 @@ C     Number of two-electron densities elements
 C
       IF ((EXPECT .OR. SUSCEP .OR. DIA2SO .OR. ZFS2EL)
      &     .AND. .NOT.NOPV) THEN
-#if defined (VAR_SPLITFILES)
-         READ (LUPAO,END=414) NPMAT
-         GOTO 415
- 414     INQUIRE(UNIT=LUPAO,NAME=FNNAME)
-         LN = 1
- 410     CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 410
-         END IF
-         LN = LN - 1
-         CALL GPCLOSE(LUPAO,'KEEP')
-         I = LN - 1
-         IF (FNNAME(I:I) .NE. '-') THEN
-            FNNM2 = FNNAME(1:LN)//'-0'
-            LN = LN + 2
-         ELSE
-            READ(FNNAME(LN:),'(I1)') INUM
-            INUM = INUM + 1
-            IF (INUM .GT. 9) THEN
-               WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &              ' file more than 11 times.',
-     &              ' This is currently not supported'
-               CALL QUIT('Too many splittings of a file')
-            END IF
-            FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-         END IF
-         CALL GPOPEN(LUPAO,FNNM2(1:LN),'UNKNOWN',' ',' ',IDUMMY,
-     &               .FALSE.)
-         IF (SUSCEP) THEN
-            INQUIRE(UNIT=LUPAS,NAME=FNNAME)
-            LN = 1
- 411        CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 411
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LUPAS,'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &                 ' file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LUPAS,FNNM2(1:LN),'UNKNOWN',' ',' ',IDUMMY,
-     &                  .FALSE.)
-         END IF
          READ (LUPAO) NPMAT
- 415     CONTINUE
-#else
-         READ (LUPAO) NPMAT
-#endif
          IF (SUSCEP) THEN
             READ (LUPAS) NPMATA
             IF (NPMAT .NE. NPMATA) THEN
@@ -1746,7 +1678,7 @@ C
      &            WORK(KPNTAB),WORK(KPNTCD),WORK(KREDAB),WORK(KREDCD),
      &            IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,WRKBUF,
      &            GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,
-     &            WORK(KIXPAB),WORK(KIXPCD))
+     &            WORK(KIXPAB),WORK(KIXPCD),GENCNT)
 C
       LWTOT  = LWTOT - KLAST
       RETURN
@@ -1763,7 +1695,8 @@ C  /* Deck twood1 */
      &                  NINDCD,INDHSQ,IODDHR,INDHER,LMNVLS,NPNTAB,
      &                  NPNTCD,NREDAB,NREDCD,IFCTYP,ADISTR,JSTRSH,
      &                  NPRIMS,NCONTS,IORBSH,WRKBUF,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,IXPAB,IXPCD)
+     &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,IXPAB,IXPCD,
+     &                  GENCNT)
 #include "implicit.h"
 #include "priunit.h"
 #include "r12int.h"
@@ -1775,7 +1708,8 @@ C  /* Deck twood1 */
 #include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, ONECEN,
-     &        FIRST, LAST, SQ12EL, SUSCEP, TPRAB, TPRCD, ADISTR, SOFOCK
+     &        FIRST, LAST, SQ12EL, SUSCEP, TPRAB, TPRCD, ADISTR, SOFOCK,
+     &        GENCNT
       DIMENSION WORK(LWORK), DMAT(*), FMAT(*), GMAT(*), PSO(*), PSA(*),
      &          HESSEE(*), IFCTYP(*), INDHSQ(*), IODDHR(*), INDHER(*),
      &          CONTA(*), CONTB(*), CONTC(*), CONTD(*),
@@ -1808,7 +1742,7 @@ Cholesky
 #include "ccdeco.h"
 Cholesky
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from TWOOD1','*',103)
 C
@@ -1984,7 +1918,7 @@ C
      &               NUCTAB,NUCTCD,INDHSQ,IODDHR,INDHER,LMNVLS,NPNTAB,
      &               NPNTCD,NREDAB,NREDCD,IFCTYP,ADISTR,IORBSH,WRKBUF,
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
-     &               IXPAB,IXPCD,CHOINT)
+     &               IXPAB,IXPCD,CHOINT,gencnt)
 C
          LWTOT = LWTOT - KLAST
       END IF
@@ -2005,7 +1939,7 @@ C  /* Deck symlop */
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &                  IFCTYP,ADISTR,IORBSH,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,
-     &                  IXPAB,IXPCD,CHOINT)
+     &                  IXPAB,IXPCD,CHOINT,gencnt)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2032,7 +1966,7 @@ C  /* Deck symlop */
      &        PERTUR, EXPECT, INTS, UNDIFF, CAEQCB, CCEQCD, ABADX,
      &        ABADY,  ABADZ, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        DIA2SO, ZFS2EL, ONECEN, FIRST, LAST, SQ12EL, SOP000,
-     &        IPNTLG(3,*), LONDON, SUSCEP, ADISTR,SOFOCK
+     &        IPNTLG(3,*), LONDON, SUSCEP, ADISTR,SOFOCK, GENCNT
       DIMENSION SOINT(NSOINT,*), PSO(NPMAT), PSA(NPMAT), HESSEE(*),
      &          WORK(LWORK), DMAT(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), FMAT(*), GMAT(*),
@@ -2063,11 +1997,11 @@ Cholesky
       LOGICAL CHOINT
 Cholesky
 C
-#include "ibtfun.h"
-      IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
-      XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
+
+      IBTAXO(I,J) = IAND(I,IEOR(I,J))
+      XAND(I)     = PT(IAND(ISYMAX(1,1),I))
+      YAND(I)     = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I)     = PT(IAND(ISYMAX(3,1),I))
 C
       CALL QENTER('SYMLOP')
 C
@@ -2097,8 +2031,8 @@ C
          CALL SETEFF(IEFFB,IEFFC,IEFFD)
       END IF
 C
-      MULAB  = IBTAND(MULA,MULB)
-      MULCD  = IBTAND(MULC,MULD)
+      MULAB  = IAND(MULA,MULB)
+      MULCD  = IAND(MULC,MULD)
 C
       IF(DIRAC) THEN
         COMP(1) = 'L'
@@ -2112,7 +2046,7 @@ C
 C     ***** Both distributions *****
 C
       JMAX0  = MAXAB + MAXCD
-      HKABCD = FMULT(IBTAND(MULAB,MULCD))
+      HKABCD = FMULT(IAND(MULAB,MULCD))
       IF (SPNORB) HKABCD = - HKABCD
       IF (UNDIFF .OR. LONDON .OR. SPNORB .OR. DIRFCK .OR.
      &    DISTRI .OR. SOFOCK .OR. DIA2SO .OR. ZFS2EL .OR. EXPGRA) THEN
@@ -2167,7 +2101,7 @@ C
       NSYMR = 0
       DO 100 ISYMR = 0,MAXOPR
 C
-      IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
+      IF (IAND(ISYMR,IOR(MULA,MULB)) .EQ. 0) THEN
          NSYMR = NSYMR + 1
          ICENTB = NUCNUM(NCNTSH(ISHELB),IBTAXO(ISYMR,MULB)+1)
          IDEG   = NDEGNM(ICENTB)
@@ -2202,7 +2136,7 @@ C        Generates distinct overlap distributions C*S(D)
 C
          NSYMS = 0
          DO 200 ISYMS = 0, MAXOPR
-         IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
+         IF (IAND(ISYMS,IOR(MULC,MULD)) .EQ. 0) THEN
             NSYMS = NSYMS + 1
             TPRICD = .FALSE.
 C
@@ -2237,8 +2171,8 @@ C
 C           Generates distinct quadruplets A*R(B) * T(C*S(D))
 C
             DO 300 ISYMT = 0, MAXOPR
-            IF (IBTAND(ISYMT,IBTOR(MULAB,MULCD)) .EQ. 0) THEN
-              ISYMTS = IBTXOR(ISYMT,ISYMS)
+            IF (IAND(ISYMT,IOR(MULAB,MULCD)) .EQ. 0) THEN
+              ISYMTS = IEOR(ISYMT,ISYMS)
               ICENTC = NUCNUM(NCNTSH(ISHELC),IBTAXO(ISYMT,MULC)+1)
               IDEG   = NDEGNM(ICENTC)
               ISYBLC = ISYMBL(ISHELC,IDEG)
@@ -2292,7 +2226,7 @@ C
      &                  (ICENTA .NE. 0)
                IF (ONECEN) THEN
                   IF (MAXDER .EQ. 0 .OR. EXPGRA) THEN
-                     IF (IBTAND(JMAX0,1).EQ.1) THEN
+                     IF (IAND(JMAX0,1).EQ.1) THEN
                         LINTMP = LINTSV
                         GO TO 300
                      END IF
@@ -2577,7 +2511,8 @@ C
      &              SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &              NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
      &              NREDAB,NREDCD,IFCTYP,HESSEE,DNSBUF,DINTSKP,
-     &              NSOINT,IXPAB(1,1,NSYMR),IXPCD(1,1,NSYMS))
+     &              NSOINT,IXPAB(1,1,NSYMR),IXPCD(1,1,NSYMS),
+     &              GENCNT)
                LWTOT  = LWTOT - KLAST
 C
 C               write(lupri,*) 'WORK(KAOINT)2: ',(WORK(KAOINT+II-1),
@@ -2644,11 +2579,11 @@ C        Reset MMCORE,ISCORE since we did not save anything useful in this call.
                   ISCORE = JSCORE
 C
                END IF    ! IF (AOSAVE .AND. ...
-            END IF     ! IF (IBTAND(ISYMT,IBTOR(MULAB,MULCD)) .EQ. 0) THEN
+            END IF     ! IF (IAND(ISYMT,IOR(MULAB,MULCD)) .EQ. 0) THEN
  300        CONTINUE   ! DO 300 ISYMT = 0, MAXOPR
-         END IF        ! IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
+         END IF        ! IF (IAND(ISYMS,IOR(MULC,MULD)) .EQ. 0) THEN
  200     CONTINUE      ! DO 200 ISYMS = 0, MAXOPR
-      END IF           ! IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
+      END IF           ! IF (IAND(ISYMR,IOR(MULA,MULB)) .EQ. 0) THEN
 C
  100  CONTINUE         ! DO 100 ISYMR = 0,MAXOPR
 C
@@ -2671,15 +2606,11 @@ C
                IF (DCCR12) THEN
                   CALL RN2OUT(SOINT,NSOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,
      &                        LAST,THRESH,NINDAB,NINDCD,IPRINT)
-               ELSE IF (SRINTS) THEN
-                  CALL SR2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
-     &                        THRESH,NINDAB,NINDCD,IPRINT)
                ELSE
-                  CALL UN2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
-     &                        THRESH,NINDAB,NINDCD,IPRINT)
+                  CALL UN2OUT(SOINT,SRINTS,IPNTNO,IPNTRP,IPNTLG,
+     &                        FIRST,LAST,THRESH,NINDAB,NINDCD,IPRINT)
                END IF
             ELSE
-C           ... ADISTR true: Distributions (all gabcd for fixed a)
                IF (U21INT) THEN
                   CALL US2OUT(SOINT,NSOINT,WRKBUF,IPNTNO,IPNTRP,IPNTLG,
      &                        FIRST,LAST,THRESH,NINDAB,NINDCD,
@@ -2702,13 +2633,6 @@ C
          ELSE IF (PERTUR .OR. SPNORB) THEN
             IF (IPRINT.GE.5) WRITE(LUPRI,*)
      &      'SYMLOP: processing differentiated integrals'
-#ifndef VAR_INT64
-           IF (NBASIS .GT. 255) THEN
-              CALL QENTER('DR2OUT')
-              CALL QUIT('NBASIS .gt. 255 not implemented for 32-bit'//
-     &        ' integers - recompile with 64-bit integers.')
-           END IF
-#endif
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             CALL DR2OUT(SOINT,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,
      &                  THRESH,IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
@@ -2794,7 +2718,7 @@ C  /* Deck caoint */
      &                  IPNTAO,IPNTOP,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
-     &                  HESSEE,DNSBUF,DINTSKP,NSOINT,IXPAB,IXPCD)
+     &                  HESSEE,DNSBUF,DINTSKP,NSOINT,IXPAB,IXPCD,GENCNT)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2808,7 +2732,7 @@ C  /* Deck caoint */
 #include "twosta.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, DIA2SO, BIGVEC, ONECEN,
-     &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, ZFS2EL
+     &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, ZFS2EL, GENCNT
       DIMENSION AOINT(NCCINT,NINTYP), SOINT(NSOINT,*), PSO(*),PSA(*),
      &          COEFAB(*), COEFCD(*), COORAB(*), COORCD(*), EXPAB(*),
      &          EXPCD(*), CONTA(*), CONTB(*), CONTC(*), CONTD(*),
@@ -2927,7 +2851,7 @@ C
      &                     ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &                     HKABCD,IPRINT,NOPV,NODV,EXPECT,LONDON,SUSCEP,
      &                     DIA2SO,ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,
-     &                     IFCTYP)
+     &                     IFCTYP,GENCNT)
                IF (TKTIME) THEN
                   CALL GETTIM(TIMEND,DUMTIM)
                   TINTEX = TINTEX + TIMEND - TIMSTR
@@ -2971,7 +2895,7 @@ C
      &                     ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &                     HKABCD,IPRINT,NOPV,NODV,EXPECT,LONDON,SUSCEP,
      &                     DIA2SO,ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,
-     &                     IFCTYP)
+     &                     IFCTYP,GENCNT)
                IF (TKTIME) THEN
                   CALL GETTIM(TIMEND,DUMTIM)
                   TINTEX = TINTEX + TIMEND - TIMSTR
@@ -2995,7 +2919,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCNT)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -3025,7 +2949,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCNT)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -3041,7 +2965,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCNT)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -3438,7 +3362,7 @@ C  /* Deck nintso */
 #include "twocom.h"
 #include "symmet.h"
 #include "dorps.h"
-#include "ibtfun.h"
+
 C
       IF (UNDIFF .OR. SOFOCK .OR. DISTRI) THEN
          NINTS     = NMBOSO(SQ12EL,0)
@@ -3447,7 +3371,7 @@ C
       ELSE
          NINTS  = 0
          NINTMX = 0
-         IRPXYZ = IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
+         IRPXYZ = IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
          DO 100 IREPX = 1, NOPREP
             IREPE  = IPTREP(IREPX,1)
             NINTE  = NMBOSO(SQ12EL,IREPE)
@@ -3456,13 +3380,13 @@ C
             NTYPE = 0
             DO 200 ICOOR = 1, 3
                IF (SPNORB) THEN
-                 IF(IREPE .EQ. IBTXOR(ISYMAX(ICOOR,1),IRPXYZ)) THEN
+                 IF(IREPE .EQ. IEOR(ISYMAX(ICOOR,1),IRPXYZ)) THEN
                     NTYPE = NTYPE + 1
                  END IF
                ELSE IF (LONDON) THEN
                  IF(IREPE .EQ. ISYMAX(ICOOR,2)) NTYPE = NTYPE + 2
                ELSE
-                 IF(IBTAND(MULE,IBTXOR(IREPE,ISYMAX(ICOOR,1))).EQ.0)THEN
+                 IF(IAND(MULE,IEOR(IREPE,ISYMAX(ICOOR,1))).EQ.0)THEN
                     NTYPE = NTYPE + 1
                  END IF
                END IF
@@ -3487,7 +3411,7 @@ C  /* Deck nmboso */
       LOGICAL SQ12EL, DCMPAC, DCABAB, NOTEST
 #include "twocom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
       IF (NOTEST) THEN
@@ -3495,21 +3419,21 @@ C
         DO 100 NA = 1,KHKTA
           ISA = ISYMAO(NHKTA,NA)
           DO 110 IREPA = 0, MAXREP
-          IF (IBTAND(MULA,IBTXOR(IREPA,ISA)) .EQ. 0) THEN
-            IRPAE = IBTXOR(IREPA,IREPE)
+          IF (IAND(MULA,IEOR(IREPA,ISA)) .EQ. 0) THEN
+            IRPAE = IEOR(IREPA,IREPE)
             DO 200 NB = 1,KHKTB
               ISB = ISYMAO(NHKTB,NB)
               DO 210 IREPB = 0, MAXREP
-              IF (IBTAND(MULB,IBTXOR(IREPB,ISB)) .EQ. 0) THEN
-                IRPABE = IBTXOR(IREPB,IRPAE)
+              IF (IAND(MULB,IEOR(IREPB,ISB)) .EQ. 0) THEN
+                IRPABE = IEOR(IREPB,IRPAE)
                 DO 300 NC = 1,KHKTC
                   ISC = ISYMAO(NHKTC,NC)
                   DO 410 IREPC = 0, MAXREP
-                  IF (IBTAND(MULC,IBTXOR(IREPC,ISC)) .EQ. 0) THEN
-                    IREPD=IBTXOR(IREPC,IRPABE)
+                  IF (IAND(MULC,IEOR(IREPC,ISC)) .EQ. 0) THEN
+                    IREPD=IEOR(IREPC,IRPABE)
                     DO 500 ND = 1,KHKTD
                       ISD = ISYMAO(NHKTD,ND)
-                      IF (IBTAND(MULD,IBTXOR(IREPD,ISD)) .EQ. 0) THEN
+                      IF (IAND(MULD,IEOR(IREPD,ISD)) .EQ. 0) THEN
                          NMBOSO = NMBOSO + 1
                       END IF
   500               CONTINUE
@@ -3543,13 +3467,13 @@ C
                 DCABAB = .NOT.SQ12EL .AND. DCMPAC .AND. NB .EQ. ND
 C
                 DO 700 IREPA = 0, MAXREP
-                IF (IBTAND(MULA,IBTXOR(IREPA,ISA)) .EQ. 0) THEN
+                IF (IAND(MULA,IEOR(IREPA,ISA)) .EQ. 0) THEN
                   DO 710 IREPB = 0, MAXREP
-                  IF (IBTAND(MULB,IBTXOR(IREPB,ISB)) .EQ. 0) THEN
+                  IF (IAND(MULB,IEOR(IREPB,ISB)) .EQ. 0) THEN
                    DO 720 IREPC = 0, MAXREP
-                   IF (IBTAND(MULC,IBTXOR(IREPC,ISC)) .EQ. 0) THEN
-                   IREPD=IBTXOR(IBTXOR(IBTXOR(IREPA,IREPB),IREPC),IREPE)
-                    IF (IBTAND(MULD,IBTXOR(IREPD,ISD)) .EQ. 0) THEN
+                   IF (IAND(MULC,IEOR(IREPC,ISC)) .EQ. 0) THEN
+                   IREPD=IEOR(IEOR(IEOR(IREPA,IREPB),IREPC),IREPE)
+                    IF (IAND(MULD,IEOR(IREPD,ISD)) .EQ. 0) THEN
                      IF (.NOT.(DCABAB .AND. (IREPA .LT. IREPC .OR.
      &                  (IREPA.EQ.IREPC .AND. IREPB.LT.IREPD)))) THEN
                          NMBOSO = NMBOSO + 1
@@ -4086,7 +4010,7 @@ C
 #include "twocom.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine NDISTR',-1)
 C
@@ -4107,9 +4031,9 @@ C
 C           Loop over symmetries
 C
             DO 300 IREPA = 0, MAXREP
-            IF (IBTAND(MULA,IBTXOR(IREPA,ITYNA)) .EQ. 0) THEN
+            IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
                DO 400 IREPB = 0, MAXREP
-               IF (IBTAND(MULB,IBTXOR(IREPB,ITYNB)) .EQ. 0) THEN
+               IF (IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
 C
 C                 Loop over contracted orbitals
 C
@@ -4217,7 +4141,7 @@ C
      &          IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*)
 #include "twocom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from CPRLOP','*',103)
@@ -4249,20 +4173,20 @@ C
            ITYND  = ISYMAO(NHKTD,ICOMPD)
            NSTRND = NSTRD + ICOMPD
            DO 300 IREPA = 0, MAXREP
-           IF (IBTAND(MULA,IBTXOR(IREPA,ITYNA)) .EQ. 0) THEN
-             IRPAE = IBTXOR(IREPA,IREPE)
+           IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
+             IRPAE = IEOR(IREPA,IREPE)
              DO 310 IREPB = 0, MAXREP
-             IF (IBTAND(MULB,IBTXOR(IREPB,ITYNB)) .EQ. 0) THEN
-               IRPABE = IBTXOR(IREPB,IRPAE)
-               IRPTYB = IBTXOR(IREPB,ITYNB)
+             IF (IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
+               IRPABE = IEOR(IREPB,IRPAE)
+               IRPTYB = IEOR(IREPB,ITYNB)
                DO 320 IREPC = 0, MAXREP
-               IF (IBTAND(MULC,IBTXOR(IREPC,ITYNC)) .EQ. 0) THEN
-                 IREPD = IBTXOR(IREPC,IRPABE)
-                 IF (IBTAND(MULD,IBTXOR(IREPD,ITYND)) .EQ. 0) THEN
+               IF (IAND(MULC,IEOR(IREPC,ITYNC)) .EQ. 0) THEN
+                 IREPD = IEOR(IREPC,IRPABE)
+                 IF (IAND(MULD,IEOR(IREPD,ITYND)) .EQ. 0) THEN
                    IPNTAO(ISOFF,IREPX)   = IAOFF
                    IPNTOP(1,ISOFF,IREPX) = IRPTYB
-                   IPNTOP(2,ISOFF,IREPX) = IBTXOR(IREPC,ITYNC)
-                   IPNTOP(3,ISOFF,IREPX) = IBTXOR(IREPD,ITYND)
+                   IPNTOP(2,ISOFF,IREPX) = IEOR(IREPC,ITYNC)
+                   IPNTOP(3,ISOFF,IREPX) = IEOR(IREPD,ITYND)
                    IPNTNO(1,ISOFF,IREPX) = NSTRNA
                    IPNTNO(2,ISOFF,IREPX) = NSTRNB
                    IPNTNO(3,ISOFF,IREPX) = NSTRNC
@@ -4306,22 +4230,22 @@ C
              DCABAB = .NOT.SQ12EL .AND. SHABAB .AND.
      &                ICOMPA.EQ.ICOMPC .AND. ICOMPB.EQ.ICOMPD
              DO 500 IREPA = 0, MAXREP
-             IF (IBTAND(MULA,IBTXOR(IREPA,ITYNA)) .EQ. 0) THEN
-               IRPAE = IBTXOR(IREPA,IREPE)
+             IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
+               IRPAE = IEOR(IREPA,IREPE)
                DO 510 IREPB = 0, MAXREP
-               IF (IBTAND(MULB,IBTXOR(IREPB,ITYNB)) .EQ. 0) THEN
-                 IRPABE = IBTXOR(IREPB,IRPAE)
-                 IRPTYB = IBTXOR(IREPB,ITYNB)
+               IF (IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
+                 IRPABE = IEOR(IREPB,IRPAE)
+                 IRPTYB = IEOR(IREPB,ITYNB)
                  DO 520 IREPC = 0, MAXREP
-                 IF (IBTAND(MULC,IBTXOR(IREPC,ITYNC)) .EQ. 0) THEN
-                   IREPD = IBTXOR(IREPC,IRPABE)
-                   IF (IBTAND(MULD,IBTXOR(IREPD,ITYND)) .EQ. 0) THEN
+                 IF (IAND(MULC,IEOR(IREPC,ITYNC)) .EQ. 0) THEN
+                   IREPD = IEOR(IREPC,IRPABE)
+                   IF (IAND(MULD,IEOR(IREPD,ITYND)) .EQ. 0) THEN
                    IF (.NOT.(DCABAB .AND. (IREPA .LT. IREPC .OR.
      &               (IREPA.EQ.IREPC .AND. IREPB.LT.IREPD)))) THEN
                      IPNTAO(ISOFF,IREPX)   = IAOFF
                      IPNTOP(1,ISOFF,IREPX) = IRPTYB
-                     IPNTOP(2,ISOFF,IREPX) = IBTXOR(IREPC,ITYNC)
-                     IPNTOP(3,ISOFF,IREPX) = IBTXOR(IREPD,ITYND)
+                     IPNTOP(2,ISOFF,IREPX) = IEOR(IREPC,ITYNC)
+                     IPNTOP(3,ISOFF,IREPX) = IEOR(IREPD,ITYND)
                      IPNTNO(1,ISOFF,IREPX) = NSTRNA
                      IPNTNO(2,ISOFF,IREPX) = NSTRNB
                      IPNTNO(3,ISOFF,IREPX) = NSTRNC
@@ -4497,10 +4421,10 @@ C
 C  /* Deck nodsym */
       FUNCTION NODSYM(MAXOPR,MULA,MULB)
 #include "implicit.h"
-#include "ibtfun.h"
+
       NODSYM = 0
       DO 100 I = 0, MAXOPR
-         IF (IBTAND(I,IBTOR(MULA,MULB)).EQ.0) NODSYM = NODSYM + 1
+         IF (IAND(I,IOR(MULA,MULB)).EQ.0) NODSYM = NODSYM + 1
   100 CONTINUE
       RETURN
       END
@@ -4512,7 +4436,7 @@ C  /* Deck herprp */
       DIMENSION INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7)
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       TUV = 0
       DO 100 J = 0, JTOP
@@ -4524,7 +4448,7 @@ C
                INDHSQ(TUV)   = T + U*(JTOP + 1) + V*(JTOP + 1)**2
                IBTUV = MOD(T,2) + 2*MOD(U,2) + 4*MOD(V,2)
                DO 200 ISYM = 0, 7
-                  IODDHR(TUV,ISYM) = IBTAND(IBTUV,ISYM)
+                  IODDHR(TUV,ISYM) = IAND(IBTUV,ISYM)
   200          CONTINUE
   120       CONTINUE
   110    CONTINUE
@@ -4589,7 +4513,7 @@ C
       DIMENSION LMNV12(KCKMX,5,2), LMNV34(KCKMX,5,2),
      &          IODD12(KCKT12,2),  IODD34(KCKT34,2)
 #include "twoao.h"
-#include "ibtfun.h"
+
 C
       IF (IHRSYM .GT. 0) THEN
          IJ = 0
@@ -4599,7 +4523,7 @@ C
             IF (DIAC12) MAXJ = I
             DO 110 J = 1, MAXJ
                IJ = IJ + 1
-               IODD12(IJ,1) = IBTAND(IHRSYM,IBTXOR(IODD,LMNV12(J,4,2)))
+               IODD12(IJ,1) = IAND(IHRSYM,IEOR(IODD,LMNV12(J,4,2)))
   110       CONTINUE
   100    CONTINUE
 C
@@ -4610,7 +4534,7 @@ C
             IF (DIAG12) MAXJ = I
             DO 210 J = 1, MAXJ
                IJ = IJ + 1
-               IODD12(IJ,2) = IBTAND(IHRSYM,IBTXOR(IODD,LMNV12(J,5,2)))
+               IODD12(IJ,2) = IAND(IHRSYM,IEOR(IODD,LMNV12(J,5,2)))
   210       CONTINUE
   200    CONTINUE
 C
@@ -4621,7 +4545,7 @@ C
             IF (DIAC34) MAXJ = I
             DO 310 J = 1, MAXJ
                IJ = IJ + 1
-               IODD34(IJ,1) = IBTAND(IHRSYM,IBTXOR(IODD,LMNV34(J,4,2)))
+               IODD34(IJ,1) = IAND(IHRSYM,IEOR(IODD,LMNV34(J,4,2)))
   310       CONTINUE
   300    CONTINUE
 C
@@ -4632,7 +4556,7 @@ C
             IF (DIAG34) MAXJ = I
             DO 410 J = 1, MAXJ
                IJ = IJ + 1
-               IODD34(IJ,2) = IBTAND(IHRSYM,IBTXOR(IODD,LMNV34(J,5,2)))
+               IODD34(IJ,2) = IAND(IHRSYM,IEOR(IODD,LMNV34(J,5,2)))
   410       CONTINUE
   400    CONTINUE
       ELSE
@@ -4665,7 +4589,7 @@ C  /* Deck whtrep */
 #include "symmet.h"
 #include "twocom.h"
 #include "expopt.h"
-#include "ibtfun.h"
+
 C
       DO 100 I = 0, MAXREP
          DOPREP(I) = .FALSE.
@@ -4682,7 +4606,7 @@ C
          DO 200 IREPE = 0, MAXREP
          IF (DOREPS(IREPE)) THEN
             DO 210 ICOOR = 1, 3
-            IF (IBTAND(MULE,IBTXOR(IREPE,ISYMAX(ICOOR,1))).EQ.0) THEN
+            IF (IAND(MULE,IEOR(IREPE,ISYMAX(ICOOR,1))).EQ.0) THEN
                DOPREP(IREPE) = .TRUE.
             END IF
   210       CONTINUE
@@ -4761,33 +4685,33 @@ C  /* Deck seteff */
       DIMENSION IEFFB(0:7), IEFFC(0:7), IEFFD(0:7)
 #include "symmet.h"
 #include "twocom.h"
-#include "ibtfun.h"
+
 C
       IOFF = 0
       DO 100 I = 0, MAXOPR
-        IF (IBTAND(I,MULB).EQ.0) THEN
+        IF (IAND(I,MULB).EQ.0) THEN
             IEFFB(I) = IOFF
             IOFF = IOFF + KHKTB
          ELSE
-            IEFFB(I) = IEFFB(IBTXOR(I,IBTAND(I,MULB)))
+            IEFFB(I) = IEFFB(IEOR(I,IAND(I,MULB)))
          END IF
  100  CONTINUE
       IOFF = 0
       DO 200 I = 0, MAXOPR
-         IF (IBTAND(I,MULC).EQ.0) THEN
+         IF (IAND(I,MULC).EQ.0) THEN
             IEFFC(I) = IOFF
             IOFF = IOFF + KHKTC
          ELSE
-            IEFFC(I) = IEFFC(IBTXOR(I,IBTAND(I,MULC)))
+            IEFFC(I) = IEFFC(IEOR(I,IAND(I,MULC)))
          END IF
  200  CONTINUE
       IOFF = 0
       DO 300 I = 0, MAXOPR
-         IF (IBTAND(I,MULD).EQ.0) THEN
+         IF (IAND(I,MULD).EQ.0) THEN
             IEFFD(I) = IOFF
             IOFF = IOFF + KHKTD
          ELSE
-            IEFFD(I) = IEFFD(IBTXOR(I,IBTAND(I,MULD)))
+            IEFFD(I) = IEFFD(IEOR(I,IAND(I,MULD)))
          END IF
  300  CONTINUE
       RETURN

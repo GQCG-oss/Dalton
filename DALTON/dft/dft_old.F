@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE DFT_COMP_KSM(DMAT,KSM,WRK,LWORK,IPRFCK)
 #include "implicit.h"
@@ -456,6 +455,7 @@ C
       END IF
 C
       CALL DEQ27(CMO,ZYMAT,DUMMY,WORK(KDA1),DUMMY,WORK(KLST),LWRK)
+      CALL DSCAL(N2BASX,0.5D0,WORK(KDA1),1)
       IF (DOPRNT) THEN
          CALL HEADER('AO transformation matrix in DFTATR ',-1)
          CALL OUTPUT(WORK(KDA1),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)

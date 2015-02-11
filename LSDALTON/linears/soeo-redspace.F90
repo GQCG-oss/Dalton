@@ -976,9 +976,9 @@ enddo
 
 !!debug
 !write (lupri, *) 'Eigenvalues for A:'
-!call output (er, 1, iter, 1, 1, iter, 1, 1, lupri)
+!call ls_output (er, 1, iter, 1, 1, iter, 1, 1, lupri)
 !write (lupri, *) 'Corresponding eigenvectors for A:'
-!call output (X, 1, iter, 1, iter, iter, iter, 1, lupri)
+!call ls_output (X, 1, iter, 1, iter, iter, iter, 1, lupri)
 
 lueval = -1 ; luevecs = -1
 inquire (file='evals',EXIST=evalsexist)

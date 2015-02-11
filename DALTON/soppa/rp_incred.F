@@ -147,6 +147,7 @@ C-------------------------------------------------------------------
 C
       LTR    = LWORK3 / NTRALL
 C
+      CALL SO_MEMMAX ('RP_INCRED.3',LWORK3)
       IF (LTR .LE. 0) CALL STOPIT('RP_INCRED.3',' ',KEND3+NTRALL,LWORK)
 C
       N1READ = LTR1E / LTR
@@ -328,6 +329,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('RP_INCRED')
 C

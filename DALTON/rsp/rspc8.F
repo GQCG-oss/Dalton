@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef revlog
 !===========================================================================
@@ -36,7 +35,7 @@ C  /* Deck rspc6 */
 C
 #include "implicit.h"
 C
-      LOGICAL IDONE
+      LOGICAL LDONE
 #include "iratdef.h"
 C
       CHARACTER*8 BLANK
@@ -88,8 +87,8 @@ C
 C
       LBVMAX = MAX(KZCONF,KZYWOP)
       IF (LWRK1.LT.2*KZYVAR+LBVMAX) THEN
-         WRITE (LUERR,9100) LWRK1,2*KZYVAR+LBVMAX
-         CALL QTRACE(LUERR)
+         WRITE (LUPRI,9100) LWRK1,2*KZYVAR+LBVMAX
+         CALL QTRACE(LUPRI)
          CALL QUIT('RSPC6 ERROR, INSUFFICIENT SPACE TO SOLVE LIN. EQ.S')
       ENDIF
  9100 FORMAT(/' RSPC6, work space too small for 2.5 (z,y)-vectors',
@@ -139,7 +138,7 @@ C     CALL DCOPY(KZYVAR*NGDNUM,WRK(KGD),1,WRK(KSOL),1)
       C6NEW  = BIG
       C6DIF  = BIG
       THCRSP = THCC6
-      IDONE  = .FALSE.
+      LDONE  = .FALSE.
  100     CONTINUE
          WRITE(LUPRI,'(//A,I3/)')
      &      ' **** RSPC6 moment iteration no.',ITC6
@@ -147,19 +146,19 @@ C     CALL DCOPY(KZYVAR*NGDNUM,WRK(KGD),1,WRK(KSOL),1)
          KGDOFF = KGD
          DO 200 IOP = 1,NGDNUM
                WRITE(LUPRI,'(A,A/A,I4)')
-     *          ' OPERATOR TYPE:    ',LBLC6(KSYMOP,IOP),
+     *          ' OPERATOR TYPE    :',LBLC6(KSYMOP,IOP),
      *          ' OPERATOR SYMMETRY:',KSYMOP
                WRK(KEIVAL) = ZERO
                IF (IPRRSP.GT.110) THEN
                   WRITE(LUPRI,'(/A,I5)')
      *           ' GRADIENT VECTOR FOR CAUCHY SERIES NUMBER',ITC6
-                  CALL OUTPUT(WRK(KSOLOF),1,KZYVAR,1,1,KZYVAR,1,1,LUPRI)
+                  CALL OUTPUT(WRK(KSOLOF),1,2,1,KZVAR,2,KZVAR,-1,LUPRI)
                END IF
                XLRTST = DDOT(KZYVAR,WRK(KSOLOF),1,WRK(KSOLOF),1)
                IF( SQRT(XLRTST).LE.DLRTST) THEN
-                  WRITE(LUPRI,'(/A)')
-     *            ' *** RIGHT HAND SIDE OF LINEAR EQUATION IS ZERO'
-     *            ,' *** THE LINEAR EQUATION IS NOT SOLVED         '
+                  WRITE(LUPRI,'(/A/A)')
+     *            ' *** RIGHT HAND SIDE OF LINEAR EQUATION IS ZERO',
+     *            ' *** THE LINEAR EQUATION IS NOT SOLVED'
                   GO TO 200
                END IF
                CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
@@ -173,27 +172,25 @@ C    *                  IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
                RESTLR = .TRUE.
                IF ( IPRRSP.GT.5) THEN
-                  WRITE(LUPRI,'(/A,G15.8)')
-     *            ' threshold for linear equations THCRSP:',THCRSP
+                  WRITE(LUPRI,'(/A,1P,G15.2)')
+     *            ' Threshold for linear equations THCRSP:',THCRSP
                END IF
                CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
      *                  WRK(KBVECS),WRK(KWRKE),1,0)
 C              CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                IF (IPRRSP.GT.100) THEN
-                  WRITE(LUPRI,'(/A,I5,/A,A)')
+                  WRITE(LUPRI,'(/A,I5/2A)')
      *           ' SOLUTION VECTOR FOR lamda(k) k =',ITC6,
      *           ' OPERATOR ',LBLC6(KSYMOP,IOP)
-                  CALL OUTPUT(WRK(KBVECS),1,KZYVAR,1,1,KZYVAR,1,1,LUPRI)
+                  CALL OUTPUT(WRK(KBVECS),1,2,1,KZVAR,2,KZVAR,-1,LUPRI)
                END IF
                GDNORM =  DDOT(KZYVAR,WRK(KSOLOF),1,WRK(KBVECS),1)
-               IF (IPRRSP.GT.42) THEN
-                  WRITE(LUPRI,'(/A,1G15.8)')
-     *            ' GDNORM ',GDNORM
-               END IF
-               IF (IPRRSP.GT.81) THEN
+               IF (IPRRSP.GT.12) WRITE(LUPRI,'(/A,1P,G15.8)')
+     *            ' GDNORM',GDNORM
+               IF (IPRRSP.GT.10) THEN
                   CAUCMO =  DDOT(KZYVAR,WRK(KGDOFF),1,WRK(KBVECS),1)
-                  WRITE(LUPRI,'(/A,I5,A,G15.8)')
-     *           'CAUCHY MOMENT itc6=:',ITC6,' CAUCMO = ',CAUCMO
+                  WRITE(LUPRI,'(/A,I3,A,1P,G15.8)')
+     *            ' CAUCHY MOMENT itc6 =',ITC6,'    CAUCMO = ',CAUCMO
                END IF
 C
 C CONSTRUCT  S[2]*X WHERE X IS THE SOLUTION VECTOR
@@ -221,20 +218,20 @@ C    *                    WRK(KBVECS+KZVAR),1)
                KSOLOF = KSOLOF + KZYVAR
  200     CONTINUE
          ITC6 = ITC6 + 1
-         IF (ITC6.GT.MAXMOM) THEN
-            WRITE(LUPRI,'(A,A,/A,I4,A,I4)')
-     *      ' *** WARNING: Stopping ITC6 iterations, but ',
+         IF ( ITC6.GT.MAXMOM ) THEN
+            WRITE(LUPRI,'(2A/A,I4,A,I4)')
+     *      ' *** WARNING: Stopping ITC6 iterations, but',
      *      ' polarizabilities not converged.',
-     *      ' ITC6 = ', ITC6, '   MAXMOM = ', MAXMOM
+     *      ' ITC6 = ', ITC6, '      MAXMOM = ', MAXMOM
             NWARN = NWARN + 1
             GO TO 400
          ENDIF
          CALL POLIM(WRK(KIBTYP),WRK(KREDS),WRK(KREDE),
      *           WRK(KXMOM),WRK(KEIVAL),WRK(KEIVEC),WRK(KGD),
-     *           WRK(KOLDAL),UDV,XINDX,WRK(KWRK1),LWRK1,IDONE)
-         IF (IDONE) THEN
+     *           WRK(KOLDAL),UDV,XINDX,WRK(KWRK1),LWRK1,LDONE)
+         IF (LDONE) THEN
             WRITE(LUPRI,'(A,/A,I4,/A)') '  ',
-     *      ' Number of ITC6 iterations used : ', ITC6,
+     *      ' Done. Number of ITC6 iterations used :', ITC6,
      *      ' ============================================='
             GOTO 400
          ENDIF
@@ -242,11 +239,11 @@ C    *                    WRK(KBVECS+KZVAR),1)
 C loop 100 finish
  400  CONTINUE
 C
-      IDONE = .TRUE.
+      LDONE = .TRUE.
       IF ( MOD(ITC6,2).EQ.0 ) ITC6 = ITC6 - 1
       CALL POLIM(WRK(KIBTYP),WRK(KREDS),WRK(KREDE),
      *           WRK(KXMOM),WRK(KEIVAL),WRK(KEIVEC),WRK(KGD),
-     *           WRK(KOLDAL),UDV,XINDX,WRK(KWRK1),LWRK1,IDONE)
+     *           WRK(KOLDAL),UDV,XINDX,WRK(KWRK1),LWRK1,LDONE)
 
       RESTLR = .FALSE.
 C
@@ -257,10 +254,10 @@ C
 C
 C  /* Deck polim */
       SUBROUTINE POLIM(IBTYP,REDS,REDE,XMOM,EIVAL,EIVEC,
-     *                 GP,OLDAL,UDV,XINDX,WRK,LWRK,IDONE)
+     *                 GP,OLDAL,UDV,XINDX,WRK,LWRK,LDONE)
 C
 C
-C     IDONE IS A FLAG. IDONE=.false. THE QUADRATURE IS CARRIED OUT.
+C     LDONE is a flag. LDONE=.false. THE QUADRATURE IS CARRIED OUT.
 C                             .true. THE CAUCHY PROCEDURE HAS
 C                             CONVERGED AND THE PSEUDOSTATES ARE USED
 C                             TO EVALUATE A SET OF REAL-FREQUENCY
@@ -280,18 +277,18 @@ C
 #include "infrsp.h"
 #include "wrkrsp.h"
 C
-      LOGICAL IDONE
+      LOGICAL   LDONE
       DIMENSION XMOM(MAXRM,*)
       DIMENSION IBTYP(*),REDS(*),REDE(*),UDV(*),XINDX(*),WRK(LWRK)
       DIMENSION EIVAL(*),EIVEC(*),GP(KZYVAR,*)
       DIMENSION OLDAL(*)
 C
       PARAMETER ( ZERO = 0.0D0 ,  D1 = 1.0D0 ,
-     *D2 = 2.0D0 , D3 = 3.0D0, D10= 10.0D0, DUMMY = 1.0D20 )
+     *   D2 = 2.0D0 , D3 = 3.0D0, D10= 10.0D0, DUMMY = 1.0D20 )
       PARAMETER ( COMPLX = 1.0D7 )
 C
-      IF (IPRRSP.GE.15)
-     *   WRITE (LUPRI,'(A//A)') '1',' *** Output from POLIM ***'
+      IF (IPRRSP.GE.10) WRITE (LUPRI,'(//A,L2/)')
+     &   ' *** Output from POLIM ***   done =',LDONE
       CALL PPRST(IBTYP,REDS,REDE,UDV,XINDX,WRK,LWRK)
       CALL RSPRED(2,.FALSE.,0,IBTYP,DUMMY,DUMMY,REDE,REDS,
      *            EIVAL,EIVEC,WRK,WRK,UDV,WRK,
@@ -347,7 +344,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
 C
 C     Print of pseudo-spectrum
 C
-      IF (IDONE) THEN
+      IF (LDONE) THEN
          LIMPRI =  5
       ELSE
          LIMPRI = 20
@@ -355,7 +352,7 @@ C
       IF (IPRRSP .GE. LIMPRI) THEN
          DO 800 IOP = 1,NGPC6(KSYMOP)
             IF (LBLC6(KSYMOP,IOP)(2:4) .EQ. 'DIP') THEN
-               CALL C6PRPS(IDONE,LBLC6(KSYMOP,IOP),KSYMOP,
+               CALL C6PRPS(LDONE,LBLC6(KSYMOP,IOP),KSYMOP,
      &                     KZRED,XMOM,EIVAL)
             END IF
   800    CONTINUE
@@ -372,12 +369,10 @@ C
          IF(LBLC6(KSYMOP,IOP)(1:2).EQ.'SM'   ) NSPH = NSPH + 1
  900  CONTINUE
       IF (IPRRSP.GT.15) THEN
-         WRITE(LUPRI,'(/A,I3)')
-     *   ' NUMBER OF CARTESIAN Cn LENGTH OPERATORS   : NCAR=',NCAR
-         WRITE(LUPRI,'(/A,I3)')
-     *   ' NUMBER OF SPHERICAL Cn LENGTH OPERATORS   : NSPH=',NSPH
-         WRITE(LUPRI,'(/A,I3)')
-     *   ' NUMBER OF C6 VELOCITY OPERATORS : NVEL=',NVEL
+         WRITE(LUPRI,'(3(/A,I3))')
+     *   ' NUMBER OF CARTESIAN Cn LENGTH OPERATORS  : NCAR =',NCAR,
+     *   ' NUMBER OF SPHERICAL Cn LENGTH OPERATORS  : NSPH =',NSPH,
+     *   ' NUMBER OF Cn VELOCITY OPERATORS          : NVEL =',NVEL
       END IF
       NGRDMX = MAX(16,NGRID)
       NMOMC  = 20
@@ -389,21 +384,21 @@ C
       KWRK1  = KCAUCH + (NMOMC+1) *  NGPC6(KSYMOP) * NGPC6(KSYMOP)
       LWRK1  = LWRK   - KWRK1
       IF (NCAR.EQ.NGPC6(KSYMOP).OR.(NSPH.EQ.NGPC6(KSYMOP))) THEN
-         CALL EFPOLL(IDONE,WRK(KGRID),WRK(KALPHA),WRK(KCAUCH),NGRDMX,
+         CALL EFPOLL(LDONE,WRK(KGRID),WRK(KALPHA),WRK(KCAUCH),NGRDMX,
      *               NMOMC,NGPC6(KSYMOP),EIVAL,XMOM,OLDAL)
       ELSE IF (NVEL.EQ.NGPC6(KSYMOP)) THEN
-         CALL EFPOLV(IDONE,WRK(KGRID),WRK(KALPHA),WRK(KCAUCH),NGRDMX,
+         CALL EFPOLV(LDONE,WRK(KGRID),WRK(KALPHA),WRK(KCAUCH),NGRDMX,
      *               NMOMC,NGPC6(KSYMOP),EIVAL,XMOM)
       ELSE
-         WRITE(LUPRI,*)' BOTH DIPLEN AND DIPVEL OPERATORS SPECIFIED'
-         WRITE(LUPRI,*)' ILLEGAL OPTION. NCAR=',NCAR,' NVEL=',NVEL,
-     *                  'NSPH= ',NSPH
+         WRITE (LUPRI,'(//A,I4,A,I4,A,I4)')
+     &      'ERROR: BOTH DIPLEN AND DIPVEL OPERATORS SPECIFIED. '//
+     &      ' NCAR=',NCAR,' NVEL=',NVEL, 'NSPH= ',NSPH
          CALL QUIT(' POLIM: Illegal option, operator types are mixed')
       END IF
       RETURN
       END
 C  /* Deck efpoll */
-      SUBROUTINE EFPOLL(IDONE,GRIDSQ,ALPHA,CAUCHY,NGRDMX,NMOMC,NSYMOP,
+      SUBROUTINE EFPOLL(LDONE,GRIDSQ,ALPHA,CAUCHY,NGRDMX,NMOMC,NSYMOP,
      *                  EIVAL,XMOM,OLDAL)
 c------------------------------------------------------------------------
 c This subroutine calculates the frequency dependent polarisabilities on
@@ -450,7 +445,7 @@ c
       DIMENSION OLDAL(NSYMOP,0:NGRDMX)
       DIMENSION OMEGA(0:16)
       CHARACTER*8 IC,JC
-      LOGICAL IDONE,END
+      LOGICAL LDONE,END
       LOGICAL FIRST, LC6IFC
       DATA FIRST /.TRUE./
       SAVE FIRST
@@ -501,7 +496,7 @@ c
          WRITE(LURSP7,'(A,I8)') '* NOMEGA',NGRID
          DO I=0,NGRID+1,5
             JMAX = MIN(I+4,NGRID)
-            WRITE(LURSP7,'(A,5(1X,F11.6))')
+            WRITE(LURSP7,'(A,5F12.6)')
      &                   '*',(SQRT(GRIDSQ(J)),J=I,JMAX)
          ENDDO
          FIRST = .FALSE.
@@ -512,8 +507,8 @@ c
       CALL DZERO(ALPHA,NSYMOP*NSYMOP*(NGRID+1))
       CALL DZERO(CAUCHY,NSYMOP*NSYMOP*NMOMC)
 c
-      END   = IDONE
-      IDONE = .TRUE.
+      END   = LDONE
+      LDONE = .TRUE.
 c
 c Compute the polarisability and cauchy moments from the effective spectrum.
 c We only need the lower triangle, hence we have j<= i in the second loop
@@ -549,33 +544,33 @@ c
                IF (JC(1:2) .EQ. 'SM' .AND.
      &             ALPHA(I,J,0) .GT. THRESHW ) THEN
                   READ(JC,'(2X,I2,I3)') LP,MP
-                  DO 112 K=0, NGRID
-                     WRITE(LURSP7,'(4(1X,I2),2X,I3,2X,1P,D15.8,3X,I3)')
+                  DO, K=0, NGRID
+                     WRITE(LURSP7,'(4I3,I5,1P,D17.8,I6)')
      &                 L,LP,M,MP,K,ALPHA(I,J,K),ITYPE
-  112             CONTINUE
+                  END DO
                ENDIF
             ENDIF
             IF (IPRRSP.GE.1) THEN
                IF (I.EQ.J) WRITE(LUPRI,'(A)') '  '
                WRITE(LUPRI,'(1X,A8,1X,A8,F20.10)') IC,JC,ALPHA(I,J,0)
             END IF
-            IF(END.AND.IPRRSP.GE.5) THEN
+            IF (END.AND.IPRRSP.GE.5) THEN
                WRITE(LUPRI,*) '        GRIDSQ               ALPHA'
-               DO 115 II=0,NGRID
-                 WRITE(LUPRI,'(1X,F14.7,F20.7)')GRIDSQ(II),ALPHA(I,J,II)
- 115           CONTINUE
+               DO, II=0,NGRID
+                 WRITE(LUPRI,'(F15.7,F20.7)')GRIDSQ(II),ALPHA(I,J,II)
+               END DO
             ENDIF
 c
 c  compare old and new polarizabilities and decide on convergence
 c
             IF (I.EQ.J .AND. .NOT.END)  THEN
                DIFFMX = ZERO
-               DO 211 II=0,NGRID
+               DO, II=0,NGRID
                   DIFF = ABS(OLDAL(I,II)-ALPHA(I,I,II))
                   DIFFMX = MAX(DIFF,DIFFMX)
-                  IDONE=(IDONE.AND.(DIFF.LT.THCC6))
+                  LDONE=(LDONE.AND.(DIFF.LT.THCC6))
                   OLDAL(I,II) = ALPHA(I,I,II)
- 211           CONTINUE
+               END DO
                IF (C6IFC) WRITE(LURSP7,'(A,F14.7,3X,A)')
      *               '* DIFFERENCE FOUND: ', DIFFMX, LBLC6(KSYMOP,I)
                IF (IPRRSP .GT. 1) THEN
@@ -592,28 +587,28 @@ c
 c Now do something very much the same to print the Cauchy moments
 c
       IF ((END.AND.IPRRSP.GT.1) .OR. IPRRSP .GT. 10) THEN
-       WRITE(LUPRI,'(//1X,A/,1X,A)') 'Cauchy moments (length)',
-     &   '------------------------------------------------'
-       DO 300 I=1,NSYMOP
+       WRITE(LUPRI,'(//A/A)') ' Cauchy moments (length)',
+     &   ' ------------------------------------------------'
+       DO, I=1,NSYMOP
          IC=LBLC6(KSYMOP,I)
-         DO 310 J=1,I
+         DO, J=1,I
             JC=LBLC6(KSYMOP,J)
             WRITE(LUPRI,'(//1X,A8,1X,A8)') IC,JC
             WRITE(LUPRI,'(/1X,A4,5X,A25)') '  k ','Moment = S(-k-2)'
-            DO 320 KK=1,NMOMC
-               WRITE(LUPRI,'(1X,I4,5X,1P,E30.20)') 2*KK-2,CAUCHY(I,J,KK)
- 320        CONTINUE
- 310     CONTINUE
- 300   CONTINUE
+            DO, KK=1,NMOMC
+               WRITE(LUPRI,'(I5,1P,E33.20)') 2*KK-2,CAUCHY(I,J,KK)
+            END DO
+         END DO
+       END DO
       END IF
 c
 c Now compute the polarisabilities at real frequencies
 c
       IF((NCFREQ.GT.0).AND. (END.OR.IPRRSP.GT.10)) THEN
-         WRITE(LUPRI,'(/1X,A/1X,A/1X,A,F10.4,A)')
-     &      'Polarisabilities at real frequencies (length)',
-     &      '---------------------------------------------------',
-     &      '(lowest pole in effective spectrum:',EIVAL(1),'au )'
+         WRITE(LUPRI,'(/A/A/A,F10.4,A)')
+     &      ' Polarisabilities at real frequencies (length)',
+     &      ' ---------------------------------------------------',
+     &      ' (lowest pole in effective spectrum:',EIVAL(1),'au )'
          DO 400 I=1,NSYMOP
             IC=LBLC6(KSYMOP,I)
             DO 410 J=1,I
@@ -621,11 +616,11 @@ c
                WRITE(LUPRI,'(/1X,A8,2X,A8)') IC,JC
                DO 420 NG=1,NCFREQ
                   POLRL = ZERO
-                  DO 430 IEFF=1,KZRED
+                  DO, IEFF=1,KZRED
                      POLRL = POLRL
      &                   + D2 * (XMOM(IEFF,I)*XMOM(IEFF,J)*EIVAL(IEFF))
      &                   /(EIVAL(IEFF)**2 - CFREQ(NG)**2)
- 430              CONTINUE
+                  END DO
                   WRITE(LUPRI,'(1X,2F20.10)') CFREQ(NG),POLRL
  420           CONTINUE
  410        CONTINUE
@@ -635,7 +630,7 @@ c
       RETURN
       END
 C  /* Deck efpolv */
-      SUBROUTINE EFPOLV(IDONE,GRIDSQ,ALPHA,CAUCHY,NGRDMX,NMOMC,NSYMOP,
+      SUBROUTINE EFPOLV(LDONE,GRIDSQ,ALPHA,CAUCHY,NGRDMX,NMOMC,NSYMOP,
      *                  EIVAL,XMOM)
 c-----------------------------------------------------------------------
 c This subroutine calculates the frequency dependent polarisabilities in
@@ -660,7 +655,7 @@ c
       DIMENSION CAUCHY(1:NSYMOP,1:NSYMOP,0:NMOMC)
       DIMENSION OMEGA(0:16)
       CHARACTER*4 IC,JC
-      LOGICAL IDONE
+      LOGICAL LDONE
 c
       DATA OMEGA/0.0D0,
      *           0.0000011354D0,0.0000324954D0,0.0002074939D0,
@@ -677,19 +672,19 @@ c
       IF(GSLEGN) THEN
 c -- use Gauss Legendre grid from old C6 module
          NGRID=16
-         DO 5 I=0,NGRID
+         DO, I=0,NGRID
             GRIDSQ(I) = OMEGA(I)
-   5     CONTINUE
+         END DO
       ELSE
 c-- compute gridpoints according to Gauss Chebychev scheme
          GRIDSQ(0) = ZERO
          N= NGRID
          NN=2*N
          FAC=PI/(2*NN)
-         DO 15 I=1,N
+         DO, I=1,N
             X=FAC*(2*I-1)
             GRIDSQ(N-I+1)=(D1/TAN(X))**2
-  15     CONTINUE
+         END DO
       ENDIF
 c
 c initialise alpha and cauchy moments to zero
@@ -711,32 +706,32 @@ c
             IF(LBLC6(KSYMOP,J)(2:5).EQ.'DIPV' ) JC=LBLC6(KSYMOP,J)(1:1)
             DO 100 IEFF=1,KZRED
                OSCSTR = D2 * (XMOM(IEFF,I)*XMOM(IEFF,J)/EIVAL(IEFF))
-               DO 110 NG=0,NGRID
+               DO, NG=0,NGRID
                   ALPHA(I,J,NG) = ALPHA(I,J,NG)
      &                   + OSCSTR/(EIVAL(IEFF)**2 + GRIDSQ(NG))
- 110           CONTINUE
+               END DO
                CAUCHY(I,J,0) = CAUCHY(I,J,0) + OSCSTR
-               DO 111 KK=1,NMOMC
+               DO, KK=1,NMOMC
                   CAUCHY(I,J,KK) = CAUCHY(I,J,KK)
      &                   + OSCSTR/(EIVAL(IEFF)**(2*KK) )
- 111           CONTINUE
+               END DO
  100        CONTINUE
             IF (IPRRSP.GE.1) THEN
                WRITE(LUPRI,'(1X,A4,1X,A4,F20.10)') IC,JC,CAUCHY(I,J,0)
                WRITE(LUPRI,'(1X,A4,1X,A4,F20.10)') IC,JC,ALPHA(I,J,0)
             END IF
-            IF(IDONE .AND. IPRRSP.GE.10) THEN
+            IF(LDONE .AND. IPRRSP.GE.10) THEN
                WRITE(LUPRI,*) '        GRIDSQ               ALPHA'
-               DO 115 II=0,NGRID
+               DO, II=0,NGRID
                  WRITE(LUPRI,'(1X,F14.7,F20.7)')GRIDSQ(II),ALPHA(I,J,II)
- 115           CONTINUE
+               END DO
             ENDIF
  210     CONTINUE
  200  CONTINUE
 c
 c Now do something very much the same to print the Cauchy moments
 c
-      IF ((IDONE.AND.IPRRSP.GT.1) .OR. IPRRSP .GT. 10) THEN
+      IF ((LDONE.AND.IPRRSP.GT.1) .OR. IPRRSP .GT. 10) THEN
        WRITE(LUPRI,'(//1X,A/,1X,A)') 'Cauchy moments (velocity)',
      &   '------------------------------------------------'
        IC = '    '
@@ -747,16 +742,16 @@ c
             IF(LBLC6(KSYMOP,J)(2:5).EQ.'DIPV' ) JC=LBLC6(KSYMOP,J)(1:1)
             WRITE(LUPRI,'(//1X,A4,1X,A4)') IC,JC
             WRITE(LUPRI,'(/1X,A4,5X,A25)') '  k ','Moment = S(-k)'
-            DO 320 KK=0,NMOMC
+            DO, KK=0,NMOMC
                WRITE(LUPRI,'(1X,I4,5X,1P,E30.20)') 2*KK,CAUCHY(I,J,KK)
- 320        CONTINUE
+            END DO
  310     CONTINUE
  300   CONTINUE
       END IF
 c
 c Now compute the polarisabilities at real frequencies
 c
-      IF((NCFREQ.GT.0).AND. (IDONE.OR.IPRRSP.GT.10)) THEN
+      IF((NCFREQ.GT.0).AND. (LDONE.OR.IPRRSP.GT.10)) THEN
          WRITE(LUPRI,'(/1X,A/,1X,A/1X,A,F10.4,A)')
      &      'Polarisabilities at real frequencies (velocity)',
      &      '---------------------------------------------------',
@@ -768,11 +763,11 @@ c
                WRITE(LUPRI,'(/1X,A4,3X,A4)') IC,JC
                DO 420 NG=1,NCFREQ
                   POLRL = ZERO
-                  DO 430 IEFF=1,KZRED
+                  DO, IEFF=1,KZRED
                      POLRL = POLRL
      &                   + D2 * (XMOM(IEFF,I)*XMOM(IEFF,J))
      &                   /(EIVAL(IEFF)*(EIVAL(IEFF)**2 - CFREQ(NG)**2))
- 430              CONTINUE
+                  END DO
                   WRITE(LUPRI,'(1X,2F20.10)') CFREQ(NG),POLRL
  420           CONTINUE
  410        CONTINUE
@@ -782,7 +777,7 @@ c
       RETURN
       END
 C  /* Deck c6prps */
-      SUBROUTINE C6PRPS(IDONE,OPTYPE,KSYMOP,KZRED,XMOM,EIVAL)
+      SUBROUTINE C6PRPS(LDONE,OPTYPE,KSYMOP,KZRED,XMOM,EIVAL)
 C
 C 25-Jun-1990 PJ+HJAAJ
 C
@@ -790,7 +785,7 @@ C     Print pseudo-spectrum
 C
 #include "implicit.h"
 #include "codata.h"
-      LOGICAL     IDONE
+      LOGICAL     LDONE
       CHARACTER*8 OPTYPE
       DIMENSION   XMOM(KZRED),EIVAL(KZRED)
       PARAMETER ( NSUM = 15 )
@@ -800,7 +795,7 @@ C
 #include "priunit.h"
 #include "infpri.h"
 C
-      IF (IDONE) THEN
+      IF (LDONE) THEN
          WRITE(LUPRI,'(//A)') ' Final pseudo-spectrum for'
       ELSE
          WRITE(LUPRI,'(//A)') ' Intermediate pseudo-spectrum for'
@@ -811,14 +806,14 @@ C
       IF (OPTYPE(2:4) .NE. 'DIP') THEN
          NWARN = NWARN + 1
          WRITE (LUPRI,'(//3A/A)')
-     &      ' C6PRPS WARNING, oscillator strength is not',
+     &      ' C6PRPS WARNING: oscillator strength is not',
      &      ' defined for ',OPTYPE,
-     &      ' C6PRPS cannot continue.'
+     &      ' WARNING: C6PRPS cannot continue.'
          RETURN
       END IF
       CALL DZERO(SUMOSC,NSUM)
-      WRITE(LUPRI,'(/2A)')
-     *   ' State no:   Transition moment:',
+      WRITE(LUPRI,'(/A)')
+     *   ' State no:   Transition moment:'//
      *   '    3*Oscillator strength:   Energy (eV):'
 C:State no:   Transition moment:    3*Oscillator strength:   Energy (eV):
 C:    5        0.123456789012          0.123456789012      0.123456789012
@@ -848,7 +843,6 @@ C(I5,1P,G26.12,G24.12,G20.12)
       ELSE IF (OPTYPE(2:5) .EQ. 'DIPV') THEN
          WRITE (LUPRI,'(/A)') ' Sum rules (velocity)'
          WRITE (LUPRI,'(/A)') '   k           S(k)'
-         WRITE (LUPRI,'(I5,1P,G20.12)')
          WRITE (LUPRI,'(I5,1P,G20.12)')
      *      ( (-ISUM+1), SUMOSC(ISUM), ISUM = 1,NSUM)
       END IF
@@ -916,10 +910,10 @@ C
       IF (IPRRSP.GT.5) THEN
          WRITE(LUPRI,'(/A)')
      *   ' M+1 coefficients in P numerator'
-         CALL OUTPUT(WRK(KAVEC),1,M+1,1,1,M+1,1,1,LUPRI)
+         CALL OUTPUT(WRK(KAVEC),1,M+1,1,1,M+1,1,-1,LUPRI)
          WRITE(LUPRI,'(/A)')
      *   ' N+1 coefficients in Q denominator'
-         CALL OUTPUT(WRK(KBVEC),1,N+1,1,1,N+1,1,1,LUPRI)
+         CALL OUTPUT(WRK(KBVEC),1,N+1,1,1,N+1,1,-1,LUPRI)
       END IF
       DO 500 I = 1,NI
          CALL POLVAL(M+1,WRK(KAVEC),COMI(I),VALP)
@@ -930,7 +924,7 @@ C
      *  ,PLVAL(I)
  500  CONTINUE
       CALL C6INT(PLVAL,PLVAL,C6TEMP)
-      WRITE(LUPRI,'(/A,I2,A,I2,A,G16.8) ')
+      WRITE(LUPRI,'(/A,I2,A,I2,A,1P,G16.8) ')
      *' C6 coefficient for [',N,',',M,'] Pade approximant = ',
      *C6TEMP
       RETURN
@@ -1165,3 +1159,4 @@ C
         GO TO 126
         END
 #endif
+!  -- end of rsp/rspc8.F --

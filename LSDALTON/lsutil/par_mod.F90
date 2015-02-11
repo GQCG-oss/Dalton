@@ -34,11 +34,16 @@ type infpar_struct
   !> number of nodes in the parent child communicator
   integer(kind=ls_mpik) :: pc_nodtot
 
+  !> number of nodes used in scalapack
+  integer(kind=ls_mpik) :: ScalapackGroupSize
+
   !> Are there more local jobs?
   logical :: lg_morejobs
 end type infpar_struct
 
 type(infpar_struct) :: infpar
+!> specifies if mpi_init should be called in lsmpi_init
+logical, save :: call_mpi_init = .true.
 #endif
 contains
 

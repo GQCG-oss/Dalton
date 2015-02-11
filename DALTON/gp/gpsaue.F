@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       BLOCK DATA BDQALGEBRA
@@ -1323,9 +1322,9 @@ C##############lbit##############################################
       LOGICAL FUNCTION LBIT(I,N)
 C	Based on an analogous DISCO routine(Jan Almloef)
 #include "implicit.h"
-#include "ibtfun.h"
+
       LBIT = .FALSE.
-      IF (IBTAND(IBTSHR(I,N-1),1).EQ.1) LBIT = .TRUE.
+      IF (IAND(ISHFT(I,-(N-1)),1).EQ.1) LBIT = .TRUE.
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lset */
@@ -1664,7 +1663,7 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
       PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
      *          D3P875 = 3.875D0, DP25 = 0.25D0)
-Cwas: #include <thrzer.h>
+Cwas: #include "thrzer.h"
 Cwas:      DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
 COLD      DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       DATA C1,C2,C3,C4,C5,C6/1.D-15,1.D-15,1.D-20,1.D-14,1.D-9,1.D-5/

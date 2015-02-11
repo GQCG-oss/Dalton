@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C===========================================================================
 C
@@ -286,12 +285,12 @@ C
       IF (FIRST) THEN
          REWIND LUSIFC
          CALL MOLLAB('SOLVINFO',LUSIFC,lupri)
-C        WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,RSOL,RSOL,LSOLMX
+C        WRITE (LUSIFC) EPSOL,EPSTAT,EPPN,RSOL,LSOLMX,INERSI,INERSF
 C        WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C        CALL WRITT (LUSIFC,NLMSO4,ERLM(1,1)))
 C        CALL WRITT (LUSIFC,NLMSO4,ERLM(1,2)))
 C        WRITE (LUSIFC) NSYM, NBAS
-         READ (LUSIFC) EPSOLI,EPSTAI,RSOLX,RSOLY,RSOLZ,LSOLMI
+         READ (LUSIFC) EPSOLI,EPSTAI,EPPNI,RSOLX,RSOLY,RSOLZ,LSOLMI
          READ (LUSIFC) DUMINP,POTNUI
          READ (LUSIFC)
          READ (LUSIFC)

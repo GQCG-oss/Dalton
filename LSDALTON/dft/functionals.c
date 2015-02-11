@@ -1,5 +1,5 @@
 /*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
+C...   Copyright (c) 2015 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 */
 /*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
+C...   Copyright (c) 2015 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
@@ -104,6 +104,25 @@ Functional* available_functionals[] = {
     &PZ81Functional,
     &PBEcFunctional,
     &PbexFunctional,
+    &revPBExFunctional,
+    &rPBExFunctional,
+    &mPBExFunctional,
+    &PW91xFunctional,
+    &G96xFunctional,
+    &LG93xFunctional,
+    &B88X_Functional,
+    &LDAX_Functional,
+    &PBEX_Functional,
+    &REVPBEX_Functional,
+    &RPBEX_Functional,
+    &MPBEX_Functional,
+    &PW91X_Functional,
+    &G96X_Functional,
+    &LG93X_Functional,
+    &KT1X_Functional,
+    &KT2X_Functional,
+    &KT3X_Functional,
+    &OPTX_Functional,
     &SlaterFunctional,
     &VWN3Functional,
     &VWN5Functional,
@@ -116,13 +135,13 @@ Functional* available_functionals[] = {
     &B3P86Functional,
     &B3P86GFunctional,
     &BLYPFunctional,
-    &BXFunctional,
     &BP86Functional,
     &BPW91Functional,
     &Camb3lypFunctional,
     &CamxFunctional,
     &CamcompxFunctional,
     &GGAKeyFunctional,
+    &CombineFunctional,
     &KT1Functional,
     &KT2Functional,
     &KT3Functional,
@@ -327,3 +346,9 @@ dft_isgga_(void)
 integer
 dft_isgga__(void)
 { return selected_func->is_gga(); }
+
+
+
+
+
+

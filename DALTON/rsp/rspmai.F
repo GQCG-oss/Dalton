@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -64,14 +64,10 @@
 !===========================================================================
 #endif
 C
-#include "single.h"
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)
 C
 C Driver for RESPONSE.
-C
-C We assume that either the SIRIUS module or the SETSIR
-C subroutine has been called before RSPDRV.
 C
 #include "implicit.h"
 C
@@ -85,6 +81,7 @@ C INFTRA : USEDRC
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "inforb.h"
 #include "infpri.h"
 #include "infmp2.h"
@@ -132,24 +129,24 @@ C     *************************
 C     ***** INPUT SECTION *****
 C     *************************
 C
+C Define wave function variables, also if SIRIUS has not been called
 C
-C DEFINE VARIABLES THAT ARE COMMON FOR ALL SYMMETRIES
+      CALL SETSIR(WRK,LWRK)
+C
+C Define variables that are common for all perturbation symmetries
 C
       CALL RSPSET
+C
+C Read **RESPONS input
 C
       CALL RSPREA
 C
 C  If SOPPA then set up information from MP2 and find number of 2p-2h
 C  excitations and offsets to various index arrays.
-C  The call to MP2SET is only for a dummy array IADR1 which will
-C  be properly set up later (in SET2SOPPA). 970206-ekd
 C
       IF (SOPPA) THEN
-         KIADR1 = 1
-         KLAST  = KIADR1 + (MAXOCC * MAXVIR + 1)/IRAT
-         LWSOP = LWRK - KLAST + 1
-         IF (LWSOP .LT. 1) CALL ERRWRK('RSPDRV 0',KLAST-1,LWSOP)
-         CALL MP2SET(WRK(KIADR1))
+         CALL MP2SET
+         CALL PHADR1(WRK,1) ! to calculate NPHTOT(1) needed in RSPACT
          CALL SETSOPPA
       END IF
 C
@@ -339,10 +336,11 @@ C
          IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
-         IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
+         ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
       END IF
 C
 C
+      CALL ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
 C
       IF ( NEED_PVX ) THEN
 C
@@ -476,8 +474,7 @@ C
 C     Calculate response properties with absorption
 C     =============================================
 C
-      IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1)).OR.
-     *   (ABSLRS .AND. (.NOT.DIRFCK))) THEN
+      IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1))) THEN
 C     Use the old linear response solver
 C     for MCSCF (or SCF if OLDCPP is requested by user)         
          CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
@@ -524,10 +521,10 @@ C
      *       .AND.  NGPC6(KSYMOP).EQ.0 )
      *      GO TO 100
 C     ... skip this symmetry if no operators
-         WRITE(LUPRI,'(//A/A,I5)')
+         WRITE(LUPRI,'(//A/A,I5,3A)')
      *      ' >>>>>>>>>> Linear response calculation',
      *      ' >>>>>>>>>> Symmetry of excitation/property operator(s)',
-     *      KSYMOP
+     *      KSYMOP,'  ( ',REP(KSYMOP-1),')'
          WRITE(LUPRI,'(3(/A,I5))')
      *      ' Number of excitations of this symmetry        ',
      *      NPPCNV(KSYMOP),
@@ -789,12 +786,16 @@ C
       GO TO 200
 C
  1    CONTINUE
-      IPRRSP = MAX(IPRPP,IPRLR,IPRC6)
-      IPRRSP = MAX(IPRRSP,IPRHYP,IPRSMO)
+      IPRRSP_default = IPRRSP
+      IPRRSP = MAX(IPRPP ,IPRLR ,IPRC6)         ! LR
+      IPRRSP = MAX(IPRRSP,IPRHYP,IPRSMO)        ! QR
+      IPRRSP = MAX(IPRRSP,IPRCR,IPRTMO,IPRTPA)  ! CR
       IPRRSP = MAX(IPRRSP,IPRESR)
-      IPRRSP = MAX(IPRRSP,IPRCR)
-      IPRRSP = MAX(IPRRSP,IPRTMO)
-      IPRRSP = MAX(IPRRSP,IPRTPA,IPRABS)
+      IPRRSP = MAX(IPRRSP,IPRABS)
+      IF (IPRRSP .ne. IPRRSP_default) THEN
+         WRITE(LUPRI,'(/A,I10)')
+     &   ' General print level in RESPONS is IPRRSP =',IPRRSP
+      END IF
 C
 C     We arrive at 2100 if no input file found. We return.
 C
@@ -831,7 +832,7 @@ C
 #include "abslrs.h"
 C
       LOGICAL NEWDEF, SET
-      PARAMETER ( NTABLE = 24 )
+      PARAMETER ( NTABLE = 25 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE TABLE, SET
@@ -843,7 +844,8 @@ C
      *            '.MAXRM ', '.QRREST', '.PROPAV',
      *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
      *            '.NODOIT', '.DFT-SO', '.PROP2A',
-     *            '.TDA   ', '.CIS   ', '.SOPRPA'/
+     *            '.TDA   ', '.CIS   ', '.SOPRPA',
+     *            '.TRDQF '/
       DATA SET /.FALSE./
 C
       IF (.NOT.SET) THEN
@@ -856,6 +858,7 @@ C
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
+         TRDQF = .FALSE.
       END IF
       NEWDEF = (WORD .EQ. '*RESPON')
       ICHANG = 0
@@ -872,7 +875,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
      *                      11,12,13,14,15,16,17,18,19,20,21,22,23,
-     *                      24), I
+     *                      24,25), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -882,57 +885,50 @@ C
                WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
      *            '" NOT RECOGNIZED IN RSPINP.'
                CALL QUIT(' ILLEGAL KEYWORD IN RSPINP ')
-    1          CONTINUE
+    1          CONTINUE ! .INPTEST
                   INPTES = .TRUE.
                GO TO 100
-    2          CONTINUE
+    2          CONTINUE ! .NOAVDIA
                   AVDIA  = .FALSE.
                GO TO 100
-    3          CONTINUE
+    3          CONTINUE ! .SOPPA
                   SOPPA = .TRUE.
-                  IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
+                  IF (PARCAL) THEN
+                    CALL PARQUIT("SOPPA combined with linear response")
+                  END IF
                   IF (SOPPA .AND. EMBEDDING) THEN
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' This is a solvent-SOPPA calculation w/ dynamic'
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' solvent response at RPA level only,'
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
 cjje: change this if full solvent soppa is ever implemented
-                    SOPRPA = .TRUE.
+                    GO TO 24 ! go to .SOPRPA option
                   END IF
                GO TO 100
     4          CONTINUE
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE ! .NOITRA
                   NOITRA = .TRUE.
                GO TO 100
-    6          CONTINUE
+    6          CONTINUE ! .ORBSFT
                   READ (LUCMD,*) ORBSFT
                GO TO 100
     7          CONTINUE ! .ORBSPC
                   ORBSPC = .TRUE.
                GO TO 100
-    8          CONTINUE
+    8          CONTINUE ! TRPFLG
                   TRPLET = .TRUE.
                   TRPFLG = .TRUE.
                GO TO 100
-    9          CONTINUE
+    9          CONTINUE ! .S0MIX
                   NOS0MX = .FALSE.
                GO TO 100
    10          CONTINUE ! .OPTORB
                   OPTORB = .TRUE.
                GO TO 100
-   11          CONTINUE
+   11          CONTINUE ! .MAXPHP
                   READ (LUCMD,*) MAXPHP
                GO TO 100
-   12          CONTINUE
+   12          CONTINUE ! .PHPRES
                   PHPRES = .TRUE.
                GO TO 100
-   13          CONTINUE
+   13          CONTINUE ! .MAXRM
                   READ (LUCMD,*) MAXRM
                GO TO 100
    14          CONTINUE
@@ -949,21 +945,21 @@ cjje: change this if full solvent soppa is ever implemented
                   END IF
                   READ(LUCMD,'(A)') LBL1AV(N1AVTOT)
                GO TO 100
-   16          CONTINUE
+   16          CONTINUE ! .HIRPA
                   HIRPA = .TRUE.
                   SOPPA = .TRUE.
                GO TO 100
-   17          CONTINUE
+   17          CONTINUE ! .SOPW4
                   SOPW4 = .TRUE.
                GO TO 100
-   18          CONTINUE
+   18          CONTINUE ! .SOPPA(CCSD)
                   SOPPA = .TRUE.
                   CCPPA = .TRUE.
                GO TO 100
-   19          CONTINUE
+   19          CONTINUE ! .NODOIT
                   DIROIT = .FALSE.
                GO TO 100
- 20            CONTINUE
+ 20            CONTINUE ! .DFT-SO
 c              compute DFT_SO integrals
                   DFT_SO = .TRUE.
                GO TO 100
@@ -978,36 +974,43 @@ C              .PROP2Average
                   END IF
                   READ(LUCMD,'(A)')LBL2AV(1,N2AVTOT),LBL2AV(2,N2AVTOT)
                GO TO 100
- 22            CONTINUE
+ 22            CONTINUE ! .TDA
                   TDA = .TRUE.
                GO TO 100
- 23            CONTINUE
+ 23            CONTINUE ! .CIS
                   CISRPA = .TRUE.
                GO TO 100
- 24            CONTINUE
+ 24            CONTINUE ! .SOPRPA
                  SOPRPA = .TRUE.
-                 SOPPA = .TRUE.
+                 SOPPA  = .TRUE.
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+     &            ' This is a SOPPA embedding calculation w/ dynamic'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            ' solvent response at RPA level only,'
+     &            ' environment response at RPA level only,'
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
      &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
-                  WRITE (LUPRI,'(/A)')
-     &             'Vacuum calc. - use .SOPPA instead'
+                  WRITE (LUPRI,'(/A)') '**RESPONSE INPUT ERROR: '//
+     &             'Vacuum calculation - use .SOPPA instead of .SOPRPA'
                   CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
                  END IF
+               GO TO 100
+ 25            CONTINUE ! .TRDQF
+                 IF(.NOT. QFIT) THEN
+                   CALL QUIT(
+     &             'RSPINP: Charge fitting with .TRDQF requires .QFIT')
+                 ENDIF
+                 TRDQF = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') '@PROMPT "',WORD,
-     &            '" NOT RECOGNIZED IN RSPINP.'
-               CALL QUIT(' ILLEGAL PROMPT IN RSPINP ')
+               WRITE (LUPRI,'(/,3A,/)') '@ Prompt "',WORD,
+     &            '" not recognized in RSPINP.'
+               CALL QUIT('Illegal keyword prompt in RSPINP ')
             END IF
       END IF
   300 CONTINUE
@@ -1089,17 +1092,17 @@ C              .PROP2Average
      &      ' .DFT-SO: DFT spin-orbit integrals calculated.'
       END IF
       IF (CCPPA .AND. RSPCI) THEN
-         WRITE (LUPRI,'(/A)')
-     &      ' Input ERROR: CI response and ".SOPPCC" are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         WRITE (LUPRI,'(/A)') ' Input ERROR:'//
+     &      ' CI response and ".SOPPA(CCSD)" are incompatible.'
+         CALL QUIT('**RESPONSE: Input error')
       ELSEIF (HIRPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
      &      ' Input ERROR: CI response and ".HIRPA " are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         CALL QUIT('**RESPONSE: Input error')
       ELSEIF (SOPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
      &      ' Input ERROR: CI response and ".SOPPA " are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         CALL QUIT('**RESPONSE: Input error')
       END IF
 C
 C *** END OF RSPINP
@@ -1192,7 +1195,9 @@ C     Initialization of TRHSO for HSOINP
 C     Initialization of INFHSO for HSOINP
       DATA TESTZY/.FALSE./, DOSO1/.TRUE./, DOSO2/.TRUE./, IPRHSO/0/
       DATA X2MAT/.FALSE./, A2MAT/.FALSE./, X2GRAD/.FALSE./,
-     &     PHOSPH/.FALSE./, MNFPHO/.FALSE./, ECPHOS/.FALSE./
+     &     PHOSPH/.FALSE./, MNFPHO/.FALSE./, ECPHOS/.FALSE./,           !MK
+     &     PHOSPV/.FALSE./, CPPHOL/.FALSE./, CPPHOV/.FALSE./,           !MK
+     &     CPPHMF/.FALSE./, CPPHEC/.FALSE./                             !MK
 C     Initialization of INFHYP
       DATA HYPCAL/.FALSE./
       DATA QRSPEC/.FALSE./,QRSHG/.FALSE./,QRPOCK/.FALSE./
@@ -1246,7 +1251,7 @@ C  Initializing ABSORP
       DATA THCLR_ABSORP/1.0D-3/,THCPP_ABSORP/1.0D-3/
       DATA FREQ_ALPHA(1)/0.0D0/
       DATA FREQ_BETA_B(1)/0.0D0/,FREQ_BETA_C(1)/0.0D0/
-      DATA ABS_OLDCPP/.FALSE./
+      DATA ABS_OLDCPP/.FALSE./,ABS_REBD/.TRUE./
 C  Initializing CHANNEL
       DATA CHANNEL_CALC/.FALSE./,CHANNEL_VCALC/.FALSE./
       DATA CHANNEL_VIRT/-1,-1,-1,-1,-1,-1,-1,-1/
@@ -1362,74 +1367,74 @@ C
      *            '" is not recognized in RSPPP for section ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT(' Illegal KEYWORD in RSPPP ')
- 1             CONTINUE
+ 1             CONTINUE   ! .DIPLEN
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
                GO TO 100
- 2             CONTINUE
+ 2             CONTINUE   ! .DIPLNX
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
                GO TO 100
- 3             CONTINUE
+ 3             CONTINUE   ! .DIPLNY
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
                GO TO 100
- 4             CONTINUE
+ 4             CONTINUE   ! .DIPLNZ
                LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
                GO TO 100
- 5             CONTINUE
+ 5             CONTINUE   ! .DIPVEL
                LPPOP( INDPRP('XDIPVEL ')) = .TRUE.
                LPPOP( INDPRP('YDIPVEL ')) = .TRUE.
                LPPOP( INDPRP('ZDIPVEL ')) = .TRUE.
                GO TO 100
- 6             CONTINUE
+ 6             CONTINUE   ! .DIPVLX
                   LPPOP( INDPRP('XDIPVEL ')) = .TRUE.
                GO TO 100
- 7             CONTINUE
+ 7             CONTINUE   ! .DIPVLY
                LPPOP( INDPRP('YDIPVEL ')) = .TRUE.
                GO TO 100
- 8             CONTINUE
+ 8             CONTINUE   ! .DIPVLZ
                LPPOP( INDPRP('ZDIPVEL ')) = .TRUE.
                GO TO 100
- 9             CONTINUE
+ 9             CONTINUE   ! .DIPMAG
                LPPOP( INDPRP('XANGMOM ')) = .TRUE.
                LPPOP( INDPRP('YANGMOM ')) = .TRUE.
                LPPOP( INDPRP('ZANGMOM ')) = .TRUE.
                GO TO 100
- 10            CONTINUE
+ 10            CONTINUE   ! .DIPMGX
                LPPOP( INDPRP('XANGMOM ')) = .TRUE.
                GO TO 100
- 11            CONTINUE
+ 11            CONTINUE   ! .DIPMGY
                LPPOP( INDPRP('YANGMOM ')) = .TRUE.
                GO TO 100
- 12            CONTINUE
+ 12            CONTINUE   ! .DIPMGZ
                LPPOP( INDPRP('ZANGMOM ')) = .TRUE.
                GO TO 100
- 13            CONTINUE
+ 13            CONTINUE   ! .QUADMO
                LPPOP( INDPRP('XXQUADRU')) = .TRUE.
                LPPOP( INDPRP('XYQUADRU')) = .TRUE.
                LPPOP( INDPRP('XZQUADRU')) = .TRUE.
                LPPOP( INDPRP('YYQUADRU')) = .TRUE.
                LPPOP( INDPRP('YZQUADRU')) = .TRUE.
                GO TO 100
- 14            CONTINUE
+ 14            CONTINUE   ! .QUADXX
                LPPOP( INDPRP('XXQUADRU')) = .TRUE.
                GO TO 100
- 15            CONTINUE
+ 15            CONTINUE   ! .QUADXY
                LPPOP( INDPRP('XYQUADRU')) = .TRUE.
                GO TO 100
- 16            CONTINUE
+ 16            CONTINUE   ! .QUADXZ
                LPPOP( INDPRP('XZQUADRU')) = .TRUE.
                GO TO 100
- 17            CONTINUE
+ 17            CONTINUE   ! .QUADYY
                LPPOP( INDPRP('YYQUADRU')) = .TRUE.
                GO TO 100
- 18            CONTINUE
+ 18            CONTINUE   ! .QUADYZ
                LPPOP( INDPRP('YZQUADRU')) = .TRUE.
                GO TO 100
- 19            CONTINUE
+ 19            CONTINUE   ! .QUADZZ
                LPPOP( INDPRP('ZZQUADRU')) = .TRUE.
                GO TO 100
- 20            CONTINUE
+ 20            CONTINUE   ! .SPIN-ORB
                LPPOP( INDPRP('X SPNORB')) = .TRUE.
                LPPOP( INDPRP('Y SPNORB')) = .TRUE.
                LPPOP( INDPRP('Z SPNORB')) = .TRUE.
@@ -1438,51 +1443,51 @@ C
                TRPLET = .TRUE.
                TRPFLG = .TRUE.
                GO TO 100
- 21            CONTINUE
+ 21            CONTINUE   ! .SPNORX
                LPPOP( INDPRP('X SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
                TRPLET = .TRUE.
                TRPFLG = .TRUE.
                GO TO 100
- 22            CONTINUE
+ 22            CONTINUE   ! .SPNORY
                LPPOP( INDPRP('Y SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
                TRPLET = .TRUE.
                TRPFLG = .TRUE.
                GO TO 100
- 23            CONTINUE
+ 23            CONTINUE   ! .SPNORZ
                LPPOP( INDPRP('Z SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
                TRPLET = .TRUE.
                TRPFLG = .TRUE.
                GO TO 100
- 24            CONTINUE
+ 24            CONTINUE   ! .PROPRT
                READ(LUCMD,'( A )')LABEL
                LPPOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
- 25            CONTINUE
+ 25            CONTINUE   ! .ROOTS
                NPPTOT = 0
                READ (LUCMD,*) (NPPCNV(MULD2H(J,LSYMRF)),J=1,NSYM)
                DO J=1,NSYM
                   NPPTOT = NPPTOT + NPPCNV(J)
                END DO
                GO TO 100
- 26            CONTINUE
+ 26            CONTINUE   ! .MAX IT
                READ (LUCMD,*) MAXITP
                GO TO 100
- 27            CONTINUE
+ 27            CONTINUE   ! .THCPP
                READ (LUCMD,*) THCPP
                GO TO 100
- 28            CONTINUE
+ 28            CONTINUE   ! .OLSEN
                OLSEN  = .TRUE.
                GO TO 100
- 29            CONTINUE
+ 29            CONTINUE   ! .MAXITO
                READ (LUCMD,*) MAXITO
                GO TO 100
- 30            CONTINUE
+ 30            CONTINUE   ! .SROOTS
 c              SROOTS: compute transition moments between
 c              selected excited states
                NPPTOT = 0
@@ -1507,34 +1512,34 @@ c              selected excited states
                   NPPTOT = NPPTOT + NPPCNV(JSYM)
                END DO
                GO TO 100
- 31            CONTINUE
+ 31            CONTINUE   ! .ANTTES
                ANTTES = .TRUE.
                GO TO 100
- 32            CONTINUE
+ 32            CONTINUE   ! .RESTPP
                RESTPP = .TRUE.
                GO TO 100
- 33            CONTINUE
+ 33            CONTINUE   ! .ABCHK
                ABCHK = .TRUE.
                GO TO 100
- 34            CONTINUE
+ 34            CONTINUE   ! .ABSYM
                ABSYM = .TRUE.
                GO TO 100
- 35            CONTINUE
+ 35            CONTINUE   ! .PRINT
                READ (LUCMD,*) IPRPP
                GO TO 100
- 36            CONTINUE
+ 36            CONTINUE   ! .IPREXM
                READ (LUCMD,*) IPREXM
                GO TO 100
- 37            CONTINUE
+ 37            CONTINUE   ! .E3TEST
                E3TEST = .TRUE.
                GO TO 100
- 38            CONTINUE
+ 38            CONTINUE   ! .EXMTES
                EXMTES = .TRUE.
                GO TO 100
- 39            CONTINUE
+ 39            CONTINUE   ! .ISPABC
                READ (LUCMD,*) ISPINA,ISPINB,ISPINC
                GO TO 100
- 40            CONTINUE
+ 40            CONTINUE   ! .ECD
                IF (.NOT. RSPECD) THEN
                   RSPECD = .TRUE. ! electronic CD
                   LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
@@ -1548,39 +1553,39 @@ c              selected excited states
                   LPPOP( INDPRP('ZANGMOM ')) = .TRUE.
                END IF
                GO TO 100
- 41            CONTINUE
+ 41            CONTINUE   ! .X2TEST
                X2TEST = .TRUE.
                GO TO 100
- 42            CONTINUE
+ 42            CONTINUE   ! .A2TEST
                A2TEST = .TRUE.
                GO TO 100
- 43            CONTINUE
+ 43            CONTINUE   ! .SINGLE
                IF (EXMOM) THEN
                  CALL QUIT('PPINP implementation ERROR: please report')
                END IF
                GO TO 100
- 44            CONTINUE
+ 44            CONTINUE   ! .DOUBLE
                IF (.NOT.EXMOM) THEN
                  CALL QUIT('PPINP implementation ERROR: please report')
                END IF
                GO TO 100
- 45            CONTINUE
+ 45            CONTINUE   ! .THCLR
                   READ (LUCMD,*) THCLR
                GO TO 100
- 46            CONTINUE
+ 46            CONTINUE   ! .MAXITL
                   READ (LUCMD,*) MAXITL
                GO TO 100
- 47            CONTINUE
+ 47            CONTINUE   ! .TRIPLET
                   TRPLET = .TRUE.
                   TRPFLG = .TRUE.
                GO TO 100
- 48            CONTINUE
+ 48            CONTINUE   ! .NSUMUL
                   READ (LUCMD,*) (NPPSIM(J),J=1,NSYM)
                GO TO 100
- 49            CONTINUE
+ 49            CONTINUE   ! .NSSTART
                   READ (LUCMD,*) (NPPSTV(J),J=1,NSYM)
                GO TO 100
- 50            CONTINUE
+ 50            CONTINUE   ! .OECD
                IF (.NOT. RSPOCD) THEN
                   RSPOCD = .TRUE. ! oriented electronic CD
                   LPPOP( INDPRP('XXSECMOM')) = .TRUE.
@@ -1609,7 +1614,7 @@ c              selected excited states
                   END IF
                END IF
                GO TO 100
- 51            CONTINUE
+ 51            CONTINUE   ! .ESA
 C panor:
 C     Excited state absorption is calculated from the lowest excited
 C     state of symmetry ESASYM to other excited states specified on
@@ -1627,7 +1632,7 @@ C     subsequent line.
                END DO
                GO TO 100
 C .CHANNEL - restrict to excitations from particular orbitals
- 52            CONTINUE
+ 52            CONTINUE   ! .CHANNEL
                CHANNEL_CALC = .TRUE.
                CHANNEL_NORB = 0
                READ(LUCMD,*) (NUMBER_ORBS(I), I=1,NSYM)
@@ -1653,14 +1658,14 @@ C .CHANNEL - restrict to excitations from particular orbitals
                END DO
                GOTO 100
 C .VIRTUAL - restrict to excitations to lowest virtuals in each symmetry
- 53            CONTINUE
+ 53            CONTINUE   ! .VIRTUAL
                CHANNEL_VCALC = .TRUE.
                READ (LUCMD,*) (CHANNEL_VIRT(I),I=1,NSYM)
                GOTO 100
- 54            CONTINUE
+ 54            CONTINUE   ! .TDA
                TDA = .TRUE.
                GO TO 100
- 55            CONTINUE
+ 55            CONTINUE   ! .CIS
                CISRPA = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -1681,7 +1686,6 @@ C ------------------
          THCPP = THCPP*THR_REDFAC
       END IF
 C
-      IF (ICHANG .GT. 0) THEN
       IF (NPPTOT .EQ. 0) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,'(/3A)') '@INFO: ',WORD1,
@@ -1711,10 +1715,10 @@ C
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-         if (peqm) then
-           write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+           WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
+         END IF
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1736,6 +1740,10 @@ C
      *      ,EPSINF
          END IF
 C
+         IF (ICHANG .GT. 0) THEN
+            WRITE(LUPRI,'(/I5,A/)') ICHANG,' input options by user.'
+         END IF
+
          IF (DOESA) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Excited state absorption calculattion requested: DOESA  ='
@@ -1812,7 +1820,6 @@ C
             TRPFLG = .TRUE.
          END IF
        END IF
-      END IF
       END IF
 C
 C  *** END OF PPINP
@@ -2273,10 +2280,10 @@ C
              WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
          END IF    
 
-         if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
+         END IF
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -2908,14 +2915,12 @@ C
       NTRLBL = 0
       NEXLBL = 0
       DO 100 ISYM = 1,NSYM
-         IF ( NPPCNV(ISYM) .GT. 0 ) THEN
-            NPPSIM(ISYM) = MAX(NPPSIM(ISYM),NPPCNV(ISYM))
-            NPPSTV(ISYM) = MAX(NPPSTV(ISYM),NPPSIM(ISYM))
-         ENDIF
-         NGPPP(ISYM) = 0
-         NGPLR(ISYM) = 0
-         NGPC6(ISYM) = 0
-         NGPS0(ISYM) = 0
+         NPPSIM(ISYM) = MAX(NPPSIM(ISYM),NPPCNV(ISYM))
+         NPPSTV(ISYM) = MAX(NPPSTV(ISYM),NPPSIM(ISYM))
+         NGPPP(ISYM)  = 0
+         NGPLR(ISYM)  = 0
+         NGPC6(ISYM)  = 0
+         NGPS0(ISYM)  = 0
          NAQROP(ISYM) = 0
          NBQROP(ISYM) = 0
          NCQROP(ISYM) = 0
@@ -3862,10 +3867,10 @@ C
             KZYCON = 0
          ENDIF
       ELSE
-         CALL SETCI2(NDETX,KSYMST,TRPFLG,0)
+         CALL SETCI2(NCONFX,KSYMST,TRPFLG,0)
 C...     TRPFLG and not TRPLET because we must use determinants
 C        in qr and cr if any operator is triplet ! /hjaaj-may2000
-         KZCONF = NDETX
+         KZCONF = NCONFX
          KZYCON = 2*KZCONF
       END IF
 C
@@ -3916,16 +3921,20 @@ Chj  *    ( DETERM .OR. .NOT.TRPLET) .AND. (.NOT.SOPPA)) THEN
 C
 C DEFINE NUMBER OF START ,SIMULTANEOUS AND CONVERGED VECTORS
 C
+      IF (NPPCNV(KSYMOP) .GT. KZVAR-KOFFTY) THEN
+         WRITE (LUPRI,91) NPPCNV(KSYMOP),KZVAR-KOFFTY
+ 91      FORMAT(/' ** RSPVAR ** Number of PP start vectors',I5,
+     &   /'   exceeds the maximum number of variables',I5,
+     &   /'   Number of start vectors reset to number of variables')
+         NPPCNV(KSYMOP) = KZVAR-KOFFTY
+      END IF
       KEXCNV = NPPCNV(KSYMOP)
-      KEXSIM = NPPSIM(KSYMOP)
-      KEXSTV = NPPSTV(KSYMOP)
+      KEXSIM = MIN(NPPSIM(KSYMOP), KZVAR)
+      KEXSTV = MIN(NPPSTV(KSYMOP), KZVAR)
 C
 C CALCULATE DIAGONAL CONFIGURATION PART OF E[2]
 C
          CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-         JRSP4 = 0
-#endif
          IF (KZCONF.GE.1) THEN
             KECDIA = 1
             KWRK1  = KECDIA + KZCONF
@@ -3937,7 +3946,7 @@ C
                CALL SOPDIAG(KSYMOP,FC,WRK(KECDIA),XINDX(KABSAD),
      *                      XINDX(KABTAD),XINDX(KIJSAD),XINDX(KIJTAD),
      *                      XINDX(KIJ1AD),XINDX(KIJ2AD),XINDX(KIJ3AD),
-     *                      WRK(KWRK1),LWRK1)
+     *                      WRK(KWRK1),LWRK1,IPRRSP)
             ELSE
 C              LUIT2 = 0 means do not write CI diag. to file
                LUIT2S = LUIT2
@@ -3955,11 +3964,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
                   WRK(KECDIA-1+I) = WRK(KECDIA-1+I) - EACTIV
  50            CONTINUE
             ENDIF
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZCONF,WRK(KECDIA),JRSP4)
-#else
             CALL WRITT(LURSP4,KZCONF,WRK(KECDIA))
-#endif
             IF (IPRRSP.GT.110) THEN
                WRITE(LUPRI,'(/A)')
      *         ' DIAGONAL CONFIGURATION PART OF E[2] '
@@ -3993,11 +3998,7 @@ C           CALL ORBDIA(FOCK,FC,FV,UDV,EDIA,SDIA)
 C
 C WRITE diagonals of orbital part of E[2]-matrix needed for RSPLIN
 C
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZWOPT,WRK(KEODIA),JRSP4)
-#else
             CALL WRITT(LURSP4,KZWOPT,WRK(KEODIA))
-#endif
 C
             IF (IPRRSP.GT.100) THEN
                IF (KZWOPT.GT.0) THEN
@@ -4017,11 +4018,7 @@ C
 C *** now WRITE orbital diagonal of S[2]-matrix
 C
          IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZWOPT,WRK(KSODIA),JRSP4)
-#else
             CALL  WRITT(LURSP4,KZWOPT,WRK(KSODIA))
-#endif
          END IF
 C
          IF (IPRRSP.GT.100) THEN
@@ -4080,6 +4077,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
+      LOGICAL   HSFOCK
 C
 C Used from common blocks:
 C SCBRHF : IOPRHF
@@ -4106,7 +4104,6 @@ C--------------------
 #include "gnrinf.h"
 #include "qm3.h"
 #include "mxcent.h"
-#include "wavpcm.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4120,7 +4117,13 @@ C      subroutine has been called before RSPMC).
 C
 C     Find out if TDHF or not :
 C
+      HSFOCK = HSROHF .OR. (DODFT .AND. NASHT .GT. 0)
+      ! Open-shell DFT response only works with HSROHF code
       TDHF = NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1) .OR. HSROHF
+      ! Closed-shell HF or DFT, or one open shell (.OPEN SHELL keyword in SIRIUS)
+      ! or high-spin ROHF (.SINGLY OCCUPIED keyword in SIRIUS)
+      HSFOCK = HSFOCK .OR. (DIRFCK .AND. TDHF .AND. NASHT .GT. 0)
+      ! Some of the open-shell direct response only works with HSROHF code
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
@@ -4132,6 +4135,8 @@ C
 C        ... call setsir to reset Sirius common blocks to determinants
          CALL SETSIR(WRK,LWRK)
       END IF
+      NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock
+                             ! in RSP - especially for RSPESR - we want NCREF=1 for HSROHF
 C
 C     ====================================================
 C     Read and check information on LUSIFC
@@ -4142,11 +4147,19 @@ C
       ELSE
          CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
       END IF
-      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF
+      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
+     &              ISTATE,ISPIN,NACTEL,LSYM,MS2
+      NDUM = 1 + 64 + 6*8 + 4
       READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
-     *            NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT
+     &              NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
+     &              (IDUM,I=1,NDUM),MCTYPE_IFC
+      HSROHF = MCTYPE_IFC .EQ. -1
 C     READ (LUSIFC) NISHT,NASHT, NOCCT, NORBT, NBAST, NCONF,NWOPT,NWOPH,
-C    *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+C    &              NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+C    &              NSYM,MULD2H, NRHF,NFRO,
+C    &              NISH,NASH,NORB,NBAS,
+C    &              NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE_IFC,
+C    &              NAS1, NAS2, NAS3
 C
 C     Transfer information
 C
@@ -4243,15 +4256,13 @@ C
      *   '@ TOTAL NUMBER OF ATOMIC ORBITALS FROM SIRINP:',NBAST,
      *   '@ FROM SIRIFC ',MBAST
       END IF
-      IF ( MCONRF .NE. MCONF .OR. (TDHF .AND. MCONF .GT. 1)) THEN
-      IF (.NOT.TDHF .OR. MCONF .GT. 1 .OR. MCONRF .GT. 1) THEN
-C     ... abacus sets NCONRF=0 when "ABAHF" true.
+      IF ( MCONRF .NE. MCONF .AND. MCONF .GT. 1 .AND. MCONRF .GT. 1 )
+     &   THEN
          NUMERR = NUMERR + 1
          WRITE(LUPRI,'(A/A,I5/A,I5,A,L5)')
      *  '@ *** FATAL ERROR IN RSPMC ***',
      *  '@ TOTAL NUMBER OF REFERENCE CONFIGURATIONS FROM SIRINP:',
      *  MCONRF,'@ AND FROM SIRIFC',MCONF,';  TDHF flag is',TDHF
-      END IF
       END IF
 C     NWOPT test disabled because RSPMC may be called from ABACUS
 C     with NCONF,NWOPT not of symmetry 1 /25-Nov-1992 PJ+HJAaJ
@@ -4286,10 +4297,12 @@ C READ IN MATRICES NEEDED IN RESPONSE CALCULATION
 C
       CALL READT (LUSIFC,NCMOT,CMO)
       READ (LUSIFC)
+      KDV   = 1 + N2BASX ! DV matrix may be needed later
+      KFREE = KDV + NNASHX
       IF (NASHT .GT. 0) THEN
 C        read and unpack DV
-         CALL READT (LUSIFC,NNASHX,WRK)
-         CALL DSPTSI(NASHT,WRK,UDV)
+         CALL READT (LUSIFC,NNASHX,WRK(KDV))
+         CALL DSPTSI(NASHT,WRK(KDV),UDV)
          IF (.NOT.RSPCI) THEN
             CALL READT (LUSIFC,N2ORBT,FOCK)
             IF (HSROHF) THEN
@@ -4308,13 +4321,6 @@ C        read and unpack DV
          READ (LUSIFC)
          CALL READT (LUSIFC,NNORBT,FC)
          CALL DZERO(FV,NNORBT)
-      END IF
-C
-      IF ( IPRRSP.GT.110 .AND. .NOT. TDHF) THEN
-         CALL GETREF(WRK,NCONRF)
-         WRITE(LUPRI,'(/A)')
-     &        ' **** RSPMC **** REFERENCE CONFIGURATION'
-         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,-1,LUPRI)
       END IF
 C
 C     If a solvent-response calculation:
@@ -4345,12 +4351,25 @@ Cjje
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
-      ELSE IF (WAVPCM) THEN
-         DO I = 1,NNORBT
-            FC(I) = FC(I) + WAVFCK(I)
-         ENDDO
       END IF
 Cjje
+C
+      IF ((NCONRF .GT. 1) .AND. QMMM ) THEN
+         write(lupri,*) 'MCSCF detected (NCONRF > 1) in QMMM calc.'
+         write(lupri,*) 'NCONRF...........................', NCONRF
+         write(lupri,*) '=> Subtracting QMMM Fock matrix (PCM-like)'
+         CALL MOLLAB('QMMMTMAT',LUSIFC,LUPRI)
+         CALL READT (LUSIFC,NNORBT,WRK)
+         DO I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+         ENDDO
+      END IF
+C
+      IF (PEQM .AND. .NOT. TDHF) THEN
+         CALL MOLLAB('PEFMAT  ', LUSIFC, LUPRI)
+         CALL READT (LUSIFC, NNORBX, WRK)
+         FC(1:NNORBX) = FC(1:NNORBX) - WRK(1:NNORBX)
+      ENDIF
 C
       IF (SOPPA) THEN
 C
@@ -4371,10 +4390,11 @@ C
             ELSE
               WRITE(LUPRI,'(/A)')' RSPMC : MP2 correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,1,LPVMAT,1,-1,LUPRI)
+            CALL OUTPUT(PV,1,1,1,LPVMAT,1,LPVMAT,-1,LUPRI)
          END IF
 C
-         IF (TRPFLG) CALL TRPKAP(PV(1),PV(LPVMAT+1),XINDX(KIADR1),WRK)
+         IF (TRPFLG)
+     &      CALL TRPKAP(PV(1),PV(LPVMAT+1),XINDX(KIADR1),WRK(KFREE))
 C
          IF (IPRRSP.GT.20 .AND. TRPFLG) THEN
             IF (CCPPA) THEN
@@ -4384,7 +4404,7 @@ C
                WRITE(LUPRI,'(/A)')
      &      ' RSPMC : MP2 singlet and triplet correlation coefficients'
             ENDIF
-            CALL OUTPUT(PV,1,LPVMAT,1,2,LPVMAT,2,-1,LUPRI)
+            CALL OUTPUT(PV,1,2,1,LPVMAT,2,LPVMAT,-1,LUPRI)
          END IF
 C
          CALL READT (LUSIFC,NACTT*NACTT,UDV)
@@ -4395,7 +4415,7 @@ C
             ELSE
                WRITE(LUPRI,'(/A)')' RSPMC : MP2 second order density'
             END IF
-            CALL OUTPUT(UDV,1,NACTT*NACTT,1,1,NACTT*NACTT,1,-1,LUPRI)
+            CALL OUTPUT(UDV,1,NACTT,1,NACTT,NACTT,NACTT,-1,LUPRI)
          END IF
 C
 C        UDV contains the MP2 one-density. Remove the diagonal
@@ -4404,13 +4424,31 @@ C
          CALL SOPUDV(UDV)
       END IF
 C
+      IF (HSFOCK .AND. .NOT.HSROHF) THEN
+         ! We want to use HSROHF in response, but SIRIUS did not use HSROHF
+         ! FC, FV are then FC, FV; and not FC+FV+FV(exch), -FV(exch) as expected for HSROHF
+         HSROHF = .TRUE.
+         WRITE(LUPRI,'(/A)')
+     &   'INFO: switching to HSROHF Fock matrices for RESPONS'
+         CALL FCKMAT((NASHT.EQ.0),WRK(KDV),CMO,EMY,FC,FV,
+     &      WRK(KFREE),LWRK-KFREE)
+         CALL DAXPY(NNORBT,-1.0D0,FV,1,FC,1)
+      END IF
+C
       IF (IPRRSP.GT.20) THEN
          DO 60 ISYM = 1,NSYM
-            WRITE(LUPRI,'(/A,I5,A)')' MO. COEFFICIENTS FOR SYMMETRY',
-     &                                ISYM
+            WRITE(LUPRI,'(/A,I5)') ' **** RSPMC **** '//
+     &      'MO coefficients read from SIRIFC for symmetry',ISYM
             CALL OUTPUT(CMO(ICMO(ISYM)+1),1,NBAS(ISYM),1,NORB(ISYM),
-     $                  NBAS(ISYM),NORB(ISYM),-1,LUPRI)
+     &                  NBAS(ISYM),NORB(ISYM),-1,LUPRI)
  60      CONTINUE
+      END IF
+C
+      IF ( IPRRSP.GT.110 .AND. .NOT. TDHF) THEN
+         CALL GETREF(WRK,NCONRF)
+         WRITE(LUPRI,'(/A)')
+     &      ' **** RSPMC **** Reference configuration coefficients'
+         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
       END IF
 C
 C *** End of RSPMC
@@ -4529,18 +4567,20 @@ C
 #include "rspprp.h"
 #include "infpp.h"
 C
-      PARAMETER ( NTABLE = 8 )
+      PARAMETER ( NTABLE = 13 )                                         !MK
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
       PARAMETER ( STRING = '*QUADRA' )
       DATA TABLE /'.SINGLE', '.DOUBLE', '.PHOSPH', '.TWO-PH',
-     &            '.MNFPHO', '.TPCD  ', '.ESA   ', '.ECPHOS'/
+     &            '.MNFPHO', '.TPCD  ', '.ESA   ', '.ECPHOS',           !MK
+     &            '.PHOSPV', '.CPPHOL', '.CPPHOV', '.CPPHMF',           !MK
+     &            '.CPPHEC'/                                            !MK
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
       CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
-            GO TO (1,2,3,4,5,4,6,8), I
+            GO TO (1,2,3,4,5,4,6,8,3,3,3,5,8), I                        !MK
          END IF
       END DO
       GO TO 100
@@ -4868,10 +4908,10 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-         if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
+         IF (PEQM) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
-         end if
+         END IF
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='
@@ -4905,4 +4945,21 @@ C
 C  *** END OF ESG
 C
       RETURN
+      END
+    
+      SUBROUTINE ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
+      IMPLICIT NONE
+#include <maxorb.h>
+#include <infinp.h>
+#include <infrsp.h>
+#include <priunit.h>
+      CALL QENTER('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
+      IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
+         WRITE(LUPRI, *) 
+     &      'Please use **WAVE FUNCTION *OPTIMIZATION .DETERMINANTS'
+         CALL QUIT(
+     &      'A TRIPLET RESPONSE CALCULATION REQUIRES DETERMINANTS'
+     &      ) 
+      END IF
+      CALL QEXIT('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
       END

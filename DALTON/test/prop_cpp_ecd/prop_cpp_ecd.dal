@@ -1,0 +1,16 @@
+**DALTON INPUT                                    
+.RUN PROPERTIES                                   
+.PARALLEL                                         
+**INTEGRALS                                       
+.DIPLEN                                           
+**WAVE FUNCTION                                   
+.HF                                               
+**PROPERTIES                                      
+.OPTROT                                           
+*ABALNR                                           
+.DAMPING                                          
+ 0.0045566                                        
+.FREQUENCIES                                      
+5                                                 
+0.050000 0.0525 0.055 0.0575 0.06                 
+**END OF DALTON INPUT

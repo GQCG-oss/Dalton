@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sirctl */
       SUBROUTINE SIRCTL(ICONV,WORK,LWORK)
@@ -53,6 +52,12 @@ C
 C
 
       use lucita_orbital_spaces
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+#endif
 
 #include "implicit.h"
 C
@@ -88,12 +93,16 @@ C
 #include "dftcom.h"
 #include "exeinf.h"
 #include "stex.h"
+! for THRQ2
+#include "cbisor.h"
+
+
 C
-      LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
-      LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
+      LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCM_save
+      LOGICAL   DFT_SPINDNS_save, DFT_LOCALSPIN_save
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
- 
+
 #include "sirbkd.h"
 #include "center.h"
 C
@@ -136,7 +145,7 @@ C - save
       DO 2 IFLAG = 1, NFLAG
          FLAGSV(IFLAG) = FLAG(IFLAG)
     2 CONTINUE
-      MCTPSV = MCTYPE
+      MCTYPE_save = MCTYPE
 C - change
 C     Now disable non-symmetric IWOPSY for properties
 C     (only wanted in first call of SETWOP)
@@ -157,10 +166,8 @@ C     No active-active rotations
 C
 C     Do some solvent initializations
 C
-Cbm initialized PCMSV
-      PCMSV   = PCM
-c     WRITE(LUPRI,*)'INIZIALIZZO PCMSV',PCMSV
-c     IF (PCM) WRITE(LUPRI,*) ' CHIAMA SOLVNT'
+Cbm initialized PCM_save
+      PCM_save   = PCM
       IF (PCM) THEN
          CALL PCMSOLVNT(WORK,LWORK)
       END IF
@@ -171,17 +178,15 @@ C        *** set RHF parameters for RHF and MP2 ***
 C
       IF (DORHF .OR. DOMP2) THEN
          MCTYPE   = 0
-         IF (DOCINO .OR. DOCI .OR. DOMC) THEN
-            FLAG(25) = .FALSE. ! do not write to SIRIFC if RHF followed by MC or CI
-            IF (DOMP2) THEN
-               FLAG(16) = .FALSE.
-               PCMSV    = PCM
-               PCM      = .FALSE.
-            END IF
+         IF (HSROHF) MCTYPE = -1
+         IF (DOMP2 ) THEN
+            FLAG(25) = .TRUE. ! SIRIFC from RHF needed for MP2 if embedding
          END IF
-C        ... do not write interface file if RHF or MP2 not final calc.
-C        ... no solvent if RHF followed by MP2 and CI or MC
-C            because solvent not implemented in MP2
+         IF (DOCINO .OR. DOCI .OR. DOMC .OR. DOLUCITA) THEN
+C        ... no continuum models if RHF followed by MP2 and CI or MC
+            FLAG(16) = .FALSE.
+            PCM = .FALSE.
+         END IF
 C
 C
 C        Define closed shell RHF wave function
@@ -206,7 +211,8 @@ C
 C        Correct for orbital input if MCSCF and/or CI
 C
          RHFWOP = .TRUE.
-         DO 10 ISYM = 1, NSYM
+         NASHT = 0
+         DO ISYM = 1, NSYM
             NFROSV(ISYM) = NFRO(ISYM)
             NISHSV(ISYM) = NISH(ISYM)
             NASHSV(ISYM) = NASH(ISYM)
@@ -219,25 +225,26 @@ C
                RHFWOP = .FALSE.
             END IF
             IF (ISYM .EQ. IOPRHF) THEN
-C           ... this is one open shell RHF; reset wave function def.
+C           ... this is one open shell RHF; reset wave function definition
                NASH(IOPRHF) = 1
                LSYM   = IOPRHF
                ISPIN  = 2
                NACTEL = 1
+               NASHT  = 1
             ELSE
                NASH(ISYM) = 0
             END IF
             IF (NASH(ISYM) .NE. NASHSV(ISYM)) RHFWOP = .FALSE.
-   10    CONTINUE
+         END DO
          IF (HSROHF) THEN
             LSYM = 1
             DO ISYM = 2, NSYM
                IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
             END DO
-            NASHT = ISUM(NSYM,NROHF,1)
-            ISPIN = NASHT+1
+            NASHT  = ISUM(NSYM,NROHF,1)
+            ISPIN  = NASHT + 1
             NACTEL = NASHT
-            CALL ICOPY(8,NROHF,1,NASH,1)
+            NASH(1:8) = NROHF(1:8)
          END IF
          IF (LSYMSV .NE. LSYM  ) RHFWOP = .FALSE.
          IF (ISPISV .NE. ISPIN ) RHFWOP = .FALSE.
@@ -283,17 +290,26 @@ C        Use always NEO for RHF (920221-hjaaj)
 C        unless .NR ALWAYS (FLAG(39)) is set, e.g. for core relax calc.
          IF (.NOT.FLAG(39)) FLAG(38) = .TRUE.
 C
-C        High-spin Fock matrices for all open-shell calcs with dft or direct
-!         HSFOCK=(((DODFT.OR.DIRCAL).AND. NASHT .GE. 1) .OR. HSROHF)
-!        Sep 2013 hjaaj: now HSFOCK also for NASHT.eq.1 because we
-!        have some evidence that the open shell Fock matrix from HSFOCK
-!        gives better convergence than the one from "single open shell"
-         HSFOCK = NASHT .GE. 1
-         IF (CORHOL.OR.CORRLX) HSFOCK = .FALSE.
-         IF (HSFOCK) HSROHF = .TRUE.
+C        Also high-spin Fock matrices for all open-shell calcs with dft
+         HSROHF = HSROHF .OR. (DODFT .AND. NASHT .GE. 1)
 C
-C
+Ck
          CALL GETTIM(TSTART,WSTART)
+
+#ifdef ENABLE_EFS
+         if (use_efs) then
+            call mpixbcast (const_generate_basis, 1, 'INTEGER', 0)
+            iprint = 0
+            call mpixbcast (iprint, 1, 'INTEGER', 0)
+            call efs_generate_basis_product(THRQ2) ! gaussian product threshold
+
+            call mpixbcast (const_init_2efock  , 1, 'INTEGER', 0)
+            iprint = 0
+            call mpixbcast (iprint, 1, 'INTEGER', 0)
+            call efs_init_2efock(HFXFAC)
+         end if
+#endif
+
 C
 C        Call FCMO to perform MAXFCK Roothaan Fock iterations
 C
@@ -334,23 +350,24 @@ C
             END IF
 C           ... REWIT1 false: do not destroy any GEOWALK information
 C           QCSCF currently needed for solvent and for writing SIRIFC
-C           QCSCF for writing SIRIFC no longer needed, except for SOPPA 
+C           QCSCF for writing SIRIFC no longer needed, except for SOPPA
 C           calculations, K.Ruud May-97
 C           QCSCF no longer needed for solvent calculations, kr Feb-99
 C           QCSCF no longer needed !!! hjaaj may 2000
 C
          END IF
          FLAG(11) = .FALSE.
-C     ... flag(11) definitely not needed after DIIS /hjaaj.apr2000
+C        ... flag(11) definitely not needed after DIIS /hjaaj.apr2000
 C
 C        Call SIROPT to perform QC-SCF iterations
 C
-         ICONVI = ICONV 
+         ICONVI = ICONV
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-            if (peqm) call quit('ERROR: DIIS failed to converge'//
-     &                 'and QC-SCF is not implemented with PE library')
-            IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
-     &         ' and QC-SCF is not implemented for QMMM')
+#if defined (HAS_PCMSOLVER)
+            if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
+     &      'failed to converge and QC-SCF is not implemented with '//
+     &      'PCMSolver')
+#endif
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN
@@ -407,6 +424,14 @@ C
          FLAG(34)   = FLAGSV(34)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
+
+!#define AO_DENSITIES_ON_FILE
+#ifdef AO_DENSITIES_ON_FILE
+         KDV   = 1
+         call write_aodens(work(kdv),nisht,nasht,nbast,nnashx,
+     &                     ncmot,nsym,nbas,ibas,lupri,hsrohf,"HF")
+#undef AO_DENSITIES_ON_FILE
+#endif
       END IF
 C
 C ***************************************************
@@ -429,13 +454,16 @@ C ***************************************************
 C        *** MP2 ***
 C
       IF (DOMP2) THEN
+         IF (DOCINO .OR. DOCI .OR. DOMC .OR. DOLUCITA) THEN
+            FLAG(25) = .FALSE. ! do not write to SIRIFC if MP2 followed by MC or CI
+         END IF
          IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
             WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
      &      'implemented in MP2 module and is ignored.'
          END IF
-         DFT_SPINDNS_SAVE = DFT_SPINDNS
+         DFT_SPINDNS_save = DFT_SPINDNS
          DFT_SPINDNS = .FALSE.
-         DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+         DFT_LOCALSPIN_save = DFT_LOCALSPIN
          DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
          IF (DORHF .AND. ICONV .LE. 0) THEN
@@ -467,19 +495,19 @@ C
          CALL FLSHFO(LUSTAT)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
-         DFT_SPINDNS = DFT_SPINDNS_SAVE
-         DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
+         DFT_SPINDNS = DFT_SPINDNS_save
+         DFT_LOCALSPIN = DFT_LOCALSPIN_save
       END IF
 C
 C ***************************************************
 C        *** reset to CI/MCSCF flags ***
 C
       IF ( (DORHF .OR. DOMP2) .AND.
-     &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) ) THEN
+     &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB .OR. DOLUCITA) ) THEN
          HSROHF = .FALSE.
-         HSFOCK = .FALSE.
 C        ... otherwise error in some MCSCF routines
 C            where HSROHF specifications erroneously will be used
+         IOPRHF  = -1
          FLAG(25)   = FLAGSV(25)
          DO 25 ISYM = 1, NSYM
             NFRO(ISYM) = NFROSV(ISYM)
@@ -504,7 +532,7 @@ C           ... orbital super symmetries may have been reordered
             OLDWOP = .TRUE.
          END IF
          JWOPSY = 1
-         MCTYPE = MCTPSV
+         MCTYPE = MCTYPE_save
          CALL SIRSET(WORK,LWORK,OLDWOP)
          IAVERR = 0
          CALL AVECHK(WORK,LWORK,IAVERR)
@@ -560,9 +588,9 @@ C
             WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
      &      'implemented in CI module and is ignored.'
          END IF
-         DFT_SPINDNS_SAVE = DFT_SPINDNS
+         DFT_SPINDNS_save = DFT_SPINDNS
          DFT_SPINDNS = .FALSE.
-         DFT_LOCALSPIN_SAVE = DFT_LOCALSPIN
+         DFT_LOCALSPIN_save = DFT_LOCALSPIN
          DFT_LOCALSPIN = .FALSE.
          NUMRUN = NUMRUN + 1
          DOHFSRDFT = .FALSE.
@@ -574,7 +602,7 @@ C        ... no more HFSRDFT
          FLAG(15) = (ICICNO .GT. 0)
 C        ... if CI it is again OK to call sirout.
          FLAG( 5) = FLAGSV( 5)
-         MCTYPE = MCTPSV
+         MCTYPE = MCTYPE_save
          IF (DOMC) FLAG(25) = .FALSE.
 C        ... do not write interface file if followed by MCSCF
          thrldg = nconf
@@ -615,8 +643,8 @@ C              ... orbital super symmetries may have been reordered
      &         'SIRCTL CINO error: inconsistency in sup.sym. averaging')
             END IF
          END IF
-         DFT_SPINDNS = DFT_SPINDNS_SAVE
-         DFT_LOCALSPIN = DFT_LOCALSPIN_SAVE
+         DFT_SPINDNS = DFT_SPINDNS_save
+         DFT_LOCALSPIN = DFT_LOCALSPIN_save
       END IF
 C
 C ***************************************************
@@ -632,10 +660,8 @@ C Recover MCSCF flags and settings
          DO 3 IFLAG = 1, NFLAG
             FLAG(IFLAG) = FLAGSV(IFLAG)
     3    CONTINUE
-         PCM    = PCMSV
-Cbm
-c        WRITE(LUPRI,*)'rimetto PCM = PCMSV',PCM
-         MCTYPE = MCTPSV
+         PCM    = PCM_save
+         MCTYPE = MCTYPE_save
 C
          FLAG( 2) = .TRUE.
          FLAG(21) = .FALSE.

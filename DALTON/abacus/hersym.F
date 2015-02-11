@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -22,17 +22,17 @@
 !
 !
 C FILE    : hersym.F
-#include "single.h"
 C
 #ifdef OLD_LOG
-===========================================================================
+========================================================================
 950522-kenneth
-Added solvent in FIND_SYMMETRY, as well as using NUCIND instead ATMARR in loops
+Added solvent in FIND_SYMMETRY,
+as well as using NUCIND instead ATMARR in loops
 950208-vebjorn
 SYMADD: Completely new module to determine molecular symmetry, find the
         symmetry elements, remove symmetry-dependant atoms and finally
         return a string containing the full point group.
-===========================================================================
+========================================================================
 #endif
 C  /* Deck symadd */
       SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,
@@ -48,7 +48,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "mxsymm.h"
-#include "optinf.h"
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER KASYM(3,3)*1, CLASS*15
 
@@ -258,13 +257,13 @@ C ::: The new symmetry is added. :::
  200     CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Angstrom mark, it's removed.    :::
-         CALL UPCASE(MLINE(NMLAU))
          TMPLN = MLINE(NMLAU)
+         CALL UPCASE(TMPLN)
          IF (INDEX(TMPLN,'ATO') .EQ. 0) THEN
-            WRITE(TMPLN(10:10), '(I1)') NSYMOP
-            WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
+            WRITE(MLINE(NMLAU)(10:10), '(I1)') NSYMOP
+            WRITE(MLINE(NMLAU)(11:20), '(A9,A1)') SYMM, ' '
          ELSE
-            CALL LINE4(TMPLN,NONTYP2,NSMOP2,CRT,KCHARG,THRS,
+            CALL LINE4(MLINE(NMLAU),NONTYP2,NSMOP2,CRT,KCHARG,THRS,
      &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
             AUTOSY = .FALSE.
             NOSYM  = .FALSE.
@@ -276,10 +275,9 @@ C ::: If there's any Angstrom mark, it's removed.    :::
                END DO
             END DO
             ID3 = ' '
-            CALL LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
-     &                  KASYM,ID3,DOCART,DOOWN)
+            CALL LINE4W(MLINE(NMLAU),NONTYP,NSYMOP,KCHARG,THRS,
+     &                  AUTOSY,NOSYM,KASYM,ID3,DOCART,DOOWN)
          END IF
-         MLINE(NMLAU) = TMPLN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
@@ -362,16 +360,16 @@ C ::: Finally the number of atoms are updated. :::
             TMPLN = MLINE(NCI)
             CALL UPCASE(TMPLN)
             IF (INDEX(TMPLN,'CHA') .EQ. 0) THEN
-               WRITE(TMPLN(12:15),'(I4)') NONT(K)
+               WRITE(MLINE(NCI)(12:15),'(I4)') NONT(K)
             ELSE
-               CALL LINE5R(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,
+               CALL LINE5R(MLINE(NCI),Q,NONT2,MBSI,IQM,JCO,MXAQN,
      &                    BASIS,ATOMBA,LMULBS,BSNM,
      &                    RADIUS_PCM, ALPHA_PCM)
-               CALL LINE5W(TMPLN,Q,NONT(K),MBSI,BASIS,ATOMBA,LMULBS,
-     &                    BSNM,IQM,JCO,MXAQN,
-     &                    RADIUS_PCM, ALPHA_PCM)
+!              CALL LINE5W(MLINE(NCI),Q,NONT(K),MBSI,BASIS,ATOMBA,
+!    &                    LMULBS,BSNM,IQM,JCO,MXAQN,
+!    &                    RADIUS_PCM, ALPHA_PCM)
+               CALL LINE5_UPD(MLINE(NCI),NONT(K))
             END IF
-            MLINE(NCI) = TMPLN
  510        CONTINUE
             IF (J .EQ. NINT(ATMARR(4,I))) THEN
                I = I + 1
@@ -859,8 +857,8 @@ Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
       IF (ITURN .LE. 1) GO TO 10
 
  100  WRITE(LUPRI,'(/A/A)')
-     &   ' - molecule centered at center of mass and rotated so',
-     &   '   principal axes of inertia are along coordinate axes.'
+     &   '@   The molecule is centered at center of mass and rotated',
+     &   '@   so principal axes of inertia are along coordinate axes.'
 Cdbg     CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
       RETURN
       END

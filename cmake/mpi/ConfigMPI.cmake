@@ -72,4 +72,11 @@ if(MPI_FOUND)
         set(USE_32BIT_MPI_INTERFACE TRUE)
     endif()
 
+    #Patrick: the automatic determination failed on titan since the itype in the compiling test is assumed to be 32bit int but if a 64bit build is requested this will never give a positive result, I have introduced the hack such that we can easily choose whatever we need
+    if(ENABLE_TITANBUILD)
+       message("-- TITANBUILD requested, will use 32bit mpi module")
+        add_definitions(-DUSE_MPI_MOD_F90)
+        add_definitions(-DVAR_MPI_32BIT_INT)
+        set(USE_32BIT_MPI_INTERFACE TRUE)
+    endif()
 endif()

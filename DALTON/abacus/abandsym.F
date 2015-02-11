@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C     /*Deck fcsini*/
       SUBROUTINE FCSINI
@@ -2442,14 +2441,16 @@ C
 C
 C     *** Test print ***
 C
-      CALL HEADER('Dependent and indepenent force coefficients',-1)
-      WRITE (LUPRI,'(5X,A)') 'Dependent components   Independent ' //
+      IF (NLDPMX .GE. KDPSTR) THEN
+         CALL HEADER('Dependent and indepenent force coefficients',-1)
+         WRITE (LUPRI,'(5X,A)') 'Dependent components   Independent ' //
      &                          'components     coefficients'
-      DO II = KDPSTR, NLDPMX
-         WRITE (LUPRI,'(I15,I4,I19,I4,15X,F6.2)')
-     &        (KDPMTX(II,J,1),J=1,2), (KDPMTX(II,J,2),J=1,2),
-     &        DCOEFF(II,1)
-      END DO
+         DO II = KDPSTR, NLDPMX
+            WRITE (LUPRI,'(I15,I4,I19,I4,15X,F6.2)')
+     &           (KDPMTX(II,J,1),J=1,2), (KDPMTX(II,J,2),J=1,2),
+     &           DCOEFF(II,1)
+         END DO
+      END IF
 C
       RETURN
       END
@@ -2819,12 +2820,16 @@ C     *******************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-#include "taymol.h"
 #include "numder.h"
 #include "fcsym.h"
       DIMENSION DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD)
       DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), NMIDPC(LDPMTX)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       NSTART = 1
       DO 100 IRDR = 1, NMORDR
          IF (IRDR .EQ. 2) THEN
@@ -2897,6 +2902,7 @@ C
          END IF
  100  CONTINUE
 C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 C

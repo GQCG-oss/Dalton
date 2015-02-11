@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_FHF   */
       SUBROUTINE CC_FHF(C1AM,RHO1,ISYMV,WORK,LWORK)
@@ -2133,11 +2132,11 @@ C     Purpose: To transpose the occupied indices of the intermediates
 C              entering some of the terms in the 2.1-block.
 C
 C
-C#include <implicit.h>
+C#include "implicit.h"
       IMPLICIT NONE
 #include "priunit.h"
 #include "ccorb.h"
-C#include <ccsdsym.h>
+C#include "ccsdsym.h"
 
       INTEGER LWORK,ISYINT
       INTEGER IT2BCD(8,8),NT2BCD(8),IT1AM(8,8),NT1AM(8),MVIR(8)
@@ -2630,11 +2629,11 @@ C
 #include "ccsdinp.h"
 #include "ccsections.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 #include "ccfield.h"
 #include "leinf.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_RCC2FF')
 C
@@ -2754,8 +2753,8 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+!#include "qmmm.h"
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_LCC2FF')
 C
@@ -2855,11 +2854,11 @@ C
 #include "ccfield.h"
 #include "leinf.h"
 #include "qm3.h"
-!#include <qmmm.h>
+!#include "qmmm.h"
 C
       LOGICAL ETRAN,FCKCON
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_FCC2FF')
 C

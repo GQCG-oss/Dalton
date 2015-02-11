@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck herdi1 */
       SUBROUTINE HERDI1(WORK,LWORK,IPRFCK)
@@ -84,10 +83,8 @@ C
          TKTIME = .FALSE.
       END IF
 C
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
+C     define NIBUF and NBITS in eribuf.h
+C
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
@@ -95,7 +92,6 @@ C
          NIBUF = 2
          NBITS = 16
       END IF
-#endif
 C
       IF (LUINTR .LE. 0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
@@ -152,16 +148,13 @@ C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
 C
-#if defined (VAR_INT64)
-         LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-         LRECL = LBFINP + LBFINP/IRAT + 1
-#else
-         IF (NBASIS .LE. 255) THEN
-            LRECL = 2*LBFINP + LBFINP + 1
-         ELSE
-            LRECL = 2*LBFINP + 2*LBFINP + 1
+         IF (NIBUF .ne. 1 .and. NIBUF .ne. 2) THEN
+            CALL QUIT('HERDI2 error: NIBUF .ne 1 .and. NIBUF .ne. 2')
          END IF
+#if defined (SYS_NEC)
+         LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+         LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
          CALL GPOPEN(LUAORC(0),'AO2DIS00','UNKNOWN','DIRECT',
      &        'UNFORMATTED',LRECL,OLDDX)
@@ -228,7 +221,8 @@ C
      &            NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
      &            IPRNTD,RETUR,ISHELA,I2TYP,
      &            WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
-     &            ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+     &            ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &            .false.)
       IF (IPRFCK.GT.0) CALL TIMER('TWOINT',TIMSTR,TIMEND)
 C
       CALL GPCLOSE(LUAORC(0),'KEEP')
@@ -278,16 +272,15 @@ C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
 C
-#if defined (VAR_INT64)
-         LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-         LRECL = LBFINP + LBFINP/IRAT + 1
-#else
          IF (NBASIS .LE. 255) THEN
-            LRECL = 2*LBFINP + LBFINP + 1
+            NIBUF = 1
          ELSE
-            LRECL = 2*LBFINP + 2*LBFINP + 1
+            NIBUF = 2
          END IF
+#if defined (SYS_NEC)
+         LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+         LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
          CALL GPOPEN(LUAORC(0),'AO2DIS00','UNKNOWN','DIRECT',
      &        'UNFORMATTED',LRECL,OLDDX)
@@ -340,7 +333,7 @@ C
 c        LSAVE = LBUF
 c        LBUF  = 50 000
       ELSE
-          STOP 'Wrong I2TYP in NERDI2'
+          CALL QUIT('Wrong I2TYP in NERDI2')
       ENDIF
 C
       REWIND(LUINTR)
@@ -364,7 +357,8 @@ C
      &            NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
      &            IPRNTD,RETUR,ISHELA,I2TYP,
      &            WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
-     &            ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+     &            ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &            .false.)
       IF (IPRFCK.GT.0) CALL TIMER('TWOINT',TIMSTR,TIMEND)
 C
       CALL GPCLOSE(LUAORC(0),'KEEP')

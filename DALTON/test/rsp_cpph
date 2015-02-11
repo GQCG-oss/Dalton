@@ -1,0 +1,198 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > rsp_cpph.info <<'%EOF%'
+   rsp_cpph
+   ----------
+   Molecule:         H2O2
+   Wave Function:    DFT B3LYP / 3-21G
+   Test Purpose:     Circularily Polarized Phosphorescence
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > rsp_cpph.mol <<'%EOF%'
+BASIS
+3-21G
+Hydrogen Peroxide. Optimized geometry
+CCSD(T)/cc-pCVQZ from our old MChD paper
+AtomTypes=2 NoSymm
+Charge=8.0 Atoms=2
+O   1.3697920000     0.0000000000    -0.0587737580
+O  -1.3697920000    -0.0000000000    -0.0587737580
+Charge=1.0 Atoms=2
+H   1.6852310000    -1.4904930000     0.9327822420
+H  -1.6852310000     1.4904930000     0.9327822420
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > rsp_cpph.dal <<'%EOF%'
+**DALTON INPUT
+.RUN RESPONS
+**WAVE FUNCTIONS
+.DFT
+B3LYP
+**INTEGRALS
+.MNF-SO
+.SPIN-ORBIT
+**RESPONS
+*QUADRATIC
+.ECPHOS
+.MNFPHO
+.CPPHOL
+.CPPHOV
+.CPPHMF
+.CPPHEC
+.ROOTS
+ 1
+.THCLR
+ 1.0D-5
+.THCPP
+ 1.0D-5
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >rsp_cpph.check
+cat >>rsp_cpph.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Energies
+CRIT1=`$GREP "SCF energy *\: * \-150\.625554*" $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=1
+ERROR[1]="ENERGY NOT CORRECT"
+
+# Response setup
+CRIT1=`$GREP "Quadratic Response single residue calculation" $log | wc -l`
+CRIT2=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
+CRIT3=`$GREP "Spin of operator B \, ISPINB\= * 1" $log | wc -l`
+CRIT4=`$GREP "Spin of operator C \, \(Excitation energy\) ISPINC\= * 1" $log | wc -l`
+CRIT5=`$GREP "1 B\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
+CRIT6=`$GREP "9 A OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
+CRIT7=`$GREP "9 B OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7`
+CTRL[2]=7
+ERROR[2]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
+
+# Transition moments
+CRIT1=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00029." $log | wc -l`
+CRIT2=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00046." $log | wc -l`
+CRIT3=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00000." $log | wc -l`
+CRIT4=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00020." $log | wc -l`
+CRIT5=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00059." $log | wc -l`
+CRIT6=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00000." $log | wc -l`
+CRIT7=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00156." $log | wc -l`
+CRIT8=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00098." $log | wc -l`
+CRIT9=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00000." $log | wc -l`
+CRIT10=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00202." $log | wc -l`
+CRIT11=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00040." $log | wc -l`
+CRIT12=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00000." $log | wc -l`
+CRIT13=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00039." $log | wc -l`
+CRIT14=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00030." $log | wc -l`
+CRIT15=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00000." $log | wc -l`
+CRIT16=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00234." $log | wc -l`
+CRIT17=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00007." $log | wc -l`
+CRIT18=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00000." $log | wc -l`
+CRIT19=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00000." $log | wc -l`
+CRIT20=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00000." $log | wc -l`
+CRIT21=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00028." $log | wc -l`
+CRIT22=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00000." $log | wc -l`
+CRIT23=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00000." $log | wc -l`
+CRIT24=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00002." $log | wc -l`
+CRIT25=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00000." $log | wc -l`
+CRIT26=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * 0*\.00000." $log | wc -l`
+CRIT27=`$GREP "omega B\, excitation energy\, moment \: * 0*\.000000 * 0*\.16652. * \-*0*\.00104." $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+	        $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
+		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ \
+		$CRIT25 \+ $CRIT26 \+ $CRIT27`
+CTRL[3]=27
+ERROR[3]="TRANSITION MOMENTS NOT CORRECT"
+
+# Phosphorescence
+CRIT1=`$GREP "Partial rates \(H_SO\)\: X\-polarization * 415\.86" $log | wc -l`
+CRIT2=`$GREP "Partial rates \(H_SO\)\: X\-polarization * 784\.70" $log | wc -l`
+CRIT3=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * 37\.761" $log | wc -l`
+CRIT4=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * 96\.477" $log | wc -l`
+CRIT5=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * 7\.8899" $log | wc -l`
+CRIT6=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * 107\.26" $log | wc -l`
+CRIT7=`$GREP "Oscillator str\. * \(\/2PI\) * \(H_SO\) * 8\.2437..E\-08" $log | wc -l`
+CRIT8=`$GREP "Dipole strength \[a\.u\.\] * \(H_SO\) * 4\.6656..E\-06" $log | wc -l`
+CRIT9=`$GREP "Dipole strength E\-40 \[esu\*\*2 cm\*\*2\] * 3\.0142..E\-01" $log | wc -l`
+CRIT10=`$GREP "Total transition rate * \(H_SO\) * 1\.5383..E+02 * s\-1" $log | wc -l`
+CRIT11=`$GREP "Total phosphorescence lifetime \(H_SO\) * 6\.5003..E\-03 * s" $log | wc -l`
+CRIT12=`$GREP "Oscillator str\. * \(\/2PI\) * \(H_SO\) * 1\.7655..E\-07" $log | wc -l`
+CRIT13=`$GREP "Dipole strength \[a\.u\.\] * \(H_SO\) * 9\.9924..E\-06" $log | wc -l`
+CRIT14=`$GREP "Dipole strength E\-40 \[esu\*\*2 cm\*\*2\] * 6\.4556..E\-01" $log | wc -l`
+CRIT15=`$GREP "Rotatory strength \[a\.u\.\] * \(H_SO\) * \-2\.2895..E\-07" $log | wc -l`
+CRIT16=`$GREP "Rot\. str\. E\-40 \[ esu cm erg \/ G \] * \-1\.0793..E\-04" $log | wc -l`
+CRIT17=`$GREP "Diss\. fac\. \[a\.u\.\] * \(H_SO\) * \-1\.9628..E\-01" $log | wc -l`
+CRIT18=`$GREP "Diss\. fac\. \[ erg \/ \(esu cm G\) \] * \-1\.4323..E\-03" $log | wc -l`
+CRIT19=`$GREP "Rotatory strength \[a\.u\.\] * \(H_SO\) * \-3\.0718..E\-07" $log | wc -l`
+CRIT20=`$GREP "Rot\. str\. E\-40 \[ esu cm erg \/ G \] * \-1\.4482..E\-04" $log | wc -l`
+CRIT21=`$GREP "Diss\. fac\. \[a\.u\.\] * \(H_SO\) * \-1\.2296..E\-01" $log | wc -l`
+CRIT22=`$GREP "Diss\. fac\. \[ erg \/ \(esu cm G\) \] * \-8\.9734..E\-04" $log | wc -l`
+
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+	        $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
+		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24`
+
+CTRL[4]=24
+ERROR[4]="PHOSPHORESCENCE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

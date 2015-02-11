@@ -6,7 +6,7 @@
 MODULE IIABSVALINT
 use gridgenerationmodule
 use dft_memory_handling
-use Integralparameters
+use LSparameters
 !use memory_handling
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
@@ -31,17 +31,18 @@ CONTAINS
 !> \brief wrapper exchange-correlation integral routine that build basinf.
 !> \author T. Kjaergaard
 !> \date 2010
-SUBROUTINE II_ABSVALINT(LUPRI,IPRINT,SETTING,CMAT,NBAST,ABSVALOVERLAP,USE_MPI,&
-     & DFTHRI)
+SUBROUTINE II_ABSVALINT(LUPRI,IPRINT,SETTING,CMAT1,CMAT2,NBAST,NMO1,NMO2,&
+     & ABSVALOVERLAP,USE_MPI,DFTHRI,SameCmat)
 use BUILDAOBATCH
 IMPLICIT NONE
-INTEGER,intent(in)     :: LUPRI,IPRINT,NBAST
-REAL(REALK),intent(in) :: CMAT(NBAST,NBAST),DFTHRI
-REAL(REALK),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
+INTEGER,intent(in)     :: LUPRI,IPRINT,NBAST,NMO1,nMO2
+REAL(REALK),intent(in) :: CMAT1(NBAST,NMO1)
+REAL(REALK),intent(in) :: CMAT2(NBAST,NMO2),DFTHRI
+REAL(REALK),intent(inout) :: ABSVALOVERLAP(NMO1,NMO2)
 TYPE(LSSETTING) :: SETTING
 LOGICAL         :: USE_MPI !use MPI ?
+LOGICAL,intent(in) :: SameCmat !Cmat1 and Cmat2, same?
 #ifdef MOD_UNRELEASED
-!
 TYPE(BASINF)  :: BAS
 integer :: igrid,GRIDDONE
 REAL(REALK),parameter :: D0=0E0_realk
@@ -51,10 +52,10 @@ GRIDDONE = SETTING%scheme%DFT%GridObject(igrid)%GRIDDONE
 maxNactbast = dft_maxNactbast(igrid)
 GRIDITERATIONS = dft_GRIDITERATIONS(igrid)
 CALL BUILD_BASINF(LUPRI,IPRINT,BAS,SETTING,GRIDDONE,.FALSE.)
-CALL II_ABSVALINT1(LUPRI,IPRINT,CMAT,NBAST,BAS,&
+CALL II_ABSVALINT1(LUPRI,IPRINT,CMAT1,CMAT2,NBAST,NMO1,nMO2,BAS,&
      &ABSVALOVERLAP,SETTING%SCHEME%noOMP,USE_MPI,setting%numnodes,setting%node,&
      &DFTHRI,SETTING%scheme%DFT%GridObject(igrid),maxNactbast,&
-     &GRIDITERATIONS)
+     &GRIDITERATIONS,SameCmat)
 CALL FREE_BASINF(BAS)
 dft_maxNactbast(igrid) = maxNactbast
 dft_GRIDITERATIONS(igrid) = GRIDITERATIONS
@@ -68,9 +69,9 @@ integer :: NBAST
 ABSVAL_MXBLLEN=NBAST
 END SUBROUTINE SET_ABSVAL_MXBLLEN
 
-SUBROUTINE II_ABSVALINT1(LUPRI,IPRINT,CMAT,NBAST,BAS,&
+SUBROUTINE II_ABSVALINT1(LUPRI,IPRINT,CMAT1,CMAT2,NBAST,NMO1,nMO2,BAS,&
      &ABSVALOVERLAP,noOMP,USE_MPI,numnodes,node,DFTHRI,GridObject,&
-     &maxNactbast,GRIDITERATIONS) 
+     &maxNactbast,GRIDITERATIONS,SameCmat) 
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -78,14 +79,20 @@ INTEGER,intent(in) :: LUPRI
 INTEGER,intent(in)  :: IPRINT
 !> number of basis functions
 INTEGER,intent(in)  :: NBAST
-!> the MO coeff matrix
-REAL(REALK),intent(in) :: CMAT(NBAST,NBAST) !ao,mo
+!> number of MO coeff
+INTEGER,intent(in)  :: NMO1,NMO2
+!> the MO coeff matrix 1
+REAL(REALK),intent(in) :: CMAT1(NBAST,NMO1) !ao,mo
+!> the MO coeff matrix 2
+REAL(REALK),intent(in) :: CMAT2(NBAST,NMO2) !ao,mo
 !> Basis-set information
 TYPE(BASINF),intent(INOUT)  :: BAS
 !> thresholds
 REAL(REALK),intent(in) :: DFTHRI
+!> same Cmat1 and Cmat2
+logical,intent(in) :: SameCmat
 !> 
-real(realk),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
+real(realk),intent(inout) :: ABSVALOVERLAP(NMO1,NMO2)
 !> shoould OpenMP be deactivated
 LOGICAL,intent(in)  :: noOMP
 !> should we use MPI
@@ -101,8 +108,7 @@ INTEGER :: iprune,L_prev,L_curr,IPT,spSIZE,L,NCURLEN,I,J
 INTEGER,pointer     :: SPINDEX(:)
 INTEGER   :: KCKTA,KHKTA,SHELLANGMOMA,IT,IBUF,IBUF_PREV,IDUM,ILEN,K,NactBAS,NRED,NRED2,IDMAT
 INTEGER   :: spsize2,IJ
-REAL(REALK) :: ERROR,CPUTIME,CPU2,CPU1
-REAL(REALK) :: WALLTIME,WALL2,WALL1
+REAL(REALK) :: ERROR,TS,TE
 REAL(REALK),pointer :: SPHMAT(:)
 LOGICAL     :: CHECKELS,SETIT,LDUM,PRINTTIM
 integer,pointer :: LVALUE(:,:),MVALUE(:,:),NVALUE(:,:)
@@ -125,27 +131,23 @@ ELSE
    PRINTTIM=.FALSE.
 ENDIF
 
-CALL LS_GETTIM(CPU1,WALL1)
 GridObject%NBUFLEN=1024
 
 !call SET_ABSVAL_MXBLLEN(NBAST)
 call SET_ABSVAL_MXBLLEN(128)
 !GridObject%NBUFLEN=NBAST
 BoxMemRequirement = 5*NBAST*NBAST
+CALL LSTIMER('START',TS,TE,LUPRI)
 CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,GridObject%HRDNES,iprune,BAS%natoms,& 
      & BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,GridObject%nbuflen,&
      & GridObject%RADIALGRID,GridObject%ZdependenMaxAng,GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
-     & IPRINT,USE_MPI,numnodes,node,GridObject%Id)
+     & IPRINT,USE_MPI,numnodes,node,GridObject%Id,GridObject%numnodes)
 IF(PRINTTIM)THEN
-   CALL LS_GETTIM(CPU2,WALL2)
-   CPUTIME = CPU2-CPU1
-   WALLTIME = WALL2-WALL1
 #ifdef VAR_MPI
    IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
-      CALL LS_TIMTXT('>>>  CPU  Time used in gridgeneration2 is  ',CPUTIME,LUPRI)
-      CALL LS_TIMTXT('>>>  WALL Time used in gridgeneration2 is  ',WALLTIME,LUPRI)
+      CALL LSTIMER('gridgeneration2',TS,TE,LUPRI)
 #ifdef VAR_MPI
    ENDIF
 #endif
@@ -198,12 +200,12 @@ DO SHELLANGMOMA=1,BAS%MAXANGMOM
 ENDDO
 
 BoxMemRequirement = ABSVAL_MXBLLEN*MaxNactBast
-CALL II_ABSVAL_GRID_LOOP(GridObject%NBUFLEN,IT,nbast,maxNactbast,BAS%maxnshell,&
-     & BAS%CC,BAS%ushells,BAS%CCSTART,BAS%CCINDEX,BAS%CENT,ABSVALOVERLAP,&
-     & DFThri,CMAT,BAS%PRIEXPSTART,lupri,&
+CALL II_ABSVAL_GRID_LOOP(GridObject%NBUFLEN,IT,nbast,nmo1,nmo2,maxNactbast,&
+     & BAS%maxnshell,BAS%CC,BAS%ushells,BAS%CCSTART,BAS%CCINDEX,&
+     & BAS%CENT,ABSVALOVERLAP,DFThri,CMAT1,CMAT2,BAS%PRIEXPSTART,lupri,&
      & BAS%mxprim,BAS%shellangmom,MMM,BAS%maxangmom,BAS%nstart,BAS%priexp,&
      & spsize,sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,&
-     & node,GridObject%Id)
+     & node,GridObject%Id,SameCmat)
 call mem_dft_dealloc(SPHMAT)
 call mem_dft_dealloc(SPINDEX)
 call mem_dft_dealloc(LVALUE)
@@ -211,13 +213,14 @@ call mem_dft_dealloc(MVALUE)
 call mem_dft_dealloc(NVALUE)
 END SUBROUTINE II_ABSVALINT1
 
-SUBROUTINE II_ABSVAL_GRID_LOOP(NBUFLEN,IT,nbast,maxNactbast,maxnshell,&
+SUBROUTINE II_ABSVAL_GRID_LOOP(NBUFLEN,IT,nbast,nmo1,nmo2,maxNactbast,maxnshell,&
      & CC,ushells,CCSTART,CCINDEX,CENT,ABSVALOVERLAP,&
-     & DFThri,CMAT,PRIEXPSTART,lupri,&
+     & DFThri,CMAT1,CMAT2,PRIEXPSTART,lupri,&
      & mxprim,shellangmom,MMM,maxangmom,nstart,priexp,spsize,&
-     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,node,GridId)
+     & sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,node,&
+     & GridId,SameCmat)
 implicit none
-integer,intent(in) :: LUPRI,MAXNSHELL,nbast,NBUFLEN,gridid
+integer,intent(in) :: LUPRI,MAXNSHELL,nbast,NBUFLEN,gridid,nmo1,nmo2
 integer :: IT
 !> Largest number of active orbitals
 integer,intent(inout) ::  maxNactbast
@@ -229,7 +232,9 @@ INTEGER,intent(in)    :: SHELLANGMOM(MAXNSHELL)
 INTEGER,intent(in)  :: MAXANGMOM
 !> MMM=MAXANGMOM*(MAXANGMOM+1)/2*MAXANGMOM*(MAXANGMOM+1)/2 
 INTEGER,intent(in)  :: MMM
-real(realk),intent(in) :: CMAT(NBAST,NBAST)
+real(realk),intent(in) :: CMAT1(NBAST,NMO1)
+real(realk),intent(in) :: CMAT2(NBAST,NMO2)
+logical,intent(in)     :: SameCmat
 !> the number of unique shells (also different contraction coefficients matrices) 
 INTEGER,intent(in)  :: ushells
 !> a contraction coefficient matrix for all the unique shells
@@ -240,7 +245,7 @@ INTEGER,intent(in) :: CCSTART(ushells)
 INTEGER,intent(in) :: CCINDEX(MAXNSHELL)
 !> X,Y,Z coordinate for each shell
 REAL(REALK),intent(in):: CENT(3,MAXNSHELL)
-real(realk),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
+real(realk),intent(inout) :: ABSVALOVERLAP(NMO1,NMO2)
 !> threshold for value of GAOs
 REAL(REALK),intent(in) :: DFTHRI
 !> shoould OpenMP be deactivated
@@ -266,7 +271,8 @@ INTEGER :: NactBAS
 INTEGER,pointer :: SHELLBLOCKS(:,:),BLOCKS(:,:)
 real(realk),pointer :: WEIGHT(:)
 real(realk),pointer :: COOR(:,:)
-real(realk),pointer :: ACTIVE_CMAT(:)
+real(realk),pointer :: ACTIVE_CMAT1(:)
+real(realk),pointer :: ACTIVE_CMAT2(:)
 real(realk),pointer :: GAO(:),TMP(:),TMP2(:)
 REAL(REALK),pointer :: COOR_pt(:,:)
 integer :: XX,NSHELLBLOCKS,NLEN,IPT,NCURLEN,I
@@ -291,11 +297,11 @@ ELSE
 ENDIF
 IF(.NOT.noOMP) call mem_dft_TurnONThread_Memory()
 !$OMP PARALLEL IF(.NOT.noOMP) PRIVATE(XX,NSHELLBLOCKS,SHELLBLOCKS,COOR,COOR_pt,WEIGHT,IPT,NCURLEN,&
-!$OMP ACTIVE_CMAT,BLOCKS,GAO,NLEN,NactBAS,I,myABSVALOVERLAP,&
-!$OMP tid,nthreads,TMP,TMP2) SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Cmat,&
+!$OMP ACTIVE_CMAT1,ACTIVE_CMAT2,BLOCKS,GAO,NLEN,NactBAS,I,myABSVALOVERLAP,&
+!$OMP tid,nthreads,TMP,TMP2) SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Cmat1,Cmat2,&
 !$OMP PRIEXPSTART,shellangmom,MMM,maxangmom,nstart,priexp,spsize,spsize2,sphmat,&
-!$OMP spindex,ABSVALOVERLAP,noOMP,NBUFLEN,it,lupri,nbast,maxnshell,mxprim,&
-!$OMP dfthri,LVALUE,MVALUE,NVALUE,MaxNactBast,lugrid)
+!$OMP spindex,ABSVALOVERLAP,noOMP,NBUFLEN,it,lupri,nbast,nmo1,nmo2,maxnshell,mxprim,&
+!$OMP dfthri,LVALUE,MVALUE,NVALUE,MaxNactBast,lugrid,SameCmat)
 IF(.NOT.noOMP) call init_dft_threadmemvar()
 #ifdef VAR_OMP
 nthreads=OMP_GET_NUM_THREADS()
@@ -309,13 +315,15 @@ call mem_dft_alloc(SHELLBLOCKS,2,MAXNSHELL)
 call mem_dft_alloc(BLOCKS,2,MAXNSHELL)
 call mem_dft_alloc(WEIGHT,NBUFLEN)
 call mem_dft_alloc(COOR,3,NBUFLEN)
-call mem_dft_alloc(ACTIVE_CMAT,maxNactBAST*NBAST)
+call mem_dft_alloc(ACTIVE_CMAT1,maxNactBAST*NMO1)
+IF(.NOT.SameCmat)THEN
+   call mem_dft_alloc(ACTIVE_CMAT2,maxNactBAST*NMO2)
+ENDIF
 call mem_dft_alloc(GAO,ABSVAL_MXBLLEN*maxNactBAST) 
-call mem_dft_alloc(TMP,ABSVAL_MXBLLEN*NBAST) 
-call mem_dft_alloc(TMP2,ABSVAL_MXBLLEN*NBAST) 
-call mem_dft_alloc(myABSVALOVERLAP,NBAST,NBAST)
-call ls_dzero(myABSVALOVERLAP,NBAST*NBAST)
-
+call mem_dft_alloc(TMP,ABSVAL_MXBLLEN*NMO1) 
+call mem_dft_alloc(TMP2,ABSVAL_MXBLLEN*NMO2) 
+call mem_dft_alloc(myABSVALOVERLAP,NMO1,NMO2)
+call ls_dzero(myABSVALOVERLAP,NMO1*NMO2)
 !$OMP END CRITICAL (initdftDATAblock)
 
 DO XX=1+tid,IT,nthreads
@@ -329,7 +337,12 @@ DO XX=1+tid,IT,nthreads
 #endif
    CALL SHELL_TO_ABSVAL_ORB(LUPRI,NSHELLBLOCKS,SHELLBLOCKS,BLOCKS,NSTART,MAXNSHELL,NBAST) !OUTPUT: BLOCKS
    CALL DETERMINE_ABSVAL_NACTIVEORB(NactBAS,NSHELLBLOCKS,BLOCKS,MAXNSHELL) !OUTPUT: NactBAS
-   CALL CONSTRUCT_ACTIVE_CMAT(NSHELLBLOCKS,MAXNSHELL,BLOCKS,CMAT,NBAST,ACTIVE_CMAT,NactBAS)
+   IF(SameCmat)THEN
+      CALL CONSTRUCT_ACTIVE_CMAT(NSHELLBLOCKS,MAXNSHELL,BLOCKS,CMAT1,NBAST,NMO1,ACTIVE_CMAT1,NactBAS)
+   ELSE
+      CALL CONSTRUCT_ACTIVE_CMAT12(NSHELLBLOCKS,MAXNSHELL,BLOCKS,CMAT1,CMAT2,NBAST,&
+           & NMO1,NMO2,ACTIVE_CMAT1,ACTIVE_CMAT2,NactBAS)
+   ENDIF
    CALL SHELL_TO_ABSVAL_ACTORB(NSHELLBLOCKS,BLOCKS,MAXNSHELL) !CHANGE ORBBLOCKS
    !CHANGE TO NO LOOP MAYBE
    DO IPT = 1, NLEN, ABSVAL_MXBLLEN
@@ -340,9 +353,16 @@ DO XX=1+tid,IT,nthreads
       &                MMM,MAXANGMOM,spSIZE,SPHMAT,SPINDEX,MAXNSHELL,NSTART,SHELLANGMOM&
       &                ,CENT,PRIEXPSTART,CC,ushells,CCSTART,CCINDEX,MXPRIM,&
       &                PRIEXP,LVALUE,MVALUE,NVALUE)
-      CALL ABSVALOVERLAP_WORKER(LUPRI,NCURLEN,NactBas,NBAST,&
-           & WEIGHT(IPT:IPT+NCURLEN-1),GAO(1:NCURLEN*NactBas),ACTIVE_CMAT,myABSVALOVERLAP,&
-           & TMP(1:NCURLEN*NBAST),TMP2(1:NCURLEN*NBAST))  
+      IF(SameCmat)THEN
+         CALL ABSVALOVERLAP_WORKER(LUPRI,NCURLEN,NactBas,NBAST,NMO1,&
+              & WEIGHT(IPT:IPT+NCURLEN-1),GAO(1:NCURLEN*NactBas),ACTIVE_CMAT1,myABSVALOVERLAP,&
+              & TMP(1:NCURLEN*NMO1),TMP2(1:NCURLEN*NMO1))  
+      ELSE
+         CALL ABSVALOVERLAP_WORKER12(LUPRI,NCURLEN,NactBas,NBAST,NMO1,NMO2,&
+              & WEIGHT(IPT:IPT+NCURLEN-1),GAO(1:NCURLEN*NactBas),&
+              & ACTIVE_CMAT1,ACTIVE_CMAT2,myABSVALOVERLAP,&
+              & TMP(1:NCURLEN*NMO1),TMP2(1:NCURLEN*NMO2))  
+      ENDIF
    ENDDO
 ENDDO
 
@@ -351,11 +371,14 @@ call mem_dft_dealloc(TMP)
 call mem_dft_dealloc(TMP2) 
 call mem_dft_dealloc(WEIGHT)
 call mem_dft_dealloc(COOR)
-call mem_dft_dealloc(ACTIVE_CMAT)
+call mem_dft_dealloc(ACTIVE_CMAT1)
+IF(.NOT.SameCmat)THEN
+   call mem_dft_dealloc(ACTIVE_CMAT2)
+ENDIF
 call mem_dft_dealloc(GAO) 
 call mem_dft_dealloc(SHELLBLOCKS)
 call mem_dft_dealloc(BLOCKS)
-CALL DAXPY(nbast*nbast,1E0_realk,myABSVALOVERLAP,1,ABSVALOVERLAP,1)
+CALL DAXPY(nmo1*nmo2,1E0_realk,myABSVALOVERLAP,1,ABSVALOVERLAP,1)
 call mem_dft_dealloc(myABSVALOVERLAP)
 !$OMP END CRITICAL (freeDFTdatablock)
 IF(.NOT.noOMP) call collect_thread_dft_memory()
@@ -367,7 +390,7 @@ CALL LSCLOSE(LUGRID,'KEEP')
 END SUBROUTINE II_ABSVAL_GRID_LOOP
 
 SUBROUTINE ABSVALOVERLAP_WORKER(LUPRI,NBLEN,Nactbast,NBAST,&
-     &  WEIGHT,GAOS,CMAT,ABSVALOVERLAP,TMP,TMP2)
+     &  NMO,WEIGHT,GAOS,CMAT,ABSVALOVERLAP,TMP,TMP2)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -377,42 +400,102 @@ INTEGER,intent(in) :: NBLEN
 INTEGER,intent(in) :: Nactbast
 !> Number of basis functions
 INTEGER,intent(in) :: Nbast
+!> Number of MO coef
+INTEGER,intent(in) :: NMO
 !> coefficient (combination of functional derivative)
 REAL(REALK),intent(in) :: WEIGHT(NBLEN)
 !> gaussian atomic orbitals
 REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST)
 !> The active AO to MO coeff matrix
-REAL(REALK),intent(inout) :: CMAT(NACTBAST,NBAST)
+REAL(REALK),intent(inout) :: CMAT(NACTBAST,NMO)
 !> The absolute valued Overlap matrix in MO
-REAL(REALK),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
+REAL(REALK),intent(inout) :: ABSVALOVERLAP(NMO,NMO)
 ! TEMPORARY MEM FROM WORK
-REAL(REALK),intent(inout) :: TMP(NBLEN,NBAST) 
-REAL(REALK),intent(inout) :: TMP2(NBLEN,NBAST)
+REAL(REALK),intent(inout) :: TMP(NBLEN,NMO) 
+REAL(REALK),intent(inout) :: TMP2(NBLEN,NMO)
 !
 Integer :: J,K,IBL,IACT
 !MO Values on grid point 
-!TMP(NBLEN,NBAST) = GAO(NBLEN,NACTBAST)*CMAT(NACTBAST,NBAST)
-CALL DGEMM('N','N',NBLEN,NBAST,NACTBAST,1.0E0_realk,&
+!TMP(NBLEN,NMO) = GAO(NBLEN,NACTBAST)*CMAT(NACTBAST,NMO)
+CALL DGEMM('N','N',NBLEN,NMO,NACTBAST,1.0E0_realk,&
      &             GAOS,NBLEN,CMAT,NACTBAST,0.0E0_realk,&
      &             TMP,NBLEN)
 
 ! First half-contraction of MO's with grid point weight
-DO J=1,NBAST
+DO J=1,NMO
    DO K=1, NBLEN
-      TMP(K,J) =  ABS(TMP(K,J))
+      TMP(K,J) = ABS(TMP(K,J))
    ENDDO
-ENDDO
-DO J=1,NBAST
    DO K=1, NBLEN
-      TMP2(K,J) =  WEIGHT(K)*TMP(K,J)
+      TMP2(K,J)= WEIGHT(K)*TMP(K,J)
    ENDDO
 ENDDO
 !  Second half-contraction of MO's with grid point weight
-CALL DGEMM('T','N',NBAST,NBAST,NBLEN,1.0E0_realk,&
+!ABSVALOVERLAP(NMO,NMO) =+ op(TMP)(NBLEN,NMO)*TMP2(NBLEN,NMO)
+CALL DGEMM('T','N',NMO,NMO,NBLEN,1.0E0_realk,&
      &             TMP,NBLEN,TMP2,NBLEN,1.0E0_realk,&
-     &             ABSVALOVERLAP,NBAST)
+     &             ABSVALOVERLAP,NMO)
 
 END SUBROUTINE ABSVALOVERLAP_WORKER
+
+SUBROUTINE ABSVALOVERLAP_WORKER12(LUPRI,NBLEN,Nactbast,NBAST,&
+     &  NMO1,NMO2,WEIGHT,GAOS,CMAT1,CMAT2,ABSVALOVERLAP,TMP,TMP2)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of MO coef
+INTEGER,intent(in) :: NMO1,NMO2
+!> coefficient (combination of functional derivative)
+REAL(REALK),intent(in) :: WEIGHT(NBLEN)
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST)
+!> The active AO to MO coeff matrix
+REAL(REALK),intent(inout) :: CMAT1(NACTBAST,NMO1)
+!> The active AO to MO coeff matrix
+REAL(REALK),intent(inout) :: CMAT2(NACTBAST,NMO2)
+!> The absolute valued Overlap matrix in MO
+REAL(REALK),intent(inout) :: ABSVALOVERLAP(NMO1,NMO2)
+! TEMPORARY MEM FROM WORK
+REAL(REALK),intent(inout) :: TMP(NBLEN,NMO1) 
+REAL(REALK),intent(inout) :: TMP2(NBLEN,NMO2)
+!
+Integer :: J,K,IBL,IACT
+!MO Values on grid point 
+!TMP(NBLEN,NMO1) = GAO(NBLEN,NACTBAST)*CMAT1(NACTBAST,NMO1)
+CALL DGEMM('N','N',NBLEN,NMO1,NACTBAST,1.0E0_realk,&
+     &             GAOS,NBLEN,CMAT1,NACTBAST,0.0E0_realk,&
+     &             TMP,NBLEN)
+
+! First half-contraction of MO's with grid point weight
+DO J=1,NMO1
+   DO K=1, NBLEN
+      TMP(K,J) = WEIGHT(K)*ABS(TMP(K,J))
+   ENDDO
+ENDDO
+!Second MO Values on grid point 
+!TMP2(NBLEN,NMO2) = GAO(NBLEN,NACTBAST)*CMAT2(NACTBAST,NMO2)
+CALL DGEMM('N','N',NBLEN,NMO2,NACTBAST,1.0E0_realk,&
+     &             GAOS,NBLEN,CMAT2,NACTBAST,0.0E0_realk,&
+     &             TMP2,NBLEN)
+!take absolute value
+DO J=1,NMO2
+   DO K=1, NBLEN
+      TMP2(K,J) = ABS(TMP2(K,J))
+   ENDDO
+ENDDO
+
+!  Second half-contraction of MO's with grid point weight
+!ABSVALOVERLAP(NMO1,NMO2) =+ op(TMP)(NBLEN,NMO1)*TMP2(NBLEN,NMO2)
+CALL DGEMM('T','N',NMO1,NMO2,NBLEN,1.0E0_realk,&
+     &             TMP,NBLEN,TMP2,NBLEN,1.0E0_realk,&
+     &             ABSVALOVERLAP,NMO1)
+END SUBROUTINE ABSVALOVERLAP_WORKER12
 
 !> \brief determine the number of active orbitals
 !> \author T. Kjaergaard
@@ -439,22 +522,22 @@ END SUBROUTINE DETERMINE_ABSVAL_NACTIVEORB
 !> \brief construct active Dmat
 !> \author T. Kjaergaard
 !> \date 2010
-SUBROUTINE CONSTRUCT_ACTIVE_CMAT(NSHELLBLOCKS,MAXNSHELL,BLOCKS,CMAT,NBAST,ACTIVE_CMAT,NactBAS)
+SUBROUTINE CONSTRUCT_ACTIVE_CMAT(NSHELLBLOCKS,MAXNSHELL,BLOCKS,CMAT,NBAST,NMO,ACTIVE_CMAT,NactBAS)
 IMPLICIT NONE 
-INTEGER,intent(in)     :: NSHELLBLOCKS,MAXNSHELL,NBAST,NactBAS
+INTEGER,intent(in)     :: NSHELLBLOCKS,MAXNSHELL,NBAST,NactBAS,NMO
 INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL)
-REAL(REALK),intent(in) :: CMAT(NBAST,NBAST)
-REAL(REALK),intent(inout):: ACTIVE_CMAT(NactBAS,NBAST)
+REAL(REALK),intent(in) :: CMAT(NBAST,NMO)
+REAL(REALK),intent(inout):: ACTIVE_CMAT(NactBAS,NMO)
 !
 INTEGER               :: IBL,IORB,J,IBASIS
 IF(NBAST.EQ.NactBAS)THEN
-   DO J = 1, NBAST
+   DO J = 1, NMO
       DO IBASIS = 1,NBAST
          ACTIVE_CMAT(IBASIS,J) = CMAT(IBASIS,J)
       ENDDO
    ENDDO
 ELSE
-   DO J = 1, NBAST
+   DO J = 1, NMO
       IBASIS = 0
       DO IBL = 1, NSHELLBLOCKS
          DO IORB = BLOCKS(1,IBL),BLOCKS(2,IBL) !ORBITALINDEX
@@ -465,6 +548,53 @@ ELSE
    ENDDO
 ENDIF
 END SUBROUTINE CONSTRUCT_ACTIVE_CMAT
+
+!> \brief construct active Dmat
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE CONSTRUCT_ACTIVE_CMAT12(NSHELLBLOCKS,MAXNSHELL,BLOCKS,&
+     & CMAT1,CMAT2,NBAST,NMO1,NMO2,ACTIVE_CMAT1,ACTIVE_CMAT2,NactBAS)
+IMPLICIT NONE 
+INTEGER,intent(in)     :: NSHELLBLOCKS,MAXNSHELL,NBAST,NactBAS,NMO1,NMO2
+INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL)
+REAL(REALK),intent(in) :: CMAT1(NBAST,NMO1)
+REAL(REALK),intent(in) :: CMAT2(NBAST,NMO2)
+REAL(REALK),intent(inout):: ACTIVE_CMAT1(NactBAS,NMO1)
+REAL(REALK),intent(inout):: ACTIVE_CMAT2(NactBAS,NMO2)
+!
+INTEGER               :: IBL,IORB,J,IBASIS
+IF(NBAST.EQ.NactBAS)THEN
+   DO J = 1, NMO1
+      DO IBASIS = 1,NBAST
+         ACTIVE_CMAT1(IBASIS,J) = CMAT1(IBASIS,J)
+      ENDDO
+   ENDDO
+   DO J = 1, NMO2
+      DO IBASIS = 1,NBAST
+         ACTIVE_CMAT2(IBASIS,J) = CMAT2(IBASIS,J)
+      ENDDO
+   ENDDO
+ELSE
+   DO J = 1, NMO1
+      IBASIS = 0
+      DO IBL = 1, NSHELLBLOCKS
+         DO IORB = BLOCKS(1,IBL),BLOCKS(2,IBL) !ORBITALINDEX
+            IBASIS = IBASIS + 1
+            ACTIVE_CMAT1(IBASIS,J) = CMAT1(IORB,J)
+         ENDDO
+      ENDDO
+   ENDDO
+   DO J = 1, NMO2
+      IBASIS = 0
+      DO IBL = 1, NSHELLBLOCKS
+         DO IORB = BLOCKS(1,IBL),BLOCKS(2,IBL) !ORBITALINDEX
+            IBASIS = IBASIS + 1
+            ACTIVE_CMAT2(IBASIS,J) = CMAT2(IORB,J)
+         ENDDO
+      ENDDO
+   ENDDO
+ENDIF
+END SUBROUTINE CONSTRUCT_ACTIVE_CMAT12
 
 !> \brief evaluates the gaussian atomic orbitals
 !> \author T. Kjaergaard

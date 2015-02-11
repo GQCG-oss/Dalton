@@ -1,11 +1,11 @@
 c -*-mode:fortran; fortran-continuation-string: "&" -*-
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -22,7 +22,6 @@ c -*-mode:fortran; fortran-continuation-string: "&" -*-
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck getfd */
       SUBROUTINE GETFD(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRINT,
@@ -109,7 +108,7 @@ C
 #include "dftcom.h"
 #include "nuclei.h"
 #include "inftap.h"
-#include "ibtfun.h"
+
       DOFV = (NISHT .GT. 0) .AND. (NASHT .GT. 0) .AND. (.NOT.NOORBI)
       DERX = DERIV(1)
       DERY = DERIV(2)
@@ -125,10 +124,6 @@ C
          WRITE (LUPRI, '(A,L5)') ' NODV  ', NODV
          WRITE (LUPRI, '(A,L5)') ' AOMAT ', AOMAT
       END IF
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
@@ -136,11 +131,9 @@ C
          NIBUF = 2
          NBITS = 16
       END IF
-#endif
       LBUF = 600
-      JBUF = 256
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
 C
 C
 C     ***************************************************
@@ -287,11 +280,7 @@ C
                KINT  = 1
                KIINT = KINT + LBUF
  150           CONTINUE
-#if defined (VAR_SPLITFILES)         
-               CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
-#else 
-               CALL READI(LU2DER,LENINT,WORK(KINT))
-#endif
+               CALL READI4(LU2DER,LENINT4,WORK(KINT))
                CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
                IF (IPRINT .GE. 05) WRITE (LUPRI, '(/,A,I5)')
      &               ' Two-electron integral buffer read, LENGTH =',
@@ -625,7 +614,7 @@ C
      *          DC(NNBASX),   DV(NNBASX)
       SAVE FIRST, ITRI, ACTIVE, IOFF
       DATA FIRST /.TRUE./
-#include "ibtfun.h"
+
 C
       IF (FIRST) THEN
          DO 100 I = 1, NBAST
@@ -942,26 +931,18 @@ C
 #include "nuclei.h"
 #include "inftap.h"
 #include "inforb.h"
-#include "ibtfun.h"
+
 C
       LBUF = 600
-      JBUF = 256
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
-         call quit('FCKMG2: NBASIS .ge. 256 not implemented yet'//
-     &     ' for 32-bit integers. Use 64-bit integers.')
-         NIBUF = 2 ! NIBUF .eq. 2 not implemented in her2out.F
+         NIBUF = 2
          NBITS = 16
       END IF
-#endif
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT   = 1
       KIINT  = KINT + LBUF
 C
@@ -985,11 +966,7 @@ C
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
 C
  300  CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
-#else
-         CALL READI(LU2DER,LENINT,WORK(KINT))
-#endif
+         CALL READI4(LU2DER,LENINT4,WORK(KINT))
          CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (IPRINT .GE. 05) WRITE (LUPRI, '(/,A,I5)')
      *      ' Two-electron integral buffer read, LENGTH =', LENGTH
@@ -1174,7 +1151,7 @@ C
 #include "symmet.h"
 #include "aosotr.h"
       DIMENSION ORBTRA(IDIM,IDIM)
-#include "ibtfun.h"
+
 C
       IF (IATOM .GT. 0) THEN
          FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
@@ -1865,6 +1842,16 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             IF (IPQMMM .GT. 1) CALL TIMER('QMMMFIRST',TIMSTR,TIMEND)
          END IF
 
+         IF (PEQM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+#if defined (BUILD_PELIB)
+            KTMAT = KWRK
+            MWRK = KTMAT + 3 * N2BASX
+            IF (MWRK > LWRK) CALL STOPIT('ONEDRL', 'PEQM', MWRK, LWRK)
+            CALL PE_IFC_LONDON(WORK(KTMAT))
+            CALL DAXPY(3*N2BASX, D1, WORK(KTMAT), 1, WORK(KMATS), 1)
+#endif
+         END IF
+
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)
          IF (DERY) CALL DCOPY(N2BASX,WORK(KMATS+  N2BASX),1,OMATY,1)
          IF (DERZ) CALL DCOPY(N2BASX,WORK(KMATS+2*N2BASX),1,OMATZ,1)
@@ -1933,7 +1920,7 @@ C
 #include "infinp.h"
 #include "chrnos.h"
       DIMENSION WORK(N2BASX), ONEMAT(N2BASX), TRONEM(NNBASX)
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GE. 10) CALL TITLER('Output from ONEDER','*',103)
       CALL DZERO(TRONEM,NNBASX)
@@ -1944,7 +1931,7 @@ C
          IF (ISCOOR .GT. 0) THEN
             IF (KEY .EQ. 'OMAT' .OR. KEY .EQ. 'HMAT') THEN
                DO 200 IREPA = 0, MAXREP
-                  IREPB = IBTXOR(IREPO,IREPA)
+                  IREPB = IEOR(IREPO,IREPA)
                   IF (IREPA .GE. IREPB) THEN
                      NDIMA = NBAS(IREPA + 1)
                      NDIMB = NBAS(IREPB + 1)

@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+#    prop_spinspin3
+#    --------------
+#    Molecule:         H2O
+#    Wave Function:    MCSCF (CAS)
+#    Test Purpose:     Nuclear shieldings and Fermi-contact contribution to
+#                      spin-spin coupling constants, thus note that only
+#                      three imaginary singlet response vectors should be
+#                      solved
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Basis set 
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+# Molecular geometry
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+
+
+# Symmetry
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+# Energies
+f.add(string = 'Hartree-Fock total energy',
+      rel_tolerance = 1.0e-9)
+f.add(string = 'MP2 second order energy',
+      rel_tolerance = 1.0e-9)
+f.add(string = 'Final MCSCF energy:',
+      rel_tolerance = 1.0e-9)
+
+f.add(string = 'Nuclear magnetic shieldings',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Nuclear spin-spin coupling constants',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Spin-spin couplings printed for atoms',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'No diamagnetic spin-orbit contribution calculated',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'No spin-dipole contribution calculated',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'No paramagnetic spin-orbit contribution calculated',
+      rel_tolerance = 1.0e-2)
+
+# Shielding tensors (symmetry coordinates) 
+f.add(from_string = 'Shielding tensors in symmetry coordinates',
+      num_lines = 24,
+      abs_tolerance = 1.0e-3)
+
+# Chemical shielding for...
+f.add(from_string = 'Chemical shielding for ',
+      num_lines = 16,
+      abs_tolerance = 1.0e-3)
+
+# Warning
+f.add(string = 'WARNING: Total spin-spin couplings not correct because some',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'contributions have not been calculated',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Isotropic coupling',
+      num_lines = 10,
+      abs_tolerance = 1.0e-4)
+
+test.run(['prop_spinspin3.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

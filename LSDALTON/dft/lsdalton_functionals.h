@@ -15,6 +15,10 @@
 #ifndef _FUNCTIONALS_H_
 #define _FUNCTIONALS_H_
 
+#if !defined(M_PI)
+#define M_PI		3.14159265358979323846
+#endif
+
 #ifdef SYS_REAL
 typedef float real;
 #else
@@ -347,7 +351,26 @@ extern Functional PW86xFunctional;
 extern Functional Pw91cFunctional;
 extern Functional PZ81Functional;
 extern Functional PBEcFunctional;
+extern Functional B88X_Functional;
+extern Functional LDAX_Functional;
+extern Functional PBEX_Functional;
+extern Functional REVPBEX_Functional;
+extern Functional RPBEX_Functional;
+extern Functional MPBEX_Functional;
+extern Functional PW91X_Functional;
+extern Functional G96X_Functional;
+extern Functional LG93X_Functional;
+extern Functional KT1X_Functional;
+extern Functional KT2X_Functional;
+extern Functional KT3X_Functional;
+extern Functional OPTX_Functional;
 extern Functional PbexFunctional;
+extern Functional revPBExFunctional;
+extern Functional rPBExFunctional;
+extern Functional mPBExFunctional;
+extern Functional PW91xFunctional;
+extern Functional G96xFunctional;
+extern Functional LG93xFunctional;
 extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
 extern Functional VWN5Functional;
@@ -366,13 +389,13 @@ extern Functional B3LYPGaussFunctional;
 extern Functional B3P86Functional;
 extern Functional B3P86GFunctional;
 extern Functional BLYPFunctional;
-extern Functional BXFunctional;
 extern Functional BP86Functional;
 extern Functional BPW91Functional;
 extern Functional Camb3lypFunctional;
 extern Functional CamxFunctional;
 extern Functional CamcompxFunctional;
 extern Functional GGAKeyFunctional;
+extern Functional CombineFunctional;
 extern Functional KT1Functional;
 extern Functional KT2Functional;
 extern Functional KT3Functional;

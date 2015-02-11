@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccdiis_sol */
       SUBROUTINE CCDIIS_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
@@ -58,6 +57,11 @@ C
 #include "ccsdinp.h"
 #include "cclr.h"
 #include "leinf.h"
+
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccdeco2.h"
+C
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
@@ -145,9 +149,8 @@ C
 
          IF (IPRLE .GT. 5) THEN
             WRITE (LUPRI,*)
-     *      ' >>> Call CC_TRDRV with TRIPLET flag set to:',
-     *      TRIPLET
-         ENDIF                      
+     *      ' >>> Call CC_TRDRV with TRIPLET flag set to:',TRIPLET
+         ENDIF
 C
          CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
@@ -210,12 +213,13 @@ C-----------------------------------------------------
 C        Print eigenvalues and residuals:
 C-----------------------------------------------------
 C
-         IF (IPRLE .GT. 1 ) THEN
+         IF (CHOINT .OR. (IPRLE .GT. 1 )) THEN
            WRITE(LUPRI,'(/5X,A)')' eigenvalues    residual   converged'
            WRITE(LUPRI,'(5X,A)')'.....................................'
            DO I = 1, NVEC
               WRITE(LUPRI,'(5X,F12.9,E13.4,5X,L2)')
      *          EIVAL(I), RNORM(I), CONVERGED(I)
+                if (.not. converged(i)) ecurr_new = eival(i)
            END DO
            WRITE(LUPRI,'(5X,A)')'.....................................'
          ENDIF
@@ -236,6 +240,7 @@ C           ( LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS )
      *         '     LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS'
          ELSE IF (JCONV.GT.0) THEN
 C           (CONVERGED)
+c           DISCON = .TRUE.
             IF (IPRLE .GT. 10) THEN
                WRITE(LUPRI,'(/,(A,I4,A,A,I4,A))')
      *         ' ITERATIONS CONVERGED FOR',NVEC,
@@ -249,7 +254,12 @@ C           (CONVERGED)
             WRITE(LUPRI,'(/A,I5,A)')
      *         ' *** CCDIIS_SOL - MAXIMUM NUMBER OF ITERATIONS',
      *         ITLE,' REACHED.'
-               CALL QUIT(' *** CCDIIS_SOL-MAX. ITERATIONS REACHED')
+               IF (CHOINT) THEN
+c                 DISCON = .FALSE.
+                  GOTO 666
+               ELSE
+                  CALL QUIT(' *** CCDIIS_SOL-MAX. ITERATIONS REACHED')
+               END IF
          END IF
 C
 C
@@ -304,6 +314,8 @@ C
   930    CONTINUE
       END IF
       CALL FLSHFO(LUPRI)
+C
+  666 CONTINUE
 C
       CALL QEXIT('CCDIIS_SOL')
       RETURN
@@ -479,6 +491,7 @@ C
 C
       RETURN
       END
+C     Restart diis:  Pass ITLEMOD instead of ITLE
 C  /* Deck ccnex2 */
       SUBROUTINE CCNEX_DIIS(FRHO1,LUFR1,FRHO2,LUFR2,
      *                      FC1AM,LUFC1,FC2AM,LUFC2,LIST,ISTART,

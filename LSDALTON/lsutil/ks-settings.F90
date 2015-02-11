@@ -2,6 +2,7 @@ MODULE KS_settings
 use precision
 use matrix_module
 use matrix_operations
+use LS_UTIL, only : capitalize_string
 ! This module evaluates the Fock/Kohn-Sham matrix using chosen
 ! algorithm, matrix representation, etc.
 !
@@ -81,6 +82,41 @@ IF(.NOT.do_increment)THEN
 ENDIF
 do_inc = do_increment
 end subroutine activate_incremental
+
+! check if for the functional used the empirical disp. corr. is defined
+SUBROUTINE II_dftdispcheck(func,lupri)
+  implicit none
+  Character(len=80),intent(IN) :: func
+  Integer,intent(IN)           :: lupri
+  !
+  Logical :: disp
+
+  disp = .FALSE.
+  
+  call capitalize_string(func)
+  IF (func == "BP86")  disp = .TRUE.
+  IF (func == "BLYP")  disp = .TRUE.
+  IF (func == "PBE")   disp = .TRUE.
+  IF (func == "B3LYP") disp = .TRUE.
+!  IF (insensitveEQUIV(func,"TPSS"))  disp = .TRUE. !!!TPSS not yet implemented in LSDALTON
+
+IF (disp .EQV. .FALSE.) THEN
+  write(lupri,'(A)') "###########################################################################################################"
+  write(lupri,'(A)') "The empirical dispersion correction is only defined for the following functionals:"
+  write(lupri,'(A)') "   BP86"
+  write(lupri,'(A)') "   BLYP"
+  write(lupri,'(A)') "   PBE"
+  write(lupri,'(A)') "   B3LYP"
+!  write(lupri,'(A)') "   TPSS"
+  write(lupri,'(A)') ""
+  write(lupri,'(A)') "At the moment these functionals have to be specified in the LSDALTON.INP with these names explicitly,"
+  write(lupri,'(A)') "defining the functionals by specifying the exchange and correlation parts explicitly is not yet possible."
+!  write(lupri,'(A)') "TPSS is not implemented yet."
+  write(lupri,'(A)') ""
+  write(lupri,'(A)') "###########################################################################################################"
+  call lsquit("Empirical dispersion correction not defined for the choosen functional",lupri)
+ENDIF
+END SUBROUTINE II_dftdispcheck
 
 END MODULE KS_settings
 

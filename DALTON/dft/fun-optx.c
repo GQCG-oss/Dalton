@@ -2,12 +2,12 @@
 
 
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -56,7 +56,7 @@
 
 /* INTERFACE PART */
 static integer  optx_isgga(void) { return 1; }
-static integer  optx_read(const char* conf_line);
+static integer  optxread(const char* conf_line);
 static real optx_energy(const FunDensProp* dens_prop);
 static void optx_first(FunFirstFuncDrv *ds, real factor, 
                         const FunDensProp* dens_prop);
@@ -66,10 +66,10 @@ static void optx_third(FunThirdFuncDrv *ds, real factor,
                         const FunDensProp* dens_prop);
 
 Functional OPTXFunctional = {
-    "OPTX",      /* name */
+    "OPTX_",      /* name */
     optx_isgga,  /* gga-corrected */
    1,
-    optx_read,   /* set bloody common blocks */
+    optxread,   /* set bloody common blocks */
     NULL,         /* reporter */
     optx_energy, 
     optx_first,
@@ -81,7 +81,7 @@ Functional OPTXFunctional = {
 /* IMPLEMENTATION PART */
 
 static integer
-optx_read(const char* conf_line)
+optxread(const char* conf_line)
 {
     fun_set_hf_weight(0.0);
     return 1;

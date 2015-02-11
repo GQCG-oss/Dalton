@@ -1,0 +1,10 @@
+BASIS
+6-31G*
+una mierda
+una kk
+Atomtypes=2  Angstrom Nosymmetry
+Charge=1.0 Atoms=2
+ H     0 1 1
+ H     0 1 -1
+Charge=8.0 Atoms=1
+ O     0 0 0

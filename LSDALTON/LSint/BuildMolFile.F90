@@ -41,7 +41,7 @@ CALL LSOPEN(LUMOL,filename,'UNKNOWN','FORMATTED')
 WRITE(lumol,'(A)')'ATOMBASIS' 
 WRITE(lumol,'(A)')'This file have been generated using the WRITE_MOLECULE_OUTPUT subroutine'
 WRITE(lumol,'(A)')'Output is in Bohr'
-natomtypes = BASIS%REGULAR%natomtypes
+natomtypes = BASIS%BINFO(RegBasParam)%natomtypes
 IF(natomtypes.LT. 10)THEN
    WRITE(natomsstring,'(I1,A)')natomtypes,'    '
 ELSEIF(natomtypes.LT. 100)THEN
@@ -72,20 +72,20 @@ ENDIF
 
 WRITE(lumol,'(A,A5,A,A3,A)')'Atomtypes=',natomsstring,'Charge=',chargestring2,' Nosymmetry'
 
-R = BASIS%REGULAR%Labelindex
-A = BASIS%AUXILIARY%Labelindex
-IF(BASIS%AUXILIARY%natomtypes.EQ. 0)THEN
+R = BASIS%BINFO(RegBasParam)%Labelindex
+A = BASIS%BINFO(AuxBasParam)%Labelindex
+IF(BASIS%BINFO(AuxBasParam)%natomtypes.EQ. 0)THEN
    AUXBASIS = .FALSE.
 ELSE
    AUXBASIS = .TRUE.
 ENDIF
 
-DO IATOMTYPE=1,BASIS%REGULAR%natomtypes
+DO IATOMTYPE=1,BASIS%BINFO(REGBASPARAM)%natomtypes
    natomsOfAtomtype=0
    DO I=1,MOLECULE%natoms   
       IF(R.EQ. 0)THEN
          ICHARGE = INT(MOLECULE%ATOM(I)%CHARGE)
-         type = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
+         type = BASIS%BINFO(REGBASPARAM)%CHARGEINDEX(ICHARGE)
       ELSE
          type = MOLECULE%ATOM(I)%IDtype(R)
       ENDIF
@@ -119,16 +119,16 @@ DO IATOMTYPE=1,BASIS%REGULAR%natomtypes
 
    IF(AUXBASIS)THEN
       WRITE(lumol,'(A,A6,A,A5,4A)')'Charge=',chargestring,' Atoms=',natomsString,&
-           & ' Basis=',TRIM(BASIS%REGULAR%ATOMTYPE(type)%NAME),&
-           & ' Aux=',TRIM(BASIS%AUXILIARY%ATOMTYPE(type)%NAME)
+           & ' Basis=',TRIM(BASIS%BINFO(REGBASPARAM)%ATOMTYPE(type)%NAME),&
+           & ' Aux=',TRIM(BASIS%BINFO(AUXBASPARAM)%ATOMTYPE(type)%NAME)
    ELSE
       WRITE(lumol,'(A,A6,A,A5,2A)')'Charge=',Chargestring,' Atoms=',natomsString,&
-           & ' Basis=',TRIM(BASIS%REGULAR%ATOMTYPE(type)%NAME)
+           & ' Basis=',TRIM(BASIS%BINFO(REGBASPARAM)%ATOMTYPE(type)%NAME)
    ENDIF
    DO I=1,MOLECULE%natoms   
       CHARGE = MOLECULE%ATOM(I)%CHARGE
       IF(R.EQ. 0)THEN
-         type = BASIS%REGULAR%CHARGEINDEX(INT(CHARGE))
+         type = BASIS%BINFO(REGBASPARAM)%CHARGEINDEX(INT(CHARGE))
       ELSE
          type = MOLECULE%ATOM(I)%IDtype(R)
       ENDIF

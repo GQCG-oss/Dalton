@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c /* deck CC_SOP */
 *=====================================================================*
@@ -41,7 +40,7 @@ c /* deck CC_SOP */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -429,7 +428,7 @@ c /* deck ccsopprt */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -1468,7 +1467,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '        oo     ')
       PARAMETER (UNDEF  = '      undefined')
-#include "ibtfun.h"
+
 
 C     Print title.
 C     ------------
@@ -1492,7 +1491,7 @@ C     ---------------------
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYM = 0, MAXOPR
-            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
                JATOM = JATOM + 1
                NATTYP = NINT(CHARGE(IATOM))
                IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
@@ -1569,7 +1568,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '         oo    ')
       PARAMETER (UNDEF  = '      undefined')
-#include "ibtfun.h"
+
 
 C     Print title.
 C     ------------
@@ -1596,7 +1595,7 @@ C     ---------------------
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYM = 0, MAXOPR
-            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
                JATOM = JATOM + 1
                NATTYP = NINT(CHARGE(IATOM))
                IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
@@ -1674,7 +1673,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '        oo     ')
       PARAMETER (UNDEF  = '      undefined')
-#include "ibtfun.h"
+
 
 C     Print title.
 C     ------------
@@ -1700,7 +1699,7 @@ C     ---------------------
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYM = 0, MAXOPR
-            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
                JATOM = JATOM + 1
                NATTYP = NINT(CHARGE(IATOM))
                IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sopinp */
       SUBROUTINE SOPINP(WORD)
@@ -36,14 +35,14 @@ C     to carry out Higher RPA calculations and to calculate the W4 term
 C     explicitly.
 C
 C     It also includes the options to carry out atomic integral direct
-C     RPA, RPA(D), SOPPA and SOPPA(CCSD) calculations and several
+C     RPA, HRPA, RPA(D), SOPPA and SOPPA(CCSD) calculations and several
 C     options concerning these calculations.
 C     
 C     
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 13)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include "abainf.h"
@@ -51,9 +50,11 @@ C
 #include "infrsp.h"
 #include "soppinf.h"
 C
+      CALL QENTER('SOPINP')
+C
       DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.DCRPA ',
      &            '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST', '.NSAVMX',
-     &            '.NEXCI2', '.THREX2'/
+     &            '.NEXCI2', '.THREX2', '.AOHRP '/
 C     
 C------------------
 C     Set defaults.
@@ -67,6 +68,9 @@ C
       AOSOC  = .FALSE.
       SOPCHK = .FALSE.
       AOTEST = .FALSE.
+CPFP
+      AOHRP = .FALSE.
+Cend-PFP
 C
       NSAVMX = 3
       NSAVMXORIG = 3
@@ -88,7 +92,10 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
+CPFP
+C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
+Cend-PFP
             END IF
   200    CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -143,6 +150,9 @@ C           NSYM is set to 8 since NSYM has not yet been set !!
    12    CONTINUE
             READ (LUCMD,*) THREX2
             GOTO 100
+   13    CONTINUE
+            AOHRP  = .TRUE.
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GOTO 300
       ELSE
@@ -166,6 +176,10 @@ C
      &       '    (Ref.: O. Christiansen, K. L. Bak, H. Koch and',
      &       ' S. P. A. Sauer',
      &       '     Chem. Phys. Lett. 284, 47-62 (1998))'
+CPFP
+         IF (AOHRP)  WRITE(LUPRI,'(A)')
+     &       ' AO integral driven Higher RPA (HRPA) :'
+Cend-PFP
          IF (AOSOP)  WRITE(LUPRI,'(A/,A,A,/,A)')
      &       ' AO integral driven SOPPA :',
      &       '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',
@@ -184,10 +198,12 @@ C
          IF (NSAVMX .NE. 3) WRITE(LUPRI,'(A,A,I3)') 
      &       ' The maximum number of trial vectors for each ',
      &       'excitation is changed to : ',NSAVMX
-         IF (LNEXC2) WRITE(LUPRI,'(A,8I5,A,/,A,E9.2)')
+         IF (LNEXC2) WRITE(LUPRI,'(A,8I5,A/A,1P,E9.2)')
      &       ' The last : ',(NEXCI2(I),I=1,8),' excitation energies',
      &       '    are only converged to : ',THREX2
       END IF
 C     
+      CALL QEXIT('SOPINP')
+C
       RETURN
       END

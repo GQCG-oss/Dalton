@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE CRTMO(VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,
      *                 RESVEC,CMO,UDV,PV,FOCK,FC,FV,
@@ -44,8 +43,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-      PARAMETER ( D0 = 0.0D0, ZEROTHR = 1.0D-10, IMXEXC = 20 )
-      DIMENSION RESTOM(3,3,3,IMXEXC,8), RESFRE(IMXEXC,8)
+      PARAMETER ( D0 = 0.0D0, ZEROTHR = 1.0D-10 )
       DIMENSION IEQTO(5)
 C
 #include "priunit.h"
@@ -62,6 +60,7 @@ C
       DIMENSION MJWOP(2,MAXWOP,8)
 #include "rspprp.h"
 #include "indcr.h"
+      REAL*8, ALLOCATABLE  ::  RESTOM(:,:,:,:,:), RESFRE(:,:)
 #include "infcr.h"
 #include "inftmo.h"
 #include "codata.h"
@@ -83,8 +82,9 @@ C
      *' TRANSITION MOMENT >>>>>'
 C
       IF (THREEPHOTON) THEN
-        CALL DZERO(RESTOM,3*3*3*IMXEXC*8)
-        CALL DZERO(RESFRE,IMXEXC*8)
+         ALLOCATE ( RESTOM(3,3,3,MXEXCR,8), RESFRE(MXEXCR,8) )
+         CALL DZERO(RESTOM,3*3*3*MXEXCR*8)
+         CALL DZERO(RESFRE,MXEXCR*8)
       END IF
 C
       DO 200 ISYMD = 1,NSYM
@@ -373,6 +373,7 @@ C
 C
       IF (THREEPHOTON) THEN
          CALL PRINT_THREEPHOTON(RESTOM,RESFRE)   
+         DEALLOCATE (RESTOM, RESFRE)
       END IF
 C
 C    End of subroutine CRTMO
@@ -386,11 +387,13 @@ C
 #include "priunit.h"
 #include "inforb.h"
 #include "rspprp.h"
+#include "indcr.h"
+#include "infcr.h"
 #include "inftmo.h"
 #include "codata.h"
 C
-      PARAMETER ( D0 = 0.0D0, ZERO = 1.0D-10, IMXEXC = 20 )
-      DIMENSION RESTOM(3,3,3,IMXEXC,8), RESFRE(IMXEXC,8)
+      PARAMETER ( D0 = 0.0D0, ZERO = 1.0D-10 )
+      DIMENSION RESTOM(3,3,3,MXEXCR,8), RESFRE(MXEXCR,8)
       CHARACTER*8 ALAB,BLAB,CLAB,DLAB
       CHARACTER*1 ITINDX,JTINDX
 C
@@ -459,8 +462,7 @@ C
      &'-----------------------------------------------------------',
      &'-----------'
       DO ISYMD=1,NSYM
-      DO ID = 1,NTMCNV(ISYMD)
-         IF (ID.LE.IMXEXC) THEN
+         DO ID = 1,NTMCNV(ISYMD)
             DF=0.0D0
             DG=0.0D0
             DO I=1,3
@@ -478,11 +480,7 @@ C
             D=(-3*DF+5*DG)/35
             WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMD,ID,
      &              RESFRE(ID,ISYMD)*XTEV,'Circular   ',DF,DG,D,R
-         ELSE
-            WRITE(LUPRI,'(/A)')
-     &           'WARNING!! NOT ENOUGH SPACE TO IN RESULT MATRIX'
-         END IF
-      END DO
+         END DO
       END DO
       WRITE(LUPRI,'(A62,A)')
      &'-----------------------------------------------------------',

@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# HF energy (2 times)
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-10)
+
+# Molecular gradients
+f.add(from_string = 'Molecular gradient (au)',
+      num_lines    = 9,
+      abs_tolerance = 1.0e-6)
+
+# Molecular hessians
+f.add(from_string = 'Molecular Hessian (au)',
+      num_lines    = 57,
+      abs_tolerance = 1.0e-5)
+
+
+# Geometry
+f.add(from_string = 'Molecular geometry (au)',
+      num_lines    = 9,
+      abs_tolerance = 1.0e-6)
+
+# Magnetizabilities 
+#f.add(from_string = 'ABACUS - MAGNETIZABILITIES',
+#      to_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
+#      mask = [2,3,4],
+#      abs_tolerance = 1.0e-4)
+f.add(from_re = 'magnetizability tensor \(au\)',
+      num_lines = 9,
+      abs_tolerance = 2.1e-6)
+
+
+# g-tensors
+#f.add(from_string = 'ABACUS - MOLECULAR ROTATIONAL g-TENSOR',
+#      to_string = 'ABACUS - CHEMICAL SHIELDINGS',
+#      abs_tolerance = 2.0e-6)
+f.add(from_re = 'Molecular rotational g\-factor',
+      num_lines = 9,
+      abs_tolerance = 2.1e-6)
+
+# Chemical shielding
+f.add(from_re = 'Shielding tensors in symmetry coordinates \(ppm\)',
+      num_lines = 30,
+      rel_tolerance = 1.0e-4, ignore_below = 1.e-4)
+
+f.add(from_re = 'Chemical shielding for ',
+      num_lines = 45,
+      rel_tolerance = 1.0e-4, ignore_below = 1.e-4)
+
+f.add(from_re = 'Summary of chemical shieldings',
+      num_lines = 14,
+      rel_tolerance = 1.0e-4, ignore_below = 1.e-4)
+
+#f.add(from_string = 'ABACUS - CHEMICAL SHIELDINGS',
+#      to_string = 'Interatomic separations',
+#      abs_tolerance = 1.0e-3)
+
+test.run(['walk_solvmag.dal'], ['ch3f_6-311ppG.mol'], f={'out': f})
+
+sys.exit(test.return_code)

@@ -145,7 +145,11 @@ IMPLICIT NONE
        OD%BATCH(IOD)%ITYPE         = INPUT%AO(AOA)%p%BATCH(IA)%ITYPE+(INPUT%AO(AOB)%p%BATCH(IB)%ITYPE-1)*ntypeA
        OD%BATCH(IOD)%redTYPE       = INPUT%AO(AOA)%p%BATCH(IA)%redTYPE+(INPUT%AO(AOB)%p%BATCH(IB)%redTYPE-1)*nredtypeA
        OD%BATCH(IOD)%sameAO = (sameAOs .AND. IA .EQ. IB)
-!
+       OD%BATCH(IOD)%ODcenter(1) = 0.0E0_realk
+       OD%BATCH(IOD)%ODcenter(2) = 0.0E0_realk
+       OD%BATCH(IOD)%ODcenter(3) = 0.0E0_realk
+       OD%BATCH(IOD)%ODextent = 0.0E0_realk
+       
        IF (OD%BATCH(IOD)%sameAO) OD%BATCH(IOD)%nAngmom &
      &       = INPUT%AO(AOA)%p%BATCH(IA)%nAngmom*(INPUT%AO(AOA)%p%BATCH(IA)%nAngmom+1)/2
 !     
@@ -611,7 +615,6 @@ type(lstensor),pointer :: GAB
  integer(kind=short)  :: maxGab,maxpGAB
  real(realk)  :: d2,distance
  Logical      :: screen
-
  nbatches=0
  DO IA=1,AOA%nbatches
    IBSTART = 1

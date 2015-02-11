@@ -17,23 +17,25 @@ MODULE dal_interface
    use TYPEDEF, only: typedef_setlist_valence2full,getNbasis, &
 		& GCAO2AO_transform_matrixD2,&
                 & ao2gcao_transform_matrixf
-   use dec_typedef_module, only: batchTOorb
-   use Integralparameters
+   use basis_typetype,only:VALBasParam
+   use dec_typedef_module, only: batchTOorb,DecAObatchinfo
+   use LSparameters
    use AO_TypeType, only: AOITEM
    use files, only: lsclose, lsopen
    use BUILDAOBATCH, only: build_batchesOfAOs, build_ao, &
-        & determine_maxBatchOrbitalsize
+        & determine_maxBatchOrbitalsize, build_minimalbatchesofaos
    use daltoninfo, only: ls_free, build_ccfragmentlsitem
    use AO_Type, only: free_aoitem
    use lowdin_module, only: lowdin_diag
    use IntegralInterfaceDEC,only: II_precalc_decscreenmat, &
-        & II_getBatchOrbitalScreenK, &
-        & ii_get_decpacked4center_k_eri
+        & II_getBatchOrbitalScreenK, II_getBatchOrbitalScreen, &
+        & ii_get_decpacked4center_k_eri,ii_get_decpacked4center_j_eri,&
+        & ii_get_decbatchpacked
    use memory_handling,only: mem_alloc, mem_dealloc
    use ks_settings, only: incremental_scheme, SaveF0andD0
    use lsdalton_fock_module, only: lsint_fock_data
-   use screen_mod, only: DECscreenITEM, free_decscreen
-   use IntegralInterfaceMOD
+   use screen_mod, only: DECscreenITEM, free_decscreen,screen_init, screen_free
+   use IntegralInterfaceMOD 
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
    use gridgenerationmodule
@@ -46,6 +48,8 @@ MODULE dal_interface
    ! debug cgto_diff_eri_host
    use cgto_diff_eri_host_interface, only: cgto_diff_eri_DGD_Econt
 #endif
+   use IchorErimoduleHost
+
 INTERFACE di_GET_GbDs
 	MODULE PROCEDURE di_GET_GbDsSingle, di_GET_GbDsArray
 END INTERFACE
@@ -66,8 +70,11 @@ END INTERFACE
         & di_debug_4center_eri, &
         & di_debug_4center, &
         & di_decpacked, &
+        & di_decpackedJ, &
+        & di_decpackedJOLD, &
 #endif
-        & di_debug_ccfragment, &
+!        & di_decbatchpacked, &
+!        & di_debug_ccfragment, &
         & di_get_fock_LSDALTON, &
         & di_GET_GbDs, &
         & di_GET_GbDs_and_XC_linrsp, &
@@ -83,7 +90,6 @@ END INTERFACE
    ! access to H1 within this module, avoiding re-reading H1 from disk and
    ! avoiding extensive modifications to existing subroutine interfaces.
    type(MATRIX), pointer, save  :: lH1
-   real(realk),parameter :: Gbd_thresh = 1.0E-14_realk
 CONTAINS
   subroutine di_debug_general(lupri,luerr,ls,nbast,S,D,debugProp)
       implicit none
@@ -92,11 +98,12 @@ CONTAINS
       type(matrix)          :: S,D
       real(realk) :: Etest,E
       logical :: debugProp
-#ifdef MOD_UNRELEASED
       IF(ls%input%dalton%DEBUGDECPACKED)then
+#ifdef MOD_UNRELEASED
+!         call di_decbatchpacked(lupri,luerr,ls,nbast,D)
          call di_decpacked(lupri,luerr,ls,nbast,D)
-      ENDIF
 #endif
+      ENDIF
       IF(ls%setting%scheme%interest)then
          print*,'di_debug_4center_eri_interest'
          call di_debug_4center_eri_interest(lupri,luerr,ls,nbast)
@@ -289,7 +296,7 @@ CONTAINS
       CALL DAXPY(3*natoms,1E0_realk,tmpGrad,1,Grad,1)
 
 !      WRITE(lupri,*)'The h1grad'
-!      call output(Grad,1,3,1,Natoms,3,natoms,1,lupri)
+!      call ls_output(Grad,1,3,1,Natoms,3,natoms,1,lupri)
 
       do I=1,Natoms
          IF(ABS(mat_trAB(genh1x(3*(I-1)+1),D)-grad(1,I)).GT.1E-8_realk)THEN
@@ -384,7 +391,7 @@ CONTAINS
       logical                        :: ReadOldProp,OnMaster
       real(realk)                    :: maxelm
       real(realk),pointer            :: expval(:)
-      real(realk),parameter          :: thresh=1.0E-14
+      real(realk),parameter          :: thresh=1.0E-12_realk
       character(len=8)   :: Label
       character(len=1)   :: CHRXYZ(-3:3)
       DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
@@ -422,7 +429,7 @@ CONTAINS
 
       !Test
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP ANGMOM',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP ANGMOM',CHRXYZ(X),' IS SYMMETRIC'
@@ -444,7 +451,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 ANGMOM',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 ANGMOM',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.8)')'PROPTEST4 ANGMOM',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -452,7 +459,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'ANGLON ')
       !Test
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) !1 sym, 2 antisym, 3 nosym, 4 zero
+         ISYM = mat_get_isym(matarray(X)) !1 sym, 2 antisym, 3 nosym, 4 zero
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP ANGLON',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP ANGLON',CHRXYZ(X),' IS SYMMETRIC'
@@ -474,36 +481,36 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 ANGLON',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 ANGLON',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 ANGLON',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
 
       !CALC 1ELPOT
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:1),1,'1ELPOT ')
-      ISYM = mat_get_isym(matarray(1),thresh) 
+      ISYM = mat_get_isym(matarray(1)) 
       WRITE(lupri,'(A,I2)')'SYMMETRY OF PROP 1ELPOT = ',ISYM
       IF(ReadOldProp)THEN
          !read and verify
          call mat_read_from_disk(propfile,OLDINT(1),OnMaster)
          call mat_add(1E0_realk,matarray(1),-1E0_realk,OLDINT(1),tempm1)
-         WRITE(lupri,'(A,I2)')'PROPTEST3 1ELPOT=',mat_get_isym(tempm1,thresh)
+         WRITE(lupri,'(A,I2)')'PROPTEST3 1ELPOT=',mat_get_isym(tempm1)
          WRITE(lupri,'(A,F18.8)')'PROPTEST4 1ELPOT=',ABS(mat_trab(tempm1,tempm1))
          call II_get_nucel_mat(LUPRI,LUERR,SETTING,matarray(1))
          call mat_add(-1E0_realk,matarray(1),-1E0_realk,OLDINT(1),tempm1)
-         WRITE(lupri,'(A,I2)')'PROPTEST1 1ELPOT=',mat_get_isym(tempm1,thresh)
+         WRITE(lupri,'(A,I2)')'PROPTEST1 1ELPOT=',mat_get_isym(tempm1)
          WRITE(lupri,'(A,F18.14)')'PROPTEST2 1ELPOT=',ABS(mat_trab(tempm1,tempm1))
       ELSE
          call II_get_nucel_mat(LUPRI,LUERR,SETTING,matarray(2))
          call mat_add(-1E0_realk,matarray(2),-1E0_realk,matarray(1),tempm1)
-         WRITE(lupri,'(A,I2)')'PROPTEST5 1ELPOT=',mat_get_isym(tempm1,thresh)
+         WRITE(lupri,'(A,I2)')'PROPTEST5 1ELPOT=',mat_get_isym(tempm1)
          WRITE(lupri,'(A,F18.14)')'PROPTEST6 1ELPOT=',ABS(mat_trab(tempm1,tempm1))
       ENDIF
 
       !CALC LONMOM1
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'LONMOM1')
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) 
+         ISYM = mat_get_isym(matarray(X)) 
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP LONMOM1',CHRXYZ(X),' = ',ISYM
          WRITE(lupri,'(A,A1,A1,F18.9)')'Norm of LONMOM1',CHRXYZ(X),'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -514,7 +521,7 @@ CONTAINS
       !CALC LONMOM2
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'LONMOM2')
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) 
+         ISYM = mat_get_isym(matarray(X)) 
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP LONMOM2',CHRXYZ(X),' = ',ISYM
          WRITE(lupri,'(A,A1,A1,F18.9)')'Norm of LONMOM2',CHRXYZ(X),'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -524,7 +531,7 @@ CONTAINS
       !CALC LONMOM
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'LONMOM ')
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) 
+         ISYM = mat_get_isym(matarray(X)) 
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP LONMOM',CHRXYZ(X),' = ',ISYM
          WRITE(lupri,'(A,A1,A1,F18.9)')'Norm of LONMOM',CHRXYZ(X),'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -536,7 +543,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 LONMOM',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 LONMOM',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 LONMOM',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -544,7 +551,7 @@ CONTAINS
       !CALC MAGMOM
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'MAGMOM ')
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) 
+         ISYM = mat_get_isym(matarray(X)) 
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP MAGMOM',CHRXYZ(X),' = ',ISYM
          WRITE(lupri,'(A,A1,A1,F18.9)')'Norm of MAGMOM',CHRXYZ(X),'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -556,7 +563,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 MAGMOM',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 MAGMOM',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.8)')'PROPTEST4 MAGMOM',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -565,7 +572,7 @@ CONTAINS
       call II_get_magderivOverlap(matarray,setting,lupri,luerr)
       !Test
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP S1MAG',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP S1MAG',CHRXYZ(X),' IS SYMMETRIC'
@@ -586,7 +593,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAG',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAG',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 S1MAG',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -594,7 +601,7 @@ CONTAINS
       call II_get_magderivOverlapR(matarray,setting,lupri,luerr)
       !Test S1MAGR
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP S1MAGR',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP S1MAGR',CHRXYZ(X),' IS SYMMETRIC'
@@ -615,7 +622,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAGR',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAGR',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 S1MAGR',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
             IF(ABS(mat_trab(tempm1,tempm1)).GT.1.0E-10)THEN
                WRITE(lupri,*)'OLD S1MAGR',CHRXYZ(X)
@@ -629,7 +636,7 @@ CONTAINS
       call II_get_magderivOverlapL(matarray,setting,lupri,luerr)
       !Test S1MAGL
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP S1MAGL',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP S1MAGL',CHRXYZ(X),' IS SYMMETRIC'
@@ -650,7 +657,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAGL',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAGL',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 S1MAGL',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
             IF(ABS(mat_trab(tempm1,tempm1)).GT.1.0E-10)THEN
                WRITE(lupri,*)'OLD S1MAGL',CHRXYZ(X)
@@ -684,7 +691,7 @@ CONTAINS
       DO X=1,3*NATOMS
          Label = 'PSO '//Char(X/100+48)//Char(mod(X,100)/10+48)&
               &//Char(mod(mod(X,100),10)+48)//' '         
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A8,A,I2)')'SYMMETRY OF PROP ',Label,' = ',ISYM
          WRITE(lupri,'(A,A8,A1,F18.9)')'Norm of ',Label,'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -698,7 +705,7 @@ CONTAINS
                  &//Char(mod(mod(X,100),10)+48)//' '         
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -755,7 +762,7 @@ CONTAINS
                     &//Char(mod(mod(X,100),10)+48)//'NSLO'//CHRXYZ(B)
                call mat_read_from_disk(propfile,OLDINT(B+(X-1)*3),OnMaster)
                call mat_add(1E0_realk,matarray(B+(X-1)*3),-1E0_realk,OLDINT(B+(X-1)*3),tempm1)
-               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
                WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
             ENDDO
          ENDDO
@@ -794,7 +801,7 @@ CONTAINS
                Label = Char(X/100+48)//Char(mod(X,100)/10+48)&
                     &//Char(mod(mod(X,100),10)+48)//'NSNL'//CHRXYZ(B)
                call mat_add(1E0_realk,matarray(B+(X-1)*3),-1E0_realk,OLDINT(B+(X-1)*3),tempm1)
-               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
                WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
             ENDDO
          ENDDO
@@ -832,7 +839,7 @@ CONTAINS
                Label = Char(X/100+48)//Char(mod(X,100)/10+48)&
                     &//Char(mod(mod(X,100),10)+48)//' NST'//CHRXYZ(B)
                call mat_add(1E0_realk,matarray(B+(X-1)*3),-1E0_realk,OLDINT(B+(X-1)*3),tempm1)
-               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
                WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
             ENDDO
          ENDDO
@@ -854,7 +861,7 @@ CONTAINS
       !Test
       DO X=1,3
          WRITE(lupri,'(A,A1)')'PROP DIPVEL',CHRXYZ(X)
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP DIPVEL',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP DIPVEL',CHRXYZ(X),' IS SYMMETRIC'
@@ -875,7 +882,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 DIPVEL',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 DIPVEL',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 DIPVEL',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -883,7 +890,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:6),6,'ROTSTR ')
       DO X=1,6
          Label = ROTXYZ(X)//'ROTSTR'
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A8,A,I2)')'SYMMETRY OF PROP ',Label,' = ',ISYM
          WRITE(lupri,'(A,A8,A1,F18.9)')'Norm of ',Label,'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -896,7 +903,7 @@ CONTAINS
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             Label = ROTXYZ(X)//'ROTSTR'
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -904,7 +911,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:6),6,'THETA  ')
       DO X=1,6
          Label = ROTXYZ(X)//'THETA'
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A8,A,I2)')'SYMMETRY OF PROP ',Label,' = ',ISYM
          WRITE(lupri,'(A,A8,A1,F18.9)')'Norm of ',Label,'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -917,7 +924,7 @@ CONTAINS
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             Label = ROTXYZ(X)//'THETA'
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
             IF(ABS(mat_trab(tempm1,tempm1)).GT.1.0E-10)THEN
                WRITE(lupri,*)'OLD LABEL:',Label
@@ -931,7 +938,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:3),3,'DIPLEN ')
       !Test
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP DIPLEN',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1.OR.isym.EQ.4)THEN
             WRITE(lupri,'(A,A,A)')'PROP DIPLEN',CHRXYZ(X),' IS SYMMETRIC OR ZERO'
@@ -950,7 +957,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 DIPLEN',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 DIPLEN',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 DIPLEN',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -958,7 +965,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:1),1,'Overlap')
       !verify OVERLAP
       call mat_add(1E0_realk,matarray(1),-1E0_realk,S,tempm1)
-      WRITE(lupri,*)'PROPTEST1 OVERLAP ',mat_get_isym(tempm1,thresh)
+      WRITE(lupri,*)'PROPTEST1 OVERLAP ',mat_get_isym(tempm1)
       WRITE(lupri,*)'PROPTEST2 OVERLAP ',ABS(mat_trab(tempm1,tempm1))
       DO X=1,9*NATOMS
          call mat_free(matarray(X))
@@ -976,168 +983,168 @@ CONTAINS
       call mat_free(NONsym)
     end subroutine di_debug_PropertyIntegrals
 #ifdef MOD_UNRELEASED
-   SUBROUTINE di_debug_4center_eri(lupri,lu_err,ls,nbast)
-     IMPLICIT NONE
-     integer,intent(in)      :: lupri,lu_err,nbast
-     type(lsitem),intent(inout) :: ls
-     !
-     real(realk),pointer   :: integrals(:,:,:,:)
-     integer :: iB,iA,iC,iD
-     !THIS IS A SPECIAL HARDCODED DEBUG ROUTINE FOR WATER (TESTCASE LS_DEBUG4CENTER)
-     call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-     call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast)
-     WRITE(lupri,*)'di_debug_4center_eri: some random 4 center integrals'
-     !SAME ATOM ON ALL 4
-     iA = 1; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 2; iC = 4; iD = 4
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 3; iB = 3; iC = 9; iD = 9
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 3; iC = 6; iD = 9
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     !SAME ATOM ON 1,2,3 and new on 4.
-     iA = 1; iB = 1; iC = 1; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 2; iC = 4; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 3; iB = 3; iC = 9; iD = 12
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 3; iC = 6; iD = 12
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     !SAME ATOM ON LHS and same on RHS.
-     iA = 1; iB = 1; iC = 11; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 2; iC = 11; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 3; iB = 3; iC = 11; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 3; iC = 11; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     !SAME ATOM ON LHS and different on RHS.
-     iA = 1; iB = 1; iC = 13; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 2; iC = 13; iD = 11
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 3; iB = 3; iC = 10; iD = 12
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 2; iB = 3; iC = 10; iD = 12
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     !SAME ATOM ON 1 and same on 2,3,4
-     iA = 10; iB = 10; iC = 10; iD = 10
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 11; iB = 10; iC = 10; iD = 10
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 12; iB = 10; iC = 10; iD = 10
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 13; iB = 10; iC = 10; iD = 10
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 10; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 11; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 12; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     iA = 13; iB = 1; iC = 1; iD = 1
-     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-     call mem_dealloc(integrals)
-
-   END SUBROUTINE di_debug_4center_eri
-
-   SUBROUTINE di_debug_4center(lupri,lu_err,ls,nbast,D)
-      IMPLICIT NONE
-      TYPE(Matrix),intent(in) :: D
-      integer,intent(in)      :: lupri,lu_err,nbast
-      type(lsitem),intent(inout) :: ls
-      !
-      TYPE(Matrix)  :: tempm1,tempm2,tempm3
-      real(realk),pointer   :: integrals(:,:,:,:)
-      real(realk) :: CoulombFactor,FAB,int
-      integer,pointer :: orb2batch(:),batchdim(:)
-      type(batchTOorb),pointer :: batch2orb(:)
-      integer :: Abatch,Bbatch,IORB,JORB,dimA,dimB,J,nbatches
-      integer :: iB,iA,iC,iD,offset,offset2,BORB,AORB,iprint
-
-      CoulombFactor = 2E0_realk
-      !build the coulomb matrix 
-      call mat_init(tempm1,nbast,nbast)
-      call mat_init(tempm2,nbast,nbast)
-      call mat_init(tempm3,nbast,nbast)
-      CALL II_get_coulomb_mat(lupri,lu_err,ls%setting,D,tempm1,1)
-
-      allocate(orb2batch(nbast))
-      CALL II_getBatchOrbitalInfo(ls%setting,nBast,orb2Batch,&
-           & nBatches,lupri,lu_err)
-      
-
-      allocate(batchdim(nbatches))
-      batchdim = 0
-      DO IORB=1,nbast
-         batchdim(orb2batch(IORB)) = batchdim(orb2batch(IORB))+1 
-      ENDDO
-
-      allocate(batch2orb(nbatches))
-      DO Abatch=1,nbatches
-         allocate(batch2orb(Abatch)%orbindex(batchdim(Abatch)))
-         batch2orb(Abatch)%orbindex = 0
-         batch2orb(Abatch)%norbindex = 0
-      ENDDO
-      DO IORB=1,nbast
-         Abatch = orb2batch(IORB)
-         batch2orb(Abatch)%norbindex = batch2orb(Abatch)%norbindex+1 
-         J = batch2orb(Abatch)%norbindex
-         batch2orb(Abatch)%orbindex(J) = IORB
-      ENDDO
-      DO Bbatch=1,nbatches
-         dimB = batchdim(Bbatch)
-         DO Abatch=1,nbatches
-            dimA = batchdim(Abatch)
-            nullify(integrals)
-            allocate(integrals(dimA,dimB,nbast,nbast))
-!            integrals=0E0_realk
-            CALL II_get_ABres_4CenterEri(ls%setting,integrals,Abatch,&
-                 & Bbatch,dimA,dimB,nbast,lupri,lu_err)            
-            DO iB = 1,dimB
-               !translate to orbitalindex: B orbital
-               BORB = batch2orb(Bbatch)%orbindex(iB)
-               offset2 = (BORB-1)*nbast
-               DO iA = 1,dimA
-                  !translate to orbitalindex: B orbital
-                  AORB = batch2orb(Abatch)%orbindex(iA) 
-                  FAB =0E0_realk
-                  DO id=1,nbast
-                     offset=(id-1)*nbast
-                     DO ic=1,nbast
-                        FAB=FAB+D%elms(ic+offset)*CoulombFactor*integrals(ia,ib,ic,id)
-                     ENDDO
-                  ENDDO
-                  tempm2%elms(AORB+offset2) = FAB
-               ENDDO
-            ENDDO
-            deallocate(integrals)
-            nullify(integrals)
-!            call mem_dealloc(integrals)
-         ENDDO
-      ENDDO
-      DO Abatch=1,nbatches
-         deallocate(batch2orb(Abatch)%orbindex)
-      ENDDO
-      deallocate(batch2orb)
-      deallocate(batchdim)
-      deallocate(orb2batch)
-      call mat_add(1E0_realk,tempm1,-1E0_realk,tempm2,tempm3)
-      write(lupri,*) 'QQQ DI_DEBUG_4CENTER STD ',mat_trab(tempm1,tempm1)
-      write(lupri,*) 'QQQ DI_DEBUG_4CENTER CHOL',mat_trab(tempm2,tempm2)
-      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL CHOLESKY TEST'
-      ELSE
-         CALL lsQUIT('CHOLESKY TEST TEST',lupri)
-      ENDIF
-      call mat_free(tempm1)
-      call mat_free(tempm2)
-      call mat_free(tempm3)
-
-    END SUBROUTINE DI_DEBUG_4CENTER
+!!$   SUBROUTINE di_debug_4center_eri(lupri,lu_err,ls,nbast)
+!!$     IMPLICIT NONE
+!!$     integer,intent(in)      :: lupri,lu_err,nbast
+!!$     type(lsitem),intent(inout) :: ls
+!!$     !
+!!$     real(realk),pointer   :: integrals(:,:,:,:)
+!!$     integer :: iB,iA,iC,iD
+!!$     !THIS IS A SPECIAL HARDCODED DEBUG ROUTINE FOR WATER (TESTCASE LS_DEBUG4CENTER)
+!!$     call mem_alloc(integrals,nbast,nbast,nbast,nbast)
+!!$     call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast)
+!!$     WRITE(lupri,*)'di_debug_4center_eri: some random 4 center integrals'
+!!$     !SAME ATOM ON ALL 4
+!!$     iA = 1; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 2; iC = 4; iD = 4
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 3; iB = 3; iC = 9; iD = 9
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 3; iC = 6; iD = 9
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     !SAME ATOM ON 1,2,3 and new on 4.
+!!$     iA = 1; iB = 1; iC = 1; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 2; iC = 4; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 3; iB = 3; iC = 9; iD = 12
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 3; iC = 6; iD = 12
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     !SAME ATOM ON LHS and same on RHS.
+!!$     iA = 1; iB = 1; iC = 11; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 2; iC = 11; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 3; iB = 3; iC = 11; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 3; iC = 11; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     !SAME ATOM ON LHS and different on RHS.
+!!$     iA = 1; iB = 1; iC = 13; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 2; iC = 13; iD = 11
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 3; iB = 3; iC = 10; iD = 12
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 2; iB = 3; iC = 10; iD = 12
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     !SAME ATOM ON 1 and same on 2,3,4
+!!$     iA = 10; iB = 10; iC = 10; iD = 10
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 11; iB = 10; iC = 10; iD = 10
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 12; iB = 10; iC = 10; iD = 10
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 13; iB = 10; iC = 10; iD = 10
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 10; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 11; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 12; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     iA = 13; iB = 1; iC = 1; iD = 1
+!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
+!!$     call mem_dealloc(integrals)
+!!$
+!!$   END SUBROUTINE di_debug_4center_eri
+!!$
+!!$   SUBROUTINE di_debug_4center(lupri,lu_err,ls,nbast,D)
+!!$      IMPLICIT NONE
+!!$      TYPE(Matrix),intent(in) :: D
+!!$      integer,intent(in)      :: lupri,lu_err,nbast
+!!$      type(lsitem),intent(inout) :: ls
+!!$      !
+!!$      TYPE(Matrix)  :: tempm1,tempm2,tempm3
+!!$      real(realk),pointer   :: integrals(:,:,:,:)
+!!$      real(realk) :: CoulombFactor,FAB,int
+!!$      integer,pointer :: orb2batch(:),batchdim(:)
+!!$      type(batchTOorb),pointer :: batch2orb(:)
+!!$      integer :: Abatch,Bbatch,IORB,JORB,dimA,dimB,J,nbatches
+!!$      integer :: iB,iA,iC,iD,offset,offset2,BORB,AORB,iprint
+!!$
+!!$      CoulombFactor = 2E0_realk
+!!$      !build the coulomb matrix 
+!!$      call mat_init(tempm1,nbast,nbast)
+!!$      call mat_init(tempm2,nbast,nbast)
+!!$      call mat_init(tempm3,nbast,nbast)
+!!$      CALL II_get_coulomb_mat(lupri,lu_err,ls%setting,D,tempm1,1)
+!!$
+!!$      allocate(orb2batch(nbast))
+!!$      CALL II_getBatchOrbitalInfo(ls%setting,nBast,orb2Batch,&
+!!$           & nBatches,lupri,lu_err)
+!!$      
+!!$
+!!$      allocate(batchdim(nbatches))
+!!$      batchdim = 0
+!!$      DO IORB=1,nbast
+!!$         batchdim(orb2batch(IORB)) = batchdim(orb2batch(IORB))+1 
+!!$      ENDDO
+!!$
+!!$      allocate(batch2orb(nbatches))
+!!$      DO Abatch=1,nbatches
+!!$         allocate(batch2orb(Abatch)%orbindex(batchdim(Abatch)))
+!!$         batch2orb(Abatch)%orbindex = 0
+!!$         batch2orb(Abatch)%norbindex = 0
+!!$      ENDDO
+!!$      DO IORB=1,nbast
+!!$         Abatch = orb2batch(IORB)
+!!$         batch2orb(Abatch)%norbindex = batch2orb(Abatch)%norbindex+1 
+!!$         J = batch2orb(Abatch)%norbindex
+!!$         batch2orb(Abatch)%orbindex(J) = IORB
+!!$      ENDDO
+!!$      DO Bbatch=1,nbatches
+!!$         dimB = batchdim(Bbatch)
+!!$         DO Abatch=1,nbatches
+!!$            dimA = batchdim(Abatch)
+!!$            nullify(integrals)
+!!$            allocate(integrals(dimA,dimB,nbast,nbast))
+!!$!            integrals=0E0_realk
+!!$            CALL II_get_ABres_4CenterEri(ls%setting,integrals,Abatch,&
+!!$                 & Bbatch,dimA,dimB,nbast,lupri,lu_err)            
+!!$            DO iB = 1,dimB
+!!$               !translate to orbitalindex: B orbital
+!!$               BORB = batch2orb(Bbatch)%orbindex(iB)
+!!$               offset2 = (BORB-1)*nbast
+!!$               DO iA = 1,dimA
+!!$                  !translate to orbitalindex: B orbital
+!!$                  AORB = batch2orb(Abatch)%orbindex(iA) 
+!!$                  FAB =0E0_realk
+!!$                  DO id=1,nbast
+!!$                     offset=(id-1)*nbast
+!!$                     DO ic=1,nbast
+!!$                        FAB=FAB+D%elms(ic+offset)*CoulombFactor*integrals(ia,ib,ic,id)
+!!$                     ENDDO
+!!$                  ENDDO
+!!$                  tempm2%elms(AORB+offset2) = FAB
+!!$               ENDDO
+!!$            ENDDO
+!!$            deallocate(integrals)
+!!$            nullify(integrals)
+!!$!            call mem_dealloc(integrals)
+!!$         ENDDO
+!!$      ENDDO
+!!$      DO Abatch=1,nbatches
+!!$         deallocate(batch2orb(Abatch)%orbindex)
+!!$      ENDDO
+!!$      deallocate(batch2orb)
+!!$      deallocate(batchdim)
+!!$      deallocate(orb2batch)
+!!$      call mat_add(1E0_realk,tempm1,-1E0_realk,tempm2,tempm3)
+!!$      write(lupri,*) 'QQQ DI_DEBUG_4CENTER STD ',mat_trab(tempm1,tempm1)
+!!$      write(lupri,*) 'QQQ DI_DEBUG_4CENTER CHOL',mat_trab(tempm2,tempm2)
+!!$      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
+!!$         write(lupri,*)'QQQ SUCCESFUL CHOLESKY TEST'
+!!$      ELSE
+!!$         CALL lsQUIT('CHOLESKY TEST TEST',lupri)
+!!$      ENDIF
+!!$      call mat_free(tempm1)
+!!$      call mat_free(tempm2)
+!!$      call mat_free(tempm3)
+!!$
+!!$    END SUBROUTINE DI_DEBUG_4CENTER
 #endif
     SUBROUTINE di_debug_magderiv_4center_eri(lupri,luerr,ls,nbast,D)
       IMPLICIT NONE
@@ -1424,6 +1431,13 @@ CONTAINS
       real(realk),parameter :: CS13=1E-13_REALK,CS14=1E-14_REALK,CS15=1E-15_REALK  
       logical :: CS_screenSAVE, PS_screenSAVE, OE_screenSAVE, PARI_screenSAVE
       logical :: OD_screenSAVE, MBIE_screenSAVE,SAVEReCalcGab
+      character :: intspec(5)
+      intspec(1) = 'R'
+      intspec(2) = 'R'
+      intspec(3) = 'R'
+      intspec(4) = 'R'
+      intspec(5) = 'C'
+
       print*,'di_screen_test(setting,nbast,lupri,luerr)',nbast
       CS(7)=CS7; CS(8)=CS8; CS(9)=CS9; CS(10)=CS10; CS(11)=CS11; CS(12)=CS12;
       CS(13)=CS13; CS(14)=CS14; CS(15)=CS15;
@@ -1443,7 +1457,8 @@ CONTAINS
       setting%scheme%OD_screen = .FALSE.
       setting%scheme%MBIE_screen = .FALSE.
       call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LUERR,setting,integrals,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LUERR,setting,integrals,&
+           & nbast,nbast,nbast,nbast,intspec)
       n(7:15)=0
       DO iD=1,nbast
          DO iC=1,nbast
@@ -1477,7 +1492,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -1518,7 +1534,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -1558,7 +1575,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -1930,222 +1948,231 @@ CONTAINS
       WRITE(lupri,*)'di_magderivOverlap_test Successful'
     end subroutine di_magderivOverlap_test
 #ifdef MOD_UNRELEASED
-   SUBROUTINE di_debug_ccfragment(lupri,luerr,ls,nbast,D,CMO,nocc)
-      IMPLICIT NONE
-      TYPE(Matrix),intent(in) :: D,CMO
-      integer,intent(in)      :: lupri,luerr,nbast,nocc
-      type(lsitem),intent(inout) :: ls
-      !
-      type(lsitem),pointer :: fragment_ls(:)
-      type(AOITEM) :: AO
-      TYPE(Matrix)  :: tempm1,tempm2,tempm3,tempm4,D2,refF
-      real(realk),pointer   :: densPtmp(:,:)
-      integer,pointer :: orb2batch(:),orb2atom(:),ATOMS(:)
-      logical,pointer :: LATOMS(:)
-      integer :: iatom,nbast1,nbast2,I,J,dim1,dim2,dim3,dim4,igamma
-      integer :: delta,iorb,natoms,nBatches,natom2,iprint
-      real(realk) :: MAXCMO
-      iprint=0
-      WRITE(LUPRI,*)'DEBUGGING THE CCFRAGMENT'
-      WRITE(*,*)'DEBUGGING THE CCFRAGMENT'
-
-      !build the coulomb matrix 
-      call mat_init(tempm1,nbast,nbast)
-      call mat_init(tempm2,nbast,nbast)
-      call mat_init(tempm3,nbast,nbast)
-      call mat_init(refF,nbast,nbast)
-      CALL II_get_coulomb_mat(LUPRI,LUERR,ls%setting,D,refF,1)
-
-      natoms = ls%input%molecule%natoms
-      nullify(LATOMS)
-      nullify(ATOMS)
-      allocate(LATOMS(natoms))
-      ALLOCATE(ATOMS(natoms))
-
-      nullify(orb2batch)
-      allocate(orb2batch(nbast))
-      CALL II_getBatchOrbitalInfo(ls%setting,&
-           &nBast,orb2Batch,nBatches,lupri,luerr)
-
-      call BUILD_AO(LUPRI,ls%setting%SCHEME,0,ls%setting%MOLECULE(1)%p,ls%setting%BASIS(1)%p%REGULAR,AO&
-     &,.false.,.false.)
-
-      call mem_alloc(orb2atom,nbast)
-      do iorb = 1,nbast
-         orb2atom(iorb) = AO%BATCH(orb2batch(iorb))%atom
-      enddo
-
-      dim1=nbast
-      dim2=nbast
-
-      nullify(fragment_ls)
-      allocate(fragment_ls(nocc))
-      call mat_zero(tempm3)
-      MAXCMO = 0E0_realk
-      DO iorb = 1,nocc
-         do igamma=1,nbast
-            MAXCMO = MAX(MAXCMO,CMO%elms(igamma+(iorb-1)*nbast))
-         enddo
-         LATOMS = .FALSE. 
-         do igamma=1,nbast
-            IF(ABS(MAXCMO*CMO%elms(igamma+(iorb-1)*nbast)).GT. 1E-13_realk)THEN
-               LATOMS(orb2atom(igamma)) = .TRUE. 
-            ENDIF
-         enddo
-!         print*,'LATOMS',LATOMS
-         nbast1 = 0
-         do igamma=1,nbast
-            IF(LATOMS(orb2atom(igamma)))THEN
-               nbast1 = nbast1+1
-            ENDIF
-         enddo
-         dim3=nbast1
-         dim4=nbast1
-!         print*,'dim3',dim3,'dim4',dim4
-         natom2=0
-         ATOMS=0
-         DO iatom = 1,natoms
-            IF(LATOMS(iatom))THEN
-               natom2=natom2+1
-               ATOMS(natom2)=iatom
-            ENDIF
-         ENDDO
-!         print*,'ATOMS',ATOMS
-         nbast1 = 0
-         nullify(DensPtmp)
-         allocate(DensPtmp(dim3,dim4))
-         DensPtmp = 0E0_realk
-         do igamma=1,nbast
-            if(LATOMS(orb2atom(igamma)))THEN
-               nbast1 = nbast1+1
-               nbast2 = 0
-               do delta=1,nbast
-                  if(LATOMS(orb2atom(delta)))THEN
-                     nbast2 = nbast2+1
-                     DensPtmp(nbast1,nbast2) = CMO%elms(igamma+(iorb-1)*nbast)*CMO%elms(delta+(iorb-1)*nbast)
-                  endif
-               enddo
-            endif
-         enddo
-         call build_ccfragmentlsitem(LS,fragment_ls(iorb),ATOMS(1:NATOM2),NATOM2,LUPRI,IPRINT)
-         ! here we set the ab in (ab|cd) to full
-         fragment_ls(iorb)%SETTING%MOLECULE(1)%p => LS%SETTING%MOLECULE(1)%p
-         fragment_ls(iorb)%SETTING%BASIS(1)%p => LS%SETTING%BASIS(1)%p
-         fragment_ls(iorb)%SETTING%FRAGMENT(1)%p => LS%SETTING%FRAGMENT(1)%p
-         fragment_ls(iorb)%SETTING%MOLECULE(2)%p => LS%SETTING%MOLECULE(2)%p
-         fragment_ls(iorb)%SETTING%BASIS(2)%p => LS%SETTING%BASIS(2)%p
-         fragment_ls(iorb)%SETTING%FRAGMENT(2)%p => LS%SETTING%FRAGMENT(2)%p
-         fragment_ls(iorb)%SETTING%molID(1)=0
-         fragment_ls(iorb)%SETTING%molID(2)=0
-         fragment_ls(iorb)%SETTING%molID(3)=iorb
-         fragment_ls(iorb)%SETTING%molID(4)=iorb
-         fragment_ls(iorb)%SETTING%sameMOL=.TRUE.
-         DO I=1,2
-            DO J=3,4          
-               fragment_ls(iorb)%SETTING%sameMOL(I,J) = .FALSE.
-               fragment_ls(iorb)%SETTING%sameMOL(J,I) = .FALSE.
-            ENDDO
-         ENDDO
-         call mat_init(D2,dim3,dim4)
-         CALL mat_set_from_full(DensPtmp,1E0_realk, D2,'DenP')
-         deallocate(DensPtmp)
-         call mat_zero(tempm1)
-         CALL II_get_coulomb_mat(LUPRI,LUERR,fragment_ls(iorb)%setting,D2,tempm1,1)
-         call mat_free(D2)
-
-!         allocate(DensPtmp(nbast,nbast))
-!         DensPtmp=0E0_realk
-!         do delta=1,nbast
-!            do gamma=1,nbast
-!               DensPtmp(gamma,delta) = CMO%elms(gamma+(iorb-1)*nbast)*CMO%elms(delta+(iorb-1)*nbast)
-!            enddo
-!         enddo
-!         call mat_init(D2,nbast,nbast)
-!         CALL mat_set_from_full(DensPtmp,1E0_realk, D2,'DenP')
-!         call mat_zero(tempm2)
-!         CALL II_get_coulomb_mat(LUPRI,LUERR,ls%setting,D2,tempm2)
-!         call mat_init(tempm4,nbast,nbast)
-!         call mat_add(1E0_realk,tempm1,-1E0_realk,tempm2,tempm4)
-!         write(lupri,*) 'QQQ DI_DEBUG',iorb,'             :',mat_trab(tempm2,tempm2)
-!         write(lupri,*) 'QQQ DI_DEBUG lsfragment',iorb,'  :',mat_trab(tempm1,tempm1)
-!         write(lupri,*) 'QQQ DIFF                         :',mat_trab(tempm4,tempm4)
-!         IF(ABS(mat_trab(tempm4,tempm4)).LE. 1E-8_realk)THEN
-!            write(lupri,*)'QQQ SUCCESFUL'
-!         ELSE
-!            WRITE(lupri,*)'ZZ THE FULL DMAT IORB =',iorb
-!            call mat_print(D2,1,nbast,1,nbast,lupri)
-!            WRITE(lupri,*)'THE FRAGMENT FOCK'
-!            call mat_print(tempm1,1,nbast,1,nbast,lupri)
-!            WRITE(lupri,*)'THE LS FOCK'
-!            call mat_print(tempm2,1,nbast,1,nbast,lupri)
-!            WRITE(lupri,*)'THE DIFF'
-!            call mat_print(tempm4,1,nbast,1,nbast,lupri)            
-!            WRITE(LUPRI,*)'ZZZ LS SETTING'
-!            call PRINT_LSSETTING(ls%setting,LUPRI)
-!            WRITE(LUPRI,*)'QQQ FRAGMNET SETTING'
-!            call PRINT_LSSETTING(fragment(iorb)%setting,LUPRI)
-!            
-!            CALL lsQUIT('TEST TEST IORB')
-!         ENDIF
-!         call mat_free(D2)
-!         call mat_free(tempm4)
-
-         call ls_free(fragment_ls(iorb))
-         !** F = h + G
-         call mat_daxpy(1E0_realk,tempm1,tempm3)
-      ENDDO
-
-      call mat_init(tempm4,nbast,nbast)
-      call mat_add(1E0_realk,tempm3,-1E0_realk,refF,tempm4)
-      write(lupri,*) 'QQQ DI_DEBUG     STD   ',mat_trab(refF,refF)
-      write(lupri,*) 'QQQ DI_DEBUG lsfragment',mat_trab(tempm3,tempm3)
-      write(lupri,*) 'QQQ DIFF               ',mat_trab(tempm4,tempm4)
-      IF(ABS(mat_trab(tempm4,tempm4)).LE. 1E-8_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL'
-      ELSE
-         WRITE(lupri,*)'THE DIFF'
-         call mat_print(tempm4,1,nbast,1,nbast,lupri)
-         CALL lsQUIT('TEST TEST',lupri)
-      ENDIF
-      call mem_dealloc(orb2atom)
-      call mat_free(tempm1)
-      call mat_free(tempm2)
-      call mat_free(tempm3)
-      call mat_free(tempm4)
-      call mat_free(refF)
-      call free_aoitem(lupri,AO)
-
-    END SUBROUTINE di_debug_ccfragment
+!!$   SUBROUTINE di_debug_ccfragment(lupri,luerr,ls,nbast,D,CMO,nocc)
+!!$      IMPLICIT NONE
+!!$      TYPE(Matrix),intent(in) :: D,CMO
+!!$      integer,intent(in)      :: lupri,luerr,nbast,nocc
+!!$      type(lsitem),intent(inout) :: ls
+!!$      !
+!!$      type(lsitem),pointer :: fragment_ls(:)
+!!$      type(AOITEM) :: AO
+!!$      TYPE(Matrix)  :: tempm1,tempm2,tempm3,tempm4,D2,refF
+!!$      real(realk),pointer   :: densPtmp(:,:)
+!!$      integer,pointer :: orb2batch(:),orb2atom(:),ATOMS(:)
+!!$      logical,pointer :: LATOMS(:)
+!!$      integer :: iatom,nbast1,nbast2,I,J,dim1,dim2,dim3,dim4,igamma
+!!$      integer :: delta,iorb,natoms,nBatches,natom2,iprint
+!!$      real(realk) :: MAXCMO
+!!$      iprint=0
+!!$      WRITE(LUPRI,*)'DEBUGGING THE CCFRAGMENT'
+!!$      WRITE(*,*)'DEBUGGING THE CCFRAGMENT'
+!!$
+!!$      !build the coulomb matrix 
+!!$      call mat_init(tempm1,nbast,nbast)
+!!$      call mat_init(tempm2,nbast,nbast)
+!!$      call mat_init(tempm3,nbast,nbast)
+!!$      call mat_init(refF,nbast,nbast)
+!!$      CALL II_get_coulomb_mat(LUPRI,LUERR,ls%setting,D,refF,1)
+!!$
+!!$      natoms = ls%input%molecule%natoms
+!!$      nullify(LATOMS)
+!!$      nullify(ATOMS)
+!!$      allocate(LATOMS(natoms))
+!!$      ALLOCATE(ATOMS(natoms))
+!!$
+!!$      nullify(orb2batch)
+!!$      allocate(orb2batch(nbast))
+!!$      CALL II_getBatchOrbitalInfo(ls%setting,&
+!!$           &nBast,orb2Batch,nBatches,lupri,luerr)
+!!$
+!!$      call BUILD_AO(LUPRI,ls%setting%SCHEME,0,ls%setting%MOLECULE(1)%p,ls%setting%BASIS(1)%p%REGULAR,AO&
+!!$     &,.false.,.false.)
+!!$
+!!$      call mem_alloc(orb2atom,nbast)
+!!$      do iorb = 1,nbast
+!!$         orb2atom(iorb) = AO%BATCH(orb2batch(iorb))%atom
+!!$      enddo
+!!$
+!!$      dim1=nbast
+!!$      dim2=nbast
+!!$
+!!$      nullify(fragment_ls)
+!!$      allocate(fragment_ls(nocc))
+!!$      call mat_zero(tempm3)
+!!$      MAXCMO = 0E0_realk
+!!$      DO iorb = 1,nocc
+!!$         do igamma=1,nbast
+!!$            MAXCMO = MAX(MAXCMO,CMO%elms(igamma+(iorb-1)*nbast))
+!!$         enddo
+!!$         LATOMS = .FALSE. 
+!!$         do igamma=1,nbast
+!!$            IF(ABS(MAXCMO*CMO%elms(igamma+(iorb-1)*nbast)).GT. 1E-13_realk)THEN
+!!$               LATOMS(orb2atom(igamma)) = .TRUE. 
+!!$            ENDIF
+!!$         enddo
+!!$!         print*,'LATOMS',LATOMS
+!!$         nbast1 = 0
+!!$         do igamma=1,nbast
+!!$            IF(LATOMS(orb2atom(igamma)))THEN
+!!$               nbast1 = nbast1+1
+!!$            ENDIF
+!!$         enddo
+!!$         dim3=nbast1
+!!$         dim4=nbast1
+!!$!         print*,'dim3',dim3,'dim4',dim4
+!!$         natom2=0
+!!$         ATOMS=0
+!!$         DO iatom = 1,natoms
+!!$            IF(LATOMS(iatom))THEN
+!!$               natom2=natom2+1
+!!$               ATOMS(natom2)=iatom
+!!$            ENDIF
+!!$         ENDDO
+!!$!         print*,'ATOMS',ATOMS
+!!$         nbast1 = 0
+!!$         nullify(DensPtmp)
+!!$         allocate(DensPtmp(dim3,dim4))
+!!$         DensPtmp = 0E0_realk
+!!$         do igamma=1,nbast
+!!$            if(LATOMS(orb2atom(igamma)))THEN
+!!$               nbast1 = nbast1+1
+!!$               nbast2 = 0
+!!$               do delta=1,nbast
+!!$                  if(LATOMS(orb2atom(delta)))THEN
+!!$                     nbast2 = nbast2+1
+!!$                     DensPtmp(nbast1,nbast2) = CMO%elms(igamma+(iorb-1)*nbast)*CMO%elms(delta+(iorb-1)*nbast)
+!!$                  endif
+!!$               enddo
+!!$            endif
+!!$         enddo
+!!$         call build_ccfragmentlsitem(LS,fragment_ls(iorb),ATOMS(1:NATOM2),NATOM2,LUPRI,IPRINT)
+!!$         ! here we set the ab in (ab|cd) to full
+!!$         fragment_ls(iorb)%SETTING%MOLECULE(1)%p => LS%SETTING%MOLECULE(1)%p
+!!$         fragment_ls(iorb)%SETTING%BASIS(1)%p => LS%SETTING%BASIS(1)%p
+!!$         fragment_ls(iorb)%SETTING%FRAGMENT(1)%p => LS%SETTING%FRAGMENT(1)%p
+!!$         fragment_ls(iorb)%SETTING%MOLECULE(2)%p => LS%SETTING%MOLECULE(2)%p
+!!$         fragment_ls(iorb)%SETTING%BASIS(2)%p => LS%SETTING%BASIS(2)%p
+!!$         fragment_ls(iorb)%SETTING%FRAGMENT(2)%p => LS%SETTING%FRAGMENT(2)%p
+!!$         fragment_ls(iorb)%SETTING%molID(1)=0
+!!$         fragment_ls(iorb)%SETTING%molID(2)=0
+!!$         fragment_ls(iorb)%SETTING%molID(3)=iorb
+!!$         fragment_ls(iorb)%SETTING%molID(4)=iorb
+!!$         fragment_ls(iorb)%SETTING%sameMOL=.TRUE.
+!!$         DO I=1,2
+!!$            DO J=3,4          
+!!$               fragment_ls(iorb)%SETTING%sameMOL(I,J) = .FALSE.
+!!$               fragment_ls(iorb)%SETTING%sameMOL(J,I) = .FALSE.
+!!$            ENDDO
+!!$         ENDDO
+!!$         call mat_init(D2,dim3,dim4)
+!!$         CALL mat_set_from_full(DensPtmp,1E0_realk, D2,'DenP')
+!!$         deallocate(DensPtmp)
+!!$         call mat_zero(tempm1)
+!!$         CALL II_get_coulomb_mat(LUPRI,LUERR,fragment_ls(iorb)%setting,D2,tempm1,1)
+!!$         call mat_free(D2)
+!!$
+!!$!         allocate(DensPtmp(nbast,nbast))
+!!$!         DensPtmp=0E0_realk
+!!$!         do delta=1,nbast
+!!$!            do gamma=1,nbast
+!!$!               DensPtmp(gamma,delta) = CMO%elms(gamma+(iorb-1)*nbast)*CMO%elms(delta+(iorb-1)*nbast)
+!!$!            enddo
+!!$!         enddo
+!!$!         call mat_init(D2,nbast,nbast)
+!!$!         CALL mat_set_from_full(DensPtmp,1E0_realk, D2,'DenP')
+!!$!         call mat_zero(tempm2)
+!!$!         CALL II_get_coulomb_mat(LUPRI,LUERR,ls%setting,D2,tempm2)
+!!$!         call mat_init(tempm4,nbast,nbast)
+!!$!         call mat_add(1E0_realk,tempm1,-1E0_realk,tempm2,tempm4)
+!!$!         write(lupri,*) 'QQQ DI_DEBUG',iorb,'             :',mat_trab(tempm2,tempm2)
+!!$!         write(lupri,*) 'QQQ DI_DEBUG lsfragment',iorb,'  :',mat_trab(tempm1,tempm1)
+!!$!         write(lupri,*) 'QQQ DIFF                         :',mat_trab(tempm4,tempm4)
+!!$!         IF(ABS(mat_trab(tempm4,tempm4)).LE. 1E-8_realk)THEN
+!!$!            write(lupri,*)'QQQ SUCCESFUL'
+!!$!         ELSE
+!!$!            WRITE(lupri,*)'ZZ THE FULL DMAT IORB =',iorb
+!!$!            call mat_print(D2,1,nbast,1,nbast,lupri)
+!!$!            WRITE(lupri,*)'THE FRAGMENT FOCK'
+!!$!            call mat_print(tempm1,1,nbast,1,nbast,lupri)
+!!$!            WRITE(lupri,*)'THE LS FOCK'
+!!$!            call mat_print(tempm2,1,nbast,1,nbast,lupri)
+!!$!            WRITE(lupri,*)'THE DIFF'
+!!$!            call mat_print(tempm4,1,nbast,1,nbast,lupri)            
+!!$!            WRITE(LUPRI,*)'ZZZ LS SETTING'
+!!$!            call PRINT_LSSETTING(ls%setting,LUPRI)
+!!$!            WRITE(LUPRI,*)'QQQ FRAGMNET SETTING'
+!!$!            call PRINT_LSSETTING(fragment(iorb)%setting,LUPRI)
+!!$!            
+!!$!            CALL lsQUIT('TEST TEST IORB')
+!!$!         ENDIF
+!!$!         call mat_free(D2)
+!!$!         call mat_free(tempm4)
+!!$
+!!$         call ls_free(fragment_ls(iorb))
+!!$         !** F = h + G
+!!$         call mat_daxpy(1E0_realk,tempm1,tempm3)
+!!$      ENDDO
+!!$
+!!$      call mat_init(tempm4,nbast,nbast)
+!!$      call mat_add(1E0_realk,tempm3,-1E0_realk,refF,tempm4)
+!!$      write(lupri,*) 'QQQ DI_DEBUG     STD   ',mat_trab(refF,refF)
+!!$      write(lupri,*) 'QQQ DI_DEBUG lsfragment',mat_trab(tempm3,tempm3)
+!!$      write(lupri,*) 'QQQ DIFF               ',mat_trab(tempm4,tempm4)
+!!$      IF(ABS(mat_trab(tempm4,tempm4)).LE. 1E-8_realk)THEN
+!!$         write(lupri,*)'QQQ SUCCESFUL'
+!!$      ELSE
+!!$         WRITE(lupri,*)'THE DIFF'
+!!$         call mat_print(tempm4,1,nbast,1,nbast,lupri)
+!!$         CALL lsQUIT('TEST TEST',lupri)
+!!$      ENDIF
+!!$      call mem_dealloc(orb2atom)
+!!$      call mat_free(tempm1)
+!!$      call mat_free(tempm2)
+!!$      call mat_free(tempm3)
+!!$      call mat_free(tempm4)
+!!$      call mat_free(refF)
+!!$      call free_aoitem(lupri,AO)
+!!$
+!!$    END SUBROUTINE di_debug_ccfragment
 #endif
 
-   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls)
+   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls,EcontADMMout)
    ! ===================================================================
    ! di_get_fock obtains total fock matrix and corresponding energy.
    ! WE have to go through the interface to dalton before the fock
    ! evaluator learns how to handle arbitrary-type arrays.
    ! ===================================================================
+#ifdef HAS_PCMSOLVER
+   use ls_pcm_config
+   use ls_pcm_scf, only: ls_pcm_energy_driver, ls_pcm_oper_ao_driver
+#endif
       IMPLICIT NONE
-      integer, INTENT(IN)         :: ndmat
+      integer, INTENT(IN)         :: ndmat, lupri,luerr
       TYPE(Matrix), INTENT(IN)    :: H1, D(ndmat)
       TYPE(Matrix), INTENT(INOUT) :: F(ndmat)
       type(lsitem) :: ls
       real(realk), INTENT(INOUT) :: Etotal(ndmat)
-      !
-      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp
-      integer nbast, lupri,luerr,idmat
+      real(realk),optional :: EcontADMMout(5)
+      !local variables
+      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat),EADMM,Etmp,EK3,EK2
+      integer nbast,idmat,LUADMM
       logical :: Dsym,ADMMexchange
-      TYPE(Matrix) :: K(ndmat),dXC(ndmat)
+      TYPE(Matrix) :: K(ndmat),dXC(ndmat),Ksave
+      logical :: PRINT_EK3
+      real(realk)  :: EcontADMM(5)
+#ifdef HAS_PCMSOLVER
+      type(matrix) :: fockPCM(ndmat)
+      real(realk)  :: Epol
+#endif
       !
+      PRINT_EK3 = ls%setting%scheme%PRINT_EK3
       nbast = D(1)%nrow
       fac = 2E0_realk
       IF(matrix_type .EQ. mtype_unres_dense)fac = 1E0_realk
       Dsym = .TRUE. !symmetric Density matrix
       ls%input%nfock = ls%input%nfock + 1
 
-!     Turn of ADMM at level 2 for ADMM_GCBASIS option (we then use the level 2
-!     basis as ADMM basis for level 3)
-      ADMMexchange = ls%input%dalton%ADMM_EXCHANGE.AND.(.NOT.ls%optlevel.EQ.1)
-      IF ((ls%optlevel.EQ.2).AND.ls%input%dalton%ADMM_GCBASIS) ADMMexchange = .FALSE.
+      ADMMexchange = ls%setting%scheme%ADMM_EXCHANGE.AND.(.NOT.ls%optlevel.EQ.1)
 
 ! *********************************************************************************
 ! *                       Fock matrix with ADMM exchange
@@ -2156,10 +2183,6 @@ CONTAINS
          IF(incremental_scheme)THEN
             call lsquit('Auxiliary Density Matrix Calculation requires NOINCREM',-1)
          ENDIF
-         IF (ls%input%dalton%ADMM_GCBASIS.AND.(ls%input%basis%valence%nAtomtypes.EQ.0)) THEN
-           call lsquit('Auxiliary Density Matrix GC-basis type Calculation requires TRILEVEL start guess',-1)
-         ENDIF
-
 
          !We do the full Coulomb part with Full density
          do idmat=1,ndmat
@@ -2174,14 +2197,64 @@ CONTAINS
             call mat_init(dXC(idmat),nbast,nbast)
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
-            CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
-            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM
+            IF(PRINT_EK3)THEN
+               ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
+               call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),1,Dsym,K(idmat))
+               EK3 = mat_dotproduct(K(idmat),D(idmat))
+               EcontADMM(1) = EK3
+               IF(ls%input%dalton%ADMMBASISFILE)THEN
+                  !save matrix
+                  call mat_init(Ksave,nbast,nbast)
+                  call mat_assign(Ksave,K(idmat))
+               ENDIF
+               call mat_zero(K(idmat))
+            ENDIF
+
+            call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym,&
+                 & EcontADMM,ls%input%dalton%ADMMBASISFILE)
+            
+            IF(PRINT_EK3)THEN
+               EK2 = mat_dotproduct(K(idmat),D(idmat))
+               write(*,*)     "E(K3)= ",EK3
+               write(lupri,*) "E(K3)= ",EK3
+               write(*,*)     "E(k2)= ",EK2
+               write(lupri,*) "E(k2)= ",EK2
+               write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
+               write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
+               IF(ls%input%dalton%ADMMBASISFILE)THEN
+                  LUADMM = -1                  
+                  write(lupri,*) "ADMMmin: K(D) energy = ",EcontADMM(1)
+                  write(lupri,*) "ADMMmin: X(D) energy = ",EcontADMM(2)
+                  write(lupri,*) "ADMMmin: k(d) energy = ",EcontADMM(3)
+                  write(lupri,*) "ADMMmin: x(d) energy = ",EcontADMM(4)
+                  EcontADMM(5) = EcontADMM(1) - EcontADMM(3) - EcontADMM(2) + EcontADMM(4)
+                  write(lupri,*) "===================================================================="
+                  write(lupri,*) "ADMMmin: K(D) - k(d) - X(D) + x(d) = ",EcontADMM(5)                  
+                  write(lupri,*) "===================================================================="
+!                  write(lupri,*) "ADMMminDATA"
+!                  CALL LSOPEN(LUADMM,'ADMMmin.dat','UNKNOWN','FORMATTED')
+!                  WRITE(LUADMM,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
+!                  WRITE(LUPRI,'(5F20.13)') EcontADMM(5), EcontADMM(1), EcontADMM(2), EcontADMM(3), EcontADMM(4)                  
+!                  CALL LSCLOSE(LUADMM,'KEEP')
+               ENDIF
+            ENDIF
+            
+            IF(ls%input%dalton%ADMMBASISFILE)THEN
+               call mat_free(Ksave)
+            ENDIF
+            Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
-            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat)
+            call mat_init(Ksave,nbast,nbast)
+            call mat_zero(Ksave)
+            write(lupri,*) "ADMM exchange energy contribution: ",fockenergy_f(K(idmat),D(idmat),Ksave,&
+                 & ls%input%dalton%unres,ls%input%potnuc,lupri)
+            call mat_free(Ksave)
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+            Etotal(idmat) = Etotal(idmat)+EdXC(idmat)
             EADMM = Etotal(idmat) - Etmp ! DEBUG ADMM
+            write(lupri,*) "ADMM EdXC: ",EdXC(idmat)
             write(lupri,*) "ADMM exchange energy contribution: ",EADMM
             call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
-            
                      
             call mat_free(K(idmat))
             call mat_free(dXC(idmat))
@@ -2204,10 +2277,29 @@ CONTAINS
             Etotal(idmat) = Etotal(idmat) + Edfty(idmat)
          enddo
       ENDIF
+#ifdef HAS_PCMSOLVER
+      if (pcm_config%do_pcm) then
+         ! ndmat is 1
+         ! Calculate polarization energy and update Etotal
+         do idmat = 1, ndmat             
+            call ls_pcm_energy_driver(D(idmat), Epol)
+            Etotal(idmat) = Etotal(idmat) + Epol
+         enddo
+         ! Update Fock matrix with PCM contribution
+         do idmat = 1, ndmat
+            call mat_init(fockPCM(idmat), nbast, nbast)
+            call mat_zero(fockPCM(idmat))
+            call ls_pcm_oper_ao_driver(fockPCM(idmat))
+            call mat_daxpy(-1.e0_realk, fockPCM(idmat), F(idmat))
+            call mat_free(fockPCM(idmat))
+         end do
+      end if
+#endif      
       !** F = h + G
       do idmat=1,ndmat
          call mat_daxpy(1E0_realk,H1,F(idmat))
       enddo
+      IF(present(EcontADMMout))EcontADMMout = EcontADMM
    END SUBROUTINE di_get_fock_LSDALTON
 
    real(realk) function fockenergy_F(F,D,H1,unres,pot_nuc,lupri)
@@ -2283,18 +2375,24 @@ CONTAINS
         integer :: ndmat 
 !       
         logical :: Dsym
+        integer :: isym
 
-        Dsym = .TRUE. !matrix either symmetric or antisymmetric
-        IF(mat_get_isym(Dens,Gbd_thresh).EQ.3) Dsym = .FALSE. !NON symmetric Density matrix
-        ndmat = 1
-        IF(present(setting))THEN
-           !This should be changed to a test like the MATSYM function
-           ! for full matrices
-           call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,&
-                                 & GbDs,ndmat,.FALSE.)
+        Dsym = .FALSE. !matrix can be non symmetric
+        isym = mat_get_isym(Dens)
+        IF(isym.EQ.4)THEN
+           !zero matrix
+           call mat_zero(GbDs)
         ELSE
-           call II_get_Fock_mat(lupri,luerr,lsint_fock_data%ls%setting,Dens,&
+           ndmat = 1
+           IF(present(setting))THEN
+              !This should be changed to a test like the MATSYM function
+              ! for full matrices
+              call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,&
+                   & GbDs,ndmat,.FALSE.)
+           ELSE
+              call II_get_Fock_mat(lupri,luerr,lsint_fock_data%ls%setting,Dens,&
                                 & Dsym,GbDs,ndmat,.FALSE.)
+           ENDIF
         ENDIF
       end subroutine di_GET_GbDsSingle
 
@@ -2324,24 +2422,24 @@ CONTAINS
         LOGICAL, intent(in)           :: do_dft
         !
         INTEGER                       :: iBmat
-        LOGICAL                       :: ADMMexchange  , ADMMGCBASIS    
+        LOGICAL                       :: ADMMexchange 
         ! -- ADMM modifications
         !     replace GdBs = J(B) + K(B)
         !    by      GdBs = J(B) + K(b) + X(B) - X(b) if ADMM
         IF(present(setting))THEN
             ADMMexchange = setting%scheme%ADMM_EXCHANGE
-            ADMMGCBASIS  = setting%scheme%ADMM_GCBASIS
         ELSE
             ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
-            ADMMGCBASIS  = lsint_fock_data%ls%setting%scheme%ADMM_GCBASIS
         ENDIF
-        IF (ADMMGCBASIS) THEN
-            ADMMexchange = .FALSE.
-        ENDIF
+
         IF (ADMMexchange) THEN 
-            call lsquit('ADMM is not fully tested yet for RESPONSE',-1)
             ! GdBs = J(B) + K(b) + X(B) - X(b)
+#ifdef MOD_UNRELEASED
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
+#else
+            write(lupri,'(3X,A)') 'Warning: the linear-response part of the code does not apply ADMM for exchange'
+            call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
+#endif
         ELSE 
             ! GdBs = J(B) + K(B)
             call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
@@ -2401,43 +2499,36 @@ CONTAINS
         ENDIF
     END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single
     
-    
-      subroutine di_GET_GbDsArray(lupri,luerr,Dens,GbDs,nDmat,setting)
-        !*********************************************************
-        ! Determine the G matrix for the 2-e contribution to sigma
-        ! vector in RSP
-        ! G([b,D]s) = 2-e part of Fock Matrix with a modified
-        !             density [b,D]s (here called Dens)
-        ! Sonia, October 2004
-        ! Thomas, Feb 2010 (fixed unrestricted + added lsdalton lsint)
-        !*********************************************************
-        implicit none
-        integer, intent(in) :: lupri,luerr,ndmat
-        type(Matrix), intent(in) :: Dens(nDmat)
-        type(Matrix), intent(inout) :: GbDs(nDmat)  !output
-        type(lssetting),optional :: setting !intent(inout)
-        !
-        integer :: idmat
-        logical :: Dsym
-
-        Dsym = .TRUE. !all matrices either symmetric or antisymmetric
-        DO idmat = 1,ndmat
-           IF(mat_get_isym(Dens(idmat),Gbd_thresh).EQ.3)THEN
-              Dsym = .FALSE. !NON symmetric Density matrix
-           ENDIF
-           IF(.NOT.Dsym)EXIT
-        ENDDO
-        IF(present(setting))THEN
-           call II_get_Fock_mat(lupri,luerr,&
+    subroutine di_GET_GbDsArray(lupri,luerr,Dens,GbDs,nDmat,setting)
+      !*********************************************************
+      ! Determine the G matrix for the 2-e contribution to sigma
+      ! vector in RSP
+      ! G([b,D]s) = 2-e part of Fock Matrix with a modified
+      !             density [b,D]s (here called Dens)
+      ! Sonia, October 2004
+      ! Thomas, Feb 2010 (fixed unrestricted + added lsdalton lsint)
+      !*********************************************************
+      implicit none
+      integer, intent(in) :: lupri,luerr,ndmat
+      type(Matrix), intent(in) :: Dens(nDmat)
+      type(Matrix), intent(inout) :: GbDs(nDmat)  !output
+      type(lssetting),optional :: setting !intent(inout)
+      !
+      integer :: idmat
+      logical :: Dsym
+      
+      Dsym = .FALSE. !matrices can be non symmetric
+      IF(present(setting))THEN
+         call II_get_Fock_mat(lupri,luerr,&
               & setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
-        ELSE
-           call II_get_Fock_mat(lupri,luerr,&
+      ELSE
+         call II_get_Fock_mat(lupri,luerr,&
               & lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
-        ENDIF
-!        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
-!        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
-
-      end subroutine di_GET_GbDsArray
+      ENDIF
+      !write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
+      !call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+      
+    end subroutine di_GET_GbDsArray
 
 
     !*********************************************************
@@ -2480,21 +2571,14 @@ CONTAINS
             type(Matrix)           :: k2(nBmat),Gx2(nBmat),Gx3(nBmat)
             character(len=80)      :: WORD
             character(21)          :: L2file,L3file
-            real(realk)            :: hfweight
-            integer                :: i,iBmat,nbast,nbast2,AO2,AO3
-            integer                :: AOdfold,AORold
+            real(realk)            :: hfweight,constrain_factor,fac
+            integer                :: i,iBmat,nbast,nbast2,AO3
+            integer                :: AORold
             logical                :: inc_scheme, do_inc
             logical                :: Dsym, copy_IntegralTransformGC
-            logical                :: GC3,GC2,testNelectrons,grid_done
-            real(realk)         :: GGAXfactor
-            !
-            IF (setting%scheme%cam) THEN
-              GGAXfactor = 1.0E0_realk
-            ELSE
-              GGAXfactor = setting%scheme%exchangeFactor
-            ENDIF
-            !
-            nbast  = Bmat(1)%nrow
+            logical                :: GC3,testNelectrons,grid_done
+
+            !Consistency checking
             IF(matrix_type .EQ. mtype_unres_dense) THEN
                 call lsquit('di_GET_GbDsArray_ADMM does not support &
                              &unrestricted matrices',lupri)
@@ -2504,13 +2588,17 @@ CONTAINS
                 call lsquit('II_get_Fock_mat incremental scheme not &
                            & allowed in di_GET_GbDsArray_ADMM_setting()',lupri)
             ENDIF
+
+            !Check for symmetry
             Dsym = .TRUE. !all matrices either symmetric or antisymmetric
             DO iBmat = 1,nBmat
-               IF(mat_get_isym(Bmat(iBmat),Gbd_thresh).EQ.3)THEN
+               IF(mat_get_isym(Bmat(iBmat)).EQ.3)THEN
                   Dsym = .FALSE. !NON symmetric Density matrix
                ENDIF
                IF(.NOT.Dsym)EXIT
             ENDDO
+
+            nbast  = Bmat(1)%nrow
             ! Get rid of Grand canonical
             copy_IntegralTransformGC = setting%IntegralTransformGC
             call mat_init(Dmat_AO,nbast,nbast)
@@ -2554,96 +2642,92 @@ CONTAINS
                 call mat_zero(K(i))
             ENDDO
 
-            ! REGULAR exchange mat
-            !!!!!call II_get_exchange_mat(LUPRI,LUERR,setting,Bmat_AO,nBmat,Dsym,K)
-            !write (lupri,*) "Exchange mat in ADMM di_GET_GbDsArray_ADMM_setting()"
-            !call mat_print(K(1),1,K(1)%nrow,1,K(1)%ncol,lupri)
-
             ! ADMM approx. to exchange mat
             ! ---------------------------------------------------------------           
-            IF(setting%scheme%ADMM_DFBASIS) THEN
-                AO2 = AOdfAux
-            ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
-                AO2 = AOdfJK
-            ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
-                AO2 = AOVAL
-            ELSE 
-                call lsquit('II_get_ADMM_K_gradient:Auxiliary Density &
-                  & Matrix Calculation requested, but no basis given',-1)
-            ENDIF
         
-            nbast2=getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+
+            ! Number of basis functions in the auxiliary ADMM basis set
+            nbast2=getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
 
             !ADMM/Level 2 basis is GC basis 
-            ! only if ADMM_GCBASIS option is active and optlevel 3
             GC3 = setting%IntegralTransformGC
-            GC2 = setting%scheme%ADMM_GCBASIS !  .AND. (optlevel.EQ.3)
-            setting%IntegralTransformGC = GC2
+            setting%IntegralTransformGC = .FALSE.
             
-            !Store original AO-indeces (AOdf will not change,
-            !                            but is still stored)
+            !Store original AO-index
             AORold  = AORdefault
-            AOdfold = AODFdefault
             
             !!****Calculation of Level 2 exchange gradient from
             !!     level 2 Density matrix starts here
             !ADMM (level 2) AO settings 
-                
+
+            constrain_factor = setting%scheme%ADMM_CONSTRAIN_FACTOR
+
             AO3 = AORdefault ! assuming optlevel.EQ.3
+
             call mat_init(D2_AO,nbast2,nbast2)
-            call mat_zero(D2_AO)
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
-                & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+                & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3,constrain_factor)
+
             call mat_init(TMPF3,nbast,nbast)
             DO ibmat=1,nBmat
                 !!We transform the full Density to a level 2 density D2
                 call mat_init(B2_AO(ibmat),nbast2,nbast2)
-                call mat_zero(B2_AO(ibmat))
                 call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
                     & setting,lupri,luerr,nbast2,nbast,&
-                    & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+                    & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3,constrain_factor)
 
                  ! K2(b): LEVEL 2 exact exchange matrix
                 call mat_init(k2(ibmat),nbast2,nbast2)
                 call mat_zero(k2(ibmat))
 
-                call mat_zero(TMPF3)
                 ! Take Dsym later on as input!!!!!!!
                 Dsym = .FALSE.
-                call set_default_AOs(AO2,AOdfold)
+                call set_default_AOs(AOadmm,AODFdefault)
                 call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
                                             & 1,Dsym,k2(ibmat))
                 !Transform level 2 exact-exchange matrix to level 3
                 call transformed_F2_to_F3(TMPF3,k2(ibmat),setting,&
                                         & lupri,luerr,&
-                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
-                call mat_daxpy(1E0_realk,TMPF3,K(ibmat))
+                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
+                IF (setting%scheme%ADMMP) THEN
+                  fac = constrain_factor**(4E0_realk)
+                ELSE
+                  fac = 1E0_realk
+                ENDIF
+                call mat_daxpy(fac,TMPF3,K(ibmat))
                                 
                 ! X3(B)- X2(b): XC-correction
                 !****Calculation of Level 2 XC gradient
                 !     from level 2 Density matrix starts here
-                call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
+                call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight,lupri)
                 !choose the ADMM Level 2 grid
                 setting%scheme%dft%igrid = Grid_ADMML2
                      
                 !!Only test electrons if the D2 density
                 ! matrix is McWeeny purified
                 testNelectrons = setting%scheme%dft%testNelectrons
-                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM1
                 setting%scheme%dft%testNelectrons = .FALSE. 
                 
                 !Level 2 XC matrix
                 call mat_init(Gx2(ibmat),nbast2,nbast2)
                 call mat_zero(Gx2(ibmat))
-                call mat_zero(TMPF3)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast2,B2_AO(ibmat),D2_AO,Gx2(ibmat),1) 
                 !Transform level 2 XC matrix to level 3
                 call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
                                         & lupri,luerr,&
-                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
-                call mat_daxpy(-GGAXfactor,TMPF3,K(ibmat))
+                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
+                IF (setting%scheme%ADMMP) THEN
+                  fac = constrain_factor**(4E0_realk)
+                ELSEIF (setting%scheme%ADMMS) THEN
+                  fac = constrain_factor**(2E0_realk/3E0_realk)
+                ELSE
+                  fac = 1E0_realk
+                ENDIF
+
+                call mat_daxpy(-fac,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
                 !Re-set to level 3 grid
@@ -2652,19 +2736,19 @@ CONTAINS
                 !!Only test electrons if the D2 density
                 ! matrix is McWeeny purified
                 testNelectrons = setting%scheme%dft%testNelectrons
-                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM1
                 setting%scheme%dft%testNelectrons = .FALSE. 
                 
                 !Level 3 XC matrix
                 call mat_init(Gx3(ibmat),nbast,nbast)
                 call mat_zero(Gx3(ibmat))
-                call set_default_AOs(AO3,AOdfold)
+                call set_default_AOs(AO3,AODFdefault)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
-                call mat_daxpy(GGAXfactor,Gx3(ibmat),K(ibmat))
+                call mat_daxpy(1E0_realk,Gx3(ibmat),K(ibmat))
                                 
                 IF (setting%do_dft) &
-      &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+      &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight,lupri)
             ENDDO
 !            ! ---------------------------------------------------------------
 
@@ -2699,93 +2783,7 @@ CONTAINS
             call mat_free(Dmat_AO)
             call mat_free(D2_AO)
           END SUBROUTINE di_GET_GbDsArray_ADMM_setting
-          
             
-        SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,&
-                        & luerr,n2,n3,AO2,AO3,McWeeny,GCAO2,GCAO3)
-            implicit none
-            type(matrix),intent(in)    :: D     !level 3 matrix input 
-            type(matrix),intent(inout) :: D2 !level 2 matrix input 
-            type(lssetting) :: setting
-            integer :: n2,n3,AO3,AO2,lupri,luerr
-            logical :: McWeeny,GCAO2,GCAO3
-            !
-            TYPE(MATRIX) :: S22,S23,T23
-            Logical :: purify_failed
-            !
-            call mat_init(T23,n2,n3)
-            call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            call mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
-            call mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
-
-            IF (McWeeny) THEN
-                call mat_init(S22,n2,n3)
-                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-                call McWeeney_purify(S22,D2,purify_failed)
-                IF (purify_failed) THEN
-                    call LSQUIT('McWeeney_purify failed in transform_D3_to_D2',-1)
-                ENDIF
-                call mat_free(S22)
-            ENDIF
-            call mat_free(T23)
-            call mat_free(S23)
-        END SUBROUTINE TRANSFORM_D3_TO_D2
-        
-        SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            use io
-            implicit none
-            TYPE(lssetting),intent(inout) :: setting
-            TYPE(MATRIX),intent(inout)    :: T23
-            Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
-            Logical,intent(IN)            :: GCAO2,GCAO3
-            !
-            TYPE(MATRIX) :: S23,S22,S22inv
-            Character(80) :: Filename = 'ADMM_T23'
-            Logical :: onMaster
-
-            onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-
-!           IF (io_file_exist(Filename,setting%IO)) THEN
-            IF (.FALSE.) THEN
-                call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-            ELSE
-                call mat_init(S22,n2,n2)
-                call mat_init(S22inv,n2,n2)
-                call mat_init(S23,n2,n3)
-
-                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-                call II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-
-                call mat_inv(S22,S22inv)
-                call mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-
-                call mat_free(S22inv)
-                call mat_free(S23)
-                call mat_free(S22)
-                call io_add_filename(setting%IO,Filename,LUPRI)
-                call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
-            ENDIF
-        END SUBROUTINE get_T23
-        
-        SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            implicit none
-            type(matrix),intent(inout) :: F  !level 3 matrix output 
-            type(matrix),intent(in)    :: F2 !level 2 matrix input 
-            type(lssetting) :: setting
-            Integer :: n2,n3,AO2,AO3,lupri,luerr
-            Logical :: GCAO2,GCAO3
-            !
-            type(matrix) :: S23,T23
-            call mat_init(T23,n2,n3)
-            call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            call mat_mul(F2,T23,'n','n',1E0_realk,0E0_realk,S23)
-            call mat_mul(T23,S23,'t','n',1E0_realk,0E0_realk,F)
-            call mat_free(T23)
-            call mat_free(S23)
-        END SUBROUTINE TRANSFORMED_F2_TO_F3
-      !CONTAINS END
       END SUBROUTINE di_GET_GbDsArray_ADMM
           
           
@@ -2834,6 +2832,12 @@ CONTAINS
         real(realk) :: JFAC,KFAC
         real(realk),pointer :: g(:,:,:,:),LmatFull(:,:),GmatFull(:,:)
         real(realk),pointer :: LmatFull2(:,:),GmatFull2(:,:)
+        character :: intspec(5)
+        intspec(1) = 'R'
+        intspec(2) = 'R'
+        intspec(3) = 'R'
+        intspec(4) = 'R'
+        intspec(5) = 'C'
         nbast = Lmat%nrow
         IF(.FALSE.)THEN
            call mat_init(TEMP2,Gmat%nrow,Gmat%ncol)
@@ -2863,7 +2867,7 @@ CONTAINS
               ENDDO
            ELSE
               call II_get_4center_eri(lsint_fock_data%LUPRI,lsint_fock_data%LUERR,&
-                   & lsint_fock_data%ls%SETTING,g,nbast,nbast,nbast,nbast)
+                   & lsint_fock_data%ls%SETTING,g,nbast,nbast,nbast,nbast,intspec)
               LUINT = -1
               call LSOPEN(LUINT,'ERI.Integrals','UNKNOWN','UNFORMATTED')
               do D=1,nbast
@@ -3012,6 +3016,7 @@ CONTAINS
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
       type(batchtoorb), pointer :: batch2orb(:)
       character :: INTSPEC(5)
+      real(realk) :: intThreshold
       doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
       nullify(orb2batch)
       nullify(batchdim)
@@ -3020,12 +3025,10 @@ CONTAINS
       nullify(batchindex)
       
       call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch,'R')
-      print*,'MinAObatch',MinAObatch
       MaxAllowedDim = MinAObatch
       call mem_alloc(orb2batch,nbast)
       call build_batchesofAOS(lupri,ls%setting,MaxAllowedDim,&
            & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch,'R')
-      print*,'nbatchesXY',nbatchesXY
       call mem_alloc(batch2orb,nbatchesXY)
       do idx=1,nbatchesXY
          call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
@@ -3043,7 +3046,8 @@ CONTAINS
       INTSPEC(3) = 'R'
       INTSPEC(4) = 'R'
       INTSPEC(5) = 'C' !operator
-      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatches,nbatchesXY,nbatchesXY,INTSPEC)
+      intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC,intThreshold)
       
       IF(doscreen)then
          call II_getBatchOrbitalScreenK(DecScreen,ls%setting,&
@@ -3060,7 +3064,7 @@ CONTAINS
       ExchangeFactor = -1E0_realk
       call mat_init(K,nbast,nbast)
       call mat_zero(K)
-      CALL II_get_exchange_mat(lupri,luerr,ls%setting,D,1,.TRUE.,K)
+      CALL II_get_exchange_mat(lupri,luerr,ls%setting,D,1,.FALSE.,K)
 
       call mem_alloc(KdecLocFULL,nbast,nbast)
       KdecLocFULL = 0E0_realk
@@ -3079,7 +3083,7 @@ CONTAINS
 
             call II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,ls%SETTING,&
                  & integrals,batchindex(X),batchindex(Y),batchsize(X),batchsize(Y),&
-                 & dimX,nbast,dimY,nbast,nbatches,INTSPEC,fullRHS)
+                 & dimX,nbast,dimY,nbast,INTSPEC,fullRHS,intThreshold)
 
             do batch_iY = 1,dimY
                iY = batch2orb(Y)%orbindex(batch_iY)
@@ -3137,6 +3141,521 @@ CONTAINS
 
     END SUBROUTINE DI_DECPACKED
 #endif
+    SUBROUTINE di_decpackedJ(lupri,luerr,ls,nbast,D)
+      IMPLICIT NONE
+      TYPE(Matrix),intent(in) :: D
+      integer,intent(in)      :: lupri,luerr,nbast
+      type(lsitem),intent(inout) :: ls
+      !
+      TYPE(Matrix)  :: J,Jdec,tempm3
+      real(realk),pointer   :: integral(:,:,:)
+      real(realk) :: CoulombFactor,Jcont
+      real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
+      integer :: iAO,RequestedOrbitalDimOfAObatch,MaxAObatchesOrbDim
+      integer :: MinimumAllowedAObatchSize,nbatchesofAOS,nAObatches
+      integer :: dim1,dim2,dimGamma,GammaStart,GammaEnd
+      integer :: AOGammaStart,AOGammaEnd,gammaB,iAG,suggestion
+      integer :: dimAlpha,AlphaStart,AlphaEnd,alphaB,iprint
+      integer :: AOAlphaStart,AOAlphaEnd,iA,iG,iB,iD,ABATCH,GBATCH
+      character :: INTSPEC(5)
+      type(DecAObatchinfo),pointer :: AObatchinfo(:)
+      logical :: SameMOL,ForcePrint,MoTrans,NoSymmetry
+      real(realk) :: t1,t2,intThreshold
+      IF(ls%setting%IntegralTransformGC)THEN
+         call lsquit('di_decpackedJ requires .NOGCBASIS',-1)
+      ENDIF
+      ForcePrint = .TRUE.
+      NoSymmetry = .FALSE. !activate permutational symmetry
+      call mem_alloc(Dfull,D%nrow,D%ncol)
+      call mat_to_full(D,1E0_realk,DFULL)
+      iprint = 0
+      INTSPEC(1) = 'R' 
+      INTSPEC(2) = 'R'
+      INTSPEC(3) = 'R'
+      INTSPEC(4) = 'R'
+      INTSPEC(5) = 'C' !operator
+      SameMOL = .TRUE.
+      MoTrans = .FALSE.
+      intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+      call LSTIMER('START',t1,t2,LUPRI)
+      call SCREEN_ICHORERI_DRIVER(lupri,iprint,ls%setting,INTSPEC,SameMOL)
+      call LSTIMER('SCREENDECJ',t1,t2,LUPRI,ForcePrint)
+
+      !step 1 Orbital to Batch information
+      iAO = 1 !the center that the batching should occur on. 
+      call determine_MinimumAllowedAObatchSize(ls%setting,iAO,'R',MinimumAllowedAObatchSize)
+      WRITE(lupri,*)'MinimumAllowedAObatchSize',MinimumAllowedAObatchSize
+      suggestion = MinimumAllowedAObatchSize
+      RequestedOrbitalDimOfAObatch = MAX(MinimumAllowedAObatchSize,suggestion)
+      WRITE(lupri,*)'MinimumAllowedAObatchSize',MinimumAllowedAObatchSize
+      WRITE(lupri,*)'RequestedOrbitalDimOfAObatch',RequestedOrbitalDimOfAObatch
+      call determine_Ichor_nbatchesofAOS(ls%setting,iAO,'R',&
+           & RequestedOrbitalDimOfAObatch,nbatchesofAOS,lupri)
+      call mem_alloc(AObatchinfo,nbatchesofAOS)
+      call determine_Ichor_batchesofAOS(ls%setting,iAO,'R',&
+           & RequestedOrbitalDimOfAObatch,nbatchesofAOS,AObatchinfo,&
+           & MaxAObatchesOrbDim,lupri)
+      call determine_Ichor_nAObatches(ls%setting,iAO,'R',nAObatches,lupri)
+      call mem_alloc(integral,nbast,nbast,MaxAObatchesOrbDim*MaxAObatchesOrbDim)
+      call mem_alloc(JdecFull,nbast,nbast)
+      call ls_dzero(JdecFull,nbast*nbast)
+      WRITE(lupri,*)'nbatchesofAOS',nbatchesofAOS
+      dim1 = nbast
+      dim2 = nbast
+      call LSTIMER('START',t1,t2,LUPRI)
+      BatchGamma: do gammaB = 1,nbatchesofAOS        ! batches of AO batches
+        dimGamma = AObatchinfo(gammaB)%dim          ! Dimension of gamma batch
+        GammaStart = AObatchinfo(gammaB)%orbstart   ! First orbital index in gamma batch
+        GammaEnd = AObatchinfo(gammaB)%orbEnd       ! Last orbital index in gamma batch
+        AOGammaStart = AObatchinfo(gammaB)%AOstart  ! First AO batch index in gamma batch
+        AOGammaEnd = AObatchinfo(gammaB)%AOEnd      ! Last AO batch index in alpha batch
+        BatchAlpha: do alphaB = gammaB,nbatchesofAOS   ! batches of AO batches
+          dimAlpha = AObatchinfo(alphaB)%dim          ! Dimension of alpha batch
+          AlphaStart = AObatchinfo(alphaB)%orbstart   ! First orbital index in alpha batch
+          AlphaEnd = AObatchinfo(alphaB)%orbEnd       ! Last orbital index in alpha batch
+          AOAlphaStart = AObatchinfo(alphaB)%AOstart  ! First AO batch index in alpha batch
+          AOAlphaEnd = AObatchinfo(alphaB)%AOEnd      ! Last AO batch index in alpha batch
+
+          !calc (beta,delta,alphaB,gammaB)
+          call MAIN_ICHORERI_DRIVER(lupri,iprint,ls%setting,dim1,dim2,dimAlpha,dimGamma,&
+               & Integral,INTSPEC,.FALSE.,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+               & AOGammaStart,AOGammaEnd,MoTrans,dim1,dim2,dimAlpha,dimGamma,NoSymmetry,intThreshold)
+          iG = GammaStart-1
+          do Gbatch = 1,dimGamma
+             iG = iG + 1
+             iA = AlphaStart-1
+             do Abatch = 1,dimAlpha
+                iA = iA + 1
+                Jcont = 0E0_realk
+                iAG = Abatch + (Gbatch-1)*dimAlpha
+                DO iD=1,nbast
+                   DO iB=1,nbast
+                      Jcont = Jcont + 2.0E0_realk*Dfull(iB,iD)*integral(iB,iD,iAG)
+!                      Jcont = Jcont + Dfull(iB,iD)*integral(iB,iD,iAG)
+                   ENDDO
+                ENDDO
+                IF(gammaB.EQ.alphaB)THEN
+                   IF(iA.NE.iG)THEN
+                      JdecFULL(iA,iG)=JdecFULL(iA,IG)+0.5E0_realk*Jcont
+                      JdecFULL(iG,iA)=JdecFULL(iG,IA)+0.5E0_realk*Jcont
+                   ELSE
+                      JdecFULL(iA,iG)=JdecFULL(iA,IG)+Jcont
+                   ENDIF
+                ELSE
+                   IF(iA.NE.iG)THEN
+                      JdecFULL(iA,iG)=JdecFULL(iA,IG)+Jcont
+                      JdecFULL(iG,iA)=JdecFULL(iG,IA)+Jcont
+                   ELSE
+                      JdecFULL(iA,iG)=JdecFULL(iA,IG)+Jcont
+                   ENDIF
+                ENDIF
+             ENDDO
+          ENDDO
+        ENDDO BatchAlpha
+      ENDDO BatchGamma
+
+      call LSTIMER('DECJ   ',t1,t2,LUPRI,ForcePrint)
+      call mem_dealloc(AObatchinfo)
+      call mat_init(Jdec,nbast,nbast)
+      call mat_set_from_full(JdecFULL,1.0E0_realk,Jdec)
+      call mem_dealloc(JdecFull)
+      call mem_dealloc(DFULL)
+
+      call mat_init(J,nbast,nbast)
+      call mat_zero(J)
+      CALL II_get_Coulomb_mat(lupri,luerr,ls%setting,D,J,1)
+
+      call mat_init(tempm3,nbast,nbast)
+      call mat_add(1E0_realk,Jdec,-1E0_realk,J,tempm3)
+      write(lupri,*) 'QQQ DI_DEBUG_DECPACK J STD    ',mat_trab(J,J)
+      write(lupri,*) 'QQQ DI_DEBUG_DECPACK J DECPACK',mat_trab(Jdec,Jdec)
+      write(lupri,*) 'QQQ DIFF',ABS(mat_trab(tempm3,tempm3))
+      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
+         write(lupri,*)'QQQ SUCCESFUL DECPACK J TEST'
+      ELSE
+         ! WARNING THIS COULD BE DUE TO FAMILY BASISSET 
+         WRITE(lupri,*)'the Jref'
+         call mat_print(J,1,nbast,1,nbast,lupri)
+         WRITE(lupri,*)'the Jdec'
+         call mat_print(Jdec,1,nbast,1,nbast,lupri)
+         WRITE(lupri,*)'the Diff'
+         call mat_print(tempm3,1,nbast,1,nbast,lupri)
+         CALL lsQUIT('DECPACKED J TEST FAILED',lupri)
+      ENDIF
+      call mat_free(J)
+      call mat_free(Jdec)
+      call mat_free(tempm3)
+      call FREE_SCREEN_ICHORERI()
+
+    END SUBROUTINE DI_DECPACKEDJ
+
+    SUBROUTINE di_decpackedJOLD(lupri,luerr,ls,nbast,D)
+      IMPLICIT NONE
+      TYPE(Matrix),intent(in) :: D
+      integer,intent(in)      :: lupri,luerr,nbast
+      type(lsitem),intent(inout) :: ls
+      !
+      TYPE(Matrix)  :: J,Jdec,tempm3
+      real(realk),pointer   :: integrals(:,:,:,:)
+      real(realk) :: CoulombFactor,Jcont,t1,t2
+      real(realk),pointer :: Dfull(:,:),JdecFull(:,:)
+      integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesXY
+      integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,k,MinAObatch,MaxAllowedDim,MaxActualDim,ib,id,ix,iy
+      logical :: doscreen,fullrhs,NOFAMILY,ForcePrint
+      TYPE(DECscreenITEM)    :: DecScreen
+      integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
+      type(batchtoorb), pointer :: batch2orb(:)
+      character :: INTSPEC(5)
+      real(realk) :: intThreshold
+      IF(ls%setting%IntegralTransformGC)THEN
+         call lsquit('di_decpackedJOLD requires .NOGCBASIS',-1)
+      ENDIF
+      ForcePrint = .TRUE.
+      doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
+
+      NOFAMILY = ls%setting%SCHEME%NOFAMILY
+      ls%setting%SCHEME%NOFAMILY = .TRUE.
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+      
+      nullify(orb2batch)
+      nullify(batchdim)
+      nullify(batch2orb)
+      nullify(batchsize)
+      nullify(batchindex)
+      
+      call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch,'R')
+      MaxAllowedDim = MinAObatch
+      call mem_alloc(orb2batch,nbast)
+      call build_batchesofAOS(lupri,ls%setting,MaxAllowedDim,&
+           & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch,'R')
+      call mem_alloc(batch2orb,nbatchesXY)
+      do idx=1,nbatchesXY
+         call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
+         batch2orb(idx)%orbindex = 0
+         batch2orb(idx)%norbindex = 0
+      end do
+      do iorb=1,nbast
+         idx = orb2batch(iorb)
+         batch2orb(idx)%norbindex = batch2orb(idx)%norbindex+1
+         k = batch2orb(idx)%norbindex
+         batch2orb(idx)%orbindex(k) = iorb
+      end do
+      INTSPEC(1) = 'R' 
+      INTSPEC(2) = 'R'
+      INTSPEC(3) = 'R'
+      INTSPEC(4) = 'R'
+      INTSPEC(5) = 'C' !operator
+      intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC,intThreshold)
+      
+      IF(doscreen)then
+         call II_getBatchOrbitalScreen(DecScreen,ls%setting,&
+              & nbast,nbatchesXY,nbatchesXY,batchsize,batchsize,batchindex,batchindex,&
+              & batchdim,batchdim,INTSPEC,lupri,luerr)
+      endif
+      FullRHS = .FALSE.
+
+      !############################################################################
+      !           Exchange Part
+      !############################################################################
+      call mem_alloc(Dfull,D%nrow,D%ncol)
+      call mat_to_full(D,1E0_realk,DFULL)
+      CoulombFactor = 2.0E0_realk
+      call mat_init(J,nbast,nbast)
+      call mat_zero(J)
+      CALL II_get_Coulomb_mat(lupri,luerr,ls%setting,D,J,1)
+
+      call mem_alloc(JdecFULL,nbast,nbast)
+      JdecFULL = 0.0E0_realk
+
+      call LSTIMER('START',t1,t2,LUPRI)
+      BatchY: do Y = 1,nbatchesXY
+         dimY = batchdim(Y)
+
+         BatchX: do X = Y,nbatchesXY
+            dimX = batchdim(X)
+
+            nullify(integrals)
+            allocate(integrals(nbast,nbast,dimX,dimY))
+            integrals = 0.0E0_realk
+            IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+            IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(X,Y)%p
+
+            call II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,ls%SETTING,&
+                 & integrals,batchindex(X),batchindex(Y),batchsize(X),batchsize(Y),&
+                 & nbast,nbast,dimX,dimY,fullRHS,INTSPEC,intThreshold)
+
+            do batch_iY = 1,dimY
+               iY = batch2orb(Y)%orbindex(batch_iY)
+               do batch_iX = 1,dimX
+                  iX = batch2orb(X)%orbindex(batch_iX)
+                  Jcont = 0E0_realk
+                  DO iD=1,nbast
+                     DO iB=1,nbast
+                        Jcont = Jcont + integrals(iB,iD,batch_iX,batch_iY)*Dfull(iB,iD)
+                     ENDDO
+                  ENDDO
+                  IF(X.EQ.Y)THEN
+                   IF(iX.NE.iY)THEN
+                      JdecFULL(iX,iY)=JdecFULL(iX,IY)+0.5E0_realk*Jcont
+                      JdecFULL(iY,iX)=JdecFULL(iY,IX)+0.5E0_realk*Jcont
+                   ELSE
+                      JdecFULL(iX,iY)=JdecFULL(iX,IY)+Jcont
+                   ENDIF
+                  ELSE
+                   IF(iX.NE.iY)THEN
+                      JdecFULL(iX,iY)=JdecFULL(iX,IY)+Jcont
+                      JdecFULL(iY,iX)=JdecFULL(iY,IX)+Jcont
+                   ELSE
+                      JdecFULL(iX,iY)=JdecFULL(iX,IY)+Jcont
+                   ENDIF
+                  ENDIF
+               ENDDO
+            ENDDO
+            deallocate(integrals)
+            nullify(integrals)
+         ENDDO BatchX
+      ENDDO BatchY
+      call LSTIMER('DECJOLD',t1,t2,LUPRI,ForcePrint)
+      call mat_init(Jdec,nbast,nbast)
+      call mat_set_from_full(JdecFULL,CoulombFactor,Jdec)
+      call mem_dealloc(JdecFULL)
+
+      nullify(ls%setting%LST_GAB_LHS)
+      nullify(ls%setting%LST_GAB_RHS)
+      call free_decscreen(DECSCREEN)
+      call mem_dealloc(orb2batch)
+      call mem_dealloc(batchdim)
+      call mem_dealloc(batchsize)
+      call mem_dealloc(batchindex)
+      do X=1,nbatchesXY
+         call mem_dealloc(batch2orb(X)%orbindex)
+         nullify(batch2orb(X)%orbindex)
+      end do
+      call mem_dealloc(batch2orb)
+      
+      call mat_init(tempm3,nbast,nbast)
+      call mat_add(1E0_realk,Jdec,-1E0_realk,J,tempm3)
+      write(lupri,*) 'QQQ OLD DI_DEBUG_DECPACK J STD    ',mat_trab(J,J)
+      write(lupri,*) 'QQQ OLD DI_DEBUG_DECPACK J DECPACK',mat_trab(Jdec,Jdec)
+      write(lupri,*) 'QQQ OLD DIFF',ABS(mat_trab(tempm3,tempm3))
+      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
+         write(lupri,*)'QQQ SUCCESFUL DECPACK JOLD TEST'
+      ELSE
+         WRITE(lupri,*)'the Jref'
+         call mat_print(J,1,nbast,1,nbast,lupri)
+         WRITE(lupri,*)'the Jdec'
+         call mat_print(Jdec,1,nbast,1,nbast,lupri)
+         WRITE(lupri,*)'the Diff'
+         call mat_print(tempm3,1,nbast,1,nbast,lupri)
+         CALL lsQUIT('DECPACKED JOLD TEST FAILED',lupri)
+      ENDIF
+      call mat_free(J)
+      call mat_free(Jdec)
+      call mat_free(tempm3)
+      ls%setting%SCHEME%NOFAMILY = NOFAMILY
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+    END SUBROUTINE DI_DECPACKEDJOLD
+
+    SUBROUTINE di_decbatchpacked(lupri,luerr,ls,nbast,Dmat)
+      IMPLICIT NONE
+      TYPE(Matrix),intent(in) :: Dmat
+      integer,intent(in)      :: lupri,luerr,nbast
+      type(lsitem),intent(inout) :: ls
+      !
+      TYPE(Matrix)  :: J,Jdec,tempm3
+      real(realk),pointer   :: integrals(:,:,:,:),integralsFULL(:,:,:,:)
+      real(realk) :: CoulombFactor,Jcont,t1,t2,Threshold_CS
+      real(realk),pointer :: Dfull(:,:),JdecFull(:,:),GAB(:,:)
+      integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err
+      integer :: thread_idx,nthreads,idx,nbatchesAB
+      integer :: A,B,C,D,dimA,dimB,dimC,dimD,batch_iA,batch_iB
+      integer :: batch_iC,batch_iD,iC,iD
+      integer :: i,k,MinAObatch,MaxAllowedDim,MaxActualDim,iA,iB
+      logical :: doscreen,fullrhs,NOFAMILY,ForcePrint
+      TYPE(DECscreenITEM)    :: DecScreen
+      integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
+      type(batchtoorb), pointer :: batch2orb(:)
+      character :: INTSPEC(5)
+      real(realk) :: IntThreshold
+      INTSPEC(1) = 'R' 
+      INTSPEC(2) = 'R'
+      INTSPEC(3) = 'R'
+      INTSPEC(4) = 'R'
+      INTSPEC(5) = 'C' !operator
+      IF(ls%setting%IntegralTransformGC)THEN
+         call lsquit('di_decbatchpacked requires .NOGCBASIS',-1)
+      ENDIF
+      ForcePrint = .TRUE.
+      doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
+
+      NOFAMILY = ls%setting%SCHEME%NOFAMILY
+      ls%setting%SCHEME%NOFAMILY = .TRUE.
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+      
+      nullify(orb2batch)
+      nullify(batchdim)
+      nullify(batch2orb)
+      nullify(batchsize)
+      nullify(batchindex)
+      
+      call mem_alloc(orb2batch,nbast)
+      call build_minimalbatchesofAOS(lupri,ls%setting,&
+           & nbast,batchsize,batchdim,batchindex,nbatchesAB,orb2Batch,'R')
+
+      call mem_alloc(GAB,nbatchesAB,nbatchesAB)
+      call II_get_2int_BatchScreenMat(LUPRI,LUERR,ls%SETTING,nbatchesAB,GAB,nbast)
+      WRITE(lupri,*)'GAB'
+      call ls_output(GAB,1,nbatchesAB,1,nbatchesAB,nbatchesAB,nbatchesAB,1,lupri)
+
+      call mem_alloc(batch2orb,nbatchesAB)
+      do idx=1,nbatchesAB
+         call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
+         batch2orb(idx)%orbindex = 0
+         batch2orb(idx)%norbindex = 0
+      end do
+      do iorb=1,nbast
+         idx = orb2batch(iorb)
+         batch2orb(idx)%norbindex = batch2orb(idx)%norbindex+1
+         k = batch2orb(idx)%norbindex
+         batch2orb(idx)%orbindex(k) = iorb
+      end do
+!#########################################################################################
+      intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+      call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesAB,nbatchesAB,INTSPEC,intThreshold)      
+      IF(doscreen)then
+         call II_getBatchOrbitalScreen(DecScreen,ls%setting,&
+              & nbast,nbatchesAB,nbatchesAB,batchsize,batchsize,batchindex,&
+              & batchindex,batchdim,batchdim,INTSPEC,lupri,luerr)
+      endif
+!#########################################################################################
+
+      Threshold_CS = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+
+      call mem_alloc(integralsFULL,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LUERR,ls%setting,integralsFULL,nbast,nbast,nbast,nbast,intspec)
+!      write(lupri,*) 'integralsFULL'
+!      call ls_output(integralsFULL,1,nbast*nbast,1,nbast*nbast,nbast*nbast,nbast*nbast,1,lupri)
+
+      call LSTIMER('START',t1,t2,LUPRI)
+      print*,'nbatchesAB',nbatchesAB
+      BatchD: do D = 1,nbatchesAB
+         dimD = batchdim(D)
+
+         BatchC: do C = 1,nbatchesAB
+            dimC = batchdim(C)           
+
+            BatchB: do B = 1,nbatchesAB
+               dimB = batchdim(B)
+               
+               BatchA: do A = 1,nbatchesAB
+                  dimA = batchdim(A)
+                  IF(GAB(A,B)*GAB(C,D).GT.Threshold_CS)THEN
+                     nullify(integrals)
+                     allocate(integrals(dimA,dimB,dimC,dimD))
+                     integrals = 0.0E0_realk
+
+                     IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%batchGab(A,B)%p
+                     IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(C,D)%p
+
+                     call II_GET_DECBATCHPACKED(LUPRI,LUERR,ls%SETTING,&
+                          & integrals,A,B,C,D,1,1,1,1,&
+                          & dimA,dimB,dimC,dimD,intSpec,intThreshold)
+                     
+                     !                  write(lupri,*) 'integrals A,B,C,D',A,B,C,D
+                     !                  write(lupri,*) 'BLOCK ',batch2orb(A)%orbindex(1),':',batch2orb(A)%orbindex(dimA)
+                     !                  write(lupri,*) 'BLOCK ',batch2orb(B)%orbindex(1),':',batch2orb(B)%orbindex(dimB)
+                     !                  write(lupri,*) 'BLOCK ',batch2orb(C)%orbindex(1),':',batch2orb(C)%orbindex(dimC)
+                     !                  write(lupri,*) 'BLOCK ',batch2orb(D)%orbindex(1),':',batch2orb(D)%orbindex(dimD)
+                     !                  call ls_output(integrals,1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+                     !                  write(lupri,*) 'corresponding to '
+                     !                  call ls_output(integralsFULL(batch2orb(A)%orbindex(1):batch2orb(A)%orbindex(dimA),&
+                     !                       & batch2orb(B)%orbindex(1):batch2orb(B)%orbindex(dimB),&
+                     !                       & batch2orb(C)%orbindex(1):batch2orb(C)%orbindex(dimC),&
+                     !                       & batch2orb(D)%orbindex(1):batch2orb(D)%orbindex(dimD)),&
+                     !                       & 1,dimA*dimB,1,dimC*dimD,dimA*dimB,dimC*dimD,1,lupri)
+                                          
+                     do batch_iB = 1,dimB
+                        iB = batch2orb(B)%orbindex(batch_iB)
+                        do batch_iA = 1,dimA
+                           iA = batch2orb(A)%orbindex(batch_iA)
+                           Jcont = 0E0_realk
+                           do batch_iD = 1,dimD
+                              iD = batch2orb(D)%orbindex(batch_iD)
+                              do batch_iC = 1,dimC
+                                 iC = batch2orb(C)%orbindex(batch_iC)
+                                 IF(ABS(integrals(batch_iA,batch_iB,batch_iC,batch_iD)-integralsFULL(iA,iB,iC,iD)).GT.1.0E-10)THEN
+                                    print*,'integrals(batch_iA,batch_iB,batch_iC,batch_iD)',&
+     &                                      integrals(batch_iA,batch_iB,batch_iC,batch_iD)
+                                    print*,'integralsFULL(iA,iB,iC,iD)',integralsFULL(iA,iB,iC,iD)
+                                    print*,'batch_iA,batch_iB,batch_iC,batch_iD',batch_iA,batch_iB,batch_iC,batch_iD
+                                    print*,'iA,iB,iC,iD',iA,iB,iC,iD
+                                    call lsquit('elements wrong',-1)
+                                 ENDIF  !                               
+                              ENDDO
+                           ENDDO
+                        enddo
+                     enddo
+                     deallocate(integrals)
+                     nullify(integrals)
+                  ELSE
+                     nullify(integrals)
+                     allocate(integrals(dimA,dimB,dimC,dimD))
+                     integrals = 0.0E0_realk
+
+                     IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%batchGab(A,B)%p
+                     IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%batchGab(C,D)%p
+
+                     call II_GET_DECBATCHPACKED(LUPRI,LUERR,ls%SETTING,&
+                          & integrals,A,B,C,D,1,1,1,1,&
+                          & dimA,dimB,dimC,dimD,intSpec,intThreshold)                     
+                     do batch_iB = 1,dimB
+                        iB = batch2orb(B)%orbindex(batch_iB)
+                        do batch_iA = 1,dimA
+                           iA = batch2orb(A)%orbindex(batch_iA)
+                           Jcont = 0E0_realk
+                           do batch_iD = 1,dimD
+                              iD = batch2orb(D)%orbindex(batch_iD)
+                              do batch_iC = 1,dimC
+                                 iC = batch2orb(C)%orbindex(batch_iC)
+                                 IF(ABS(integrals(batch_iA,batch_iB,batch_iC,batch_iD)).GT.Threshold_CS)THEN
+                                    call lsquit('screening wrong',-1)
+                                 ENDIF
+                              enddo
+                           enddo
+                        enddo
+                     enddo
+                  ENDIF
+               ENDDO BatchA
+            ENDDO BatchB
+         ENDDO BatchC
+      ENDDO BatchD
+      call LSTIMER('DECJOLD',t1,t2,LUPRI,ForcePrint)
+      nullify(ls%setting%LST_GAB_LHS)
+      nullify(ls%setting%LST_GAB_RHS)
+      call free_decscreen(DECSCREEN)
+      call mem_dealloc(orb2batch)
+      call mem_dealloc(batchdim)
+      call mem_dealloc(batchsize)
+      call mem_dealloc(batchindex)
+      do A=1,nbatchesAB
+         call mem_dealloc(batch2orb(A)%orbindex)
+         nullify(batch2orb(A)%orbindex)
+      end do
+      call mem_dealloc(batch2orb)
+      
+      ls%setting%SCHEME%NOFAMILY = NOFAMILY
+      call screen_free()
+      call screen_init()
+      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
+    END SUBROUTINE di_decbatchpacked
+
     SUBROUTINE di_debug_4center_eri_interest(lupri,lu_err,ls,nbast)
       IMPLICIT NONE
       integer,intent(in)      :: lupri,lu_err,nbast
@@ -3145,12 +3664,18 @@ CONTAINS
       real(realk),pointer   :: integrals(:,:,:,:)
       real(realk),pointer   :: integrals2(:,:,:,:)
       integer :: iB,iA,iC,iD
+      character :: intspec(5)
+      intspec(1) = 'R'
+      intspec(2) = 'R'
+      intspec(3) = 'R'
+      intspec(4) = 'R'
+      intspec(5) = 'C'
       call mem_alloc(integrals2,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals2,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals2,nbast,nbast,nbast,nbast,intspec)
 
       ls%setting%scheme%interest = .FALSE.
       call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast,intspec)
       do iD=1,nbast
          do iC=1,nbast
             do iB=1,nbast

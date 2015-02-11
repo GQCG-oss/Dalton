@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE CRINP(WORD)
 C
@@ -38,8 +37,8 @@ C
 #include "infcr.h"
 #include "inftap.h"
 C
-      LOGICAL NEWDEF, BCDFRQ, STATIC
-      PARAMETER ( NTABLE = 24 , ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
+      LOGICAL NEWDEF, BCDFRQ, STATIC, GAMALL_TMP
+      PARAMETER ( NTABLE = 25 , ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -48,13 +47,15 @@ C
      *            '.THCLR ', '.MAXITO', '.PRINT ', '.FREQUE',
      *            '.ISABCD', '.INVEXP', '.THG   ', '.DC-SHG',
      *            '.DC-KER', '.IDRI  ', 'xXXXXXX', '.THRNRM',
-     *            '.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ'/
+     *            '.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
+     *            '.GAMALL'/
 C
 C  Set BCDFRQ = .TRUE. if frequencies specified for each operator
 C  Used to test if special processes (THG,DC-SHG,DC-KERR,IDRI)
 C  and indivual frequencies specified then quit.
 C
       DATA BCDFRQ/.FALSE./
+      GAMALL_TMP = .FALSE.
 C
 C READ IN  INPUT
 C
@@ -73,7 +74,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,
-     *                     15,16,17,18,19,20,21,22,23,24),I
+     *                     15,16,17,18,19,20,21,22,23,24,25),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -243,6 +244,9 @@ C                 and solve linear equations by matrix inversion
                   CCROP( INDPRP(LABEL)) = .TRUE.
                   DCROP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
+ 25            CONTINUE
+                  GAMALL_TMP = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -253,6 +257,9 @@ C                 and solve linear equations by matrix inversion
          GO TO 100
       END IF
   300 CONTINUE
+
+      IF (GAMALL_TMP) GAMALL = .TRUE.
+
       IF (THR_REDFAC .GT. 0.0D0) THEN
          ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
@@ -1009,6 +1016,7 @@ C
 C
 #include "maxorb.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "infdim.h"
@@ -1056,8 +1064,6 @@ C
 C
 C Solve eigenvalue equation
 C
-         WRITE(LUPRI,'(//A/)')
-     *' <<<<< Solving eigenvalue equations for cubic response >>>>>'
          DO 100 KSYMOP = 1,NSYM
 C
 C Set up vectors defining the number of eigenvectors that need
@@ -1075,6 +1081,11 @@ C
 C Skip symmetry if no operators
 C
             IF ( NEXCR(KSYMOP).EQ.0 ) GOTO 100
+
+            WRITE(LUPRI,'(//A/A,I2,3A/A,I5)')
+     &' <<<<< Solving eigenvalue equations for cubic response >>>>>',
+     &'       Symmetry',KSYMOP,'  ( ',REP(KSYMOP-1),')',
+     &'       Number of excitations:',NEXCR(KSYMOP)
 C
 C     Then we check if there appears to be correct number of eigenvectors
 C     of this symmetry on file
@@ -1126,9 +1137,6 @@ C
 C
 C SOLVE SINGLET LINEAR RESPONSE EQUATIONS
 C
-         WRITE(LUPRI,'(//A/)')
-     *   ' <<<<< Solving set of linear response equations'//
-     *   ' for cubic response >>>>>'
          KEXSIM = 1
          KEXCNV = 1
          DO 200 KSYMOP = 1,NSYM
@@ -1141,6 +1149,12 @@ C
 C Skip this symmetry if no operators
 C
             IF ( NLRCR(KSYMOP).EQ.0 ) GO TO 200
+
+            WRITE(LUPRI,'(//A/A,I2,3A/A,I5)')
+     &' <<<<< Solving linear response equations'//
+     &   ' for cubic response >>>>>',
+     &'       Symmetry',KSYMOP,'  ( ',REP(KSYMOP-1),')',
+     &'       Number of different response vectors:',NLRCR(KSYMOP)
 C
             IF ( KZVAR.EQ.0 ) THEN
                NINFO = NINFO + 1

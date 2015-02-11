@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck getrho */
       SUBROUTINE GETRHO(DMAT,GSO,RHO,DMAGAO,DFTHRI)
@@ -312,7 +311,7 @@ c
 #include "symmet.h"
       DIMENSION CENTER(3), RSHEL(KMAX), IBLCKS(2,NBAST)
       DIMENSION  ISSS(KMAX)
-#include "ibtfun.h"
+
 
 !#define NO_SHELL_SCREENING
 #ifdef NO_SHELL_SCREENING
@@ -333,10 +332,10 @@ c
 c        try different symmetry equivalent atoms:
 c        
          DO ISYMOP = 0, MAXOPR         
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-               CORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-               CORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-               CORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               CORX = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               CORY = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               CORZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                PX = center(1)-CORX
                PY = center(2)-CORY
                PZ = center(3)-CORZ

@@ -1,28 +1,27 @@
-module IchorCoulombIntegral_seg_seg_SSSS_mod
-use IchorprecisionModule
-use IchorCommonModule
+module ICI_seg_seg_SSSS_mod
+use IchorprecisionMod
+use IchorCommonMod
 private 
-public :: IchorCoulombIntegral_seg_seg_SSSS
+public :: ICI_seg_seg_SSSS
 CONTAINS
-  subroutine IchorCoulombIntegral_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
-       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-       & reducedExponents,integralPrefactor,PQorder,CDAB)
+  subroutine ICI_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
+       & nAtomsA,nAtomsB,IatomAPass,iatomBPass,pcent,qcent,Ppreexpfac,&
+       & Qpreexpfac,TABFJW,reducedExponents,integralPrefactor,LocalIntPassSSSS)
     implicit none
-    integer,intent(in) :: nPrimQ,nPrimP,nPasses
-    integer,intent(in) :: nTABFJW1,nTABFJW2
-    real(realk),intent(in) :: pcent(3,nPrimP),qcent(3,nPrimQ,nPasses)
-    real(realk),target,intent(in) :: QpreExpFac(nPrimQ,nPasses)
-    real(realk),target,intent(in) :: PpreExpFac(nPrimP)
-!    real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2)
+    integer,intent(in) :: nAtomsA,nAtomsB,nPrimQ,nPrimP,nPasses
+    real(realk),intent(in) :: pcent(3,nPrimP,nAtomsA,nAtomsB),qcent(3,nPrimQ)
+    real(realk),target,intent(in) :: QpreExpFac(nPrimQ)
+    real(realk),target,intent(in) :: PpreExpFac(nPrimP,nAtomsA,nAtomsB)
     real(realk),intent(in) :: TABFJW(0:3,0:1200)
-    real(realk),intent(inout) :: CDAB(nPasses)
-    real(realk),intent(in) :: integralPrefactor(nPrimP,nPrimQ)
-    real(realk),intent(in) :: reducedExponents(nPrimP,nPrimQ)
-    logical :: PQorder
+    real(realk),intent(inout) :: LocalIntPassSSSS(nAtomsA,nAtomsB)
+    real(realk),intent(in) :: integralPrefactor(nPrimQ,nPrimP)
+    real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP)
+    integer,intent(in) :: IatomAPass(nAtomsA*nAtomsB)
+    integer,intent(in) :: iatomBPass(nAtomsA*nAtomsB)
     !
     real(realk) :: RJ000,squaredDistance
-    real(realk) :: px,py,pz,qx,qy,qz,pqx,pqy,pqz,tmpQ
-    integer :: nPrimPQ,offset,IPNT,ipq,iPrimQ,iPrimP,IPASSQ
+    real(realk) :: px,py,pz,qx,qy,qz,pqx,pqy,pqz,tmpP
+    integer :: nPrimPQ,offset,IPNT,ipq,iPrimQ,iPrimP,IPASSP,iatomA,iatomB
     REAL(REALK), PARAMETER :: D2 = 2.0E0_realk,D4 = 4.0E0_realk,D1 = 1.0E0_realk
     REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
     REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
@@ -35,41 +34,34 @@ CONTAINS
     REAL(REALK), PARAMETER :: COEF2 = 0.5E0_realk, COEF3=-D1/6.0E0_realk
     REAL(REALK), PARAMETER :: D36 = 36E0_realk,HALF=0.5E0_realk
     real(realk) :: WVAL,R,RWVAL,REXPW,GVAL,WDIFF,W2,W3,tmp
-!ifdef VAR_DEBUG
-    IF(.NOT.PQorder)THEN
-       call Ichorquit('IchorCoulombIntegral_seg_seg_SSSS expect to get PQ ordering',-1)
-    ENDIF
     !nested OMP parallel or GPU/MIC
     !reducedExponents, integralPrefactor as input
     !I would like to avoid the IF statement inside the loop (not good from a gpu point of view)
     !Add nPassP as well so that nPasses is big!! far greater than nThreads/nGPUcores
     !precalc squaredDistance and sort -> alot of work.
-    nPrimPQ = nPrimP*nPrimQ
-
-!All cores have 2*nPrimP*nPrimQ : RJ000, squaredDistance
-  
-!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IPASSQ,iPrimQ,&
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IPASSP,iPrimQ,&
 !$OMP qx,qy,qz,offset,iPrimP,pqx,pqy,pqz,squaredDistance,&
 !$OMP ipq,WVAL,IPNT,WDIFF,W2,W3,R,RJ000,REXPW,RWVAL,GVAL,&
-!$OMP tmp,tmpQ) Shared(Qcent,Pcent,reducedExponents,TABFJW,&
-!$OMP integralPrefactor,QpreExpFac,PpreExpFac,CDAB,nPasses,&
-!$OMP nPrimQ,nPrimP,nPrimPQ)
-    DO IPASSQ = 1,nPasses
-       !build squaredDistance(nPrimP,nPrimQ,nPasses)
+!$OMP tmp,tmpP,iAtomA,iAtomB,px,py,pz) FIRSTPRIVATE(nPrimQ,&
+!$OMP nPrimP) Shared(Qcent,&
+!$OMP Pcent,reducedExponents,TABFJW,integralPrefactor,&
+!$OMP QpreExpFac,PpreExpFac,LocalIntPassSSSS,nPasses,&
+!$OMP IatomAPass,IatomBPass)
+    DO IPASSP = 1,nPasses
+       IatomA = IatomAPass(iPassP)
+       IatomB = IatomBPass(iPassP)
        tmp = 0.0E0_realk
-       DO iPrimQ=1, nPrimQ
-          qx = -Qcent(1,iPrimQ,iPassQ)
-          qy = -Qcent(2,iPrimQ,iPassQ)
-          qz = -Qcent(3,iPrimQ,iPassQ)
-          TMPQ = QpreExpFac(iPrimQ,iPassQ)
-          DO iPrimP=1, nPrimP
-             pqx = Pcent(1,iPrimP) + qx
-             pqy = Pcent(2,iPrimP) + qy
-             pqz = Pcent(3,iPrimP) + qz          
-             !(nPrimP,nPrimQ)
+       DO iPrimP=1, nPrimP
+          px = -Pcent(1,iPrimP,iAtomA,iAtomB)
+          py = -Pcent(2,iPrimP,iAtomA,iAtomB)
+          pz = -Pcent(3,iPrimP,iAtomA,iAtomB)
+          TMPP = PpreExpFac(iPrimP,iAtomA,iAtomB)
+          DO iPrimQ=1, nPrimQ
+             pqx = px + Qcent(1,iPrimQ)
+             pqy = py + Qcent(2,iPrimQ)
+             pqz = pz + Qcent(3,iPrimQ)
              squaredDistance = pqx*pqx+pqy*pqy+pqz*pqz
-             !(nPrimP,nPrimQ)*(nPrimP,nPrimQ)
-             WVAL = reducedExponents(iPrimP,iPrimQ)*squaredDistance
+             WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance
              IF (WVAL .LT. D12) THEN
                 IPNT = NINT(D100*WVAL)
                 WDIFF = WVAL - TENTH*IPNT
@@ -89,13 +81,12 @@ CONTAINS
                 RWVAL = PID4/WVAL
                 RJ000 = SQRT(RWVAL)
              END IF
-             !scale RJ000
-             tmp = tmp + PpreExpFac(iPrimP)*integralPrefactor(IPrimP,iPrimQ)*RJ000*TMPQ
+             tmp = tmp + QpreExpFac(iPrimQ)*integralPrefactor(IPrimQ,iPrimP)*RJ000*TMPP
           ENDDO
        ENDDO
-       CDAB(iPassQ) = tmp
+       LocalIntPassSSSS(iAtomA,iAtomB) = tmp
     ENDDO
 !$OMP END PARALLEL DO
-  end subroutine IchorCoulombIntegral_seg_seg_SSSS
+  end subroutine ICI_seg_seg_SSSS
 
-END MODULE IchorCoulombIntegral_seg_seg_SSSS_mod
+END MODULE ICI_seg_seg_SSSS_mod

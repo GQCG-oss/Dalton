@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_FMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
@@ -462,7 +461,7 @@ C           ----------------------------------
 *---------------------------------------------------------------------*
 *     Compute contribution from  <L_3|[[H^B,T^0_2],\tau_nu_1]|HF>
 *                          and   <L_3|[[H^0,T^B_2],\tau_nu_1]|HF>
-*     for finite difference include <L_3|[V,T^B_3],\tau_nu_1]|HF>
+*     for finite difference include "L_3|[V,T^B_3],\tau_nu_1]|HF>
 *---------------------------------------------------------------------*
       KT02AM = KEND3
       KTB2AM = KT02AM + NT1AMX*NT1AMX
@@ -525,7 +524,7 @@ C           ----------------------------------
 
 *---------------------------------------------------------------------*
 *     Compute contribution from  <L_3|[H^B,\tau_nu_2]|HF>
-*     for finite difference include <L_3|[[V,T^B_2],\tau_nu_2]|HF>
+*     for finite difference include "L_3|[[V,T^B_2],\tau_nu_2]|HF>
 *---------------------------------------------------------------------*
 
       CALL CC3_L3_OMEGA2_NODDY(WORK(KOME2),WORK(KL3AM),
@@ -746,7 +745,7 @@ c       -------------------------------------------
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -861,7 +860,7 @@ C------------------------------------------------------
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -1521,7 +1520,7 @@ c       -------------------------------
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"

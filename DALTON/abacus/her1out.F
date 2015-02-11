@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,14 +21,9 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-930209-hjaaj: add GSOLTT in SHDCHK
-===========================================================================
-#endif
+C FILE: abacus/her1out.F
+C
 C  /* Deck wrtund */
       SUBROUTINE WRTUND(STHMAT,NNBAST,NNBASX,IPRINT)
 C
@@ -172,7 +167,7 @@ C
 #include "oneadr.h"
       DIMENSION BUFDA(NBUF), IBUFDA(IRAT*NBUF)
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
-#include "ibtfun.h"
+
 C
 C     **************************
 C     ***** INITIALIZATION *****
@@ -261,9 +256,9 @@ C           Loop over elements in this buffer
 C
             DO 400 I = 1, LENGTH
                LABEL = IBUF(I)
-               IMAT  = IBTAND(LABEL,IBIT10)
+               IMAT  = IAND(LABEL,IBIT10)
                IF (IMAT.GE.IFIRST .AND. IMAT.LE.ILAST) THEN
-                  IOFF = (IMAT - IFIRST)*INDMAX + IBTSHR(LABEL,10)
+                  IOFF = (IMAT - IFIRST)*INDMAX + ISHFT(LABEL,-10)
                   SOINT(IOFF) = SOINT(IOFF) + BUF(I)
 C
 C                 Print Section
@@ -275,7 +270,7 @@ C
      *                  (IMAT + NMATS - 1)/NMATS,
      *                  (MOD(IMAT-1,NMATS)+1+MAXREP)/(MAXREP+1),
      *                  MOD(IMAT - 1,MAXREP + 1),
-     *                  IBTSHR(LABEL,10), BUF(I), SOINT(IOFF)
+     *                  ISHFT(LABEL,-10), BUF(I), SOINT(IOFF)
                   END IF
                END IF
   400       CONTINUE
@@ -390,7 +385,7 @@ C
 #include "inftap.h"
       LOGICAL DNULL, NOTZER
       EQUIVALENCE (BUF(1),IBUF(1))
-#include "ibtfun.h"
+
       IF (NDIM .EQ. 0) THEN
          WRITE(LUPRI,'(//A/)') ' >>>>> Error in GETONE: NDIM = 0 '
          CALL QUIT('NDIM zero in GETONE.')
@@ -419,7 +414,7 @@ C
             DO 300 INT = 1, NOFF
                DINT = BUF(INT)
                LABEL = IBUF(MXABF2 + INT)
-               IORBAB = IBTAND(LABEL,IBIT22)
+               IORBAB = IAND(LABEL,IBIT22)
                WORK(IORBAB) = DINT
   300       CONTINUE
             IDISK = IBUF(LABUFI)
@@ -445,7 +440,7 @@ C
 #include "symmet.h"
       DIMENSION WORK(LWORK)
       LOGICAL DNULL
-#include "ibtfun.h"
+
       CALL HEADER('Output from SHDPRI',-1)
       DO 100 IREPO = 0, MAXREP
          DO 200 ICENT = 1, NUCIND
@@ -453,7 +448,7 @@ C
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   DO 400 IREPA = 0, MAXREP
-                     IREPB = IBTXOR(IREPO,IREPA)
+                     IREPB = IEOR(IREPO,IREPA)
                      NDIMA = NAOS(IREPA + 1)
                      NDIMB = NAOS(IREPB + 1)
                      NDIM = NDIMA*NDIMB
@@ -614,3 +609,4 @@ C
       END IF
       RETURN
       END
+C end of: abacus/her1out.F

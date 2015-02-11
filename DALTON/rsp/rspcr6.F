@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE T4DRV(IBCDEQ,ISYMA,ISYMB,ISYMC,ISYMD,VECA,VECB,VECC,
      *                 VECD,FREQB,FREQC,FREQD,XINDX,UDV,PV,MJWOP,
@@ -247,12 +246,32 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
-      if (peqm) then
-        call quit('ERROR: cubic response not implemented using the'//
-     &            ' PE library')
-      end if
+      IF (PEQM) THEN
+#ifdef MOD_UNRELEASED
+#if defined (BUILD_PELIB)
+         IF (.NOT. TDHF) THEN
+             CALL QUIT('ERROR: MCSCF cubic response not'//
+     &                 ' implemented with PE library.')
+         ELSE IF (NASHT > 0) THEN
+             CALL QUIT('ERROR: cubic response not implemented for'//
+     &                 ' open shell systems with PE library.')
+         ELSE IF (TRPLET) THEN
+             CALL QUIT('ERROR: triplets not implemented for cubic'//
+     &                 ' response with PE library.')
+         ENDIF
+         CALL PE_RSPCRO(VECB, VECC, VECD, ETRS, XINDX, WRK(KZYMB),
+     &                  WRK(KZYMC), WRK(KZYMD), UDV, WRK(KFREE), LFREE,
+     &                  KZYVA, KZYVB, KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
+     &                  ISYMD, CMO, MJWOP)
+#endif
+#else
+         CALL QUIT('ERROR: cubic response not implemented'//
+     &             ' using the PE library (.PEQM).')
+#endif
+      END IF
 C
       IF (QMMM) THEN
+#ifdef MOD_UNRELEASED
          IF (TDHF) THEN
              CALL QMMMCRO(VECB, VECC, VECD,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),
@@ -287,6 +306,10 @@ C
          ELSE
             CALL QUIT('CR-QM/MM only implemented for TDHF/TDDFT')
          END IF
+#else
+         CALL QUIT('ERROR: cubic response not implemented'//
+     &             ' for QMMM.')
+#endif
       END IF
 
       IF (FLAG(16)) THEN
@@ -334,7 +357,7 @@ C
      *        DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
-C     Overall minus sign for E[4] (missing in Eq. 34 jcp 105 (1996) 6401)
+C     overall minus sign for E[4] (missing in Eq. 34 jcp 105 (1996) 6401)
 C
       CALL DSCAL(KZYVA,DM1,ETRS,1)
 C
@@ -347,15 +370,15 @@ C
      *                  KZYVA,KZYVB,KZYVC,KZYVD,KZYVBC,KZYVBD,KZYVCD,
      *                  VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,IEQTO)
 C
-C     Called from CRHYP or CRTMO or CRTPA.
+C     called from CRHYP or CRTMO or CRTPA.
 C
-C     Initialize variables.
+C     initialize variables.
 C
-C     Check if an equivalent calculation already has been done,
+C     check if an equivalent calculation already has been done,
 C     DOCAL indicates the result. Save uniqe calculations in
 C     LAB(N,4) and FRQ(N,4).
 C
-C     Check if some of the response vectors are equal or zero,
+C     check if some of the response vectors are equal or zero,
 C     IBCDEQ indicates the result:
 C       0  at least one of VECB VECC VECD equal to zero
 C       1  all of VECB, VECC, VECD unequal
@@ -404,7 +427,7 @@ C
 C
       DATA N/0/
 C
-C     Set variables
+C     set variables
 C
       ONFIL = .FALSE.
       ISYMBC = MULD2H(ISYMB,ISYMC)
@@ -481,7 +504,7 @@ C
          END IF
       END IF
 C
-C     Check if an equivalent calculation already has been done.
+C     check if an equivalent calculation already has been done.
 C
       DOCAL = .TRUE.
       DO 110 I = 1,N
@@ -595,7 +618,7 @@ C
  120  CONTINUE
  110  CONTINUE
 C
-C     Finally we check if the result is available from a previous
+C     finally we check if the result is available from a previous
 C     calculation
 C     
       IF (DOCAL) THEN
@@ -707,7 +730,7 @@ C
       END IF
 
 C
-C     If not done before put in list with unique calculations
+C     if not done before put in list with unique calculations
 C
       IF ((DOCAL .OR. ONFIL).AND.(CRCAL.OR.TOMOM.OR.TPAMP)) THEN
          N = N + 1
@@ -733,7 +756,7 @@ C
       END IF
 C
 C
-C     Read in response vectors
+C     read in response vectors
 C
       CALL READVE(ISYMA,ISYMB,ISYMC,ISYMD,
      *            ALAB,BLAB,CLAB,DLAB,
@@ -741,7 +764,7 @@ C
      *            KZYVA,KZYVB,KZYVC,KZYVD,KZYVBC,KZYVBD,KZYVCD,
      *            VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD)
 C
-C     Check if response vectors are zero or equal.
+C     check if response vectors are zero or equal.
 C
       IBCDEQ = 1
       IF ( ISYMB .EQ. ISYMC .AND. FREQB .EQ. FREQC ) THEN

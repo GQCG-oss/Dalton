@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_soldrv */
 C--------------------------------------------------------------------
@@ -872,9 +871,9 @@ C            FC2AM  (LUC2)  doubles part
 C            FC12AM (LUC12) R12 doubles part
 C
       IMPLICIT NONE
-C#include <implicit.h>
+C#include "implicit.h"
 #include "priunit.h"
-C#include <iratdef.h>
+C#include "iratdef.h"
 #include "cclr.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
@@ -931,9 +930,9 @@ C                doubles file (name: FC2AM,  nr: LUC2)
 C            R12 doubles file (name: FC12AM, nr: LUC12)
 C
       IMPLICIT NONE
-C#include <implicit.h>
+C#include "implicit.h"
 #include "priunit.h"
-C#include <iratdef.h>
+C#include "iratdef.h"
 #include "cclr.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
@@ -990,8 +989,8 @@ C                Open files for linear solver.
 C                Has to be 8 character long.
 C
       IMPLICIT NONE
-C#include <implicit.h>
-C#include <iratdef.h>
+C#include "implicit.h"
+C#include "iratdef.h"
 #include "ccsdinp.h"
 Cholesky
 #include "maxorb.h"
@@ -1063,8 +1062,8 @@ C     tbp: use fortran i/o [notably, gpopen/gpclose] for
 C          Cholesky....
 C
       IMPLICIT NONE
-C#include <implicit.h>
-C#include <iratdef.h>
+C#include "implicit.h"
+C#include "iratdef.h"
 #include "ccsdinp.h"
 Cholesky
 #include "maxorb.h"

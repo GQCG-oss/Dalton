@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -116,6 +115,8 @@ C
       EXTERNAL QBDINIT
 C
       LEVELQ = LEVELQ + 1
+!     print *, IDENT,' entry, LEVELQ =',LEVELQ,
+!    &(' ',QNAMES(i),i=1,levelq-1)
 Chj2  LQTREE = LQTREE + 1
       IF (LEVELQ .LE. MXQLVL) THEN
 Chj1     IDENT8 = IDENT//BLANK8
@@ -141,6 +142,8 @@ Chj1  IF (QNAMES(LEVELQ) .EQ. IDENT8) THEN
          CALL QDUMP(LUPRI)
          CALL QUIT('QEXIT error, exit ID does not match entry ID')
       END IF
+!     print *, IDENT,' exit,  LEVELQ =',LEVELQ,
+!    &(' ',QNAMES(i),i=1,levelq)
       RETURN
 C
       ENTRY QINIT
@@ -183,7 +186,7 @@ C  /* Deck qtrace */
 C
 C  1-Mar-1989 Hans Joergen Aa. Jensen
 C
-C  Printe traceback from Q stack
+C  Print traceback from Q stack
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
       PARAMETER (MXQLVL = 100)

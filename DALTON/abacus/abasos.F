@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sosdrv */
       SUBROUTINE SOSDRV(WORK,LWORK,PASS)
@@ -2006,7 +2005,7 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 CPFP
-C#include <mxorb.h>
+C#include "mxorb.h"
 #include "maxorb.h"
 Cend-PFP
       PARAMETER (ZERO = 0.0D+00, D1 = 1.0D+00)
@@ -2023,7 +2022,7 @@ C
 #include "cbitrp.h"
 #include "spnout.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       CALL QENTER('LTRPMV')
 C
@@ -2038,23 +2037,23 @@ c      CALL DZERO(SPNSD,MXCOOR*MXCOOR*NLOCCS*NLOCCS*NLVIRS*NLVIRS)
          JATOM1 = 0
          DO IREP = 0, MAXREP
          DO IATOM1 = 1, NUCIND
-            IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = 0
                DO  IREP1 = 0, MAXREP
                DO  IATOM2 = 1, NUCIND
-                  IF (IBTAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
+                  IF (IAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
                      JATOM2 = JATOM2 + 1
                      DO ICOOR = 1, 3
-                        IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                        IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                         ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
                         DO JCOOR = 1, 3
-                           IREP3 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                           IREP3 = IEOR(ISYMAX(JCOOR,2),IREP1)
                            ISCOR2 = IPTCNT(3*(IATOM2-1)+JCOOR,IREP3,2)
                            IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
                               DO KCOOR = 1, 3
                                  IF (KCOOR .GT. ICOOR) THEN
-                                   IREP4 = IBTXOR(ISYMAX(KCOOR,2),IREP)
+                                   IREP4 = IEOR(ISYMAX(KCOOR,2),IREP)
                                    ISCOR3 = IPTCNT(3*(IATOM1-1)+KCOOR,
      &                                             IREP4,2)
                                    IADR1 = 3*(ISCOR3 - 1) + ICOOR
@@ -2062,7 +2061,7 @@ c      CALL DZERO(SPNSD,MXCOOR*MXCOOR*NLOCCS*NLOCCS*NLVIRS*NLVIRS)
                                     IADR1 = 3*(ISCOR1 - 1) + KCOOR
                                  END IF
                                  IF (KCOOR .GT. JCOOR) THEN
-                                   IREP4 = IBTXOR(ISYMAX(KCOOR,2),IREP1)
+                                   IREP4 = IEOR(ISYMAX(KCOOR,2),IREP1)
                                    ISCOR3 = IPTCNT(3*(IATOM2-1)+KCOOR,
      &                                             IREP4,2)
                                    IADR2 = 3*(ISCOR3 - 1) + JCOOR
@@ -2096,14 +2095,14 @@ C
          DO IREP = 0, MAXREP
             KATOM1 = JATOM1
             DO IATOM1 = 1, NUCIND
-               IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = KATOM1
                DO IATOM2 = 1, NUCIND
-                  IF (IBTAND(IREP,ISTBNU(IATOM2)).EQ.0) THEN
+                  IF (IAND(IREP,ISTBNU(IATOM2)).EQ.0) THEN
                   JATOM2 = JATOM2 + 1
                   DO ICOOR = 1, 3
-                     IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                     IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                      ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
                      ISCOR2 = IPTCNT(3*(IATOM2 - 1) + ICOOR,IREP2,2)
                      IF (ISCOR1.GT.0 .AND. ISCOR2.GT.0) THEN
@@ -2131,26 +2130,26 @@ C
          JATOM1 = 0
          DO IREP = 0, MAXREP
             DO IATOM1 = 1, NUCIND
-               IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
                JATOM1 = JATOM1 + 1
                JATOM2 = 0
                DO IREP1 = 0, MAXREP
                   DO IATOM2 = 1, NUCIND
-                     IF (IBTAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
+                     IF (IAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
                      JATOM2 = JATOM2 + 1
 C
                      DO ILVAR = 1, NLOCCS*NLOCCS*NLVIRS*NLVIRS
 C
                         DO ICOOR = 1, 3
-                           IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                           IREP2 = IEOR(ISYMAX(ICOOR,2),IREP)
                            ISCOR1 = IPTCNT(3*(IATOM1-1)+ICOOR,IREP2,2)
                            DO JCOOR = 1, 3
-                              IREP3  = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                              IREP3  = IEOR(ISYMAX(JCOOR,2),IREP1)
                               ISCOR2 =
      &                            IPTCNT(3*(IATOM2-1)+JCOOR,IREP3,2)
                               IF (ISCOR1.GT.0 .AND. ISCOR2.GT.0) THEN
                                  IADR1  = 3*(ISCOR1 - 1) + JCOOR
-                                 IREP4  = IBTXOR(ISYMAX(ICOOR,2),IREP1)
+                                 IREP4  = IEOR(ISYMAX(ICOOR,2),IREP1)
                                  ISCOR3 = 
      &                               IPTCNT(3*(IATOM2-1)+ICOOR,IREP4,2)
                                  IADR2 = 3*(ISCOR3 - 1) + JCOOR
@@ -2419,7 +2418,7 @@ C PMASS used from include file pmass.h
 C
 #include "priunit.h"
 #include "codata.h"
-C#include <pmass.h>
+C#include "pmass.h"
 C
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D1O3 = 1.0D0/D3, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/
@@ -2432,7 +2431,7 @@ C MXCORB used from include file mxorb.h
 #include "maxaqn.h"
 #include "mxcent.h"
 CPFP
-C#include <mxorb.h>
+C#include "mxorb.h"
 #include "maxorb.h"
 Cend-PFP
 C
@@ -2457,7 +2456,7 @@ C
 C
       LOGICAL TEST
 C
-#include "ibtfun.h"
+
 C
       CALL QENTER('LSPRES')
 C
@@ -2493,7 +2492,7 @@ C
       IF (SOLVNT) NUCINS = NUCINS - 1
       DO I1 = 1, NUCINS
          DO ISYM1 = 0, MAXOPR
-            IF (IBTAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
+            IF (IAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
             IATOM1 = IATOM1 + 1
             IF (DOPERT(I1,2)) THEN
             IATOM2 = 0
@@ -2504,7 +2503,7 @@ C
                   MAXSYM = MAXOPR
                END IF
                DO ISYM2 = 0, MAXSYM
-                  IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
+                  IF (IAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
                   IATOM2 = IATOM2 + 1
                   IF (DOPERT(I2,2)) THEN
                   IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2

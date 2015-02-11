@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 * ==================================================================== *
       SUBROUTINE WFNAO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
@@ -97,13 +96,13 @@ C     ----------------------------------------------------------------
       END DO
 
       IF (NAO .NE. NBASIS) THEN
-         PRINT *, "Inconsistency in the number of AO's in WFNAO."
-         STOP     "Inconsistency in the number of AO's in WFNAO."
+         PRINT *,  "Inconsistency in the number of AO's in WFNAO."
+         CALL QUIT("Inconsistency in the number of AO's in WFNAO.")
       END IF
 
       IF (NCENTER .NE. NUCDEP) THEN
-         PRINT *, "Inconsistency in the number of centers in WFNAO."
-         STOP     "Inconsistency in the number of centers in WFNAO."
+         PRINT *,  "Inconsistency in the number of centers in WFNAO."
+         CALL QUIT("Inconsistency in the number of centers in WFNAO.")
       END IF
 
 C     ----------------------------------------------------------------
@@ -119,8 +118,8 @@ C     ----------------------------------------------------------------
       KEND    = KSCR    + NBASIS * NPRIM 
 
       IF (KEND .GT. LWORK) THEN
-         PRINT *,'Insufficient memory in WFNAO.'
-         STOP    'Insufficient memory in WFNAO.'
+         PRINT *,  'Insufficient memory in WFNAO.'
+         CALL QUIT('Insufficient memory in WFNAO.')
       END IF
 
 C     ----------------------------------------------------
@@ -159,8 +158,8 @@ C     ----------------------------------------------------------------
               IOFFWRK = KSCR + IOFFPR * NBASIS 
               LENGTH  = NBASIS * NDEG * KCK(J) * NNUC
               IF (IOFFWRK+LENGTH .GT. LWORK) THEN
-                PRINT *, 'Insufficient memory in WFNAO.'
-                STOP     'Insufficient memory in WFNAO.'
+                PRINT *,  'Insufficient memory in WFNAO.'
+                CALL QUIT('Insufficient memory in WFNAO.')
               END IF
               CALL DZERO(WORK(IOFFWRK+1),NBASIS*NDEG*KCK(J)*NNUC)
 
@@ -229,8 +228,8 @@ c
 
 
       IF ( (KPOSAO + NBASIS*NPRIM) .GT. LWORK) THEN
-        PRINT *, 'Insufficient memory in WFNAO.'
-        STOP     'Insufficient memory in WFNAO.'
+        PRINT *,  'Insufficient memory in WFNAO.'
+        CALL QUIT('Insufficient memory in WFNAO.')
       END IF
 
 C     ----------------------------------------------------------------
@@ -328,8 +327,8 @@ C     ---------------------------------------------------
       READ(LUWFN,'(8X,I3,9X,3(I3,17X))') IDUM, NAO, NPRIM, NATOM
 
       IF (NAO .NE. NBAST) THEN
-         PRINT *, "Inconsistency in the number of AO's in WFNMO."
-         STOP     "Inconsistency in the number of AO's in WFNMO."
+         PRINT *,  "Inconsistency in the number of AO's in WFNMO."
+         CALL QUIT("Inconsistency in the number of AO's in WFNMO.")
       END IF
 
 C     ----------------------
@@ -342,8 +341,8 @@ C     ----------------------
       KEND    = KPOSAO  + NPRIM * NAO
 
       IF (KEND .GT. LWORK) THEN
-         PRINT *,'Insufficient memory in WFNMO.'
-         STOP    'Insufficient memory in WFNMO.'
+         PRINT *,  'Insufficient memory in WFNMO.'
+         CALL QUIT('Insufficient memory in WFNMO.')
       END IF
 
 
@@ -388,8 +387,8 @@ C     ----------------------
       KEND  = KPOMO + NBAST * NPRIM
 
       IF (KEND .GT. LWORK) THEN
-         PRINT *,'Insufficient memory in WFNMO (2).'
-         STOP    'Insufficient memory in WFNMO (2).'
+         PRINT *,  'Insufficient memory in WFNMO (2).'
+         CALL QUIT('Insufficient memory in WFNMO (2).')
       END IF
 
       CALL DZERO(WORK(KAOMO),NBAST*NBAST)
@@ -438,7 +437,7 @@ C     ----------------------
      .     'An error occured while reading from file ', FNWFNAO,
      .     'IOSTAT = ', IOS
       CLOSE(UNIT=LUWFN)
-      STOP 'I/O ERROR IN WFNMO.'
+      CALL QUIT('I/O ERROR IN WFNMO.')
       END 
 
 * ==================================================================== *
@@ -467,7 +466,7 @@ C
       DIMENSION POMO(NPRIM,*)
 
       INTEGER IOS, ICENT, MCENT, LCENT, I, N
-#include "ibtfun.h"
+
 
 C     ----------------------------------------------------
 C     open wfn file and write header:
@@ -499,13 +498,13 @@ C     ----------------------------------------------------
          ELSE
            LCENT = 0
            DO ISYMOP = 0, MAXOPR
-             IF (IBTAND(ISYMOP,ISTBNU(ICENT)) .EQ. 0) THEN
+             IF (IAND(ISYMOP,ISTBNU(ICENT)) .EQ. 0) THEN
                LCENT = LCENT + 1
                MCENT = MCENT + 1
 
-               X = PT(IBTAND(ISYMAX(1,1),ISYMOP)) * CORD(1,ICENT)
-               Y = PT(IBTAND(ISYMAX(2,1),ISYMOP)) * CORD(2,ICENT)
-               Z = PT(IBTAND(ISYMAX(3,1),ISYMOP)) * CORD(3,ICENT)
+               X = PT(IAND(ISYMAX(1,1),ISYMOP)) * CORD(1,ICENT)
+               Y = PT(IAND(ISYMAX(2,1),ISYMOP)) * CORD(2,ICENT)
+               Z = PT(IAND(ISYMAX(3,1),ISYMOP)) * CORD(3,ICENT)
 
                WRITE(LUWFN,'(1X,A4,A1,I1,1X,A11,I3,A2,3F12.8,A10,F5.1)')
      &             NAMN(ICENT),'#',LCENT,'    (CENTRE',MCENT,') ',
@@ -518,8 +517,8 @@ C     ----------------------------------------------------
       END DO
 
       IF (MCENT.NE.NATOM) THEN
-         PRINT *, "Inconsistency in the number of centers in WRWFN."
-         STOP     "Inconsistency in the number of centers in WRWFN."
+         PRINT *,  "Inconsistency in the number of centers in WRWFN."
+         CALL QUIT("Inconsistency in the number of centers in WRWFN.")
       END IF
 
 C     ---------------------------------------------------------------
@@ -566,7 +565,7 @@ C     ---------------------------------------------------------------
      .     'An error occured while writing to file ', FNWFN,
      .     'IOSTAT = ', IOS
       CLOSE(UNIT=LUWFN)
-      STOP 'I/O ERROR IN WRWFN.'
+      CALL QUIT('I/O ERROR IN WRWFN.')
                                    
       END
 * ==================================================================== *

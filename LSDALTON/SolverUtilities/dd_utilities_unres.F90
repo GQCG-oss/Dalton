@@ -5,7 +5,7 @@ use precision
 use matrix_module
 use matrix_operations
 use direct_dens_util
-use matrix_operations_unres_dense
+use matrix_op_unres_dense
 use queue_module
 use rspPrecond
 !use queue_ops
@@ -108,7 +108,7 @@ contains
    !Set proj to alfa part of DUone:
    proj(1:matdim,1:matdim) = fullmat2(1:matdim,1:matdim)
        !write(lupri,*) 'FUP halfmat, alfa part **'
-       !call OUTPUT(halfmat, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
+       !call LS_OUTPUT(halfmat, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
    !norm = frob_norm(halfmat,matdim,matdim)
    !if (norm < 1.0E-12_realk) then
    if (DD%nocca == 0) then
@@ -138,7 +138,7 @@ contains
    !Set proj to beta part of DUone:
    proj(1:matdim,1:matdim) = fullmat2(matdim+1:fulldim,matdim+1:fulldim)
        !write(lupri,*) 'FUP halfmat, beta part **'
-       !call OUTPUT(halfmat, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
+       !call LS_OUTPUT(halfmat, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
    !norm = frob_norm(halfmat,matdim,matdim)
    !if (norm < 1.0E-12_realk) then
    if (DD%noccb == 0) then
@@ -195,7 +195,7 @@ contains
    !Set halfmat to alfa part of FUQ:
    halfmat(1:matdim,1:matdim) = fullmat1(matdim+1:fulldim,matdim+1:fulldim)
        !write(lupri,*) 'FUQ halfmat, beta part **'
-       !call OUTPUT(halfmat, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
+       !call LS_OUTPUT(halfmat, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
    !Set proj to alfa part of QU:
    proj(1:matdim,1:matdim) = fullmat2(matdim+1:fulldim,matdim+1:fulldim)
    !norm = frob_norm(halfmat,matdim,matdim)
@@ -327,32 +327,32 @@ contains
          write(decomp%lupri,*)
          write(decomp%lupri,*) '       Alpha occ. eigenvalues' !; call flshfo(decomp%lupri)
          write(decomp%lupri,*) '       ======================'
-         CALL OUTPUT(DD%FUPalfa_eival,1,DD%nocca,1,1,DD%nocca,1,1,decomp%LUPRI)
-         !CALL OUTPUT(DD_FUPalfa_eivecs,1,matdim,1,DD_nocc,matdim,DD_nocc,1,LUPRI)
+         CALL LS_OUTPUT(DD%FUPalfa_eival,1,DD%nocca,1,1,DD%nocca,1,1,decomp%LUPRI)
+         !CALL LS_OUTPUT(DD_FUPalfa_eivecs,1,matdim,1,DD_nocc,matdim,DD_nocc,1,LUPRI)
       endif
 
       if (.not. NoBeta .and. decomp%info_stability) then
          write(decomp%lupri,*)
          write(decomp%lupri,*) '       Beta occ. eigenvalues' !; call flshfo(decomp%lupri)
          write(decomp%lupri,*) '       ====================='
-         CALL OUTPUT(DD%FUPbeta_eival,1,DD%noccb,1,1,DD%noccb,1,1,decomp%LUPRI)
-         !CALL OUTPUT(DD_FUPbeta_eivecs,1,matdim,1,DD_nocc,matdim,DD_nocc,1,LUPRI)
+         CALL LS_OUTPUT(DD%FUPbeta_eival,1,DD%noccb,1,1,DD%noccb,1,1,decomp%LUPRI)
+         !CALL LS_OUTPUT(DD_FUPbeta_eivecs,1,matdim,1,DD_nocc,matdim,DD_nocc,1,LUPRI)
       endif
 
       if (.not. NoAlfa .and. decomp%info_stability) then
          write(decomp%lupri,*)
          write(decomp%lupri,*) '       Alpha virt. eigenvalues' !; call flshfo(lupri)
          write(decomp%lupri,*) '       ======================='
-         CALL OUTPUT(DD%FUQalfa_eival,1,DD%nvirta,1,1,DD%nvirta,1,1,decomp%LUPRI)
-         !CALL OUTPUT(DD_FUQalfa_eivecs,1,matdim,1,DD_nvirt,matdim,DD_nvirt,1,LUPRI)
+         CALL LS_OUTPUT(DD%FUQalfa_eival,1,DD%nvirta,1,1,DD%nvirta,1,1,decomp%LUPRI)
+         !CALL LS_OUTPUT(DD_FUQalfa_eivecs,1,matdim,1,DD_nvirt,matdim,DD_nvirt,1,LUPRI)
       endif
 
       if (.not. NoBeta .and. decomp%info_stability) then
          write(decomp%lupri,*)
          write(decomp%lupri,*) '       Beta virt. eigenvalues' !; call flshfo(lupri)
          write(decomp%lupri,*) '       ======================'
-         CALL OUTPUT(DD%FUQbeta_eival,1,DD%nvirtb,1,1,DD%nvirtb,1,1,decomp%LUPRI)
-         !CALL OUTPUT(DD_FUQbeta_eivecs,1,matdim,1,DD_nvirt,matdim,DD_nvirt,1,LUPRI)
+         CALL LS_OUTPUT(DD%FUQbeta_eival,1,DD%nvirtb,1,1,DD%nvirtb,1,1,decomp%LUPRI)
+         !CALL LS_OUTPUT(DD_FUQbeta_eivecs,1,matdim,1,DD_nvirt,matdim,DD_nvirt,1,LUPRI)
       endif
 
       k = 0
@@ -441,7 +441,7 @@ contains
                enddo
             endif
             !write(lupri,*) 'full Hes starting guess no', i
-            !call OUTPUT(iniguess_full, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
+            !call LS_OUTPUT(iniguess_full, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
 
             alfa_orb_energy_diff(posmin(1)) = alfa_orb_energy_diff(posmax(1))
             call mat_unres_dense_part_from_full(iniguess_full,'a',iniguess(i))
@@ -475,7 +475,7 @@ contains
                enddo
             endif
             !write(lupri,*) 'full Hes starting guess no', i
-            !call OUTPUT(iniguess_full, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
+            !call LS_OUTPUT(iniguess_full, 1, matdim, 1, matdim, matdim, matdim, 1, lupri)
             beta_orb_energy_diff(posmin(1)) = beta_orb_energy_diff(posmax(1))
             call mat_unres_dense_part_from_full(iniguess_full,'a',iniguess(i)) !Thomas, Stinne 17/2-10
             call mat_unres_dense_part_from_full(iniguess_full,'b',iniguess(i))

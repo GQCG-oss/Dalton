@@ -4,15 +4,14 @@ MODULE io
 use io_type
 use files
 use precision
-use Integralparameters
+use LSparameters
 use matrix_module
 use matrix_operations
 use memory_handling
 use mat3d_mod, only: read_mat3d_from_disk, mat3d
 use molecule_type
 use molecule_typetype
-use LSTENSOR_OPERATIONSMOD, only: write_lstensor_to_disk, LSTENSOR, &
-     & read_lstensor_from_disk
+use LSTENSOR_OPERATIONSMOD, only: LSTENSOR
 use mat3d_mod, only: write_mat3d_to_disk, mat3d
 CONTAINS
 !> \brief initialise the IOitem
@@ -25,6 +24,10 @@ TYPE(IOITEM)  :: IO
 IO%numFiles = 0
 call io_alloc(IO,increment)
 IO%isopen = .FALSE.
+IO%saveInMem = .TRUE.
+IO%nMemMat = 0
+NULLIFY(IO%first)
+NULLIFY(IO%current)
 END SUBROUTINE io_init
 
 !> \brief free the IOitem
@@ -33,10 +36,28 @@ END SUBROUTINE io_init
 !> \param IO the IOITEM
 SUBROUTINE io_free(IO)
 implicit none
-TYPE(IOITEM)  :: IO
+TYPE(IOITEM)          :: IO
+Integer               :: i
+TYPE(memMatP),pointer :: current,next
+
 IO%numFiles = 0
 call io_dealloc(IO)
+
+current => IO%first
+DO i=1,IO%nMemMat
+  next => current%next
+  call free_memmat(current)
+  current => next
+ENDDO
 END SUBROUTINE io_free
+
+SUBROUTINE free_memmat(memMat)
+implicit none
+TYPE(memMatP),pointer :: memMat
+call mat_free(memMat%p%mat)
+deallocate(memMat%p)
+deallocate(memMat)
+END SUBROUTINE free_memmat
 
 !> \brief allocate the IOitem
 !> \author S. Reine and T. Kjaergaard
@@ -241,7 +262,7 @@ ENDIF
 IF(fileopen2)THEN
    CALL LSOPEN(IUNIT,FILENAME,'UNKNOWN','UNFORMATTED')
 ELSE
-   call matrixmembuf_Open(iunit,filename)
+   call lsquit('io_open: membuf',-1)
 ENDIF
 IO%isOpen(iFile) = .TRUE.
 IO%IUNIT(iFile)  = IUNIT
@@ -297,7 +318,7 @@ IF(fileclose2)THEN
    ENDIF
    CALL LSCLOSE(IUNIT,'KEEP')
 ELSE
-   call matrixmembuf_Close(iunit,.FALSE.)
+   call lsquit('membuf io_close',-1)
 ENDIF
 IO%isOpen(iFile) = .FALSE.
 IO%IUNIT(iFile)  = -1
@@ -400,6 +421,9 @@ DO IAO=1,4
   ELSEIF (AOstring(IAO).EQ.AOdfJK) THEN
     Filename(iFilename:iFilename+1) = 'jk'
     iFilename = iFilename + 2
+  ELSEIF (AOstring(IAO).EQ.AOadmm) THEN
+    Filename(iFilename:iFilename) = 'a'
+    iFilename = iFilename + 1
   ELSEIF (AOstring(IAO).EQ.AOVAL) THEN
     Filename(iFilename:iFilename) = 'v'
     iFilename = iFilename + 1
@@ -412,24 +436,9 @@ DO IAO=1,4
   ELSEIF (AOstring(IAO).EQ.AOpCharge) THEN
     Filename(iFilename:iFilename) = 'p'
     iFilename = iFilename + 1
-  ELSEIF (AOstring(IAO).EQ.AOS1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't1'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't2'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p2cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't3'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOS2p2cGen) THEN
-    Filename(iFilename:iFilename+1) = 't4'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOP1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't5'
-    iFilename = iFilename + 2
-  ELSEIF (AOstring(IAO).EQ.AOD1p1cSeg) THEN
-    Filename(iFilename:iFilename+1) = 't6'
-    iFilename = iFilename + 2
+  ELSEIF (AOstring(IAO).EQ.AOelField) THEN
+    Filename(iFilename:iFilename) = 'f'
+    iFilename = iFilename + 1
   ELSE
     WRITE(LUPRI,'(1X,A,I1,2A)') 'Error! Wrong AOstring(',IAO,')=',AOstring(IAO),' in io_get_filename.'
     CALL lsQUIT('Error in io_get_filename Wrong AOstring',lupri)
@@ -495,18 +504,68 @@ END SUBROUTINE io_get_filename
 !> \param IO the IOITEM
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
-SUBROUTINE io_write_mat(Mat,Filename,IO,OnMaster,LUPRI,LUERR)
+SUBROUTINE io_write_mat(Mat,Filename,IO,LUPRI,LUERR)
 implicit none
 Character(80) :: Filename
 Integer       :: LUPRI,LUERR,n1,n2,n3,n4,n5
 TYPE(matrix)  :: Mat
 TYPE(IOITEM)  :: IO
-logical       :: OnMaster
-CALL io_open(Filename,IO,LUPRI,LUERR,OnMaster)
-IF(.NOT.OnMaster)call matrixmembuf_Overwrite(io_iunit(IO,Filename),filename)
-CALL mat_write_to_disk(io_iunit(IO,Filename),Mat,OnMaster)
-CALL io_close(Filename,IO,LUPRI,LUERR,OnMaster)
+IF (IO%saveInMem) THEN
+  CALL add_mat_to_mem(IO,Mat,Filename)
+ELSE
+  CALL io_open(Filename,IO,LUPRI,LUERR)
+  CALL mat_write_to_disk(io_iunit(IO,Filename),Mat)
+  CALL io_close(Filename,IO,LUPRI,LUERR)
+ENDIF
 END SUBROUTINE io_write_mat
+
+SUBROUTINE add_mat_to_mem(IO,Mat,Filename)
+implicit none
+TYPE(matrix)  :: Mat
+TYPE(IOITEM)  :: IO
+Character(80) :: Filename
+!
+TYPE(memMatP),pointer :: next,current
+Integer               :: iMat
+
+!See if matrix already exsist
+IF (associated(IO%first)) THEN
+  current => IO%first
+  iMat = 1
+  DO WHILE (.TRUE.)
+    IF (Filename .EQ. current%p%Filename) THEN
+      !Overwrite exisiting storage if already stored
+      call mat_assign(current%p%mat,Mat)
+      RETURN
+    ENDIF
+    current => current%next
+    iMat = iMat+1
+    IF (iMat.GT.IO%nMemMat) EXIT
+  ENDDO
+ENDIF
+!Add it to the list if not
+IO%nMemMat = IO%nMemMat + 1
+nullify(next)
+allocate(next)
+nullify(next%p)
+allocate(next%p)
+call mat_init(next%p%mat,Mat%nrow,Mat%ncol)
+call mat_assign(next%p%mat,Mat)
+next%p%Filename = Filename
+IF (associated(IO%current)) THEN
+  IO%current%next => next
+  next%previous   => IO%current
+  IO%current      => next
+  nullify(next%next)
+ELSE
+  IO%first => next
+  IO%current => next
+  nullify(next%next)
+  nullify(next%previous)
+ENDIF
+IO%current      => next
+
+END SUBROUTINE add_mat_to_mem
 
 !> \brief write tensor to disk
 !> \author S. Reine and T. Kjaergaard
@@ -562,24 +621,24 @@ DO i5=1,n5
 ENDDO
 END SUBROUTINE io_write_tensor
 
-!> \brief write lstensor to disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param tensor the lstensor to be written to disk  
-!> \param Filename the filename
-!> \param IO the IOITEM
-!> \param LUPRI the logical unit number for the output file
-!> \param LUERR the logical unit number for the error file
-SUBROUTINE io_write_lstensor(tensor,Filename,IO,LUPRI,LUERR)
-implicit none
-Character(80) :: Filename
-Integer       :: LUPRI,LUERR
-type(lstensor) :: tensor
-TYPE(IOITEM)  :: IO
-CALL io_open(Filename,IO,LUPRI,LUERR)
-CALL write_lstensor_to_disk(tensor,io_iunit(IO,Filename),lupri)
-CALL io_close(Filename,IO,LUPRI,LUERR)
-END SUBROUTINE io_write_lstensor
+!!$!> \brief write lstensor to disk
+!!$!> \author S. Reine and T. Kjaergaard
+!!$!> \date 2010
+!!$!> \param tensor the lstensor to be written to disk  
+!!$!> \param Filename the filename
+!!$!> \param IO the IOITEM
+!!$!> \param LUPRI the logical unit number for the output file
+!!$!> \param LUERR the logical unit number for the error file
+!!$SUBROUTINE io_write_lstensor(tensor,Filename,IO,LUPRI,LUERR)
+!!$implicit none
+!!$Character(80) :: Filename
+!!$Integer       :: LUPRI,LUERR
+!!$type(lstensor) :: tensor
+!!$TYPE(IOITEM)  :: IO
+!!$CALL io_open(Filename,IO,LUPRI,LUERR)
+!!$CALL write_lstensor_to_disk(tensor,io_iunit(IO,Filename),lupri)
+!!$CALL io_close(Filename,IO,LUPRI,LUERR)
+!!$END SUBROUTINE io_write_lstensor
 
 !> \brief read mat to disk
 !> \author S. Reine and T. Kjaergaard
@@ -589,17 +648,46 @@ END SUBROUTINE io_write_lstensor
 !> \param IO the IOITEM
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
-SUBROUTINE io_read_mat(Mat,Filename,IO,OnMaster,LUPRI,LUERR)
+SUBROUTINE io_read_mat(Mat,Filename,IO,LUPRI,LUERR)
 implicit none
 Character(80) :: Filename
 Integer       :: LUPRI,LUERR,n1,n2,n3,n4,n5
 TYPE(matrix)  :: Mat
 TYPE(IOITEM)  :: IO
-logical       :: OnMaster
-CALL io_open(Filename,IO,LUPRI,LUERR,OnMaster)
-CALL mat_read_from_disk(io_iunit(IO,Filename),Mat,OnMaster)
-CALL io_close(Filename,IO,LUPRI,LUERR,OnMaster)
+IF (IO%saveInMem) THEN
+  CALL get_mat_from_mem(IO,Mat,Filename)
+ELSE
+  CALL io_open(Filename,IO,LUPRI,LUERR)
+  CALL mat_read_from_disk(io_iunit(IO,Filename),Mat)
+  CALL io_close(Filename,IO,LUPRI,LUERR)
+ENDIF
 END SUBROUTINE io_read_mat
+
+SUBROUTINE get_mat_from_mem(IO,Mat,Filename)
+implicit none
+TYPE(matrix)  :: Mat
+TYPE(IOITEM)  :: IO
+Character(80) :: Filename
+!
+TYPE(memMatP),pointer     :: current
+Integer :: iMat
+
+current => IO%first
+
+iMat = 1
+DO while (.true.)
+  IF (iMat.GT.IO%nMemMat) THEN
+    WRITE(*,*) 'Error in get_mat_from_mem. File not found: ',Filename
+    CALL LSQUIT('Programming error. Matrix not found in get_mat_from_mem!',-1)
+  ENDIF
+  IF (current%p%Filename .EQ. Filename) THEN
+    call mat_assign(Mat,current%p%mat)
+    EXIT
+  ENDIF
+  current => current%next
+  iMat = iMat + 1
+ENDDO
+END SUBROUTINE get_mat_from_mem
 
 !> \brief read 5 dim array to disk
 !> \author S. Reine and T. Kjaergaard
@@ -658,26 +746,26 @@ DO i5=1,n5
 ENDDO
 END SUBROUTINE io_read_tensor
 
-!> \brief read lstensor from disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param tensor the lstensor to be written to disk  
-!> \param Filename the filename
-!> \param IO the IOITEM
-!> \param LUPRI the logical unit number for the output file
-!> \param LUERR the logical unit number for the error file
-SUBROUTINE io_read_lstensor(tensor,Filename,IO,LUPRI,LUERR)
-implicit none
-Character(80) :: Filename
-Integer       :: LUPRI,LUERR
-type(lstensor) :: tensor
-TYPE(IOITEM)  :: IO
-!$OMP CRITICAL
-CALL io_open(Filename,IO,LUPRI,LUERR)
-CALL read_lstensor_from_disk(tensor,io_iunit(IO,Filename),lupri)
-CALL io_close(Filename,IO,LUPRI,LUERR)
-!$OMP END CRITICAL
-END SUBROUTINE io_read_lstensor
+!!$!> \brief read lstensor from disk
+!!$!> \author S. Reine and T. Kjaergaard
+!!$!> \date 2010
+!!$!> \param tensor the lstensor to be written to disk  
+!!$!> \param Filename the filename
+!!$!> \param IO the IOITEM
+!!$!> \param LUPRI the logical unit number for the output file
+!!$!> \param LUERR the logical unit number for the error file
+!!$SUBROUTINE io_read_lstensor(tensor,Filename,IO,LUPRI,LUERR)
+!!$implicit none
+!!$Character(80) :: Filename
+!!$Integer       :: LUPRI,LUERR
+!!$type(lstensor) :: tensor
+!!$TYPE(IOITEM)  :: IO
+!!$!$OMP CRITICAL
+!!$CALL io_open(Filename,IO,LUPRI,LUERR)
+!!$CALL read_lstensor_from_disk(tensor,io_iunit(IO,Filename),lupri)
+!!$CALL io_close(Filename,IO,LUPRI,LUERR)
+!!$!$OMP END CRITICAL
+!!$END SUBROUTINE io_read_lstensor
 
 !Type(IOitem)         :: IO
 !IUNIT = -1

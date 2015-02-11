@@ -21,12 +21,16 @@ F90_OBJS = \
 	Integral_interfaceDF.o\
 	Integral_interface_test.o\
         II_absval_int.o \
+	II_dft_dftd.o \
 	II_dft_int.o \
 	II_dft_ksm.o \
 	II_dft_ksm_worker.o \
 	II_XC_interface.o\
         ThermiteDistribute.o \
+        ThermiteDistribute2.o \
+        ThermiteDistributeGen.o \
         ThermiteDistributeK.o \
+        ThermiteDistributeK2.o \
         ThermiteDistributeDEC.o \
         ThermiteDriver.o \
         ThermiteOverlapDistribution.o \

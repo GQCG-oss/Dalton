@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+#    prop_roa
+#    --------
+#    Molecule:         C3H4
+#    Wave Function:    SCF / DZ(Dunning)
+#    Test Purpose:     Single-point calculation of Raman Optical Activity
+#                      parameters
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Molecular geometry
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 12,
+      rel_tolerance = 1.0e-8)
+
+# Energies
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-9)
+
+# Numerical walk
+f.add(string = 'Walk type: Numerical differentiation',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Vibrational Raman intensities and optical activity',
+      rel_tolerance = 1.0e-2)
+
+# Frequencies
+f.add(string = 'Number of frequencies',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Frequencies',
+      rel_tolerance = 1.0e-2)
+
+# Optical rotation
+f.add(from_string = 'G tensor for frequency',
+      num_lines = 8,
+      abs_tolerance = 2.0e-7)
+
+# Polarizability tensor
+f.add(from_string = 'Polarizability tensor at reference geometry',
+      num_lines = 25,
+      abs_tolerance = 5.0e-7)
+
+# No-London G tensor
+# London G tensor
+f.add(from_string = 'London G tensor at reference geometry',
+      num_lines = 23,
+      abs_tolerance = 5.0e-7)
+
+# A tensor
+f.add(from_string = 'A tensor at reference geometry',
+      num_lines = 40,
+      abs_tolerance = 5.0e-7)
+
+# Rayleigh properties
+f.add(from_string = 'Rayleigh properties for parent molecule',
+      num_lines = 60,
+      abs_tolerance = 1.0e-3)
+
+# Vibrational Frequencies and IR Intensities (15)
+f.add(from_re = 'Vibrational Frequencies and IR Intensities',
+      num_lines = 24,
+      abs_tolerance = 1.0e-2)
+
+# Raman related properties (15)
+f.add(from_re = 'Raman related properties for freq.',
+      num_lines = 21,
+      abs_tolerance = 1.0e-2)
+
+# Raman Optical Activity properties (15)
+f.add(from_re = 'Raman Optical Activity properties for freq.',
+      num_lines = 23,
+      abs_tolerance = 1.0e-2)
+
+
+# Circular Intensity difference (15)
+# Not working for the first couple of instances
+# when run in parallel
+f.add(from_re = 'Circular Intensity difference',
+      num_lines = 20,
+      abs_tolerance = 1.0e-2)
+
+test.run(['prop_roa.dal'], ['C3H4_DZ-Dunning.mol'], f={'out': f})
+
+sys.exit(test.return_code)

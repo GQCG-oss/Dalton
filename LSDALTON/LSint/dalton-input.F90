@@ -1,8 +1,9 @@
 !> @file
 !> Contains module that reads the dalton input and initializes lsitem
 MODULE DALTONINFO
+use memory_handling
 use precision
-use Integralparameters
+use LSparameters
 use files, only: lsopen,lsclose
 use typedeftype, only: LSITEM, integralconfig, DALTONINPUT,&
      & BASISSETLIBRARYITEM
@@ -13,16 +14,24 @@ use lattice_type, only: lvec_list_t
 #ifdef MOD_UNRELEASED
  use lattice_vectors, only: pbc_setup_default
 #endif
-use basis_type, only: copy_basissetinfo, free_basissetinfo
+use basis_type, only: copy_basissetinfo, free_basissetinfo,&
+     & freeBrakebasinfo,initBrakebasinfo,&
+     & copybrakebasinfo,buildbasisfrombrakebasinf,print_basissetinfo,&
+     & print_brakebas, add_basissetinfo
+use basis_typetype,only: nullifyBasisset,nullifyMainBasis,&
+     & BasParamLABEL,nBasisBasParam,GCTBasParam,BRAKEBASINFO,&
+     & RegBasParam,CABBasParam,CAPBasParam
 use io, only: io_init, io_free
 use molecule_type, only: free_moleculeinfo
-use READMOLEFILE, only: read_molfile_and_build_molecule
-use BuildBasisSet, only: Build_BASIS
+use READMOLEFILE, only: read_molfile_and_build_molecule,Geometry_analysis  
+use BuildBasisSet, only: Build_BASIS,copy_Molecule_IDTYPE
 use lstiming, only: lstimer
-use molecule_module, only: build_fragment
+use molecule_module, only: build_fragment,build_fragment2,&
+     & DETERMINE_FRAGMENTNBAST,determine_nbast
 use screen_mod, only: screen_init, screen_free
 private
-public ::  ls_init, ls_free, build_ccfragmentlsitem, dalton_finalize
+public ::  ls_init, ls_free, build_ccfragmentlsitem, dalton_finalize,&
+     & build_atomspecfragmentlsitem
 CONTAINS 
 !> \brief initiate the lsitem structure which contain all info about integralevaluation schemes, molecule and basisset.
 !> \author T. Kjaergaard
@@ -45,7 +54,10 @@ Logical      :: doprint
 Logical      :: dodft
 !> is this a DEC calculation or a HF calculation
 Logical      :: doDEC
-
+!!!!!!!!!!!!!!!!!!!!!!!!
+TYPE(LSITEM) :: FRAGMENT
+integer :: nATOMS,nBASIS,nbasisfull,I
+integer,pointer :: ATOMS(:),BASIS(:)
 ls%lupri = lupri
 ls%luerr = luerr
 ls%optlevel = 3 
@@ -54,6 +66,41 @@ CALL dalton_init(ls%input,lupri,luerr,nbast,integral,dodft,doDEC,doprint)
 CALL typedef_init_setting(ls%setting)
 call screen_init()
 CALL typedef_set_default_setting(ls%setting,ls%input)
+
+
+!!$WRITE(lupri,*)'LS%input%BASIS%BINFO(1)'
+!!$call print_basissetinfo(LUPRI,LS%input%BASIS%BINFO(1))
+!!$
+!!$nATOMS = 7
+!!$nbasis = 19
+!!$nbasisfull = nbast
+!!$call mem_alloc(ATOMS,nATOMS)
+!!$do I=1,nATOMS
+!!$   ATOMS(I) = I
+!!$enddo
+!!$call mem_alloc(BASIS,nBASIS)
+!!$do I=1,nBASIS
+!!$   BASIS(I) = I
+!!$enddo
+!!$call build_ccfragmentlsitem(LS,FRAGMENT,ATOMS,NATOMS,BASIS,NBASIS,NBASISFULL,LUPRI,1000)!IPRINT)
+!!$call mem_dealloc(ATOMS)
+!!$call mem_dealloc(BASIS)
+!!$
+!!$WRITE(lupri,*)'THE MODIFIED CC FRAGMENT BASIS'
+!!$IF (doprint) THEN
+!!$   WRITE(lupri,*)'FRAGMENT%input%BASIS%BINFO(1)'
+!!$   call print_basissetinfo(LUPRI,FRAGMENT%input%BASIS%BINFO(1))
+!!$
+!!$   CALL PRINT_MOLECULEINFO(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS,1000)
+!!$   do i=1,nBasisBasParam
+!!$      IF(ls%input%BASIS%WBASIS(I))THEN
+!!$         CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%BINFO(I))
+!!$      ENDIF
+!!$   enddo
+!!$ENDIF
+!!$
+!!$call lsquit('test done',-1)
+!!$
 
 END SUBROUTINE ls_init
 
@@ -102,13 +149,14 @@ logical              :: doDEC
 LOGICAL              :: doprint
 TYPE(lvec_list_t)    :: latt_config
 !
-TYPE(BASISSETLIBRARYITEM) :: LIBRARY
+TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)
 integer              :: LUCME,IDUMMY,I
 CHARACTER(len=80)    :: BASISSETNAME
 CHARACTER(len=9)     :: BASISLABEL
 real(realk)          :: Tim1,Tim2,TIME_BUILD_BASIS,TIME_READ_DALTON
 real(realk)          :: TIME_AUXBUILD_BASIS,TIME_READ_MOL,TSTART
 Integer              :: numAtoms, numNodes
+integer,pointer :: atoms(:)
 logical              :: lopen
 LUCME=-1
 !CAREFUL
@@ -116,9 +164,14 @@ LUCME=-1
 intinp%nfock = 0 !number of fock matrices calculated
 
 NULLIFY(intinp%MOLECULE)
+NULLIFY(intinp%AUXMOLECULE)
 NULLIFY(intinp%BASIS)
 ALLOCATE(intinp%MOLECULE)
+ALLOCATE(intinp%AUXMOLECULE)
+intinp%AUXMOLECULE%nAtoms=0
+intinp%AUXMOLECULE%nSubSystems=0
 ALLOCATE(intinp%BASIS)
+call nullifyMainBasis(intinp%BASIS)
 
 IF (doprint) THEN
    !CALL PRINT_INTRO(LUPRI)
@@ -148,10 +201,12 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ DALTONFILE',TIM1,TIM2,LUPRI)
 !*************************************************
 #ifdef MOD_UNRELEASED
   call pbc_setup_default(latt_config)
-#endif
-CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
-     & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%auxbasis,&
-     & intinp%dalton%CABSbasis,intinp%dalton%JKbasis,latt_config)
+#endif  
+  CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
+       & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%basis,&
+       & latt_config)
+
+CALL Geometry_analysis(intinp%MOLECULE,LUPRI)  
 
 integral%nelectrons = intinp%MOLECULE%nelectrons 
 integral%molcharge = INT(intinp%MOLECULE%charge)
@@ -177,12 +232,6 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ MOLFILE',TIM1,TIM2,LUPRI)
 !*
 !*************************************************
 
-IF (doprint) THEN
-  WRITE(LUPRI,'(2X,A)')' '
-  WRITE(LUPRI,'(2X,A)')'CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS'
-  WRITE(LUPRI,'(2X,A)')' '
-ENDIF
-BASISLABEL='REGULAR  '
 IF(doDEC)intinp%DALTON%NOFAMILY=.TRUE.
 !this is due to the ordering of basisfunctions in the batches and the 
 !minAObatch sizes calculation. 
@@ -194,99 +243,63 @@ IF(doDEC)intinp%DALTON%NOGCINTEGRALTRANSFORM=.TRUE.
 !added complications if the 2int screening matrix should be calculated. 
 !it needs to be possible for a single integral to change basis in the integral call
 
-CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
-     &intinp%MOLECULE,intinp%BASIS%REGULAR,LIBRARY,&
-     &BASISLABEL,intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
-     &doprint,intinp%DALTON%DOSPHERICAL)
-nbast = getNbasis(AORdefault,Contractedinttype,intinp%MOLECULE,LUPRI)
+IF (doprint) THEN
+   do i=1,nBasisBasParam
+      IF(intinp%DALTON%BASIS(i))THEN
+         WRITE(lupri,*)'BASISSETLIBRARY  : ',BasParamLABEL(i)
+         CALL PRINT_BASISSETLIBRARY(LUPRI,LIBRARY(i))
+      ENDIF
+   enddo
+ENDIF
 
 IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD BASIS',TIM1,TIM2,LUPRI)
 
+call nullifyMainBasis(intinp%BASIS)
+intinp%BASIS%WBASIS = intinp%DALTON%BASIS
+do i=1,nBasisBasParam
+   IF(intinp%BASIS%WBASIS(I))THEN
+      IF (doprint) THEN
+         WRITE(LUPRI,'(2X,A)')' '
+         WRITE(LUPRI,'(2X,3A)')'CALLING BUILD BASIS WITH DEFAULT ',BasParamLABEL(i),' BASIS'
+         WRITE(LUPRI,'(2X,A)')' '
+      ENDIF
+      CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
+           & intinp%MOLECULE,intinp%BASIS%BINFO(I),LIBRARY,&
+           & BasParamLABEL(I),intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
+           & doprint,intinp%DALTON%DOSPHERICAL,I)
+      IF(i.EQ.CAPBasParam)THEN
+         !Add the CABSP basis to REGULAR basis and store in CABS basis!
+         IF(intinp%BASIS%WBASIS(CABBasParam))THEN
+            call lsquit('CABS and CABSP basis set supplied, not compatibel',-1)
+         ENDIF
+         CALL Add_basissetinfo(LUPRI,intinp%DALTON%BASPRINT,&
+              & intinp%BASIS%BINFO(RegBasParam),intinp%BASIS%BINFO(CAPBasParam),&
+              & intinp%BASIS%BINFO(CABBasParam),CABBasParam)
+         IF(intinp%BASIS%BINFO(RegBasParam)%labelindex .NE. 0)THEN
+            call copy_Molecule_IDTYPE(intinp%MOLECULE,RegBasParam,CABBasParam)
+         ENDIF
+         CALL DETERMINE_NBAST(intinp%MOLECULE,intinp%BASIS%BINFO(CABBasParam),&
+              & intinp%DALTON%DOSPHERICAL,.FALSE.)
+         intinp%BASIS%WBASIS(CABBasParam) = .TRUE.
+         intinp%dalton%basis(CABBasParam) = .TRUE.
+         IF(intinp%DALTON%BASPRINT .GT. 5) CALL PRINT_BASISSETINFO(LUPRI,&
+              & intinp%BASIS%BINFO(CABBasParam))
+      ENDIF
+      IF(i.EQ.RegBasParam)THEN !regular basis
+         nbast = getNbasis(AORdefault,Contractedinttype,intinp%MOLECULE,LUPRI)
+      ENDIF
+      IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD '//BasParamLABEL(I),TIM1,TIM2,LUPRI)
+   ENDIF
+ENDDO
+
 IF (doprint) THEN
-  CALL PRINT_BASISSETLIBRARY(LUPRI,LIBRARY)
-ENDIF
-
-IF(intinp%DALTON%AUXBASIS)THEN
-
-   IF (doprint) THEN
-      WRITE(LUPRI,'(2X,A)')' '
-      WRITE(LUPRI,'(2X,A)')'CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS'
-      WRITE(LUPRI,'(2X,A)')' '
-   ENDIF
-   BASISLABEL='AUXILIARY'
-   CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
-     &intinp%MOLECULE,intinp%BASIS%AUXILIARY,LIBRARY,&
-     &BASISLABEL,intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
-     &doprint,intinp%DALTON%DOSPHERICAL)
-   IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD AUXBASIS',TIM1,TIM2,LUPRI)
-   IF (doprint) THEN
-      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%AUXILIARY)
-   ENDIF
-   
-ELSE
-intinp%BASIS%AUXILIARY%natomtypes = 0
-intinp%BASIS%AUXILIARY%nChargeindex = 0  
-intinp%BASIS%AUXILIARY%labelindex = 0  
-nullify(intinp%BASIS%AUXILIARY%Chargeindex)
-ENDIF
-
-IF(intinp%DALTON%CABSBASIS)THEN
-   IF (doprint) THEN
-      WRITE(LUPRI,'(2X,A)')' '
-      WRITE(LUPRI,'(2X,A)')'CALLING BUILD BASIS WITH COMPLEMENTARY AUXILIARY BASIS'
-      WRITE(LUPRI,'(2X,A)')' '
-   ENDIF
-   BASISLABEL='CABS     '
-   CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
-     &intinp%MOLECULE,intinp%BASIS%CABS,LIBRARY,&
-     &BASISLABEL,intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
-     &doprint,intinp%DALTON%DOSPHERICAL)
-   IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD CABSBASIS',TIM1,TIM2,LUPRI)
-   IF (doprint) THEN
-      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%CABS)
-   ENDIF
-ELSE
-   intinp%BASIS%CABS%natomtypes = 0
-   intinp%BASIS%CABS%nChargeindex = 0  
-   intinp%BASIS%CABS%labelindex = 0  
-   nullify(intinp%BASIS%CABS%Chargeindex)
-ENDIF
-
-IF(intinp%DALTON%JKBASIS)THEN
-   IF (doprint) THEN
-      WRITE(LUPRI,'(2X,A)')' '
-      WRITE(LUPRI,'(2X,A)')'CALLING BUILD BASIS WITH COMPLEMENTARY AUXILIARY BASIS'
-      WRITE(LUPRI,'(2X,A)')' '
-   ENDIF
-   BASISLABEL='JKAUX    '
-   CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
-     &intinp%MOLECULE,intinp%BASIS%JK,LIBRARY,&
-     &BASISLABEL,intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
-     &doprint,intinp%DALTON%DOSPHERICAL)
-   IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD JKAUXBASIS',TIM1,TIM2,LUPRI)
-   IF (doprint) THEN
-      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%JK)
-   ENDIF
-ELSE
-   intinp%BASIS%JK%natomtypes = 0
-   intinp%BASIS%JK%nChargeindex = 0  
-   intinp%BASIS%JK%labelindex = 0  
-   nullify(intinp%BASIS%JK%Chargeindex)
-ENDIF
-
-intinp%BASIS%VALENCE%natomtypes = 0
-intinp%BASIS%VALENCE%nChargeindex = 0  
-intinp%BASIS%VALENCE%labelindex = 0  
-nullify(intinp%BASIS%VALENCE%Chargeindex)
-
-nullify(intinp%BASIS%GCtrans%ATOMTYPE)
-intinp%BASIS%GCtrans%natomtypes = 0
-intinp%BASIS%GCtrans%labelindex = 0
-intinp%BASIS%GCtrans%nChargeindex = 0
-intinp%BASIS%GCtransAlloc = .FALSE.
-IF (doprint) THEN
+   WRITE(lupri,*)'PRINT MOLECULE AND BASIS IN FULL INPUT'
    CALL PRINT_MOLECULEINFO(LUPRI,intinp%MOLECULE,intinp%BASIS,intinp%DALTON%MOLPRINT)
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%REGULAR)
+   do i=1,nBasisBasParam
+      IF(intinp%BASIS%WBASIS(I))THEN
+         CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%BINFO(I))
+      ENDIF
+   enddo
 ENDIF
 
 intinp%DO_DFT = dodft
@@ -312,55 +325,26 @@ TYPE(DALTONINPUT)    :: intinp
 integer   :: LUPRI
 !> the logical unit number for the error file
 integer   :: LUERR
+integer :: ibas
 
 call free_Moleculeinfo(intinp%MOLECULE)
-IF(intinp%BASIS%REGULAR%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%REGULAR)
-ENDIF
-IF(intinp%BASIS%AUXILIARY%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%AUXILIARY)
-ENDIF
-IF(intinp%BASIS%CABS%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%CABS)
-ENDIF
-IF(intinp%BASIS%JK%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%JK)
-ENDIF
-IF(intinp%BASIS%VALENCE%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%VALENCE)
-ENDIF
-IF(intinp%BASIS%GCtransAlloc)THEN
-   IF(intinp%BASIS%GCtrans%natomtypes .NE. 0)THEN
-      call free_basissetinfo(intinp%BASIS%GCtrans)
+call free_Moleculeinfo(intinp%AUXMOLECULE)
+DO ibas=1,nBasisBasParam
+   IF(intinp%BASIS%WBASIS(ibas))THEN
+      IF(intinp%BASIS%BINFO(ibas)%natomtypes .NE. 0)THEN
+         call free_basissetinfo(intinp%BASIS%BINFO(ibas))
+      ELSE
+         call lsquit('Error in dalton_finalize',-1)
+      ENDIF
    ENDIF
-ENDIF
+ENDDO
 DEALLOCATE(intinp%MOLECULE)
+DEALLOCATE(intinp%AUXMOLECULE)
 DEALLOCATE(intinp%BASIS)
 call io_free(intinp%io)
 
 END SUBROUTINE dalton_finalize
 
-!!$!> \brief free the daltoninput structure
-!!$!> \author T. Kjaergaard
-!!$!> \date 2010
-!!$SUBROUTINE dalton_free(intinp)
-!!$implicit none
-!!$!> contains info about input from LSDALTON.INP(only integral info) and MOLECULE.INP
-!!$TYPE(DALTONINPUT) :: intinp
-!!$
-!!$call free_Moleculeinfo(intinp%MOLECULE)
-!!$call free_basissetinfo(intinp%BASIS%REGULAR)
-!!$IF(intinp%DALTON%AUXBASIS)THEN
-!!$   call free_basissetinfo(intinp%BASIS%AUXILIARY)
-!!$ENDIF
-!!$DEALLOCATE(intinp%MOLECULE)
-!!$DEALLOCATE(intinp%BASIS)
-!!$NULLIFY(intinp%MOLECULE)
-!!$NULLIFY(intinp%BASIS)
-!!$call io_free(intinp%io)
-!!$
-!!$END SUBROUTINE dalton_free
- 
 !> \brief print dalton file
 !> \author T. Kjaergaard
 !> \date 2010
@@ -554,7 +538,7 @@ END SUBROUTINE PRINT_MOL_FILE
 !> \brief build a lsitem as a fragment of a full lsitem, used in DEC
 !> \author T. Kjaergaard
 !> \date 2010
-SUBROUTINE build_ccfragmentlsitem(LSFULL,FRAGMENT,ATOMS,NATOMS,LUPRI,IPRINT)
+SUBROUTINE build_AtomSpecfragmentlsitem(LSFULL,FRAGMENT,ATOMS,NATOMS,LUPRI,IPRINT)
 #ifdef VAR_MPI
 use infpar_module
 #endif
@@ -572,76 +556,66 @@ integer            :: LUPRI
 !> the printlevel integer, determining how much output should be generated
 integer            :: IPRINT
 !
-integer            :: IAO
+integer            :: IAO,I
 CHARACTER(len=9)   :: BASISLABEL
+integer,pointer :: FullAtomList(:)
+
+FRAGMENT%lupri = lsfull%lupri
+FRAGMENT%luerr = lsfull%luerr
+FRAGMENT%optlevel = lsfull%optlevel
+FRAGMENT%fopen = lsfull%fopen
 
 CALL io_init(FRAGMENT%INPUT%IO)
+!no pointers so a simple copy is fine
 FRAGMENT%INPUT%DALTON = lsfull%INPUT%DALTON
+FRAGMENT%INPUT%DALTON%DFT = lsfull%INPUT%DALTON%DFT
 
 NULLIFY(FRAGMENT%INPUT%BASIS)
 ALLOCATE(FRAGMENT%INPUT%BASIS)
-CALL Copy_basissetinfo(lsfull%INPUT%BASIS%REGULAR,fragment%INPUT%BASIS%REGULAR)
+call nullifyMainBasis(FRAGMENT%INPUT%BASIS)
+FRAGMENT%INPUT%BASIS%WBASIS = lsfull%INPUT%BASIS%WBASIS
+do i=1,nBasisBasParam
+ IF(lsfull%INPUT%BASIS%WBASIS(I))THEN
+  CALL Copy_basissetinfo(lsfull%INPUT%BASIS%BINFO(i),fragment%INPUT%BASIS%BINFO(I))
+ ENDIF
+enddo
+
+IF(.NOT.lsfull%input%DALTON%NOGCINTEGRALTRANSFORM)THEN
+   CALL LSQUIT('NOGCINTEGRALTRANSFORM false in build_AtomSpecfragmentlsitem',-1)
+ENDIF
 
 !The values of daltonitem which are set in readmolfile
-fragment%INPUT%BASIS%AUXILIARY%natomtypes = 0
-fragment%INPUT%BASIS%AUXILIARY%nChargeindex = 0  
-fragment%INPUT%BASIS%AUXILIARY%labelindex = 0  
-nullify(fragment%INPUT%BASIS%AUXILIARY%Chargeindex)
-
-fragment%input%DALTON%AUXBASIS = lsfull%input%DALTON%AUXBASIS
-fragment%input%DALTON%CABSBASIS = lsfull%input%DALTON%CABSBASIS
-fragment%input%DALTON%JKBASIS = lsfull%input%DALTON%JKBASIS
 FRAGMENT%input%dalton%DoSpherical  = lsfull%input%DALTON%DoSpherical 
 FRAGMENT%input%numFragments  = lsfull%input%numFragments 
-FRAGMENT%input%DALTON%NOGCINTEGRALTRANSFORM=.TRUE. 
-
-IF(FRAGMENT%INPUT%DALTON%AUXBASIS)THEN
-   CALL Copy_basissetinfo(lsfull%input%BASIS%AUXILIARY,fragment%input%BASIS%AUXILIARY)
-ELSE
-   fragment%input%BASIS%AUXILIARY%nAtomtypes=0
-ENDIF
-
-IF(FRAGMENT%INPUT%DALTON%CABSBASIS)THEN
-   CALL Copy_basissetinfo(lsfull%input%BASIS%CABS,fragment%input%BASIS%CABS)
-ELSE
-   fragment%input%BASIS%CABS%nAtomtypes=0
-ENDIF
-
-IF(FRAGMENT%INPUT%DALTON%JKBASIS)THEN
-   CALL Copy_basissetinfo(lsfull%input%BASIS%JK,fragment%input%BASIS%JK)
-ELSE
-   fragment%input%BASIS%JK%nAtomtypes=0
-ENDIF
-
-fragment%INPUT%BASIS%VALENCE%natomtypes = 0
-fragment%INPUT%BASIS%VALENCE%nChargeindex = 0  
-fragment%INPUT%BASIS%VALENCE%labelindex = 0  
-nullify(fragment%INPUT%BASIS%VALENCE%Chargeindex)
-
-nullify(fragment%INPUT%BASIS%GCtrans%ATOMTYPE)
-fragment%INPUT%BASIS%GCtrans%natomtypes = 0
-fragment%INPUT%BASIS%GCtrans%labelindex = 2
-fragment%INPUT%BASIS%GCtrans%nChargeindex = 0
-fragment%INPUT%BASIS%GCtransAlloc = .FALSE.
 
 NULLIFY(FRAGMENT%INPUT%MOLECULE)
 ALLOCATE(FRAGMENT%INPUT%MOLECULE)
-CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,fragment%input%BASIS,&
-     &FRAGMENT%INPUT%DALTON%AUXBASIS,FRAGMENT%INPUT%DALTON%CABSBASIS,&
-     &FRAGMENT%INPUT%DALTON%JKBASIS,ATOMS,nATOMS,LUPRI)
+CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
+     & fragment%input%BASIS,ATOMS,nATOMS,LUPRI)
+NULLIFY(FRAGMENT%INPUT%AUXMOLECULE)
+ALLOCATE(FRAGMENT%INPUT%AUXMOLECULE)
+call mem_alloc(FullAtomList,lsfull%input%MOLECULE%natoms)
+do I=1,lsfull%input%MOLECULE%natoms
+   FullAtomList(I) = I
+enddo
+CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & fragment%input%BASIS,FullAtomList,lsfull%input%MOLECULE%natoms,LUPRI)
+call mem_dealloc(FullAtomList)
 
 IF(IPRINT .GT. 0)THEN
    CALL PRINT_MOLECULEINFO(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS,IPRINT)
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%REGULAR)
-   IF(FRAGMENT%INPUT%DALTON%AUXBASIS)THEN
-      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%AUXILIARY)
-   ENDIF
+   do i=1,nBasisBasParam
+    IF(lsfull%input%BASIS%WBASIS(I))THEN
+     CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%BINFO(I))
+    ENDIF
+   enddo
 ENDIF
-
-FRAGMENT%input%DALTON%exchangeFactor = 1.0E0_realk
 
 CALL typedef_init_setting(FRAGMENT%setting)
 CALL typedef_set_default_setting(FRAGMENT%SETTING,FRAGMENT%INPUT)
+IF(FRAGMENT%SETTING%IntegralTransformGC)THEN
+   CALL LSQUIT('IntegralTransformGC true in build_AtomSpecfragmentlsitem',-1)
+ENDIF
 FRAGMENT%SETTING%IntegralTransformGC =.FALSE.
 
 ! Set setting communicator to be local group communicator
@@ -654,6 +628,322 @@ fragment%setting%comm = 0
 fragment%setting%node = 0
 fragment%setting%numnodes = 1
 #endif
+END SUBROUTINE build_AtomSpecfragmentlsitem
+
+!> \brief build a lsitem as a fragment of a full lsitem, used in DEC
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE build_ccfragmentlsitem(LSFULL,FRAGMENT,ATOMS,NATOMS,BASIS,NBASIS,NBASISFULL,LUPRI,IPRINT)
+#ifdef VAR_MPI
+use infpar_module
+#endif
+implicit none
+!> full lsitem structure 
+TYPE(LSITEM)       :: LSFULL
+!> fragment lsitem structure to be build 
+TYPE(LSITEM)       :: FRAGMENT
+!> number of atoms in the fragment
+integer            :: NATOMS
+!> list of atoms in the fragment
+integer            :: ATOMS(NATOMS)
+!> number of aos (basis functions) in the fragment
+integer            :: NBASIS
+!> number of aos (basis functions) in the molecule
+integer            :: NBASISFULL
+!> list of basis functions  in the fragment
+integer            :: BASIS(NBASIS)
+!> the logical unit number for the output file
+integer            :: LUPRI
+!> the printlevel integer, determining how much output should be generated
+integer            :: IPRINT
+!
+integer            :: IAO,I,NATOMSFULL
+CHARACTER(len=9)   :: BASISLABEL
+logical            :: WhichAos(NBASISFULL)
+
+NATOMSFULL = lsfull%input%MOLECULE%nAtoms
+FRAGMENT%lupri = lsfull%lupri
+FRAGMENT%luerr = lsfull%luerr
+FRAGMENT%optlevel = lsfull%optlevel
+FRAGMENT%fopen = lsfull%fopen
+
+CALL io_init(FRAGMENT%INPUT%IO)
+!no pointers so a simple copy is fine
+FRAGMENT%INPUT%DALTON = lsfull%INPUT%DALTON
+FRAGMENT%INPUT%DALTON%DFT = lsfull%INPUT%DALTON%DFT
+
+NULLIFY(FRAGMENT%INPUT%BASIS)
+ALLOCATE(FRAGMENT%INPUT%BASIS)
+call nullifyMainBasis(FRAGMENT%INPUT%BASIS)
+FRAGMENT%INPUT%BASIS%WBASIS = lsfull%INPUT%BASIS%WBASIS
+Call BuildNewBasInfoStructure(LSFULL,FRAGMENT,ATOMS,NATOMS,NATOMSFULL,BASIS,NBASIS,NBASISFULL,LUPRI,IPRINT)
+
+IF(.NOT.lsfull%input%DALTON%NOGCINTEGRALTRANSFORM)THEN
+   CALL LSQUIT('NOGCINTEGRALTRANSFORM false in build_ccfragmentlsitem',-1)
+ENDIF
+
+!The values of daltonitem which are set in readmolfile
+FRAGMENT%input%dalton%DoSpherical  = lsfull%input%DALTON%DoSpherical 
+FRAGMENT%input%numFragments  = lsfull%input%numFragments 
+
+IF(IPRINT .GT. 0)THEN
+   WRITE(lupri,*)'FRAGMENT%input%BASIS%BINFO(1)'
+   call print_basissetinfo(LUPRI,FRAGMENT%input%BASIS%BINFO(1))
+   WRITE(lupri,*)'PRINT MOLECULE AND BASIS IN CCFRAGMENT'
+   CALL PRINT_MOLECULEINFO(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS,IPRINT)
+   do i=1,nBasisBasParam
+    IF(lsfull%input%BASIS%WBASIS(I))THEN
+     CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%BINFO(I))
+    ENDIF
+   enddo
+ENDIF
+
+CALL typedef_init_setting(FRAGMENT%setting)
+CALL typedef_set_default_setting(FRAGMENT%SETTING,FRAGMENT%INPUT)
+IF(FRAGMENT%SETTING%IntegralTransformGC)THEN
+   CALL LSQUIT('IntegralTransformGC true in build_ccfragmentlsitem',-1)
+ENDIF
+FRAGMENT%SETTING%IntegralTransformGC =.FALSE.
+
+! Set setting communicator to be local group communicator
+#ifdef VAR_MPI
+fragment%setting%comm = infpar%lg_comm
+fragment%setting%node = infpar%lg_mynum
+fragment%setting%numnodes = infpar%lg_nodtot
+#else
+fragment%setting%comm = 0
+fragment%setting%node = 0
+fragment%setting%numnodes = 1
+#endif
+
 END SUBROUTINE build_ccfragmentlsitem
+
+SUBROUTINE BuildNewBasInfoStructure(LSFULL,FRAGMENT,ATOMS,NATOMS,NATOMSFULL,BASIS,NBASIS,NBASISFULL,LUPRI,IPRINT)
+implicit none
+!> full lsitem structure 
+TYPE(LSITEM)       :: LSFULL
+!> fragment lsitem structure to be build 
+TYPE(LSITEM)       :: FRAGMENT
+!> number of atoms in the fragment
+integer            :: NATOMS
+!> list of atoms in the fragment
+integer            :: ATOMS(NATOMS)
+!> number of atoms in the full
+integer            :: NATOMSFULL
+!> number of aos (basis functions) in the fragment
+integer            :: NBASIS
+!> list of basis functions  in the fragment
+integer            :: BASIS(NBASIS)
+!> number of aos (basis functions) in the full molecule
+integer            :: NBASISFULL
+!> the logical unit number for the output file
+integer            :: LUPRI
+!> the printlevel integer, determining how much output should be generated
+integer            :: IPRINT
+!
+TYPE(BRAKEBASINFO) :: BASINFO
+TYPE(BRAKEBASINFO) :: BASINFOARRAY(NATOMS)
+logical :: WhichAos(NBASISFULL),ContainOrb,WhichAtoms(nAtomsFull)
+integer :: iB,r,iOrbitalIndex,i,icharge,itype,MaxnOrb,nangmom,kmult,iAngNew,ang
+integer :: nOrb,iOrbNew,nBASINFOARRAY,itypeOld,iOrb,iK,unique,iAtom,ik1,ik2
+integer :: iOrbitalIndexSS
+integer,pointer :: newType(:),FullAtomList(:)
+call mem_alloc(newType,natoms)
+WhichAos = .FALSE.
+DO I=1,NBASIS
+   WhichAos(BASIS(I)) = .TRUE.
+ENDDO
+WhichAtoms = .FALSE.
+DO I=1,NATOMS
+   WhichAtoms(ATOMS(I)) = .TRUE.
+ENDDO
+
+nBASINFOARRAY = 0
+iB=RegBasParam
+r = lsfull%input%basis%binfo(IB)%labelindex
+iOrbitalIndex = 0
+itypeOld = -24
+iAtom = 0 
+DO i=1,natomsfull
+ if(r == 0) then            
+    icharge = int(lsfull%input%molecule%atom(i)%charge)
+    itype = lsfull%input%basis%binfo(iB)%chargeindex(icharge)
+ else
+    itype = lsfull%input%molecule%atom(i)%idtype(r)
+ end if
+
+ IF(WhichAtoms(i))THEN
+   iAtom = iAtom + 1 
+   nangmom = lsfull%input%basis%binfo(iB)%ATOMTYPE(itype)%nAngmom
+   MaxnOrb = 0 
+   do ang = 1,nAngmom
+      MaxnOrb = MAX(MaxnOrb,lsfull%input%basis%binfo(iB)%ATOMTYPE(itype)%SHELL(ang)%norb)
+   enddo
+!   IF(itype.NE.itypeOld)THEN
+      IF(itypeOld.NE.-24)call freeBrakebasinfo(BASINFO)
+      call initBrakebasinfo(BASINFO,itype,nangmom,MaxnOrb)
+      itypeOld = itype
+!   ENDIF
+   kmult = 1
+   iAngNew = 1
+   do ang = 0,nAngmom-1
+      nOrb = lsfull%input%basis%binfo(iB)%ATOMTYPE(itype)%SHELL(ang+1)%norb
+      BASINFO%OriginalnOrb(ang+1) = nOrb      
+      iOrbNew = 1 
+      do iOrb = 1,nOrb
+         ContainOrb = .TRUE.
+         iOrbitalIndexSS = iOrbitalIndex
+         do iK = 1,kmult
+            iOrbitalIndex = iOrbitalIndex + 1
+            IF(.NOT.WhichAos(iOrbitalIndex))THEN !at least one orb comp is false
+               !ensure WhichAos are false for all Orbital components
+               do iK1 = 1,kmult
+                  IF(WhichAos(iOrbitalIndexSS+iK1))THEN !At least one orb comp is true                      
+                     CALL LSQUIT('Only part of Orbital componets include ',-1)
+                  ENDIF
+               enddo
+               ContainOrb = .FALSE.
+            ENDIF
+         enddo
+         IF(ContainOrb)THEN
+            BASINFO%Orb(iOrbNew,iAngNew) = iOrb
+            iOrbNew = iOrbNew +  1
+         ENDIF
+      enddo
+      BASINFO%nOrb(iAngNew) = iOrbNew-1
+      IF(BASINFO%nOrb(iAngNew).NE.0)THEN
+         BASINFO%angmom(iAngNew) = ang 
+         iAngNew = iAngNew + 1 
+      ENDIF
+      kmult = kmult + 2
+   enddo
+   BASINFO%nangmom = iAngNew-1 
+   IF(iAngNew.EQ.1)THEN
+      !atom not included 
+      call lsquit('atom not included in BASIS list, but included in ATOMS list',-1)
+   ELSE
+      !Determine if unique BASINFO structure
+      call DetermineIfUniqueBASINFO(BASINFO,BASINFOARRAY,NATOMS,nBASINFOARRAY,unique)
+      IF(unique.EQ.0)THEN
+!         call print_Brakebas(BASINFO,6)
+         call copyBrakebasinfo(BASINFO,BASINFOARRAY(nBASINFOARRAY+1))
+         nBASINFOARRAY = nBASINFOARRAY + 1 
+         newType(iAtom) = nBASINFOARRAY
+      ELSE
+         newType(iAtom) = unique
+      ENDIF         
+   ENDIF
+ ELSE
+    iOrbitalIndex = iOrbitalIndex + lsfull%input%basis%binfo(iB)%ATOMTYPE(itype)%TotnOrb
+ ENDIF
+ENDDO
+IF(itypeOld.NE.-24)call freeBrakebasinfo(BASINFO)
+
+Call BuildBasisFromBRAKEBASINF(BASINFOARRAY,NATOMS,nBASINFOARRAY,&
+     & lsfull%INPUT%BASIS%BINFO(iB),fragment%INPUT%BASIS%BINFO(IB),RegBasParam)
+
+DO I=1,nBASINFOARRAY
+   call freeBrakebasinfo(BASINFOARRAY(I))
+ENDDO
+
+!copy the rest (for now the full Aux/CABS AO set is used for each atom)
+do iB=2,nBasisBasParam
+   IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
+      CALL Copy_basissetinfo(lsfull%INPUT%BASIS%BINFO(iB),fragment%INPUT%BASIS%BINFO(IB))
+   ENDIF
+enddo
+NULLIFY(FRAGMENT%INPUT%MOLECULE)
+ALLOCATE(FRAGMENT%INPUT%MOLECULE)
+CALL BUILD_FRAGMENT2(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
+     & fragment%input%BASIS,ATOMS,nATOMS,LUPRI)
+
+call mem_alloc(FullAtomList,natomsfull)
+do I=1,natomsfull
+   FullAtomList(I) = I
+enddo
+NULLIFY(FRAGMENT%INPUT%AUXMOLECULE)
+ALLOCATE(FRAGMENT%INPUT%AUXMOLECULE)
+CALL BUILD_FRAGMENT2(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & lsfull%input%BASIS,FullAtomList,natomsfull,LUPRI)
+call mem_dealloc(FullAtomList)
+
+DO i=1,natoms
+   fragment%input%molecule%atom(i)%idtype(RegBasParam) = newType(i)
+ENDDO
+call mem_dealloc(newType)
+
+call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
+     & fragment%input%BASIS,LUPRI)
+call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
+     & fragment%input%BASIS,LUPRI)
+
+do iB=nBasisBasParam,1,-1
+   IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
+      CALL DETERMINE_NBAST(FRAGMENT%INPUT%AUXMOLECULE,FRAGMENT%INPUT%BASIS%BINFO(iB),&
+           & FRAGMENT%input%dalton%DoSpherical,.FALSE.)
+   ENDIF
+enddo
+do iB=nBasisBasParam,1,-1
+   IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
+      CALL DETERMINE_NBAST(FRAGMENT%INPUT%MOLECULE,FRAGMENT%INPUT%BASIS%BINFO(iB),&
+           & FRAGMENT%input%dalton%DoSpherical,.FALSE.)
+   ENDIF
+enddo
+
+end SUBROUTINE BuildNewBasInfoStructure
+
+subroutine DetermineIfUniqueBASINFO(BASINFO,BASINFOARRAY,NATOMS,nBASINFOARRAY,unique)
+implicit none
+integer,intent(inout) :: unique
+integer,intent(in) :: NATOMS,nBASINFOARRAY
+TYPE(BRAKEBASINFO),intent(in) :: BASINFO
+TYPE(BRAKEBASINFO) :: BASINFOARRAY(NATOMS)
+!
+integer :: i
+!logical,external :: IdenticalBrakebasinfo
+
+unique = 0
+IF(nBASINFOARRAY.EQ.0)THEN
+   unique = 0
+ELSE
+   basinfoloop: DO i = 1,nBASINFOARRAY
+      IF(IdenticalBrakebasinfo(BASINFO,BASINFOARRAY(i)))THEN
+         unique = i
+         exit basinfoloop         
+      ENDIF
+   ENDDO basinfoloop
+ENDIF
+CONTAINS
+logical function IdenticalBrakebasinfo(BBASINFO,BBASINFO2)
+implicit none
+TYPE(BRAKEBASINFO) :: BBASINFO,BBASINFO2
+!
+integer :: I,J
+IdenticalBrakebasinfo = .TRUE.
+IF(BBASINFO%OriginalType.NE.BBASINFO2%OriginalType)THEN
+   IdenticalBrakebasinfo = .FALSE. !not same original type
+ELSE
+   IF(BBASINFO%nAngmom.NE.BBASINFO2%nAngmom)THEN
+      IdenticalBrakebasinfo = .FALSE. !not same number of angular moments
+   ELSE
+      DO I=1,BBASINFO%nAngmom
+         IF(BBASINFO%nOrb(I).NE.BBASINFO2%nOrb(I).OR.&
+              & BBASINFO%Angmom(I).NE.BBASINFO2%Angmom(I))THEN
+            IdenticalBrakebasinfo = .FALSE. !not same number of orbitals or angmom
+         ELSE
+            DO J=1,BBASINFO%nOrb(I)
+               IF(BBASINFO%Orb(J,I).NE.BBASINFO2%Orb(J,I))THEN
+                  IdenticalBrakebasinfo = .FALSE. !not same orbitals
+               ENDIF
+            ENDDO
+         ENDIF
+      ENDDO
+   ENDIF
+ENDIF
+end function IdenticalBrakebasinfo
+
+end subroutine DetermineIfUniqueBASINFO
+
+
 
 END MODULE DALTONINFO

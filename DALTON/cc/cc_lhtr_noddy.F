@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *---------------------------------------------------------------------*
 C  /* Deck cc_lhtr_noddy */
@@ -73,7 +72,7 @@ C
       DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*), C1AM(*), C2AM(*)
       DIMENSION XLAMDP(*),XLAMDH(*),WORK(LWORK)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       IF (NSYM .NE. 1) THEN
          CALL QUIT('No symmetry in this part yet')
@@ -241,7 +240,7 @@ C
       DIMENSION XIAJB(NT1AMX,NT1AMX)
       DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       DO A = 1, NVIRT
       DO I = 1, NRHFT
@@ -294,7 +293,7 @@ C
       DIMENSION XIAJB(NT1AMX,NT1AMX)
       DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       DO A = 1, NVIRT
       DO I = 1, NRHFT
@@ -347,7 +346,7 @@ C
       DIMENSION OMEGA1(NT1AMX), XIAJB(NT1AMX,NT1AMX)
       DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       DO A = 1, NVIRT
       DO I = 1, NRHFT
@@ -721,7 +720,7 @@ C
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
 C===================================================
 C     Calculate the L3 contributions to omega2
@@ -836,7 +835,7 @@ C
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
 C===================================================
 C     Calculate the L3BAR contributions to omega1
@@ -1110,7 +1109,7 @@ C
 C
 #include "ccfield.h"
 #include "inforb.h"
-CCN #include <infind.h> not compatible with R12!
+CCN #include "infind.h" not compatible with R12!
 #include "ccisao.h"
 #include "r12int.h"
 #include "blocks.h"
@@ -1125,7 +1124,7 @@ COMMENT COMMENT
 COMMENT COMMENT
 COMMENT COMMENT
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       IF (NSYM .NE. 1) THEN
          CALL QUIT('CC_LHTR_NODDY2: No symmetry in this part yet')

@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# enehf
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-9)
+
+# tes
+f.add(string = 'Total number of tesserae',
+      rel_tolerance = 1.0e-1)
+
+# diplen
+f.add(string = 'DIPLEN  ;',
+      ignore_below = 1.0e-12,
+      rel_tolerance = 1.0e-5)
+
+# addlf
+f.add(string = 'ADDING LOCAL',
+      rel_tolerance = 1.0e-5)
+
+# symop
+f.add(string = 'Spin symmetry of',
+      rel_tolerance = 1.0e-5)
+
+# diploc
+f.add(string = 'DIPLOC  ;',
+      ignore_below = 1.0e-12,
+      rel_tolerance = 1.0e-5)
+
+test.run(['lf_hfnosym_linres.dal'], ['CH2O_STO-3G.mol'], f={'out': f})
+
+sys.exit(test.return_code)

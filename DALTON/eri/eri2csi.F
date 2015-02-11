@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ericsm */
       SUBROUTINE ERICSM(SO,CSMAT,IPNTCR,INDXBT,WORK,LWORK,IPRINT)
@@ -80,8 +79,8 @@ C
 #include "inforb.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-      IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
+
+      IBTEST(I,J,K,L) = IAND(I,IEOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERICSM',-1)
 C
@@ -122,7 +121,7 @@ C
          IF (DOREP(B,2)) THEN
             C = A
             D = B
-            CD = IBTXOR(C,D)
+            CD = IEOR(C,D)
 C
             IF (DIAGAB .AND. B.GT.A) GO TO 200
             IF (DIAGCD .AND. D.GT.C) GO TO 200
@@ -192,8 +191,8 @@ C
                               KAB = INDORB(I,1) + IAB
                               KCD = INDORB(I,2) + ICD
                               IF (KAB.EQ.KCD) THEN
-                                 KA = IBTAND(IBTSHR(KAB,NBITX),IBITA-1)
-                                 KB = IBTAND(       KAB,       IBITA-1)
+                                 KA = IAND(ISHFT(KAB,-NBITX),IBITA-1)
+                                 KB = IAND(       KAB,       IBITA-1)
                                  CSI = SQRT(SO(I,R,S,T,ICMPAB,ICMPCD,1))
                                  CSMAT(KA,KB) = CSI
                                  CSMAT(KB,KA) = CSI
@@ -249,8 +248,8 @@ C
 #include "hertop.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-      IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
+
+      IBTEST(I,J,K,L) = IAND(I,IEOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERICSO',-1)
 C
@@ -293,7 +292,7 @@ C
          IF (DOREP(B,2)) THEN
             C = A
             D = B
-            CD = IBTXOR(C,D)
+            CD = IEOR(C,D)
 C
             IF (DIAGAB .AND. B.GT.A) GO TO 200
             IF (DIAGCD .AND. D.GT.C) GO TO 200
@@ -362,10 +361,10 @@ C
                            DO I = 1, NCCS
                               KAB = INDORB(I,1) + IAB
                               KCD = INDORB(I,2) + ICD
-C                             KA = IBTAND(IBTSHR(KAB,NBITX),IBITA-1)
-C                             KB = IBTAND(       KAB,       IBITA-1)
-C                             KC = IBTAND(IBTSHR(KCD,NBITX),IBITA-1)
-C                             KD = IBTAND(       KCD,       IBITA-1)
+C                             KA = IAND(ISHFT(KAB,-NBITX),IBITA-1)
+C                             KB = IAND(       KAB,       IBITA-1)
+C                             KC = IAND(ISHFT(KCD,-NBITX),IBITA-1)
+C                             KD = IAND(       KCD,       IBITA-1)
 C                             IJ = MAX(KA,KB)*IBITA + KA + KB
 C                             KL = MAX(KC,KD)*IBITA + KC + KD
 C                             IF (IJ.EQ.KL) THEN

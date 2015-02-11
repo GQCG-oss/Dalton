@@ -1,6 +1,7 @@
 !> @file 
 !> contains many structure and associated subroutine
 MODULE TYPEDEFTYPE
+  use,intrinsic :: iso_c_binding,only:c_ptr
  use precision
  use dft_typetype
  use molecule_typetype
@@ -11,9 +12,9 @@ MODULE TYPEDEFTYPE
  use lsmatrix_type
  use LSTENSOR_typetype
  use matrix_module
- use Integralparameters
+ use LSparameters
  use integralOutput_typetype
- use tensor_type_def_module,only:array
+ use tensor_type_def_module,only:tensor
 #ifdef VAR_MPI
  use infpar_module
 #endif
@@ -27,6 +28,11 @@ END TYPE INTEGERP
 !* THE DALTON INPUT FILE
 !*
 !*****************************************
+! WARNING WARNING  WARNING WARNING 
+! when modifing this type def
+! remember to modify mpicopy_integralconfig (in lsmpi-operations.F90) 
+! accordingly
+! WARNING WARNING  WARNING WARNING 
 TYPE integralconfig
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 LOGICAL  :: CONTANG  !Specifies that the AO-shell ordering is contracted first then
@@ -34,6 +40,8 @@ LOGICAL  :: CONTANG  !Specifies that the AO-shell ordering is contracted first t
 LOGICAL  :: NOGCINTEGRALTRANSFORM
 LOGICAL  :: FORCEGCBASIS
 LOGICAL  :: noOMP
+LOGICAL  :: IchorForceCPU
+LOGICAL  :: IchorForceGPU
 LOGICAL  :: UNRES
 LOGICAL  :: CFG_LSDALTON !.RUN LINSCA SPECIFIED 
 LOGICAL  :: TRILEVEL
@@ -84,6 +92,9 @@ LOGICAL  :: DEBUG4CENTER
 LOGICAL  :: DEBUG4CENTER_ERI
 LOGICAL  :: DEBUGPROP
 LOGICAL  :: DEBUGICHOR
+LOGICAL  :: DEBUGICHORLINK
+LOGICAL  :: DEBUGICHORLINKFULL
+INTEGER  :: DEBUGICHOROPTION
 LOGICAL  :: DEBUGGEN1INT
 LOGICAL  :: DEBUGCGTODIFF
 LOGICAL  :: DEBUGEP
@@ -125,10 +136,7 @@ LOGICAL     :: MM_NOSCREEN
 Integer     :: MMunique_ID1
 !*BASIS PARAMETERS
 LOGICAL  :: ATOMBASIS
-LOGICAL  :: BASIS
-LOGICAL  :: AUXBASIS
-LOGICAL  :: CABSBASIS
-LOGICAL  :: JKBASIS
+LOGICAL  :: BASIS(nBasisBasParam)
 LOGICAL  :: NOFAMILY
 LOGICAL  :: Hermiteecoeff
 LOGICAL  :: DoSpherical
@@ -177,13 +185,20 @@ INTEGER     :: LU_LUINDR
 LOGICAL     :: LR_EXCHANGE_DF
 LOGICAL     :: LR_EXCHANGE_PARI
 LOGICAL     :: LR_EXCHANGE
-LOGICAL     :: ADMM_EXCHANGE
-LOGICAL     :: ADMM_GCBASIS
-LOGICAL     :: ADMM_DFBASIS
-LOGICAL     :: ADMM_JKBASIS
-LOGICAL     :: ADMM_MCWEENY
-LOGICAL     :: ADMM_CONST_EL
-LOGICAL     :: SR_EXCHANGE
+!ADMM setting
+LOGICAL       :: ADMM_EXCHANGE
+LOGICAL       :: ADMM1
+LOGICAL       :: ADMMS
+LOGICAL       :: ADMMQ
+LOGICAL       :: ADMMP
+CHARACTER(80) :: ADMM_FUNC
+LOGICAL       :: ADMM_separateX
+LOGICAL       :: ADMM_2ERI
+LOGICAL       :: PRINT_EK3
+LOGICAL       :: ADMMBASISFILE
+LOGICAL       :: ADMMexchangeMetric
+
+LOGICAL       :: SR_EXCHANGE
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
 REAL(REALK) :: CAMalpha
@@ -199,12 +214,21 @@ INTEGER     :: molcharge
 
 ! TESTING FUNCTIONALITIES FOR DEC
 LOGICAL     :: run_dec_gradient_test
+LOGICAL     :: ForceRIMP2memReduced
 END TYPE integralconfig
 
+! WARNING WARNING  WARNING WARNING 
+! when modifing this type def
+! remember to modify mpicopy_schem (in lsmpi-operations.F90) accordingly
+! WARNING WARNING  WARNING WARNING 
 TYPE LSINTSCHEME
 !PARAMETERS FROM **INTEGRALS   DECLERATION
 LOGICAL  :: NOBQBQ ! switches off the point charge--point charge repulsion contribution (NUCPOT)
+LOGICAL  :: doMPI
+LOGICAL  :: MasterWakeSlaves
 LOGICAL  :: noOMP
+LOGICAL  :: IchorForceCPU
+LOGICAL  :: IchorForceGPU
 LOGICAL  :: CFG_LSDALTON
 LOGICAL  :: DOPASS
 LOGICAL  :: DENSFIT
@@ -264,9 +288,7 @@ INTEGER     :: LU_LUINTR
 INTEGER     :: LU_LUINDM
 INTEGER     :: LU_LUINDR
 !*BASIS PARAMETERS
-LOGICAL  :: AUXBASIS
-LOGICAL  :: CABSBASIS
-LOGICAL  :: JKBASIS
+LOGICAL  :: BASIS(nBasisBasParam)
 LOGICAL  :: NOFAMILY
 LOGICAL  :: Hermiteecoeff
 LOGICAL  :: DoSpherical
@@ -325,11 +347,19 @@ LOGICAL     :: LR_EXCHANGE
 LOGICAL     :: SR_EXCHANGE
 
 LOGICAL     :: ADMM_EXCHANGE
-LOGICAL     :: ADMM_GCBASIS
-LOGICAL     :: ADMM_DFBASIS
-LOGICAL     :: ADMM_JKBASIS
-LOGICAL     :: ADMM_MCWEENY
-LOGICAL     :: ADMM_CONST_EL
+LOGICAL     :: ADMM1
+LOGICAL     :: ADMMQ
+LOGICAL     :: ADMMS
+LOGICAL     :: ADMMP
+LOGICAL     :: ADMM_separateX
+LOGICAL     :: ADMM_2ERI
+LOGICAL     :: PRINT_EK3
+! Used for internal storage - to pass this information from energy to gradient 
+! to avoid redundant recalculation in the gradient
+real(realk) :: ADMM_CONSTRAIN_FACTOR
+real(realk) :: ADMM_LARGE_LAMBDA
+LOGICAL     :: ADMMexchangeMetric
+!
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
 REAL(REALK) :: CAMalpha
@@ -343,6 +373,7 @@ LOGICAL :: INCREMENTAL !Use incremental scheme (density-difference KS-matrix bui
   
 logical   :: DO_PROP
 integer   :: PropOper
+logical   :: ForceRIMP2memReduced
 END TYPE LSINTSCHEME
 
 !*****************************************
@@ -395,7 +426,12 @@ Integer,pointer :: fragmentIndex(:)  !Index giving the fragment of each atom
 Integer,pointer :: nAtoms(:) !atoms in each fragment
 Integer,pointer :: AtomicIndex(:,:) !list of atoms in each fragment
 ! First dimension numFragments, second dimension for different basis sets:
-!    1: Regular, 2: DF-Aux, 3: CABS 4: JK 5: VALENCE
+!               (see BasisinfoType.F90)
+!    1: Regular (RegBasParam=1)
+!    2: DF-Aux  (AUXBasParam=2)
+!    3: CABS    (CABBasParam=3)
+!    4: JK      (JKBasParam=4)
+!    5: VALENCE (VALBasParam=5)
 Integer,pointer :: nContOrb(:,:)
 Integer,pointer :: nPrimOrb(:,:)
 Integer,pointer :: nStartContOrb(:,:)
@@ -440,7 +476,8 @@ TYPE(IOITEM)               :: IO
 INTEGER                    :: numFragments !Number of fragments to partition molecule into
 Integer                    :: numNodes     !Number of MPI nodes
 Integer                    :: node         !Integer value defining the node number
-!if you add a structure to this type remember to add it to MPI_ALLOC_DALTONINPUT
+TYPE(MOLECULEINFO),pointer :: AUXMOLECULE  !secondary Molecule (used in DEC for RI/CABS)
+!if you add a structure to this type remember to add it to LSMPI_ALLOC_DALTONINPUT and mpicopy_daltoninput
 END TYPE DALTONINPUT
 
 #ifdef VAR_MPI
@@ -572,6 +609,7 @@ TYPE(INTEGRALOUTPUT)       :: OUTPUT  !The structure containing the output
 !if you add a structure to this type remember to add it to MPI_ALLOC_DALTONINPUT
 TYPE(GaussianGeminal)      :: GGem !Information about the Gaussian geminal expansion        
 TYPE(ReducedScreeningInfo) :: RedCS !Batchinformation and batchwise screening and density matrices  
+REAL(REALK)                :: GPUMAXMEM !Maximum Memory on Device
 END TYPE LSSETTING
 
 !*****************************************
@@ -661,6 +699,19 @@ type pltinfo
 
 end type pltinfo
 
+!TYPE DEFINITION FOR MPI_MEM_D
+type mpi_realk
+   ! double precision buffer
+   real(realk), pointer :: d(:) => null()
+   ! number of elements in the buffer
+   integer(kind=8)      :: n
+   ! associated c_ptr
+   type(c_ptr)          :: c
+   ! mpi_window handle
+   integer(kind=ls_mpik):: w
+   ! allocation type, 0 = normal pointer, 1 = MPI_ALLOC_MEM, 3 =  MPI_WIN_ALLOC(LOCAL)
+   integer              :: t
+end type mpi_realk
 
 
 contains

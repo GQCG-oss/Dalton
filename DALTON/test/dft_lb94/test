@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+#    dft_lb94
+#    --------
+#    Molecule:         Ne
+#    Wave Function:    DFT LB94 / aug-cc-pVDZ
+#    Test Purpose:     LB94 functional test.
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+test.run(['dft_lb94.dal'], ['Ar_aug-cc-pVTZ.mol'], f={'out': f})
+
+sys.exit(test.return_code)

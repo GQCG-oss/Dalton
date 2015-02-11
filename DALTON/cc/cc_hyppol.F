@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c /* deck cc_hyppol */
 *=====================================================================*
@@ -41,7 +40,7 @@ c /* deck cc_hyppol */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccsdinp.h"
@@ -1056,7 +1055,7 @@ c /* deck ccqrdisp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccqrinf.h"
@@ -1694,7 +1693,7 @@ c /* deck ccqhypprt */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -2295,7 +2294,7 @@ c /* deck ccqexpprt */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"
@@ -2410,7 +2409,7 @@ c /* deck ccqdisprt */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#  include <implicit.h>
+#  include "implicit.h"
 #endif
 #include "priunit.h"
 #include "ccorb.h"

@@ -89,9 +89,9 @@ enddo
 
 !debug
 write (lupri, *) 'Eigenvalues for A:'
-call output (er, 1, iter, 1, 1, iter, 1, 1, lupri)
+call ls_output (er, 1, iter, 1, 1, iter, 1, 1, lupri)
 write (lupri, *) 'Corresponding eigenvectors for A:'
-call output (X, 1, iter, 1, iter, iter, iter, 1, lupri)
+call ls_output (X, 1, iter, 1, iter, iter, iter, 1, lupri)
 !end debug
 
 end subroutine soeo_debug_find_mineval
@@ -289,7 +289,7 @@ endif
 write (soeo%lupri, *) "======================================"
 
 write (soeo%lupri, *) "Full hessian ="
-call output (hessian, 1, hessdim, 1, hessdim,&
+call ls_output (hessian, 1, hessdim, 1, hessdim,&
            & hessdim, hessdim, 1, soeo%lupri)
 
         
@@ -479,7 +479,7 @@ else
     do j=1,soeo%space%Nact
       tmp = fohess(i,j) - fohess(j,i)
       tmp = dsqrt(tmp*tmp)
-      if (tmp > 1.0E-5) then
+      if (tmp > 1.0E-5_realk) then
         sym = .false.
       endif
     enddo
@@ -487,17 +487,17 @@ else
   call soeo_debug_find_mineval (soeo%lupri, soeo%space%Nact, fohess, fomine, fominevec)
   write (soeo%lupri, *) 'First order tt-hessian:'
   write (soeo%lupri, *) 'Symmetric?', sym
-  call output (fohess, 1, soeo%space%Nact, 1, soeo%space%Nact, soeo%space%Nact, soeo%space%Nact, 1, soeo%lupri)
+  call ls_output (fohess, 1, soeo%space%Nact, 1, soeo%space%Nact, soeo%space%Nact, soeo%space%Nact, 1, soeo%lupri)
   write (soeo%lupri, *) 'Min eval =', fomine
   write (soeo%lupri, *) 'Crsp evec ='
-  call output (fominevec, 1, soeo%space%Nact, 1, 1, soeo%space%Nact, 1, 1, soeo%lupri)
+  call ls_output (fominevec, 1, soeo%space%Nact, 1, 1, soeo%space%Nact, 1, 1, soeo%lupri)
 
   sym = .true.
   do i=1,soeo%space%Nact
     do j=1,soeo%space%Nact
       tmp = sohess(i,j) - sohess(j,i)
       tmp = dsqrt(tmp*tmp)
-      if (tmp > 1.0E-5) then
+      if (tmp > 1.0E-5_realk) then
         sym = .false.
       endif
     enddo
@@ -505,10 +505,10 @@ else
   call soeo_debug_find_mineval (soeo%lupri, soeo%space%Nact, sohess, somine, sominevec)
   write (soeo%lupri, *) 'Second order tt-hessian:'
   write (soeo%lupri, *) 'Symmetric?', sym
-  call output (sohess, 1, soeo%space%Nact, 1, soeo%space%Nact, soeo%space%Nact, soeo%space%Nact, 1, soeo%lupri)
+  call ls_output (sohess, 1, soeo%space%Nact, 1, soeo%space%Nact, soeo%space%Nact, soeo%space%Nact, 1, soeo%lupri)
   write (soeo%lupri, *) 'Min eval =', somine
   write (soeo%lupri, *) 'Crsp evec ='
-  call output (sominevec, 1, soeo%space%Nact, 1, 1, soeo%space%Nact, 1, 1, soeo%lupri)
+  call ls_output (sominevec, 1, soeo%space%Nact, 1, 1, soeo%space%Nact, 1, 1, soeo%lupri)
 
   hess = fohess + sohess
   sym = .true.
@@ -516,7 +516,7 @@ else
     do j=1,soeo%space%Nact
       tmp = hess(i,j) - hess(j,i)
       tmp = dsqrt(tmp*tmp)
-      if (tmp > 1.0E-5) then
+      if (tmp > 1.0E-5_realk) then
         sym = .false.
       endif
     enddo
@@ -524,10 +524,10 @@ else
   call soeo_debug_find_mineval (soeo%lupri, soeo%space%Nact, hess, mine, minevec)
   write (soeo%lupri, *) 'Total order tt-hessian:'
   write (soeo%lupri, *) 'Symmetric?', sym
-  call output (hess, 1, soeo%space%Nact, 1, soeo%space%Nact, soeo%space%Nact, soeo%space%Nact, 1, soeo%lupri)
+  call ls_output (hess, 1, soeo%space%Nact, 1, soeo%space%Nact, soeo%space%Nact, soeo%space%Nact, 1, soeo%lupri)
   write (soeo%lupri, *) 'Min eval =', mine
   write (soeo%lupri, *) 'Crsp evec ='
-  call output (minevec, 1, soeo%space%Nact, 1, 1, soeo%space%Nact, 1, 1, soeo%lupri)
+  call ls_output (minevec, 1, soeo%space%Nact, 1, 1, soeo%space%Nact, 1, 1, soeo%lupri)
 
   write (soeo%lupri, *) '------------------------------------------------'
   
@@ -1371,7 +1371,7 @@ call mem_alloc(gradient2,tmpint)
 !get full hessian from linear transform
 call soeo_get_full_hessian (soeo, mu, hessian)
 !write (soeo%lupri, *) 'hessian by linear transform'
-!call output (hessian, 1, tmpint, 1, tmpint, &
+!call ls_output (hessian, 1, tmpint, 1, tmpint, &
 !           & tmpint, tmpint, 1, soeo%lupri)
 !
 !lueval = -1 ; luevecs = -1
@@ -1404,28 +1404,28 @@ call soeo_get_full_hessian (soeo, mu, hessian)
 !    endif
 !  enddo
 !  write (soeo%lupri, *) 'gradient in iteration', iter
-!  call output (gradient, 1, tmpint, 1, 1, tmpint, 1, 1, soeo%lupri)
+!  call ls_output (gradient, 1, tmpint, 1, 1, tmpint, 1, 1, soeo%lupri)
 !  deallocate (step)
 !  
 !Finite difference Hessian and gradient
 call soeo_finite_difference (soeo, mu, gradient2, hessian2)
 !write (soeo%lupri, *) 'hessian from finite difference'
-!call output (hessian2, 1, tmpint, 1, tmpint, &
+!call ls_output (hessian2, 1, tmpint, 1, tmpint, &
 !           & tmpint, tmpint, 1, soeo%lupri)
 !write (soeo%lupri, *) 'and the gradient'
-!call output (gradient2, 1, tmpint, 1, 1, tmpint, 1, 1, soeo%lupri)
+!call ls_output (gradient2, 1, tmpint, 1, 1, tmpint, 1, 1, soeo%lupri)
 
 write (soeo%lupri, *) 'hessian from lt:'
-call output (hessian, 1, tmpint, 1, tmpint, &
+call ls_output (hessian, 1, tmpint, 1, tmpint, &
            & tmpint, tmpint, 1, soeo%lupri)
 
 write (soeo%lupri, *) 'hessians from fd:'
-call output (hessian2, 1, tmpint, 1, tmpint, &
+call ls_output (hessian2, 1, tmpint, 1, tmpint, &
            & tmpint, tmpint, 1, soeo%lupri)
 
 write (soeo%lupri, *) 'difference between hessians:'
 hessian = hessian-hessian2
-call output (hessian, 1, tmpint, 1, tmpint, &
+call ls_output (hessian, 1, tmpint, 1, tmpint, &
            & tmpint, tmpint, 1, soeo%lupri)
 tmp = 0.0E0_realk
 do i=1,tmpint
@@ -1437,7 +1437,7 @@ tmp = sqrt(tmp)
 write (soeo%lupri, *) 'diffnorm hessian', tmp
 !  write (soeo%lupri, *) 'difference between gradients:'
 !  gradient = gradient-gradient2
-!  call output (gradient, 1, tmpint, 1, 1, tmpint, 1, 1, soeo%lupri)
+!  call ls_output (gradient, 1, tmpint, 1, 1, tmpint, 1, 1, soeo%lupri)
 !  tmp=0.0E0_realk
 !  do i=1,tmpint
 !    tmp = tmp+gradient(i)*gradient(i)

@@ -34,7 +34,6 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
   TYPE(MATRIX),intent(INOUT)  ::  Dmat
   !Local variables
   TYPE(MOLECULEINFO) :: refcell
-  TYPE(MOLECULEINFO),pointer :: latt_cell(:)
   TYPE(MATRIX)  ::  D(1),D1(1)!,F(1)
   TYPE(matrix),pointer :: nfdensity(:),f_1(:),ovl(:)
   TYPE(matrix),pointer :: g_2(:)
@@ -44,11 +43,11 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
   real(realk), pointer :: Tlat(:,:)
   REAL(realk)::  latt_vec_std(3),focknorm
   REAL(realk)::  E_cell,E_kin,E_ff,E_XC,E_K,E_J,E_en,E_nuc
-  REAL(realk)::  E_1,E_nnff
+  REAL(realk)::  E_1,E_nnff,maxdens
   real(realk) :: TS,TE
 !  REAL(realk) :: PI=3.14159265358979323846D0
   INTEGER :: sze,num_latvectors
-  INTEGER :: maxmultmom,n1,n2,n3,nfsze,fdim(3),Tlmax
+  INTEGER :: maxmultmom,n1,n2,n3,nfsze,Tlmax
   INTEGER :: i,j,k,scfit,iunit,l1,l2,l3,nbasterik,ierror
   character*(20) :: mattxt,string1,numtostring1,numtostring2,numtostring3
   character(len=3) ::nline
@@ -56,11 +55,11 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
 
 
 !!!!!!!!!!!!Information for me
-!!!!! input%Basis%regular%atomtype(:)%shell(:)%segment(1)%exponents(:)
-write(lupri,*) 'shells ',input%Basis%regular%atomtype(1)%nangmom
-write(lupri,*) 'Number of atom species ',input%Basis%regular%natomtypes
-write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)%exponents)
-!  call screening_ovl(input%Basis%regular)
+!!!!! input%Basis%binfo(regbasparam)%atomtype(:)%shell(:)%segment(1)%exponents(:)
+write(lupri,*) 'shells ',input%Basis%binfo(regbasparam)%atomtype(1)%nangmom
+write(lupri,*) 'Number of atom species ',input%Basis%binfo(regbasparam)%natomtypes
+write(lupri,*) 'Exponents ',(input%Basis%binfo(regbasparam)%atomtype(1)%shell(1)%segment(1)%exponents)
+!  call screening_ovl(input%Basis%binfo(regbasparam))
   call build_lvec_list(lattice,nbast) 
 
   write(*,*) 'nearest neighbour in pbcmain', lattice%nneighbour
@@ -86,22 +85,21 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   num_latvectors=size(lattice%lvec)
   write(lupri,*) 'Number of vectors ', num_latvectors
 
-  allocate(latt_cell(num_latvectors))
 
-  call set_lattice_cells(latt_cell,num_latvectors,input%molecule,lattice,lupri)
+  call set_lattice_cells(num_latvectors,input%molecule,lattice,lupri)
 
 
-  write(lupri,*) 'setting%p%atom%center', latt_cell(2)%atom(1)%center(1)
+  write(lupri,*) 'setting%p%atom%center', lattice%lvec(2)%molecule%atom(1)%center(1)
 
+  call reset_integral_computed(lattice,num_latvectors,'all')
 
   write(lupri,*) 'cutoff' 
-  call find_cutoff_onep(lupri,luerr,setting,nbast,lattice,&
-              latt_cell, refcell,num_latvectors)
+  call find_cutoff_onep(lupri,luerr,setting,nbast,refcell,lattice)
 
-  write(*,*) 'nearest neighbour in pbcmain 2 ', lattice%nneighbour
-  call build_nflvec_list(lattice,nbast) 
-  write(*,*) 'nearest neighbour in pbcmain 3 ', lattice%nneighbour
-  n_neighbour=lattice%nneighbour
+!  write(*,*) 'nearest neighbour in pbcmain 2 ', lattice%nneighbour
+!  call build_nflvec_list(lattice,nbast) 
+!  write(*,*) 'nearest neighbour in pbcmain 3 ', lattice%nneighbour
+!  n_neighbour=lattice%nneighbour
 
  
   SELECT CASE(lattice%wannier_direct)
@@ -124,7 +122,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
    ! fck=0.0000E-100
   
 !
-    call pbc_init_recvec(lattice%ldef%avec,kvec)
+    call pbc_init_recvec(lattice%ldef%avec,kvec,lattice%ldef%is_active,lupri)
 
 
     write(lupri,*) 'kvec', kvec!(3,3)
@@ -150,30 +148,13 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 
   write(*,*) 'lattice%nneighbour', lattice%nneighbour
   write(*,*) 'lattice%nf', lattice%nf
-  write(*,*) 'Number of k points', Bz%nk
+  write(*,*) 'Number of k points', Bz%nk !TODO Should be nk_nosym ????
   write(lupri,*) 'Number of k points', Bz%nk
 
-!  call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
-!  nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
-  !write(*,*) 'nfsize: ',nfsze
-  !write(lupri,*) 'nfsize: ',nfsze
-  call mem_alloc(nfdensity,num_latvectors)
-!  call mem_alloc(f_1,num_latvectors)
-!  call mem_alloc(Ovl,num_latvectors)
-!  call mem_alloc(g_2,num_latvectors)
     k=0
     l1=0
     l2=0
     l3=0
-    !do l1=-3,3
-  !do n1=1,num_latvectors
-  !    call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-  !    call mat_init(nfdensity(n1),nbast,nbast)
-  !    call mat_zero(nfdensity(n1))
-  !enddo
-  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-  call mat_init(nfdensity(n1),nbast,nbast)
-  call mat_zero(nfdensity(n1))
 
 #ifdef DEBUGPBC
 
@@ -181,7 +162,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   mattxt=adjustl('PBCDMAT000')
   mattxt=trim(mattxt)
   write(*,*) mattxt
-  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+  call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
   CALL lsOPEN(IUNIT,mattxt,'old','FORMATTED')
   !OPEN(UNIT=iunit,FILE=trim(mattxt),STATUS='OLD',IOSTAT=ierror)
   read(iunit,*) nbasterik
@@ -217,17 +198,17 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
   !write(*,*) 'debugpbc 4'
   !enddo
 
-  call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-  Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+  !call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
+  Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
   write(*,*) 'density'
   write(lupri,*) 'density'
-  call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
+  call mat_print(dmat,1,nbast,1,nbast,lupri)
   write(*,*) 'density written to LSDALTON.OUT'
 
 
   elseif(lattice%read_file) then
 
-        call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
+        call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
         mattxt=adjustl(lattice%debugdensfile)
         mattxt=trim(mattxt)
         write(*,*) mattxt
@@ -250,7 +231,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         ENDDO
         CALL lsCLOSE(IUNIT,'KEEP')
   
-        Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+        Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
 
     elseif(lattice%testcase) THEN !THIS IS FOR DEBUGGING
       iunit = 345
@@ -269,7 +250,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
     !  write(mattxt,'(A20)') 'PBCDMAT'//trim(string1)//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)
 
 
-      call find_latt_index(k,0,0,0,fdim,lattice,lattice%max_layer)
+      call find_latt_index(k,0,0,0,lattice,lattice%max_layer)
       !do i=1,num_latvectors
       !  call init_lvec_data(lattice%lvec(i),nbast)
       !enddo
@@ -292,7 +273,7 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         lattice%lvec(k)%d_mat(4,2)=0.44350182805060839D0
         lattice%lvec(k)%d_mat(4,3)=0.28409190914049431D0
         lattice%lvec(k)%d_mat(4,4)=0.44350182805060839D0
-        Call mat_set_from_full(lattice%lvec(k)%d_mat,1.D0,nfdensity(k))
+        Call mat_set_from_full(lattice%lvec(k)%d_mat,1.D0,dmat)
         call mem_dealloc(lattice%lvec(k)%d_mat)
       else
         mattxt=adjustl(lattice%debugdensfile)
@@ -313,8 +294,8 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
         ENDDO
         CALL lsCLOSE(IUNIT,'KEEP')
 
-      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+      call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
+      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,dmat)
       !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
       call mem_dealloc(lattice%lvec(k)%d_mat)
     endif
@@ -323,14 +304,15 @@ write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)
 else
 
 
-      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-      call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
+      !call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
+      !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
     endif
 
 
 
 #else
 
+    write(*,*) 'before lattice%testcase'
     if(lattice%testcase) THEN !THIS IS FOR DEBUGGING
       iunit = 345
       scfit=1
@@ -348,7 +330,7 @@ else
     !  write(mattxt,'(A20)') 'PBCDMAT'//trim(string1)//trim(numtostring1)//trim(numtostring2)//trim(numtostring3)
 
 
-      call find_latt_index(k,0,0,0,fdim,lattice,lattice%max_layer)
+      call find_latt_index(k,0,0,0,lattice,lattice%max_layer)
       !do i=1,num_latvectors
       !  call init_lvec_data(lattice%lvec(i),nbast)
       !enddo
@@ -374,18 +356,19 @@ else
         mattxt=adjustl(lattice%debugdensfile)
         mattxt=trim(mattxt)
         write(*,*) mattxt
-        CALL lsOPEN(IUNIT,mattxt,'old','UNFORMATTED')
+        CALL lsOPEN(IUNIT,mattxt,'old','FORMATTED')
         !OPEN(UNIT=iunit,FILE=trim(mattxt),STATUS='OLD',IOSTAT=ierror)
-        read(iunit) nbasterik
+        read(iunit,*) nbasterik
         if(nbasterik .ne. nbast) then
           write(*,*) 'Not the right dimensions for the density matrix'
           write(*,*) 'are you sure you have the same basis or molecule?'
+          write(*,*) 'Your dimension is',nbast,'read dimension is',nbasterik
           write(lupri,*) 'Not the right dimensions for the density matrix'
           write(lupri,*) 'are you sure you have the same basis or molecule?'
           call LSquit('Not correct dimension in density matrix',lupri)
         endif
         DO j=1,nbasterik
-         read(iunit) (lattice%lvec(k)%d_mat(i,j),i=1,nbasterik)
+         read(iunit,*) (lattice%lvec(k)%d_mat(i,j),i=1,nbasterik)
         ENDDO
         CALL lsCLOSE(IUNIT,'KEEP')
       endif
@@ -394,8 +377,8 @@ else
       !   call mat_zero(nfdensity(n1))
       !enddo
 
-      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,nfdensity(n1))
+      call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
+      Call mat_set_from_full(lattice%lvec(n1)%d_mat,1.D0,Dmat)
 
       write(lupri,*) 'density used'
       do j=1,nbast
@@ -412,8 +395,8 @@ else
       !   call mat_init(nfdensity(n1),nbast,nbast)
       !   call mat_zero(nfdensity(n1))
       !enddo
-      call find_latt_index(n1,0,0,0,fdim,lattice,lattice%max_layer)
-      call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
+      !call find_latt_index(n1,0,0,0,lattice,lattice%max_layer)
+      !call mat_copy(1.0_realk,Dmat,nfdensity(n1)) 
 
 
     endif!END ELSEIF TESTCASE DEBUGGING
@@ -425,7 +408,7 @@ else
       !call write_matrix(lattice%lvec(n1)%d_mat,nbast,nbast,lupri)
       !write(*,*) 'density used'
       write(lupri,*) 'Density first'
-      call mat_print(nfdensity(n1),1,nbast,1,nbast,lupri)
+      call mat_print(dmat,1,nbast,1,nbast,lupri)
 #endif
 
   !Preparation for the far field contribution, setup multipole
@@ -433,22 +416,17 @@ else
   maxmultmom=lattice%lmax
   Tlmax=lattice%Tlmax
 
-  CALL LSTIMER('START ',TS,TE,LUPRI)
-  call pbc_multipole_expan_k(lupri,luerr,setting,nbast,lattice,&
-    &latt_cell,refcell,num_latvectors,maxmultmom)
-  CALL LSTIMER('pbc_multipole',TS,TE,LUPRI)
-  
-  call mem_alloc(Tlat,(Tlmax+1)**2,(Tlmax+1)**2)
+ ! call mem_alloc(Tlat,(Tlmax+1)**2,(Tlmax+1)**2)
 
-  write(*,*) 'density used ',num_latvectors
-  call pbc_controlmm(20,Tlat,Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
-     nbast,lupri,nfdensity,num_latvectors,lattice,E_ff,E_nnff,refcell)
+ ! write(*,*) 'density used ',num_latvectors
+ ! call pbc_controlmm(20,Tlat,Tlmax,maxmultmom,.false.,lattice%ldef%avec,&
+ !    nbast,lupri,dmat,num_latvectors,lattice,E_ff,E_nnff,refcell)
 
 #ifdef DEBUGPBC
   if(lattice%compare_elmnts) then
     !write(*,*) 'hei'
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
-    num_latvectors,latt_cell,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+    & num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
   endif
 
 #endif
@@ -467,7 +445,7 @@ else
 
     !call pbc_readopmat2(0,0,0,matris,2,'OVERLAP',.true.,.false.)
     !CALL lsOPEN(IUNIT,mattxt,'unknown','FORMATTED')
-    !call find_latt_index(k,n1,0,0,fdim,lattice,lattice%max_layer)
+    !call find_latt_index(k,n1,0,0,lattice,lattice%max_layer)
     !write(iunit,*) k
     !DO j=1,nbast
     !   write(iunit,*) (lattice%lvec(k)%fck_vec(i+(j-1)*nbast),i=1,nbast)
@@ -484,25 +462,31 @@ else
 
     !call COMPARE_MATRICES(lupri,nbast,num_latvectors,nfsze,maxmultmom,lattice)
     call readerikmats(input%molecule,setting,k_fock,k_Sab,nbast,lattice,&
-    num_latvectors,latt_cell,nfsze,maxmultmom,bz,tlat,lupri,luerr)
+    & num_latvectors,nfsze,maxmultmom,bz,tlat,lupri,luerr)
 
     deallocate(k_fock)
     deallocate(k_Sab)
     call mem_dealloc(Tlat)
 
   else
-    call mem_dealloc(Tlat)
+!    call mem_dealloc(Tlat)
     !call init_pbc_elstr(bz%fck,nbast,nbast)
     !call init_pbc_elstr(bz%smat,nbast,nbast)
 	do i=1,num_latvectors
-	 call free_Moleculeinfo(latt_cell(i))
+	 call free_Moleculeinfo(lattice%lvec(i)%molecule)
 	enddo
-    deallocate(latt_cell)
+    write(*,*) 'before call to scf loops'
+
+   call mat_abs_max_elm(dmat,maxdens)
+   write(lupri,*) 'max element in initial dmat',maxdens
+   write(*,*) 'max element in initial dmat',maxdens
 
   call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
-  num_latvectors,maxmultmom,bz,nfdensity(n1),lupri,luerr)
-  call mat_free(nfdensity(n1))
-  call mem_dealloc(nfdensity)
+  & num_latvectors,maxmultmom,bz,dmat,lupri,luerr)
+
+  call pbc_end_Bzgrid(bZ)
+!  call mat_free(nfdensity(n1))
+!  call mem_dealloc(nfdensity)
 
  !   E_1=E_kin+E_en+E_nuc
  !   if(lattice%num_its .gt. 0) call pbc_startzdiis(input%molecule,setting,nbast,lattice,&
@@ -541,16 +525,16 @@ else
     write(lupri,*) 'We are now in the ',lattice%wannier_direct, ' method'
 
     allocate(fck(sze*sze))
-    fck=0.0000E-100
+    fck=0.0000E-100_realk
   
-    call pbc_overlap_int(lupri,luerr,setting,input%molecule,&
-    nbast,lattice,latt_cell,refcell,num_latvectors)
+    call pbc_overlap_int(lupri,luerr,setting,nbast,lattice, &
+		 & refcell,num_latvectors)
   
-    call pbc_kinetic_int(lupri,luerr,setting,input%molecule,nbast,fck,&
-     sze,lattice,latt_cell,refcell,num_latvectors)
+    call pbc_kinetic_int(lupri,luerr,setting,input%molecule%natoms,nbast,fck,&
+     & sze,lattice,refcell,num_latvectors)
   
-    call pbc_nucattrc_int(lupri,luerr,setting,input%molecule,nbast,fck,&
-     sze,lattice,latt_cell,refcell,num_latvectors)
+    call pbc_nucattrc_int(lupri,luerr,setting,input%molecule%natoms,nbast,fck,&
+     & sze,lattice,refcell,num_latvectors)
      
     call pbc_get_nfsize(n1,n2,n3,lattice%nneighbour,lupri)
     nfsze=(2*n1+1)*(2*n2+1)*(2*n3+1)
@@ -590,7 +574,7 @@ else
          call mat_init(nfdensity(n1),nbast,nbast)
          call mat_zero(nfdensity(n1))
       enddo
-      call find_latt_index(n1,0,0,0,fdim,lattice,3)
+      call find_latt_index(n1,0,0,0,lattice,3)
       Call mat_set_from_full(lattice%lvec(k)%d_mat,1.D0,nfdensity(n1))
       CALL lsCLOSE(IUNIT,'KEEP')
     else
@@ -616,8 +600,8 @@ else
     enddo
   endif
  
-    call pbc_electron_rep(lupri,luerr,setting,input%molecule,nbast,&
-     lattice,latt_cell,refcell,num_latvectors,nfdensity,nfsze)
+    call pbc_electron_rep(lupri,luerr,setting,input%molecule%natoms,nbast,&
+     & lattice,refcell,num_latvectors,nfdensity,nfsze)
   
 !  call pbc_complete_Fock_mtx(lupri,nbast,S_ab,sze,cutoff,ll)
 
@@ -641,35 +625,151 @@ else
 
 END SUBROUTINE set_pbc_molecules
 
-SUBROUTINE pbc_init_recvec(realspace,recvec)
-IMPLICIT NONE
-REAL(realk),INTENT(IN) :: realspace(3,3)
-REAL(realk),INTENT(INOUT) :: recvec(3,3)
-!REAL(realk) :: PI=3.14159265358979323846D0
 
-    recvec(1,1)=2.*pi*(realspace(2,2)*realspace(3,3)-&
-              realspace(3,2)*realspace(2,3))
-    recvec(2,1)=2.*pi*(realspace(3,2)*realspace(1,3)-&
-              realspace(1,2)*realspace(3,3))
-    recvec(3,1)=2.*pi*(realspace(1,2)*realspace(2,3)-&
-              realspace(2,2)*realspace(1,3))
+!TODO move this s.r. to pbc-msc ?? 
 
-    recvec(1,2)=2.*pi*(realspace(2,3)*realspace(3,1)-&
-              realspace(3,3)*realspace(2,1))
-    recvec(2,2)=2.*pi*(realspace(3,3)*realspace(1,1)-&
-              realspace(1,3)*realspace(3,1))
-    recvec(3,2)=2.*pi*(realspace(1,3)*realspace(2,1)-&
-              realspace(2,3)*realspace(1,1))
+!> @brief Calculate basis vectors of the reciprocal space.
+!> @param realspace Primitive vectors of the lattice.
+!> @param recvec Reciprocal vectors.
+!> @param is_active Active dimensions in the calculation.
+!> @param lu 
+SUBROUTINE pbc_init_recvec(realspace,recvec,is_active,lu)
+	IMPLICIT NONE
+	! input
+	REAL(realk),INTENT(IN) :: realspace(3,3)
+	REAL(realk),INTENT(INOUT) :: recvec(3,3)
+	LOGICAL,INTENT(IN)     :: is_active(3)
+	INTEGER,INTENT(IN)     :: lu
+	! local
+	REAL(realk)            :: t2ct3(3), norm_a(2), tmp(3)
+	REAL(realk)            :: a(3, 2), b(3, 2), e(3, 2), rotmat(3, 3)
+	REAL(realk)            :: vol
+	INTEGER                :: active_dims, i, j
+    
+	! count the number of active dimensions
+	active_dims = 0
+	do i = 1, 3
+      if(is_active(i)) active_dims = active_dims + 1
+	enddo
+   recvec(:,:) = 0.0_realk
 
-    recvec(1,3)=2.*pi*(realspace(2,1)*realspace(3,3)-&
-              realspace(3,1)*realspace(2,3))
-    recvec(2,3)=2.*pi*(realspace(3,1)*realspace(1,2)-&
-              realspace(1,1)*realspace(3,2))
-    recvec(3,3)=2.*pi*(realspace(1,1)*realspace(2,2)-&
-    	      &realspace(2,1)*realspace(1,2))
+	SELECT CASE(active_dims)
 
-    recvec=2.*pi*recvec/(recvec(1,1)*realspace(1,1)+recvec(2,1)*realspace(2,1)+&
-         recvec(3,1)*realspace(3,1))!This gives NaN for the moment
+	CASE(3)
+
+		recvec(1,1)=2.*pi*(realspace(2,2)*realspace(3,3)-&
+			& realspace(3,2)*realspace(2,3))
+		recvec(2,1)=2.*pi*(realspace(3,2)*realspace(1,3)-&
+			& realspace(1,2)*realspace(3,3))
+		recvec(3,1)=2.*pi*(realspace(1,2)*realspace(2,3)-&
+			& realspace(2,2)*realspace(1,3))
+
+		recvec(1,2)=2.*pi*(realspace(2,3)*realspace(3,1)-&
+			& realspace(3,3)*realspace(2,1))
+		recvec(2,2)=2.*pi*(realspace(3,3)*realspace(1,1)-&
+			& realspace(1,3)*realspace(3,1))
+		recvec(3,2)=2.*pi*(realspace(1,3)*realspace(2,1)-&
+			& realspace(2,3)*realspace(1,1))
+
+		recvec(1,3)=2.*pi*(realspace(2,1)*realspace(3,3)-&
+			& realspace(3,1)*realspace(2,3))
+		recvec(2,3)=2.*pi*(realspace(3,1)*realspace(1,2)-&
+			& realspace(1,1)*realspace(3,2))
+		recvec(3,3)=2.*pi*(realspace(1,1)*realspace(2,2)-&
+			&realspace(2,1)*realspace(1,2))
+
+		t2ct3(1)=realspace(2,2)*realspace(3,3)-&
+			& realspace(3,2)*realspace(2,3)
+
+		t2ct3(2)=realspace(3,2)*realspace(1,3)-&
+			& realspace(1,2)*realspace(3,3)
+
+		t2ct3(3)=realspace(1,2)*realspace(2,3)-&
+			& realspace(2,2)*realspace(1,3)
+
+		vol= dot_product(t2ct3,realspace(:,1))
+
+		recvec(:,:)=recvec(:,:)/vol
+
+	CASE(2)
+
+		! the formula for the 2D reciprocal vectors is
+	   ! $b_i = 2\pi \frac{ E a_j }{ a_i \cdot E a_j }$	
+		! where $E = (e_i \otimes \e_j - e_j \otimes e_i)$, $e_i = a_i/|a_i|$ 
+		! and $i\neq j, \, i,j\in\{1,2\}$
+		
+		! pick the 'active' primitive vectors
+		do i = 1, 3
+			if ( is_active(i) ) then
+				a(:, i) = realspace(:, i)
+			endif
+		enddo
+		
+		! calculate reciprocal vectors
+		do i = 1, 2
+			norm_a(i) = sqrt( dot_product(a(:, i), a(:, i)) )
+			e(:, i) = a(:, i) / norm_a(i)
+		enddo
+		do i = 1, 3
+			rotmat(:, i) = e(i, 1)*e(:, 2) - e(i, 2)*e(:, 1)
+		enddo
+		do i = 1, 3
+			tmp(i) =  dot_product(rotmat(:, i), e(:, 2)) 
+		enddo
+		b(:, 1) = 2.0_realk * pi * tmp(:) &
+			/ ( norm_a(1) * dot_product(e(:, 1), tmp(:)) )
+		do i = 1, 3
+			tmp(i) =  dot_product(rotmat(:, i), e(:, 1)) 
+		enddo
+		b(:, 2) = 2.0_realk * pi *tmp(:) &
+			/ ( norm_a(2) * dot_product(e(:, 2), tmp(:)) )
+
+		! set reciprocal vectors
+		j = 1
+		do i = 1, 3
+			if ( is_active(i) ) then
+				recvec(:, i) = b(:, j)
+				j = j + 1
+			else
+				recvec(:, i) = 0.0_realk
+			endif
+		enddo
+		
+!		write (*, *) 'test'
+!		write (*, *) 'a1b1', dot_product(a(:,1), b(:,1)), 'should be 2 pi'
+!		write (*, *) 'a1b2', dot_product(a(:,1), b(:,2)), 'should be 0'
+!		write (*, *) 'a2b1', dot_product(a(:,2), b(:,1)), 'should be 0'
+!		write (*, *) 'a2b2', dot_product(a(:,2), b(:,2)), 'should be 2 pi'
+!		
+!	 	write (*, *) recvec
+
+	CASE(1)
+		if(realspace(1,1) .ne. 0) then
+			recvec(1,1)=2._realk*pi/realspace(1,1)
+			if(realspace(2,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
+				write(*,*) 'Use just one axis it is a one dimensional system'
+				call LSquit('Not correct usage of lattice vectors',lu)
+			endif
+		elseif(realspace(2,1) .ne. 0) then
+			recvec(2,1)=2._realk*pi/realspace(2,1)
+			if(realspace(1,1) .ne. 0._realk .or. realspace(3,1) .ne. 0._realk) then
+				write(*,*) 'Use just one axis it is a one dimensional system'
+				call LSquit('Not correct usage of lattice vectors',lu)
+			endif
+		elseif(realspace(3,1) .ne. 0) then
+			recvec(3,1)=2._realk*pi/realspace(3,1)
+			if(realspace(2,1) .ne. 0._realk .or. realspace(1,1) .ne. 0._realk) then
+				write(*,*) 'Use just one axis it is a one dimensional system'
+				call LSquit('Not correct usage of lattice vectors',lu)
+			endif
+		endif
+
+	END SELECT
+
+
+
+	!recvec=2.*pi*recvec/(recvec(1,1)*realspace(1,1)+recvec(2,1)*realspace(2,1)+&
+	!     recvec(3,1)*realspace(3,1))!This gives NaN for the moment
 
 END SUBROUTINE pbc_init_recvec
 

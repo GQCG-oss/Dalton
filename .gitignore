@@ -21,4 +21,7 @@ DALTON/Doc/*.ilg
 DALTON/Doc/*.ind
 DALTON/Doc/*.toc
 DALTON/Doc/Master.out
+DALTON/test/perl-pid.*
+DALTON/test/perl_test.*
 *~
+.DS_Store

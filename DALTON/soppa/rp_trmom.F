@@ -1,11 +1,7 @@
 C
 C  /* Deck rp_trmom */
-CSPAS:23/5-11: second and third moment sum rules
-C     SUBROUTINE RP_TRMOM(ISYMTR,NLBTOT,NEXCI,TRLEN,TRVEL,TRLON,TRMAG,
-C    &                    BSRLON,EXENG,WORK,LWORK)
       SUBROUTINE RP_TRMOM(ISYMTR,NLBTOT,NEXCI,TRLEN,TRVEL,TQLEN,TQVEL,
      &                    TTLEN,TRLON,TRMAG,BSRLON,EXENG,WORK,LWORK)
-CKeinSPASmehr
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -20,9 +16,6 @@ C
 #include "priunit.h"
 C
 #include "cbiexc.h"
-CSPAS:15/03-2006: merge with Dalton-2.0  
-C#include <cbilrs.h>
-CKeinSPASmehr
 #include "ccsdsym.h"
 #include "ccorb.h"
 #include "soppinf.h"
@@ -30,10 +23,8 @@ CKeinSPASmehr
 #include "nuclei.h"
 C
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
-CSPAS:23/5-11: second and third moment sum rules
       DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
       DIMENSION TTLEN(10,NSYM,MXNEXI)
-CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION WORK(LWORK)
@@ -59,9 +50,6 @@ C-----------------------------------------------------------------
 C        Check if integrals are second moment of charge integrals.
 C-----------------------------------------------------------------
 C
-CSPAS:23/5-11: second and third moment sum rules
-C        IF ( LABEL(3:8) .EQ. 'SECMOM' ) GOTO 200
-CKeinSPASmehr
 C
 C----------------------------------------------------------------------
 C        If KSYMOP (the operator symmetry) equals ISYMTR (the reference
@@ -187,9 +175,7 @@ C---------------------------------------------------
 C
                CALL SO_COLLECT_TM(ISYMTR,LABEL,IEXCI,
      &                            WORK(KTRMOM+IEXCI-1),TRLEN,TRVEL,
-CSPAS:23/5-11: second and third moment sum rules
      &                            TQLEN,TQVEL,TTLEN,
-CKeinSPASmehr
      &                            TRLON,TRMAG,BSRLON,EXENG)
 C
   100       CONTINUE
@@ -234,6 +220,8 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
+C
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('RP_TRMOM')
 C

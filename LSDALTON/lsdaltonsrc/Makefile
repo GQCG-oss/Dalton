@@ -2,12 +2,13 @@ all: liblsdaltonsrc.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../rsp_properties -I../SolverUtilities -I../xcfun_host
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../rsp_properties -I../SolverUtilities -I../xcfun_host -I../IchorIntegrals -I../responsesolver
 
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
 
 F90_OBJS = \
+	ADMMbasisOpt.o\
 	numerical_derivatives.o\
         LS_optimizer.o \
 	LSdynamics.o \
@@ -15,10 +16,12 @@ F90_OBJS = \
 	lsmpiSlave.o \
 	init_lsdalton.o \
 	configuration.o \
+	LSlibState.o \
 	LSlib.o \
 	Profile.o\
 	IchorTesting.o\
 	IchorProfile.o\
+	InteractionEnergy.o\
 	LSDALTON.o
 SMALLF90_OBJS = \
         lsdalton_wrapper.o
@@ -48,7 +51,7 @@ clean :
 
 
 Makefile.depend depend: $(FORTFILES)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../geomopt -M../deccc -M../SolverUtilities -M../xcfun_host -- $(FORTFILES) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../geomopt -M../deccc -M../SolverUtilities -M../xcfun_host -M../IchorIntegrals -M../responsesolver -- $(FORTFILES) > Makefile.depend
 
 
 include Makefile.depend

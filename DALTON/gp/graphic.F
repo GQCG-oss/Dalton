@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -24,7 +24,6 @@
 C
 C FILE    : graphic.F
 C
-#include "single.h"
 C
 C/* Deck MOLPLT */
       SUBROUTINE MOLPLT(KINDS,KOLOR,TITMOL,WORK,LWORK)
@@ -47,7 +46,7 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
       DIMENSION KOLORS(103)
       CHARACTER*2 ATMSYM(103),SKINDS(MXCENT)
@@ -124,12 +123,12 @@ C
       IAT = 0
       DO 310 INUC=1,NUCIND
          DO 311 IA = 0, MAXOPR
-            IF (IBTAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
+            IF (IAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
                IAT = IAT + 1
                NUCZ = NINT(CHARGE(INUC))
-               X = XTANG * PT(IBTAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
-               Y = XTANG * PT(IBTAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
-               Z = XTANG * PT(IBTAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
+               X = XTANG * PT(IAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
+               Y = XTANG * PT(IAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
+               Z = XTANG * PT(IAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
                WRITE(LUIP,8030) ATMSYM(NUCZ),X,Y,Z
             END IF
  311     CONTINUE 
@@ -178,7 +177,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "primit.h"
-#include "ibtfun.h"
+
 C
       DATA (ATMSYM(I),I = 1,103)
      1/'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',
@@ -219,12 +218,12 @@ C
       IAT = 0
       DO 310 INUC=1,NUCIND
          DO 311 IA = 0, MAXOPR
-            IF (IBTAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
+            IF (IAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
                IAT = IAT + 1
                NUCZ = NINT(CHARGE(INUC))
-               X = XTANG * PT(IBTAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
-               Y = XTANG * PT(IBTAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
-               Z = XTANG * PT(IBTAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
+               X = XTANG * PT(IAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
+               Y = XTANG * PT(IAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
+               Z = XTANG * PT(IAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
                WRITE(LUIP,8020) ATMSYM(NUCZ),X,Y,Z
             END IF
  311     CONTINUE 
@@ -316,7 +315,7 @@ C     Original source code provided by Kim Baldridge at SDSC. Punches
 C     molecular orbital coefficients
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
-c#include <implicit.h>
+c#include "implicit.h"
 C
 c      DIMENSION V(NDIM,M)
 C

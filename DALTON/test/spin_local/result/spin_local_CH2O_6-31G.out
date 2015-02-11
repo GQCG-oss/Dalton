@@ -1,0 +1,2710 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2014.0
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2014.0 (2014), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Wed Oct 22 21:34:08 2014
+     Host name              : stallo-1.local                          
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/arnfinn/dalton/DALTON/test/spin_local
+   2) /home/arnfinn/dalton/build-2014/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | arnfinn
+ Host                     | c56-2.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
+ C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
+                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
+                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
+                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
+                          | read.so;/usr/lib64/libm.so
+ LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
+                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
+                          | ntel64/libmkl_intel_lp64.so
+ Static linking           | OFF
+ Last Git revision        | 13b1d9390d1fcd3010fa0120fc2efc73f59a1dc9
+ Configuration time       | 2014-10-16 13:44:16.086512
+
+ * Sequential calculation.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN PROPERTIES                                   
+**INTEGRALS                                       
+.NOSUP                                            
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ B3LYP                                            
+*ORBITAL                                          
+.NOSUPSYM                                         
+**PROPERTIES                                      
+.LOCALIZATION                                     
+.SPIN-SPIN                                        
+*TRPRSP                                           
+.MAXRED                                           
+ 1700                                             
+.THRESH                                           
+ 1.0D-5                                           
+*LINRES                                           
+.MAXRED                                           
+ 1700                                             
+.THRESH                                           
+ 1.0D-5                                           
+*SPIN-SPIN                                        
+.SOSOCC                                           
+.ABUNDA                                           
+ 0.04                                             
+*LOCALIZATION                                     
+.FOSBOY                                           
+*END OF DALTON INPUT                              
+
+
+   Content of the .mol file
+ ----------------------------
+
+ATOMBASIS                                                                      
+CH2O                                                                           
+------------------------                                                       
+AtomTypes=3 Angstrom                                                           
+        6.0   1    Basis=6-31G                                                 
+C           -1.588367    -.770650     .029109                                  
+        8.0   1    Basis=6-31G                                                 
+O           -1.657083     .436069    -.009750                                  
+        1.0   2    Basis=6-31G                                                 
+H           -.620668   -1.294822      .054251                                  
+H           -2.508043   -1.382001     .040282                                  
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Static molecular property section will be executed (ABACUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: CH2O                                                                    
+ 2: ------------------------                                                
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "6-31G" from the basis set library.
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/arnfinn/dalton/build-2014/basis/6-31G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G                                                                           
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "6-31G" from the basis set library.
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/arnfinn/dalton/build-2014/basis/6-31G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G                                                                           
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  The basis set is "6-31G" from the basis set library.
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/arnfinn/dalton/build-2014/basis/6-31G"
+
+  Info about the basis set file: your basis has no documentation.
+  Basis set: 6-31G                                                                           
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+@   The molecule is centered at center of mass and rotated
+@   so principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(1)           
+
+ Symmetry Independent Centres             
+ ----------------------------
+       8 :      0.00000000     0.00105827     1.13941835  Isotope  1
+       6 :      0.00001741     0.00105028    -1.14582446  Isotope  1
+       1 :     -0.00006987    -1.79980438    -2.20056359  Isotope  1
+       1 :     -0.00007111     1.77050338    -2.23969756  Isotope  1
+
+ No symmetry elements were found.
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Full point group is: C(1)           
+@    Represented as:      C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C          12.000000
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    30.010565 amu
+                       Natural abundance:  98.633 %
+
+ Center-of-mass coordinates (a.u.):    0.000002   -0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    3
+  Total number of atoms:    4
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  C           1    6.0000    22     9      [10s4p|3s2p]                                       
+  O           1    8.0000    22     9      [10s4p|3s2p]                                       
+  H           2    1.0000     4     2      [4s|2s]                                            
+  ----------------------------------------------------------------------
+  total:      4   16.0000    52    22
+  ----------------------------------------------------------------------
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   12
+  C       :     1  x   0.0000174063    2  y   0.0010502766    3  z  -1.1458244562
+  O       :     4  x   0.0000000000    5  y   0.0010582718    6  z   1.1394183506
+  H       :     7  x  -0.0000711057    8  y   1.7705033754    9  z  -2.2396975555
+  H       :    10  x  -0.0000698661   11  y  -1.7998043817   12  z  -2.2005635940
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           O           H           H     
+            ------      ------      ------      ------
+ C     :    0.000000
+ O     :    1.209298    0.000000
+ H     :    1.100831    2.018474    0.000000
+ H     :    1.104391    2.007988    1.889439    0.000000
+
+
+  Max    interatomic separation is    2.0185 Angstrom (    3.8144 Bohr)
+  between atoms    3 and    2, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.1008 Angstrom (    2.0803 Bohr)
+
+  Min YX interatomic separation is    1.2093 Angstrom (    2.2852 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  O          C            1.209298
+  bond distance:  H          C            1.100831
+  bond distance:  H          C            1.104391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     O          C          H            121.724
+  bond angle:     O          C          H            120.357
+  bond angle:     H          C          H            117.919
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       1.798871          0.000002    0.000000    1.000000
+   IB      13.009178          0.000000    1.000000   -0.000000
+   IC      14.808049          1.000000   -0.000000   -0.000002
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         280942.3015          38847.8806          34128.6681 MHz
+            9.371226            1.295826            1.138410 cm-1
+
+
+@  Nuclear repulsion energy :   31.249215316217 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000002225914     -0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000002225914     -0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000002225914     -0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:       29013 ( 90.3% )
+ HERMIT - Megabytes written:                              0.337
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.05 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:   12
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -20.684762     -11.351957      -1.632119      -1.046130      -0.813248
+           -0.702067      -0.605910      -0.491826      -0.321033      -0.161573
+           -0.131670      -0.108806
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Oct 22 21:34:09 2014
+     Host name              : stallo-1.local                          
+
+ Title lines from ".mol" input file:
+     CH2O                                                                    
+     ------------------------                                                
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> KS-DFT <<<
+@    Number of closed shell electrons          16
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1
+                                           |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               8 |    8
+     Secondary orbitals                 14 |   14
+     Total number of orbitals           22 |   22
+     Number of basis functions          22 |   22
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations            112
+     ------------------------------------------
+@    Total number of variables              113
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.718248639727  16.0000002748    2.75D-07
+@  1    -113.960631928        2.45119D+00   -1.14D+02    1
+      Virial theorem: -V/T =      2.007196
+@      MULPOP C       1.09; O      -0.80; H      -0.15; H      -0.15; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.808625305684  16.0000003608    3.61D-07
+@  2    -113.312913949        4.40639D+00    6.48D-01    2
+      Virial theorem: -V/T =      1.998513
+@      MULPOP C      -1.72; O       1.19; H       0.26; H       0.27; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.984772742448  16.0000002695    2.70D-07
+@  3    -114.363991690        8.63582D-01   -1.05D+00    3
+      Virial theorem: -V/T =      1.993525
+@      MULPOP C       0.19; O      -0.55; H       0.18; H       0.19; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.797849985588  16.0000003043    3.04D-07
+@  4    -114.398488493        2.03458D-01   -3.45D-02    4
+      Virial theorem: -V/T =      2.007506
+@      MULPOP C       0.14; O      -0.31; H       0.09; H       0.09; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.838637826033  16.0000003004    3.00D-07
+@  5    -114.400841045        7.18810D-03   -2.35D-03    5
+      Virial theorem: -V/T =      2.004383
+@      MULPOP C       0.09; O      -0.33; H       0.12; H       0.12; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.837543814697  16.0000003005    3.01D-07
+@  6    -114.400845017        2.51116D-03   -3.97D-06    6
+      Virial theorem: -V/T =      2.004460
+@      MULPOP C       0.09; O      -0.33; H       0.12; H       0.12; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.837873028542  16.0000003005    3.00D-07
+@  7    -114.400845396        1.21827D-04   -3.78D-07    7
+      Virial theorem: -V/T =      2.004437
+@      MULPOP C       0.09; O      -0.33; H       0.12; H       0.12; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.837863675477  16.0000003005    3.00D-07
+@  8    -114.400845397        2.96358D-05   -1.55D-09    8
+      Virial theorem: -V/T =      2.004438
+@      MULPOP C       0.09; O      -0.33; H       0.12; H       0.12; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.837865789893  16.0000003005    3.00D-07
+@  9    -114.400845397        4.41319D-06   -4.69D-11    8
+
+@ *** DIIS converged in   9 iterations !
+@     Converged SCF energy, gradient:   -114.400845397224    4.41D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   16
+ Orbital occupations :    8
+
+ Sym       Kohn-Sham orbital energies
+
+1 A     -19.16881683   -10.28599161    -1.08332667    -0.63694028    -0.50690560
+         -0.44149336    -0.40288899    -0.26571601    -0.04665639     0.10239401
+          0.17920312     0.21948661     0.50874706
+
+    E(LUMO) :    -0.04665639 au (symmetry 1)
+  - E(HOMO) :    -0.26571601 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.21905961 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       2.615       2.687
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+
+@    Final DFT energy:           -114.400845397224                 
+@    Nuclear repulsion:            31.249215316217
+@    Electronic energy:          -145.650060713441
+
+@    Final gradient norm:           0.000004413187
+
+ 
+     Date and time (Linux)  : Wed Oct 22 21:34:11 2014
+     Host name              : stallo-1.local                          
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 C   :1s    -0.0002  -0.9950   0.1161   0.1627   0.0006  -0.0271   0.0000
+   2 C   :1s     0.0002  -0.0339  -0.2346  -0.3496  -0.0017   0.1031  -0.0000
+   3 C   :1s    -0.0089   0.0172  -0.0584  -0.3314  -0.0017   0.0021  -0.0000
+   4 C   :2px    0.0000   0.0000   0.0000   0.0000  -0.0000   0.0000  -0.3748
+   5 C   :2py   -0.0000  -0.0000   0.0002  -0.0015   0.4549   0.0047   0.0000
+   6 C   :2pz    0.0001  -0.0014  -0.1984   0.2168  -0.0040   0.3753   0.0000
+   7 C   :2px    0.0000  -0.0000   0.0000   0.0000   0.0000   0.0000  -0.2175
+   8 C   :2py    0.0001  -0.0000  -0.0004  -0.0002   0.1843   0.0030   0.0000
+   9 C   :2pz   -0.0056  -0.0023   0.0369   0.0708  -0.0011   0.0585   0.0000
+  10 O   :1s    -0.9951   0.0002   0.1940  -0.0876  -0.0015   0.0903   0.0000
+  11 O   :1s    -0.0290   0.0004  -0.4331   0.2025   0.0034  -0.1897  -0.0000
+  12 O   :1s     0.0182   0.0003  -0.3900   0.2641   0.0066  -0.3784  -0.0000
+  13 O   :2px   -0.0000  -0.0000  -0.0000   0.0000   0.0000   0.0000  -0.5053
+  14 O   :2py    0.0000   0.0000  -0.0000  -0.0002   0.2812   0.0049   0.0000
+  15 O   :2pz    0.0025  -0.0006   0.1923   0.0801   0.0047  -0.5184  -0.0000
+  16 O   :2px    0.0000   0.0000  -0.0000   0.0000   0.0000   0.0000  -0.3118
+  17 O   :2py   -0.0000  -0.0000   0.0001   0.0001   0.1366   0.0025   0.0000
+  18 O   :2pz   -0.0056  -0.0020   0.0604   0.0340   0.0018  -0.2504  -0.0000
+  19 H   :1s     0.0004   0.0012  -0.0270  -0.1877   0.1942  -0.0790  -0.0000
+  20 H   :1s    -0.0001  -0.0048   0.0080  -0.0737   0.1152  -0.0810  -0.0000
+  21 H   :1s     0.0004   0.0012  -0.0272  -0.1837  -0.1956  -0.0797  -0.0000
+  22 H   :1s     0.0000  -0.0048   0.0070  -0.0718  -0.1159  -0.0805  -0.0000
+
+    Orbital         8        9       10
+   1 C   :1s    -0.0003  -0.0000  -0.1293
+   2 C   :1s    -0.0001   0.0000   0.2149
+   3 C   :1s     0.0038   0.0001   1.8473
+   4 C   :2px    0.0000   0.5001  -0.0000
+   5 C   :2py   -0.1517  -0.0000  -0.0042
+   6 C   :2pz   -0.0011  -0.0000  -0.2432
+   7 C   :2px   -0.0000   0.5730  -0.0001
+   8 C   :2py    0.0599   0.0000  -0.0093
+   9 C   :2pz   -0.0032  -0.0000  -0.6152
+  11 O   :1s    -0.0007  -0.0000  -0.0149
+  13 O   :2px   -0.0000  -0.4545   0.0000
+  14 O   :2py    0.5950  -0.0000  -0.0002
+  15 O   :2pz    0.0032   0.0000   0.0801
+  16 O   :2px    0.0000  -0.4739   0.0000
+  17 O   :2py    0.4262  -0.0000   0.0006
+  18 O   :2pz    0.0017   0.0000   0.0831
+  19 H   :1s    -0.1910  -0.0000  -0.0984
+  20 H   :1s    -0.2971  -0.0000  -1.3547
+  21 H   :1s     0.1927  -0.0000  -0.0996
+  22 H   :1s     0.2971  -0.0000  -1.3545
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.63 seconds
+ >>>> Total wall time used in SIRIUS :      2.73 seconds
+
+ 
+     Date and time (Linux)  : Wed Oct 22 21:34:11 2014
+     Host name              : stallo-1.local                          
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+        *****************************************************************
+        ******** Output from **PROPE input processing for ABACUS ********
+        *****************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+ Default print level:        0
+
+      Nuclear spin-spin coupling constants
+      Localized orbitals are used in the analysis
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in triplet response: 1.00E-05
+ Maximum iterations in TRPRSP :   60
+ Maximum size of reduced space : 1700
+
+
+ Changes of defaults for LINRES:
+ -------------------------------
+
+ Singlet linear response module for properties
+ as VCD, MAGSUS, SPIN-SPIN, SHIELD, SPINRO, MOLGFA
+ Print level in LINRES        :    0
+ Threshold in LINRES          : 1.00D-05
+ Maximum iterations in LINRES :   60
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+ Spin-spin couplings printed for atoms with abundance greater than :   0.040 %
+ Orbital analysis of spin-spin couplings
+ Only contributions from pairs of occupied  orbitals are printed
+
+
+ Changes of defaults for LOCALI:
+ -------------------------------
+
+ FOSOCC: Foster Boys localization of all occupied orbitals
+
+ Center of mass dipole origin  :    0.000002   -0.000000    0.000000
+
+ Center of mass gauge origin   :    0.000002   -0.000000    0.000000
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Wed Oct 22 21:34:11 2014
+     Host name              : stallo-1.local                          
+
+No symmetry -> DSO by numerical integration.
+ Electrons:  16.0000003(    3e-07): DFTDSO time:       0.1 s
+
+ Integral transformation: Total CPU and WALL times (sec)       0.019       0.036
+    Convergence for SD 001 x. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 002 x. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 002 y. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 003 x. Last residual and threshold:   0.00001   0.00001
+    Convergence for SD 003 y. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 003 z. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 004 x. Last residual and threshold:   0.00001   0.00001
+    Convergence for SD 005 x. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 005 y. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 006 x. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 006 y. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 006 z. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 007 x. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 008 x. Last residual and threshold:   0.00001   0.00001
+    Convergence for SD 008 y. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 009 x. Last residual and threshold:   0.00001   0.00001
+    Convergence for SD 009 y. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 009 z. Last residual and threshold:   0.00001   0.00001
+    Convergence for SD 010 x. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 011 x. Last residual and threshold:   0.00001   0.00001
+    Convergence for SD 011 y. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 012 x. Last residual and threshold:   0.00001   0.00001
+    Convergence for SD 012 y. Last residual and threshold:   0.00000   0.00001
+    Convergence for SD 012 z. Last residual and threshold:   0.00001   0.00001
+    Convergence for FC C  01. Last residual and threshold:   0.00000   0.00001
+    Convergence for FC O  02. Last residual and threshold:   0.00000   0.00001
+    Convergence for FC H  03. Last residual and threshold:   0.00000   0.00001
+    Convergence for FC H  04. Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 001 . Last residual and threshold:   0.00001   0.00001
+    Convergence for PSO 002 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 003 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 004 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 005 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 006 . Last residual and threshold:   0.00001   0.00001
+    Convergence for PSO 007 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 008 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 009 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 010 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 011 . Last residual and threshold:   0.00000   0.00001
+    Convergence for PSO 012 . Last residual and threshold:   0.00000   0.00001
+
+
+ FOSTER-BOYS LOCALIZATION:
+ SUM OF (R-VECTOR)**2 FOR THE ORBITAL DISTRIBUTIONS
+ INCREASED BY   10.4667      TO   17.3400    
+ NUMBER OF (2*2)-OPTIMIZATIONS:  155  ACCURACY: 0.10E-11
+
+
+
+
+                      Localized Occupied Molecular Orbitals
+                      -------------------------------------
+
+
+      8  Localized Occupied Molecular Orbitals 
+
+ Orbital               1        2        3        4        5        6        7
+   1  C     1s      -0.0018  -1.0054   0.0551   0.0813   0.0807  -0.0182   0.0551
+   2  C     1s       0.0021  -0.0077  -0.1878  -0.2326  -0.2308   0.0735  -0.1878
+   3  C     1s      -0.0147   0.0344  -0.0430  -0.2215  -0.2229   0.0716  -0.0430
+   4  C     2px     -0.0000  -0.0000   0.2650   0.0000   0.0000  -0.0000  -0.2651
+   5  C     2py      0.0000  -0.0000  -0.0011  -0.3279   0.3315   0.0800  -0.0011
+   6  C     2pz      0.0059  -0.0002  -0.2490   0.2118   0.2072   0.0865  -0.2490
+   7  C     2px      0.0000  -0.0000   0.1538   0.0000   0.0000  -0.0000  -0.1538
+   8  C     2py      0.0001   0.0000  -0.0011  -0.0873   0.0889   0.1055  -0.0011
+   9  C     2pz     -0.0083  -0.0065   0.0032   0.0644   0.0651   0.0238   0.0032
+  10  O     1s      -1.0110  -0.0026   0.0570  -0.0106  -0.0107   0.0864   0.0570
+  11  O     1s       0.0141   0.0079  -0.1948   0.0356   0.0361  -0.3057  -0.1948
+  12  O     1s       0.0672   0.0020  -0.0994   0.0345   0.0360  -0.4101  -0.0994
+  13  O     2px     -0.0000   0.0000   0.3573   0.0000   0.0000   0.0000  -0.3573
+  14  O     2py     -0.0000   0.0000  -0.0012   0.0540  -0.0544   0.4633  -0.0012
+  15  O     2pz      0.0113  -0.0158   0.3018  -0.0510  -0.0511  -0.2474   0.3018
+  16  O     2px     -0.0000   0.0000   0.2205  -0.0000  -0.0000   0.0000  -0.2205
+  17  O     2py     -0.0001  -0.0000  -0.0005   0.0773  -0.0781   0.3074  -0.0005
+  18  O     2pz      0.0008  -0.0078   0.1256  -0.0312  -0.0320  -0.1294   0.1256
+  19  H     1s      -0.0002   0.0101   0.0076  -0.3325   0.0450  -0.0463   0.0076
+  20  H     1s       0.0003  -0.0025   0.0318  -0.2463   0.1148  -0.1591   0.0318
+  21  H     1s      -0.0003   0.0100   0.0076   0.0452  -0.3323   0.0384   0.0076
+  22  H     1s       0.0004  -0.0024   0.0310   0.1136  -0.2477   0.1113   0.0310
+
+ Orbital               8
+   1  C     1s       0.0182
+   2  C     1s      -0.0748
+   3  C     1s      -0.0686
+   4  C     2px      0.0000
+   5  C     2py      0.0789
+   6  C     2pz     -0.0887
+   7  C     2px      0.0000
+   8  C     2py      0.1044
+   9  C     2pz     -0.0280
+  10  O     1s      -0.0865
+  11  O     1s       0.3053
+  12  O     1s       0.4128
+  13  O     2px     -0.0000
+  14  O     2py      0.4611
+  15  O     2pz      0.2516
+  16  O     2px     -0.0000
+  17  O     2py      0.3061
+  18  O     2pz      0.1312
+  19  H     1s      -0.0379
+  20  H     1s      -0.1115
+  21  H     1s       0.0456
+  22  H     1s       0.1576
+
+ Old LUGDT file opened in SOSJTR.
+
+
+                Triplet electronic excitation energies
+                --------------------------------------
+
+     Sym.      Mode              Frequency               Frequency
+    ex. st.    No.               (au)                    (eV)
+    ---------------------------------------------------------------
+      1         1                 0.11484                  3.12482
+      1         2                 0.19755                  5.37572
+      1         3                 0.27776                  7.55814
+      1         4                 0.29788                  8.10580
+      1         5                 0.35963                  9.78603
+      1         6                 0.36584                  9.95496
+      1         7                 0.40319                 10.97124
+      1         8                 0.43881                 11.94076
+      1         9                 0.48258                 13.13177
+      1        10                 0.48359                 13.15918
+      1        11                 0.51278                 13.95346
+      1        12                 0.52011                 14.15281
+      1        13                 0.53308                 14.50572
+      1        14                 0.55447                 15.08794
+      1        15                 0.57720                 15.70643
+      1        16                 0.58175                 15.83017
+      1        17                 0.63963                 17.40516
+      1        18                 0.65060                 17.70375
+      1        19                 0.70681                 19.23335
+      1        20                 0.72981                 19.85919
+      1        21                 0.76947                 20.93821
+      1        22                 0.80589                 21.92937
+      1        23                 0.81089                 22.06534
+      1        24                 0.82350                 22.40856
+      1        25                 0.87035                 23.68331
+      1        26                 0.88501                 24.08247
+      1        27                 0.90533                 24.63519
+      1        28                 0.91957                 25.02281
+      1        29                 0.95097                 25.87733
+      1        30                 0.95994                 26.12129
+      1        31                 0.97861                 26.62938
+      1        32                 0.99037                 26.94929
+      1        33                 1.01779                 27.69536
+      1        34                 1.01864                 27.71860
+      1        35                 1.03174                 28.07517
+      1        36                 1.04348                 28.39450
+      1        37                 1.04799                 28.51735
+      1        38                 1.05322                 28.65956
+      1        39                 1.06154                 28.88591
+      1        40                 1.10226                 29.99398
+      1        41                 1.10364                 30.03155
+      1        42                 1.11903                 30.45032
+      1        43                 1.12660                 30.65642
+      1        44                 1.16924                 31.81656
+      1        45                 1.17038                 31.84773
+      1        46                 1.18243                 32.17557
+      1        47                 1.19106                 32.41038
+      1        48                 1.19290                 32.46037
+      1        49                 1.19803                 32.60011
+      1        50                 1.20139                 32.69146
+      1        51                 1.22066                 33.21578
+      1        52                 1.22992                 33.46786
+      1        53                 1.23107                 33.49916
+      1        54                 1.24687                 33.92907
+      1        55                 1.26121                 34.31917
+      1        56                 1.27906                 34.80492
+      1        57                 1.28319                 34.91744
+      1        58                 1.28326                 34.91941
+      1        59                 1.28779                 35.04251
+      1        60                 1.38463                 37.67783
+      1        61                 1.39335                 37.91492
+      1        62                 1.40335                 38.18704
+      1        63                 1.41946                 38.62559
+      1        64                 1.42345                 38.73407
+      1        65                 1.45190                 39.50822
+      1        66                 1.50471                 40.94537
+      1        67                 1.51814                 41.31060
+      1        68                 1.52902                 41.60662
+      1        69                 1.54252                 41.97419
+      1        70                 1.61036                 43.82010
+      1        71                 1.61873                 44.04784
+      1        72                 1.68005                 45.71662
+      1        73                 1.70029                 46.26714
+      1        74                 1.74869                 47.58424
+      1        75                 1.86180                 50.66218
+      1        76                 1.86710                 50.80632
+      1        77                 1.87369                 50.98569
+      1        78                 1.92516                 52.38617
+      1        79                 1.93344                 52.61160
+      1        80                 1.94806                 53.00944
+      1        81                 2.02651                 55.14423
+      1        82                 2.09560                 57.02428
+      1        83                 2.16926                 59.02853
+      1        84                 2.54938                 69.37224
+      1        85                10.10058                274.85076
+      1        86                10.28700                279.92338
+      1        87                10.34750                281.56971
+      1        88                10.41944                283.52732
+      1        89                10.63236                289.32130
+      1        90                10.75570                292.67743
+      1        91                10.80018                293.88785
+      1        92                10.87738                295.98854
+      1        93                11.03163                300.18581
+      1        94                11.04378                300.51663
+      1        95                11.16740                303.88044
+      1        96                11.17517                304.09192
+      1        97                11.33323                308.39280
+      1        98                11.81127                321.40100
+      1        99                18.97500                516.33612
+      1       100                19.22036                523.01263
+      1       101                19.28168                524.68112
+      1       102                19.28745                524.83810
+      1       103                19.61082                533.63768
+      1       104                19.69682                535.97785
+      1       105                19.70282                536.14097
+      1       106                19.79133                538.54949
+      1       107                19.90247                541.57376
+      1       108                19.91991                542.04824
+      1       109                19.94965                542.85771
+      1       110                20.01943                544.75647
+      1       111                20.13333                547.85568
+      1       112                20.60088                560.57858
+
+ Old LUGDI file opened in SOSJSN.
+
+
+                Singlet electronic excitation energies
+                --------------------------------------
+
+     Sym.      Mode              Frequency               Frequency
+    ex. st.    No.               (au)                    (eV)
+    ---------------------------------------------------------------
+      1         1                 0.14298                  3.89061
+      1         2                 0.32955                  8.96760
+      1         3                 0.33374                  9.08153
+      1         4                 0.36324                  9.88430
+      1         5                 0.38613                 10.50714
+      1         6                 0.42562                 11.58182
+      1         7                 0.44365                 12.07237
+      1         8                 0.45574                 12.40141
+      1         9                 0.50695                 13.79472
+      1        10                 0.52257                 14.21998
+      1        11                 0.55716                 15.16105
+      1        12                 0.56402                 15.34764
+      1        13                 0.57875                 15.74855
+      1        14                 0.59470                 16.18255
+      1        15                 0.61380                 16.70240
+      1        16                 0.65500                 17.82347
+      1        17                 0.67711                 18.42514
+      1        18                 0.70969                 19.31161
+      1        19                 0.72922                 19.84322
+      1        20                 0.77006                 20.95434
+      1        21                 0.81891                 22.28362
+      1        22                 0.85145                 23.16926
+      1        23                 0.85482                 23.26092
+      1        24                 0.87746                 23.87697
+      1        25                 0.88497                 24.08113
+      1        26                 0.92890                 25.27658
+      1        27                 0.93476                 25.43614
+      1        28                 0.96050                 26.13649
+      1        29                 0.96794                 26.33891
+      1        30                 0.99932                 27.19278
+      1        31                 1.00542                 27.35889
+      1        32                 1.04518                 28.44087
+      1        33                 1.05431                 28.68913
+      1        34                 1.07242                 29.18212
+      1        35                 1.07551                 29.26605
+      1        36                 1.09377                 29.76299
+      1        37                 1.09842                 29.88943
+      1        38                 1.10044                 29.94436
+      1        39                 1.12860                 30.71069
+      1        40                 1.13190                 30.80045
+      1        41                 1.13965                 31.01156
+      1        42                 1.16843                 31.79458
+      1        43                 1.17000                 31.83741
+      1        44                 1.20005                 32.65509
+      1        45                 1.20394                 32.76094
+      1        46                 1.21895                 33.16943
+      1        47                 1.21918                 33.17548
+      1        48                 1.23531                 33.61442
+      1        49                 1.25738                 34.21493
+      1        50                 1.26111                 34.31657
+      1        51                 1.26313                 34.37153
+      1        52                 1.27635                 34.73123
+      1        53                 1.28501                 34.96684
+      1        54                 1.30342                 35.46778
+      1        55                 1.30937                 35.62976
+      1        56                 1.31671                 35.82961
+      1        57                 1.34077                 36.48431
+      1        58                 1.35408                 36.84650
+      1        59                 1.39944                 38.08083
+      1        60                 1.40041                 38.10722
+      1        61                 1.43369                 39.01263
+      1        62                 1.46718                 39.92399
+      1        63                 1.47571                 40.15616
+      1        64                 1.49873                 40.78248
+      1        65                 1.52126                 41.39547
+      1        66                 1.53214                 41.69166
+      1        67                 1.54075                 41.92599
+      1        68                 1.55388                 42.28327
+      1        69                 1.63490                 44.48778
+      1        70                 1.64339                 44.71897
+      1        71                 1.69823                 46.21126
+      1        72                 1.71961                 46.79291
+      1        73                 1.80072                 49.00012
+      1        74                 1.82254                 49.59386
+      1        75                 1.88693                 51.34608
+      1        76                 1.91455                 52.09761
+      1        77                 1.92996                 52.51686
+      1        78                 1.95578                 53.21939
+      1        79                 1.96089                 53.35857
+      1        80                 1.98023                 53.88490
+      1        81                 2.04533                 55.65633
+      1        82                 2.12230                 57.75073
+      1        83                 2.19817                 59.81529
+      1        84                 2.69240                 73.26392
+      1        85                10.13173                275.69847
+      1        86                10.32536                280.96723
+      1        87                10.38038                282.46441
+      1        88                10.42731                283.74152
+      1        89                10.69143                290.92869
+      1        90                10.83153                294.74089
+      1        91                10.83427                294.81549
+      1        92                10.91052                296.89043
+      1        93                11.05814                300.90725
+      1        94                11.10365                302.14579
+      1        95                11.17145                303.99049
+      1        96                11.17530                304.09549
+      1        97                11.33334                308.39597
+      1        98                11.81251                321.43465
+      1        99                19.01017                517.29296
+      1       100                19.22256                523.07239
+      1       101                19.28830                524.86139
+      1       102                19.32109                525.75353
+      1       103                19.61148                533.65552
+      1       104                19.72075                536.62879
+      1       105                19.73690                537.06832
+      1       106                19.80285                538.86286
+      1       107                19.96595                543.30109
+      1       108                19.96773                543.34962
+      1       109                20.00024                544.23432
+      1       110                20.03038                545.05433
+      1       111                20.17955                549.11358
+      1       112                20.69306                563.08668
+
+
+           +-----------------------------------------------------------+
+           ! Contributions to the indirect spin-spin coupling constant !
+           +-----------------------------------------------------------+
+
+
+
+              Indirect spin-spin-coupling between O      and C     :
+              ======================================================
+
+
+  Mass number atom 1:  17          Abundance:    0.040
+  Mass number atom 2:  13          Abundance:    1.100
+
+
+                     DSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.0309
+     19   -**--**-  3  -**--**-  3      0.1215
+     28   -**--**-  4  -**--**-  4     -0.0522
+     37   -**--**-  5  -**--**-  5     -0.0520
+     46   -**--**-  6  -**--**-  6     -0.1112
+     55   -**--**-  7  -**--**-  7      0.1215
+     64   -**--**-  8  -**--**-  8     -0.1117
+          TOTAL                         -0.0533
+
+
+                     PSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      3   -**--**-  3  -**--**-  1      0.0191
+      6   -**--**-  6  -**--**-  1     -0.0957
+      7   -**--**-  7  -**--**-  1      0.0191
+      8   -**--**-  8  -**--**-  1     -0.0978
+     18   -**--**-  2  -**--**-  3      0.0188
+     19   -**--**-  3  -**--**-  3      5.1422
+     20   -**--**-  4  -**--**-  3      0.0474
+     21   -**--**-  5  -**--**-  3      0.0488
+     22   -**--**-  6  -**--**-  3      0.4908
+     23   -**--**-  7  -**--**-  3     -1.0946
+     24   -**--**-  8  -**--**-  3      0.5126
+     26   -**--**-  2  -**--**-  4     -0.0228
+     27   -**--**-  3  -**--**-  4      0.3202
+     28   -**--**-  4  -**--**-  4      1.1587
+     29   -**--**-  5  -**--**-  4      0.0760
+     30   -**--**-  6  -**--**-  4      4.1130
+     31   -**--**-  7  -**--**-  4      0.3202
+     32   -**--**-  8  -**--**-  4      1.3565
+     34   -**--**-  2  -**--**-  5     -0.0222
+     35   -**--**-  3  -**--**-  5      0.3186
+     36   -**--**-  4  -**--**-  5      0.0812
+     37   -**--**-  5  -**--**-  5      1.1702
+     38   -**--**-  6  -**--**-  5      1.4591
+     39   -**--**-  7  -**--**-  5      0.3186
+     40   -**--**-  8  -**--**-  5      4.1882
+     43   -**--**-  3  -**--**-  6      0.1896
+     44   -**--**-  4  -**--**-  6      0.0106
+     45   -**--**-  5  -**--**-  6     -0.1259
+     46   -**--**-  6  -**--**-  6     -0.3338
+     47   -**--**-  7  -**--**-  6      0.1896
+     48   -**--**-  8  -**--**-  6     -1.6587
+     50   -**--**-  2  -**--**-  7      0.0188
+     51   -**--**-  3  -**--**-  7     -1.0947
+     52   -**--**-  4  -**--**-  7      0.0474
+     53   -**--**-  5  -**--**-  7      0.0488
+     54   -**--**-  6  -**--**-  7      0.4908
+     55   -**--**-  7  -**--**-  7      5.1421
+     56   -**--**-  8  -**--**-  7      0.5126
+     59   -**--**-  3  -**--**-  8      0.1970
+     60   -**--**-  4  -**--**-  8     -0.1239
+     61   -**--**-  5  -**--**-  8      0.0136
+     62   -**--**-  6  -**--**-  8     -1.6526
+     63   -**--**-  7  -**--**-  8      0.1970
+     64   -**--**-  8  -**--**-  8     -0.2175
+          TOTAL                         21.7015
+
+
+                      FC part of spin-spin coupling constant
+                      --------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1     -0.7432
+      6   -**--**-  6  -**--**-  1     -0.0527
+      8   -**--**-  8  -**--**-  1     -0.0528
+      9   -**--**-  1  -**--**-  2     -1.9433
+     10   -**--**-  2  -**--**-  2     -1.9221
+     11   -**--**-  3  -**--**-  2    -10.5732
+     12   -**--**-  4  -**--**-  2      2.3943
+     13   -**--**-  5  -**--**-  2      2.4048
+     14   -**--**-  6  -**--**-  2      5.9694
+     15   -**--**-  7  -**--**-  2    -10.5733
+     16   -**--**-  8  -**--**-  2      6.0728
+     17   -**--**-  1  -**--**-  3     -4.6904
+     18   -**--**-  2  -**--**-  3     -0.0259
+     19   -**--**-  3  -**--**-  3    -30.6480
+     20   -**--**-  4  -**--**-  3     -0.2319
+     21   -**--**-  5  -**--**-  3     -0.2400
+     22   -**--**-  6  -**--**-  3      5.3684
+     23   -**--**-  7  -**--**-  3      6.3078
+     24   -**--**-  8  -**--**-  3      5.3358
+     25   -**--**-  1  -**--**-  4      1.1382
+     26   -**--**-  2  -**--**-  4     -0.0441
+     27   -**--**-  3  -**--**-  4      1.6386
+     28   -**--**-  4  -**--**-  4      8.0235
+     29   -**--**-  5  -**--**-  4     -1.4006
+     30   -**--**-  6  -**--**-  4     -9.6667
+     31   -**--**-  7  -**--**-  4      1.6385
+     32   -**--**-  8  -**--**-  4      6.8669
+     33   -**--**-  1  -**--**-  5      1.1981
+     34   -**--**-  2  -**--**-  5     -0.0436
+     35   -**--**-  3  -**--**-  5      1.6623
+     36   -**--**-  4  -**--**-  5     -1.3712
+     37   -**--**-  5  -**--**-  5      8.0583
+     38   -**--**-  6  -**--**-  5      6.9201
+     39   -**--**-  7  -**--**-  5      1.6622
+     40   -**--**-  8  -**--**-  5     -9.6645
+     41   -**--**-  1  -**--**-  6      7.4987
+     43   -**--**-  3  -**--**-  6     -1.2506
+     44   -**--**-  4  -**--**-  6     -0.2730
+     45   -**--**-  5  -**--**-  6      0.2235
+     46   -**--**-  6  -**--**-  6     18.0017
+     47   -**--**-  7  -**--**-  6     -1.2505
+     48   -**--**-  8  -**--**-  6     -4.2180
+     49   -**--**-  1  -**--**-  7     -4.6907
+     50   -**--**-  2  -**--**-  7     -0.0259
+     51   -**--**-  3  -**--**-  7      6.3082
+     52   -**--**-  4  -**--**-  7     -0.2319
+     53   -**--**-  5  -**--**-  7     -0.2400
+     54   -**--**-  6  -**--**-  7      5.3684
+     55   -**--**-  7  -**--**-  7    -30.6500
+     56   -**--**-  8  -**--**-  7      5.3358
+     57   -**--**-  1  -**--**-  8      7.5535
+     59   -**--**-  3  -**--**-  8     -1.2487
+     60   -**--**-  4  -**--**-  8      0.2184
+     61   -**--**-  5  -**--**-  8     -0.2803
+     62   -**--**-  6  -**--**-  8     -4.2399
+     63   -**--**-  7  -**--**-  8     -1.2487
+     64   -**--**-  8  -**--**-  8     18.1053
+          TOTAL                          7.5131
+
+
+                   SD(+FC) part of spin-spin coupling constant
+                   -------------------------------------------
+
+
+                label     I  label     J
+     19   -**--**-  3  -**--**-  3     -0.6407
+     22   -**--**-  6  -**--**-  3      0.1033
+     23   -**--**-  7  -**--**-  3     -1.9478
+     24   -**--**-  8  -**--**-  3      0.1068
+     27   -**--**-  3  -**--**-  4      0.0994
+     28   -**--**-  4  -**--**-  4      0.2239
+     29   -**--**-  5  -**--**-  4      0.0209
+     30   -**--**-  6  -**--**-  4      1.1097
+     31   -**--**-  7  -**--**-  4      0.0994
+     32   -**--**-  8  -**--**-  4      0.4588
+     35   -**--**-  3  -**--**-  5      0.1014
+     36   -**--**-  4  -**--**-  5      0.0217
+     37   -**--**-  5  -**--**-  5      0.2274
+     38   -**--**-  6  -**--**-  5      0.4869
+     39   -**--**-  7  -**--**-  5      0.1014
+     40   -**--**-  8  -**--**-  5      1.1309
+     43   -**--**-  3  -**--**-  6      0.0306
+     45   -**--**-  5  -**--**-  6     -0.0360
+     46   -**--**-  6  -**--**-  6     -0.3607
+     47   -**--**-  7  -**--**-  6      0.0306
+     48   -**--**-  8  -**--**-  6     -0.4998
+     51   -**--**-  3  -**--**-  7     -1.9478
+     54   -**--**-  6  -**--**-  7      0.1032
+     55   -**--**-  7  -**--**-  7     -0.6408
+     56   -**--**-  8  -**--**-  7      0.1067
+     59   -**--**-  3  -**--**-  8      0.0320
+     60   -**--**-  4  -**--**-  8     -0.0354
+     62   -**--**-  6  -**--**-  8     -0.4986
+     63   -**--**-  7  -**--**-  8      0.0320
+     64   -**--**-  8  -**--**-  8     -0.3393
+          TOTAL                         -2.3030
+
+
+                        Total spin-spin coupling constant
+                        ---------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1     -0.7175
+      3   -**--**-  3  -**--**-  1      0.0105
+      6   -**--**-  6  -**--**-  1     -0.1491
+      7   -**--**-  7  -**--**-  1      0.0105
+      8   -**--**-  8  -**--**-  1     -0.1512
+      9   -**--**-  1  -**--**-  2     -1.9433
+     10   -**--**-  2  -**--**-  2     -1.9230
+     11   -**--**-  3  -**--**-  2    -10.5747
+     12   -**--**-  4  -**--**-  2      2.3948
+     13   -**--**-  5  -**--**-  2      2.4054
+     14   -**--**-  6  -**--**-  2      5.9687
+     15   -**--**-  7  -**--**-  2    -10.5749
+     16   -**--**-  8  -**--**-  2      6.0720
+     17   -**--**-  1  -**--**-  3     -4.6908
+     19   -**--**-  3  -**--**-  3    -26.0249
+     20   -**--**-  4  -**--**-  3     -0.1784
+     21   -**--**-  5  -**--**-  3     -0.1847
+     22   -**--**-  6  -**--**-  3      5.9625
+     23   -**--**-  7  -**--**-  3      3.2654
+     24   -**--**-  8  -**--**-  3      5.9552
+     25   -**--**-  1  -**--**-  4      1.1382
+     26   -**--**-  2  -**--**-  4     -0.0672
+     27   -**--**-  3  -**--**-  4      2.0581
+     28   -**--**-  4  -**--**-  4      9.3539
+     29   -**--**-  5  -**--**-  4     -1.3036
+     30   -**--**-  6  -**--**-  4     -4.4440
+     31   -**--**-  7  -**--**-  4      2.0580
+     32   -**--**-  8  -**--**-  4      8.6822
+     33   -**--**-  1  -**--**-  5      1.1981
+     34   -**--**-  2  -**--**-  5     -0.0662
+     35   -**--**-  3  -**--**-  5      2.0823
+     36   -**--**-  4  -**--**-  5     -1.2683
+     37   -**--**-  5  -**--**-  5      9.4038
+     38   -**--**-  6  -**--**-  5      8.8661
+     39   -**--**-  7  -**--**-  5      2.0822
+     40   -**--**-  8  -**--**-  5     -4.3455
+     41   -**--**-  1  -**--**-  6      7.5007
+     43   -**--**-  3  -**--**-  6     -1.0304
+     44   -**--**-  4  -**--**-  6     -0.2638
+     45   -**--**-  5  -**--**-  6      0.0616
+     46   -**--**-  6  -**--**-  6     17.1961
+     47   -**--**-  7  -**--**-  6     -1.0303
+     48   -**--**-  8  -**--**-  6     -6.3765
+     49   -**--**-  1  -**--**-  7     -4.6910
+     51   -**--**-  3  -**--**-  7      3.2657
+     52   -**--**-  4  -**--**-  7     -0.1784
+     53   -**--**-  5  -**--**-  7     -0.1847
+     54   -**--**-  6  -**--**-  7      5.9624
+     55   -**--**-  7  -**--**-  7    -26.0272
+     56   -**--**-  8  -**--**-  7      5.9551
+     57   -**--**-  1  -**--**-  8      7.5555
+     59   -**--**-  3  -**--**-  8     -1.0197
+     60   -**--**-  4  -**--**-  8      0.0592
+     61   -**--**-  5  -**--**-  8     -0.2676
+     62   -**--**-  6  -**--**-  8     -6.3911
+     63   -**--**-  7  -**--**-  8     -1.0197
+     64   -**--**-  8  -**--**-  8     17.4369
+          TOTAL                         26.8582
+
+
+              Indirect spin-spin-coupling between H      and C     :
+              ======================================================
+
+
+  Mass number atom 1:   1          Abundance:   99.985
+  Mass number atom 2:  13          Abundance:    1.100
+
+
+                     DSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.1705
+     19   -**--**-  3  -**--**-  3      0.4300
+     28   -**--**-  4  -**--**-  4     -1.0306
+     37   -**--**-  5  -**--**-  5      0.4609
+     46   -**--**-  6  -**--**-  6      0.1228
+     55   -**--**-  7  -**--**-  7      0.4300
+     64   -**--**-  8  -**--**-  8      0.1387
+          TOTAL                          0.7217
+
+
+                     PSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1     -0.0375
+     18   -**--**-  2  -**--**-  3      0.0732
+     19   -**--**-  3  -**--**-  3     -0.0879
+     20   -**--**-  4  -**--**-  3      0.0255
+     21   -**--**-  5  -**--**-  3     -0.0294
+     22   -**--**-  6  -**--**-  3     -0.0452
+     23   -**--**-  7  -**--**-  3      0.1612
+     24   -**--**-  8  -**--**-  3     -0.0523
+     26   -**--**-  2  -**--**-  4     -0.3096
+     28   -**--**-  4  -**--**-  4      1.1540
+     29   -**--**-  5  -**--**-  4     -0.2335
+     30   -**--**-  6  -**--**-  4     -0.2570
+     34   -**--**-  2  -**--**-  5      0.1347
+     35   -**--**-  3  -**--**-  5     -0.0433
+     36   -**--**-  4  -**--**-  5      0.1893
+     37   -**--**-  5  -**--**-  5     -1.1163
+     38   -**--**-  6  -**--**-  5      0.0140
+     39   -**--**-  7  -**--**-  5     -0.0433
+     40   -**--**-  8  -**--**-  5     -0.1652
+     43   -**--**-  3  -**--**-  6     -0.0327
+     44   -**--**-  4  -**--**-  6     -0.0137
+     45   -**--**-  5  -**--**-  6      0.1170
+     46   -**--**-  6  -**--**-  6     -0.0981
+     47   -**--**-  7  -**--**-  6     -0.0327
+     48   -**--**-  8  -**--**-  6      0.0677
+     50   -**--**-  2  -**--**-  7      0.0732
+     51   -**--**-  3  -**--**-  7      0.1612
+     52   -**--**-  4  -**--**-  7      0.0255
+     53   -**--**-  5  -**--**-  7     -0.0294
+     54   -**--**-  6  -**--**-  7     -0.0452
+     55   -**--**-  7  -**--**-  7     -0.0879
+     56   -**--**-  8  -**--**-  7     -0.0523
+     57   -**--**-  1  -**--**-  8      0.0136
+     58   -**--**-  2  -**--**-  8      0.0254
+     60   -**--**-  4  -**--**-  8     -0.0962
+     61   -**--**-  5  -**--**-  8      0.0371
+     62   -**--**-  6  -**--**-  8      0.1149
+     64   -**--**-  8  -**--**-  8     -0.1522
+          TOTAL                         -0.6808
+
+
+                      FC part of spin-spin coupling constant
+                      --------------------------------------
+
+
+                label     I  label     J
+     10   -**--**-  2  -**--**-  2      3.6897
+     11   -**--**-  3  -**--**-  2     -0.5561
+     12   -**--**-  4  -**--**-  2     52.5505
+     13   -**--**-  5  -**--**-  2     -4.0427
+     14   -**--**-  6  -**--**-  2     -0.8354
+     15   -**--**-  7  -**--**-  2     -0.5564
+     16   -**--**-  8  -**--**-  2      0.7672
+     18   -**--**-  2  -**--**-  3      0.0358
+     19   -**--**-  3  -**--**-  3     -1.7299
+     20   -**--**-  4  -**--**-  3     -3.3751
+     21   -**--**-  5  -**--**-  3      0.4419
+     22   -**--**-  6  -**--**-  3     -0.8951
+     23   -**--**-  7  -**--**-  3      0.4229
+     24   -**--**-  8  -**--**-  3      0.5218
+     26   -**--**-  2  -**--**-  4      0.1152
+     27   -**--**-  3  -**--**-  4      0.1249
+     28   -**--**-  4  -**--**-  4    173.8773
+     29   -**--**-  5  -**--**-  4      2.6372
+     30   -**--**-  6  -**--**-  4      2.2313
+     31   -**--**-  7  -**--**-  4      0.1249
+     32   -**--**-  8  -**--**-  4      1.2548
+     34   -**--**-  2  -**--**-  5      0.0740
+     35   -**--**-  3  -**--**-  5      0.1253
+     36   -**--**-  4  -**--**-  5    -25.4549
+     37   -**--**-  5  -**--**-  5    -14.1007
+     38   -**--**-  6  -**--**-  5     -1.2868
+     39   -**--**-  7  -**--**-  5      0.1253
+     40   -**--**-  8  -**--**-  5     -1.4035
+     43   -**--**-  3  -**--**-  6     -0.0774
+     44   -**--**-  4  -**--**-  6     -6.2001
+     45   -**--**-  5  -**--**-  6     -0.3536
+     46   -**--**-  6  -**--**-  6     -3.0360
+     47   -**--**-  7  -**--**-  6     -0.0774
+     48   -**--**-  8  -**--**-  6     -0.4345
+     50   -**--**-  2  -**--**-  7      0.0358
+     51   -**--**-  3  -**--**-  7      0.4228
+     52   -**--**-  4  -**--**-  7     -3.3741
+     53   -**--**-  5  -**--**-  7      0.4418
+     54   -**--**-  6  -**--**-  7     -0.8952
+     55   -**--**-  7  -**--**-  7     -1.7307
+     56   -**--**-  8  -**--**-  7      0.5218
+     59   -**--**-  3  -**--**-  8     -0.0526
+     60   -**--**-  4  -**--**-  8      4.7778
+     61   -**--**-  5  -**--**-  8      0.5252
+     62   -**--**-  6  -**--**-  8      0.6041
+     63   -**--**-  7  -**--**-  8     -0.0527
+     64   -**--**-  8  -**--**-  8      2.2780
+          TOTAL                        178.2136
+
+
+                   SD(+FC) part of spin-spin coupling constant
+                   -------------------------------------------
+
+
+                label     I  label     J
+     19   -**--**-  3  -**--**-  3      0.0296
+     20   -**--**-  4  -**--**-  3      0.0753
+     21   -**--**-  5  -**--**-  3      0.0150
+     23   -**--**-  7  -**--**-  3      0.0414
+     27   -**--**-  3  -**--**-  4     -0.0121
+     28   -**--**-  4  -**--**-  4      0.0306
+     29   -**--**-  5  -**--**-  4     -0.0900
+     30   -**--**-  6  -**--**-  4     -0.0358
+     31   -**--**-  7  -**--**-  4     -0.0121
+     32   -**--**-  8  -**--**-  4      0.0134
+     36   -**--**-  4  -**--**-  5      0.1359
+     37   -**--**-  5  -**--**-  5     -0.0465
+     44   -**--**-  4  -**--**-  6     -0.0313
+     45   -**--**-  5  -**--**-  6      0.0167
+     51   -**--**-  3  -**--**-  7      0.0414
+     52   -**--**-  4  -**--**-  7      0.0752
+     53   -**--**-  5  -**--**-  7      0.0150
+     55   -**--**-  7  -**--**-  7      0.0296
+     60   -**--**-  4  -**--**-  8     -0.0922
+     61   -**--**-  5  -**--**-  8      0.0313
+     62   -**--**-  6  -**--**-  8      0.0193
+     64   -**--**-  8  -**--**-  8     -0.0478
+          TOTAL                          0.2084
+
+
+                        Total spin-spin coupling constant
+                        ---------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.1328
+      6   -**--**-  6  -**--**-  1      0.0126
+     10   -**--**-  2  -**--**-  2      3.6907
+     11   -**--**-  3  -**--**-  2     -0.5561
+     12   -**--**-  4  -**--**-  2     52.5470
+     13   -**--**-  5  -**--**-  2     -4.0428
+     14   -**--**-  6  -**--**-  2     -0.8355
+     15   -**--**-  7  -**--**-  2     -0.5564
+     16   -**--**-  8  -**--**-  2      0.7673
+     18   -**--**-  2  -**--**-  3      0.1093
+     19   -**--**-  3  -**--**-  3     -1.3581
+     20   -**--**-  4  -**--**-  3     -3.2744
+     21   -**--**-  5  -**--**-  3      0.4275
+     22   -**--**-  6  -**--**-  3     -0.9401
+     23   -**--**-  7  -**--**-  3      0.6255
+     24   -**--**-  8  -**--**-  3      0.4627
+     26   -**--**-  2  -**--**-  4     -0.1954
+     27   -**--**-  3  -**--**-  4      0.1179
+     28   -**--**-  4  -**--**-  4    174.0312
+     29   -**--**-  5  -**--**-  4      2.3137
+     30   -**--**-  6  -**--**-  4      1.9384
+     31   -**--**-  7  -**--**-  4      0.1179
+     32   -**--**-  8  -**--**-  4      1.2661
+     34   -**--**-  2  -**--**-  5      0.2093
+     35   -**--**-  3  -**--**-  5      0.0900
+     36   -**--**-  4  -**--**-  5    -25.1297
+     37   -**--**-  5  -**--**-  5    -14.8026
+     38   -**--**-  6  -**--**-  5     -1.2690
+     39   -**--**-  7  -**--**-  5      0.0901
+     40   -**--**-  8  -**--**-  5     -1.5618
+     43   -**--**-  3  -**--**-  6     -0.1073
+     44   -**--**-  4  -**--**-  6     -6.2451
+     45   -**--**-  5  -**--**-  6     -0.2199
+     46   -**--**-  6  -**--**-  6     -3.0030
+     47   -**--**-  7  -**--**-  6     -0.1073
+     48   -**--**-  8  -**--**-  6     -0.3684
+     50   -**--**-  2  -**--**-  7      0.1093
+     51   -**--**-  3  -**--**-  7      0.6253
+     52   -**--**-  4  -**--**-  7     -3.2734
+     53   -**--**-  5  -**--**-  7      0.4274
+     54   -**--**-  6  -**--**-  7     -0.9402
+     55   -**--**-  7  -**--**-  7     -1.3590
+     56   -**--**-  8  -**--**-  7      0.4627
+     57   -**--**-  1  -**--**-  8      0.0153
+     58   -**--**-  2  -**--**-  8      0.0311
+     59   -**--**-  3  -**--**-  8     -0.0710
+     60   -**--**-  4  -**--**-  8      4.5894
+     61   -**--**-  5  -**--**-  8      0.5936
+     62   -**--**-  6  -**--**-  8      0.7384
+     63   -**--**-  7  -**--**-  8     -0.0711
+     64   -**--**-  8  -**--**-  8      2.2167
+          TOTAL                        178.4629
+
+
+              Indirect spin-spin-coupling between H      and O     :
+              ======================================================
+
+
+  Mass number atom 1:   1          Abundance:   99.985
+  Mass number atom 2:  17          Abundance:    0.040
+
+
+                     DSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.0391
+     10   -**--**-  2  -**--**-  2      0.1822
+     19   -**--**-  3  -**--**-  3      0.1542
+     28   -**--**-  4  -**--**-  4      0.1386
+     46   -**--**-  6  -**--**-  6     -0.1959
+     55   -**--**-  7  -**--**-  7      0.1542
+     64   -**--**-  8  -**--**-  8     -0.0434
+          TOTAL                          0.4271
+
+
+                     PSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+     10   -**--**-  2  -**--**-  2     -0.0504
+     17   -**--**-  1  -**--**-  3      0.0244
+     18   -**--**-  2  -**--**-  3     -0.0353
+     19   -**--**-  3  -**--**-  3      1.1425
+     20   -**--**-  4  -**--**-  3     -0.0621
+     21   -**--**-  5  -**--**-  3      0.0647
+     22   -**--**-  6  -**--**-  3      0.1154
+     23   -**--**-  7  -**--**-  3     -0.1882
+     24   -**--**-  8  -**--**-  3      0.0244
+     26   -**--**-  2  -**--**-  4      0.0123
+     27   -**--**-  3  -**--**-  4      0.0100
+     28   -**--**-  4  -**--**-  4     -0.2213
+     29   -**--**-  5  -**--**-  4      0.0384
+     30   -**--**-  6  -**--**-  4      0.0678
+     31   -**--**-  7  -**--**-  4      0.0100
+     37   -**--**-  5  -**--**-  5      0.2992
+     38   -**--**-  6  -**--**-  5     -0.0209
+     40   -**--**-  8  -**--**-  5      0.0250
+     41   -**--**-  1  -**--**-  6     -0.2392
+     42   -**--**-  2  -**--**-  6     -0.0465
+     43   -**--**-  3  -**--**-  6      0.1518
+     44   -**--**-  4  -**--**-  6     -0.7463
+     45   -**--**-  5  -**--**-  6      0.5124
+     46   -**--**-  6  -**--**-  6      1.0461
+     47   -**--**-  7  -**--**-  6      0.1518
+     48   -**--**-  8  -**--**-  6      0.0225
+     49   -**--**-  1  -**--**-  7      0.0244
+     50   -**--**-  2  -**--**-  7     -0.0353
+     51   -**--**-  3  -**--**-  7     -0.1882
+     52   -**--**-  4  -**--**-  7     -0.0621
+     53   -**--**-  5  -**--**-  7      0.0647
+     54   -**--**-  6  -**--**-  7      0.1154
+     55   -**--**-  7  -**--**-  7      1.1424
+     56   -**--**-  8  -**--**-  7      0.0244
+     58   -**--**-  2  -**--**-  8      0.0111
+     59   -**--**-  3  -**--**-  8      0.0999
+     60   -**--**-  4  -**--**-  8     -0.2276
+     61   -**--**-  5  -**--**-  8      1.0842
+     62   -**--**-  6  -**--**-  8     -0.1217
+     63   -**--**-  7  -**--**-  8      0.0999
+     64   -**--**-  8  -**--**-  8      0.2920
+          TOTAL                          4.4428
+
+
+                      FC part of spin-spin coupling constant
+                      --------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1     -0.0136
+      3   -**--**-  3  -**--**-  1     -0.0561
+      4   -**--**-  4  -**--**-  1     -0.5819
+      6   -**--**-  6  -**--**-  1      1.1890
+      7   -**--**-  7  -**--**-  1     -0.0561
+      8   -**--**-  8  -**--**-  1     -1.1340
+     12   -**--**-  4  -**--**-  2      0.0274
+     19   -**--**-  3  -**--**-  3     -0.4253
+     20   -**--**-  4  -**--**-  3      0.6777
+     21   -**--**-  5  -**--**-  3      0.1039
+     22   -**--**-  6  -**--**-  3     -0.3248
+     23   -**--**-  7  -**--**-  3      0.1158
+     24   -**--**-  8  -**--**-  3      0.0841
+     28   -**--**-  4  -**--**-  4     -4.5211
+     29   -**--**-  5  -**--**-  4     -0.0882
+     30   -**--**-  6  -**--**-  4     -0.0533
+     32   -**--**-  8  -**--**-  4     -0.0475
+     36   -**--**-  4  -**--**-  5      1.0322
+     37   -**--**-  5  -**--**-  5      0.3207
+     38   -**--**-  6  -**--**-  5      0.0367
+     40   -**--**-  8  -**--**-  5      0.0451
+     43   -**--**-  3  -**--**-  6      0.1247
+     44   -**--**-  4  -**--**-  6      5.4939
+     45   -**--**-  5  -**--**-  6      0.2198
+     46   -**--**-  6  -**--**-  6      3.0858
+     47   -**--**-  7  -**--**-  6      0.1247
+     48   -**--**-  8  -**--**-  6      0.5496
+     51   -**--**-  3  -**--**-  7      0.1158
+     52   -**--**-  4  -**--**-  7      0.6776
+     53   -**--**-  5  -**--**-  7      0.1039
+     54   -**--**-  6  -**--**-  7     -0.3248
+     55   -**--**-  7  -**--**-  7     -0.4254
+     56   -**--**-  8  -**--**-  7      0.0841
+     59   -**--**-  3  -**--**-  8      0.0238
+     60   -**--**-  4  -**--**-  8     -6.2037
+     61   -**--**-  5  -**--**-  8     -0.4892
+     62   -**--**-  6  -**--**-  8     -0.8207
+     63   -**--**-  7  -**--**-  8      0.0238
+     64   -**--**-  8  -**--**-  8     -2.5154
+          TOTAL                         -3.8294
+
+
+                   SD(+FC) part of spin-spin coupling constant
+                   -------------------------------------------
+
+
+                label     I  label     J
+     19   -**--**-  3  -**--**-  3      0.1821
+     20   -**--**-  4  -**--**-  3      0.0188
+     21   -**--**-  5  -**--**-  3      0.0182
+     22   -**--**-  6  -**--**-  3      0.0200
+     23   -**--**-  7  -**--**-  3     -0.0861
+     28   -**--**-  4  -**--**-  4     -0.0934
+     29   -**--**-  5  -**--**-  4      0.0141
+     36   -**--**-  4  -**--**-  5     -0.0212
+     37   -**--**-  5  -**--**-  5      0.0293
+     43   -**--**-  3  -**--**-  6      0.0118
+     44   -**--**-  4  -**--**-  6     -0.7478
+     45   -**--**-  5  -**--**-  6      0.1451
+     46   -**--**-  6  -**--**-  6      0.1777
+     47   -**--**-  7  -**--**-  6      0.0118
+     48   -**--**-  8  -**--**-  6     -0.0195
+     51   -**--**-  3  -**--**-  7     -0.0861
+     52   -**--**-  4  -**--**-  7      0.0188
+     53   -**--**-  5  -**--**-  7      0.0182
+     54   -**--**-  6  -**--**-  7      0.0200
+     55   -**--**-  7  -**--**-  7      0.1821
+     60   -**--**-  4  -**--**-  8     -0.3449
+     61   -**--**-  5  -**--**-  8      0.1785
+     64   -**--**-  8  -**--**-  8      0.0124
+          TOTAL                         -0.3102
+
+
+                        Total spin-spin coupling constant
+                        ---------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.0192
+      3   -**--**-  3  -**--**-  1     -0.0561
+      4   -**--**-  4  -**--**-  1     -0.5818
+      6   -**--**-  6  -**--**-  1      1.1897
+      7   -**--**-  7  -**--**-  1     -0.0561
+      8   -**--**-  8  -**--**-  1     -1.1342
+     10   -**--**-  2  -**--**-  2      0.1331
+     12   -**--**-  4  -**--**-  2      0.0282
+     17   -**--**-  1  -**--**-  3      0.0242
+     18   -**--**-  2  -**--**-  3     -0.0251
+     19   -**--**-  3  -**--**-  3      1.0536
+     20   -**--**-  4  -**--**-  3      0.6344
+     21   -**--**-  5  -**--**-  3      0.1868
+     22   -**--**-  6  -**--**-  3     -0.1894
+     23   -**--**-  7  -**--**-  3     -0.1585
+     24   -**--**-  8  -**--**-  3      0.1137
+     27   -**--**-  3  -**--**-  4      0.0106
+     28   -**--**-  4  -**--**-  4     -4.6971
+     29   -**--**-  5  -**--**-  4     -0.0356
+     30   -**--**-  6  -**--**-  4      0.0244
+     31   -**--**-  7  -**--**-  4      0.0106
+     32   -**--**-  8  -**--**-  4     -0.0515
+     36   -**--**-  4  -**--**-  5      1.0025
+     37   -**--**-  5  -**--**-  5      0.6472
+     38   -**--**-  6  -**--**-  5      0.0128
+     40   -**--**-  8  -**--**-  5      0.0707
+     41   -**--**-  1  -**--**-  6     -0.2405
+     42   -**--**-  2  -**--**-  6     -0.0541
+     43   -**--**-  3  -**--**-  6      0.2883
+     44   -**--**-  4  -**--**-  6      3.9999
+     45   -**--**-  5  -**--**-  6      0.8774
+     46   -**--**-  6  -**--**-  6      4.1137
+     47   -**--**-  7  -**--**-  6      0.2883
+     48   -**--**-  8  -**--**-  6      0.5526
+     49   -**--**-  1  -**--**-  7      0.0242
+     50   -**--**-  2  -**--**-  7     -0.0251
+     51   -**--**-  3  -**--**-  7     -0.1585
+     52   -**--**-  4  -**--**-  7      0.6343
+     53   -**--**-  5  -**--**-  7      0.1868
+     54   -**--**-  6  -**--**-  7     -0.1894
+     55   -**--**-  7  -**--**-  7      1.0533
+     56   -**--**-  8  -**--**-  7      0.1137
+     59   -**--**-  3  -**--**-  8      0.1316
+     60   -**--**-  4  -**--**-  8     -6.7761
+     61   -**--**-  5  -**--**-  8      0.7735
+     62   -**--**-  6  -**--**-  8     -0.9467
+     63   -**--**-  7  -**--**-  8      0.1316
+     64   -**--**-  8  -**--**-  8     -2.2544
+          TOTAL                          0.7303
+
+
+              Indirect spin-spin-coupling between H      and C     :
+              ======================================================
+
+
+  Mass number atom 1:   1          Abundance:   99.985
+  Mass number atom 2:  13          Abundance:    1.100
+
+
+                     DSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.1712
+     19   -**--**-  3  -**--**-  3      0.4269
+     28   -**--**-  4  -**--**-  4      0.4599
+     37   -**--**-  5  -**--**-  5     -1.0240
+     46   -**--**-  6  -**--**-  6      0.1399
+     55   -**--**-  7  -**--**-  7      0.4269
+     64   -**--**-  8  -**--**-  8      0.1216
+          TOTAL                          0.7226
+
+
+                     PSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1     -0.0377
+     18   -**--**-  2  -**--**-  3      0.0708
+     19   -**--**-  3  -**--**-  3     -0.0779
+     20   -**--**-  4  -**--**-  3     -0.0290
+     21   -**--**-  5  -**--**-  3      0.0246
+     22   -**--**-  6  -**--**-  3     -0.0542
+     23   -**--**-  7  -**--**-  3      0.1632
+     24   -**--**-  8  -**--**-  3     -0.0445
+     26   -**--**-  2  -**--**-  4      0.1363
+     27   -**--**-  3  -**--**-  4     -0.0421
+     28   -**--**-  4  -**--**-  4     -1.0910
+     29   -**--**-  5  -**--**-  4      0.1926
+     30   -**--**-  6  -**--**-  4     -0.1666
+     31   -**--**-  7  -**--**-  4     -0.0421
+     32   -**--**-  8  -**--**-  4      0.0126
+     34   -**--**-  2  -**--**-  5     -0.3071
+     36   -**--**-  4  -**--**-  5     -0.2300
+     37   -**--**-  5  -**--**-  5      1.1509
+     40   -**--**-  8  -**--**-  5     -0.2623
+     41   -**--**-  1  -**--**-  6      0.0135
+     42   -**--**-  2  -**--**-  6      0.0248
+     44   -**--**-  4  -**--**-  6      0.0358
+     45   -**--**-  5  -**--**-  6     -0.0953
+     46   -**--**-  6  -**--**-  6     -0.1540
+     48   -**--**-  8  -**--**-  6      0.1142
+     50   -**--**-  2  -**--**-  7      0.0709
+     51   -**--**-  3  -**--**-  7      0.1632
+     52   -**--**-  4  -**--**-  7     -0.0290
+     53   -**--**-  5  -**--**-  7      0.0246
+     54   -**--**-  6  -**--**-  7     -0.0542
+     55   -**--**-  7  -**--**-  7     -0.0779
+     56   -**--**-  8  -**--**-  7     -0.0445
+     59   -**--**-  3  -**--**-  8     -0.0328
+     60   -**--**-  4  -**--**-  8      0.1144
+     61   -**--**-  5  -**--**-  8     -0.0159
+     62   -**--**-  6  -**--**-  8      0.0699
+     63   -**--**-  7  -**--**-  8     -0.0328
+     64   -**--**-  8  -**--**-  8     -0.0977
+          TOTAL                         -0.6431
+
+
+                      FC part of spin-spin coupling constant
+                      --------------------------------------
+
+
+                label     I  label     J
+     10   -**--**-  2  -**--**-  2      3.6554
+     11   -**--**-  3  -**--**-  2     -0.5393
+     12   -**--**-  4  -**--**-  2     -4.0671
+     13   -**--**-  5  -**--**-  2     52.2203
+     14   -**--**-  6  -**--**-  2      0.7653
+     15   -**--**-  7  -**--**-  2     -0.5396
+     16   -**--**-  8  -**--**-  2     -0.8257
+     18   -**--**-  2  -**--**-  3      0.0354
+     19   -**--**-  3  -**--**-  3     -1.6785
+     20   -**--**-  4  -**--**-  3      0.4356
+     21   -**--**-  5  -**--**-  3     -3.4042
+     22   -**--**-  6  -**--**-  3      0.5262
+     23   -**--**-  7  -**--**-  3      0.4106
+     24   -**--**-  8  -**--**-  3     -0.8695
+     26   -**--**-  2  -**--**-  4      0.0739
+     27   -**--**-  3  -**--**-  4      0.1207
+     28   -**--**-  4  -**--**-  4    -14.2134
+     29   -**--**-  5  -**--**-  4    -25.4967
+     30   -**--**-  6  -**--**-  4     -1.4203
+     31   -**--**-  7  -**--**-  4      0.1207
+     32   -**--**-  8  -**--**-  4     -1.2433
+     34   -**--**-  2  -**--**-  5      0.1131
+     35   -**--**-  3  -**--**-  5      0.1228
+     36   -**--**-  4  -**--**-  5      2.6338
+     37   -**--**-  5  -**--**-  5    172.4135
+     38   -**--**-  6  -**--**-  5      1.2921
+     39   -**--**-  7  -**--**-  5      0.1228
+     40   -**--**-  8  -**--**-  5      2.1916
+     43   -**--**-  3  -**--**-  6     -0.0507
+     44   -**--**-  4  -**--**-  6      0.5198
+     45   -**--**-  5  -**--**-  6      4.8330
+     46   -**--**-  6  -**--**-  6      2.2892
+     47   -**--**-  7  -**--**-  6     -0.0507
+     48   -**--**-  8  -**--**-  6      0.5882
+     50   -**--**-  2  -**--**-  7      0.0354
+     51   -**--**-  3  -**--**-  7      0.4104
+     52   -**--**-  4  -**--**-  7      0.4356
+     53   -**--**-  5  -**--**-  7     -3.4032
+     54   -**--**-  6  -**--**-  7      0.5262
+     55   -**--**-  7  -**--**-  7     -1.6794
+     56   -**--**-  8  -**--**-  7     -0.8695
+     59   -**--**-  3  -**--**-  8     -0.0751
+     60   -**--**-  4  -**--**-  8     -0.3494
+     61   -**--**-  5  -**--**-  8     -6.2515
+     62   -**--**-  6  -**--**-  8     -0.4418
+     63   -**--**-  7  -**--**-  8     -0.0752
+     64   -**--**-  8  -**--**-  8     -2.9867
+          TOTAL                        176.3674
+
+
+                   SD(+FC) part of spin-spin coupling constant
+                   -------------------------------------------
+
+
+                label     I  label     J
+     19   -**--**-  3  -**--**-  3      0.0331
+     20   -**--**-  4  -**--**-  3      0.0145
+     21   -**--**-  5  -**--**-  3      0.0748
+     23   -**--**-  7  -**--**-  3      0.0397
+     28   -**--**-  4  -**--**-  4     -0.0479
+     29   -**--**-  5  -**--**-  4      0.1311
+     35   -**--**-  3  -**--**-  5     -0.0124
+     36   -**--**-  4  -**--**-  5     -0.0895
+     38   -**--**-  6  -**--**-  5      0.0142
+     39   -**--**-  7  -**--**-  5     -0.0124
+     40   -**--**-  8  -**--**-  5     -0.0364
+     44   -**--**-  4  -**--**-  6      0.0304
+     45   -**--**-  5  -**--**-  6     -0.0914
+     46   -**--**-  6  -**--**-  6     -0.0478
+     48   -**--**-  8  -**--**-  6      0.0192
+     51   -**--**-  3  -**--**-  7      0.0397
+     52   -**--**-  4  -**--**-  7      0.0145
+     53   -**--**-  5  -**--**-  7      0.0748
+     55   -**--**-  7  -**--**-  7      0.0330
+     60   -**--**-  4  -**--**-  8      0.0162
+     61   -**--**-  5  -**--**-  8     -0.0316
+          TOTAL                          0.1802
+
+
+                        Total spin-spin coupling constant
+                        ---------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.1333
+      8   -**--**-  8  -**--**-  1      0.0124
+     10   -**--**-  2  -**--**-  2      3.6570
+     11   -**--**-  3  -**--**-  2     -0.5394
+     12   -**--**-  4  -**--**-  2     -4.0672
+     13   -**--**-  5  -**--**-  2     52.2170
+     14   -**--**-  6  -**--**-  2      0.7654
+     15   -**--**-  7  -**--**-  2     -0.5396
+     16   -**--**-  8  -**--**-  2     -0.8258
+     18   -**--**-  2  -**--**-  3      0.1064
+     19   -**--**-  3  -**--**-  3     -1.2964
+     20   -**--**-  4  -**--**-  3      0.4211
+     21   -**--**-  5  -**--**-  3     -3.3047
+     22   -**--**-  6  -**--**-  3      0.4651
+     23   -**--**-  7  -**--**-  3      0.6135
+     24   -**--**-  8  -**--**-  3     -0.9137
+     26   -**--**-  2  -**--**-  4      0.2108
+     27   -**--**-  3  -**--**-  4      0.0862
+     28   -**--**-  4  -**--**-  4    -14.8924
+     29   -**--**-  5  -**--**-  4    -25.1731
+     30   -**--**-  6  -**--**-  4     -1.5797
+     31   -**--**-  7  -**--**-  4      0.0863
+     32   -**--**-  8  -**--**-  4     -1.2271
+     34   -**--**-  2  -**--**-  5     -0.1950
+     35   -**--**-  3  -**--**-  5      0.1156
+     36   -**--**-  4  -**--**-  5      2.3144
+     37   -**--**-  5  -**--**-  5    172.5484
+     38   -**--**-  6  -**--**-  5      1.3038
+     39   -**--**-  7  -**--**-  5      0.1156
+     40   -**--**-  8  -**--**-  5      1.8929
+     41   -**--**-  1  -**--**-  6      0.0152
+     42   -**--**-  2  -**--**-  6      0.0303
+     43   -**--**-  3  -**--**-  6     -0.0687
+     44   -**--**-  4  -**--**-  6      0.5860
+     45   -**--**-  5  -**--**-  6      4.6463
+     46   -**--**-  6  -**--**-  6      2.2273
+     47   -**--**-  7  -**--**-  6     -0.0687
+     48   -**--**-  8  -**--**-  6      0.7216
+     50   -**--**-  2  -**--**-  7      0.1065
+     51   -**--**-  3  -**--**-  7      0.6133
+     52   -**--**-  4  -**--**-  7      0.4211
+     53   -**--**-  5  -**--**-  7     -3.3037
+     54   -**--**-  6  -**--**-  7      0.4652
+     55   -**--**-  7  -**--**-  7     -1.2973
+     56   -**--**-  8  -**--**-  7     -0.9138
+     59   -**--**-  3  -**--**-  8     -0.1050
+     60   -**--**-  4  -**--**-  8     -0.2189
+     61   -**--**-  5  -**--**-  8     -6.2989
+     62   -**--**-  6  -**--**-  8     -0.3736
+     63   -**--**-  7  -**--**-  8     -0.1050
+     64   -**--**-  8  -**--**-  8     -2.9544
+          TOTAL                        176.6271
+
+
+              Indirect spin-spin-coupling between H      and O     :
+              ======================================================
+
+
+  Mass number atom 1:   1          Abundance:   99.985
+  Mass number atom 2:  17          Abundance:    0.040
+
+
+                     DSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.0391
+     10   -**--**-  2  -**--**-  2      0.1744
+     19   -**--**-  3  -**--**-  3      0.1526
+     37   -**--**-  5  -**--**-  5      0.1367
+     46   -**--**-  6  -**--**-  6     -0.0380
+     55   -**--**-  7  -**--**-  7      0.1526
+     64   -**--**-  8  -**--**-  8     -0.1991
+          TOTAL                          0.4151
+
+
+                     PSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+     10   -**--**-  2  -**--**-  2     -0.0482
+     17   -**--**-  1  -**--**-  3      0.0244
+     18   -**--**-  2  -**--**-  3     -0.0336
+     19   -**--**-  3  -**--**-  3      1.1511
+     20   -**--**-  4  -**--**-  3      0.0654
+     21   -**--**-  5  -**--**-  3     -0.0602
+     22   -**--**-  6  -**--**-  3      0.0252
+     23   -**--**-  7  -**--**-  3     -0.1876
+     24   -**--**-  8  -**--**-  3      0.1152
+     28   -**--**-  4  -**--**-  4      0.2925
+     29   -**--**-  5  -**--**-  4     -0.0110
+     30   -**--**-  6  -**--**-  4      0.0248
+     32   -**--**-  8  -**--**-  4     -0.0196
+     34   -**--**-  2  -**--**-  5      0.0121
+     35   -**--**-  3  -**--**-  5      0.0105
+     36   -**--**-  4  -**--**-  5      0.0363
+     37   -**--**-  5  -**--**-  5     -0.2199
+     39   -**--**-  7  -**--**-  5      0.0105
+     40   -**--**-  8  -**--**-  5      0.0699
+     42   -**--**-  2  -**--**-  6      0.0130
+     43   -**--**-  3  -**--**-  6      0.0937
+     44   -**--**-  4  -**--**-  6      1.0595
+     45   -**--**-  5  -**--**-  6     -0.2543
+     46   -**--**-  6  -**--**-  6      0.2998
+     47   -**--**-  7  -**--**-  6      0.0937
+     48   -**--**-  8  -**--**-  6     -0.0979
+     49   -**--**-  1  -**--**-  7      0.0244
+     50   -**--**-  2  -**--**-  7     -0.0336
+     51   -**--**-  3  -**--**-  7     -0.1875
+     52   -**--**-  4  -**--**-  7      0.0654
+     53   -**--**-  5  -**--**-  7     -0.0602
+     54   -**--**-  6  -**--**-  7      0.0252
+     55   -**--**-  7  -**--**-  7      1.1510
+     56   -**--**-  8  -**--**-  7      0.1152
+     57   -**--**-  1  -**--**-  8     -0.2459
+     58   -**--**-  2  -**--**-  8     -0.0459
+     59   -**--**-  3  -**--**-  8      0.1597
+     60   -**--**-  4  -**--**-  8      0.4777
+     61   -**--**-  5  -**--**-  8     -0.7512
+     62   -**--**-  6  -**--**-  8      0.0179
+     63   -**--**-  7  -**--**-  8      0.1597
+     64   -**--**-  8  -**--**-  8      1.0947
+          TOTAL                          4.4560
+
+
+                      FC part of spin-spin coupling constant
+                      --------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1     -0.0151
+      3   -**--**-  3  -**--**-  1     -0.0583
+      5   -**--**-  5  -**--**-  1     -0.6441
+      6   -**--**-  6  -**--**-  1     -1.1485
+      7   -**--**-  7  -**--**-  1     -0.0583
+      8   -**--**-  8  -**--**-  1      1.1696
+     13   -**--**-  5  -**--**-  2      0.0272
+     19   -**--**-  3  -**--**-  3     -0.4106
+     20   -**--**-  4  -**--**-  3      0.0992
+     21   -**--**-  5  -**--**-  3      0.7287
+     22   -**--**-  6  -**--**-  3      0.0796
+     23   -**--**-  7  -**--**-  3      0.1095
+     24   -**--**-  8  -**--**-  3     -0.3080
+     28   -**--**-  4  -**--**-  4      0.3159
+     29   -**--**-  5  -**--**-  4      0.9697
+     30   -**--**-  6  -**--**-  4      0.0428
+     32   -**--**-  8  -**--**-  4      0.0330
+     36   -**--**-  4  -**--**-  5     -0.0865
+     37   -**--**-  5  -**--**-  5     -4.4997
+     38   -**--**-  6  -**--**-  5     -0.0479
+     40   -**--**-  8  -**--**-  5     -0.0501
+     43   -**--**-  3  -**--**-  6      0.0209
+     44   -**--**-  4  -**--**-  6     -0.4610
+     45   -**--**-  5  -**--**-  6     -5.9861
+     46   -**--**-  6  -**--**-  6     -2.5131
+     47   -**--**-  7  -**--**-  6      0.0209
+     48   -**--**-  8  -**--**-  6     -0.7658
+     51   -**--**-  3  -**--**-  7      0.1095
+     52   -**--**-  4  -**--**-  7      0.0993
+     53   -**--**-  5  -**--**-  7      0.7286
+     54   -**--**-  6  -**--**-  7      0.0796
+     55   -**--**-  7  -**--**-  7     -0.4107
+     56   -**--**-  8  -**--**-  7     -0.3080
+     59   -**--**-  3  -**--**-  8      0.1178
+     60   -**--**-  4  -**--**-  8      0.1970
+     61   -**--**-  5  -**--**-  8      5.1023
+     62   -**--**-  6  -**--**-  8      0.5266
+     63   -**--**-  7  -**--**-  8      0.1179
+     64   -**--**-  8  -**--**-  8      2.9810
+          TOTAL                         -4.1040
+
+
+                   SD(+FC) part of spin-spin coupling constant
+                   -------------------------------------------
+
+
+                label     I  label     J
+     19   -**--**-  3  -**--**-  3      0.1818
+     20   -**--**-  4  -**--**-  3      0.0180
+     21   -**--**-  5  -**--**-  3      0.0197
+     23   -**--**-  7  -**--**-  3     -0.0848
+     24   -**--**-  8  -**--**-  3      0.0202
+     28   -**--**-  4  -**--**-  4      0.0282
+     29   -**--**-  5  -**--**-  4     -0.0220
+     36   -**--**-  4  -**--**-  5      0.0138
+     37   -**--**-  5  -**--**-  5     -0.0918
+     40   -**--**-  8  -**--**-  5      0.0103
+     44   -**--**-  4  -**--**-  6      0.1752
+     45   -**--**-  5  -**--**-  6     -0.3653
+     51   -**--**-  3  -**--**-  7     -0.0847
+     52   -**--**-  4  -**--**-  7      0.0180
+     53   -**--**-  5  -**--**-  7      0.0198
+     55   -**--**-  7  -**--**-  7      0.1818
+     56   -**--**-  8  -**--**-  7      0.0202
+     59   -**--**-  3  -**--**-  8      0.0133
+     60   -**--**-  4  -**--**-  8      0.1379
+     61   -**--**-  5  -**--**-  8     -0.7490
+     62   -**--**-  6  -**--**-  8     -0.0208
+     63   -**--**-  7  -**--**-  8      0.0133
+     64   -**--**-  8  -**--**-  8      0.1831
+          TOTAL                         -0.3374
+
+
+                        Total spin-spin coupling constant
+                        ---------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.0177
+      3   -**--**-  3  -**--**-  1     -0.0583
+      5   -**--**-  5  -**--**-  1     -0.6441
+      6   -**--**-  6  -**--**-  1     -1.1487
+      7   -**--**-  7  -**--**-  1     -0.0583
+      8   -**--**-  8  -**--**-  1      1.1703
+     10   -**--**-  2  -**--**-  2      0.1276
+     13   -**--**-  5  -**--**-  2      0.0279
+     17   -**--**-  1  -**--**-  3      0.0241
+     18   -**--**-  2  -**--**-  3     -0.0234
+     19   -**--**-  3  -**--**-  3      1.0749
+     20   -**--**-  4  -**--**-  3      0.1826
+     21   -**--**-  5  -**--**-  3      0.6882
+     22   -**--**-  6  -**--**-  3      0.1099
+     23   -**--**-  7  -**--**-  3     -0.1628
+     24   -**--**-  8  -**--**-  3     -0.1726
+     28   -**--**-  4  -**--**-  4      0.6334
+     29   -**--**-  5  -**--**-  4      0.9367
+     30   -**--**-  6  -**--**-  4      0.0681
+     32   -**--**-  8  -**--**-  4      0.0105
+     35   -**--**-  3  -**--**-  5      0.0112
+     36   -**--**-  4  -**--**-  5     -0.0364
+     37   -**--**-  5  -**--**-  5     -4.6747
+     38   -**--**-  6  -**--**-  5     -0.0521
+     39   -**--**-  7  -**--**-  5      0.0112
+     40   -**--**-  8  -**--**-  5      0.0301
+     43   -**--**-  3  -**--**-  6      0.1203
+     44   -**--**-  4  -**--**-  6      0.7737
+     45   -**--**-  5  -**--**-  6     -6.6057
+     46   -**--**-  6  -**--**-  6     -2.2439
+     47   -**--**-  7  -**--**-  6      0.1203
+     48   -**--**-  8  -**--**-  6     -0.8647
+     49   -**--**-  1  -**--**-  7      0.0241
+     50   -**--**-  2  -**--**-  7     -0.0234
+     51   -**--**-  3  -**--**-  7     -0.1628
+     52   -**--**-  4  -**--**-  7      0.1826
+     53   -**--**-  5  -**--**-  7      0.6881
+     54   -**--**-  6  -**--**-  7      0.1098
+     55   -**--**-  7  -**--**-  7      1.0746
+     56   -**--**-  8  -**--**-  7     -0.1726
+     57   -**--**-  1  -**--**-  8     -0.2473
+     58   -**--**-  2  -**--**-  8     -0.0535
+     59   -**--**-  3  -**--**-  8      0.2909
+     60   -**--**-  4  -**--**-  8      0.8126
+     61   -**--**-  5  -**--**-  8      3.6022
+     62   -**--**-  6  -**--**-  8      0.5237
+     63   -**--**-  7  -**--**-  8      0.2909
+     64   -**--**-  8  -**--**-  8      4.0597
+          TOTAL                          0.4298
+
+
+              Indirect spin-spin-coupling between H      and H     :
+              ======================================================
+
+
+  Mass number atom 1:   1          Abundance:   99.985
+  Mass number atom 2:   1          Abundance:   99.985
+
+
+                     DSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.1536
+     10   -**--**-  2  -**--**-  2     -1.4454
+     19   -**--**-  3  -**--**-  3      0.0320
+     28   -**--**-  4  -**--**-  4     -1.2014
+     37   -**--**-  5  -**--**-  5     -1.2066
+     46   -**--**-  6  -**--**-  6      0.1307
+     55   -**--**-  7  -**--**-  7      0.0320
+     64   -**--**-  8  -**--**-  8      0.1290
+          TOTAL                         -3.3761
+
+
+                     PSO part of spin-spin coupling constant
+                     ---------------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1     -0.0325
+     10   -**--**-  2  -**--**-  2      0.3774
+     19   -**--**-  3  -**--**-  3      0.1031
+     23   -**--**-  7  -**--**-  3      0.0526
+     24   -**--**-  8  -**--**-  3     -0.0107
+     28   -**--**-  4  -**--**-  4      0.5556
+     29   -**--**-  5  -**--**-  4     -0.0785
+     30   -**--**-  6  -**--**-  4      0.0461
+     36   -**--**-  4  -**--**-  5     -0.1610
+     37   -**--**-  5  -**--**-  5      0.5619
+     38   -**--**-  6  -**--**-  5     -0.0137
+     40   -**--**-  8  -**--**-  5     -0.0645
+     43   -**--**-  3  -**--**-  6     -0.0108
+     44   -**--**-  4  -**--**-  6     -0.0627
+     46   -**--**-  6  -**--**-  6     -0.1145
+     47   -**--**-  7  -**--**-  6     -0.0108
+     48   -**--**-  8  -**--**-  6      0.0287
+     51   -**--**-  3  -**--**-  7      0.0526
+     55   -**--**-  7  -**--**-  7      0.1031
+     56   -**--**-  8  -**--**-  7     -0.0107
+     60   -**--**-  4  -**--**-  8     -0.0130
+     61   -**--**-  5  -**--**-  8      0.0453
+     64   -**--**-  8  -**--**-  8     -0.1126
+          TOTAL                          1.2704
+
+
+                      FC part of spin-spin coupling constant
+                      --------------------------------------
+
+
+                label     I  label     J
+     13   -**--**-  5  -**--**-  2     -0.0516
+     19   -**--**-  3  -**--**-  3     -0.0242
+     20   -**--**-  4  -**--**-  3      0.0103
+     21   -**--**-  5  -**--**-  3     -0.1037
+     22   -**--**-  6  -**--**-  3      0.0105
+     24   -**--**-  8  -**--**-  3     -0.0131
+     26   -**--**-  2  -**--**-  4     -0.0511
+     27   -**--**-  3  -**--**-  4     -0.1012
+     28   -**--**-  4  -**--**-  4      9.2771
+     29   -**--**-  5  -**--**-  4     12.9469
+     30   -**--**-  6  -**--**-  4      1.2620
+     31   -**--**-  7  -**--**-  4     -0.1012
+     32   -**--**-  8  -**--**-  4      1.0811
+     35   -**--**-  3  -**--**-  5      0.0101
+     36   -**--**-  4  -**--**-  5      0.1507
+     37   -**--**-  5  -**--**-  5      9.2669
+     38   -**--**-  6  -**--**-  5      0.0846
+     39   -**--**-  7  -**--**-  5      0.0101
+     40   -**--**-  8  -**--**-  5      0.1550
+     43   -**--**-  3  -**--**-  6     -0.0129
+     44   -**--**-  4  -**--**-  6      0.1573
+     45   -**--**-  5  -**--**-  6      1.1275
+     46   -**--**-  6  -**--**-  6      0.4154
+     47   -**--**-  7  -**--**-  6     -0.0129
+     48   -**--**-  8  -**--**-  6      0.1202
+     52   -**--**-  4  -**--**-  7      0.0103
+     53   -**--**-  5  -**--**-  7     -0.1037
+     54   -**--**-  6  -**--**-  7      0.0105
+     55   -**--**-  7  -**--**-  7     -0.0243
+     56   -**--**-  8  -**--**-  7     -0.0131
+     59   -**--**-  3  -**--**-  8      0.0102
+     60   -**--**-  4  -**--**-  8      0.0817
+     61   -**--**-  5  -**--**-  8      1.2467
+     62   -**--**-  6  -**--**-  8      0.0703
+     63   -**--**-  7  -**--**-  8      0.0102
+     64   -**--**-  8  -**--**-  8      0.4025
+          TOTAL                         37.3452
+
+
+                   SD(+FC) part of spin-spin coupling constant
+                   -------------------------------------------
+
+
+                label     I  label     J
+     28   -**--**-  4  -**--**-  4      0.1361
+     37   -**--**-  5  -**--**-  5      0.1348
+          TOTAL                          0.2906
+
+
+                        Total spin-spin coupling constant
+                        ---------------------------------
+
+
+                label     I  label     J
+      1   -**--**-  1  -**--**-  1      0.1212
+     10   -**--**-  2  -**--**-  2     -1.0706
+     13   -**--**-  5  -**--**-  2     -0.0565
+     19   -**--**-  3  -**--**-  3      0.1113
+     20   -**--**-  4  -**--**-  3      0.0128
+     21   -**--**-  5  -**--**-  3     -0.0897
+     23   -**--**-  7  -**--**-  3      0.0639
+     24   -**--**-  8  -**--**-  3     -0.0239
+     26   -**--**-  2  -**--**-  4     -0.0561
+     27   -**--**-  3  -**--**-  4     -0.0872
+     28   -**--**-  4  -**--**-  4      8.7674
+     29   -**--**-  5  -**--**-  4     12.8709
+     30   -**--**-  6  -**--**-  4      1.3010
+     31   -**--**-  7  -**--**-  4     -0.0872
+     32   -**--**-  8  -**--**-  4      1.0849
+     35   -**--**-  3  -**--**-  5      0.0124
+     36   -**--**-  4  -**--**-  5     -0.0156
+     37   -**--**-  5  -**--**-  5      8.7571
+     38   -**--**-  6  -**--**-  5      0.0714
+     39   -**--**-  7  -**--**-  5      0.0124
+     40   -**--**-  8  -**--**-  5      0.0829
+     43   -**--**-  3  -**--**-  6     -0.0237
+     44   -**--**-  4  -**--**-  6      0.0872
+     45   -**--**-  5  -**--**-  6      1.1325
+     46   -**--**-  6  -**--**-  6      0.4387
+     47   -**--**-  7  -**--**-  6     -0.0237
+     48   -**--**-  8  -**--**-  6      0.1547
+     51   -**--**-  3  -**--**-  7      0.0639
+     52   -**--**-  4  -**--**-  7      0.0128
+     53   -**--**-  5  -**--**-  7     -0.0897
+     55   -**--**-  7  -**--**-  7      0.1112
+     56   -**--**-  8  -**--**-  7     -0.0239
+     60   -**--**-  4  -**--**-  8      0.0691
+     61   -**--**-  5  -**--**-  8      1.2850
+     62   -**--**-  6  -**--**-  8      0.0652
+     64   -**--**-  8  -**--**-  8      0.4259
+          TOTAL                         35.5300
+ >>>  Time used in SOSDRV     is  1 minute   9 seconds
+
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Oct 22 21:36:46 2014
+     Host name              : stallo-1.local                          
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ C          0.0000174063            0.0010502766           -1.1458244562
+ O          0.0000000000            0.0010582718            1.1394183506
+ H         -0.0000711057            1.7705033754           -2.2396975555
+ H         -0.0000698661           -1.7998043817           -2.2005635940
+
+
+
+
+
+                        Molecular wave function and energy
+                        ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+     Total energy       -114.4008453972 au (Hartrees)
+                         -3113.00535805 eV
+                           -300359.3733 kJ/mol
+
+
+                             Relativistic corrections
+                             ------------------------
+
+     Darwin correction:                          0.2543798469 au
+     Mass-velocity correction:                  -0.3204298701 au
+
+     Total relativistic correction:             -0.0660500232 au (0.0577%)
+     Non-relativistic + relativistic energy:  -114.4668954205 au
+
+
+
+
+                                  Dipole moment
+                                  -------------
+
+                 au               Debye          C m (/(10**-30)
+              0.937383           2.382589           7.947463
+
+
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x     -0.00001020        -0.00002593        -0.00008648
+      y      0.00228270         0.00580205         0.01935355
+      z     -0.93738005        -2.38258228        -7.94743904
+
+
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
+
+
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                       +------------------------------------+
+                       ! ABACUS - Final spin-spin couplings !
+                       +------------------------------------+
+
+
+
+              Indirect spin-spin coupling between O      and C     :
+              ======================================================
+
+
+  Mass number atom 1:   17;   Abundance:   0.040 %;   g factor:  -0.757516
+  Mass number atom 2:   13;   Abundance:   1.100 %;   g factor:   1.404824
+
+  Isotropic coupling        :     26.8582 Hz
+  Anisotropic coupling      :     75.4278 Hz
+  Asymmetry                 :     -0.1499   
+  S parameter               :    -75.7099 Hz
+  A parameter               :     -0.1492 Hz
+  Isotropic DSO contribution:     -0.0533 Hz
+  Isotropic PSO contribution:     21.7015 Hz
+  Isotropic SD contribution :     -2.3030 Hz
+  Isotropic FC contribution :      7.5131 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x   -2.054144     -3.2091157E-05  2.4163464E-03
+                y  -4.4346891E-05   77.14321     -0.2775919    
+                z   2.1312858E-03  2.0793570E-02   5.485572    
+
+
+              Indirect spin-spin coupling between H      and C     :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   13;   Abundance:   1.100 %;   g factor:   1.404824
+
+  Isotropic coupling        :    178.4629 Hz
+  Anisotropic coupling      :    -17.1686 Hz
+  Asymmetry                 :     -0.3447   
+  S parameter               :     17.5053 Hz
+  A parameter               :      0.6306 Hz
+  Isotropic DSO contribution:      0.7217 Hz
+  Isotropic PSO contribution:     -0.6808 Hz
+  Isotropic SD contribution :      0.2084 Hz
+  Isotropic FC contribution :    178.2136 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    186.1587      2.5125807E-03 -1.3327978E-03
+                y   2.5730788E-03   172.1736       6.564234    
+                z  -1.4597332E-03   7.825533       177.0564    
+
+
+              Indirect spin-spin coupling between H      and O     :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
+
+  Isotropic coupling        :      0.7303 Hz
+  Anisotropic coupling      :    -11.0118 Hz
+  Asymmetry                 :      0.1498   
+  S parameter               :    -11.0529 Hz
+  A parameter               :     -2.7482 Hz
+  Isotropic DSO contribution:      0.4271 Hz
+  Isotropic PSO contribution:      4.4428 Hz
+  Isotropic SD contribution :     -0.3102 Hz
+  Isotropic FC contribution :     -3.8294 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    3.850989     -3.3876800E-03  6.6472318E-04
+                y  -2.9122858E-03  -5.513548       6.136859    
+                z   4.6523545E-04  0.6404078       3.853560    
+
+
+              Indirect spin-spin coupling between H      and C     :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   13;   Abundance:   1.100 %;   g factor:   1.404824
+
+  Isotropic coupling        :    176.6271 Hz
+  Anisotropic coupling      :    -16.2278 Hz
+  Asymmetry                 :     -0.3695   
+  S parameter               :     16.5929 Hz
+  A parameter               :      0.6508 Hz
+  Isotropic DSO contribution:      0.7226 Hz
+  Isotropic PSO contribution:     -0.6431 Hz
+  Isotropic SD contribution :      0.1802 Hz
+  Isotropic FC contribution :    176.3674 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    184.0350     -2.5176388E-03 -1.2693092E-03
+                y  -2.5789222E-03   169.9408      -5.808496    
+                z  -1.3948481E-03  -7.110138       175.9056    
+
+
+              Indirect spin-spin coupling between H      and O     :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:   17;   Abundance:   0.040 %;   g factor:  -0.757516
+
+  Isotropic coupling        :      0.4298 Hz
+  Anisotropic coupling      :    -10.7786 Hz
+  Asymmetry                 :      0.1414   
+  S parameter               :    -10.8145 Hz
+  A parameter               :     -2.6112 Hz
+  Isotropic DSO contribution:      0.4151 Hz
+  Isotropic PSO contribution:      4.4560 Hz
+  Isotropic SD contribution :     -0.3374 Hz
+  Isotropic FC contribution :     -4.1040 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    3.514646      3.3835633E-03  6.8301935E-04
+                y   2.9163460E-03  -5.713503      -5.879088    
+                z   4.9674353E-04 -0.6567126       3.488206    
+
+
+              Indirect spin-spin coupling between H      and H     :
+              ======================================================
+
+
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:    1;   Abundance:  99.985 %;   g factor:   5.585694
+
+  Isotropic coupling        :     35.5300 Hz
+  Anisotropic coupling      :     13.6936 Hz
+  Asymmetry                 :      0.7716   
+  S parameter               :     14.9909 Hz
+  A parameter               :      5.5191 Hz
+  Isotropic DSO contribution:     -3.3761 Hz
+  Isotropic PSO contribution:      1.2704 Hz
+  Isotropic SD contribution :      0.2906 Hz
+  Isotropic FC contribution :     37.3452 Hz
+
+
+
+
+                           Total Coupling Tensor in Hz
+                           ---------------------------
+
+                             x              y              z
+
+                x    27.44349     -3.6358027E-04  4.7973552E-04
+                y   3.3611758E-04   44.65706       5.375363    
+                z   4.7463339E-04  -5.662815       34.48958    
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           O           H           H     
+            ------      ------      ------      ------
+ C     :    0.000000
+ O     :    1.209298    0.000000
+ H     :    1.100831    2.018474    0.000000
+ H     :    1.104391    2.007988    1.889439    0.000000
+
+
+  Max    interatomic separation is    2.0185 Angstrom (    3.8144 Bohr)
+  between atoms    3 and    2, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.1008 Angstrom (    2.0803 Bohr)
+
+  Min YX interatomic separation is    1.2093 Angstrom (    2.2852 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  O          C            1.209298
+  bond distance:  H          C            1.100831
+  bond distance:  H          C            1.104391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     O          C          H            121.724
+  bond angle:     O          C          H            120.357
+  bond angle:     H          C          H            117.919
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ LINRES     00:00:21      14 %
+ TRP LR     00:01:02      41 %
+
+ TOTAL      00:02:31     100 %
+
+
+ >>>> Total CPU  time used in ABACUS:  2 minutes 31 seconds
+ >>>> Total wall time used in ABACUS:  2 minutes 35 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  2 minutes 34 seconds
+ >>>> Total wall time used in DALTON:  2 minutes 38 seconds
+
+ 
+     Date and time (Linux)  : Wed Oct 22 21:36:46 2014
+     Host name              : stallo-1.local                          

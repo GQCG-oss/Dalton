@@ -7,7 +7,7 @@ use IntegralInterfaceMOD
 use matrix_util
 use matrix_module
 use matrix_operations
-use integralparameters
+use LSparameters
 use memory_handling
 use TYPEDEF,only: count_ncore
 contains
@@ -757,6 +757,7 @@ subroutine get_PAOs(Cmo,S,MyLsitem,lupri)
   ! Number of electrons (assuming neutral molecule)
   nelectrons=0
   do i=1,MyLsitem%setting%MOLECULE(1)%p%nAtoms
+     IF(MyLsitem%setting%MOLECULE(1)%p%Atom(i)%phantom)CYCLE
      nelectrons = nelectrons + MyLsitem%setting%MOLECULE(1)%p%Atom(i)%Charge
   enddo
   nbasis = cmo%nrow
