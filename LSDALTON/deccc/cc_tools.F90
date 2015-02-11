@@ -1406,22 +1406,25 @@ module cc_tools_module
 
       endif
 
-      contains
 
-      function a_plus_b(a,b) result(c)
-         implicit none
-         real(realk), intent(in) :: a, b
-         real(realk) :: c
-         c = a + b
-      end function a_plus_b
-      function a_minus_b(a,b) result(c)
-         implicit none
-         real(realk), intent(in) :: a, b
-         real(realk) :: c
-         c = a - b
-      end function a_minus_b
 
    end subroutine get_I_plusminus_le
+
+   !Even though the following two functions are only needed inside
+   !get_I_plusminus_le, they were moved here since PGI decided that internal
+   !procedures may not be targets of function pointers
+   function a_plus_b(a,b) result(c)
+      implicit none
+      real(realk), intent(in) :: a, b
+      real(realk) :: c
+      c = a + b
+   end function a_plus_b
+   function a_minus_b(a,b) result(c)
+      implicit none
+      real(realk), intent(in) :: a, b
+      real(realk) :: c
+      c = a - b
+   end function a_minus_b
 
    !> \brief subroutine to add contributions to the sio4 matrix which enters the
    !B2.2 term in the "non"-parallel region

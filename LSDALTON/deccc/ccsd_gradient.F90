@@ -3502,13 +3502,13 @@ print *, "I AM HERE 1 "
        print *, "I AM HERE 1 "
 
 call mem_TurnONThread_Memory()
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(Y_tmp,i,j,a,b,c)
+!OMP PARALLEL DEFAULT(shared) PRIVATE(Y_tmp,i,j,a,b,c)
 call init_threadmemvar()
 
     call mem_alloc(Y_tmp,nvirtAOS,nvirtAOS)
     Y_tmp = 0E0_realk
  
-!$OMP DO SCHEDULE(dynamic,1)
+!OMP DO SCHEDULE(dynamic,1)
        print *, "I AM HERE 2 "
  
     do i=1,noccEOS
@@ -3529,17 +3529,17 @@ call init_threadmemvar()
 
        end do
     end do
-!$OMP END DO NOWAIT
+!OMP END DO NOWAIT
        print *, "I AM HERE 3 "
 
 ! Total Y matrix is found by summing all thread contributions
-!$OMP CRITICAL
+!OMP CRITICAL
 dens%Y = dens%Y + Y_tmp
-!$OMP END CRITICAL
+!OMP END CRITICAL
 
 call mem_dealloc(Y_tmp)
 call collect_thread_memory()
-!$OMP END PARALLEL
+!OMP END PARALLEL
 call mem_TurnOffThread_Memory()
        print *, "I AM HERE 4 "
 
@@ -3565,12 +3565,12 @@ call mem_TurnOffThread_Memory()
     ! -- where we only include the contributions if A and B belong to different fragments!
 
 !Call mem_TurnONThread_Memory()
-!!$OMP PARALLEL DEFAULT(shared) PRIVATE(X_tmp,i,j,k,a,b)
+!!OMP PARALLEL DEFAULT(shared) PRIVATE(X_tmp,i,j,k,a,b)
 !call init_threadmemvar()
 !    call mem_alloc(X_tmp,noccAOS,noccAOS)
 !    X_tmp = 0E0_realk
 !
-!!$OMP DO SCHEDULE(dynamic,1)
+!!OMP DO SCHEDULE(dynamic,1)
 !
 !
 !    do a=1,nvirtEOS
@@ -3591,16 +3591,16 @@ call mem_TurnOffThread_Memory()
 !
 !       end do
 !    end do
-!!$OMP END DO NOWAIT
+!!OMP END DO NOWAIT
 !
 !! Total X matrix is found by summing all thread contributions
-!!$OMP CRITICAL
+!!OMP CRITICAL
 !dens%X = dens%X + X_tmp
-!!$OMP END CRITICAL
+!!OMP END CRITICAL
 !
 !call mem_dealloc(X_tmp)
 !call collect_thread_memory()
-!!$OMP END PARALLEL
+!!OMP END PARALLEL
 !call mem_TurnOffThread_Memory()
 !
 !! Multiply by 1/2 due to convention for Theta array [see above]
@@ -3620,12 +3620,12 @@ call mem_TurnOffThread_Memory()
 !
 !
 !call mem_TurnONThread_Memory()
-!!$OMP PARALLEL DEFAULT(shared) PRIVATE(Phivo_tmp,i,j,c,l,d)
+!!OMP PARALLEL DEFAULT(shared) PRIVATE(Phivo_tmp,i,j,c,l,d)
 !call init_threadmemvar()
  !   call mem_alloc(Phivo_tmp,nvirtAOS,nocctot)
  !   Phivo_tmp = 0E0_realk
  !
-!!$OMP DO SCHEDULE(dynamic,1)
+!!OMP DO SCHEDULE(dynamic,1)
  !
  !
  !   do i=1,noccEOS
@@ -3645,16 +3645,16 @@ call mem_TurnOffThread_Memory()
 !
 !       end do
 !    end do
-!!$OMP END DO NOWAIT
+!!OMP END DO NOWAIT
 !
 !! Total Phivo matrix is found by summing all thread contributions
-!!$OMP CRITICAL
+!!OMP CRITICAL
 !dens%Phivo = dens%Phivo + Phivo_tmp
-!!$OMP END CRITICAL
+!!OMP END CRITICAL
 !
 !    call mem_dealloc(Phivo_tmp)
 !call collect_thread_memory()
-!!$OMP END PARALLEL
+!!OMP END PARALLEL
 !call mem_TurnOffThread_Memory()
 !
 !    call LSTIMER('PHIVO MATRIX',tcpu,twall,DECinfo%output)
@@ -3672,12 +3672,12 @@ call mem_TurnOffThread_Memory()
 !
 !
 !call mem_TurnONThread_Memory()
-!!$OMP PARALLEL DEFAULT(shared) PRIVATE(Phiov_tmp,a,b,c,k,l)
+!!OMP PARALLEL DEFAULT(shared) PRIVATE(Phiov_tmp,a,b,c,k,l)
 !call init_threadmemvar()
 !    call mem_alloc(Phiov_tmp,noccAOS,nvirtAOS)
 !    Phiov_tmp = 0E0_realk
 !
-!!$OMP DO SCHEDULE(dynamic,1)
+!!OMP DO SCHEDULE(dynamic,1)
 !
 !    do a=1,nvirtEOS
 !       do b=1,nvirtEOS
@@ -3696,16 +3696,16 @@ call mem_TurnOffThread_Memory()
 !
 !       end do
 !    end do
-!$OMP END DO NOWAIT
+!OMP END DO NOWAIT
 !
 ! Total Phiov matrix is found by summing all thread contributions
-!$OMP CRITICAL
+!OMP CRITICAL
 !dens%Phiov = dens%Phiov + Phiov_tmp
-!!$OMP END CRITICAL
+!!OMP END CRITICAL
 !
 !    call mem_dealloc(Phiov_tmp)
 !call collect_thread_memory()
-!!$OMP END PARALLEL
+!!OMP END PARALLEL
 !call mem_TurnOffThread_Memory()
 !
 !    call mem_dealloc(dopair_occ)
