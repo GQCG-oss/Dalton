@@ -54,10 +54,6 @@ contains
 #include "gnrinf.h"
 #include "qmnpmm.h"
 
-#ifdef VAR_MPI
-#include "iprtyp.h"
-#endif
-
       integer, parameter :: NTABLE = 13
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -194,7 +190,6 @@ contains
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
 
-#include "priunit.h"
 #include "qmnpmm.h"
 !
       DONPSUB = .FALSE.
@@ -705,7 +700,7 @@ contains
 #include "priunit.h"
 #include "qmnpmm.h"
 
-      real(8) :: fmat(*)
+      real(8) :: fmat(:, :, :)
       integer :: lwork
       real(8) :: work(lwork)
       integer, allocatable :: ipiv(:)
@@ -717,21 +712,24 @@ contains
       LFREE = LWORK
 !     Initialize arrays
       CALL GETDIM_RELMAT(IDIM,.TRUE.)
-      CALL DZERO(FMAT,IDIM)
+      fmat = 0.0d0
 !     Reset matrix dimension parameter
       CALL GETDIM_RELMAT(IDIM,.FALSE.)
       IF (.NOT.MQITER) THEN
-!        Compute polarizabilty dependent terms
-         IF (DONPPOL.OR.DOMMPOL) THEN
-            CALL GET_AMAT(FMAT,IDIM)
-         END IF
-!        Compute capacitancy dependent term
-         IF (DONPCAP.OR.DOMMCAP) THEN
+
+!        compute polarizabilty dependent terms
+         if (donppol .or. dommpol) then
+            call get_amat(fmat)
+         end if
+
+!        compute capacitancy dependent term
+         if (donpcap .or. dommcap) then
            !todo adapt these routines to handle complex case
-           CALL GET_CMAT(FMAT,IDIM)
-           CALL GET_MMAT(FMAT,IDIM)
-           CALL GET_QLAG(FMAT,IDIM)
-         END IF
+           call get_cmat(fmat)
+           call get_mmat(fmat)
+           call get_qlag(fmat)
+         end if
+
       ELSE
 !       Conjugated gradient method via paradiso solver
       END IF
@@ -829,12 +827,10 @@ contains
    end subroutine
 
 
-   pure subroutine get_amat(fmat, idimension)
+   pure subroutine get_amat(fmat)
       ! computes a matrix component of relay matrix for np and mm regions
 
-
-      real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
-      integer, intent(in)    :: idimension
+      real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
 
 #include "qmnpmm.h"
 
@@ -849,7 +845,7 @@ contains
             RPOL = 1.0d0/NPFPOL(NPFTYP(I))
             DO J=1,3
                JOFF = (I-1)*3+J
-               FMAT(JOFF,JOFF) = RPOL
+               FMAT(JOFF,JOFF,1) = RPOL
             END DO
          END DO
       END IF
@@ -861,7 +857,7 @@ contains
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD = dsqrt(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RAD2 = RAD*RAD
                RAD51 = 1.0d0/(RAD2*RAD2*RAD)
                IF (NPMQGAU) CALL GET_GG_AFACT(FACTA,FACTB,I,J,RAD)
@@ -876,8 +872,8 @@ contains
                      IF (NPMQGAU) THEN
                         RVAL = RVAL*FACTA-FACTB*RIJ(K)*RIJ(L)
                      END IF
-                     FMAT(KOFF,LOFF) = -RVAL
-                     FMAT(LOFF,KOFF) = -RVAL
+                     FMAT(KOFF,LOFF,1) = -RVAL
+                     FMAT(LOFF,KOFF,1) = -RVAL
                   END DO
                END DO
             END DO
@@ -922,7 +918,7 @@ contains
             RIJ(1) = mm_cord(1,I)-mm_cord(1,J)
             RIJ(2) = mm_cord(2,I)-mm_cord(2,J)
             RIJ(3) = mm_cord(3,I)-mm_cord(3,J)
-            RAD = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+            RAD = dsqrt(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
             RAD2 = RAD*RAD
             RAD51 = 1.0d0/(RAD2*RAD2*RAD)
 !           Distribute interaction tensor
@@ -983,10 +979,10 @@ contains
       RIPOL = NPFPOL(NPFTYP(IATM))/3.0d0
       RJPOL = NPFPOL(NPFTYP(JATM))/3.0d0
 !     Get damping radius
-      RDIM = SQRT(2.0d0)/SQRTPI
+      RDIM = dsqrt(2.0d0)/SQRTPI
       RIM  = (RDIM*RIPOL)**(1.0d0/3.0d0)
       RJM  = (RDIM*RJPOL)**(1.0d0/3.0d0)
-      RIJM = SQRT(RIM*RIM+RJM*RJM)
+      RIJM = dsqrt(RIM*RIM+RJM*RJM)
       RVAL = RAD/RIJM
 !     Compute factors
       FACTA = DERF(RVAL)-2.0d0*RVAL*DEXP(-RVAL*RVAL)/SQRTPI
@@ -996,12 +992,10 @@ contains
    end subroutine
 
 
-   pure subroutine get_cmat(fmat, idimension)
+   pure subroutine get_cmat(fmat)
       ! computes c matrix component of relay matrix for np and mm regions
 
-
-      real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
-      integer, intent(in)    :: idimension
+      real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
 
 #include "qmnpmm.h"
 
@@ -1016,7 +1010,7 @@ contains
 !        Fix me: MM shift
          DO I=1,TNPATM
             IOFF = ISTART+I
-            FMAT(IOFF,IOFF) = -1.0d0/NPFCAP(NPFTYP(I))
+            FMAT(IOFF,IOFF,1) = -1.0d0/NPFCAP(NPFTYP(I))
          END DO
       END IF
 !     Set off-diagonal components
@@ -1032,14 +1026,14 @@ contains
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD  = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD  = dsqrt(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RVAL = 1.0d0/RAD
                IF (NPMQGAU) THEN
                   CALL GET_GG_CFACT(FACT,I,J,RAD)
                   RVAL = FACT*RVAL
                END IF
-               FMAT(IOFF,JOFF) = -RVAL
-               FMAT(JOFF,IOFF) = -RVAL
+               FMAT(IOFF,JOFF,1) = -RVAL
+               FMAT(JOFF,IOFF,1) = -RVAL
             END DO
          END DO
       END IF
@@ -1079,18 +1073,16 @@ contains
       RJCAP = 1.41421356237309504880D0*NPFCAP(NPFTYP(JATM))/SQRTPI
 
 !     Get damping radius & scalling factor
-      RIJM = SQRT(RICAP*RICAP+RJCAP*RJCAP)
+      RIJM = dsqrt(RICAP*RICAP+RJCAP*RJCAP)
       FACT = DERF(RAD/RIJM)
 
    end subroutine
 
 
-   pure subroutine get_mmat(fmat, idimension)
+   pure subroutine get_mmat(fmat)
       ! computes m matrix component of relay matrix for np and mm regions
 
-
-      real(8), intent(inout) :: fmat(idimension, idimension) ! relay matrix with m matrix contribution added up
-      integer, intent(in)    :: idimension
+      real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
 
 #include "qmnpmm.h"
 
@@ -1109,7 +1101,7 @@ contains
                RIJ(1) = NPCORD(1,I)-NPCORD(1,J)
                RIJ(2) = NPCORD(2,I)-NPCORD(2,J)
                RIJ(3) = NPCORD(3,I)-NPCORD(3,J)
-               RAD  = SQRT(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
+               RAD  = dsqrt(RIJ(1)*RIJ(1)+RIJ(2)*RIJ(2)+RIJ(3)*RIJ(3))
                RAD3 = 1.0d0/(RAD*RAD*RAD)
 !              Get damping factor
                IF (NPMQGAU) CALL GET_GG_MFACT(FACT,I,J,RAD)
@@ -1119,8 +1111,8 @@ contains
                   JOFF = ISTART+J
                   RVAL = RIJ(M)*RAD3
                   IF (NPMQGAU) RVAL = RVAL*FACT
-                  FMAT(IOFF,JOFF) = -RVAL
-                  FMAT(JOFF,IOFF) = -RVAL
+                  FMAT(IOFF,JOFF,1) = -RVAL
+                  FMAT(JOFF,IOFF,1) = -RVAL
                END DO
             END DO
          END DO
@@ -1160,24 +1152,23 @@ contains
 !     get j-th capacitancy
       rjcap = rdim*npfcap(npftyp(jatm))
 !     get damping radius & scalling factor
-      rijm = sqrt(rim*rim+rjcap*rjcap)
+      rijm = dsqrt(rim*rim+rjcap*rjcap)
       radx = distance_i_j/rijm
       fact = derf(radx)-2.0d0*radx*dexp(-radx*radx)/sqrtpi
 
    end subroutine
 
 
-   pure subroutine get_qlag(fmat, idimension)
+   pure subroutine get_qlag(fmat)
       ! sets charge constrain in relay matrix for np and mm regions
 
-
-      real(8), intent(inout) :: fmat(idimension, idimension)
-      integer, intent(in)    :: idimension
+      real(8), intent(inout) :: fmat(:, :, :)
 
 ! donpcap, dommcap, donppol
 #include "qmnpmm.h"
 
-      integer :: i, istart, ioff
+      integer :: i, istart, ioff, idimension
+      idimension = size(fmat, 1)
 
       ! set diagonal components
       if (donpcap .or. dommcap) then
@@ -1187,8 +1178,8 @@ contains
          if (donpcap) then
             do i = 1, tnpatm
                ioff = istart + i
-               fmat(ioff, idimension) = 1.0d0
-               fmat(idimension, ioff) = 1.0d0
+               fmat(ioff, idimension, 1) = 1.0d0
+               fmat(idimension, ioff, 1) = 1.0d0
             end do
          end if
       end if
@@ -1208,7 +1199,6 @@ contains
 ! Last updated: 16/08/2013 by Z. Rinkevicius.
 !
 
-#include "priunit.h"
 #include "qmnpmm.h"
 #include "dummy.h"
 #include "iratdef.h"
@@ -1240,7 +1230,6 @@ contains
 ! Last updated: 16/08/2013 by Z. Rinkevicius.
 !
 
-#include "priunit.h"
 #include "qmnpmm.h"
 #include "dummy.h"
 #include "iratdef.h"
@@ -1285,9 +1274,14 @@ contains
 #include "shells.h"
 #include "primit.h"
 
+#ifdef VAR_MPI
+! qmcmm_work
+#include "iprtyp.h"
+#endif
+
       real(8), allocatable :: rdvec(:)
       real(8), allocatable :: rqvec(:)
-      integer              :: idimension
+      integer              :: idimension, i
       integer              :: iprint
 
       call getdim_relmat(idimension, .false.)
@@ -1300,8 +1294,11 @@ contains
       call set_damparam(rdvec, rqvec)
 
       if (iprtlvl > 14) then
-         write(lupri, '(/,2x,a)') '*** Computed MQ vector ***'
-         call output(mqvec, 1, idimension, 1, 1, idimension, 1, 1, lupri)
+         write(lupri, '(/,2x,a)') '*** Computed MQ vector start ***'
+         do i = 1, idimension
+            write(lupri, '(i8, f18.8)') i, mqvec(i)
+         end do
+         write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
       end if
 
 #ifdef VAR_MPI
@@ -1345,7 +1342,7 @@ contains
       real(8) :: ripol
       integer :: i
 
-      rdim = sqrt(2.0d0)/sqrtpi
+      rdim = dsqrt(2.0d0)/sqrtpi
       do i = 1, tnpatm
          ripol = npfpol(npftyp(i))/3.0d0
          rdvec(i) = (rdim*ripol)**(1.0d0/3.0d0)
