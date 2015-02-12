@@ -117,6 +117,8 @@ contains
      call ccsolver_job(ccmodel,Co,Cv,fock,nb,no,nv,mylsitem,ccPrintLevel,&
         &oof,vvf,ccenergy,aibj,.false.,loc,t1f,t2f,m1f,m2f)
 
+     !call one_el_unrel_dens(nb,no,nv,t1f,t2f,m1f,m2f) 
+
      call tensor_free(t1f)
      call tensor_free(t2f)
      call tensor_free(m1f)
@@ -126,6 +128,141 @@ contains
 
    end subroutine ccsolver_energy_multipliers
 #endif
+
+   subroutine one_el_unrel_dens(nb,no,nv,t1f,t2f,m1f,m2f)
+
+      implicit none
+      integer, intent(in) :: nb,no,nv
+      type(tensor), intent(inout) :: t1f,t2f
+      type(tensor), intent(inout) :: m1f,m2f
+      integer a,b,i,j
+      integer, dimension(2)       :: dims
+
+      type(array4)                :: tbar, temp1, temp2, temp3
+      type(array2)                :: Xij, Yba, Eai, temp
+      type(array2) :: Dsd
+      
+      dims = [nb,nb]
+
+      !Initialize SD density
+      Dsd  = array2_init(dims)
+
+      !1. virt-occ block
+      !*****************
+      !D^sd_ai = z^a_i
+      do a=no+1,nb
+         do i=1,no
+             Dsd%val(a,i) = m1f%elm2(a-no,i)
+         end do
+      end do
+ 
+      !2. virt-virt block
+      !******************
+      !D^sd_ab = Sum_ckl (t^cb_kl * z^ca_kl) = Y_ba
+ 
+      !container for amps voov shape
+      temp1 = array4_init([nv,no,no,nv])
+      temp2 = array4_init([nv,no,no,nv])
+ 
+      !sort amps(ckbl) -> bckl
+      call array_reorder_4d(1.0E0_realk,m2f%elm4,nv,no,nv,no,[1,2,4,3],0.0E0_realk,temp1%val)
+      call array_reorder_4d(1.0E0_realk,t2f%elm4,nv,no,nv,no,[1,2,4,3],0.0E0_realk,temp2%val)
+ 
+      !form Y_ba intermediate
+      Yba = array2_init([nv,nv])
+      call array4_contract3(temp1,temp2,Yba)
+ 
+      !clean up!
+      call array4_free(temp1)
+      call array4_free(temp2)
+ 
+      !D^sd_ab = Yba
+      do a=no+1,nb
+         do b=no+1,nb
+             Dsd%val(a,b) = 1.0*Yba%val(a-no,b-no)
+         end do
+      end do
+      call array2_free(Yba)
+
+      !3. occ-occ block
+      !****************
+      !D^sd_ij = 2*delta_ij - Sum_cdk (t^cd_ki * z^cd_kj) = 2*delta_ij - X_ij
+ 
+      !container for amps vovo shape
+      temp1 = array4_init([nv,no,nv,no])
+      temp2 = array4_init([nv,no,nv,no])
+      call array_reorder_4d(1.0E0_realk,m2f%elm4,nv,no,nv,no,[1,2,3,4],0.0E0_realk,temp1%val)
+      call array_reorder_4d(1.0E0_realk,t2f%elm4,nv,no,nv,no,[1,2,3,4],0.0E0_realk,temp2%val)
+ 
+      !form X intermediate
+      Xij = array2_init([no,no])
+      call array4_contract3(temp2,temp1,Xij)
+ 
+      !clean up!
+      call array4_free(temp1)
+      call array4_free(temp2)
+ 
+      !add to the SD density
+      do i=1,no
+         do j=1,no
+            if(i==j)then
+               Dsd%val(i,j) = Dsd%val(i,j) + 2 - Xij%val(i,j)
+            else
+               Dsd%val(i,j) = Dsd%val(i,j) - Xij%val(i,j)
+            endif
+         end do
+      end do
+      call array2_free(Xij)
+
+      !4. occ-virt block
+      !*****************
+      !D^sd_ia = Sum_bj z^b_j*(2t^ab_ij - t^ba_ij) = Sum_bj z^b_j * tbar^ab_ij
+ 
+      !intermediate container vovo shape
+      tbar = array4_init([nv,no,nv,no])
+ 
+      !Construct the tbar intermediate
+      do j=1,t2f%dims(4)
+        do b=1,t2f%dims(3)
+           do i=1,t2f%dims(2)
+              do a=1,t2f%dims(1)
+                 tbar%val(a,i,b,j) = tbar%val(a,i,b,j) + 2.0*t2f%elm4(a,i,b,j)&
+                                      & - t2f%elm4(b,i,a,j)
+              end do
+           end do
+        end do
+      end do
+ 
+      !form eai intermediate
+      Eai = array2_init([nv,no])
+ 
+      !container for amps
+      temp = array2_init([nv,no],m1f%elm2)
+      call array4_contract_array2(tbar,temp,Eai)
+      call array2_free(temp)
+      call array4_free(tbar)
+
+      !add to the SD density
+      do a=no+1,nb
+         do i=1,no
+             Dsd%val(i,a) = Eai%val(a-no,i)
+         end do
+      end do
+
+      !print *, ""
+      !print *, "Dsd in MO DEBUG Print: "
+      !print *, ""
+      !print *,no,nv
+      !write(*, *) ''
+      !do i=1,Dsd%dims(1)
+      !  do j=1,Dsd%dims(2)
+      !    write(*,'(f16.10)',advance='no') Dsd%val(i,j)
+      !  end do
+      !  write(*, *) ''
+      !end do
+      !print *, ""
+  
+   end subroutine one_el_unrel_dens  
 
    subroutine ccsolver_job(ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,oof,vvf,e,vovo,lrt1,loc,t1f,t2f,m1f,m2f,frag)
       implicit none
@@ -1760,6 +1897,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    case( MODEL_RIMP2 )
 
+      call lsquit("ERROR(ccsolver_par): RI-MP2 is not implemented iteratively",-1)
+
       use_singles = .false.
       atype = 'REAR'
 
@@ -2250,20 +2389,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          end do
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_mixing, &
-            &labelttot= 'CCIT: MIXING          :', output = DECinfo%output, twall = time_copy_opt ) 
-
-         ! if crop, put the optimal in place of trial (not for diis)
-         if(DECinfo%use_crop) then
-            if(use_singles) then
-               call tensor_cp_data( omega1_opt, omega1(iter_idx) )
-               call tensor_cp_data( t1_opt,     t1(iter_idx)     )
-            end if
-            call tensor_cp_data( omega2_opt, omega2(iter_idx) )
-            call tensor_cp_data( t2_opt,     t2(iter_idx)     )
-         end if
-
-         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_copy_opt, &
-            &labelttot= 'CCIT: COPY OPTIMALS   :', output = DECinfo%output, twall = time_norm ) 
+            &labelttot= 'CCIT: MIXING          :', output = DECinfo%output, twall = time_norm ) 
 
          ! check for the convergence
          one_norm1 = 0.0E0_realk
@@ -2346,7 +2472,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_energy, &
-            &labelttot= 'CCIT: GET ENERGY      :', output = DECinfo%output, twall = time_new_guess) 
+            &labelttot= 'CCIT: GET ENERGY      :', output = DECinfo%output, twall = time_copy_opt) 
+
+         ! if crop, put the optimal in place of trial (not for diis)
+         if(DECinfo%use_crop) then
+            if(use_singles) then
+               call tensor_cp_data( omega1_opt, omega1(iter_idx) )
+               call tensor_cp_data( t1_opt,     t1(iter_idx)     )
+            end if
+            call tensor_cp_data( omega2_opt, omega2(iter_idx) )
+            call tensor_cp_data( t2_opt,     t2(iter_idx)     )
+         end if
+
+         if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_copy_opt, &
+            &labelttot= 'CCIT: COPY OPTIMALS   :', output = DECinfo%output, twall = time_new_guess ) 
+
 
          ! generate next trial vector if this is not the last iteration
          if(.not.break_iterations) then
@@ -2699,9 +2839,14 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
          call tensor_minit(ml4,[nv,no,nv,no],4)
          call tensor_cp_data(m4,ml4)
 
-         call get_ccsd_multipliers_simple(omega1(use_i)%elm2,o2%elm4,m2%elm2&
-            &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,delta_fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
-            &,no,nv,nb,MyLsItem)
+         if(DECinfo%simple_multipler_residual)then
+            call get_ccsd_multipliers_simple(omega1(use_i)%elm2,o2%elm4,m2%elm2&
+               &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,delta_fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
+               &,no,nv,nb,MyLsItem)
+         else
+            print *,"The multipliers integral direct scheme is not implemented yet! Quitting..."
+            stop 0
+         endif
 
          call tensor_cp_data(o2,omega2(use_i),order=[1,3,2,4])
          call tensor_free(o2)
