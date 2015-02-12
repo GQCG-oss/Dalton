@@ -4,75 +4,58 @@
 
 !> \brief Contains PARI routines
 MODULE pari_mod
-use precision
-use Typedef  
-use ls_Integral_Interface
-use AtomSparse
-use mat3d_mod
-use LSparameters
-use molecule_module
-use memory_handling
-use lstiming
+  use precision
+  use Typedef  
+  use ls_Integral_Interface
+  use AtomSparse
+  use mat3d_mod
+  use LSparameters
+  use molecule_module
+  use memory_handling
+  use lstiming
 CONTAINS
 
-!> \brief Calculates the PARI (pair-atomic resolution-of-the-identity) fitting coefficients 
-!> \latexonly
-!>        $c_\alpha^{ab} = (\alpha|\beta)^{-1} (\beta|ab), \quad \alpha\in{A\cup B},
-!>                         \quad a\in A,\quad b\in B$
-!> \endlatexonly
-!> \author S. Reine and P. Merlot
-!> \date 2010-07-22
-SUBROUTINE getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,regCSfull,auxCSfull) 
+  !> \brief Calculates the PARI (pair-atomic resolution-of-the-identity) fitting coefficients 
+  !> \latexonly
+  !>        $c_\alpha^{ab} = (\alpha|\beta)^{-1} (\beta|ab), \quad \alpha\in{A\cup B},
+  !>                         \quad a\in A,\quad b\in B$
+  !> \endlatexonly
+  !> \author S. Reine and P. Merlot
+  !> \date 2010-07-22
+  SUBROUTINE getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,&
+       regCSfull,auxCSfull) 
     implicit none
     TYPE(LSSETTING),intent(inout)         :: SETTING
     INTEGER,intent(IN)                    :: LUPRI,LUERR
     TYPE(MOLECULARORBITALINFO),INTENT(IN) :: orbitalInfo
     TYPE(MAT3D),intent(inout)             :: calpha_ab(orbitalInfo%nAtoms)
     TYPE(LSTENSOR),pointer                :: regCSfull,auxCSfull
-        !
+    !
     Integer               :: iAtomA,iAtomB,nRegA,nRegB,nAuxA,nAuxB
     Integer               :: iAlpha,iGamma,iRegA,iRegB
     Integer               :: startRegA,startRegB,startAuxA,startAuxB
     Integer               :: endRegA,endRegB,endAuxA,endAuxB
     Integer               :: nAux
     Integer               :: info
-    Real(realk),pointer   :: alpha_ab(:,:,:)
-    Real(realk),pointer   :: alphaBetaFull(:,:)
-    Real(realk),pointer   :: alpha_ab_red(:,:)
-    Real(realk),pointer   :: alphaBeta(:,:),copy_alpBeta(:,:)
-    Real(realk),pointer   :: eigValphaBeta(:)
-!   TYPE(MOLECULEINFO)    :: atoms(orbitalInfo%nAtoms)
+    Real(realk),pointer   :: calpha_ab_block(:,:,:)
     !
     TYPE(MOLECULEINFO),pointer :: molecule
     TYPE(MOLECULEINFO),pointer :: ATOMS_A(:)
-    Integer           :: nAtoms,iRegAfull,iRegBfull,iBeta
-    Integer,pointer   :: indexAB(:,:)
-    Integer           :: nRegAB,iRegAB
-    Real(realk)       :: maxAbs
-    Real(realk)       :: threshold = 1E-20_realk ! 1E-10 NOK while {1E-20, 1E-30} OK
-    Character(80)     :: C_filename
-    Real(realk),pointer :: alpha_charge(:)
-    Real(realk),pointer :: K_red(:)
-    Real(realk),pointer :: lambda_ab(:,:)        ! multipole constraint
-    ! Real(realk),pointer :: lambda_ab(:)        ! charge constraint
-    Real(realk),pointer :: charge_ab(:,:)
-    Real(realk),pointer :: dipole_ab(:,:,:)
-    Real(realk),pointer :: alpha_dipole(:,:)
-    Real(realk),pointer :: Amat(:,:)
-    Real(realk),pointer :: multipoleDiff(:,:)
-    Real(realk)         :: charge_diff_max,xdipole_diff_max,ydipole_diff_max,zdipole_diff_max
-    Integer             :: iauxa,ireg,iaux,iauxb,ksi1,ksi2
-    CHARACTER(LEN=3)    :: nline
-    INTEGER             :: nb_eigVal
-    Real(realk)         :: minEigv,maxEigv,minTemp,maxTemp,conditionNum,tempCondNum
-    Real(realk),pointer :: eigval(:)
+    Integer                    :: nAtoms,iRegAfull,iRegBfull,iBeta
+    Integer,pointer            :: indexAB(:,:)
+    Integer                    :: nRegAB,iRegAB
+    Real(realk)                :: maxAbs
+    Real(realk)                :: threshold = 1E-20_realk 
+! 1E-10 NOK while {1E-20, 1E-30} OK
+    Character(80)              :: C_filename
+    Real(realk)                :: minEigv,maxEigv,conditionNum
 
     minEigV = 9999.90E0_realk
     maxEigV = -9999.90E0_realk
     conditionNum = abs(maxEigV)/abs(minEigV)
 
     threshold = SETTING%SCHEME%PARI_THRESHOLD*SETTING%SCHEME%THRESHOLD
-    
+
     !write(*,*) 'used PARI_THRES',threshold
     ! --- prepare for re-initialization of SETTING
     molecule => SETTING%MOLECULE(1)%p      
@@ -96,7 +79,7 @@ SUBROUTINE getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,regCSfu
        allocate(ATOMS_A(nAtoms))  ! --- each molecule made of only one atom
 
        call pari_set_atomic_fragments(molecule,ATOMS_A,nAtoms,lupri)
-       
+
        ! --- For each "Pair of atoms A and B",
        DO iAtomA=1,orbitalInfo%nAtoms
           call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
@@ -104,292 +87,52 @@ SUBROUTINE getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,regCSfu
           DO iAtomB=iAtomA,orbitalInfo%nAtoms
              call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
                   nAuxB,startAuxB,endAuxB)
-             nAux      = nAuxA + nAuxB
-             IF (iAtomA.EQ.iAtomB) nAux = nAuxA
-             call mem_alloc(alpha_ab,nAux,nRegA,nRegB)
-             call mem_alloc(alphaBeta,nAux,nAux)
-             call ls_dzero(alpha_ab,nAux*nRegA*nRegB)
-             call ls_dzero(alphaBeta,nAux*nAux)
+             if (iAtomA.EQ.iAtomB) then
+                nAux = nAuxA
+             else
+                nAux = nAuxA + nAuxB
+             endif
+!TODO is_AB_significant ?
+             call mem_alloc(calpha_ab_block,nAux,nRegA,nRegB)
+             calpha_ab_block = 0E0_realk
+             call getPariCoefficientsBlock(lupri,luerr,setting,iAtomA,iAtomB,&
+                  calpha_ab_block,orbitalInfo,regCSfull,auxCSfull,molecule,atoms_a,&
+                  minEigV,maxEigV,conditionNum)
 
-             ! --- extract (alpha | beta) and (alpha | ab) with 
-             ! --- alpha in {A U B}, a in {A}, b in {B} from the full matrices
-             alpha_ab = 0E0_realk
-             call pari_alphaab(alpha_ab,setting,molecule,atoms_a,iAtomA,iAtomB,&
-                  nAuxA,nAuxB,nRegA,nRegB,regCSfull,auxCSfull,lupri,luerr)
-
-             call pari_alphaBeta(alphaBeta,setting,molecule,atoms_a,iAtomA,iAtomB,&
-                  nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
-
-#if 0
-             ! Checking eigenvalues of (alpha|beta) matrices
-             call mem_alloc(copy_alpBeta,nAux,nAux)
-             call ls_dzero(copy_alpBeta,nAux*nAux)
-             call mem_alloc(eigValphaBeta,nAux)
-             call ls_dzero(eigValphaBeta,nAux)
-             copy_alpBeta = alphaBeta
-             call II_get_eigv_square_mat(lupri,luerr,copy_alpBeta,eigValphaBeta,nAux) 
-             !
-             call check_min_max_Array_elem(minTemp,maxTemp,tempCondNum,&
-                  eigValphaBeta,nAux,lupri,luerr)
-             minEigV=min(minEigV,minTemp)
-             maxEigV=max(maxEigV,maxTemp)
-             conditionNum = max(conditionNum,tempCondNum)
-             call mem_dealloc(copy_alpBeta)
-             call mem_dealloc(eigValphaBeta)
-#endif
-
-             ! --- Solve only for (alpha|ab) > threshold, 
-             ! --- make first reduction of integrals according to
-             ! --- size of |(alpha|ab)|
-             nRegAB = 0
-             DO iRegB=1,nRegB
-                DO iRegA=1,nRegA
-                   maxAbs = abs(alpha_ab(1,iRegA,iRegB))
-                   DO iAlpha=2,nAux
-                      maxAbs = max(maxAbs,abs(alpha_ab(iAlpha,iRegA,iRegB)))
-                   ENDDO
-                   IF (maxAbs.GT.threshold) THEN
-                      nRegAB = nRegAB + 1
-                   ENDIF
-                ENDDO
-             ENDDO
-             IF (nRegAB.GT. 0) THEN
-                call mem_alloc(indexAB,2,nRegAB)
-                IF (setting%scheme%pari_dipole) THEN   
-                   ! We need 4 additional dimensions when we constrain the dipole 
-                   ! (charge + dipole-{x,y,z})
-                   call mem_alloc(lambda_ab,4,nRegAB)
-                   call mem_alloc(dipole_ab,nRegA,nRegB,4)
-                   !  Calculate regular charges and dipoles 
-                   ! (dipole_ab = {<ab>,<xab>,<yab>,<zab>})
-                   call pari_dipole_ab(dipole_ab,setting,atoms_a(iAtomA),&
-                        atoms_a(iAtomB),nRegA,nRegB,lupri,luerr)
-                   nRegAB = nRegAB + 4
-                   ! We need one additional dimension when we constrain the charge
-                ELSEIF (setting%scheme%pari_charge) THEN
-                   call mem_alloc(lambda_ab,1,nRegAB)
-                   call mem_alloc(charge_ab,nRegA,nRegB)
-                   ! Calculate regular charges (charge_ab = <ab>)
-                   call pari_charge_ab(charge_ab,setting,atoms_a(iAtomA),&
-                        atoms_a(iAtomB),nRegA,nRegB,lupri,luerr)
-                   nRegAB = nRegAB + 1
-                ENDIF ! if pari_charge or pari_dipole
-
-                call mem_alloc(alpha_ab_red,nAux,nRegAB)
-                alpha_ab_red = 0E0_realk
-                iRegAB = 0
-                DO iRegB=1,nRegB
-                   DO iRegA=1,nRegA
-                      maxAbs = abs(alpha_ab(1,iRegA,iRegB))
-                      DO iAlpha=2,nAux
-                         maxAbs = max(maxAbs,abs(alpha_ab(iAlpha,iRegA,iRegB)))
-                      ENDDO
-                      IF (maxAbs.GT.threshold) THEN
-                         iRegAB = iRegAB + 1
-                         indexAB(1,iRegAB) = iRegA
-                         indexAB(2,iRegAB) = iRegB
-                         alpha_ab_red(:,iRegAB) = alpha_ab(:,iRegA,iRegB)
-                         ! Put charge_ab, dipole_ab, ... into lambda_ab
-                         IF (setting%scheme%pari_dipole) THEN 
-                            lambda_ab(1,iRegAB) = dipole_ab(iRegA,iRegB,1) ! charge
-                            lambda_ab(2,iRegAB) = dipole_ab(iRegA,iRegB,2) ! x-dipole
-                            lambda_ab(3,iRegAB) = dipole_ab(iRegA,iRegB,3) ! y-dipole
-                            lambda_ab(4,iRegAB) = dipole_ab(iRegA,iRegB,4) ! z-dipole
-                         ELSEIF (setting%scheme%pari_charge) THEN
-                            lambda_ab(1,iRegAB) = charge_ab(iRegA,iRegB)
-                         ENDIF ! if pari_charge or pari_dipole
-                      ENDIF
-                   ENDDO
-                ENDDO
-
-                ! --- Calculate the auxiliary charges and dipoles 
-                ! --- (alpha_dipole={ <alpha>, <xalpha>, <yalpha>, <zalpha>})          
-                ! --- and store them in additional columns of alpha_ab_red(:,:)
-                IF (setting%scheme%pari_dipole) THEN
-                   call mem_alloc(alpha_dipole,nAux,4)
-                   call pari_alpha_dipole(alpha_dipole,setting,molecule,& 
-                        atoms_a,iAtomA,iAtomB,nAuxA,nAuxB,lupri,luerr)
-                   alpha_ab_red(:,nRegAB)   = alpha_dipole(:,4) ! z-dipole fit
-                   alpha_ab_red(:,nRegAB-1) = alpha_dipole(:,3) ! y-dipole fit 
-                   alpha_ab_red(:,nRegAB-2) = alpha_dipole(:,2) ! x-dipole fit
-                   alpha_ab_red(:,nRegAB-3) = alpha_dipole(:,1) ! charge fit
-                ELSE IF (setting%scheme%pari_charge) THEN
-                   ! Calculate the auxiliary charges (alpha_charge=<alpha>)
-                   call mem_alloc(alpha_charge,nAux)
-                   call mem_alloc(K_red,nRegAB)
-                   call pari_alpha_charge(alpha_charge,setting,molecule,atoms_a,&
-                        iAtomA,iAtomB,nAuxA,nAuxB,lupri,luerr)
-                   alpha_ab_red(:,nRegAB) = alpha_charge
-                ENDIF ! if pari_charge or pari_dipole
-
-                ! --- Solve the linear system to find the unconstrained 
-                ! --- density-fitting coefficients
-                ! --- c_alpha^ab = (alpha|beta)^-1 (beta|ab) with alpha in AUB
-                ! --- (here the alpha_ab is changed to be c_alpha^ab)
-                call DPOSV('U',nAux,nRegAB,alphaBeta,nAux,alpha_ab_red,nAux,info)
-                If (info.ne. 0) THEN
-                   WRITE(LUPRI,'(1X,A,I5)') &
-                        'DPOSV error in getPariCoefficients 1/2. Info =',info
-                   call LSQUIT('DPOSV error in getPariCoefficients 1/2',lupri)
-                ENDIF
-
-                ! --- find the Lagrange multiplier(s)
-                IF (setting%scheme%pari_dipole) THEN
-                   ! --- Solve the linear system to find the Langrangian multipliers
-                   ! --- solve Amat*lambda_ab = B_ab (B_ab stored in lambda_ab)
-                   call mem_alloc(Amat,4,4)
-                   Amat = 0E0_realk
-                   DO ksi1=1,4
-                      DO ksi2=1,4
-                         DO iAlpha=1,nAux
-                            Amat(ksi1,ksi2) = Amat(ksi1,ksi2) + &
-                                 alpha_dipole(iAlpha,ksi1)*&
-                                 alpha_ab_red(iAlpha,nRegAB-4+ksi2)
-                         ENDDO
-                      ENDDO
-                   ENDDO
-                   DO iregAB=1,nregAB-4
-                     DO iAux=1,nAux
-                        lambda_ab(1,iRegAB) = lambda_ab(1,iRegAB) &
-                             - alpha_dipole(iAux,1)*alpha_ab_red(iAux,iRegAB)
-                        lambda_ab(2,iRegAB) = lambda_ab(2,iRegAB) &
-                             - alpha_dipole(iAux,2)*alpha_ab_red(iAux,iRegAB)
-                        lambda_ab(3,iRegAB) = lambda_ab(3,iRegAB) &
-                             - alpha_dipole(iAux,3)*alpha_ab_red(iAux,iRegAB)
-                        lambda_ab(4,iRegAB) = lambda_ab(4,iRegAB) &
-                             - alpha_dipole(iAux,4)*alpha_ab_red(iAux,iRegAB)
-                     ENDDO
-                   ENDDO
-                   call DPOSV('U',4,nRegAB-4,Amat,4,lambda_ab,4,info)
-                   If (info.ne. 0) THEN
-                      WRITE(LUPRI,'(1X,A,I5)') &
-                           'DPOSV error in getPariCoefficients 2/2. Info =',info
-                      call LSQUIT('DPOSV error in getPariCoefficients 2/2',lupri)
-                   ENDIF
-
-                   ! --- rewrite the charge-/dipole-constrained fitting coefficients  
-                   ! --- in terms of the unconstrained fitting coeff. and the 
-                   ! --- corrections terms
-                   DO iRegAB=1,nRegAB-4
-                      DO iAux=1,nAux
-                         alpha_ab_red(iAux,iRegAB) = alpha_ab_red(iAux,iRegAB) &
-                              + lambda_ab(1,iRegAB)*alpha_ab_red(iAux,nRegAB-3) &
-                              + lambda_ab(2,iRegAB)*alpha_ab_red(iAux,nRegAB-2) &
-                              + lambda_ab(3,iRegAB)*alpha_ab_red(iAux,nRegAB-1) &
-                              + lambda_ab(4,iRegAB)*alpha_ab_red(iAux,nRegAB)
-                      ENDDO
-                   ENDDO
-                   charge_diff_max = 0E0_realk
-                   xdipole_diff_max = 0E0_realk
-                   ydipole_diff_max = 0E0_realk
-                   zdipole_diff_max = 0E0_realk
-                   DO iRegAB = 1,nRegAB-4
-                      iRegA = indexAB(1,iRegAB)
-                      iRegB = indexAB(2,iRegAB)
-                      lambda_ab(1,iRegAB) = dipole_ab(iRegA,iRegB,1)
-                      lambda_ab(2,iRegAB) = dipole_ab(iRegA,iRegB,2)
-                      lambda_ab(3,iRegAB) = dipole_ab(iRegA,iRegB,3)
-                      lambda_ab(4,iRegAB) = dipole_ab(iRegA,iRegB,4)
-                      DO iAlpha=1,nAux
-                         lambda_ab(1,iRegAB) = lambda_ab(1,iRegAB) &
-                              - alpha_dipole(iAlpha,1)*alpha_ab_red(iAlpha,iRegAB)
-                         lambda_ab(2,iRegAB) = lambda_ab(2,iRegAB) &
-                              - alpha_dipole(iAlpha,2)*alpha_ab_red(iAlpha,iRegAB)
-                         lambda_ab(3,iRegAB) = lambda_ab(3,iRegAB) &
-                              - alpha_dipole(iAlpha,3)*alpha_ab_red(iAlpha,iRegAB)
-                         lambda_ab(4,iRegAB) = lambda_ab(4,iRegAB) &
-                              - alpha_dipole(iAlpha,4)*alpha_ab_red(iAlpha,iRegAB)
-                      ENDDO
-                      charge_diff_max  = max(charge_diff_max ,abs(lambda_ab(1,iRegAB)))
-                      xdipole_diff_max = max(xdipole_diff_max,abs(lambda_ab(2,iRegAB)))
-                      ydipole_diff_max = max(ydipole_diff_max,abs(lambda_ab(3,iRegAB)))
-                      zdipole_diff_max = max(zdipole_diff_max,abs(lambda_ab(4,iRegAB)))
-                   ENDDO
-                   IF (charge_diff_max.GE. 1E-13_realk)  &
-                        & write(LUPRI,*) &
-                        'Maximum error in PARI charge-constraint: ',charge_diff_max
-                   IF (xdipole_diff_max.GE. 1E-13_realk) & 
-                        & write(LUPRI,*) &
-                        'Maximum error in PARI x-dipole-constraint: ',xdipole_diff_max
-                   IF (ydipole_diff_max.GE. 1E-13_realk) & 
-                        & write(LUPRI,*) &
-                        'Maximum error in PARI y-dipole-constraint: ',ydipole_diff_max
-                   IF (zdipole_diff_max.GE. 1E-13_realk) & 
-                        & write(LUPRI,*) &
-                        'Maximum error in PARI z-dipole-constraint: ',zdipole_diff_max
-                   !
-                   call mem_dealloc(dipole_ab)
-                   call mem_dealloc(lambda_ab)
-                   call mem_dealloc(Amat)
-                   call mem_dealloc(alpha_dipole)
-                   nRegAB = nRegAB-4
-
-                ELSEIF (setting%scheme%pari_charge) THEN
-                   ! --- K_red contrains sum_I <I>c_I^{ab} and sum_I <I> k_I 
-                   ! --- (needed to obtain lambda_ab)
-                   call dgemm('N','N',1,nRegAB,nAux,1E0_realk,alpha_charge,1,&
-                        alpha_ab_red,nAux,0E0_realk,K_red,1)
-                   lambda_ab(1,:) = lambda_ab(1,:) - K_red(1:nRegAB-1)
-                   lambda_ab(1,:) = lambda_ab(1,:) / K_red(nRegAB)
-                   ! --- rewrite the charge-/dipole-constrained fitting coefficients  
-                   ! --- in terms of the unconstrained fitting coeff. and the
-                   ! --- corrections terms
-                   DO iRegAB=1,nRegAB-1
-                      alpha_ab_red(:,iRegAB) = alpha_ab_red(:,iRegAB) &
-                           + lambda_ab(1,iRegAB)*alpha_ab_red(:,nRegAB)
-                   ENDDO
-                   charge_diff_max = 0E0_realk
-                   DO iRegAB = 1,nRegAB-1
-                      iRegA = indexAB(1,iRegAB)
-                      iRegB = indexAB(2,iRegAB)
-                      lambda_ab(1,iRegAB) = charge_ab(iRegA,iRegB)
-                      DO iAlpha=1,nAux
-                         lambda_ab(1,iRegAB) = lambda_ab(1,iRegAB) &
-                              - alpha_charge(iAlpha)*alpha_ab_red(iAlpha,iRegAB)
-                      ENDDO
-                      charge_diff_max = max(charge_diff_max,abs(lambda_ab(1,iRegAB)))
-                   ENDDO
-!                   IF (charge_diff_max.GE. 1E-13_realk) THEN
-!                      write(*,*) 'error in charge-constraint:charge-diff',lambda_ab
-!                   ENDIF
-                   call mem_dealloc(charge_ab)
-                   call mem_dealloc(lambda_ab)
-                   call mem_dealloc(K_red)
-                   call mem_dealloc(alpha_charge)
-                   nRegAB = nRegAB-1
-                ENDIF ! if pari_charge or pari_dipole
-
-                DO iRegAB=1,nRegAB
-                   iRegA=indexAB(1,iRegAB)
-                   iRegB=indexAB(2,iRegAB)
+             calpha_ab(iAtomA)%elements(:,:,startRegB:endRegB) = &
+                  calpha_ab_block(1:nAuxA,:,:)
+             IF (iAtomA.NE.iAtomB) then
+                do iRegA=1,nRegA
                    iRegAfull = startRegA+iRegA-1
-                   iRegBfull = startRegB+iRegB-1
-                   calpha_ab(iAtomA)%elements(:,iRegA,iRegBfull) = &
-                        alpha_ab_red(1:nAuxA,iRegAB)
-                   IF (iAtomA.NE.iAtomB) & 
-                        calpha_ab(iAtomB)%elements(:,iRegB,iRegAfull) = &
-                        alpha_ab_red(nAuxA+1:nAuxA+nAuxB,iRegAB)
-                ENDDO
-                call mem_dealloc(indexAB)
-                call mem_dealloc(alpha_ab_red)
-             ENDIF ! IF nRegAB >0
-             call mem_dealloc(alpha_ab)
-             call mem_dealloc(alphaBeta)
+                   do iRegB=1,nRegB
+                      calpha_ab(iAtomB)%elements(:,iRegB,iRegAfull) = &
+                           calpha_ab_block(nAuxA+1:nAuxA+nAuxB,iRegA,iRegB)
+                   enddo
+                enddo
+             else
+             endif
+             call mem_dealloc(calpha_ab_block)
           ENDDO !iAtomB
        ENDDO !iAtomA
        ! Reset settings to default
 
 #if 0
-       write(lupri,*) "(alpha|beta): minEigV of all (alpha|beta) local matrices: ",minEigV
-       write(*,*)     "(alpha|beta): minEigV of all (alpha|beta) local matrices: ",minEigV
-       write(lupri,*) "(alpha|beta): maxEigV of all (alpha|beta) local matrices: ",maxEigV
-       write(*,*)     "(alpha|beta): maxEigV of all (alpha|beta) local matrices: ",maxEigV
-       write(lupri,*) "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-       write(*,*)     "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
+       write(lupri,*) &
+            "(alpha|beta): minEigV of all (alpha|beta) local matrices: ",minEigV
+       write(*,*)     &
+            "(alpha|beta): minEigV of all (alpha|beta) local matrices: ",minEigV
+       write(lupri,*) &
+            "(alpha|beta): maxEigV of all (alpha|beta) local matrices: ",maxEigV
+       write(*,*)     &
+            "(alpha|beta): maxEigV of all (alpha|beta) local matrices: ",maxEigV
+       write(lupri,*) &
+            "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
+       write(*,*)     &
+            "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
 #endif
 
        call typedef_setMolecules(setting,molecule,1,2,3,4)
-
+       
        call pari_free_atomic_fragments(ATOMS_A,nAtoms)
        deallocate(ATOMS_A)  
        CALL io_add_filename(setting%io,C_filename,lupri)
@@ -398,18 +141,404 @@ SUBROUTINE getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,regCSfu
     !call LSQUIT('Testing eigenvalues of the (alpha|beta) matrices - quitting getPariCoefficients()',-1)
   END SUBROUTINE getPariCoefficients
 
-SUBROUTINE freePariCoefficients(calpha_ab,nAtoms)
-implicit none
-Integer,intent(in)        :: nAtoms
-type(MAT3D),intent(inout) :: calpha_ab(nAtoms)
-!
-Integer iAtom
-!
-DO iAtom=1,nAtoms
-   call free_MAT3D(calpha_ab(iAtom))
-ENDDO
-END SUBROUTINE freePariCoefficients
+  !> For atomic pair AB, returns the block matrix C_alpha^ab 
+  !> alpha in Aux(A U B)
+  !> a in Reg(A)
+  !> b in Reg(B)
+  subroutine getPariCoefficientsBlock(lupri,luerr,setting,iAtomA,iAtomB,&
+       Calpha_ab_block,orbitalInfo,regCSfull,auxCSfull,molecule,atoms_a,&
+       minEigV,maxEigV,conditionNum)
+    implicit none
+    Type(lssetting),intent(inout)         :: setting
+    Integer,intent(in)                    :: lupri,luerr
+    Type(molecularorbitalinfo),intent(in) :: orbitalInfo
+    Integer,intent(in)                    :: iAtomA,iAtomB
+    Real(realk),pointer                   :: calpha_ab_block(:,:,:) !nAux,nRegA,nRegB
+    Type(lstensor),pointer                :: regCSfull,auxCSfull
+    Type(moleculeinfo),pointer            :: molecule
+    Type(moleculeinfo),pointer            :: atoms_a(:)
+    Real(realk)                           :: minEigv,maxEigv,conditionNum
+    !
+    Integer                    :: nRegA,nRegB,nAuxA,nAuxB
+    Integer                    :: startRegA,startRegB,startAuxA,startAuxB
+    Integer                    :: endRegA,endRegB,endAuxA,endAuxB
+    Integer                    :: nAux
+    Integer                    :: iRegA,iRegB
+    Integer                    :: nRegAB,iRegAB
+    Integer                    :: iAuxA,iReg,iAux,iAuxB,ksi1,ksi2
+    Integer                    :: iAlpha
+    Integer                    :: info
+    Integer,pointer            :: indexAB(:,:)
+    Real(realk),pointer        :: alpha_ab(:,:,:)
+    Real(realk),pointer        :: alpha_ab_red(:,:)
+    Real(realk),pointer        :: alphaBeta(:,:),copy_alpBeta(:,:)
+    Real(realk),pointer        :: eigValphaBeta(:)
+    Real(realk),pointer        :: lambda_ab(:,:)        ! multipole constraint
+    Real(realk),pointer        :: charge_ab(:,:)
+    Real(realk),pointer        :: dipole_ab(:,:,:)
+    Real(realk),pointer        :: alpha_dipole(:,:)
+    Real(realk),pointer        :: alpha_charge(:)
+    Real(realk),pointer        :: K_red(:)
+    Real(realk),pointer        :: Amat(:,:)
+    Real(realk)                :: minTemp,maxTemp,tempCondNum
+    Real(realk)                :: maxAbs
+    Real(realk)                :: threshold = 1E-20_realk 
+    Real(realk)                :: charge_diff_max,xdipole_diff_max
+    Real(realk)                :: ydipole_diff_max,zdipole_diff_max
+    
+        
+    threshold = SETTING%SCHEME%PARI_THRESHOLD*SETTING%SCHEME%THRESHOLD
+    
+    call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+         nAuxA,startAuxA,endAuxA)
+    call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
+         nAuxB,startAuxB,endAuxB)
 
+    if (iAtomA.EQ.iAtomB) then
+       nAux = nAuxA
+    else
+       nAux = nAuxA + nAuxB
+    endif
+
+    call mem_alloc(alpha_ab,nAux,nRegA,nRegB)
+    call mem_alloc(alphaBeta,nAux,nAux)
+    call ls_dzero(alpha_ab,nAux*nRegA*nRegB)
+    call ls_dzero(alphaBeta,nAux*nAux)
+    
+    ! --- extract (alpha | beta) and (alpha | ab) with 
+    ! --- alpha in {A U B}, a in {A}, b in {B} from the full matrices
+    alpha_ab = 0E0_realk
+    call pari_alphaab(alpha_ab,setting,molecule,atoms_a,iAtomA,iAtomB,&
+         nAuxA,nAuxB,nRegA,nRegB,regCSfull,auxCSfull,lupri,luerr)
+    
+    call pari_alphaBeta(alphaBeta,setting,molecule,atoms_a,iAtomA,iAtomB,&
+         nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
+
+#if 0
+    ! Checking eigenvalues of (alpha|beta) matrices
+    call mem_alloc(copy_alpBeta,nAux,nAux)
+    call ls_dzero(copy_alpBeta,nAux*nAux)
+    call mem_alloc(eigValphaBeta,nAux)
+    call ls_dzero(eigValphaBeta,nAux)
+    copy_alpBeta = alphaBeta
+    call II_get_eigv_square_mat(lupri,luerr,copy_alpBeta,eigValphaBeta,nAux) 
+    !
+    call check_min_max_Array_elem(minTemp,maxTemp,tempCondNum,&
+         eigValphaBeta,nAux,lupri,luerr)
+    minEigV=min(minEigV,minTemp)
+    maxEigV=max(maxEigV,maxTemp)
+    conditionNum = max(conditionNum,tempCondNum)
+    call mem_dealloc(copy_alpBeta)
+    call mem_dealloc(eigValphaBeta)
+#endif
+
+    ! --- Solve only for (alpha|ab) > threshold, 
+    ! --- make first reduction of integrals according to
+    ! --- size of |(alpha|ab)|
+    nRegAB = 0
+    DO iRegB=1,nRegB
+       DO iRegA=1,nRegA
+          maxAbs = abs(alpha_ab(1,iRegA,iRegB))
+          DO iAlpha=2,nAux
+             maxAbs = max(maxAbs,abs(alpha_ab(iAlpha,iRegA,iRegB)))
+          ENDDO
+          IF (maxAbs.GT.threshold) THEN
+             nRegAB = nRegAB + 1
+          ENDIF
+       ENDDO
+    ENDDO
+    IF (nRegAB.GT. 0) THEN
+       call mem_alloc(indexAB,2,nRegAB)
+       IF (setting%scheme%pari_dipole) THEN   
+          ! We need 4 additional dimensions when we constrain the dipole 
+          ! (charge + dipole-{x,y,z})
+          call mem_alloc(lambda_ab,4,nRegAB)
+          call mem_alloc(dipole_ab,nRegA,nRegB,4)
+          !  Calculate regular charges and dipoles 
+          ! (dipole_ab = {<ab>,<xab>,<yab>,<zab>})
+          call pari_dipole_ab(dipole_ab,setting,atoms_a(iAtomA),&
+               atoms_a(iAtomB),nRegA,nRegB,lupri,luerr)
+          nRegAB = nRegAB + 4
+          ! We need one additional dimension when we constrain the charge
+       ELSEIF (setting%scheme%pari_charge) THEN
+          call mem_alloc(lambda_ab,1,nRegAB)
+          call mem_alloc(charge_ab,nRegA,nRegB)
+          ! Calculate regular charges (charge_ab = <ab>)
+          call pari_charge_ab(charge_ab,setting,atoms_a(iAtomA),&
+               atoms_a(iAtomB),nRegA,nRegB,lupri,luerr)
+          nRegAB = nRegAB + 1
+       ENDIF ! if pari_charge or pari_dipole
+
+       call mem_alloc(alpha_ab_red,nAux,nRegAB)
+       alpha_ab_red = 0E0_realk
+       iRegAB = 0
+       DO iRegB=1,nRegB
+          DO iRegA=1,nRegA
+             maxAbs = abs(alpha_ab(1,iRegA,iRegB))
+             DO iAlpha=2,nAux
+                maxAbs = max(maxAbs,abs(alpha_ab(iAlpha,iRegA,iRegB)))
+             ENDDO
+             IF (maxAbs.GT.threshold) THEN
+                iRegAB = iRegAB + 1
+                indexAB(1,iRegAB) = iRegA
+                indexAB(2,iRegAB) = iRegB
+                alpha_ab_red(:,iRegAB) = alpha_ab(:,iRegA,iRegB)
+                ! Put charge_ab, dipole_ab, ... into lambda_ab
+                IF (setting%scheme%pari_dipole) THEN 
+                   lambda_ab(1,iRegAB) = dipole_ab(iRegA,iRegB,1) ! charge
+                   lambda_ab(2,iRegAB) = dipole_ab(iRegA,iRegB,2) ! x-dipole
+                   lambda_ab(3,iRegAB) = dipole_ab(iRegA,iRegB,3) ! y-dipole
+                   lambda_ab(4,iRegAB) = dipole_ab(iRegA,iRegB,4) ! z-dipole
+                ELSEIF (setting%scheme%pari_charge) THEN
+                   lambda_ab(1,iRegAB) = charge_ab(iRegA,iRegB)
+                ENDIF ! if pari_charge or pari_dipole
+             ENDIF
+          ENDDO
+       ENDDO
+       
+       ! --- Calculate the auxiliary charges and dipoles 
+       ! --- (alpha_dipole={ <alpha>, <xalpha>, <yalpha>, <zalpha>})          
+       ! --- and store them in additional columns of alpha_ab_red(:,:)
+       IF (setting%scheme%pari_dipole) THEN
+          call mem_alloc(alpha_dipole,nAux,4)
+          call pari_alpha_dipole(alpha_dipole,setting,molecule,& 
+               atoms_a,iAtomA,iAtomB,nAuxA,nAuxB,lupri,luerr)
+          alpha_ab_red(:,nRegAB)   = alpha_dipole(:,4) ! z-dipole fit
+          alpha_ab_red(:,nRegAB-1) = alpha_dipole(:,3) ! y-dipole fit 
+          alpha_ab_red(:,nRegAB-2) = alpha_dipole(:,2) ! x-dipole fit
+          alpha_ab_red(:,nRegAB-3) = alpha_dipole(:,1) ! charge fit
+       ELSE IF (setting%scheme%pari_charge) THEN
+          ! Calculate the auxiliary charges (alpha_charge=<alpha>)
+          call mem_alloc(alpha_charge,nAux)
+          call mem_alloc(K_red,nRegAB)
+          call pari_alpha_charge(alpha_charge,setting,molecule,atoms_a,&
+               iAtomA,iAtomB,nAuxA,nAuxB,lupri,luerr)
+          alpha_ab_red(:,nRegAB) = alpha_charge
+       ENDIF ! if pari_charge or pari_dipole
+       
+       ! --- Solve the linear system to find the unconstrained 
+       ! --- density-fitting coefficients
+       ! --- c_alpha^ab = (alpha|beta)^-1 (beta|ab) with alpha in AUB
+       ! --- (here the alpha_ab is changed to be c_alpha^ab)
+       call DPOSV('U',nAux,nRegAB,alphaBeta,nAux,alpha_ab_red,nAux,info)
+       If (info.ne. 0) THEN
+          WRITE(LUPRI,'(1X,A,I5)') &
+               'DPOSV error in getPariCoefficients 1/2. Info =',info
+          call LSQUIT('DPOSV error in getPariCoefficients 1/2',lupri)
+       ENDIF
+       
+       ! --- find the Lagrange multiplier(s)
+       IF (setting%scheme%pari_dipole) THEN
+          ! --- Solve the linear system to find the Langrangian multipliers
+          ! --- solve Amat*lambda_ab = B_ab (B_ab stored in lambda_ab)
+          call mem_alloc(Amat,4,4)
+          Amat = 0E0_realk
+          DO ksi1=1,4
+             DO ksi2=1,4
+                DO iAlpha=1,nAux
+                   Amat(ksi1,ksi2) = Amat(ksi1,ksi2) + &
+                        alpha_dipole(iAlpha,ksi1)*&
+                        alpha_ab_red(iAlpha,nRegAB-4+ksi2)
+                ENDDO
+             ENDDO
+          ENDDO
+          DO iregAB=1,nregAB-4
+             DO iAux=1,nAux
+                lambda_ab(1,iRegAB) = lambda_ab(1,iRegAB) &
+                     - alpha_dipole(iAux,1)*alpha_ab_red(iAux,iRegAB)
+                lambda_ab(2,iRegAB) = lambda_ab(2,iRegAB) &
+                     - alpha_dipole(iAux,2)*alpha_ab_red(iAux,iRegAB)
+                lambda_ab(3,iRegAB) = lambda_ab(3,iRegAB) &
+                     - alpha_dipole(iAux,3)*alpha_ab_red(iAux,iRegAB)
+                lambda_ab(4,iRegAB) = lambda_ab(4,iRegAB) &
+                     - alpha_dipole(iAux,4)*alpha_ab_red(iAux,iRegAB)
+             ENDDO
+          ENDDO
+          call DPOSV('U',4,nRegAB-4,Amat,4,lambda_ab,4,info)
+          If (info.ne. 0) THEN
+             WRITE(LUPRI,'(1X,A,I5)') &
+                  'DPOSV error in getPariCoefficients 2/2. Info =',info
+             call LSQUIT('DPOSV error in getPariCoefficients 2/2',lupri)
+          ENDIF
+          
+          ! --- rewrite the charge-/dipole-constrained fitting coefficients  
+          ! --- in terms of the unconstrained fitting coeff. and the 
+          ! --- corrections terms
+          DO iRegAB=1,nRegAB-4
+             DO iAux=1,nAux
+                alpha_ab_red(iAux,iRegAB) = alpha_ab_red(iAux,iRegAB) &
+                     + lambda_ab(1,iRegAB)*alpha_ab_red(iAux,nRegAB-3) &
+                     + lambda_ab(2,iRegAB)*alpha_ab_red(iAux,nRegAB-2) &
+                     + lambda_ab(3,iRegAB)*alpha_ab_red(iAux,nRegAB-1) &
+                     + lambda_ab(4,iRegAB)*alpha_ab_red(iAux,nRegAB)
+             ENDDO
+          ENDDO
+          charge_diff_max = 0E0_realk
+          xdipole_diff_max = 0E0_realk
+          ydipole_diff_max = 0E0_realk
+          zdipole_diff_max = 0E0_realk
+          DO iRegAB = 1,nRegAB-4
+             iRegA = indexAB(1,iRegAB)
+             iRegB = indexAB(2,iRegAB)
+             lambda_ab(1,iRegAB) = dipole_ab(iRegA,iRegB,1)
+             lambda_ab(2,iRegAB) = dipole_ab(iRegA,iRegB,2)
+             lambda_ab(3,iRegAB) = dipole_ab(iRegA,iRegB,3)
+             lambda_ab(4,iRegAB) = dipole_ab(iRegA,iRegB,4)
+             DO iAlpha=1,nAux
+                lambda_ab(1,iRegAB) = lambda_ab(1,iRegAB) &
+                     - alpha_dipole(iAlpha,1)*alpha_ab_red(iAlpha,iRegAB)
+                lambda_ab(2,iRegAB) = lambda_ab(2,iRegAB) &
+                     - alpha_dipole(iAlpha,2)*alpha_ab_red(iAlpha,iRegAB)
+                lambda_ab(3,iRegAB) = lambda_ab(3,iRegAB) &
+                     - alpha_dipole(iAlpha,3)*alpha_ab_red(iAlpha,iRegAB)
+                lambda_ab(4,iRegAB) = lambda_ab(4,iRegAB) &
+                     - alpha_dipole(iAlpha,4)*alpha_ab_red(iAlpha,iRegAB)
+             ENDDO
+             charge_diff_max  = max(charge_diff_max ,abs(lambda_ab(1,iRegAB)))
+             xdipole_diff_max = max(xdipole_diff_max,abs(lambda_ab(2,iRegAB)))
+             ydipole_diff_max = max(ydipole_diff_max,abs(lambda_ab(3,iRegAB)))
+             zdipole_diff_max = max(zdipole_diff_max,abs(lambda_ab(4,iRegAB)))
+          ENDDO
+          IF (charge_diff_max.GE. 1E-13_realk)  &
+               & write(LUPRI,*) &
+               'Maximum error in PARI charge-constraint: ',charge_diff_max
+          IF (xdipole_diff_max.GE. 1E-13_realk) & 
+               & write(LUPRI,*) &
+               'Maximum error in PARI x-dipole-constraint: ',xdipole_diff_max
+          IF (ydipole_diff_max.GE. 1E-13_realk) & 
+               & write(LUPRI,*) &
+               'Maximum error in PARI y-dipole-constraint: ',ydipole_diff_max
+          IF (zdipole_diff_max.GE. 1E-13_realk) & 
+               & write(LUPRI,*) &
+               'Maximum error in PARI z-dipole-constraint: ',zdipole_diff_max
+          !
+          call mem_dealloc(dipole_ab)
+          call mem_dealloc(lambda_ab)
+          call mem_dealloc(Amat)
+          call mem_dealloc(alpha_dipole)
+          nRegAB = nRegAB-4
+          
+       ELSEIF (setting%scheme%pari_charge) THEN
+          ! --- K_red contrains sum_I <I>c_I^{ab} and sum_I <I> k_I 
+          ! --- (needed to obtain lambda_ab)
+          call dgemm('N','N',1,nRegAB,nAux,1E0_realk,alpha_charge,1,&
+               alpha_ab_red,nAux,0E0_realk,K_red,1)
+          lambda_ab(1,:) = lambda_ab(1,:) - K_red(1:nRegAB-1)
+          lambda_ab(1,:) = lambda_ab(1,:) / K_red(nRegAB)
+          ! --- rewrite the charge-/dipole-constrained fitting coefficients  
+          ! --- in terms of the unconstrained fitting coeff. and the
+          ! --- corrections terms
+          DO iRegAB=1,nRegAB-1
+             alpha_ab_red(:,iRegAB) = alpha_ab_red(:,iRegAB) &
+                  + lambda_ab(1,iRegAB)*alpha_ab_red(:,nRegAB)
+          ENDDO
+          charge_diff_max = 0E0_realk
+          DO iRegAB = 1,nRegAB-1
+             iRegA = indexAB(1,iRegAB)
+             iRegB = indexAB(2,iRegAB)
+             lambda_ab(1,iRegAB) = charge_ab(iRegA,iRegB)
+             DO iAlpha=1,nAux
+                lambda_ab(1,iRegAB) = lambda_ab(1,iRegAB) &
+                     - alpha_charge(iAlpha)*alpha_ab_red(iAlpha,iRegAB)
+             ENDDO
+             charge_diff_max = max(charge_diff_max,abs(lambda_ab(1,iRegAB)))
+          ENDDO
+          
+          call mem_dealloc(charge_ab)
+          call mem_dealloc(lambda_ab)
+          call mem_dealloc(K_red)
+          call mem_dealloc(alpha_charge)
+          nRegAB = nRegAB-1
+       ENDIF ! if pari_charge or pari_dipole
+   
+!TODO Fill correctly calpha_ab_block
+       DO iRegAB=1,nRegAB
+          iRegA=indexAB(1,iRegAB)
+          iRegB=indexAB(2,iRegAB)
+          do iAux=1,nAux
+!          iRegAfull = startRegA+iRegA-1
+!          iRegBfull = startRegB+iRegB-1
+!          calpha_ab(iAtomA)%elements(:,iRegA,iRegBfull) = &
+!               alpha_ab_red(1:nAuxA,iRegAB)
+             calpha_ab_block(iAux,iRegA,iRegB) = alpha_ab_red(iAux,iRegAB)
+!          IF (iAtomA.NE.iAtomB) & 
+!               calpha_ab(iAtomB)%elements(:,iRegB,iRegAfull) = &
+!               alpha_ab_red(nAuxA+1:nAuxA+nAuxB,iRegAB)
+          enddo
+       ENDDO
+       call mem_dealloc(indexAB)
+       call mem_dealloc(alpha_ab_red)
+    ENDIF ! IF nRegAB >0
+    call mem_dealloc(alpha_ab)
+    call mem_dealloc(alphaBeta)
+    
+  end subroutine getPariCoefficientsBlock
+
+  SUBROUTINE freePariCoefficients(calpha_ab,nAtoms)
+    implicit none
+    Integer,intent(in)        :: nAtoms
+    type(MAT3D),intent(inout) :: calpha_ab(nAtoms)
+    !
+    Integer iAtom
+    !
+    DO iAtom=1,nAtoms
+       call free_MAT3D(calpha_ab(iAtom))
+    ENDDO
+  END SUBROUTINE freePariCoefficients
+
+  !> \brief Compute GQ_nusigma coefficients for aux. fct. Q centered on atom A for MOPARI-K
+  !> \latexonly
+  !> $G_Q^{\nu \sigma}=(Q | \nu \sigma)-\dfrac{1}{2} \sum_R (Q | R)C_R^{\nu \sigma} $
+  !> \endlatexonly
+  !> \author E. Rebolini
+  !> \date 2015-02
+  !> \param orbitalInfo Information about the molecular orbitals (dimensions)
+  !> \param calpha_ab Array of extracted PARI coefficients centered on each atom
+  !> \param alpha_beta Matrix of Aux 2-center integrals (Q|R)
+  !> \param GQ_nusigma Array of coefficients Q in Aux(A), nu in Reg(A), sigma in Reg(Mol)
+  subroutine getGQcoeff(iAtomA,orbitalInfo,calpha_ab,alpha_beta,GQ_nusigma)
+    implicit none
+    integer,intent(in)                    :: iAtomA
+    type(molecularorbitalinfo),intent(in) :: orbitalInfo
+    type(mat3d),intent(in)                :: calpha_ab(orbitalInfo%nAtoms)
+    real(realk),pointer                   :: alpha_beta(:,:,:,:,:)
+    real(realk),intent(inout)             :: GQ_nusigma&
+         (orbitalInfo%numAtomicOrbitalsAux(iAtomA),&
+         orbitalInfo%numAtomicOrbitalsReg(iAtomA),&
+         orbitalInfo%nBastReg)
+    !Number, start and end indices of Reg basis fct centered on A
+    integer                               :: nRegA,startRegA,endRegA
+    !Number, start and end indices of Aux basis fct centered on A
+    integer                               :: nAuxA,startAuxA,endAuxA
+    !Number, start and end indices of Reg basis fct centered on B
+    integer                               :: nRegB,startRegB,endRegB
+    !Number, start and end indices of Aux basis fct centered on B
+    integer                               :: nAuxB,startAuxB,endAuxB
+    !Total number of Reg and Aux basis functions
+    integer                               :: nBastReg,nBastAux
+    integer                               :: iAtomB,nAtoms
+    !Submatrix of Aux 2-center integrals (Q|R) with Q centered on A
+    real(realk),pointer                   :: extracted_alpha_beta(:,:)
+
+    call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+         nAuxA,startAuxA,endAuxA)
+
+    nAtoms = orbitalInfo%nAtoms
+
+    !Loop over B
+    do iAtomB=1,nAtoms
+       call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
+            nAuxB,startAuxB,endAuxB)
+       call mem_alloc(extracted_alpha_beta,nAuxA,nAuxB)
+       extracted_alpha_beta(1:nAuxA,1:nAuxB) = alpha_beta(startAuxA:endAuxA,&
+            1,startAuxB:endAuxB,1,1)
+
+       !call DGEMM('N','N',nAuxA*nRegA,nBasis,nBasis,1E0_realk,calpha_ab(iAtomA)%elements,&
+       !   &     nAuxA*nRegA,Dfull,nBasis,0E0_realk,dalpha_ab,nAuxA*nRegA)
+
+       call mem_dealloc(extracted_alpha_beta)
+    enddo !Loop B
+  end subroutine getGQcoeff
 
 !> \brief This subroutine constructs the density coefficients centered on one atom A for PARI-K
 !> \latexonly
@@ -427,7 +556,7 @@ Integer,INTENT(IN)                     :: iAtomA
 TYPE(MOLECULARORBITALINFO),INTENT(IN)  :: orbitalInfo
 TYPE(MAT3D),intent(IN)                 :: calpha_ab(orbitalInfo%nAtoms)
 Real(realk),intent(IN)                 :: Dfull(orbitalInfo%nBastReg,orbitalInfo%nBastReg,1)
-Real(realk),intent(INOUT)                :: dalpha_ab(orbitalInfo%numAtomicOrbitalsAux(iAtomA),&
+Real(realk),intent(INOUT)              :: dalpha_ab(orbitalInfo%numAtomicOrbitalsAux(iAtomA),&
      &                                              orbitalInfo%numAtomicOrbitalsReg(iAtomA),&
      &                                              orbitalInfo%nBastReg)
 !
@@ -771,6 +900,11 @@ call mem_dealloc(fXalpha_ad)
 call mem_dealloc(dalpha_da)
 END SUBROUTINE pariK_TwoCenter
 
+!> \brief Compute three-center integrals (alpha|ab) for atomic pair AB
+!>
+!> alpha in Aux(A) U Aux(B)
+!> a in Reg(A)
+!> b in Reg(B)
 SUBROUTINE pari_alphaab(alpha_ab,setting,molecule,atoms,iAtomA,iAtomB,&
      &                  nAuxA,nAuxB,nRegA,nRegB,regCSfull,auxCSfull,lupri,luerr)
 implicit none
@@ -791,6 +925,7 @@ INTEGER                    :: atomsAB(2),dummyAtoms(1)
 !set threshold
 SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%PARI_THRESHOLD
 
+!build fragment molecule composed only of atoms A and B
 CALL pariSetPairFragment(AB,ABtarget,setting%basis(1)%p,molecule,atoms,&
      molecule%nAtoms,iAtomA,iAtomB,nAuxA,nAuxB,nAux,lupri)
 
@@ -864,6 +999,7 @@ call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,R
 CALL retrieve_Output(lupri,setting,alpha_cd,.FALSE.)
 
 END SUBROUTINE pari_alphacd_full
+
 
 SUBROUTINE pari_alphaBeta(alphaBeta,setting,molecule,atoms,iAtomA,iAtomB,&
      &                    nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
@@ -1122,7 +1258,7 @@ TYPE(moleculeinfo),intent(in) :: molecule
 TYPE(moleculeinfo),pointer    :: AB
 TYPE(moleculeinfo),target     :: ABtarget
 Integer,intent(in)            :: nAtoms,iAtomA,iAtomB,nAuxA,nAuxB,lupri
-Integer,intent(inout)           :: nAux
+Integer,intent(inout)         :: nAux
 TYPE(moleculeinfo),target     :: atoms(nAtoms)
 
 Logical                    :: sameAtoms
