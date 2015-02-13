@@ -569,8 +569,9 @@ contains
     real(realk), pointer :: X3ijkn(:,:,:,:) ! sum_pq <ij|f12|mc> * <mc|f12|kn> 
     real(realk), pointer :: X3ijnk(:,:,:,:)  
  
-!    real(realk), pointer :: Rijmc(:,:,:,:)  ! <ij|f12|ma'>
-    type(tensor) :: Rijmc  ! <ij|f12|ma'>
+    !real(realk), pointer :: Rijmc(:,:,:,:)  ! <ij|f12|ma'>
+    !type(tensor) :: Rijmc  ! <ij|f12|ma'>
+    real(realk), pointer :: Rijmc(:,:,:,:) 
     real(realk), pointer :: Rmckn(:,:,:,:)  
     real(realk), pointer :: Rmcnk(:,:,:,:)  
        
@@ -585,20 +586,22 @@ contains
     ncabsMO = size(MyFragment%Ccabs,2) 
 
     dims = [noccEOS, noccEOS, noccAOS, ncabsMO]
-    call tensor_init(Rijmc,dims,4)
-!    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS, ncabsMO)
+!    call tensor_init(Rijmc,dims,4)
+    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS, ncabsMO)
     call mem_alloc(Rmckn,  noccAOS, ncabsMO, noccEOS, noccAOS)
     call mem_alloc(X3ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
 
     !(Note INTSPEC is always stored as (2,4,1,3) )    
-    call get_mp2f12_MO_PDM(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'mcim','CRRRG',Rmckn)
      
     !> Creating the X3ijkn
     m = noccEOS*noccEOS   ! <ij R mc> <mc R kn> = <m X3 n>
     k = noccAOS*ncabsMO
     n = noccEOS*noccAOS
-    call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc%elm1,m,Rmckn,k,0.0E0_realk,X3ijkn,m)
+    
+    call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc,m,Rmckn,k,0.0E0_realk,X3ijkn,m)
+    !call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc%elm1,m,Rmckn,k,0.0E0_realk,X3ijkn,m)
 
     call mem_dealloc(Rmckn)
     call mem_alloc(Rmcnk,  noccAOS, ncabsMO, noccAOS, noccEOS)
@@ -610,10 +613,12 @@ contains
     m = noccEOS*noccEOS   ! <ij R mc> <mc R nk> = <m X3 n>
     k = noccAOS*ncabsMO
     n = noccEOS*noccAOS
-    call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc%elm1,m,Rmcnk,k,0.0E0_realk,X3ijnk,m)
+    
+    call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc,m,Rmcnk,k,0.0E0_realk,X3ijnk,m)
+    !call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc%elm1,m,Rmcnk,k,0.0E0_realk,X3ijnk,m)
 
-    call tensor_free(Rijmc)
-!    call mem_dealloc(Rijmc)
+    !call tensor_free(Rijmc)
+    call mem_dealloc(Rijmc)
     call mem_dealloc(Rmcnk)
 
     call mem_alloc(X3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)

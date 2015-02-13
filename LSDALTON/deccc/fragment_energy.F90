@@ -37,7 +37,9 @@ module fragment_energy_module
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
        & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
-
+#ifdef MOD_UNRELEASED
+  use ccsd_gradient_module
+#endif
 public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
      & pair_driver,atomic_driver_advanced,plot_pair_energies,&
      & Full_DECMP2_calculation,estimate_energy_error
@@ -261,8 +263,10 @@ contains
     type(decfrag), intent(in),optional :: Fragment1, Fragment2
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(tensor) :: t1, ccsdpt_t1, m1
+    type(tensor) :: t1, ccsdpt_t1, m1, eta
     type(tensor) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
+    type(tensor) :: t2occp,t2virtp
+    type(tensor) :: m2occ,m2virt
     type(tensor) :: t2_occEOS
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
@@ -295,24 +299,31 @@ contains
 
     case(MODEL_MP2) ! MP2 calculation
 
-       if(DECinfo%first_order) then  ! calculate also MP2 density integrals
+       if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
+          ! calculate also MP2 density integrals
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
-       else ! calculate only MP2 energy integrals and MP2 amplitudes
+       else 
+          ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
 #ifdef MOD_UNRELEASED
        ! MP2-F12 Code
-       if(DECinfo%F12) then    
+       MP2F12: if(DECinfo%F12) then    
           if(pair) then
-             call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
-                  &  Fragment1, Fragment2)
+             if(MyFragment%isopt) then
+                call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
+                     &  Fragment1, Fragment2)
+             end if
           else
-             call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
+             ! Calculate F12 only for optimized fragment or if it has been requested by input
+             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
+             end if
           end if
-             !> Free cabs after each calculation
-             call free_cabs()
-       endif
+       !> Free cabs after each calculation
+       call free_cabs()
+    endif MP2F12
 #endif
 
     case(MODEL_RIMP2) ! RIMP2 calculation
@@ -331,6 +342,10 @@ contains
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order.or.DECinfo%CCSDmultipliers) then  
           call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
+          !extract the indices here for later use in CCSD first order properties
+          !note: the t2occp and t2virtp are the t2 without further addmixture of t1!
+          call tensor_extract_eos_indices(m2,MyFragment,tensor_occEOS=m2occ,tensor_virtEOS=m2virt)
+          call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2occp,tensor_virtEOS=t2virtp)
        else
 #endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
@@ -344,9 +359,9 @@ contains
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
-          !          call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
-          call tensor_free(m2)
-          call tensor_free(m1)
+          !call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
+          !call tensor_free(m2)
+          !call tensor_free(m1)
        endif
 #endif
 
@@ -442,14 +457,25 @@ contains
 
 #ifdef MOD_UNRELEASED
        ! CCSD-F12 Code
-       if(DECinfo%F12) then
+       CCSDF12: if(DECinfo%F12) then
+
           call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2_occEOS)
-          call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
+          if(pair) then
+             if(MyFragment%isopt) then
+                call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
+             end if
+          else
+             ! Calculate F12 only for optimized fragment or if it has been requested by input
+             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
+             end if
+          end if
 
           !> Free cabs after each calculation
           call tensor_free(t2_occEOS)
           call free_cabs()
-       endif
+
+       endif CCSDF12
 #endif
        ! free vovo integrals
        call tensor_free(VOVO)
@@ -481,7 +507,7 @@ contains
 
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if(DECinfo%frozencore .and. DECinfo%first_order) then
+    if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
 
        call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
        if(pair) then
@@ -557,7 +583,22 @@ contains
     if(DECinfo%first_order) then
 #ifdef MOD_UNRELEASED
        if(DECinfo%ccmodel == MODEL_CCSD)then
-          !first order properties
+         if(pair) then
+           ! Pair fragment
+           call pair_calculate_CCSDgradient_driver&
+                             &(Fragment1,Fragment2,MyFragment,t2occp,t2virtp,m2occ,m2virt,m1,&
+                                       &VOOO,VOVV,VOVOocc,VOVOvirt,grad)
+           call tensor_free(m2occ)
+           call tensor_free(m2virt) 
+           
+         else
+           ! Atomic fragment
+           call single_calculate_CCSDgradient_driver&
+                             &(MyFragment,t2occp,t2virtp,m2occ,m2virt,m1,&
+                                       &VOOO,VOVV,VOVOocc,VOVOvirt,grad)
+           call tensor_free(m2occ)
+           call tensor_free(m2virt)
+         endif
        endif
 #endif
        if(DECinfo%ccmodel == MODEL_MP2)then
@@ -570,8 +611,10 @@ contains
              call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,&
                   & VOVV,VOVOocc,VOVOvirt,grad)
           end if
-          call tensor_free(VOOO)
-          call tensor_free(VOVV)
+          if(.not. DECinfo%unrelaxed) then
+             call tensor_free(VOOO)
+             call tensor_free(VOVV)
+          end if
        end if
     end if
     !
@@ -2250,6 +2293,7 @@ contains
            &AtomicFragment%ccmodel,'Fragment optmization')
         return
      end if
+
      IF(OrbDistanceSpec)THEN
         call mem_alloc(SortedDistanceTableOrbAtomOcc,nocc)
         call mem_alloc(OrbOccDistTrackMyAtom,nocc)
@@ -2535,6 +2579,9 @@ contains
      ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
      MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
      ! call lsquit('TEST DONE',-1)
+
+      ! Fragment has been optimized
+      AtomicFragment%isopt = .true.
 
   end subroutine optimize_atomic_fragment
 
@@ -4096,6 +4143,7 @@ contains
     if(freebasisinfo) then
        call atomic_fragment_free_basis_info(AtomicFragment)
     end if
+    AtomicFragment%isopt=.true.
 
   end subroutine fragopt_include_fullmolecule
 
@@ -4803,6 +4851,8 @@ contains
       logical :: full_mol
       !> Timings for frag opt
       real(realk), pointer :: times_fragopt(:)  
+      !> number of core orbitals
+      integer :: nc,idx,i,a
 
 
       !==================================================================================!
@@ -4860,10 +4910,57 @@ contains
       call mem_alloc(exp_list_occ,no)
       call mem_alloc(exp_list_vir,nv)
 
+
+      !Define the EOS spaces in the fragment to be able to calculate priority lists
+      !============================================================================
+
+      if(DECinfo%frozencore)then
+         nc = MyMolecule%ncore
+      else
+         nc = 0
+      endif
+
+      ! Occ orbitals not in the core
+      idx = 0
+      do i=nc+1,MyMolecule%nocc
+         if(OccOrbitals(i)%centralatom == MyAtom)then
+            idx = idx + 1
+         endif
+      enddo
+
+      AtomicFragment%noccEOS   = idx
+      AtomicFragment%nunoccEOS = nvir_per_atom(MyAtom)
+      call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS)
+      call mem_alloc(AtomicFragment%unoccEOSidx,AtomicFragment%nunoccEOS)
+
+      idx = 1
+      do i=nc+1,MyMolecule%nocc
+         if(OccOrbitals(i)%centralatom == MyAtom)then
+            AtomicFragment%occEOSidx(idx) = i
+            idx = idx + 1
+         endif
+      enddo
+      if(idx-1/=AtomicFragment%noccEOS)then
+         call lsquit("ERROR finding the right amount of occupied EOS orbitals",-1)
+      endif
+
+      idx = 1
+      do a=1,MyMolecule%nunocc
+         if(VirOrbitals(a)%centralatom == MyAtom)then
+            AtomicFragment%unoccEOSidx(idx) = a
+            idx = idx + 1
+         endif
+      enddo
+      if(idx-1/=AtomicFragment%nunoccEOS)then
+         call lsquit("ERROR finding the right amount of occupied EOS orbitals",-1)
+      endif
+
+
       call define_frag_expansion(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
          & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
 
-
+      call mem_dealloc(AtomicFragment%occEOSidx)
+      call mem_dealloc(AtomicFragment%unoccEOSidx)
 
       !==================================================================================!
       !                               Initialize Fragment                                !
@@ -4965,6 +5062,9 @@ contains
       ! Restore the original CC model 
       ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
+
+      ! Fragment has been optimized
+      AtomicFragment%isopt = .true.
 
    end subroutine optimize_atomic_fragment_CLEAN
 

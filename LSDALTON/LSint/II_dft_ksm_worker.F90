@@ -108,8 +108,8 @@ REAL(REALK),intent(in) :: GAOMAX
 REAL(REALK) :: VX(5),DFTENE
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
-#ifdef VAR_XCFUN
 REAL(REALK),pointer :: VXC(:,:)
+#ifdef VAR_XCFUN
 REAL(REALK),pointer :: XCFUNINPUT(:,:),XCFUNOUTPUT(:,:)
 INTEGER,pointer     :: IFULL(:)
 INTEGER             :: NPNT

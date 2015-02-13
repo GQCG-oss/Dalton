@@ -15,7 +15,7 @@ module tensor_interface_module
   use matrix_module
   use dec_workarounds_module
   use tensor_algebra_dil
-
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
 !Tensor algebra (`DIL backend):
   public INTD,INTL        !integer sizes for DIL tensor algebra (default, long)
   public MAX_TENSOR_RANK  !max allowed tensor rank for DIL tensor algebra
@@ -40,6 +40,7 @@ module tensor_interface_module
   public dil_tensor_init
   public dil_tensor_norm1
 ! public merge_sort_real8 !`DIL: remove
+#endif
 
   !This defines the public interface to the tensors
   !The tensor type itself
@@ -488,6 +489,7 @@ contains
      integer:: i,j,k
      logical:: contraction_mode
      integer:: rorder(C%mode)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
      !internal variables (DIL)
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -496,6 +498,7 @@ contains
      integer(INTD):: tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+#endif
      character(26), parameter:: elett='abcdefghijklmnopqrstuvwxyz'
 
      call time_start_phase( PHASE_WORK )
@@ -616,46 +619,50 @@ contains
       end select
 
      else !DIL backend (MPI-3 only)
- !Get the symbolic tensor contraction pattern:
-      tcs(1:2)='D('; tcl=2; i1=C%mode
-      do i0=1,i1; tcs(tcl+1:tcl+2)=elett(i0:i0)//','; tcl=tcl+2; enddo
-      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-      tcs(tcl+1:tcl+4)='+=L('; tcl=tcl+4; i2=0
-      do i0=1,A%mode
-       i2=i2+1; i3=iabs(tcm(i2))
-       if(tcm(i2).gt.0) then !uncontracted index
-        tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
-       elseif(tcm(i2).lt.0) then !contracted index
-        tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
-       else
-        call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
-       endif
-      enddo
-      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-      tcs(tcl+1:tcl+3)='*R('; tcl=tcl+3
-      do i0=1,B%mode
-       i2=i2+1; i3=iabs(tcm(i2))
-       if(tcm(i2).gt.0) then !uncontracted index
-        tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
-       elseif(tcm(i2).lt.0) then !contracted index
-        tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
-       else
-        call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
-       endif
-      enddo
-      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-      if(DIL_DEBUG) write(*,*) '#DEBUG(DIL): symbolic: '//tcs(1:tcl)
- !Set tensor arguments:
-      call dil_clean_tens_contr(tch)
-      
- !Set the formal tensor contraction specification:
-      
- !Perform the tensor contraction:
-      
-     endif
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+        !Get the symbolic tensor contraction pattern:
+        tcs(1:2)='D('; tcl=2; i1=C%mode
+        do i0=1,i1; tcs(tcl+1:tcl+2)=elett(i0:i0)//','; tcl=tcl+2; enddo
+           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+           tcs(tcl+1:tcl+4)='+=L('; tcl=tcl+4; i2=0
+           do i0=1,A%mode
+              i2=i2+1; i3=abs(tcm(i2))
+              if(tcm(i2).gt.0) then !uncontracted index
+                 tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
+                 elseif(tcm(i2).lt.0) then !contracted index
+                 tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
+              else
+                 call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
+              endif
+           enddo
+           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+           tcs(tcl+1:tcl+3)='*R('; tcl=tcl+3
+           do i0=1,B%mode
+              i2=i2+1; i3=abs(tcm(i2))
+              if(tcm(i2).gt.0) then !uncontracted index
+                 tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
+                 elseif(tcm(i2).lt.0) then !contracted index
+                 tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
+              else
+                 call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
+              endif
+           enddo
+           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+           if(DIL_DEBUG) write(*,*) '#DEBUG(DIL): symbolic: '//tcs(1:tcl)
+           !Set tensor arguments:
+           call dil_clean_tens_contr(tch)
 
-     call time_start_phase( PHASE_WORK )
-  end subroutine tensor_contract
+           !Set the formal tensor contraction specification:
+
+           !Perform the tensor contraction:
+
+#else
+           call lsquit("ERROR(tensor_contract_simple): DIL backend requires Fortran 2003/2008",-1)
+#endif
+        endif
+
+        call time_start_phase( PHASE_WORK )
+     end subroutine tensor_contract
 
   subroutine tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
      implicit none

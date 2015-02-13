@@ -59,10 +59,6 @@ contains
 
     ! Number of subsystems
     nsub = lsfull%input%molecule%nSubSystems
-    if(nsub /= 2) then
-       print *, 'Number of subsystems = ',nsub
-       call lsquit('snoop_driver: Only implemented for two subsystems!',-1)
-    end if
 
     if(DECinfo%SNOOPort) then
        ! SNOOP with orthogonality constraint and iteration SNOOP HF cycles
@@ -258,22 +254,26 @@ contains
             & Cvirtsnoop(this),MyMoleculeFULL)
 
        ! Determine orbitals for correlated SNOOP monomer calculations
-       if(DECinfo%SNOOPlocalize) then
-          ! Localize orbitals
-          ! -----------------
-          nMO = Coccsnoop(this)%ncol + Cvirtsnoop(this)%ncol
-          call mat_init(C,nbasis,nMO)
-          call collect_MO_coeff_in_one_matrix(Coccsnoop(this),Cvirtsnoop(this),C) 
-          call optimloc(C,noccsnoop,config%decomp%cfg_mlo_m,lssnoop,&
-               & config%davidOrbLoc)
-          call partition_MO_coeff_into_two_matrices(C,Coccsnoop(this),Cvirtsnoop(this))
-          call mat_free(C)
-       else
-          ! Rotate subsystem orbitals using natural connection such that they are as
-          ! close as possible to the full orbitals in a least-squares sense.
-          call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,this,&
-               & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop(this), Cvirtsnoop(this))
-       end if
+
+       ! SNOOP-DEC stuff
+       DECcalc: if(.not. DECinfo%full_molecular_cc) then
+          if(DECinfo%SNOOPlocalize) then
+             ! Localize orbitals
+             ! -----------------
+             nMO = Coccsnoop(this)%ncol + Cvirtsnoop(this)%ncol
+             call mat_init(C,nbasis,nMO)
+             call collect_MO_coeff_in_one_matrix(Coccsnoop(this),Cvirtsnoop(this),C) 
+             call optimloc(C,noccsnoop,config%decomp%cfg_mlo_m,lssnoop,&
+                  & config%davidOrbLoc)
+             call partition_MO_coeff_into_two_matrices(C,Coccsnoop(this),Cvirtsnoop(this))
+             call mat_free(C)
+          else
+             ! Rotate subsystem orbitals using natural connection such that they are as
+             ! close as possible to the full orbitals in a least-squares sense.
+             call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,this,&
+                  & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop(this), Cvirtsnoop(this))
+          end if
+       end if DECcalc
 
        ! Correlation energy for subsystem
        if(.not. DECinfo%SNOOPjustHF) then
@@ -586,6 +586,7 @@ contains
 
     ! Solver information
     dodiis=.true.
+    if(DECinfo%SNOOPMaxDIIS==0) dodiis=.false.
     convthr = DECinfo%SNOOPTHR      ! The convergence threshold
     converged=.false.
     prev_norm = huge(1.0_realk)

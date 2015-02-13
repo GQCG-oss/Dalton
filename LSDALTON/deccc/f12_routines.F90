@@ -1329,9 +1329,6 @@ contains
     call mat_transpose(n31,n32, 1.0E0_realk,C3, 0.0E0_realk,C3T)
     call mat_transpose(n11,n12, 1.0E0_realk,C1, 0.0E0_realk,C1T)
 
-!!$    !For debugging purposes    
-    !call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
-    !call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
 
     ! ************************
     ! Determine AO batch sizes
@@ -1359,6 +1356,10 @@ contains
           BatchType(i) = 'C'
        endif
     enddo
+
+    !For debugging purposes    
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
 
     IF(DECinfo%useIchor)THEN
        iprint = 0           !print level for Ichor Integral code
@@ -2128,7 +2129,7 @@ contains
     KB = 1.0E-3_realk
     frac = 0.9E0_realk   
     Maxstepmem = 0.0E0_realk
-    UNIT = KB
+    UNIT = GB
 
     dimAlpha = n11
     dimGamma = n31
@@ -2136,12 +2137,15 @@ contains
     MemAvailable = 0.0E0_realk   
     call get_currently_available_memory(MemAvailable)
     MemAvailable = MemAvailable*1.0E9_realk !In bytes
-   
-!!$    if(DECinfo%F12DEBUG) then
-!!$       print *, "----------------------------------"
-!!$       print *, " Inside get_max_batchsize summary "
-!!$       print *, "----------------------------------"
-!!$       print *, "MemAvailable: ", MemAvailable*UNIT
+  
+    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+ 
+    if(DECinfo%F12DEBUG) then
+          print *, "----------------------------------"
+          print *, " Inside get_max_batchsize summary "
+          print *, "----------------------------------"
+          print *, "MemAvailable: ", MemAvailable*UNIT
+          print *, "MAXstepmem: ", MAXstepmem*UNIT
 !!$       print *, "n11: ", n11
 !!$       print *, "n21: ", n21
 !!$       print *, "n31: ", n31
@@ -2152,14 +2156,13 @@ contains
 !!$       print *, "n32: ", n32
 !!$       print *, "n42: ", n42
 !!$       print *, "----------------------------------"
-!!$    endif
+    endif
     
 !!$    if(DECinfo%F12DEBUG) then
 !!$       print *, "call get_maxstepmem..."
 !!$       print *, "dimAlpha: ", dimAlpha
 !!$       print *, "dimGamma: ", dimGamma
 !!$    endif
-
 
     if(DECinfo%F12DEBUG) then
        print *, "minAlpha: ", minAlpha
@@ -2442,12 +2445,12 @@ contains
        enddo
     enddo
 
-    !print *, "norm2(Fia) 1:", norm2(Fia)
+    !print *, "norm2D(Fia) 1:", norm2D(Fia)
 
     !> matB = C1^T matA C2
     !dec_diff_basis_transform1(nA,nB1,nB2,C1,C2,matA,matB)
     !call dec_diff_basis_transform1(nocc*ncabs,nocc,ncabs,C_ij,C_cd,Fic_real,Fia)
-    !print *, "norm2(Fia) 2:", norm2(Fia)
+    !print *, "norm2D(Fia) 2:", norm2D(Fia)
 
 
     !PRINT *, "norm2(Fic):",  norm2(Fic_real)  
@@ -2534,9 +2537,9 @@ contains
     call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
     call solve_eigenvalue_problem_unitoverlap(ncabsAO,Fcd_real,eps_c,C_cd)    
 
-    print *, "norm2(Fcd_real):",  norm2(Fcd_real)  
-    print *, "norm2(C_cd):",  norm2(C_cd)
-    print *, "norm2(eps_c):", norm2(eps_c)    
+    !print *, "norm2D(Fcd_real):",  norm2D(Fcd_real)  
+    !print *, "norm2D(C_cd):",  norm2D(C_cd)
+    !print *, "norm2D(eps_c):", norm2D(eps_c)    
 
     !Fij
     call mem_alloc(Fij_real,nocc,nocc)
@@ -2547,9 +2550,9 @@ contains
   
     call solve_eigenvalue_problem_unitoverlap(nocc,Fij_real,eps_i,C_ij)     
 
-    print *, "norm2(Fij_real):",  norm2(Fij_real)  
-    print *, "norm2(C_ij):",      norm2(C_ij)
-    print *, "norm2(eps_i):",     norm2(eps_i)   
+    !print *, "norm2D(Fij_real):",  norm2D(Fij_real)  
+    !print *, "norm2D(C_ij):",      norm2D(C_ij)
+    !print *, "norm2D(eps_i):",     norm2D(eps_i)   
 
     !Fic
     call mem_alloc(Fic_real,nocc,ncabsAO)

@@ -1,5 +1,5 @@
 /*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
+C...   Copyright (c) 2015 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
