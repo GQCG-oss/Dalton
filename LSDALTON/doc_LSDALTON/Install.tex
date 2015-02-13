@@ -1,6 +1,6 @@
 \chapter{Installation of \lsdalton}\label{ch:install}
 
-\section{Installation instructions}\index{installation instructions}
+\section{Installation instructions}\index{installation instructions}\label{sec:cmake-installation}
 
 {\lsdalton} is configured using CMake, typically via the setup script,
 and subsequently compiled using make or gmake.
@@ -29,7 +29,7 @@ file obtainable from
 the Dalton homepage at \verb|http://www.daltonprogram.org|.
 After you have downloaded the file extract it with:
 \begin{verbatim}
-tar xvzf DALTON-2014.*-Source.tar.gz
+tar xvzf DALTON-2015.*-Source.tar.gz
 \end{verbatim}
 Most of the extracted subdirectories under \verb|LSDALTON/*| contain source code for the different
 sections constituting the {\lsdalton} program.
@@ -47,8 +47,8 @@ a directory containing all the basis sets supplied with this distribution (\verb
 \index{installation!Makefile.config}
 
 The {\lsdalton} program can, in addition to the standard 
-standard CMake method (see section \cite{installation instructions}), be 
-built using a Makefile.
+standard CMake method (see section \ref{sec:cmake-installation}), be
+built using a distributed Makefile and configure script.
 
 The main \verb|.../LSDALTON| directory contains a shell script (\verb|configure|).
 Based on the automatic detection of the architecture, the
