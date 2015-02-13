@@ -5,8 +5,8 @@ module cc_tools_module
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
 #ifdef VAR_MPI
 #ifdef VAR_OMP
-!#define DIL_ACTIVE
-!#define DIL_DEBUG_ON
+#define DIL_ACTIVE
+#define DIL_DEBUG_ON
 #endif
 #endif
 #endif

@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/02/02 (started 2014/09/01).
+!REVISION: 2015/02/13 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -116,7 +116,7 @@
         integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device (defaults to screen)
         integer(INTD), public:: DIL_CONS_OUT=6                          !console output device for external use (defaults to screen)
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
-        logical, public:: DIL_DEBUG=.false.                              !debugging
+        logical, public:: DIL_DEBUG=.true.                              !debugging
         integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC
@@ -4363,9 +4363,10 @@
 
         if(present(ierr)) ierr=0
         if(CONS_OUT_SAVED.le.0) then
-           !PETT 2 DIL: FIXME: PLEASE CHECK PRECOMPILER FLAGS
 #ifdef VAR_MPI
          impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
+#else
+         impir_world=0; impir=0
 #endif
          deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
          open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN')
@@ -4385,9 +4386,10 @@
 
         if(present(ierr)) ierr=0
         if(CONS_OUT_SAVED.gt.0) then
-           !PETT 2 DIL: FIXME: PLEASE CHECK PRECOMPILER FLAGS
 #ifdef VAR_MPI
          impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
+#else
+         impir_world=0; impir=0
 #endif
          write(CONS_OUT,'("### DEBUG END: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
          CONS_OUT=CONS_OUT_SAVED; DIL_CONS_OUT=CONS_OUT_SAVED; CONS_OUT_SAVED=0; close(DIL_DEBUG_FILE)
