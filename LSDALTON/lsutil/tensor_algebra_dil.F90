@@ -145,11 +145,7 @@
          integer(INTD), private:: rank                                !tensor rank (number of dimensions)
          integer(INTD), private:: dims(1:MAX_TENSOR_RANK)             !tensor dimension extents: dims(1:rank)
          integer(INTD), private:: base(1:MAX_TENSOR_RANK)             !offsets specifying a subtensor (similar to cspec%bases)
-#ifdef FORTRAN_2008
          real(realk), pointer, contiguous, private:: elems(:)=>NULL() !tensor elements (1:*)
-#else
-         real(realk), pointer, private:: elems(:)=>NULL() !tensor elements (1:*)
-#endif
         end type tens_loc_t
  !Tensor argument:
         type, private:: tens_arg_t
@@ -197,11 +193,7 @@
  !Argument buffer:
         type, private:: arg_buf_t
          integer(INTL), private:: buf_vol=0_INTL                        !buffer volume (number of elements)
-#ifdef FORTRAN_2008
          real(realk), pointer, contiguous, private:: buf_ptr(:)=>NULL() !buffer pointer
-#else
-         real(realk), pointer, private:: buf_ptr(:)=>NULL() !buffer pointer
-#endif
         end type arg_buf_t
  !Device buffers:
         type, private:: dev_buf_t
