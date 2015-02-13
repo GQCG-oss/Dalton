@@ -955,7 +955,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   !############################################################################
 
   write(lupri,*) '---------------------------------------------------------'
-  write(lupri,*) 'NUCLEA MAGNETIC TENSOR (INAS)                                  '
+  write(lupri,*) 'NUCLEA MAGNETIC TENSOR (INASHIELD)                                  '
   write(lupri,*) '---------------------------------------------------------'
 
 
