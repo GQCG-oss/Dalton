@@ -854,7 +854,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   subroutine get_ccsd_residual_integral_driven(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
         ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
-!`DIL:
+!`DIL backend (depends on Fortran 2003/2008, MPI, OMP):
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
 #ifdef VAR_MPI
 #ifdef VAR_OMP
@@ -1022,6 +1022,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer, parameter :: bs = 1
 #ifdef DIL_ACTIVE
 !{`DIL:
+     integer:: nors,nvrs
+     type(tensor):: tpld,tmid
      logical:: DIL_LOCK_OUTSIDE !controls Patrick's outside locks in Scheme 1
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -1427,8 +1429,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ------------------------
 
      !get the t+ and t- for the Kobayshi-like B2 term
-     if(scheme==1) then
-      !`DIL: Create distributed arrays
+     if(scheme==1) then !`DIL: Create TPL & TMI
+#ifdef DIL_ACTIVE
+      nors = get_split_scheme_0(nor)
+      nvrs = get_split_scheme_0(nvr)
+      call tensor_ainit(tpld,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
+      call tensor_ainit(tmid,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
+#else
+      call lsquit('ERROR(ccsd_residual_integral_driven): This part (1) of Scheme 1 requires DIL backend!',-1)
+#endif
      else
       call mem_alloc( tpl, int(i8*nor*nvr,kind=long), simple = .true. )
       call mem_alloc( tmi, int(i8*nor*nvr,kind=long), simple = .true. )
@@ -1439,8 +1448,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !#endif
 
      !if I am the working process, then
-     if(scheme==1) then
-      !`DIL: define distributed TPL and TMI from distributed T2
+     if(scheme==1) then !`DIL: Define TPL & TMI
+#ifdef DIL_ACTIVE
+      call get_tpl_and_tmi(t2,tpld,tmid)
+      if(DIL_DEBUG)then
+       call print_norm(tpld," NORM(tpl)   :",print_on_rank=0)
+       call print_norm(tmid," NORM(tmi)   :",print_on_rank=0)
+      endif
+#else
+      call lsquit('ERROR(ccsd_residual_integral_driven): This part (2) of Scheme 1 requires DIL backend!',-1)
+#endif
      else
       call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
       if(master.and.print_debug)then
@@ -1793,6 +1810,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
+#else
+         call lsquit('ERROR(ccsd_residual_integral_driven): This part (3) of Scheme 1 requires DIL backend!',-1)
 #endif
         elseif(scheme==2) then
 #ifdef VAR_MPI
@@ -1985,6 +2004,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: TC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Tens contr failed!',-1)
+#else
+               call lsquit('ERROR(ccsd_residual_integral_driven): This part (4) of Scheme 1 requires DIL backend!',-1)
 #endif
               endif
               if(scheme/=1) call lsmpi_poke()
@@ -2055,6 +2076,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: TC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Tens contr failed!',-1)
+#else
+               call lsquit('ERROR(ccsd_residual_integral_driven): This part (5) of Scheme 1 requires DIL backend!',-1)
 #endif
               endif
               if(scheme/=1) call lsmpi_poke()
@@ -2109,10 +2132,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  !the gamma batch, chose the trafolength as minimum of alpha batch-length
                  !and the difference between first element of alpha batch and last element
                  !of gamma batch
-                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3,tpl,tmi
-                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
-                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
-
+                 if(scheme /= 1) then
+                  call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
+                        &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
+                        &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
+                 else !`DIL: Scheme 1: TPL and TMI are distributed tensors
+#ifdef DIL_ACTIVE
+                  call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpld,tmid,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
+                        &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,DIL_LOCK_OUTSIDE,&
+                        &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
+#else
+                  call lsquit('ERROR(ccsd_residual_integral_driven): This part (6) of Scheme 1 requires DIL backend!',-1)
+#endif
+                 endif
 
                  !start a new timing phase after these terms
                  call time_start_phase(PHASE_WORK)
@@ -2189,6 +2221,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: TC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Tens contr failed!',-1)
+#else
+               call lsquit('ERROR(ccsd_residual_integral_driven): This part (7) of Scheme 1 requires DIL backend!',-1)
 #endif
               end select
 #ifdef DIL_ACTIVE
@@ -2250,6 +2284,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
             call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: TC: ',infpar%lg_mynum,errc
             if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Tens contr failed!',-1)
+#else
+            call lsquit('ERROR(ccsd_residual_integral_driven): This part (8) of Scheme 1 requires DIL backend!',-1)
 #endif
            else !scheme 3,4,0
               call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
