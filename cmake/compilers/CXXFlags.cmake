@@ -1,4 +1,3 @@
-if (NOT DEFINED DEFAULT_CXX_FLAGS_SET)
 if (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS         "-g -Wall -fno-rtti -fno-exceptions")
     if(NOT DEVELOPMENT_CODE)
@@ -49,4 +48,3 @@ if(DEFINED EXTRA_CXX_FLAGS)
 endif()
 
 save_compiler_flags(CXX)
-endif ()

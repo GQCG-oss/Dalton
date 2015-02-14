@@ -1,5 +1,3 @@
-if(NOT DEFINED DEFAULT_C_FLAGS_SET)
-
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS         "-std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64 -ffloat-store")
     if(NOT DEVELOPMENT_CODE)
@@ -84,4 +82,3 @@ if(DEFINED EXTRA_C_FLAGS)
 endif()
 
 save_compiler_flags(C)
-endif()
