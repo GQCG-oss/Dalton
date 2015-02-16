@@ -100,6 +100,7 @@ contains
     DECinfo%CCSD_NO_DEBUG_COMM   = .true.
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
+    DECinfo%simple_multipler_residual = .true.
     DECinfo%use_pnos             = .false.
     DECinfo%pno_S_on_the_fly     = .false.
     DECinfo%noPNOtrafo           = .false.
@@ -630,6 +631,7 @@ contains
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
        case('.CCSDNODYNAMIC_LOAD');       DECinfo%dyn_load             = .false.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.DEBUG_MULTIPLIERS_DIRECT'); DECinfo%simple_multipler_residual = .false.
        case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
 #endif
@@ -924,7 +926,7 @@ contains
 
     MP2gradientCalculation: if(DECinfo%first_order) then
 
-       if(DECinfo%full_molecular_cc) then
+       if(DECinfo%full_molecular_cc.and.DECinfo%ccmodel==MODEL_MP2) then
           call lsquit('Full calculation for MP2 gradient is implemented via the &
                & .SimulateFull keyword', DECinfo%output)
        end if

@@ -1250,7 +1250,11 @@
         integer(INTD):: flags
         integer(C_SIZE_T):: csize
         type(C_PTR):: caddr
+#ifdef FORTRAN_2008
         real(realk), pointer, contiguous:: fptr(:)
+#else
+        real(realk), pointer:: fptr(:)
+#endif
         real(realk):: val
 #ifdef VAR_MPI
         integer(MPI_ADDRESS_KIND):: mpi_size
@@ -1270,7 +1274,12 @@
          case(DIL_ALLOC_PINNED)
           val=0E0_realk; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
           !`Write (call C wrapper for cudaMallocHost)
+!PE2DIL: These bounds remappings are "newer" fortran standard and therefore
+!not implemented in all compilers we are tarteting, therefore I have introduced
+!the flags FORTRAN_2008. 
+#ifdef FORTRAN_2008
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
+#endif
          case(DIL_ALLOC_MPI)
           caddr=C_NULL_PTR
 #ifdef VAR_MPI
@@ -1281,7 +1290,9 @@
            &mpi_err
            ierr=2
           else
+#ifdef FORTRAN_2008
            call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
+#endif
           endif
 #else
           ierr=3
@@ -3432,7 +3443,11 @@
 !------------------------------------------------
         integer(INTD):: i,j,k,l,m,n,impir
         type(C_PTR):: hbuf_cp
+#ifdef FORTRAN_2008
         real(realk), pointer, contiguous:: hbuf(:)  !Host buffer space
+#else
+        real(realk), pointer:: hbuf(:)  !Host buffer space
+#endif
         type(dev_buf_t):: buf(0:MAX_DEVS-1)         !Host buffers for all devices (mapped to the Host buffer space)
         type(contr_task_list_t), target:: task_list !`Make it global threadsafe to allow reuse and avoid unnecessary allocations
         character(3):: contr_case,arg_reuse
@@ -4408,7 +4423,11 @@
         integer(INTD):: dbas(1:MAX_TENSOR_RANK),lbas(1:MAX_TENSOR_RANK),rbas(1:MAX_TENSOR_RANK)
         integer(INTD):: ddim(1:MAX_TENSOR_RANK),ldim(1:MAX_TENSOR_RANK),rdim(1:MAX_TENSOR_RANK)
         integer(INTD):: dful(1:MAX_TENSOR_RANK),lful(1:MAX_TENSOR_RANK),rful(1:MAX_TENSOR_RANK)
+#ifdef FORTRAN_2008
         real(realk), pointer, contiguous:: darr(:),larr(:),rarr(:),barr(:)
+#else
+        real(realk), pointer:: darr(:),larr(:),rarr(:),barr(:)
+#endif
         type(dil_tens_contr_t):: tcr
         character(128):: tcs
         real(realk):: val0,val1,val2

@@ -78,6 +78,10 @@ add_dalton_runtest(qmmm5                         "dalton;runtest;qmmm;parallel;m
 add_dalton_runtest(qmmm6                         "dalton;runtest;qmmm;medium;parallel")
 add_dalton_runtest(walk_solvmag                  "dalton;runtest;long")
 
+if(ENABLE_VPOTDAMP)
+    add_dalton_runtest(qmcmm "dalton;runtest;qmcmm;short;parallel")
+endif()
+
 if(ENABLE_PCMSOLVER)
 	add_dalton_runtest(extpcm "dalton;runtest;short")
 endif()

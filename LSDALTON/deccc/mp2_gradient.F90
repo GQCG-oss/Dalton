@@ -38,7 +38,8 @@ module mp2_gradient_module
   public :: init_fullmp2grad,free_fullmp2grad,single_calculate_mp2gradient_driver,&
        &pair_calculate_mp2gradient_driver,read_gradient_and_energies_for_restart, &
        &write_gradient_and_energies_for_restart,free_mp2grad,get_mp2gradient_main,&
-       &dec_get_error_for_geoopt,update_full_mp2gradient,nullify_mp2dens,nullify_mp2grad
+       &dec_get_error_for_geoopt,update_full_mp2gradient,nullify_mp2dens,nullify_mp2grad,&
+       &init_mp2grad
   private
 
 contains

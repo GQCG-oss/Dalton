@@ -214,6 +214,8 @@ module dec_typedef_module
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
      logical :: CCSDmultipliers
+     !> use debug multiplier residual
+     logical :: simple_multipler_residual
      !> use pnos in dec
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as

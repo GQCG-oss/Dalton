@@ -2445,12 +2445,12 @@ contains
        enddo
     enddo
 
-    !print *, "norm2(Fia) 1:", norm2(Fia)
+    !print *, "norm2D(Fia) 1:", norm2D(Fia)
 
     !> matB = C1^T matA C2
     !dec_diff_basis_transform1(nA,nB1,nB2,C1,C2,matA,matB)
     !call dec_diff_basis_transform1(nocc*ncabs,nocc,ncabs,C_ij,C_cd,Fic_real,Fia)
-    !print *, "norm2(Fia) 2:", norm2(Fia)
+    !print *, "norm2D(Fia) 2:", norm2D(Fia)
 
 
     !PRINT *, "norm2(Fic):",  norm2(Fic_real)  
@@ -2537,9 +2537,9 @@ contains
     call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
     call solve_eigenvalue_problem_unitoverlap(ncabsAO,Fcd_real,eps_c,C_cd)    
 
-    print *, "norm2(Fcd_real):",  norm2(Fcd_real)  
-    print *, "norm2(C_cd):",  norm2(C_cd)
-    print *, "norm2(eps_c):", norm2(eps_c)    
+    !print *, "norm2D(Fcd_real):",  norm2D(Fcd_real)  
+    !print *, "norm2D(C_cd):",  norm2D(C_cd)
+    !print *, "norm2D(eps_c):", norm2D(eps_c)    
 
     !Fij
     call mem_alloc(Fij_real,nocc,nocc)
@@ -2550,9 +2550,9 @@ contains
   
     call solve_eigenvalue_problem_unitoverlap(nocc,Fij_real,eps_i,C_ij)     
 
-    print *, "norm2(Fij_real):",  norm2(Fij_real)  
-    print *, "norm2(C_ij):",      norm2(C_ij)
-    print *, "norm2(eps_i):",     norm2(eps_i)   
+    !print *, "norm2D(Fij_real):",  norm2D(Fij_real)  
+    !print *, "norm2D(C_ij):",      norm2D(C_ij)
+    !print *, "norm2D(eps_i):",     norm2D(eps_i)   
 
     !Fic
     call mem_alloc(Fic_real,nocc,ncabsAO)
