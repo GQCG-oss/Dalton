@@ -1251,22 +1251,27 @@ module cc_tools_module
 #endif
    end subroutine get_I_cged
 
+   !Even though the following two functions are only needed inside
+   !get_I_plusminus_le, they were moved here since PGI decided that internal
+   !procedures may not be targets of function pointers
+   function a_plus_b(a,b) result(c)
+      implicit none
+      real(realk), intent(in) :: a, b
+      real(realk) :: c
+      c = a + b
+   end function a_plus_b
+   function a_minus_b(a,b) result(c)
+      implicit none
+      real(realk), intent(in) :: a, b
+      real(realk) :: c
+      c = a - b
+   end function a_minus_b
 
    !> \brief Construct symmetric and antisymmentric combinations of an itegral matrix 
    !> \author Patrick Ettenhuber
    !> \date October 2012
    subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,qu,quarry)
       implicit none
-
-      abstract interface
-      function simple_ab_return_c(a,b) result(c)
-         use precision
-         import
-         real(realk), intent(in) :: a,b
-         real(realk) :: c
-      end function simple_ab_return_c
-      end interface
-
       !> blank workspace
       real(realk),intent(inout) :: w0(:),w2(:)
       !> workspace containing the integrals
@@ -1294,7 +1299,7 @@ module cc_tools_module
       real(realk) ::chk,chk2,el
       real(realk),pointer :: trick(:,:,:)
       logical :: modb,query
-      procedure(simple_ab_return_c), pointer :: a_op_b => null()
+      procedure(a_plus_b), pointer :: a_op_b => null()
 
       select case(op)
       case ('+')
@@ -1410,21 +1415,6 @@ module cc_tools_module
 
    end subroutine get_I_plusminus_le
 
-   !Even though the following two functions are only needed inside
-   !get_I_plusminus_le, they were moved here since PGI decided that internal
-   !procedures may not be targets of function pointers
-   function a_plus_b(a,b) result(c)
-      implicit none
-      real(realk), intent(in) :: a, b
-      real(realk) :: c
-      c = a + b
-   end function a_plus_b
-   function a_minus_b(a,b) result(c)
-      implicit none
-      real(realk), intent(in) :: a, b
-      real(realk) :: c
-      c = a - b
-   end function a_minus_b
 
    !> \brief subroutine to add contributions to the sio4 matrix which enters the
    !B2.2 term in the "non"-parallel region
