@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -4077,12 +4077,12 @@ C
      &  ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &               WRK(KGD),LWRK1)
-         DNORM = DNRM2(KZYVAR,WRK(KGD),1)
+         DNORM_GD = DNRM2(KZYVAR,WRK(KGD),1)
          write(lupri,*) 'FREQ 2 ',FREQ(1:NFREQ)
          IF (IPRRSP .GT. 30) THEN
             CALL HEADER('Gradient vectors in RSPLR for operator '//
      &                  LBLLR(KSYMOP,IOP)//':',-1)
-            WRITE (LUPRI,'(/A,1P,D12.4)') ' Norm : ', DNORM
+            WRITE (LUPRI,'(/A,1P,D12.4)') ' Norm : ', DNORM_GD
             CALL OUTPUT(WRK(KGD),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
          END IF
          JFREQ  = 0
@@ -4112,10 +4112,10 @@ C              ! Remove duplicates, they will cause linear dependency
             GOTO 600
          END IF
 C
-         IF (DNORM .LT. THRNRM) THEN
+         IF (DNORM_GD .LT. THRNRM) THEN
             WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
             WRITE (LUPRI,*) '     property vector '//LBLLR(KSYMOP,IOP)//
-     &                      ' is only',DNORM
+     &                      ' is only',DNORM_GD
             CALL DZERO(WRK(KBVECS),KZYVAR)
             DO 450 IFREQ = 1,JFREQ
                CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LBLLR(KSYMOP,IOP),
@@ -4168,8 +4168,8 @@ C                 CALL RSPPRC(WRK(KBVECS+(IVEC-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                   CALL HEADER('Solution vectors in RSPLR for operator '
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-                  DNORM = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM
+                  DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
+                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM_BV
                END IF
   750       CONTINUE
             CALL RSPRES(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
@@ -4185,10 +4185,10 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
                   CALL HEADER('Residual vectors in RSPLR for operator '
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-                  DNORM = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM
+                  DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
+                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM_BV
                END IF
- 760        CONTINUE
+  760       CONTINUE
   700    CONTINUE
   600 CONTINUE
       IF (LWRK1.LT.0) CALL ERRWRK('RSPLR 2',KWRK1-1,LWRK)

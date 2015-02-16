@@ -855,8 +855,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
 !`DIL:
-!#define DIL_DEBUG_ON
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_MPI
+#ifdef VAR_OMP
 !#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
+#endif
+#endif
+#endif
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -1014,6 +1020,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
+#ifdef DIL_ACTIVE
 !{`DIL:
      logical:: DIL_LOCK_OUTSIDE !controls Patrick's outside locks in Scheme 1
      character(256):: tcs
@@ -1024,6 +1031,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
 !}
+#endif
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
      call DetectHeapMemoryInit()
@@ -1088,7 +1096,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ***********
      call get_currently_available_memory(MemFree)
 
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
       call dil_debug_to_file_start()
@@ -1220,12 +1228,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifndef VAR_MPI
         if(scheme==3.or.scheme==2.or.scheme==1) call lsquit("ERROR(ccsd_residual_integral_driven): wrong choice of scheme",-1)
 #endif
+#ifdef DIL_ACTIVE
         if(scheme==1) then
          if(.not.alloc_in_dummy) call lsquit("ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3",-1)
          DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
         else
          DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
         endif
+#endif
      endif
 
 #ifdef VAR_MPI
@@ -1260,7 +1270,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      hstatus = 80
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
       write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",'//&
@@ -1271,8 +1281,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      govov%access_type  = AT_ALL_ACCESS
      omega2%access_type = AT_ALL_ACCESS
-
+#ifdef DIL_ACTIVE
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
+#else
+     if(alloc_in_dummy.and.(scheme==2.or.scheme==1)) then
+#endif
       call tensor_lock_wins(omega2,'s',all_nodes = .true.)
      endif
 #endif
@@ -1447,7 +1460,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
+#ifdef DIL_ACTIVE
         if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then
+#else
+        if(alloc_in_dummy.and.scheme/=1) then
+#endif
          call tensor_lock_wins(u2,'s',all_nodes = .true.)
         endif
 
@@ -1503,11 +1520,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_MPI
         if(alloc_in_dummy)then
+#ifdef DIL_ACTIVE
            if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
+#else
+           if(scheme==3.or.scheme==2.or.scheme==1) then
+#endif
               call tensor_lock_wins(gvvooa,'s',all_nodes = .true.)
               call tensor_lock_wins(gvoova,'s',all_nodes = .true.)
            endif
+#ifdef DIL_ACTIVE
            if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
+#else
+           if(scheme==2.or.scheme==1) then
+#endif
               call tensor_lock_wins(sio4,  's',all_nodes = .true.)
            endif
         endif
@@ -1724,7 +1749,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         scheme=1 !``DIL: remove
 #endif
         if(scheme==1) then !`DIL: Tensor contraction 1
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
          call time_start_phase(PHASE_COMM, at = time_intloop_work )
          if(gammaB/=1)then
           if(alloc_in_dummy) then
@@ -1879,7 +1904,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
            !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
            if( alloc_in_dummy )then
+#ifdef DIL_ACTIVE
               if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) call lsmpi_win_flush(omega2%wi(1),local=.true.)
+#else
+              if(scheme==2.or.scheme==1) call lsmpi_win_flush(omega2%wi(1),local=.true.)
+#endif
            else
               if(lock_outside.and.scheme==2) call tensor_unlock_wins(omega2,.true.)
            endif
@@ -1926,7 +1955,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
               elseif(scheme==1) then !`DIL: Tensor contraction 2
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
                if(DIL_DEBUG) then
                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 2:")')&
                 &infpar%lg_mynum,infpar%mynum
@@ -1997,7 +2026,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
               else if(scheme==1)then !`DIL: Tensor contraction 3
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
                if(DIL_DEBUG) then
                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 3:")')&
                 &infpar%lg_mynum,infpar%mynum
@@ -2055,7 +2084,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
            if( Ccmodel>MODEL_CC2 )then
               if( alloc_in_dummy )then
+#ifdef DIL_ACTIVE
                  if(scheme==2.or.scheme==3.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
+#else
+                 if(scheme==2.or.scheme==3.or.scheme==1)then
+#endif
                     call lsmpi_win_flush(gvvooa%wi(1),local=.true.)
                     call lsmpi_win_flush(gvoova%wi(1),local=.true.)
                  endif
@@ -2122,7 +2155,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  endif
 #endif
               case(1) !`DIL: Tensor contraction 4
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
                ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
                call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d) !`DIL: w0,w3 in use
                ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
@@ -2187,7 +2220,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call time_start_phase(PHASE_WORK, at = time_intloop_comm )
 #endif
            elseif(scheme==1)then !`DIL: Tensor contraction 5
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
             if(DIL_DEBUG) then
              write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 5:")')&
              &infpar%lg_mynum,infpar%mynum
@@ -2268,17 +2301,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! free arrays only needed in the batched loops
 #ifdef VAR_MPI
      call time_start_phase(PHASE_COMM, at = time_intloop_work )
+#ifdef DIL_ACTIVE
      if(lock_outside.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
+#else
+     if(lock_outside.and.(scheme==2.or.scheme==1))then
+#endif
         call tensor_unlock_wins(omega2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
      endif
 
      if(alloc_in_dummy)then
+#ifdef DIL_ACTIVE
         if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
+#else
+        if(scheme==3.or.scheme==2.or.scheme==1)then
+#endif
            !SWITCH ONE SIDED EPOCH FROM ACCUMULATES TO GETS
            call tensor_unlock_wins(gvvooa, all_nodes = .true.)
            call tensor_unlock_wins(gvoova, all_nodes = .true.)
         endif
+#ifdef DIL_ACTIVE
         if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
+#else
+        if(scheme==2.or.scheme==1)then
+#endif
            call tensor_unlock_wins(sio4, all_nodes = .true.)
         endif
      endif
@@ -2345,7 +2390,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
 
+#ifdef DIL_ACTIVE
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
+#else
+     if(alloc_in_dummy.and.(scheme==2.or.scheme==1))then
+#endif
         call tensor_lock_wins(omega2,'s',all_nodes=.true.)
      endif
 
@@ -2563,10 +2612,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         else if(scheme==1)then
            call tensor_free(gvoova)
            call tensor_free(gvvooa)
+#ifdef DIL_ACTIVE
            if(DIL_LOCK_OUTSIDE)then
+#endif
               call tensor_unlock_wins(omega2,all_nodes=.true.)
               call tensor_unlock_wins(u2,all_nodes=.true.)
+#ifdef DIL_ACTIVE
            endif
+#endif
 #endif
         endif
 
@@ -2819,8 +2872,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
 
+#ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) call dil_debug_to_file_finish() !`DIL
+#endif
 #endif
 
      if(print_debug)then
@@ -3513,7 +3568,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
                  & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d,&
-                 & DECinfo%IntegralThreshold)
+                 & DECinfo%IntegralThreshold,DECinfo%useIchor)
 
            enddo
            call time_start_phase(PHASE_WORK, ttot = time_int1 )
@@ -3680,7 +3735,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call II_GET_ERI_INTEGRALBLOCK(DECinfo%output,DECinfo%output,Mylsitem%setting,&
                  & startA,startB,startC,startD,ndimA,ndimB,ndimC,ndimD,&
                  & ndimAs,ndimBs,ndimCs,ndimDs,INTSPEC,Cint%ti(i)%t,w1%d,&
-                 & DECinfo%IntegralThreshold)
+                 & DECinfo%IntegralThreshold,DECinfo%useIchor)
            enddo
 
            call time_start_phase(PHASE_WORK, ttot = time_int2 )

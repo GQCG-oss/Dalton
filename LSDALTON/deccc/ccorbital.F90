@@ -2988,7 +2988,7 @@ contains
     ! - only one fragment 
     ! - fragment opt where reduction step is done for a different model than the target CC model.
     if(DECinfo%first_order .or. nfrags==1 .or. DECinfo%InclFullMolecule &
-         & .or. (DECinfo%ccmodel/=DECinfo%fragopt_red_model ) ) then
+         & .or. (DECinfo%ccmodel/=DECinfo%fragopt_red_model ) .or. DECinfo%F12 ) then
        DECinfo%RepeatAF=.true.
     else
        DECinfo%RepeatAF=.false.

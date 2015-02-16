@@ -669,6 +669,9 @@ contains
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags)
+       if(DECinfo%use_abs_overlap)then
+          call mem_alloc(MyMolecule%ov_abs_overlap,MyMolecule%nocc,MyMolecule%nunocc)
+       endif
     end if
 
 
@@ -719,6 +722,9 @@ contains
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags,&
          & master,MPI_COMM_LSDALTON)
+    if(DECinfo%use_abs_overlap)then
+       call ls_mpibcast(MyMolecule%ov_abs_overlap,MyMolecule%nocc,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
+    endif
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -784,6 +790,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%PNOset,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
     CALL ls_mpi_buffer(MyFragment%pairfrag,master)
+    CALL ls_mpi_buffer(MyFragment%isopt,master)
 
     ! Reals that are not pointers
     ! ---------------------------
@@ -2314,6 +2321,7 @@ contains
     call ls_mpi_buffer(DECitem%PNOtriangular,Master)
     call ls_mpi_buffer(DECitem%pno_S_on_the_fly,Master)
     call ls_mpi_buffer(DECitem%CCSDmultipliers,Master)
+    call ls_mpi_buffer(DECitem%simple_multipler_residual,Master)
     call ls_mpi_buffer(DECitem%CRASHCALC,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
     call ls_mpi_buffer(DECitem%cc_solver_tile_mem,Master)
@@ -2329,6 +2337,7 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
+    call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
@@ -2340,6 +2349,9 @@ contains
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
     call ls_mpi_buffer(DECitem%ccsdAbatch,Master)
     call ls_mpi_buffer(DECitem%ccsdGbatch,Master)
+    call ls_mpi_buffer(DECitem%manual_occbatchsizes,Master)
+    call ls_mpi_buffer(DECitem%batchOccI,Master)
+    call ls_mpi_buffer(DECitem%batchOccJ,Master)
     call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%hack,Master)
@@ -2385,6 +2397,7 @@ contains
     call ls_mpi_buffer(DECitem%vir_init_radius,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
+    call ls_mpi_buffer(DECitem%use_abs_overlap,Master)
     call ls_mpi_buffer(DECitem%pairestimateignore,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
@@ -2398,6 +2411,7 @@ contains
     call ls_mpi_buffer(DECitem%FOTscaling,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%density,Master)
+    call ls_mpi_buffer(DECitem%unrelaxed,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner_in_b,Master)

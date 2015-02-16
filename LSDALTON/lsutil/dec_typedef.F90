@@ -214,6 +214,8 @@ module dec_typedef_module
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
      logical :: CCSDmultipliers
+     !> use debug multiplier residual
+     logical :: simple_multipler_residual
      !> use pnos in dec
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
@@ -282,6 +284,8 @@ module dec_typedef_module
      !> ************
      !> Use F12 correction
      logical :: F12
+     !> Do F12 also for fragment optimization
+     logical :: F12fragopt
 
      !> F12 debug settings
      !> ************
@@ -324,6 +328,12 @@ module dec_typedef_module
      !> test integral scheme, fully distributed, get_mo_integrals
      logical :: test_fully_distributed_integrals
 
+     !> MP2 occupied batching
+     !> *****************
+     !> Set batch sizes manually
+     logical :: manual_occbatchsizes
+     !> Sizes of I and J occupied batches defined manually
+     integer :: batchOccI,batchOccJ
 
      !> General debug and simple tests
      !> ******************************
@@ -433,6 +443,7 @@ module dec_typedef_module
      !> Note that scheme 2 is only meaningful for occupied partitioning scheme.
      integer :: CorrDensScheme
      ! --  
+     logical :: use_abs_overlap
 
      !> Pair fragments
      !> **************
@@ -471,6 +482,8 @@ module dec_typedef_module
      logical :: first_order
      !> density matrix (and not gradient)
      logical :: density    
+     !> Unrelaxed density matrix
+     logical :: unrelaxed
      !> Calculate MP2 gradient  (density is then also calculated as a subset of the calculation)
      logical :: gradient
      !> Use preconditioner for kappa multiplier equation
@@ -661,6 +674,8 @@ module dec_typedef_module
      !> Overlap matrix (AO basis)
      real(realk), pointer :: overlap(:,:) => null()
 
+     !> Abs overlap information
+     real(realk), pointer :: ov_abs_overlap(:,:) => null()
      !> Occ-occ block of Fock matrix in MO basis
      real(realk), pointer :: ppfock(:,:) => null()
      !> Virt-virt block of Fock matrix in MO basis
@@ -738,6 +753,9 @@ module dec_typedef_module
      !> Total number of unoccupied orbitals (AOS)
      integer,pointer :: nunoccAOS
 
+     !> Has fragment been optimized
+     logical :: isopt
+
      !> Pair fragment?
      logical :: pairfrag
 
@@ -800,7 +818,7 @@ module dec_typedef_module
      !> ********************************************************
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
-
+     
      !> Information about fragment size always set, this is the maximum distance
      !between any two atoms in the fragment
      real(realk) :: RmaxAE,RmaxAOS,RaveAE,RaveAOS,RsdvAE,RsdvAOS

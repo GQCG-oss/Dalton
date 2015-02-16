@@ -27,8 +27,13 @@ module lsmpi_type
   END INTERFACE lsmpi_send
 
   INTERFACE lsmpi_recv
-    MODULE PROCEDURE lsmpi_recv_realkV_4,lsmpi_recv_realkV_8
+    MODULE PROCEDURE lsmpi_recv_realkV_4,lsmpi_recv_realkV_8,&
+         & lsmpi_recv_intV4,lsmpi_recv_realkV
   END INTERFACE lsmpi_recv
+
+  INTERFACE lsmpi_isend
+     MODULE PROCEDURE lsmpi_isend_intV4,lsmpi_isend_realk
+  end INTERFACE lsmpi_isend
 
   INTERFACE ls_mpibcast
      MODULE PROCEDURE ls_mpibcast_integer,& 
@@ -6404,6 +6409,7 @@ contains
      call MPI_COMM_GROUP(comm, group, ierr) 
 #endif
   end subroutine lsmpi_comm_group
+
   subroutine lsmpi_group_free(group)
      implicit none
      integer(kind=ls_mpik), intent(inout) :: group
@@ -6413,6 +6419,85 @@ contains
      call MPI_GROUP_FREE(group, ierr) 
 #endif
   end subroutine lsmpi_group_free
+
+  subroutine lsmpi_iprobe(comm,MessageRecieved,lsmpi_status)
+    implicit none
+    integer(kind=ls_mpik), intent(in) :: comm
+#ifdef VAR_MPI
+    integer(kind=ls_mpik), intent(inout) :: lsmpi_status(MPI_STATUS_SIZE) 
+#else
+    integer(kind=ls_mpik), intent(inout) :: lsmpi_status(:) 
+#endif
+    logical,intent(inout) :: MessageRecieved
+    !local variable
+    logical(kind=ls_mpik) :: flag
+    integer(kind=ls_mpik) :: IERR
+#ifdef VAR_MPI
+    call MPI_IPROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,comm,flag,lsmpi_status,ierr)
+#else
+    flag = .false.
+#endif
+    MessageRecieved = flag
+  end subroutine lsmpi_iprobe
+
+  subroutine lsmpi_probe(comm,lsmpi_status)
+    implicit none
+    integer(kind=ls_mpik), intent(in) :: comm
+#ifdef VAR_MPI
+    integer(kind=ls_mpik), intent(inout) :: lsmpi_status(MPI_STATUS_SIZE) 
+#else
+    integer(kind=ls_mpik), intent(inout) :: lsmpi_status(:) 
+#endif
+    integer(kind=ls_mpik) :: IERR
+#ifdef VAR_MPI
+    call MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,comm,lsmpi_status,ierr)
+#endif
+  end subroutine lsmpi_probe
+
+  subroutine lsmpi_isend_intV4(buf,nbuf,receiver,TAG1,comm,request1)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: nbuf,receiver,TAG1,comm
+    integer(kind=ls_mpik),intent(inout) :: request1
+    integer(kind=4) :: buf(nbuf)
+    integer(kind=ls_mpik) :: IERR
+#ifdef VAR_MPI
+    call MPI_ISEND(buf,nbuf,MPI_INTEGER4,receiver,TAG1,comm,request1,ierr)
+#endif
+  end subroutine lsmpi_isend_intV4
+
+  subroutine lsmpi_isend_realk(buf,receiver,TAG1,comm,req1)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: receiver,TAG1,comm
+    integer(kind=ls_mpik),intent(inout) :: req1
+    real(realk) :: buf
+    integer(kind=ls_mpik) :: IERR,nbuf
+    nbuf = 1
+#ifdef VAR_MPI
+    call MPI_ISEND(buf,nbuf,MPI_DOUBLE_PRECISION,receiver,TAG1,comm,req1,ierr)
+#endif
+  end subroutine lsmpi_isend_realk
+
+  subroutine lsmpi_recv_intV4(buf,nbuf,sender,TAG1,comm)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: nbuf,sender,TAG1,comm
+    integer(kind=4) :: buf(nbuf)
+    integer(kind=ls_mpik) :: IERR
+#ifdef VAR_MPI
+    call MPI_RECV(buf,nbuf,MPI_INTEGER4,sender,TAG1,comm,lsmpi_status,ierr)
+#endif
+  end subroutine lsmpi_recv_intV4
+  subroutine lsmpi_recv_realkV(buf,sender,TAG1,comm)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: sender,TAG1,comm
+    real(realk),intent(inout) :: buf
+    integer(kind=ls_mpik) :: IERR
+    integer(kind=ls_mpik) :: nbuf
+    nbuf = 1
+#ifdef VAR_MPI
+    call MPI_RECV(buf,nbuf,MPI_DOUBLE_PRECISION,sender,TAG1,comm,lsmpi_status,ierr)
+#endif
+  end subroutine lsmpi_recv_realkV
+
 end module lsmpi_type
 
 

@@ -196,6 +196,7 @@ LOGICAL       :: ADMM_separateX
 LOGICAL       :: ADMM_2ERI
 LOGICAL       :: PRINT_EK3
 LOGICAL       :: ADMMBASISFILE
+LOGICAL       :: ADMMexchangeMetric
 
 LOGICAL       :: SR_EXCHANGE
 !Coulomb attenuated method CAM parameters
@@ -357,6 +358,7 @@ LOGICAL     :: PRINT_EK3
 ! to avoid redundant recalculation in the gradient
 real(realk) :: ADMM_CONSTRAIN_FACTOR
 real(realk) :: ADMM_LARGE_LAMBDA
+LOGICAL     :: ADMMexchangeMetric
 !
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM

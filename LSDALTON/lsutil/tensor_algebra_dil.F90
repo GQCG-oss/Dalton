@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/01/26 (started 2014/09/01).
+!REVISION: 2015/02/02 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -49,14 +49,15 @@
 !   may have different segment lengths. The tensor tiles are enumerated in Fortran style
 !   (1st dimenstion, 2nd dimension, and so on), flat (global) tile numeration starts from 1.
 !NOTES:
-! * The code is written in Fortran 2003/2008 + OpenMP (optional).
+! * The code is written in Fortran 2003/2008 + OpenMP 3.0 (optional).
 ! * The code assumes MPI-3 standard at least (RMA specification), that is,
 !   if MPI is used it must be MPI-3 (for RMA). If MPI is not used, it is fine.
 ! * The number of OMP threads spawned on CPU or MIC must not exceed the MAX_THREADS parameter!
 ! * In order to activate debugging mode, set global variable DIL_DEBUG to true.
        module tensor_algebra_dil
-        use, intrinsic:: ISO_C_BINDING
         use lspdm_tensor_operations_module
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+        use, intrinsic:: ISO_C_BINDING
 #ifdef VAR_OMP
 #ifdef USE_OMP_MOD
         use omp_lib
@@ -144,7 +145,11 @@
          integer(INTD), private:: rank                                !tensor rank (number of dimensions)
          integer(INTD), private:: dims(1:MAX_TENSOR_RANK)             !tensor dimension extents: dims(1:rank)
          integer(INTD), private:: base(1:MAX_TENSOR_RANK)             !offsets specifying a subtensor (similar to cspec%bases)
+#ifdef FORTRAN_2008
          real(realk), pointer, contiguous, private:: elems(:)=>NULL() !tensor elements (1:*)
+#else
+         real(realk), pointer, private:: elems(:)=>NULL() !tensor elements (1:*)
+#endif
         end type tens_loc_t
  !Tensor argument:
         type, private:: tens_arg_t
@@ -192,7 +197,11 @@
  !Argument buffer:
         type, private:: arg_buf_t
          integer(INTL), private:: buf_vol=0_INTL                        !buffer volume (number of elements)
+#ifdef FORTRAN_2008
          real(realk), pointer, contiguous, private:: buf_ptr(:)=>NULL() !buffer pointer
+#else
+         real(realk), pointer, private:: buf_ptr(:)=>NULL() !buffer pointer
+#endif
         end type arg_buf_t
  !Device buffers:
         type, private:: dev_buf_t
@@ -1241,7 +1250,11 @@
         integer(INTD):: flags
         integer(C_SIZE_T):: csize
         type(C_PTR):: caddr
+#ifdef FORTRAN_2008
         real(realk), pointer, contiguous:: fptr(:)
+#else
+        real(realk), pointer:: fptr(:)
+#endif
         real(realk):: val
 #ifdef VAR_MPI
         integer(MPI_ADDRESS_KIND):: mpi_size
@@ -1261,7 +1274,12 @@
          case(DIL_ALLOC_PINNED)
           val=0E0_realk; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
           !`Write (call C wrapper for cudaMallocHost)
+!PE2DIL: These bounds remappings are "newer" fortran standard and therefore
+!not implemented in all compilers we are tarteting, therefore I have introduced
+!the flags FORTRAN_2008. 
+#ifdef FORTRAN_2008
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
+#endif
          case(DIL_ALLOC_MPI)
           caddr=C_NULL_PTR
 #ifdef VAR_MPI
@@ -1272,7 +1290,9 @@
            &mpi_err
            ierr=2
           else
+#ifdef FORTRAN_2008
            call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
+#endif
           endif
 #else
           ierr=3
@@ -2241,7 +2261,6 @@
             enddo loop1
             if(lb.ne.0_INTL) then
              if(VERBOSE) write(CONS_OUT,'("ERROR(dil_tensor_algebra::dil_tensor_transpose): invalid remainder: ",i11,1x,i4)') lb,n
-!$OMP ATOMIC WRITE
              ierr=2
              exit loop0
             endif
@@ -3424,7 +3443,11 @@
 !------------------------------------------------
         integer(INTD):: i,j,k,l,m,n,impir
         type(C_PTR):: hbuf_cp
+#ifdef FORTRAN_2008
         real(realk), pointer, contiguous:: hbuf(:)  !Host buffer space
+#else
+        real(realk), pointer:: hbuf(:)  !Host buffer space
+#endif
         type(dev_buf_t):: buf(0:MAX_DEVS-1)         !Host buffers for all devices (mapped to the Host buffer space)
         type(contr_task_list_t), target:: task_list !`Make it global threadsafe to allow reuse and avoid unnecessary allocations
         character(3):: contr_case,arg_reuse
@@ -4355,7 +4378,10 @@
 
         if(present(ierr)) ierr=0
         if(CONS_OUT_SAVED.le.0) then
+           !PETT 2 DIL: FIXME: PLEASE CHECK PRECOMPILER FLAGS
+#ifdef VAR_MPI
          impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
+#endif
          deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
          open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN')
          CONS_OUT_SAVED=CONS_OUT; CONS_OUT=DIL_DEBUG_FILE; DIL_CONS_OUT=DIL_DEBUG_FILE
@@ -4374,7 +4400,10 @@
 
         if(present(ierr)) ierr=0
         if(CONS_OUT_SAVED.gt.0) then
+           !PETT 2 DIL: FIXME: PLEASE CHECK PRECOMPILER FLAGS
+#ifdef VAR_MPI
          impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
+#endif
          write(CONS_OUT,'("### DEBUG END: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
          CONS_OUT=CONS_OUT_SAVED; DIL_CONS_OUT=CONS_OUT_SAVED; CONS_OUT_SAVED=0; close(DIL_DEBUG_FILE)
         else
@@ -4394,7 +4423,11 @@
         integer(INTD):: dbas(1:MAX_TENSOR_RANK),lbas(1:MAX_TENSOR_RANK),rbas(1:MAX_TENSOR_RANK)
         integer(INTD):: ddim(1:MAX_TENSOR_RANK),ldim(1:MAX_TENSOR_RANK),rdim(1:MAX_TENSOR_RANK)
         integer(INTD):: dful(1:MAX_TENSOR_RANK),lful(1:MAX_TENSOR_RANK),rful(1:MAX_TENSOR_RANK)
+#ifdef FORTRAN_2008
         real(realk), pointer, contiguous:: darr(:),larr(:),rarr(:),barr(:)
+#else
+        real(realk), pointer:: darr(:),larr(:),rarr(:),barr(:)
+#endif
         type(dil_tens_contr_t):: tcr
         character(128):: tcs
         real(realk):: val0,val1,val2
@@ -4660,5 +4693,5 @@
 #endif
         return
         end subroutine dil_test
-
+#endif
        end module tensor_algebra_dil

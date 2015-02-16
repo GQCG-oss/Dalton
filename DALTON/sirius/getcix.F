@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -81,7 +81,7 @@ C
          DTIM = SECOND()
       END IF
       LFREE  = LFRSAV
-      IF (MCTYPE .GT. 0) THEN
+      IF (MCTYPE .GT. 0) THEN ! MCSCF
         LUSTR = -9999
         IF (FLAG(26) .AND. IFIRST .EQ. 1) THEN
           CALL GPOPEN(LUSTR,'SIRIUS.STRINGINFO','UNKNOWN',
@@ -248,7 +248,8 @@ C CI information (NEWCI forced false).
 C Note that change of symmetry will not change CI information.
 C
       NEWCI = CHCKCI(NOSYM,IPRCIX,LUPRI)
-      IF (NASHT .LE. 1 .OR. HSROHF) THEN
+!     IF (NASHT .LE. 1 .OR. HSROHF) THEN
+      IF ( MCTYPE .EQ. 0 .OR. MCTYPE .EQ. -1) THEN ! Hartree-Fock or HSROHF
          NEWCI = .FALSE.
       ELSE
          NOCSF = FLAG(27)
@@ -526,7 +527,8 @@ C If not first call (NEWCI false) check if CI specification has
 C changed, if yes then reset NEWCI to true.
 C Note that Hartree-Fock (i.e. nasht .le. 1) will not change
 C CI information.
-      IF (NASHT .LE. 1 .OR. HSROHF) THEN
+!     IF (NASHT .LE. 1 .OR. HSROHF) THEN
+      IF ( MCTYPE .EQ. 0 .OR. MCTYPE .EQ. -1) THEN ! Hartree-Fock or HSROHF
          IF (NASHT .NE. MASHT) THEN
             CHCKCI = .TRUE.
 C           force SETCI2 to quit if HF follows MCSCF,
