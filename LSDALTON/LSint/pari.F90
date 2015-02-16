@@ -141,10 +141,22 @@ CONTAINS
     !call LSQUIT('Testing eigenvalues of the (alpha|beta) matrices - quitting getPariCoefficients()',-1)
   END SUBROUTINE getPariCoefficients
 
+  !> \brief Calculates the PARI fitting coefficients for a pair of atom AB
+  !> \latexonly
+  !>        $c_\alpha^{ab} = (\alpha|\beta)^{-1} (\beta|ab), \quad \alpha\in{A\cup B},
+  !>                         \quad a\in A,\quad b\in B$
+  !> \endlatexonly
+  !> \author E. Rebolini, S. Reine and P. Merlot
+  !> \date 2015-02-13
   !> For atomic pair AB, returns the block matrix C_alpha^ab 
   !> alpha in Aux(A U B)
   !> a in Reg(A)
   !> b in Reg(B)
+  !> \param iAtomA,iAtomB indices of atoms A and B
+  !> \param calpha_ab_block(alpha,a,b) PARI coefficients
+  !> \param orbitalInfo Information of atoms A and B
+  !> \param regCSfull
+  !> \param auxCSfull
   subroutine getPariCoefficientsBlock(lupri,luerr,setting,iAtomA,iAtomB,&
        Calpha_ab_block,orbitalInfo,regCSfull,auxCSfull,molecule,atoms_a,&
        minEigV,maxEigV,conditionNum)

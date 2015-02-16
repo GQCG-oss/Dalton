@@ -514,79 +514,28 @@ contains
     END SUBROUTINE checkConsistency
   END SUBROUTINE II_get_NRpari_df_coulomb_mat
 
+
+!> \brief Find the precalculated screening matrices for Reg and Aux basis
+!> 
   SUBROUTINE II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
     implicit none
     TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
     TYPE(LSSETTING),intent(inout) :: SETTING
     INTEGER,intent(in)            :: LUPRI,LUERR
     !
-    type(moleculeinfo),pointer :: molecule
-    Character(80) :: Filename
-    Character(53) :: identifier
-    Logical       :: FoundInMem,dofit
-    Integer       :: molID,THR,THR2
-    Integer       :: i
+    Logical       :: dofit
 
     IF (setting%scheme%CS_SCREEN) THEN
-       THR = ABS(NINT(LOG10(SETTING%SCHEME%intTHRESHOLD)))
-       molecule => SETTING%MOLECULE(1)%p
-       molID = SETTING%molID(1)
-       !Find the precalculated screening matrices (up to 10 orders of magnitude smaller 
-       !than the current intTHRESHOLD
-       DO I=0,10
-          THR2 = THR + I
-          CALL io_get_CSidentifier(identifier,THR2,molecule,molecule,&
-               Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
-          CALL io_get_filename(Filename,identifier,AORdefault,AORdefault,&
-               AORdefault,AORdefault,molID,molID,&
-               CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
-          call determine_lst_in_screenlist(Filename,FoundInMem,SETTING%IO)
-          IF (FoundInMem) THEN
-             call screen_associate(regCSfull,Filename,FoundInMem)
-             EXIT
-          ENDIF
-       ENDDO
-       IF (.NOT.FoundInMem) THEN
-          CALL io_get_CSidentifier(identifier,THR,molecule,molecule,&
-               Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
-          CALL io_get_filename(Filename,identifier,AORdefault,AORdefault,&
-               AORdefault,AORdefault,molID,molID,&
-               CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
-          write(lupri,'(1X,1A)') &
-               'Error in II_getScreenMatFull no regular screening matrix found'
-          write(lupri,'(1X,2A)') 'Identifier =',identifier
-          write(lupri,'(1X,2A)') 'Filename ='  ,Filename
-          CALL LSQUIT('Error in II_getScreenMatFull no regular screening matrix found',-1)
-       ENDIF
-
-       dofit = setting%scheme%densfit.OR.setting%scheme%pari_j.OR.setting%scheme%pari_k&
-            .OR.setting%scheme%mopari_k
+       call II_getScreenMat(regCSfull,AORdefault,AORdefault,&
+            AORdefault,AORdefault,Setting,lupri,luerr)
+       
+       ! For density fiiting, get the screening matrix for the auxiliary basis
+       dofit = setting%scheme%densfit.OR.setting%scheme%pari_j.OR. &
+            setting%scheme%pari_k.OR.setting%scheme%mopari_k
+       
        IF (dofit) THEN
-          DO I=0,10
-             THR2 = THR + I
-             CALL io_get_CSidentifier(identifier,THR2,molecule,molecule,&
-                  Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
-             CALL io_get_filename(Filename,identifier,AODFdefault,AOempty,&
-                  AODFdefault,AOempty,molID,molID,&
-                  CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
-             call determine_lst_in_screenlist(Filename,FoundInMem,SETTING%IO)
-             IF (FoundInMem) THEN
-                call screen_associate(auxCSfull,Filename,FoundInMem)
-                EXIT
-             ENDIF
-          ENDDO
-          IF (.NOT.FoundInMem) THEN
-             CALL io_get_CSidentifier(identifier,THR,molecule,molecule,&
-                  Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
-             CALL io_get_filename(Filename,identifier,AODFdefault,AOempty,&
-                  AODFdefault,AOempty,molID,molID,&
-                  CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
-             write(lupri,'(1X,1A)') &
-                  'Error in II_getScreenMatFull no auxiliary screening matrix found'
-             write(lupri,'(1X,2A)') 'Identifier =',identifier
-             write(lupri,'(1X,2A)') 'Filename ='  ,Filename
-             CALL LSQUIT('Error in II_getScreenMatFull no auxiliary screening matrix found',-1)
-          ENDIF
+          call II_getScreenMat(auxCSfull,AODFdefault,AOempty,&
+               AODFdefault,AOempty,Setting,lupri,luerr)
        ELSE
           NULLIFY(auxCSfull)
        ENDIF
@@ -596,6 +545,62 @@ contains
     ENDIF
 
   END SUBROUTINE II_getScreenMatFull
+
+  !> \brief Find the precalculated screening matrix
+  !> (up to 10 orders of magnitude smaller than the current intTHRESHOLD)
+  !
+  !> \param CSfull Precalculated screening matrix
+  !> \param AO1 Character string usually 'Regular' or 'Empty' or 'DF-Aux' for center 1
+  !> \param AO2 Character string usually 'Regular' or 'Empty' or 'DF-Aux' for center 2
+  !> \param AO3 Character string usually 'Regular' or 'Empty' or 'DF-Aux' for center 3
+  !> \param AO4 Character string usually 'Regular' or 'Empty' or 'DF-Aux' for center 4
+  !> \param SETTING Integral evalualtion settings
+  !> \param LUPRI the logical unit number for the output file
+  !> \param LUERR the logical unit number for the error file
+  subroutine II_getScreenMat(CSfull,AO1,AO2,AO3,AO4,Setting,lupri,luerr)
+    implicit none
+    TYPE(LSTENSOR),pointer        :: CSfull
+    TYPE(LSSETTING),intent(inout) :: SETTING
+    INTEGER,intent(in)            :: LUPRI,LUERR,AO1,AO2,AO3,AO4
+
+    type(moleculeinfo),pointer :: molecule
+    Character(80) :: Filename
+    Character(53) :: identifier
+    Logical       :: FoundInMem
+    Integer       :: molID,THR,THR2
+    Integer       :: i
+
+    THR = ABS(NINT(LOG10(SETTING%SCHEME%intTHRESHOLD)))
+       molecule => SETTING%MOLECULE(1)%p
+       molID = SETTING%molID(1)
+
+    DO I=0,10
+       THR2 = THR + I
+       CALL io_get_CSidentifier(identifier,THR2,molecule,molecule,&
+            Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
+       CALL io_get_filename(Filename,identifier,AO1,AO2,&
+            AO3,AO4,molID,molID,&
+            CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
+       call determine_lst_in_screenlist(Filename,FoundInMem,SETTING%IO)
+       IF (FoundInMem) THEN
+          call screen_associate(CSfull,Filename,FoundInMem)
+          EXIT
+       ENDIF
+    ENDDO
+    IF (.NOT.FoundInMem) THEN
+       CALL io_get_CSidentifier(identifier,THR,molecule,molecule,&
+            Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
+       CALL io_get_filename(Filename,identifier,AO1,AO2,&
+            AO3,AO4,molID,molID,&
+            CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
+       write(lupri,'(1X,1A)') &
+            'Error in II_getScreenMatFull no screening matrix found'
+       write(lupri,'(1X,2A)') 'Identifier =',identifier
+       write(lupri,'(1X,2A)') 'Filename ='  ,Filename
+       CALL LSQUIT('Error in II_getScreenMatFull no screening matrix found',-1)
+    ENDIF
+
+  end subroutine II_getScreenMat
 
   !> \brief This subroutine calculates the pari-atomic density-fitted (PARI) Coulomb matrix
   !> \author P. Merlot, S. Reine
@@ -1382,7 +1387,7 @@ contains
     setting%scheme%recalcgab = saveRecalcGab
   END SUBROUTINE II_get_pari_df_coulomb_mat_simple
 
-  !> \brief This subroutine calculates the pair-atomic density-fitted (PARI) Exchange matrix
+  !> \brief Calculates the pair-atomic density-fitted (PARI) Exchange matrix
   !> \author P. Merlot, S. Reine
   !> \date 2010-03-29
   !> \param lupri Default print-unit for output
@@ -1483,6 +1488,9 @@ contains
     !Then get the full precalculated screening matrices
     CALL II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
     !
+!debug
+    write(lupri,*) 'regCSfull'
+    call lstensor_Print(regCSfull,lupri)
     molecule => SETTING%MOLECULE(1)%p
     !
     call getMolecularDimensions(molecule,nAtoms,nBastReg,nBastAux)
@@ -1495,7 +1503,8 @@ contains
     call ls_DZERO(Kfull_3cContrib,nBastReg*nBastReg*nmat)
     call ls_DZERO(Kfull_2cContrib,nBastReg*nBastReg*nmat)
 
-    ! --- Build an array with the list of atoms with their respective nb. of orbitals/auxiliary functions
+    ! --- Build an array with the list of atoms with their respective 
+    ! --- nb. of orbitals/auxiliary functions
     ! --- Build another array to know where each atom start in the complete matrices
     call setMolecularOrbitalInfo(molecule,orbitalInfo)
 
@@ -1575,7 +1584,7 @@ contains
                + Kfull_2cContrib(:,:,1,1,idmat)
           call symmetrizeKfull_3cContrib(Kfull_3cContrib(:,:,1,1,idmat),nBastReg)
        Else !MOPARI_K
-          !> MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
+       !--- MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
           do iAtomA=1,nAtoms
              call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
                   nAuxA,startAuxA,endAuxA)
