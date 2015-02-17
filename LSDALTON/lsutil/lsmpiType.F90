@@ -4479,8 +4479,11 @@ contains
     integer(kind=ls_mpik) :: old_nodtot, old_mynum, oldgroup, ierr, newgroup,I
     integer(kind=ls_mpik), allocatable :: mygroup(:)
     integer(kind=ls_mpik) :: mysize,offset,cnter,mygroupnumber,newcomm
+    logical :: prnt
       IERR=0
 
+    prnt = .false.
+    if(present(print_)) prnt = print_
     ! EXAMPLE
     ! *******
     ! Assume that the current local group size is 7 and that we want
@@ -4583,7 +4586,7 @@ contains
     ! Communicator
     infpar%lg_comm = newcomm
 
-    if(infpar%lg_mynum==0.and.print_) then
+    if(infpar%lg_mynum==0.and.prnt) then
        print *, 'Redefining local group'
        print *, '======================'
        print '(1X,a,4i6)', 'Old rank, new rank, old size, new size ', &
