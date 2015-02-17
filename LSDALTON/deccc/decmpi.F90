@@ -800,6 +800,9 @@ contains
     call ls_mpi_buffer(MyFragment%EoccFOP,master)
     call ls_mpi_buffer(MyFragment%EvirtFOP,master)
     call ls_mpi_buffer(MyFragment%LagFOP,master)
+    call ls_mpi_buffer(MyFragment%EoccFOP_exp,master)
+    call ls_mpi_buffer(MyFragment%EvirtFOP_exp,master)
+    call ls_mpi_buffer(MyFragment%LagFOP_exp,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
     call ls_mpi_buffer(MyFragment%slavetime_work,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%slavetime_comm,ndecmodels,master)
@@ -1739,8 +1742,9 @@ contains
   !> because the PDM memory allocation has to happen in the smaller groups now
   !> \author Kasper Kristensen, modified by Patrick Ettenhuber
   !> \date May 2012
-  subroutine dec_half_local_group
+  subroutine dec_half_local_group(print_)
     implicit none
+    logical, intent(in), optional :: print_
     integer(kind=ls_mpik) :: ngroups
     integer(kind=ls_mpik) :: groupdims(2)
 
@@ -1758,7 +1762,7 @@ contains
     ! Current values of infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm
     ! will be overwritten.
     ngroups=2
-    call divide_local_mpi_group(ngroups,groupdims)
+    call divide_local_mpi_group(ngroups,groupdims,print_=print_)
     call new_group_reset_persistent_array
 
   end subroutine dec_half_local_group
@@ -2365,6 +2369,7 @@ contains
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
