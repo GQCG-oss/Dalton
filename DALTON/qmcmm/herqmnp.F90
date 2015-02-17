@@ -1218,7 +1218,7 @@ contains
       CALL WRTIEF(FMAT, IDIM, 'QQMNPMAT', LUQMNP)
       CALL GPCLOSE(LUQMNP,'KEEP')
 !
-      END
+      end subroutine
       SUBROUTINE READ_RELMAT(FMAT)
 !
 ! Purpose:
@@ -1255,7 +1255,7 @@ contains
       ENDIF
       CALL GPCLOSE(LUQMNP,'KEEP')
 !
-      END
+      end subroutine
 
 
 

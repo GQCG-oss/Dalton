@@ -816,13 +816,15 @@ end function max_batch_dimension
     integer, intent(inout) :: SubSystemIndex(nAtoms)
     ! local variables
     integer :: i
-    IF(mylsitem%input%molecule%nSubSystems.EQ.2)THEN
+
+    IF(mylsitem%input%molecule%nSubSystems>1)THEN
        do i=1,nAtoms
           SubSystemIndex(i)=mylsitem%input%molecule%ATOM(I)%SubSystemIndex
        end do
     ELSE
        SubSystemIndex=1
     ENDIF
+
   end subroutine GetSubSystemIndex
 
   !> \brief Get a table with interatomic distances (or interorbital for DECCO)

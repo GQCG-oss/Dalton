@@ -68,7 +68,6 @@ CONTAINS
          write(config%lupri,*) 'Switching to second order optimization - turning off averaging!'
          config%av%cfg_averaging = config%av%cfg_avg_none
       endif
-
        if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
          call mat_init(tmp1,ndim,ndim)
          call mat_init(tmp2,ndim,ndim)
@@ -134,6 +133,7 @@ CONTAINS
             !write(config%lupri,*) 'Fmo:'
             !call mat_print(Fmo, 1, F%nrow, 1, F%ncol, lupri)
             !2. Get occupied-virtual block of Fock matrix:
+            IF (config%decomp%cfg_unres) CALL LSQUIT('Fixme: VanLenthe and unrestricted not working together',-1)
             call mat_init(Fov, config%decomp%nocc, F%nrow-config%decomp%nocc)
             call mat_section(Fmo,1,config%decomp%nocc,config%decomp%nocc+1,F%nrow,Fov)
             call mat_free(Fmo)

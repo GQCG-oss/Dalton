@@ -107,7 +107,7 @@
          if (allocated(fao)) deallocate(fao)
       END IF
 
-      END
+      end subroutine
 !  /* Deck get_fvvec */
       SUBROUTINE GET_FVVEC(DCAO,DVAO,FVVEC,IDIM,WORK,LWORK)
 !
@@ -160,7 +160,7 @@
       END IF
 !
       RETURN
-      END
+      end subroutine
 !  /* Deck get_qmnucfv */
       SUBROUTINE GET_QMNUCFV(FVVEC,IDIM)
 !
@@ -220,7 +220,7 @@
       END IF
 !
       RETURN
-      END
+      end subroutine
 !  /* Deck get_qmelefv */
       SUBROUTINE GET_QMELEFV(FVVEC,IDIM,DCAO,DVAO,WORK,LWORK)
 !
@@ -345,7 +345,7 @@
       DIPORG(3) = RSAVORG(3)
 !
       RETURN
-      END
+      end subroutine
 !  /* Deck get_qlag */
       SUBROUTINE GET_QLAGRAN(FVVEC,IDIM)
 !
@@ -370,7 +370,7 @@
       END IF
 !
       RETURN
-      END
+      end subroutine
 !  /* Deck get_mmfv */
       SUBROUTINE GET_MMFV(FVVEC,IDIM)
 !
@@ -428,7 +428,7 @@
       END IF
 !
       RETURN
-      END
+      end subroutine
 !  /* Deck get_fvvec */
       SUBROUTINE GET_INDMQ_FOCK(DCAO,DVAO,MQVEC,IDIM,FCAO,WORK,LWORK)
 !
@@ -674,7 +674,7 @@
          ENSOLQNP = DP5*ENSOLQNP
       END IF
       RETURN
-      END
+      end subroutine
 !  /* Deck get_permq_fock */
       SUBROUTINE GET_PERMQ_FOCK(DCAO,DVAO,FCAO,WORK,LWORK)
 !
@@ -768,7 +768,7 @@
       DIPORG(3) = RSAVORG(3)
 !
       RETURN
-      END
+      end subroutine
 !     /* Deck scf_qmnpmm_out */
       SUBROUTINE SCF_QMNPMM_OUT()
 ! Purpose:
@@ -821,7 +821,7 @@
       END IF
 !
       RETURN
-      END
+      end subroutine
 
 
 

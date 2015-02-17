@@ -137,7 +137,7 @@
       CALL MEMREL('QMNPMM_LNO',WORK,1,1,KFREE,LFREE)
 !
       RETURN
-      END
+      end subroutine
 !  /* Deck qmnpmmqro */
       SUBROUTINE QMNPMMQRO(VEC1,VEC2,ETRS,XINDX,ZYM1,ZYM2,              &
      &                     UDV,WORK,LWORK,KZYVR,KZYV1,KZYV2,            &
@@ -278,7 +278,7 @@
       CALL QEXIT('QMNPMMQRO')
 !
       RETURN
-      END
+      end subroutine
 
 !  /* Deck get_fvvec_lr */
       SUBROUTINE GET_FVVEC_LR(UDV,UDVTR,CMO,BOVECS,FVVEC,IDIM,NOSIM,    &
@@ -500,7 +500,7 @@
       END DO
 !
       RETURN
-      END
+      end subroutine
 
 !  /* Deck get_fvvec_qr */
       SUBROUTINE GET_FVVEC_QR(FVVEC1,FVVEC2,IDIM,NSIM,UDV,UCMO,         &
@@ -750,7 +750,7 @@
       END DO
 !
       RETURN
-      END
+      end subroutine
 
 !  /* Deck get_xyvec_lr */
       SUBROUTINE GET_XYVEC_LR(FMQVEC,CMO,IDIM,NOSIM,FXYVEC,WORK,LWORK)
@@ -905,7 +905,7 @@
       DIPORG(3) = RSAVORG(3)
 !
       RETURN
-      END
+      end subroutine
 
 !  /* Deck get_xyvec_qr */
       SUBROUTINE GET_XYVEC_QR(FMQVEC1,FMQVEC2,UCMO,IDIM,NSIM,FVEC,      &
@@ -1086,5 +1086,5 @@
       DIPORG(3) = RSAVORG(3)
 !
       RETURN
-      END
+      end subroutine
 
