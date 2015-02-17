@@ -143,8 +143,8 @@ CONTAINS
 
   !> \brief Calculates the PARI fitting coefficients for a pair of atom AB
   !> \latexonly
-  !>        $c_\alpha^{ab} = (\alpha|\beta)^{-1} (\beta|ab), \quad \alpha\in{A\cup B},
-  !>                         \quad a\in A,\quad b\in B$
+  !>   $c_\alpha^{ab} = (\alpha|\beta)^{-1} (\beta|ab), \quad \alpha\in{A\cup B},
+  !>                    \quad a\in A,\quad b\in B$
   !> \endlatexonly
   !> \author E. Rebolini, S. Reine and P. Merlot
   !> \date 2015-02-13
@@ -498,70 +498,116 @@ CONTAINS
     ENDDO
   END SUBROUTINE freePariCoefficients
 
-  !> \brief Compute GQ_nusigma coefficients for aux. fct. Q centered on atom A for MOPARI-K
+  !> \brief Compute GQ_nusigma coefficients for MOPARI-K
   !> \latexonly
-  !> $G_Q^{\nu \sigma}=(Q | \nu \sigma)-\dfrac{1}{2} \sum_R (Q | R)C_R^{\nu \sigma} $
+  !>   $G_Q^{\nu \sigma}=(Q | \nu \sigma)
+  !>      -\dfrac{1}{2} \sum_R (Q | R) C_R^{\nu \sigma} $
   !> \endlatexonly
   !> \author E. Rebolini
   !> \date 2015-02
+  !> \param GQ_nusigma Array of coeffs with Q in Aux(A), nu in Reg(B), sigma in Reg(C)
+  !> \param iAtomA
+  !> \param iAtomB
+  !> \param iAtomC
   !> \param orbitalInfo Information about the molecular orbitals (dimensions)
-  !> \param calpha_ab Array of extracted PARI coefficients centered on each atom
-  !> \param alpha_beta Matrix of Aux 2-center integrals (Q|R)
-  !> \param GQ_nusigma Array of coefficients Q in Aux(A), nu in Reg(A), sigma in Reg(Mol)
-  subroutine getGQcoeff(iAtomA,orbitalInfo,calpha_ab,alpha_beta,GQ_nusigma)
+  !> \param setting Contains information about the integral settings
+  !> \param molecule Description of the molecule
+  !> \param atoms Each molecule made of only one atom 
+  !> \param regCSfull Screening matrix G_ab = log( sqrt( (ab|ab) ) )
+  !> \param auxCSfull Screening matrix G_alpha = log( sqrt( (alpha|alpha) ) )
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
+  subroutine getGQcoeff(GQ_nusigma,iAtomA,iAtomB,iAtomC,orbitalInfo,&
+       setting,molecule,atoms_A,regCSfull,auxCSfull,lupri,luerr)
     implicit none
-    integer,intent(in)                    :: iAtomA
+    real(realk),pointer                   :: GQ_nusigma(:,:,:)
+    integer,intent(in)                    :: iAtomA,iAtomB,iAtomC
     type(molecularorbitalinfo),intent(in) :: orbitalInfo
-    type(mat3d),intent(in)                :: calpha_ab(orbitalInfo%nAtoms)
-    real(realk),pointer                   :: alpha_beta(:,:,:,:,:)
-    real(realk),intent(inout)             :: GQ_nusigma&
-         (orbitalInfo%numAtomicOrbitalsAux(iAtomA),&
-         orbitalInfo%numAtomicOrbitalsReg(iAtomA),&
-         orbitalInfo%nBastReg)
-    !Number, start and end indices of Reg basis fct centered on A
+    TYPE(LSSETTING),intent(inout)         :: SETTING
+    Integer,intent(in)                    :: LUPRI,LUERR
+    TYPE(LSTENSOR),pointer                :: regCSfull,auxCSfull
+    TYPE(MoleculeInfo),pointer            :: molecule
+    Type(moleculeinfo),pointer            :: atoms_A(:)
+
     integer                               :: nRegA,startRegA,endRegA
-    !Number, start and end indices of Aux basis fct centered on A
     integer                               :: nAuxA,startAuxA,endAuxA
-    !Number, start and end indices of Reg basis fct centered on B
     integer                               :: nRegB,startRegB,endRegB
-    !Number, start and end indices of Aux basis fct centered on B
     integer                               :: nAuxB,startAuxB,endAuxB
-    !Total number of Reg and Aux basis functions
+    integer                               :: nRegC,startRegC,endRegC
+    integer                               :: nAuxC,startAuxC,endAuxC
     integer                               :: nBastReg,nBastAux
-    integer                               :: iAtomB,nAtoms
-    !Submatrix of Aux 2-center integrals (Q|R) with Q centered on A
+    integer                               :: nAuxAB,nAuxBC,nAuxAC
+    integer                               :: nAtoms
+    real(realk),pointer                   :: alpha_beta(:,:)
     real(realk),pointer                   :: extracted_alpha_beta(:,:)
+    real(realk),pointer                   :: calpha_ab_block(:,:,:)
+    Real(realk)                           :: minEigv,maxEigv,conditionNum
+
+    minEigV = 9999.90E0_realk
+    maxEigV = -9999.90E0_realk
+    conditionNum = abs(maxEigV)/abs(minEigV)
 
     call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
          nAuxA,startAuxA,endAuxA)
+    call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
+         nAuxB,startAuxB,endAuxB)
+    call getAtomicOrbitalInfo(orbitalInfo,iAtomC,nRegC,startRegC,endRegC,&
+         nAuxC,startAuxC,endAuxC)
 
     nAtoms = orbitalInfo%nAtoms
 
-    !Loop over B
-    do iAtomB=1,nAtoms
-       call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
-            nAuxB,startAuxB,endAuxB)
-       call mem_alloc(extracted_alpha_beta,nAuxA,nAuxB)
-       extracted_alpha_beta(1:nAuxA,1:nAuxB) = alpha_beta(startAuxA:endAuxA,&
-            1,startAuxB:endAuxB,1,1)
+    !Get matrix (Q|R) with Q in Aux(A) and R in Aux(B U C)
+    nAuxAB=nAuxA+nAuxB
+    nAuxAC=nAuxA+nAuxC
+    nAuxBC=nAuxB+nAuxC
+    call mem_alloc(extracted_alpha_beta,nAuxA,nAuxBC)
+    call mem_alloc(alpha_beta,nAuxAB,nAuxAB)
+    call ls_dzero(alpha_beta,nAuxAB*nAuxAB)
+    call pari_alphaBeta(alpha_beta,setting,molecule,atoms_A,iAtomA,iAtomB,&
+         &                    nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
+    
+    extracted_alpha_beta(1:nAuxA,1:nAuxB) = alpha_beta(1:nAuxA,nAuxA+1:nAuxAB)
+    call mem_dealloc(alpha_beta)
+    call mem_alloc(alpha_beta,nAuxAC,nAuxAC)
+    call ls_dzero(alpha_beta,nAuxAC*nAuxAC)
+    call pari_alphaBeta(alpha_beta,setting,molecule,atoms_A,iAtomA,iAtomC,&
+         &                    nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
+    extracted_alpha_beta(1:nAuxA,nAuxB+1:nAuxBC) = alpha_beta(1:nAuxA,nAuxA+1:nAuxAC)
+    call mem_dealloc(alpha_beta)
+    
+    !Get PARI coefficients C_R^{\nu \sigma} with R in Aux(B U C)
+    !nu in Reg(B) and sigma in Reg(C)
+    call mem_alloc(calpha_ab_block,nAuxBC,nRegB,nRegC)
+    call getPariCoefficientsBlock(lupri,luerr,setting,iAtomB,iAtomC,&
+       Calpha_ab_block,orbitalInfo,regCSfull,auxCSfull,molecule,atoms_A,&
+       minEigV,maxEigV,conditionNum)
 
-       !call DGEMM('N','N',nAuxA*nRegA,nBasis,nBasis,1E0_realk,calpha_ab(iAtomA)%elements,&
-       !   &     nAuxA*nRegA,Dfull,nBasis,0E0_realk,dalpha_ab,nAuxA*nRegA)
+    !Get three-center integrals (Q|nu sigma) with Q in Aux(A), nu in Reg(B) and 
+    !sigma in Reg(C)
+    call pari_alphacd(GQ_nusigma,setting,atoms_a,iAtomA,iAtomB,iAtomC,&
+         nAuxA,nRegB,nRegC,lupri,luerr)
 
-       call mem_dealloc(extracted_alpha_beta)
-    enddo !Loop B
+    !Construct GQ_nusigma 
+    call DGEMM('N','N',nAuxA,nRegB*nRegC,nAuxBC,-0.5E0_realk,extracted_alpha_beta,&
+         &     nAuxA,Calpha_ab_block,nRegB*nRegC,1E0_realk,GQ_nusigma,nAuxA)
+    call mem_dealloc(calpha_ab_block)
+    call mem_dealloc(extracted_alpha_beta)
+    
   end subroutine getGQcoeff
 
-!> \brief This subroutine constructs the density coefficients centered on one atom A for PARI-K
-!> \latexonly
-!>   $d_\alpha^{ac} = \sum_b c_\alpha^{ab} D_{bc}, \quad a,\alpha\in A, \quad b,c\in{\cal M}$
-!> \endlatexonly
-!> \author P. Merlot, S. Reine
-!> \date 2010-05-04
-!> \param orbitalInfo Information about the molecular orbitals (dimensions)
-!> \param calpha_ab Array of extracted PARI coefficients centered on each atom
-!> \param Dfull the full density matrix
-!> \param dalpha_ab Array of PARI density coefficients (alpha,a in A, and b in mol.)
+
+
+  !> \brief Constructs the density coefficients centered on one atom A for PARI-K
+  !> \latexonly
+  !>   $d_\alpha^{ac} = \sum_b c_\alpha^{ab} D_{bc},
+  !>      \quad a,\alpha\in A, \quad b,c\in{\cal M}$
+  !> \endlatexonly
+  !> \author P. Merlot, S. Reine
+  !> \date 2010-05-04
+  !> \param orbitalInfo Information about the molecular orbitals (dimensions)
+  !> \param calpha_ab Array of extracted PARI coefficients centered on each atom
+  !> \param Dfull the full density matrix
+  !> \param dalpha_ab Array of PARI density coefficients (alpha,a in A, and b in mol.)
 SUBROUTINE getDensityCoefficients(iAtomA,orbitalInfo,calpha_ab,Dfull,dalpha_ab)
 IMPLICIT NONE
 Integer,INTENT(IN)                     :: iAtomA
@@ -976,22 +1022,22 @@ CALL pariFreePairFragment(AB,iAtomA,iAtomB)
 
 END SUBROUTINE pari_alphaab
 
-! SUBROUTINE pari_alphacd(alpha_cd,setting,atoms,iAtomA,iAtomC,iAtomD,&
-!      &                  nAuxA,nRegC,nRegD,lupri,luerr)
-! implicit none
-! TYPE(lssetting),intent(inout) :: setting
-! Integer,intent(in)            :: iAtomA,iAtomC,iAtomD,nAuxA,nRegC,nRegD,lupri,luerr
-! TYPE(moleculeinfo),pointer    :: atoms(:)
-! Real(realk),intent(in)        :: alpha_cd(nAuxA,nRegC,nRegD)
+SUBROUTINE pari_alphacd(alpha_cd,setting,atoms,iAtomA,iAtomC,iAtomD,&
+      &                  nAuxA,nRegC,nRegD,lupri,luerr)
+implicit none
+TYPE(lssetting),intent(inout) :: setting
+Integer,intent(in)            :: iAtomA,iAtomC,iAtomD,nAuxA,nRegC,nRegD,lupri,luerr
+TYPE(moleculeinfo),pointer    :: atoms(:)
+Real(realk),intent(in)        :: alpha_cd(nAuxA,nRegC,nRegD)
 
-! !set threshold
-! SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
-! call typedef_setMolecules(setting,atoms(iAtomA),1,atoms(iAtomC),3,atoms(iAtomD),4)
-! call initIntegralOutputDims(setting%Output,nAuxA,1,nRegC,nRegD,1)
-! call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,RegularSpec,&
-!      &               Contractedinttype,SETTING,LUPRI,LUERR)
-! CALL retrieve_Output(lupri,setting,alpha_cd,.FALSE.)
-! END SUBROUTINE pari_alphacd
+!set threshold
+SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+call typedef_setMolecules(setting,atoms(iAtomA),1,atoms(iAtomC),3,atoms(iAtomD),4)
+call initIntegralOutputDims(setting%Output,nAuxA,1,nRegC,nRegD,1)
+call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
+     RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,alpha_cd,.FALSE.)
+END SUBROUTINE pari_alphacd
 
 SUBROUTINE pari_alphacd_full(alpha_cd,setting,molecule,atoms,iAtomA,&
      &                       nAuxA,nRegC,nRegD,lupri,luerr)
@@ -1304,6 +1350,7 @@ IF (iAtomA.NE.iAtomB) THEN
   call free_MoleculeInfo(AB)
 ENDIF
 END SUBROUTINE pariFreePairFragment
+
 
 !> \brief Calculate eigenvalues(W)/eigenvectors(A) of a square (symmetric or not) matrix A with rank rankA
 !> \author P. Merlot

@@ -1413,7 +1413,7 @@ contains
     Real(realk),pointer        :: alpha_beta(:,:,:,:,:)
     type(matrixp)              :: intmat(1)
     Integer                    :: usemat
-    Integer                    :: iAtomA,iAtomB,iAtomC,iAtomD
+    Integer                    :: iAtomA,iAtomB,iAtomC,iAtomD,iAtom
     TYPE(MAT3D),pointer        :: calpha_ab(:)
     Real(realk),pointer        :: dalpha_ad(:,:,:),GQ_nusigma(:,:,:)
 
@@ -1431,6 +1431,12 @@ contains
     logical                    :: saveRecalcGab
     integer                    :: idmat,nmat,nrow,ncol
     TYPE(LSTENSOR),pointer     :: regCSfull,auxCSfull
+    !
+    Real(realk)                :: threshold
+    Integer,pointer            :: neighbourA(:,:)
+    Real(realk)                :: minEigv,maxEigv,conditionNum
+    Type(moleculeinfo),pointer :: atoms_A(:)
+    Real(realk),pointer        :: calpha_ab_block(:,:,:)
 
     IF (ndmat.GT.1) THEN
        WRITE(*,*)     &
@@ -1466,7 +1472,8 @@ contains
                "The PARI approximation isn't implemented for unrestricted cases yet."
           WRITE(LUPRI,*) &
                "The PARI approximation isn't implemented for unrestricted cases yet."
-          call lsquit('Not allowed combination in II_get_pari_df_exchange_mat. FMM and unrestricted',-1)
+          call lsquit('Not allowed combination in II_get_pari_df_exchange_mat.'//&
+               'FMM and unrestricted',-1)
        ENDIF
        nmat = 2*ndmat
        call mem_alloc(Dfull,nrow,ncol,nmat)
@@ -1485,12 +1492,13 @@ contains
 
     !set threshold 
     SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
-    !Then get the full precalculated screening matrices
+    threshold=SETTING%SCHEME%intTHRESHOLD
+
+    !Then get the full precalculated screening matrices G_ab and G_alpha
+    !G_ab = integer part of log( max( sqrt (ab|ab) ))
+    !where a and b runs on batches of atomic orbitals
     CALL II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
     !
-!debug
-    write(lupri,*) 'regCSfull'
-    call lstensor_Print(regCSfull,lupri)
     molecule => SETTING%MOLECULE(1)%p
     !
     call getMolecularDimensions(molecule,nAtoms,nBastReg,nBastAux)
@@ -1498,50 +1506,85 @@ contains
     CALL LSTIMER('START ',te,ts,lupri)
     CALL LSTIMER('START ',tefull,tsfull,lupri)
 
-    call mem_alloc(Kfull_3cContrib,nBastReg,nBastReg,1,1,nmat)
-    call mem_alloc(Kfull_2cContrib,nBastReg,nBastReg,1,1,nmat)
-    call ls_DZERO(Kfull_3cContrib,nBastReg*nBastReg*nmat)
-    call ls_DZERO(Kfull_2cContrib,nBastReg*nBastReg*nmat)
-
     ! --- Build an array with the list of atoms with their respective 
     ! --- nb. of orbitals/auxiliary functions
     ! --- Build another array to know where each atom start in the complete matrices
     call setMolecularOrbitalInfo(molecule,orbitalInfo)
 
-    ! --- Get screening integrals G_ab and G_alpha
-    !> \todo (Patrick) Get screening integrals G_ab and G_alpha
+    call mem_alloc(Kfull_3cContrib,nBastReg,nBastReg,1,1,nmat)
+    call mem_alloc(Kfull_2cContrib,nBastReg,nBastReg,1,1,nmat)
+    call ls_DZERO(Kfull_3cContrib,nBastReg*nBastReg*nmat)
+    call ls_DZERO(Kfull_2cContrib,nBastReg*nBastReg*nmat)
+    
+    !--- MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
+    if (setting%scheme%MOPARI_K) then
+       ! --- Set up domains of atoms
+       ! --- NeighbourA(iAtomA,1:M) contains the indices of the M atoms B 
+       ! --- Such that max(G_ab) > threshold with a in Reg(A) and b in Reg(B)
+       ! --- the rest of each line is zero
+       allocate(atoms_A(nAtoms))  ! --- each molecule made of only one atom   
+       call pari_set_atomic_fragments(molecule,atoms_A,nAtoms,lupri)
+       call mem_alloc(neighbourA,nAtoms,nAtoms)
+       neighbourA(:,:) = 0
+       call get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
+            atoms_A,lupri,luerr,setting)
+       ! Loop over A
+       do iAtomA=1,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+               nAuxA,startAuxA,endAuxA)                
+          ! Loop over B
+          do iAtomB=1,nAtoms
+!TOCHECK: B begins at 1 or A ?
+             call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
+                  nAuxB,startAuxB,endAuxB)
+             iAtom=1
+             !Loop over C (neighbours of B)
+             do while (neighbourA(iAtomB,iAtom).gt.0)
+                iAtomC=neighbourA(iAtomB,iAtom)
+                iAtom=iAtom+1
+                call getAtomicOrbitalInfo(orbitalInfo,iAtomC,nRegC,startRegC,endRegC,&
+                  nAuxC,startAuxC,endAuxC)
+                ! --- Construct GQ_nusigma, Q in Aux(A), nu in Reg(B), sigma in Reg(C)
+                call mem_alloc(GQ_nusigma,nAuxA,nRegB,nRegC)
+                call getGQcoeff(GQ_nusigma,iAtomA,iAtomB,iAtomC,orbitalInfo,&
+                     setting,molecule,atoms_A,regCSfull,auxCSfull,lupri,luerr)
+                call mem_dealloc(GQ_nusigma)
+              Enddo !Loop over C
+          Enddo !Loop over B 
+       Enddo !Loop A
+             
+       call pari_free_atomic_fragments(atoms_A,nAtoms)
+       deallocate(atoms_A) 
+       call mem_dealloc(neighbourA)
 
-    ! --- Set up domains of atoms
-    !> \todo (Patrick) Set up domains of atoms
+    else !PARI_K
 
-    ! --- Build the full huge matrices (alpha | beta)
-    usemat = 0 
-    call mem_alloc(alpha_beta,nBastAux,1,nBastAux,1,1)
-    call ls_DZERO(alpha_beta,nBastAux*nBastAux)
-    call ls_attach_gab_to_setting(setting,auxCSfull,auxCSfull)
-    call initIntegralOutputDims(setting%output,nBastaux,1,nBastaux,1,1)
-    call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
-         CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-    call retrieve_Output(lupri,setting,alpha_beta,.FALSE.)
-    call ls_free_gab_from_setting(setting,lupri)
+       ! --- Build the full huge matrices (alpha | beta)
+       usemat = 0 
+       call mem_alloc(alpha_beta,nBastAux,1,nBastAux,1,1)
+       call ls_DZERO(alpha_beta,nBastAux*nBastAux)
+       call ls_attach_gab_to_setting(setting,auxCSfull,auxCSfull)
+       call initIntegralOutputDims(setting%output,nBastaux,1,nBastaux,1,1)
+       call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
+            CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+       call retrieve_Output(lupri,setting,alpha_beta,.FALSE.)
+       call ls_free_gab_from_setting(setting,lupri)
 
-    ! --- Memory allocation (all Density coefficients stored in an INefficient way)
+       ! --- Memory allocation (all Density coefficients stored in an INefficient way)
 
-    CALL LSTIMER('(al|be)',te,ts,lupri)
+       CALL LSTIMER('(al|be)',te,ts,lupri)
 
-    ! --- Calculate the pair-atomic fitting coefficients 
-    allocate(calpha_ab(nAtoms))
-    call getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,&
-         regCSfull,auxCSfull)
+       ! --- Calculate the pair-atomic fitting coefficients 
+       allocate(calpha_ab(nAtoms))
+       call getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,&
+            regCSfull,auxCSfull)
 
-    CALL LSTIMER('Coeffs ',te,ts,lupri)
+       CALL LSTIMER('Coeffs ',te,ts,lupri)
 
-    !re-set threshold 
-    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+       !re-set threshold 
+       SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
 
-
-    DO idmat=1,nmat
-       if (setting%scheme%PARI_K) then
+       DO idmat=1,nmat
           ! 
           ! Insert call to screening_matrices over the full molecule for both 
           ! AORdefault,AORdefault and AODFdefault
@@ -1583,22 +1626,11 @@ contains
           Kfull_3cContrib(:,:,1,1,idmat) = Kfull_3cContrib(:,:,1,1,idmat) &
                + Kfull_2cContrib(:,:,1,1,idmat)
           call symmetrizeKfull_3cContrib(Kfull_3cContrib(:,:,1,1,idmat),nBastReg)
-       Else !MOPARI_K
-       !--- MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
-          do iAtomA=1,nAtoms
-             call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
-                  nAuxA,startAuxA,endAuxA)
-             ! --- Construct GQ_nusigma, Q in Aux(A), nu in Reg(A), sigma in Reg(Mol)
-             call mem_alloc(GQ_nusigma,nAuxA,nRegA,nBastReg)
-             call getGQcoeff(iAtomA,orbitalInfo,calpha_ab,alpha_beta,GQ_nusigma)
+       ENDDO
 
-             call mem_dealloc(GQ_nusigma)
-          Enddo !Loop A
-       Endif !PARI_K
-    ENDDO
-
-    call freePariCoefficients(calpha_ab,orbitalInfo%nAtoms)
-    deallocate(calpha_ab)
+       call freePariCoefficients(calpha_ab,orbitalInfo%nAtoms)
+       deallocate(calpha_ab)
+    endif
 
     CALL freeMolecularOrbitalInfo(orbitalInfo)
 
@@ -1626,6 +1658,72 @@ contains
     CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
 
   END SUBROUTINE II_get_pari_df_exchange_mat
+
+  !> \brief Set up domains of atoms such that max(G_ab) > threshold
+  !> \brief with a in Reg(A) and b in Reg(B)
+  !> \author E. Rebolini
+  !> \date 2015-02
+  !> \param neighbourA (iAtomA,1:M) contains the indices of the M neighbours B 
+  !> \param orbitalInfo Orbital information
+  !> \param regCSfull Screening matrix G_ab = log( sqrt( (ab|ab) ) )
+  !> \param threshold Minimum value for G_ab
+  !> \param molecule Description of the molecule
+  !> \param atoms Each molecule made of only one atom 
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
+  !> \param setting Contains information about the integral settings
+subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
+     atoms,lupri,luerr,setting)
+  implicit none
+  Integer,pointer                       :: neighbourA(:,:)
+  Type(molecularorbitalinfo),intent(in) :: orbitalInfo
+  Type(lstensor),pointer                :: regCSfull
+  Real(realk)                           :: threshold
+  Type(moleculeinfo),pointer            :: molecule
+  Type(moleculeinfo),pointer            :: atoms(:)
+  Integer,intent(in)                    :: lupri,luerr
+  Type(lssetting),intent(inout)         :: setting
+    
+  Integer                               :: nAtoms
+  Integer                               :: iAtomA,nRegA,startRegA,endRegA
+  Integer                               :: nAuxA,startAuxA,endAuxA
+  Integer                               :: iAtomB,nRegB,startRegB,endRegB
+  Integer                               :: nAuxB,startAuxB,endAuxB
+  TYPE(moleculeinfo),pointer            :: AB
+  TYPE(moleculeinfo),target             :: ABtarget
+  Integer                               :: nAux,iAtomAB
+  TYPE(LSTENSOR),pointer                :: auxCSab,regCSab
+  INTEGER                               :: atomsAB(2),dummyAtoms(1)
+  Integer(kind=short)                   :: maxgab
+ 
+  nAtoms=orbitalInfo%nAtoms
+!  allocate(ATOMS(nAtoms))  ! --- each molecule made of only one atom   
+!  call pari_set_atomic_fragments(molecule,ATOMS,nAtoms,lupri)
+  do iAtomA=1,nAtoms
+       call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+            nAuxA,startAuxA,endAuxA)
+       iAtomAB=1
+       do iAtomB=iAtomA,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
+               nAuxB,startAuxB,endAuxB)
+          CALL pariSetPairFragment(AB,ABtarget,setting%basis(1)%p,molecule,atoms,&
+               molecule%nAtoms,iAtomA,iAtomB,nAuxA,nAuxB,nAux,lupri)
+          NULLIFY(regCSab)
+          ALLOCATE(regCSab)
+          call ls_subScreenAtomic(regCSab,regCSfull,iAtomA,iAtomB,&
+               nRegA,nRegB,.FALSE.)
+          maxgab=regCSab%maxgabelm
+          if (maxgab.GE.(CEILING(LOG10(threshold)))) then
+             neighbourA(iAtomA,iAtomAB)=iAtomB
+             iAtomAB=iAtomAB+1
+          endif
+          call lstensor_free(regCSab)
+          DEALLOCATE(regCSab)
+          CALL pariFreePairFragment(AB,iAtomA,iAtomB)
+       enddo
+    enddo         
+    
+end subroutine
 
 subroutine symmetrizeKfull_3cContrib(Kfull_3cContrib,nBastReg)
   implicit none
