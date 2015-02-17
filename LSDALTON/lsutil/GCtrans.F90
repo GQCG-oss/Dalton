@@ -616,7 +616,10 @@ IF(matrix_exsist)then
    call lsopen(GCAOtrans_lun,'GCAOtrans','OLD','UNFORMATTED')
    rewind GCAOtrans_lun
    READ(GCAOtrans_lun) nbast2
-   IF(nbast2.NE.nbast)call lsquit('dim mismatch read_GCtransformationmatrix',-1)
+   IF(nbast2.NE.nbast) THEN
+     write(lupri,'(A,2I5)') 'Error in read_GCtransformationmatrix - dim mismatch:',nbast,nbast2
+     call lsquit('dim mismatch read_GCtransformationmatrix',-1)
+   ENDIF
    READ(GCAOtrans_lun) CCfull
    call lsclose(GCAOtrans_lun,'KEEP')
 ELSE

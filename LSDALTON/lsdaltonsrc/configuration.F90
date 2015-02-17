@@ -3386,6 +3386,8 @@ config%av%ediis_history_size = config%av%diis_history_size
       config%diag%cfg_unres =.TRUE.
       config%opt%cfg_unres =.TRUE.
       config%soeoinp%cfg_unres = .true.
+      config%diag%nocca = config%decomp%NOCCA
+      config%diag%noccb = config%decomp%NOCCb
       !write(lupri,*) 'alpha_specified, beta_specified', alpha_specified, beta_specified
       if (config%decomp%alpha_specified .and. config%decomp%beta_specified) then
          if (config%decomp%nocca + config%decomp%noccb /= 2*config%decomp%nocc + config%decomp%nactive) then
