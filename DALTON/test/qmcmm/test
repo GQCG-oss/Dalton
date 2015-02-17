@@ -22,7 +22,7 @@ f.add(from_string = '     QM/NP/MM calculation converged     :',
       num_lines = 7,
       rel_tolerance = 1.0e-7)
 
-test.run(['qmcmm_damped.dal', 'qmcmm_nppoin.dal', 'qmcmm_nonpca.dal', 'qmcmm_mmpola.dal', 'qmcmm_damped_rsp.dal'],
+test.run(['qmcmm_damped.dal', 'qmcmm_nppoin.dal', 'qmcmm_nonpca.dal', 'qmcmm_mmpola.dal', 'qmcmm_damped_lr.dal', 'qmcmm_damped_qr.dal'],
          ['qmcmm.mol'], f={'out': f}, args='-put POTENTIAL.INP')
 
 sys.exit(test.return_code)

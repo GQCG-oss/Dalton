@@ -230,18 +230,22 @@
            IOFF = (I-1)*IDIM
            CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
      &                WORK(KFVVEC1+IOFF),1,D0,WORK(KMQVEC1+IOFF),1)
-           IF (IPRTLVL.GE.15) THEN
-              WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed MQ1 vector ',  &
-     &              I,' perturbed first order density ***'
-              CALL OUTPUT(WORK(KMQVEC1+IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-           END IF
            CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
      &                WORK(KFVVEC2+IOFF),1,D0,WORK(KMQVEC2+IOFF),1)
-           IF (IPRTLVL.GE.15) THEN
-              WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed MQ2 vector ',  &
-     &              I,' perturbed first order density ***'
-              CALL OUTPUT(WORK(KMQVEC2+IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-           END IF
+          if (iprtlvl > 14) then
+             write(lupri, '(/,2x,a,i0)') &
+                 '*** Computed MQ vector start v1 1st-order density ', i
+             do j = 1, idim
+                write(lupri, '(i8, f18.8)') j, WORK(KMQVEC1+IOFF-1+j)
+             end do
+             write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
+             write(lupri, '(/,2x,a,i0)') &
+                 '*** Computed MQ vector start v2 1st-order density ', i
+             do j = 1, idim
+                write(lupri, '(i8, f18.8)') j, WORK(KMQVEC2+IOFF-1+j)
+             end do
+             write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
+          end if
         END DO
 !       Determine MM region contribution to QM region potential from
 !       second order density
@@ -738,15 +742,21 @@
       DIPORG(3) = RSAVORG(3)
 !     Print final FV vector
       DO I=1,NSIM
-         IF ((IPRTLVL.GE.15).AND.(.NOT.MQITER)) THEN
-            WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed FV1 vector for ',&
-     &            I, ' pertubed second order density matrix ***'
+         if (iprtlvl > 14 .and. .not. mqiter) then
             IOFF = (I-1)*IDIM+1
-            CALL OUTPUT(FVVEC1(IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-            WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed FV2 vector for ',&
-     &            I, ' pertubed second order density matrix ***'
-            CALL OUTPUT(FVVEC2(IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-         END IF
+            write(lupri, '(/,2x,a,i0)') &
+                '*** Computed FV vector start v1 2nd-order density ', i
+            do j = 1, idim
+               write(lupri, '(i8, f18.8)') j, fvvec1(IOFF-1+j)
+            end do
+            write(lupri, '(/,2x,a)') '*** Computed FV vector end ***'
+            write(lupri, '(/,2x,a,i0)') &
+                '*** Computed FV vector start v2 2nd-order density ', i
+            do j = 1, idim
+               write(lupri, '(i8, f18.8)') j, fvvec2(IOFF-1+j)
+            end do
+            write(lupri, '(/,2x,a)') '*** Computed FV vector end ***'
+         end if
       END DO
 !
       RETURN
