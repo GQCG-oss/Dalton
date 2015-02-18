@@ -410,6 +410,9 @@ contains
     fragment%EoccFOP      = 0.0_realk
     fragment%EvirtFOP     = 0.0_realk
     fragment%LagFOP       = 0.0_realk
+    fragment%Eocc_err     = 0.0_realk
+    fragment%Evir_err     = 0.0_realk
+    fragment%Elag_err     = 0.0_realk
 
 
     ! Information related to singles amplitudes - only relevant for CC2 and CCSD
@@ -3609,8 +3612,11 @@ contains
        write(wunit) int(fragment%EOSatoms(i),kind=8)
     end do
 
-    ! Energies
+    ! Energies, and reference energies
     write(wunit) fragment%energies
+    write(wunit) fragment%Eocc_err
+    write(wunit) fragment%Evir_err
+    write(wunit) fragment%Elag_err
 
     ! Correlation density matrices
     CDset64    = fragment%CDset
@@ -3839,8 +3845,11 @@ contains
     call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nunocc, MyMolecule%nocc,&
          & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
-    ! Fragment energies
+    ! Fragment energies, and fragment approximate errors for the estimate
     read(runit) fragment%energies
+    read(runit) fragment%Eocc_err
+    read(runit) fragment%Evir_err
+    read(runit) fragment%Elag_err
 
     ! Correlation density matrices and fragment-adapted orbitals
     call read_64bit_to_int(runit,fragment%CDset)

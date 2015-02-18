@@ -58,7 +58,7 @@ contains
     !> Correlation Energy 
     real(realk),intent(inout) :: Ecorr
     !local variables
-    real(realk) :: Eerr,Edft
+    real(realk) :: Edft
 
     write(DECinfo%output,'(/,a)') ' ================================================ '
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
@@ -120,9 +120,8 @@ contains
          Edft = get_dft_energy_fullmolecule(MyMolecule,Mylsitem,D) 
        endif
 
-       ! Print summary
-       Eerr = 0.0_realk   ! zero error for full calculation by definition
-       call print_total_energy_summary(EHF,Edft,Ecorr,Eerr)
+       ! Print summary, set the error estimates to zero
+       call print_total_energy_summary(EHF,Edft,Ecorr,0.0E0_realk,0.0E0_realk,0.0E0_realk)
 
     end if DoCorrelatedCalculation
 
