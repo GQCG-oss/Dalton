@@ -376,7 +376,6 @@ add_dalton_runtest(pehf_cpp           "dalton;peqm;runtest;parallel;short;essent
 add_dalton_test(pehf_nomb             "dalton;peqm;parallel;short;multistep")
 add_dalton_runtest(pehf_lao           "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_lao_redist    "dalton;peqm;runtest;parallel;short;essential")
-add_dalton_runtest(pehf_zero          "dalton;peqm;parallel;short")
 add_dalton_test(pemcscf_1             "dalton;peqm;parallel;short")
 add_dalton_test(pemcscf_2             "dalton;peqm;parallel;short")
 add_dalton_test(pemcscf_3             "dalton;peqm;parallel;short")
