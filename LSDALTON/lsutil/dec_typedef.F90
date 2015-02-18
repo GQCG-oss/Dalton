@@ -354,6 +354,8 @@ module dec_typedef_module
      logical :: force_Occ_SubSystemLocality
      !> Debug print level
      integer :: PL
+     !> reduce the output if a big calculation is done
+     logical :: print_small_calc
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
      !> set fraction of extended orbital space to reduce to in the binary search
@@ -800,6 +802,10 @@ module dec_typedef_module
      !> Lagrangian energy 
      !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
      real(realk) :: LagFOP
+     !> energies for the most expanded fragments for generating an error estimate
+     real(realk) :: EoccFOP_exp
+     real(realk) :: EvirtFOP_exp
+     real(realk) :: LagFOP_exp
 
      !> Contributions to the fragment Lagrangian energy from each individual
      !  occupied or virtual orbital.

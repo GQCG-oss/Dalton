@@ -203,7 +203,7 @@ contains
 
           ! Get new local groups
           ! (redefine globals infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm)
-          call dec_half_local_group
+          call dec_half_local_group( print_ = DECinfo%print_small_calc )
 
           ! Check if the current rank has become a local master (rank=master within local group)
           if(infpar%lg_mynum==master) localslave=.false.
@@ -470,7 +470,7 @@ contains
           DoDivide: do while(divide)
              if( (ntasks .LE. infpar%lg_nodtot*DECinfo%MPIsplit) .and. (infpar%lg_nodtot>1)  ) then
 
-                print '(a,4i8)', 'DIVIDE! Job, tasks, mynode, #nodes: ', &
+                if(DECinfo%print_small_calc) print '(a,4i8)', 'DIVIDE! Job, tasks, mynode, #nodes: ', &
                      & job,ntasks,infpar%mynum,infpar%lg_nodtot
 
                 ! Kick slaves out of local group
