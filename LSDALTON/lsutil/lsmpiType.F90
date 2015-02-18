@@ -4466,11 +4466,12 @@ contains
   !> routine because their communication channel is redefined in here!
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine divide_local_mpi_group(ngroups,groupdims)
+  subroutine divide_local_mpi_group(ngroups,groupdims,print_)
     implicit none
 
     !> Number of new local groups to create from existing local group
     integer(kind=ls_mpik),intent(in) :: ngroups
+    logical, intent(in), optional :: print_
     !> Dimensions for these groups
     !> NOTE: The sum of these dimensions must equal the current group size:
     !> sum(groupsize) = infpar%lg_nodtot
@@ -4478,8 +4479,11 @@ contains
     integer(kind=ls_mpik) :: old_nodtot, old_mynum, oldgroup, ierr, newgroup,I
     integer(kind=ls_mpik), allocatable :: mygroup(:)
     integer(kind=ls_mpik) :: mysize,offset,cnter,mygroupnumber,newcomm
+    logical :: prnt
       IERR=0
 
+    prnt = .false.
+    if(present(print_)) prnt = print_
     ! EXAMPLE
     ! *******
     ! Assume that the current local group size is 7 and that we want
@@ -4582,7 +4586,7 @@ contains
     ! Communicator
     infpar%lg_comm = newcomm
 
-    if(infpar%lg_mynum==0) then
+    if(infpar%lg_mynum==0.and.prnt) then
        print *, 'Redefining local group'
        print *, '======================'
        print '(1X,a,4i6)', 'Old rank, new rank, old size, new size ', &

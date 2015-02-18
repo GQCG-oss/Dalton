@@ -1309,7 +1309,7 @@ subroutine print_dec_info()
     real(realk),pointer :: FragEnergiesPart(:,:)
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
-    real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est
+    real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est,deltaE_p
     integer :: nfrags,i,j,k
     type(joblist) :: jobs,fragoptjobs,estijobs
     integer(kind=ls_mpik) :: master
@@ -1411,6 +1411,8 @@ subroutine print_dec_info()
     end if UseEstimatedFragments
 
 
+    call evaluate_AtomicFragment_energy_error(AtomicFragments,nfrags,deltaE_p)
+
 
     if(esti) then
        ! Get estimated pair fragment energies for occupied partitioning scheme
@@ -1465,6 +1467,78 @@ subroutine print_dec_info()
 
   end subroutine fragopt_and_estimated_frags
 
+  !> \author Patrick Ettenhuber
+  !> extracting the approximate error made in a fragment calculation. we may use
+  !this as a complementary measure to estimate the error made in a DEC
+  !calculation
+  subroutine evaluate_AtomicFragment_energy_error(AtomicFragments,nfrags,deltaE_p)
+     implicit none
+     integer, intent(in) :: nfrags
+     type(decfrag), intent(in) :: AtomicFragments(nfrags)
+     real(realk), intent(inout) :: deltaE_p
+     integer :: frag, maxis
+     real(realk) :: dE_occ, dE_vir, dE_Lag
+
+     if( DECinfo%fragopt_exp_model == DECinfo%fragopt_red_model)then
+        dE_occ = 0.0E0_realk
+        dE_vir = 0.0E0_realk
+        dE_Lag = 0.0E0_realk
+
+        do frag=1,nfrags
+           dE_occ = dE_occ + ( AtomicFragments(frag)%EoccFOP_exp  - AtomicFragments(frag)%EoccFOP  )
+           dE_vir = dE_vir + ( AtomicFragments(frag)%EvirtFOP_exp - AtomicFragments(frag)%EvirtFOP )
+           dE_Lag = dE_Lag + ( AtomicFragments(frag)%LagFOP_exp   - AtomicFragments(frag)%LagFOP   )
+        enddo
+
+        maxis = 0
+        if(abs(dE_occ) > abs(dE_vir))then
+           if( abs(dE_occ) > abs(dE_Lag))then
+              !occ > (virt and lag)
+              maxis = 1
+           else
+              !lag > occ > virt
+              maxis = 3
+           endif
+        else
+           if( abs(dE_vir) > abs(dE_Lag))then
+              !virt > (occ and lag)
+              maxis = 2
+           else
+              !lag > virt > occ
+              maxis = 3
+           endif
+        endif
+
+        select case(maxis)
+        case(1)
+           deltaE_p =  dE_occ
+        case(2)
+           deltaE_p =  dE_vir
+        case(3)
+           deltaE_p =  dE_Lag
+        end select
+
+        write(DECinfo%output,*)
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a)') '******************************************************************'
+        write(DECinfo%output,'(1X,a)') '*                SUMMARY ATOMIC FRAGMENT ERROR                   *'
+        write(DECinfo%output,'(1X,a)') '******************************************************************'
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,i10)')    'Total number of fragments:                                      ', nfrags
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution beyond the fragment energy contribution: ',deltaE_p
+        if(DECinfo%PL>0)then
+           write(DECinfo%output,*)
+           write(DECinfo%output,'(1X,a,g20.10)') '-- individual estimated errors:'
+           write(DECinfo%output,'(1X,a,g20.10)') '   occupied fragment energy:   ',dE_occ
+           write(DECinfo%output,'(1X,a,g20.10)') '   virtual fragment energy:    ',dE_vir
+           write(DECinfo%output,'(1X,a,g20.10)') '   Lagrangian fragment energy: ',dE_Lag
+        endif
+        write(DECinfo%output,*)
+     else
+        deltaE_p = 0.0E0_realk
+     endif
+  end subroutine evaluate_AtomicFragment_energy_error
 
 end module dec_driver_module
 
