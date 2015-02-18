@@ -5244,7 +5244,7 @@ contains
      integer,intent(in) :: no_gap, nv_gap
      !> Fragment optimization threshold to use in reduction
      real(realk),intent(in) :: FOT
-     real(realk) :: FOTincreased
+     real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
      type(decfrag) :: ReducedFragment
      integer :: i,noccAOSprev, nunoccAOSprev
      integer,pointer :: occAOSidxprev(:),unoccAOSidxprev(:)
@@ -5255,24 +5255,29 @@ contains
         call lsquit('fragment_reduction_procedure_wrapper: Requires scaling factor larger than one! ',-1)
      end if
 
+
+     ! At this point AtomicFragment correspondings to the expanded fragment
+     ! We store the atomic fragment energies of the expanded fragment
+     LagEnergy_exp = AtomicFragment%LagFOP
+     OccEnergy_exp = AtomicFragment%EoccFOP
+     VirEnergy_exp = AtomicFragment%EvirtFOP
+
      ! Determine AtomicFragment according to main FOT
      call fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
           & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
           & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
 
-     if( DECinfo%print_small_calc )then
+     if(DECinfo%print_small_calc)then
         write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
            & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,AtomicFragment%nbasis
      endif
 
      ! Store AOS space for converged AtomicFragment 
-     noccAOSprev   = AtomicFragment%noccAOS
-     nunoccAOSprev = AtomicFragment%nunoccAOS
-
+     noccAOSprev=AtomicFragment%noccAOS
+     nunoccAOSprev=AtomicFragment%nunoccAOS
      call mem_alloc(occAOSidxprev,noccAOSprev)
      call mem_alloc(unoccAOSidxprev,nunoccAOSprev)
-
-     occAOSidxprev   = AtomicFragment%occAOSidx
+     occAOSidxprev = AtomicFragment%occAOSidx
      unoccAOSidxprev = AtomicFragment%unoccAOSidx
 
      
@@ -5288,9 +5293,9 @@ contains
              & OccOrbitals,VirOrbitals,MyMolecule,mylsitem,ReducedFragment,.true.,.false.)
 
         ! Set initial energies for ReducedFragment equal to the ones for the expanded fragment
-        ReducedFragment%LagFOP   = ReducedFragment%LagFOP_exp
-        ReducedFragment%EoccFOP  = ReducedFragment%EoccFOP_exp
-        ReducedFragment%EvirtFOP = ReducedFragment%EvirtFOP_exp
+        ReducedFragment%LagFOP   = LagEnergy_exp
+        ReducedFragment%EoccFOP  = OccEnergy_exp
+        ReducedFragment%EvirtFOP = VirEnergy_exp
 
         ! Increase FOT by scaling factor
         FOTincreased = FOTincreased*DECinfo%FOTscaling
@@ -5303,34 +5308,27 @@ contains
         ! Save information about ReducedFragment AOS in AtomicFragment structure
         AtomicFragment%REDfrags(i)%noccAOS   = ReducedFragment%noccAOS
         AtomicFragment%REDfrags(i)%nunoccAOS = ReducedFragment%nunoccAOS
-
         call mem_alloc(AtomicFragment%REDfrags(i)%occAOSidx,AtomicFragment%REDfrags(i)%noccAOS)
-
         AtomicFragment%REDfrags(i)%occAOSidx = ReducedFragment%occAOSidx
-
         call mem_alloc(AtomicFragment%REDfrags(i)%unoccAOSidx,AtomicFragment%REDfrags(i)%nunoccAOS)
-
         AtomicFragment%REDfrags(i)%unoccAOSidx = ReducedFragment%unoccAOSidx
-        AtomicFragment%REDfrags(i)%FOT         = FOTincreased
+        AtomicFragment%REDfrags(i)%FOT = FOTincreased
 
         ! Print summary (delete this at some point but nice to have for analysis now)
-        if( DECinfo%print_small_calc )then
+        if(DECinfo%print_small_calc)then
            write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,&
-             & FOTincreased, ReducedFragment%noccAOS,ReducedFragment%nunoccAOS,&
-             & ReducedFragment%nbasis
+              & FOTincreased, ReducedFragment%noccAOS,ReducedFragment%nunoccAOS,&
+              & ReducedFragment%nbasis
         endif
 
         ! Store AOS information to use as starting point in fragment for next FOT
         call mem_dealloc(occAOSidxprev)
         call mem_dealloc(unoccAOSidxprev)
-
-        noccAOSprev   = ReducedFragment%noccAOS
-        nunoccAOSprev = ReducedFragment%nunoccAOS
-
+        noccAOSprev=ReducedFragment%noccAOS
+        nunoccAOSprev=ReducedFragment%nunoccAOS
         call mem_alloc(occAOSidxprev,noccAOSprev)
         call mem_alloc(unoccAOSidxprev,nunoccAOSprev)
-
-        occAOSidxprev   = ReducedFragment%occAOSidx
+        occAOSidxprev = ReducedFragment%occAOSidx
         unoccAOSidxprev = ReducedFragment%unoccAOSidx
 
         ! Done with reduced fragment
@@ -5394,6 +5392,7 @@ contains
       integer :: no_old, nv_old, no_new, nv_new, iter
       logical :: redocc, redvir, step_accepted, reduction_converged, occ_red_conv, vir_red_conv
       logical, pointer :: OccAOS_old(:), VirAOS_old(:)
+      real(realk) :: LagEnergy_exp, OccEnergy_exp, VirEnergy_exp
       real(realk) :: LagEnergy_old, OccEnergy_old, VirEnergy_old
       real(realk) :: LagEnergy_dif, OccEnergy_dif, VirEnergy_dif
 
@@ -5405,6 +5404,9 @@ contains
 
       no_exp = AtomicFragment%noccAOS
       nv_exp = AtomicFragment%nunoccAOS
+      LagEnergy_exp = AtomicFragment%LagFOP
+      OccEnergy_exp = AtomicFragment%EoccFOP
+      VirEnergy_exp = AtomicFragment%EvirtFOP
 
       ! Set boundaries of the list (min = EOS, max = Expanded fragment AOS)
       ! note: if frozen core then core orbitals are already excluded from those numbers
@@ -5418,16 +5420,16 @@ contains
       nv_old = nv_exp
       OccAOS_old = Occ_AOS
       VirAOS_old = Vir_AOS
-      LagEnergy_old = AtomicFragment%LagFOP_exp
-      OccEnergy_old = AtomicFragment%EoccFOP_exp
-      VirEnergy_old = AtomicFragment%EvirtFOP_exp
+      LagEnergy_old = LagEnergy_exp
+      OccEnergy_old = OccEnergy_exp
+      VirEnergy_old = VirEnergy_exp
 
 
       ! Define specific reduction parameters:
       ! -------------------------------------
       if (DECinfo%Frag_red_occ.and.(.not.DECinfo%Frag_red_virt)) then
          ! Start reducing occupied space:
-         if( DECinfo%print_small_calc )then
+         if(DECinfo%print_small_calc)then
             write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce occupied space first'
          endif
          redocc = .true.
@@ -5436,7 +5438,7 @@ contains
          dE_vir = DECinfo%frag_red2_thr*FOT
       else if (DECinfo%Frag_red_virt.and.(.not.DECinfo%Frag_red_occ)) then
          ! Start reducing virtual space:
-         if( DECinfo%print_small_calc )then
+         if(DECinfo%print_small_calc)then
             write(DECinfo%output,'(1X,a,/)') 'FOP: User chose to reduce virtual space first'
          endif
          redvir = .true.
@@ -5513,9 +5515,9 @@ contains
          call fragment_energy_and_prop(AtomicFragment)
 
          ! Energy differences
-         LagEnergy_dif = abs(AtomicFragment%LagFOP_exp - AtomicFragment%LagFOP)
-         OccEnergy_dif = abs(AtomicFragment%EoccFOP_exp - AtomicFragment%EoccFOP)
-         VirEnergy_dif = abs(AtomicFragment%EvirtFOP_exp - AtomicFragment%EvirtFOP)
+         LagEnergy_dif = abs(LagEnergy_exp - AtomicFragment%LagFOP)
+         OccEnergy_dif = abs(OccEnergy_exp - AtomicFragment%EoccFOP)
+         VirEnergy_dif = abs(VirEnergy_exp - AtomicFragment%EvirtFOP)
 
          ! print reduced fragment information:
          call fragopt_print_info(AtomicFragment,LagEnergy_dif,OccEnergy_dif,VirEnergy_dif,iter)
@@ -5561,7 +5563,7 @@ contains
          ! If everything has converged then we keep the last valid
          ! information and quit the loop:
          FullConvergence: if (reduction_converged) then
-            if (DECinfo%PL > 1.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: REDUCTION CONVERGED'
+            if (DECinfo%PL > 1 .and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: REDUCTION CONVERGED'
 
             if (.not.step_accepted) then
                ! The last binary search step did not succeed so  
@@ -5584,7 +5586,7 @@ contains
          no_old = no_new
          nv_old = nv_new
          if (step_accepted) then
-            if (DECinfo%PL > 1.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: Step accepted'
+            if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: Step accepted'
             ! The current number of occ and virt is good or too high:
             ! Setting new maximum:
             if (redocc.and.(.not.redvir)) then
@@ -5596,7 +5598,7 @@ contains
                nv_max = nv_new
             end if
          else
-            if (DECinfo%PL > 1.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: Step NOT accepted'
+            if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: Step NOT accepted'
             ! The current number of occ and virt is NOT good enough:
             ! Setting new minimum:
             if (redocc.and.(.not.redvir)) then

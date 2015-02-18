@@ -509,8 +509,8 @@ contains
     end do
 
     ! Print all fragment energies
-    call print_all_fragment_energies(nfrags,FragEnergies,dofrag,&
-         & mymolecule%DistanceTable,energies)
+    call print_all_fragment_energies(nfrags,FragEnergies,dofrag,mymolecule%DistanceTable,energies)
+
     call mem_dealloc(FragEnergies)
     !Obtain The Correlation Energy from the list energies
     call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
