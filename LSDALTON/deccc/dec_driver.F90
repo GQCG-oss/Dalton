@@ -1491,23 +1491,30 @@ subroutine print_dec_info()
         enddo
 
         maxis = 0
-        if(abs(dE_occ) > abs(dE_vir))then
-           if( abs(dE_occ) > abs(dE_Lag))then
-              !occ > (virt and lag)
-              maxis = 1
-           else
-              !lag > occ > virt
-              maxis = 3
-           endif
+        if(DECinfo%OnlyOccPart)then
+           maxis = 1
+        else if(DECinfo%OnlyVirtPart)then
+           maxis = 2
         else
-           if( abs(dE_vir) > abs(dE_Lag))then
-              !virt > (occ and lag)
-              maxis = 2
+           if(abs(dE_occ) > abs(dE_vir))then
+              if( abs(dE_occ) > abs(dE_Lag))then
+                 !occ > (virt and lag)
+                 maxis = 1
+              else
+                 !lag > occ > virt
+                 maxis = 3
+              endif
            else
-              !lag > virt > occ
-              maxis = 3
+              if( abs(dE_vir) > abs(dE_Lag))then
+                 !virt > (occ and lag)
+                 maxis = 2
+              else
+                 !lag > virt > occ
+                 maxis = 3
+              endif
            endif
         endif
+
 
         select case(maxis)
         case(1)
