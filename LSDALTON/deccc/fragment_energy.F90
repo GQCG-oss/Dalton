@@ -671,7 +671,7 @@ contains
     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
     real(realk) :: prefac_coul,prefac_k
-    PerformLag = MyFragment%ccmodel==MODEL_RIMP2
+    PerformLag = MyFragment%ccmodel==MODEL_MP2 .OR. MyFragment%ccmodel==MODEL_RIMP2
     ! Lagrangian energy can be split into four contributions:
     ! The first two (e1 and e2) use occupied EOS orbitals and virtual AOS orbitals.
     ! The last two (e3 and e4) use virtual EOS orbitals and occupied AOS orbitals.
