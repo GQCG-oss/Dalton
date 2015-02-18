@@ -463,27 +463,20 @@ CONTAINS
           nRegAB = nRegAB-1
        ENDIF ! if pari_charge or pari_dipole
    
-!TODO Fill correctly calpha_ab_block
        DO iRegAB=1,nRegAB
           iRegA=indexAB(1,iRegAB)
           iRegB=indexAB(2,iRegAB)
           do iAux=1,nAux
-!          iRegAfull = startRegA+iRegA-1
-!          iRegBfull = startRegB+iRegB-1
-!          calpha_ab(iAtomA)%elements(:,iRegA,iRegBfull) = &
-!               alpha_ab_red(1:nAuxA,iRegAB)
              calpha_ab_block(iAux,iRegA,iRegB) = alpha_ab_red(iAux,iRegAB)
-!          IF (iAtomA.NE.iAtomB) & 
-!               calpha_ab(iAtomB)%elements(:,iRegB,iRegAfull) = &
-!               alpha_ab_red(nAuxA+1:nAuxA+nAuxB,iRegAB)
           enddo
        ENDDO
        call mem_dealloc(indexAB)
        call mem_dealloc(alpha_ab_red)
     ENDIF ! IF nRegAB >0
+
     call mem_dealloc(alpha_ab)
     call mem_dealloc(alphaBeta)
-    
+
   end subroutine getPariCoefficientsBlock
 
   SUBROUTINE freePariCoefficients(calpha_ab,nAtoms)
@@ -555,33 +548,53 @@ CONTAINS
          nAuxC,startAuxC,endAuxC)
 
     nAtoms = orbitalInfo%nAtoms
-
+    
     !Get matrix (Q|R) with Q in Aux(A) and R in Aux(B U C)
-    nAuxAB=nAuxA+nAuxB
-    nAuxAC=nAuxA+nAuxC
-    nAuxBC=nAuxB+nAuxC
+    if (iAtomA.eq.iAtomB) then
+       nAuxAB=nAuxA
+    else
+       nAuxAB=nAuxA+nAuxB
+    endif
+    if (iAtomA.eq.iAtomC) then
+       nAuxAC=nAuxA
+    else
+       nAuxAC=nAuxA+nAuxC
+    endif
+    if (iAtomB.eq.iAtomC) then
+       nAuxBC=nAuxB
+    else
+       nAuxBC=nAuxB+nAuxC
+    endif
+
     call mem_alloc(extracted_alpha_beta,nAuxA,nAuxBC)
     call mem_alloc(alpha_beta,nAuxAB,nAuxAB)
     call ls_dzero(alpha_beta,nAuxAB*nAuxAB)
+    call ls_dzero(extracted_alpha_beta,nAuxA*nAuxBC)
+
     call pari_alphaBeta(alpha_beta,setting,molecule,atoms_A,iAtomA,iAtomB,&
-         &                    nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
+         nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
     
-    extracted_alpha_beta(1:nAuxA,1:nAuxB) = alpha_beta(1:nAuxA,nAuxA+1:nAuxAB)
+    extracted_alpha_beta(1:nAuxA,1:nAuxB) = alpha_beta(1:nAuxA,nAuxAB-nAuxB+1:nAuxAB)
     call mem_dealloc(alpha_beta)
-    call mem_alloc(alpha_beta,nAuxAC,nAuxAC)
-    call ls_dzero(alpha_beta,nAuxAC*nAuxAC)
-    call pari_alphaBeta(alpha_beta,setting,molecule,atoms_A,iAtomA,iAtomC,&
-         &                    nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
-    extracted_alpha_beta(1:nAuxA,nAuxB+1:nAuxBC) = alpha_beta(1:nAuxA,nAuxA+1:nAuxAC)
-    call mem_dealloc(alpha_beta)
+    
+    if (.not.(iAtomB.eq.iAtomC)) then
+       call mem_alloc(alpha_beta,nAuxAC,nAuxAC)
+       call ls_dzero(alpha_beta,nAuxAC*nAuxAC)
+       call pari_alphaBeta(alpha_beta,setting,molecule,atoms_A,iAtomA,iAtomC,&
+            nAuxA,nAuxC,regCSfull,auxCSfull,lupri,luerr)
+       extracted_alpha_beta(1:nAuxA,nAuxB+1:nAuxBC) = &
+            alpha_beta(1:nAuxA,nAuxAC-nAuxC+1:nAuxAC)
+       call mem_dealloc(alpha_beta)
+    endif
     
     !Get PARI coefficients C_R^{\nu \sigma} with R in Aux(B U C)
     !nu in Reg(B) and sigma in Reg(C)
     call mem_alloc(calpha_ab_block,nAuxBC,nRegB,nRegC)
+    calpha_ab_block = 0E0_realk
     call getPariCoefficientsBlock(lupri,luerr,setting,iAtomB,iAtomC,&
        Calpha_ab_block,orbitalInfo,regCSfull,auxCSfull,molecule,atoms_A,&
        minEigV,maxEigV,conditionNum)
-
+    
     !Get three-center integrals (Q|nu sigma) with Q in Aux(A), nu in Reg(B) and 
     !sigma in Reg(C)
     call pari_alphacd(GQ_nusigma,setting,atoms_a,iAtomA,iAtomB,iAtomC,&
@@ -589,7 +602,8 @@ CONTAINS
 
     !Construct GQ_nusigma 
     call DGEMM('N','N',nAuxA,nRegB*nRegC,nAuxBC,-0.5E0_realk,extracted_alpha_beta,&
-         &     nAuxA,Calpha_ab_block,nRegB*nRegC,1E0_realk,GQ_nusigma,nAuxA)
+         &     nAuxA,Calpha_ab_block,nAuxBC,1E0_realk,GQ_nusigma,nAuxA)
+
     call mem_dealloc(calpha_ab_block)
     call mem_dealloc(extracted_alpha_beta)
     

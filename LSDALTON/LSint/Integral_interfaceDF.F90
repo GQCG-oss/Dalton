@@ -1534,7 +1534,6 @@ contains
                nAuxA,startAuxA,endAuxA)                
           ! Loop over B
           do iAtomB=1,nAtoms
-!TOCHECK: B begins at 1 or A ?
              call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
                   nAuxB,startAuxB,endAuxB)
              iAtom=1
@@ -1550,9 +1549,12 @@ contains
                      setting,molecule,atoms_A,regCSfull,auxCSfull,lupri,luerr)
                 call mem_dealloc(GQ_nusigma)
               Enddo !Loop over C
-          Enddo !Loop over B 
+         Enddo !Loop over B 
        Enddo !Loop A
-             
+       
+       !Get the MO coeff by Cholesky Decomposition of the Density Matrix
+       !all mat_chol(Dfull(:,:,1),MOcoeff)
+
        call pari_free_atomic_fragments(atoms_A,nAtoms)
        deallocate(atoms_A) 
        call mem_dealloc(neighbourA)
@@ -1630,6 +1632,7 @@ contains
 
        call freePariCoefficients(calpha_ab,orbitalInfo%nAtoms)
        deallocate(calpha_ab)
+       call mem_dealloc(alpha_beta)
     endif
 
     CALL freeMolecularOrbitalInfo(orbitalInfo)
@@ -1652,7 +1655,7 @@ contains
     call mem_dealloc(Kfull_3cContrib)
     call mem_dealloc(Kfull_2cContrib)
     call mem_dealloc(Dfull)
-    call mem_dealloc(alpha_beta)
+    
 
     !call free_AtomSparseMat(alphaBeta)
     CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
@@ -1697,17 +1700,20 @@ subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
   Integer(kind=short)                   :: maxgab
  
   nAtoms=orbitalInfo%nAtoms
-!  allocate(ATOMS(nAtoms))  ! --- each molecule made of only one atom   
-!  call pari_set_atomic_fragments(molecule,ATOMS,nAtoms,lupri)
   do iAtomA=1,nAtoms
        call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
             nAuxA,startAuxA,endAuxA)
-       iAtomAB=1
-       do iAtomB=iAtomA,nAtoms
+       !Case A=B
+       neighbourA(iAtomA,1)=iAtomA
+       !Case A<>B
+       iAtomAB=2
+       do iAtomB=iAtomA+1,nAtoms
           call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
-               nAuxB,startAuxB,endAuxB)
+               nAuxB,startAuxB,endAuxB)          
+          nAux=nAuxA+nAuxB
           CALL pariSetPairFragment(AB,ABtarget,setting%basis(1)%p,molecule,atoms,&
                molecule%nAtoms,iAtomA,iAtomB,nAuxA,nAuxB,nAux,lupri)
+          
           NULLIFY(regCSab)
           ALLOCATE(regCSab)
           call ls_subScreenAtomic(regCSab,regCSfull,iAtomA,iAtomB,&
@@ -1720,8 +1726,8 @@ subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
           call lstensor_free(regCSab)
           DEALLOCATE(regCSab)
           CALL pariFreePairFragment(AB,iAtomA,iAtomB)
-       enddo
-    enddo         
+       enddo      
+    enddo
     
 end subroutine
 
