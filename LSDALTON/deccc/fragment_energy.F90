@@ -2078,7 +2078,7 @@ contains
      integer,pointer :: OrbVirtDistTrackMyAtom(:),OrbVirtFockTrackMyAtom(:)
      logical,pointer :: OccAOS(:),VirtAOS(:),OldOccAOS(:),OldVirtAOS(:)
      logical :: BruteForce,FockMatrixOrdering
-
+     real(realk) :: ELag_exp, Eocc_exp, Evir_exp 
 !!$     !! HACK for testing purposes, F12 code, Do not remove 
 !!$     !! ****
 !!$     !! All virtual, change occupied
@@ -2284,10 +2284,13 @@ contains
      ! Only do fragment optimization if there are orbitals assigned to central atom.
      if( (nocc_per_atom(MyAtom) == 0) .and. (nunocc_per_atom(MyAtom) == 0) ) then
         write(DECinfo%output,*) 'FOP Skipping optimization of fragment ', MyAtom
-        AtomicFragment%LagFOP=0E0_realk
-        AtomicFragment%EoccFOP=0E0_realk
-        AtomicFragment%EvirtFOP=0E0_realk
-        AtomicFragment%energies=0E0_realk
+        AtomicFragment%LagFOP   = 0E0_realk
+        AtomicFragment%EoccFOP  = 0E0_realk
+        AtomicFragment%EvirtFOP = 0E0_realk
+        AtomicFragment%Elag_err = 0E0_realk
+        AtomicFragment%Eocc_err = 0E0_realk
+        AtomicFragment%Evir_err = 0E0_realk
+        AtomicFragment%energies = 0E0_realk
         AtomicFragment%ccmodel = DECinfo%ccmodel
         call dec_fragment_time_get(times_fragopt)
         call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
@@ -2431,6 +2434,10 @@ contains
         VirtContribs(idx) = AtomicFragment%VirtContribs(i)
      end do
 
+      !Store the energies of the expanded fragment
+      ELag_exp = AtomicFragment%LagFOP   
+      Eocc_exp = AtomicFragment%EoccFOP  
+      Evir_exp = AtomicFragment%EvirtFOP 
 
      ! Set AtomicFragment to be the converged fragment                                        
      ! ***********************************************
@@ -2480,7 +2487,6 @@ contains
      ! Which model for reduction loop?
      ! *******************************
      MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
-
 
      ! Save energies in converged space of local orbitals
      ! **************************************************
@@ -2595,6 +2601,11 @@ contains
 
       ! Fragment has been optimized
       AtomicFragment%isopt = .true.
+
+      !Store the energies of the expanded fragment in the final fragment for the estimate on master
+      AtomicFragment%Elag_err = ( ELag_exp - AtomicFragment%LagFOP   )
+      AtomicFragment%Eocc_err = ( Eocc_exp - AtomicFragment%EoccFOP  )
+      AtomicFragment%Evir_err = ( Evir_exp - AtomicFragment%EvirtFOP )
 
   end subroutine optimize_atomic_fragment
 
@@ -4879,6 +4890,7 @@ contains
       real(realk), pointer :: times_fragopt(:)  
       !> number of core orbitals
       integer :: nc,idx,i,a
+      real(realk) :: ELag_exp, Eocc_exp, Evir_exp
 
 
       !==================================================================================!
@@ -5061,6 +5073,11 @@ contains
          endif
       end if
 
+      !Store the energies of the expanded fragment
+      ELag_exp = AtomicFragment%LagFOP   
+      Eocc_exp = AtomicFragment%EoccFOP  
+      Evir_exp = AtomicFragment%EvirtFOP 
+
       ! Get information on how the reduction should be performed:
       call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
          & red_list_occ,red_list_vir,nred_occ,nred_vir)
@@ -5074,6 +5091,10 @@ contains
       !                              Finalize subroutine                                 !
       !==================================================================================!
 
+      !Store the error estimates for the fragments
+      AtomicFragment%Elag_err = ( ELag_exp - AtomicFragment%LagFOP   )
+      AtomicFragment%Eocc_err = ( Eocc_exp - AtomicFragment%EoccFOP  )
+      AtomicFragment%Evir_err = ( Evir_exp - AtomicFragment%EvirtFOP )
 
       ! Deallocation:
       call mem_dealloc(red_list_occ)
@@ -5192,11 +5213,6 @@ contains
          end if ExpansionConvergence
 
       end do EXPANSION_LOOP
-
-      ! Set the energies for the most expanded fragments
-      AtomicFragment%LagFOP_exp   = AtomicFragment%LagFOP
-      AtomicFragment%EoccFOP_exp  = AtomicFragment%EoccFOP
-      AtomicFragment%EvirtFOP_exp = AtomicFragment%EvirtFOP
 
       ! Check that expansion loop is converged
       if(.not. expansion_converged) then
@@ -5637,7 +5653,6 @@ contains
 
       call mem_dealloc(OccAOS_old)
       call mem_dealloc(VirAOS_old)
-
 
       ! PRINT INFO FOR FINAL (REDUCED) FRAGMENT:
       ! ****************************************
