@@ -24,7 +24,7 @@ module cc_tools_module
          import
          implicit none
          real(realk), intent(in) :: a, b
-         real(realk), intent(out) :: c
+         real(realk) :: c
       end function ab_eq_c
    end interface
    
@@ -1266,13 +1266,13 @@ module cc_tools_module
    function a_plus_b(a,b) result(c)
       implicit none
       real(realk), intent(in)  :: a, b
-      real(realk), intent(out) :: c
+      real(realk) :: c
       c = a + b
    end function a_plus_b
    function a_minus_b(a,b) result(c)
       implicit none
       real(realk), intent(in)  :: a, b
-      real(realk), intent(out) :: c
+      real(realk) :: c
       c = a - b
    end function a_minus_b
 
