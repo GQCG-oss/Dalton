@@ -1,0 +1,1258 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2016.alpha
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/bast/devel/dalton/qmcmm/DALTON/test/qmcmm
+   2) /home/bast/devel/dalton/qmcmm/build_opt/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | donkey
+ System                   | Linux-3.13.0-44-generic
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/intel/composer_xe_2015.0.090/bin/intel64/ifor
+                          | t
+ Fortran compiler version | ifort (IFORT) 15.0.0 20140723
+ C compiler               | /opt/intel/composer_xe_2015.0.090/bin/intel64/icc
+ C compiler version       | icc (ICC) 15.0.0 20140723
+ C++ compiler             | /opt/intel/composer_xe_2015.0.090/bin/intel64/icpc
+ C++ compiler version     | icpc (ICC) 15.0.0 20140723
+ Static linking           | OFF
+ Last Git revision        | f3c46f6a2c8efda1c5d71700de5a9a681d3210db
+ Git branch               | radovan/qmcmm
+ Configuration time       | 2015-02-17 10:46:12.758320
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE                                         
+.DIRECT                                           
+*QMNPMM                                           
+.QMNP                                             
+.NONPCA                                           
+.PRINT                                            
+ 15                                               
+**WAVE FUNCTIONS                                  
+.HF                                               
+*END OF DALTON INPUT                              
+
+
+   Content of the .mol file
+ ----------------------------
+
+ATOMBASIS                                                                      
+HF on gold surface                                                             
+------------------------                                                       
+AtomTypes=2 NoSymmetry Angstroms                                               
+        9.0   1    Basis=cc-pVDZ                                               
+F            0.00000    0.000000     2.500000                                  
+        1.0   1    Basis=cc-pVDZ                                               
+H            0.00000    0.000000     3.600000                                  
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+                  *********************************************
+                  *** QM/NP Embedding: Nanoparticle(s) data ***
+                  *********************************************
+
+
+  Nanoparticle region contains single nanoparticle.
+
+  Nanoparticle  1 with charge 0.000. Coordinates in au.
+  --------------------------------------------------
+  Atom    Coord. X    Coord. Y    Coord. Z   FF Type
+  ==================================================
+   Au     4.34637     0.00000     0.00000      1
+   Au     0.00000     0.00000     0.00000      1
+   Au    -4.34637     0.00000     0.00000      1
+  ==================================================
+
+  Static force field(s) data for nanoparticle region.
+  -------------------------------------
+  FF Type Polarizability    Capacitance
+  =====================================
+    1        39.52970         1.21590
+  =====================================
+
+  Dynamic force field(s) data for nanoparticle region.
+  ---------------------------------------------------------
+  FF Type Omega(1)  Gamma(1)  Omega(2)  Gamma(2)  Factor
+  =========================================================
+    1      0.00000   0.00000   0.00000   0.00000   0.00000
+  =========================================================
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: HF on gold surface                                                      
+ 2: ------------------------                                                
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   9.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "cc-pVDZ" from the basis set library.
+  Basis set file used for this atomic type with Z =   9 :
+     "/home/bast/devel/dalton/qmcmm/build_opt/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "cc-pVDZ" from the basis set library.
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/devel/dalton/qmcmm/build_opt/basis/cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           F          18.998403
+                           H           1.007825
+
+                       Total mass:    20.006228 amu
+                       Natural abundance:  99.985 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    4.829031
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  F           1    9.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H           1    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      2   10.0000    33    19
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    6
+  F       :     1  x   0.0000000000    2  y   0.0000000000    3  z   4.7243153125
+  H       :     4  x   0.0000000000    5  y   0.0000000000    6  z   6.8030140500
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            F           H     
+            ------      ------
+ F     :    0.000000
+ H     :    1.100000    0.000000
+
+
+  Max    interatomic separation is    1.1000 Angstrom (    2.0787 Bohr)
+  between atoms    2 and    1, "H     " and "F     ".
+
+  Min HX interatomic separation is    1.1000 Angstrom (    2.0787 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          F            1.100000
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       1.158037          0.000000    1.000000    0.000000
+   IC       1.158037          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is linear.
+
+               B =       436410.12 MHz     (   14.557075 cm-1)
+
+
+@  Nuclear repulsion energy :    4.329631724727 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      4.829030931796
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    6
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -26.383492      -1.672506      -0.827058      -0.730000      -0.730000
+           -0.302144
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  
+
+ Title lines from ".mol" input file:
+     HF on gold surface                                                      
+     ------------------------                                                
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Hartree-Fock calculation.
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+@    QM part is embedded in an environment :
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1
+@                                          |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               5 |    5
+@    Secondary orbitals                 14 |   14
+@    Total number of orbitals           19 |   19
+@    Number of basis functions          19 |   19
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations             70
+     ------------------------------------------
+@    Total number of variables               71
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy       Solvation energy    Error norm    Delta(E)
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  3.94D-02  1.00D-02
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.00721700     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.00891006
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.00721700     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.00891006     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.00891006     0.00000000     0.00000000
+       7      -0.00301200     0.00000000     0.00000000    -0.00721700     0.00000000
+       8       0.00000000     0.00152046     0.00000000     0.00000000     0.00891006
+       9       0.00000000     0.00000000     0.00152046     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000    -0.00301200     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152046     0.00000000
+       3       0.00891006     0.00000000     0.00000000     0.00152046
+       4       0.00000000    -0.00721700     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00891006     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.00891006
+       7       0.00000000     0.02529743     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.02529743     0.00000000
+       9       0.00891006     0.00000000     0.00000000     0.02529743
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1      45.18345241     0.00000000     0.00000000    15.70299113     0.00000000
+       2       0.00000000    45.36979979     0.00000000     0.00000000   -17.14642913
+       3       0.00000000     0.00000000    45.36979979     0.00000000     0.00000000
+       4      15.70299113     0.00000000     0.00000000    48.48938525     0.00000000
+       5       0.00000000   -17.14642913     0.00000000     0.00000000    51.60806047
+       6       0.00000000     0.00000000   -17.14642913     0.00000000     0.00000000
+       7       9.85953708     0.00000000     0.00000000    15.70299113     0.00000000
+       8       0.00000000     3.31230943     0.00000000     0.00000000   -17.14642913
+       9       0.00000000     0.00000000     3.31230943     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000     9.85953708     0.00000000     0.00000000
+       2       0.00000000     0.00000000     3.31230943     0.00000000
+       3     -17.14642913     0.00000000     0.00000000     3.31230943
+       4       0.00000000    15.70299113     0.00000000     0.00000000
+       5       0.00000000     0.00000000   -17.14642913     0.00000000
+       6      51.60806047     0.00000000     0.00000000   -17.14642913
+       7       0.00000000    45.18345241     0.00000000     0.00000000
+       8       0.00000000     0.00000000    45.36979979     0.00000000
+       9     -17.14642913     0.00000000     0.00000000    45.36979979
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00439701
+       2       -0.00000000
+       3        0.00275100
+       4        0.00000000
+       5       -0.00000000
+       6        0.01205730
+       7        0.00439701
+       8       -0.00000000
+       9        0.00275100
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.15531971
+       2        0.00000000
+       3       -0.07281532
+       4        0.00000000
+       5       -0.00000000
+       6        0.52791428
+       7        0.15531971
+       8        0.00000000
+       9       -0.07281532
+
+  *** Computed MQ vector end ***
+@  1  -99.9306266572     -3.665238224147E-03    1.01513D+00   -9.99D+01
+      Virial theorem: -V/T =      1.996962
+@      MULPOP F      -0.47; H       0.47; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  3.07D-02  7.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.00721700     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.00891006
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.00721700     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.00891006     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.00891006     0.00000000     0.00000000
+       7      -0.00301200     0.00000000     0.00000000    -0.00721700     0.00000000
+       8       0.00000000     0.00152046     0.00000000     0.00000000     0.00891006
+       9       0.00000000     0.00000000     0.00152046     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000    -0.00301200     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152046     0.00000000
+       3       0.00891006     0.00000000     0.00000000     0.00152046
+       4       0.00000000    -0.00721700     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00891006     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.00891006
+       7       0.00000000     0.02529743     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.02529743     0.00000000
+       9       0.00891006     0.00000000     0.00000000     0.02529743
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1      45.18345241     0.00000000     0.00000000    15.70299113     0.00000000
+       2       0.00000000    45.36979979     0.00000000     0.00000000   -17.14642913
+       3       0.00000000     0.00000000    45.36979979     0.00000000     0.00000000
+       4      15.70299113     0.00000000     0.00000000    48.48938525     0.00000000
+       5       0.00000000   -17.14642913     0.00000000     0.00000000    51.60806047
+       6       0.00000000     0.00000000   -17.14642913     0.00000000     0.00000000
+       7       9.85953708     0.00000000     0.00000000    15.70299113     0.00000000
+       8       0.00000000     3.31230943     0.00000000     0.00000000   -17.14642913
+       9       0.00000000     0.00000000     3.31230943     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000     9.85953708     0.00000000     0.00000000
+       2       0.00000000     0.00000000     3.31230943     0.00000000
+       3     -17.14642913     0.00000000     0.00000000     3.31230943
+       4       0.00000000    15.70299113     0.00000000     0.00000000
+       5       0.00000000     0.00000000   -17.14642913     0.00000000
+       6      51.60806047     0.00000000     0.00000000   -17.14642913
+       7       0.00000000    45.18345241     0.00000000     0.00000000
+       8       0.00000000     0.00000000    45.36979979     0.00000000
+       9     -17.14642913     0.00000000     0.00000000    45.36979979
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00285797
+       2       -0.00000000
+       3        0.00205949
+       4        0.00000000
+       5       -0.00000000
+       6        0.00694080
+       7        0.00285797
+       8        0.00000000
+       9        0.00205949
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.10095458
+       2       -0.00000000
+       3       -0.01874983
+       4        0.00000000
+       5       -0.00000000
+       6        0.28757560
+       7        0.10095458
+       8        0.00000000
+       9       -0.01874983
+
+  *** Computed MQ vector end ***
+@  2  -99.9855068160     -1.247912286731E-03    2.94999D-01   -5.49D-02
+      Virial theorem: -V/T =      2.006804
+@      MULPOP F      -0.34; H       0.34; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  3.11D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.00721700     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.00891006
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.00721700     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.00891006     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.00891006     0.00000000     0.00000000
+       7      -0.00301200     0.00000000     0.00000000    -0.00721700     0.00000000
+       8       0.00000000     0.00152046     0.00000000     0.00000000     0.00891006
+       9       0.00000000     0.00000000     0.00152046     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000    -0.00301200     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152046     0.00000000
+       3       0.00891006     0.00000000     0.00000000     0.00152046
+       4       0.00000000    -0.00721700     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00891006     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.00891006
+       7       0.00000000     0.02529743     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.02529743     0.00000000
+       9       0.00891006     0.00000000     0.00000000     0.02529743
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1      45.18345241     0.00000000     0.00000000    15.70299113     0.00000000
+       2       0.00000000    45.36979979     0.00000000     0.00000000   -17.14642913
+       3       0.00000000     0.00000000    45.36979979     0.00000000     0.00000000
+       4      15.70299113     0.00000000     0.00000000    48.48938525     0.00000000
+       5       0.00000000   -17.14642913     0.00000000     0.00000000    51.60806047
+       6       0.00000000     0.00000000   -17.14642913     0.00000000     0.00000000
+       7       9.85953708     0.00000000     0.00000000    15.70299113     0.00000000
+       8       0.00000000     3.31230943     0.00000000     0.00000000   -17.14642913
+       9       0.00000000     0.00000000     3.31230943     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000     9.85953708     0.00000000     0.00000000
+       2       0.00000000     0.00000000     3.31230943     0.00000000
+       3     -17.14642913     0.00000000     0.00000000     3.31230943
+       4       0.00000000    15.70299113     0.00000000     0.00000000
+       5       0.00000000     0.00000000   -17.14642913     0.00000000
+       6      51.60806047     0.00000000     0.00000000   -17.14642913
+       7       0.00000000    45.18345241     0.00000000     0.00000000
+       8       0.00000000     0.00000000    45.36979979     0.00000000
+       9     -17.14642913     0.00000000     0.00000000    45.36979979
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00323794
+       2       -0.00000000
+       3        0.00226117
+       4        0.00000000
+       5       -0.00000000
+       6        0.00811176
+       7        0.00323794
+       8        0.00000000
+       9        0.00226117
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.11437677
+       2       -0.00000000
+       3       -0.02900914
+       4        0.00000000
+       5       -0.00000000
+       6        0.34109011
+       7        0.11437677
+       8        0.00000000
+       9       -0.02900914
+
+  *** Computed MQ vector end ***
+@  3  -99.9885511175     -1.688170965426E-03    9.88566D-02   -3.04D-03
+      Virial theorem: -V/T =      2.000982
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  3.10D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.00721700     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.00891006
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.00721700     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.00891006     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.00891006     0.00000000     0.00000000
+       7      -0.00301200     0.00000000     0.00000000    -0.00721700     0.00000000
+       8       0.00000000     0.00152046     0.00000000     0.00000000     0.00891006
+       9       0.00000000     0.00000000     0.00152046     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000    -0.00301200     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152046     0.00000000
+       3       0.00891006     0.00000000     0.00000000     0.00152046
+       4       0.00000000    -0.00721700     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00891006     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.00891006
+       7       0.00000000     0.02529743     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.02529743     0.00000000
+       9       0.00891006     0.00000000     0.00000000     0.02529743
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1      45.18345241     0.00000000     0.00000000    15.70299113     0.00000000
+       2       0.00000000    45.36979979     0.00000000     0.00000000   -17.14642913
+       3       0.00000000     0.00000000    45.36979979     0.00000000     0.00000000
+       4      15.70299113     0.00000000     0.00000000    48.48938525     0.00000000
+       5       0.00000000   -17.14642913     0.00000000     0.00000000    51.60806047
+       6       0.00000000     0.00000000   -17.14642913     0.00000000     0.00000000
+       7       9.85953708     0.00000000     0.00000000    15.70299113     0.00000000
+       8       0.00000000     3.31230943     0.00000000     0.00000000   -17.14642913
+       9       0.00000000     0.00000000     3.31230943     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000     9.85953708     0.00000000     0.00000000
+       2       0.00000000     0.00000000     3.31230943     0.00000000
+       3     -17.14642913     0.00000000     0.00000000     3.31230943
+       4       0.00000000    15.70299113     0.00000000     0.00000000
+       5       0.00000000     0.00000000   -17.14642913     0.00000000
+       6      51.60806047     0.00000000     0.00000000   -17.14642913
+       7       0.00000000    45.18345241     0.00000000     0.00000000
+       8       0.00000000     0.00000000    45.36979979     0.00000000
+       9     -17.14642913     0.00000000     0.00000000    45.36979979
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00319925
+       2        0.00000000
+       3        0.00224145
+       4        0.00000000
+       5       -0.00000000
+       6        0.00798228
+       7        0.00319925
+       8       -0.00000000
+       9        0.00224145
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.11300992
+       2        0.00000000
+       3       -0.02774923
+       4       -0.00000000
+       5       -0.00000000
+       6        0.33508441
+       7        0.11300992
+       8       -0.00000000
+       9       -0.02774923
+
+  *** Computed MQ vector end ***
+@  4  -99.9889568600     -1.636717175745E-03    1.78578D-02   -4.06D-04
+      Virial theorem: -V/T =      2.002703
+@      MULPOP F      -0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  3.09D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.00721700     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.00891006
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.00721700     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.00891006     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.00891006     0.00000000     0.00000000
+       7      -0.00301200     0.00000000     0.00000000    -0.00721700     0.00000000
+       8       0.00000000     0.00152046     0.00000000     0.00000000     0.00891006
+       9       0.00000000     0.00000000     0.00152046     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000    -0.00301200     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152046     0.00000000
+       3       0.00891006     0.00000000     0.00000000     0.00152046
+       4       0.00000000    -0.00721700     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00891006     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.00891006
+       7       0.00000000     0.02529743     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.02529743     0.00000000
+       9       0.00891006     0.00000000     0.00000000     0.02529743
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1      45.18345241     0.00000000     0.00000000    15.70299113     0.00000000
+       2       0.00000000    45.36979979     0.00000000     0.00000000   -17.14642913
+       3       0.00000000     0.00000000    45.36979979     0.00000000     0.00000000
+       4      15.70299113     0.00000000     0.00000000    48.48938525     0.00000000
+       5       0.00000000   -17.14642913     0.00000000     0.00000000    51.60806047
+       6       0.00000000     0.00000000   -17.14642913     0.00000000     0.00000000
+       7       9.85953708     0.00000000     0.00000000    15.70299113     0.00000000
+       8       0.00000000     3.31230943     0.00000000     0.00000000   -17.14642913
+       9       0.00000000     0.00000000     3.31230943     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000     9.85953708     0.00000000     0.00000000
+       2       0.00000000     0.00000000     3.31230943     0.00000000
+       3     -17.14642913     0.00000000     0.00000000     3.31230943
+       4       0.00000000    15.70299113     0.00000000     0.00000000
+       5       0.00000000     0.00000000   -17.14642913     0.00000000
+       6      51.60806047     0.00000000     0.00000000   -17.14642913
+       7       0.00000000    45.18345241     0.00000000     0.00000000
+       8       0.00000000     0.00000000    45.36979979     0.00000000
+       9     -17.14642913     0.00000000     0.00000000    45.36979979
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00322751
+       2       -0.00000000
+       3        0.00225772
+       4        0.00000000
+       5       -0.00000000
+       6        0.00806468
+       7        0.00322751
+       8        0.00000000
+       9        0.00225772
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.11400835
+       2       -0.00000000
+       3       -0.02836990
+       4        0.00000000
+       5       -0.00000000
+       6        0.33877870
+       7        0.11400835
+       8        0.00000000
+       9       -0.02836990
+
+  *** Computed MQ vector end ***
+@  5  -99.9889789250     -1.669982455355E-03    2.14077D-03   -2.21D-05
+      Virial theorem: -V/T =      2.002430
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  3.09D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.00721700     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.00891006
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.00721700     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.00891006     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.00891006     0.00000000     0.00000000
+       7      -0.00301200     0.00000000     0.00000000    -0.00721700     0.00000000
+       8       0.00000000     0.00152046     0.00000000     0.00000000     0.00891006
+       9       0.00000000     0.00000000     0.00152046     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000    -0.00301200     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152046     0.00000000
+       3       0.00891006     0.00000000     0.00000000     0.00152046
+       4       0.00000000    -0.00721700     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00891006     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.00891006
+       7       0.00000000     0.02529743     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.02529743     0.00000000
+       9       0.00891006     0.00000000     0.00000000     0.02529743
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1      45.18345241     0.00000000     0.00000000    15.70299113     0.00000000
+       2       0.00000000    45.36979979     0.00000000     0.00000000   -17.14642913
+       3       0.00000000     0.00000000    45.36979979     0.00000000     0.00000000
+       4      15.70299113     0.00000000     0.00000000    48.48938525     0.00000000
+       5       0.00000000   -17.14642913     0.00000000     0.00000000    51.60806047
+       6       0.00000000     0.00000000   -17.14642913     0.00000000     0.00000000
+       7       9.85953708     0.00000000     0.00000000    15.70299113     0.00000000
+       8       0.00000000     3.31230943     0.00000000     0.00000000   -17.14642913
+       9       0.00000000     0.00000000     3.31230943     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000     9.85953708     0.00000000     0.00000000
+       2       0.00000000     0.00000000     3.31230943     0.00000000
+       3     -17.14642913     0.00000000     0.00000000     3.31230943
+       4       0.00000000    15.70299113     0.00000000     0.00000000
+       5       0.00000000     0.00000000   -17.14642913     0.00000000
+       6      51.60806047     0.00000000     0.00000000   -17.14642913
+       7       0.00000000    45.18345241     0.00000000     0.00000000
+       8       0.00000000     0.00000000    45.36979979     0.00000000
+       9     -17.14642913     0.00000000     0.00000000    45.36979979
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00323434
+       2       -0.00000000
+       3        0.00226155
+       4        0.00000000
+       5       -0.00000000
+       6        0.00808482
+       7        0.00323434
+       8        0.00000000
+       9        0.00226155
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.11424960
+       2       -0.00000000
+       3       -0.02852873
+       4        0.00000000
+       5       -0.00000000
+       6        0.33968694
+       7        0.11424960
+       8        0.00000000
+       9       -0.02852873
+
+  *** Computed MQ vector end ***
+@  6  -99.9889794682     -1.678157303430E-03    5.00242D-04   -5.43D-07
+      Virial theorem: -V/T =      2.002440
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  3.09D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.00721700     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.00891006
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.00721700     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.00891006     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.00891006     0.00000000     0.00000000
+       7      -0.00301200     0.00000000     0.00000000    -0.00721700     0.00000000
+       8       0.00000000     0.00152046     0.00000000     0.00000000     0.00891006
+       9       0.00000000     0.00000000     0.00152046     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000    -0.00301200     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152046     0.00000000
+       3       0.00891006     0.00000000     0.00000000     0.00152046
+       4       0.00000000    -0.00721700     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00891006     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.00891006
+       7       0.00000000     0.02529743     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.02529743     0.00000000
+       9       0.00891006     0.00000000     0.00000000     0.02529743
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1      45.18345241     0.00000000     0.00000000    15.70299113     0.00000000
+       2       0.00000000    45.36979979     0.00000000     0.00000000   -17.14642913
+       3       0.00000000     0.00000000    45.36979979     0.00000000     0.00000000
+       4      15.70299113     0.00000000     0.00000000    48.48938525     0.00000000
+       5       0.00000000   -17.14642913     0.00000000     0.00000000    51.60806047
+       6       0.00000000     0.00000000   -17.14642913     0.00000000     0.00000000
+       7       9.85953708     0.00000000     0.00000000    15.70299113     0.00000000
+       8       0.00000000     3.31230943     0.00000000     0.00000000   -17.14642913
+       9       0.00000000     0.00000000     3.31230943     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000     9.85953708     0.00000000     0.00000000
+       2       0.00000000     0.00000000     3.31230943     0.00000000
+       3     -17.14642913     0.00000000     0.00000000     3.31230943
+       4       0.00000000    15.70299113     0.00000000     0.00000000
+       5       0.00000000     0.00000000   -17.14642913     0.00000000
+       6      51.60806047     0.00000000     0.00000000   -17.14642913
+       7       0.00000000    45.18345241     0.00000000     0.00000000
+       8       0.00000000     0.00000000    45.36979979     0.00000000
+       9     -17.14642913     0.00000000     0.00000000    45.36979979
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00323573
+       2       -0.00000000
+       3        0.00226235
+       4        0.00000000
+       5       -0.00000000
+       6        0.00808888
+       7        0.00323573
+       8        0.00000000
+       9        0.00226235
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.11429857
+       2       -0.00000000
+       3       -0.02855917
+       4        0.00000000
+       5       -0.00000000
+       6        0.33986863
+       7        0.11429857
+       8        0.00000000
+       9       -0.02855917
+
+  *** Computed MQ vector end ***
+@  7  -99.9889794960     -1.679805771042E-03    7.57274D-05   -2.77D-08
+      Virial theorem: -V/T =      2.002446
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  3.08D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.00721700     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.00891006
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.00721700     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.00891006     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.00891006     0.00000000     0.00000000
+       7      -0.00301200     0.00000000     0.00000000    -0.00721700     0.00000000
+       8       0.00000000     0.00152046     0.00000000     0.00000000     0.00891006
+       9       0.00000000     0.00000000     0.00152046     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000    -0.00301200     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152046     0.00000000
+       3       0.00891006     0.00000000     0.00000000     0.00152046
+       4       0.00000000    -0.00721700     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00891006     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.00891006
+       7       0.00000000     0.02529743     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.02529743     0.00000000
+       9       0.00891006     0.00000000     0.00000000     0.02529743
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1      45.18345241     0.00000000     0.00000000    15.70299113     0.00000000
+       2       0.00000000    45.36979979     0.00000000     0.00000000   -17.14642913
+       3       0.00000000     0.00000000    45.36979979     0.00000000     0.00000000
+       4      15.70299113     0.00000000     0.00000000    48.48938525     0.00000000
+       5       0.00000000   -17.14642913     0.00000000     0.00000000    51.60806047
+       6       0.00000000     0.00000000   -17.14642913     0.00000000     0.00000000
+       7       9.85953708     0.00000000     0.00000000    15.70299113     0.00000000
+       8       0.00000000     3.31230943     0.00000000     0.00000000   -17.14642913
+       9       0.00000000     0.00000000     3.31230943     0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9
+       1       0.00000000     9.85953708     0.00000000     0.00000000
+       2       0.00000000     0.00000000     3.31230943     0.00000000
+       3     -17.14642913     0.00000000     0.00000000     3.31230943
+       4       0.00000000    15.70299113     0.00000000     0.00000000
+       5       0.00000000     0.00000000   -17.14642913     0.00000000
+       6      51.60806047     0.00000000     0.00000000   -17.14642913
+       7       0.00000000    45.18345241     0.00000000     0.00000000
+       8       0.00000000     0.00000000    45.36979979     0.00000000
+       9     -17.14642913     0.00000000     0.00000000    45.36979979
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00323599
+       2       -0.00000000
+       3        0.00226251
+       4        0.00000000
+       5       -0.00000000
+       6        0.00808960
+       7        0.00323599
+       8        0.00000000
+       9        0.00226251
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.11430767
+       2       -0.00000000
+       3       -0.02856387
+       4        0.00000000
+       5       -0.00000000
+       6        0.33990062
+       7        0.11430767
+       8        0.00000000
+       9       -0.02856387
+
+  *** Computed MQ vector end ***
+@  8  -99.9889794968     -1.680102081140E-03    8.23287D-06   -8.57D-10
+
+@ *** DIIS converged in   8 iterations !
+@     Converged SCF energy, gradient:    -99.988979496840    8.23D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+    (incl. solvent contribution)
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Hartree-Fock orbital energies
+
+1 A     -26.29362479    -1.54833468    -0.69547178    -0.62775369    -0.62773244
+          0.12662701     0.66270850     1.34031549     1.34035436     1.46465261
+          1.61468440     1.61472831     2.00895791     2.21373229     4.00588715
+          4.00588777     4.12413422     4.12414463     4.76811612
+
+    E(LUMO) :     0.12662701 au (symmetry 1)
+  - E(HOMO) :    -0.62773244 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.75435945 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.395       0.098
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+
+     QM/NP/MM calculation converged     :
+
+     NP charges nuclear contribution    :      0.000000000000
+     NP charges electronic contribution :      0.000000000000
+     NP dipoles nuclear contribution    :      0.085089239497
+     NP dipoles electronic contribution :     -0.086769341579
+     Total QM/NP/MM energy              :     -0.001680102081
+
+
+@    Final HF energy:             -99.988979496840                 
+@    Nuclear repulsion:             4.329631724727
+@    Electronic energy:          -104.316931119486
+
+@    Final gradient norm:           0.000008232873
+
+ 
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  
+
+File label for MO orbitals:  17Feb15   FOCKDIIS
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 F   :1s    -1.0002   0.0046   0.0017  -0.0000   0.0000  -0.0263  -0.0365
+   2 F   :1s    -0.0007  -0.9498  -0.1727  -0.0000   0.0000   0.1351  -0.2017
+   3 F   :1s     0.0011   0.0021  -0.0953  -0.0000   0.0000   0.4426   0.3323
+   4 F   :2px    0.0000  -0.0000  -0.0000  -0.0000  -0.9622   0.0000   0.0000
+   5 F   :2py    0.0000   0.0000   0.0000  -0.9621   0.0000  -0.0000  -0.0000
+   6 F   :2pz   -0.0012  -0.0473   0.7833   0.0000  -0.0000   0.4106  -0.4601
+   7 F   :2px    0.0000  -0.0000  -0.0000  -0.0000  -0.0400   0.0000   0.0000
+   8 F   :2py    0.0000   0.0000   0.0000  -0.0400   0.0000  -0.0000  -0.0000
+   9 F   :2pz    0.0013   0.0165  -0.0092   0.0000  -0.0000   0.1973   0.0907
+  12 F   :3d0    0.0002  -0.0036   0.0157   0.0000  -0.0000   0.0006   0.0496
+  15 H   :1s    -0.0008  -0.1754   0.5779   0.0000  -0.0000  -0.3286   2.2252
+  16 H   :1s    -0.0002   0.0760  -0.2012   0.0000  -0.0000  -0.9122  -2.2091
+  17 H   :2px    0.0000  -0.0000  -0.0000  -0.0000  -0.0250   0.0000   0.0000
+  18 H   :2py    0.0000   0.0000   0.0000  -0.0250   0.0000  -0.0000  -0.0000
+  19 H   :2pz    0.0002   0.0264  -0.0449   0.0000  -0.0000  -0.0085   0.1695
+
+    Orbital         8        9       10       11       12       13       14
+   1 F   :1s    -0.0000   0.0000   0.1128   0.0000  -0.0000  -0.3563   0.6111
+   2 F   :1s    -0.0000   0.0000   0.7337   0.0000  -0.0000  -1.8025   2.6390
+   3 F   :1s    -0.0000   0.0000  -0.3161   0.0000  -0.0000   1.6547  -3.6656
+   4 F   :2px    0.0001  -1.0311  -0.0000   0.0000  -0.8773   0.0000   0.0000
+   5 F   :2py   -1.0311  -0.0001   0.0000  -0.8772  -0.0000  -0.0000  -0.0000
+   6 F   :2pz    0.0000  -0.0000  -1.0358  -0.0000   0.0000  -0.8650  -0.2458
+   7 F   :2px   -0.0001   1.0836  -0.0000  -0.0000   1.3165   0.0000   0.0000
+   8 F   :2py    1.0837   0.0001   0.0000   1.3165   0.0000  -0.0000  -0.0000
+   9 F   :2pz    0.0000  -0.0000   1.8793  -0.0000   0.0000   0.7168  -0.6084
+  11 F   :3d1-   0.0379   0.0000  -0.0000  -0.0731  -0.0000   0.0000   0.0000
+  12 F   :3d0    0.0000  -0.0000  -0.0350  -0.0000   0.0000   0.0000   0.1325
+  13 F   :3d1+  -0.0000   0.0379   0.0000   0.0000  -0.0731  -0.0000  -0.0000
+  15 H   :1s     0.0000  -0.0000  -1.1943  -0.0000   0.0000  -0.1273   1.0004
+  16 H   :1s     0.0000  -0.0000   0.5242  -0.0000   0.0000   0.0396   0.0570
+  17 H   :2px   -0.0001   0.6213  -0.0000   0.0000  -0.8287   0.0000   0.0000
+  18 H   :2py    0.6212   0.0001   0.0000  -0.8287  -0.0000  -0.0000  -0.0000
+  19 H   :2pz    0.0000  -0.0000   0.5324  -0.0000   0.0000  -0.7629  -1.0019
+
+    Orbital        15
+  10 F   :3d2-   1.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.42 seconds
+ >>>> Total wall time used in SIRIUS :      0.11 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   0.46 seconds
+ >>>> Total wall time used in DALTON:   0.13 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  

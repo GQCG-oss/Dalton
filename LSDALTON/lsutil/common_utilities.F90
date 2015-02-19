@@ -289,9 +289,19 @@
 
      if(unres) then
         ndim=sz/2
-        gap_a=eival(nocca+1)-eival(nocca)
-        gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
-        HOMO_LUMO_gap=MIN(gap_a,gap_b)
+        IF (nocca.GE.1) gap_a=eival(nocca+1)-eival(nocca)
+        IF (noccb.GE.1) gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
+        IF (nocca.EQ.0) THEN
+          IF (noccb.EQ.0) THEN
+            CALL LSQUIT('Error in HOMO_LUMO_gap, both nocca and noccb are zero',-1)
+          ELSE
+            HOMO_LUMO_gap = gap_b
+          ENDIF
+        ELSE IF (noccb.EQ.0) THEN
+          HOMO_LUMO_gap = gap_a
+        ELSE
+          HOMO_LUMO_gap=MIN(gap_a,gap_b)
+        ENDIF
      else
         ndim=size(eival)
         HOMO_LUMO_gap=eival(nocc+1)-eival(nocc)
@@ -318,9 +328,16 @@
 
      if(unres) then
         ndim=sz/2
-        gap_a=eival(nocca+1)-eival(nocca)
-        gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
-        HOMO_energy=MAX(eival(nocca),eival(noccb + ndim))
+        IF (nocca.EQ.0) THEN
+          IF (noccb.EQ.0) THEN
+            CALL LSQUIT('Error in HOMO_energy, both nocca and noccb are zero',-1)
+          ENDIF
+          HOMO_energy = eival(noccb + ndim)
+        ELSE IF (noccb.EQ.0) THEN
+          HOMO_energy = eival(nocca)
+        ELSE
+          HOMO_energy=MAX(eival(nocca),eival(noccb + ndim))
+        ENDIF
      else
         ndim=size(eival)
         HOMO_energy=eival(nocc)

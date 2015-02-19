@@ -1,6 +1,6 @@
 
 
-2015.0 (2015-02-03)
+2015.0 (2015-02-18)
 ===================
 
 See the release notes at http://daltonprogram.org for a list of new features in

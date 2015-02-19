@@ -3715,7 +3715,6 @@ module lspdm_tensor_operations_module
      enddo
 
      if(internal_alloc)then
-        print *,"SCATTER INTERNAL ALLOC"
         tmps = arr%tsize*2
         call mem_alloc(tmp,tmps)
      else

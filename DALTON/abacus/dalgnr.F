@@ -388,6 +388,9 @@ C
       END
 C  /* Deck exeher */
       SUBROUTINE EXEHER(WORK, LMWORK, WRKDLM)
+
+      use qmcmm, only: read_pot_qmnpmm
+
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -1304,6 +1307,7 @@ C
       use pcmmod_cfg
       use pcm_write
 #endif
+      use qmcmm, only: qmnpinp
 
 #include "implicit.h"
 #include "dummy.h"

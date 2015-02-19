@@ -214,6 +214,8 @@ module dec_typedef_module
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
      logical :: CCSDmultipliers
+     !> use debug multiplier residual
+     logical :: simple_multipler_residual
      !> use pnos in dec
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
@@ -352,6 +354,8 @@ module dec_typedef_module
      logical :: force_Occ_SubSystemLocality
      !> Debug print level
      integer :: PL
+     !> reduce the output if a big calculation is done
+     logical :: print_small_calc
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
      !> set fraction of extended orbital space to reduce to in the binary search
@@ -798,6 +802,10 @@ module dec_typedef_module
      !> Lagrangian energy 
      !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
      real(realk) :: LagFOP
+     !> energy error estimates
+     real(realk) :: Eocc_err
+     real(realk) :: Evir_err
+     real(realk) :: Elag_err
 
      !> Contributions to the fragment Lagrangian energy from each individual
      !  occupied or virtual orbital.

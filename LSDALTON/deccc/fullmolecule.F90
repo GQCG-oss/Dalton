@@ -584,7 +584,6 @@ contains
        call mat_init(s,nbasis,nbasis)
        call mat_zero(s)
        call II_get_overlap(DECinfo%output,DECinfo%output,mylsitem%setting,s)
-       call mem_alloc(molecule%overlap,nbasis,nbasis)
        molecule%overlap=0.0E0_realk
        call mat_to_full(s,1.0E0_realk,molecule%overlap)
        call mat_free(s)

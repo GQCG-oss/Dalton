@@ -1079,12 +1079,20 @@ module cc_debug_routines_module
        call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=t2_final%val,vo=t1_final%val)
        call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
-       &vovo=VOVO%val)
+          &vovo=VOVO%val)
+       if(get_mult)then
+          call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+           &vovo=m2%val,vo=m1%val)
+       endif
      else
        call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=t2_final%val)
        call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=VOVO%val)
+       if(get_mult)then
+          call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+           &vovo=m2%val)
+       endif
      endif
 
      call mem_dealloc(Uocc)

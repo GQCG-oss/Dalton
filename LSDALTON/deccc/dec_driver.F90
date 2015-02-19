@@ -32,6 +32,7 @@ module dec_driver_module
 !       & init_fullmp2grad,update_full_mp2gradient,get_mp2gradient_main,free_fullmp2grad,&
 !       & write_gradient_and_energies_for_restart,read_gradient_and_energies_for_restart
   use fragment_energy_module
+  use ccsd_gradient_module
 
 #ifdef VAR_MPI
   use infpar_module
@@ -134,7 +135,7 @@ contains
   !> \date October 2010
   subroutine main_fragment_driver(MyMolecule,mylsitem,D,&
        & OccOrbitals,UnoccOrbitals, &
-       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc,AtomicFragments,AFset)
+       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,dE_est1,FragEnergiesOcc,AtomicFragments,AFset)
 
     implicit none
     !> Number of occupied orbitals in full molecule (not changed, inout for MPI reasons)
@@ -160,7 +161,7 @@ contains
     !> Molecular gradient (only calculated if DECinfo%gradient is set!)
     real(realk),intent(inout) :: molgrad(3,natoms)
     !> Estimated energy error
-    real(realk),intent(inout) :: Eerr
+    real(realk),intent(inout) :: dE_est1
     !> Fragment energies for occupied partitioning scheme
     real(realk),dimension(MyMolecule%nfrags,MyMolecule%nfrags),intent(inout) :: FragEnergiesOcc
     logical :: esti
@@ -195,7 +196,7 @@ contains
     !> (:,:,5): Occupied E[5] contribution;  (:,:,6): Virtual E[5] contribution
     logical :: calcAF,ForcePrintTime
     integer(kind=ls_mpik) :: master,IERR,comm,sender
-    real(realk) :: Edft
+    real(realk) :: Edft,dE_est2,dE_est3
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
@@ -297,7 +298,7 @@ contains
     ! FRAGMENT OPTIMIZATION AND (POSSIBLY) ESTIMATED FRAGMENTS
     ! ********************************************************
     call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-         & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset)
+         & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset,dE_est3)
 
     ! Send CC models and pair FOTs to use for all pairs based on estimates
     if(esti) then
@@ -508,8 +509,8 @@ contains
     end do
 
     ! Print all fragment energies
-    call print_all_fragment_energies(nfrags,FragEnergies,dofrag,&
-         & mymolecule%DistanceTable,energies)
+    call print_all_fragment_energies(nfrags,FragEnergies,dofrag,mymolecule%DistanceTable,energies)
+
     call mem_dealloc(FragEnergies)
     !Obtain The Correlation Energy from the list energies
     call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
@@ -541,9 +542,19 @@ contains
             & OF DENSITY/GRADIENT CALCULATION!'
     else
        if(DECinfo%first_order) then
-          fullgrad%EHF = EHF
-          ! Calculate MP2 density/gradient and save MP2 density matrices to file
-          call get_mp2gradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
+#ifdef MOD_UNRELEASED
+         if(DECinfo%ccmodel == MODEL_CCSD)then
+           fullgrad%EHF = EHF
+           ! Calculate CCSD density/gradient and save density matrices to file
+           call get_CCSDgradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
+         end if
+#endif
+         if(DECinfo%ccmodel == MODEL_MP2)then
+           fullgrad%EHF = EHF
+           ! Calculate MP2 density/gradient and save MP2 density matrices to file
+           call get_mp2gradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
+         end if
+
        end if
     end if
 
@@ -554,16 +565,16 @@ contains
     call free_joblist(jobs)
 
     ! Estimate energy error
-    call get_estimated_energy_error(nfrags,energies,Eerr)
+    call get_estimated_energy_error(nfrags,energies,dE_est1,dE_est2)
     if(DECinfo%ccmodel == MODEL_RPA) then
-       call get_estimated_energy_error(nfrags,energies,Eerrs,.true.)
+       call get_estimated_energy_error(nfrags,energies,Eerrs,dE_est2,.true.)
     endif
     call mem_dealloc(energies)
 
     ! Print short summary
-    call print_total_energy_summary(EHF,Edft,Ecorr,Eerr)
-    if(DECinfo%ccmodel == MODEL_RPA) then
-       call print_total_energy_summary(EHF,Edft,Esos,Eerrs,.true.)
+    call print_total_energy_summary(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3)
+    if(DECinfo%ccmodel==MODEL_RPA)then
+       call print_total_energy_summary(EHF,Edft,Esos,Eerrs,dE_est2,dE_est3,doSOS=.true.)
     endif
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
@@ -1066,6 +1077,15 @@ subroutine print_dec_info()
              FragEnergies(atomA,atomA,j) = AtomicFragments(atomA)%energies(j)
           end do
 
+#ifdef MOD_UNRELEASED
+       if(DECinfo%first_order) then  ! density and/or gradient
+        !Update the CCSD density
+        if(DECinfo%ccmodel == MODEL_CCSD)then
+          call update_CCSDdensity(AtomicFragments(atomA),grad,fullgrad)
+        endif
+       endif
+#endif
+
           ! Copy fragment information into joblist
           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
           singlejob%jobsdone(1) = .true.
@@ -1132,6 +1152,15 @@ subroutine print_dec_info()
           singlejob%esti(1) = jobs%esti(jobdone)
           singlejob%dofragopt(1) = jobs%dofragopt(jobdone)
 
+#ifdef MOD_UNRELEASED
+       if(DECinfo%first_order) then  ! density and/or gradient
+        !Update the CCSD density
+        if(DECinfo%ccmodel == MODEL_CCSD)then
+          call update_CCSDdensity(PairFragment,grad,fullgrad)
+        endif
+       endif
+#endif
+
           call atomic_fragment_free(PairFragment)
 
        end if
@@ -1139,8 +1168,16 @@ subroutine print_dec_info()
        ! Update stuff (same for single and pair)
        ! ***************************************
        if(DECinfo%first_order) then  ! density and/or gradient
+#ifdef MOD_UNRELEASED
+!        if(DECinfo%ccmodel == MODEL_CCSD)then
+!          call update_full_CCSDgradient(grad,fullgrad)
+!          call free_mp2grad(grad)
+!        endif
+#endif
+        if(DECinfo%ccmodel == MODEL_MP2)then
           call update_full_mp2gradient(grad,fullgrad)
           call free_mp2grad(grad)
+        end if
        end if
 
 #endif
@@ -1240,7 +1277,7 @@ subroutine print_dec_info()
   !> \author Kasper Kristensen
   !> \date November 2013
   subroutine fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-       & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset)
+       & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset,dE_est3)
 
     implicit none
     !> Full molecule info (CC model for each pair fragment resulting from estimate analysis is stored 
@@ -1269,10 +1306,12 @@ subroutine print_dec_info()
     !> or do they need to be optimized (false)
     !> NOTE: If AFset=false, nothing (except some MPI communication) is effectively done here.
     logical,intent(in) :: AFset
+    !> error energy estimate based on information from the fragment optimization
+    real(realk), intent(out) :: dE_est3
     real(realk),pointer :: FragEnergiesPart(:,:)
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
-    real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est
+    real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est,deltaE_p
     integer :: nfrags,i,j,k
     type(joblist) :: jobs,fragoptjobs,estijobs
     integer(kind=ls_mpik) :: master
@@ -1374,6 +1413,8 @@ subroutine print_dec_info()
     end if UseEstimatedFragments
 
 
+    call evaluate_AtomicFragment_energy_error(AtomicFragments,nfrags,deltaE_p)
+
 
     if(esti) then
        ! Get estimated pair fragment energies for occupied partitioning scheme
@@ -1392,8 +1433,12 @@ subroutine print_dec_info()
        ! (Also calculate estimated correlation energy and estimated error by skipping pairs).
        call define_pair_calculations(nfrags,dofrag,FragEnergiesPart,MyMolecule,Epair_est,Eskip_est)
        call mem_dealloc(FragEnergiesPart)
+    else 
+       Eskip_est = 0.0E0_realk
     end if
 
+    !Get the estimated total error of the calculation
+    dE_est3 = deltaE_p + Eskip_est
 
     ! Zero all pair fragment energies to make sure that there are no leftovers from estimated pairs.
     do k=1,ndecenergies
@@ -1428,6 +1473,89 @@ subroutine print_dec_info()
 
   end subroutine fragopt_and_estimated_frags
 
+  !> \author Patrick Ettenhuber
+  !> extracting the approximate error made in a fragment calculation. we may use
+  !this as a complementary measure to estimate the error made in a DEC
+  !calculation
+  subroutine evaluate_AtomicFragment_energy_error(AtomicFragments,nfrags,deltaE_p)
+     implicit none
+     integer, intent(in) :: nfrags
+     type(decfrag), intent(in) :: AtomicFragments(nfrags)
+     real(realk), intent(inout) :: deltaE_p
+     integer :: frag, maxis
+     real(realk) :: dE_occ, dE_vir, dE_Lag
+
+     if(.not.DECinfo%InclFullMolecule .and. .not. DECinfo%simulate_full)then
+        dE_occ = 0.0E0_realk
+        dE_vir = 0.0E0_realk
+        dE_Lag = 0.0E0_realk
+
+
+        !Note, that %*_exp always contains the fragment energies of the expanded
+        !fragment on the level of theory performed in the fragment reduction.
+        !Therefore we may always get the difference here
+        do frag=1,nfrags
+           dE_occ = dE_occ + abs( AtomicFragments(frag)%Eocc_err )
+           dE_vir = dE_vir + abs( AtomicFragments(frag)%Evir_err )
+           dE_Lag = dE_Lag + abs( AtomicFragments(frag)%Elag_err )
+        enddo
+
+        maxis = 0
+        if(DECinfo%OnlyOccPart)then
+           maxis = 1
+        else if(DECinfo%OnlyVirtPart)then
+           maxis = 2
+        else
+           if(abs(dE_occ) > abs(dE_vir))then
+              if( abs(dE_occ) > abs(dE_Lag))then
+                 !occ > (virt and lag)
+                 maxis = 1
+              else
+                 !lag > occ > virt
+                 maxis = 3
+              endif
+           else
+              if( abs(dE_vir) > abs(dE_Lag))then
+                 !virt > (occ and lag)
+                 maxis = 2
+              else
+                 !lag > virt > occ
+                 maxis = 3
+              endif
+           endif
+        endif
+
+
+        select case(maxis)
+        case(1)
+           deltaE_p =  dE_occ
+        case(2)
+           deltaE_p =  dE_vir
+        case(3)
+           deltaE_p =  dE_Lag
+        end select
+
+        write(DECinfo%output,*)
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a)') '******************************************************************'
+        write(DECinfo%output,'(1X,a)') '*                SUMMARY ATOMIC FRAGMENT ERROR                   *'
+        write(DECinfo%output,'(1X,a)') '******************************************************************'
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,i10)')    'Total number of fragments:                                      ', nfrags
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,g20.10)') 'Estimated contribution beyond the fragment energy contribution: ',deltaE_p
+        if(DECinfo%PL>0)then
+           write(DECinfo%output,*)
+           write(DECinfo%output,'(1X,a,g20.10)') '-- individual estimated errors:'
+           write(DECinfo%output,'(1X,a,g20.10)') '   occupied fragment energy:   ',dE_occ
+           write(DECinfo%output,'(1X,a,g20.10)') '   virtual fragment energy:    ',dE_vir
+           write(DECinfo%output,'(1X,a,g20.10)') '   Lagrangian fragment energy: ',dE_Lag
+        endif
+        write(DECinfo%output,*)
+     else
+        deltaE_p=0.0E0_realk
+     endif
+  end subroutine evaluate_AtomicFragment_energy_error
 
 end module dec_driver_module
 

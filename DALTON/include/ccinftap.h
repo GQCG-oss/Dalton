@@ -20,7 +20,8 @@
 !     &                FNCKJD3, FNDELD2, FNDELD3, FNDELD4, FNDELD5,
 !     &                FNDKBC2, FNDKBC3, FNDKBC4, FNDKBC5
 
-       INTEGER         LUIAJB, LUBFDN, LURES, LUCSOL, LUPRPC,
+       INTEGER         LUIAJB, LUBFDN, LURES, LUCSOL, LUPRPC,           &
      &                 LUMMMO, LUCCEF, LUCCPO
-       COMMON /CC_TAP/ LUIAJB, LUBFDN, LURES, LUCSOL, LUPRPC,
+       COMMON /CC_TAP/ LUIAJB, LUBFDN, LURES, LUCSOL, LUPRPC,           &
      &                 LUMMMO, LUCCEF, LUCCPO
+

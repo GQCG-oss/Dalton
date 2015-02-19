@@ -30,16 +30,28 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
+    ! DEC output control:
+    !PL (suggestion by PE):
+    ! 0: standard output, only most necessary information
+    ! 1: somewhat more info, e.g. additional measures and timing data
+    ! 2: even more -- junkbox level, also set print_small_calc always to .true.
+    ! 3: first debug level  -- information that is not interesting for the general user
+    ! 4: second debug level
+    ! 5: extra verbose -- will overflow every reasonable machine in no time
+    ! a reduction of the print level is obtained by setting print_small_calc to .false. for > 100 nodes
+    DECinfo%PL                     = 0
+    DECinfo%print_small_calc       = .true.
+
     ! SNOOP
-    DECinfo%SNOOP = .false.
-    DECinfo%SNOOPjustHF = .false.
-    DECinfo%SNOOPMaxDIIS=5
-    DECinfo%SNOOPMaxIter=100
-    DECinfo%SNOOPthr=1e-7_realk
-    DECinfo%SNOOPdebug=.false.
-    DECinfo%SNOOPort=.false.
-    DECinfo%SNOOPsamespace=.true.
-    DECinfo%SNOOPlocalize=.false.
+    DECinfo%SNOOP          = .false.
+    DECinfo%SNOOPjustHF    = .false.
+    DECinfo%SNOOPMaxDIIS   = 5
+    DECinfo%SNOOPMaxIter   = 100
+    DECinfo%SNOOPthr       = 1e-7_realk
+    DECinfo%SNOOPdebug     = .false.
+    DECinfo%SNOOPort       = .false.
+    DECinfo%SNOOPsamespace =.true.
+    DECinfo%SNOOPlocalize  = .false.
 
 
     DECinfo%doDEC                  = .false.
@@ -100,6 +112,7 @@ contains
     DECinfo%CCSD_NO_DEBUG_COMM   = .true.
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
+    DECinfo%simple_multipler_residual = .true.
     DECinfo%use_pnos             = .false.
     DECinfo%pno_S_on_the_fly     = .false.
     DECinfo%noPNOtrafo           = .false.
@@ -139,7 +152,6 @@ contains
     DECinfo%FOTlevel               = 1
     DECinfo%FOT                    = 1.0E-4_realk
     DECinfo%InclFullMolecule       = .false.
-    DECinfo%PL                     = 0
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
     DECinfo%Frag_Exp_Scheme        = 1
@@ -630,6 +642,7 @@ contains
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
        case('.CCSDNODYNAMIC_LOAD');       DECinfo%dyn_load             = .false.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.DEBUG_MULTIPLIERS_DIRECT'); DECinfo%simple_multipler_residual = .false.
        case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
 #endif
@@ -782,6 +795,10 @@ contains
     nodtot = infpar%nodtot
 #endif
 
+    if( nodtot > 100 .and. DECinfo%PL<=1)then
+       DECinfo%print_small_calc = .false.
+    endif
+
     ! Reduced pairs - certain limitations
     if(DECinfo%nFRAGSred>0) then
        if(DECinfo%fragadapt) then
@@ -924,7 +941,7 @@ contains
 
     MP2gradientCalculation: if(DECinfo%first_order) then
 
-       if(DECinfo%full_molecular_cc) then
+       if(DECinfo%full_molecular_cc.and.DECinfo%ccmodel==MODEL_MP2) then
           call lsquit('Full calculation for MP2 gradient is implemented via the &
                & .SimulateFull keyword', DECinfo%output)
        end if

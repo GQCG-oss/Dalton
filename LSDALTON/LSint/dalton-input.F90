@@ -873,13 +873,13 @@ ENDDO
 call mem_dealloc(newType)
 
 call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%AUXMOLECULE,&
-     & fragment%input%BASIS,LUPRI)
+     & lsfull%input%BASIS,LUPRI)
 call DETERMINE_FRAGMENTNBAST(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
      & fragment%input%BASIS,LUPRI)
 
 do iB=nBasisBasParam,1,-1
    IF(lsfull%INPUT%BASIS%WBASIS(IB))THEN
-      CALL DETERMINE_NBAST(FRAGMENT%INPUT%AUXMOLECULE,FRAGMENT%INPUT%BASIS%BINFO(iB),&
+      CALL DETERMINE_NBAST(FRAGMENT%INPUT%AUXMOLECULE,lsfull%INPUT%BASIS%BINFO(iB),&
            & FRAGMENT%input%dalton%DoSpherical,.FALSE.)
    ENDIF
 enddo
