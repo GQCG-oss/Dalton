@@ -3,8 +3,8 @@
 !> \brief Contains common routine for the Ichor Code
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorGammaTabulationModule
-use IchorprecisionModule
+MODULE IchorGammaTabulationMod
+use IchorprecisionMod
 public:: gammaTabulation
 private
 CONTAINS
@@ -50,7 +50,7 @@ SUBROUTINE gammaTabulation(LUPRI,JMX,nTABFJW1,nTABFJW2,TABFJW)
  R2MAX1 = 1E0_realk/D2MAX1
 !$OMP PARALLEL DO PRIVATE(IPOINT,WVAL,D2WAL,IADR2,TERM,SUM,DENOM,&
 !$OMP IORDER,REXPW,JADR,J) FIRSTPRIVATE(IADR,R2MAX1,D2MAX1,&
-!$OMP JMAX) SHARED(TABFJW) SCHEDULE(DYNAMIC,1)
+!$OMP JMAX) SHARED(TABFJW) SCHEDULE(DYNAMIC,5)
  DO IPOINT = 1,1200
     !  WVAL = TENTH*DFLOAT(IPOINT)
     WVAL = 0.01E0_realk*IPOINT
@@ -78,4 +78,4 @@ SUBROUTINE gammaTabulation(LUPRI,JMX,nTABFJW1,nTABFJW2,TABFJW)
 !$OMP END PARALLEL DO 
 END SUBROUTINE gammaTabulation
 
-END MODULE IchorGammaTabulationModule
+END MODULE IchorGammaTabulationMod

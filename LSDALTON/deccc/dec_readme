@@ -49,6 +49,10 @@ For new model (e.g. RPA): Grep for "MODIFY FOR NEW MODEL" in all files in the DE
 For new correction (e.g. F12): Grep for "MODIFY FOR NEW CORRECTION" in all files in the DEC code. These are the main places you need to change to include your new model. It is hopefully clear from the context and the comments in the code what needs to be to include the new correction".
 
 
+(vi) 
+Workarounds:
+if you have to introduce workarounds on specific systems introduce them in dec_workarounds.F90 with a specific precompiler flag for your issue at hand. Rationale: Usually workarounds are compiler and system dependent and a clean version of the code should be maintained by default 
+
 Note: I have almost certainly forgotten something in the description above, so please feel free
 to update and improve the description!
 
@@ -80,8 +84,11 @@ Anyone not obeying these simple rules will get executed by the Jonas Kramer warr
 Dependency list:
 ****************
 
-Level 9
+Level 10
 dec_main
+
+Level 9
+snoop_main, snoop_tools
 
 Level 8
 full_driver, dec_driver,decmpiSlave
@@ -99,18 +106,18 @@ Level 4
 rpa
 
 Level 3
-ccsd, dec_atom,ccsdpt,mp2_gradient
+pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals
 
 Level 2 
-array_operations,  fullmolecule, mp2, cc_integrals, crop_tools
+fullmolecule, mp2, cc_integrals, crop_tools
 
 Level 1
-ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple, dec_pdm, decmpi
+ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple,  decmpi, dec_utils
 
 Level 0 
-dec_settings, full_driver_f12contractions, CABS,
-dec_utils, array3_memory, array4_memory, array_memory, manual_reorderings, ccri_simple
+dec_settings, full_driver_f12contractions, CABS, cc_tools
 
+array3_memory, array4_memory, f12_routines, dec_workarounds, dec_tools
 
 
 ------------------------

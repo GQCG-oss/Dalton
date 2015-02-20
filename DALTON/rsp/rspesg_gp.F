@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -342,8 +342,8 @@ C
 C  Old AO2MO for inputs without the symmetry
 C
 C      SUBROUTINE AO2MO(MAO,MMO,CMO,NORBT,WRK,LWRK)
-C#include <implicit.h>
-C#include <priunit.h> 
+C#include "implicit.h"
+C#include "priunit.h"
 C
 C
 C     Purpose: transforms a two-index matrix from 
@@ -372,7 +372,7 @@ C
       SUBROUTINE AO2MO(AAO,BMO,CMO,WRK,LWRK)
 #include "implicit.h"
 #include "priunit.h" 
-#include "inforb.h" 
+#include "inforb.h"
 
 C
 C     Purpose: transforms a two-index matrix from 
@@ -479,8 +479,8 @@ C This version was working for non-symmetry calc
 C
 C
 C      SUBROUTINE MO2AO_OLD(MMO,MAO,CMO,NORBT,WRK,LWRK)
-C#include <implicit.h>
-C#include <priunit.h> 
+C#include "implicit.h"
+C#include "priunit.h"
 C
 C
 C     Purpose: transforms a two-index matrix from 

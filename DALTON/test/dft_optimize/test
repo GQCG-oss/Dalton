@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+#    dft_optimize_nosym
+#    ------------------
+#    Molecule:         H2O
+#    Wave Function:    DFT B3LYP / 6-31G*
+#    Test Purpose:     DFT B3LYP geometry optimization w/o symmetry
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+# Molecular gradients
+f.add(from_string = 'Molecular gradient (au)',
+      num_lines    = 6,
+      abs_tolerance = 1.0e-6)
+
+# Geometry
+f.add(from_string = 'Molecular geometry (au)',
+      num_lines    = 6,
+      abs_tolerance = 1.0e-6)
+
+
+test.run(['b3lyp_optimize.dal'], ['H2O_6-31Gs_nosym.mol'], f={'out': f})
+test.run(['b3lypgauss_optimize.dal'], ['H2O_6-31Gs_sym.mol'], f={'out': f})
+
+sys.exit(test.return_code)

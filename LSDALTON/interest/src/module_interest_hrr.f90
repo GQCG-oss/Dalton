@@ -55,6 +55,10 @@ module module_interest_hrr
   !-- 1204 --!
   real(8) :: gi(21:35,57:84),ii(57:84,57:84)
   !-- 15792 -!
+!$OMP THREADPRIVATE(m,n,j,jxyz,jplus,jmins,ab4,a2,b2,dmins,rx,ry,rz,waux,ss,ps,ds,fs,gs,hs,is,&
+!$OMP               js,ks,ls,ms,ns,os,sp,pp,dp,fp,gp,hp,ip,jp,kp,lp,mp,np,sd,pd,dd,fd,gd,hd, &
+!$OMP               id,jd,kd,ld,md,pf,df,ff,gf,hf,if,jf,kf,lf,dg,fg,gg,hg,ig,jg,kg,fh,gh,hh,ih,&
+!$OMP               jh,gi,ii)
  
  
   integer, parameter, dimension( 1:9)    :: smo = (/2,0,1,3,0,1,4,0,1/)

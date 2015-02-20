@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,11 +21,10 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 #if defined (VAR_DEBUG)
-#define DEBUG .TRUE.
+#define HSODEBUG .TRUE.
 #else
-#define DEBUG .FALSE.
+#define HSODEBUG .FALSE.
 #endif
 
 C
@@ -107,7 +106,7 @@ C
       ACALL = .FALSE.
       DATA HSOLBL/'X SPNORB','Y SPNORB','Z SPNORB'/
 
-      IPRHSO=IPRRSP
+      IPRHSO = MAX(IPRRSP, IPRHSO)
 C
 C If expicit one-electron part go normal way
 C
@@ -162,7 +161,7 @@ C
          KSYMSO = IOPSYM
          ITRLSO = 2
          IF (IPRHSO.GT.0) WRITE(LUPRI,'(/A,I3)')
-     &      ' X2HSO: Transforming spin-orbit component', ILXYZ
+     &      ' X2HSO: Transforming 2-el. spin-orbit component', ILXYZ
          CALL GPOPEN(LUAHSO,'AO2SOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          CALL TRAHSO(ITRLSO,CMO,WRK(KFREE),LFREE)
@@ -234,7 +233,7 @@ C
       NZCVEC = MZCONF(1)
       LREFST = .TRUE.
       CALL IPSET(0,0,1,1)
-      CALL HSO2CR(IGRSYM,IGRSPI,X2TRS,VECDUM,NZYVEC,NZCVEC,ISYMV,ISYMDN,
+      CALL HSO2CR(IGRSYM,IGRSPI,X2TRS,DUMMY2,NZYVEC,NZCVEC,ISYMV,ISYMDN,
      *              XINDX,OVLAP,UDV,PV,WRK(KX2X),WRK(KFREE),LFREE,KZYVR,
      *              LCON,LORB,LREFST,IDAX,INTSYM,IOPSPI,ISPINV,
      *              IKLVL,WRK(KZYM),ISYMV,ZYMC,ISYMC,MJWOP)
@@ -503,7 +502,7 @@ C
          KSYMSO = IOPSYM
          ITRLSO = 2
          IF (IPRHSO.GT.0) WRITE(LUPRI,'(/A,I3)')
-     &      ' A2HSO: Transforming spin-orbit component', ILXYZ
+     &      ' A2HSO: Transforming 2-el. spin-orbit component', ILXYZ
          CALL GPOPEN(LUAHSO,'AO2SOINT','OLD',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          CALL TRAHSO(ITRLSO,CMO,WRK(KFREE),LFREE)
@@ -580,7 +579,7 @@ C
       LREFST = .TRUE.
       CALL IPSET(0,0,1,1)
       IF (LCON) THEN
-         CALL HSO2CR(IGRSYM,IGRSPI,A2TRS,VECDUM,NZYVEC,NZCVEC,
+         CALL HSO2CR(IGRSYM,IGRSPI,A2TRS,DUMMY2,NZYVEC,NZCVEC,
      *              ISYMV,ISYMDN,
      *              XINDX,OVLAP,UDV,PV,WRK(KA2X),WRK(KFREE),LFREE,KZYVR,
      *              LCON,.FALSE.,LREFST,IDAX,INTSYM,IOPSPI,ISPINV,
@@ -596,7 +595,7 @@ C        multiply ZYMAT with 1/2 for orbital part
          CALL DSCAL(N2ORBX,DH,WRK(KZYM),1)
          CALL DZERO(WRK(KA2X),N2ORBX)
          CALL OITH1(ISYMV,WRK(KZYM),OPMAT,WRK(KA2X),IOPSYM)
-         CALL HSO2CR(IGRSYM,IGRSPI,A2TRS,VECDUM,NZYVEC,NZCVEC,
+         CALL HSO2CR(IGRSYM,IGRSPI,A2TRS,DUMMY2,NZYVEC,NZCVEC,
      *           ISYMV,ISYMDN,
      *           XINDX,OVLAP,UDV,PV,WRK(KA2X),WRK(KFREE),LFREE,KZYVR,
      *           .FALSE.,LORB,LREFST,IDAX,INTSYM,IOPSPI,ISPINV,
@@ -1221,6 +1220,7 @@ C
 #include "inforb.h"
 #include "priunit.h"
 #include "infrsp.h"
+#include "infhso.h"
 #include "maxorb.h"
 #include "infinp.h"
 #include "aovec.h"
@@ -1243,7 +1243,7 @@ C
       INTEGER IRNTYP , NUMDIS, IFCTYP(2), ISYMDM(2)
       LOGICAL TKTIME,RTNTWO
 C
-      IPRINT=IPRRSP
+      IPRINT=MAX(IPRRSP,IPRHSO)
       NDMAT=2
       IF (NASHT.GT.0) 
      &   CALL QUIT('X2HSOAO not implemented for open shells')
@@ -1264,7 +1264,7 @@ C
       CALL DZERO(WORK(KAO),N2BASX)
       CALL MOTOAO(WORK(KMO),WORK(KAO),CMO,VECSYM,WORK(KFREE),LFREE)
       CALL MEMREL('MOTOAO',WORK,KMO,KMO,KFREE,LFREE)
-      IF (DEBUG) THEN
+      IF (IPRHSO .gt. 100 .or. HSODEBUG) THEN
          CALL MAOPRI(WORK(KAO),'X2HSOAO:kappa(ao)')
       END IF
 C
@@ -1289,7 +1289,7 @@ C
       CALL GTDMSO(WORK(KFREE),CMO,WORK(KD1),WORK(KFREE),WORK(KFREE))
       CALL D_K(NBAST,WORK(KAO),WORK(KD1),WORK(KD2),WORK(KS),
      &         WORK(KFREE),LFREE)
-      IF (DEBUG) THEN
+      IF (IPRHSO .gt. 100 .or. HSODEBUG) THEN
          CALL MAOPRI(WORK(KD1),'X2HSOAO:Density 1')
          CALL MAOPRI(WORK(KD2),'X2HSOAO:Density 2')
       END IF
@@ -1341,10 +1341,10 @@ C        Always full exchange in spin-orbit integrals:
      &               IPRNTD,RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
      &               WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &               .FALSE.)
+     &               .FALSE.,.false.)
          CALL MEMREL('HSOFCKAO.TWOINT',WORK,KF,KJSTRS,KFREE,LFREE)
          HFXFAC=HFXSAV
-      IF (DEBUG) THEN
+      IF (IPRHSO .gt. 100 .or. HSODEBUG) THEN
          CALL MAOPRI(WORK(KF1),'X2HSOAO(TWOINT):Fock 1')
          CALL MAOPRI(WORK(KF2),'X2HSOAO(TWOINT):Fock 2')
       END IF
@@ -1372,7 +1372,7 @@ C
       ELSE
          TRIPLET(1) = GRSPIN.NE.VECSPIN
          TRIPLET(2) = GRSPIN.EQ.1
-         CALL GETFMATX(OPLBL,TRIPLET,WORK(KF),WORK(KD),2)
+         CALL GET_FSO_AO(OPLBL,TRIPLET,WORK(KF),WORK(KD),2)
       END IF
 C
 C One-electron
@@ -1381,7 +1381,7 @@ C
          CALL GET_P(OPLBL(1:1)//'1'//OPLBL(3:8),WORK(KD1))
          CALL DAXPY(N2BASX,D1,WORK(KD1),1,WORK(KF1),1)
       END IF
-      IF (DEBUG) THEN
+      IF (IPRHSO .gt. 100 .or. HSODEBUG) THEN
          CALL MAOPRI(WORK(KF1),'X2HSOAO:Fock 1')
          CALL MAOPRI(WORK(KF2),'X2HSOAO:Fock 2')
       END IF
@@ -1390,7 +1390,7 @@ C Final transform (adds [k,f1] to f2
 C
       CALL F_K(NBAST,WORK(KAO),WORK(KF1),WORK(KF2),WORK(KS),
      &         WORK(KFREE),LFREE)
-      IF (DEBUG) THEN
+      IF (IPRHSO .gt. 100 .or. HSODEBUG) THEN
          CALL MAOPRI(WORK(KF2),'X2HSOAO:Final fock')
       END IF
 C
@@ -1398,7 +1398,7 @@ C Mo basis (add to one-electron in input)
 C
       CALL DZERO(WORK(KF1),N2ORBX)
       CALL AOTOMO(WORK(KF2),WORK(KF1),CMO,GRSYM,WORK(KFREE),LFREE)
-      IF (DEBUG) THEN
+      IF (IPRHSO .gt. 100 .or. HSODEBUG) THEN
          CALL MAOPRI(WORK(KF1),'X2HSOAO:Final fock (mo)')
       END IF
 C
@@ -1408,7 +1408,7 @@ C
       CALL ORBEX(GRSYM,1,LGR,
      &   WORK(KF1),WORK(KFREE),WORK(KFREE),WORK(KFREE),
      &   GR,D1,WORK(KFREE),MJWOP)
-      IF (DEBUG) THEN
+      IF (IPRHSO .gt. 100 .or. HSODEBUG) THEN
          CALL OUTPUT(GR,1,LGR/2,1,2,LGR/2,2,1,LUPRI)
       END IF
       CALL MEMREL('X2HSOAO',WORK,1,1,KFREE,LFREE)

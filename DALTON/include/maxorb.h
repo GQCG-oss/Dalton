@@ -10,9 +10,9 @@
 !     IF you change any of these parameters you should rebuild with "make".
 !
       INTEGER    MXSHEL, MXPRIM, MXCORB, MXORBT, MAXOCC
-      PARAMETER (MXSHEL = 1000, MXPRIM = 8000 )
-      PARAMETER (MXCORB = 2400, MXORBT = MXCORB*(MXCORB + 1)/2 )
-      PARAMETER (MAXOCC = 800 )
+      PARAMETER (MXSHEL = 1500, MXPRIM = 15000 )
+      PARAMETER (MXCORB = 5000, MXORBT = MXCORB*(MXCORB + 1)/2 )
+      PARAMETER (MAXOCC = 1500 )
 
 !     MXCORB_CC = max number of orbitals in CC modules
 !     (normally less than MXCORB because of a lot of static allocations

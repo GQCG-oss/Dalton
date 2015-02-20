@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck twoinp */
       SUBROUTINE TWOINP(WORD)
@@ -258,7 +257,7 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "aovec.h"
-      LOGICAL PASS, ANTI, PANTI, ANTIDM, DIA2SO, DOERI
+      LOGICAL PASS, ANTI, PANTI, ANTIDM, DIA2SO, DOERI, LDUMMY
       DIMENSION WORK(LWORK)
 #include "abainf.h"
 #include "exeinf.h"
@@ -272,7 +271,6 @@ C
 #include "gnrinf.h"
 #include "infpar.h"
 #include "infinp.h"
-#include "taymol.h"
 #include "taysol.h"
 #include "energy.h"
 #include "expopt.h"
@@ -281,6 +279,9 @@ C
 #include "esg.h"
 C defined parallel calculation types 
 #include "iprtyp.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
@@ -375,7 +376,7 @@ C
          IF (IPRPTR .GE. 2) CALL TIMER('PTRAN ',TIMSTR,TIMEND)
       END IF
 C
-C     Final sorting of integrals
+C     Final sorting of 2-el. AO density matrix into integral evaluatin order
 C
       IF (RUNSOR) THEN
          IF (IPRPTR .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
@@ -387,7 +388,7 @@ C
 #if defined (SYS_CRAY) || defined (SYS_NEC) || defined (SYS_T90)
          LWUSE = LWRK
 #else
-         CALL MEMSRT(MEMMIN,WORK(KNCONT))
+         CALL MEM_PSORT(MEMMIN,WORK(KNCONT))
 C
 C        1000000 is just an estimate of what the rest of the sorting 
 C        program needs
@@ -514,7 +515,7 @@ cfrj-end
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
      &                  RETUR,IPRINT,IPRTYP,
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                  DUMMY)
+     &                  DUMMY,LDUMMY)
             HFXMU = HFXM0
             IF (HFXMU.NE.D0) THEN
 
@@ -537,7 +538,7 @@ cfrj-end
      &              ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
      &              RETUR,IPRINT,IPRTYP,
      &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &              DUMMY)
+     &              DUMMY,LDUMMY)
 cfrj-st camb3lyp looses the 1e-contribution during the second call to pardrv, reason unknown, kludge fix by zeroing array above and manually adding it again
                CALL DAXPY(MXPRIM,1.0D0,ALPGR1,1,ALPGRD,1)
 cfrj-end
@@ -572,7 +573,7 @@ cfrj-end
      &                     TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &                     RETUR,IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),
      &                     WORK(KNCONT),WORK(KIORBS),IDUMMY,IDUMMY,
-     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.,.false.)
                HFXMU = HFXM0
                IF (HFXMU.NE.D0) THEN
                   HFXFC0 = HFXFAC
@@ -583,7 +584,7 @@ cfrj-end
      &                     TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &                     RETUR,IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),
      &                     WORK(KNCONT),WORK(KIORBS),IDUMMY,IDUMMY,
-     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.,.false.)
                   HFXFAC = HFXFC0
                END IF
                IF (IPRINT .GE. 2)
@@ -622,6 +623,7 @@ C
                CALL ADDGRD(GRADNN)
                CALL ADDGRD(GRADNA)
                CALL ADDGRD(GRADEE)
+               CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Molecular gradient',-1)
                CALL ADDGRD(GRADFS)
@@ -630,6 +632,7 @@ C
                   CALL ADDGRD(GSOLTT)
                   CALL ADDGRD(GSOLNN)
                END IF
+               CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
                NCDEP3 = 3*NUCDEP
                GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)
@@ -835,4 +838,4 @@ C
       CALL QEXIT('ONEDSF')
       RETURN
       END
-! --- end of aba2tex.F ---
+!  -- end of abacus/aba2tex.F --

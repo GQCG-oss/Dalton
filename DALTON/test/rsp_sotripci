@@ -84,7 +84,7 @@ Z2SPNORB
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo '#!/bin/bash
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -92,6 +92,12 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 
 # ?
 CRIT1=`$GREP "Final MCSCF energy\: * 2\.468763964419" $log | wc -l`

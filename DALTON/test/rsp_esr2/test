@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+#   rsp_esr2
+#   --------
+#   Molecule:         BeOH
+#   Wave Function:    MCSCF (CAS)
+#   Test Purpose:     ESR properties
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'The following one-electron property integrals are calculated')
+f.add(string = '- overlap integrals')
+f.add(string = '- Fermi contact integrals')
+f.add(string = '(Dirac delta function integrals)')
+f.add(string = '- spin-dipole integrals')
+f.add(string = '(electron spin - nuclear moment coupling)')
+f.add(string = 'Integrals for all indirect spin-spin coupling and/or shielding tensors are calculated.')
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-3)
+
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-3)
+
+f.add(string = 'Final MCSCF energy:',
+      rel_tolerance = 1.0e-12)
+
+f.add(string = 'TRIPLET OPERATOR:',
+      abs_tolerance = 1.0e-4)
+
+test.run(['rsp_esr2.dal'], ['rsp_esr2.mol'], f={'out': f})
+
+sys.exit(test.return_code)

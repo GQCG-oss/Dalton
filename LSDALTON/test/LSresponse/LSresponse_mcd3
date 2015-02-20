@@ -112,6 +112,8 @@ CRIT1=`$GREP "This is a DFT calculation of type: B3LYP" $log | wc -l`
 CRIT2=`$GREP "Final DFT energy\: *\-1\.001861447" $log | wc -l`       
 TEST[1]=`expr   $CRIT1 + $CRIT2`                        
 CTRL[1]=2                                                           
+TEST[1]=`expr   $CRIT2`                        
+CTRL[1]=1                                                           
 ERROR[1]="DFT ENERGY NOT CORRECT -"  
 
 # DAMPED 

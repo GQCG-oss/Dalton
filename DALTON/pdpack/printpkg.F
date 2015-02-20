@@ -1,10 +1,22 @@
 C FILE    : printpkg.F
 C
-C...   Dalton, Release DALTON2013, pdpack/printpkg.F
+C...   Dalton, Release DALTON2014, pdpack/printpkg.F
 C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.
 C...
+C
+C FILE: printpkg.F
+C
+C ====================================================================================
+C For all OUT* routines, the NCTL parameter is used to select different output formats.
+C ------------------------------------------------------------------------------------
+C     NCTL > 0: fit in 80 columns
+C     NCTL < 0: fit in 132 columns
+C     abs(NCTL) .ge. 10: also print zero rows
+C     abs(NCTL) =2 or =3: write old obsolete line printer carriage control characters
+C               for double or triple space between lines
+C ====================================================================================
 C
 C  /* Deck outpak */
       SUBROUTINE OUTPAK (AMATRX,NROW,NCTL,LUPRI)
@@ -75,7 +87,6 @@ C
       CMAX = ZERO
       N_NAN = 0
       DO I = 1,J
-!        IF (AMATRX(I) .ne. AMATRX(I)) THEN
          IF (IS_NAN(AMATRX(I),AMATRX(I))) THEN
             N_NAN = N_NAN + 1
          ELSE
@@ -110,6 +121,7 @@ C.....BEGIN NON STANDARD DO LOOP.
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 40 K = BEGIN,NROW
             KTOTAL = (K*(K-1))/2 + BEGIN - 1
+            IF (MCTL .GE. 10) GO TO 20 ! also print zero rows
             DO 10 I = 1,NCOL
                IF (AMATRX(KTOTAL+I) .NE. ZERO) GO TO 20
    10       CONTINUE
@@ -247,6 +259,7 @@ C.....BEGIN NON STANDARD DO LOOP.
             WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
             KTOTAL = IOFF + BEGIN*(BEGIN+1)/2 - 1
             DO 40 K = BEGIN,IDIM
+               IF (MCTL .GE. 10) GO TO 20 ! also print zero rows
                DO 10 I = 1,NCOL
                   IF (AMATRX(KTOTAL+I) .NE. ZERO) GO TO 20
    10          CONTINUE
@@ -324,12 +337,12 @@ C
       PARAMETER (D0 = 0.0D0, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
-#include "ibtfun.h"
+
 C
       IF (IREPO .NE. 1) THEN
          IBLK = 1
          DO 500 IREPB = 0, NBLK - 1
-            IREPA = IBTXOR(IREPO - 1,IREPB)
+            IREPA = IEOR(IREPO - 1,IREPB)
             IF (IREPA .GT. IREPB) THEN
                NDIMA = NDIM(IREPA + 1)
                NDIMB = NDIM(IREPB + 1)
@@ -403,6 +416,7 @@ C.....BEGIN NON STANDARD DO LOOP.
             WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
             KTOTAL = IOFF + BEGIN*(BEGIN+1)/2 - 1
             DO 40 K = BEGIN,IDIM
+               IF (MCTL .GE. 10) GO TO 20 ! also print zero rows
                DO 10 I = 1,NCOL
                   IF (AMATRX(KTOTAL+I) .NE. D0) GO TO 20
    10          CONTINUE
@@ -527,6 +541,7 @@ C
           WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
             DO 1 K = 1,IDIM
             IOFFK = IOFF + K
+            IF (MCTL .GE. 10) GO TO 5 ! also print zero rows
               DO 4 I=BEGIN,LAST
               IF (AMATRX(IOFFK+(I-1)*IDIM).NE.ZERO) GO TO 5
     4         CONTINUE
@@ -642,6 +657,7 @@ C
       DO 2 BEGIN = COLLOW,COLHI,KCOL
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 1 K = ROWLOW,ROWHI
+            IF (MCTL .GE. 10) GO TO 5 ! also print zero rows
             DO 4 I = BEGIN,LAST
                IF (abs(AMATRX(K,I)).gt.thrpri) GO TO 5
     4       CONTINUE
@@ -652,6 +668,100 @@ C
     3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
       RETURN
  1000 FORMAT (/10X,8(5X,A6,I4))
+      END
+C  /* Deck Ioutput */
+      SUBROUTINE IOUTPUT(IMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,
+     *                   NCTL,LUPRI)
+C.......................................................................
+C 04-Jun-2014 by Hans Jorgen Aa. Jensen.
+C Based on OUTPUT.
+C
+C IOUTPUT PRINTS an integer MATRIX IN FORMATTED FORM WITH NUMBERED ROWS
+C AND COLUMNS.  THE INPUT IS AS FOLLOWS;
+C
+C        IMATRX(',').........integer MATRIX TO BE OUTPUT
+C
+C        ROWLOW..............ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
+C
+C        ROWHI...............ROW NUMBER AT WHICH OUTPUT IS TO END
+C
+C        COLLOW..............COLUMN NUMBER AT WHICH OUTPUT IS TO BEGIN
+C
+C        COLHI...............COLUMN NUMBER AT WHICH OUTPUT IS TO END
+C
+C        ROWDIM..............ROW DIMENSION OF IMATRX(',')
+C
+C        COLDIM..............COLUMN DIMENSION OF IMATRX(',')
+C
+C        NCTL................CARRIAGE CONTROL FLAG; 1 FOR SINGLE SPACE
+C                                                   2 FOR DOUBLE SPACE
+C                                                   3 FOR TRIPLE SPACE
+C                            hjaaj: negative for 132 col width
+C
+C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER.  THE
+C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
+C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
+C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
+C OF COLUMNS.
+C
+C.......................................................................
+C
+#include "implicit.h"
+      INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
+      INTEGER   IMATRX(ROWDIM,COLDIM), IM_MAX
+      CHARACTER*1 ASA(3), BLANK, CTL
+      CHARACTER   CFMT*20,PFMT*20, COLUMN*8
+      DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
+C
+      IF (ROWHI.LT.ROWLOW) GO TO 3
+      IF (COLHI.LT.COLLOW) GO TO 3
+C
+      IM_MAX = 0
+      DO 10 J = COLLOW,COLHI
+         DO 10 I = ROWLOW,ROWHI
+            IM_MAX = MAX( IM_MAX, ABS(IMATRX(I,J)) )
+   10 CONTINUE
+      IF (IM_MAX .EQ. 0) THEN
+         WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
+         GO TO 3
+      END IF
+      IF (IM_MAX .le. 1000000) THEN
+         CFMT = '(/10X,20(1X,A3,I4))'
+         PFMT = '(A1,I7,2X,20I8)'
+         KCOLP =  8
+         KCOLN = 15
+      ELSE
+         CFMT = '(/10X,8(5X,A6,I4))'
+         PFMT = '(A1,I7,2X,8I15)'
+         KCOLP = 5
+         KCOLN = 8
+      END IF
+C
+      IF (NCTL .LT. 0) THEN
+         KCOL = KCOLN
+      ELSE
+         KCOL = KCOLP
+      END IF
+      MCTL = ABS(NCTL)
+      IF ((MCTL.LE.3).AND.(MCTL.GT.0)) THEN
+         CTL = ASA(MCTL)
+      ELSE
+         CTL = BLANK
+      END IF
+C
+      LAST = MIN(COLHI,COLLOW+KCOL-1)
+      DO 2 BEGIN = COLLOW,COLHI,KCOL
+         WRITE (LUPRI,CFMT) (COLUMN,I,I = BEGIN,LAST)
+         DO 1 K = ROWLOW,ROWHI
+            DO 4 I = BEGIN,LAST
+               IF (abs(IMATRX(K,I)).gt.0) GO TO 5
+    4       CONTINUE
+         GO TO 1
+    5       WRITE (LUPRI,PFMT) CTL,K,(IMATRX(K,I), I = BEGIN,LAST)
+    1    CONTINUE
+    2 LAST = MIN(LAST+KCOL,COLHI)
+    3 WRITE(LUPRI,'(A)') '    ==== End of integer matrix output ===='
+      RETURN
       END
 C  /* Deck prtab */
       SUBROUTINE PRTAB(NTABLE,TABLE,TEXT,LUPRI)
@@ -1048,6 +1158,7 @@ C
       DO 2 BEGIN = COLLOW,COLHI,KCOL
          WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
          DO 1 K = ROWLOW,ROWHI
+            IF (MCTL .GE. 10) GO TO 5 ! also print zero rows
             DO 4 I = BEGIN,LAST
                C4_test = AMATRX(K,I)   ! hjaaj: all this because no intrinsic routine to
                R4_test = cabs(C4_test) !        calculate absolute value of double complex number

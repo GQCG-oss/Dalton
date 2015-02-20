@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+#    geoopt_numgrd
+#    -------------
+#    Molecule:         H2O
+#    Wave Function:    MP2 / 6-31G
+#    Test Purpose:     Geometry optimization (1st order) using numerical
+#                      gradients
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(re = 'Default 1st order method will be used\: * BFGS update',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Optimization will be performed in redundant internal coordinates',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Model Hessian will be used as initial Hessian',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Trust region method will be used to control step \(default\)',
+      rel_tolerance = 1.0e-2)
+f.add(re = '1st Order Geometry Optimization',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+f.add(re = '\= MP2 second order energy',
+      rel_tolerance = 1.0e-9)
+
+f.add(re = 'Derivatives calculated to order * 1',
+      rel_tolerance = 1.0e-2)
+f.add(re = 'Analytical derivatives from energies to * 0 order\.',
+      rel_tolerance = 1.0e-2)
+f.add(re = '1\. numerical derivatives from * (0| )\. order analytical derivatives',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Symmetry coordinates',
+      num_lines = 14,
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'Gradient in symmetry coordinates',
+      num_lines = 7,
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'Gradient in cartesian coordinates',
+      num_lines = 7,
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'Gradient in Dalton symmetry coordinates',
+      num_lines = 7,
+      abs_tolerance = 1.0e-5)
+
+
+
+f.add(from_string = 'Next geometry (au)',
+      num_lines = 7,
+      abs_tolerance = 1.0e-6)
+
+f.add(re = 'Energy at this geometry is',
+      rel_tolerance = 1.0e-7)
+f.add(re = 'Norm of gradient',
+      abs_tolerance = 1.0e-4)
+f.add(re = 'Norm of step * \: *',
+      abs_tolerance = 1.0e-4)
+
+
+
+f.add(from_string = 'Final geometry (au)',
+      num_lines = 7,
+      abs_tolerance = 1.0e-7)
+
+f.add(string = '@ Geometry converged in',
+      rel_tolerance = 1.0e-2)
+f.add(string = '@ Energy at final geometry is',
+      rel_tolerance = 1.0e-8)
+f.add(string = '@ Energy change during optimization',
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = 'Bond distances (Angstrom):',
+      num_lines = 18,
+      abs_tolerance = 1.0e-6)
+
+
+
+
+test.run(['geoopt_numgrd.dal'], ['h2o_6-31G_sym.mol'], f={'out': f})
+
+sys.exit(test.return_code)

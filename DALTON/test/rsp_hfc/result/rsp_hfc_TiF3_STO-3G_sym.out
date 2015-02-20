@@ -1,0 +1,1093 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Agren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Sun Sep  8 20:39:20 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/bast/DALTON-2013.0-Source/build/test_rsp_hfc
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+.DIRECT                                           
+**INTEGRALS                                       
+.FC                                               
+.SD                                               
+**WAVE FUNCTIONS                                  
+.DFT                                              
+BP86                                              
+*SCF INPUT                                        
+.THRESH                                           
+1.0D-9                                            
+**RESPON                                          
+.TRPFLG                                           
+*ESR                                              
+.MAX IT                                           
+  30                                              
+.ATOMS                                            
+2                                                 
+1 2                                               
+.FCCALC                                           
+.SDCALC                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+STO-3G                                                                         
+TiF3.                                                                          
+                                                                               
+    2    2Y  Z     *                                                           
+       22.    1                                                                
+Ti    0.000000  0.000000   0.000000                                            
+        9.    2                                                                
+F     1.756834  0.000000   0.000000                                            
+F    -0.878417  1.521463   0.000000                                            
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: TiF3.                                                                   
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:  22.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =  22 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   9.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   9 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2x  Oxy  Oxz
+   -----+--------------------
+     E  |  E   C2x  Oxy  Oxz
+    C2x | C2x   E   Oxz  Oxy
+    Oxy | Oxy  Oxz   E   C2x
+    Oxz | Oxz  Oxy  C2x   E 
+
+   * Character table
+
+        |  E   C2x  Oxy  Oxz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           Ti         47.947947
+                           F          18.998403
+                           F   _1     18.998403
+                           F   _2     18.998403
+
+                       Total mass:   104.943156 amu
+                       Natural abundance:  73.800 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    4
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  Ti          1   22.0000    54    18      [12s9p3d|4s3p1d]                                   
+  F           3    9.0000    15     5      [6s3p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      4   49.0000    99    33
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   12
+  Ti      :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  F       :     4  x   3.3199351071    5  y   0.0000000000    6  z   0.0000000000
+  F   / 1 :     7  x  -1.6599675535    8  y   2.8751483793    9  z   0.0000000000
+  F   / 2 :    10  x  -1.6599675535   11  y  -2.8751483793   12  z   0.0000000000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     4    4    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   Ti    x    1
+    2   F     x    4
+    3   F     x    [  7  +   10 ]/2
+    4   F     y    [  8  -   11 ]/2
+
+  Symmetry  B1  ( 2)
+
+    5   Ti    y    2
+    6   F     y    5
+    7   F     x    [  7  -   10 ]/2
+    8   F     y    [  8  +   11 ]/2
+
+  Symmetry  B2  ( 3)
+
+    9   Ti    z    3
+   10   F     z    6
+   11   F     z    [  9  +   12 ]/2
+
+  Symmetry  A2  ( 4)
+
+   12   F     z    [  9  -   12 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            Ti          F           F   _1      F   _2
+            ------      ------      ------      ------
+ Ti    :    0.000000
+ F     :    1.756834    0.000000
+ F   _1:    1.756834    3.042926    0.000000
+ F   _2:    1.756834    3.042926    3.042926    0.000000
+
+
+  Max    interatomic separation is    3.0429 Angstrom (    5.7503 Bohr)
+  between atoms    4 and    3, "F   _2" and "F   _1".
+
+  Min YX interatomic separation is    1.7568 Angstrom (    3.3199 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  F          Ti           1.756834
+  bond distance:  F   _1     Ti           1.756834
+  bond distance:  F   _2     Ti           1.756834
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     F          Ti         F   _1       120.000
+  bond angle:     F          Ti         F   _2       120.000
+  bond angle:     F   _1     Ti         F   _2       120.000
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA      87.956879          0.000000    1.000000    0.000000
+   IB      87.956893          1.000000    0.000000    0.000000
+   IC     175.913772          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+           5745.7587           5745.7578           2872.8791 MHz
+            0.191658            0.191658            0.095829 cm-1
+
+
+@  Nuclear repulsion energy :  221.177842753152 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          16    9    6    2
+
+
+  Symmetry  A1 ( 1)
+
+    1     Ti       1s         1
+    2     Ti       1s         2
+    3     Ti       1s         3
+    4     Ti       1s         4
+    5     Ti       2px        5
+    6     Ti       2px        8
+    7     Ti       2px       11
+    8     Ti       3d0       16
+    9     Ti       3d2+      18
+   10     F        1s        19
+   11     F        1s        20
+   12     F        2px       21
+   13     F        1s        24 +   25
+   14     F        1s        26 +   27
+   15     F        2px       28 +   29
+   16     F        2py       30 -   31
+
+
+  Symmetry  B1 ( 2)
+
+   17     Ti       2py        6
+   18     Ti       2py        9
+   19     Ti       2py       12
+   20     Ti       3d2-      14
+   21     F        2py       22
+   22     F        1s        24 -   25
+   23     F        1s        26 -   27
+   24     F        2px       28 -   29
+   25     F        2py       30 +   31
+
+
+  Symmetry  B2 ( 3)
+
+   26     Ti       2pz        7
+   27     Ti       2pz       10
+   28     Ti       2pz       13
+   29     Ti       3d1+      17
+   30     F        2pz       23
+   31     F        2pz       32 +   33
+
+
+  Symmetry  A2 ( 4)
+
+   32     Ti       3d1-      15
+   33     F        2pz       32 -   33
+
+  Symmetries of electric field:  A1 (1)  B1 (2)  B2 (3)
+
+  Symmetries of magnetic field:  A2 (4)  B2 (3)  B1 (2)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - Fermi contact integrals
+            (Dirac delta function integrals)
+          - spin-dipole integrals
+            (electron spin - nuclear moment coupling)
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+ Integrals for all indirect spin-spin coupling and/or shielding tensors are calculated.
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.04 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:   15    8    5    2
+
+ Huckel EHT eigenvalues for symmetry :  1
+         -183.285436     -26.393587     -26.386466     -21.439818     -17.803132
+           -2.936946      -1.889552      -1.635796      -1.536909      -0.754395
+           -0.718561      -0.700972      -0.388109      -0.347097      -0.143714
+
+ Huckel EHT eigenvalues for symmetry :  2
+          -26.386466     -17.803132      -1.889552      -1.536909      -0.754395
+           -0.717289      -0.700972      -0.347097
+
+ Huckel EHT eigenvalues for symmetry :  3
+          -17.803013      -1.808036      -0.747221      -0.731434      -0.385287
+
+ Huckel EHT eigenvalues for symmetry :  4
+           -0.747221      -0.385287
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:39:20 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ Title lines from ".mol" input file:
+     TiF3.                                                                   
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, one open shell Kohn-Sham DFT calculation.
+
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          48
+@    Number of electrons in active shells       1
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                2         1
+     Total number of symmetries                 4
+@    Reference state symmetry                   1
+ 
+     This is a DFT calculation of type: BP86
+ Weighted mixed functional:
+                      PZ81:    1.00000
+                      P86c:    1.00000
+                     Becke:    1.00000
+                    Slater:    1.00000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           33 |   16    9    6    2
+     Number of basis functions          33 |   16    9    6    2
+
+      ** Automatic occupation of RKS orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals              24 |   12    7    4    1
+
+@    plus one open shell SCF orbital of symmetry   1
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-09
+ 
+     This is a DFT calculation of type: BP86
+ Weighted mixed functional:
+                      PZ81:    1.00000
+                      P86c:    1.00000
+                     Becke:    1.00000
+                    Slater:    1.00000
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  49 electrons.
+ "sym." is the symmetry of the one open shell orbital in table below.
+
+ Iter     Total energy    Error norm  Delta(E)  Sym.  Closed shell occupation
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)   -6    F
+@  1  -1135.85168455       2.67D+00  -1.14D+03   1    12   7   4   1
+      Virial theorem: -V/T =      2.008781
+@      MULPOP Ti      0.26; F      -0.38; F   _1  0.06; F   _2  0.06; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)   -7    F
+@  2  -1132.84574630       7.61D+00   3.01D+00   2    13   6   4   1
+      Virial theorem: -V/T =      2.012824
+@      MULPOP Ti     -3.98; F       1.16; F   _1  1.41; F   _2  1.41; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)   -6    F
+@  3  -1136.18922702       8.38D-01  -3.34D+00   1    12   7   4   1
+      Virial theorem: -V/T =      2.009945
+@      MULPOP Ti     -0.12; F      -0.26; F   _1  0.19; F   _2  0.19; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)   -7    F
+@  4  -1136.24450552       2.94D-01  -5.53D-02   1    12   7   4   1
+      Virial theorem: -V/T =      2.011126
+@      MULPOP Ti     -0.82; F      -0.00; F   _1  0.41; F   _2  0.41; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
+@  5  -1136.25069834       3.08D-02  -6.19D-03   1    12   7   4   1
+      Virial theorem: -V/T =      2.010913
+@      MULPOP Ti     -0.67; F      -0.06; F   _1  0.36; F   _2  0.36; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
+@  6  -1136.25077136       3.35D-04  -7.30D-05   1    12   7   4   1
+      Virial theorem: -V/T =      2.010879
+@      MULPOP Ti     -0.65; F      -0.07; F   _1  0.36; F   _2  0.36; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -11    F
+@  7  -1136.25077137       3.17D-04  -6.48D-09   1    12   7   4   1
+      Virial theorem: -V/T =      2.010880
+@      MULPOP Ti     -0.65; F      -0.07; F   _1  0.36; F   _2  0.36; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -11    F
+@  8  -1136.25077137       1.69D-04  -6.08D-09   1    12   7   4   1
+      Virial theorem: -V/T =      2.010880
+@      MULPOP Ti     -0.65; F      -0.07; F   _1  0.36; F   _2  0.36; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -11    F
+@  9  -1136.25077138       6.60D-07  -2.41D-09   1    12   7   4   1
+      Virial theorem: -V/T =      2.010879
+@      MULPOP Ti     -0.65; F      -0.07; F   _1  0.36; F   _2  0.36; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -13    F
+@ 10  -1136.25077138       2.33D-07   1.36D-12   1    12   7   4   1
+      Virial theorem: -V/T =      2.010879
+@      MULPOP Ti     -0.65; F      -0.07; F   _1  0.36; F   _2  0.36; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -14    F
+@ 11  -1136.25077138       5.33D-09  -2.96D-12   1    12   7   4   1
+      Virial theorem: -V/T =      2.010879
+@      MULPOP Ti     -0.65; F      -0.07; F   _1  0.36; F   _2  0.36; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -14    F
+@ 12  -1136.25077138       4.74D-10   2.27D-12   1    12   7   4   1
+
+@ *** DIIS converged in  12 iterations !
+@     Converged SCF energy, gradient:  -1136.250771376732    4.74D-10
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Orbital energy analysis for an open-shell system.
+ Orbital energies are not well-defined for open-shell systems
+   here is used block diagonalization of the FD=FC+FV Fock matrix.
+ NOTE that Koopmans' theorem is not fulfilled for this case.
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   48
+ Orbital occupations :   12    7    4    1
+
+ Sym       Kohn-Sham orbital energies
+
+  1   -176.10747202   -24.01143580   -24.01118397   -19.32313760   -16.42267489
+        -2.32166595    -1.50054326    -0.95637277    -0.94153875    -0.24109056
+        -0.23681910    -0.19838171     0.00236723     0.17349352     0.28370301
+         0.47393066
+
+  2    -24.01143574   -16.42267485    -1.50054323    -0.94153870    -0.24109063
+        -0.19838164    -0.16980560     0.17349355     0.47393068
+
+  3    -16.42417388    -1.48274793    -0.20815523    -0.20542050     0.12403808
+         0.18120455
+
+  4     -0.20815535     0.12403819
+
+    E(LUMO) :     0.12403808 au (symmetry 3)
+  - E(HOMO) :    -0.16980560 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.29384368 au
+
+and E(SOMO) :     0.00236723 au (symmetry 1)
+
+ NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
+
+ Largest off-diagonal Fock matrix element is  8.77D-03
+
+ >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       8.621       9.140
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           2
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+
+@    Final DFT energy:          -1136.250771376732                 
+@    Nuclear repulsion:           221.177842753152
+@    Electronic energy:         -1357.428614129884
+
+@    Final gradient norm:           0.000000000474
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:39:29 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         9       10       11       12       13       14       15
+   1 Ti  :1s     0.0000   0.0000   0.0243  -0.0000  -0.0344   0.0000  -0.0278
+   2 Ti  :1s    -0.0000  -0.0000  -0.0758   0.0000   0.1106  -0.0000   0.0911
+   3 Ti  :1s     0.0000   0.0000   0.2258  -0.0000  -0.3203   0.0000  -0.2588
+   4 Ti  :1s    -0.0000  -0.0000  -0.3482   0.0000   0.8408  -0.0000   0.8673
+   5 Ti  :2px    0.0761  -0.0112   0.0000  -0.0747  -0.0000  -0.0867  -0.0000
+   6 Ti  :2px   -0.2314   0.0324  -0.0000   0.2499   0.0000   0.3067   0.0000
+   7 Ti  :2px    0.0551   0.0641  -0.0000  -0.2880  -0.0000  -0.6055   0.0000
+   8 Ti  :3d0    0.0000   0.0000   0.1950   0.0000   0.6646  -0.0000  -0.7889
+   9 Ti  :3d2+   0.0629  -0.3833   0.0000   0.0076   0.0000   0.7719   0.0000
+  10 F   :1s    -0.2098  -0.0263  -0.0344  -0.0278   0.0191  -0.0040   0.0507
+  11 F   :1s     0.7971   0.1291   0.1806   0.1575  -0.1221   0.0453  -0.3295
+  12 F   :2px   -0.0537   0.4908   0.4879   0.5224   0.0772   0.1456   0.3527
+  13 F   :1s     0.1049   0.0132  -0.0344   0.0139   0.0191   0.0020   0.0507
+  14 F   :1s    -0.3985  -0.0646   0.1806  -0.0788  -0.1221  -0.0227  -0.3295
+  15 F   :2px   -0.0167   0.4780  -0.2440  -0.2646  -0.0386   0.3628  -0.1764
+  16 F   :2py    0.0214  -0.0073   0.4225  -0.4544   0.0669   0.1254   0.3055
+
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
+
+    Orbital         3        4        5        6        7        8        9
+   1 Ti  :2py   -0.3500   0.0761  -0.0112  -0.0747   0.0000   0.0867   0.1116
+   2 Ti  :2py    1.0022  -0.2314   0.0324   0.2499  -0.0000  -0.3067  -0.4149
+   3 Ti  :2py    0.0620   0.0551   0.0641  -0.2880   0.0000   0.6055   1.1506
+   4 Ti  :3d2-  -0.0024  -0.0629   0.3833  -0.0076  -0.0000   0.7719  -0.6709
+   5 F   :2py    0.0051  -0.0043   0.4738  -0.5269  -0.5775  -0.4351  -0.0532
+   6 F   :1s    -0.0210  -0.1817  -0.0228  -0.0241   0.0000   0.0035   0.0747
+   7 F   :1s     0.0683   0.6903   0.1118   0.1364  -0.0000  -0.0393  -0.5202
+   8 F   :2px    0.0194   0.0214  -0.0073  -0.4544   0.5001  -0.1254  -0.2322
+   9 F   :2py   -0.0286  -0.0414   0.4865   0.2601   0.2887  -0.2180   0.3491
+
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5        6
+   1 Ti  :2pz    0.9866  -0.3563  -0.0000   0.0606  -0.0000   0.1445
+   2 Ti  :2pz    0.0416   1.0216   0.0000  -0.2070   0.0000  -0.5138
+   3 Ti  :2pz   -0.0101   0.0646  -0.0000   0.3314  -0.0000   1.0706
+   4 Ti  :3d1+  -0.0000   0.0000   0.3288   0.0000   0.9558   0.0000
+   5 F   :2pz    0.0006   0.0052   0.7329   0.5189  -0.3794  -0.2764
+   6 F   :2pz    0.0006   0.0052  -0.3665   0.5188   0.1897  -0.2764
+
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+    Orbital         1        2
+   1 Ti  :3d1-   0.3288   0.9558
+   2 F   :2pz    0.6348  -0.3286
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      8.63 seconds
+ >>>> Total wall time used in SIRIUS :      9.15 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:39:29 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ CHANGES OF DEFAULTS FOR RSPINP:
+ -------------------------------
+
+
+ AO-direct Fock matrix calculations.
+
+ ** CALCULATION OF TRIPLET RESPONSE PROPERTIES  **  TRPFLG = T  TRPLET = T
+
+ Default : Using Fock type decoupling of the two-electron density matrix :
+    Add DV*(FC+FV) instead of DV*FC to E[2] approximate orbital diagonal
+
+
+ ********* ESRINP ********
+
+
+ Changes of defaults under *ESR   :
+ ----------------------------------
+
+
+ ESR - hyperfine calculation carried out
+
+ MAXIMUM NUMBER OF ITERATIONS. MAXESR =    30
+
+    8 ESR CALC. : TRIPLET OP.  SYMMETRY NO:    1 AND LABEL:
+
+          FC Ti 01
+          FC F  02
+          SD 002 z
+          SD 005 y
+          SD 009 x
+          SD 003 z
+          SD 006 y
+          SD 010 x
+
+    4 ESR CALC. : TRIPLET OP.  SYMMETRY NO:    2 AND LABEL:
+
+          SD 005 x
+          SD 009 y
+          SD 006 x
+          SD 010 y
+
+    4 ESR CALC. : TRIPLET OP.  SYMMETRY NO:    3 AND LABEL:
+
+          SD 002 x
+          SD 009 z
+          SD 003 x
+          SD 010 z
+
+    4 ESR CALC. : TRIPLET OP.  SYMMETRY NO:    4 AND LABEL:
+
+          SD 002 y
+          SD 005 z
+          SD 003 y
+          SD 006 z
+
+
+ open shell SCF energy:    -1136.250771376732473
+ -- inactive part     :    -1357.428614129884181
+ --   active part     :        0.000000000000000
+ -- nuclear repulsion :      221.177842753151623
+
+
+                    ******************************************
+                    *** High-spin DFT response calculation ***
+                    ******************************************
+
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       T
+ Orbital variables.         KZWOPT:      74
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      74
+
+
+ Output from RSPESR module
+ -------------------------
+
+
+
+ RSPLAN -- linear response calculation for symmetry  1
+ RSPLAN -- operator label : TRIPLAGR
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry =  1; triplet =   T
+
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-05
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   10)
+ RSP solution vector no.    1; norm of residual   6.42D-07
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+     FC Ti 01 inactive part:     0.00000000
+     FC Ti 01 active part  :    14.94162725
+     FC Ti 01 total        :    14.94162725
+
+TRIPLET OPERATOR: "FC Ti 01" LAGRANGIAN:  0.395451 AVERAGE: 14.941627 TOTAL: 15.337078
+
+     FC F  02 inactive part:     0.00000000
+     FC F  02 active part  :     0.31880246
+     FC F  02 total        :     0.31880246
+
+TRIPLET OPERATOR: "FC F  02" LAGRANGIAN: -0.006226 AVERAGE:  0.318802 TOTAL:  0.312576
+
+     SD 002 z inactive part:     0.00000000
+     SD 002 z active part  :     0.08936733
+     SD 002 z total        :     0.08936733
+
+TRIPLET OPERATOR: "SD 002 z" LAGRANGIAN: -0.017298 AVERAGE:  0.089367 TOTAL:  0.072070
+
+     SD 005 y inactive part:     0.00000000
+     SD 005 y active part  :    -0.04468354
+     SD 005 y total        :    -0.04468354
+
+TRIPLET OPERATOR: "SD 005 y" LAGRANGIAN:  0.008650 AVERAGE: -0.044684 TOTAL: -0.036034
+
+     SD 009 x inactive part:     0.00000000
+     SD 009 x active part  :    -0.04468379
+     SD 009 x total        :    -0.04468379
+
+TRIPLET OPERATOR: "SD 009 x" LAGRANGIAN:  0.008648 AVERAGE: -0.044684 TOTAL: -0.036036
+
+     SD 003 z inactive part:     0.00000000
+     SD 003 z active part  :    -0.01701679
+     SD 003 z total        :    -0.01701679
+
+TRIPLET OPERATOR: "SD 003 z" LAGRANGIAN: -0.102304 AVERAGE: -0.017017 TOTAL: -0.119321
+
+     SD 006 y inactive part:     0.00000000
+     SD 006 y active part  :    -0.02747373
+     SD 006 y total        :    -0.02747373
+
+TRIPLET OPERATOR: "SD 006 y" LAGRANGIAN:  0.046286 AVERAGE: -0.027474 TOTAL:  0.018813
+
+     SD 010 x inactive part:     0.00000000
+     SD 010 x active part  :     0.04449052
+     SD 010 x total        :     0.04449052
+
+TRIPLET OPERATOR: "SD 010 x" LAGRANGIAN:  0.056018 AVERAGE:  0.044491 TOTAL:  0.100508
+
+TRIPLET OPERATOR: "SD 005 x" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  2
+
+TRIPLET OPERATOR: "SD 009 y" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  2
+
+TRIPLET OPERATOR: "SD 006 x" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  2
+
+TRIPLET OPERATOR: "SD 010 y" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  2
+
+TRIPLET OPERATOR: "SD 002 x" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  3
+
+TRIPLET OPERATOR: "SD 009 z" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  3
+
+TRIPLET OPERATOR: "SD 003 x" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  3
+
+TRIPLET OPERATOR: "SD 010 z" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  3
+
+TRIPLET OPERATOR: "SD 002 y" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  4
+
+TRIPLET OPERATOR: "SD 005 z" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  4
+
+TRIPLET OPERATOR: "SD 003 y" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  4
+
+TRIPLET OPERATOR: "SD 006 z" contribution = 0.0 by symmetry.
+- Operator is of symmetry no.  4
+
+
+                         +-------------------------------+
+                         ! Isotropic  Hyperfine Coupling !
+                         +-------------------------------+
+
+    Atom      Mass      G-val      A, Mhz        A, G    
+ -------------------------------------------------------
+ *   Ti    *  46.95 * -.31539 * -461.5196  * -164.6814 *
+ *   F     *  19.00 * 5.25774 *  156.8021  *   55.9508 *
+ -------------------------------------------------------
+
+ *** NOTE: Results printed only for symmetry unique atoms!
+
+
+               +---------------------------------------------------+
+               ! R-U contributions to Isotropic hyperfine coupling !
+               +---------------------------------------------------+
+
+    Atom    G-val    Average, MHz  Response, MHz   Total, MHz 
+ ---------------------------------------------------------------
+ *  Ti   * -.31539 *   -449.6198 *    -11.8998  *   -461.5196  * 
+ *  F    * 5.25774 *    159.9254 *     -3.1232  *    156.8021  * 
+ ---------------------------------------------------------------
+
+ *** NOTE: Results printed only for symmetry unique atoms!
+
+
+                         +--------------------------------+
+                         ! Anisotropic Hyperfine Coupling !
+                         +--------------------------------+
+
+
+ A Tensor components for Ti   ( Mass = 46.95 G-val =-.31539) in MHz: 
+ ===================================================================
+
+  
+           SX          SY          SZ      
+ IX *       1.0844 *     -0.0000 *     -0.0000 * 
+ IY *      -0.0000 *      1.0843 *     -0.0000 * 
+ IZ *      -0.0000 *     -0.0000 *     -2.1687 * 
+
+ A Tensor components for F    ( Mass = 19.00 G-val =5.25774) in MHz: 
+ ===================================================================
+
+  
+           SX          SY          SZ      
+ IX *      50.4194 *      0.0000 *      0.0000 * 
+ IY *       0.0000 *      9.4373 *      0.0000 * 
+ IZ *       0.0000 *      0.0000 *    -59.8566 * 
+
+ *** NOTE: Results printed only for symmetry unique atoms!
+
+ >>>> Total CPU  time used in RESPONSE:   3.64 seconds
+ >>>> Total wall time used in RESPONSE:   4.13 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  12.32 seconds
+ >>>> Total wall time used in DALTON:  13.32 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:39:34 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

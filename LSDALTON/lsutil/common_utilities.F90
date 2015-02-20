@@ -86,7 +86,7 @@
 
    if (print_eivecs) then
       write (lupri,*) 'Eigenvectors of A:'
-      call OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
+      call LS_OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
    endif
 
    deallocate(eigenval)
@@ -142,8 +142,8 @@
      allocate(wrk(5))
      lwrk = -1
 #ifdef VAR_LSESSL
-     no_ref=0.0E0_realk
-     tol = 0.0E0_realk
+     no_ref = 0.0E0_realk
+     tol    = 0.0E0_realk
      call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
 #else
@@ -151,9 +151,16 @@
 #endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
-        stop "programming error in my_DSYGV input. workarray inquiry"
+        call lsquit("programming error in my_DSYGV input. workarray inquiry",-1)
      endif
+!#ifdef VAR_LSDEBUG
+!     ! sometimes the optimal batch sizes do not always work, especially when
+!     ! compiled with ifort --debug and --check so I introduced this, PE
+!     print *,"WARNING(my_sygv): using minimal lwrk instead of optimal in debug build"
+!     lwrk = 3*N-1
+!#else
      lwrk = NINT(wrk(1))
+!#endif
      deallocate(wrk)
      allocate(wrk(lwrk))
 #ifdef VAR_LSESSL
@@ -165,7 +172,18 @@
 #endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
-        stop "programming error in my_DSYGV input."
+        IF(ierr.LT.0) print *, "illegal value of argument number ",ABS(ierr)
+        IF(ierr.LE.N)then
+           print *, 'SYEV failed to converge;'
+           print *,  ierr, ' off-diagonal elements of an intermediate'
+           print *, 'tridiagonal form did not converge to zero;'
+        ENDIF
+        IF(ierr.GE.N.AND.ierr.LE.2*N)then
+           print *, 'the leading minor of order ',ierr-N,' of B is not positive definite.'
+           print *, 'The factorization of B could not be completed and'
+           print *, 'no eigenvalues or eigenvectors were computed '
+        endif
+        call lsquit("programming error in my_DSYGV input.",-1)
      endif
      deallocate(wrk)
    END SUBROUTINE my_DSYGV
@@ -271,9 +289,19 @@
 
      if(unres) then
         ndim=sz/2
-        gap_a=eival(nocca+1)-eival(nocca)
-        gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
-        HOMO_LUMO_gap=MIN(gap_a,gap_b)
+        IF (nocca.GE.1) gap_a=eival(nocca+1)-eival(nocca)
+        IF (noccb.GE.1) gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
+        IF (nocca.EQ.0) THEN
+          IF (noccb.EQ.0) THEN
+            CALL LSQUIT('Error in HOMO_LUMO_gap, both nocca and noccb are zero',-1)
+          ELSE
+            HOMO_LUMO_gap = gap_b
+          ENDIF
+        ELSE IF (noccb.EQ.0) THEN
+          HOMO_LUMO_gap = gap_a
+        ELSE
+          HOMO_LUMO_gap=MIN(gap_a,gap_b)
+        ENDIF
      else
         ndim=size(eival)
         HOMO_LUMO_gap=eival(nocc+1)-eival(nocc)
@@ -300,9 +328,16 @@
 
      if(unres) then
         ndim=sz/2
-        gap_a=eival(nocca+1)-eival(nocca)
-        gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
-        HOMO_energy=MAX(eival(nocca),eival(noccb + ndim))
+        IF (nocca.EQ.0) THEN
+          IF (noccb.EQ.0) THEN
+            CALL LSQUIT('Error in HOMO_energy, both nocca and noccb are zero',-1)
+          ENDIF
+          HOMO_energy = eival(noccb + ndim)
+        ELSE IF (noccb.EQ.0) THEN
+          HOMO_energy = eival(nocca)
+        ELSE
+          HOMO_energy=MAX(eival(nocca),eival(noccb + ndim))
+        ENDIF
      else
         ndim=size(eival)
         HOMO_energy=eival(nocc)
@@ -437,6 +472,27 @@
         enddo
      endif
    end subroutine ls_dzero
+
+  !> \brief Sets a real array of length *LENGTH* to zero.
+  !> \author H. J. Aa. Jensen. F90'fied by S. Host
+  !> \date May 5, 1984
+  subroutine ls_dzero8(dx, length)
+  use precision
+  implicit none
+       !Length of array
+       integer(kind=long), intent(in) :: length
+       !Array to be nullified
+       real(realk), intent(inout) :: dx(length)
+       integer(kind=long)             :: i
+
+     if (length < 0) then
+        !do nothing
+     else
+        do i = 1, length
+           dx(i) = 0.0E0_realk
+        enddo
+     endif
+   end subroutine ls_dzero8
 
   !> \brief Sets a short integer array of length *LENGTH* to shortzero.
   !> \author T. Kjaergaard
@@ -600,13 +656,26 @@ end subroutine ls_dcopy
 #endif
 
       CALL ls_GETTIM(CTOT,WTOT)
-      CALL ls_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
-      CALL ls_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+      CALL ls_TIMTXT('>>>> Total CPU  time used in LSDALTON:',CTOT,LUPRIN)
+      CALL ls_TIMTXT('>>>> Total wall time used in LSDALTON:',WTOT,LUPRIN)
       CALL ls_FLSHFO(LUPRIN)
-
-#ifdef VAR_MPI
-      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
-#endif
+!It may seem like a good idea to wake up the slaves so that the slaves can all call mpi_finalize and quit. However in the case of MPI the lsquit can be called in many ways.
+! Option 1: The Master is awake and the slaves are sleeping. Master calls lsquit
+!           Here it can make sense to wake up the slaves and have the slaves 
+!           call mpi_finalize and quit
+! Option 2: The Master and the Slaves are awake. Master calls lsquit
+!           In this case Master should not broadcast a wake up call as the 
+!           slaves are already sleeping - so it does not make sense 
+!           and the calculation will hang in the MPI broadcast routine. 
+!           The MPI slaves will wait in some reduction routine or something
+!           While the Master i waiting in the bcast routine 
+! Option 3: The Master and the Slaves are awake. Slave calls lsquit
+!           Clearly it should not wake up the other slaves
+!
+!If master and slaves calls EXIT directly the mpiexec should kill the slaves!
+!#ifdef VAR_MPI
+!      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
+!#endif
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
 #if defined (SYS_LINUX)
       CALL EXIT(100)
@@ -614,6 +683,27 @@ end subroutine ls_dcopy
       STOP 100
 #endif
       end subroutine lsquit
+
+      !> \brief Print Stack
+      !> \author T. Kjaergaard
+      !> \date Jan 2014
+      subroutine LsTraceBack(text)
+        use precision
+#ifdef VAR_IFORT
+#ifndef VAR_INT64
+        use IFCORE
+        implicit none
+        !> Text string to be printed
+        CHARACTER(len=*), intent(in) :: TEXT
+        WRITE (*,'(/2A/)')"TRACEBACKQQ INFO:",TEXT
+        CALL TRACEBACKQQ("TRACEBACKQQ INFO:",USER_EXIT_CODE=-1)
+#else
+        WRITE (*,'(/2A/)')"LsTraceBack do not work using -int64"
+#endif
+#else
+        WRITE (*,'(/2A/)')"LsTraceBack do not work unless ifort is used"
+#endif
+      end subroutine LsTraceBack
 
       !> \brief Print a header. Based on HEADER by T. Helgaker
       !> \author S. Host
@@ -744,11 +834,11 @@ end subroutine ls_dcopy
          first = .false.
          call cpu_time(TCPU0)
          call date_and_time(values=dateandtime0)
-         call get_walltime(dateandtime0,twall0)
+         call ls_get_walltime(dateandtime0,twall0)
       end if
       call cpu_time(tcpu1)
       call date_and_time(values=dateandtime1)
-      call get_walltime(dateandtime1,twall1)
+      call ls_get_walltime(dateandtime1,twall1)
 
       cputime = tcpu1 - TCPU0
       walltime = twall1 - twall0
@@ -814,7 +904,7 @@ end subroutine ls_dcopy
 !> Exception: Years that are evenly divisible by 100 are not leap years, 
 !> unless they are also evenly divisible by 400. Source: Wikipedia
 !>
-subroutine get_walltime(dateandtime,walltime)
+subroutine ls_get_walltime(dateandtime,walltime)
 use precision
 implicit none
    !> "values" output from fortran intrinsic subroutine date_and_time
@@ -864,7 +954,7 @@ implicit none
       else if (month == 4 .or. month == 6 .or. month == 9 .or. month == 11) then
          walltime = walltime + 30E0_realk*24E0_realk*3600E0_realk
       else
-         stop 'Unknown month (get_walltime)'
+         stop 'Unknown month (ls_get_walltime)'
       endif
    enddo
 
@@ -882,7 +972,7 @@ implicit none
       endif
    enddo
 
-end subroutine get_walltime
+end subroutine ls_get_walltime
 
 !> \brief Flush formatted output unit (empty buffers). 
 !> \author H. J. Aa. Jensen. F90'fied by S. Host
@@ -924,7 +1014,7 @@ end subroutine ls_flshfo
 !>         Revised 15-Dec-1983 by Hans Jorgen Aa. Jensen.
 !>         16-Aug-2010 f90'fied by S. Host
 !> \date August 2010
-subroutine output(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,NCTL,LUPRI)
+subroutine ls_output(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,NCTL,LUPRI)
 use precision
 implicit none 
       !> ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
@@ -999,7 +1089,7 @@ implicit none
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
  1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
-      END subroutine output
+      END subroutine ls_output
 
       subroutine shortint_output(MAT2,dim1,dim2,lupri)
         implicit none

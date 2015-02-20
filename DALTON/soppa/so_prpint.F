@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_prpint */
       SUBROUTINE SO_PRPINT(LTYPE,NLBTOT,WORK,LWORK)
@@ -21,7 +20,7 @@ C
 #include "inftap.h"
 CSPAS:10/11-2003: is merged with maxorb.h
 #include "maxorb.h"
-C#include <mxorb.h>
+C#include "mxorb.h"
 CKeinSPASmehr
 #include "maxaqn.h"
 #include "symmet.h"

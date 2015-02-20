@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef REV_LOG
 c970923-vb
@@ -85,9 +84,9 @@ C
      &                    ' be welcome back'
                      CALL QUIT('Input error in *VIBANA')
                   END IF
-                  DO 305 ICOUNT = 1, NISOTP
+                  DO, ICOUNT = 1, NISOTP
                      READ (LUCMD,*) (ISOTP(ICOUNT,N), N = 1, NATM)
- 305              CONTINUE
+                  END DO
                GO TO 100
     4             CONTINUE
   400                DOINT = .TRUE.
@@ -240,11 +239,7 @@ C
 C
       DIMENSION WORK(LWORK)
 C
-C Used from common blocks:
-C   TAYMOL : HESMOL
-C
 #include "abainf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dorps.h"
@@ -280,15 +275,9 @@ C
      &            WORK(KWRK1),LWRK1,NATOMS,NCORD,DIPDER,DOVCD,IPRINT,
      &            HESPUN)
       IF (NUMHES) THEN
-         KCOOR0 = KWRK1
-         KGRAD0 = KCOOR0 + 3*NUCIND
-         KHESS0 = KGRAD0 + NCORD
+         KHESS0 = 1
          KGRADF = KHESS0 + NCORD*NCORD
 C
-C     We use the gradient from the first iteration, since we are not in
-C     the minimum geometry when we end geometry steps using NUMHES
-C
-ckr         CALL REANMHES(WORK(KCOOR0),WORK(KGRAD0),WORK(KHESS0),
          CALL REANMHES(WORK(KGEOM),WORK(KGRAD),WORK(KHESS0),
      &                 WORK(KGRADF),WORK(KHESS),NCORD,3*NUCIND)
 C
@@ -809,16 +798,15 @@ C        ... this is an atom !
       ROTB = ROTMHZ/BIMOM
       ROTC = ROTMHZ/CIMOM
       IF (LINEAR) THEN
-         WRITE (LUPRI,'(A/)') ' The molecule is linear.'
+         WRITE (LUPRI,'(A/)') '@    The molecule is linear.'
          WRITE (LUPRI,'(T16,A,F16.2,A,F12.6,A)')
      &        'B =', ROTB, ' MHz     (', CINVRS*ROTB, ' cm-1)'
-      ELSE IF (PLANAR) THEN
-         WRITE (LUPRI,'(A/)') ' The molecule is planar.'
-      END IF
-      IF (.NOT. LINEAR)
-     &     WRITE (LUPRI,'(T16,A,T36,A,T56,A,//3F20.4,A,/3F20.6,A)')
+      ELSE
+         IF (PLANAR) WRITE (LUPRI,'(A/)') '@    The molecule is planar.'
+         WRITE (LUPRI,'(T16,A,T36,A,T56,A,//3F20.4,A,/3F20.6,A)')
      &     'A','B','C', ROTA, ROTB, ROTC, ' MHz',
      &     CINVRS*ROTA, CINVRS*ROTB, CINVRS*ROTC, ' cm-1'
+      END IF
  9999 RETURN
       END
 C  /* Deck vibana */
@@ -860,14 +848,14 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
-#include "taymol.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
+#include "taymol.h"
 C
       LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
       DIMENSION DMYLAB(3), DMYMOL(3), AATMOL(3), NUMODX(8)
-      CHARACTER*1 CHRIMG(0:1)
       CHARACTER*5 IRPTXT
+      CHARACTER*1 CHRIMG(0:1)
       DATA CHRIMG /' ','i'/
 C
 C     *********************************************
@@ -1220,7 +1208,7 @@ C     ***** Zero-point energies *****
 C     *******************************
 C
       IF (.NOT.NOTALL) THEN
-         EVIB = D0
+         EVIB   = D0
          DO 800 IFREQ = 1,NUMMOD
             IF (EVAL(IFREQ).GT.1.D-8) EVIB = EVIB + SQRT(EVAL(IFREQ))
   800    CONTINUE
@@ -1625,7 +1613,6 @@ C
      &          NATTYP(*), WRK(*)
       LOGICAL   LINDEP(6)
 C
-#include "taymol.h"
 #include "cbisol.h"
       AMASS(I) = DISOTP(NATTYP(I),1,'MASS')
 C
@@ -2133,17 +2120,17 @@ C  /* Deck getb */
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          BMAT(NINTER,NCORD), BDAG(NCORD,NINTER), CTYPE(NINTER)
       LOGICAL PRINT, QONLY
-#include "ibtfun.h"
+
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
-               XA(IATOM) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-               YA(IATOM) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-               ZA(IATOM) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               XA(IATOM) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               YA(IATOM) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               ZA(IATOM) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
             END IF
   110    CONTINUE
   100 CONTINUE
@@ -2180,17 +2167,17 @@ C
 #include "nuclei.h"
 #include "symmet.h"
       LOGICAL PRINT, QONLY
-#include "ibtfun.h"
+
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
-               XA(IATOM) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-               YA(IATOM) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-               ZA(IATOM) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               XA(IATOM) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               YA(IATOM) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               ZA(IATOM) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
             END IF
   110    CONTINUE
   100 CONTINUE
@@ -2292,24 +2279,35 @@ C
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
      &          DGRAD(3,NCORD), CAAT(3,NCORD)
-#include "taymol.h"
 #include "energy.h"
 #include "moldip.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "aatens.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
-#include "ibtfun.h"
+
+C
+      IF (NCOOR .NE. NCORD) THEN
+         WRITE (LUPRI,'(///A,2I10)')
+     &      'INTERNAL ERROR in GET_NOSYM_COORD:'//
+     &      ' NCOOR .ne. NCORD :', NCOOR, NCORD
+         CALL QUIT('INTERNAL ERROR in GET_NOSYM_COORD:'//
+     &      ' NCOOR .ne. NCORD')
+      END IF
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     Atomic numbers and geometry
 C
       IATOM = 0
       DO 100 I = 1, NUCIND
          DO 200 J = 0, MAXOPR
-            IF (IBTAND(J,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(J,ISTBNU(I)) .EQ. 0) THEN
                ICHRG(IATOM + 1) = IZATOM(I)
                DO 300 K = 1, 3
-                  GEOM(3*IATOM+K) = PT(IBTAND(ISYMAX(K,1),J))*CORD(K,I)
+                  GEOM(3*IATOM+K) = PT(IAND(ISYMAX(K,1),J))*CORD(K,I)
   300          CONTINUE
                IATOM = IATOM + 1
             END IF
@@ -2327,7 +2325,7 @@ C     Gradient
 C
       CALL DGEMM('N','N',NCORD,1,NCORD,1.D0,
      &           WRK(KSCTRA),NCORD,
-     &           GRDMOL,MXCOOR,0.D0,
+     &           GRDMOL,NCOOR,0.D0,
      &           GRAD,NCORD)
 C
 C     Nuclear Repulsion Gradient
@@ -2341,12 +2339,12 @@ C     Hessian
 C
       CALL DGEMM('N','N',NCORD,NCORD,NCORD,1.D0,
      &           WRK(KSCTRA),NCORD,
-     &           HESMOL,MXCOOR,0.D0,
-     &           WRK(KLAST),MXCOOR)
+     &           HESMOL,     NCOOR,0.D0,
+     &           WRK(KLAST), NCORD)
       CALL DGEMM('N','T',NCORD,NCORD,NCORD,1.D0,
-     &           WRK(KLAST),MXCOOR,
+     &           WRK(KLAST), NCORD,
      &           WRK(KSCTRA),NCORD,0.D0,
-     &           HESS,NCORD)
+     &           HESS,       NCORD)
 C
 C     Dipole gradient
 C
@@ -2431,7 +2429,7 @@ C
 #include "cbinum.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
-#include "ibtfun.h"
+
 C
       CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
      &          .FALSE.)
@@ -2650,12 +2648,12 @@ C
          DO ICENT = 1, NUCIND
             MULCNT = ISTBNU(ICENT)
             DO IOP = 0, MAXOPR
-               IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+               IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                   IATOM = IATOM + 1
                   DO I = 1, 3
                      ICOOR = ICOOR + 1
                      POS(I,IATOM) = POS(I,IATOM)
-     &                    + PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+     &                    + PT(IAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
                   END DO
                END IF
             END DO
@@ -2858,7 +2856,7 @@ C
       READ (LUWLK)
       READ (LUWLK)
       READ (LUWLK) NFRVAL, FRVAL,
-     &             ROAAFU,ROAAFD,ROAGNU,ROAGND,
+     &             ROAAFU,ROAAFD, ROAGNU,ROAGND,
      &             ROAGLU,ROAGLD, ROAAU, ROAAD
       CALL GPCLOSE(LUWLK,'KEEP')
 C
@@ -2886,26 +2884,29 @@ C
          CALL HEADER('Polarizability tensor Cartesian gradient)',1)
          DO 100 F = 1, NFRVAL
             WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-            CALL OUTPUT(ROAAFD(1,1,F,1),1,9,1,NUMMOD,9*MXFR,NCORD,
+C modified by Bin Gao and Kenneth Ruud, December 7, 2009
+            CALL OUTPUT(ROAAFD(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                  1,LUPRI)
+C            CALL OUTPUT(ROAAFD(1,1,F,1),1,9,1,NUMMOD,9*MXFR,NCORD,
+C     &                  1,LUPRI)
   100    CONTINUE
          IF (VROA) THEN
             CALL HEADER('Non-London G tensor Cartesian gradient',1)
             DO 110 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAGND(1,1,F,1),1,9,1,NUMMOD,9*MXFR,NCORD,
+               CALL OUTPUT(ROAGND(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                     1,LUPRI)
   110       CONTINUE
             CALL HEADER('London G tensor Cartesian gradient',1)
             DO 120 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAGLD(1,1,F,1),1,9,1,NUMMOD,9*MXFR,NCORD,
+               CALL OUTPUT(ROAGLD(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                     1,LUPRI)
   120       CONTINUE
             CALL HEADER('A tensor Cartesian gradient',1)
             DO 130 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAAD(1,1,1,F,1),1,27,1,NUMMOD,27*MXFR,NCORD,
+               CALL OUTPUT(ROAAD(1,1,1,F,1),1,27,1,NCORD,27*MXFR,NCORD,
      &                     1,LUPRI)
   130       CONTINUE
 C
@@ -3131,7 +3132,7 @@ C
       CHARACTER*5 IRPTXT
       DIMENSION ICHRVC(0:7), ITMP(0:7), ITRANS(NCORD/3)
       LOGICAL FOUND, CHANGE
-#include "ibtfun.h"
+
       SXFAMU = SQRT(XFAMU)
 C
 C     First we have to expand the atomic coordinates. The geometry
@@ -3141,13 +3142,13 @@ C
       DO 10 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 15 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                GVC1(IATOM*3+1) =
-     &              PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+     &              PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                GVC1(IATOM*3+2) =
-     &              PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+     &              PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                GVC1(IATOM*3+3) =
-     &              PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+     &              PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                IATOM = IATOM + 1
                ATCHRG(IATOM) = CHARGE(ICENT)
             END IF
@@ -3173,17 +3174,17 @@ C
       DO 20 ISYMOP = 0, MAXREP
          DO 25 ICENT = 1, NCORD/3
             EVC2((ICENT-1)*3+1) =
-     &        PT(IBTAND(ISYMAX(1,1),ISYMOP))*EVC1((ICENT-1)*3+1)
+     &        PT(IAND(ISYMAX(1,1),ISYMOP))*EVC1((ICENT-1)*3+1)
             GVC2((ICENT-1)*3+1) =
-     &        PT(IBTAND(ISYMAX(1,1),ISYMOP))*GVC1((ICENT-1)*3+1)
+     &        PT(IAND(ISYMAX(1,1),ISYMOP))*GVC1((ICENT-1)*3+1)
             EVC2((ICENT-1)*3+2) =
-     &        PT(IBTAND(ISYMAX(2,1),ISYMOP))*EVC1((ICENT-1)*3+2)
+     &        PT(IAND(ISYMAX(2,1),ISYMOP))*EVC1((ICENT-1)*3+2)
             GVC2((ICENT-1)*3+2) =
-     &        PT(IBTAND(ISYMAX(2,1),ISYMOP))*GVC1((ICENT-1)*3+2)
+     &        PT(IAND(ISYMAX(2,1),ISYMOP))*GVC1((ICENT-1)*3+2)
             EVC2((ICENT-1)*3+3) =
-     &        PT(IBTAND(ISYMAX(3,1),ISYMOP))*EVC1((ICENT-1)*3+3)
+     &        PT(IAND(ISYMAX(3,1),ISYMOP))*EVC1((ICENT-1)*3+3)
             GVC2((ICENT-1)*3+3) =
-     &        PT(IBTAND(ISYMAX(3,1),ISYMOP))*GVC1((ICENT-1)*3+3)
+     &        PT(IAND(ISYMAX(3,1),ISYMOP))*GVC1((ICENT-1)*3+3)
  25      CONTINUE
 C
 C     If the geometry is affected by the symmetry operation,
@@ -3341,7 +3342,7 @@ C
 #include "cbiwlk.h"
 #include "abainf.h"
 #include "orgcom.h"
-#include "ibtfun.h"
+
 C
       PREFAC = D1/(D4*XFAMU)
 C
@@ -3868,7 +3869,7 @@ C
          JATOM = 0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
                   NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
@@ -4186,7 +4187,7 @@ C
    20 CONTINUE
       IF (FREAD) THEN
          READ (LUCMD,'(A1)') WE
-         BACKSPACE 5
+         BACKSPACE LUCMD
       ELSE
          WE = KWORD(ICARD)
       END IF
@@ -4577,4 +4578,4 @@ C
       CALL V3NOM (W)
       RETURN
       END
-C  /* Deck rpflin */
+!  -- end of abacus/abavib.F --

@@ -172,7 +172,7 @@
 	note={doi: 10.1002/wcms.1172}}
 
 @note{daltonversion,
- title={{Dalton, a Molecular Electronic Structure Program, Release DALTON2013.1} (2013), see http://daltonprogram.org/},
+ title={{Dalton, a Molecular Electronic Structure Program, Release DALTON2015.0} (2015), see http://daltonprogram.org/},
 }
 %
 % *****
@@ -1109,6 +1109,14 @@ pages = {144117},
    YEAR    = 1994,
    PAGES   = 21}
 
+@article{pemcscf,
+  author = {E.~D.~Hedeg\aa{}rd and N.~H.~List and H.~J.~Aa.~Jensen and J.~Kongsted},
+  title = {The multi-configuration self-consistent field method within a polarizable embedded framework},
+  journal = jcp,
+  volume = {139},
+  year = {2013},
+  pages = {044101}}
+
 @ARTICLE{tuhjahjajpjjcp84,
    AUTHOR  = {T.~U.~Helgaker and J.~Alml\"{o}f and H.~J.~Aa.~Jensen
               and P.~J{\o}rgensen},
@@ -1480,11 +1488,21 @@ pages = {144117},
    AUTHOR  = {H.~Koch and A.~S{\'a}nchez {de Mer{\'a}s} and
               T.~B.~Pedersen},
    TITLE   = {Reduced scaling in electronic structure calculations using
-          Cholesky decompositions},
+              Cholesky decompositions},
    JOURNAL = jcp,
    VOLUME  = 118,
    PAGES   = 9481,
    YEAR    = 2003}
+
+@ARTICLE{choexci,
+   AUTHOR  = {P.~Baudin and J.~S{\'a}nchez and I.~G. Cuesta and 
+              A.~S{\'a}nchez {de Mer{\'a}s}},
+   TITLE   = {Calculation of excitation energies from the CC2 
+              linear response theory using Cholesky decomposition},
+   JOURNAL = jcp,
+   VOLUME  = 140,
+   PAGES   = 104111,
+   YEAR    = 2014}
 
 @ARTICLE{Koch:JCP106,
    AUTHOR  = {H.~Koch and O.~Christiansen and P.~J{\o}rgensen
@@ -1663,23 +1681,23 @@ pages = {144117},
   pages =    205 }
 
 @Article{melomaldojcp12,
-  author =   {J.I.~{\mbox Melo} and A. F.~{\mbox Maldonado} and G.A. ~{\mbox Aucar}},
-  TITLE   = {Relativistic effects on nuclear magnetic shieldings of CH$_n$ X$_{4−n}$
-and CHXYZ (X, Y, Z = H, F, Cl, Br, I)},
+  author =   {J.I.~{\mbox Melo} and A.F.~{\mbox Maldonado} and G.A.~{\mbox Aucar}},
+  TITLE   = {{Relativistic effects on nuclear magnetic shieldings of CH$_n$X$_{4−n}$
+and CHXYZ (X, Y, Z = H, F, Cl, Br, I)}},
   journal =  jcp  ,
   year =     2012 ,
   volume =   137 ,
   pages =    214319 }
 
 @Article{melomaldotca11,
-  author =   {J.I.~{\mbox Melo} and A. F.~{\mbox Maldonado} and G.A. ~{\mbox Aucar}},
+  author =   {J.I.~{\mbox Melo} and A. F.~{\mbox Maldonado} and G.A.~{\mbox Aucar}},
   journal =  tca  ,
   year =     2011 ,
   volume =   129 ,
   pages =    483 }
 
 @Article{melojcp03,
-  author =   {J.I.~{\mbox Melo} and M.C.~{\mbox Ruiz de Azua} and C.G.~{\mbox Giribet} and G.A. ~{\mbox Aucar} and R.H . ~{\mbox Romero} },
+  author =   {J.I.~{\mbox Melo} and M.C.~{\mbox Ruiz de Azua} and C.G.~{\mbox Giribet} and G.A.~{\mbox Aucar} and R.H.~{\mbox Romero} },
   TITLE   = {Relativistic effects on the nuclear magnetic shielding tensor},
   journal =  jcp  ,
   year =     2003 ,
@@ -1817,20 +1835,34 @@ doi = {10.1063/1.2107627}
 
 @article{pescf,
   author = {J.~M.~Olsen and K.~Aidas and J.~Kongsted},
-  title = {Excited States in Solution through Polarizable Embedding},
+  title = {{Excited States in Solution through Polarizable Embedding}},
   journal = jctc,
   volume = {6},
   year = {2010},
   pages = {3721}}
 
-@phdthesis{pelib2012,
+@article{pemodel1,
+title={{Molecular Properties through Polarizable Embedding}},
+  author={J.~M.~H.~Olsen and J.~Kongsted},
+  journal={Adv. Quantum Chem.},
+  volume={61},
+  pages={107},
+  year={2011}}
+
+@phdthesis{pemodel2,
   author = {J.~M.~H.~Olsen},
-  title = {Development of Quantum Chemical Methods towards Rationalization and Optimal Design of Photoactive Proteins},
-  note = {DOI: 10.6084/m9.figshare.156851},
+  title = {{Development of Quantum Chemical Methods towards Rationalization and Optimal Design of Photoactive Proteins}},
+  note = {DOI: 10.6084/m9.figshare.156852},
   month = {November},
   year= {2012},
   school =  {{University of Southern Denmark}},
   address = {Odense, Denmark}}
+
+@misc{pelib,
+  author = {J\'{o}gvan Magnus Haugaard Olsen},
+  title = {{The polarizable embedding (PE) library (version 1.2)}},
+  year = {2014}
+}
 
 %
 % *****
@@ -1874,6 +1906,14 @@ gases: A four-component relativistic Hartree-Fock study},
   volume =   {121},
   pages =    {3051}
 }
+
+@article{pecpp,
+  author = {M.~N.~Pedersen and E.~D.~Hedeg\aa{}rd and J.~M.~H.~Olsen and J.~Kauczor and P.~Norman and J.~Kongsted},
+  title = {{Damped Response Theory in Combination with Polarizable Environments: The Polarizable Embedding Complex Polarization Propagator Method}},
+  journal = jctc,
+  volume = {10},
+  year = {2014},
+  pages = {1164}}
 
 @ARTICLE{tbpaehcpl246,
    AUTHOR  = {T.~B.~Pedersen and Aa.~E.~Hansen},
@@ -2392,6 +2432,14 @@ circular dichroism.},
         VOLUME = 76 ,
         YEAR = 1982 ,
         PAGES = 1919 }
+
+@article{pelao,
+  author = {C.~Steinmann and J.~M.~H.~Olsen and J.~Kongsted},
+  title = {{Nuclear Magnetic Shielding Constants from Quantum Mechanical/Molecular Mechanical Calculations Using Polarizable Embedding: Role of the Embedding Potential}},
+  journal = jctc,
+  volume = {10},
+  year = {2014},
+  pages = {981}}
 
 %
 % *****
@@ -3109,4 +3157,18 @@ of atoms and molecules},
     VOLUME=4,
     PAGES=1810,
     YEAR=2008
+    }
+@ARTICLE{vaara2014,
+    TITLE = {Nuclear spin circular dichroism},
+    AUTHOR = {
+        J.~Vaara
+        and A.~Rizzo
+        and J.~Kauczor
+        and P.~Norman
+        and S.~Coriani
+        },
+    JOURNAL=jcp,
+    VOLUME=140,
+    PAGES=134103,
+    YEAR=2014
     }

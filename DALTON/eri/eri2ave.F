@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck eriave */
       SUBROUTINE ERIAVE(SO,PMAT,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,
@@ -79,8 +78,8 @@ C  /* Deck eriav1 */
 #include "nuclei.h"
 #include "energy.h"
 C
-#include "ibtfun.h"
-      IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
+
+      IBTEST(I,J,K,L) = IAND(I,IEOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIAV1',-1)
 C
@@ -110,8 +109,8 @@ C
       DO B = 0, MAXREP
       IF (DOREP(B,2)) THEN
       DO C = 0, MAXREP
-      IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
-         D = IBTXOR(IBTXOR(A,B),C)
+      IF (DOREP(C,3) .AND. DOREP(IEOR(IEOR(A,B),C),4)) THEN
+         D = IEOR(IEOR(A,B),C)
          IF (DIAGAB .AND. B.GT.A) GO TO 100
          IF (DIAGCD .AND. D.GT.C) GO TO 100
 C
@@ -120,7 +119,7 @@ C
 C
          R = IPNRST(B,1)
          S = IPNRST(D,2)
-         T = IPNRST(IBTXOR(C,D),3)
+         T = IPNRST(IEOR(C,D),3)
 C
          CALL ERIPNT(IPOINT,A,B,C,D,IPNTCR,INDXBT,0)
 C

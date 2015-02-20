@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sopinp */
       SUBROUTINE SOPINP(WORD)
@@ -43,10 +42,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-CPFP
-C      PARAMETER (NTABLE = 12)
       PARAMETER (NTABLE = 13)
-Cend-PFP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include "abainf.h"
@@ -58,10 +54,7 @@ C
 C
       DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.DCRPA ',
      &            '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST', '.NSAVMX',
-CPFP
-C     &            '.NEXCI2', '.THREX2'/
      &            '.NEXCI2', '.THREX2', '.AOHRP '/
-Cend-PFP
 C     
 C------------------
 C     Set defaults.
@@ -157,11 +150,9 @@ C           NSYM is set to 8 since NSYM has not yet been set !!
    12    CONTINUE
             READ (LUCMD,*) THREX2
             GOTO 100
-CPFP
    13    CONTINUE
             AOHRP  = .TRUE.
             GOTO 100
-Cend-PFP
       ELSE IF (PROMPT .EQ. '*') THEN
          GOTO 300
       ELSE
@@ -207,7 +198,7 @@ Cend-PFP
          IF (NSAVMX .NE. 3) WRITE(LUPRI,'(A,A,I3)') 
      &       ' The maximum number of trial vectors for each ',
      &       'excitation is changed to : ',NSAVMX
-         IF (LNEXC2) WRITE(LUPRI,'(A,8I5,A,/,A,E9.2)')
+         IF (LNEXC2) WRITE(LUPRI,'(A,8I5,A/A,1P,E9.2)')
      &       ' The last : ',(NEXCI2(I),I=1,8),' excitation energies',
      &       '    are only converged to : ',THREX2
       END IF

@@ -8,7 +8,7 @@ module density_subspace_min
 !  use ARHmodule
   use configurationType,only: configitem
   use matrix_module,only: matrix
-  use av_utilities, only: util_HistoryStore
+  use av_utilities!, only: util_HistoryStore, add_to_queue, flush_queue
   use queue_module,only: modFIFO
   use queue_ops, only: add_to_modfifo
   use precision  
@@ -18,7 +18,7 @@ module density_subspace_min
   use matrix_util,only: dumpmats
   USE linsca_dsm
   USE linsca_diis
-  USE linsca_ediis
+!  USE linsca_ediis
   use rsp_util, only: util_save_moinfo, util_free_mostuff, util_ao_to_mo
   use diagonalization, only: SCF_iteration, diag_lshift_none
   use ARHmodule, only: arh_debug_print
@@ -68,7 +68,6 @@ CONTAINS
          write(config%lupri,*) 'Switching to second order optimization - turning off averaging!'
          config%av%cfg_averaging = config%av%cfg_avg_none
       endif
-
        if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
          call mat_init(tmp1,ndim,ndim)
          call mat_init(tmp2,ndim,ndim)
@@ -134,6 +133,7 @@ CONTAINS
             !write(config%lupri,*) 'Fmo:'
             !call mat_print(Fmo, 1, F%nrow, 1, F%ncol, lupri)
             !2. Get occupied-virtual block of Fock matrix:
+            IF (config%decomp%cfg_unres) CALL LSQUIT('Fixme: VanLenthe and unrestricted not working together',-1)
             call mat_init(Fov, config%decomp%nocc, F%nrow-config%decomp%nocc)
             call mat_section(Fmo,1,config%decomp%nocc,config%decomp%nocc+1,F%nrow,Fov)
             call mat_free(Fmo)
@@ -164,7 +164,8 @@ CONTAINS
       else if (config%av%cfg_averaging == config%av%CFG_AVG_DIIS) then
          CALL diis(config%av, queue, D, F)
       else if (config%av%cfg_averaging == config%av%CFG_AVG_EDIIS) then
-         CALL ediis(config%av, queue, D, F)
+         call lsquit('EDIIS feature was removed',-1)
+!         CALL ediis(config%av, queue, D, F)
       else if (config%av%cfg_averaging == config%av%cfg_avg_van_lenthe) then
          if (config%av%vanlentheCounter > 0) then
             config%av%vanlentheCounter = config%av%vanlentheCounter + 1

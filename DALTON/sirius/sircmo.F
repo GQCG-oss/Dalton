@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cmodel */
       SUBROUTINE CMODEL(CMO,GETCMO)
@@ -551,9 +550,8 @@ C
 C
 C        Diagonalize overlap matrix ( S * U = U * Seig )
 C
-         CALL JACO(SCRA(KS1T),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *             SCRA(KSCR1),SCRA(KSCR2))
-C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(SCRA(KS1T),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,V,NB,NMAX,NROWV,THR_JACO)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
@@ -890,7 +888,7 @@ C
      &    /' Largest molecular orbital coefficient/sym',1P,D20.6,3I5,
      &    /' This number is larger than accepted limit',D20.6)
  3020 FORMAT(
-     &    /' Significant loss of accuaracy is probable ',
+     &    /' Significant loss of accuracy is probable',
      &    /' in transformation of two-electron integrals,'
      &   //'*** Program stops here. ***   Your options:',
      &    /' 1) modify basis set,',
@@ -977,9 +975,8 @@ C
      *             NBASI,NORBI)
 C        CALL UTHU(H,HT,U,WRK,NAO,NMO)
 C
-         CALL JACO(SCRA(KH1T),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *             SCRA(KSCR1),SCRA(KSCR2))
-C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(SCRA(KH1T),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,V,NB,NMAX,NROWV,THR_JACO)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
@@ -1205,9 +1202,8 @@ C
             ISSYM = IIORB(ISYM) + 1
             ICSYM = ICMO(ISYM) + 1
 C
-            CALL JACO(FC(ISSYM),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *                SCRA,SCRA(1+NORBI))
-C           CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+            CALL JACO_THR(FC(ISSYM),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C           CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
             II = ISSYM - 1
             DO 175 I=1,NORBI
@@ -1382,11 +1378,8 @@ C
   167    CONTINUE
 C
 C
-         KBIG  = KWRK
-         KJBIG = KBIG + NORBI
-         CALL JACO(WRK(JXFC),CMO(JCMO),NORBI,NORBI,NBASI,
-     *             WRK(KBIG),WRK(KJBIG))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(WRK(JXFC),CMO(JCMO),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          DO 175 I = 1,NORBI
             WRK(I) = WRK(JXFC-1 + IROW(I+1))
@@ -1423,7 +1416,7 @@ C  Print molecular orbital coefficients on unit IOUT.
 C
 C Input:
 C  CMO:    MO orbital coefficients (symmetry blocked)
-C  PROCC:  print only occupied orbitals
+C  PROCC:  print only occupied orbitals (unless CMOPRI true)
 C  IOUT:   output file unit
 C
 #include "implicit.h"
@@ -1431,30 +1424,35 @@ C
       LOGICAL   PROCC
 C
 C Used from common blocks:
+C   pgroup : REP
 C   INFINP : CENT,TYPE,SUPSYM,?
 C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
+C   INFPRI : CMOPRI
 C   CBIREA : LMULBS
+C   R12INT : MBAS1(:)
 C
 #include "maxorb.h"
 #include "maxash.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
+#include "infpri.h"
 #include "cbirea.h"
 #include "r12int.h"
 C
 C *** FORMAT statements
 C
- 2400 FORMAT(/' Molecular orbitals for symmetry species',I3,
-     &       /' ------------------------------------------')
+ 2400 FORMAT(/' Molecular orbitals for symmetry species',I2,'  (',A,')'
+     &       /' ------------------------------------------------')
  2600 FORMAT(/'    Orbital ',7I9)
  2620 FORMAT( '    Sup.sym.',7I9)
  2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
 C
 C *** Print molecular orbitals
 C
-      IF (PROCC) THEN
+      IF (PROCC .AND. .NOT. CMOPRI) THEN
          THRPRI = 1.0D-2
          WRITE(IOUT,'(/A,F6.4,A)')
      &   ' (Only coefficients >',THRPRI,' are printed.)'
@@ -1468,33 +1466,29 @@ C
          MBASI = NBAS(ISYM)
          IF (LMULBS) MBASI = MBAS1(ISYM)
 C
-         IF (PROCC) THEN
-            IF (NBAST .LE. 25) THEN
-C           print all occupied and 2 lowest unoccupied this symmetry
+         IF (PROCC .AND. .NOT. CMOPRI) THEN
+            IF (NBAST .LE. 50) THEN
+C           print all occupied and 10 lowest unoccupied this symmetry
                IEND = 0
             ELSE
-C           print 5 highest occupied and 2 lowest unoccupied this symmetry
+C           print 10 highest doubly occupied, all active, and 10 lowest unoccupied this symmetry
 C           (output becomes too big otherwise ... /hjaaj Dec08)
-C           Oct12 hjaaj: do print all active orbitals if MCSCF
-               IEND  = MIN(NISH(ISYM),NOCC(ISYM)-5)
-               IEND  = MAX(0,IEND)
+               IEND  = MAX(NISH(ISYM)-10, 0)
             END IF
-            NENDI = NOCC(ISYM)
-     &            + MIN(2,NORB(ISYM)-NOCC(ISYM) - NRXR12(ISYM))
+            NENDI = MIN(NOCC(ISYM)+10, NORB(ISYM))
          ELSE
             IEND  = 0
             NENDI = NORB(ISYM)
          END IF
       IF (NENDI.EQ.0) GO TO 300
-         WRITE(IOUT,2400) ISYM
+         WRITE(IOUT,2400) ISYM,REP(ISYM-1)
 C
          ICMOI = ICMO(ISYM)
          ISTORB = IORB(ISYM)
-  100       IST =IEND+1
-            ISTMO=IEND*NBASI+ICMOI
-            IEND=IEND+7
-            IF(IEND.GT.NENDI) IEND=NENDI
-            IEMO=NBASI*(IEND-1)+ICMOI
+  100       IST   =IEND+1
+            ISTMO =IEND*NBASI+ICMOI
+            IEND  =MIN(IEND+7,NENDI)
+            IEMO  =NBASI*(IEND-1)+ICMOI
             WRITE(IOUT,2600) (I,I=IST,IEND)
             IF (SUPSYM) WRITE(IOUT,2620) (ISSMO(ISTORB+I),I=IST,IEND)
             DO 200 I=1,MBASI

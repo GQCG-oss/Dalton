@@ -1,15 +1,20 @@
-!Monitor memory
+!Monitor memory NON THREAD SAFE
 MODULE IchorMemory
-  use IchorCommonModule
-  use IchorprecisionModule
+  use IchorCommonMod
+  use IchorprecisionMod
    private
-   public set_ichor_memvar
-   public retrieve_ichor_memvar
+   public set_ichor_memvar, retrieve_ichor_memvar
    public stats_ichor_mem
    public mem_ichor_alloc
    public mem_ichor_dealloc
+   public mem_ichor_alloc_dryrun
+   public mem_ichor_dealloc_dryrun
+   public mem_realsize,mem_intsize
+   public ADD_OMP_MEM
+   public REMOVE_OMP_MEM
 !GLOBAL VARIABLES
    integer(KIND=long),save :: mem_allocated_ichor, max_mem_used_ichor  !Count all memory
+   integer(KIND=long),save :: maxMemLimit_ichor !maximum allowed memory usage
    !Count 'real' memory, integral code
    integer(KIND=long),save :: mem_allocated_real, max_mem_used_real
    !Count 'integer' memory, integral code
@@ -17,22 +22,29 @@ MODULE IchorMemory
    !Count 'logical' memory, integral code
    integer(KIND=long),save :: mem_allocated_logical, max_mem_used_logical
 ! sizes
-   integer(KIND=long),parameter :: mem_realsize=8
-   integer(KIND=long),parameter :: mem_logicalsize=4
+   integer(KIND=long),parameter :: mem_realsize=8_long
+   integer(KIND=long),parameter :: mem_logicalsize=4_long
 #if VAR_INT64
    integer(KIND=long),parameter :: mem_intsize=8_long
 #else
    integer(KIND=long),parameter :: mem_intsize=4_long
 #endif
-!Interfaces for allocating/deallocating pointers
+!Interfaces for counting memory 
+INTERFACE mem_ichor_alloc_dryrun
+  MODULE PROCEDURE alloc_dryrun_1dim, alloc_dryrun_2dim, &
+       & alloc_dryrun_3dim, alloc_dryrun_4dim
+
+END INTERFACE
+!
+INTERFACE mem_ichor_dealloc_dryrun
+  MODULE PROCEDURE dealloc_dryrun_1dim, dealloc_dryrun_2dim, &
+       & dealloc_dryrun_3dim, dealloc_dryrun_4dim
+END INTERFACE
+
 INTERFACE mem_ichor_alloc
   MODULE PROCEDURE real_allocate_1dim, real_allocate_2dim, &
-       & real_allocate_2dim_zero, real_allocate_3dim, &
-       & real_allocate_3dim_zero, real_allocate_4dim, &
-       & real_allocate_5dim, &
-       & int_allocate_1dim,int_allocate_2dim,int_allocate_3dim, &
-       & int_allocate_1dim_zero, int_allocate_2dim_zero,  &
-       & int_allocate_3dim_zero,&
+       & real_allocate_3dim, real_allocate_4dim, real_allocate_5dim, &
+       & int_allocate_1dim, int_allocate_2dim, int_allocate_3dim, &
        & logic_allocate_1dim, logic_allocate_2dim
 
 END INTERFACE
@@ -45,11 +57,16 @@ INTERFACE mem_ichor_dealloc
 END INTERFACE
 !
 CONTAINS
-subroutine set_ichor_memvar(MaxMemAllocated,MemAllocated)
+subroutine set_ichor_memvar(MaxMemAllocated,MemAllocated,MaxMem)
 implicit none
-integer(KIND=long),intent(in) :: MaxMemAllocated,MemAllocated
-mem_allocated_ichor = MemAllocated
+integer(KIND=long),intent(in) :: MaxMemAllocated,MemAllocated,MaxMem
 max_mem_used_ichor = MaxMemAllocated
+mem_allocated_ichor = MemAllocated
+IF(MaxMem.EQ.0)THEN
+   maxMemLimit_ichor = HUGE(MaxMem)
+ELSE
+   maxMemLimit_ichor = MaxMem
+ENDIF
 mem_allocated_real = 0
 max_mem_used_real = 0
 mem_allocated_integer = 0
@@ -115,578 +132,374 @@ subroutine print_ichor_maxmem(lupri,max_mem_used,STRING)
   endif
 end subroutine print_ichor_maxmem
 
-!----- ALLOCATE REAL POINTERS -----!
-
-SUBROUTINE real_allocate_1dim(A,n)
+SUBROUTINE alloc_dryrun_1dim(n1)
   implicit none
-  integer,intent(in)  :: n
-  REAL(REALK),pointer :: A(:)
-  integer :: IERR
+  integer :: n1
   integer (kind=long) :: nsize
-  !$OMP CRITICAL
-  nullify(A)
-  ALLOCATE(A(n),STAT = IERR)
-  !$OMP END CRITICAL
-  IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_1dim',IERR,n
-     CALL ichorquit('Error in real_allocate_1dim',-1)
-  ENDIF
+  nsize = n1*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_1DIM
+
+SUBROUTINE alloc_dryrun_2dim(n1,n2)
+  implicit none
+  integer :: n1,n2
+  integer (kind=long) :: nsize
+  nsize = n1*n2*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_2DIM
+
+SUBROUTINE alloc_dryrun_3dim(n1,n2,n3)
+  implicit none
+  integer :: n1,n2,n3
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_3DIM
+
+SUBROUTINE alloc_dryrun_4dim(n1,n2,n3,n4)
+  implicit none
+  integer :: n1,n2,n3,n4
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*n4*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_4DIM
+
+SUBROUTINE dealloc_dryrun_1dim(n1)
+  implicit none
+  integer :: n1
+  integer (kind=long) :: nsize
+  nsize = n1*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_1DIM
+
+SUBROUTINE dealloc_dryrun_2dim(n1,n2)
+  implicit none
+  integer :: n1,n2
+  integer (kind=long) :: nsize
+  nsize = n1*n2*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_2DIM
+
+SUBROUTINE dealloc_dryrun_3dim(n1,n2,n3)
+  implicit none
+  integer :: n1,n2,n3
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_3DIM
+
+SUBROUTINE dealloc_dryrun_4dim(n1,n2,n3,n4)
+  implicit none
+  integer :: n1,n2,n3,n4
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*n4*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_4DIM
+
+SUBROUTINE real_allocate_1dim(A)
+  implicit none
+  REAL(REALK) :: A(:)
+  integer (kind=long) :: nsize
   nsize = size(A,KIND=long)*mem_realsize
   call mem_allocated_ichor_mem_real(nsize)
 END SUBROUTINE real_allocate_1dim
 
-SUBROUTINE real_allocate_2dim(A,n1,n2)
+SUBROUTINE real_allocate_2dim(A)
   implicit none
-  integer,intent(in)  :: n1, n2
-  REAL(REALK),pointer :: A(:,:)
-  integer :: IERR
+  REAL(REALK) :: A(:,:)
   integer (kind=long) :: nsize
-  nullify(A)
-  ALLOCATE(A(n1,n2),STAT = IERR)
-  IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_2dim',IERR,n1,n2
-     call IchorQuit('Error in real_allocate_2dim',-1)
-  ENDIF
   nsize = size(A,KIND=long)*mem_realsize
   call mem_allocated_ichor_mem_real(nsize)
 END SUBROUTINE real_allocate_2dim
 
-SUBROUTINE real_allocate_2dim_zero(A,n1,n2,z1,z2)
-  ! Allocates 2d arrays starting from zero index
-  ! for first,second or both dimensions
+SUBROUTINE ADD_OMP_MEM(nsize1)
   implicit none
-  integer,intent(in)  :: n1, n2
-  logical,intent(in)  :: z1,z2
-  REAL(REALK),pointer :: A(:,:)
-  integer :: IERR
+  integer :: nsize1
   integer (kind=long) :: nsize
-  integer             :: i1,i2
-  !
-  nullify(A)
-  i1=1
-  IF(z1)i1=0
-  i2=1
-  IF(z2)i2=0
-  ALLOCATE(A(i1:n1,i2:n2),STAT = IERR)
-  IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_2dim',IERR,n1,n2
-     CALL ICHORQUIT('Error in real_allocate_2dim',-1)
-  ENDIF
-  nsize = size(A,KIND=long)*mem_realsize
-  call mem_allocated_ichor_mem_real(nsize)
-END SUBROUTINE real_allocate_2dim_zero
+  nsize = nsize1
+  call mem_allocated_ichor_mem_real2(nsize)
+END SUBROUTINE ADD_OMP_MEM
 
-SUBROUTINE real_allocate_3dim(A,n1,n2,n3)
+SUBROUTINE REMOVE_OMP_MEM(nsize1)
   implicit none
-  integer,intent(in)  :: n1, n2, n3
-  REAL(REALK),pointer :: A(:,:,:)
-  integer :: IERR
+  integer :: nsize1
   integer (kind=long) :: nsize
-  nullify(A)
-  ALLOCATE(A(n1,n2,n3),STAT = IERR)
-  IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_3dim',IERR,n1,n2,n3
-     CALL ICHORQUIT('Error in real_allocate_3dim',-1)
-  ENDIF
+  nsize = nsize1
+  call mem_deallocated_ichor_mem_real2(nsize)
+END SUBROUTINE REMOVE_OMP_MEM
+
+SUBROUTINE real_allocate_3dim(A)
+  implicit none
+  REAL(REALK) :: A(:,:,:)
+  integer (kind=long) :: nsize
   nsize = size(A,KIND=long)*mem_realsize
   call mem_allocated_ichor_mem_real(nsize)
 END SUBROUTINE real_allocate_3dim
 
-SUBROUTINE real_allocate_3dim_zero(A,n1,n2,n3,z1,z2,z3)
+SUBROUTINE real_allocate_4dim(A)
   implicit none
-  integer,intent(in)  :: n1, n2, n3
-  logical,intent(in)  :: z1,z2,z3
-  REAL(REALK),pointer :: A(:,:,:)
-  integer :: IERR
+  REAL(REALK) :: A(:,:,:,:)
   integer (kind=long) :: nsize
-  integer             :: i1,i2,i3
-  nullify(A)
-  i1=1
-  IF(z1)i1=0
-  i2=1
-  IF(z2)i2=0
-  i3=1
-  IF(z3)i3=0
-  ALLOCATE(A(i1:n1,i2:n2,i3:n3),STAT = IERR)
-  IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_3dim',IERR,n1,n2,n3
-     CALL ICHORQUIT('Error in real_allocate_3dim',-1)
-  ENDIF
-  nsize = size(A,KIND=long)*mem_realsize
-  call mem_allocated_ichor_mem_real(nsize)
-END SUBROUTINE real_allocate_3dim_zero
-
-SUBROUTINE real_allocate_4dim(A,n1,n2,n3,n4)
-  implicit none
-  integer,intent(in)  :: n1,n2,n3,n4
-  REAL(REALK),pointer :: A(:,:,:,:)
-  integer :: IERR
-  integer (kind=long) :: nsize
-  nullify(A)
-  ALLOCATE(A(n1,n2,n3,n4),STAT = IERR)
-  IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_4dim',IERR,n1,n2,n3,n4
-     CALL ICHORQUIT('Error in real_allocate_4dim',-1)
-  ENDIF
   nsize = size(A,KIND=long)*mem_realsize
   call mem_allocated_ichor_mem_real(nsize)
 END SUBROUTINE real_allocate_4dim
 
-SUBROUTINE real_allocate_5dim(A,n1,n2,n3,n4,n5)
+SUBROUTINE real_allocate_5dim(A)
   implicit none
-  integer,intent(in)  :: n1,n2,n3,n4,n5
-  REAL(REALK),pointer :: A(:,:,:,:,:)
-  integer :: IERR
+  REAL(REALK) :: A(:,:,:,:,:)
   integer (kind=long) :: nsize
-  nullify(A)
-  ALLOCATE(A(n1,n2,n3,n4,n5),STAT = IERR)
-  IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_5dim',IERR,n1,n2,n3,n4,n5
-     CALL ICHORQUIT('Error in real_allocate_5dim',-1)
-  ENDIF
   nsize = size(A,KIND=long)*mem_realsize
   call mem_allocated_ichor_mem_real(nsize)
 END SUBROUTINE real_allocate_5dim
 
-!----- DEALLOCATE REAL POINTERS -----!
-
 SUBROUTINE real_deallocate_1dim(A)
   implicit none
-  REAL(REALK),pointer :: A(:)
-  integer :: IERR
+  REAL(REALK) :: A(:)
   integer (kind=long) :: nsize
   nsize = size(A,KIND=long)*mem_realsize
   call mem_deallocated_ichor_mem_real(nsize)
-  if (.not.ASSOCIATED(A)) then
-     print *,'Memory previously released!!'
-     call IchorQuit('Error in real_deallocate_1dim - memory previously released',-1)
-  endif
-  DEALLOCATE(A,STAT = IERR)
-  IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_deallocate_1dim',IERR
-     CALL ICHORQUIT('Error in real_deallocate_1dim',-1)
-  ENDIF
-  nullify(A)
 END SUBROUTINE real_deallocate_1dim
 
 SUBROUTINE real_deallocate_2dim(A)
 implicit none
-REAL(REALK),pointer :: A(:,:)
-integer :: IERR
+REAL(REALK) :: A(:,:)
 integer (kind=long) :: nsize
-   nsize = size(A,KIND=long)*mem_realsize
-   call mem_deallocated_ichor_mem_real(nsize)
-   if (.not.ASSOCIATED(A)) then
-      print *,'Memory previously released!!'
-      call IchorQuit('Error in real_deallocate_2dim - memory previously released',-1)
-   endif
-   DEALLOCATE(A,STAT = IERR)
-   IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_deallocate_2dim',IERR
-     CALL ICHORQUIT('Error in real_deallocate_2dim',-1)
-   ENDIF
-   nullify(A)
+nsize = size(A,KIND=long)*mem_realsize
+call mem_deallocated_ichor_mem_real(nsize)
 END SUBROUTINE real_deallocate_2dim
 
 SUBROUTINE real_deallocate_3dim(A)
 implicit none
-REAL(REALK),pointer :: A(:,:,:)
-integer :: IERR
+REAL(REALK) :: A(:,:,:)
 integer (kind=long) :: nsize
-   nsize = size(A,KIND=long)*mem_realsize
-   call mem_deallocated_ichor_mem_real(nsize)
-   if (.not.ASSOCIATED(A)) then
-      print *,'Memory previously released!!'
-      call IchorQuit('Error in real_deallocate_3dim - memory previously released',-1)
-   endif
-   DEALLOCATE(A,STAT = IERR)
-   IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_deallocate_3dim',IERR
-     CALL ICHORQUIT('Error in real_deallocate_3dim',-1)
-   ENDIF
-   nullify(A)
+nsize = size(A,KIND=long)*mem_realsize
+call mem_deallocated_ichor_mem_real(nsize)
 END SUBROUTINE real_deallocate_3dim
 
 SUBROUTINE real_deallocate_4dim(A)
 implicit none
-REAL(REALK),pointer :: A(:,:,:,:)
-integer :: IERR
+REAL(REALK) :: A(:,:,:,:)
 integer (kind=long) :: nsize
-   nsize = size(A,KIND=long)*mem_realsize
-   call mem_deallocated_ichor_mem_real(nsize)
-   if (.not.ASSOCIATED(A)) then
-      print *,'Memory previously released!!'
-      call IchorQuit('Error in real_deallocate_4dim - memory previously released',-1)
-   endif
-   DEALLOCATE(A,STAT = IERR)
-   IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_deallocate_4dim',IERR
-     CALL ICHORQUIT('Error in real_deallocate_4dim',-1)
-   ENDIF
-   nullify(A)
+nsize = size(A,KIND=long)*mem_realsize
+call mem_deallocated_ichor_mem_real(nsize)
 END SUBROUTINE real_deallocate_4dim
 
 SUBROUTINE real_deallocate_5dim(A)
 implicit none
-REAL(REALK),pointer :: A(:,:,:,:,:)
-integer :: IERR
+REAL(REALK) :: A(:,:,:,:,:)
 integer (kind=long) :: nsize
-   nsize = size(A,KIND=long)*mem_realsize
-   call mem_deallocated_ichor_mem_real(nsize)
-   if (.not.ASSOCIATED(A)) then
-      print *,'Memory previously released!!'
-      call IchorQuit('Error in real_deallocate_5dim - memory previously released',-1)
-   endif
-   DEALLOCATE(A,STAT = IERR)
-   IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_deallocate_5dim',IERR
-     CALL ICHORQUIT('Error in real_deallocate_5dim',-1)
-   ENDIF
-   nullify(A)
+nsize = size(A,KIND=long)*mem_realsize
+call mem_deallocated_ichor_mem_real(nsize)
 END SUBROUTINE real_deallocate_5dim
 
-!----- ALLOCATE INTEGER POINTERS -----!
-
-SUBROUTINE int_allocate_1dim(I,n)
+SUBROUTINE int_allocate_1dim(I)
 implicit none
-integer,intent(in)  :: n
-INTEGER,pointer     :: I(:)
-integer :: IERR
+INTEGER             :: I(:)
 integer (kind=long) :: nsize
-nullify(I)
-ALLOCATE(I(n),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in int_allocate_1dim',IERR,n
-   call IchorQuit('Error in int_allocate_1dim',-1)
-ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_ichor_mem_integer(nsize)
 END SUBROUTINE int_allocate_1dim
 
-SUBROUTINE int_allocate_2dim(I,n1,n2)
+SUBROUTINE int_allocate_2dim(I)
 implicit none
-integer,intent(in) :: n1,n2
-INTEGER,pointer    :: I(:,:)
-integer :: IERR
+INTEGER    :: I(:,:)
 integer (kind=long) :: nsize
-nullify(I)
-ALLOCATE(I(n1,n2),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in int_allocate_2dim',IERR,n1,n2
-   call IchorQuit('Error in int_allocate_2dim',-1)
-ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_ichor_mem_integer(nsize)
 END SUBROUTINE int_allocate_2dim
 
-SUBROUTINE int_allocate_3dim(I,n1,n2,n3)
+SUBROUTINE int_allocate_3dim(I)
 implicit none
-integer,intent(in) :: n1,n2,n3
-INTEGER,pointer    :: I(:,:,:)
-integer :: IERR
+INTEGER :: I(:,:,:)
 integer (kind=long) :: nsize
-nullify(I)
-ALLOCATE(I(n1,n2,n3),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in int_allocate_3dim',IERR,n1,n2,n3
-   call IchorQuit('Error in int_allocate_3dim',-1)
-ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_ichor_mem_integer(nsize)
 END SUBROUTINE int_allocate_3dim
 
-SUBROUTINE int_allocate_4dim(I,n1,n2,n3,n4)
+SUBROUTINE int_allocate_4dim(I)
 implicit none
-integer,intent(in) :: n1,n2,n3,n4
-INTEGER,pointer    :: I(:,:,:,:)
-integer :: IERR
+INTEGER :: I(:,:,:,:)
 integer (kind=long) :: nsize
-nullify(I)
-ALLOCATE(I(n1,n2,n3,n4),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in int_allocate_4dim',IERR,n1,n2,n3,n4
-   call IchorQuit('Error in int_allocate_4dim',-1)
-ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_ichor_mem_integer(nsize)
 END SUBROUTINE int_allocate_4dim
 
-SUBROUTINE int_allocate_1dim_zero(I,n,z1)
-implicit none
-integer,intent(in)  :: n
-INTEGER,pointer     :: I(:)
-logical,intent(in) :: z1
-integer :: IERR,i1
-integer (kind=long) :: nsize
-i1=1
-IF(z1)i1=0
-nullify(I)
-ALLOCATE(I(i1:n),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in int_allocate_1dim',IERR,n
-   call IchorQuit('Error in int_allocate_1dim',-1)
-ENDIF
-nsize = size(I,KIND=long)*mem_intsize
-call mem_allocated_ichor_mem_integer(nsize)
-END SUBROUTINE int_allocate_1dim_zero
-
-SUBROUTINE int_allocate_2dim_zero(I,n1,n2,z1,z2)
-implicit none
-integer,intent(in) :: n1,n2
-INTEGER,pointer    :: I(:,:)
-logical,intent(in) :: z1,z2
-integer :: IERR,i1,i2
-integer (kind=long) :: nsize
-i1=1
-IF(z1)i1=0
-i2=1
-IF(z2)i2=0
-nullify(I)
-ALLOCATE(I(i1:n1,i2:n2),STAT = IERR)
-   IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in int_allocate_2dim',IERR,n1,n2
-     call IchorQuit('Error in int_allocate_2dim',-1)
-   ENDIF
-   nsize = size(I,KIND=long)*mem_intsize
-   call mem_allocated_ichor_mem_integer(nsize)
-END SUBROUTINE int_allocate_2dim_zero
-
-SUBROUTINE int_allocate_3dim_zero(I,n1,n2,n3,z1,z2,z3)
-implicit none
-integer,intent(in) :: n1,n2,n3
-logical,intent(in) :: z1,z2,z3
-INTEGER,pointer    :: I(:,:,:)
-integer :: IERR,i1,i2,i3
-integer (kind=long) :: nsize
-i1=1
-IF(z1)i1=0
-i2=1
-IF(z2)i2=0
-i3=1
-IF(z3)i3=0
-nullify(I)
-ALLOCATE(I(i1:n1,i2:n2,i3:n3),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in int_allocate_3dim',IERR,n1,n2,n3
-   call IchorQuit('Error in int_allocate_3dim',-1)
-ENDIF
-nsize = size(I,KIND=long)*mem_intsize
-call mem_allocated_ichor_mem_integer(nsize)
-END SUBROUTINE int_allocate_3dim_zero
-
-!----- DEALLOCATE INTEGER POINTERS -----!
 SUBROUTINE int_deallocate_1dim(I)
 implicit none
-INTEGER,pointer :: I(:)
-integer :: IERR
+INTEGER :: I(:)
 integer (kind=long) :: nsize
 nsize = size(I,KIND=long)*mem_intsize
 call mem_deallocated_ichor_mem_integer(nsize)
-if (.not.ASSOCIATED(I)) then
-   print *,'Memory previously released!!'
-   call IchorQuit('Error in int_deallocate_1dim - memory previously released',-1)
-endif
-DEALLOCATE(I,STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in int_deallocate_1dim',IERR
-   CALL ICHORQUIT('Error in int_deallocate_1dim',-1)
-ENDIF
-nullify(I)
 END SUBROUTINE int_deallocate_1dim
 
 SUBROUTINE int_deallocate_2dim(I)
 implicit none
-INTEGER,pointer :: I(:,:)
-integer :: IERR
+INTEGER :: I(:,:)
 integer (kind=long) :: nsize
 nsize = size(I,KIND=long)*mem_intsize
 call mem_deallocated_ichor_mem_integer(nsize)
-if (.not.ASSOCIATED(I)) then
-   print *,'Memory previously released!!'
-   call IchorQuit('Error in int_deallocate_2dim - memory previously released',-1)
-endif
-DEALLOCATE(I,STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in int_deallocate_2dim',IERR
-   CALL ICHORQUIT('Error in int_deallocate_2dim',-1)
-ENDIF
-nullify(I)
 END SUBROUTINE int_deallocate_2dim
 
 SUBROUTINE int_deallocate_3dim(I)
 implicit none
-INTEGER,pointer :: I(:,:,:)
-integer :: IERR
+INTEGER :: I(:,:,:)
 integer (kind=long) :: nsize
-   nsize = size(I,KIND=long)*mem_intsize
-   call mem_deallocated_ichor_mem_integer(nsize)
-   if (.not.ASSOCIATED(I)) then
-      print *,'Memory previously released!!'
-      call IchorQuit('Error in int_deallocate_3dim - memory previously released',-1)
-   endif
-   DEALLOCATE(I,STAT = IERR)
-   IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in int_deallocate_3dim',IERR
-      CALL ICHORQUIT('Error in int_deallocate_3dim',-1)
-   ENDIF
-   nullify(I)
- END SUBROUTINE int_deallocate_3dim
+nsize = size(I,KIND=long)*mem_intsize
+call mem_deallocated_ichor_mem_integer(nsize)
+END SUBROUTINE int_deallocate_3dim
 
-SUBROUTINE logic_allocate_1dim(L,n)
+SUBROUTINE logic_allocate_1dim(L)
 implicit none
-integer,intent(in)  :: n
-logical,pointer     :: L(:)
-integer :: IERR
+logical     :: L(:)
 integer (kind=long) :: nsize
-nullify(L)
-ALLOCATE(L(n),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in logic_allocate_1dim',IERR,n
-   call IchorQuit('Error in logic_allocate_1dim',-1)
-ENDIF
 nsize = size(L,KIND=long)*mem_logicalsize
 call mem_allocated_ichor_mem_logical(nsize)
 END SUBROUTINE logic_allocate_1dim
 
-SUBROUTINE logic_allocate_2dim(L,n1,n2)
+SUBROUTINE logic_allocate_2dim(L)
 implicit none
-integer,intent(in) :: n1,n2
-logical,pointer    :: L(:,:)
-integer :: IERR
+logical    :: L(:,:)
 integer (kind=long) :: nsize
-nullify(L)
-ALLOCATE(L(n1,n2),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in logic_allocate_2dim',IERR,n1,n2
-   call IchorQuit('Error in logic_allocate_2dim',-1)
-ENDIF
 nsize = size(L,KIND=long)*mem_logicalsize
 call mem_allocated_ichor_mem_logical(nsize)
 END SUBROUTINE logic_allocate_2dim
 
-!----- DEALLOCATE LOGICAL POINTERS -----!
 SUBROUTINE logic_deallocate_1dim(L)
 implicit none
-logical,pointer :: L(:)
-integer :: IERR
+logical :: L(:)
 integer (kind=long) :: nsize
 nsize = size(L,KIND=long)*mem_logicalsize
 call mem_deallocated_ichor_mem_logical(nsize)
-if (.not.ASSOCIATED(L)) then
-   print *,'Memory previously released!!'
-   call IchorQuit('Error in logic_deallocate_1dim - memory previously released',-1)
-endif
-DEALLOCATE(L,STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in logic_deallocate_1dim',IERR
-   CALL ICHORQUIT('Error in logic_deallocate_1dim',-1)
-ENDIF
-nullify(L)
 END SUBROUTINE logic_deallocate_1dim
 
 SUBROUTINE logic_deallocate_2dim(L)
 implicit none
-LOGICAL,pointer :: L(:,:)
-integer :: IERR
+LOGICAL :: L(:,:)
 integer (kind=long) :: nsize
 nsize = size(L,KIND=long)*mem_logicalsize
 call mem_deallocated_ichor_mem_logical(nsize)
-if (.not.ASSOCIATED(L)) then
-   print *,'Memory previously released!!'
-   call IchorQuit('Error in logic_deallocate_2dim - memory previously released',-1)
-endif
-DEALLOCATE(L,STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in logic_deallocate_2dim',IERR
-   CALL ICHORQUIT('Error in logic_deallocate_2dim',-1)
-ENDIF
-nullify(L)
 END SUBROUTINE logic_deallocate_2dim
 
 !----- MEMORY HANDLING -----!
 
- subroutine mem_allocated_ichor_mem_real(nsize)
-   implicit none
-   integer (kind=long), intent(in) :: nsize
-   mem_allocated_real = mem_allocated_real + nsize
-   if (mem_allocated_real < 0) then
-      write(*,*) 'Real memory negative! mem_allocated_real =', mem_allocated_real
-      write(*,*) 'Real memory negative! nsize =', nsize
-      call IchorQuit('Error in mem_allocated_ichor_mem_real - probably integer overflow!',-1)
-   endif
-   max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
-   !Count also the total memory:
-   mem_allocated_ichor = mem_allocated_ichor  + nsize
-   if (mem_allocated_ichor < 0) then
-      write(*,*) 'Total memory negative! mem_allocated_ichor =', mem_allocated_ichor
-      call IchorQuit('Error in mem_allocated_ichor_mem_real - probably integer overflow!',-1)
-   endif
-   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
- end subroutine mem_allocated_ichor_mem_real
+subroutine mem_allocated_ichor_mem_real(nsize)
+  implicit none
+  integer (kind=long), intent(in) :: nsize
+  mem_allocated_real = mem_allocated_real + nsize
+  if (mem_allocated_real < 0) then
+     write(*,*) 'Real memory negative! mem_allocated_real =', mem_allocated_real
+     write(*,*) 'Real memory negative! nsize =', nsize
+     call IchorQuit('Error in mem_allocated_ichor_mem_real - probably integer overflow!',-1)
+  endif
+  max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
+  !Count also the total memory:
+  mem_allocated_ichor = mem_allocated_ichor  + nsize
+  if (mem_allocated_ichor < 0) then
+     write(*,*) 'Total memory negative! mem_allocated_ichor =', mem_allocated_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_real - probably integer overflow!',-1)
+  endif
+  max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_real - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
+end subroutine mem_allocated_ichor_mem_real
 
- subroutine mem_deallocated_ichor_mem_real(nsize)
-   implicit none
-   integer (kind=long), intent(in) :: nsize
-   
-   mem_allocated_real = mem_allocated_real - nsize
-   if (mem_allocated_real < 0) then
-      write(*,*) 'Real memory negative! mem_allocated_real =', mem_allocated_real
-      call IchorQuit('Error in mem_deallocated_ichor_mem_real - something wrong with deallocation!',-1)
-   endif
-   !Count also the total memory:
-   mem_allocated_ichor = mem_allocated_ichor - nsize
-   if (mem_allocated_ichor < 0) then
-      write(*,*) 'Total memory negative! mem_allocated_ichor =', mem_allocated_ichor
-      call IchorQuit('Error in mem_deallocated_ichor_mem_real - something wrong with deallocation!',-1)
-   endif
- end subroutine mem_deallocated_ichor_mem_real
- 
- subroutine mem_allocated_ichor_mem_integer(nsize)
-   implicit none
-   integer(kind=long), intent(in) :: nsize
-   mem_allocated_integer = mem_allocated_integer + nsize
-   max_mem_used_integer = MAX(max_mem_used_integer,mem_allocated_integer)
-   !Count also the total memory:
-   mem_allocated_ichor = mem_allocated_ichor  + nsize
-   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
- end subroutine mem_allocated_ichor_mem_integer
- 
- subroutine mem_deallocated_ichor_mem_integer(nsize)
-   implicit none
-   integer (kind=long), intent(in) :: nsize
-   mem_allocated_integer = mem_allocated_integer - nsize
-   if (mem_allocated_integer < 0) then
-      call IchorQuit('Error in mem_deallocated_ichor_mem_integer1 - probably integer overflow!',-1)
-   endif
-   !Count also the total memory:
-   mem_allocated_ichor = mem_allocated_ichor - nsize
-   if (mem_allocated_ichor < 0) then
-      call IchorQuit('Error in mem_deallocated_ichor_mem_integer2 - probably integer overflow!',-1)
-   endif
+subroutine mem_deallocated_ichor_mem_real(nsize)
+  implicit none
+  integer (kind=long), intent(in) :: nsize
+  
+  mem_allocated_real = mem_allocated_real - nsize
+  if (mem_allocated_real < 0) then
+     write(*,*) 'Real memory negative! mem_allocated_real =', mem_allocated_real
+     call IchorQuit('Error in mem_deallocated_ichor_mem_real - something wrong with deallocation!',-1)
+  endif
+  !Count also the total memory:
+  mem_allocated_ichor = mem_allocated_ichor - nsize
+  if (mem_allocated_ichor < 0) then
+     write(*,*) 'Total memory negative! mem_allocated_ichor =', mem_allocated_ichor
+     call IchorQuit('Error in mem_deallocated_ichor_mem_real - something wrong with deallocation!',-1)
+  endif
+end subroutine mem_deallocated_ichor_mem_real
+
+subroutine mem_allocated_ichor_mem_real2(nsize)
+  implicit none
+  integer (kind=long), intent(in) :: nsize
+  mem_allocated_real = mem_allocated_real + nsize
+  max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
+  mem_allocated_ichor = mem_allocated_ichor  + nsize
+  max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_real2 - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
+end subroutine mem_allocated_ichor_mem_real2
+
+subroutine mem_deallocated_ichor_mem_real2(nsize)
+  implicit none
+  integer (kind=long), intent(in) :: nsize
+  mem_allocated_real = mem_allocated_real - nsize
+  mem_allocated_ichor = mem_allocated_ichor - nsize
+end subroutine mem_deallocated_ichor_mem_real2
+
+subroutine mem_allocated_ichor_mem_integer(nsize)
+  implicit none
+  integer(kind=long), intent(in) :: nsize
+  mem_allocated_integer = mem_allocated_integer + nsize
+  max_mem_used_integer = MAX(max_mem_used_integer,mem_allocated_integer)
+  !Count also the total memory:
+  mem_allocated_ichor = mem_allocated_ichor  + nsize
+  max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_integer - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
+end subroutine mem_allocated_ichor_mem_integer
+
+subroutine mem_deallocated_ichor_mem_integer(nsize)
+  implicit none
+  integer (kind=long), intent(in) :: nsize
+  mem_allocated_integer = mem_allocated_integer - nsize
+  if (mem_allocated_integer < 0) then
+     call IchorQuit('Error in mem_deallocated_ichor_mem_integer1 - probably integer overflow!',-1)
+  endif
+  !Count also the total memory:
+  mem_allocated_ichor = mem_allocated_ichor - nsize
+  if (mem_allocated_ichor < 0) then
+     call IchorQuit('Error in mem_deallocated_ichor_mem_integer2 - probably integer overflow!',-1)
+  endif
 end subroutine mem_deallocated_ichor_mem_integer
 
- subroutine mem_allocated_ichor_mem_logical(nsize)
-   implicit none
-   integer(kind=long), intent(in) :: nsize
-   mem_allocated_logical = mem_allocated_logical + nsize
-   max_mem_used_logical = MAX(max_mem_used_logical,mem_allocated_logical)
-   !Count also the total memory:
-   mem_allocated_ichor = mem_allocated_ichor  + nsize
-   max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
- end subroutine mem_allocated_ichor_mem_logical
- 
- subroutine mem_deallocated_ichor_mem_logical(nsize)
-   implicit none
-   integer (kind=long), intent(in) :: nsize
-   mem_allocated_logical = mem_allocated_logical - nsize
-   if (mem_allocated_logical < 0) then
-      call IchorQuit('Error in mem_deallocated_ichor_mem_logical1 - probably integer overflow!',-1)
-   endif
-   !Count also the total memory:
-   mem_allocated_ichor = mem_allocated_ichor - nsize
-   if (mem_allocated_ichor < 0) then
-      call IchorQuit('Error in mem_deallocated_ichor_mem_logical2 - probably integer overflow!',-1)
-   endif
+subroutine mem_allocated_ichor_mem_logical(nsize)
+  implicit none
+  integer(kind=long), intent(in) :: nsize
+  mem_allocated_logical = mem_allocated_logical + nsize
+  max_mem_used_logical = MAX(max_mem_used_logical,mem_allocated_logical)
+  !Count also the total memory:
+  mem_allocated_ichor = mem_allocated_ichor  + nsize
+  max_mem_used_ichor = MAX(max_mem_used_ichor,mem_allocated_ichor)
+  IF(max_mem_used_ichor.GT.maxMemLimit_ichor)THEN
+     print*,'Maximum Memory Limit',maxMemLimit_ichor
+     print*,'Memory Usage        ',max_mem_used_ichor
+     call IchorQuit('Error in mem_allocated_ichor_mem_logical - Maximum Memory Limit Exceeded!',-1)     
+  ENDIF
+end subroutine mem_allocated_ichor_mem_logical
+
+subroutine mem_deallocated_ichor_mem_logical(nsize)
+  implicit none
+  integer (kind=long), intent(in) :: nsize
+  mem_allocated_logical = mem_allocated_logical - nsize
+  if (mem_allocated_logical < 0) then
+     call IchorQuit('Error in mem_deallocated_ichor_mem_logical1 - probably integer overflow!',-1)
+  endif
+  !Count also the total memory:
+  mem_allocated_ichor = mem_allocated_ichor - nsize
+  if (mem_allocated_ichor < 0) then
+     call IchorQuit('Error in mem_deallocated_ichor_mem_logical2 - probably integer overflow!',-1)
+  endif
 end subroutine mem_deallocated_ichor_mem_logical
 
 END MODULE IchorMemory

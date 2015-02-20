@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
@@ -139,7 +138,7 @@ C
 #include "dorps.h"
 #include "energy.h"
 #include "past.h"
-#include "ibtfun.h"
+
 C
 C     This subroutine calculates the nuclear repulsion contributions
 C     to the molecular gradient and Hessian.
@@ -159,8 +158,8 @@ C     **********************
 C
       SECOND = MAXDIF .EQ. 2
       NCDEP3 = 3*NUCDEP
-      CALL DZERO(GRADNN(1),NCDEP3)
-      IF (SECOND) CALL HESZER(HESSNN)
+      GRADNN(:) = 0.0D0
+      IF (SECOND) HESSNN(:,:) = 0.0D0
 C
 C     ******************************************
 C     ***** CALCULATE GRADIENT AND HESSIAN *****
@@ -192,8 +191,8 @@ C
                   CORBZ0 = CORD(3,NCENTB)
                   MULB   = ISTBNU(NCENTB)
 C
-                  MAB    = IBTOR (MULA,MULB)
-                  KAB    = IBTAND(MULA,MULB)
+                  MAB    = IOR (MULA,MULB)
+                  KAB    = IAND(MULA,MULB)
                   HKAB   = FMULT(KAB)
                   CROSS = ONE
                   IF (NCENTA .EQ. NCENTB) THEN
@@ -204,14 +203,14 @@ C
 C                 Run over symmetry independent charge distributions
 C
                   DO 400 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MAB) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,MAB) .EQ. 0) THEN
                      ICENTA = NUCNUM(NCENTA,1)
                      ICENTB = NUCNUM(NCENTB,ISYMOP+1)
                   IF (ICENTA .EQ. ICENTB) GO TO 400
 C
-                     SBX = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-                     SBY = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-                     SBZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                     SBX = PT(IAND(ISYMAX(1,1),ISYMOP))
+                     SBY = PT(IAND(ISYMAX(2,1),ISYMOP))
+                     SBZ = PT(IAND(ISYMAX(3,1),ISYMOP))
                      XAB = CORDXA - SBX*CORBX0
                      YAB = CORDYA - SBY*CORBY0
                      ZAB = CORDZA - SBZ*CORBZ0
@@ -264,7 +263,7 @@ C                       Loop over irreps for differentiation operator
 C
                         DO 500 IREPD = 0, MAXREP
                         IF (DOREPS(IREPD)) THEN
-                           CRSCHI = CROSS*PT(IBTAND(ISYMOP,IREPD))
+                           CRSCHI = CROSS*PT(IAND(ISYMOP,IREPD))
                            IAX  = IPTCNT(NAX,IREPD,1)
                            IAY  = IPTCNT(NAY,IREPD,1)
                            IAZ  = IPTCNT(NAZ,IREPD,1)

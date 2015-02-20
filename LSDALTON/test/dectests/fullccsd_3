@@ -56,8 +56,6 @@ TRILEVEL
 **INFO
 .DEBUG_MPI_MEM
 **CC
-.DECPRINT
-3
 .CCSD
 .CCSDforce_scheme
 3

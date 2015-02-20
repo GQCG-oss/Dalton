@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+#    energy_stex
+#    --------------
+#    Molecule:         H2O
+#    Wave Functions:   HF/CCATZ
+#    Test Purpose:     Three-step STEX calculation
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+f.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-9)
+
+test.run(['energy_stex__1.dal'], ['energy_stex.mol'], f={'out': f}, args = '-get SIRIUS.RST')
+shutil.move('energy_stex__1_energy_stex.SIRIUS.RST', 'SIRIUS.RST')
+
+test.run(['energy_stex__2.dal'], ['energy_stex.mol'], f={'out': f}, args = '-put SIRIUS.RST -get "SIRIUS.RST SIRIFC"')
+shutil.move('energy_stex__2_energy_stex.SIRIUS.RST', 'SIRIUS.RST')
+shutil.move('energy_stex__2_energy_stex.SIRIFC', 'SIRIFC1')
+
+test.run(['energy_stex__3.dal'], ['energy_stex.mol'], f={'out': f}, args = '-put SIRIUS.RST -get "SIRIUS.RST SIRIFC"')
+shutil.move('energy_stex__3_energy_stex.SIRIUS.RST', 'SIRIUS.RST')
+shutil.move('energy_stex__3_energy_stex.SIRIFC', 'SIRIFC2')
+
+f_stex = Filter()
+f_stex.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+f_stex.add(from_string = 'Cartesian Coordinates',
+      num_lines = 10,
+      rel_tolerance = 1.0e-8)
+f_stex.add(from_string = 'Static exchange calculation',
+      num_lines = 14,
+      rel_tolerance = 1.0e-9)
+f_stex.add(from_string = 'Two-electron STEX fock matrix',
+      num_lines = 6,
+      rel_tolerance = 1.0e-9)
+
+test.run(['energy_stex__4.dal'], ['energy_stex__4.mol'], f={'out': f_stex}, args = '-put "SIRIFC1 SIRIFC2"')
+
+os.remove('SIRIUS.RST')
+os.remove('SIRIFC1')
+os.remove('SIRIFC2')
+
+sys.exit(test.return_code)

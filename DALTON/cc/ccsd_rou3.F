@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 !  /* Deck cc_bf3 */
       SUBROUTINE CC_BF3(XINT,OMEGA2,XLAMD1,ISYML1,XLAMD2,
@@ -2696,7 +2695,7 @@ C  /* Deck ccrhs_cio */
       CHARACTER CFIL*(*)
       LOGICAL ANTISYM, NORMALCONT, PIJCONT
 !
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !
       CALL QENTER('CCRHS3_CIO')
 !
@@ -3269,7 +3268,7 @@ C
 !
       LOGICAL ANTISYM, OM2CONT, LOGIC1
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       CALL QENTER('CCRHS3_DIO')
 C
@@ -3701,7 +3700,7 @@ C
 #endif
       PARAMETER(ZERO=0.0D00,ONE=1.0D00)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       CALL QENTER('CCRHS_H31')
 C
@@ -3902,7 +3901,7 @@ C
       PARAMETER(ZERO=0.0D00,ONE=1.0D00)
       PARAMETER(TWO=2.0D00)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       CALL QENTER('CCRHS_G31')
 C
@@ -4465,7 +4464,7 @@ C
 !
       PARAMETER(ZERO=0.0D00,HALF=0.5D00,ONE=1.0D00,TWO=2.0D00)
 !
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !
       CALL QENTER('CCRHS3_EI1')
 !

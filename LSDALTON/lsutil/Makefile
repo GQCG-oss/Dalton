@@ -2,8 +2,6 @@ all: liblsutil.a
 
 include ../Makefile.config
 
-reorder_frontend.F90: ./autogen/generate_man_reord.py
-	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS} "nocollapse"
 reord2d_2_reord.F90: ./autogen/generate_man_reord.py
 	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord3d_1_reord.F90: ./autogen/generate_man_reord.py
@@ -11,6 +9,18 @@ reord3d_1_reord.F90: ./autogen/generate_man_reord.py
 reord3d_2_reord.F90: ./autogen/generate_man_reord.py
 	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord3d_3_reord.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_1_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_2_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_3_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_1_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_2_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_3_utils_t2f.F90: ./autogen/generate_man_reord.py
 	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_1_reord.F90: ./autogen/generate_man_reord.py
 	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
@@ -36,6 +46,8 @@ reord4d_3_utils_t2f.F90: ./autogen/generate_man_reord.py
 	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_4_utils_t2f.F90: ./autogen/generate_man_reord.py
 	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
+reorder_frontend.F90: ./autogen/generate_man_reord.py
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS} "nocollapse"
 
 # Keep the file lists sorted for easier modification.
 
@@ -62,7 +74,6 @@ F90_OBJS = \
 	ls_math.o\
 	ptr_assoc.o \
 	OverlapDistributionType.o\
-	ls_screenMPI.o\
 	lstensor_operations.o\
         reorder_frontend.o\
 	reord2d_2_reord.o\
@@ -73,6 +84,16 @@ F90_OBJS = \
 	reord4d_2_reord.o\
 	reord4d_3_reord.o\
 	reord4d_4_reord.o\
+	reord2d_1_utils_f2t.o\
+	reord2d_2_utils_f2t.o\
+	reord2d_1_utils_t2f.o\
+	reord2d_2_utils_t2f.o\
+	reord3d_1_utils_f2t.o\
+	reord3d_2_utils_f2t.o\
+	reord3d_3_utils_f2t.o\
+	reord3d_1_utils_t2f.o\
+	reord3d_2_utils_t2f.o\
+	reord3d_3_utils_t2f.o\
 	reord4d_1_utils_f2t.o\
 	reord4d_2_utils_f2t.o\
 	reord4d_3_utils_f2t.o\
@@ -115,10 +136,12 @@ F90_OBJS = \
 	OD_operations.o\
 	LSmatrixType.o\
         memory.o \
+        MemoryLeakTool.o \
 	Time.o\
 	TestMPI.o\
 	ks-settings.o\
 	dec_typedef.o\
+	dec_workarounds.o\
 	SphCartMatrices.o\
 	GCtrans.o\
 	TYPE-DEF.o\

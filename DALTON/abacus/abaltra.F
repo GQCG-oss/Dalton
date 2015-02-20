@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  FILE: abacus/abaltra.F
 C  PRINCIPAL AUTHOR: Hans Joergen Aa. Jensen 1992, 1995
@@ -29,14 +28,14 @@ C  PURPOSE: MO transformation of London two-electron integrals
 C           for H2LAC(u,v,x,y) and FQL(p,u)
 C
 #ifdef UNDEF
-===========================================================================
+========================================================================
 /* Comdeck log */
-950102-hjaaj TRLTDS: improved vectorization (now not NASHA in inner loop)
+950102-hjaaj TRLTDS: improved vectorization->now not NASHA in inner loop
 941215-hjaaj removed TRFDIS (routine was duplicated in abadtra.F)
 921117:to do: skip pack/unpack if NSYM .eq. 1
               option for only FQL if open-shell Hartree-Fock ?
               probably not worth the effort
-===========================================================================
+========================================================================
 #endif
 C  /* Deck lontra */
       SUBROUTINE LONTRA(IBXYZ,IBOPSY,H2LAC,FQL,CMO,PVSQ,WRK,LWRK,IPRINT)
@@ -675,33 +674,23 @@ C
       CALL REWSPL(LULONA)
       KEY = 'AO2MGINT'
       CALL MOLLAB(KEY,LULONA,LUPRI)
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
-         call quit('TRLRAO only implemented for < 256 basis functions')
          NIBUF = 2
          NBITS = 16
       END IF
-#endif
       LBUF = 600
       JBUF = 256
 C
-      LENINT = IRAT*LBUF + LBUF + 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT = 1
       KIINT = KINT + LBUF
 C
       DOCOOR = .FALSE.
  150  CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LULONA,LENINT,WRK(KINT),JBUF)
-#else
-         CALL READI(LULONA,LENINT,WRK(KINT))
-#endif
+         CALL READI4(LULONA,LENINT4,WRK(KINT))
          CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH

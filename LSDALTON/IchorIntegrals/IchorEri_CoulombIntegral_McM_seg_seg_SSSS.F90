@@ -1,10 +1,10 @@
-module IchorCoulombIntegral_seg_seg_SSSS_mod
-use IchorprecisionModule
-use IchorCommonModule
+module ICI_seg_seg_SSSS_mod
+use IchorprecisionMod
+use IchorCommonMod
 private 
-public :: IchorCoulombIntegral_seg_seg_SSSS
+public :: ICI_seg_seg_SSSS
 CONTAINS
-  subroutine IchorCoulombIntegral_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
+  subroutine ICI_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,&
        & nAtomsA,nAtomsB,IatomAPass,iatomBPass,pcent,qcent,Ppreexpfac,&
        & Qpreexpfac,TABFJW,reducedExponents,integralPrefactor,LocalIntPassSSSS)
     implicit none
@@ -87,6 +87,6 @@ CONTAINS
        LocalIntPassSSSS(iAtomA,iAtomB) = tmp
     ENDDO
 !$OMP END PARALLEL DO
-  end subroutine IchorCoulombIntegral_seg_seg_SSSS
+  end subroutine ICI_seg_seg_SSSS
 
-END MODULE IchorCoulombIntegral_seg_seg_SSSS_mod
+END MODULE ICI_seg_seg_SSSS_mod

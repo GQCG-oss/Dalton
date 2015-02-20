@@ -68,43 +68,8 @@ case(mtype_dense)
  end select
 
 
-
-
-
 end subroutine charge_precond
 
-
-
-subroutine CLLinearTrans(Grad,HKappa,kappa,OrbLoc)
-use loc_types
-use Pipek
-implicit none
-type(PMitem)   :: OrbLoc
-type(matrix)   :: S,SC
-type(matrix)   :: Hkappa
-type(matrix)   :: kappa
-type(matrix)   :: Grad
-type(lsitem)   :: ls
-integer :: k,l
-
-call mat_zero(Hkappa)
-
-if (Orbloc%ChargeLocMulliken) then
-  call CL_add_terms_1_4M(OrbLoc,kappa,Hkappa) 
-  call CL_add_terms_7_8M(OrbLoc,Hkappa)
-  call CL_add_terms_9_10M(OrbLoc,Hkappa)
-elseif (OrbLoc%ChargeLocLowdin) then
-  call CL_add_terms_1_4L(OrbLoc,kappa,Hkappa) 
-  call CL_add_terms_7_8L(OrbLoc,Hkappa)
-  call CL_add_terms_9_10L(OrbLoc,Hkappa)
-end if
-
-if (OrbLoc%m<0) call mat_scal(-1.0d0,Hkappa)
-
-call add_grad_terms(Grad,kappa,Hkappa,OrbLoc%ChargeLocLowdin)
-
-
-end subroutine CLLinearTrans
 
 subroutine PMMull_LinTra(Grad,HKappa,kappa,OrbLoc)
 use loc_types

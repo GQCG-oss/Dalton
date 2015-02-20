@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+#    prop_nolondon
+#    -------------
+#    Molecule:         H2O
+#    Wave Function:    MP2 (SOPPA)
+#    Test Purpose:     Calculation of no-London shielding constants
+#                      through ABACUS
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 13,
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 9,
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+      
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+f.add(string = 'Hartree-Fock total energy',
+      rel_tolerance = 1.0e-10)
+f.add(string = 'MP2 second order energy',
+      rel_tolerance = 1.0e-10)
+
+f.add(string = 'Nuclear magnetic shieldings',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Magnetic susceptibilities',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'London orbitals are NOT used',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'No mass-velocity energy correction calculated',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'No Darwin energy correction calculated',
+      rel_tolerance = 1.0e-2)
+
+f.add(from_string = 'Magnetizabilities',
+      num_lines = 9,
+      mask = [2],
+      abs_tolerance = 1.0e-3)
+
+f.add(from_string = 'Total magnetizability tensor',
+      num_lines = 9,
+      abs_tolerance = 1.0e-6)
+
+f.add(from_string = 'Diamagnetic magnetizability tensor',
+      num_lines = 9,
+      abs_tolerance = 1.0e-6)
+
+f.add(from_string = 'Paramagnetic magnetizability tensor',
+      num_lines = 9,
+      abs_tolerance = 1.0e-6)
+
+f.add(from_string = 'Molecular rotational g-tensor',
+      num_lines = 10,
+      abs_tolerance = 1.0e-6)
+
+# Molecular rotational g-factor in principal axis system  
+f.add(from_string = 'Molecular rotational g-tensor in principal axis system',
+      num_lines = 7,
+      abs_tolerance = 1.0e-6)
+
+f.add(from_string = 'Shielding tensors in symmetry coordinates',
+      num_lines = 24,
+      abs_tolerance = 1.0e-3)
+
+f.add(from_string = 'Chemical shielding for ',
+      num_lines = 11,
+      abs_tolerance = 1.0e-3)
+f.add(from_string = 'Total shielding tensor',
+      num_lines = 11,
+      abs_tolerance = 1.0e-3)
+
+f.add(string = 'Diamagnetic contribution:',
+      abs_tolerance = 1.0e-3)
+
+f.add(from_re = 'Summary of chemical shieldings',
+      num_lines = 14,
+      abs_tolerance = 1.0e-3)
+
+test.run(['prop_nolondon.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

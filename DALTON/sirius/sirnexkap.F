@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck kapbet */
       SUBROUTINE KAPBET (NHORED,RTRUST,BETA,HORED,EVAL,EVEC,WRK,LFREE)
@@ -716,11 +715,9 @@ C
 C Insert the only non-zero element in first column
 C
       NREDO = NBOVEC + 1
-      KTOT  = IROW(NREDO+1)
-      KWJ   =   1 + KTOT
-      KIWJ  = KWJ + NREDO
+      NNREDO= IROW(NREDO+1)
 C
-      CALL DCOPY(KTOT,REDO(1),1,WRK(1),1)
+      CALL DCOPY(NNREDO,REDO(1),1,WRK(1),1)
       DO 55 I=1,NREDO
          WRK(IROW(I)+1) = DAMP*WRK(IROW(I)+1)
  55   CONTINUE
@@ -729,8 +726,7 @@ C
          CALL OUTPAK(WRK,NREDO,1,LUPRI)
       END IF
       CALL DUNIT(EOVEC,NREDO)
-      CALL JACO(WRK,EOVEC,NREDO,NREDO,NREDO,
-     *          WRK(KWJ),WRK(KIWJ))
+      CALL JACO_THR(WRK,EOVEC,NREDO,NREDO,NREDO,0.0D0)
       II = 0
       DO 150 I = 1,NREDO
          II = II + I
@@ -770,10 +766,10 @@ C
 C SOLVE LEVEL SHIFTED LINEAR SET OF EQUATIONS
 C
 C
-      KTOT  = IROW(NBOVEC+1)
-      KIPVT = 1 + KTOT
+      NNBOVEC = IROW(NBOVEC+1)
+      KIPVT = 1 + NNBOVEC
 C
-      CALL DCOPY(KTOT,REDO,1,WRK,1)
+      CALL DCOPY(NNBOVEC,REDO,1,WRK,1)
       II = 0
       DO 500 I = 1,NBOVEC
          II = II + I

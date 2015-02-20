@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -58,7 +58,7 @@ C
 #include "abainf.h"
 #include "gnrinf.h"
 #include "infsop.h"
-#include "ibtfun.h"
+
 C
       CALL QENTER('CTOABA')
       CALL TIMER('START ',TIMEIN,TIMOUT)
@@ -549,7 +549,7 @@ C
 #include "orgcom.h"
       DIMENSION SFTP(3,3,MXCENT),SFTM(3,3,MXCENT),
      &          SSFT(3,MXCENT)
-#include "ibtfun.h"
+
 C     ... compute the (R_cm - R_I) for each atom ...
       JATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -561,11 +561,11 @@ C     ... compute the (R_cm - R_I) for each atom ...
            END DO
          ELSE
             DO 200 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                   JATOM = JATOM + 1
                  DO i=1,3
                    SSFT(I,JATOM) = GAGORG(I) - 
-     &             PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+     &             PT(IAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
                  END DO
                END IF
   200       CONTINUE

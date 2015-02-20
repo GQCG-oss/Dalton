@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -66,7 +66,7 @@ C
          CMO2(I,I,2) = D1
       END DO 
 C
-      IF (IPRINT.GT.3) THEN
+      IF (IPRINT.GE.15) THEN
          CALL HEADER('Matrix < abs(phi_p) abs(phi_q) >',-1)
          CALL OUTPUT(CMO2,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
          CALL HEADER('Matrix < phi_p^2 phi_q^2 >',-1)

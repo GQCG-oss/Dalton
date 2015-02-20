@@ -66,6 +66,8 @@ cat > rsp_lrso2.dal <<'%EOF%'
  1
 .SPIN MULT
  1
+*OPTIMI
+.DETERM
 **RESPONS
 .TRPFLG
 *LINEAR

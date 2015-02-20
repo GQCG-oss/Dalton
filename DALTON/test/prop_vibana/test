@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+#    prop_vibana
+#    -----------
+#    Molecule:         Pyrimidine cation
+#    Wave Function:    Open-shell HF / cc-pVDZ
+#    Test Purpose:     Vibrational analysis
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Basis set 
+f.add(from_string = 'Atoms and basis sets',
+      num_lines = 15,
+      rel_tolerance = 1.0e-2)
+
+# Molecular geometry
+f.add(from_string = 'Cartesian Coordinates',
+      num_lines = 15,
+      rel_tolerance = 1.0e-8)
+
+# Symmetry
+f.add(string = 'Number of coordinates in each symmetry',
+      rel_tolerance = 1.0e-2)
+f.add(string = 'Number of orbitals in each symmetry',
+      rel_tolerance = 1.0e-2)
+
+# Energy
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-9)
+
+# Molecular gradient
+f.add(from_string = 'Molecular gradient (au)',
+       num_lines = 14,
+       abs_tolerance = 1.0e-9)
+
+# Molecular Hessian
+f.add(from_string = 'Molecular Hessian (au)',
+      to_string = 'Dipole moment',
+       abs_tolerance = 1.0e-4)
+
+# Rotational constants
+f.add(from_string = 'Rotational constants',
+       num_lines = 8,
+       abs_tolerance = 1.0e-7)
+
+# Vibrational Frequencies
+f.add(from_string = 'Vibrational Frequencies and IR Intensities',
+       num_lines = 40,
+       abs_tolerance = 1.0e-1,
+       mask = [2])
+
+# IR Intensities
+f.add(from_string = 'Vibrational Frequencies and IR Intensities',
+       num_lines = 40,
+       abs_tolerance = 1.0e-2,
+       mask = [4])
+
+test.run(['prop_vibana.dal'], ['C4H4N2_cc-pVDZ_sym.mol'], f={'out': f})
+         # dirty fix
+#         accepted_errors=['MAXRED too small in ANRCTL'])
+
+sys.exit(test.return_code)

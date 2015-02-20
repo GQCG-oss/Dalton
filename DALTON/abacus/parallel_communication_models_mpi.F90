@@ -3,7 +3,7 @@
 !
 !dalton_copyright_end
 !
-! stefan jan 2013: this module contains the type definition for the
+! stefan jan 2014: this module contains the type definition for the
 !                  MPI communication handles to be potentially used in modules.
 !                  currently in use in Dalton: 
 !                                    - lucita (after merge with hjaa-srdft)

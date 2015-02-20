@@ -235,7 +235,7 @@ C
 C     Analyse the diagonal.
 C     ---------------------
 C
-      IF (IPRINT .GT. 2) THEN
+      IF (IPRINT .GT. 1) THEN
          WRITE(LUPRI,'(//,A,/)') '>>> Checking initial diagonal'
          CALL CC_ANADI(DIAG,.TRUE.)
       END IF
@@ -248,13 +248,13 @@ C
       allocate(indexa(nbast),stat=indexa_ok)
       if (indexa_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXA in CC_CHOLESKY'
-         stop 'INDEXA not allocated'
+         CALL QUIT('INDEXA not allocated')
       end if
 !
       allocate(indexb(nbast),stat=indexb_ok)
       if (indexb_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXB in CC_CHOLESKY'
-         stop 'INDEXB not allocated'
+         CALL QUIT('INDEXB not allocated')
       end if
 
 
@@ -308,7 +308,7 @@ C
       END IF
 C
       LREAD = (NBAST*NBAST + 1)/IRAT + 1 
-     &      + (NIBUF*LBUF-1)/IRAT + 1 + LBUF
+     &      + (NIBUF*LBUF+1)/2 + LBUF ! integer*4 ibuf4(nibuf*lbuf) + real*8 buf(lbuf)
      &      + (2*MAXQUA-1)/IRAT + 1
 C
       MINCHO = LENAB + MXNNBS 
@@ -850,6 +850,7 @@ C
          IF (IPRINT .EQ. 1) THEN
             WRITE(LUPRI,'(I4,I9,8X,I3,I7,I13,D24.9)') ICHOV2,ICHOV,
      &                                 NUMINT,NINT2,NQTOT,DIMAX
+            CALL FLSHFO(LUPRI)
          ELSE
             WRITE(LUPRI,'(/,A,2I6)')
      &           'Number of Cholesky vectors so far  : ',ICHOV2,ICHOV
@@ -1031,11 +1032,8 @@ C
 C
 C     Buffer allocation
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
-      LRINT  = IRAT*LBUF
-C
       KIBUF = KEND1
-      KRBUF = KIBUF + (NIBUF*LBUF-1)/IRAT + 1
+      KRBUF = KIBUF + (NIBUF*LBUF+1)/2   ! integer*4 ibuf4(nibuf*lbuf)
       KEND2 = KRBUF + LBUF
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) THEN
@@ -1050,16 +1048,19 @@ C
       RETURN
       END
 C  /* Deck cc_rda1 */
-      SUBROUTINE CC_RDA1(XINT,IBUF,RBUF,IDELTA,IGAM,KADR2,
+      SUBROUTINE CC_RDA1(XINT,IBUF4,RBUF,IDELTA,IGAM,KADR2,
      *                  IBIT1,IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
 #include "implicit.h"
 #include "ibtpar.h"
+#include "mxcent.h"
+#include "eribuf.h"
       DIMENSION XINT(*)
       DIMENSION KADR2(NBAST,NBAST)
-      DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
+      DIMENSION RBUF(LBUF)
+      INTEGER*4 IBUF4(LBUF*NIBUF),LENGTH4
       DIMENSION IRECNR(*)
       CHARACTER*8 FAODER
       LOGICAL OLDDX
@@ -1071,12 +1072,10 @@ Casm
 Casm
 #include "ccinftap.h"
 #include "ccorb.h"
-#include "mxcent.h"
-#include "eribuf.h"
 #include "nuclei.h"
 #include "inftap.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1099,16 +1098,13 @@ C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
 C    
-#if defined (VAR_INT64)
-            LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-            LRECL = LBFINP + LBFINP/IRAT + 1
-#else
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
+            IF (NIBUF .ne. 1 .and. NIBUF .ne. 2) THEN
+               CALL QUIT('CC_RDA1: NIBUF not correct in eribuf.h')
             END IF
+#if defined (SYS_NEC)
+            LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+            LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
@@ -1125,12 +1121,13 @@ C
                ICOUNT = ICOUNT + 1
                NREC   = J
                IF (MULFIL) NREC = ICOUNT
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
-               DO 110 I = 1,NINT
-                  IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
+               DO 110 I = 1,LENGTH4
+                  I_PQR = IBUF4(I) ! change to default integer type
+                  IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
                   IF (IR .EQ. IGAM) THEN
-                     IP = IBTAND(       IBUF(I,1)         ,IBIT1)
-                     IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
+                     IP = IAND(       I_PQR         ,IBIT1)
+                     IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
                      IADR = KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
                   ENDIF
@@ -1147,12 +1144,14 @@ C
                ICOUNT = ICOUNT + 1
                NREC   = J
                IF (MULFIL) NREC = ICOUNT
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
-               DO 130 I = 1,NINT
-                  IR = IBTAND(       IBUF(I,1)       ,IBIT1)
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
+               DO 130 I = 1,LENGTH4
+                  I_PQ = IBUF4(2*I  ) ! change to default integer type
+                  I_RS = IBUF4(2*I-1) ! change to default integer type
+                  IR = IAND(       I_RS       ,IBIT1)
                   IF (IR .EQ. IGAM) THEN
-                     IP = IBTAND(       IBUF(I,2)       ,IBIT1)
-                     IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
+                     IP = IAND(       I_PQ       ,IBIT1)
+                     IQ = IAND(ISHFT(I_PQ,-NBITS),IBIT1)
                      IADR = KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
                   ENDIF
@@ -1276,25 +1275,25 @@ C
       allocate(indexa(nbast),stat=indexa_ok)
       if (indexa_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXA in CC_GAB'
-         stop 'INDEXA not allocated'
+         CALL QUIT('INDEXA not allocated')
       end if
 !
       allocate(indexb(nbast),stat=indexb_ok)
       if (indexb_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXB in CC_GAB'
-         stop 'INDEXB not allocated'
+         CALL QUIT('INDEXB not allocated')
       end if
 !!
       allocate(jndexa(nbast),stat=jndexa_ok)
       if (jndexa_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXA in CC_GAB'
-         stop 'JNDEXA not allocated'
+         CALL QUIT('JNDEXA not allocated')
       end if
 !
       allocate(jndexb(nbast),stat=jndexb_ok)
       if (jndexb_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXB in CC_GAB'
-         stop 'JNDEXB not allocated'
+         CALL QUIT('JNDEXB not allocated')
       end if
 
 
@@ -1405,6 +1404,11 @@ C
 #include "mxcent.h"
 #include "eribuf.h"
 C
+C
+      CALL QENTER('CHODRV')
+      CALL GETTIM(TIMCPU,TIMWAL)
+      CHOCPU = TIMCPU
+      CHOWAL = TIMWAL
 C
 C------------------------------------------
 C     Suggest to use 64 bit integer version
@@ -1595,7 +1599,7 @@ C
       END IF
 C
   777 CONTINUE
-      IF (SKIP) RETURN
+      IF (SKIP) GOTO 9999
 C
 C
          CALL CC_CHOLESKY(WORK(KDIAG),WORK(KOLD),WORK(KIND),
@@ -1633,7 +1637,20 @@ C
          CALL SYSTEM('rm -f AOTWOINT')
       END IF
 C
-      WRITE(LUPRI,'(//)')
+ 9999 CONTINUE
+C
+      CALL GETTIM(TIMCPU,TIMWAL)
+      CHOCPU = TIMCPU - CHOCPU
+      CHOWAL = TIMWAL - CHOWAL
+C
+      WRITE(LUPRI,'(//,A,F10.2,A)') 
+     &            ' >>>> Total CPU  time used in CHOLESKY :',
+     &            CHOCPU, ' seconds'
+      WRITE(LUPRI,'(A,F10.2,A,///)') 
+     &            ' >>>> Total wall time used in CHOLESKY :',
+     &            CHOWAL, ' seconds'
+C
+      CALL QEXIT('CHODRV')
 C
       RETURN
       END
@@ -1964,7 +1981,7 @@ C
 #include "inftap.h"
 #include "priunit.h"
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C
 C-------------
@@ -2244,7 +2261,7 @@ C
 C
       DIMENSION CHOVEC(NDIM)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C
       CALL QUIT('non-implemented choscr called')
@@ -3017,11 +3034,8 @@ C
 C
 C     Buffer allocation
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
-      LRINT  = IRAT*LBUF
-C
       KIBUF = KEND1
-      KRBUF = KIBUF + (NIBUF*LBUF-1)/IRAT + 1
+      KRBUF = KIBUF + (NIBUF*LBUF+1)/2  ! integer*4 ibuf4(nibuf*lbuf)
       KGAM  = KRBUF + LBUF
       KEND2 = KGAM  + (2*NUMPR-1)/IRAT + 1 
       LWRK2 = LWORK - KEND2
@@ -3035,7 +3049,7 @@ C
       RETURN
       END
 C  /* Deck cc_rda1n */
-      SUBROUTINE CC_RDA1N(XINT,IBUF,RBUF,IDELTA,IGAM,NUMPR,ISYMGD,
+      SUBROUTINE CC_RDA1N(XINT,IBUF4,RBUF,IDELTA,IGAM,NUMPR,ISYMGD,
      *                  KADR2,IBIT1,KGAM,IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993
@@ -3044,7 +3058,8 @@ C
 #include "ibtpar.h"
       DIMENSION XINT(*)
       DIMENSION KADR2(NBAST,NBAST)
-      DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
+      DIMENSION RBUF(LBUF)
+      INTEGER*4 IBUF4(LBUF*NIBUF), LENGTH4
       DIMENSION IDELTA(NUMPR), IGAM(NUMPR)
       DIMENSION KGAM(NUMPR,2)
       DIMENSION IRECNR(*)
@@ -3060,9 +3075,9 @@ C
 #include "chrnos.h"
 #include "eribuf.h"
 #include "inftap.h"
-#include "ibtfun.h"
+
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       IF (NEWDIS) THEN
 C
@@ -3082,16 +3097,13 @@ C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
 C
-#if defined (VAR_INT64)
-            LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-            LRECL = LBFINP + LBFINP/IRAT + 1
-#else
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
+            IF (NIBUF .ne. 1 .and. NIBUF .ne. 2) THEN
+               CALL QUIT('CC_RDA1: NIBUF not correct in eribuf.h')
             END IF
+#if defined (SYS_NEC)
+            LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+            LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
@@ -3114,9 +3126,10 @@ C
 C
             IF (ICOUNT .NE. 0) THEN
                NREC   = J
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
-               DO 110 I = 1,NINT
-                  IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
+               DO 110 I = 1,LENGTH4
+                  I_PQR = IBUF4(I) ! change to default integer type
+                  IR = IAND(ISHFT(I_PQR,-2*NBITS),IBIT1)
                   LSV = -1
                   DO L = 1,ICOUNT
                      IF (IR .EQ. KGAM(L,1)) THEN
@@ -3124,8 +3137,8 @@ C
                      ENDIF
                   ENDDO 
                   IF (LSV .GT. 0) THEN
-                     IP = IBTAND(       IBUF(I,1)         ,IBIT1)
-                     IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
+                     IP = IAND(       I_PQR         ,IBIT1)
+                     IQ = IAND(ISHFT(I_PQR,  -NBITS),IBIT1)
                      IADR = NNBST(ISYMGD)*(LSV-1) + KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
                   ENDIF
@@ -3152,9 +3165,11 @@ C
 C
             IF (ICOUNT .NE. 0) THEN
                NREC   = J
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
-               DO 130 I = 1,NINT
-                  IR = IBTAND(       IBUF(I,1)       ,IBIT1)
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
+               DO 130 I = 1,LENGTH4
+                  I_PQ = IBUF4(2*I  ) ! change to default integer type
+                  I_RS = IBUF4(2*I-1) ! change to default integer type
+                  IR = IAND(       I_RS       ,IBIT1)
                   LSV = -1
                   DO L = 1,ICOUNT
                      IF (IR .EQ. KGAM(L,1)) THEN
@@ -3162,8 +3177,8 @@ C
                      ENDIF
                   ENDDO 
                   IF (LSV .GT. 0) THEN
-                     IP = IBTAND(       IBUF(I,2)       ,IBIT1)
-                     IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
+                     IP = IAND(       I_PQ       ,IBIT1)
+                     IQ = IAND(ISHFT(I_PQ,-NBITS),IBIT1)
                      IADR = NNBST(ISYMGD)*(LSV-1) + KADR2(IP,IQ) + 1
                      XINT(IADR) = RBUF(I)
                   ENDIF
@@ -4304,11 +4319,8 @@ C
 C
 C     Buffer allocation
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
-      LRINT  = IRAT*LBUF
-C
       KIBUF = 1
-      KRBUF = KIBUF + (NIBUF*LBUF-1)/IRAT + 1
+      KRBUF = KIBUF + (NIBUF*LBUF+1)/IRAT   ! integer*4 ibuf4(nibuf*lbuf)
       KEND2 = KRBUF + LBUF
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) THEN
@@ -4321,7 +4333,7 @@ C
       RETURN
       END
 C  /* Deck cc_rdaox1 */
-      SUBROUTINE CC_RDAOX1(XINT,IBUF,RBUF,NUMDIA,NUMDIB,
+      SUBROUTINE CC_RDAOX1(XINT,IBUF4,RBUF,NUMDIA,NUMDIB,
      *                  JNDEXA,JNDEXB,ISHLA,ISHLB,IBIT1,IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993
@@ -4329,9 +4341,12 @@ C
 #include "implicit.h"
 #include "ibtpar.h"
 #include "priunit.h"
+#include "mxcent.h"
+#include "eribuf.h"
       DIMENSION XINT(*)
       DIMENSION JNDEXA(*), JNDEXB(*)
-      DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
+      DIMENSION RBUF(LBUF)
+      INTEGER*4 IBUF4(LBUF*NIBUF), LENGTH4
       DIMENSION IRECNR(*)
       CHARACTER*8 FAODER
       LOGICAL OLDDX
@@ -4339,14 +4354,12 @@ C
       PARAMETER (LOCDBG = .FALSE.)
 #include "ccinftap.h"
 #include "ccorb.h"
-#include "mxcent.h"
-#include "eribuf.h"
 #include "nuclei.h"
 #include "inftap.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       IF (NEWDIS) THEN
 C
@@ -4366,17 +4379,14 @@ C
 C
       IF (LUAORC(0) .LE. 0) THEN
             LBFINP = LBUF
-C    
-#if defined (VAR_INT64)
-            LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-            LRECL = LBFINP + LBFINP/IRAT + 1
-#else
-            IF (NBASIS .LE. 255) THEN
-               LRECL = 2*LBFINP + LBFINP + 1
-            ELSE
-               LRECL = 2*LBFINP + 2*LBFINP + 1
+C
+            IF (NIBUF .ne. 1 .and. NIBUF .ne. 2) THEN
+               CALL QUIT('CC_RDA1: NIBUF not correct in eribuf.h')
             END IF
+#if defined (SYS_NEC)
+            LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+            LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
@@ -4392,12 +4402,13 @@ C
             IF (IRECNR(J) .EQ. 1) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
-               DO 110 I = 1,NINT
-                  IA = IBTAND(IBTSHR(IBUF(I,1),3*NBITS),IBIT1)
-                  IB = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
-                  IC = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
-                  ID = IBTAND(       IBUF(I,1)         ,IBIT1)
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
+               DO 110 I = 1,LENGTH4
+                  I_ABCD = IBUF4(I) ! change to default integer type
+                  IA = IAND(ISHFT(I_ABCD,-3*NBITS),IBIT1)
+                  IB = IAND(ISHFT(I_ABCD,-2*NBITS),IBIT1)
+                  IC = IAND(ISHFT(I_ABCD,  -NBITS),IBIT1)
+                  ID = IAND(       I_ABCD         ,IBIT1)
                   IADR = NUMDIA*(JNDEXB(IB) - 1) + JNDEXA(IA) 
                   XINT(IADR) = RBUF(I)
                   IF (ISHLA .EQ. ISHLB) THEN
@@ -4416,12 +4427,14 @@ C
             IF (IRECNR(J) .EQ. 1) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
-               DO 130 I = 1,NINT
-                  IA = IBTAND(IBTSHR(IBUF(I,1),NBITS),IBIT1)
-                  IB = IBTAND(       IBUF(I,1)       ,IBIT1)
-                  IC = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
-                  ID = IBTAND(       IBUF(I,2)       ,IBIT1)
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF4,LENGTH4
+               DO 130 I = 1,LENGTH4
+                  I_AB = IBUF4(2*I  ) ! change to default integer type
+                  I_CD = IBUF4(2*I-1) ! change to default integer type
+                  IA = IAND(ISHFT(I_AB,-NBITS),IBIT1)
+                  IB = IAND(       I_AB       ,IBIT1)
+                  IC = IAND(ISHFT(I_CD,-NBITS),IBIT1)
+                  ID = IAND(       I_CD       ,IBIT1)
                   IADR = NUMDIA*(JNDEXB(IB) - 1) + JNDEXA(IA) 
                   XINT(IADR) = RBUF(I)
                   IF (ISHLA .EQ. ISHLB) THEN
@@ -4488,13 +4501,13 @@ C
       allocate(indexa(nbast),stat=indexa_ok)
       if (indexa_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXA in CC_GABOLD'
-         stop 'INDEXA not allocated'
+         CALL QUIT('INDEXA not allocated')
       end if
 !
       allocate(indexb(nbast),stat=indexb_ok)
       if (indexb_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXB in CC_GABOLD'
-         stop 'INDEXB not allocated'
+         CALL QUIT('INDEXB not allocated')
       end if
 
 

@@ -2,7 +2,7 @@
 !> Contains unrestricted dense matrix module.
 
 !> \brief Contains matrix operation routines for type(matrix) = unrestricted dense.
-module matrix_operations_unres_dense
+module matrix_op_unres_dense
   use matrix_module
   use memory_handling
   use precision
@@ -333,9 +333,9 @@ module matrix_operations_unres_dense
 
      !to be found in pdpack/printpkg.F
      write(lu,'(1x,a)') 'ALPHA part:'
-     call OUTPUT(a%elms, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, 1, lu)
+     call LS_OUTPUT(a%elms, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, 1, lu)
      write(lu,'(1x,a)') 'BETA part:'
-     call OUTPUT(a%elmsb, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, &
+     call LS_OUTPUT(a%elmsb, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, &
                & 1, lu)
   end subroutine mat_unres_dense_print
 
@@ -1209,7 +1209,7 @@ end subroutine mat_unres_dense_create_ab_elms
     integer :: i
     type(Matrix), intent(in) :: A
     character(len=20) :: filename
-
+    integer(kind=long) :: ncol,nrow 
     if (.not.ASSOCIATED(A%elms)) &
          & STOP 'A in mat_unres_dense_WRITE_TO_DISK non-existant'
 
@@ -1220,7 +1220,9 @@ end subroutine mat_unres_dense_create_ab_elms
 !    OPEN(iunit, FILE=filename, STATUS="old", FORM="unformatted", POSITION="append" )
 !    OPEN(iunit, FILE=filename, STATUS="old", FORM="unformatted")
  !   REWIND(iunit)
-    WRITE(iunit) A%Nrow, A%Ncol
+    nrow = A%Nrow
+    ncol = A%Ncol
+    write(iunit) Nrow, Ncol
     WRITE(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
     WRITE(iunit)(A%elmsb(I),I=1,A%nrow*A%ncol)
  !   WRITE(iunit) A%elms
@@ -1238,9 +1240,12 @@ end subroutine mat_unres_dense_create_ab_elms
     integer, intent(in) :: iunit
     type(Matrix), intent(inout) :: A
     integer :: i
+    integer(kind=long) :: ncol,nrow 
 
 !    REWIND iunit
-    READ(iunit) A%Nrow, A%Ncol         
+    READ(iunit) Nrow, Ncol
+    IF(nrow .NE. A%Nrow) call lsquit( 'mat_unres_dense_read_from_disk: Nrow /= A%nrow',-1)
+    IF(ncol .NE. A%Ncol) call lsquit( 'mat_unres_dense_read_from_disk: Ncol /= A%ncol',-1)
     READ(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
     READ(iunit)(A%elmsb(I),I=1,A%nrow*A%ncol)
     !READ(iunit) A%elms
@@ -1342,5 +1347,5 @@ end subroutine mat_unres_dense_create_ab_elms
 
   end subroutine unres_dens_stat_deallocated_mem
 
-end module matrix_operations_unres_dense
+end module matrix_op_unres_dense
 

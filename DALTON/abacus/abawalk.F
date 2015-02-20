@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  FILE: abacus/abawalk.F
 C
@@ -1311,16 +1310,18 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), DIPG0(3,NCART),
      *          DIPM(3), WORK(LWORK)
 C
-#include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
+
+      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
 C
 C     ***** Initialize *****
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL DZERO(GRDCAR,NCRTOT)
 C
 C     ***** Multiplicities *****
@@ -2137,7 +2138,7 @@ C
 #include "infinp.h"
 #include "nuclei.h"
 #include "cbisol.h"
-#include "ibtfun.h"
+
 C
       CHARACTER*(len_MLINE) TMP_MLINE
 C
@@ -2166,12 +2167,12 @@ C     total charge. Thus move center-of nuclear charge to the origin
 C
             DO IATOM = 1, NUCIND
                DO IREP = 0, MAXREP
-                  IF (IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
-                     CCAVX = CCAVX + PT(IBTAND(ISYMAX(1,1),IREP))
+                  IF (IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+                     CCAVX = CCAVX + PT(IAND(ISYMAX(1,1),IREP))
      &                              *COONEW(1,IATOM)*CHARGE(IATOM)
-                     CCAVY = CCAVY + PT(IBTAND(ISYMAX(2,1),IREP))
+                     CCAVY = CCAVY + PT(IAND(ISYMAX(2,1),IREP))
      &                              *COONEW(2,IATOM)*CHARGE(IATOM)
-                     CCAVZ = CCAVZ + PT(IBTAND(ISYMAX(3,1),IREP))
+                     CCAVZ = CCAVZ + PT(IAND(ISYMAX(3,1),IREP))
      &                              *COONEW(3,IATOM)*CHARGE(IATOM)
                      TOTCHR = TOTCHR + CHARGE(IATOM)
                   END IF
@@ -2554,10 +2555,13 @@ C  /* Deck wlkir1 */
 #include "inftap.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(NUCDEP), CSTRA(*), SCTRA(*)
-#include "ibtfun.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+
 C
       NCOOR = 3*NUCDEP
       CALL DZERO(COOR, NCOOR)
@@ -2570,18 +2574,19 @@ C
          DMSS = DISOTP(IZATOM(ICENT),ISOTOP(ICENT),'MASS')
          MULCNT = ISTBNU(ICENT)
          DO 200 IOP = 0, MAXOPR
-            IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                DMASS(IATOM) = DMSS
                DO 300 I = 1, 3
                  ICOOR = ICOOR + 1
-                 COOR(ICOOR) = PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+                 COOR(ICOOR) = PT(IAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
   300          CONTINUE
             END IF
   200    CONTINUE
   100 CONTINUE
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL TRAGRD(GRDMOL,CGRAD,CSTRA,SCTRA,NCRREP(0,1),NCOOR)
-      CALL TRAHES(HESMOL,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
+      CALL TRAHES(HESMOL,NCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
       ARC = AACCUM - STPNRM
       WRITE (LUWLK) IPOINT, NCOOR, DUMMY, DUMMY, DUMMY,
      &     DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY
@@ -3190,7 +3195,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('PMCAR in WLKTRA',-1)
@@ -3208,7 +3213,7 @@ C
          NISOTP = ISOTOP(ICENT)
          AMASS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
          DO 200 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                IFRAG = IPART(IATOM)
                IF (IFRAG .EQ. 1 .OR. IFRAG .EQ. 2) THEN
@@ -3216,7 +3221,7 @@ C
                   DO 300 ICOOR = 1, 3
                      ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,0,1)
                      IF (ISCOOR .NE. 0) THEN
-                        SGNXYZ = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                        SGNXYZ = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
                         QCM(ICOOR,IFRAG) = QCM(ICOOR,IFRAG)
      &                                  + SGNXYZ*AMASS*CORD(ICOOR,ICENT)
                         PCM(ICOOR,IFRAG) = PCM(ICOOR,IFRAG)
@@ -4901,7 +4906,7 @@ C
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND)
 C
-#include "ibtfun.h"
+
 C
 C     Transforms coordinates to non-symmetry basis
 C
@@ -5098,11 +5103,9 @@ C
             END IF
    20    CONTINUE
    30    CONTINUE
-         HESMAX = EVAL(NONTRO)
          SPECAS = .FALSE.
       ELSE
          HESMIN = EVAL(1)
-         HESMAX = EVAL(NONTRO)
          GRDMIN = ABS(GRDDIA(1))
 C
 C        Test whether the lowest Hessian eigenvalue is negative and the
@@ -5113,12 +5116,13 @@ C
       END IF
 C
       GRDNRM = SQRT(DDOT(NONTRO,GRDDIA,1,GRDDIA,1))
+      GRD_ASUM = DASUM(NONTRO,GRDDIA,1)
 C
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(A,1P,D12.5)') ' HESMIN: ', HESMIN
-         WRITE (LUPRI,'(A,1P,D12.5)') ' HESMAX: ', HESMAX
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDMIN: ', GRDMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDNRM: ', GRDNRM
+         WRITE (LUPRI,'(A,1P,D12.5)') ' GRD_ASUM', GRD_ASUM
       END IF
 C
 C     ************************
@@ -5129,16 +5133,20 @@ C
          IF (IPRINT .GT. 3) WRITE (LUPRI,'(/A/)') ' General case.'
 C
 C        Determine level shift
-C        hjaaj Oct 2013:
+C        hjaaj Jan 2014
 C           We want to find the RNU for which the step length SL is TRUSTR
 C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
 C           We know that SL = norm(- (Hess + RNU)^-1 grad )
-C                   Thus SL ≥ norm(grad) / (HESMAX + RNU)
-C                   and  SL ≤ norm(grad) / (HESMIN + RNU)
-C           From this you can derive the formulas for XMIN and XMAX
+C               SL ≤ contribution if all eigenvalues where equal to EVAL(1)
+C                  = GRD_ASUM  / (EVAL(1) + RNU)
+C               SL ≥ contribution from first eigenvector
+C                  = GRDDIA(1) / (EVAL(1) + RNU)
+C           From this you can derive the formulas for XMIN and XMAX,
+C           when we also remember that if RNU corresponding to trust
+C           radius is negative, then we select Newton step, RNU = 0.
 C
-         XMIN = MAX(D0,GRDNRM/TRUSTR - HESMIN)
-         XMAX = MAX(D0,GRDNRM/TRUSTR - HESMAX)
+         XMIN = MAX(D0,  -HESMIN + GRD_ASUM/TRUSTR)
+         XMAX = MAX(D0, - HESMIN + DP5*GRDMIN/TRUSTR)
          IF (IPRINT .GT. 5) THEN
             WRITE (LUPRI,'(/A,2(1P,D12.5,2X))')
      *         ' XMIN and XMAX before WLKBIS (WLKSTL) minimum walk: ',
@@ -6564,7 +6572,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('PMCARX in WLKDAN',-1)
@@ -6646,7 +6654,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
+
 c     NEXT1(I) = MOD(I,3) + 1
 c     NEXT2(I) = NEXT1(NEXT1(I))
 C
@@ -6663,13 +6671,13 @@ C
          NISOTP = ISOTOP(ICENT)
          ATMAS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                TMASS(IATOM) = ATMAS
                DO 120 ICOOR = 1, 3
                   ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,0,1)
                   IF (ISCOOR .NE. 0) THEN
-                     SGN = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                     SGN = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
                      TCOR(IATOM,ICOOR) = SGN*CORD(ICOOR,ICENT)
                      TVEL(IATOM,ICOOR) = SGN*FAC*PMCARX(ISCOOR)/ATMAS
                   END IF
@@ -7220,23 +7228,23 @@ C
          CALL HEADER('Polarizability tensor at reference geometry',1)
          DO 300 F = 1, NFRVAL
             WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-            CALL OUTPUT(ROAAFU(1,1,F),1,3,1,3,3,3,1,LUPRI)
+            CALL OUTPUT(ROAAFU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   300    CONTINUE
          IF (VROA) THEN
             CALL HEADER('Non-London G tensor at reference geometry',1)
             DO 310 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAGNU(1,1,F),1,3,1,3,3,3,1,LUPRI)
+               CALL OUTPUT(ROAGNU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   310       CONTINUE
             CALL HEADER('London G tensor at reference geometry',1)
             DO 320 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAGLU(1,1,F),1,3,1,3,3,3,1,LUPRI)
+               CALL OUTPUT(ROAGLU(1,1,F),1,3,1,3,3,3,11,LUPRI)
   320       CONTINUE
             CALL HEADER('A tensor at reference geometry',1)
             DO 330 F = 1, NFRVAL
                WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
-               CALL OUTPUT(ROAAU(1,1,1,F),1,3,1,9,3,9,1,LUPRI)
+               CALL OUTPUT(ROAAU(1,1,1,F),1,3,1,9,3,9,11,LUPRI)
   330       CONTINUE
          END IF
 C
@@ -7342,44 +7350,6 @@ C
       END IF
       RETURN
       END
-C  /* Deck ircpot */
-#if defined (VAR_IRCPOT)
-      PROGRAM IRCPOT
-#include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "mxcent.h"
-      DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
-     &          DMASS(MXCENT)
-      LUTRJ = -1
-      CALL GPOPEN(LUTRJ,'DALTON.IRC','OLD','SEQUENTIAL','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
-      NPOINT = 2
-      REWIND LUTRJ
-      DO 100 JPOINT = 1, NPOINT
-         READ (LUTRJ)
-         READ (LUTRJ) IPOINT, NCOOR
-         READ (LUTRJ) AACCUM, ERGMOL
-         READ (LUTRJ) (DMASS(I),I=1,NCOOR/3)
-         READ (LUTRJ) (COOR (I),I=1,NCOOR)
-         READ (LUTRJ) (CGRAD(I),I=1,NCOOR)
-         READ (LUTRJ) ((CHESS(I,J),I=1,NCOOR),J=1,NCOOR)
-         WRITE (LUPRI,'(//A,I5)') ' Point No. ',IPOINT
-         WRITE (LUPRI,'(/A,F12.6)') ' Arc length ', AACCUM
-         WRITE (LUPRI,'(/A,F16.8)') ' Energy     ', ERGMOL
-         CALL HEADER('Masses',-1)
-         CALL OUTPUT(DMASS,1,NCOOR/3,1,1,MXCENT,1,1,LUPRI)
-         CALL HEADER('Coordinates',-1)
-         CALL OUTPUT(COOR,1,3,1,NCOOR,3,MXCOOR,1,LUPRI)
-         CALL HEADER('Gradient',-1)
-         CALL OUTPUT(CGRAD,1,3,1,NCOOR,3,MXCOOR,1,LUPRI)
-         CALL HEADER('Hessian',-1)
-         CALL OUTPUT(CHESS,1,NCOOR,1,NCOOR,MXCOOR,MXCOOR,1,LUPRI)
-  100 CONTINUE
-      CALL GPCLOSE(LUTRJ,'KEEP')
-      STOP
-      END
-#endif
 C  /* Deck wlkort */
       SUBROUTINE WLKORT(CMO,CMOORT,CORNEW,WORK,LWORK,IPRINT)
 #include "implicit.h"

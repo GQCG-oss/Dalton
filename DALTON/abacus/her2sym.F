@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sym2 */
       SUBROUTINE SYM2(SO,AO,IPNTAO,IPNTOP,ISYMR,ISYMT,ISYMTS,FACTOR,
@@ -45,7 +44,7 @@ C
      &          IPNTOP(3,*)
 #include "twocom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from SYM2','*',103)
         IF (IPRINT .GT. 10) THEN
@@ -60,15 +59,15 @@ C
          DO 100 I = 1, NINTX
             IAO = IPNTAO(I)
 #if defined (SYS_AIX)
-            ITMPR  = IBTAND(ISYMR, IPNTOP(1,I))
-            ITMPT  = IBTAND(ISYMT, IPNTOP(2,I))
-            ITMPTS = IBTAND(ISYMTS,IPNTOP(3,I))
-            ITMP1  = IBTXOR(ITMPT,ITMPTS)
-            FAC    = FACTOR*PT(IBTXOR(ITMPR,ITMP1))
+            ITMPR  = IAND(ISYMR, IPNTOP(1,I))
+            ITMPT  = IAND(ISYMT, IPNTOP(2,I))
+            ITMPTS = IAND(ISYMTS,IPNTOP(3,I))
+            ITMP1  = IEOR(ITMPT,ITMPTS)
+            FAC    = FACTOR*PT(IEOR(ITMPR,ITMP1))
 #else
-            FAC = FACTOR*PT(IBTXOR((IBTAND(ISYMR, IPNTOP(1,I))),
-     &                     (IBTXOR (IBTAND(ISYMT, IPNTOP(2,I)),
-     &                              IBTAND(ISYMTS,IPNTOP(3,I))))))
+            FAC = FACTOR*PT(IEOR((IAND(ISYMR, IPNTOP(1,I))),
+     &                     (IEOR (IAND(ISYMT, IPNTOP(2,I)),
+     &                              IAND(ISYMTS,IPNTOP(3,I))))))
 #endif
             DO 110 J = 1,NOABCD
                SO(J,I) = FAC*AO(J,IAO)
@@ -78,15 +77,15 @@ C
          DO 200 I = 1, NINTX
             IAO = IPNTAO(I)
 #if defined (SYS_AIX)
-            ITMPR  = IBTAND(ISYMR, IPNTOP(1,I))
-            ITMPT  = IBTAND(ISYMT, IPNTOP(2,I))
-            ITMPTS = IBTAND(ISYMTS,IPNTOP(3,I))
-            ITMP1  = IBTXOR(ITMPT,ITMPTS)
-            FAC    = FACTOR*PT(IBTXOR(ITMPR,ITMP1))
+            ITMPR  = IAND(ISYMR, IPNTOP(1,I))
+            ITMPT  = IAND(ISYMT, IPNTOP(2,I))
+            ITMPTS = IAND(ISYMTS,IPNTOP(3,I))
+            ITMP1  = IEOR(ITMPT,ITMPTS)
+            FAC    = FACTOR*PT(IEOR(ITMPR,ITMP1))
 #else
-            FAC = FACTOR*PT(IBTXOR((IBTAND(ISYMR, IPNTOP(1,I))),
-     &                     (IBTXOR (IBTAND(ISYMT, IPNTOP(2,I)),
-     &                              IBTAND(ISYMTS,IPNTOP(3,I))))))
+            FAC = FACTOR*PT(IEOR((IAND(ISYMR, IPNTOP(1,I))),
+     &                     (IEOR (IAND(ISYMT, IPNTOP(2,I)),
+     &                              IAND(ISYMTS,IPNTOP(3,I))))))
 #endif
             DO 210 J = 1,NOABCD
                SO(J,I) = SO(J,I) + FAC*AO(J,IAO)
@@ -124,7 +123,7 @@ C
 #include "symmet.h"
 #include "dorps.h"
 #include "doxyz.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM2',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -144,12 +143,12 @@ C
          ISYTYE = ISYMAX(ICOOR,1)
          DO 200 IREPE = 0, MAXREP
             IF (DOREPS(IREPE) .AND.
-     &          (IBTAND(MULE,IBTXOR(IREPE,ISYTYE)) .EQ. 0)) THEN
+     &          (IAND(MULE,IEOR(IREPE,ISYTYE)) .EQ. 0)) THEN
                IREPX = IPTREP(IREPE,2)
                NINTX = NINTSR(IREPX)
                IF (NINTX .GT. 0) THEN
                   IF (NOATMS .EQ. 1) THEN
-                     FACSYM = PT(IBTAND(ISOPDR(1),IREPE))
+                     FACSYM = PT(IAND(ISOPDR(1),IREPE))
      &                        *SIGNDR(1,ICOOR)*HKABCD
                      CALL SYM2(SOINT(1,ISTR),AOINT(1,ICOOR),
      &                         IPNTAO(1,IREPX),IPNTOP(1,1,IREPX),
@@ -158,7 +157,7 @@ C
                   ELSE
                      FACSYM = HKABCD
                      DO 300 ICENT = 1, NOATMS
-                        FACTOR = PT(IBTAND(ISOPDR(ICENT),IREPE))
+                        FACTOR = PT(IAND(ISOPDR(ICENT),IREPE))
      &                           *SIGNDR(ICENT,ICOOR)
                         ITYPE   = 3*(ICENT - 1) + ICOOR
                         IF (ICENT .EQ. 1) THEN
@@ -209,16 +208,16 @@ C
 #include "dirprt.h"
 #include "expcom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
      &                             ISYMR, ISYMT, ISYMTS
       END IF
       ISOSTR = 1
-      IRPXYZ = IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
+      IRPXYZ = IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
       DO 100 X = 1, 3
-         IREPE = IBTXOR(ISYMAX(X,1),IRPXYZ)
+         IREPE = IEOR(ISYMAX(X,1),IRPXYZ)
          IREPX = IPTREP(IREPE,2)
          NINTX = NINTSR(IREPX)
          IF (IPRINT .GT. 20) THEN
@@ -251,10 +250,10 @@ C
 #include "twocom.h"
 #include "twosta.h"
 #include "symmet.h"
-#include "ibtfun.h"
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       IF (IPRINT .GT. 10) THEN

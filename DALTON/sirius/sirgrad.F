@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C FILE: sirius/sirgrad.F
 C
@@ -226,29 +225,28 @@ C
 C     ************************************
 C     DCAO matrix
 C
+C     multiply with DC(i,i) = 2.0 factor in DGEMM to get final result
+C     (if transition density matrix, then DCAO must be
+C      multiplied with the <L | R> overlap outside this routine)
+C
       IF (GETDC) THEN
          CALL DZERO(DCAO,N2BASX)
+C
       IF (NISHT .GT. 0 .AND. JWOPSY .EQ. 1) THEN
-         DO 4000 ISYM = 1,NSYM
+         DO, ISYM = 1,NSYM
             NISHI = NISH(ISYM)
-         IF (NISHI .GT. 0) THEN
-            NBASI = NBAS(ISYM)
-            JCMO  = ICMO(ISYM) + 1
-            CALL DGEMM('N','T',NBASI,NBASI,NISHI,1.D0,
-     &                 CMO(JCMO),NBASI,
-     &                 CMO(JCMO),NBASI,0.D0,
-     &                 DCAO(IBAS(ISYM)+1,IBAS(ISYM)+1),NBAST)
-         END IF
- 4000    CONTINUE
-C
-C **     multiply with DC(i,i) = 2.0 factor to get final result
-C        (if transition density matrix, then DCAO must be
-C         multiplied with the <L | R> overlap outside this routine)
-C
-         CALL DSCAL(N2BASX,D2,DCAO,1)
-      END IF
+            IF (NISHI .GT. 0) THEN
+               NBASI = NBAS(ISYM)
+               JCMO  = ICMO(ISYM) + 1
+               CALL DGEMM('N','T',NBASI,NBASI,NISHI,D2,
+     &                    CMO(JCMO),NBASI,
+     &                    CMO(JCMO),NBASI,0.D0,
+     &                    DCAO(IBAS(ISYM)+1,IBAS(ISYM)+1),NBAST)
+            END IF
+         END DO
       END IF
 C
+      END IF
 C
 C
       IF (P6FLAG(18)) THEN
@@ -378,7 +376,7 @@ C
 C
       CALL QENTER('FCKMAT')
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
-      LSRHYBR = SRHYBR .AND. .NOT. MCTYPE.EQ.0
+      LSRHYBR = SRHYBR .AND. MCTYPE.GT.0
 C
       IF (DFT_SPINDNS .AND. LSRHYBR) THEN
          CALL QUIT('SRHYBR and non-singlet not implemented')
@@ -744,7 +742,7 @@ C        (except for RO-DFT and srDFT we need FCAO for VxcAO)
 C           ... off-set to FVAO,DVAO in FCAO,DCAO
          END IF
       END IF
-      IF (HSFOCK) THEN
+      IF (HSROHF) THEN
 C
 C This gives the exchange part of the active Fock matrix;
 C we need only the difference between Fa and Q which is
@@ -756,7 +754,7 @@ C
 C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
       IF (NFMAT .GT. 0) THEN
       IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSFOCK .OR. DODFT .OR.
+     &   .NOT. (HSROHF .OR. DODFT .OR.
      &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE

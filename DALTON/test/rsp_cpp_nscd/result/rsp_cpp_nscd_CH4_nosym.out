@@ -1,0 +1,1567 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2014.0
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2014.0 (2014), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Tue Sep  2 13:20:05 2014
+     Host name              : sonias-mbp.chem.au.dk                   
+
+ * Work memory size             :   520000000 =  3.874 gigabytes.
+
+ * Directories for basis set searches:
+   1) /Users/sonia/Codes/RELEASE2014/dalton/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | sonia
+ Host                     | sonias-mbp.chem.au.dk
+ System                   | Darwin-13.3.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/local/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.9.0 20130929 (experimental)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | Apple LLVM version 5.1 (clang-503.0.40) (based on 
+                          | LLVM 3.4svn)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | Apple LLVM version 5.1 (clang-503.0.40) (based on 
+                          | LLVM 3.4svn)
+ BLAS                     | /usr/lib/libblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | e8006bef150f67296c260e2a119a31209b686982
+ Configuration time       | 2014-09-02 12:58:54.822488
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+.DIRECT                                           
+**INTEGRALS                                       
+.ANGMOM                                           
+.DIPLEN                                           
+.PSO                                              
+.SELECT                                           
+ 2    !select two atoms                           
+ 1 2  !atoms # 1 and 2 on MOL file                
+**WAVE FUNCTIONS                                  
+.HF                                               
+*SCF INPUT                                        
+.AUTOCCUPATION                                    
+.THRESHOLD                                        
+ 3.D-10                                           
+.MAX DIIS ITERATIONS                              
+ 200                                              
+.MAX ERROR VECTORS                                
+ 100                                              
+**RESPONSE INPUT                                  
+*ABSORP                                           
+.THCLR                                            
+1.d-5                                             
+.NSCD                                             
+.BFREQ                                            
+1                                                 
+0.112502104 0.10 0.09                             
+.DAMPING                                          
+ 0.004556                                         
+*END OF FILE                                      
+
+
+   Content of the .mol file
+ ----------------------------
+
+ATOMBASIS                                                                      
+Methane CH4                                                                    
+NSCD tests                                                                     
+Atomtypes=2 Angstrom NoSymmetry                                                
+Charge=6.0 Atoms=1 Basis=cc-pVDZ                                               
+C     0.000000      0.000000      0.000000                                     
+Charge=1.0 Atoms=4 Basis=cc-pVDZ                                               
+H1    0.626887      0.626887      0.626887                                     
+H2   -0.626887     -0.626887      0.626887                                     
+H3    0.626887     -0.626887     -0.626887                                     
+H4   -0.626887      0.626887     -0.626887                                     
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Methane CH4                                                             
+ 2: NSCD tests                                                              
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "cc-pVDZ" from the basis set library.
+  Basis set file used for this atomic type with Z =   6 :
+     "/Users/sonia/Codes/RELEASE2014/dalton/build/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    2
+  The basis set is "cc-pVDZ" from the basis set library.
+  Basis set file used for this atomic type with Z =   1 :
+     "/Users/sonia/Codes/RELEASE2014/dalton/build/basis/cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C          12.000000
+                           H1          1.007825
+                           H2          1.007825
+                           H3          1.007825
+                           H4          1.007825
+
+                       Total mass:    16.031300 amu
+                       Natural abundance:  98.841 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    5
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  C           1    6.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H4          4    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      5   10.0000    54    34
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   15
+  C       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  H1      :     4  x   1.1846447413    5  y   1.1846447413    6  z   1.1846447413
+  H2      :     7  x  -1.1846447413    8  y  -1.1846447413    9  z   1.1846447413
+  H3      :    10  x   1.1846447413   11  y  -1.1846447413   12  z  -1.1846447413
+  H4      :    13  x  -1.1846447413   14  y   1.1846447413   15  z  -1.1846447413
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           H1          H2          H3          H4    
+            ------      ------      ------      ------      ------
+ C     :    0.000000
+ H1    :    1.085800    0.000000
+ H2    :    1.085800    1.773104    0.000000
+ H3    :    1.085800    1.773104    1.773104    0.000000
+ H4    :    1.085800    1.773104    1.773104    1.773104    0.000000
+
+
+  Max    interatomic separation is    1.7731 Angstrom (    3.3507 Bohr)
+  between atoms    3 and    2, "H2    " and "H1    ".
+
+  Min HX interatomic separation is    1.0858 Angstrom (    2.0519 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H1         C            1.085800
+  bond distance:  H2         C            1.085800
+  bond distance:  H3         C            1.085800
+  bond distance:  H4         C            1.085800
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H1         C          H2           109.471
+  bond angle:     H1         C          H3           109.471
+  bond angle:     H1         C          H4           109.471
+  bond angle:     H2         C          H3           109.471
+  bond angle:     H2         C          H4           109.471
+  bond angle:     H3         C          H4           109.471
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       3.168499          1.000000    0.000000    0.000000
+   IB       3.168499          0.000000    1.000000    0.000000
+   IC       3.168499          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         159501.0532         159501.0532         159501.0532 MHz
+            5.320382            5.320382            5.320382 cm-1
+
+
+@  Nuclear repulsion energy :   13.487357219281 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+          - paramagnetic spin-orbit integrals
+            (nuclear moment - electron orbit coupling)
+          - electronic angular momentum around the origin
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+ Indirect spin-spin integrals involving the following nuclei are calculated:
+
+            1  2
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.04 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+INFO: .AUTOCC ignored because C_1 symmetry
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    9
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -11.351053      -1.452054      -0.660338      -0.660338      -0.660338
+           -0.124272      -0.120935      -0.120935      -0.120935
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Sep  2 13:20:05 2014
+     Host name              : sonias-mbp.chem.au.dk                   
+
+ Title lines from ".mol" input file:
+     Methane CH4                                                             
+     NSCD tests                                                              
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Hartree-Fock calculation.
+
+@    Time-dependent Hartree-Fock calculation (random phase approximation).
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1
+                                           |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               5 |    5
+     Secondary orbitals                 29 |   29
+     Total number of orbitals           34 |   34
+     Number of basis functions          34 |   34
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations            145
+     ------------------------------------------
+@    Total number of variables              146
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations    200
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     3.00D-10
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+
+ C1-DIIS algorithm; max error vectors =  100
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    1    T  1.19D-01  1.20D-01
+@  1    -39.9947114427        1.57291D+00   -4.00D+01    1
+      Virial theorem: -V/T =      2.037143
+@      MULPOP C       0.37; H1     -0.09; H2     -0.09; H3     -0.09; H4     -0.09; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    T  1.22D-01  1.22D-01
+@  2    -40.1692476294        6.86153D-01   -1.75D-01    2
+      Virial theorem: -V/T =      1.988413
+@      MULPOP C      -0.43; H1      0.11; H2      0.11; H3      0.11; H4      0.11; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    T  1.31D-01  1.31D-01
+@  3    -40.1977859345        8.40985D-02   -2.85D-02    3
+      Virial theorem: -V/T =      2.003865
+@      MULPOP C      -0.14; H1      0.04; H2      0.03; H3      0.03; H4      0.03; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  1.16D-01  1.15D-01
+@  4    -40.1986083166        1.71838D-02   -8.22D-04    4
+      Virial theorem: -V/T =      2.002204
+@      MULPOP C      -0.15; H1      0.04; H2      0.04; H3      0.04; H4      0.04; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    T  1.16D-01  1.16D-01
+@  5    -40.1986431664        1.53544D-03   -3.48D-05    5
+      Virial theorem: -V/T =      2.001794
+@      MULPOP C      -0.14; H1      0.04; H2      0.04; H3      0.04; H4      0.04; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    T  1.16D-01  1.16D-01
+@  6    -40.1986435548        1.58926D-04   -3.88D-07    6
+      Virial theorem: -V/T =      2.001787
+@      MULPOP C      -0.14; H1      0.03; H2      0.03; H3      0.03; H4      0.03; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    F  1.21D-01  1.21D-01
+@  7    -40.1986435575        1.06127D-05   -2.74D-09    7
+      Virial theorem: -V/T =      2.001784
+@      MULPOP C      -0.14; H1      0.03; H2      0.03; H3      0.03; H4      0.03; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -15    8    F  1.19D-01  1.19D-01
+@  8    -40.1986435575        1.41437D-06   -1.40D-11    8
+      Virial theorem: -V/T =      2.001784
+@      MULPOP C      -0.14; H1      0.03; H2      0.03; H3      0.03; H4      0.03; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -15    9    T  1.16D-01  1.17D-01
+@  9    -40.1986435575        2.68111D-07   -3.20D-13    9
+      Virial theorem: -V/T =      2.001784
+@      MULPOP C      -0.14; H1      0.03; H2      0.03; H3      0.03; H4      0.03; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -15   10    T  1.27D-01  1.28D-01
+@ 10    -40.1986435575        2.73963D-08   -2.84D-14   10
+      Virial theorem: -V/T =      2.001784
+@      MULPOP C      -0.14; H1      0.03; H2      0.03; H3      0.03; H4      0.03; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -15   11    T  1.15D-01  1.16D-01
+@ 11    -40.1986435575        2.84418D-09   -2.13D-14   11
+      Virial theorem: -V/T =      2.001784
+@      MULPOP C      -0.14; H1      0.03; H2      0.03; H3      0.03; H4      0.03; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -15   12    T  1.30D-01  1.31D-01
+@ 12    -40.1986435575        2.78723D-10    2.13D-14   12
+
+@ *** DIIS converged in  12 iterations !
+@     Converged SCF energy, gradient:    -40.198643557508    2.79D-10
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Hartree-Fock orbital energies
+
+1 A     -11.21427180    -0.94375949    -0.54362145    -0.54362145    -0.54362145
+          0.19354508     0.27467179     0.27467179     0.27467179     0.58922308
+
+    E(LUMO) :     0.19354508 au (symmetry 1)
+  - E(HOMO) :    -0.54362145 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.73716653 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       1.468       1.495
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -40.198643557508                 
+@    Nuclear repulsion:            13.487357219281
+@    Electronic energy:           -53.686000776789
+
+@    Final gradient norm:           0.000000000279
+
+ 
+     Date and time (Linux)  : Tue Sep  2 13:20:07 2014
+     Host name              : sonias-mbp.chem.au.dk                   
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 C   :1s     1.0017  -0.0301   0.0000   0.0000  -0.0000  -0.0974   0.0000
+   2 C   :1s     0.0097   0.7334   0.0000  -0.0000  -0.0000   0.1461  -0.0000
+   3 C   :1s    -0.0107  -0.1916   0.0000   0.0000  -0.0000   2.2807  -0.0000
+   4 C   :2px    0.0000   0.0000  -0.3954   0.4318  -0.2426   0.0000   0.2585
+   5 C   :2py   -0.0000   0.0000   0.4594   0.4357   0.0268   0.0000   0.3614
+   6 C   :2pz   -0.0000   0.0000   0.1850  -0.1592  -0.5849   0.0000  -0.0108
+   7 C   :2px    0.0000  -0.0000   0.0626  -0.0683   0.0384   0.0000   0.7039
+   8 C   :2py   -0.0000  -0.0000  -0.0727  -0.0690  -0.0042   0.0000   0.9844
+   9 C   :2pz    0.0000  -0.0000  -0.0293   0.0252   0.0926   0.0000  -0.0294
+  10 C   :3d2-  -0.0000   0.0000   0.0079  -0.0068  -0.0250  -0.0000  -0.0006
+  11 C   :3d1-   0.0000   0.0000  -0.0169   0.0185  -0.0104   0.0000   0.0137
+  13 C   :3d1+  -0.0000  -0.0000   0.0196   0.0186   0.0011  -0.0000   0.0192
+  15 H1  :1s    -0.0000   0.3161   0.1503   0.4275  -0.4833  -0.0170  -0.0658
+  16 H1  :1s     0.0012  -0.1298  -0.0386  -0.1099   0.1242  -0.8426  -1.7731
+  17 H1  :2px    0.0003  -0.0152  -0.0129  -0.0043   0.0100   0.0081   0.0142
+  18 H1  :2py    0.0003  -0.0152   0.0049  -0.0042   0.0156   0.0081   0.0142
+  19 H1  :2pz    0.0003  -0.0152  -0.0008  -0.0166   0.0029   0.0081   0.0144
+  20 H2  :1s    -0.0000   0.3161   0.0730  -0.6197  -0.2227  -0.0170   0.0682
+  21 H2  :1s     0.0012  -0.1298  -0.0188   0.1592   0.0572  -0.8426   1.8360
+  22 H2  :2px   -0.0003   0.0152  -0.0060  -0.0103  -0.0120  -0.0081   0.0148
+  23 H2  :2py   -0.0003   0.0152   0.0118  -0.0102  -0.0064  -0.0081   0.0147
+  24 H2  :2pz    0.0003  -0.0152   0.0016   0.0159  -0.0052   0.0081  -0.0149
+  25 H3  :1s    -0.0000   0.3161  -0.6276   0.0937   0.1904  -0.0170   0.0100
+  26 H3  :1s     0.0012  -0.1298   0.1613  -0.0241  -0.0489  -0.8426   0.2683
+  27 H3  :2px    0.0003  -0.0152   0.0113   0.0061  -0.0110   0.0081  -0.0023
+  28 H3  :2py   -0.0003   0.0152  -0.0099   0.0120   0.0065  -0.0081   0.0020
+  29 H3  :2pz   -0.0003   0.0152  -0.0157  -0.0004  -0.0063  -0.0081   0.0022
+  30 H4  :1s    -0.0000   0.3161   0.4042   0.0984   0.5156  -0.0170  -0.0123
+  31 H4  :1s     0.0012  -0.1298  -0.1039  -0.0253  -0.1325  -0.8426  -0.3312
+  32 H4  :2px   -0.0003   0.0152   0.0043   0.0120   0.0110  -0.0081  -0.0028
+  33 H4  :2py    0.0003  -0.0152  -0.0030   0.0060  -0.0155   0.0081   0.0025
+  34 H4  :2pz   -0.0003   0.0152   0.0164  -0.0003   0.0039  -0.0081  -0.0027
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.48 seconds
+ >>>> Total wall time used in SIRIUS :      1.54 seconds
+
+ 
+     Date and time (Linux)  : Tue Sep  2 13:20:07 2014
+     Host name              : sonias-mbp.chem.au.dk                   
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+                  +----------------------------------------------+
+                  ! Variable settings for absorption calculation !
+                  +----------------------------------------------+
+
+ Nuclear-spin circular dichroism/OR requested: ABSLRS_NSCD=   T
+ at frequencies:  0.11250210
+ Absorption calc over frequency interval  :                           ABSLRS_INTERVAL =   F
+ Start: 0.00000Stop: 0.00000   Step: 1.00000
+ Damping parameter (a.u. and cm-1)        : ABS_DAMP     = 0.004556   999.9
+ Threshold of convergence in LR solver    : THCLR        = 1.0D-05
+ Maximum iterations in complex LR solver  : MAXIT     = 150
+ Print level in absorption modules        : IPRABSLRS    =   0
+
+
+   SCF energy         :      -40.198643557507737
+ -- inactive part     :      -53.686000776789172
+ -- nuclear repulsion :       13.487357219281435
+
+
+                     ***************************************
+                     *** RHF response calculation (TDHF) ***
+                     ***************************************
+
+
+
+                    +------------------------------------------+
+                    ! Setup of Hyperpolarizability Calculation !
+                    +------------------------------------------+
+
+
+ This calculations requires the solution of linear response
+ equations for electric dipole operators at   2 frequencies:
+
+ LR FREQ:  0.00000000  0.11250210
+
+ and the evaluation of   54 quadratic response functions:
+
+---------------------------------------------------------------------------
+ No      A-oper      B-oper      C-oper      A-freq      B-freq      C-freq
+---------------------------------------------------------------------------
+   1    XDIPLEN     XDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+   2    XDIPLEN     XDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+   3    XDIPLEN     XDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+   4    XDIPLEN     XDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+   5    XDIPLEN     XDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+   6    XDIPLEN     XDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+   7    XDIPLEN     YDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+   8    XDIPLEN     YDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+   9    XDIPLEN     YDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+  10    XDIPLEN     YDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+  11    XDIPLEN     YDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+  12    XDIPLEN     YDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+  13    XDIPLEN     ZDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+  14    XDIPLEN     ZDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+  15    XDIPLEN     ZDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+  16    XDIPLEN     ZDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+  17    XDIPLEN     ZDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+  18    XDIPLEN     ZDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+  19    YDIPLEN     XDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+  20    YDIPLEN     XDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+  21    YDIPLEN     XDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+  22    YDIPLEN     XDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+  23    YDIPLEN     XDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+  24    YDIPLEN     XDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+  25    YDIPLEN     YDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+  26    YDIPLEN     YDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+  27    YDIPLEN     YDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+  28    YDIPLEN     YDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+  29    YDIPLEN     YDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+  30    YDIPLEN     YDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+  31    YDIPLEN     ZDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+  32    YDIPLEN     ZDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+  33    YDIPLEN     ZDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+  34    YDIPLEN     ZDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+  35    YDIPLEN     ZDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+  36    YDIPLEN     ZDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+  37    ZDIPLEN     XDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+  38    ZDIPLEN     XDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+  39    ZDIPLEN     XDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+  40    ZDIPLEN     XDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+  41    ZDIPLEN     XDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+  42    ZDIPLEN     XDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+  43    ZDIPLEN     YDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+  44    ZDIPLEN     YDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+  45    ZDIPLEN     YDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+  46    ZDIPLEN     YDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+  47    ZDIPLEN     YDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+  48    ZDIPLEN     YDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+  49    ZDIPLEN     ZDIPLEN     PSO 001  -0.11250210  0.11250210  0.00000000
+  50    ZDIPLEN     ZDIPLEN     PSO 002  -0.11250210  0.11250210  0.00000000
+  51    ZDIPLEN     ZDIPLEN     PSO 003  -0.11250210  0.11250210  0.00000000
+  52    ZDIPLEN     ZDIPLEN     PSO 004  -0.11250210  0.11250210  0.00000000
+  53    ZDIPLEN     ZDIPLEN     PSO 005  -0.11250210  0.11250210  0.00000000
+  54    ZDIPLEN     ZDIPLEN     PSO 006  -0.11250210  0.11250210  0.00000000
+---------------------------------------------------------------------------
+
+
+                       +-----------------------------------+
+                       ! Solving Linear Response Equations !
+                       +-----------------------------------+
+
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:     145
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :     145
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator XDIPLEN  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ITER, IVEC:   1   1  XDIPLEN   0.0000   RESID, RESID/X:  0.1745552D+00  0.4742442D+00
+ITER, IVEC:   1   2  XDIPLEN   0.1125   RESID, RESID/X:  0.1806561D+00  0.4734282D+00
+ITER, IVEC:   2   1  XDIPLEN   0.0000   RESID, RESID/X:  0.1363315D-01  0.3656140D-01
+ITER, IVEC:   2   2  XDIPLEN   0.1125   RESID, RESID/X:  0.1443650D-01  0.3729940D-01
+ITER, IVEC:   3   1  XDIPLEN   0.0000   RESID, RESID/X:  0.7456578D-03  0.1999594D-02
+ITER, IVEC:   3   2  XDIPLEN   0.1125   RESID, RESID/X:  0.8140343D-03  0.2103068D-02
+ITER, IVEC:   4   1  XDIPLEN   0.0000   RESID, RESID/X:  0.4109213D-04  0.1101946D-03
+ITER, IVEC:   4   2  XDIPLEN   0.1125   RESID, RESID/X:  0.4754145D-04  0.1228238D-03
+ITER, IVEC:   5   1  XDIPLEN   0.0000   RESID, RESID/X:  0.2408566D-05  0.6458926D-05
+ITER, IVEC:   5   2  XDIPLEN   0.1125   RESID, RESID/X:  0.2769588D-05  0.7155258D-05
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  15  15
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator YDIPLEN  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ Use ABS_READIN_RED           15          15
+ITER, IVEC:   1   1  YDIPLEN   0.0000   RESID, RESID/X:  0.1000000D+01  0.9382563D+04
+ITER, IVEC:   1   2  YDIPLEN   0.1125   RESID, RESID/X:  0.1000000D+01  0.9366115D+04
+ITER, IVEC:   2   1  YDIPLEN   0.0000   RESID, RESID/X:  0.1745552D+00  0.4742442D+00
+ITER, IVEC:   2   2  YDIPLEN   0.1125   RESID, RESID/X:  0.1806561D+00  0.4734282D+00
+ITER, IVEC:   3   1  YDIPLEN   0.0000   RESID, RESID/X:  0.1363315D-01  0.3656140D-01
+ITER, IVEC:   3   2  YDIPLEN   0.1125   RESID, RESID/X:  0.1443650D-01  0.3729941D-01
+ITER, IVEC:   4   1  YDIPLEN   0.0000   RESID, RESID/X:  0.7456579D-03  0.1999594D-02
+ITER, IVEC:   4   2  YDIPLEN   0.1125   RESID, RESID/X:  0.8140344D-03  0.2103068D-02
+ITER, IVEC:   5   1  YDIPLEN   0.0000   RESID, RESID/X:  0.4109214D-04  0.1101946D-03
+ITER, IVEC:   5   2  YDIPLEN   0.1125   RESID, RESID/X:  0.4754146D-04  0.1228238D-03
+ITER, IVEC:   6   1  YDIPLEN   0.0000   RESID, RESID/X:  0.2408567D-05  0.6458928D-05
+ITER, IVEC:   6   2  YDIPLEN   0.1125   RESID, RESID/X:  0.2769589D-05  0.7155261D-05
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  30  30
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator ZDIPLEN  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ Use ABS_READIN_RED           30          30
+ITER, IVEC:   1   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.1000000D+01  0.4962280D+03
+ITER, IVEC:   1   2  ZDIPLEN   0.1125   RESID, RESID/X:  0.1000000D+01  0.4953546D+03
+ITER, IVEC:   2   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.1745552D+00  0.4742442D+00
+ITER, IVEC:   2   2  ZDIPLEN   0.1125   RESID, RESID/X:  0.1806561D+00  0.4734282D+00
+ITER, IVEC:   3   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.1363315D-01  0.3656140D-01
+ITER, IVEC:   3   2  ZDIPLEN   0.1125   RESID, RESID/X:  0.1443650D-01  0.3729940D-01
+ITER, IVEC:   4   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.7456578D-03  0.1999594D-02
+ITER, IVEC:   4   2  ZDIPLEN   0.1125   RESID, RESID/X:  0.8140344D-03  0.2103068D-02
+ITER, IVEC:   5   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.4109214D-04  0.1101946D-03
+ITER, IVEC:   5   2  ZDIPLEN   0.1125   RESID, RESID/X:  0.4754146D-04  0.1228238D-03
+ITER, IVEC:   6   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.2408566D-05  0.6458926D-05
+ITER, IVEC:   6   2  ZDIPLEN   0.1125   RESID, RESID/X:  0.2769589D-05  0.7155259D-05
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  45  45
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator PSO 001  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ Use ABS_READIN_RED           45          45
+ITER, IVEC:   1   1  PSO 001   0.0000   RESID, RESID/X:  0.1000000D+01  0.8622470D+03
+ITER, IVEC:   1   2  PSO 001   0.1125   RESID, RESID/X:  0.1000000D+01  0.8610814D+03
+ Warning : Unknown operator! PSO 001 
+ITER, IVEC:   2   1  PSO 001   0.0000   RESID, RESID/X:  0.3032294D-01  0.1163832D+00
+ITER, IVEC:   2   2  PSO 001   0.1125   RESID, RESID/X:  0.3327985D-01  0.1250418D+00
+ Warning : Unknown operator! PSO 001 
+ITER, IVEC:   3   1  PSO 001   0.0000   RESID, RESID/X:  0.2172323D-02  0.8331144D-02
+ITER, IVEC:   3   2  PSO 001   0.1125   RESID, RESID/X:  0.2294093D-02  0.8609425D-02
+ Warning : Unknown operator! PSO 001 
+ITER, IVEC:   4   1  PSO 001   0.0000   RESID, RESID/X:  0.4743410D-04  0.1819148D-03
+ITER, IVEC:   4   2  PSO 001   0.1125   RESID, RESID/X:  0.4985361D-04  0.1870926D-03
+ Warning : Unknown operator! PSO 001 
+ITER, IVEC:   5   1  PSO 001   0.0000   RESID, RESID/X:  0.5731741D-08  0.2198184D-07
+ITER, IVEC:   5   2  PSO 001   0.1125   RESID, RESID/X:  0.6245599D-08  0.2343873D-07
+ Warning : Unknown operator! PSO 001 
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  57  57
+ Warning: Unknown operator!
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator PSO 002  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ Use ABS_READIN_RED           57          57
+ITER, IVEC:   1   1  PSO 002   0.0000   RESID, RESID/X:  0.9999999D+00  0.3949865D+03
+ITER, IVEC:   1   2  PSO 002   0.1125   RESID, RESID/X:  0.9999999D+00  0.3944591D+03
+ Warning : Unknown operator! PSO 002 
+ITER, IVEC:   2   1  PSO 002   0.0000   RESID, RESID/X:  0.3032317D-01  0.1163841D+00
+ITER, IVEC:   2   2  PSO 002   0.1125   RESID, RESID/X:  0.3328010D-01  0.1250428D+00
+ Warning : Unknown operator! PSO 002 
+ITER, IVEC:   3   1  PSO 002   0.0000   RESID, RESID/X:  0.2172371D-02  0.8331329D-02
+ITER, IVEC:   3   2  PSO 002   0.1125   RESID, RESID/X:  0.2294198D-02  0.8609820D-02
+ Warning : Unknown operator! PSO 002 
+ITER, IVEC:   4   1  PSO 002   0.0000   RESID, RESID/X:  0.4746917D-04  0.1820493D-03
+ITER, IVEC:   4   2  PSO 002   0.1125   RESID, RESID/X:  0.4995160D-04  0.1874604D-03
+ Warning : Unknown operator! PSO 002 
+ITER, IVEC:   5   1  PSO 002   0.0000   RESID, RESID/X:  0.4337281D-06  0.1663393D-05
+ITER, IVEC:   5   2  PSO 002   0.1125   RESID, RESID/X:  0.5124868D-06  0.1923281D-05
+ Warning : Unknown operator! PSO 002 
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  69  69
+ Warning: Unknown operator!
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator PSO 003  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ Use ABS_READIN_RED           69          69
+ITER, IVEC:   1   1  PSO 003   0.0000   RESID, RESID/X:  0.1000015D+01  0.2829762D+02
+ITER, IVEC:   1   2  PSO 003   0.1125   RESID, RESID/X:  0.1000019D+01  0.2822574D+02
+ Warning : Unknown operator! PSO 003 
+ITER, IVEC:   2   1  PSO 003   0.0000   RESID, RESID/X:  0.3071377D-01  0.1178833D+00
+ITER, IVEC:   2   2  PSO 003   0.1125   RESID, RESID/X:  0.3370522D-01  0.1266403D+00
+ Warning : Unknown operator! PSO 003 
+ITER, IVEC:   3   1  PSO 003   0.0000   RESID, RESID/X:  0.2234363D-02  0.8569078D-02
+ITER, IVEC:   3   2  PSO 003   0.1125   RESID, RESID/X:  0.2354354D-02  0.8835576D-02
+ Warning : Unknown operator! PSO 003 
+ITER, IVEC:   4   1  PSO 003   0.0000   RESID, RESID/X:  0.1158132D-03  0.4441559D-03
+ITER, IVEC:   4   2  PSO 003   0.1125   RESID, RESID/X:  0.1141049D-03  0.4282173D-03
+ Warning : Unknown operator! PSO 003 
+ITER, IVEC:   5   1  PSO 003   0.0000   RESID, RESID/X:  0.6159734D-05  0.2362324D-04
+ITER, IVEC:   5   2  PSO 003   0.1125   RESID, RESID/X:  0.7341519D-05  0.2755155D-04
+ Warning : Unknown operator! PSO 003 
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  81  81
+ Warning: Unknown operator!
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator PSO 004  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ Use ABS_READIN_RED           81          81
+ITER, IVEC:   1   1  PSO 004   0.0000   RESID, RESID/X:  0.5695686D+00  0.1126595D+01
+ITER, IVEC:   1   2  PSO 004   0.1125   RESID, RESID/X:  0.5695490D+00  0.1106936D+01
+ Warning : Unknown operator! PSO 004 
+ITER, IVEC:   2   1  PSO 004   0.0000   RESID, RESID/X:  0.4097336D-01  0.7839121D-01
+ITER, IVEC:   2   2  PSO 004   0.1125   RESID, RESID/X:  0.4113325D-01  0.7742592D-01
+ Warning : Unknown operator! PSO 004 
+ITER, IVEC:   3   1  PSO 004   0.0000   RESID, RESID/X:  0.3490137D-02  0.6673063D-02
+ITER, IVEC:   3   2  PSO 004   0.1125   RESID, RESID/X:  0.3539367D-02  0.6657980D-02
+ Warning : Unknown operator! PSO 004 
+ITER, IVEC:   4   1  PSO 004   0.0000   RESID, RESID/X:  0.3384894D-03  0.6471769D-03
+ITER, IVEC:   4   2  PSO 004   0.1125   RESID, RESID/X:  0.3528899D-03  0.6638216D-03
+ Warning : Unknown operator! PSO 004 
+ITER, IVEC:   5   1  PSO 004   0.0000   RESID, RESID/X:  0.2031510D-04  0.3884154D-04
+ITER, IVEC:   5   2  PSO 004   0.1125   RESID, RESID/X:  0.2294620D-04  0.4316408D-04
+ Warning : Unknown operator! PSO 004 
+ITER, IVEC:   6   1  PSO 004   0.0000   RESID, RESID/X:  0.1000381D-05  0.1912683D-05
+ITER, IVEC:   6   2  PSO 004   0.1125   RESID, RESID/X:  0.1332342D-05  0.2506268D-05
+ Warning : Unknown operator! PSO 004 
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF  96  96
+ Warning: Unknown operator!
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator PSO 005  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ Use ABS_READIN_RED           96          96
+ITER, IVEC:   1   1  PSO 005   0.0000   RESID, RESID/X:  0.4593490D+00  0.9013651D+00
+ITER, IVEC:   1   2  PSO 005   0.1125   RESID, RESID/X:  0.4594748D+00  0.8861225D+00
+ Warning : Unknown operator! PSO 005 
+ITER, IVEC:   2   1  PSO 005   0.0000   RESID, RESID/X:  0.2848355D-01  0.5447520D-01
+ITER, IVEC:   2   2  PSO 005   0.1125   RESID, RESID/X:  0.2868201D-01  0.5396907D-01
+ Warning : Unknown operator! PSO 005 
+ITER, IVEC:   3   1  PSO 005   0.0000   RESID, RESID/X:  0.1795858D-02  0.3433600D-02
+ITER, IVEC:   3   2  PSO 005   0.1125   RESID, RESID/X:  0.1813712D-02  0.3411773D-02
+ Warning : Unknown operator! PSO 005 
+ITER, IVEC:   4   1  PSO 005   0.0000   RESID, RESID/X:  0.5975998D-04  0.1142583D-03
+ITER, IVEC:   4   2  PSO 005   0.1125   RESID, RESID/X:  0.6130262D-04  0.1153163D-03
+ Warning : Unknown operator! PSO 005 
+ITER, IVEC:   5   1  PSO 005   0.0000   RESID, RESID/X:  0.4030036D-05  0.7705244D-05
+ITER, IVEC:   5   2  PSO 005   0.1125   RESID, RESID/X:  0.4171336D-05  0.7846699D-05
+ Warning : Unknown operator! PSO 005 
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF 108 108
+ Warning: Unknown operator!
+
+ ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSLRS -- for operator PSO 006  of symmetry 1 at frequencies:
+ ABSLRS --  0.00000000  0.11250210
+ Use ABS_READIN_RED          108         108
+ITER, IVEC:   1   1  PSO 006   0.0000   RESID, RESID/X:  0.1813603D+00  0.3481312D+00
+ITER, IVEC:   1   2  PSO 006   0.1125   RESID, RESID/X:  0.1817078D+00  0.3431073D+00
+ Warning : Unknown operator! PSO 006 
+ITER, IVEC:   2   1  PSO 006   0.0000   RESID, RESID/X:  0.6404815D-02  0.1224579D-01
+ITER, IVEC:   2   2  PSO 006   0.1125   RESID, RESID/X:  0.6495217D-02  0.1221823D-01
+ Warning : Unknown operator! PSO 006 
+ITER, IVEC:   3   1  PSO 006   0.0000   RESID, RESID/X:  0.2973246D-03  0.5684711D-03
+ITER, IVEC:   3   2  PSO 006   0.1125   RESID, RESID/X:  0.3028758D-03  0.5697394D-03
+ Warning : Unknown operator! PSO 006 
+ITER, IVEC:   4   1  PSO 006   0.0000   RESID, RESID/X:  0.1137182D-04  0.2174241D-04
+ITER, IVEC:   4   2  PSO 006   0.1125   RESID, RESID/X:  0.1179682D-04  0.2219100D-04
+ Warning : Unknown operator! PSO 006 
+ITER, IVEC:   5   1  PSO 006   0.0000   RESID, RESID/X:  0.5159729D-06  0.9865164D-06
+ITER, IVEC:   5   2  PSO 006   0.1125   RESID, RESID/X:  0.5439447D-06  0.1023214D-05
+ Warning : Unknown operator! PSO 006 
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF 119 118
+ Warning: Unknown operator!
+
+
+                     +---------------------------------------+
+                     ! Evaluate Quadratic Response Functions !
+                     +---------------------------------------+
+
+
+ Quadratic response function no    1 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Nx A[2] Ny           0.000000       0.000000      -0.000000       0.000000
+ Na T[3] NbNc         0.000000      -0.000000       0.000000       0.000000
+
+ Quadratic response function no    2 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny           0.000001       0.000000       0.000001       0.000000
+ Nx A[2] Ny          -0.000001      -0.000000      -0.000000       0.000000
+ Na T[3] NbNc        -0.000000       0.000000      -0.000000       0.000000
+
+ Quadratic response function no    3 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny          -0.000012      -0.000000      -0.000012      -0.000000
+ Nx A[2] Ny           0.000012       0.000001      -0.000000       0.000000
+ Na T[3] NbNc         0.000000      -0.000000      -0.000000       0.000000
+
+ Quadratic response function no    4 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Nx A[2] Ny           0.000000      -0.000000       0.000000      -0.000000
+ Na T[3] NbNc        -0.000000       0.000000       0.000000      -0.000000
+
+ Quadratic response function no    5 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny           0.057091       0.003638       0.057091       0.003638
+ Nx A[2] Ny          -0.057104      -0.001583      -0.000013       0.002055
+ Na T[3] NbNc         0.000650       0.000176      -0.000010       0.001583
+
+ Quadratic response function no    6 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny          -0.057091      -0.003638      -0.057091      -0.003638
+ Nx A[2] Ny           0.057104       0.001583       0.000013      -0.002055
+ Na T[3] NbNc        -0.000650      -0.000176       0.000010      -0.001583
+
+ Quadratic response function no    7 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny           0.000000       0.000000       0.000000       0.000000
+ Nx A[2] Ny           0.000000       0.000000       0.000000       0.000000
+ Na T[3] NbNc        -0.000000       0.000000       0.000000       0.000000
+
+ Quadratic response function no    8 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Nx A[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Na T[3] NbNc        -0.000000      -0.000000      -0.000000      -0.000000
+
+ Quadratic response function no    9 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny           1.551567       0.106559       1.551567       0.106559
+ Nx A[2] Ny           1.250897       0.033922       2.802464       0.140481
+ Na T[3] NbNc        -0.002745      -0.002539       2.630761       0.135197
+
+ Quadratic response function no   10 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny          -0.016398       0.001435      -0.016398       0.001435
+ Nx A[2] Ny          -0.012080       0.001509      -0.028478       0.002944
+ Na T[3] NbNc        -0.000122       0.000431      -0.020743       0.003909
+
+ Quadratic response function no   11 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny          -0.061787      -0.004601      -0.061787      -0.004601
+ Nx A[2] Ny           0.033349      -0.000524      -0.028438      -0.005125
+ Na T[3] NbNc         0.000540       0.000001      -0.020692      -0.005240
+
+ Quadratic response function no   12 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny           0.272418       0.012014       0.272418       0.012014
+ Nx A[2] Ny          -0.013424      -0.000155       0.258994       0.011859
+ Na T[3] NbNc         0.000164       0.000165       0.266141       0.012188
+
+ Quadratic response function no   13 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny           0.000000      -0.000000       0.000000      -0.000000
+ Nx A[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Na T[3] NbNc         0.000000      -0.000000      -0.000000      -0.000000
+
+ Quadratic response function no   14 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny          -1.551567      -0.106559      -1.551567      -0.106559
+ Nx A[2] Ny          -1.250897      -0.033922      -2.802464      -0.140480
+ Na T[3] NbNc         0.002745       0.002539      -2.630762      -0.135197
+
+ Quadratic response function no   15 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Nx A[2] Ny           0.000000      -0.000000      -0.000000      -0.000000
+ Na T[3] NbNc         0.000000       0.000000      -0.000000      -0.000000
+
+ Quadratic response function no   16 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny           0.016398      -0.001435       0.016398      -0.001435
+ Nx A[2] Ny           0.012080      -0.001509       0.028478      -0.002944
+ Na T[3] NbNc         0.000122      -0.000431       0.020743      -0.003909
+
+ Quadratic response function no   17 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny          -0.272418      -0.012014      -0.272418      -0.012014
+ Nx A[2] Ny           0.013424       0.000155      -0.258994      -0.011859
+ Na T[3] NbNc        -0.000164      -0.000165      -0.266141      -0.012188
+
+ Quadratic response function no   18 of   54.
+ A operator, symmetry, frequency:   XDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny           0.061787       0.004601       0.061787       0.004601
+ Nx A[2] Ny          -0.033349       0.000524       0.028438       0.005125
+ Na T[3] NbNc        -0.000540      -0.000001       0.020692       0.005240
+
+ Quadratic response function no   19 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Nx A[2] Ny           0.000000       0.000000      -0.000000      -0.000000
+ Na T[3] NbNc        -0.000000       0.000000      -0.000000      -0.000000
+
+ Quadratic response function no   20 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Nx A[2] Ny           0.000000      -0.000000       0.000000      -0.000000
+ Na T[3] NbNc        -0.000000       0.000000       0.000000      -0.000000
+
+ Quadratic response function no   21 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny          -1.551567      -0.106559      -1.551567      -0.106559
+ Nx A[2] Ny          -1.250897      -0.033922      -2.802464      -0.140480
+ Na T[3] NbNc         0.002745       0.002539      -2.630761      -0.135197
+
+ Quadratic response function no   22 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny           0.061787       0.004601       0.061787       0.004601
+ Nx A[2] Ny          -0.033349       0.000524       0.028438       0.005125
+ Na T[3] NbNc        -0.000540      -0.000001       0.020692       0.005240
+
+ Quadratic response function no   23 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny           0.016398      -0.001435       0.016398      -0.001435
+ Nx A[2] Ny           0.012080      -0.001509       0.028478      -0.002944
+ Na T[3] NbNc         0.000122      -0.000431       0.020743      -0.003909
+
+ Quadratic response function no   24 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny          -0.272418      -0.012014      -0.272418      -0.012014
+ Nx A[2] Ny           0.013425       0.000155      -0.258994      -0.011859
+ Na T[3] NbNc        -0.000164      -0.000165      -0.266141      -0.012188
+
+ Quadratic response function no   25 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny          -0.000000       0.000000      -0.000000       0.000000
+ Nx A[2] Ny           0.000000       0.000000      -0.000000       0.000000
+ Na T[3] NbNc         0.000000      -0.000000      -0.000000       0.000000
+
+ Quadratic response function no   26 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny           0.000001       0.000000       0.000001       0.000000
+ Nx A[2] Ny          -0.000001      -0.000000      -0.000000       0.000000
+ Na T[3] NbNc        -0.000000       0.000000      -0.000000       0.000000
+
+ Quadratic response function no   27 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny          -0.000012      -0.000000      -0.000012      -0.000000
+ Nx A[2] Ny           0.000012       0.000001      -0.000000       0.000001
+ Na T[3] NbNc         0.000000      -0.000000      -0.000000       0.000001
+
+ Quadratic response function no   28 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny          -0.057091      -0.003638      -0.057091      -0.003638
+ Nx A[2] Ny           0.057104       0.001583       0.000013      -0.002055
+ Na T[3] NbNc        -0.000650      -0.000176       0.000010      -0.001583
+
+ Quadratic response function no   29 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny           0.000000       0.000000       0.000000       0.000000
+ Nx A[2] Ny          -0.000000      -0.000000       0.000000      -0.000000
+ Na T[3] NbNc         0.000000       0.000000      -0.000000       0.000000
+
+ Quadratic response function no   30 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny           0.057091       0.003638       0.057091       0.003638
+ Nx A[2] Ny          -0.057104      -0.001583      -0.000013       0.002055
+ Na T[3] NbNc         0.000650       0.000176      -0.000010       0.001583
+
+ Quadratic response function no   31 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny           1.551567       0.106559       1.551567       0.106559
+ Nx A[2] Ny           1.250897       0.033922       2.802464       0.140481
+ Na T[3] NbNc        -0.002745      -0.002539       2.630762       0.135197
+
+ Quadratic response function no   32 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny          -0.000000       0.000000      -0.000000       0.000000
+ Nx A[2] Ny           0.000000       0.000000       0.000000       0.000000
+ Na T[3] NbNc         0.000000      -0.000000       0.000000       0.000000
+
+ Quadratic response function no   33 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny           0.000000       0.000000       0.000000       0.000000
+ Nx A[2] Ny          -0.000000      -0.000000      -0.000000       0.000000
+ Na T[3] NbNc         0.000000      -0.000000      -0.000000       0.000000
+
+ Quadratic response function no   34 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny           0.272418       0.012014       0.272418       0.012014
+ Nx A[2] Ny          -0.013425      -0.000155       0.258994       0.011859
+ Na T[3] NbNc         0.000164       0.000165       0.266141       0.012188
+
+ Quadratic response function no   35 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny          -0.016398       0.001435      -0.016398       0.001435
+ Nx A[2] Ny          -0.012080       0.001509      -0.028478       0.002944
+ Na T[3] NbNc        -0.000122       0.000431      -0.020743       0.003909
+
+ Quadratic response function no   36 of   54.
+ A operator, symmetry, frequency:   YDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny          -0.061787      -0.004601      -0.061787      -0.004601
+ Nx A[2] Ny           0.033349      -0.000524      -0.028438      -0.005125
+ Na T[3] NbNc         0.000540       0.000001      -0.020692      -0.005240
+
+ Quadratic response function no   37 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny           0.000000       0.000000       0.000000       0.000000
+ Nx A[2] Ny          -0.000000      -0.000000       0.000000      -0.000000
+ Na T[3] NbNc         0.000000      -0.000000       0.000000      -0.000000
+
+ Quadratic response function no   38 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny           1.551567       0.106559       1.551567       0.106559
+ Nx A[2] Ny           1.250897       0.033922       2.802464       0.140481
+ Na T[3] NbNc        -0.002745      -0.002539       2.630762       0.135197
+
+ Quadratic response function no   39 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Nx A[2] Ny           0.000000      -0.000000       0.000000      -0.000000
+ Na T[3] NbNc         0.000000       0.000000       0.000000      -0.000000
+
+ Quadratic response function no   40 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny          -0.061787      -0.004601      -0.061787      -0.004601
+ Nx A[2] Ny           0.033349      -0.000524      -0.028438      -0.005125
+ Na T[3] NbNc         0.000540       0.000001      -0.020692      -0.005240
+
+ Quadratic response function no   41 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny           0.272418       0.012014       0.272418       0.012014
+ Nx A[2] Ny          -0.013425      -0.000155       0.258994       0.011859
+ Na T[3] NbNc         0.000164       0.000165       0.266141       0.012188
+
+ Quadratic response function no   42 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   XDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny          -0.016398       0.001435      -0.016398       0.001435
+ Nx A[2] Ny          -0.012080       0.001509      -0.028478       0.002944
+ Na T[3] NbNc        -0.000122       0.000431      -0.020743       0.003909
+
+ Quadratic response function no   43 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny          -1.551567      -0.106559      -1.551567      -0.106559
+ Nx A[2] Ny          -1.250897      -0.033922      -2.802464      -0.140481
+ Na T[3] NbNc         0.002745       0.002539      -2.630762      -0.135197
+
+ Quadratic response function no   44 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny          -0.000000       0.000000      -0.000000       0.000000
+ Nx A[2] Ny           0.000000       0.000000      -0.000000       0.000000
+ Na T[3] NbNc         0.000000      -0.000000      -0.000000       0.000000
+
+ Quadratic response function no   45 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny           0.000000       0.000000       0.000000       0.000000
+ Nx A[2] Ny          -0.000000      -0.000000       0.000000       0.000000
+ Na T[3] NbNc         0.000000      -0.000000       0.000000       0.000000
+
+ Quadratic response function no   46 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny          -0.272418      -0.012014      -0.272418      -0.012014
+ Nx A[2] Ny           0.013424       0.000155      -0.258994      -0.011859
+ Na T[3] NbNc        -0.000164      -0.000165      -0.266141      -0.012188
+
+ Quadratic response function no   47 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny           0.061787       0.004601       0.061787       0.004601
+ Nx A[2] Ny          -0.033349       0.000524       0.028438       0.005125
+ Na T[3] NbNc        -0.000540      -0.000001       0.020692       0.005240
+
+ Quadratic response function no   48 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   YDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny           0.016398      -0.001435       0.016398      -0.001435
+ Nx A[2] Ny           0.012080      -0.001509       0.028478      -0.002944
+ Na T[3] NbNc         0.000122      -0.000431       0.020743      -0.003909
+
+ Quadratic response function no   49 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 001     1  0.000000
+ Na X[2] Ny          -0.000000       0.000000      -0.000000       0.000000
+ Nx A[2] Ny           0.000000       0.000000      -0.000000       0.000000
+ Na T[3] NbNc        -0.000000      -0.000000       0.000000       0.000000
+
+ Quadratic response function no   50 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 002     1  0.000000
+ Na X[2] Ny           0.000002       0.000000       0.000002       0.000000
+ Nx A[2] Ny          -0.000002      -0.000000      -0.000000       0.000000
+ Na T[3] NbNc        -0.000000       0.000000      -0.000000       0.000000
+
+ Quadratic response function no   51 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 003     1  0.000000
+ Na X[2] Ny          -0.000016      -0.000001      -0.000016      -0.000001
+ Nx A[2] Ny           0.000016       0.000000       0.000000      -0.000001
+ Na T[3] NbNc        -0.000000       0.000000       0.000000      -0.000000
+
+ Quadratic response function no   52 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 004     1  0.000000
+ Na X[2] Ny           0.057091       0.003638       0.057091       0.003638
+ Nx A[2] Ny          -0.057104      -0.001583      -0.000013       0.002055
+ Na T[3] NbNc         0.000650       0.000176      -0.000010       0.001583
+
+ Quadratic response function no   53 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 005     1  0.000000
+ Na X[2] Ny          -0.057091      -0.003638      -0.057091      -0.003638
+ Nx A[2] Ny           0.057104       0.001583       0.000013      -0.002055
+ Na T[3] NbNc        -0.000650      -0.000176       0.000010      -0.001583
+
+ Quadratic response function no   54 of   54.
+ A operator, symmetry, frequency:   ZDIPLEN     1 -0.112502
+ B operator, symmetry, frequency:   ZDIPLEN     1  0.112502
+ C operator, symmetry, frequency:   PSO 006     1  0.000000
+ Na X[2] Ny           0.000000       0.000000       0.000000       0.000000
+ Nx A[2] Ny          -0.000000      -0.000000      -0.000000      -0.000000
+ Na T[3] NbNc         0.000000       0.000000      -0.000000       0.000000
+
+
+      **********************************************************************
+      ******************** FINAL RESULTS FOR ABSORPTION ********************
+      **********************************************************************
+
+
+
+                          +-----------------------------+
+                          ! Polarizability with damping !
+                          +-----------------------------+
+
+ ------------------------------------------------------------------
+ No    A-oper    B-oper   Frequency       Real part       Imag part
+ ------------------------------------------------------------------
+
+  1   XDIPLEN   XDIPLEN    0.000000       12.878562       -0.000000
+  2   YDIPLEN   YDIPLEN    0.000000       12.878562       -0.000000
+  3   ZDIPLEN   ZDIPLEN    0.000000       12.878562       -0.000000
+  4   XDIPLEN   YDIPLEN    0.000000        0.000000       -0.000000
+  5   XDIPLEN   ZDIPLEN    0.000000        0.000000       -0.000000
+  6   YDIPLEN   ZDIPLEN    0.000000        0.000000       -0.000000
+
+      Averaged value       0.000000       12.878562       -0.000000
+
+  7   XDIPLEN   XDIPLEN    0.112502       13.384139        0.043080
+  8   YDIPLEN   YDIPLEN    0.112502       13.384139        0.043080
+  9   ZDIPLEN   ZDIPLEN    0.112502       13.384139        0.043080
+ 10   XDIPLEN   YDIPLEN    0.112502        0.000000        0.000000
+ 11   XDIPLEN   ZDIPLEN    0.112502        0.000000        0.000000
+ 12   YDIPLEN   ZDIPLEN    0.112502        0.000000        0.000000
+
+      Averaged value       0.112502       13.384139        0.043080
+ 
+ ------------------------------------------------------------------
+ Damping parameter equals  0.004556 au = 0.1240 eV =  999.9 cm-1
+ NPATOM=           2
+           1           2
+
+
+         +---------------------------------------------------------------+
+         ! Nuclear Spin optical rotation/circular dichroism with damping !
+         +---------------------------------------------------------------+
+
+ -----------------------------------------------------------------------------------------------
+ No    A-oper    B-oper    C-oper    A-freq    B-freq    C-freq       Real part       Imag part
+ -----------------------------------------------------------------------------------------------
+  1  XDIPLEN   XDIPLEN   PSO 001  -0.112502  0.112502  0.000000        0.000000        0.000000
+  2  XDIPLEN   XDIPLEN   PSO 002  -0.112502  0.112502  0.000000        0.000000       -0.000000
+  3  XDIPLEN   XDIPLEN   PSO 003  -0.112502  0.112502  0.000000        0.000000       -0.000000
+  4  XDIPLEN   XDIPLEN   PSO 004  -0.112502  0.112502  0.000000       -0.000000        0.000000
+  5  XDIPLEN   XDIPLEN   PSO 005  -0.112502  0.112502  0.000000        0.001583       -0.000010
+  6  XDIPLEN   XDIPLEN   PSO 006  -0.112502  0.112502  0.000000       -0.001583        0.000010
+  7  XDIPLEN   YDIPLEN   PSO 001  -0.112502  0.112502  0.000000        0.000000        0.000000
+  8  XDIPLEN   YDIPLEN   PSO 002  -0.112502  0.112502  0.000000       -0.000000       -0.000000
+  9  XDIPLEN   YDIPLEN   PSO 003  -0.112502  0.112502  0.000000        0.135197        2.630761
+ 10  XDIPLEN   YDIPLEN   PSO 004  -0.112502  0.112502  0.000000        0.003909       -0.020743
+ 11  XDIPLEN   YDIPLEN   PSO 005  -0.112502  0.112502  0.000000       -0.005240       -0.020692
+ 12  XDIPLEN   YDIPLEN   PSO 006  -0.112502  0.112502  0.000000        0.012188        0.266141
+ 13  XDIPLEN   ZDIPLEN   PSO 001  -0.112502  0.112502  0.000000       -0.000000       -0.000000
+ 14  XDIPLEN   ZDIPLEN   PSO 002  -0.112502  0.112502  0.000000       -0.135197       -2.630762
+ 15  XDIPLEN   ZDIPLEN   PSO 003  -0.112502  0.112502  0.000000       -0.000000       -0.000000
+ 16  XDIPLEN   ZDIPLEN   PSO 004  -0.112502  0.112502  0.000000       -0.003909        0.020743
+ 17  XDIPLEN   ZDIPLEN   PSO 005  -0.112502  0.112502  0.000000       -0.012188       -0.266141
+ 18  XDIPLEN   ZDIPLEN   PSO 006  -0.112502  0.112502  0.000000        0.005240        0.020692
+ 19  YDIPLEN   XDIPLEN   PSO 001  -0.112502  0.112502  0.000000       -0.000000       -0.000000
+ 20  YDIPLEN   XDIPLEN   PSO 002  -0.112502  0.112502  0.000000       -0.000000        0.000000
+ 21  YDIPLEN   XDIPLEN   PSO 003  -0.112502  0.112502  0.000000       -0.135197       -2.630761
+ 22  YDIPLEN   XDIPLEN   PSO 004  -0.112502  0.112502  0.000000        0.005240        0.020692
+ 23  YDIPLEN   XDIPLEN   PSO 005  -0.112502  0.112502  0.000000       -0.003909        0.020743
+ 24  YDIPLEN   XDIPLEN   PSO 006  -0.112502  0.112502  0.000000       -0.012188       -0.266141
+ 25  YDIPLEN   YDIPLEN   PSO 001  -0.112502  0.112502  0.000000        0.000000       -0.000000
+ 26  YDIPLEN   YDIPLEN   PSO 002  -0.112502  0.112502  0.000000        0.000000       -0.000000
+ 27  YDIPLEN   YDIPLEN   PSO 003  -0.112502  0.112502  0.000000        0.000001       -0.000000
+ 28  YDIPLEN   YDIPLEN   PSO 004  -0.112502  0.112502  0.000000       -0.001583        0.000010
+ 29  YDIPLEN   YDIPLEN   PSO 005  -0.112502  0.112502  0.000000        0.000000       -0.000000
+ 30  YDIPLEN   YDIPLEN   PSO 006  -0.112502  0.112502  0.000000        0.001583       -0.000010
+ 31  YDIPLEN   ZDIPLEN   PSO 001  -0.112502  0.112502  0.000000        0.135197        2.630762
+ 32  YDIPLEN   ZDIPLEN   PSO 002  -0.112502  0.112502  0.000000        0.000000        0.000000
+ 33  YDIPLEN   ZDIPLEN   PSO 003  -0.112502  0.112502  0.000000        0.000000       -0.000000
+ 34  YDIPLEN   ZDIPLEN   PSO 004  -0.112502  0.112502  0.000000        0.012188        0.266141
+ 35  YDIPLEN   ZDIPLEN   PSO 005  -0.112502  0.112502  0.000000        0.003909       -0.020743
+ 36  YDIPLEN   ZDIPLEN   PSO 006  -0.112502  0.112502  0.000000       -0.005240       -0.020692
+ 37  ZDIPLEN   XDIPLEN   PSO 001  -0.112502  0.112502  0.000000       -0.000000        0.000000
+ 38  ZDIPLEN   XDIPLEN   PSO 002  -0.112502  0.112502  0.000000        0.135197        2.630762
+ 39  ZDIPLEN   XDIPLEN   PSO 003  -0.112502  0.112502  0.000000       -0.000000        0.000000
+ 40  ZDIPLEN   XDIPLEN   PSO 004  -0.112502  0.112502  0.000000       -0.005240       -0.020692
+ 41  ZDIPLEN   XDIPLEN   PSO 005  -0.112502  0.112502  0.000000        0.012188        0.266141
+ 42  ZDIPLEN   XDIPLEN   PSO 006  -0.112502  0.112502  0.000000        0.003909       -0.020743
+ 43  ZDIPLEN   YDIPLEN   PSO 001  -0.112502  0.112502  0.000000       -0.135197       -2.630762
+ 44  ZDIPLEN   YDIPLEN   PSO 002  -0.112502  0.112502  0.000000        0.000000       -0.000000
+ 45  ZDIPLEN   YDIPLEN   PSO 003  -0.112502  0.112502  0.000000        0.000000        0.000000
+ 46  ZDIPLEN   YDIPLEN   PSO 004  -0.112502  0.112502  0.000000       -0.012188       -0.266141
+ 47  ZDIPLEN   YDIPLEN   PSO 005  -0.112502  0.112502  0.000000        0.005240        0.020692
+ 48  ZDIPLEN   YDIPLEN   PSO 006  -0.112502  0.112502  0.000000       -0.003909        0.020743
+ 49  ZDIPLEN   ZDIPLEN   PSO 001  -0.112502  0.112502  0.000000        0.000000        0.000000
+ 50  ZDIPLEN   ZDIPLEN   PSO 002  -0.112502  0.112502  0.000000        0.000000       -0.000000
+ 51  ZDIPLEN   ZDIPLEN   PSO 003  -0.112502  0.112502  0.000000       -0.000000        0.000000
+ 52  ZDIPLEN   ZDIPLEN   PSO 004  -0.112502  0.112502  0.000000        0.001583       -0.000010
+ 53  ZDIPLEN   ZDIPLEN   PSO 005  -0.112502  0.112502  0.000000       -0.001583        0.000010
+ 54  ZDIPLEN   ZDIPLEN   PSO 006  -0.112502  0.112502  0.000000        0.000000       -0.000000
+ =================================================================================================
+ Averages     A-freq    B-freq    C-freq     6*Re<<A,B,C>> 6*Im<<A,B,C>>   CD(mu rad/M cm)  OR(mu rad/M cm) 
+ =================================================================================================
+ 
+ Atom(C )  -0.112502  0.112502  0.000000        0.811181       15.784569        0.119787        2.330907
+ Atom(H1)  -0.112502  0.112502  0.000000        0.073128        1.596848        0.042937        0.937586
+ 
+ ----------------------------------------------------------------------------------------------
+ Damping parameter equals  0.004556 au = 0.1240 eV =  999.9 cm-1
+
+ >>>> Total CPU  time used in RESPONSE:  35.28 seconds
+ >>>> Total wall time used in RESPONSE:  35.11 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  36.80 seconds
+ >>>> Total wall time used in DALTON:  36.69 seconds
+
+ 
+     Date and time (Linux)  : Tue Sep  2 13:20:42 2014
+     Host name              : sonias-mbp.chem.au.dk                   

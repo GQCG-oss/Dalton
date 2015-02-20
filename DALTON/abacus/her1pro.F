@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck pr1int */
       SUBROUTINE PR1INT(WORD,WORK,LWORK,IORDER,NPQUAD,
@@ -197,7 +196,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include "efield.h"
 #include "ccom.h"
 #include "qm3.h"
-      PARAMETER (NTABLE = 101)
+      PARAMETER (NTABLE = 104)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
@@ -211,22 +210,23 @@ C
 C
       DIMENSION QMTEST(NMMBA1)
 C
-#include "shells.h"
-#include "symmet.h"
-#include "pgroup.h"
-#include "nuclei.h"
-#include "huckel.h"
-#include "cbihr1.h"
-#include "orgcom.h"
-!
-#include "elweak.h"
-#include "drw2el.h"
-#include "codata.h"
-#include "gtensor.h"
-#include "pcmdef.h"
-#include "pcm.h"
-#include "pcmlog.h"
+#include <shells.h>
+#include <symmet.h>
+#include <pgroup.h>
+#include <nuclei.h>
+#include <huckel.h>
+#include <cbihr1.h>
+#include <elweak.h>
+#include <drw2el.h>
+#include <codata.h>
+#include <orgcom.h>
+#include <gtensor.h>
+#include <chrnos.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
 C
+C Bin Gao, December 17, 2009; adds integrals S2MBRA, S2MKET, and S2MMIX
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP', !   1: 4
      &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ', !   5: 8
      &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ', !   9:12
@@ -252,12 +252,12 @@ C
      &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ', !  89:92
      &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2', !  93:96
      &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP', !  97:100
-     &            'KINADIA'/                                  ! 101
+     &            'KINADIA', 'S2MBRA ', 'S2MKET ', 'S2MMIX '/ ! 101:104
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
 C
-#include "ibtfun.h"
+
 C
       CALL QENTER('PR1IN1')
       KFRSAV = KFREE
@@ -286,7 +286,7 @@ C
      &             71,72,73,74,75,76,77,78,79,80,
      &             81,82,83,84,85,86,87,88,89,90,
      &             91,92, 1,94,95,96,97,98,99,100,
-     &             101), I
+     &             101,102,103,104), I
          END IF
       END DO
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -375,10 +375,10 @@ C
          LABINT(5) = 'YZQUADRU'
          LABINT(6) = 'ZZQUADRU'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
       GO TO 200
@@ -396,9 +396,9 @@ C
          LABINT(1) = 'X1SPNORB'
          LABINT(2) = 'Y1SPNORB'
          LABINT(3) = 'Z1SPNORB'
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .TRUE.
       GO TO 200
 C
@@ -419,10 +419,10 @@ C
          LABINT(5) = 'YZSECMOM'
          LABINT(6) = 'ZZSECMOM'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
       GO TO 200
@@ -444,10 +444,10 @@ C
          LABINT(5) = 'YZTHETA '
          LABINT(6) = 'ZZTHETA '
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
       GO TO 200
@@ -613,9 +613,9 @@ C
          LABINT(1) = 'dS/dBX  '
          LABINT(2) = 'dS/dBY  '
          LABINT(3) = 'dS/dBZ  '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(3,1),ISYMAX(1,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .TRUE.
       GOTO 200
 C
@@ -636,10 +636,10 @@ C
          LABINT(5) = 'dS/dB2YZ'
          LABINT(6) = 'dS/dB2ZZ'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
       GOTO 200
@@ -657,9 +657,9 @@ C
          LABINT(1) = 'XANGLON '
          LABINT(2) = 'YANGLON '
          LABINT(3) = 'ZANGLON '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GO TO 200
@@ -677,9 +677,9 @@ C
          LABINT(1) = 'XANGMOM '
          LABINT(2) = 'YANGMOM '
          LABINT(3) = 'ZANGMOM '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .TRUE.
          SQUARE = .FALSE.
       GO TO 200
@@ -697,9 +697,9 @@ C
          LABINT(1) = 'XLONMOM '
          LABINT(2) = 'YLONMOM '
          LABINT(3) = 'ZLONMOM '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GO TO 200
@@ -717,9 +717,9 @@ C
          LABINT(1) = 'dh/dBX  '
          LABINT(2) = 'dh/dBY  '
          LABINT(3) = 'dh/dBZ  '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .TRUE.
       GO TO 200
 C
@@ -756,10 +756,10 @@ C
          LABINT(5) = 'YZDSUSNL'
          LABINT(6) = 'ZZDSUSNL'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -783,10 +783,10 @@ C
          LABINT(5) = 'YZDSUSLL'
          LABINT(6) = 'ZZDSUSLL'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -810,10 +810,10 @@ C
          LABINT(5) = 'YZDSUSLH'
          LABINT(6) = 'ZZDSUSLH'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -836,10 +836,10 @@ C
          LABINT(5) = 'YZdh/dB2'
          LABINT(6) = 'ZZdh/dB2'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
       GOTO 200
@@ -936,9 +936,9 @@ C
          LABINT(1) = 'd<S|/dBX'
          LABINT(2) = 'd<S|/dBY'
          LABINT(3) = 'd<S|/dBZ'
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(3,1),ISYMAX(1,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GOTO 200
@@ -956,9 +956,9 @@ C
          LABINT(1) = 'd|S>/dBX'
          LABINT(2) = 'd|S>/dBY'
          LABINT(3) = 'd|S>/dBZ'
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(3,1),ISYMAX(1,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GOTO 200
@@ -1009,9 +1009,9 @@ C
          LABINT(1) = ' HBDO X '
          LABINT(2) = ' HBDO Y '
          LABINT(3) = ' HBDO Z '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(3,1),ISYMAX(1,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .FALSE.
       GOTO 200
 C
@@ -1047,10 +1047,10 @@ C
          LABINT(5) = 'YZSUSCGO'
          LABINT(6) = 'ZZSUSCGO'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
       GO TO 200
@@ -1144,9 +1144,9 @@ C
          ELSE
             IRET = 3
          END IF
-         INTREP(1) = IBTXOR(ISYMAX(1,2),ISYMAX(IRET,1))
-         INTREP(2) = IBTXOR(ISYMAX(2,2),ISYMAX(IRET,1))
-         INTREP(3) = IBTXOR(ISYMAX(3,2),ISYMAX(IRET,1))
+         INTREP(1) = IEOR(ISYMAX(1,2),ISYMAX(IRET,1))
+         INTREP(2) = IEOR(ISYMAX(2,2),ISYMAX(IRET,1))
+         INTREP(3) = IEOR(ISYMAX(3,2),ISYMAX(IRET,1))
          ANTI      = .TRUE.
       GOTO 200
 C
@@ -1175,12 +1175,12 @@ C
             IRET = 3
          END IF
          INTREP(1)  = ISYMAX(IRET,1)
-         INTREP(2)  = IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(2,2)),
+         INTREP(2)  = IEOR(IEOR(ISYMAX(1,2),ISYMAX(2,2)),
      &                              ISYMAX(IRET,1))
-         INTREP(3)  = IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(3,2)),
+         INTREP(3)  = IEOR(IEOR(ISYMAX(1,2),ISYMAX(3,2)),
      &                              ISYMAX(IRET,1))
          INTREP(4)  = ISYMAX(IRET,1)
-         INTREP(5)  = IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(3,2)),
+         INTREP(5)  = IEOR(IEOR(ISYMAX(2,2),ISYMAX(3,2)),
      &                              ISYMAX(IRET,1))
          INTREP(6)  = ISYMAX(IRET,1)
          ANTI       = .FALSE.
@@ -1399,10 +1399,10 @@ C
          LABINT(5) = 'YZROTSTR'
          LABINT(6) = 'ZZROTSTR'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .TRUE.
          SQUARE = .FALSE.
@@ -1432,7 +1432,7 @@ C
          INTREP(2)  = ISYMAX(2,1)
          INTREP(3)  = ISYMAX(3,1)
          INTREP(4)  = ISYMAX(1,1)
-         INTREP(5)  =IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
+         INTREP(5)  =IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
          INTREP(6)  = ISYMAX(1,1)
          INTREP(7)  = ISYMAX(2,1)
          INTREP(8)  = ISYMAX(3,1)
@@ -1462,13 +1462,13 @@ C
          LABINT(8) = 'SOMF  ZY'
          LABINT(9) = 'SOMF  ZZ'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,2),ISYMAX(2,2))
-         INTREP(3) = IBTXOR(ISYMAX(1,2),ISYMAX(3,2))
-         INTREP(4) = IBTXOR(ISYMAX(1,2),ISYMAX(2,2))
+         INTREP(2) = IEOR(ISYMAX(1,2),ISYMAX(2,2))
+         INTREP(3) = IEOR(ISYMAX(1,2),ISYMAX(3,2))
+         INTREP(4) = IEOR(ISYMAX(1,2),ISYMAX(2,2))
          INTREP(5) = 0
-         INTREP(6) = IBTXOR(ISYMAX(2,2),ISYMAX(3,2))
-         INTREP(7) = IBTXOR(ISYMAX(1,2),ISYMAX(3,2))
-         INTREP(8) = IBTXOR(ISYMAX(2,2),ISYMAX(3,2))
+         INTREP(6) = IEOR(ISYMAX(2,2),ISYMAX(3,2))
+         INTREP(7) = IEOR(ISYMAX(1,2),ISYMAX(3,2))
+         INTREP(8) = IEOR(ISYMAX(2,2),ISYMAX(3,2))
          INTREP(9) = 0
          ANTI = .FALSE.
          SQUARE = .FALSE.
@@ -1536,13 +1536,13 @@ C
          LABINT(8) = 'D1-SO ZY'
          LABINT(9) = 'D1-SO ZZ'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(4) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(5) = 0
-         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(7) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(8) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(7) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(8) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(9) = 0
          ANTI      = .FALSE.
       GOTO 200
@@ -1568,13 +1568,13 @@ C
          LABINT(8) = 'D1-SOLZY'
          LABINT(9) = 'D1-SOLZZ'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(4) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(5) = 0
-         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(7) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(8) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(7) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(8) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(9) = 0
          ANTI = .FALSE.
       GOTO 200
@@ -1596,10 +1596,10 @@ C     ACH
          LABINT(6) = 'dd/dzdz '
 C
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI=.FALSE.
       GOTO 200
@@ -1622,10 +1622,10 @@ C     ACH
          LABINT(6) = 'DERZZ   '
 C
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI=.FALSE.
       GOTO 200
@@ -1644,9 +1644,9 @@ C     ACH
          LABINT(2) = 'DERXZ-ZX'
          LABINT(3) = 'DERYZ-ZY'
 C
-         INTREP(1) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(1) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          ANTI=.TRUE.
       GOTO 200
 C
@@ -1780,15 +1780,15 @@ C
             INTREP(3) = ISYMAX(3,2)
          ELSE
             IF (FIELD3(1:2) .EQ. 'XY') THEN
-               IRP = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+               IRP = IEOR(ISYMAX(1,1),ISYMAX(2,1))
             ELSE IF (FIELD3(1:2) .EQ. 'XZ') THEN
-               IRP = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+               IRP = IEOR(ISYMAX(1,1),ISYMAX(3,1))
             ELSE
-               IRP = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+               IRP = IEOR(ISYMAX(2,1),ISYMAX(3,1))
             END IF
-            INTREP(1) = IBTXOR(ISYMAX(1,2),IRP)
-            INTREP(2) = IBTXOR(ISYMAX(2,2),IRP)
-            INTREP(3) = IBTXOR(ISYMAX(3,2),IRP)
+            INTREP(1) = IEOR(ISYMAX(1,2),IRP)
+            INTREP(2) = IEOR(ISYMAX(2,2),IRP)
+            INTREP(3) = IEOR(ISYMAX(3,2),IRP)
          END IF
          ANTI      = .TRUE.
       GOTO 200
@@ -1806,9 +1806,9 @@ C
          LABINT(1) = 'X1SPNSCA'
          LABINT(2) = 'Y1SPNSCA'
          LABINT(3) = 'Z1SPNSCA'
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .TRUE.
 C        Scale charges
          CALL HEADER('SO integrals use charges:',0)
@@ -1837,13 +1837,13 @@ C
          LABINT(8) = 'D-SSO ZY'
          LABINT(9) = 'D-SSO ZZ'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(4) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(5) = 0
-         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(7) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(8) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(7) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(8) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(9) = 0
          ANTI      = .FALSE.
 C        Scale charges
@@ -1869,9 +1869,9 @@ C
          LABINT(1) = 'XANGECC '
          LABINT(2) = 'YANGECC '
          LABINT(3) = 'ZANGECC '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .TRUE.
       GO TO 200
 cLig >>
@@ -1896,15 +1896,15 @@ C
          LABINT(7) = 'ZXRANG'
          LABINT(8) = 'ZYRANG'
          LABINT(9) = 'ZZRANG'
-         INTREP(1) = IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
+         INTREP(1) = IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
          INTREP(2) = ISYMAX(3,1)
          INTREP(3) = ISYMAX(2,1)
          INTREP(4) = ISYMAX(3,1)
-         INTREP(5) = IBTXOR(ISYMAX(2,1),IBTXOR(ISYMAX(1,1),ISYMAX(3,1)))
+         INTREP(5) = IEOR(ISYMAX(2,1),IEOR(ISYMAX(1,1),ISYMAX(3,1)))
          INTREP(6) = ISYMAX(1,1)
          INTREP(7) = ISYMAX(2,1)
          INTREP(8) = ISYMAX(1,1)
-         INTREP(9) = IBTXOR(ISYMAX(3,1),IBTXOR(ISYMAX(1,1),ISYMAX(2,1)))
+         INTREP(9) = IEOR(ISYMAX(3,1),IEOR(ISYMAX(1,1),ISYMAX(2,1)))
 c
          ANTI = .FALSE.
          SQUARE = .TRUE.
@@ -1978,9 +1978,9 @@ C
          LABINT(1) = 'XOZKE   '
          LABINT(2) = 'YOZKE   '
          LABINT(3) = 'ZOZKE   '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .TRUE.
       GO TO 200
 C
@@ -2103,9 +2103,9 @@ ckr      or should we temporarily use noptyp=3*max(nsym) = 3*8 = 24
          LABINT(1) = 'XPCMLON '
          LABINT(2) = 'YPCMLON '
          LABINT(3) = 'ZPCMLON '
-         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(1) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GO TO 200
@@ -2128,10 +2128,10 @@ Clf         PCM = .TRUE.
          LABINT(5) = 'YZMAGPCM'
          LABINT(6) = 'ZZMAGPCM'
          INTREP(1) = 0
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(4) = 0
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(6) = 0
          ANTI = .FALSE.
          SQUARE = .FALSE.
@@ -2265,15 +2265,15 @@ C
          LABINT(7) = 'ZXMAGQDP'
          LABINT(8) = 'ZYMAGQDP'
          LABINT(9) = 'ZZMAGQDP'
-         INTREP(1) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,2))
-         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,2))
-         INTREP(4) = IBTXOR(ISYMAX(2,1),ISYMAX(1,2))
-         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(2,2))
-         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,2))
-         INTREP(7) = IBTXOR(ISYMAX(3,1),ISYMAX(1,2))
-         INTREP(8) = IBTXOR(ISYMAX(3,1),ISYMAX(2,2))
-         INTREP(9) = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
+         INTREP(1) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,2))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,2))
+         INTREP(4) = IEOR(ISYMAX(2,1),ISYMAX(1,2))
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(2,2))
+         INTREP(6) = IEOR(ISYMAX(2,1),ISYMAX(3,2))
+         INTREP(7) = IEOR(ISYMAX(3,1),ISYMAX(1,2))
+         INTREP(8) = IEOR(ISYMAX(3,1),ISYMAX(2,2))
+         INTREP(9) = IEOR(ISYMAX(3,1),ISYMAX(3,2))
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GOTO 200
@@ -2326,7 +2326,6 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          ANTI = .FALSE.
       GOTO 200
-C
 C     Adiabatic kinetic energy KINADIAB
 C     -------------------------
 C     (from nuclear second derivatives, with specified isotopes)
@@ -2343,6 +2342,88 @@ C
          INTREP(1) = 0
          ANTI = .FALSE.
       GO TO 200
+C copied from linsca abacus/her1pro.F, Bin Gao, December 17, 2009
+C 
+C     Second order contribution from overlap matrix to magnetic properties
+cdj bra, ket, and mixed bra-ket contributions separately
+C
+  102 CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' bra part'
+         INTTYP = 104
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = '<<S/B2XX'
+         LABINT(2) = '<<S/B2XY'
+         LABINT(3) = '<<S/B2XZ'
+         LABINT(4) = '<<S/B2YY'
+         LABINT(5) = '<<S/B2YZ'
+         LABINT(6) = '<<S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+  103 CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' ket part'
+         INTTYP = 105
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = '>>S/B2XX'
+         LABINT(2) = '>>S/B2XY'
+         LABINT(3) = '>>S/B2XZ'
+         LABINT(4) = '>>S/B2YY'
+         LABINT(5) = '>>S/B2YZ'
+         LABINT(6) = '>>S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+  104 CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' mixed bra-ket part'
+         INTTYP = 106
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = '<>S/B2XX'
+         LABINT(2) = '<>S/B2XY'
+         LABINT(3) = '<>S/B2XZ'
+         LABINT(4) = '<>S/B2YX'
+         LABINT(5) = '<>S/B2YY'
+         LABINT(6) = '<>S/B2YZ'
+         LABINT(7) = '<>S/B2ZX'
+         LABINT(8) = '<>S/B2ZY'
+         LABINT(9) = '<>S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(5) = 0
+         INTREP(6) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(7) = IEOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(8) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(9) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
 C
   200 CONTINUE
 C
@@ -2379,7 +2460,7 @@ C        ... DOHUCKEL
 #endif
       DO 400 ISHELL = 1, KMAXT
          DO 410 KB = 0,MAXREP
-            IF (IBTAND(KB,ISTBAO(ISHELL)) .EQ. 0)
+            IF (IAND(KB,ISTBAO(ISHELL)) .EQ. 0)
      *            NBAST = NBAST + KHKT(ISHELL)
   410    CONTINUE
   400 CONTINUE
@@ -3068,7 +3149,7 @@ C  /* Deck cmtyp */
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)/2)*8
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       NOPTYP = (IORDER + 1)*(IORDER + 2)/2
       CALL NTYPTS(NOPTYP)
       CALL LMNVAL(IORDER+1,NOPTYP,IX,IY,IZ)
@@ -3088,7 +3169,7 @@ C
          ISX = MOD(NX,2)*ISYMAX(1,1)
          ISY = MOD(NY,2)*ISYMAX(2,1)
          ISZ = MOD(NZ,2)*ISYMAX(3,1)
-         INTREP(I) = IBTXOR(ISX,IBTXOR(ISY,ISZ))
+         INTREP(I) = IEOR(ISX,IEOR(ISY,ISZ))
   100 CONTINUE
       RETURN
       END
@@ -3106,7 +3187,7 @@ C  /* Deck sl1typ */
 #include "symmet.h"
 #include "mgsolt.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       IF (DOALL_MGSOLT) THEN
          NOPTYP = (IORDER + 1)*(IORDER + 2)*3/2
       ELSE
@@ -3137,12 +3218,12 @@ C
          ISX = MOD(NX,2)*ISYMAX(1,1)
          ISY = MOD(NY,2)*ISYMAX(2,1)
          ISZ = MOD(NZ,2)*ISYMAX(3,1)
-         INTREP(3*(I - 1) + 1) = IBTXOR(IBTXOR(ISX,
-     &                           IBTXOR(ISY,ISZ)),ISYMAX(1,2))
-         INTREP(3*(I - 1) + 2) = IBTXOR(IBTXOR(ISX,
-     &                           IBTXOR(ISY,ISZ)),ISYMAX(2,2))
-         INTREP(3*(I - 1) + 3) = IBTXOR(IBTXOR(ISX,
-     &                           IBTXOR(ISY,ISZ)),ISYMAX(3,2))
+         INTREP(3*(I - 1) + 1) = IEOR(IEOR(ISX,
+     &                           IEOR(ISY,ISZ)),ISYMAX(1,2))
+         INTREP(3*(I - 1) + 2) = IEOR(IEOR(ISX,
+     &                           IEOR(ISY,ISZ)),ISYMAX(2,2))
+         INTREP(3*(I - 1) + 3) = IEOR(IEOR(ISX,
+     &                           IEOR(ISY,ISZ)),ISYMAX(3,2))
          ELSE
             ISX = MOD(NX,2)*ISYMAX(1,1)
             ISY = MOD(NY,2)*ISYMAX(2,1)
@@ -3151,20 +3232,20 @@ C
                LABINT(I) = 'X '//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &                         //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
      &                         //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
-               INTREP(I) = IBTXOR(IBTXOR(ISX,
-     &                           IBTXOR(ISY,ISZ)),ISYMAX(1,2))
+               INTREP(I) = IEOR(IEOR(ISX,
+     &                           IEOR(ISY,ISZ)),ISYMAX(1,2))
             ELSE IF (ICOMP_MGSOLT .EQ. 2) THEN
                LABINT(I) = 'Y '//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &                         //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
      &                         //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
-               INTREP(I) = IBTXOR(IBTXOR(ISX,
-     &                           IBTXOR(ISY,ISZ)),ISYMAX(2,2))
+               INTREP(I) = IEOR(IEOR(ISX,
+     &                           IEOR(ISY,ISZ)),ISYMAX(2,2))
             ELSE
                LABINT(I) = 'Z '//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &                         //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
      &                         //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
-               INTREP(I) = IBTXOR(IBTXOR(ISX,
-     &                           IBTXOR(ISY,ISZ)),ISYMAX(3,2))
+               INTREP(I) = IEOR(IEOR(ISX,
+     &                           IEOR(ISY,ISZ)),ISYMAX(3,2))
             END IF
          END IF
   100 CONTINUE
@@ -3184,7 +3265,7 @@ C  /* Deck sl2typ */
 #include "symmet.h"
 #include "mgsolt.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       IF (DOALL_MGSOLT) THEN
          NOPTYP = (IORDER + 1)*(IORDER + 2)*6/2
       ELSE
@@ -3224,21 +3305,21 @@ C
          ISX = MOD(NX,2)*ISYMAX(1,1)
          ISY = MOD(NY,2)*ISYMAX(2,1)
          ISZ = MOD(NZ,2)*ISYMAX(3,1)
-         ISYMC = IBTXOR(ISX,IBTXOR(ISY,ISZ))
+         ISYMC = IEOR(ISX,IEOR(ISY,ISZ))
          INTREP(6*(I - 1) + 1) = ISYMC
-         INTREP(6*(I - 1) + 2) = IBTXOR(ISYMC,
-     &                           IBTXOR(ISYMAX(1,2),ISYMAX(2,2)))
-         INTREP(6*(I - 1) + 3) = IBTXOR(ISYMC,
-     &                           IBTXOR(ISYMAX(1,2),ISYMAX(3,2)))
+         INTREP(6*(I - 1) + 2) = IEOR(ISYMC,
+     &                           IEOR(ISYMAX(1,2),ISYMAX(2,2)))
+         INTREP(6*(I - 1) + 3) = IEOR(ISYMC,
+     &                           IEOR(ISYMAX(1,2),ISYMAX(3,2)))
          INTREP(6*(I - 1) + 4) = ISYMC
-         INTREP(6*(I - 1) + 5) = IBTXOR(ISYMC,
-     &                           IBTXOR(ISYMAX(2,2),ISYMAX(3,2)))
+         INTREP(6*(I - 1) + 5) = IEOR(ISYMC,
+     &                           IEOR(ISYMAX(2,2),ISYMAX(3,2)))
          INTREP(6*(I - 1) + 6) = ISYMC
          ELSE
             ISX = MOD(NX,2)*ISYMAX(1,1)
             ISY = MOD(NY,2)*ISYMAX(2,1)
             ISZ = MOD(NZ,2)*ISYMAX(3,1)
-            ISYMC = IBTXOR(ISX,IBTXOR(ISY,ISZ))
+            ISYMC = IEOR(ISX,IEOR(ISY,ISZ))
             IF (ICOMP_MGSOLT .EQ. 1) THEN
                LABINT(I) = 'XX'//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &              //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
@@ -3248,12 +3329,12 @@ C
                LABINT(I) = 'XY'//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &              //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
      &              //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
-               INTREP(I) = IBTXOR(ISYMC,IBTXOR(ISYMAX(1,2),ISYMAX(2,2)))
+               INTREP(I) = IEOR(ISYMC,IEOR(ISYMAX(1,2),ISYMAX(2,2)))
             ELSE IF (ICOMP_MGSOLT .EQ. 3) THEN
                LABINT(I) = 'XZ'//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &              //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
      &              //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
-               INTREP(I) = IBTXOR(ISYMC,IBTXOR(ISYMAX(1,2),ISYMAX(3,2)))
+               INTREP(I) = IEOR(ISYMC,IEOR(ISYMAX(1,2),ISYMAX(3,2)))
             ELSE IF (ICOMP_MGSOLT .EQ. 4) THEN
                LABINT(I) = 'YY'//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &              //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
@@ -3263,7 +3344,7 @@ C
                LABINT(I) = 'YZ'//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &              //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
      &              //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
-               INTREP(I) = IBTXOR(ISYMC,IBTXOR(ISYMAX(2,2),ISYMAX(3,2)))
+               INTREP(I) = IEOR(ISYMC,IEOR(ISYMAX(2,2),ISYMAX(3,2)))
             ELSE
                LABINT(I) = 'ZZ'//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &              //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
@@ -3293,7 +3374,7 @@ C
       CHARACTER LABINT(2*IORDER + 1)*8
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       NOPTYP = 2*IORDER + 1
       CALL NTYPTS(NOPTYP)
 C
@@ -3327,12 +3408,12 @@ C  /* Deck frmtyp */
       CHARACTER LABINT(9*MXCENT)*8
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
-               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
                   IF (INTTYP .EQ. 9) THEN
                      LABINT(ITYP) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
@@ -3368,7 +3449,7 @@ C    MI/HJaJ - extended for LAO integral
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -3388,10 +3469,10 @@ C    MI/HJaJ - extended for LAO integral
                         LABINT(ITYP) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
      &                                 CHRNOS(ITHIRD)//LABEL//
      &                                 CHRXYZ(ICOOR)
-                        INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,2))
+                        INTREP(ITYP) = IEOR(IREP,ISYMAX(ICOOR,2))
 cLig >> changed the symmetri for RPSO
                         IF(LABEL.EQ.'RPSO')
-     &                    INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1))
+     &                    INTREP(ITYP) = IEOR(IREP,ISYMAX(ICOOR,1))
 cLig <<
                         LSCOOR = 3*(ISCOOR - 1) + ICOOR
                         INTADR(LSCOOR) = ITYP
@@ -3419,7 +3500,7 @@ C  /* Deck psotyp */
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -3464,7 +3545,7 @@ C  /* Deck sdtyp */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -3492,7 +3573,7 @@ C  /* Deck sdtyp */
      &                                       //CHRNOS(MOD(ISCOR1,10))
      &                                       //' '//CHRXYZ(-ICOOR2)
                      END IF
-                     INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR2,2))
+                     INTREP(ITYP) = IEOR(IREP,ISYMAX(ICOOR2,2))
                      ISCOOR = 3*(ISCOR1 - 1) + ICOOR2
                      INTADR(ISCOOR) = ITYP
   400             CONTINUE
@@ -3532,7 +3613,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
       ITYP = 0
 C
@@ -3613,7 +3694,7 @@ C  /* Deck hdbtyp */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -3626,7 +3707,7 @@ C  /* Deck hdbtyp */
                         LABINT(ITYP) = CHRNOS(ISCOOR/10)//
      &                                 CHRNOS(MOD(ISCOOR,10))//' HDB '//
      &                                 CHRXYZ(LCOOR)
-                        INTREP(ITYP) = IBTXOR(IREP,ISYMAX(LCOOR,2))
+                        INTREP(ITYP) = IEOR(IREP,ISYMAX(LCOOR,2))
                         LSCOOR = 3*(ISCOOR - 1) + LCOOR
                         INTADR(LSCOOR) = ITYP
  400                 CONTINUE
@@ -3654,7 +3735,7 @@ C  /* Deck dpgtyp */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -3666,15 +3747,16 @@ C  /* Deck dpgtyp */
                      DO 400 LCOOR = 1, 3
                         ITYP = ITYP + 1
                         IXY = IXY + 1
-                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
-     &                                 CHRNOS(MOD(ISCOOR,10))//' DPG '//
-     &                                 CHRXYZ(LCOOR)
+                        LABINT(ITYP) = CHRNOS(ISCOOR/100)
+     &                               //CHRNOS(MOD(ISCOOR,100)/10)
+     &                               //CHRNOS(MOD((MOD(ISCOOR,100)),10))
+     &                               //'DPG '//CHRXYZ(LCOOR)
 CCH                     wrong copy & paste from QUGTYP ??
-CCH                     IAX = IBTXOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
+CCH                     IAX = IEOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
 CCH
                         IAX = ISYMAX(LCOOR,1)
 CCH
-                        INTREP(ITYP) = IBTXOR(IREP,IAX)
+                        INTREP(ITYP) = IEOR(IREP,IAX)
                         LSCOOR = 3*(ISCOOR - 1) + IXY
                         INTADR(LSCOOR) = ITYP
  400                 CONTINUE
@@ -3702,7 +3784,7 @@ C  /* Deck qugtyp */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -3715,11 +3797,15 @@ C  /* Deck qugtyp */
                      DO 400 MCOOR = LCOOR, 3
                         ITYP = ITYP + 1
                         IXY = IXY + 1
-                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
-     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG '//
+Cgb                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
+Cgb     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG '//
+Cgb     &                                 CHRXYZ(LCOOR)//CHRXYZ(MCOOR)
+                        LABINT(ITYP) = CHRNOS(ISCOOR/100)//
+     &                                 CHRNOS(MOD(ISCOOR,100)/10)//
+     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG'//
      &                                 CHRXYZ(LCOOR)//CHRXYZ(MCOOR)
-                        IAX = IBTXOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
-                        INTREP(ITYP) = IBTXOR(IREP,IAX)
+                        IAX = IEOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
+                        INTREP(ITYP) = IEOR(IREP,IAX)
                         LSCOOR = 6*(ISCOOR - 1) + IXY
                         INTADR(LSCOOR) = ITYP
  400                 CONTINUE
@@ -3748,7 +3834,7 @@ C  /* Deck ocgtyp */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       NOPTYP = 30*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -3771,13 +3857,13 @@ C  /* Deck ocgtyp */
 CCH
 CCH                     isn't this a wrong copy & paste from QUCTYP ?
 CCH
-                        IAX = IBTXOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
+                        IAX = IEOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
 CCH
 CCH                     guess here it should be introduced an additional
 CCH                     line with:
-                        IAX = IBTXOR(IAX,ISYMAX(NCOOR,1))
+                        IAX = IEOR(IAX,ISYMAX(NCOOR,1))
 CCH
-                        INTREP(ITYP) = IBTXOR(IREP,IAX)
+                        INTREP(ITYP) = IEOR(IREP,IAX)
                         LSCOOR = 10*(ISCOOR - 1) + IXY
                         INTADR(LSCOOR) = ITYP
  400                 CONTINUE
@@ -3802,7 +3888,7 @@ C  /* Deck hdotyp */
       CHARACTER LABINT(*)*8
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -3859,7 +3945,7 @@ C  /* Deck npetyp */
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
 #include "qm3.h"
-#include "ibtfun.h"
+
 C
       NOPTYP = NATOM
       CALL NTYPTS(NOPTYP)
@@ -3872,7 +3958,7 @@ C
           IF (DOATOM(IATOM)) THEN
             NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
             DO 200 IREP = 0, MAXREP
-              IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
+              IF (IAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
                 ITYP = ITYP + 1
                 NPETBL(IATOM,IREP) = ITYP
                 LABINT(ITYP) = 'POT.E '//NAME
@@ -3886,7 +3972,7 @@ C
         DO 300 IATOM = 1, NCTOT
           NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
           DO 400 IREP = 0, MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
+            IF (IAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
               ITYP = ITYP + 1
               NPETBL(IATOM,IREP) = ITYP
               LABINT(ITYP) = 'POT.E '//NAME
@@ -3911,7 +3997,7 @@ C  /* Deck testyp */
 #include "orgcom.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
 C     Determine the bitstring that stabilize the tesserae
 C
@@ -3919,7 +4005,7 @@ C
       MULK = 0
       DO 140 L = 1, MAXREP
          DO M = 1, 3
-            IF (IBTAND(LL,ISYMAX(M,1)) .NE. 0) THEN
+            IF (IAND(LL,ISYMAX(M,1)) .NE. 0) THEN
                IF (ISYMAX(M,1) .EQ. 1) THEN
                   IF (ABS(DIPORG(M)) .GE. 1.0D-6) GO TO 140
                ELSE IF (ISYMAX(M,1) .EQ. 2) THEN
@@ -3934,7 +4020,7 @@ C
 C
       ITYP = 0
       DO IREP = 0, MAXREP
-         IF (IBTAND(MULK,IREP) .EQ. 0) THEN
+         IF (IAND(MULK,IREP) .EQ. 0) THEN
             ITYP = ITYP + 1
             LABINT(ITYP) = 'J1-PCMIN'
             INTREP(ITYP) = IREP
@@ -3957,7 +4043,7 @@ C  /* Deck efntyp */
 #include "symmet.h"
 #include "qm3.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -4040,7 +4126,7 @@ C  /* Deck efgtyp */
 #include "qm3.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -4060,10 +4146,10 @@ C
             DO 200 ICOOR1 = 1, 3
             DO 200 ICOOR2 = ICOOR1, 3
               IJ = IJ + 1
-              ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+              ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
               IOFF = 0
               DO 300 IREPC = 0, MAXREP
-                IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ))
+                IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ))
      &            .EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
@@ -4085,10 +4171,10 @@ C
             DO 201 ICOOR1 = 1, 3
             DO 201 ICOOR2 = ICOOR1, 3
               IJ = IJ + 1
-              ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+              ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
               IOFF = 0
               DO 301 IREPC = 0, MAXREP
-                IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ))
+                IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ))
      &            .EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
@@ -4105,10 +4191,10 @@ C
             DO 202 ICOOR1 = 1, 3
             DO 202 ICOOR2 = ICOOR1, 3
               IJ = IJ + 1
-              ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+              ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
               IOFF = 0
               DO 302 IREPC = 0, MAXREP
-                IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ))
+                IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ))
      &            .EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
@@ -4173,7 +4259,7 @@ C  /* Deck efgsp1 */
       DIMENSION CARINT(NELMNT,NOPTYP), TRAMAT(NXYZ,NLM), JTABLE(6),
      &          SPHINT(NELMNT,NLM*NATOM), ITABLE(6), WORK(LWORK)
       DATA ITABLE /1,2,3,5,6,9/
-#include "ibtfun.h"
+
       CALL SPHCOM(IORDER,TRAMAT,NLM,NXYZ,0,0,WORK,LWORK,IPRINT)
       CALL DZERO(SPHINT,NELMNT*NLM*NATOM)
       ITYP  = 0
@@ -4182,7 +4268,7 @@ C  /* Deck efgsp1 */
          IF (DOATOM(IATOM)) THEN
             NUATOM = 0
             DO 101 IREPAX = 0, MAXREP
-               IF (IBTAND(IREPAX,ISTBNU(IATOM)).EQ.0) NUATOM = NUATOM+1
+               IF (IAND(IREPAX,ISTBNU(IATOM)).EQ.0) NUATOM = NUATOM+1
  101        CONTINUE
             DO 102 I = 1, 6
                JTABLE(I) = (I - 1)*NUATOM + 1
@@ -4190,7 +4276,7 @@ C  /* Deck efgsp1 */
             DO 100 I = 1, NLM
                JATOM = 0
                DO 160 IREP = 0, MAXREP
-                  IF (IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+                  IF (IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
                      ITYP   = ITYP + 1
                      ICOMP2 = ICOMP + 6*NUATOM*(I/(5*NUATOM)) + JATOM
                      DO 110 J = 1, NXYZ
@@ -4233,7 +4319,7 @@ C
       CHARACTER LABINT(5*NATOM)*8
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 C
       NOPTYP = NATOM*5
       CALL NTYPTS(NOPTYP)
@@ -4253,7 +4339,7 @@ C
                   END IF
                END IF
                DO 30 IREP = 0, MAXREP
-               IF (IBTAND(IBTXOR(IREP,ISYMCO),ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IEOR(IREP,ISYMCO),ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
                   IF (I .EQ. 0) THEN
                      LABINT(ITYP) = '00'//'EFG '//
@@ -4864,7 +4950,7 @@ C  /* Deck alftyp */
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
       NOPTYP = 9*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -4879,7 +4965,7 @@ C  /* Deck alftyp */
                         LABINT(ITYP) = 'ALF '//CHRXYZ(ICOOR1)//
      &                       CHRXYZ(ICOOR2)//
      &                       CHRNOS(ITYP/10)//CHRNOS(MOD(ITYP,10))
-                        INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR2,2))
+                        INTREP(ITYP) = IEOR(IREP,ISYMAX(ICOOR2,2))
                         ISCOOR = 3*(ISCOR1 - 1) + ICOOR2
                         INTADR(ISCOOR) = ITYP
  400                 CONTINUE

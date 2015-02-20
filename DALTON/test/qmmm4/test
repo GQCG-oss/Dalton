@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Energy
+f.add(from_re = 'QM\/MM \"QMMM\" calculation converged',
+      num_lines = 13,
+      rel_tolerance = 1.0e-8)
+
+f.add(from_re = 'Dipole moment components',
+      num_lines = 9,
+      mask = [3],
+      rel_tolerance = 1.0e-6)
+
+f.add(from_re = 'Singlet electronic excitation energies',
+      num_lines = 10,
+      mask = [4],
+      rel_tolerance = 1.0e-6)
+
+f.add(from_re = 'Electric transition dipole moments \(au\)',
+      num_lines = 9,
+      ignore_sign = True,
+      abs_tolerance = 1.0e-3)
+
+f.add(from_re = 'Oscillator strengths',
+      num_lines = 10,
+      abs_tolerance = 1.0e-3)
+
+test.run(['qmmm4.dal'], ['ch2o_cc-pvdz.mol'], f={'out': f}, args='-put POTENTIAL.INP')
+
+sys.exit(test.return_code)

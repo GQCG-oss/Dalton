@@ -4,9 +4,11 @@ include ../Makefile.config
 
 ifdef VAR_RSP
 INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver \
+	-I../pcm \
 	-I../../external/matrix-defop/src -I../../external/openrsp/src
 else
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../SolverUtilities -I../responsesolver \
+	-I../pcm
 endif
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
@@ -82,7 +84,7 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
 Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -M../deccc -M../SolverUtilities -M../responsesolver -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -M../deccc -M../SolverUtilities -M../responsesolver -M../pcm -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

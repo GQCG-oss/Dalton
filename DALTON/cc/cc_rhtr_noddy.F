@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -541,7 +541,7 @@
       INTEGER INDEX, IVEC, IDLSTC, ISYMC, KSCR1, KLC3AM, KEND1, KLC1AM,
      &        KLC2AM, LWRK1, ILSTSYM, IOPT, KLAMPC, KLAMHC, KFOCKC,
      &        KINT1SC, KINT2SC, KEND2, LWRK2
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
       CALL QENTER('CCDOTRSP')
 

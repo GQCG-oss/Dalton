@@ -1,0 +1,2558 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2014.0
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2014.0 (2014), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Wed Oct 15 22:44:56 2014
+     Host name              : c28-5.local                             
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/arnfinn/dalton/DALTON/test/choles_cc2_excdiis
+   2) /home/arnfinn/dalton/build-2014/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | arnfinn
+ Host                     | c21-1.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
+ C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
+                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
+                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
+                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
+                          | read.so;/usr/lib64/libm.so
+ LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
+                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
+                          | ntel64/libmkl_intel_lp64.so
+ Static linking           | OFF
+ Last Git revision        | 9683c3b17a8f2ed43737463d95620353fb7df0fe
+ Configuration time       | 2014-10-15 09:34:12.935583
+
+ * Sequential calculation.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON                                          
+.RUN WAVE                                         
+.CHOLES                                           
+**INTEGRALS                                       
+.DIPLEN                                           
+**CHOLESKY                                        
+.REDUCE                                           
+.SPANDI                                           
+  1.0d-3                                          
+.THRCOM                                           
+ 1.0D-6                                           
+!.RSTDIA                                          
+!.RSTCHO                                          
+**WAVE FUNCTION                                   
+.CC                                               
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0D-8                                           
+.MAX DIIS                                         
+  100                                             
+*ORBITAL                                          
+.MOSTART                                          
+ HUCKEL                                           
+.NOSUPSYM                                         
+*CC INP                                           
+.PRINT                                            
+  1                                               
+.FREEZE                                           
+  5   0                                           
+.CCS                                              
+.CC2                                              
+*CCEXCI                                           
+.CHEXDI                                           
+.DV4DIS                                           
+.NCCEXCI                                          
+  2   1   0   0                                   
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+Turbomole-SVP                                                                  
+............                                                                   
+............                                                                   
+Atomtypes=3 Angstrom                                                           
+Charge=6 Atoms=4                                                               
+C  0.0000    1.0935    0.3466                                                  
+C  0.0000   -1.0935    0.3466                                                  
+C  0.0000    0.7174   -0.9581                                                  
+C  0.0000   -0.7174   -0.9581                                                  
+Charge=8 Atoms=1                                                               
+O  0.0000    0.0000    1.1590                                                  
+Charge=1 Atoms=4                                                               
+H  0.0000    2.0468    0.8491                                                  
+H  0.0000   -2.0468    0.8491                                                  
+H  0.0000    1.3728   -1.8160                                                  
+H  0.0000   -1.3728   -1.8160                                                  
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Cholesky decomposition-based calculation will be done
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: ............                                                            
+ 2: ............                                                            
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/arnfinn/dalton/build-2014/basis/Turbomole-SVP"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/arnfinn/dalton/build-2014/basis/Turbomole-SVP"
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/arnfinn/dalton/build-2014/basis/Turbomole-SVP"
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+@   The molecule is centered at center of mass and rotated
+@   so principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: C(2v)          
+
+ Symmetry Independent Centres             
+ ----------------------------
+       8 :      0.00000000     0.00000000    -2.13704578  Isotope  1
+       6 :      0.00000000     2.06641552    -0.60183227  Isotope  1
+       6 :      0.00000000     1.35568952     1.86369340  Isotope  1
+       1 :      0.00000000     3.86789143    -1.55141965  Isotope  1
+       1 :      0.00000000     2.59421602     3.48488945  Isotope  1
+
+ The following elements were found:   X  Y     
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Full point group is: C(2v)          
+@    Represented as:      C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C   _1     12.000000
+                           C   _2     12.000000
+                           C   _1     12.000000
+                           C   _2     12.000000
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    68.026215 amu
+                       Natural abundance:  95.385 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    3
+  Total number of atoms:    9
+
+  Basis set used is "Turbomole-SVP" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  C           4    6.0000    24    14      [7s4p1d|3s2p1d]                                    
+  O           1    8.0000    24    14      [7s4p1d|3s2p1d]                                    
+  H           4    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      9   36.0000   148    90
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   27
+  C   / 1 :     1  x   0.0000000000    2  y   2.0664155177    3  z  -0.6018322721
+  C   / 2 :     4  x   0.0000000000    5  y  -2.0664155177    6  z  -0.6018322721
+  C   / 1 :     7  x   0.0000000000    8  y   1.3556895221    9  z   1.8636934032
+  C   / 2 :    10  x   0.0000000000   11  y  -1.3556895221   12  z   1.8636934032
+  O       :    13  x   0.0000000000   14  y   0.0000000000   15  z  -2.1370457761
+  H   / 1 :    16  x   0.0000000000   17  y   3.8678914326   18  z  -1.5514196499
+  H   / 2 :    19  x   0.0000000000   20  y  -3.8678914326   21  z  -1.5514196499
+  H   / 1 :    22  x   0.0000000000   23  y   2.5942160244   24  z   3.4848894458
+  H   / 2 :    25  x   0.0000000000   26  y  -2.5942160244   27  z   3.4848894458
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     9    5    9    4
+
+  Symmetry  A1  ( 1)
+
+    1   C     y    [  2  -    5 ]/2
+    2   C     z    [  3  +    6 ]/2
+    3   C     y    [  8  -   11 ]/2
+    4   C     z    [  9  +   12 ]/2
+    5   O     z   15
+    6   H     y    [ 17  -   20 ]/2
+    7   H     z    [ 18  +   21 ]/2
+    8   H     y    [ 23  -   26 ]/2
+    9   H     z    [ 24  +   27 ]/2
+
+  Symmetry  B1  ( 2)
+
+   10   C     x    [  1  +    4 ]/2
+   11   C     x    [  7  +   10 ]/2
+   12   O     x   13
+   13   H     x    [ 16  +   19 ]/2
+   14   H     x    [ 22  +   25 ]/2
+
+  Symmetry  B2  ( 3)
+
+   15   C     y    [  2  +    5 ]/2
+   16   C     z    [  3  -    6 ]/2
+   17   C     y    [  8  +   11 ]/2
+   18   C     z    [  9  -   12 ]/2
+   19   O     y   14
+   20   H     y    [ 17  +   20 ]/2
+   21   H     z    [ 18  -   21 ]/2
+   22   H     y    [ 23  +   26 ]/2
+   23   H     z    [ 24  -   27 ]/2
+
+  Symmetry  A2  ( 4)
+
+   24   C     x    [  1  -    4 ]/2
+   25   C     x    [  7  -   10 ]/2
+   26   H     x    [ 16  -   19 ]/2
+   27   H     x    [ 22  -   25 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C   _1      C   _2      C   _1      C   _2      O           H   _1
+            ------      ------      ------      ------      ------      ------
+ C   _1:    0.000000
+ C   _2:    2.187000    0.000000
+ C   _1:    1.357827    2.231950    0.000000
+ C   _2:    2.231950    1.357827    1.434800    0.000000
+ O     :    1.362254    1.362254    2.235347    2.235347    0.000000
+ H   _1:    1.077630    3.180250    2.243496    3.302540    2.070128    0.000000
+ H   _2:    3.180250    1.077630    3.302540    2.243496    2.070128    4.093600
+ H   _1:    2.180561    3.280164    1.079603    2.259409    3.276462    2.749006
+ H   _2:    3.280164    2.180561    2.259409    1.079603    3.276462    4.335484
+
+            H   _2      H   _1      H   _2
+            ------      ------      ------
+ H   _2:    0.000000
+ H   _1:    4.335484    0.000000
+ H   _2:    2.749006    2.745600    0.000000
+
+
+  Max    interatomic separation is    4.3355 Angstrom (    8.1929 Bohr)
+  between atoms    8 and    7, "H   _1" and "H   _2".
+
+  Min HX interatomic separation is    1.0776 Angstrom (    2.0364 Bohr)
+
+  Min YX interatomic separation is    1.3578 Angstrom (    2.5659 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C   _1     C   _1       1.357827
+  bond distance:  C   _2     C   _2       1.357827
+  bond distance:  C   _2     C   _1       1.434800
+  bond distance:  O          C   _1       1.362254
+  bond distance:  O          C   _2       1.362254
+  bond distance:  H   _1     C   _1       1.077630
+  bond distance:  H   _2     C   _2       1.077630
+  bond distance:  H   _1     C   _1       1.079603
+  bond distance:  H   _2     C   _2       1.079603
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C   _1     C   _1     O            110.530
+  bond angle:     C   _1     C   _1     H   _1       133.875
+  bond angle:     O          C   _1     H   _1       115.596
+  bond angle:     C   _2     C   _2     O            110.530
+  bond angle:     C   _2     C   _2     H   _2       133.875
+  bond angle:     O          C   _2     H   _2       115.596
+  bond angle:     C   _1     C   _1     C   _2       106.080
+  bond angle:     C   _1     C   _1     H   _1       126.541
+  bond angle:     C   _2     C   _1     H   _1       127.378
+  bond angle:     C   _2     C   _2     C   _1       106.080
+  bond angle:     C   _2     C   _2     H   _2       126.541
+  bond angle:     C   _1     C   _2     H   _2       127.378
+  bond angle:     C   _1     O          C   _2       106.780
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA      53.292718          0.000000    0.000000    1.000000
+   IB      54.446499          0.000000    1.000000    0.000000
+   IC     107.739218          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+           9483.0781           9282.1212           4690.7618 MHz
+            0.316321            0.309618            0.156467 cm-1
+
+
+@  Nuclear repulsion energy :  160.945387976104 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          35   13   31   11
+
+
+  Symmetry  A1 ( 1)
+
+    1     C        1s         1 +    2
+    2     C        1s         3 +    4
+    3     C        1s         5 +    6
+    4     C        2py        9 -   10
+    5     C        2pz       11 +   12
+    6     C        2py       15 -   16
+    7     C        2pz       17 +   18
+    8     C        3d1-      21 -   22
+    9     C        3d0       23 +   24
+   10     C        3d2+      27 +   28
+   11     C        1s        29 +   30
+   12     C        1s        31 +   32
+   13     C        1s        33 +   34
+   14     C        2py       37 -   38
+   15     C        2pz       39 +   40
+   16     C        2py       43 -   44
+   17     C        2pz       45 +   46
+   18     C        3d1-      49 -   50
+   19     C        3d0       51 +   52
+   20     C        3d2+      55 +   56
+   21     O        1s        57
+   22     O        1s        58
+   23     O        1s        59
+   24     O        2pz       62
+   25     O        2pz       65
+   26     O        3d0       68
+   27     O        3d2+      70
+   28     H        1s        71 +   72
+   29     H        1s        73 +   74
+   30     H        2py       77 -   78
+   31     H        2pz       79 +   80
+   32     H        1s        81 +   82
+   33     H        1s        83 +   84
+   34     H        2py       87 -   88
+   35     H        2pz       89 +   90
+
+
+  Symmetry  B1 ( 2)
+
+   36     C        2px        7 +    8
+   37     C        2px       13 +   14
+   38     C        3d2-      19 -   20
+   39     C        3d1+      25 +   26
+   40     C        2px       35 +   36
+   41     C        2px       41 +   42
+   42     C        3d2-      47 -   48
+   43     C        3d1+      53 +   54
+   44     O        2px       60
+   45     O        2px       63
+   46     O        3d1+      69
+   47     H        2px       75 +   76
+   48     H        2px       85 +   86
+
+
+  Symmetry  B2 ( 3)
+
+   49     C        1s         1 -    2
+   50     C        1s         3 -    4
+   51     C        1s         5 -    6
+   52     C        2py        9 +   10
+   53     C        2pz       11 -   12
+   54     C        2py       15 +   16
+   55     C        2pz       17 -   18
+   56     C        3d1-      21 +   22
+   57     C        3d0       23 -   24
+   58     C        3d2+      27 -   28
+   59     C        1s        29 -   30
+   60     C        1s        31 -   32
+   61     C        1s        33 -   34
+   62     C        2py       37 +   38
+   63     C        2pz       39 -   40
+   64     C        2py       43 +   44
+   65     C        2pz       45 -   46
+   66     C        3d1-      49 +   50
+   67     C        3d0       51 -   52
+   68     C        3d2+      55 -   56
+   69     O        2py       61
+   70     O        2py       64
+   71     O        3d1-      67
+   72     H        1s        71 -   72
+   73     H        1s        73 -   74
+   74     H        2py       77 +   78
+   75     H        2pz       79 -   80
+   76     H        1s        81 -   82
+   77     H        1s        83 -   84
+   78     H        2py       87 +   88
+   79     H        2pz       89 -   90
+
+
+  Symmetry  A2 ( 4)
+
+   80     C        2px        7 -    8
+   81     C        2px       13 -   14
+   82     C        3d2-      19 +   20
+   83     C        3d1+      25 -   26
+   84     C        2px       35 -   36
+   85     C        2px       41 -   42
+   86     C        3d2-      47 +   48
+   87     C        3d1+      53 -   54
+   88     O        3d2-      66
+   89     H        2px       75 -   76
+   90     H        2px       85 -   86
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000     -0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000     -0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.05 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                     .---------------------------------------.
+                     | Starting in Cholesky Integral Section |
+                     `---------------------------------------'
+
+
+
+
+================================================================================
+
+                                      INFO
+
+  Full advantage of Cholesky decomposition based-methods is accomplished only 
+  if 64-bit integers are used.
+
+  Therefore, if you plan an intensive use of Cholesky routines, rebuild Dalton 
+  code with -DVAR_INT64 directive and -i8 option.
+  (Remember to link to the proper 64-bit libraries)
+
+  Note, however, that some other functionalities do not work in this mode.
+
+================================================================================
+
+
+
+
+
+                          +------------------------------+
+                          ! Output from **CHOLESKY input !
+                          +------------------------------+
+
+Cholesky vectors written in reduced set
+Default first screening threshold on diagonal                  1.0000D+00
+Default second screening threshold on diagonal                 1.0000D+03
+Cholesky vectors are not compressed
+Convergence threshold defined by user                          1.0000D-06
+Default buffer length:  250000
+Span factor:                                                   1.0000D-03
+File size (Gb; words) :   16         17179867885
+Number of shells:   13
+
+
+
+         Diagonal information
+         --------------------
+
+      ISAB         NNBST        NREDUC
+        1            1283            1271
+        2             796             777
+        3            1228            1212
+        4             788             766
+ 
+    Total            4095            4026
+
+End of Cholesky initializations
+
+
+
+
+    Vectors          Distributions     Qualified      Max. diagonal
+  77       77          4      4          126         0.733988348D+01
+  30      107          3      7           55         0.244707930D+00
+  39      146          2      9           90         0.192690800D+00
+  32      178          3     12           55         0.127861573D+00
+  42      220          1     13           60         0.714808158D-01
+  75      295          3     16           91         0.485992055D-01
+  33      328          1     17           55         0.348255889D-01
+  54      382          2     19          166         0.318910860D-01
+ 110      492          3     22          165         0.215203650D-01
+  37      529          1     23           67         0.137251971D-02
+  28      557          1     24           60         0.975119807D-03
+  28      585          1     25           60         0.566603423D-03
+  46      631          1     26           50         0.474682127D-03
+  49      680          1     27          100         0.265661957D-03
+  34      714          1     28           72         0.193027544D-03
+  28      742          1     29           72         0.897886878D-04
+  29      771          2     31           51         0.582167709D-04
+  21      792          2     33           63         0.184234374D-04
+  25      817          3     36           65         0.842536308D-05
+  21      838          4     40           55         0.286276703D-05
+  15      853          4     44           58         0.211415206D-05
+  13      866          5     49           30         0.149200548D-05
+
+
+                       +-----------------------------------+
+                       ! Summary of Cholesky decomposition !
+                       +-----------------------------------+
+
+
+         Number of vectors
+         -----------------
+
+      ISAB         Maximum          Actual
+        1            1283             283
+        2             796             178
+        3            1228             247
+        4             788             158
+
+
+Largest absolute element in diagonal:    0.97870D-06
+Number of distributions (total and actual):        91        49
+
+
+
+
+         Time statistics
+         ---------------
+
+
+      Initialization time :       0.14
+      Diagonal time       :       2.74
+      Integral time       :       2.18
+      Decomposition time  :       0.89
+
+      Total time          :       5.95
+
+
+Cholesky decomposition completed
+
+
+
+
+Poor man check of decomposition
+
+
+
+
+                          +-----------------------------+
+                          ! Summary of Cholesky restart !
+                          +-----------------------------+
+
+
+Check information for symmetry  1
+
+Number of vectors      :     283
+
+Maximum diagonal       :    0.95958808D-06
+Minimum diagonal       :   -0.26367797D-15
+
+Maximum absolute error :    0.95958808D-06    0.66838822D-01
+
+Converged   diagonals :    1283
+Zeroed neg  diagonals :       0
+Unconverged diagonals :       0
+
+
+Check information for symmetry  2
+
+Number of vectors      :     178
+
+Maximum diagonal       :    0.90273564D-06
+Minimum diagonal       :   -0.55511151D-16
+
+Maximum absolute error :    0.90273564D-06    0.83843386D-02
+
+Converged   diagonals :     796
+Zeroed neg  diagonals :       0
+Unconverged diagonals :       0
+
+
+Check information for symmetry  3
+
+Number of vectors      :     247
+
+Maximum diagonal       :    0.97870170D-06
+Minimum diagonal       :   -0.10408341D-15
+
+Maximum absolute error :    0.97870170D-06    0.31864614D-01
+
+Converged   diagonals :    1228
+Zeroed neg  diagonals :       0
+Unconverged diagonals :       0
+
+
+Check information for symmetry  4
+
+Number of vectors      :     158
+
+Maximum diagonal       :    0.89495350D-06
+Minimum diagonal       :   -0.41633363D-16
+
+Maximum absolute error :    0.89495350D-06    0.79298140D-02
+
+Converged   diagonals :     788
+Zeroed neg  diagonals :       0
+Unconverged diagonals :       0
+
+
+
+ >>>> Total CPU  time used in CHOLESKY :      5.97 seconds
+ >>>> Total wall time used in CHOLESKY :     25.49 seconds
+
+
+
+
+
+                        .----------------------------------.
+                        | End of Cholesky Integral Section |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+ NCCEXCI for singlet:           2           1           0           0
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:   13    3   11    2
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.710953     -11.409454     -11.377077      -1.729748      -1.253303
+           -0.826294      -0.735854      -0.531760      -0.463399      -0.272563
+           -0.202939      -0.191307      -0.171633
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.754827      -0.518870      -0.300477
+
+ Huckel EHT eigenvalues for symmetry :  3
+          -11.383368     -11.368998      -1.128841      -0.812516      -0.559361
+           -0.476139      -0.254800      -0.230253      -0.194187      -0.177860
+           -0.158295
+
+ Huckel EHT eigenvalues for symmetry :  4
+           -0.411068      -0.258558
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Oct 15 22:45:21 2014
+     Host name              : c28-5.local                             
+
+ Title lines from ".mol" input file:
+     ............                                                            
+     ............                                                            
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    (Integral direct) CC calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+@    Wave function type        >>> CC <<<
+@    Number of closed shell electrons          36
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                           |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           90 |   35   13   31   11
+     Number of basis functions          90 |   35   13   31   11
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals              18 |    9    2    6    1
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations    100
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-08
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+ -Excitation energies calculated
+  
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+     (using Cholesky decomposed integrals)
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  36 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+@  1  -227.624130811       4.13D+00  -2.28D+02     9   2   6   1
+      Virial theorem: -V/T =      2.008097
+@      MULPOP C   _1  0.32; C   _2  0.32; C   _1  0.23; C   _2  0.23; O      -0.27; H   _1 -0.21; H   _2 -0.21; H   _1 -0.21; H   _2 -0.21; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  3.10D-02  3.30D-02
+@  2  -228.331981856       1.43D+00  -7.08D-01     9   2   6   1
+      Virial theorem: -V/T =      2.001141
+@      MULPOP C   _1  0.06; C   _2  0.06; C   _1 -0.20; C   _2 -0.20; O      -0.04; H   _1  0.07; H   _2  0.07; H   _1  0.09; H   _2  0.09; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  3.20D-02  3.40D-02
+@  3  -228.437394335       5.37D-01  -1.05D-01     9   2   6   1
+      Virial theorem: -V/T =      2.003741
+@      MULPOP C   _1  0.22; C   _2  0.22; C   _1 -0.02; C   _2 -0.02; O      -0.49; H   _1  0.03; H   _2  0.03; H   _1  0.02; H   _2  0.02; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  3.20D-02  3.30D-02
+@  4  -228.452204877       1.38D-01  -1.48D-02     9   2   6   1
+      Virial theorem: -V/T =      2.005453
+@      MULPOP C   _1  0.23; C   _2  0.23; C   _1 -0.12; C   _2 -0.12; O      -0.40; H   _1  0.05; H   _2  0.05; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  3.20D-02  3.30D-02
+@  5  -228.453437830       3.32D-02  -1.23D-03     9   2   6   1
+      Virial theorem: -V/T =      2.004378
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  3.10D-02  3.30D-02
+@  6  -228.453570486       7.88D-03  -1.33D-04     9   2   6   1
+      Virial theorem: -V/T =      2.004416
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.12; C   _2 -0.12; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  3.20D-02  3.30D-02
+@  7  -228.453580933       3.73D-03  -1.04D-05     9   2   6   1
+      Virial theorem: -V/T =      2.004429
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  3.10D-02  3.30D-02
+@  8  -228.453583262       1.40D-03  -2.33D-06     9   2   6   1
+      Virial theorem: -V/T =      2.004420
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    9    F  3.20D-02  3.40D-02
+@  9  -228.453583652       2.99D-04  -3.91D-07     9   2   6   1
+      Virial theorem: -V/T =      2.004421
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11   10    F  3.20D-02  3.30D-02
+@ 10  -228.453583678       5.07D-05  -2.56D-08     9   2   6   1
+      Virial theorem: -V/T =      2.004421
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -12   11    F  3.10D-02  3.30D-02
+@ 11  -228.453583678       1.22D-05  -6.24D-10     9   2   6   1
+      Virial theorem: -V/T =      2.004421
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   12    F  3.20D-02  3.30D-02
+@ 12  -228.453583678       2.01D-06  -3.44D-11     9   2   6   1
+      Virial theorem: -V/T =      2.004421
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -14   13    F  3.20D-02  3.30D-02
+@ 13  -228.453583678       5.27D-07  -7.39D-13     9   2   6   1
+      Virial theorem: -V/T =      2.004421
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -14   14    F  3.20D-02  3.30D-02
+@ 14  -228.453583678       1.46D-07   5.68D-14     9   2   6   1
+      Virial theorem: -V/T =      2.004421
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+  15  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -14   15    F  3.20D-02  3.20D-02
+@ 15  -228.453583678       2.71D-08  -3.98D-13     9   2   6   1
+      Virial theorem: -V/T =      2.004421
+@      MULPOP C   _1  0.21; C   _2  0.21; C   _1 -0.11; C   _2 -0.11; O      -0.43; H   _1  0.06; H   _2  0.06; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
+  16  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -14   16    F  3.10D-02  3.40D-02
+@ 16  -228.453583678       8.58D-09   1.14D-13     9   2   6   1
+
+@ *** DIIS converged in  16 iterations !
+@     Converged SCF energy, gradient:   -228.453583678441    8.58D-09
+    - total time used in SIRFCK :              0.51 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   36
+ Orbital occupations :    9    2    6    1
+
+ Sym       Hartree-Fock orbital energies
+
+1 A1    -20.61609478   -11.29169304   -11.23442027    -1.44355229    -1.07421113
+         -0.77302431    -0.73951679    -0.56731470    -0.54238871     0.20372037
+          0.23469938     0.32987485     0.43893079     0.51118983
+
+2 B1     -0.63381433    -0.39894776     0.15679679     0.68606752     0.77789733
+          1.28951529     1.41325403
+
+3 B2    -11.29174334   -11.23356401    -0.99606155    -0.80437819    -0.61018760
+         -0.57931979     0.22895062     0.24554955     0.37132649     0.52219662
+          0.56491543
+
+4 A2     -0.32297806     0.22979835     0.73245592     0.85284334     1.51340346
+          1.67885356
+
+    E(LUMO) :     0.15679679 au (symmetry 2)
+  - E(HOMO) :    -0.32297806 au (symmetry 4)
+  ------------------------------------------
+    gap     :     0.47977485 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.556       0.598
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+
+@    Final HF energy:            -228.453583678441                 
+@    Nuclear repulsion:           160.945387976104
+@    Electronic energy:          -389.398971654544
+
+@    Final gradient norm:           0.000000008584
+
+ 
+     Date and time (Linux)  : Wed Oct 15 22:45:22 2014
+     Host name              : c28-5.local                             
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         5        6        7        8        9       10       11
+   1 C   :1s    -0.0695  -0.1284   0.0142  -0.0112   0.0100  -0.0434  -0.0604
+   2 C   :1s     0.1373   0.2689  -0.0270   0.0261  -0.0167   0.0831   0.0984
+   3 C   :1s     0.0239   0.1023  -0.0691  -0.0016   0.0007   0.7156   0.8958
+   4 C   :2py   -0.0097   0.1151  -0.2021  -0.0887  -0.0431   0.1039   0.0662
+   5 C   :2pz    0.1385   0.0220   0.0835  -0.0509   0.2504  -0.0451  -0.0555
+   6 C   :2py    0.0081   0.0318  -0.0505  -0.0090  -0.0528   0.3647   0.7213
+   7 C   :2pz    0.0240   0.0096   0.0317   0.0227   0.0657  -0.2447  -0.3606
+   8 C   :3d1-  -0.0165  -0.0089   0.0020   0.0202   0.0030   0.0075  -0.0115
+   9 C   :3d0    0.0078   0.0002  -0.0094  -0.0095   0.0183   0.0045  -0.0010
+  10 C   :3d2+  -0.0005  -0.0040  -0.0102  -0.0100   0.0144   0.0057   0.0050
+  11 C   :1s    -0.1743   0.0688   0.0371   0.0262  -0.0053  -0.0362   0.0425
+  12 C   :1s     0.3351  -0.1424  -0.0731  -0.0699   0.0080   0.0644  -0.0929
+  13 C   :1s     0.0919  -0.0627  -0.0514  -0.0338   0.0143   0.9181  -0.7378
+  14 C   :2py   -0.0690   0.1313  -0.0838   0.2627   0.2775   0.0713  -0.0657
+  15 C   :2pz   -0.0619  -0.1638  -0.1655   0.1401  -0.1575   0.1178  -0.0697
+  16 C   :2py   -0.0245   0.0431  -0.0324   0.0897   0.1355   0.2715  -0.5497
+  17 C   :2pz   -0.0203  -0.0472  -0.0628   0.0587  -0.0482   0.3404  -0.5035
+  18 C   :3d1-  -0.0005  -0.0056   0.0038   0.0032   0.0009  -0.0119  -0.0038
+  19 C   :3d0    0.0023   0.0095   0.0034   0.0105   0.0136  -0.0021   0.0036
+  20 C   :3d2+  -0.0133   0.0098   0.0020   0.0082   0.0088  -0.0005   0.0037
+  21 O   :1s    -0.1055  -0.0755  -0.0429  -0.0297   0.0530   0.0039  -0.0271
+  22 O   :1s    -0.2220  -0.1626  -0.0957  -0.0653   0.1159   0.0136  -0.0758
+  23 O   :1s    -0.1605  -0.1537  -0.0760  -0.0417   0.1118  -0.0065   0.0364
+  24 O   :2pz    0.0570   0.0909   0.2839   0.4054  -0.2885   0.0319  -0.0794
+  25 O   :2pz    0.0301   0.0602   0.1835   0.2922  -0.2245   0.1129   0.0183
+  26 O   :3d0    0.0062   0.0013   0.0174   0.0130  -0.0038  -0.0063  -0.0049
+  28 H   :1s     0.0152   0.1921  -0.1610  -0.0384  -0.1629  -0.0185  -0.0182
+  29 H   :1s     0.0002   0.0411  -0.0272  -0.0209  -0.0531  -1.0877  -1.4654
+  30 H   :2py   -0.0013  -0.0148   0.0114  -0.0002   0.0098   0.0031   0.0049
+  32 H   :1s     0.0761  -0.1011  -0.1605   0.2110   0.0439  -0.0222  -0.0015
+  33 H   :1s     0.0141  -0.0230  -0.0250   0.0777   0.0057  -1.2089   1.2760
+  35 H   :2pz   -0.0088   0.0053   0.0104  -0.0119  -0.0056   0.0048  -0.0053
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4
+   1 C   :2px    0.1959  -0.1142   0.3211  -0.5740
+   2 C   :2px    0.1000  -0.0621   0.5626   0.5637
+   3 C   :3d2-  -0.0225  -0.0047   0.0129   0.0154
+   4 C   :3d1+  -0.0059  -0.0282   0.0014  -0.0273
+   5 C   :2px    0.1095  -0.3220  -0.1763  -0.4047
+   6 C   :2px    0.0519  -0.2389  -0.3494   0.2381
+   7 C   :3d2-  -0.0033   0.0134   0.0209   0.0125
+   8 C   :3d1+  -0.0107   0.0129  -0.0222   0.0418
+   9 O   :2px    0.4965   0.3348  -0.2801  -0.0293
+  10 O   :2px    0.3461   0.2962  -0.4042  -0.1723
+  11 O   :3d1+   0.0231   0.0072   0.0028  -0.0164
+  12 H   :2px    0.0048  -0.0035   0.0203  -0.0186
+  13 H   :2px    0.0025  -0.0091  -0.0108  -0.0050
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         2        3        4        5        6        7        8
+   1 C   :1s    -0.0086  -0.1725   0.0251   0.0342   0.0449  -0.0490  -0.0307
+   2 C   :1s    -0.0021   0.3422  -0.0514  -0.0646  -0.1076   0.1297   0.0426
+   3 C   :1s     0.0059   0.1140  -0.0521  -0.1038  -0.0718   0.7805  -0.4300
+   4 C   :2py    0.0002  -0.0251   0.0386  -0.2828   0.1353   0.1496   0.0245
+   5 C   :2pz   -0.0010   0.0102   0.2357  -0.0288  -0.2190  -0.0700  -0.0024
+   6 C   :2py    0.0015  -0.0201   0.0214  -0.0807   0.0625   0.9674   0.7458
+   7 C   :2pz    0.0011   0.0359   0.0211  -0.0150  -0.0780  -0.5212  -0.2626
+   8 C   :3d1-   0.0004   0.0063  -0.0178   0.0292   0.0044  -0.0036   0.0009
+   9 C   :3d0   -0.0003   0.0119   0.0056   0.0086  -0.0065  -0.0041  -0.0095
+  10 C   :3d2+   0.0004  -0.0074   0.0105  -0.0006  -0.0043  -0.0017   0.0009
+  11 C   :1s     0.7003  -0.0887  -0.1230  -0.0456  -0.0074  -0.0075   0.0777
+  12 C   :1s     0.0270   0.1700   0.2461   0.0935   0.0059   0.0218  -0.1461
+  13 C   :1s    -0.0215   0.0368   0.1776   0.1283   0.0529   1.0944  -0.0826
+  14 C   :2py   -0.0008   0.0684   0.1145   0.0294   0.0471   0.0392  -0.0442
+  15 C   :2pz   -0.0000  -0.0790  -0.0120   0.0614   0.2925   0.0682  -0.0888
+  16 C   :2py    0.0002   0.0037   0.0179  -0.0090   0.0215  -0.1321  -0.8583
+  17 C   :2pz    0.0005  -0.0113  -0.0418   0.0042   0.0920   0.1372  -1.2909
+  18 C   :3d1-   0.0008  -0.0067  -0.0003   0.0107   0.0200   0.0013  -0.0097
+  19 C   :3d0    0.0007   0.0133   0.0087   0.0060  -0.0080  -0.0010  -0.0025
+  21 O   :2py    0.0001   0.2362  -0.3072   0.3284   0.0303  -0.0253  -0.0126
+  22 O   :2py    0.0000   0.1252  -0.1757   0.2036   0.0299  -0.0550   0.0906
+  23 O   :3d1-   0.0001   0.0194  -0.0154   0.0185  -0.0049   0.0004   0.0064
+  24 H   :1s    -0.0002   0.1174  -0.0717  -0.2509   0.1305   0.0062  -0.0365
+  25 H   :1s    -0.0013   0.0261  -0.0241  -0.0770   0.0432  -1.8074  -0.7149
+  26 H   :2py   -0.0002  -0.0133   0.0069   0.0125  -0.0076   0.0111   0.0013
+  28 H   :1s    -0.0019   0.0547   0.1548   0.1169   0.2456   0.0193   0.0219
+  29 H   :1s     0.0046   0.0091   0.0361   0.0404   0.0893  -0.6037   1.9237
+  30 H   :2py    0.0009  -0.0029  -0.0083  -0.0046  -0.0113   0.0057  -0.0039
+  31 H   :2pz    0.0010  -0.0074  -0.0124  -0.0060  -0.0093   0.0033  -0.0100
+
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 C   :2px    0.3534  -0.2199  -0.6086
+   2 C   :2px    0.2913  -0.5379   0.7106
+   3 C   :3d2-  -0.0070  -0.0001   0.0433
+   4 C   :3d1+   0.0138   0.0284  -0.0298
+   5 C   :2px    0.2277   0.3193  -0.3483
+   6 C   :2px    0.2035   0.8209   0.3707
+   7 C   :3d2-   0.0146   0.0145  -0.0086
+   8 C   :3d1+  -0.0209   0.0071   0.0487
+   9 O   :3d2-   0.0175  -0.0206  -0.0192
+  10 H   :2px    0.0112  -0.0164   0.0076
+  11 H   :2px    0.0069   0.0212   0.0067
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.63 seconds
+ >>>> Total wall time used in SIRIUS :      0.68 seconds
+
+ 
+     Date and time (Linux)  : Wed Oct 15 22:45:22 2014
+     Host name              : c28-5.local                             
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+ 
+  I am freezing!
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   -20.6160947820997     
+  -11.2335640119409     
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -20.6161
+ Freezing HF-orbital  49 of symmetry   3 and with orbital energy  -11.2917
+ Freezing HF-orbital   2 of symmetry   1 and with orbital energy  -11.2917
+ Freezing HF-orbital   3 of symmetry   1 and with orbital energy  -11.2344
+ Freezing HF-orbital  50 of symmetry   3 and with orbital energy  -11.2336
+ In total frozen-core per symmetry-class:  3  0  2  0
+ 
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+ 
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :       288
+          Number of t2 amplitudes                 :    115497
+          Total number of amplitudes in ccsd      :    115785
+ 
+
+
+          CCS CALC. - NO WAVEFUNCTION OPTIMIZATION
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                    +-----------------------------------------+
+                    !  Cholesky-based CCS Excitation Energies !
+                    +-----------------------------------------+
+
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       288
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.552776412247122     
+  0.777088082022542     
+ Start vector guessed from diagonal
+ ... selected element no.279
+ Start vector guessed from diagonal
+ ... selected element no.168
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32093253
+       2       0.41642707
+    ==== End of matrix output ====
+      1       2         0.00     0.24E+00
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31293862
+       2       0.35821151
+    ==== End of matrix output ====
+      2       2         0.00     0.59E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31131252
+       2       0.35352331
+    ==== End of matrix output ====
+      3       2         0.00     0.15E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31095194
+       2       0.35332280
+    ==== End of matrix output ====
+      4       2         0.00     0.49E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31093323
+       2       0.35329726
+    ==== End of matrix output ====
+      5       2         0.00     0.14E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31093231
+       2       0.35329459
+    ==== End of matrix output ====
+      6       2         0.00     0.63E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31093222
+       2       0.35329423
+    ==== End of matrix output ====
+      7       2         0.00     0.19E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31093222
+       2       0.35329419
+    ==== End of matrix output ====
+      8       1         0.00     0.84E-04
+    --------------------------------------
+    converged in  8 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.02
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.02
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.12 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.17 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3109322214
+    2   0.3532941944
+
+
+ SYMMETRY CLASS NR.    1
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.3109322214        8.4608961393
+         2            0.3532941944        9.6136240623
+
+
+ Total excited state energies for states of symmetry/spin    1    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    1    1          -228.142651457058292
+@@    1    2          -228.100289484065542
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             8.4609 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       2     |      168          |              |    0.735072  |
+ | 4   4   |   1       1     |      279          |              |   -0.662566  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9896
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                             9.6136 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       2     |      168          |              |    0.635097  |
+ | 4   4   |   1       1     |      279          |              |    0.711072  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9534
+
+          Printed all single excitations greater than 0.500000
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       183
+ Converging for  1 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.551928683733895     
+  0.633647134327099     
+ Start vector guessed from diagonal
+ ... selected element no.159
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36386600
+    ==== End of matrix output ====
+      1       1         0.00     0.69E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34886014
+    ==== End of matrix output ====
+      2       1         0.00     0.35E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34383197
+    ==== End of matrix output ====
+      3       1         0.00     0.39E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34167991
+    ==== End of matrix output ====
+      4       1         0.00     0.19E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34102931
+    ==== End of matrix output ====
+      5       1         0.00     0.91E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34078175
+    ==== End of matrix output ====
+      6       1         0.00     0.96E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34065971
+    ==== End of matrix output ====
+      7       1         0.00     0.43E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34062833
+    ==== End of matrix output ====
+      8       1         0.00     0.32E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34059877
+    ==== End of matrix output ====
+      9       1         0.00     0.25E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34058880
+    ==== End of matrix output ====
+     10       1         0.00     0.14E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34058337
+    ==== End of matrix output ====
+     11       1         0.00     0.11E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34058194
+    ==== End of matrix output ====
+     12       1         0.00     0.47E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34058146
+    ==== End of matrix output ====
+     13       1         0.00     0.32E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34058130
+    ==== End of matrix output ====
+     14       1         0.00     0.17E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34058124
+    ==== End of matrix output ====
+     15       1         0.00     0.15E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34058119
+    ==== End of matrix output ====
+     16       1         0.00     0.12E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34058117
+    ==== End of matrix output ====
+     17       1         0.00     0.57E-04
+    --------------------------------------
+    converged in 17 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.02
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.02
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.19 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.25 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3405811650
+
+
+ SYMMETRY CLASS NR.    2
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.3405811650        9.2676849359
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1          -228.113002513425585
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             9.2677 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   4   |   1       1     |      159          |              |    0.871760  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8718
+
+          Printed all single excitations greater than 0.500000
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       285
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       180
+ No Excitation Energies calculated in this symmetry class
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+ 
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :       288
+          Number of t2 amplitudes                 :    115497
+          Total number of amplitudes in ccsd      :    115785
+ 
+
+
+                              Output from CC_CHOECC2
+                              ----------------------
+
+     Cholesky based optimization of the CC2 wave function:
+     Threshold for energy         :    1.000000D-08
+     Threshold for vector function:    1.000000D-06
+     Maximum number of iterations :              40
+
+ Iter.  1: Coupled cluster MP2   energy :   -229.1585815712914211
+ Iter.  2: Coupled cluster CC2   energy :   -229.1656313465173014
+ Iter.  3: Coupled cluster CC2   energy :   -229.1678845795785264
+ Iter.  4: Coupled cluster CC2   energy :   -229.1682787943432515
+ Iter.  5: Coupled cluster CC2   energy :   -229.1682664151896063
+ Iter.  6: Coupled cluster CC2   energy :   -229.1682697181029198
+ Iter.  7: Coupled cluster CC2   energy :   -229.1682694653441388
+ Iter.  8: Coupled cluster CC2   energy :   -229.1682694792600046
+ Iter.  9: Coupled cluster CC2   energy :   -229.1682694687769413
+ Iter. 10: Coupled cluster CC2   energy :   -229.1682694696840201
+
+ CC2 energy converged to within 0.1000D-07 is   -229.168269470
+ - the CC2 correlation energy contribution is     -0.714685791
+ Final norm of the CC2 vector function is           4.4393D-08
+ Total time used for CC2 optimization is                  1.38 seconds
+
+
+
+
+
+                       +------------------------------------+
+                       ! Calculating Intermediates for CCLR !
+                       +------------------------------------+
+
+
+
+            E-intermediates calculated
+ >>>> Total CPU  time used in CC_CHOECC2:   1.47 seconds
+ >>>> Total wall time used in CC_CHOECC2:   1.68 seconds
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+            Total SCF   energy:                  -228.4535836784
+            Total CC2   energy:                  -229.1682694697
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                    +-----------------------------------------+
+                    !  Cholesky-based CC2 Excitation Energies !
+                    +-----------------------------------------+
+
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       288
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.552776412247122     
+  0.777088082022542     
+ Start vector guessed from diagonal
+ ... selected element no.279
+ Start vector guessed from diagonal
+ ... selected element no.168
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.00000
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+
+                              +----------------------+
+                              ! Output from CC_DECMO !
+                              +----------------------+
+
+          Cholesky decomposition of CC2 am.:
+          Decomposition threshold:    1.000000D-06
+          Span factor            :    1.000000D-03
+          No zeroing of diagonals.
+          Max. number of diagonals qualified:         50
+          Max. number of prev. vectors read :        200
+
+
+
+                         Summary of CC2 am. decomposition
+                         --------------------------------
+
+     Symmetry        Min. Diag.           Max. Diag.            RMS Error   
+     --------------------------------------------------------------------
+         1        -4.857226D-17         9.894064D-07         3.053372D-07
+         2        -1.344411D-17         9.912983D-07         3.312294D-07
+         3        -4.163336D-17         9.858728D-07         3.312455D-07
+         4        -1.821460D-17         9.291957D-07         3.325064D-07
+     --------------------------------------------------------------------
+
+     Symmetry      NDIM        NTOVEC   %Saving(*)    NUMCHO
+     -------------------------------------------------------
+         1           288          210     27.08          283
+         2           183          127     30.60          178
+         3           285          187     34.39          247
+         4           180          114     36.67          158
+     -------------------------------------------------------
+     (*) (NDIM-NTOVEC)/NDIM
+
+     Original MO Cholesky vectors held in core for the following symmetries:
+      1 2 3 4
+ 
+
+
+                         Timing of CC2 am. decomposition
+                         -------------------------------
+
+     Diagonal time     :       0.00 seconds
+     Integral time     :       0.00 seconds (  73.34% integrals calculated)
+     Decomposition time:       0.05 seconds
+
+     Total time        :       0.05 seconds
+
+     - End of CC_DECMO
+
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.29631752
+       2       0.39542310
+    ==== End of matrix output ====
+      1       2         0.01     0.19E+00
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.28716282
+       2       0.36140376
+    ==== End of matrix output ====
+      2       2         0.00     0.53E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.28643772
+       2       0.35746044
+    ==== End of matrix output ====
+      3       2         0.00     0.17E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.28626725
+       2       0.35702535
+    ==== End of matrix output ====
+      4       2         0.00     0.82E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.28624860
+       2       0.35694019
+    ==== End of matrix output ====
+      5       2         0.00     0.25E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.28624891
+       2       0.35693163
+    ==== End of matrix output ====
+      6       1         0.00     0.92E-03
+    --------------------------------------
+    converged in  6 iterations
+    threshold:    0.10E-02
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.03
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.03
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.63 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.01 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-03)
+
+    1   0.2862489110
+    2   0.3569316285
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.552776412247122     
+  0.777088082022542     
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+
+
+
+ >>>>> COUPLED CLUSTER DIIS SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+      1       2         0.00     0.10E-01
+
+      eigenvalues    residual   converged
+     .....................................
+      0.259086285   0.9954E-02      F
+      0.338762076   0.9862E-02      F
+     .....................................
+      2       2         0.00     0.56E-02
+
+      eigenvalues    residual   converged
+     .....................................
+      0.262123876   0.2478E-02      F
+      0.339622744   0.5582E-02      F
+     .....................................
+      3       2         0.00     0.26E-02
+
+      eigenvalues    residual   converged
+     .....................................
+      0.261775573   0.1057E-02      F
+      0.339351684   0.2639E-02      F
+     .....................................
+      4       2         0.00     0.10E-02
+
+      eigenvalues    residual   converged
+     .....................................
+      0.261814421   0.4134E-03      F
+      0.339260747   0.1010E-02      F
+     .....................................
+      5       2         0.00     0.28E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.261806897   0.5510E-04      T
+      0.339253550   0.2766E-03      F
+     .....................................
+      6       1         0.00     0.11E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.261806897   0.5511E-04      T
+      0.339253973   0.1112E-03      F
+     .....................................
+      7       1         0.00     0.55E-04
+
+      eigenvalues    residual   converged
+     .....................................
+      0.261806897   0.5510E-04      T
+      0.339251700   0.4202E-04      T
+     .....................................
+    --------------------------------------
+    converged in  7 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.03
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.03
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.73 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.13 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.2618068969
+    2   0.3392517001
+
+
+ SYMMETRY CLASS NR.    1
+ MULTIPLICITY          1
+
+
+ CC2        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.2618068969        7.1241280601
+         2            0.3392517001        9.2315083558
+
+
+ Total excited state energies for states of symmetry/spin    1    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    1    1          -228.906462572795164
+@@    1    2          -228.829017769564246
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             7.1241 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       2     |      168          |              |    0.763476  |
+ | 4   4   |   1       1     |      279          |              |   -0.632082  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9912
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                             9.2315 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       2     |      168          |              |    0.595195  |
+ | 4   4   |   1       1     |      279          |              |    0.744483  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9532
+
+          Printed all single excitations greater than 0.500000
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       183
+ Converging for  1 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.551928683733895     
+  0.633647134327099     
+ Start vector guessed from diagonal
+ ... selected element no.159
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.00000
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36879177
+    ==== End of matrix output ====
+      1       1         0.00     0.65E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35939707
+    ==== End of matrix output ====
+      2       1         0.00     0.23E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35679318
+    ==== End of matrix output ====
+      3       1         0.00     0.31E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35500883
+    ==== End of matrix output ====
+      4       1         0.00     0.21E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35366567
+    ==== End of matrix output ====
+      5       1         0.00     0.13E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35338257
+    ==== End of matrix output ====
+      6       1         0.00     0.80E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35320941
+    ==== End of matrix output ====
+      7       1         0.00     0.90E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35308925
+    ==== End of matrix output ====
+      8       1         0.00     0.44E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35304535
+    ==== End of matrix output ====
+      9       1         0.00     0.33E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35301750
+    ==== End of matrix output ====
+     10       1         0.00     0.30E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35299363
+    ==== End of matrix output ====
+     11       1         0.00     0.22E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35298553
+    ==== End of matrix output ====
+     12       1         0.00     0.11E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35298403
+    ==== End of matrix output ====
+     13       1         0.00     0.51E-03
+    --------------------------------------
+    converged in 13 iterations
+    threshold:    0.10E-02
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.03
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.03
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.79 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.21 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-03)
+
+    1   0.3529840345
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.551928683733895     
+  0.633647134327099     
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+
+
+
+ >>>>> COUPLED CLUSTER DIIS SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+      1       1         0.00     0.64E-02
+
+      eigenvalues    residual   converged
+     .....................................
+      0.337620514   0.6423E-02      F
+     .....................................
+      2       1         0.00     0.32E-02
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338346991   0.3191E-02      F
+     .....................................
+      3       1         0.00     0.77E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338262787   0.7674E-03      F
+     .....................................
+      4       1         0.00     0.43E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338263201   0.4340E-03      F
+     .....................................
+      5       1         0.00     0.36E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338260303   0.3650E-03      F
+     .....................................
+      6       1         0.00     0.20E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338258971   0.1997E-03      F
+     .....................................
+      7       1         0.00     0.27E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338258272   0.2695E-03      F
+     .....................................
+      8       1         0.00     0.17E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338257468   0.1671E-03      F
+     .....................................
+      9       1         0.00     0.12E-03
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338256269   0.1204E-03      F
+     .....................................
+     10       1         0.00     0.96E-04
+
+      eigenvalues    residual   converged
+     .....................................
+      0.338255520   0.9576E-04      T
+     .....................................
+    --------------------------------------
+    converged in 10 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.02
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.02
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.37 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.06 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3382555197
+
+
+ SYMMETRY CLASS NR.    2
+ MULTIPLICITY          1
+
+
+ CC2        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.3382555197        9.2044009070
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1          -228.830013950010169
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             9.2044 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   4   |   1       1     |      159          |              |    0.874514  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8745
+
+          Printed all single excitations greater than 0.500000
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       285
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       180
+ No Excitation Energies calculated in this symmetry class
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+            Total SCF   energy:                  -228.4535836784                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CCS        Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1A1  |    1   |     0.3109322  |       8.46090  |     68241.734  | 100.00  |
+ | ^1A1  |    2   |     0.3532942  |       9.61362  |     77539.112  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1B1  |    1   |     0.3405812  |       9.26768  |     74748.925  | 100.00  |
+ +=============================================================================+
+                                                                                
+                                                                                
+     Total energies in Hartree:                                                 
+             1 ^1A1      -228.1426514571                                        
+             2 ^1A1      -228.1002894841                                        
+             1 ^1B1      -228.1130025134                                        
+                                                                                
+            Total SCF   energy:                  -228.4535836784                
+            Total CC2   energy:                  -229.1682694697                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CC2        Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1A1  |    1   |     0.2618069  |       7.12413  |     57459.972  | 100.00  |
+ | ^1A1  |    2   |     0.3392517  |       9.23151  |     74457.141  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1B1  |    1   |     0.3382555  |       9.20440  |     74238.505  | 100.00  |
+ +=============================================================================+
+                                                                                
+                                                                                
+     Total energies in Hartree:                                                 
+             1 ^1A1      -228.9064625728                                        
+             2 ^1A1      -228.8290177696                                        
+             1 ^1B1      -228.8300139500                                        
+
+  1 a.u. =        27.21138 eV.  
+  1 a.u. =    219474.62934 cm-1.
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ >>>> CPU and wall time for CC :      10.323      12.544
+
+ 
+     Date and time (Linux)  : Wed Oct 15 22:45:34 2014
+     Host name              : c28-5.local                             
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  17.02 seconds
+ >>>> Total wall time used in DALTON:  38.84 seconds
+
+ 
+     Date and time (Linux)  : Wed Oct 15 22:45:34 2014
+     Host name              : c28-5.local                             

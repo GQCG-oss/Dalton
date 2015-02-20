@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck er2inp */
       SUBROUTINE ER2INP(WORD)
@@ -280,7 +279,7 @@ C
             END DO
             IF (LBFINP .NE. 600) THEN
                WRITE (LUPRI,'(A,I5)')
-     &            ' Non-default buffer length:',LBFINP
+     &            ' Non-default 2-el. integral buffer length:',LBFINP
             END IF
             IF (MAXDST .NE. MAXDSD) THEN
                WRITE (LUPRI,'(A,I5)')
@@ -316,7 +315,6 @@ C  /* Deck er2ini */
 C
 C     Initialize /CBIERI/
 C
-      IF (PARCAL) RUNERI = .FALSE.
       IPRERI = IPRDEF
       IPRNT1 = 0
       IPRNT2 = 0
@@ -562,10 +560,6 @@ C
          NPERTS = 1
          NCORS = 1
       END IF
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASE .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
@@ -573,7 +567,6 @@ C
          NIBUF = 2
          NBITS = 16
       END IF
-#endif
       IF (DGABAB) THEN
          NIBUF = 1
          NBITS = 16
@@ -695,7 +688,7 @@ C  /* Deck odcdr1 */
      &          BUF(*), IBUF(*),
      &          CCFBT(*), INDXBT(*), NCOUNT(*),
      &          CSQ(NCSQ1,NCSQ2), WORK(LWORK)
-#include "ibtfun.h"
+
 C
 C     Information in arrays:
 C
@@ -1026,9 +1019,9 @@ C
             GCONAB = GCONA .OR. GCONB
             GCONCD = GCONC .OR. GCOND
 C
-            ISTBLR = IBTOR(ISTBLA,ISTBLB)
-            ISTBLS = IBTOR(ISTBLC,ISTBLD)
-            ISTBLT = IBTOR(IBTAND(ISTBLA,ISTBLB),IBTAND(ISTBLC,ISTBLD))
+            ISTBLR = IOR(ISTBLA,ISTBLB)
+            ISTBLS = IOR(ISTBLC,ISTBLD)
+            ISTBLT = IOR(IAND(ISTBLA,ISTBLB),IAND(ISTBLC,ISTBLD))
 C
             MLTPA = MULT(ISTBLA)
             MLTPB = MULT(ISTBLB)
@@ -2391,7 +2384,7 @@ C  /* Deck pntuv */
 #include "ericom.h"
 #include "sphtrm.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
       ICMPAB = 0
       MAXB = KCKTB
@@ -2726,7 +2719,7 @@ C  /* Deck lmnprp */
 #include "eriao.h"
 #include "ccom.h"
 #include "sphtrm.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from LMNPRP','*',103)
 C
@@ -2746,7 +2739,7 @@ C
             IBITS =   MOD(LMNPWR(J,I,1),2)
      &            + 2*MOD(LMNPWR(J,I,2),2)
      &            + 4*MOD(LMNPWR(J,I,3),2)
-            LMNSYM(J,I,1,ISYM) = IBTAND(ISYM,IBITS)
+            LMNSYM(J,I,1,ISYM) = IAND(ISYM,IBITS)
          END DO
          END DO
 C
@@ -3251,7 +3244,7 @@ c
               if(nccmio.eq.1) then
                 write(u,505) i, j, aoint(1,i,j,k)
               else
-                stop 'may not work...'
+                call quit('may not work...')
                 do icc=1,nccmio
                   write(u,505) i, j, aoint(1+icc-1,i,j,k)
                 end do
@@ -3265,7 +3258,7 @@ c
             if(nccmio.eq.1) then
               write(u,505) i, j, aoint(1,i,j,1)
             else
-              stop 'may not work...'
+              call quit('may not work...')
               do icc=1,nccmio
                 write(u,505) i, j, aoint(1+icc-1,i,j,1)
               end do
@@ -3329,7 +3322,7 @@ c     C. Villani, Uni Karlsruhe, Feb 2005
                 end if
               else
 c               not sure, here
-                stop 'Integral deriv. ncc>1, may not work...'
+                call quit('Integral deriv. ncc>1, may not work...')
               end if
             end do
           end do
@@ -3349,7 +3342,7 @@ c               not sure, here
               end if
             else
 c               not sure, here
-              stop 'Integral deriv. ncc>1, may not work...'
+              call quit('Integral deriv. ncc>1, may not work...')
             end if
           end do
         end do

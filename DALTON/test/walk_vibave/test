@@ -1,0 +1,145 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# HF energy (14 times)
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-10)
+
+# Numerical differentiation set up
+f.add(from_string = 'Molecular properties transformed to the following Eckart frame',
+      num_lines = 5,
+      ignore_below = 1.0e-8,
+      rel_tolerance = 1.0e-8)
+
+# Molecular gradients (Low numbers, so difficult to test)
+#ADJUST
+f.add(from_string = 'Molecular gradient (au)',
+      num_lines    = 6,
+#      ignore_below = 1.0e-3,
+      abs_tolerance = 1.0e-4)
+
+# Molecular hessians (Low numbers, so difficult to test)
+#ADJUST
+f.add(from_string = 'Molecular Hessian (au)',
+      num_lines    = 20,
+      ignore_below = 1.0e-3,
+      rel_tolerance = 1.0e-4)
+
+# Initial static polarizabilities
+f.add(from_string = 'Static polarizability at effective geometry',
+      num_lines = 8,
+#      ignore_below = 1.0e-10,
+      abs_tolerance = 1.0e-8)
+
+# Magnetizabilities (check SI numbers since they are largest)
+f.add(from_string = 'Magnetizabilities                    au',
+      num_lines = 9,
+      abs_tolerance = 1.0e-2,
+      mask = [2])
+
+# g-tensor
+f.add(from_string = 'Molecular rotational g-tensor\n',
+      num_lines = 8,
+      rel_tolerance = 1.0e-4)
+
+# Initial shielding tensor
+f.add(from_string = 'Chemical shielding tensors at effective geometry',
+      num_lines = 24,
+#      ignore_below = 1.0e-6,
+      abs_tolerance = 1.0e-6)
+
+# Chemical shielding for nitrogen and hydrogen
+f.add(from_string = 'Chemical shielding for ',
+      num_lines = 10,
+#      ignore_below = 1.0e-4,
+      abs_tolerance = 1.0e-2)
+
+# Chemical shielding summary
+f.add(string = '@1 N ',
+      abs_tolerance = 1.0e-3)
+f.add(string = '@2 H ',
+      abs_tolerance = 1.0e-3)
+
+# Projected gradient
+f.add(string = 'Norm of projected gradient',
+      rel_tolerance = 1.0e-5)
+
+# Energy at effective geometry 
+f.add(string = 'Energy at effective geometry:',
+      rel_tolerance = 1.0e-8)
+
+# Dipole moments
+f.add(from_string = 'Dipole moment components',
+      num_lines = 8,
+#      ignore_below = 1.0e-4,
+      abs_tolerance = 1.0e-5,
+      mask = [3])
+
+# Dipole moment at effective geometry 
+f.add(from_string = 'Dipole moment at effective geometry',
+      num_lines = 6,
+      ignore_below = 1.0e-8,
+      rel_tolerance = 1.0e-8)
+
+# Magnetizabilities at effective geometry 
+f.add(from_string = 'Magnetizabilities at effective geometry',
+      num_lines = 8,
+      ignore_below = 1.0e-7,
+      rel_tolerance = 1.0e-8)
+
+# g-tensor at effective geometry
+f.add(from_string = 'Rotational g tensor at effective geometry',
+      num_lines = 8,
+      ignore_below = 1.0e-8,
+      rel_tolerance = 1.0e-8)
+
+# Static polarizability at effective geometry
+f.add(from_string = 'Static polarizability at effective geometry',
+      num_lines = 8,
+#      ignore_below = 1.0e-8,
+      abs_tolerance = 1.0e-8)
+
+######################
+# Second derivatives #
+######################
+
+f.add(from_string = 'Dipole moment second derivatives:',
+      num_lines = 10,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_string = 'Magnetizability tensor second derivatives:',
+      num_lines = 11,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_string = 'Rotational g tensor second derivatives:',
+      num_lines = 11,
+      abs_tolerance = 1.0e-4)
+
+f.add(from_string = 'Nuclear shielding tensor second derivatives for:',
+      num_lines = 11,
+      abs_tolerance = 1.0e-2)
+
+f.add(from_string = 'Polarizability second derivatives:',
+      num_lines = 11,
+      abs_tolerance = 2.0e-4)
+
+###############################################
+# Vibrationally averaged molecular properties #
+###############################################
+
+f.add(from_string = 'Vibrationally averaged molecular properties', 
+      to_string = 'Numerical differentiation complete.',
+      abs_tolerance = 2.0e-5)
+
+test.run(['walk_vibave.dal'], ['nh3_sto-3g.mol'], f={'out': f})
+
+sys.exit(test.return_code)

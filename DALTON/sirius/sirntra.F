@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 
 #define USE_MXMA
@@ -306,7 +305,7 @@ C
             CALL REWSPL(LUINTA)
             CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
 !           consistency checks before reading of AOTWOINT in RDAO2
-            READ (LUINTA) NSYM_x, (NBAS_x(I),I=1,8), LBUF, NIBUF, NBITS
+            READ (LUINTA) NSYM_x, NBAS_x, LBUF, NIBUF, NBITS, LENINT4
             ierr = 0
             IF (NSYM_x .ne. NSYM) THEN
                ierr = ierr + 1
@@ -1169,7 +1168,7 @@ C* Comdeck notes and ideas*
 !890824-hjaaj
 !   New routine TRALIM; called from TR2CTL
 !890823-hjaaj-t13
-!   Replaced IEOR with IBTXOR statement function
+!   Replaced IEOR with IEOR statement function
 !890705-hjaaj-t13
 !   Skip memory tests for exchange integrals if NOEXCH
 !================
@@ -1244,7 +1243,7 @@ C
 #include "inftra.h"
 #include "inftap.h"
 C
-#include "ibtfun.h"
+
 C
       CALL QENTER('TR2CTL')
 C
@@ -1330,7 +1329,7 @@ C
         NOQ   = MORB(NSQ)
         NOCQ  = MASH(NSQ)
         ISQ   = NSQ
-        NSPQ  = IBTXOR(NSP-1,NSQ-1)+1
+        NSPQ  = IEOR(NSP-1,NSQ-1)+1
         ITR   = 0
         LMOR1 = 1
         JMOR1 = 0
@@ -1347,7 +1346,7 @@ C
          KEEPR = KEEP(10+NSR)
          NOR   = MORB(NSR)
          NOCR  = MASH(NSR)
-         NSPQR = IBTXOR(NSPQ-1,NSR-1)+1
+         NSPQR = IEOR(NSPQ-1,NSR-1)+1
          ISR   = NSR
          ITS   = 0
          LMOS1 = 1
@@ -1358,7 +1357,7 @@ C
             LMOS1 = LMOS1+MBAS(NSS-1)*MORB(NSS-1)
             JMOS1 = JMOS1+MORB(NSS-1)
           END IF
-          NSPQRS= IBTXOR(NSPQR-1,NSS-1) + 1
+          NSPQRS= IEOR(NSPQR-1,NSS-1) + 1
          IF(NSPQRS .NE. INTSYM) GO TO 101
           NBS   = MBAS(NSS)
           LMOS  = LMOS1+NBS*MFRO(NSS)
@@ -3141,7 +3140,7 @@ C
 C
       INTEGER NBAS_x(8)
 C
-#include "ibtfun.h"
+
 C
       IBASP = IBAS(ISP)
       IBASQ = IBAS(ISQ)
@@ -3153,7 +3152,7 @@ C
 C     LBUF, NIBUF, and NBITS have been read from LUINTA in
 C     SIR_INTOPEN_NEWTRA
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! counted in INTEGER*4
       KINT = 1
       KIINT = KINT + LBUF
 C
@@ -3161,12 +3160,7 @@ C
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
  150  CONTINUE
-#if defined (VAR_SPLITFILES)         
-         JBUF = 608
-         CALL READSI(LUINTA,LENINT,BUF(KINT),JBUF)
-#else
-         CALL READI(LUINTA,LENINT,BUF(KINT))
-#endif
+         CALL READI4(LUINTA,LENINT4,BUF(KINT))
          CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 200 I = 1, LENGTH

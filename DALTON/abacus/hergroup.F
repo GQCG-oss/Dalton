@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -26,7 +26,6 @@ C FILE : hergroup.F
 C
 C Purpose: set up point group symmetry information
 C
-#include "single.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck syminp */
@@ -55,7 +54,7 @@ C
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
       DATA IS/0,1,1,2,1,2,2,3/
-#include "ibtfun.h"
+
 C
 C     Initialization
 C     ==============
@@ -97,8 +96,17 @@ C
           ISYMAX(K,1) = ISYMAX(K,1) + 2**(J-1)
         END IF
   110   CONTINUE
-        IAXIS = IBTOR(IAXIS,IGEN(J))
+        IAXIS = IOR(IAXIS,IGEN(J))
   100 CONTINUE
+#if defined (HAS_PCMSOLVER)
+! Save info on the generators in pcm_igen.
+! It will possibly be needed to initialize symmetry handling in
+! PCMSolver
+      pcm_igen(1) = nsymop
+      do i = 1, nsymop
+        pcm_igen(i+1) = igen(i)
+      end do
+#endif
 C
 C     Determine IFXYZ
 C     ===============
@@ -106,19 +114,19 @@ C     Do we really need it ????
 C
       IND = 0
       DO 140 I = 1,NSYMOP
-        IND = IBTOR(IND,IGEN(I))
+        IND = IOR(IND,IGEN(I))
   140 CONTINUE
       DO 141 I = 1,3
-        IFXYZ(I) = IBTAND(IBTSHR(IND,(I-1)),1)
+        IFXYZ(I) = IAND(ISHFT(IND,-(I-1)),1)
   141 CONTINUE
 C
 C     Determine:
 C     ISYMAX(I,2) - behaviour of principal rotations under basic operations
 C     =====================================================================
 C
-      ISYMAX(1,2) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-      ISYMAX(2,2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
-      ISYMAX(3,2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+      ISYMAX(1,2) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+      ISYMAX(2,2) = IEOR(ISYMAX(3,1),ISYMAX(1,1))
+      ISYMAX(3,2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
 C
 C     Determine:
 C     IPTAX   - coordinate axis: pointer analogous to IPTSYM
@@ -132,7 +140,7 @@ C
         DO 205 IREP = 0, MAXREP
            NAXIS = 0
            DO 210 ICOOR = 1, 3
-              IF (IBTXOR(IREP,ISYMAX(ICOOR,ITYPE)) .EQ. 0) THEN
+              IF (IEOR(IREP,ISYMAX(ICOOR,ITYPE)) .EQ. 0) THEN
                  NAXIS  = NAXIS + 1
                  IPTAXI = IPTAXI + 1
                  IPTAX(ICOOR,ITYPE) = IPTAXI
@@ -207,7 +215,7 @@ C
       DATA IROTS/3,5,6/
       DATA IREFL/4,2,1/
       DATA JPAR/ 1,-1,-1, 1,-1, 1, 1,-1/
-#include "ibtfun.h"
+
 
 #ifdef MOD_ECP
 #include "argoscom.h"
@@ -224,10 +232,10 @@ C
       JSOP(0)   = 0
       IPAR(0)   = 1
       DO 10 I   = 1,MAXREP
-        I0 = IBTAND(1,I)          *IGEN(1)
-        I1 = IBTAND(1,IBTSHR(I,1))*IGEN(2)
-        I2 = IBTAND(1,IBTSHR(I,2))*IGEN(3)
-        IND = IBTXOR(IBTXOR(I0,I1),I2)
+        I0 = IAND(1,I)          *IGEN(1)
+        I1 = IAND(1,ISHFT(I,-1))*IGEN(2)
+        I2 = IAND(1,ISHFT(I,-2))*IGEN(3)
+        IND = IEOR(IEOR(I0,I1),I2)
         LSYMOP(IND) = .TRUE.
         IPAR(I)     = JPAR(IND)
    10 CONTINUE
@@ -294,12 +302,12 @@ C
       DO 60 I = 0,MAXREP
         IXVAL(0,I) = 1
         DO 70 J = 1,NSYMOP
-          IXVAL(IGEN(J),I) = NINT(PT(IBTAND(IBTSHR(I,(J-1)),1)))
+          IXVAL(IGEN(J),I) = NINT(PT(IAND(ISHFT(I,-(J-1)),1)))
           DO 80 K = 1,(J-1)
-            IND      = IBTXOR(IGEN(J),IGEN(K))
+            IND      = IEOR(IGEN(J),IGEN(K))
             IXVAL(IND,I)  = IXVAL(IGEN(J),I)*IXVAL(IGEN(K),I)
             DO 90 L = 1,(K-1)
-              IXVAL(IBTXOR(IND,IGEN(L)),I)
+              IXVAL(IEOR(IND,IGEN(L)),I)
      &           = IXVAL(IND,I)*IXVAL(IGEN(L),I)
    90       CONTINUE
    80     CONTINUE
@@ -325,7 +333,7 @@ C
         ELSEIF(NROTS.EQ.1) THEN
           IF(IXVAL(JSOP(1),I).EQ.-1) REP(I)(1:1) = 'B'
           IF(NREFL.EQ.2) THEN
-            IF(IBTAND(IBTSHR(JSOP(1),1),1).EQ.1) THEN
+            IF(IAND(ISHFT(JSOP(1),-1),1).EQ.1) THEN
               IND = 2
             ELSE
               IND = 3
@@ -374,21 +382,26 @@ C
 C       Group name
 C
         IF (CLASS(1:3) .EQ. 'N/A') THEN
-           WRITE(LUPRI,'(A,A3)') 'Point group: ',GROUP
+           WRITE(LUPRI,'(A,A3)') '@    Point group: ',GROUP
            IF (LUCME.GT.0)
      &     WRITE(LUCME,'(A,A3)') 'Point group: ',GROUP
         ELSE
-           WRITE(LUPRI,'(A,A)')  'Full point group is: ',CLASS
-           WRITE(LUPRI,'(A,A3)') 'Represented as:      ',GROUP
+           WRITE(LUPRI,'(A,A)')  '@    Full point group is: ',CLASS
+           WRITE(LUPRI,'(A,A3)') '@    Represented as:      ',GROUP
            IF (LUCME.GT.0) THEN
               WRITE(LUCME,'(A,A)')  'Full point group is: ',CLASS
               WRITE(LUCME,'(A,A3)') 'Represented as:      ',GROUP
            END IF
         END IF
+
+        IF (NSYMOP.GT.0) THEN
+
+          WRITE(LUPRI,'(/A,8(I5,2A)/)')
+     &       '@  * The irrep name for each symmetry:',
+     &       (I+1,': ',REP(I), I = 0,MAXREP)
 C
 C       Group generators
 C
-        IF (NSYMOP.GT.0) THEN
           WRITE(LUPRI,'(/3X,A/)')
      &        '* The point group was generated by:'
           DO I = 1,NSYMOP
@@ -412,7 +425,7 @@ C
           DO I = 0,MAXREP
             WRITE(LUPRI,'(4X,A3,1X,A1,8(1X,A3,1X))')
      &        SYMOP(JSOP(I)),'|',
-     &        (SYMOP(IBTXOR(JSOP(I),JSOP(J))),J = 0,MAXREP)
+     &        (SYMOP(IEOR(JSOP(I),JSOP(J))),J = 0,MAXREP)
           END DO
 C
 C         Character table
@@ -433,7 +446,7 @@ C
           WRITE(LUPRI,'(3X,A6,8A5)') '-----+',('-----',I = 0,MAXREP)
           DO I = 0,MAXREP
             WRITE(LUPRI,'(3X,1X,A3,1X,A1,8(1X,A3,1X))')
-     &        REP(I),'|',(REP(IBTXOR(I,J)),J = 0,MAXREP)
+     &        REP(I),'|',(REP(IEOR(I,J)),J = 0,MAXREP)
           END DO
         ENDIF
       ENDIF
@@ -470,9 +483,9 @@ C
       LOGICAL LBUF(8)
       EXTERNAL BDQALGEBRA
 C
-#include "ibtfun.h"
+
 C
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL IZERO(IQTOPQ,32)
       CALL IZERO(IPQTOQ,32)
 C
@@ -654,7 +667,7 @@ C         ..non-totally symmetric rotation
           IPQTOQ(1,IRNT) = 4
           IPQTOQ(2,IRNT) = 3
         IF(NFSYM.EQ.2) THEN
-          IRNU = IBTXOR(IRNT,IXYZ)
+          IRNU = IEOR(IRNT,IXYZ)
           DO IZ = 1,NZ
             IPQTOQ(IZ,IXYZ) = IPQTOQ(IZ,0)
             IPQTOQ(IZ,IRNU) = IPQTOQ(IZ,IRNT)
@@ -988,7 +1001,7 @@ C     quaternion matrix:
 C
       DO IZ = 1,4
         DO IBRP = 0,MAXREP
-          IRQMAT(IZ,IBRP) = IBTXOR(IFDIRP(IZ,1),IBRP)
+          IRQMAT(IZ,IBRP) = IEOR(IFDIRP(IZ,1),IBRP)
         ENDDO
       ENDDO
 C

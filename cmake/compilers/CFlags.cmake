@@ -1,7 +1,11 @@
-if(NOT DEFINED DEFAULT_C_FLAGS_SET)
-
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS         "-std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAVE_NO_LSEEK64 -ffloat-store")
+    if(DEVELOPMENT_CODE)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+    else()
+        # suppress warnings in exported code
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
+    endif()
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_C_FLAGS
             "${CMAKE_C_FLAGS} -m32"
@@ -15,6 +19,11 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_C_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-unused")
     set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
+    if (ENABLE_CODE_COVERAGE)
+        set (CMAKE_C_FLAGS
+            "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+        set (CMAKE_C_LINK_FLAGS "-fprofile-arcs -ftest-coverage")
+    endif()
     if(ENABLE_OMP)
         set(CMAKE_C_FLAGS
             "${CMAKE_C_FLAGS} -fopenmp"
@@ -29,6 +38,10 @@ endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
     set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd1777 -restrict -DRESTRICT=restrict")
+    if(NOT DEVELOPMENT_CODE)
+        # suppress warnings in exported code
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
+    endif()
     set(CMAKE_C_FLAGS_DEBUG   "-O0")
     set(CMAKE_C_FLAGS_RELEASE "-O3 -ip")
     set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
@@ -76,4 +89,3 @@ if(DEFINED EXTRA_C_FLAGS)
 endif()
 
 save_compiler_flags(C)
-endif()

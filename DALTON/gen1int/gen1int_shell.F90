@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -141,13 +141,13 @@ module gen1int_shell
     sub_shell%num_prim = num_prim
     allocate(sub_shell%exponents(num_prim), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntShellCreate>> failed to allocate exponents!"
+      call quit("Gen1IntShellCreate>> failed to allocate exponents!")
     end if
     sub_shell%exponents = exponents
     sub_shell%num_contr = num_contr
     allocate(sub_shell%contr_coef(num_contr,num_prim), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntShellCreate>> failed to allocate contr_coef!"
+      call quit("Gen1IntShellCreate>> failed to allocate contr_coef!")
     end if
     sub_shell%contr_coef = contr_coef
     ! spherical GTOs
@@ -176,7 +176,7 @@ module gen1int_shell
       sub_shell%num_ao = (ang_num+1)*(ang_num+2)/2
       allocate(sub_shell%powers(3,sub_shell%num_ao), stat=ierr)
       if (ierr/=0) then
-        stop "Gen1IntShellCreate>> failed to allocate powers!"
+        call quit("Gen1IntShellCreate>> failed to allocate powers!")
       end if
       if (present(powers)) then
         sub_shell%powers = powers
@@ -269,7 +269,7 @@ module gen1int_shell
           if (bcast_mag_powers) then
             allocate(sub_shells(ishell)%powers(3,sub_shells(ishell)%num_ao), stat=ierr)
             if (ierr/=0) then
-              stop "Gen1IntShellBcast>> failed to allocate powers!"
+              call quit("Gen1IntShellBcast>> failed to allocate powers!")
             end if
             call MPI_Bcast(sub_shells(ishell)%powers, 3*sub_shells(ishell)%num_ao, &
                            MPI_INTEGER, root, api_comm, ierr)
@@ -278,12 +278,12 @@ module gen1int_shell
         ! allocates memory for exponents and contraction coefficients
         allocate(sub_shells(ishell)%exponents(sub_shells(ishell)%num_prim), stat=ierr)
         if (ierr/=0) then
-          stop "Gen1IntShellBcast>> failed to allocate exponents!"
+          call quit("Gen1IntShellBcast>> failed to allocate exponents!")
         end if
         allocate(sub_shells(ishell)%contr_coef(sub_shells(ishell)%num_contr, &
                                                sub_shells(ishell)%num_prim), stat=ierr)
         if (ierr/=0) then
-          stop "Gen1IntShellBcast>> failed to allocate contr_coef!"
+          call quit("Gen1IntShellBcast>> failed to allocate contr_coef!")
         end if
       end if
       call MPI_Bcast(sub_shells(ishell)%exponents, sub_shells(ishell)%num_prim, &
@@ -612,7 +612,7 @@ module gen1int_shell
     size_ints = max_ao_bra*max_ao_ket*num_matrices
     allocate(contr_ints(size_ints), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntShellGetIntExpt>> failed to allocate contr_ints!"
+      call quit("Gen1IntShellGetIntExpt>> failed to allocate contr_ints!")
     end if
 #if defined(VAR_MPI)
     ! gets the rank of this processor and the number of processors
@@ -651,7 +651,7 @@ module gen1int_shell
                                path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo, &
                                num_dens), stat=ierr)
           if (ierr/=0) then
-            stop "Gen1IntShellGetIntExpt>> failed to allocate unique_expt!"
+            call quit("Gen1IntShellGetIntExpt>> failed to allocate unique_expt!")
           end if
           unique_expt = 0.0_REALK
         else
@@ -670,7 +670,7 @@ module gen1int_shell
       call MPI_Bcast(do_expectation, 1, MPI_LOGICAL, MANAGER, api_comm, ierr)
       if (do_expectation) then
         if (.not.present(ao_dens)) then
-          stop "Gen1IntShellGetIntExpt>> worker processor does not have ao_dens!"
+          call quit("Gen1IntShellGetIntExpt>> worker processor does not have ao_dens!")
         end if
         allocate(unique_expt(num_prop,                                          &
                              path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo, &
@@ -678,7 +678,7 @@ module gen1int_shell
                              path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo, &
                              num_dens), stat=ierr)
         if (ierr/=0) then
-          stop "Gen1IntShellGetIntExpt>> failed to allocate unique_expt on worker processor!"
+          call quit("Gen1IntShellGetIntExpt>> failed to allocate unique_expt on worker processor!")
         end if
         unique_expt = 0.0_REALK
       end if
@@ -1395,7 +1395,7 @@ module gen1int_shell
     size_ints = max_ao_bra*max_ao_ket*num_points*num_matrices
     allocate(contr_ints(size_ints), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntShellGetFunExpt>> failed to allocate contr_ints!"
+      call quit("Gen1IntShellGetFunExpt>> failed to allocate contr_ints!")
     end if
 #if defined(VAR_MPI)
     ! gets the rank of this processor and the number of processors
@@ -1431,7 +1431,7 @@ module gen1int_shell
                              path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo, &
                              num_dens), stat=ierr)
         if (ierr/=0) then
-          stop "Gen1IntShellGetFunExpt>> failed to allocate unique_expt on worker processor!"
+          call quit("Gen1IntShellGetFunExpt>> failed to allocate unique_expt on worker processor!")
         end if
         unique_expt = 0.0_REALK
       end if
@@ -1486,7 +1486,7 @@ module gen1int_shell
             end if
           ! the worker wants to send the contracted integrals back
           else
-            stop "Gen1IntShellGetFunExpt>> weird error!"
+            call quit("Gen1IntShellGetFunExpt>> weird error!")
           end if
         end do
         ! receives expectation values from worker processors
@@ -1915,7 +1915,7 @@ module gen1int_shell
     ! gets the type of GTOs
     if (present(gto_type)) then
       if (gto_type/=NON_LAO) then
-        stop "Gen1IntShellGetMO>> only non-LAO implemented!"
+        call quit("Gen1IntShellGetMO>> only non-LAO implemented!")
       end if
       p_gto_type = gto_type
     else
@@ -1936,7 +1936,7 @@ module gen1int_shell
       p_order_ram = 0
     end if
     if (p_order_mag/=0 .or. p_order_ram/=0) then
-      stop "Gen1IntShellGetMO>> only geometric derivatives implemented!"
+      call quit("Gen1IntShellGetMO>> only geometric derivatives implemented!")
     end if
     if (present(order_geo)) then
       p_order_geo = order_geo
@@ -1945,7 +1945,7 @@ module gen1int_shell
       p_order_geo = 0
     end if
     if (num_opt/=num_derv) then
-      stop "Gen1IntShellGetMO>> incorrect number of derivatives!"
+      call quit("Gen1IntShellGetMO>> incorrect number of derivatives!")
     end if
     num_opt = num_opt*num_points
     ! loops over AO sub-shells
@@ -1955,7 +1955,7 @@ module gen1int_shell
                            sub_shells(ishell)%num_contr, &
                            num_opt), stat=ierr)
       if (ierr/=0) then
-        stop "Gen1IntShellGetMO>> failed to allocate contr_value!"
+        call quit("Gen1IntShellGetMO>> failed to allocate contr_value!")
       end if
       ! spherical GTOs
       if (spher_gto) then
@@ -1989,7 +1989,7 @@ module gen1int_shell
                             sub_shells(ishell)%num_contr, &
                             num_opt), stat=ierr)
           if (ierr/=0) then
-            stop "Gen1IntShellGetMO>> failed to allocate mo_value!"
+            call quit("Gen1IntShellGetMO>> failed to allocate mo_value!")
           end if
           call contr_cgto_value(sub_shells(ishell)%coord_cent,        &
                                 sub_shells(ishell)%ang_num,           &
@@ -2019,7 +2019,7 @@ module gen1int_shell
                         sub_shells(ishell)%num_contr, &
                         num_mo), stat=ierr)
       if (ierr/=0) then
-        stop "Gen1IntShellGetMO>> failed to allocate mo_value!"
+        call quit("Gen1IntShellGetMO>> failed to allocate mo_value!")
       end if
       call MatGetValues(mo_coef, min_row_idx, max_row_idx, 1, num_mo, mo_value)
 ! mo_value(:,:,:) = reshape(mo_coef%elms(min_row_idx : max_row_idx, &
@@ -2080,7 +2080,7 @@ module gen1int_shell
     ! while those in Gen1Int is: py(-1), pz(0), px(1)
     allocate(tmp_ints(dim_sgto_bra), stat=ierr)
     if (ierr/=0) then
-      stop "gen1int_reorder_p_sgto>> failed to allocate tmp_ints!"
+      call quit("gen1int_reorder_p_sgto>> failed to allocate tmp_ints!")
     end if
     do iopt = 1, num_opt
       do icontr = 1, num_contr_ket

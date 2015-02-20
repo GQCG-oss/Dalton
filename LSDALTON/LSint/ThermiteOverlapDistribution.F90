@@ -7,7 +7,7 @@ use SphCart_matrices
 use OD_type
 use ls_util
 use precision
-use Integralparameters
+use LSparameters
 use ThermiteMem_module
 use OverlapType
 TYPE Allocitem
@@ -1830,7 +1830,7 @@ Logical :: printCenter
    ENDDO
 !   IF(Orb%angmom(K) .GE. 2)THEN
 !      WRITE(IUNIT,'(7X,A,I3)')'Spherical transformation matrix for angular momentum', Orb%angmom(K)
-!      CALL OUTPUT(orb%SPH_MAT(Orb%angmom(K)+1)%p%elms,1,2*Orb%angmom(K)+1,&
+!      CALL LS_OUTPUT(orb%SPH_MAT(Orb%angmom(K)+1)%p%elms,1,2*Orb%angmom(K)+1,&
 !         &1,(Orb%angmom(K)+1)*(Orb%angmom(K)+2)/2,2*Orb%angmom(K)+1,&
 !         &(Orb%angmom(K)+1)*(Orb%angmom(K)+2)/2,1,IUNIT)
 !   ENDIF
@@ -2225,7 +2225,7 @@ IF (IPRINT.GT. 50) THEN
   DO iPrim=1,nPrim
     DO iOrb=1,nOrb
         WRITE(LUPRI,'(5X,A,I3,A,I3)') 'iPrim =',iPrim,', iOrb =',iOrb
-        WRITE(LUPRI,'(7X,5ES10.4/,(7X,5ES10.4))') (EcoeffCont(iAng,iOrb,iPrim),iAng=1,nAng)
+        WRITE(LUPRI,'(7X,5ES12.4/,(7X,5ES12.4))') (EcoeffCont(iAng,iOrb,iPrim),iAng=1,nAng)
     ENDDO
   ENDDO
 ENDIF
@@ -2308,7 +2308,7 @@ IF(IPRINT.GT.100)THEN
    do X=1,nOperatorComp
       WRITE(lupri,'(A,I3,A,I3,A,I3)')&
            &'The SphericalTransformed intermidiates lm=',lm,'dim1=',dim1,'X=',X
-      call output(integralSpher(:,:,X),1,lm,1,dim1,lm,dim1,1,lupri)
+      call ls_output(integralSpher(:,:,X),1,lm,1,dim1,lm,dim1,1,lupri)
    enddo
 ENDIF
 
@@ -2522,7 +2522,7 @@ IF (IPRINT.GT. 30) THEN
   WRITE(LUPRI,'(7X,A)') 'C1  C2 CC(prim12)'
   DO iC2=1,nC2
     DO iC1=1,nC1
-      WRITE(LUPRI,'(5X,2I4,5ES10.4/,(13X,5ES10.4))') iC1,iC2,(CC(iP,iC1,iC2),iP=1,nP)
+      WRITE(LUPRI,'(5X,2I4,5ES12.4/,(13X,5ES12.4))') iC1,iC2,(CC(iP,iC1,iC2),iP=1,nP)
     ENDDO
   ENDDO
 ENDIF
@@ -3165,7 +3165,6 @@ Integer :: CSscreenLOG,tenminusmaxgab
 
 call mem_alloc(ODtoFTUVindex,OD%nbatches)
 call mem_alloc(nPrimOD,OD%nbatches)
-call mem_alloc(FTUVtoPassIndex,OD%nbatches)
 call mem_alloc(Identifier,OD%nbatches)
 call mem_alloc(UniqeIdentfiers,OD%nbatches)
 call mem_alloc(FTUVprim,OD%nbatches)
@@ -3239,6 +3238,8 @@ DO I=1,NFTUVbatches
   Alloc%maxPrimTUVRHS = max(np*nTUV,FTUVprimPass(I)*nTUV,Alloc%maxPrimTUVRHS)
 ENDDO
 
+call mem_dealloc(FTUVprimPass)
+
 !Initialize FTUV-batches
 call INIT_BUFCOUNTERS(4)
 DO iPassType=1,nPassTypes
@@ -3250,6 +3251,7 @@ DO iPassType=1,nPassTypes
 ENDDO
 CALL ALLOC_ODFTUV_BUFFERS
 
+call mem_alloc(FTUVtoPassIndex,NFTUVbatches)
 call mem_alloc(F,NFTUVbatches)
 I = 0
 DO iPassType=1,nPassTypes
@@ -3285,7 +3287,6 @@ call mem_dealloc(FTUVPassType)
 call mem_dealloc(FTUVminAng)
 call mem_dealloc(FTUVmaxAng)
 call mem_dealloc(FTUVntuv)
-call mem_dealloc(FTUVprimPass)
 call mem_dealloc(offPrim)
 
 END SUBROUTINE SET_FTUVbatches
@@ -3398,11 +3399,15 @@ F%orbital1%nContracted(1)  = 1
 F%orbital1%nOrbComp(1)     = 1
 F%orbital1%startOrbital(1) = 1
 F%orbital1%totOrbitals     = ndmat
+F%orbital1%type_Nucleus    = .FALSE.
+F%orbital1%type_Empty      = .FALSE.
 F%orbital2%angmom(1)       = 0
 F%orbital2%nContracted(1)  = 1
 F%orbital2%nOrbComp(1)     = 1
 F%orbital2%startOrbital(1) = 1
 F%orbital2%totOrbitals     = 1
+F%orbital2%type_Nucleus    = .FALSE.
+F%orbital2%type_Empty      = .FALSE.
 F%indexAng1(1)             = 1
 F%indexAng2(1)             = 1
 F%nOrbitals(1)             = 1

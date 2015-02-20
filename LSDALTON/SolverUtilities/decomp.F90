@@ -148,6 +148,7 @@ type DecompItem
    !DEBUG VARIABLES:
    !================
       logical      :: debug_rsp_linsca
+      logical      :: debugAbsOverlap
    !INFO VARIABLES:
    !===============
       !> Print info from orbital energy / Hessian eigenvalue solvers
@@ -227,6 +228,7 @@ contains
          decomp%cfg_hessian_nvec     = 1
    
          decomp%cfg_rsp_nexcit       = 0
+         decomp%cfg_no_of_startvectors = 0 
          decomp%cfg_rsp_mostart      = .false.
          decomp%cfg_startvectors     = .false.
    
@@ -239,6 +241,8 @@ contains
       !DEBUG VARIABLES:
       !================
          decomp%debug_rsp_linsca     = .false.
+         decomp%debugAbsOverlap      = .false.
+
       !INFO VARIABLES:
       !===============
          decomp%info_stability         = .false.

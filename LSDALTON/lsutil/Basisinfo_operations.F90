@@ -24,7 +24,10 @@ MODULE basis_type
       & copy_basissetinfo, &
       & free_basissetinfo, &
       & lsmpi_alloc_basissetinfo, &
-      & print_basissetinfo
+      & print_basissetinfo, &
+      & freeBrakebasinfo,initBrakebasinfo,&
+      & copybrakebasinfo,buildbasisfrombrakebasinf,&
+      & print_brakebas, add_basissetinfo
 
 CONTAINS
 !#################################################################
@@ -120,15 +123,15 @@ real(realk),pointer :: CCtmp(:,:),bCMO(:,:)
 integer :: J,K,iprim,nrow2,ncol2
 integer :: iCont,iseg,iContLoc,ic1,ip1,nprim,norb,ielm,iprimLoc
 type(SHELL),pointer :: shell2
-DO J=1,BASIS%REGULAR%nAtomtypes
- DO K=1,BASIS%REGULAR%ATOMTYPE(J)%nAngmom
-  shell2 => BASIS%REGULAR%ATOMTYPE(J)%SHELL(K)
+DO J=1,BASIS%BINFO(RegBasParam)%nAtomtypes
+ DO K=1,BASIS%BINFO(RegBasParam)%ATOMTYPE(J)%nAngmom
+  shell2 => BASIS%BINFO(RegBasParam)%ATOMTYPE(J)%SHELL(K)
 
-  nrow2 = BASIS%GCtrans%ATOMTYPE(J)%SHELL(K)%nprim
+  nrow2 = BASIS%BINFO(GCTBasParam)%ATOMTYPE(J)%SHELL(K)%nprim
   if (nrow2.eq. 0) cycle
-  ncol2 = BASIS%GCtrans%ATOMTYPE(J)%SHELL(K)%norb
+  ncol2 = BASIS%BINFO(GCTBasParam)%ATOMTYPE(J)%SHELL(K)%norb
   call mem_alloc(bCMO,nrow2,ncol2)
-  bCMO = reshape(BASIS%GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%elms,(/ nrow2,ncol2 /))
+  bCMO = reshape(BASIS%BINFO(GCTBasParam)%ATOMTYPE(J)%SHELL(K)%segment(1)%elms,(/ nrow2,ncol2 /))
 
   nprim     = shell2%nprim
   norb      = shell2%norb
@@ -201,38 +204,13 @@ implicit none
 TYPE(BASISINFO),intent(in)    :: BASIS
 INTEGER,intent(in)            :: lun
 !
-INTEGER :: ZERO
-ZERO=0
-IF(BASIS%REGULAR%natomtypes.NE. 0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%REGULAR)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%AUXILIARY%natomtypes.NE. 0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%AUXILIARY)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%GCtransAlloc)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%GCTRANS)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%CABS%natomtypes.NE.0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%CABS)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%JK%natomtypes.NE.0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%JK)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%VALENCE%natomtypes.NE.0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%VALENCE)
-ELSE
-   write(lun)ZERO
-ENDIF
+integer :: i
+DO I=1,nBasisBasParam
+   write(lun) BASIS%WBASIS(I)
+   IF(BASIS%WBASIS(I))THEN
+      CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%BINFO(I))
+   ENDIF
+ENDDO
 END SUBROUTINE write_basisinfo_to_disk
 
 !> \brief read the atomtype structure from disk
@@ -284,7 +262,7 @@ TYPE(BASISSETINFO),intent(inout)    :: BASISSET
 INTEGER,intent(in)               :: lun
 !
 INTEGER :: I
-
+call nullifybasisset(BASISSET)
 read(lun)BASISSET%natomtypes
 IF(BASISSET%natomtypes.GT. 0)THEN
    read(lun)BASISSET%DunningsBasis
@@ -317,18 +295,15 @@ SUBROUTINE read_basisinfo_from_disk(lun,BASIS)
 implicit none
 TYPE(BASISINFO),intent(inout)    :: BASIS
 INTEGER,intent(in)            :: lun
-
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%REGULAR)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%AUXILIARY)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%GCTRANS)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%CABS)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%JK)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%VALENCE)
-IF(BASIS%GCTRANS%natomtypes.GT.0)THEN
-   BASIS%GCtransAlloc=.TRUE.
-ELSE
-   BASIS%GCtransAlloc=.FALSE.
-ENDIF
+!
+integer :: I
+call nullifyMainbasis(BASIS)
+DO I=1,nBasisBasParam
+   read(lun)BASIS%WBASIS(I)
+   IF(BASIS%WBASIS(I))THEN
+      CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%BINFO(I))
+   ENDIF
+ENDDO
 
 END SUBROUTINE read_basisinfo_from_disk
 
@@ -341,10 +316,14 @@ SUBROUTINE init_basissetinfo_types(BasisInfo,natomtypes)
 implicit none
 TYPE(BASISSETINFO),intent(inout) :: BasisInfo
 INTEGER,intent(in)               :: natomtypes
+!
+integer :: i
 
 BasisInfo%natomtypes=natomtypes
 CALL MEM_ALLOC(BasisInfo%AtomType,natomtypes)
-
+do I=1,natomtypes
+   call nullifyAtomtype(BasisInfo%AtomType(I))
+enddo
 END SUBROUTINE init_basissetinfo_types
 
 !> \brief initialise shell in basissetinfo structure
@@ -410,6 +389,10 @@ do i = 1,nsize
 enddo
 CALL MEM_ALLOC(BasisInfo%AtomType(natomtype)%SHELL(nAngmom)%&
                        &segment(segments)%Exponents,nrow)
+do i = 1,nrow
+   BasisInfo%AtomType(natomtype)%SHELL(nAngmom)%&
+                   &segment(segments)%Exponents(i) = 0.0E0_realk
+enddo
 
 END SUBROUTINE init_basissetinfo_elms
 
@@ -486,7 +469,8 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
   TYPE(BASISSETINFO),intent(inout) :: NEWBAS
 !
   INTEGER            :: I,J,K,nrow,ncol
-  
+
+  call nullifyBasisset(NEWBAS)
   NEWBAS%natomtypes = OLDBAS%natomtypes
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
@@ -527,6 +511,18 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
                    &OLDBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow)
            ENDDO
         ENDDO
+        DO J=NEWBAS%ATOMTYPE(I)%nAngmom+1,maxAOangmom
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim = -1
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = -1
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments  = -1
+           DO K=1,maxBASISsegment
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow  = -1
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol  = -1
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms)
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms)
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents)
+           ENDDO
+        ENDDO
      ENDDO
   ENDIF
   IF(NEWBAS%nChargeindex .NE. 0)THEN
@@ -534,9 +530,140 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
      DO I = 0,NEWBAS%nChargeindex
         NEWBAS%Chargeindex(I) = OLDBAS%Chargeindex(I)  
      ENDDO
+  ELSE
+     NULLIFY(NEWBAS%Chargeindex)
   ENDIF
  
 END SUBROUTINE copy_basissetinfo
+
+!> \brief add two basissetinfos together to generat a third basissetinfo  
+!> \author T. Kjaergaard
+!> \date  2010-02-24
+!> \param lupri output logical unit number. 
+!> \param iprint print level integer
+!> \param bas1 is the original BASISSETINFO1
+!> \param bas2 is the original BASISSETINFO2
+!> \param newbas is the new output BASISSETINFO
+!> \param Newlabelindex  labelindex of new basis
+SUBROUTINE add_basissetinfo(lupri,iprint,BAS1,BAS2,NEWBAS,NewLabelindex)
+  implicit none
+  integer,intent(in)               :: lupri,iprint,NewLabelindex
+  TYPE(BASISSETINFO),intent(in)    :: BAS1,BAS2
+  TYPE(BASISSETINFO),intent(inout) :: NEWBAS
+!
+  INTEGER            :: I,J,K,nrow,ncol,nK,MAXANGMOM
+
+  call nullifyBasisset(NEWBAS)
+  IF(BAS1%natomtypes.NE.BAS2%natomtypes)THEN
+     call lsquit('natomtypes mismatch in add_basissetinfo',-1)
+  ENDIF
+  NEWBAS%natomtypes = BAS1%natomtypes
+  NEWBAS%Gcont = BAS1%Gcont .OR. BAS2%Gcont
+  NEWBAS%DunningsBasis = BAS1%DunningsBasis .OR. BAS2%DunningsBasis
+  NEWBAS%Gcbasis = BAS1%GCbasis
+  NEWBAS%Spherical = BAS1%Spherical
+  IF(BAS1%labelindex.EQ.0.AND.BAS2%labelindex.EQ.0)THEN
+     NEWBAS%labelindex = 0
+     NEWBAS%nChargeindex = BAS1%nChargeindex
+  ELSEIF(BAS1%labelindex.EQ.0.AND.BAS2%labelindex.NE.0)THEN
+     call lsquit('labelindex mismatch in add_basissetinfo',-1)
+  ELSE
+     NEWBAS%labelindex = NewLabelindex
+     NEWBAS%nChargeindex = 0
+  ENDIF
+  NEWBAS%nbast = BAS1%nbast + BAS2%nbast
+  NEWBAS%nprimbast = BAS1%nprimbast + BAS2%nprimbast
+  NEWBAS%label = BasParamLABEL(NewLabelindex)
+  NULLIFY(NEWBAS%ATOMTYPE)
+  IF(NEWBAS%natomtypes.GT. 0)THEN
+   CALL MEM_ALLOC(NEWBAS%ATOMTYPE,NEWBAS%natomtypes)
+   DO I = 1,NEWBAS%natomtypes
+!    IF(BAS1%ATOMTYPE(I)%nAngmom .NE.BAS2%ATOMTYPE(I)%nAngmom)THEN
+!       call lsquit('nAngmom mismatch in add_basissetinfo, not implemented contact TK',-1)
+!    ENDIF
+    MAXANGMOM=MAX(BAS1%ATOMTYPE(I)%nAngmom,BAS2%ATOMTYPE(I)%nAngmom)
+    NEWBAS%ATOMTYPE(I)%nAngmom = MAXANGMOM
+    NEWBAS%ATOMTYPE(I)%family = BAS1%ATOMTYPE(I)%family 
+    NEWBAS%ATOMTYPE(I)%ToTnorb = BAS1%ATOMTYPE(I)%ToTnorb + BAS2%ATOMTYPE(I)%ToTnorb
+    NEWBAS%ATOMTYPE(I)%ToTnprim = BAS1%ATOMTYPE(I)%ToTnprim + BAS2%ATOMTYPE(I)%ToTnprim
+    NEWBAS%ATOMTYPE(I)%Charge = BAS1%ATOMTYPE(I)%Charge
+    NEWBAS%ATOMTYPE(I)%NAME  = TRIM(BAS1%ATOMTYPE(I)%NAME)//'+'//TRIM(BAS2%ATOMTYPE(I)%NAME)
+    DO J=1,MAXANGMOM
+     NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = 0
+     NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = 0
+     NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments =0
+     IF(BAS1%ATOMTYPE(I)%nAngmom.GE.J)THEN
+        NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = BAS1%ATOMTYPE(I)%SHELL(J)%nprim 
+        NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = BAS1%ATOMTYPE(I)%SHELL(J)%norb 
+        NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments = BAS1%ATOMTYPE(I)%SHELL(J)%nsegments
+     ENDIF
+     IF(BAS2%ATOMTYPE(I)%nAngmom.GE.J)THEN
+        NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  + BAS2%ATOMTYPE(I)%SHELL(J)%nprim
+        NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = NEWBAS%ATOMTYPE(I)%SHELL(J)%norb + BAS2%ATOMTYPE(I)%SHELL(J)%norb
+        NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments =NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments + BAS2%ATOMTYPE(I)%SHELL(J)%nsegments
+     ENDIF
+     IF(BAS1%ATOMTYPE(I)%nAngmom.GE.J)THEN
+      DO K=1,BAS1%ATOMTYPE(I)%SHELL(J)%nsegments
+       nrow = BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow
+       ncol = BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow  = nrow
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol  = ncol
+       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms,nrow*ncol)
+       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms,nrow*ncol)
+       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents,nrow)
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms(1:nrow*ncol) = &
+            &BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%elms(1:nrow*ncol)
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol) = &
+            &BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol)
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow) = &
+            &BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow)
+      ENDDO
+      nK = BAS1%ATOMTYPE(I)%SHELL(J)%nsegments
+     ELSE
+      nK = 0
+     ENDIF
+     IF(BAS2%ATOMTYPE(I)%nAngmom.GE.J)THEN
+      DO K=1,BAS2%ATOMTYPE(I)%SHELL(J)%nsegments
+       nrow = BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow
+       ncol = BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%nrow  = nrow
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%ncol  = ncol
+       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%elms,nrow*ncol)
+       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%UCCelms,nrow*ncol)
+       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%Exponents,nrow)
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%elms(1:nrow*ncol) = &
+            &BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%elms(1:nrow*ncol)
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%UCCelms(1:nrow*ncol) = &
+            &BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol)
+       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%Exponents(1:nrow) = &
+            &BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow)
+      ENDDO
+     ENDIF
+    ENDDO !nangmom
+    DO J=NEWBAS%ATOMTYPE(I)%nAngmom+1,maxAOangmom
+     NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim = -1
+     NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = -1
+     NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments  = -1
+     DO K=1,maxBASISsegment
+      NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow  = -1
+      NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol  = -1
+      NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms)
+      NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms)
+      NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents)
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDIF
+  IF(NEWBAS%nChargeindex .NE. 0)THEN
+     CALL MEM_ALLOC(NEWBAS%Chargeindex,NEWBAS%nChargeindex,.TRUE.)
+     DO I = 0,NEWBAS%nChargeindex
+        NEWBAS%Chargeindex(I) = BAS1%Chargeindex(I)  
+     ENDDO
+  ELSE
+     NULLIFY(NEWBAS%Chargeindex)
+  ENDIF
+ 
+END SUBROUTINE add_basissetinfo
 
 !> \brief call mem_dealloc BASISSETINFO
 !> \author T. Kjaergaard
@@ -618,6 +745,20 @@ ENDDO
 
 END SUBROUTINE lsmpi_alloc_basissetinfo
 
+SUBROUTINE print_brakebas(BB,LUPRI)
+implicit none
+type(BRAKEBASINFO),intent(in) :: BB
+INTEGER,intent(in)      :: LUPRI
+
+WRITE(Lupri,*)'OriginalType:',BB%OriginalType
+WRITE(Lupri,*)'OriginalnAngmom:',BB%OriginalnAngmom
+WRITE(Lupri,*)'nAngmom:',BB%nAngmom
+WRITE(Lupri,*)'BB%OriginalnOrb:',BB%OriginalnOrb(1:BB%OriginalnAngmom)
+WRITE(Lupri,*)'BB%nOrb:',BB%nOrb(1:BB%nAngmom)
+WRITE(Lupri,*)'BB%Orb:',BB%Orb
+WRITE(Lupri,*)'BB%Angmom:',BB%Angmom(1:BB%nAngmom)
+END SUBROUTINE PRINT_BRAKEBAS
+
 !> \brief print BASISSETINFO routine
 !> \author T. Kjaergaard
 !> \date  2010-02-24
@@ -641,7 +782,7 @@ DO J=1,natomtypes
    nAngmom=BASISINFO%ATOMTYPE(J)%nAngmom
    Charge=BASISINFO%ATOMTYPE(J)%Charge
    WRITE(LUPRI,*)'------------------------------------------------------------'
-   WRITE(LUPRI,'(A8,I4,A14,I4)')' TYPE   :',J,' has charge ',Charge
+   WRITE(LUPRI,'(A8,I4,A14,I4,A,A)')' TYPE   :',J,' has charge ',Charge,' Name:',TRIM(BASISINFO%ATOMTYPE(J)%NAME)
    IF(BASISINFO%ATOMTYPE(J)%FAMILY) WRITE(LUPRI,'(A)')' This atomtype is a Family basis set type'
    WRITE(LUPRI,*)'------------------------------------------------------------'
    DO K=1,nAngmom
@@ -657,12 +798,12 @@ DO J=1,natomtypes
                WRITE(LUPRI,'(2X,I2,A)')K,'-TYPE FUNCTIONS'
             ENDIF
             WRITE(LUPRI,'(A22,I3,A22,I3)')'Exponents BLOCK=',L
-            call OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%&
+            call LS_OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%&
                  &Exponents, 1, nPrimitives, 1, 1, nPrimitives, 1, 1, LUPRI)
             WRITE(LUPRI,*)'segment BLOCK=',L
-            CALL OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%elms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
-            WRITE(LUPRI,*)'unmodified segment BLOCK=',L
-            CALL OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
+            CALL LS_OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%elms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
+            WRITE(LUPRI,*)'The unmodified and non normalized segment read from basis set file BLOCK=',L
+            CALL LS_OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
          ENDDO
       ELSE
          IF (K.LE. 10) THEN
@@ -677,6 +818,243 @@ ENDDO
 WRITE(LUPRI,*)' '
 
 END SUBROUTINE print_basissetinfo
+
+subroutine freeBrakebasinfo(BASINFO)
+implicit none
+type(BRAKEBASINFO) :: BASINFO
+call mem_dealloc(BASINFO%OriginalnOrb)
+call mem_dealloc(BASINFO%nOrb)
+call mem_dealloc(BASINFO%Orb) 
+call mem_dealloc(BASINFO%angmom)
+end subroutine freeBrakebasinfo
+
+subroutine initBrakebasinfo(BASINFO,itype,nangmom,MaxnOrb)
+implicit none
+type(BRAKEBASINFO) :: BASINFO
+integer,intent(in) :: itype,nangmom,MaxnOrb
+BASINFO%OriginalType = itype
+BASINFO%OriginalnAngmom = nAngmom
+call mem_alloc(BASINFO%OriginalnOrb,nangmom)
+BASINFO%OriginalnOrb = 0
+call mem_alloc(BASINFO%nOrb,nangmom)
+BASINFO%nOrb = 0
+call mem_alloc(BASINFO%Orb,MaxnOrb,nangmom)
+BASINFO%Orb = 0
+call mem_alloc(BASINFO%Angmom,nangmom)
+BASINFO%Angmom = 0
+end subroutine initBrakebasinfo
+
+subroutine copybrakebasinfo(OLDBASINFO,NEWBASINFO)
+  implicit none
+  type(BRAKEBASINFO),intent(in) :: OLDBASINFO
+  type(BRAKEBASINFO),intent(inout) :: NEWBASINFO
+  NEWBASINFO%OriginalType = OLDBASINFO%OriginalType
+  NEWBASINFO%OriginalnAngmom = OLDBASINFO%OriginalnAngmom
+  NEWBASINFO%nAngmom = OLDBASINFO%nAngmom
+  call mem_alloc(NEWBASINFO%OriginalnOrb,SIZE(OLDBASINFO%OriginalnOrb))
+  call mem_alloc(NEWBASINFO%nOrb,SIZE(OLDBASINFO%nOrb))
+  call mem_alloc(NEWBASINFO%Orb,SIZE(OLDBASINFO%Orb,1),SIZE(OLDBASINFO%Orb,2))
+  call mem_alloc(NEWBASINFO%Angmom,SIZE(OLDBASINFO%Angmom))
+  NEWBASINFO%OriginalnOrb = OLDBASINFO%OriginalnOrb
+  NEWBASINFO%nOrb = OLDBASINFO%nOrb
+  NEWBASINFO%Orb = OLDBASINFO%Orb
+  NEWBASINFO%Angmom = OLDBASINFO%Angmom
+end subroutine copybrakebasinfo
+
+subroutine buildbasisfrombrakebasinf(BB,NATOMS,nBB,oldBAS,newBAS,labelindex)
+  implicit none
+  integer,intent(in) :: nBB,natoms,labelindex
+  type(BRAKEBASINFO),intent(in) :: BB(nBB)
+  type(BASISSETINFO) :: oldBAS,newBAS
+
+  INTEGER :: I,J,K,nrow,ncol,OrigI,OrigJ,iOrbIndex,iOrbIndex2,nOrbComp
+  INTEGER :: newK,nSegmentOrb,nSegmentOrb2,L,LL,nprim,ToTnprim,ToTnOrb,JJ
+  INTEGER :: FoundAngmom
+  call nullifyBasisset(NEWBAS)
+  NEWBAS%natomtypes = nBB
+  NEWBAS%Gcont = OLDBAS%Gcont
+  NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
+  NEWBAS%Gcbasis = OLDBAS%GCbasis
+  NEWBAS%Spherical = OLDBAS%Spherical
+  !The labelindex cannot be 0 and nChargeindex must be zero
+  IF(labelindex.EQ.0)call lsquit('labelindex cannot be 0 in buildbasisfrombrakebasinf',-1)
+  NEWBAS%labelindex = labelindex
+  NEWBAS%nChargeindex = 0 !OLDBAS%nChargeindex
+  NEWBAS%label = OLDBAS%label
+  NULLIFY(NEWBAS%ATOMTYPE)
+  IF(NEWBAS%natomtypes.GT. 0)THEN
+     CALL MEM_ALLOC(NEWBAS%ATOMTYPE,NEWBAS%natomtypes)
+     DO I = 1,NEWBAS%natomtypes
+        OrigI = BB(I)%OriginalType
+        JJ = 1
+        DO J=1,BB(I)%nAngmom
+           JJ = MAX(JJ,BB(I)%Angmom(J)+1)
+        ENDDO
+        NEWBAS%ATOMTYPE(I)%nAngmom = JJ
+        NEWBAS%ATOMTYPE(I)%family = OLDBAS%ATOMTYPE(OrigI)%family 
+        NEWBAS%ATOMTYPE(I)%Charge = OLDBAS%ATOMTYPE(OrigI)%Charge
+!WRONG CHANGE AT SOME POINT
+        NEWBAS%ATOMTYPE(I)%NAME  = OLDBAS%ATOMTYPE(OrigI)%NAME 
+
+        IF(BB(I)%nAngmom.NE.OLDBAS%ATOMTYPE(OrigI)%nAngmom)THEN
+           NEWBAS%ATOMTYPE(I)%NAME  = TRIM(OLDBAS%ATOMTYPE(OrigI)%NAME)//'Reduced'
+        ENDIF
+        DO J=1,NEWBAS%ATOMTYPE(I)%nAngmom !the number in the the Original Basis, and new
+         FoundAngmom = -1
+         DO JJ=1,BB(I)%nAngmom
+          IF(BB(I)%Angmom(JJ)+1.EQ.J)THEN
+             FoundAngmom = JJ !the number in BB
+          ENDIF
+         ENDDO
+         IF(FoundAngmom.NE.-1)THEN
+           JJ = FoundAngmom !the number in BB
+           OrigJ = J!BB(I)%Angmom(J)+1
+           IF(BB(I)%nOrb(JJ).EQ.OLDBAS%ATOMTYPE(OrigI)%SHELL(OrigJ)%nOrb)THEN
+              !all Orbitals included 
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = OLDBAS%ATOMTYPE(OrigI)%SHELL(OrigJ)%nprim
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = OLDBAS%ATOMTYPE(OrigI)%SHELL(OrigJ)%norb
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments  = OLDBAS%ATOMTYPE(OrigI)%SHELL(OrigJ)%nsegments
+              DO K=1,NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments
+                 nrow = OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%nrow
+                 ncol = OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%ncol
+                 NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow  = nrow
+                 NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol  = ncol
+                 CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms,nrow*ncol)
+                 CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms,nrow*ncol)
+                 CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents,nrow)
+                 NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms(1:nrow*ncol) = &
+                      &OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%elms(1:nrow*ncol)
+                 NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol) = &
+                      &OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol)
+                 NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow) = &
+                      &OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%Exponents(1:nrow)
+              ENDDO
+           ELSE
+              OrigJ = J
+              NEWBAS%ATOMTYPE(I)%NAME  = TRIM(OLDBAS%ATOMTYPE(OrigI)%NAME)//'Reduced'
+              !not all orbitals included 
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = BB(I)%nOrb(JJ)
+              
+              iOrbIndex = 0
+              newK = 0 
+              nprim = 0
+              DO K=1,OLDBAS%ATOMTYPE(OrigI)%SHELL(OrigJ)%nsegments
+                 ncol = OLDBAS%ATOMTYPE(OrigI)%SHELL(OrigJ)%segment(K)%ncol
+                 nrow = OLDBAS%ATOMTYPE(OrigI)%SHELL(OrigJ)%segment(K)%nrow
+                 nSegmentOrb = 0
+                 iOrbIndex2 = iOrbIndex
+                 DO L=1,ncol
+                    iOrbIndex2 = iOrbIndex2 + 1
+                    DO LL = 1, BB(I)%nOrb(JJ)
+                       IF(iOrbIndex2.EQ.BB(I)%Orb(LL,JJ))THEN
+                          nSegmentOrb = nSegmentOrb + 1
+                       ENDIF
+                    ENDDO
+                 ENDDO
+                 IF(nSegmentOrb.EQ.ncol)THEN
+                    newK = newK + 1
+                    nprim = nprim + nrow
+                    NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%nrow  = nrow
+                    NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%ncol  = ncol
+                    CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%elms,nrow*ncol)
+                    CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%UCCelms,nrow*ncol)
+                    CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%Exponents,nrow)
+                    NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%Exponents(1:nrow) = &
+                         &OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%Exponents(1:nrow)
+                    NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%elms(1:nrow*ncol) = &
+                         &OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%elms(1:nrow*ncol)
+                    NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%UCCelms(1:nrow*ncol) = &
+                         &OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol)
+                 ELSEIF(nSegmentOrb.NE.0)THEN
+                    newK = newK + 1
+                    nprim = nprim + nrow
+                    NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%nrow  = nrow
+                    NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%ncol  = nSegmentOrb
+                    CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%elms,nrow*nSegmentOrb)
+                    CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%UCCelms,nrow*nSegmentOrb)
+                    CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%Exponents,nrow)
+                    NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%Exponents(1:nrow) = &
+                         &OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%Exponents(1:nrow)
+                    
+                    nSegmentOrb2 = 0
+                    iOrbIndex2 = iOrbIndex
+                    DO L=1,ncol
+                       iOrbIndex2 = iOrbIndex2 + 1
+                       DO LL = 1, BB(I)%nOrb(JJ)
+                          IF(iOrbIndex2.EQ.BB(I)%Orb(LL,JJ))THEN
+                             nSegmentOrb2 = nSegmentOrb2 + 1
+                             CALL COPYPARTSEG(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%elms,&
+                                  & OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%elms,&
+                                  & NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(newK)%UCCelms,&
+                                  & OLDBAS%ATOMTYPE(OrigI)%SHELL(J)%segment(K)%UCCelms,nrow,ncol,&
+                                  & nSegmentOrb,L,nSegmentOrb2)
+                          ENDIF
+                       ENDDO
+                    ENDDO
+                 ENDIF
+                 iOrbIndex = iOrbIndex + ncol
+              ENDDO
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = nprim
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments = newK 
+           ENDIF
+         ELSE
+            !angmom not included 
+            NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = 0
+            NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = 0
+            NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments = 0             
+         ENDIF
+        ENDDO
+        DO J=NEWBAS%ATOMTYPE(I)%nAngmom+1,maxAOangmom
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim = -1
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = -1
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments  = -1
+           DO K=1,maxBASISsegment
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow  = -1
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol  = -1
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms)
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms)
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents)
+           ENDDO
+        ENDDO
+        ToTnorb = 0
+        ToTnprim = 0 
+        DO J=1,NEWBAS%ATOMTYPE(I)%nAngmom
+           IF(NEWBAS%Spherical)THEN
+              nOrbComp = 2*J-1
+           ELSE
+              nOrbComp = J*(J+1)/2
+           ENDIF
+           ToTnprim = ToTnprim + NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim*nOrbComp
+           ToTnorb = ToTnorb + NEWBAS%ATOMTYPE(I)%SHELL(J)%norb*nOrbComp
+        ENDDO
+        NEWBAS%ATOMTYPE(I)%ToTnorb = ToTnorb
+        NEWBAS%ATOMTYPE(I)%ToTnprim = ToTnprim
+     ENDDO
+  ENDIF
+  IF(NEWBAS%nChargeindex .NE. 0)THEN
+     CALL MEM_ALLOC(NEWBAS%Chargeindex,NEWBAS%nChargeindex,.TRUE.)
+     DO I = 0,NEWBAS%nChargeindex
+        NEWBAS%Chargeindex(I) = OLDBAS%Chargeindex(I)  
+     ENDDO
+  ELSE
+     NULLIFY(NEWBAS%Chargeindex)
+  ENDIF
+
+! will be determined using DETERMINE_NBAST
+!  NEWBAS%nbast = OLDBAS%nbast
+!  NEWBAS%nprimbast = OLDBAS%nprimbast
+ 
+end subroutine buildbasisfrombrakebasinf
+
+subroutine COPYPARTSEG(newelms,oldelms,newUCCelms,oldUCCelms,nrow,ncol,&
+     & nSegmentOrb,L,nSegmentOrb2)
+  implicit none
+  integer :: nrow,ncol,nSegmentOrb,L,nSegmentOrb2
+  real(realk) :: newelms(nrow,nSegmentOrb),newUCCelms(nrow,nSegmentOrb)
+  real(realk) :: oldelms(nrow,ncol),oldUCCelms(nrow,ncol)
+  newelms(1:nrow,nSegmentOrb2) = oldelms(1:nrow,L)
+  newUCCelms(1:nrow,nSegmentOrb2) = oldUCCelms(1:nrow,L)
+end subroutine COPYPARTSEG
 
 END MODULE basis_type
 

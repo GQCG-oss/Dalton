@@ -30,7 +30,7 @@ MODULE precision
   ! Quick and dirty conversion of 32 bit integgers to 64 bit integers:
   ! Multiply 32 bit integer by i8
   integer(kind=8),parameter :: i8 = 1
-#if defined (VAR_INT64)
+#ifdef VAR_INT64
   INTEGER, PARAMETER :: INTK = SELECTED_INT_KIND(17)!, REALK = KIND(1D0)
 #else
   INTEGER, PARAMETER :: INTK = SELECTED_INT_KIND(9)!, REALK = KIND(1D0)
@@ -45,11 +45,105 @@ MODULE precision
   INTEGER, PARAMETER :: MAXINT = 2147483640
 #endif
   
+INTERFACE Test_if_64bit_integer_required
+   MODULE PROCEDURE Test_if_64bit_integer_required_2d,&
+        & Test_if_64bit_integer_required_3d,&
+        & Test_if_64bit_integer_required_4d 
+end INTERFACE Test_if_64bit_integer_required
 
 contains
 
-!Added to avoid "has no symbols" linking warning
-subroutine precision_void()
-end subroutine precision_void
+subroutine Test_if_64bit_integer_required_2d(n1,n2)
+   implicit none
+   integer,intent(in) :: n1,n2
+#ifndef VAR_INT64
+   !local variables
+   integer(kind=long) :: n   
+   n = n1*n2
+   IF(n.GT.MAXINT)THEN
+      print*,'A 64 bit integer is required in this context'
+      print*,'The two dimensions: '
+      print*,'n1 = ',n1
+      print*,'n2 = ',n2
+      print*,'gives a combined dimension',n
+      print*,'which is bigger than can be described using a 32 bit integer'
+      print*,'The maximum size is ',MAXINT
+      print*,'Use the flag --int64 in the setup command e.g.'
+      print*,'./setup --int64 BuildUsing64int'
+      call lsquit('A 64 bit integer is required, recompile using --int64',-1)
+   ENDIF
+#endif
+ end subroutine Test_if_64bit_integer_required_2d
 
+subroutine Test_if_64bit_integer_required_3d(n1,n2,n3)
+   implicit none
+   integer,intent(in) :: n1,n2,n3
+#ifndef VAR_INT64
+   !local variables
+   integer(kind=long) :: n   
+   n = n1*n2*n3
+   IF(n.GT.MAXINT)THEN
+      print*,'A 64 bit integer is required in this context'
+      print*,'The three dimensions: '
+      print*,'n1 = ',n1
+      print*,'n2 = ',n2
+      print*,'n3 = ',n3
+      print*,'gives a combined dimension',n
+      print*,'which is bigger than can be described using a 32 bit integer'
+      print*,'The maximum size is ',MAXINT
+      print*,'Use the flag --int64 in the setup command e.g.'
+      print*,'./setup --int64 BuildUsing64int'
+      call lsquit('A 64 bit integer is required, recompile using --int64',-1)
+   ENDIF
+#endif
+ end subroutine Test_if_64bit_integer_required_3d
+
+subroutine Test_if_64bit_integer_required_4d(n1,n2,n3,n4)
+   implicit none
+   integer,intent(in) :: n1,n2,n3,n4
+#ifndef VAR_INT64
+   !local variables
+   integer(kind=long) :: n   
+   n = n1*n2*n3*n4
+   IF(n.GT.MAXINT)THEN
+      print*,'A 64 bit integer is required in this context'
+      print*,'The four dimensions: '
+      print*,'n1 = ',n1
+      print*,'n2 = ',n2
+      print*,'n3 = ',n3
+      print*,'n4 = ',n4
+      print*,'gives a combined dimension',n
+      print*,'which is bigger than can be described using a 32 bit integer'
+      print*,'The maximum size is ',MAXINT
+      print*,'Use the flag --int64 in the setup command e.g.'
+      print*,'./setup --int64 BuildUsing64int'
+      call lsquit('A 64 bit integer is required, recompile using --int64',-1)
+   ENDIF
+#endif
+ end subroutine Test_if_64bit_integer_required_4d
+
+ subroutine Obtain_CS_THRLOG(CS_THRLOG,IntegralThreshold)
+   implicit none
+   integer(kind=short),intent(inout) :: CS_THRLOG
+   real(realk),intent(in) :: IntegralThreshold
+   !local variables
+   integer :: IP
+   real(realk) :: TMP
+   !Beware when converting from double precision to short integer 
+   !If double precision is less than 10^-33 then you can run into
+   !problems with short integer overflow
+   IF(IntegralThreshold.GT.shortintCrit)then
+      TMP=log10(IntegralThreshold)
+      IP=NINT(TMP) !IP used as temp
+      IF (ABS(TMP-IP).LT. 1.0E-15_realk) THEN
+         !this means that the threshold is 1EX_realk X=-1,..,-19,..
+         CS_THRLOG=IP
+      ELSE
+         CS_THRLOG=FLOOR(log10(IntegralThreshold))
+      ENDIF
+   ELSE
+      CS_THRLOG=shortzero
+   ENDIF
+ end subroutine Obtain_CS_THRLOG
+ 
 END MODULE precision

@@ -107,7 +107,10 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     add_definitions(-DVAR_PGI)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90 -mcmodel=medium")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
+    if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+       set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mcmodel=medium")
+    endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")

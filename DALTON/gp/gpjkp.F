@@ -1,4 +1,4 @@
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   J. Olsen, K. Ruud, H. Agren, A.A. Auer, K.L. Bak, V. Bakken,
 C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
 C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
 C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
@@ -24,7 +24,6 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include "single.h"
 C /* Deck erf */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION ERF(X)

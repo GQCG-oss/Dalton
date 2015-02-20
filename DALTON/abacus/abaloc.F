@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck locini */
       SUBROUTINE LOCINI
@@ -2468,7 +2467,7 @@ C           2 save orbital energies in ORVAL
 C
 #include "implicit.h"
 #include "priunit.h"
-ckr#include <bassel.h>
+ckr#include "bassel.h"
 #include "cbieri.h"
 #include "inforb.h"
 #include "inftap.h"
@@ -2594,11 +2593,11 @@ Cend-PFP
 #include "chrxyz.h"
 #include "chrsgn.h"
 #include "chrnos.h"
-#include "ibtfun.h"
+
 #include "codata.h"
 C from codata: XTANG
 CPFP with g77
-C#include <molde.h>
+C#include "molde.h"
 Cend-PFP
 C
 C      CHARACTER*2 ASYMB
@@ -2647,17 +2646,17 @@ C                ICRZ = ICRZ + 3
 C             ELSE
 C                JATOM = 0
 C                DO 200 ISYMOP = 0, MAXOPR
-C                   IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+C                   IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
 C                      JATOM = JATOM + 1
 C                      ICHARGE = NINT(CHARGE(ICENT))
 C
 C                      IF (WORD .EQ. 'ATOM')
 C     &                  WRITE (LUMOLDE1,'(A,1X,I5,1X,I5,3(1X,F20.10))')
 C     &                         NAME,ICENT+JATOM-1,ICHARGE,
-C     &           ((PT(IBTAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
+C     &           ((PT(IAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
 C                      IF(WORD .EQ. 'FREQ')
 C     &                   WRITE (LUMOLDE1,'(A,3(1X,F20.10))') NAME,
-C     &           ((PT(IBTAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
+C     &           ((PT(IAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
 C                      ICRX = ICRX + 3
 C                      ICRY = ICRY + 3
 C                      ICRZ = ICRZ + 3
@@ -2709,12 +2708,12 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                 NAME(J:J) = '_'
                 J = J + 1
                 DO 200 ISYMOP = 0, MAXOPR
-                   IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                   IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                       JATOM = JATOM + 1
                       NAME(J:J) = CHRNOS(JATOM)
-                      CRX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-                      CRY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-                      CRZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+                      CRX = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+                      CRY = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+                      CRZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                       IF (WORD .EQ. 'ATOM') THEN
                          ICHARGE = NINT(CHARGE(ICENT))
                          IATOM = IATOM + 1

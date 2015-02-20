@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c===========================================================================
 c/* old abaenr_log */
@@ -127,7 +126,7 @@ C
          CALL AROUND('Test output of GD vectors from ANRCTL')
          DO 950 J = 1,NGD
             WRITE(LUPRI,'(/I3,A,I3)') J,'. GD gradient vector of',NGD
-            WRITE(LUPRI,'(2X,10F7.4)') (GD(I,J),I=1,NVARPT)
+            WRITE(LUPRI,'(10F10.4)') (GD(I,J),I=1,NVARPT)
   950    CONTINUE
       END IF
 C
@@ -177,13 +176,13 @@ C
             IOFF = 0
             DO 960 J = 1,NCSIM
                WRITE(LUPRI,'(/I3,A,I3)') J,'. start CI vector of',NCSIM
-               WRITE(LUPRI,'(2X,10F7.4)') (WRK(IOFF+I),I=1,NCONST)
+               WRITE(LUPRI,'(10F10.4)') (WRK(IOFF+I),I=1,NCONST)
                IOFF = IOFF + NCONST
   960       CONTINUE
             DO 965 J = 1,NOSIM
                WRITE(LUPRI,'(/I3,A,I3)') 
      *             J,'. start orbital vector of',NOSIM
-               WRITE(LUPRI,'(2X,10F7.4)') (WRK(IOFF+I),I=1,NWOPPT)
+               WRITE(LUPRI,'(10F10.4)') (WRK(IOFF+I),I=1,NWOPPT)
                IOFF = IOFF + NWOPPT
   965       CONTINUE
          END IF
@@ -985,7 +984,7 @@ C
 C Section 1: extend reduced PROJECTED HESSIAN matrix
 C            with N new b-vectors
 C
-      IF (IBTAND(ICTL,1).EQ.0) GO TO 1000
+      IF (IAND(ICTL,1).EQ.0) GO TO 1000
       IF (N.LT.1) GO TO 1000
       IREDH = NREDH - N
 C
@@ -1068,7 +1067,7 @@ C *********************************************************
 C Section 2: FIND SOLUTIONS TO THE NGR SET OF NEWTON-RAPHSON EQ.
 C
  1000 CONTINUE
-      IF (IBTAND(ICTL,2).EQ.0) GO TO 2000
+      IF (IAND(ICTL,2).EQ.0) GO TO 2000
 C
 C SOLVE NGD SET OF N-R EQ.
 C Copy REDH to SNRVEC and REDGD to soleq

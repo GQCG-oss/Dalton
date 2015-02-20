@@ -19,12 +19,15 @@ MODULE integraldriver
   use ls_util
   use Thermite_prop
   use ThermiteMem_module
-  use Integralparameters
+  use LSparameters
   use Fundamental
   use OverlapType
   use thermite_distribute
+  use thermite_distribute2
+  use thermite_distributeGen
   use thermite_distributeDEC
   use thermite_distributeK
+  use thermite_distributeK2
   use math_fun
 SAVE
 TYPE LINKshell
@@ -614,7 +617,7 @@ REAL(REALK)          :: CPU1,CPU2,WALL1,WALL2
 
 Integer             :: JmaxA,JmaxB,JmaxP,JMAXAP,JMAXBP,JMAXTP,JMAXD,JMAXM,JMAXT
 Integer             :: ITEX,iPrimP,iAngmomP,nPrimP,proptype,ijkP,ijk1,ijk2,lmP
-integer             :: nOperatorComp,J,nPrimPQ,jmaxPQ,I,U,V,tuv,T,IX
+integer             :: nOperatorComp,J,nPrimPQ,jmaxPQ,I,U,V,tuv,T,IX,QnPasses
 integer             :: iprimA,iprimB,offsetTUV,offsetTUV2,iPassQ,offset
 REAL(REALK)         :: SAAB13,FAC,TEXPB1,FACB,TMPB
 REAL(REALK)         :: ORIGIN(3),Apreexpfac
@@ -678,6 +681,7 @@ IF(INPUT%PropRequireBoys.GT.-1)THEN
        ENDDO
     ENDIF
     IF(Input%addtointegral.AND.Q%orbital1%TYPE_Nucleus)THEN
+       QnPasses = Q%nPasses 
        ! We sum all the charges in Overlap PassQ (all same charge)
        call mem_alloc(ptemp,nPrimPQ*Integral%nTUV )
        Z = -Q%orbital1%CC(1)%p%elms(1) !Charge
@@ -693,7 +697,7 @@ IF(INPUT%PropRequireBoys.GT.-1)THEN
              iPassQ=1
              offsetTUV2=(I-1)*Q%nPasses + (TUV-1)*nPrimPQ
              INTEGRAL%Rtuv(I+offsetTUV)= ptemp(iPassQ + offsetTUV2) 
-             DO iPassQ=2,Q%nPasses
+             DO iPassQ=2,QnPasses
                 INTEGRAL%Rtuv(I+offsetTUV)= INTEGRAL%Rtuv(I+offsetTUV)+ptemp(iPassQ + offsetTUV2) 
              ENDDO
           ENDDO
@@ -1690,21 +1694,7 @@ nDMAT_RHS = INPUT%nDMAT_RHS
 nDMAT_LHS = INPUT%nDMAT_LHS
 CS_THRESHOLD = INPUT%CS_THRESHOLD/INPUT%exchangeFactor
 sameLHSaos = INPUT%sameLHSaos
-!Beware when converting from double precision to short integer 
-!If double precision is less than 10^-33 then you can run into
-!problems with short integer overflow
-IF(INPUT%CS_THRESHOLD/INPUT%exchangeFactor.GT.shortintCrit)then
-   TMP=log10(INPUT%CS_THRESHOLD/INPUT%exchangeFactor)
-   IP=NINT(TMP) !IP used as temp
-   IF (ABS(TMP-IP).LT. 1.0E-15_realk) THEN
-      !this means that the threshold is 1EX_realk X=-1,..,-19,..
-      CS_THRLOG=IP
-   ELSE
-      CS_THRLOG=FLOOR(log10(INPUT%CS_THRESHOLD/INPUT%exchangeFactor))
-   ENDIF
-ELSE
-   CS_THRLOG=shortzero
-ENDIF
+call Obtain_CS_THRLOG(CS_THRLOG,INPUT%CS_THRESHOLD/INPUT%exchangeFactor)
 DALINK_THRLOG = CS_THRLOG-INPUT%DASCREEN_THRLOG
 sameODs = INPUT%sameODs
 MBIE_SCREEN = INPUT%MBIE_SCREEN
@@ -1984,7 +1974,8 @@ IF(PerformCALC)THEN
  tid=OMP_GET_THREAD_NUM()
 !$OMP MASTER
  if(tid==0)then
-   IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.' 
+   IF(node.EQ.0.AND.IPRINT.GT.1)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',&
+     & omp_get_num_threads(),' threads.' 
  endif
 !$OMP END MASTER
 
@@ -3056,88 +3047,87 @@ END SUBROUTINE Build_Integrand
 !> \param IUNIT the logical unit number for the output file
 SUBROUTINE SetIntegrand(rPQ,squaredDistance,exponents,&
      &                  reducedExponents,coulomb,nucpotRHS,nucpotLHS,integralPrefactor,npq,&
-     &                  pexps,qexps,pcent,qcent,np,nq,nprimQ,nPassQ,IUNIT)
+     &                  pexps,qexps,pcent,qcent,nPrimPassP,nPrimPassQ,nprimQ,nPassQ,IUNIT)
 implicit none
-integer     :: np,nq,npq,IUNIT,nprimQ,nPassQ
-!integer     :: iprimP(npq),iprimQ(npq)
-real(realk) :: rPQ(nq,np,3),squaredDistance(nQ,nP)
-real(realk) :: exponents(nPrimQ,nPassQ,nP),reducedExponents(nPrimQ,nPassQ,nP),integralPrefactor(nPrimQ,nPassQ,nP)
-real(realk) :: pexps(np),pcent(3,np)
-real(realk) :: qexps(nq),qcent(3,nq)
-real(realk) :: px,py,pz,qx,qy,qz,pqx,pqy,pqz
-logical     :: nucpotRHS,nucpotLHS
+integer,intent(in)     :: nPrimPassP,nPrimPassQ,npq,IUNIT,nprimQ,nPassQ
+real(realk),intent(inout) :: rPQ(nPrimPassQ,nPrimPassP,3)
+real(realk),intent(inout) :: exponents(nPrimQ,nPassQ,nPrimPassP)
+real(realk),intent(inout) :: squaredDistance(nPrimPassQ,nPrimPassP)
+real(realk),intent(inout) :: reducedExponents(nPrimQ,nPassQ,nPrimPassP)
+real(realk),intent(inout) :: integralPrefactor(nPrimQ,nPassQ,nPrimPassP)
+real(realk),intent(in) :: pexps(nPrimPassP),pcent(3,nPrimPassP)
+real(realk),intent(in) :: qexps(nPrimPassQ),qcent(3,nPrimPassQ)
+logical,intent(in)     :: nucpotRHS,nucpotLHS,coulomb
 !
+real(realk) :: px,py,pz,qx,qy,qz,pqx,pqy,pqz
 integer :: ipq,ip,iq,idir,startq,ipassQ,tmpipq
 real(realk) :: pqdist(3),pqdist2,d2,p,q,p_q,pq_inv
 Real(realk), parameter :: PI=3.14159265358979323846E0_realk, Nill = 0.0E0_realk, OneHalf=1.5E0_realk
 Real(realk), parameter :: Two = 2.0E0_realk, TwoHalf=2.5E0_realk 
 Real(realk), parameter :: PIFAC = 34.986836655249725E0_realk !Two*PI**TwoHalf
 Real(realk), parameter :: TWOPI = 6.2831853071795862E0_realk 
-Real(realk) :: expoTMP(nPrimQ,np),expoTMP2(nPrimQ,np)
-Real(realk) :: invexponents(nPrimQ,np)
-Real(realk) :: sqrtexpoTMP(nPrimQ,np)
+! Too much stack memory usage
+!Real(realk) :: expoTMP(nPrimQ,np),expoTMP2(nPrimQ,np)
+!Real(realk) :: invexponents(nPrimQ,np)
+!Real(realk) :: sqrtexpoTMP(nPrimQ,np)
 !
-logical :: coulomb
 
 !Primitives ordered according to (Q,P)
 !exponents(nPrimQ,nPassQ,nP)
-DO ip=1, np
-   p  = pexps(ip)
-   DO iq=1, nPrimQ
-      expoTMP(iq,ip) = p + qexps(iq)
-      expoTMP2(iq,ip) = p * qexps(iq)
-   ENDDO
-ENDDO
-call ls_vdinv(np*nPrimQ,expoTMP,invexponents)
+
+!use rPQ and squaredDistance as temporary array
 IF (coulomb) THEN
-   call ls_vdsqrt(np*nPrimQ,expoTMP,sqrtexpoTMP)
+   !   exponents not needed for Coulomb
+   DO ip=1, nPrimPassP
+      p = pexps(ip)
+      DO iq=1, nPrimQ
+         rPQ(iq,ip,2) = p * qexps(iq)
+         rPQ(iq,ip,3) = 1.0E0_realk/(p + qexps(iq))
+         squaredDistance(iq,ip) = SQRT(p + qexps(iq))
+      ENDDO
+   ENDDO
+ELSE
+   DO ip=1, nPrimPassP
+      p = pexps(ip)
+      DO iq=1, nPrimQ
+         exponents(iq,1,ip) = p + qexps(iq)
+         rPQ(iq,ip,2) = p * qexps(iq)
+         rPQ(iq,ip,3) = 1.0E0_realk/(p + qexps(iq))
+      ENDDO
+   ENDDO
 ENDIF
+
 !WE BUILD THE PART WHICH IS THE SAME FOR ALL PASSES
-DO ip=1, np
+DO ip=1, nPrimPassp
+   p = pexps(ip)
    DO iq=1, nPrimQ
-      reducedExponents(iq,1,ip) = expoTMP2(iq,ip)*invexponents(iq,ip)
+      reducedExponents(iq,1,ip) = rPQ(iq,ip,2)*rPQ(iq,ip,3)
    ENDDO
 ENDDO
 IF (coulomb) THEN
-   DO ip=1, np
+   DO ip=1, nPrimPassp
       DO iq=1, nPrimQ
-         integralPrefactor(iq,1,ip) = PIFAC/(expoTMP2(iq,ip)*sqrtexpoTMP(iq,ip))
+         integralPrefactor(iq,1,ip) = PIFAC/(rPQ(iq,ip,2)*squaredDistance(iq,ip))
       ENDDO
    ENDDO
-!   exponents not needed for Coulomb
 ELSEIF(nucpotRHS)THEN
-   DO ip=1, np
-      DO iq=1, nPrimQ
-         exponents(iq,1,ip) = expoTMP(iq,ip)
-      ENDDO
-   ENDDO
-   DO ip=1, np
+   DO ip=1, nPrimPassp
       p  = pexps(ip)
       DO iq=1, nPrimQ
          integralPrefactor(iq,1,ip) = TWOPI/p
       ENDDO
    ENDDO
 ELSEIF(nucpotLHS)THEN
-   DO ip=1, np
-      DO iq=1, nPrimQ
-         exponents(iq,1,ip) = expoTMP(iq,ip)
-      ENDDO
-   ENDDO
    DO iq=1, nPrimQ
       q  = qexps(iq)
-      DO ip=1, np
+      DO ip=1, nPrimPassP
          integralPrefactor(iq,1,ip) = TWOPI/q
       ENDDO
    ENDDO
 ELSE
-   DO ip=1, np
+   DO ip=1, nPrimPassp
       DO iq=1, nPrimQ
-         exponents(iq,1,ip) = expoTMP(iq,ip)
-      ENDDO
-   ENDDO
-   DO ip=1, np
-      DO iq=1, nPrimQ
-         integralPrefactor(iq,1,ip) = (PI*invexponents(iq,ip))**(OneHalf)
+         integralPrefactor(iq,1,ip) = (PI*rPQ(iq,ip,3))**(OneHalf)
       ENDDO
    ENDDO
 ENDIF
@@ -3145,23 +3135,23 @@ ENDIF
 IF(npassQ.GT.1)then
    IF(.NOT.coulomb)THEN
       !not needed for coulomb
-      do ipassQ=2,npassQ
-         DO ip=1, np
+      DO ip=1, nPrimPassp
+         do ipassQ=2,npassQ
             DO iq=1, nPrimQ
-               exponents(iq,ipassQ,ip) = expoTMP(iq,ip)
+               exponents(iq,ipassQ,ip) = exponents(iq,1,ip)
             ENDDO
          ENDDO
       ENDDO
    ENDIF
-   do ipassQ=2,npassQ
-      DO ip=1, np
+   DO ip=1, nPrimPassp
+      do ipassQ=2,npassQ
          DO iq=1, nPrimQ
             reducedExponents(iq,ipassQ,ip) = reducedExponents(iq,1,ip) 
          ENDDO
       ENDDO
    enddo
-   do ipassQ=2,npassQ
-      DO ip=1, np
+   DO ip=1, nPrimPassp
+      do ipassQ=2,npassQ
          DO iq=1, nPrimQ
             integralPrefactor(iq,ipassQ,ip) = integralPrefactor(iq,1,ip)
          ENDDO
@@ -3170,11 +3160,11 @@ IF(npassQ.GT.1)then
 ENDIF
 !BUILD THE PART WHICH IS UNIQUE FOR EACH OVERLAP
 !ipq = 0
-DO ip=1, np
+DO ip=1, nPrimPassp
    px = pcent(1,ip)
    py = pcent(2,ip)
    pz = pcent(3,ip)
-   DO iq=1, nq
+   DO iq=1, nPrimPassq
       pqx = px - qcent(1,iq)
       pqy = py - qcent(2,iq)
       pqz = pz - qcent(3,iq)
@@ -3556,6 +3546,10 @@ nCompB  = P%orbital2%nOrbComp(angB)
 nPassP  = P%nPasses
 permute = P%sameAO.AND.(startA.NE.startB)
 
+IF (IPRINT.GT.20) THEN
+  CALL print_addPQ(Integral%IN,nC*nD,nPassQ*ndim5Q,ndim5P,nAng,nCont,permute,contAng,lupri,iprint)
+ENDIF
+
 IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
   IF (nQ.EQ. 1) THEN
 #ifdef VAR_LSDEBUGINT
@@ -3617,6 +3611,35 @@ IF (IPRINT.GT. 10) THEN
   CALL PrintPQ(Integral%integralsABCD,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,nDer,LUPRI,IPRINT)
 ENDIF
 
+CONTAINS
+  SUBROUTINE print_addPQ(AddPQ,nQ,n5Q,nAng,nCont,n5P,permute,contang,LUPRI,IPRINT)
+  implicit none
+  INTEGER,intent(IN)     :: nQ,n5Q,nAng,nCont,n5P,LUPRI,IPRINT
+  LOGICAL,intent(IN)     :: permute,contang
+  Real(realk),intent(IN) :: AddPQ(nCont,nQ,n5Q,n5P,nAng)
+  !
+  Integer :: iCont,iQ,i5Q,i5P,iAng
+  
+  write(lupri,'(1X,A)')    'Printing AddPQ entering AddToPQ'
+  write(lupri,'(3X,A10,I5)') 'n5Q    =',n5Q
+  write(lupri,'(3X,A10,I5)') 'n5P    =',n5P
+  write(lupri,'(3X,A10,I5)') 'nQ     =',nQ
+  write(lupri,'(3X,A10,I5)') 'nAngP  =',nAng
+  write(lupri,'(3X,A10,I5)') 'nContP =',nCont
+  write(lupri,'(3X,A10,L5)') 'permute =',permute
+  write(lupri,'(3X,A10,L5)') 'contang =',contang
+  
+  write(lupri,'(5X,A)') '  iQ5  iP5   iQ  iAng   iCont=1,...,nCont'
+  DO i5Q = 1,n5Q
+  DO i5P = 1,n5P
+  DO iQ  = 1,nQ
+  DO iAng = 1,nAng
+    write(lupri,'(5X,4I5,10F15.9/25X,10F15.9)') i5Q,i5P,iQ,iAng,(AddPQ(iCont,iQ,i5Q,i5P,iAng),iCont=1,nCont)
+  ENDDO
+  ENDDO
+  ENDDO
+  ENDDO
+  END SUBROUTINE print_addPQ
 END SUBROUTINE AddToPQ
 
  
@@ -6587,19 +6610,28 @@ INTEGER                 :: LUPRI,SUM,J,K,T,U,V,TUV,IOFF
 INTEGER                 :: nPrim,IPRINT,ntuv,L,I,offsetTUV,offset,offset2
 INTEGER                 :: zeroX,zeroY,zeroZ,Jmax,Jstart,nPrimP,nPassQ,iPass
 real(realk)             :: X0,Y0,Z0
-Integer                 :: der,ntuvFull,fullOP,ioffP
-Logical                 :: kinetic,facone
+Integer                 :: der,ntuvFull,fullOP,ioffP,addDer
+Logical                 :: kinetic,facone,efP,efQ
 
 kinetic = INPUT%operator .EQ. KineticOperator
+!efP     = PQ%P%p%type_elField
+!efQ     = PQ%Q%p%type_elField
 !
 NPrim=PQ%nPrimitives
 JMAX=PQ%endAngmom
 Jstart=PQ%startAngmom
 
+addDer = 0
 IF (kinetic) THEN
-  JMAX=PQ%endAngmom + 2
-  Jstart=PQ%startAngmom + 2
+   addDer = 2
+!ELSE IF (efP) THEN
+!   addDer = 1
+!ELSE IF (efQ) THEN
+!   addDer = 1
 ENDIF
+
+JMAX=PQ%endAngmom + addDer
+Jstart=PQ%startAngmom + addDer
 
 #ifdef VAR_LSDEBUGINT
 IF(nPrim*(JMAX+1).GT.allocIntmaxTUVdim)THEN
@@ -6615,10 +6647,12 @@ CASE (OverlapOperator)
 CASE (KineticOperator)
    CALL buildSJ000(Integral%IN,PQ,nPrim,JMAX,LUPRI,IPRINT)
 CASE (CAMOperator)
-   ! (1 + beta erf(\omega r12) )/r12   (note Beta is now beta/alpha)
    call mem_alloc(SJ0002,JMAX,nPrim,.TRUE.,.FALSE.)
    CALL buildRJ000(Integral%IN,PQ,nPrim,JMAX,LUPRI,IPRINT,integral,INPUT%HIGH_RJ000_ACCURACY)
    CALL buildErfRJ000(SJ0002,PQ,nPrim,Jmax,LUPRI,IPRINT,integral,INPUT%ATTomega,INPUT%HIGH_RJ000_ACCURACY)
+   ! alpha /r12 
+   CALL DSCAL(NPrim*(JMAX+1),INPUT%ATTalpha,Integral%IN,1)
+   ! (alpha + beta erf(\omega r12) )/r12 
    CALL DAXPY(NPrim*(JMAX+1),INPUT%ATTbeta,SJ0002,1,Integral%IN,1)
    call mem_dealloc(SJ0002)
 CASE (ErfcOperator)
@@ -7071,8 +7105,8 @@ IF(INPUT%MBIE_SCREEN)THEN
          nomX = exp(-X*X)
          denomX = X + SQRT(X*X+D2)
          ERF_Rpq   = 1 - twosqPim * nomX/denomX
-         CAMcorr = 1 + input%ATTbeta * ERF_Rpq !note that alpha is actually 
-         !put into the exchangefactor and beta is in reality beta/alpha)
+         CAMcorr = input%ATTalpha + input%ATTbeta * ERF_Rpq !note that alpha is not  
+         !put into the exchangefactor anymore -> TO CHECK for consistency
          MBIEEST = CAMcorr*MBIEEST
       ENDIF
       screen = (MBIEEST.LE.INPUT%CS_THRESHOLD)

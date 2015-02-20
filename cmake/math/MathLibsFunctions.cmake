@@ -1,27 +1,29 @@
-#=============================================================================
-# Copyright 2011-2013 Jonas Juselius <jonas.juselius@uit.no>
-#                     Radovan Bast <radovan.bast@gmail.com>
+
+
+# -----------------------------------------------------------------------------
+# Copyright 2011-2013 Jonas Juselius <firstname.lastname at uit.no>
+#                     Radovan Bast   <lastname at kth.se>
 #
-# Distributed under the OSI-approved BSD License (the "License");
-# see accompanying file Copyright.txt for details.
+# Distributed under the GNU Lesser General Public License.
+# See accompanying file LICENSE for details.
 #
 # This software is distributed WITHOUT ANY WARRANTY; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the License for more information.
-#=============================================================================
-# (To distributed this file outside of CMake, substitute the full
-#  License text for the above reference.)
+# -----------------------------------------------------------------------------
+
 
 include(FindPackageHandleStandardArgs)
 include(FindPackageMessage)
 
-if(NOT MATH_LANG)
-    set(MATH_LANG C)
-elseif(MATH_LANG STREQUAL "C" OR MATH_LANG STREQUAL "CXX")
-    set(MATH_LANG C)
-elseif(NOT MATH_LANG STREQUAL "Fortran")
-    message(FATAL_ERROR "Invalid math library linker language: ${MATH_LANG}")
-endif()
+foreach(_service BLAS LAPACK)
+    if(NOT ${_service}_LANG)
+        set(${_service}_LANG C)
+    elseif(${_service}_LANG STREQUAL "C" OR ${_service}_LANG STREQUAL "CXX")
+        set(${_service}_LANG C)
+    elseif(NOT ${_service}_LANG STREQUAL "Fortran")
+        message(FATAL_ERROR "Invalid ${_service} library linker language: ${${_service}_LANG}")
+    endif()
+endforeach()
 
 macro(find_math_header _service _header)
     string(TOUPPER ${_service} _SERVICE)
@@ -31,6 +33,12 @@ macro(find_math_header _service _header)
         HINTS ${${_SERVICE}_ROOT}/include
         PATH_SUFFIXES ${MATH_INCLUDE_PATH_SUFFIXES}
         NO_DEFAULT_PATH
+        )
+    # the following is needed for Atlas' clapack.h
+    # this whole code needs major cleanup soon (2014-10-31)
+    find_path(${_SERVICE}_INCLUDE_DIRS
+        NAMES ${_header}
+        PATH_SUFFIXES ${MATH_INCLUDE_PATH_SUFFIXES}
         )
     find_path(${_SERVICE}_INCLUDE_DIRS
         NAMES ${_header}
@@ -79,12 +87,18 @@ macro(cache_math_result _service MATH_TYPE)
     string(TOUPPER ${_service} _SERVICE)
     set(${_SERVICE}_FIND_QUIETLY TRUE)
     if(DEFINED ${_SERVICE}_INCLUDE_DIRS)
-        find_package_handle_standard_args(${_SERVICE}
+        find_package_handle_standard_args(
+            ${_SERVICE}
             "Could NOT find ${MATH_TYPE} ${_SERVICE}"
-            ${_SERVICE}_LIBRARIES ${_SERVICE}_INCLUDE_DIRS)
+            ${_SERVICE}_LIBRARIES
+            ${_SERVICE}_INCLUDE_DIRS
+            )
     else()
-        find_package_handle_standard_args(${_SERVICE}
-            "Could NOT find ${MATH_TYPE} ${_SERVICE}" ${_SERVICE}_LIBRARIES)
+        find_package_handle_standard_args(
+            ${_SERVICE}
+            "Could NOT find ${MATH_TYPE} ${_SERVICE}"
+            ${_SERVICE}_LIBRARIES
+            )
     endif()
 
     if(${_SERVICE}_FOUND)
@@ -133,14 +147,30 @@ macro(config_math_service _SERVICE)
     set(${_SERVICE}_FOUND FALSE)
     if(ENABLE_AUTO_${_SERVICE})
         if(EXISTS $ENV{MATH_ROOT})
-            if(NOT DEFINED ${_SERVICE}_ROOT})
+            if("${${_SERVICE}_ROOT}" STREQUAL "")
                 set(${_SERVICE}_ROOT $ENV{MATH_ROOT})
+                message("-- ${_SERVICE} will be searched for based on MATH_ROOT=${${_SERVICE}_ROOT} ")
             endif()
         endif()
 
         if(EXISTS $ENV{${_SERVICE}_ROOT})
-            if(NOT DEFINED ${_SERVICE}_ROOT})
+            if("${${_SERVICE}_ROOT}" STREQUAL "")
                 set(${_SERVICE}_ROOT $ENV{${_SERVICE}_ROOT})
+                message("-- ${_SERVICE} will be searched for based on ${_SERVICE}_ROOT=${${_SERVICE}_ROOT}")
+            endif()
+        endif()
+
+        if(EXISTS $ENV{MKL_ROOT})
+            if("${${_SERVICE}_ROOT}" STREQUAL "")
+                set(${_SERVICE}_ROOT $ENV{MKL_ROOT})
+                message("-- ${_SERVICE} will be searched for based on MKL_ROOT=${${_SERVICE}_ROOT}")
+            endif()
+        endif()
+
+        if(EXISTS $ENV{MKLROOT})
+            if("${${_SERVICE}_ROOT}" STREQUAL "")
+                set(${_SERVICE}_ROOT $ENV{MKLROOT})
+                message("-- ${_SERVICE} will be searched for based on MKLROOT=${${_SERVICE}_ROOT}")
             endif()
         endif()
 
@@ -158,30 +188,34 @@ macro(config_math_service _SERVICE)
 
         find_service(${_SERVICE})
     endif()
+
     if(${_SERVICE}_FOUND)
 
-        # hack to sneak in extra libraries
-        set(EXTRA_LIBS)
-        if(HAVE_MKL_BLAS OR HAVE_MKL_LAPACK)
-            if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-                set(EXTRA_LIBS -openmp)
+        # take care of omp flags
+        if(ENABLE_THREADED_MKL)
+            set(_omp_flag)
+            if(HAVE_MKL_BLAS OR HAVE_MKL_LAPACK)
+                if(MKL_COMPILER_BINDINGS MATCHES Intel)
+                    set(_omp_flag -openmp)
+                endif()
+                if(MKL_COMPILER_BINDINGS MATCHES GNU)
+                    set(_omp_flag -fopenmp)
+                endif()
+                if(MKL_COMPILER_BINDINGS MATCHES PGI)
+                    set(_omp_flag -mp)
+                endif()
             endif()
-            if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-                set(EXTRA_LIBS -fopenmp)
+            if(HAVE_MKL_${_SERVICE})
+                set(${_SERVICE}_LIBRARIES -Wl,--start-group ${${_SERVICE}_LIBRARIES} ${_omp_flag} -Wl,--end-group)
             endif()
-            if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-                set(EXTRA_LIBS -mp)
-            endif()
+            unset(_omp_flag)
         endif()
-        if(HAVE_MKL_${_SERVICE})
-            set(${_SERVICE}_LIBRARIES -Wl,--start-group ${${_SERVICE}_LIBRARIES} ${EXTRA_LIBS} -Wl,--end-group)
-        endif()
-        unset(EXTRA_LIBS)
 
         find_package_message(${_SERVICE}
             "Found ${_SERVICE}: ${${_SERVICE}_TYPE} (${${_SERVICE}_LIBRARIES})"
             "[${${_SERVICE}_LIBRARIES}]"
             )
+
         set(EXTERNAL_LIBS
             ${EXTERNAL_LIBS}
             ${${_SERVICE}_LIBRARIES}
@@ -190,7 +224,6 @@ macro(config_math_service _SERVICE)
         if(ENABLE_AUTO_${_SERVICE})
             message("-- No external ${_SERVICE} library found (have you set the MATH_ROOT environment variable?)")
         endif()
-        message("-- Using builtin ${_SERVICE} implementation (slow)")
         add_definitions(-DUSE_BUILTIN_${_SERVICE})
         set(USE_BUILTIN_${_SERVICE} TRUE)
     endif()
@@ -198,17 +231,12 @@ endmacro()
 
 macro(find_math_library _myservice _mytype)
     set(MATH_INCLUDE_PATH_SUFFIXES ${${_mytype}_${_myservice}_INCLUDE_PATH_SUFFIXES})
-    if(MATH_LANG STREQUAL "C")
+    if(${_myservice}_LANG STREQUAL "C")
         find_math_header(${_myservice} ${${_mytype}_${_myservice}_HEADERS})
     endif()
     set(MATH_LIBRARY_PATH_SUFFIXES ${${_mytype}_${_myservice}_LIBRARY_PATH_SUFFIXES})
 
     find_math_libs(${_myservice} ${${_mytype}_${_myservice}_LIBS})
-    if(NOT ${_myservice}_LIBRARIES)
-        if(DEFINED ${_mytype}_${_myservice}_LIBS2)
-            find_math_libs(${_myservice} ${${_mytype}_${_myservice}_LIBS2})
-        endif()
-    endif()
     # try some alternative patterns (if defined) until we find it
     foreach(_i 2 3 4 5 6 7 8 9)
         if(NOT ${_myservice}_LIBRARIES)

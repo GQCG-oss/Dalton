@@ -1,0 +1,1163 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON (Release Dalton2013 patch 0)
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Agren.
+       The Dalton quantum chemistry program system.
+       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.0 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Sun Sep  8 20:40:33 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/bast/DALTON-2013.0-Source/build/test_dftmm_5
+   2) /home/bast/DALTON-2013.0-Source/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | lpqlx131.ups-tlse.fr
+ System                   | Linux-3.8.5-201.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ Static linking           | OFF
+ Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
+ Configuration time       | 2013-09-08 20:31:27.952056
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON                                          
+.RUN RESPONSE                                     
+*QM3                                              
+.PRINT                                            
+ 1                                                
+.QM3                                              
+.THRDIP                                           
+ 1.0D-12                                          
+.MAXDIP                                           
+ 180                                              
+**INTEGRALS                                       
+.DIPLEN                                           
+.NUCPOT                                           
+.NELFLD                                           
+.PRINT                                            
+ 2                                                
+**WAVE FUNCTIONS                                  
+.DFT                                              
+B3LYP                                             
+*SCF INPUT                                        
+.THRESH                                           
+1.0D-12                                           
+**RESPONSE                                        
+*QUADRATIC                                        
+.DIPLEN                                           
+.SHG                                              
+.FREQUE                                           
+ 1                                                
+ 0.040                                            
+.THCLR                                            
+1.0D-9                                            
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+ATOMBASIS                                                                      
+CH2O PLUS 2 WATERS                                                             
+------------------------                                                       
+    5    0         1 1.00D-12                                                  
+        6.0   1    Basis=STO-3G                                                
+C           -1.588367    -.770650     .029109 0 1                              
+        8.0   1    Basis=STO-3G                                                
+O           -1.657083     .436069    -.009750 0 2                              
+        1.0   2    Basis=STO-3G                                                
+H           -.620668   -1.294822      .054251 0 3                              
+H           -2.508043   -1.382001     .040282 0 4                              
+   -0.669     2   Basis=MM                                                     
+O             .975536    1.507219    -.082590 1 1                              
+O            1.633705   -1.233280    -.078786 2 1                              
+    0.3345    4   Basis=MM                                                     
+H             .023200    1.300096    -.088063 1 2                              
+H            1.113831    2.040431     .704778 1 3                              
+H            1.600739    -.258639    -.086953 2 2                              
+H            2.303878   -1.461228     .570065 2 3                              
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+ Changes of defaults for *QM3   :
+ --------------------------------
+
+ +------------------+
+ |  WORD: | CHANGE: |
+ +------------------+
+ |    QM3 |       T |
+ | THDISC | 1.0D-12 |
+ | MXDIIT |     180 |
+ |  PRINT |       1 |
+ +------------------+
+  Settings for determination of induced dipoles:
+  Iterative Method is used
+ +------------------+
+
+
+    *************************************************************************
+    *************** Output from MM potential input processing ***************
+    *************************************************************************
+
+
+
+ ------------------------------------------------------------------------
+ | QM-sys type: | Systems:    | Model:  | Electric properties:          |
+ ------------------------------------------------------------------------
+ |          0   | [   0;   0] | SPC     |     No classical polarization |
+ ------------------------------------------------------------------------
+
+
+ ------------------------------------------------------------------------
+ | MM-sys type: | Systems:    | Model:  | Electric properties:          |
+ ------------------------------------------------------------------------
+ |          1   | [   1;   2] | SPC_E01 | Isotropic polarizability:     |
+ |              |             |         | alp( 1)=  9.5010              |
+ ------------------------------------------------------------------------
+
+
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: CH2O PLUS 2 WATERS                                                      
+ 2: ------------------------                                                
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "STO-3G" from the basis set library.
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "STO-3G" from the basis set library.
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  The basis set is "STO-3G" from the basis set library.
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/DALTON-2013.0-Source/build/basis/STO-3G"
+
+  Atomic type no.    4
+  --------------------
+  Nuclear charge:  -0.66900
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  This is an MM atom without basis functions.
+
+  Atomic type no.    5
+  --------------------
+  Nuclear charge:   0.33450
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    2
+  This is an MM atom without basis functions.
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C          12.000000
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    30.010565 amu
+                       Natural abundance:  98.633 %
+
+ Center-of-mass coordinates (a.u.):   -3.067740   -0.312997    0.018175
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    6
+  Total number of atoms:   12
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  C           1    6.0000    15     5      [6s3p|2s1p]                                        
+  O           1    8.0000    15     5      [6s3p|2s1p]                                        
+  H           2    1.0000     3     1      [3s|1s]                                            
+  O           2   -0.6690     0     0      Point Charge                                       
+  H           4    0.3345     0     0      Point Charge                                       
+  a           2    0.0000     0     0      Point Charge                                       
+  ----------------------------------------------------------------------
+  total:     12   16.0000    36    12
+  ----------------------------------------------------------------------
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   36
+  C       :     1  x  -3.0015786160    2  y  -1.4563174382    3  z   0.0550080378
+  O       :     4  x  -3.1314330364    5  y   0.8240509816    6  z  -0.0184248297
+  H       :     7  x  -1.1728925345    8  y  -2.4468589606    9  z   0.1025195320
+  H       :    10  x  -4.7395143797   11  y  -2.6116033945   12  z   0.0761219478
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           O           H           H           O           O     
+            ------      ------      ------      ------      ------      ------
+ C     :    0.000000
+ O     :    1.209298    0.000000
+ H     :    1.100831    2.018474    0.000000
+ H     :    1.104391    2.007988    1.889439    0.000000
+ O     :    3.431437    2.843123    3.227697    4.527473    0.000000
+ O     :    3.256903    3.690634    2.259133    4.146127    2.818428    0.000000
+ H     :    2.626569    1.891038    2.677390    3.690164    0.974615    3.001967
+ H     :    3.957345    3.280624    3.815178    5.027183    0.960931    3.406086
+ H     :    3.232031    3.331964    2.455252    4.261481    1.873273    0.975233
+ H     :    3.989875    4.430026    2.974344    4.841645    3.316946    0.960260
+ a  1  :    3.408645    2.807232    3.219816    4.503294    0.065744    2.847367
+ a  2  :    3.285589    3.703418    2.294418    4.182574    2.786761    0.065593
+
+            H           H           H           H           a  1        a  2  
+            ------      ------      ------      ------      ------      ------
+ H     :    0.000000
+ H     :    1.538236    0.000000
+ H     :    2.217721    2.479847    0.000000
+ H     :    3.641364    3.700807    1.540226    0.000000
+ a  1  :    0.935667    0.923012    1.906635    3.343454    0.000000
+ a  2  :    2.986623    3.363487    0.936414    0.922570    2.815774    0.000000
+
+
+  Max    interatomic separation is    2.0185 Angstrom (    3.8144 Bohr)
+  between atoms    3 and    2, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.1008 Angstrom (    2.0803 Bohr)
+
+  Min YX interatomic separation is    1.2093 Angstrom (    2.2852 Bohr)
+
+  Max QM+MM interatomic separation is    5.0272 Angstrom (    9.5000 Bohr)
+  between the QM+MM centers    8 and    4, "H     " and "H     ".
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       1.798871         -0.056827    0.997867   -0.032124
+   IB      13.009178          0.998345    0.057081    0.007042
+   IC      14.808049         -0.008861    0.031671    0.999459
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         280942.3015          38847.8806          34128.6681 MHz
+            9.371226            1.295826            1.138410 cm-1
+
+
+@  Nuclear repulsion energy :   31.249215315972 Hartree
+      QM3 induced dipole vector converged in  13 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.020409711895445
+
+
+    **************************************************************************
+    ***************** The MM/MM classical interaction energy *****************
+    **************************************************************************
+
+
+ ------------------------------------------------------------------------
+ |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        |       -0.00626437 |
+ |  Epol  = - 1/2*Sum_a[ Pind_a*E^site_a ]          |       -0.00096177 |
+ |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] |        0.00000000 |
+ ------------------------------------------------------------------------
+ |  E(MM/MM) = Eelec + Epol + Evdw                  |       -0.00722614 |
+ ------------------------------------------------------------------------
+
+
+
+
+     ************************************************************************
+     *************** The "QM"/MM classical interaction energy ***************
+     ************************************************************************
+
+
+ ------------------------------------------------------------------------
+ |  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        |        0.00000000 |
+ |  Epol  = - 1/2*Sum_a[ Pind_a*E^(QMclassic)_a ]   |        0.00000000 |
+ |  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] |        0.00000000 |
+ ------------------------------------------------------------------------
+ |  E("QM"/MM) = Eelec + Epol + Evdw                |        0.00000000 |
+ ------------------------------------------------------------------------
+
+
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        2
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+          - Electric field at the nuclei
+          - Potential energy at the nuclei
+
+ Center of mass  (bohr):     -3.067740315293     -0.312997395263      0.018174673399
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERONE **************************
+     ************************************************************************
+
+
+
+     ************************************************************************
+     ************************** Output from TWOINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:        2907 ( 94.4% )
+ Megabytes written:                              0.034
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:   12
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.705291     -11.377081      -1.496925      -0.962689      -0.743251
+           -0.672270      -0.593413      -0.504635      -0.350830      -0.253214
+           -0.198302      -0.193199
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:40:33 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ Title lines from ".mol" input file:
+     CH2O PLUS 2 WATERS                                                      
+     ------------------------                                                
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+@    QM part is embedded in an environment :
+
+@         Model: QM3
+
+     Wave function specification
+     ============================
+@    For the wave function of type :      >>> KS-DFT <<<
+@    Number of closed shell electrons          16
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+     Total number of symmetries                 1
+@    Reference state symmetry                   1
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1
+                                       --- |  ---
+@    Occupied SCF orbitals               8 |    8
+     Secondary orbitals                  4 |    4
+     Total number of orbitals           12 |   12
+     Number of basis functions          12 |   12
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations             32
+     ------------------------------------------
+@    Total number of variables               33
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-12
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy       Solvation energy    Error norm    Delta(E)
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.975378044871  16.0000012547    1.25D-06
+      QM3 induced Dipole vector converged in  13 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.068478740049335
+@  1  -112.623001715     -1.770440366844E-02    2.45334D+00   -1.13D+02
+      Virial theorem: -V/T =      2.004423
+@      MULPOP C       0.99; O      -0.72; H      -0.14; H      -0.14; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.746476974085  16.0000013834    1.38D-06
+      QM3 induced Dipole vector converged in  13 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.009770909930574
+@  2  -112.274338924      1.474130203961E-02    2.94671D+00    3.49D-01
+      Virial theorem: -V/T =      2.014367
+@      MULPOP C      -1.47; O       1.09; H       0.22; H       0.17; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.950280243882  16.0000013090    1.31D-06
+      QM3 induced Dipole vector converged in  13 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.064920296142577
+@  3  -112.842566659     -1.706188249596E-02    8.61243D-01   -5.68D-01
+      Virial theorem: -V/T =      2.008819
+@      MULPOP C       0.40; O      -0.60; H       0.11; H       0.08; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.862966937643  16.0000013128    1.31D-06
+      QM3 induced Dipole vector converged in  12 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.035118619007291
+@  4  -112.900301894     -7.461039508836E-03    6.75708D-02   -5.77D-02
+      Virial theorem: -V/T =      2.014234
+@      MULPOP C       0.02; O      -0.16; H       0.09; H       0.05; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.871215584161  16.0000013154    1.32D-06
+      QM3 induced Dipole vector converged in  11 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037464089436544
+@  5  -112.900644177     -8.363423644778E-03    1.32509D-02   -3.42D-04
+      Virial theorem: -V/T =      2.013667
+@      MULPOP C       0.01; O      -0.19; H       0.11; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870525888676  16.0000013146    1.31D-06
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037301622577105
+@  6  -112.900659092     -8.300430668984E-03    3.33594D-03   -1.49D-05
+      Virial theorem: -V/T =      2.013731
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870722898031  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037363406774895
+@  7  -112.900659033     -8.323409839985E-03    4.54921D-04    5.87D-08
+      Virial theorem: -V/T =      2.013720
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870750439606  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in   9 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037372874827224
+@  8  -112.900658926     -8.326917843151E-03    5.56743D-05    1.07D-07
+      Virial theorem: -V/T =      2.013719
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870753759062  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in   8 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037373902608558
+@  9  -112.900658913     -8.327300164150E-03    8.81784D-06    1.30D-08
+      Virial theorem: -V/T =      2.013719
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870754438298  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in   7 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037374123655586
+@ 10  -112.900658910     -8.327382320743E-03    6.70110D-07    2.82D-09
+      Virial theorem: -V/T =      2.013719
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870754396171  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in   6 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037374109857812
+@ 11  -112.900658910     -8.327377247432E-03    6.88202D-08   -1.78D-10
+      Virial theorem: -V/T =      2.013719
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870754391153  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in   5 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037374108239852
+@ 12  -112.900658910     -8.327376646832E-03    7.16697D-10   -2.09D-11
+      Virial theorem: -V/T =      2.013719
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870754391097  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037374108221757
+@ 13  -112.900658910     -8.327376640830E-03    1.75092D-11   -2.56D-13
+      Virial theorem: -V/T =      2.013719
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870754391096  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037374108221604
+@ 14  -112.900658910     -8.327376640765E-03    3.20106D-12    1.85D-13
+      Virial theorem: -V/T =      2.013719
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870754391096  16.0000013145    1.31D-06
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.037374108221534
+@ 15  -112.900658910     -8.327376640741E-03    1.40360D-13   -1.99D-13
+
+@ *** DIIS converged in  15 iterations !
+@     Converged SCF energy, gradient:   -112.900658910452    1.40D-13
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+    (incl. solvent contribution)
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   16
+ Orbital occupations :    8
+
+ Sym       Kohn-Sham orbital energies
+
+  1    -18.91905092   -10.08389823    -1.01341480    -0.57687160    -0.44434717
+        -0.35005810    -0.32119123    -0.16543924     0.06967467     0.39381260
+         0.49744573     0.61388890
+
+    E(LUMO) :     0.06967467 au (symmetry 1)
+  - E(HOMO) :    -0.16543924 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.23511391 au
+
+ >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       3.933       3.972
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1
+@    Total charge of molecule:    0
+
+     QM/MM "QM3" calculation converged :
+
+        Electrostatic energy:      -0.007810375438
+        Polarization energy:       -0.000517001203
+        van der Waals energy:       0.000000000000
+        Total QM/MM energy:        -0.008327376641
+
+@    Final DFT energy:           -112.900658910452                 
+@    Nuclear repulsion:            31.249215315972
+@    Electronic energy:          -144.141546849784
+
+@    Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:40:37 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 C   :1s     0.0007   0.9910  -0.1289  -0.1866  -0.0051   0.0400   0.0000
+   2 C   :1s    -0.0089   0.0406   0.2852   0.5872   0.0194  -0.1271   0.0005
+   3 C   :2px    0.0005  -0.0001  -0.0092   0.0045   0.5760   0.0146  -0.0069
+   4 C   :2py   -0.0078   0.0011   0.1690  -0.2633   0.0169  -0.4223   0.0232
+   5 C   :2pz    0.0002  -0.0000  -0.0046   0.0109   0.0065   0.0182   0.6014
+   6 O   :1s     0.9935   0.0005  -0.2149   0.0979   0.0016  -0.1122   0.0012
+   7 O   :1s     0.0296  -0.0081   0.7388  -0.4138  -0.0050   0.5655  -0.0059
+   8 O   :2px    0.0004  -0.0002   0.0186  -0.0051   0.3295  -0.0220  -0.0067
+   9 O   :2py   -0.0064   0.0031  -0.2119  -0.1023   0.0236   0.6807   0.0163
+  10 O   :2pz    0.0002  -0.0001   0.0080   0.0030   0.0034  -0.0150   0.6810
+  11 H   :1s     0.0003  -0.0088   0.0311   0.2538   0.3180   0.1282  -0.0028
+  12 H   :1s     0.0003  -0.0088   0.0320   0.2725  -0.3153   0.1486  -0.0014
+
+    Orbital         8        9       10
+   1 C   :1s     0.0008   0.0000   0.2047
+   2 C   :1s    -0.0051   0.0009  -1.2661
+   3 C   :2px   -0.0893  -0.0076   0.0551
+   4 C   :2py    0.0063   0.0267   0.4658
+   5 C   :2pz   -0.0019   0.8270  -0.0130
+   6 O   :1s     0.0041  -0.0002  -0.0224
+   7 O   :1s    -0.0185   0.0004   0.1271
+   8 O   :2px    0.9062   0.0074  -0.0146
+   9 O   :2py    0.0386  -0.0224  -0.2103
+  10 O   :2pz    0.0076  -0.7632   0.0060
+  11 H   :1s    -0.3392  -0.0019   0.8467
+  12 H   :1s     0.3482  -0.0006   0.9413
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      3.94 seconds
+ >>>> Total wall time used in SIRIUS :      3.97 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:40:37 2013
+     Host name              : lpqlx131.ups-tlse.fr                    
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ Quadratic Response calculation
+ ------------------------------
+
+ First hyperpolarizability calculation : HYPCAL= T
+
+ Spin of operator A , ISPINA=    0
+ Spin of operator B , ISPINB=    0
+ Spin of operator C , ISPINC=    0
+
+  1 B-frequencies  4.000000D-02
+  1 C-frequencies  4.000000D-02
+ QM/MM response calculation
+ Second harmonic generation                     : SHG= T
+
+ Print level                                    : IPRHYP =   2
+ Maximum number of iterations in lin.rsp. solver: MAXITL =  60
+ Threshold for convergence of linear resp. eq.s : THCLR  = 1.000D-09
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+ Direct one-index transformation                : DIROIT= T
+
+    3 A OPERATORS OF SYMMETRY NO:    1 AND LABELS:
+
+          XDIPLEN 
+          YDIPLEN 
+          ZDIPLEN 
+
+    3 B OPERATORS OF SYMMETRY NO:    1 AND LABELS:
+
+          XDIPLEN 
+          YDIPLEN 
+          ZDIPLEN 
+
+    3 C OPERATORS OF SYMMETRY NO:    1 AND LABELS:
+
+          XDIPLEN 
+          YDIPLEN 
+          ZDIPLEN 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.002       0.008
+
+
+   SCF energy         :     -112.900658910452336
+ -- inactive part     :     -144.282701539104636
+ -- nuclear repulsion :       31.249215315972382
+
+
+                    *****************************************
+                    *** DFT response calculation (TD-DFT) ***
+                    *****************************************
+
+
+
+ Linear response calculations for quadratic response
+ - singlet property operator of symmetry    1
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      32
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      32
+
+
+ QRLRVE -- linear response calculation for symmetry  1
+ QRLRVE -- operator label : XDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.040000  0.080000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry =  1; triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-09
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   36)
+ RSP solution vector no.    1; norm of residual   3.81D-10
+ RSP solution vector no.    2; norm of residual   3.19D-10
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   XDIPLEN     FREQUENCY   0.400000D-01
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.04000):     6.37422217694    
+
+@ QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.04000):   -0.195515147719    
+
+@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.04000):    3.597641693075E-02
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   XDIPLEN     FREQUENCY   0.800000D-01
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.08000):     6.43195709954    
+
+@ QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.08000):   -0.198028731156    
+
+@ QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.08000):    3.626636978755E-02
+
+
+ QRLRVE -- linear response calculation for symmetry  1
+ QRLRVE -- operator label : YDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.040000  0.080000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry =  1; triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-09
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   36)
+ RSP solution vector no.    1; norm of residual   1.04D-10
+ RSP solution vector no.    2; norm of residual   1.31D-10
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YDIPLEN     FREQUENCY   0.400000D-01
+
+@ QRLRVE:  << XDIPLEN  ; YDIPLEN  >> (   0.04000):   -0.195515147691    
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.04000):     9.56063859429    
+
+@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.04000):   -0.222959760154    
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   YDIPLEN     FREQUENCY   0.800000D-01
+
+@ QRLRVE:  << XDIPLEN  ; YDIPLEN  >> (   0.08000):   -0.198028731141    
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.08000):     9.66201108191    
+
+@ QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.08000):   -0.225147608524    
+
+
+ QRLRVE -- linear response calculation for symmetry  1
+ QRLRVE -- operator label : ZDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.040000  0.080000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry =  1; triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-09
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   36)
+ RSP solution vector no.    1; norm of residual   9.74D-11
+ RSP solution vector no.    2; norm of residual   2.01D-10
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.400000D-01
+
+@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.04000):    3.597641690965E-02
+
+@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.04000):   -0.222959760154    
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.04000):     2.60913987091    
+
+ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1    LABEL   ZDIPLEN     FREQUENCY   0.800000D-01
+
+@ QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.08000):    3.626636976895E-02
+
+@ QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.08000):   -0.225147608518    
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.08000):     2.64356050568    
+ 
+ ======================================================================
+ >>>>>>>>    L I N E A R   R E S P O N S E   F U N C T I O N   <<<<<<<<
+ ======================================================================
+
+ The -<<A;B>>(omega_b) functions from vectors generated
+ in a *QUADRA calculation of <<A;B,C>>(omega_b,omega_c)
+
+ Note: the accuracy of off-diagonal elements will be linear
+ in the convergence threshold THCLR =  1.00D-09
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      32
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      32
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   XDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):       6.374222176941
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):      -0.195515147719
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   ZDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):       0.035976416931
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   XDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):      -0.195515147691
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):       9.560638594286
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   ZDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):      -0.222959760154
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   XDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):       0.035976416910
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):      -0.222959760154
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   ZDIPLEN    1 -0.040000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.040000
+
+@ Value of linear response -<<A;B>>(omega):       2.609139870909
+
+
+  Results from quadratic response calculation
+ --------------------------------------------
+
+ DFT-QR computed in a linearly-scaling fashion.
+
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;X,X) =     -1.16564837
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;X,X) =      6.67002744
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;X,X) =     -0.27992017
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;Y,X) =      6.78192389
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;Y,X) =      0.30935739
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;Y,X) =      0.05758382
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;Z,X) =     -0.28959798
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;Z,X) =      0.05795224
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;Z,X) =     -0.05646650
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;X,Y) = beta(X,Y,X)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;X,Y) = beta(Y,Y,X)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;X,Y) = beta(Z,Y,X)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;Y,Y) =      0.31558689
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;Y,Y) =      3.82717586
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;Y,Y) =     -0.13767006
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;Z,Y) =      0.05790640
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;Z,Y) =     -0.14096901
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;Z,Y) =      0.42301782
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;X,Z) = beta(X,Z,X)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;X,Z) = beta(Y,Z,X)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;X,Z) = beta(Z,Z,X)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;Y,Z) = beta(X,Z,Y)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;Y,Z) = beta(Y,Z,Y)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;Y,Z) = beta(Z,Z,Y)
+@ B-freq = 0.040000  C-freq = 0.040000     beta(X;Z,Z) =     -0.03674686
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Y;Z,Z) =      0.34328923
+@ B-freq = 0.040000  C-freq = 0.040000     beta(Z;Z,Z) =     -0.00417351
+
+ >>>> Total CPU  time used in RESPONSE:  17.10 seconds
+ >>>> Total wall time used in RESPONSE:  17.62 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  21.06 seconds
+ >>>> Total wall time used in DALTON:  21.61 seconds
+
+ 
+     Date and time (Linux)  : Sun Sep  8 20:40:55 2013
+     Host name              : lpqlx131.ups-tlse.fr                    

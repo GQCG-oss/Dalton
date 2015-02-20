@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# Energy
+f.add(from_re = 'QM\/MM \"QMMM\" calculation converged',
+      num_lines = 13,
+      rel_tolerance = 1.0e-8)
+
+f.add(from_re = 'Dipole moment components',
+      num_lines = 9,
+      mask = [3],
+      rel_tolerance = 1.0e-6)
+
+f.add(from_re = 'Shielding tensors in symmetry coordinates \(ppm\)',
+      num_lines = 21,
+      abs_tolerance = 1.0e-6)
+
+f.add(from_re = 'Chemical shielding for ',
+      num_lines = 80,
+      abs_tolerance = 1.0e-3)
+
+f.add(from_re = 'Summary of chemical shieldings',
+      num_lines = 14,
+      abs_tolerance = 1.0e-3)
+
+f.add(from_re = 'Indirect spin-spin coupling between ',
+      num_lines = 30,
+      abs_tolerance = 1.0e-3)
+
+test.run(['qmmm3.dal'], ['ch2o_cc-pvdz.mol'], f={'out': f}, args='-put POTENTIAL.INP')
+
+sys.exit(test.return_code)

@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+#    dft_camb3lyp
+#    --------------
+#    Molecule:         hydrogen atom
+#    Wave Function:    DFT CAM-B3LYP / aug-cc-pVTZ
+#    Test Purpose:     DFT open-shell energy and dipole moment in field
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+f.add(from_string = 'Dipole moment',
+      abs_tolerance = 1.0e-6,
+      num_lines = 5,
+      mask = [1])
+
+test.run(['dft_camb3lyp.dal'], ['H_aug-cc-pVTZ.mol'], f={'out': f})
+
+sys.exit(test.return_code)

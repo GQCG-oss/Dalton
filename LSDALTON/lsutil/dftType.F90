@@ -43,14 +43,15 @@ INTEGER           :: TURBO
 INTEGER           :: NBUFLEN                 !0
 integer           :: Id !1,2 or 3 corresponds to (Grid_Default,Grid_ADMML2,..)
 integer           :: NBAST
+integer           :: Numnodes
 END TYPE GridItem
 
 !> Keywords and input to gridgeneration and exchange-correlation calculation
 TYPE DFTparam
-INTEGER           :: iGrid !which gridObject to use
-TYPE(Griditem)    :: GridObject(3) !3 different grids (Grid_Default,Grid_ADMML2,..)
-INTEGER           :: iDFTtype
-CHARACTER(len=80) :: dftfuncObject(2)    !2 different functionals (dftfunc_Default,dftfunc_ADMML2,..)
+INTEGER            :: iGrid !which gridObject to use
+TYPE(Griditem)     :: GridObject(3) !3 different grids (Grid_Default,Grid_ADMML2,..)
+INTEGER            :: iDFTtype
+CHARACTER(len=1024) :: dftfuncObject(2)    !2 different functionals (dftfunc_Default,dftfunc_ADMML2,..)
 !
 INTEGER           :: RADIALGRID !(1 = GC2, 2 = LMG, 3 = TURBO)
 INTEGER           :: PARTITIONING !integer in following list
@@ -72,6 +73,24 @@ LOGICAL           :: NOPRUN !                .FALSE.
 LOGICAL           :: DFTASC !                .FALSE.
 LOGICAL           :: DFTPOT !                .FALSE.
 LOGICAL           :: DODISP !                .FALSE. ; empirical dispersion correction following Grimme
+!AMT More Dispersion Correction related logicals and values
+LOGICAL           :: DO_DFTD2        !       .FALSE.
+LOGICAL           :: L_INP_D2PAR     !       .FALSE.
+REAL(REALK)       :: D2_s6_inp       !       D2 Parameters
+REAL(REALK)       :: D2_alp_inp
+REAL(REALK)       :: D2_rs6_inp
+LOGICAL           :: DODISP2        !       .FALSE.
+LOGICAL           :: DODISP3        !       .FALSE.
+LOGICAL           :: DO_DFTD3        !       .FALSE.
+LOGICAL           :: DO_BJDAMP       !       .FALSE.
+LOGICAL           :: DO_3BODY        !       .FALSE.
+LOGICAL           :: L_INP_D3PAR     !       .FALSE.
+REAL(REALK)       :: D3_s6_inp       !       D3 Parameters
+REAL(REALK)       :: D3_alp_inp
+REAL(REALK)       :: D3_rs6_inp
+REAL(REALK)       :: D3_rs18_inp
+REAL(REALK)       :: D3_s18_inp
+!AMT
 REAL(REALK)       :: DFTIPT !                1.0E-20_realk      
 REAL(REALK)       :: DFTBR1 !                1.0E-20_realk
 REAL(REALK)       :: DFTBR2 !                1.0E-20_realk
@@ -89,7 +108,7 @@ REAL(REALK)       :: CS00ZND2   !Zhan-Nichols-Dixon shift parameter
 REAL(REALK)       :: HFexchangeFac
 !type(dft_grid)    :: L2GRID     !Grid parameters for level 2/ADMM grid
 !type(dft_grid)    :: L3GRID     !Grid parameters for level 3/regular grid
-CHARACTER(len=80) :: dftfunc                 !""
+CHARACTER(len=1024) :: dftfunc                 !""
 LOGICAL           :: XCFUN                   !.FALSE.
 END type DFTPARAM
 
@@ -142,43 +161,35 @@ do iGrid=1,size(gridObject)
    GridObject(iGrid)%nbuflen = dft%nbuflen
    GridObject(iGrid)%Id = iGrid
    GridObject(iGrid)%NBAST = 0
+   GridObject(iGrid)%Numnodes = 1
    !module parameters
    DFT_GRIDITERATIONS(iGrid) = 0
    DFT_MaxNactBast(iGrid) = 0
 enddo
 end subroutine init_gridObject
 
+
 subroutine init_dftfunc(dft)
-TYPE(dftparam) :: dft
+!TYPE(integralconfig) :: integral
+TYPE(DFTparam) :: dft
 !
 integer :: iDFT,ialpha
-character(80) :: word
+character(80)         :: word
 
-do iDFT=1,size(dft%dftfuncObject)
-   DFT%DFTfuncObject(iDFT) = dft%dftfunc
+
+do iDFT=1,size(DFT%dftfuncObject)
+   DFT%DFTfuncObject(iDFT) = DFT%dftfunc
 enddo
-IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
-  !word = 'Camx'
-  ialpha = max (INDEX(dft%dftfunc,'alpha='),INDEX(dft%dftfunc,'ALPHA='))
-  IF (ialpha.NE.0) THEN
-    write(word,'(A8,X,A71)') 'Camcompx',dft%dftfunc(ialpha:)
-  ELSE
-    word = 'Camcompx'
-  ENDIF
-ELSE
-  word = 'BX'
-ENDIF
-call set_admmfun(dft,word)
 
 end subroutine init_dftfunc
 
-subroutine set_admmfun(dft,func)
-TYPE(dftparam) :: dft
-character(80)  :: func
-
-DFT%DFTfuncObject(dftfunc_ADMML2) = func
-
-end subroutine set_admmfun
+!!$subroutine set_admmfun(dft,func)
+!!$TYPE(dftparam) :: dft
+!!$character(80)  :: func
+!!$
+!!$DFT%DFTfuncObject(dftfunc_ADMML2) = func
+!!$
+!!$end subroutine set_admmfun
 
 
 !!$SUBROUTINE store_dft_grid(grid,filename,dft)
@@ -206,5 +217,6 @@ end subroutine set_admmfun
 !!$  call lsquit('Filename error in get_dft_grid',-1)
 !!$ENDIF
 !!$END SUBROUTINE get_dft_grid
+
 
 END MODULE dft_typetype

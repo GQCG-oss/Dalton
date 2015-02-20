@@ -1,0 +1,2774 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2013.2
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Tue May 27 10:41:43 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/ast018/dalton/DALTON/test/Bterm_sym
+   2) /Users/ast018/dalton/build-master/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | ast018
+ Host                     | rfb-ntf-m0022.bargi.uit.no
+ System                   | Darwin-13.1.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /usr/local/bin/mpif90
+ Fortran compiler version | GNU Fortran (MacPorts gcc48 4.8.2_0) 4.8.2
+ C compiler               | /usr/local/bin/mpicc
+ C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
+ C++ compiler             | /usr/local/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /usr/lib/libblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | 0c3e398ca4c78bacad0308b5fa7e055981e33872
+ Configuration time       | 2014-05-26 21:29:21.213348
+
+ * Sequential calculation.
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE FUNCTION                                
+.RUN RESPONSE                                     
+*PCM                                              
+.NPCMMT                                           
+0                                                 
+.EPS                                              
+ 24.55                                            
+.RSOLV                                            
+ 2.180                                            
+*PCMCAV                                           
+.AREATS                                           
+0.5                                               
+**WAVE FUNCTIONS                                  
+.DFT                                              
+B3LYP                                             
+*SCF INPUT                                        
+.THRESHOLD                                        
+1.0D-8                                            
+**RESPONSE                                        
+*QUADRATIC                                        
+.SINGLE RESIDUE                                   
+.MCDBTERM                                         
+.ROOTS                                            
+ 4 4 4 4                                          
+**END OF                                          
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+aug-cc-pVDZ                                                                    
+magnet                                                                         
+nuova base                                                                     
+    2    2 X Y                                                                 
+        8.    1                                                                
+O      0.0000000000  0.0000000000  -0.1258515023                               
+        1.    1                                                                
+H      0.0000000000  1.4523500000   0.9986773907                               
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+     -----------------------------------
+     Input for PCM solvation calculation 
+     -----------------------------------
+     ICOMPCM =       0          SOLVNT=INPUT        EPS   = 24.5500     EPSINF=  0.0000
+     RSOLV =  2.1800
+
+     ICESPH =       0     NESFP =       0
+     OMEGA = 40.0000     RET   =  0.2000     FRO   =  0.7000
+
+     IPRPCM=       0
+
+     NON-EQ = F     NEQRSP =F
+     POLYG          60
+
+     INPUT FOR CAVITY DEFINITION 
+     ---------------------------
+     ATOM         COORDINATES           RADIUS 
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: magnet                                                                  
+ 2: nuova base                                                              
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/Users/ast018/dalton/build-master/basis/aug-cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/Users/ast018/dalton/build-master/basis/aug-cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+ ********SPHERES IN PCMSPHGEN************
+ INDEX        X        Y         Z        R
+   1    0.0000000000D+00    0.0000000000D+00   -1.2585150230D-01    1.5000000000D+00
+   2    0.0000000000D+00    1.4523500000D+00    9.9867739070D-01    1.2000000000D+00
+   3    0.0000000000D+00   -1.4523500000D+00    9.9867739070D-01    1.2000000000D+00
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "aug-cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O           1    8.0000    35    23      [10s5p2d|4s3p2d]                                   
+  H           2    1.0000    11     9      [5s2p|3s2p]                                        
+  ----------------------------------------------------------------------
+  total:      3   10.0000    57    41
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z  -0.1258515023
+  H   / 1 :     4  x   0.0000000000    5  y   1.4523500000    6  z   0.9986773907
+  H   / 2 :     7  x   0.0000000000    8  y  -1.4523500000    9  z   0.9986773907
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   O     z    3
+    2   H     y    [  5  -    8 ]/2
+    3   H     z    [  6  +    9 ]/2
+
+  Symmetry  B1  ( 2)
+
+    4   O     x    1
+    5   H     x    [  4  +    7 ]/2
+
+  Symmetry  B2  ( 3)
+
+    6   O     y    2
+    7   H     y    [  5  +    8 ]/2
+    8   H     z    [  6  -    9 ]/2
+
+  Symmetry  A2  ( 4)
+
+    9   H     x    [  4  -    7 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O           H   _1      H   _2
+            ------      ------      ------
+ O     :    0.000000
+ H   _1:    0.972000    0.000000
+ H   _2:    0.972000    1.537101    0.000000
+
+
+  Max    interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
+  between atoms    3 and    2, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9720 Angstrom (    1.8368 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     O            0.972000
+  bond distance:  H   _2     O            0.972000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.500
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.633889          0.000000    1.000000    0.000000
+   IB       1.190584          0.000000    0.000000    1.000000
+   IC       1.824473          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         797267.3370         424479.9976         277000.0210 MHz
+           26.593976           14.159129            9.239726 cm-1
+
+
+@  Nuclear repulsion energy :    9.055004525638 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          18    7   12    4
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        1s         4
+    5     O        2pz        7
+    6     O        2pz       10
+    7     O        2pz       13
+    8     O        3d0       16
+    9     O        3d2+      18
+   10     O        3d0       21
+   11     O        3d2+      23
+   12     H        1s        24 +   25
+   13     H        1s        26 +   27
+   14     H        1s        28 +   29
+   15     H        2py       32 -   33
+   16     H        2pz       34 +   35
+   17     H        2py       38 -   39
+   18     H        2pz       40 +   41
+
+
+  Symmetry  B1 ( 2)
+
+   19     O        2px        5
+   20     O        2px        8
+   21     O        2px       11
+   22     O        3d1+      17
+   23     O        3d1+      22
+   24     H        2px       30 +   31
+   25     H        2px       36 +   37
+
+
+  Symmetry  B2 ( 3)
+
+   26     O        2py        6
+   27     O        2py        9
+   28     O        2py       12
+   29     O        3d1-      15
+   30     O        3d1-      20
+   31     H        1s        24 -   25
+   32     H        1s        26 -   27
+   33     H        1s        28 -   29
+   34     H        2py       32 +   33
+   35     H        2pz       34 -   35
+   36     H        2py       38 +   39
+   37     H        2pz       40 -   41
+
+
+  Symmetry  A2 ( 4)
+
+   38     O        3d2-      14
+   39     O        3d2-      19
+   40     H        2px       30 -   31
+   41     H        2px       36 -   37
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000036
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:       91307 ( 24.6% )
+ Megabytes written:                              1.051
+
+
+ MEMORY USED TO GENERATE CAVITY =    432802
+
+
+ Total number of spheres =    3
+ Sphere             Center  (X,Y,Z) (A)               Radius (A)      Area (A^2)
+   1    0.000000000    0.000000000   -0.066597747    1.800000000   24.581233216
+   2    0.000000000    0.768550522    0.528477316    1.440000000   11.987539471
+   3    0.000000000   -0.768550522    0.528477316    1.440000000   11.987539471
+
+ Total number of tesserae =     152
+ Surface area =   48.55631216 (A^2)    Cavity volume =   30.53397374 (A^3)
+
+          THE SOLUTE IS ENCLOSED IN ONE CAVITY
+
+ ..... DONE GENERATION CAVITY .....
+
+  ..... DONE GENERATING -Q-  MATRIX .....
+ >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total wall time used in HERMIT:   0.08 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.704225      -1.499390      -0.671093      -0.296848
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.731017      -0.261127
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue May 27 10:41:44 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ Title lines from ".mol" input file:
+     magnet                                                                  
+     nuova base                                                              
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+
+@    Time-dependent Kohn-Sham DFT calculation (TD-DFT).
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+@    QM part is embedded in an environment :
+
+@         Solvation model: PCM
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> KS-DFT <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                           |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           41 |   18    7   12    4
+     Number of basis functions          41 |   18    7   12    4
+
+      ** Automatic occupation of RKS orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-08
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+          -------------------------------------
+          ---- POLARISABLE CONTINUUM MODEL ----
+          ----      UNIVERSITY OF PISA     ----
+          -------------------------------------
+
+ ESTIMATE OF NUCLEAR CHARGE        9.97104
+ NUCLEAR APPARENT CHARGE  -9.59233
+ THEORETICAL  -9.59267 NOT RENORMALIZED
+
+ ..... DONE WITH INDUCED NUCLEAR CHARGES .....
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy      Solvation energy  Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.444816974253   9.9999996417   -3.58D-07
+@  1  -76.2026679986     -1.156122791697E-02   2.30D+00  -7.62D+01     3   1   1   0
+      Virial theorem: -V/T =      2.002657
+@      MULPOP O      -0.38; H   _1  0.19; H   _2  0.19; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.529587965547   9.9999996762   -3.24D-07
+@  2  -76.4001661263     -6.250994731682E-03   5.98D-01  -1.97D-01     3   1   1   0
+      Virial theorem: -V/T =      2.003553
+@      MULPOP O      -0.26; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.472362744182   9.9999996735   -3.27D-07
+@  3  -76.4142823932     -8.895624387268E-03   1.56D-01  -1.41D-02     3   1   1   0
+      Virial theorem: -V/T =      2.009093
+@      MULPOP O      -0.22; H   _1  0.11; H   _2  0.11; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.518185232640   9.9999996720   -3.28D-07
+@  4  -76.4146286112     -9.390037694569E-03   1.26D-01  -3.46D-04     3   1   1   0
+      Virial theorem: -V/T =      2.004110
+@      MULPOP O      -0.28; H   _1  0.14; H   _2  0.14; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.494351382229   9.9999996734   -3.27D-07
+@  5  -76.4153531528     -8.885097305273E-03   9.57D-03  -7.25D-04     3   1   1   0
+      Virial theorem: -V/T =      2.006657
+@      MULPOP O      -0.25; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.495903106961   9.9999996733   -3.27D-07
+@  6  -76.4153574047     -8.936280944745E-03   1.92D-04  -4.25D-06     3   1   1   0
+      Virial theorem: -V/T =      2.006488
+@      MULPOP O      -0.25; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.495915607140   9.9999996733   -3.27D-07
+@  7  -76.4153574082     -8.936808020760E-03   1.20D-05  -3.45D-09     3   1   1   0
+      Virial theorem: -V/T =      2.006487
+@      MULPOP O      -0.25; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.495914554656   9.9999996733   -3.27D-07
+@  8  -76.4153574082     -8.936811114033E-03   7.13D-07  -2.86D-11     3   1   1   0
+      Virial theorem: -V/T =      2.006487
+@      MULPOP O      -0.25; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.495914476716   9.9999996733   -3.27D-07
+@  9  -76.4153574082     -8.936814331905E-03   4.14D-08  -3.98D-13     3   1   1   0
+      Virial theorem: -V/T =      2.006487
+@      MULPOP O      -0.25; H   _1  0.13; H   _2  0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.495914475909   9.9999996733   -3.27D-07
+@ 10  -76.4153574082     -8.936814182766E-03   4.30D-09  -5.68D-14     3   1   1   0
+
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -76.415357408208    4.30D-09
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+    (incl. solvent contribution)
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Sym       Kohn-Sham orbital energies
+
+1 A1    -19.15770733    -1.01435580    -0.39866828    -0.01408857     0.10168960
+          0.12975014     0.22734410     0.29590865
+
+2 B1     -0.32191470     0.11216629     0.32696197     0.89445357     1.18997717
+          1.84727003
+
+3 B2     -0.52976370     0.03359655     0.16210902     0.17626517     0.45234852
+          0.53245659
+
+4 A2      0.28746054     0.95198395     1.75179833     3.31154187
+
+    E(LUMO) :    -0.01408857 au (symmetry 1)
+  - E(HOMO) :    -0.32191470 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.30782613 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       5.207       5.246
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+
+     SOLVATION MODEL: polarizable continuum model (PCM),
+          dielectric constant =   24.550000
+
+@    Final DFT energy:            -76.415357408208                 
+@    Nuclear repulsion:             9.055004525638
+@    Electronic energy:           -85.461425119663
+
+@    Final gradient norm:           0.000000004295
+
+ 
+     Date and time (Linux)  : Tue May 27 10:41:49 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5
+   1 O   :1s     1.0039  -0.0038   0.0030  -0.0051  -0.0211
+   2 O   :1s     0.0196   0.8880  -0.3045  -0.2480  -0.1142
+   3 O   :1s    -0.0259  -0.1459  -0.1428  -0.1635   0.2592
+   4 O   :1s    -0.0101   0.0662  -0.1249  -0.5856   2.5842
+   5 O   :2pz    0.0024   0.1543   0.8088  -0.1633  -0.3669
+   6 O   :2pz   -0.0041  -0.0863  -0.0713  -0.0312   0.0597
+   7 O   :2pz   -0.0016   0.0136   0.0562  -0.1547   1.6590
+   8 O   :3d0   -0.0000   0.0034   0.0143  -0.0024  -0.0127
+  10 O   :3d0    0.0001  -0.0060   0.0105  -0.0031   0.0360
+  11 O   :3d2+   0.0007   0.0198   0.0149  -0.0039  -0.0294
+  12 H   :1s     0.0014   0.3561   0.3556   0.1015   0.0414
+  13 H   :1s     0.0075  -0.2059  -0.1080   0.2451  -1.0633
+  14 H   :1s     0.0007  -0.0022   0.0076   0.5880  -0.5215
+  15 H   :2py    0.0004  -0.0362  -0.0262   0.0164   0.0312
+  16 H   :2pz    0.0004  -0.0209   0.0036   0.0093   0.0220
+  17 H   :2py   -0.0027   0.0041  -0.0034  -0.0028   0.2239
+  18 H   :2pz   -0.0024   0.0069   0.0138   0.0031   0.0424
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :2px    0.9200   0.3478   0.2547
+   2 O   :2px   -0.0003   0.0854   0.4494
+   3 O   :2px    0.1036  -1.3570   1.1962
+   4 O   :3d1+   0.0137   0.0142  -0.0202
+   5 O   :3d1+   0.0140  -0.0386   0.0186
+   6 H   :2px    0.0261  -0.0079  -0.0104
+   7 H   :2px    0.0211   0.2204  -1.1551
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 O   :2py    0.7556  -0.2137  -0.4423
+   2 O   :2py   -0.1959  -0.0672   0.2408
+   3 O   :2py    0.0153  -0.4875   2.4030
+   4 O   :3d1-   0.0249  -0.0010  -0.0005
+   5 O   :3d1-  -0.0461  -0.0042   0.0758
+   6 H   :1s     0.6088   0.0232   0.0455
+   7 H   :1s    -0.1713   0.4128  -1.5287
+   8 H   :1s     0.0018   2.4695  -2.8936
+   9 H   :2py   -0.0214   0.0084   0.0391
+  10 H   :2pz   -0.0322   0.0094   0.0277
+  11 H   :2py   -0.0232  -0.0485   0.4593
+  12 H   :2pz   -0.0159  -0.0661   0.4761
+
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 O   :3d2-  -0.0339   0.0015
+   2 O   :3d2-   0.0636  -1.2230
+   3 H   :2px   -0.0123  -0.0394
+   4 H   :2px   -1.0827   0.7806
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      5.21 seconds
+ >>>> Total wall time used in SIRIUS :      5.26 seconds
+
+ 
+     Date and time (Linux)  : Tue May 27 10:41:49 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ Quadratic Response single residue calculation
+ ---------------------------------------------
+
+ That is, calculation of second order moments.
+
+  1 B-frequencies  0.000000D+00
+
+ Spin of operator A , ISPINA=    0
+ Spin of operator B , ISPINB=    0
+ Spin of operator C , (Excitation energy) ISPINC=    0
+ B of Magnetic Circular Dichroism requested    : MCDCAL =T
+
+ Print level                                    : IPRSMO =    2
+ Threshold for convergence in RSPPP             : THCPP  = 1.000D-03
+ Maximum number of iterations in RSPPP          : MAXITP =   60
+ Threshold for convergence in RSPLR             : THCLR  = 1.000D-03
+ Maximum number of iterations in RSPLR          : MAXITL =   60
+ Maximum iterations in optimal orbital algorithm: MAXITO =    5
+
+    1 A OPERATORS OF SYMMETRY NO:    1 AND LABELS:
+
+          ZDIPLEN 
+
+    1 A OPERATORS OF SYMMETRY NO:    2 AND LABELS:
+
+          XDIPLEN 
+
+    1 A OPERATORS OF SYMMETRY NO:    3 AND LABELS:
+
+          YDIPLEN 
+
+    1 B OPERATORS OF SYMMETRY NO:    2 AND LABELS:
+
+          YANGMOM 
+
+    1 B OPERATORS OF SYMMETRY NO:    3 AND LABELS:
+
+          XANGMOM 
+
+    1 B OPERATORS OF SYMMETRY NO:    4 AND LABELS:
+
+          ZANGMOM 
+
+ Integral transformation: Total CPU and WALL times (sec)       0.047       0.048
+
+
+   SCF energy         :      -76.415357408208024
+ -- inactive part     :      -85.461425119663161
+ -- nuclear repulsion :        9.055004525637894
+
+
+                    *****************************************
+                    *** DFT response calculation (TD-DFT) ***
+                    *****************************************
+
+
+
+ Linear response excitations for quadratic response
+ - symmetry of excitation operator    1  ( A1 )
+ - is the operator a triplet operator ?     F
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      62
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      62
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry = 1  ( A1 ); triplet =   F
+
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           3
+ rspoli: nfmat,ndmat           3           3
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        5068       10111       10111       10111       10111       10114
+
+ *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   30)
+ RSP solution vector no.    1; norm of residual   2.56D-04
+ RSP solution vector no.    2; norm of residual   3.94D-04
+ RSP solution vector no.    3; norm of residual   4.10D-04
+ RSP solution vector no.    4; norm of residual   1.87D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    1    SYMMETRY    1  ( A1 )
+@ Singlet excitation energy  3.368452D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    2    SYMMETRY    1  ( A1 )
+@ Singlet excitation energy  3.972275D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    3    SYMMETRY    1  ( A1 )
+@ Singlet excitation energy  4.685476D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    4    SYMMETRY    1  ( A1 )
+@ Singlet excitation energy  4.832778D-01
+
+
+ Linear response excitations for quadratic response
+ - symmetry of excitation operator    2  ( B1 )
+ - is the operator a triplet operator ?     F
+
+
+ Perturbation symmetry.     KSYMOP:       2
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      37
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      37
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry = 2  ( B1 ); triplet =   F
+
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+
+ *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   24)
+ RSP solution vector no.    1; norm of residual   1.21D-04
+ RSP solution vector no.    2; norm of residual   3.61D-04
+ RSP solution vector no.    3; norm of residual   6.31D-04
+ RSP solution vector no.    4; norm of residual   7.95D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    1    SYMMETRY    2  ( B1 )
+@ Singlet excitation energy  2.600939D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    2    SYMMETRY    2  ( B1 )
+@ Singlet excitation energy  3.717275D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    3    SYMMETRY    2  ( B1 )
+@ Singlet excitation energy  4.081959D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    4    SYMMETRY    2  ( B1 )
+@ Singlet excitation energy  4.588004D-01
+
+
+ Linear response excitations for quadratic response
+ - symmetry of excitation operator    3  ( B2 )
+ - is the operator a triplet operator ?     F
+
+
+ Perturbation symmetry.     KSYMOP:       3
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      52
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      52
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry = 3  ( B2 ); triplet =   F
+
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           3
+ rspoli: nfmat,ndmat           3           3
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        5068       10111       10111       10111       10111       10114
+
+ *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   30)
+ RSP solution vector no.    1; norm of residual   9.34D-05
+ RSP solution vector no.    2; norm of residual   5.75D-05
+ RSP solution vector no.    3; norm of residual   9.52D-05
+ RSP solution vector no.    4; norm of residual   1.98D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    1    SYMMETRY    3  ( B2 )
+@ Singlet excitation energy  3.948136D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    2    SYMMETRY    3  ( B2 )
+@ Singlet excitation energy  4.686829D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    3    SYMMETRY    3  ( B2 )
+@ Singlet excitation energy  5.126133D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    4    SYMMETRY    3  ( B2 )
+@ Singlet excitation energy  5.229518D-01
+
+
+ Linear response excitations for quadratic response
+ - symmetry of excitation operator    4  ( A2 )
+ - is the operator a triplet operator ?     F
+
+
+ Perturbation symmetry.     KSYMOP:       4
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      29
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      29
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry = 4  ( A2 ); triplet =   F
+
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        6749       13473       13473       13473       13473       13476
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+
+ *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   26)
+ RSP solution vector no.    1; norm of residual   1.89D-05
+ RSP solution vector no.    2; norm of residual   3.28D-05
+ RSP solution vector no.    3; norm of residual   4.14D-05
+ RSP solution vector no.    4; norm of residual   1.08D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    1    SYMMETRY    4  ( A2 )
+@ Singlet excitation energy  3.165015D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    2    SYMMETRY    4  ( A2 )
+@ Singlet excitation energy  4.278118D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    3    SYMMETRY    4  ( A2 )
+@ Singlet excitation energy  4.437972D-01
+
+@ QRPPVE: SINGLET EXCITATION VECTOR    4    SYMMETRY    4  ( A2 )
+@ Singlet excitation energy  5.912755D-01
+
+
+ Linear response calculations for quadratic response
+ - singlet property operator of symmetry    1  ( A1 )
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      62
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      62
+
+
+ QRLRVE -- linear response calculation for symmetry  1  ( A1 )
+ QRLRVE -- operator label : ZDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.260094  0.371727  0.408196  0.458800  0.394814
+                          0.468683  0.512613  0.522952  0.316502  0.427812
+                          0.443797  0.591276
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry = 1  ( A1 ); triplet =   F
+
+ rspoli: ncsim,nosim           0          12
+ rspoli: nfmat,ndmat          12          12
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree       20197       40369       40369       40369       40369       40372
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.37173 a.u.
+ after   12 linear transformations is     -3.53553799D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-61.06 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   12 linear transformations is      5.11860387D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is 71.09 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   12 linear transformations is      1.84347434D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is 30.04 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   12 linear transformations is      4.50455473D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-10.46 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   12 linear transformations is      2.76642121D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is 79.82 * 10 **-30.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   12 linear transformations is      2.45732512D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is 17.29 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   12 linear transformations is      6.62658324D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is 15.17 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   12 linear transformations is      9.27846149D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is 13.16 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   12 linear transformations is      1.27795597D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is 83.84 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   12 linear transformations is     -9.17991231D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   18    0    6
+ Determinant of reduced matrix is 16.78 * 10 **-20.0
+ rspoli: ncsim,nosim           0          12
+ rspoli: nfmat,ndmat          12          12
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree       20197       40369       40369       40369       40369       40372
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.37173 a.u.
+ after   24 linear transformations is     -3.14693940D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-17.92 * 10 ** 90.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   24 linear transformations is      6.04560892D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is 27.20 * 10 ** 80.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   24 linear transformations is      1.92648229D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is 24.28 * 10 ** 70.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   24 linear transformations is      5.79830995D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-10.03 * 10 ** 80.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   24 linear transformations is     -2.01207275D+02
+ INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    3
+ Determinant of reduced matrix is-14.02 * 10 ** 50.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   24 linear transformations is      5.73793110D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is 13.73 * 10 ** 70.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   24 linear transformations is      9.47745356D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is 85.03 * 10 ** 60.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   24 linear transformations is      9.69216365D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is 26.80 * 10 ** 80.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   24 linear transformations is      1.31192545D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is 11.94 * 10 ** 80.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   24 linear transformations is      1.48123927D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    6
+ Determinant of reduced matrix is 98.90 * 10 ** 50.0
+ rspoli: ncsim,nosim           0          12
+ rspoli: nfmat,ndmat          12          12
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree       20197       40369       40369       40369       40369       40372
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.37173 a.u.
+ after   36 linear transformations is     -3.14664317D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is-15.55 * 10 **230.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   36 linear transformations is      6.04688557D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is 20.33 * 10 **220.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   36 linear transformations is      1.92659988D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is 14.25 * 10 **210.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   36 linear transformations is      5.80594921D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is-78.92 * 10 **210.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   36 linear transformations is     -1.70346356D+02
+ INERTIA (POS,ZER,NEG) of reduced matrix is   69    0    3
+ Determinant of reduced matrix is-90.52 * 10 **180.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   36 linear transformations is      5.74187939D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   68    0    4
+ Determinant of reduced matrix is 59.75 * 10 **200.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   36 linear transformations is      9.48144719D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   68    0    4
+ Determinant of reduced matrix is 34.70 * 10 **200.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   36 linear transformations is      9.69269602D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is 18.33 * 10 **220.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   36 linear transformations is      1.31195361D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is 75.63 * 10 **210.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   36 linear transformations is      1.50740226D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   66    0    6
+ Determinant of reduced matrix is 24.46 * 10 **190.0
+
+ *** THE REQUESTED   12 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   72)
+ RSP solution vector no.    1; norm of residual   2.53D-04
+ RSP solution vector no.    2; norm of residual   3.54D-05
+ RSP solution vector no.    3; norm of residual   1.87D-04
+ RSP solution vector no.    4; norm of residual   6.19D-05
+ RSP solution vector no.    5; norm of residual   1.54D-04
+ RSP solution vector no.    6; norm of residual   2.86D-04
+ RSP solution vector no.    7; norm of residual   2.22D-04
+ RSP solution vector no.    8; norm of residual   2.47D-04
+ RSP solution vector no.    9; norm of residual   1.33D-04
+ RSP solution vector no.   10; norm of residual   1.41D-04
+ RSP solution vector no.   11; norm of residual   8.76D-05
+ RSP solution vector no.   12; norm of residual   3.80D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.260094D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.26009):     17.0603624997    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.371727D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.37173):    -3.14664316535    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.408196D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.40820):     6.04688556832    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.458800D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.45880):     19.2659987676    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.394814D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.39481):     5.80594920932    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.468683D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.46868):    -170.346356174    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.512613D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.51261):     5.74187939068    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.522952D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.52295):     9.48144719248    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.316502D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.31650):     37.5548894018    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.427812D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.42781):     9.69269602321    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.443797D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.44380):     13.1195361497    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.591276D+00
+
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.59128):     15.0740226406    
+
+
+ Linear response calculations for quadratic response
+ - singlet property operator of symmetry    2  ( B1 )
+
+
+ Perturbation symmetry.     KSYMOP:       2
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      37
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      37
+
+
+ QRLRVE -- linear response calculation for symmetry  2  ( B1 )
+ QRLRVE -- operator label : XDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.397228  0.468548  0.483278  0.394814  0.468683
+                          0.512613  0.522952  0.316502  0.427812  0.443797
+                          0.591276  0.336845
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry = 2  ( B1 ); triplet =   F
+
+ rspoli: ncsim,nosim           0          12
+ rspoli: nfmat,ndmat          12          12
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree       20197       40369       40369       40369       40369       40372
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   12 linear transformations is      1.21801528D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is 16.75 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   12 linear transformations is      2.28736500D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is 89.70 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   12 linear transformations is      6.00860579D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is 93.44 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   12 linear transformations is      1.16290005D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is 19.43 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   12 linear transformations is      2.30276275D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    4
+ Determinant of reduced matrix is 90.65 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   12 linear transformations is     -5.36451908D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    5
+ Determinant of reduced matrix is-63.75 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   12 linear transformations is      2.32026632D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    5
+ Determinant of reduced matrix is-98.25 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.31650 a.u.
+ after   12 linear transformations is      2.91355004D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-68.38 * 10 **  0.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   12 linear transformations is      1.26047434D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   21    0    3
+ Determinant of reduced matrix is-20.19 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   12 linear transformations is      1.67269779D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   21    0    3
+ Determinant of reduced matrix is-16.40 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   12 linear transformations is     -9.28028481D-01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   18    0    6
+ Determinant of reduced matrix is 91.25 * 10 **  0.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.33685 a.u.
+ after   12 linear transformations is      5.50725122D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-33.83 * 10 **  0.0
+ rspoli: ncsim,nosim           0          12
+ rspoli: nfmat,ndmat          12          12
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree       20197       40369       40369       40369       40369       40372
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   24 linear transformations is      1.22626738D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is 87.81 * 10 **110.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   24 linear transformations is      2.40392504D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is 34.73 * 10 **110.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   24 linear transformations is      6.47945074D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is 30.80 * 10 **110.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   24 linear transformations is      1.17176234D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is 10.43 * 10 **120.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   24 linear transformations is      2.41953766D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    4
+ Determinant of reduced matrix is 35.05 * 10 **110.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   24 linear transformations is     -5.14129707D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   43    0    5
+ Determinant of reduced matrix is-18.34 * 10 **120.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   24 linear transformations is      2.55928403D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   43    0    5
+ Determinant of reduced matrix is-25.93 * 10 **120.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.31650 a.u.
+ after   24 linear transformations is      3.12675731D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-52.07 * 10 **130.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   24 linear transformations is      1.30689309D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    3
+ Determinant of reduced matrix is-97.24 * 10 **110.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   24 linear transformations is      1.71847677D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    3
+ Determinant of reduced matrix is-70.01 * 10 **110.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   24 linear transformations is     -7.31305132D-01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    6
+ Determinant of reduced matrix is 13.88 * 10 **130.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.33685 a.u.
+ after   24 linear transformations is      5.67950849D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-23.65 * 10 **130.0
+ rspoli: ncsim,nosim           0           5
+ rspoli: nfmat,ndmat           5           5
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        8430       16835       16835       16835       16835       16838
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   29 linear transformations is      1.22626799D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   56    0    2
+ Determinant of reduced matrix is 13.69 * 10 **200.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   29 linear transformations is      2.40393207D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   54    0    4
+ Determinant of reduced matrix is 51.65 * 10 **190.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   29 linear transformations is      6.47947501D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   54    0    4
+ Determinant of reduced matrix is 45.29 * 10 **190.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39481 a.u.
+ after   29 linear transformations is      1.17176280D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   56    0    2
+ Determinant of reduced matrix is 16.28 * 10 **200.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46868 a.u.
+ after   29 linear transformations is      2.41954461D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   54    0    4
+ Determinant of reduced matrix is 52.11 * 10 **190.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.51261 a.u.
+ after   29 linear transformations is     -5.14123891D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   53    0    5
+ Determinant of reduced matrix is-26.35 * 10 **200.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.52295 a.u.
+ after   29 linear transformations is      2.55932820D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   53    0    5
+ Determinant of reduced matrix is-36.93 * 10 **200.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.31650 a.u.
+ after   29 linear transformations is      3.12676976D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   57    0    1
+ Determinant of reduced matrix is-84.77 * 10 **210.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   29 linear transformations is      1.30689524D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   55    0    3
+ Determinant of reduced matrix is-14.87 * 10 **200.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   29 linear transformations is      1.71847950D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   55    0    3
+ Determinant of reduced matrix is-10.59 * 10 **200.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   29 linear transformations is     -7.31211171D-01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   52    0    6
+ Determinant of reduced matrix is 18.57 * 10 **210.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.33685 a.u.
+ after   29 linear transformations is      5.67951716D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   57    0    1
+ Determinant of reduced matrix is-38.11 * 10 **210.0
+
+ *** THE REQUESTED   12 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   58)
+ RSP solution vector no.    1; norm of residual   2.51D-05
+ RSP solution vector no.    2; norm of residual   1.03D-05
+ RSP solution vector no.    3; norm of residual   1.08D-05
+ RSP solution vector no.    4; norm of residual   2.64D-05
+ RSP solution vector no.    5; norm of residual   1.03D-05
+ RSP solution vector no.    6; norm of residual   2.19D-05
+ RSP solution vector no.    7; norm of residual   3.19D-05
+ RSP solution vector no.    8; norm of residual   5.74D-05
+ RSP solution vector no.    9; norm of residual   1.21D-05
+ RSP solution vector no.   10; norm of residual   1.31D-05
+ RSP solution vector no.   11; norm of residual   1.15D-05
+ RSP solution vector no.   12; norm of residual   4.96D-05
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.397228D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.39723):     12.2626799058    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.39723):    0.434463125846    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.468548D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.46855):     24.0393207120    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.46855):    -3.38537724194    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.483278D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.48328):     64.7947500850    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.48328):    -10.6058746025    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.394814D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.39481):     11.7176280300    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.39481):    0.212453483582    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.468683D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.46868):     24.1954460546    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.46868):    -3.40754285583    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.512613D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.51261):    -5.14123891075    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.51261):     3.26376211572    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.522952D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.52295):     2.55932819575    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.52295):     2.13930155275    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.316502D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.31650):     3.12676976210    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.31650):   -0.914041620281    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.427812D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.42781):     13.0689524061    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.42781):    -1.89613576231    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.443797D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.44380):     17.1847949690    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.44380):    -1.97372933779    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.591276D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.59128):   -0.731211170620    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.59128):     2.57407698680    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.336845D+00
+
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.33685):     5.67951716168    
+
+@ QRLRVE:  << YANGMOM  ; XDIPLEN  >> (   0.33685):   -0.683357301603    
+
+
+ QRLRVE -- linear response calculation for symmetry  2  ( B1 )
+ QRLRVE -- operator label : YANGMOM 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies : -0.000000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry = 2  ( B1 ); triplet =   F
+
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:    6)
+ RSP solution vector no.    1; norm of residual   5.03D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   YANGMOM     FREQUENCY  -0.000000D+00
+
+@ QRLRVE:  << XDIPLEN  ; YANGMOM  >> (  -0.00000):    9.150666335778E-16
+
+@ QRLRVE:  << YANGMOM  ; YANGMOM  >> (  -0.00000):    0.563437668974    
+
+
+ Linear response calculations for quadratic response
+ - singlet property operator of symmetry    3  ( B2 )
+
+
+ Perturbation symmetry.     KSYMOP:       3
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      52
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      52
+
+
+ QRLRVE -- linear response calculation for symmetry  3  ( B2 )
+ QRLRVE -- operator label : YDIPLEN 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies :  0.408196  0.458800  0.316502  0.427812  0.443797
+                          0.591276  0.336845  0.397228  0.468548  0.483278
+                          0.260094  0.371727
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry = 3  ( B2 ); triplet =   F
+
+ rspoli: ncsim,nosim           0          12
+ rspoli: nfmat,ndmat          12          12
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree       20197       40369       40369       40369       40369       40372
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   12 linear transformations is      2.17507751D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-15.82 * 10 **  0.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   12 linear transformations is      7.61794166D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-14.55 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   12 linear transformations is      3.03626646D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-13.14 * 10 **  0.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   12 linear transformations is      4.13456368D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-59.82 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   12 linear transformations is     -9.65628151D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   18    0    6
+ Determinant of reduced matrix is 24.99 * 10 **-20.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   12 linear transformations is     -2.35080049D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-42.88 * 10 **-10.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   12 linear transformations is      1.00150968D+03
+ INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
+ Determinant of reduced matrix is-50.88 * 10 **-30.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   12 linear transformations is     -1.08124065D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
+ Determinant of reduced matrix is 48.47 * 10 **-20.0
+ rspoli: ncsim,nosim           0          12
+ rspoli: nfmat,ndmat          12          12
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree       20197       40369       40369       40369       40369       40372
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   24 linear transformations is      2.23120119D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-14.45 * 10 **100.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   24 linear transformations is      7.94880830D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-79.65 * 10 ** 80.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   24 linear transformations is      3.10883750D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-10.01 * 10 **100.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   24 linear transformations is      4.24484418D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-39.01 * 10 ** 90.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   24 linear transformations is     -7.37000087D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    6
+ Determinant of reduced matrix is 38.02 * 10 ** 70.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   24 linear transformations is      7.12698766D-01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-47.47 * 10 ** 90.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   24 linear transformations is      4.16770314D+03
+ INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
+ Determinant of reduced matrix is-61.87 * 10 ** 60.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   24 linear transformations is     -8.02541639D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
+ Determinant of reduced matrix is 21.69 * 10 ** 80.0
+ rspoli: ncsim,nosim           0          12
+ rspoli: nfmat,ndmat          12          12
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree       20197       40369       40369       40369       40369       40372
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.40820 a.u.
+ after   36 linear transformations is      2.23124714D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is-10.37 * 10 **260.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.45880 a.u.
+ after   36 linear transformations is      7.94901865D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is-46.72 * 10 **240.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.42781 a.u.
+ after   36 linear transformations is      3.10888388D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is-66.68 * 10 **250.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.44380 a.u.
+ after   36 linear transformations is      4.24491036D+01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is-24.37 * 10 **250.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.59128 a.u.
+ after   36 linear transformations is     -7.36815127D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   66    0    6
+ Determinant of reduced matrix is 10.99 * 10 **230.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.39723 a.u.
+ after   36 linear transformations is      7.15471125D-01
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is-35.43 * 10 **250.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.46855 a.u.
+ after   36 linear transformations is      4.17749083D+03
+ INERTIA (POS,ZER,NEG) of reduced matrix is   71    0    1
+ Determinant of reduced matrix is-34.70 * 10 **220.0
+
+ *** INFO, negative eigenvalues in reduced matrix. Symmetry  3,  triplet       F
+
+ GP * SOLUTION vector at frequency     0.48328 a.u.
+ after   36 linear transformations is     -8.02321922D+00
+ INERTIA (POS,ZER,NEG) of reduced matrix is   70    0    2
+ Determinant of reduced matrix is 11.40 * 10 **240.0
+
+ *** THE REQUESTED   12 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   72)
+ RSP solution vector no.    1; norm of residual   2.34D-05
+ RSP solution vector no.    2; norm of residual   1.78D-05
+ RSP solution vector no.    3; norm of residual   5.21D-05
+ RSP solution vector no.    4; norm of residual   2.98D-05
+ RSP solution vector no.    5; norm of residual   2.49D-05
+ RSP solution vector no.    6; norm of residual   1.78D-05
+ RSP solution vector no.    7; norm of residual   4.87D-05
+ RSP solution vector no.    8; norm of residual   8.65D-06
+ RSP solution vector no.    9; norm of residual   1.54D-05
+ RSP solution vector no.   10; norm of residual   2.57D-05
+ RSP solution vector no.   11; norm of residual   5.86D-05
+ RSP solution vector no.   12; norm of residual   3.69D-05
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.408196D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.40820):     22.3124714017    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.40820):   -0.340692117073    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.458800D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.45880):     79.4901864586    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.45880):    -3.76741712683    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.316502D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.31650):     17.4395666534    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.31650):    0.201007237000    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.427812D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.42781):     31.0888388112    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.42781):   -0.120822671450    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.443797D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.44380):     42.4491036260    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.44380):   -0.573390679935    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.591276D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.59128):    -7.36815127390    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.59128):    -8.96664264891    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.336845D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.33685):     18.8827846221    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.33685):    0.263552083523    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.397228D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.39723):    0.715471124584    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.39723):    -2.91008593881    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.468548D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.46855):     4177.49082828    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.46855):    -473.498938051    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.483278D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.48328):    -8.02321922328    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.48328):     9.57756718391    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.260094D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.26009):     14.9197132860    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.26009):    0.105489247870    
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   YDIPLEN     FREQUENCY   0.371727D+00
+
+@ QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.37173):     23.3127097909    
+
+@ QRLRVE:  << XANGMOM  ; YDIPLEN  >> (   0.37173):    0.520311796936    
+
+
+ QRLRVE -- linear response calculation for symmetry  3  ( B2 )
+ QRLRVE -- operator label : XANGMOM 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies : -0.000000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry = 3  ( B2 ); triplet =   F
+
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:    6)
+ RSP solution vector no.    1; norm of residual   1.74D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    3  ( B2 )    LABEL   XANGMOM     FREQUENCY  -0.000000D+00
+
+@ QRLRVE:  << YDIPLEN  ; XANGMOM  >> (  -0.00000):    8.907805049141E-16
+
+@ QRLRVE:  << XANGMOM  ; XANGMOM  >> (  -0.00000):     2.07779601727    
+
+
+ Linear response calculations for quadratic response
+ - singlet property operator of symmetry    4  ( A2 )
+
+
+ Perturbation symmetry.     KSYMOP:       4
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      29
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      29
+
+
+ QRLRVE -- linear response calculation for symmetry  4  ( A2 )
+ QRLRVE -- operator label : ZANGMOM 
+ QRLRVE -- operator spin  :   0
+ QRLRVE -- frequencies : -0.000000
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+ Operator symmetry = 4  ( A2 ); triplet =   F
+
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree        1706        3387        3387        3387        3387        3390
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:    6)
+ RSP solution vector no.    1; norm of residual   1.44D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    4  ( A2 )    LABEL   ZANGMOM     FREQUENCY  -0.000000D+00
+
+@ QRLRVE:  << ZANGMOM  ; ZANGMOM  >> (  -0.00000):     1.14494101090    
+ DFT-QR computed in a linearly-scaling fashion.
+
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             1    1    0
+
+ omega B, excitation energy, moment :    0.000000    0.336845   -8.381612
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      ZDIPLEN     1    0
+ Excited state no., symmetry, spin:             1    1    0
+ Excitation energy in au,    moment :                0.336845   -0.737144
+
+ B term contribution:              3.089228
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             2    1    0
+
+ omega B, excitation energy, moment :    0.000000    0.397228   -7.166796
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      ZDIPLEN     1    0
+ Excited state no., symmetry, spin:             2    1    0
+ Excitation energy in au,    moment :                0.397228   -0.067944
+
+ B term contribution:              0.243469
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             3    1    0
+
+ omega B, excitation energy, moment :    0.000000    0.468548   -9.871268
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      ZDIPLEN     1    0
+ Excited state no., symmetry, spin:             3    1    0
+ Excitation energy in au,    moment :                0.468548   -0.162247
+
+ B term contribution:              0.800793
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             4    1    0
+
+ omega B, excitation energy, moment :    0.000000    0.483278   -6.976226
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      ZDIPLEN     1    0
+ Excited state no., symmetry, spin:             4    1    0
+ Excitation energy in au,    moment :                0.483278   -0.457883
+
+ B term contribution:              1.597149
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             1    1    0
+
+ omega B, excitation energy, moment :    0.000000    0.336845   -5.468479
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      ZDIPLEN     1    0
+ Excited state no., symmetry, spin:             1    1    0
+ Excitation energy in au,    moment :                0.336845   -0.737144
+
+ B term contribution:              2.015529
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             2    1    0
+
+ omega B, excitation energy, moment :    0.000000    0.397228   10.999918
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      ZDIPLEN     1    0
+ Excited state no., symmetry, spin:             2    1    0
+ Excitation energy in au,    moment :                0.397228   -0.067944
+
+ B term contribution:             -0.373687
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             3    1    0
+
+ omega B, excitation energy, moment :    0.000000    0.468548  449.684286
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      ZDIPLEN     1    0
+ Excited state no., symmetry, spin:             3    1    0
+ Excitation energy in au,    moment :                0.468548   -0.162247
+
+ B term contribution:            -36.480026
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             4    1    0
+
+ omega B, excitation energy, moment :    0.000000    0.483278   -6.361957
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      ZDIPLEN     1    0
+ Excited state no., symmetry, spin:             4    1    0
+ Excitation energy in au,    moment :                0.483278   -0.457883
+
+ B term contribution:              1.456517
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             1    2    0
+
+ omega B, excitation energy, moment :    0.000000    0.260094   -9.238086
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      XDIPLEN     2    0
+ Excited state no., symmetry, spin:             1    2    0
+ Excitation energy in au,    moment :                0.260094   -0.651687
+
+ B term contribution:              3.010172
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             2    2    0
+
+ omega B, excitation energy, moment :    0.000000    0.371727   -1.045786
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      XDIPLEN     2    0
+ Excited state no., symmetry, spin:             2    2    0
+ Excitation energy in au,    moment :                0.371727    0.002162
+
+ B term contribution:             -0.001131
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             3    2    0
+
+ omega B, excitation energy, moment :    0.000000    0.408196    6.718619
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      XDIPLEN     2    0
+ Excited state no., symmetry, spin:             3    2    0
+ Excitation energy in au,    moment :                0.408196    0.141087
+
+ B term contribution:              0.473954
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             4    2    0
+
+ omega B, excitation energy, moment :    0.000000    0.458800   20.554719
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      XDIPLEN     2    0
+ Excited state no., symmetry, spin:             4    2    0
+ Excitation energy in au,    moment :                0.458800    0.157023
+
+ B term contribution:              1.613784
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             1    2    0
+
+ omega B, excitation energy, moment :    0.000000    0.260094    2.756296
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      XDIPLEN     2    0
+ Excited state no., symmetry, spin:             1    2    0
+ Excitation energy in au,    moment :                0.260094   -0.651687
+
+ B term contribution:             -0.898122
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             2    2    0
+
+ omega B, excitation energy, moment :    0.000000    0.371727    1.412016
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      XDIPLEN     2    0
+ Excited state no., symmetry, spin:             2    2    0
+ Excitation energy in au,    moment :                0.371727    0.002162
+
+ B term contribution:              0.001526
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             3    2    0
+
+ omega B, excitation energy, moment :    0.000000    0.408196   -0.155424
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      XDIPLEN     2    0
+ Excited state no., symmetry, spin:             3    2    0
+ Excitation energy in au,    moment :                0.408196    0.141087
+
+ B term contribution:             -0.010964
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             4    2    0
+
+ omega B, excitation energy, moment :    0.000000    0.458800   -7.028364
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      XDIPLEN     2    0
+ Excited state no., symmetry, spin:             4    2    0
+ Excitation energy in au,    moment :                0.458800    0.157023
+
+ B term contribution:             -0.551808
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             1    3    0
+
+ omega B, excitation energy, moment :    0.000000    0.394814   -3.141205
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      YDIPLEN     3    0
+ Excited state no., symmetry, spin:             1    3    0
+ Excitation energy in au,    moment :                0.394814   -0.238923
+
+ B term contribution:              0.375252
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             2    3    0
+
+ omega B, excitation energy, moment :    0.000000    0.468683  -92.101606
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      YDIPLEN     3    0
+ Excited state no., symmetry, spin:             2    3    0
+ Excitation energy in au,    moment :                0.468683    0.748664
+
+ B term contribution:            -34.476566
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             3    3    0
+
+ omega B, excitation energy, moment :    0.000000    0.512613   -6.488795
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      YDIPLEN     3    0
+ Excited state no., symmetry, spin:             3    3    0
+ Excitation energy in au,    moment :                0.512613    0.203752
+
+ B term contribution:             -0.661053
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             4    3    0
+
+ omega B, excitation energy, moment :    0.000000    0.522952   10.906980
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      YDIPLEN     3    0
+ Excited state no., symmetry, spin:             4    3    0
+ Excitation energy in au,    moment :                0.522952   -0.584102
+
+ B term contribution:             -3.185396
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             1    3    0
+
+ omega B, excitation energy, moment :    0.000000    0.394814    1.661200
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      YDIPLEN     3    0
+ Excited state no., symmetry, spin:             1    3    0
+ Excitation energy in au,    moment :                0.394814   -0.238923
+
+ B term contribution:             -0.198449
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             2    3    0
+
+ omega B, excitation energy, moment :    0.000000    0.468683   -2.145468
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      YDIPLEN     3    0
+ Excited state no., symmetry, spin:             2    3    0
+ Excitation energy in au,    moment :                0.468683    0.748664
+
+ B term contribution:             -0.803117
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             3    3    0
+
+ omega B, excitation energy, moment :    0.000000    0.512613    6.314436
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      YDIPLEN     3    0
+ Excited state no., symmetry, spin:             3    3    0
+ Excitation energy in au,    moment :                0.512613    0.203752
+
+ B term contribution:              0.643290
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             4    3    0
+
+ omega B, excitation energy, moment :    0.000000    0.522952   -5.720559
+
+ First order moment in a.u. for
+ C operator label,  symmetry, spin:      YDIPLEN     3    0
+ Excited state no., symmetry, spin:             4    3    0
+ Excitation energy in au,    moment :                0.522952   -0.584102
+
+ B term contribution:              1.670696
+ ------------------------------------------- 
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             1    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.316502    2.981124
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             2    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.427812    2.398042
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             3    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.443797   -0.910132
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      YDIPLEN     3    0
+ B operator label,  symmetry, spin:      YANGMOM     2    0
+ Excited state no., symmetry, spin:             4    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.591276   28.982596
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             1    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.316502    2.274185
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             2    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.427812   -4.844419
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             3    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.443797   10.412326
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      XDIPLEN     2    0
+ B operator label,  symmetry, spin:      XANGMOM     3    0
+ Excited state no., symmetry, spin:             4    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.591276    1.273230
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             1    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.316502   -4.255232
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             2    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.427812    1.014526
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             3    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.443797   -0.417544
+ No MCD for this SOMOM
+
+
+ Second order moment in a.u. for
+ A operator label,  symmetry, spin:      ZDIPLEN     1    0
+ B operator label,  symmetry, spin:      ZANGMOM     4    0
+ Excited state no., symmetry, spin:             4    4    0
+
+ omega B, excitation energy, moment :    0.000000    0.591276   -7.985649
+ No MCD for this SOMOM
+
+ >>>> Total CPU  time used in RESPONSE:  1 minute  33 seconds
+ >>>> Total wall time used in RESPONSE:  1 minute  33 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  1 minute  38 seconds
+ >>>> Total wall time used in DALTON:  1 minute  39 seconds
+
+ 
+     Date and time (Linux)  : Tue May 27 10:43:22 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              

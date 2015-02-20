@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+#    dft_energy_sym
+#    --------------
+#    Molecule:         Glycine
+#    Wave Function:    DFT LDA/OWN
+#    Test Purpose:     DFT polarizability calculation
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+f.add(from_string = 'Static polarizabilities (au)',
+      num_lines = 9,
+      rel_tolerance = 1.0e-5)
+
+test.run(['dft_polar.dal'], ['C2FH3_STO-2G-mod.mol'], f={'out': f})
+
+sys.exit(test.return_code)

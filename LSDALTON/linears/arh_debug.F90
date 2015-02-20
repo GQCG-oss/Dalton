@@ -10,7 +10,7 @@ use matrix_module
 use matrix_operations
 use matrix_operations_aux
 use matrix_util
-use matrix_operations_unres_dense, only: mat_unres_dense_create_elm_alph,&
+use matrix_op_unres_dense, only: mat_unres_dense_create_elm_alph,&
      & mat_unres_dense_create_elm_beta
 !> True if the debug header should be printed. Set to false after 1st iteration.
 logical, save :: print_header = .true.
@@ -215,7 +215,7 @@ contains
       enddo
 
       !write (decomp%LUPRI,*) "Unrestricted Hessian:"
-      !call OUTPUT(fullhes, 1, 2*hesdim, 1, 2*hesdim, 2*hesdim, 2*hesdim, 1, decomp%lupri)
+      !call LS_OUTPUT(fullhes, 1, 2*hesdim, 1, 2*hesdim, 2*hesdim, 2*hesdim, 1, decomp%lupri)
 
       call dsyevx_interface(fullhes,2*hesdim,.false.,decomp%lupri,'HesA+B')
 

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,7 +23,6 @@
 !
 C FILE: eri2car1.F
 C
-#include "single.h"
 C
 C  /* Deck cr1drv */
       SUBROUTINE CR1DRV(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
@@ -48,7 +47,7 @@ C     Call to subroutine CR1UND or CR1U12 in CR1TWO (WK/UniKA/04-11-2002).
 #include "ericom.h"
 #include "eriao.h"
 #include "r12int.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
 C
@@ -210,7 +209,7 @@ C
 #include "r12int.h"
       LOGICAL LOCMIA
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1TWO','*',103)
 C
@@ -396,7 +395,7 @@ C
 #include "ericom.h"
 #include "eriao.h"
 #include "hertop.h"
-#include "ibtfun.h"
+
 C
 C     Print Hermite-Spherical integrals
 C     =================================
@@ -460,7 +459,7 @@ C
 #include "eriao.h"
 #include "hertop.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1UND','*',103)
 C
@@ -470,9 +469,9 @@ C
       MAXT = L1 + L2
       MAXU = M1 + M2
       MAXV = N1 + N2
-      MINT = IBTAND(MAXT,I120(1))
-      MINU = IBTAND(MAXU,I120(2))
-      MINV = IBTAND(MAXV,I120(3))
+      MINT = IAND(MAXT,I120(1))
+      MINU = IAND(MAXU,I120(2))
+      MINV = IAND(MAXV,I120(3))
 C
       IF (IPRINT .GT. 25) THEN
          WRITE(LUPRI,'(/,1X,A,2I5/)')' ICOMP1, ICOMP2', ICOMP1,ICOMP2
@@ -690,7 +689,7 @@ c     Part for [T1,r12] integral derivatives, based on subroutine CR1DRV
 #include "ericom.h"
 #include "eriao.h"
 #include "r12int.h"
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
 C
@@ -843,7 +842,7 @@ C
 #include "eriao.h"
 #include "hertop.h"
 #include "r12int.h"
-#include "ibtfun.h"
+
 
       DO I=1,3
         MIAXYZ(I)=0
@@ -858,18 +857,18 @@ C
       MAXT = L1 + L2
       MAXU = M1 + M2
       MAXV = N1 + N2
-      MINT = IBTAND(MAXT,I120(1))
-      MINU = IBTAND(MAXU,I120(2))
-      MINV = IBTAND(MAXV,I120(3))
-      MINTP = IBTAND(MAXT+1,I120(1))
-      MINUP = IBTAND(MAXU+1,I120(2))
-      MINVP = IBTAND(MAXV+1,I120(3))
-      MINTP1 = IBTAND(MAXT+MIAXYZ(1)+1,I120(1))
-      MINTP2 = IBTAND(MAXT+MIAXYZ(1),I120(1))
-      MINUP1 = IBTAND(MAXU+MIAXYZ(2)+1,I120(2))
-      MINUP2 = IBTAND(MAXU+MIAXYZ(2),I120(2))
-      MINVP1 = IBTAND(MAXV+MIAXYZ(3)+1,I120(3))
-      MINVP2 = IBTAND(MAXV+MIAXYZ(3),I120(3))
+      MINT = IAND(MAXT,I120(1))
+      MINU = IAND(MAXU,I120(2))
+      MINV = IAND(MAXV,I120(3))
+      MINTP = IAND(MAXT+1,I120(1))
+      MINUP = IAND(MAXU+1,I120(2))
+      MINVP = IAND(MAXV+1,I120(3))
+      MINTP1 = IAND(MAXT+MIAXYZ(1)+1,I120(1))
+      MINTP2 = IAND(MAXT+MIAXYZ(1),I120(1))
+      MINUP1 = IAND(MAXU+MIAXYZ(2)+1,I120(2))
+      MINUP2 = IAND(MAXU+MIAXYZ(2),I120(2))
+      MINVP1 = IAND(MAXV+MIAXYZ(3)+1,I120(3))
+      MINVP2 = IAND(MAXV+MIAXYZ(3),I120(3))
 C
       IF (IPRINT .GT. 25) THEN
          WRITE(LUPRI,'(/,1X,A,2I5/)')' ICOMP1, ICOMP2', ICOMP1,ICOMP2

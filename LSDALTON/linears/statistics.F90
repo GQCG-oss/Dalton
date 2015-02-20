@@ -7,6 +7,10 @@
 MODULE scf_stats
    !FIXME:       Without the stat_tab information, the computation crashes
    use opttype
+#ifdef HAS_PCMSOLVER
+   use ls_pcm_scf, only: get_pcm_energy
+   use ls_pcm_config
+#endif
    public
    private :: scf_stats_print_table_header,stat_ao_grad,stat_oao_grad!,scf_stats_print_table !Stinne comment
    ! we do not try to collect data from more than 100 iterations.
@@ -36,7 +40,7 @@ MODULE scf_stats
 
       NULLIFY(stat_tab,stat_gradnorm,stat_energy)
       ALLOCATE(stat_tab(0:maxit+1,11),stat_gradnorm(0:maxit+1,2),stat_energy(0:maxit+1))
-
+      stat_energy = 0.0E0_realk
       do j = 1,11
         do i = 0,maxit+1
           stat_tab(i,j) = 0.0E0_realk
@@ -150,9 +154,10 @@ MODULE scf_stats
       !> Logical unit number for output file.
       integer,intent(in) :: lupri
 
-        WRITE(LUPRI,'("*******************************************************************************************%%%")')
-        WRITE(LUPRI,'(" Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%")')
-        WRITE(LUPRI,'("*******************************************************************************************%%%")')
+        WRITE(LUPRI,'("***********************************************************************************************%%%")')
+        WRITE(LUPRI,'(" Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%")')
+        WRITE(LUPRI,'("***********************************************************************************************%%%")')
+
    end subroutine scf_stats_trustradius_header
 
    !> \brief Print the header for ARH debug info.
@@ -233,6 +238,7 @@ MODULE scf_stats
       !> Contains general settings for SCF optimization
       type(optItem), intent(in)  :: opt
       integer :: i,j,igrad
+      real(realk) :: Epcm
 
       if (stat_current_iteration>=opt%cfg_max_linscf_iterations) then
          stat_current_iteration = opt%cfg_max_linscf_iterations
@@ -282,6 +288,16 @@ MODULE scf_stats
             WRITE(opt%LUPRI,'("      SCF has failed to converge in ",i3," iterations")') stat_current_iteration
          ELSE
             WRITE(opt%LUPRI,'("      SCF has failed to converge in ",i3," iterations")') stat_current_iteration
+            IF(opt%optlevel.EQ.2)THEN
+               ! The SCF failed to converge at the second level in the Trilevel scheme. 
+               ! move dens.restart file to vdens.restart, otherwise the restart option 
+               ! will not work
+#ifdef SYS_AIX
+               call rename('dens.restart\0','vdens.restart\0')
+#else
+               call rename('dens.restart','vdens.restart')
+#endif
+            ENDIF
             CALL lsQUIT('Computation terminated - convergence NOT obtained!!!!',opt%lupri)
          ENDIF
       endif
@@ -289,14 +305,22 @@ MODULE scf_stats
       WRITE(opt%LUPRI,*)
       WRITE(opt%LUPRI,*) 
       if (opt%calctype == opt%dftcalc) then
-         WRITE(opt%LUPRI,'("      Final DFT energy:              ",f20.12)') stat_energy(stat_current_iteration)
+         WRITE(opt%LUPRI,'("      Final DFT energy:              ",f24.12)') stat_energy(stat_current_iteration)
       else if (opt%calctype == opt%hfcalc) then
-         WRITE(opt%LUPRI,'("      Final HF energy:               ",f20.12)') stat_energy(stat_current_iteration)
+         WRITE(opt%LUPRI,'("      Final HF energy:               ",f24.12)') stat_energy(stat_current_iteration)
       else
          call lsquit('Calculation type has not been set',opt%lupri)
       endif
-      WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f20.12)') opt%potnuc
-      WRITE(opt%LUPRI,'("      Electronic energy:             ",f20.12)') stat_energy(stat_current_iteration)-opt%potnuc
+      Epcm = 0.0_realk
+#ifdef HAS_PCMSOLVER
+      if (pcm_config%do_pcm) then
+         Epcm = get_pcm_energy()
+         WRITE(opt%LUPRI,'("      PCM polarization energy:       ",f24.12)') Epcm 
+      endif
+#endif  
+      WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f24.12)') opt%potnuc                                          
+      WRITE(opt%LUPRI,'("      Electronic energy:             ",f24.12)') &
+                                       stat_energy(stat_current_iteration)-opt%potnuc-Epcm
       WRITE(opt%LUPRI,*)
 
    end subroutine scf_stats_end_print

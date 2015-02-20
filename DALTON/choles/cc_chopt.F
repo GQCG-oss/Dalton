@@ -4499,15 +4499,15 @@ C     and s(ai,bj) = 2 t(ai,bj) - t(aj,bi), and d(aij) and d(aib) denote
 C     the occupied and virtual parts of the Cholesky decomposition of the
 C     orbital energy denominator.
 C
-c#include <implicit.h>
-c#include <priunit.h>
+c#include "implicit.h"
+c#include "priunit.h"
 C
 c     DIMENSION XJINT(*),T2VO(*),CHOELE(*),FOCKD(*)
 c     DIMENSION WORK(LWORK)
 c     DIMENSION IOFF3(8)
 C
-c#include <ccorb.h>
-c#include <ccsdsym.h>
+c#include "ccorb.h"
+c#include "ccsdsym.h"
 C
 c     PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -7129,7 +7129,7 @@ C
       PARAMETER (XMONE = -1.00D0, ZERO = 0.00D0)
       PARAMETER (ONE   =  1.00D0, TWO  = 2.00D0)
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
 C 
       TLAST = SECOND()

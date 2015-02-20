@@ -1,0 +1,52 @@
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.MCSCF
+.NSYM
+ 8
+*CONFIGURATION INPUT
+.SYMMETRY
+ 1
+.SPIN MULTIPLICITY
+ 1
+.INACTIVE
+ 0 0 0 0 0 0 0 0
+.ELECTRONS
+ 2
+.CAS SPACE
+   3   1   1   0   3   1   1   0
+*OPTIMIZATION
+.MAX CI
+ 15
+.THRESHOLD
+ 1.0D-11
+*CI VECTOR
+.PLUS COMBINATION
+*ORBITAL INPUT
+.NOSUPSYM
+**PROPERTIES
+.EXCITA
+.NACME
+*RESPON
+.THRESH
+ 1.0D-09
+*TROINV
+.SKIP
+*EXCITA
+.FNAC
+.NEXCITA
+   20    6    6    2   10    6    6    1
+.THRESH
+ 1.0D-9
+**END OF DALTON INPUT
+
+
+   prop_vibg2
+   ----------
+   Molecule:         H2
+   Wave Function:    Full CI / 6-31G**
+   Test Purpose:     Calculation of vibrational g-factor as sum
+                     over all first order non-adiabatic coupling elements.
+                     Also test that .NEXCITA value > dimension works
+                     (there are only 15 excitations in symmetry 1).
+

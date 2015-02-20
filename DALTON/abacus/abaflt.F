@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck fltinp */
       SUBROUTINE FLTINP(WORD)
@@ -130,9 +129,9 @@ C     of floating orbitals. We assume the the position of all centers
 C     with zero charge have been completely optimized.
 C
 C     The final second-order properties are stored in
-C     HESMOL(MXCOOR,MXCOOR), DIPFLT(3,MXCOOR) and POLFLT(3,3).
+C     HESMOL(NCOOR,NCOOR), DIPFLT(3,MXCOOR) and POLFLT(3,3).
 C     If no floating orbitals are used this arrays are set
-C     equal to HESMOL(MXCOOR,MXCOOR), DIP1(3,MXCOOR) and
+C     equal to HESMOL(NCOOR,NCOOR), DIP1(3,MXCOOR) and
 C     POLFLT(3,3)
 C
 #include "implicit.h"
@@ -143,9 +142,12 @@ C
       DIMENSION WORK(LWORK)
 #include "abainf.h"
 #include "cbiflt.h"
-#include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       IF (SKIP) RETURN
       IF (.NOT. (MOLHES .OR. DIPDER .OR. POLAR)) RETURN
       CALL QENTER('FLTORB')
@@ -207,11 +209,13 @@ C
          CALL FLTHDP(WORK(KRED),NIND)
       ELSE
          IF (MOLHES) THEN
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             DO 200 I = 1, 3*NUCDEP
                DO 300 J = 1, I
                   HESMOL(J,I) = HESMOL(I,J)
   300          CONTINUE
   200       CONTINUE
+            CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
          END IF
          IF (DIPDER) THEN
             DO 400 I = 1, 3*NUCDEP
@@ -243,12 +247,15 @@ C  /* Deck fltgmt */
 #include "mxcent.h"
 #include "cbiflt.h"
 #include "abainf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "moldip.h"
       DIMENSION GII(NIND,NIND), GID(NIND,NDEP), GDI(NDEP,NIND),
      *          GDD(NDEP,NDEP), IVIND(NIND), IVDEP(NDEP)
-      LOGICAL DEPEND
+      LOGICAL DEPEND_FLT
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       IF (IPRINT .GE. 5) CALL TITLER('Output from FLTGMT','*',103)
 C
 C     Set up address vectors
@@ -256,8 +263,8 @@ C
       IIND = 0
       IDEP = 0
       DO 100 ICOOR = 1, 3*NUCDEP
-         DEPEND = NINT(CHARGE((ICOOR + 2)/3)) .EQ. 0
-         IF (DEPEND) THEN
+         DEPEND_FLT = NINT(CHARGE((ICOOR + 2)/3)) .EQ. 0
+         IF (DEPEND_FLT) THEN
             IDEP = IDEP + 1
             IVDEP(IDEP) = ICOOR
          ELSE
@@ -279,6 +286,7 @@ C
 C
 C     Construct GII
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       DO 200 I = 1, NIND
          DO 210 J = 1, NIND
             II = IVIND(I)
@@ -378,7 +386,6 @@ C  /* Deck flthdp */
 #include "mxcent.h"
 #include "cbiflt.h"
 #include "abainf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "moldip.h"
       DIMENSION GRED(NIND,NIND)

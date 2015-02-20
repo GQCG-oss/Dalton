@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -977,36 +976,17 @@ C
       JRSP3 = 0
       JRSP5 = 0
       IF (KOFFTY.GT.0) THEN
-#if !defined (VAR_SPLITFILES)
          READ (LURSP3)
          READ (LURSP5)
-#else
-         CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-         CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#endif
       END IF
       DO 200 ISIM = 1,KZRED
          IF (IBTYP(KOFFTY+ISIM).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
             READ (LURSP3)
             READ (LURSP5)
-#endif
          ELSE
             KOZRED = KOZRED + 1
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,OBVEC(1,KOZRED),JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in ORPSVE')
-            CALL READST(LURSP5,LRSP5,WRK,JRSP5,.TRUE.)
-            IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP5 in ORPSVE')
-#else
             CALL READT(LURSP3,KZYWOP,OBVEC(1,KOZRED))
             CALL READT(LURSP5,KZYVAR,WRK)
-#endif
             CALL DCOPY(KZWOPT,WRK(KZCONF+1),1,OEVEC(1,KOZRED),1)
             CALL DCOPY(KZWOPT,WRK(KZVAR+KZCONF+1),1,
      *                                 OEVEC(1+KZWOPT,KOZRED),1)

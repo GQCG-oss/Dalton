@@ -1,0 +1,13 @@
+Units = Angstrom
+Medium 
+{
+		SolverType = IEFPCM
+		Solvent = Water 
+}
+
+Cavity 
+{
+		Type = GePol
+		Area = 0.3
+                Mode = Implicit 
+}

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck hfcinp */
       SUBROUTINE HFCINP(WORD)
@@ -151,7 +150,7 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+
 #include "codata.h"
 #include "gfac.h"
 #include "cbiher.h"
@@ -218,7 +217,7 @@ C        Spin polarization correction to Spin-dipolar contribution
                      ISCOR1 = IPTCNT(3*(IDX-1)+ICOOR1,IREP,2)
                      IF (ISCOR1 .GT. 0) THEN
                         DO ICOOR2 = 1, 3
-                            IDOCOMP = IBTXOR(IREP,ISYMAX(ICOOR2,2))
+                            IDOCOMP = IEOR(IREP,ISYMAX(ICOOR2,2))
                             IF (IDOCOMP .EQ. 0) THEN
                                IFIRST = ISCOR1/100
                                ISECND = MOD(ISCOR1,100)/10
@@ -387,7 +386,7 @@ C  /* Deck asdave */
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "esrhfc.h"
-#include "ibtfun.h"
+
       LOGICAL OLDDX, FNDLB2, TRPSAVE
       EXTERNAL FNDLB2
       CHARACTER*7 RTNLBL(2)
@@ -430,7 +429,7 @@ C     Compute expectation values
                ISCOR1 = IPTCNT(3*(IDX-1)+ICOOR1,IREP,2)
                IF (ISCOR1 .GT. 0) THEN
                   DO ICOOR2 = 1, 3
-                     IF (IBTXOR(IREP,ISYMAX(ICOOR2,2)) .EQ. 0) THEN
+                     IF (IEOR(IREP,ISYMAX(ICOOR2,2)) .EQ. 0) THEN
                         IFIRST = ISCOR1/100
                         ISECND = MOD(ISCOR1,100)/10
                         ITHIRD = MOD(MOD(ISCOR1,100),10)

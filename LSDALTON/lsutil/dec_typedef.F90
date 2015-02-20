@@ -10,11 +10,11 @@ module dec_typedef_module
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
   !Could someone please rename ri to something less generic. TK!!
-!  private
-!  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
-!       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
-!       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
-!       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
+  !  private
+  !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
+  !       & fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
+  !       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
+  !       & SPgridbox,MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_NONE
 
 
 
@@ -26,12 +26,19 @@ module dec_typedef_module
 
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
+  !> how many real models in total are there, disregard MODEL_NONE
+  integer,parameter :: ndecmodels   = 6
+  !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
   integer,parameter :: MODEL_CC2    = 2
   integer,parameter :: MODEL_CCSD   = 3
   integer,parameter :: MODEL_CCSDpT = 4
   integer,parameter :: MODEL_RPA    = 5
+  integer,parameter :: MODEL_RIMP2  = 6
+
+  ! Number of possible FOTs to consider in geometry optimization
+  integer,parameter :: nFOTs=8
 
 
   ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
@@ -40,7 +47,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 17
+  integer, parameter :: ndecenergies = 23
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -51,16 +58,21 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_OCCCC2   = 7   ! CC2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTCC2  = 8   ! CC2 virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCCCSD  = 9   ! CCSD occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTCCSD = 10   ! CCSD virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCCSD = 10  ! CCSD virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT    = 11  ! (T) contribution, occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT   = 12  ! (T) contribution, virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT4   = 13  ! Fourth order (T) contribution, occ partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT4  = 14  ! Fourth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT5   = 15  ! Fifth order (T) contribution, occ partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
-  integer,parameter :: FRAGMODEL_F12      = 17  ! MP2-F12 energy correction
-
-
+  integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
+  integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
+  integer,parameter :: FRAGMODEL_LAGRIMP2 = 19  ! RI-MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCRIMP2 = 20  ! RI-MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTRIMP2= 21  ! RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCSOS   = 22  ! SOSEX occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTSOS  = 23  ! SOSEX virtual partitioning scheme
+  
   !> \author Kasper Kristensen
   !> \date June 2010
   !> \brief Contains settings for DEC calculation, see default settings in dec_set_default_config.
@@ -75,6 +87,26 @@ module dec_typedef_module
      ! *****************************************************************************************
 
 
+     !> Do a SNOOP calculation rather than DEC? (later SNOOP and DEC will be somewhat merged)
+     logical :: SNOOP
+     !> Skip CC calculation in SNOOP and just do HF
+     logical :: SNOOPjustHF
+     !> Maximum number of iterations in SNOOP HF calculations
+     integer :: SNOOPmaxiter
+     !> Convergence threshold in SNOOP HF calculations
+     real(realk) :: SNOOPthr
+     !> Maximum number of DIIS vectors stored in RH/DIIS scheme in SNOOP
+     integer :: SNOOPmaxdiis
+     !> Debug prints for SNOOP RH/DIIS
+     logical :: SNOOPdebug
+     !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
+     logical :: SNOOPort
+     !> Use "same" orbital spaces for monomer calculation as for full calculation,
+     !> as defined by natural connection
+     logical :: SNOOPsamespace
+     !> Localize SNOOP subsystem orbitals (cannot be used in connection with SNOOPsamespace)
+     logical :: SNOOPlocalize
+
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
      !> **************************************
@@ -85,6 +117,8 @@ module dec_typedef_module
      logical :: frozencore
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
+     !> Print fragment energies for full molecular cc
+     logical :: print_frags
      !> Enforce canonical orbitals in calculation 
      logical :: use_canonical
      !> Simulate full molecular calculation in DEC mode  (debug)
@@ -99,6 +133,12 @@ module dec_typedef_module
      integer :: ccModel ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
      !> Use singles
      logical :: use_singles
+     !> is the density and other matrices in the grand-canonical basis?
+     logical :: gcbasis
+     !> DEC-CC orbital-based (DECCO)
+     logical :: DECCO
+
+
 
 
      !> Restart options
@@ -112,6 +152,13 @@ module dec_typedef_module
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
      logical :: read_dec_orbitals
 
+     
+     !> Integral Stuff
+     !> ************
+     !> Screening threshold for Integral evaluation
+     real(realk) :: IntegralThreshold
+     !> Use Ichor Integral Code
+     logical :: UseIchor
 
      !> Memory stuff
      !> ************
@@ -119,6 +166,10 @@ module dec_typedef_module
      real(realk) :: memory
      !> Memory defined by input? (If not, use system call).
      logical :: memory_defined
+     !> use system information to determine available memory during a dec
+     !calculation
+     logical :: use_system_memory_info
+
      ! Memory use for full molecule structure
      real(realk) :: fullmolecule_memory
      !> Save array4 on file instead of in memory (debug)
@@ -158,16 +209,19 @@ module dec_typedef_module
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> if mpich is used CCSD has some special treats that can be used
-     logical :: CCSD_MPICH
+     logical :: CCSD_NO_DEBUG_COMM
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
      logical :: CCSDmultipliers
+     !> use debug multiplier residual
+     logical :: simple_multipler_residual
      !> use pnos in dec
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
      !transformation matrices
-     logical :: noPNOtrafo, noPNOtrunc
+     logical :: noPNOtrafo, noPNOtrunc, pno_S_on_the_fly
+     logical :: noFAtrafo, noFAtrunc
      !> defines a simple cutoff threshold for constructing the PNOs from the
      !correlation density
      real(realk) :: simplePNOthr
@@ -176,17 +230,20 @@ module dec_typedef_module
      real(realk) :: PNOoverlapthr
      !> this defines the PNO threshold used for the EOS adapted space
      real(realk) :: EOSPNOthr
-     !> Use MO-based algorithm to solve the CCSD equations
-     logical :: MOCCSD
-     !> Maximum number of MOs until which an MO-CCSD calculation should be
-     !> performed
-     integer :: Max_num_MO
+     !> use triangular counting in th occupied indices
+     logical :: PNOtriangular
+     !> Prevent using MO-based algorithm to solve the CCSD equations
+     logical :: NO_MO_CCSD
      !> do not update the singles residual
      logical :: CCDhack
+     !> Crash Calc Debug keyword - to test restart option
+     logical :: CRASHCALC
      !> Debug CC driver
      logical :: cc_driver_debug
      !> Integer specifying which scheme to use in CCSD calculations (debug)
      integer :: en_mem
+     !overwrite standard preconditioning settings in solver
+     logical :: ccsolver_overwrite_prec
      !> Use full molecular Fock matrix to precondition
      logical :: precondition_with_full
      !> Use devel version of doubles
@@ -205,24 +262,55 @@ module dec_typedef_module
      logical :: use_preconditioner_in_b
      !> Use CROP (if false we use DIIS)
      logical :: use_crop
-     !> Simulate full ERI using RI arrays 
-     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
-     logical :: simulate_eri
-     !> Construct Fock matrix from RI integrals (obsolete for the moment)
-     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
-     logical :: fock_with_ri
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
+     !> set tilesize in ccsolver in GB
+     real(realk) :: cc_solver_tile_mem
+     !> select tensor segmenting scheme
+     integer :: tensor_segmenting_scheme
+
+     !> ccsd(T) settings
+     !> *****************************
+     !> logical for abc scheme
+     logical :: abc
+     !> force a specific tile size for use with abc scheme
+     integer :: abc_tile_size
+     !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
+     integer :: ijk_nbuffs
+     !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
+     integer :: abc_nbuffs
 
      !> F12 settings
      !> ************
      !> Use F12 correction
      logical :: F12
+     !> Do F12 also for fragment optimization
+     logical :: F12fragopt
 
      !> F12 debug settings
      !> ************
      !> Use F12 correction
      logical :: F12DEBUG
+
+     logical :: SOS
+
+     !> Debug keyword to specify pure hydrogen atoms
+     logical :: PUREHYDROGENdebug
+
+     !> Calculate the Interaction Energy (Ref to article)
+     logical :: InteractionEnergy
+     !> Print the Interaction Energy (Ref to article)
+     logical :: PrintInteractionEnergy
+
+     !> Stress Test 
+     logical :: StressTest
+     !> Kohn-Sham Reference
+     logical :: DFTreference
+
+     !> Atomic Extent - include all atomic orbitals of atoms included
+     logical :: AtomicExtent
+     !> Auxiliary Atomic Extent - for now include ALL atomic orbitals in RI
+     logical :: AuxAtomicExtent
 
      !> MPI settings
      !> ************
@@ -237,7 +325,15 @@ module dec_typedef_module
      logical :: manual_batchsizes
      !> Sizes of alpha and gamma batches defined manually
      integer :: ccsdAbatch,ccsdGbatch
+     !> test integral scheme, fully distributed, get_mo_integrals
+     logical :: test_fully_distributed_integrals
 
+     !> MP2 occupied batching
+     !> *****************
+     !> Set batch sizes manually
+     logical :: manual_occbatchsizes
+     !> Sizes of I and J occupied batches defined manually
+     integer :: batchOccI,batchOccJ
 
      !> General debug and simple tests
      !> ******************************
@@ -247,17 +343,23 @@ module dec_typedef_module
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
      !> test the array structure
-     logical :: array_test
+     logical :: tensor_test
      !> test the array reorderings
      logical :: reorder_test
      !> Check that LCM orbitals are correct
      logical :: check_lcm_orbitals
+     !> Check the the Occupied Subsystem locality
+     logical :: check_Occ_SubSystemLocality
+     !> Enforce a zero Occupied Subsystem locality
+     logical :: force_Occ_SubSystemLocality
      !> Debug print level
      integer :: PL
+     !> reduce the output if a big calculation is done
+     logical :: print_small_calc
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
-     !> Print fragment energies for full CC calculation
-     logical :: full_print_frag_energies
+     !> set fraction of extended orbital space to reduce to in the binary search
+     real(realk) :: FracOfOrbSpace_red
      ! --
 
      !> Output options 
@@ -278,18 +380,11 @@ module dec_typedef_module
      logical :: PurifyMOs
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
-     !> Has simple orbital threshold been defined manually in input (true),
-     !> or should simple orbital threshold be adapted to FOT 
-     !> as descripted under FOTlevel (false)?
-     logical :: simple_orbital_threshold_set     
-     !> Use Boughton-Pulay criteria for generating orbitals rather than simple Lowdin charge criteria
-     logical :: BoughtonPulay
-     !> Simple Mulliken charge threshold (only for Boughton-Pulay procedure)
-     real(realk) :: mulliken_threshold
-     !> Simple Mulliken charge criteria 
-     logical :: simple_mulliken_threshold
-     !> Norm error in approximated (fitted orbitals)
-     real(realk) :: approximated_norm_threshold
+     !> Hack to only do fragment optimization
+     integer         :: only_n_frag_jobs
+     integer,pointer :: frag_job_nr(:)
+     !> Use hack to specify only pair fragment jobs
+     logical         :: only_pair_frag_jobs
      !> Use Mulliken population analysis to assign orbitals (default: Lowdin, only for Boughton-Pulay)
      logical :: mulliken
      !> Use Distance criteria to determine central atom
@@ -301,20 +396,41 @@ module dec_typedef_module
      !> *********************
      !> Fragment optimization threshold
      real(realk) :: FOT
+     !> Fragment optimization thresholds of decreasing magnitude (increasing accuracy)
+     !> to possibly be used in geometry optimization
+     real(realk) :: GeoFOTs(nFOTs)
      !> Max number of iterations for expanding fragment
      integer :: MaxIter
-     !> FOT level defining precision of calculation, see set_input_for_fot_level
+     !> FOT level (used for geometry opt.)
      integer :: FOTlevel
-     !> Max accepted FOT level
-     integer :: maxFOTlevel
+     !> Which Fragment Expansion Scheme should be used
+     integer :: Frag_Exp_Scheme
+     !> Which Fragment Reduction Scheme should be used for the occ space
+     integer :: Frag_RedOcc_Scheme
+     !> Which Fragment Reduction Scheme should be used for the vir space
+     integer :: Frag_RedVir_Scheme
+     !> Number of atoms to include in initial fragment
+     integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion
-     integer :: FragmentExpansionSize
+     integer :: Frag_Exp_Size
+     !> Threshold in reduction in case of unbalanced red:
+     real(realk) :: Frag_red1_thr
+     real(realk) :: Frag_red2_thr
+     !> space to reduce first in FOP:
+     logical :: Frag_red_occ
+     logical :: Frag_red_virt
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
+     !> Temporary keyword to use clean version of the frag opt
+     logical :: no_orb_based_fragopt
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
+     !> Only consider virtual partitioning
+     logical :: OnlyVirtPart
+     !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
+     real(realk) :: all_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
@@ -327,13 +443,12 @@ module dec_typedef_module
      !> Note that scheme 2 is only meaningful for occupied partitioning scheme.
      integer :: CorrDensScheme
      ! --  
+     logical :: use_abs_overlap
 
      !> Pair fragments
      !> **************
      !> Distance cutoff for pair fragments
      real(realk) :: pair_distance_threshold
-     !> Pair cutoff set manually (will overwrite default pair cutoff defined by FOTlevel)
-     logical :: paircut_set
      !> When pair regression fit is performed, pair distances smaller than PairMinDist are ignored
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)
@@ -341,19 +456,34 @@ module dec_typedef_module
      !> Fragment-adapted threshold for throwing away orbitals in atomic fragments
      !> that constitute pair fragment (currently on a testing basis)
      real(realk) :: pairFOthr
-     !> Do some pairs at MP2 level
-     logical :: PairMP2
      !> Estimate pair interaction energies using simple estimates?
      logical :: PairEstimate
+     !> Carry out pair estimate, but anyway run all pairs.
+     logical :: PairEstimateIgnore
+     !> initiation radius of the estimated fragments
+     real(realk) :: EstimateINITradius
+     !> number of average atoms that will be included in the estimated fragments
+     integer :: EstimateInitAtom
+     !> Which model to use for pair estimates
+     integer :: PairEstimateModel
+     !> Number of reduced fragments (increased FOT) to used for pair calculations 
+     !> (NOT including fragment for main FOT)
+     integer :: nFRAGSred
+     !> Factor to scale FOT by for reduced fragments
+     integer :: FOTscaling
+
+
      ! --
 
 
      ! First order properties
      ! **********************
-     !> Do first order properties (MP2 density, electric dipole, mp2 gradient)
+     !> Do first order properties (density, electric dipole, gradient)
      logical :: first_order
-     !> MP2 density matrix (and not gradient)
-     logical :: MP2density    
+     !> density matrix (and not gradient)
+     logical :: density    
+     !> Unrelaxed density matrix
+     logical :: unrelaxed
      !> Calculate MP2 gradient  (density is then also calculated as a subset of the calculation)
      logical :: gradient
      !> Use preconditioner for kappa multiplier equation
@@ -374,12 +504,11 @@ module dec_typedef_module
      !> *********************
      !> Book keeping of the number of DEC calculations for each FOT level
      !> (only relevant for geometry optimizations)
-     integer,dimension(8) :: ncalc
+     integer,dimension(nFOTs) :: ncalc
      !> Factor multiply intrinsic energy error by before returning error to geometry optimizer
      real(realk) :: EerrFactor
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
-
 
   end type DECSETTINGS
 
@@ -450,13 +579,22 @@ module dec_typedef_module
 
      !> Number of the orbital in full molecular basis
      integer :: orbitalnumber
-     !> Cental atom in the population
+     !> Central atom to which orbital is assigned
      integer :: centralatom
      !> Number of significant atoms
-     integer :: numberofatoms
+!     integer :: numberofatoms
+     !> Secondary central atom for orbital. For example, if virtual orbital "a" is assigned to
+     !> a hydrogen atom "H_A" for which there are no occupied orbitals assigned, the secondary
+     !> central atom for orbital "a" will be the atom closest to "H_A" which has a nonzero number
+     !> of occupied AND virtual orbitals in the original assignment.
+     integer :: secondaryatom
 
      !> List of significant atoms
-     integer, pointer :: atoms(:) => null()
+!     integer, pointer :: atoms(:) => null()
+     !> Number of significant Atomic Orbitals
+     integer :: numberofaos
+     !> List of significant Atomic Orbitals
+     integer, pointer :: aos(:) => null()
 
   end type decorbital
 
@@ -487,6 +625,8 @@ module dec_typedef_module
      integer :: natoms
      !> Number of basis functions
      integer :: nbasis
+     !> Number of MOs (usually equal to nbasis but can be different for subsystems in SNOOP)
+     integer :: nMO
      !> Number of auxiliary basis functions
      integer :: nauxbasis
      !> Number of occupied orbitals (core + valence)
@@ -497,6 +637,13 @@ module dec_typedef_module
      integer :: nval
      !> Number of unoccupied orbitals
      integer :: nunocc
+     !> Number of cabs AO orbitals
+     integer :: nCabsAO
+     !> Number of cabs MO orbitals
+     integer :: nCabsMO
+     !> Number of possible fragments
+     integer :: nfrags
+
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
@@ -504,19 +651,31 @@ module dec_typedef_module
      integer, pointer :: atom_start(:) => null()
      !> Index of the last basis function for an atom
      integer, pointer :: atom_end(:) => null()
+     !> Index of the first basis function for the angmom
+     integer, pointer :: bas_start(:) => null()
+     !> Index of the last basis function for the angmom
+     integer, pointer :: bas_end(:) => null()
+     !> Number of CABS basis functions on atoms
+     integer, pointer :: atom_cabssize(:) => null()
+     !> Index of the first CABS basis function for an atom
+     integer, pointer :: atom_cabsstart(:) => null()
 
      !> Occupied MO coefficients (mu,i)
      real(realk), pointer :: Co(:,:) => null()
      !> Virtual MO coefficients (mu,a)
      real(realk), pointer :: Cv(:,:) => null()
      !> CABS MO coefficients (mu,x)
-     real(realk), pointer :: cabsMOs(:,:) => null()
+     !     real(realk), pointer :: Ccabs(:,:) => null()
+     !> RI MO coefficients 
+     !     real(realk), pointer :: Cri(:,:) => null() 
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
      !> Overlap matrix (AO basis)
      real(realk), pointer :: overlap(:,:) => null()
 
+     !> Abs overlap information
+     real(realk), pointer :: ov_abs_overlap(:,:) => null()
      !> Occ-occ block of Fock matrix in MO basis
      real(realk), pointer :: ppfock(:,:) => null()
      !> Virt-virt block of Fock matrix in MO basis
@@ -527,6 +686,33 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     !> Distances between Occ Orbitals and Atoms
+     real(realk), pointer :: DistanceTableOrbAtomOcc(:,:) => null()
+     !> Distances between Virtual Orbitals and Atoms
+     real(realk), pointer :: DistanceTableOrbAtomVirt(:,:) => null()
+     !> Which atoms are phantom atoms (only basis functions)
+     Logical, pointer :: PhantomAtom(:) => null()
+
+
+     !> Occ-Occ Fock matrix in MO basis (change)
+     real(realk), pointer :: Fij(:,:) => null()
+
+     !> Occ-CABS (one-electron + coulomb matrix) in MO basis
+     real(realk), pointer :: hJir(:,:) => null() 
+     !> Cabs ri-Cabs ri exchange matrix in MO basis
+     real(realk), pointer :: Krs(:,:) => null() 
+     !> Cabs ri-Cabs ri Fock matrix in MO basis
+     real(realk), pointer :: Frs(:,:) => null() 
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
+     !> Cabs ri-Occ Fock matrix in MO basis  
+     real(realk), pointer :: Frm(:,:) => null()
+     !> Cabs-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fcp(:,:) => null()
+     !> Cabs-Cabs  Fock matrix in MO basis
+     !real(realk), pointer :: Fcd(:,:) => null()
+     
+     integer,pointer :: SubSystemIndex(:) => null()
 
      !> Pair distance table giving interatomic distances
      real(realk),pointer :: DistanceTable(:,:) => null()
@@ -535,6 +721,17 @@ module dec_typedef_module
      !> model=MODEL_MP2 :  Do MP2
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
+     !> FOT level to use for each pair calculation
+     !>  0: Use input FOT
+     !>  n>0: Use AOS information from fragment%REDfrags(n)
+     integer,pointer :: PairFOTlevel(:,:) => null()
+
+     !> Partitioning of energy into dispersion, charge transfer,
+     !> and internal subsystem excitations 
+     !> (see SNOOP_partition_energy).
+     real(realk) :: Edisp
+     real(realk) :: Ect
+     real(realk) :: Esub
 
   end type fullmolecule
 
@@ -556,29 +753,33 @@ module dec_typedef_module
      !> Total number of unoccupied orbitals (AOS)
      integer,pointer :: nunoccAOS
 
+     !> Has fragment been optimized
+     logical :: isopt
+
      !> Pair fragment?
      logical :: pairfrag
 
      !> CC model to use for fragment (see MODEL_* in this file)
      integer :: ccmodel
 
-     !> Occupied orbital EOS indices 
+     !> Occupied orbital EOS indices in the full basis 
      integer, pointer :: occEOSidx(:) => null()
-     !> Unoccupied orbital EOS indices 
+     !> Unoccupied orbital EOS indices in the full basis 
      integer, pointer :: unoccEOSidx(:) => null()
      !> Occupied AOS orbital indices (only valence orbitals for frozen core approx)
      integer, pointer :: occAOSidx(:) => null()
-     !> Unoccupied AOS orbital indices 
+     !> Unoccupied AOS orbital indices in the full basis  
      integer, pointer :: unoccAOSidx(:) => null()
      !> Core orbitals indices (only used for frozen core approx, 
      !> otherwise there are included in the occAOSidx list).
      integer,pointer :: coreidx(:) => null()
-
-
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()
      !> Indices of unoccupied EOS in AOS basis
      integer, pointer :: idxu(:) => null()
+
+     ! Reduced fragments (dimension DECinfo%nFOTred)
+     type(fragmentAOS),pointer :: REDfrags(:)
 
      !> DEC fragment energies are stored in the energies array
      !> according to the global integers "FRAGMODEL_*" defined below.
@@ -594,11 +795,17 @@ module dec_typedef_module
      !> without thinking about which CC model we are using...
      !> Energy using occupied partitioning scheme
      real(realk) :: EoccFOP
+     !> Energy using occupied partitioning scheme with the F12 Correction
+     real(realk) :: EoccFOP_Corr
      !> Energy using virtual partitioning scheme
      real(realk) :: EvirtFOP
      !> Lagrangian energy 
      !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
      real(realk) :: LagFOP
+     !> energy error estimates
+     real(realk) :: Eocc_err
+     real(realk) :: Evir_err
+     real(realk) :: Elag_err
 
      !> Contributions to the fragment Lagrangian energy from each individual
      !  occupied or virtual orbital.
@@ -615,6 +822,11 @@ module dec_typedef_module
      !> ********************************************************
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
+     
+     !> Information about fragment size always set, this is the maximum distance
+     !between any two atoms in the fragment
+     real(realk) :: RmaxAE,RmaxAOS,RaveAE,RaveAOS,RsdvAE,RsdvAOS
+     real(realk) :: DmaxAE,DmaxAOS,DaveAE,DaveAOS,DsdvAE,DsdvAOS
 
      ! NOTE!!! occAOSorb and unoccAOSorb are ILL-DEFINED when fragmentadapted=.true. !!!!
 
@@ -627,10 +839,14 @@ module dec_typedef_module
      integer :: natoms=0
      !> Number of basis functions
      integer :: nbasis=0
+     !> Number of CABS basis functions
+     integer :: ncabsAO=0
      !> Atomic indices
      integer, pointer :: atoms_idx(:) => null()
      !> Corresponding basis function indices
      integer,pointer :: basis_idx(:) => null()
+     !> Corresponding CABS basis function indices
+     integer,pointer :: cabsbasis_idx(:) => null()
 
      !> Has the information inside the expensive box below been initialized or not?
      logical :: BasisInfoIsSet
@@ -659,9 +875,12 @@ module dec_typedef_module
      !> Virtual MO coefficients
      real(realk), pointer :: Cv(:,:) => null()
      !> Cabs MO coefficients
-     real(realk),pointer :: cabsMOs(:,:) => null()     
+     real(realk),pointer :: Ccabs(:,:) => null()     
      !> Core MO coefficients 
      real(realk),pointer :: CoreMO(:,:) => null()
+     !> RI Mo coefficients
+     real(realk),pointer :: Cri(:,:) => null()
+
 
      !> AO Fock matrix
      real(realk), pointer :: fock(:,:) => null()
@@ -672,6 +891,23 @@ module dec_typedef_module
      !> Core-core block of Fock matrix in MO basis  (subset of ppfock when frozen core is NOT used)
      real(realk), pointer :: ccfock(:,:) => null()
 
+
+     !> Occ-Occ Fock matrix in MO basis
+     real(realk), pointer :: Fij(:,:) => null()
+
+     !> Occ-CABS (one-electron + coulomb matrix) in MO basis
+     real(realk), pointer :: hJir(:,:) => null() 
+     !> Cabs ri-Cabs ri exchange matrix in MO basis
+     real(realk), pointer :: Krs(:,:) => null() 
+     !> Cabs ri-Cabs ri Fock matrix in MO basis
+     real(realk), pointer :: Frs(:,:) => null() 
+     !> Virt-Cabs Fock matrix in MO basis
+     real(realk), pointer :: Fac(:,:) => null() 
+     !> Cabs ri-Occ Fock matrix in MO basis  
+     real(realk), pointer :: Frm(:,:) => null()
+     !> Cabs-(Occ+virt) Fock matrix in MO basis
+     real(realk), pointer :: Fcp(:,:) => null()
+    
      ! Information for local orbitals
      ! ******************************
      !> Local occupied MO coefficients
@@ -682,22 +918,6 @@ module dec_typedef_module
      real(realk), pointer :: ppfockLOC(:,:) => null()
      !> Virt-virt block of Fock matrix in local MO basis
      real(realk), pointer :: qqfockLOC(:,:) => null()
-
-
-     !> Integral program input
-     type(lsitem) :: mylsitem
-
-     ! End of EXPENSIVE BOX
-     ! ==============================================================
-
-     
-     ! Information for local orbitals
-     ! ******************************
-     !> Number of local occupied orbitals in fragment
-     integer,pointer :: noccLOC
-     !> Number of local unoccupied orbitals in fragment
-     integer,pointer :: nunoccLOC
-     
 
      ! Information used for fragment-adapted orbitals
      ! **********************************************
@@ -733,6 +953,33 @@ module dec_typedef_module
      !> Virt-virt block of Fock matrix in FO basis
      real(realk), pointer :: qqfockFA(:,:) => null()
 
+     ! Information used for pair-natural orbitals (this only applies to virtual
+     ! oribtals, the occupied orbitals will be kept in the local basis)
+     ! ******************************************
+     !> use PNO information?
+     logical :: PNOset
+     !> collection of transformation matrices from LO space to PNO space
+     type(PNOSpaceInfo), pointer :: CLocPNO(:)
+     !> number of spaces to consider
+     integer :: nspaces
+
+
+     !> Integral program input
+     type(lsitem) :: mylsitem
+
+     ! End of EXPENSIVE BOX
+     ! ==============================================================
+
+
+     ! Information for local orbitals
+     ! ******************************
+     !> Number of local occupied orbitals in fragment
+     integer,pointer :: noccLOC
+     !> Number of local unoccupied orbitals in fragment
+     integer,pointer :: nunoccLOC
+
+
+
 
      !> Information used only for the CC2 and CCSD models to describe
      !> long-range effects described by singles amplitudes properly.
@@ -759,7 +1006,9 @@ module dec_typedef_module
      ! INTEGRAL TIME ACCOUNTING
      ! ************************
      ! MPI: Time(s) used by local slaves
-     real(realk) :: slavetime
+     real(realk),dimension(ndecmodels) :: slavetime_work
+     real(realk),dimension(ndecmodels) :: slavetime_comm
+     real(realk),dimension(ndecmodels) :: slavetime_idle
 
 
   end type decfrag
@@ -983,17 +1232,17 @@ module dec_typedef_module
      logical,pointer :: dofragopt(:)
      ! Does job use estimated fragments?
      logical,pointer :: esti(:)
-
-     ! MPI statistics
-
-     !> Number of nodes in MPI slot (local master + local slaves)
-     integer,pointer:: nslaves(:)
      !> Number of occupied orbitals for given fragment (AOS)
      integer,pointer :: nocc(:)
      !> Number of unoccupied orbitals for given fragment (AOS)
      integer,pointer :: nunocc(:)
      !> Number of basis functions for given fragment
      integer,pointer :: nbasis(:)
+
+     ! MPI statistics
+
+     !> Number of nodes in MPI slot (local master + local slaves)
+     integer,pointer:: nslaves(:)
      !> Number of MPI tasks used for integral/transformation (nalpha*ngamma)
      integer,pointer :: ntasks(:)
      !> FLOP count for all local nodes (local master + local slaves)
@@ -1001,37 +1250,50 @@ module dec_typedef_module
      !> Time used for local master
      real(realk),pointer :: LMtime(:)
      !> Measure of load distribution:
-     !> { (total times for nodes) / (time for local master) } / number of nodes
-     real(realk),pointer :: load(:)
+     !> ( work and communication times for nodes) / {(time for local master) * (number of nodes) }
+     !> ( work times for nodes) / {(time for local master) * (number of nodes) }
+     real(realk),pointer :: commt(:)
+     real(realk),pointer :: workt(:)
+     real(realk),pointer :: idlet(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
-  TYPE traceback
-     INTEGER :: na,ng,ident
-  END TYPE traceback
+  type traceback
+     integer :: na,ng,ident
+  end type traceback
 
+  type int_batch
+     integer :: nbatches,max_dim
+     integer, pointer :: orb2batch(:)
+     integer, pointer :: batchdim(:)
+     integer, pointer :: batchsize(:)
+     integer, pointer :: batchindex(:)
+     type(batchtoorb), pointer :: batch2orb(:)
+  end type int_batch
 
   !> Integral batch handling
-  TYPE batchTOorb
-     INTEGER,pointer :: orbindex(:)
-     INTEGER :: norbindex
-  END TYPE batchTOorb
+  type batchTOorb
+     integer,pointer :: orbindex(:)
+     integer :: norbindex
+  end type batchTOorb
 
   !> MO Integral batch info:
   type MObatchInfo
 
-    !> number of batches:
-    integer :: nbatch
-    !> dimension of each of the nbatch1:
-    integer, pointer :: dimInd1(:) 
-    !> dimension of each of the nbatch2:
-    integer, pointer :: dimInd2(:)
-    !> MO index corresponding to the starting point of each batch:
-    integer, pointer :: StartInd1(:) 
-    integer, pointer :: StartInd2(:) 
-    !> starting index of each batch in the packed array:
-    integer, pointer :: packInd(:) 
-    
+     !> number of batches:
+     integer :: nbatch
+     !> dimension of each of the nbatch1:
+     integer, pointer :: dimInd1(:) 
+     !> dimension of each of the nbatch2:
+     integer, pointer :: dimInd2(:)
+     !> MO index corresponding to the starting point of each batch:
+     integer, pointer :: StartInd1(:) 
+     integer, pointer :: StartInd2(:) 
+     !> Total dimension of the batch
+     integer, pointer :: dimTot(:)
+     !> Tile index for pdm arrays
+     integer, pointer :: tileInd(:,:)
+
   end type MObatchInfo
 
   !> AO Integral batch info:
@@ -1069,5 +1331,41 @@ module dec_typedef_module
   type(DECsettings) :: DECinfo
 
 
+  !> Space information specifically designed to keep PNO spaces nicely together
+  !> IMPORTANT:
+  !> if you modify this structure, also modify bufferadd_PNOSpaceInfo_struct in decmpi.F90
+  type PNOSpaceInfo
+
+     integer              :: rpd                    ! corresponding dimension of the (restricted) pair space [i(<=)j], read reduced pair dimension
+
+     integer              :: n                      ! number of occ orbitals in the corresponding space
+     integer, pointer     :: iaos(:) => null()      ! orbital index in the aos space
+
+     logical              :: s_associated           ! indicate whether s matrices are associated, i.e. a SVD  d = s1 d_new  s2^T  
+     integer              :: ns1,ns2,red1,red2      ! dimensions, depending on s_associated
+     real(realk), pointer :: d(:,:)  => null()      ! density matrix or overlap matrix. if s_associated d = d_new, either (ns1,ns2) or (red1,red2)
+     real(realk), pointer :: s1(:,:) => null()      ! the left unit matrix reduced to the kernel dimensions (ns1,red1)
+     real(realk), pointer :: s2(:,:) => null()      ! the right unit matrix reduced to the kernel dimensions (red2,ns2)
+
+     logical              :: allocd,contributes     ! logical to show the allocation and contribution status
+     logical              :: is_FA_space            ! save whether this refers to FA space, only important for trafo mats, not for overlap
+     logical              :: PS                     ! save wheter it is a triangular pair space
+  end type PNOSpaceInfo
+
+  type pno_query_info
+     integer(kind=8)          :: n_arrays
+     integer(kind=8), pointer :: size_array(:)
+  end type pno_query_info
+
+  ! Information for fragment AOS (intended to be used for fragments of reduced FOT)
+  ! Remember to modify mpicopy_fragmentAOStype if you add/remove someting here!
+  type fragmentAOS
+     !> Number of occupied and unoccupied orbitals in fragment AOS
+     integer          :: noccAOS, nunoccAOS
+     !> Occupied and unoccupied AOS indices
+     integer, pointer :: occAOSidx(:), unoccAOSidx(:)
+     !> FOT corresponding to orbital spaces
+     real(realk) :: FOT
+  end type fragmentAOS
 
 end module dec_typedef_module
