@@ -1,0 +1,64 @@
+#!/bin/sh
+
+info="
+   dft_qr_qlop
+   ------------------
+   Molecule:         H2O
+   Wave Functions:   DFT B3LYP / STO-3G
+   Test Purpose:     DFT B3LYP hyperpolarizability test w/ symmetry.
+"
+
+molecule="BASIS
+3-21G
+Water
+STO-3G basis
+    2    0  X  Z
+        8.    1
+O      .0000   -.2249  0.0000000000
+        1.    2
+H     1.4523    .8996   .0000000000
+H    -1.4523    .8996   .0000000000
+"
+
+dalton="**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.DFT
+ B3LYP
+*SCF INPUT
+*DFT INPUT
+.GRID TYPE
+LMG BLOCK
+**RESPONSE
+*QUADRATIC
+.QLOP
+.E3TEST
+.DIPLEN
+.FREQUENCIES
+2
+0 0.1
+**END OF DALTON INPUT
+"
+
+test="
+check_scf_energy DFT -75.935844970093 4e-9
+                     
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y' -15.36418364 1e-2
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y' -17.25772592 1e-2
+check_hyperpolarizabilities 0.1 0.1 'Y;Y,Y' -22.61634941 1e-2
+check_hyperpolarizabilities 0.0 0.0 'Y;X,X' -21.38430844 1e-2
+check_hyperpolarizabilities 0.0 0.1 'X;Y,X' -22.86902589 1e-2
+check_hyperpolarizabilities 0.1 0.0 'X;Y,X' -23.17289327 1e-2
+check_hyperpolarizabilities 0.1 0.1 'X;Y,X' -26.80630318 1e-2
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'  -1.29484755 1e-3
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y'  -1.65164644 1e-3
+check_hyperpolarizabilities 0.0 0.1 'Z;Z,Y'  -1.50263285 1e-3
+check_hyperpolarizabilities 0.1 0.1 'Z;Z,Y'  -2.82628015 1e-3
+check_hyperpolarizabilities 0.1 0.0 'Y;X,X' -23.17289419 1e-2
+check_hyperpolarizabilities 0.1 0.1 'Y;X,X' -28.37918504 1e-2
+check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'  -1.50263302 1e-3
+check_hyperpolarizabilities 0.1 0.1 'Y;Z,Z'  -1.92230587 1e-3
+"
+
+. ./functions || { echo "'functions' library not found." ; exit 1; }
+check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"
