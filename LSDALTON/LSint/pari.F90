@@ -510,10 +510,12 @@ CONTAINS
   !> \param auxCSfull Screening matrix G_alpha = log( sqrt( (alpha|alpha) ) )
   !> \param lupri Default print-unit for output
   !> \param luerr Default print-unit for termination
-  subroutine getGQcoeff(GQ_nusigma,iAtomA,iAtomB,iAtomC,orbitalInfo,&
-       setting,molecule,atoms_A,regCSfull,auxCSfull,lupri,luerr)
+  subroutine getGQcoeff(GQ_nusigma,calpha_ab_mo,iAtomA,iAtomB,iAtomC,&
+       orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
+       lupri,luerr)
     implicit none
     real(realk),pointer                   :: GQ_nusigma(:,:,:)
+    Type(mat3d),pointer                   :: calpha_ab_mo(:,:)
     integer,intent(in)                    :: iAtomA,iAtomB,iAtomC
     type(molecularorbitalinfo),intent(in) :: orbitalInfo
     TYPE(LSSETTING),intent(inout)         :: SETTING
@@ -574,7 +576,8 @@ CONTAINS
     call pari_alphaBeta(alpha_beta,setting,molecule,atoms_A,iAtomA,iAtomB,&
          nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
     
-    extracted_alpha_beta(1:nAuxA,1:nAuxB) = alpha_beta(1:nAuxA,nAuxAB-nAuxB+1:nAuxAB)
+    extracted_alpha_beta(1:nAuxA,1:nAuxB) = &
+         alpha_beta(1:nAuxA,nAuxAB-nAuxB+1:nAuxAB)
     call mem_dealloc(alpha_beta)
     
     if (.not.(iAtomB.eq.iAtomC)) then
@@ -591,9 +594,17 @@ CONTAINS
     !nu in Reg(B) and sigma in Reg(C)
     call mem_alloc(calpha_ab_block,nAuxBC,nRegB,nRegC)
     calpha_ab_block = 0E0_realk
-    call getPariCoefficientsBlock(lupri,luerr,setting,iAtomB,iAtomC,&
+    if (associated(calpha_ab_mo(iAtomB,iAtomC)%elements)) then
+       calpha_ab_block = calpha_ab_mo(iAtomB,iAtomC)%elements
+       write(lupri,*) 'calpha_ab_block read from memory',iAtomB,iAtomC
+    else
+       call init_mat3d(calpha_ab_mo(iAtomB,iAtomC),nAuxBC,nRegB,nRegC)
+       call getPariCoefficientsBlock(lupri,luerr,setting,iAtomB,iAtomC,&
        Calpha_ab_block,orbitalInfo,regCSfull,auxCSfull,molecule,atoms_A,&
        minEigV,maxEigV,conditionNum)
+       calpha_ab_mo(iAtomB,iAtomC)%elements(:,:,:)=calpha_ab_block(:,:,:)
+       write(lupri,*) 'calpha_ab_block computed',iAtomB,iAtomC
+    endif
     
     !Get three-center integrals (Q|nu sigma) with Q in Aux(A), nu in Reg(B) and 
     !sigma in Reg(C)
@@ -609,6 +620,81 @@ CONTAINS
     
   end subroutine getGQcoeff
 
+  subroutine get_chol_coeff(Dfull,MOcoeff,molecule,lupri,luerr)
+    implicit none
+    type(moleculeInfo),intent(in)  :: molecule
+    Real(realk),intent(in)         :: Dfull(molecule%nBastReg,molecule%nBastReg,1)
+    Real(realk),intent(inout)      :: MOcoeff(:,:)
+    Integer,intent(in)             :: LUPRI,LUERR
+
+    Integer                        :: nBastReg,nOcc,i,j
+    Integer                        :: RankA,INFO
+    Integer,pointer                :: PIV(:)
+    Real(realk)                    :: chol_tol,sum
+    Real(realk),pointer            :: matA(:,:),Work(:),matL(:,:),matL2(:,:)
+
+    nBastReg=molecule%nBastReg
+    nOcc=molecule%nelectrons/2
+    write(lupri,'(/A,i4,A/)') 'The molecule contains',nOcc,' occupied orbitals'
+    chol_tol=1.0E-12_realk
+    call mem_alloc(matA,nBastReg,nBastReg)
+    call mem_alloc(PIV,nBastReg)
+    call mem_alloc(work,2*nBastReg)
+    INFO=-1
+    RankA=0
+    PIV(:)=0
+    matA(:,:) = Dfull(:,:,1)
+    call dpstrf('L',nBastReg,matA,nBastReg,PIV,RankA,chol_tol,Work,INFO)
+    write(lupri,'(/A,i4/)') 'After Choleski: MatA of Rank',RankA
+    do i=1,nBastReg
+       write(lupri,*) matA(i,:)
+    enddo
+    write(lupri,'(/A/)') 'After Choleski: PIV'
+    write(lupri,*) PIV
+    
+    do j=1,nOcc
+       do i=j,nBastReg
+          MOcoeff(PIV(i),j)=MatA(i,j)
+       enddo
+    enddo
+    write(lupri,'(/A/)') 'After Choleski MOcoeff'
+    do i=1,nBastReg
+       write(lupri,*) MOcoeff(i,:)
+    enddo
+    write(lupri,*) 'Info',info
+    
+    call mem_alloc(matL,nBastReg,nOcc)
+    matL=0E0_realk
+    do j=1,nOcc
+       do i=j,nBastReg
+          MatL(i,j)=MatA(i,j)
+       enddo
+    enddo
+    write(lupri,'(/A/)') 'After Choleski: MatL'
+    do i=1,nBastReg
+       write(lupri,*) matL(i,:)
+    enddo
+    call mem_alloc(matL2,nOcc,nOcc)
+    call dgemm('T','N',nOcc,nOcc,nBastReg,1E0_realk,matL,nBastReg,matL,nBastReg,0E0_realk,matL2,nOcc)
+
+    write(lupri,'(/A/)') 'After Choleski: MatL2'
+    do i=1,nBastReg
+       write(lupri,*) matL2(i,:)
+    enddo
+    
+    sum=0E0_realk
+    do i=1,nOcc
+       sum = sum+matL2(i,i)
+    enddo
+    write(lupri,*) sum
+    
+    call mem_dealloc(matL)
+    call mem_dealloc(matL2)
+    
+    call mem_dealloc(PIV)
+    call mem_dealloc(matA)
+    call mem_dealloc(work)
+  end subroutine get_chol_coeff
 
 
   !> \brief Constructs the density coefficients centered on one atom A for PARI-K

@@ -1415,7 +1415,7 @@ contains
     Integer                    :: usemat
     Integer                    :: iAtomA,iAtomB,iAtomC,iAtomD,iAtom
     TYPE(MAT3D),pointer        :: calpha_ab(:)
-    Real(realk),pointer        :: dalpha_ad(:,:,:),GQ_nusigma(:,:,:)
+    Real(realk),pointer        :: dalpha_ad(:,:,:)
 
     TYPE(MATRIX)               :: matrixK
     Integer                    :: nRegA,nRegB,nRegC,nRegD,nAuxA,nAuxB,nAuxC,nAuxD
@@ -1423,7 +1423,8 @@ contains
     Integer                    :: startAuxA,startAuxB,startAuxC,startAuxD
     Integer                    :: endRegA,endRegB,endRegC,endRegD
     Integer                    :: endAuxA,endAuxB,endAuxC,endAuxD
-    Integer                    :: iAlpha,iRegA,iRegB,iRegC,iRegD
+    Integer                    :: iAlpha,iRegA,iRegB,iRegC,iRegD,iAuxA
+    Integer                    :: nElec,nOcc,iOcc
     !
     TYPE(AtomSparseMat)        :: alphaBeta
     TYPE(MoleculeInfo),pointer :: molecule
@@ -1433,10 +1434,15 @@ contains
     TYPE(LSTENSOR),pointer     :: regCSfull,auxCSfull
     !
     Real(realk)                :: threshold
-    Integer,pointer            :: neighbourA(:,:)
+    Logical,pointer            :: neighbourA(:,:)
     Real(realk)                :: minEigv,maxEigv,conditionNum
     Type(moleculeinfo),pointer :: atoms_A(:)
-    Real(realk),pointer        :: calpha_ab_block(:,:,:)
+    Type(mat3d),pointer        :: calpha_ab_mo(:,:)
+    Real(realk),pointer        :: GQ_nusigma(:,:,:),GQ_sigmanu(:,:,:)
+    Real(realk),pointer        :: MOcoeff(:,:),calpha_ab_block(:,:,:)
+    Real(realk),pointer        :: MOmatK(:,:)
+    Real(realk),pointer        :: matH_Q(:,:,:),matD_Q(:,:,:)
+    Real(realk),pointer        :: tmp(:,:,:)
 
     IF (ndmat.GT.1) THEN
        WRITE(*,*)     &
@@ -1515,50 +1521,333 @@ contains
     call mem_alloc(Kfull_2cContrib,nBastReg,nBastReg,1,1,nmat)
     call ls_DZERO(Kfull_3cContrib,nBastReg*nBastReg*nmat)
     call ls_DZERO(Kfull_2cContrib,nBastReg*nBastReg*nmat)
-    
+
     !--- MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
     if (setting%scheme%MOPARI_K) then
+       call mem_alloc(MOmatK,nBastReg,nBastReg)
+       MOmatK=0E0_realk
+
+       !Get the MO coeff by Cholesky Decomposition of the Density Matrix
+       nElec=molecule%nelectrons
+       if (mod(nElec,2).gt.0) then
+          call lsquit('PARI-K only implemented in the restricted case',-1)
+       else
+          nOcc=nElec/2
+       endif
+       call mem_alloc(MOcoeff,nBastReg,nOcc)
+       MOcoeff=0E0_realk
+       call get_chol_coeff(Dfull(:,:,1),MOcoeff,molecule,lupri,luerr)
+
        ! --- Set up domains of atoms
        ! --- NeighbourA(iAtomA,1:M) contains the indices of the M atoms B 
        ! --- Such that max(G_ab) > threshold with a in Reg(A) and b in Reg(B)
        ! --- the rest of each line is zero
-       allocate(atoms_A(nAtoms))  ! --- each molecule made of only one atom   
+       allocate(atoms_A(nAtoms))  ! --- each molecule made of only one atom  
+       allocate(calpha_ab_mo(nAtoms,nAtoms))
+       do iAtomA=1,nAtoms
+          do iAtomB=1,nAtoms
+             nullify(calpha_ab_mo(iAtomA,iAtomB)%elements)
+          enddo
+       enddo
        call pari_set_atomic_fragments(molecule,atoms_A,nAtoms,lupri)
        call mem_alloc(neighbourA,nAtoms,nAtoms)
-       neighbourA(:,:) = 0
+       neighbourA(:,:) = .false.
        call get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
             atoms_A,lupri,luerr,setting)
+       write(lupri,'(/A/)') 'neighbour'
+       do iAtomA=1,nAtoms
+          write(lupri,*) neighbourA(iAtomA,:)
+       enddo
        ! Loop over A
        do iAtomA=1,nAtoms
+          write(lupri,*) 'Begin loop for Atom',iAtomA
           call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
-               nAuxA,startAuxA,endAuxA)                
+               nAuxA,startAuxA,endAuxA) 
+
+          call mem_alloc(matH_Q,nBastReg,nAuxA,nOcc)
+          matH_Q=0E0_realk
           ! Loop over B
           do iAtomB=1,nAtoms
              call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
                   nAuxB,startAuxB,endAuxB)
+
+             !Loop over C<>B (neighbours of B)
              iAtom=1
-             !Loop over C (neighbours of B)
-             do while (neighbourA(iAtomB,iAtom).gt.0)
-                iAtomC=neighbourA(iAtomB,iAtom)
-                iAtom=iAtom+1
-                call getAtomicOrbitalInfo(orbitalInfo,iAtomC,nRegC,startRegC,endRegC,&
-                  nAuxC,startAuxC,endAuxC)
-                ! --- Construct GQ_nusigma, Q in Aux(A), nu in Reg(B), sigma in Reg(C)
-                call mem_alloc(GQ_nusigma,nAuxA,nRegB,nRegC)
-                call getGQcoeff(GQ_nusigma,iAtomA,iAtomB,iAtomC,orbitalInfo,&
-                     setting,molecule,atoms_A,regCSfull,auxCSfull,lupri,luerr)
-                call mem_dealloc(GQ_nusigma)
-              Enddo !Loop over C
-         Enddo !Loop over B 
+             do iAtomC=iAtomB,nAtoms
+                if (neighbourA(iAtomB,iAtomC)) then
+                   call getAtomicOrbitalInfo(orbitalInfo,iAtomC,nRegC,&
+                        startRegC,endRegC,nAuxC,startAuxC,endAuxC)
+
+                   ! --- Construct GQ_nusigma
+                   ! --- Q in Aux(A), nu in Reg(B), sigma in Reg(C)
+                   call mem_alloc(GQ_nusigma,nAuxA,nRegB,nRegC)
+                   call getGQcoeff(GQ_nusigma,calpha_ab_mo,iAtomA,iAtomB,iAtomC,&
+                        orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
+                        lupri,luerr)
+
+                   ! --- Construct HQ_nui Q in Aux(A), nu in Reg(B), i in Occ
+                   call mem_alloc(tmp,nAuxA,nRegB,nOcc)
+                   call dgemm('N','N',nAuxA*nRegB,nOcc,nRegC,1.0E0_realk,GQ_nusigma,&
+                        nAuxA*nRegB,MOcoeff(StartRegC:EndRegC,:),nRegC,0.0E0_realk,&
+                        tmp,nAuxA*nRegB)
+
+                   !write(lupri,'(/A,i2,i2,i2/)') 'tmp',iAtomA,iAtomB,iAtomC
+                   !do iOcc=1,nOcc
+                   !   write(lupri,*) tmp(1,:,iOcc)
+                   !enddo
+
+                   do iRegB=1,nRegB
+                      do iAuxA=1,nAuxA
+                         matH_Q(iRegB+StartRegB-1,iAuxA,:)=&
+                              matH_Q(iRegB+StartRegB-1,iAuxA,:)+tmp(iAuxA,iRegB,:)
+                      enddo
+                   enddo
+                   call mem_dealloc(tmp)
+
+                   !write(lupri,'(/A,i2,i2,i2/)') 'matH_Q',iAtomA,iAtomB,iAtomC 
+                   !do iOcc=1,nOcc
+                   !   write(lupri,*) matH_Q(:,1,iOcc)
+                   !enddo
+
+                   if (.not.(iAtomB.eq.iAtomC)) then
+                      call mem_alloc(GQ_sigmanu,nAuxA,nRegC,nRegB)
+                      do iRegB=1,nRegB
+                         do iRegC=1,nRegC
+                            GQ_sigmanu(:,iRegC,iRegB)=GQ_nusigma(:,iRegB,iRegC)
+                         enddo
+                      enddo
+                      call mem_alloc(tmp,nAuxA,nRegC,nOcc)
+                      call dgemm('N','N',nAuxA*nRegC,nOcc,nRegB,1.0E0_realk,&
+                           GQ_sigmanu,nAuxA*nRegC,MOcoeff(StartRegB:EndRegB,:),&
+                           nRegB,0.0E0_realk,tmp,nAuxA*nRegC)
+                      !write(lupri,'(/A,i2,i2,i2/)') 'tmp',iAtomA,iAtomC,iAtomB 
+                      !do iOcc=1,nOcc
+                      !   write(lupri,*) tmp(1,:,iOcc)
+                      !enddo
+
+                      do iRegC=1,nRegC
+                         do iAuxA=1,nAuxA
+                            matH_Q(iRegC+StartRegC-1,iAuxA,:)=&
+                                 matH_Q(iRegC+StartRegC-1,iAuxA,:)+tmp(iAuxA,iRegC,:)
+                         enddo
+                      enddo
+                      call mem_dealloc(tmp)
+                      call mem_dealloc(GQ_sigmanu)
+
+                      !write(lupri,'(/A,i2,i2,i2/)') 'matH_Q',iAtomA,iAtomC,iAtomB 
+                      !do iOcc=1,nOcc
+                      !   write(lupri,*) matH_Q(:,1,iOcc)
+                      !enddo
+                   endif
+                   call mem_dealloc(GQ_nusigma)
+                endif !C is in neighbour(B)
+             Enddo !Loop over C
+          Enddo !Loop over B
+          write(lupri,'(/A,i2/)') 'matH_Q AtomA',iAtomA
+          do iOcc=1,nOcc
+             write(lupri,*) matH_Q(:,1,iOcc)
+          enddo
+
+          call mem_alloc(matD_Q,nOcc,nAuxA,nBastReg)
+          matD_Q=0E0_realk
+          ! Loop over B (neighbours of A)
+          do iAtomB=1,nAtoms
+             if (iAtomA.eq.iAtomB) then !A=B
+                do iAtomC=1,nAtoms
+                   if (neighbourA(iAtomA,iAtomC)) then !C >=A
+                      call getAtomicOrbitalInfo(orbitalInfo,iAtomC,nRegC,&
+                        startRegC,endRegC,nAuxC,startAuxC,endAuxC)
+                      call mem_alloc(calpha_ab_block,nAuxA,nRegA,nRegC)
+                      calpha_ab_block = &
+                           calpha_ab_mo(iAtomA,iAtomc)%elements(1:nAuxA,:,:)
+                      call mem_alloc(tmp,nAuxA,nRegA,nOcc)
+
+                      call dgemm('N','N',nAuxA*nRegA,nOcc,nRegC,1.0E0_realk,&
+                           calpha_ab_block,nAuxA*nRegA,MOcoeff(StartRegC:EndRegC,:),&
+                           nRegC,0.0E0_realk,tmp,nAuxA*nRegA)
+                      do iRegA=1,nRegA
+                         do iAuxA=1,nAuxA
+                            do iOcc=1,nOcc
+                               matD_Q(iOcc,iAuxA,iRegA+StartRegA-1) = &
+                                    matD_Q(iOcc,iAuxA,iRegA+StartRegA-1) + &
+                                    tmp(iAuxA,iRegA,iOcc)
+                            enddo
+                         enddo
+                      enddo
+
+                      !write(lupri,'(/A,i2,i2,i2/)') 'tmp',iAtomA,iAtomB,iAtomC
+                      !do iOcc=1,nOcc
+                      !   write(lupri,*) tmp(1,:,iOcc)
+                      !enddo
+                      
+                      call mem_dealloc(tmp)
+                      call mem_dealloc(calpha_ab_block)
+                      
+                      !write(lupri,'(/A,i2,i2,i2/)') 'matD_Q',iAtomA,iAtomB,iAtomC
+                      !do iOcc=1,nOcc
+                      !   write(lupri,*) matD_Q(iOcc,1,:)
+                      !enddo
+                   elseif (neighbourA(iAtomC,iAtomA)) then !C < A
+                      call getAtomicOrbitalInfo(orbitalInfo,iAtomC,nRegC,&
+                        startRegC,endRegC,nAuxC,startAuxC,endAuxC)
+                      call mem_alloc(calpha_ab_block,nAuxA,nRegA,nRegC)
+                      do iRegA=1,nRegA
+                         do iRegC=1,nRegC
+                            calpha_ab_block(:,iRegA,iRegC) = &
+                                 calpha_ab_mo(iAtomC,iAtomA)%elements(nAuxC+1:nAuxC+nAuxA,iRegC,iRegA)
+                         enddo
+                      enddo
+                      call mem_alloc(tmp,nAuxA,nRegA,nOcc)
+
+                      call dgemm('N','N',nAuxA*nRegA,nOcc,nRegC,1.0E0_realk,&
+                           calpha_ab_block,nAuxA*nRegA,MOcoeff(StartRegC:EndRegC,:),&
+                           nRegC,0.0E0_realk,tmp,nAuxA*nRegA)
+                      do iRegA=1,nRegA
+                         do iAuxA=1,nAuxA
+                            do iOcc=1,nOcc
+                               matD_Q(iOcc,iAuxA,iRegA+StartRegA-1) = &
+                                    matD_Q(iOcc,iAuxA,iRegA+StartRegA-1) + &
+                                    tmp(iAuxA,iRegA,iOcc)
+                            enddo
+                         enddo
+                      enddo
+
+                      !write(lupri,'(/A,i2,i2,i2/)') 'tmp',iAtomA,iAtomB,iAtomC
+                      !do iOcc=1,nOcc
+                      !   write(lupri,*) tmp(1,:,iOcc)
+                      !enddo
+                      
+                      call mem_dealloc(tmp)
+                      call mem_dealloc(calpha_ab_block)
+                      
+                      !write(lupri,'(/A,i2,i2,i2/)') 'matD_Q',iAtomA,iAtomB,iAtomC
+                      !do iOcc=1,nOcc
+                      !   write(lupri,*) matD_Q(iOcc,1,:)
+                      !enddo
+                   endif
+                enddo
+             elseif (neighbourA(iAtomA,iAtomB)) then ! B > A 
+                call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
+                     nAuxB,startAuxB,endAuxB)
+
+                call mem_alloc(calpha_ab_block,nAuxA,nRegB,nRegA)
+                do iRegA=1,nRegA
+                   do iRegB=1,nRegB
+                      calpha_ab_block(:,iRegB,iRegA) = &
+                           calpha_ab_mo(iAtomA,iAtomB)%elements(1:nAuxA,iRegA,iRegB)
+                   enddo
+                enddo
+
+                call mem_alloc(tmp,nAuxA,nRegB,nOcc)
+                call dgemm('N','N',nAuxA*nRegB,nOcc,nRegA,1.0E0_realk,calpha_ab_block,&
+                     nAuxA*nRegB,MOcoeff(StartRegA:EndRegA,:),nRegA,0.0E0_realk,&
+                     tmp,nAuxA*nRegB)
+
+                !write(lupri,'(/A,i2,i2,i2/)') 'tmp',iAtomA,iAtomB
+                !do iOcc=1,nOcc
+                !   write(lupri,*) tmp(1,:,iOcc)
+                !enddo
+
+                do iRegB=1,nRegB
+                   do iAuxA=1,nAuxA
+                      do iOcc=1,nOcc
+                         matD_Q(iOcc,iAuxA,iRegB+StartRegB-1)=&
+                              matD_Q(iOcc,iAuxA,iRegB+StartRegB-1)+tmp(iAuxA,iRegB,iOcc)
+                      enddo
+                   enddo
+                enddo
+
+                !write(lupri,'(/A,i2,i2,i2/)') 'matD_Q',iAtomA,iAtomB
+                !do iOcc=1,nOcc
+                !   write(lupri,*) matD_Q(iOcc,1,:)
+                !enddo
+
+                call mem_dealloc(tmp)
+                call mem_dealloc(calpha_ab_block)
+
+             elseif (neighbourA(iAtomB,iAtomA)) then ! B < A
+                
+                call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
+                     nAuxB,startAuxB,endAuxB)
+                
+                call mem_alloc(calpha_ab_block,nAuxA,nRegB,nRegA)
+                
+                calpha_ab_block(:,:,:) = &
+                     calpha_ab_mo(iAtomB,iAtomA)%elements(nAuxB+1:nAuxB+nAuxA,:,:)
+                                   
+                !write(lupri,'(/A,i2,i2,i2/)') 'c_alpha',iAtomA,iAtomB
+                !write(lupri,*) calpha_ab_block
+               
+                call mem_alloc(tmp,nAuxA,nRegB,nOcc)
+                call dgemm('N','N',nAuxA*nRegB,nOcc,nRegA,1.0E0_realk,calpha_ab_block,&
+                     nAuxA*nRegB,MOcoeff(StartRegA:EndRegA,:),nRegA,0.0E0_realk,&
+                     tmp,nAuxA*nRegB)
+
+                !write(lupri,'(/A,i2,i2,i2/)') 'tmp',iAtomA,iAtomB
+                !do iOcc=1,nOcc
+                !   write(lupri,*) tmp(1,:,iOcc)
+                !enddo
+
+                do iRegB=1,nRegB
+                   do iAuxA=1,nAuxA
+                      do iOcc=1,nOcc
+                         matD_Q(iOcc,iAuxA,iRegB+StartRegB-1)=&
+                              matD_Q(iOcc,iAuxA,iRegB+StartRegB-1)+tmp(iAuxA,iRegB,iOcc)
+                      enddo
+                   enddo
+                enddo
+
+                !write(lupri,'(/A,i2,i2,i2/)') 'matD_Q',iAtomA,iAtomB
+                !do iOcc=1,nOcc
+                !   write(lupri,*) matD_Q(iOcc,1,:)
+                !enddo
+
+                call mem_dealloc(tmp)
+                call mem_dealloc(calpha_ab_block)
+                
+             endif
+          enddo !Loop over B
+
+          write(lupri,'(/A/)') 'matD_Q AtomA'
+          do iOcc=1,nOcc
+             write(lupri,*) matD_Q(iOcc,1,:)
+          enddo
+
+          call dgemm('N','N',nBastReg,nBastReg,nAuxA*nOcc,1.0E0_realk,matH_Q,nBastReg,&
+               matD_Q,nAuxA*nOcc,1.0E0_realk,MOmatK,nBastReg)
+
+          write(lupri,'(/A/)') 'MOmatK'
+          do iRegA=1,nBastReg
+             write(lupri,*) MOMatK(iRegA,:)
+          enddo
+
+          call mem_dealloc(matD_Q)
+          call mem_dealloc(matH_Q)
+          write(lupri,*) 'Loop finished for Atom',iAtomA
        Enddo !Loop A
        
-       !Get the MO coeff by Cholesky Decomposition of the Density Matrix
-       !all mat_chol(Dfull(:,:,1),MOcoeff)
-
-       call pari_free_atomic_fragments(atoms_A,nAtoms)
-       deallocate(atoms_A) 
+       
+       call mem_dealloc(MOcoeff)
        call mem_dealloc(neighbourA)
+       call pari_free_atomic_fragments(atoms_A,nAtoms)
+       deallocate(calpha_ab_mo)
+       deallocate(atoms_A) 
 
+       ! --- Construct K_munu from L_munu
+       do iRegA=1,nBastReg
+          do iRegB=iRegA,nBastReg
+             MOMatK(iRegA,iRegB) =  MOMatK(iRegA,iRegB) +  MOMatK(iRegB,iRegA)
+             MOMatK(iRegB,iRegA) =  MOMatK(iRegA,iRegB)
+          enddo
+       enddo
+
+       write(lupri,'(/A/)') 'Final MOmatK'
+       do iRegA=1,nBastReg
+          write(lupri,*) MOMatK(iRegA,:)
+       enddo
+       
+       deallocate(MOmatK)
+       call lsquit('Implementation not finished',-1)
     else !PARI_K
 
        ! --- Build the full huge matrices (alpha | beta)
@@ -1627,7 +1916,12 @@ contains
           ! --- add the contributions of the K matrix (K_ac = K_ac + K_ca = K_ca )
           Kfull_3cContrib(:,:,1,1,idmat) = Kfull_3cContrib(:,:,1,1,idmat) &
                + Kfull_2cContrib(:,:,1,1,idmat)
+          
           call symmetrizeKfull_3cContrib(Kfull_3cContrib(:,:,1,1,idmat),nBastReg)
+          write(lupri,'(/A/)') 'Final MOmatK'
+          do iRegA=1,nBastReg
+             write(lupri,*) Kfull_3cContrib(iRegA,:,1,1,idmat)
+          enddo
        ENDDO
 
        call freePariCoefficients(calpha_ab,orbitalInfo%nAtoms)
@@ -1655,7 +1949,7 @@ contains
     call mem_dealloc(Kfull_3cContrib)
     call mem_dealloc(Kfull_2cContrib)
     call mem_dealloc(Dfull)
-    
+
 
     !call free_AtomSparseMat(alphaBeta)
     CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
@@ -1678,7 +1972,7 @@ contains
 subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
      atoms,lupri,luerr,setting)
   implicit none
-  Integer,pointer                       :: neighbourA(:,:)
+  Logical,pointer                       :: neighbourA(:,:)
   Type(molecularorbitalinfo),intent(in) :: orbitalInfo
   Type(lstensor),pointer                :: regCSfull
   Real(realk)                           :: threshold
@@ -1694,7 +1988,7 @@ subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
   Integer                               :: nAuxB,startAuxB,endAuxB
   TYPE(moleculeinfo),pointer            :: AB
   TYPE(moleculeinfo),target             :: ABtarget
-  Integer                               :: nAux,iAtomAB
+  Integer                               :: nAux
   TYPE(LSTENSOR),pointer                :: auxCSab,regCSab
   INTEGER                               :: atomsAB(2),dummyAtoms(1)
   Integer(kind=short)                   :: maxgab
@@ -1704,9 +1998,8 @@ subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
        call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
             nAuxA,startAuxA,endAuxA)
        !Case A=B
-       neighbourA(iAtomA,1)=iAtomA
+       neighbourA(iAtomA,iAtomA)=.true.
        !Case A<>B
-       iAtomAB=2
        do iAtomB=iAtomA+1,nAtoms
           call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
                nAuxB,startAuxB,endAuxB)          
@@ -1720,8 +2013,7 @@ subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
                nRegA,nRegB,.FALSE.)
           maxgab=regCSab%maxgabelm
           if (maxgab.GE.(CEILING(LOG10(threshold)))) then
-             neighbourA(iAtomA,iAtomAB)=iAtomB
-             iAtomAB=iAtomAB+1
+             neighbourA(iAtomA,iAtomB)=.true.
           endif
           call lstensor_free(regCSab)
           DEALLOCATE(regCSab)
