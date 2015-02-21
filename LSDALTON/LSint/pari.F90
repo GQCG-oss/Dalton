@@ -141,6 +141,120 @@ CONTAINS
     !call LSQUIT('Testing eigenvalues of the (alpha|beta) matrices - quitting getPariCoefficients()',-1)
   END SUBROUTINE getPariCoefficients
 
+  !> \brief Returns the PARI fitting coefficients C_Q^mulambda 
+  !> Q in Aux(AtomQ), mu in Reg(AtomMu) and lambda in Reg(AtomLambda)
+  !> \author E. Rebolini
+  !> \date 2015-02
+  !> \param MatCoeff
+  !> \param calpha_ab_mo
+  !> \param iAtomQ
+  !> \param iAtomMu
+  !> \param iAtomLambda 
+  !> \param orbitalInfo Information about the molecular orbitals (dimensions)
+  !> \param setting Contains information about the integral settings
+  !> \param molecule Description of the molecule
+  !> \param atoms_a Each molecule made of only one atom 
+  !> \param regCSfull Screening matrix G_ab = log( sqrt( (ab|ab) ) )
+  !> \param auxCSfull Screening matrix G_alpha = log( sqrt( (alpha|alpha) ) )
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
+  subroutine getPariCoeffABC(MatCoeff,calpha_ab_mo,iAtomQ,iAtomMu,iAtomLambda,&
+       orbitalInfo,regCSfull,auxCSfull,molecule,atoms_a,&
+       lupri,luerr,setting)
+    implicit none
+    real(realk),pointer                   :: MatCoeff(:,:,:)
+    Type(mat3d),pointer                   :: calpha_ab_mo(:,:)
+    integer,intent(in)                    :: iAtomQ,iAtomMu,iAtomLambda
+    type(molecularorbitalinfo),intent(in) :: orbitalInfo
+    TYPE(LSSETTING),intent(inout)         :: SETTING
+    Integer,intent(in)                    :: LUPRI,LUERR
+    TYPE(LSTENSOR),pointer                :: regCSfull,auxCSfull
+    TYPE(MoleculeInfo),pointer            :: molecule
+    Type(moleculeinfo),pointer            :: atoms_A(:)
+   
+    integer                               :: nRegQ,startRegQ,endRegQ
+    integer                               :: nAuxQ,startAuxQ,endAuxQ
+    integer                               :: nRegMu,startRegMu,endRegMu
+    integer                               :: nAuxMu,startAuxMu,endAuxMu
+    integer                               :: nRegLambda,startRegLambda,endRegLambda
+    integer                               :: nAuxLambda,startAuxLambda,endAuxLambda
+    integer                               :: iRegMu,iRegLambda
+    Real(realk)                           :: minEigv,maxEigv,conditionNum
+    
+    minEigV = 9999.90E0_realk
+    maxEigV = -9999.90E0_realk
+    conditionNum = abs(maxEigV)/abs(minEigV)
+    
+    call getAtomicOrbitalInfo(orbitalInfo,iAtomQ,nRegQ,startRegQ,endRegQ,&
+         nAuxQ,startAuxQ,endAuxQ)
+    call getAtomicOrbitalInfo(orbitalInfo,iAtomMu,nRegMu,&
+         startRegMu,endRegMu,nAuxMu,startAuxMu,endAuxMu)
+    call getAtomicOrbitalInfo(orbitalInfo,iAtomLambda,nRegLambda,&
+         startRegLambda,endRegLambda,nAuxLambda,startAuxLambda,endAuxLambda)
+    
+    if (.not.((iAtomQ.eq.iAtomMu).or.(iAtomQ.eq.iAtomLambda))) then
+       nullify(MatCoeff)
+       write(lupri,*) 'Case Q<>mu<>lambda'
+    elseif (iAtomQ.eq.iAtomMu) then       
+       ! mu =< lambda: CQ_mulambda is read from memory
+       ! it was calculated during the construction of the GQcoeff
+       ! if the pointer is null there is a problem with the indices
+       ! As Q = mu, the first half of the auxiliary basis set is spanned
+       if (iAtomMu.le.iAtomLambda) then 
+          if (associated(calpha_ab_mo(iAtomMu,iAtomLambda)%elements)) then
+             MatCoeff=calpha_ab_mo(iAtomMu,iAtomLambda)%elements(1:nAuxQ,:,:)
+          else 
+             write(lupri,*) 'calpha_ab_mo',iAtomMu,iAtomLambda,'not available'
+          endif
+       ! mu > lambda: CQ_mulambda is obtained by symmetry
+       ! by permutation of mu and lambda   
+       ! As Q = mu, the second half of the auxiliary basis set is spanned
+       else
+          if (associated(calpha_ab_mo(iAtomLambda,iAtomMu)%elements)) then
+             do iRegMu=1,nRegMu
+                do iRegLambda=1,nRegLambda
+                   MatCoeff(:,iRegMu,iRegLambda) = & 
+                        calpha_ab_mo(iAtomLambda,iAtomMu)%elements&
+                        (nAuxLambda+1:nAuxLAmbda+nAuxMu,iRegLambda,iRegMu)
+                enddo
+             enddo
+          else 
+             write(lupri,*) 'calpha_ab_mo',iAtomMu,iAtomLambda,'not available'
+          endif
+       endif
+    elseif (iAtomQ.eq.iAtomLambda) then
+       ! mu =< lambda: CQ_mulambda is read from memory
+       ! it was calculated during the construction of the GQcoeff
+       ! if the pointer is null there is a problem with the indices
+       !As Q = lambda, the second half of the auxiliary basis set is spanned
+       if (iAtomMu.le.iAtomLambda) then 
+          if (associated(calpha_ab_mo(iAtomMu,iAtomLambda)%elements)) then
+             MatCoeff=calpha_ab_mo(iAtomMu,iAtomLambda)%elements&
+                  (nAuxMu+1:nAuxMu+nAuxLambda,:,:)
+          else 
+             write(lupri,*) 'calpha_ab_mo',iAtomMu,iAtomLambda,'not available'
+          endif
+       ! mu > lambda: CQ_mulambda is obtained by symmetry
+       ! by permutation of mu and lambda   
+       ! As Q = lambda, the first half of the auxiliary basis set is spanned
+       else
+          if (associated(calpha_ab_mo(iAtomLambda,iAtomMu)%elements)) then
+             do iRegMu=1,nRegMu
+                do iRegLambda=1,nRegLambda
+                   MatCoeff(:,iRegMu,iRegLambda) = & 
+                        calpha_ab_mo(iAtomLambda,iAtomMu)%elements&
+                        (1:nAuxLambda,iRegLambda,iRegMu)
+                enddo
+             enddo
+          else 
+             write(lupri,*) 'calpha_ab_mo',iAtomMu,iAtomLambda,'not available'
+          endif
+       endif
+    else
+       write(luerr,*) 'getPariCoeffABC',iAtomQ,iAtommu,iAtomLambda
+    endif
+  end subroutine getPariCoeffABC
+
   !> \brief Calculates the PARI fitting coefficients for a pair of atom AB
   !> \latexonly
   !>   $c_\alpha^{ab} = (\alpha|\beta)^{-1} (\beta|ab), \quad \alpha\in{A\cup B},
@@ -491,6 +605,10 @@ CONTAINS
     ENDDO
   END SUBROUTINE freePariCoefficients
 
+
+
+
+
   !> \brief Compute GQ_nusigma coefficients for MOPARI-K
   !> \latexonly
   !>   $G_Q^{\nu \sigma}=(Q | \nu \sigma)
@@ -620,6 +738,18 @@ CONTAINS
     
   end subroutine getGQcoeff
 
+
+
+
+  !> \brief Returns the Cholesky decomposition of matrix D 
+  !> pivoted back in the initial basis 
+  !> \author E. Rebolini
+  !> \date 2015-02
+  !> \param Dfull Density matrix
+  !> \param MOcoeff Cholesky decomposition of Dfull
+  !> \param molecule contains information on the molecule
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
   subroutine get_chol_coeff(Dfull,MOcoeff,molecule,lupri,luerr)
     implicit none
     type(moleculeInfo),intent(in)  :: molecule
@@ -631,7 +761,7 @@ CONTAINS
     Integer                        :: RankA,INFO
     Integer,pointer                :: PIV(:)
     Real(realk)                    :: chol_tol,sum
-    Real(realk),pointer            :: matA(:,:),Work(:),matL(:,:),matL2(:,:)
+    Real(realk),pointer            :: matA(:,:),Work(:)
 
     nBastReg=molecule%nBastReg
     nOcc=molecule%nelectrons/2
@@ -644,52 +774,14 @@ CONTAINS
     RankA=0
     PIV(:)=0
     matA(:,:) = Dfull(:,:,1)
+    
     call dpstrf('L',nBastReg,matA,nBastReg,PIV,RankA,chol_tol,Work,INFO)
-    write(lupri,'(/A,i4/)') 'After Choleski: MatA of Rank',RankA
-    do i=1,nBastReg
-       write(lupri,*) matA(i,:)
-    enddo
-    write(lupri,'(/A/)') 'After Choleski: PIV'
-    write(lupri,*) PIV
     
     do j=1,nOcc
        do i=j,nBastReg
           MOcoeff(PIV(i),j)=MatA(i,j)
        enddo
     enddo
-    write(lupri,'(/A/)') 'After Choleski MOcoeff'
-    do i=1,nBastReg
-       write(lupri,*) MOcoeff(i,:)
-    enddo
-    write(lupri,*) 'Info',info
-    
-    call mem_alloc(matL,nBastReg,nOcc)
-    matL=0E0_realk
-    do j=1,nOcc
-       do i=j,nBastReg
-          MatL(i,j)=MatA(i,j)
-       enddo
-    enddo
-    write(lupri,'(/A/)') 'After Choleski: MatL'
-    do i=1,nBastReg
-       write(lupri,*) matL(i,:)
-    enddo
-    call mem_alloc(matL2,nOcc,nOcc)
-    call dgemm('T','N',nOcc,nOcc,nBastReg,1E0_realk,matL,nBastReg,matL,nBastReg,0E0_realk,matL2,nOcc)
-
-    write(lupri,'(/A/)') 'After Choleski: MatL2'
-    do i=1,nBastReg
-       write(lupri,*) matL2(i,:)
-    enddo
-    
-    sum=0E0_realk
-    do i=1,nOcc
-       sum = sum+matL2(i,i)
-    enddo
-    write(lupri,*) sum
-    
-    call mem_dealloc(matL)
-    call mem_dealloc(matL2)
     
     call mem_dealloc(PIV)
     call mem_dealloc(matA)
