@@ -226,7 +226,7 @@ MODULE matrix_operations
                 K=1
                 do 
                    K=K+1
-                   IF(nproc.LE.K)EXIT
+                   IF(nproc+1.LE.K*K)EXIT
                    tmprow = nproc/K
                    tmpcol = K
                    IF(tmprow*tmpcol.EQ.nproc)THEN
