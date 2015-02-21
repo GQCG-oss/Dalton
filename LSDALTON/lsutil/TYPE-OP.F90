@@ -155,6 +155,7 @@ DALTON%ADMM_separateX= .FALSE.
 DALTON%ADMM_2ERI     = .FALSE.
 DALTON%PRINT_EK3     = .FALSE.
 DALTON%ADMMBASISFILE = .FALSE. !we do not produce ADMMmin.dat file 
+DALTON%ADMMexchangeMetric = .FALSE.
 DALTON%NOFAMILY = .FALSE.
 DALTON%Hermiteecoeff = .TRUE.
 DALTON%JENGINE = .TRUE.
@@ -982,6 +983,7 @@ WRITE(LUPRI,'(2X,A35,7X,A30)')'ADMM_FUNC',DALTON%ADMM_FUNC
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_separateX',DALTON%ADMM_separateX
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PRINT_EK3',DALTON%PRINT_EK3
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMBASISFILE',DALTON%ADMMBASISFILE
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMexchangeMetric',DALTON%ADMMexchangeMetric
 WRITE(LUPRI,'(2X,A35,7X,L1)')'SR_EXCHANGE',DALTON%SR_EXCHANGE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'CAM',DALTON%CAM
 WRITE(LUPRI,'(2X,A35,F16.8)') 'CAMalpha',DALTON%CAMalpha
@@ -2766,6 +2768,7 @@ scheme%ADMMQ                 = dalton_inp%ADMMQ
 scheme%ADMMS                 = dalton_inp%ADMMS
 scheme%ADMMP                 = dalton_inp%ADMMP
 scheme%ADMM_separateX        = dalton_inp%ADMM_separateX
+scheme%ADMMexchangeMetric    = dalton_inp%ADMMexchangeMetric
 scheme%ADMM_2ERI             = dalton_inp%ADMM_2ERI 
 scheme%PRINT_EK3             = dalton_inp%PRINT_EK3
 scheme%THRESHOLD             = dalton_inp%THRESHOLD
@@ -2899,6 +2902,7 @@ WRITE(IUNIT,'(3X,A22,L7)') 'ADMMQ                 ', scheme%ADMMQ
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMS                 ', scheme%ADMMS
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMP                 ', scheme%ADMMP
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_separateX        ', scheme%ADMM_separateX
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMMexchangeMetric    ', scheme%ADMMexchangeMetric
 WRITE(IUNIT,'(3X,A22,L7)') 'PRINT_EK3             ', scheme%PRINT_EK3
 WRITE(IUNIT,'(3X,A22,G14.2)') 'THRESHOLD             ', scheme%THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'CS_THRESHOLD          ', scheme%CS_THRESHOLD

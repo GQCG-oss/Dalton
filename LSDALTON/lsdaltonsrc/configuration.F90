@@ -503,6 +503,7 @@ DO
                config%skipscfloop =  .TRUE.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
             CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
+            CASE('.TESTABSVAL');    config%decomp%debugAbsOverlap=.true.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
@@ -1520,6 +1521,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         ! calculate and print full Exchange when doing ADMM exchange approx.
         ! > Debugging purpose only
            INTEGRAL%PRINT_EK3       = .TRUE.
+        CASE ('.ADMM-K-METRIC'); ! EXPERIMENTAL
+        ! calculate and print the residual error in the exchange metric
+        ! > Development purpose only
+           INTEGRAL%ADMMexchangeMetric = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -3381,6 +3386,8 @@ config%av%ediis_history_size = config%av%diis_history_size
       config%diag%cfg_unres =.TRUE.
       config%opt%cfg_unres =.TRUE.
       config%soeoinp%cfg_unres = .true.
+      config%diag%nocca = config%decomp%NOCCA
+      config%diag%noccb = config%decomp%NOCCb
       !write(lupri,*) 'alpha_specified, beta_specified', alpha_specified, beta_specified
       if (config%decomp%alpha_specified .and. config%decomp%beta_specified) then
          if (config%decomp%nocca + config%decomp%noccb /= 2*config%decomp%nocc + config%decomp%nactive) then

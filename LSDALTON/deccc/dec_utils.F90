@@ -153,8 +153,8 @@ end function max_batch_dimension
      frag%slavetime_comm(ccmodel) = tottime_comm
      frag%slavetime_idle(ccmodel) = tottime_idle
 
-     if(DECinfo%PL>0)then
-        if(time_tot>0.1E-13)then
+     if(DECinfo%PL>0.and.DECinfo%print_small_calc)then
+        if(time_tot>0.1E-3)then
            write(DECinfo%output,'("Portion time spent working       in ",a," is: ",g10.3,"%")')label,tottime_work/time_tot*100
            write(DECinfo%output,'("Portion time spent communicating in ",a," is: ",g10.3,"%")')label,tottime_comm/time_tot*100
            write(DECinfo%output,'("Portion time spent idle          in ",a," is: ",g10.3,"%")')label,tottime_idle/time_tot*100
@@ -816,13 +816,15 @@ end function max_batch_dimension
     integer, intent(inout) :: SubSystemIndex(nAtoms)
     ! local variables
     integer :: i
-    IF(mylsitem%input%molecule%nSubSystems.EQ.2)THEN
+
+    IF(mylsitem%input%molecule%nSubSystems>1)THEN
        do i=1,nAtoms
           SubSystemIndex(i)=mylsitem%input%molecule%ATOM(I)%SubSystemIndex
        end do
     ELSE
        SubSystemIndex=1
     ENDIF
+
   end subroutine GetSubSystemIndex
 
   !> \brief Get a table with interatomic distances (or interorbital for DECCO)
@@ -3355,6 +3357,96 @@ end function max_batch_dimension
 
   end subroutine which_pairs_unocc
 
+  !> \brief Construct logical array telling which unoccupied/occupied combinations should be
+  !> included when calculating pair interaction energies and other pair interaction
+  !> properties - to avoid double counting.
+  !> \author Dmytro Bykov
+  !> \date October 2014
+  subroutine which_pairs_occ_unocc(Fragment1,Fragment2,PairFragment,dopair)
+
+    implicit none
+    ! Fragment 1 in pair
+    type(decfrag),intent(in) :: Fragment1
+    ! Fragment 2 in pair
+    type(decfrag),intent(in) :: Fragment2
+    !> Pair fragment
+    type(decfrag),intent(inout) :: PairFragment
+    !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
+    logical,dimension(PairFragment%nunoccEOS,PairFragment%noccEOS),&
+         & intent(inout) :: dopair
+    integer :: a,b,ax,bx,p1,p2,i,ix,pox,pux
+
+    ! This is the same as which_pairs_unocc, but for the case where one needs 
+    ! unoccupied/occupied combination.
+
+    ! Set which atoms to consider for pair
+    dopair=.false.
+
+    ! occ fragment1 - unocc fragment2 part:
+    do a=1,fragment1%nunoccEOS   ! Unoccupied EOS for fragment 1
+      do i=1,fragment2%noccEOS   ! Occupied   EOS for fragment 2
+
+        ax=fragment1%unoccEOSidx(a)  ! index in full list orbitals
+        ix=fragment2%occEOSidx(i)    ! index in full list orbitals
+        p1=0                     ! pair unocc full list index
+        p2=0                     ! pair occ   full list index
+
+        ! loop to find pair indices  
+        do pux=1,PairFragment%nunoccEOS
+          do pox=1,PairFragment%noccEOS
+
+            if(PairFragment%unoccEOSidx(pux) == ax) p1 = pux
+            if(PairFragment%occEOSidx(pox)   == ix) p2 = pox
+
+          end do
+        end do
+
+        ! Sanity check
+!        if(p1==p2 .or. p1==0 .or. p2==0 ) then
+!          write(DECinfo%output,'(1X,a,4i6)') 'ax,ix,p1,p2', ax,ix,p1,p2
+!          call lsquit('which_pairs_occ_unocc: &
+!                     & Something wrong with indices in pair',DECinfo%output)
+!        end if
+
+        ! Pair interaction for (p1,p2) index pair
+        dopair(p1,p2)=.true.
+
+      end do
+    end do
+
+    ! occ fragment2 - unocc fragment1 part:
+    do a=1,fragment2%nunoccEOS   ! Unoccupied EOS for fragment 1
+      do i=1,fragment1%noccEOS   ! Occupied   EOS for fragment 2
+
+        ax=fragment2%unoccEOSidx(a)  ! index in full list orbitals
+        ix=fragment1%occEOSidx(i)    ! index in full list orbitals
+        p1=0                     ! pair unocc full list index
+        p2=0                     ! pair occ   full list index
+
+        ! loop to find pair indices  
+        do pux=1,PairFragment%nunoccEOS
+          do pox=1,PairFragment%noccEOS
+            
+            if(PairFragment%unoccEOSidx(pux) == ax) p1 = pux
+            if(PairFragment%occEOSidx(pox)   == ix) p2 = pox
+            
+          end do
+        end do
+        
+        ! Sanity check
+!        if(p1==p2 .or. p1==0 .or. p2==0 ) then
+!          write(DECinfo%output,'(1X,a,4i6)') 'ax,ix,p1,p2', ax,ix,p1,p2
+!          call lsquit('which_pairs_occ_unocc: &
+!                     & Something wrong with indices in pair',DECinfo%output)
+!        end if
+        
+        ! Pair interaction for (p1,p2) index pair
+        dopair(p1,p2)=.true.
+        
+      end do
+    end do
+
+  end subroutine which_pairs_occ_unocc
 
 
   !> Write fragment job list to file.
@@ -4147,30 +4239,22 @@ end function max_batch_dimension
   end subroutine orthogonalize_MOs
 
   !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
-  subroutine print_total_energy_summary(EHF,Edft,Ecorr,Eerr,doSOS)
+  subroutine print_total_energy_summary(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF,Edft
     !> Correlation energy
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
-    real(realk),intent(in) :: Eerr
+    real(realk),intent(in) :: dE_est1,dE_est2,dE_est3
     logical,intent(in),optional :: doSOS
     integer :: lupri
 
     lupri=6
-    if(present(doSOS))then
-      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
-    else
-      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri)
-    endif
+    call print_total_energy_summary_lupri(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3,lupri,doSOS=doSOS)
 
     lupri=DECinfo%output
-    if(present(doSOS))then
-      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
-    else
-      call print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri)
-    endif
+    call print_total_energy_summary_lupri(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3,lupri,doSOS=doSOS)
 
 
   end subroutine print_total_energy_summary
@@ -4179,14 +4263,14 @@ end function max_batch_dimension
   !> (Necessary to place here because it is used both for DEC and for full calculation).
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine print_total_energy_summary_lupri(EHF,Edft,Ecorr,Eerr,lupri,doSOS)
+  subroutine print_total_energy_summary_lupri(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3,lupri,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF,Edft
     !> Correlation energy
     real(realk),intent(in) :: Ecorr
     !> Estimated intrinsic DEC energy error
-    real(realk),intent(in) :: Eerr
+    real(realk),intent(in) :: dE_est1,dE_est2,dE_est3
     !> Logical unit number to print to
     integer,intent(in) :: lupri
     !> SOS cont
@@ -4221,8 +4305,12 @@ end function max_batch_dimension
        ENDIF
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
-       if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
-          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
+       if(.not.DECinfo%full_molecular_cc)then  
+          if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
+             write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 1 :', dE_est1
+          endif
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 2 :', dE_est2
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 3 :', dE_est3
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
@@ -4274,8 +4362,12 @@ end function max_batch_dimension
        endif
 
        ! skip error print for full calculation (0 by definition)
-       if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
-          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC error :', Eerr
+       if(.not.DECinfo%full_molecular_cc)then  
+          if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
+             write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 1 :', dE_est1
+          endif
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2 :', dE_est2
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3 :', dE_est3
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
@@ -5210,14 +5302,14 @@ end function max_batch_dimension
   !> \brief Estimate (absolute) energy error in DEC calculation.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine get_estimated_energy_error(natoms,energies,Eerr,doSOS)
+  subroutine get_estimated_energy_error(nfrags,energies,dE_est1,dE_est2,doSOS)
     implicit none
-    !> Number of atoms in molecule
-    integer,intent(in) :: natoms
+    !> Number of fragments in molecule
+    integer,intent(in) :: nfrags
     !> SUM of fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
     real(realk),intent(in) :: energies(ndecenergies)
     !> Estimated (absolute) energy error
-    real(realk),intent(inout) :: Eerr
+    real(realk),intent(inout) :: dE_est1,dE_est2
     logical,intent(in),optional :: doSOS
     real(realk) :: Eocc,Evirt
     logical :: SOS
@@ -5228,38 +5320,40 @@ end function max_batch_dimension
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
        ! Energy error = max difference between occ,virt, and Lag energies
-       Eerr = max(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2)) &
+       dE_est1 = max(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2)) &
             & - min(energies(FRAGMODEL_LAGMP2),energies(FRAGMODEL_OCCMP2),energies(FRAGMODEL_VIRTMP2))
 
     case(MODEL_CC2)
        ! Energy error = difference between occ and virt energies
-       Eerr = abs(energies(FRAGMODEL_OCCCC2) - energies(FRAGMODEL_VIRTCC2))
+       dE_est1 = abs(energies(FRAGMODEL_OCCCC2) - energies(FRAGMODEL_VIRTCC2))
 
     case(MODEL_RPA)
        ! Energy error = difference between occ and virt energies
        if(SOS) then
-         Eerr = abs(energies(FRAGMODEL_OCCSOS) - energies(FRAGMODEL_VIRTSOS))
+         dE_est1 = abs(energies(FRAGMODEL_OCCSOS) - energies(FRAGMODEL_VIRTSOS))
        else
-         Eerr = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
+         dE_est1 = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
        endif
 
     case(MODEL_CCSD)
-       Eerr = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))
+       dE_est1 = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))
 
     case(MODEL_CCSDpT)
        ! CCSD(T): Add CCSD and (T) contributions and find diff
        Eocc = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
        Evirt = energies(FRAGMODEL_VIRTCCSD) + energies(FRAGMODEL_VIRTpT)
-       Eerr = abs(Eocc-Evirt)
+       dE_est1 = abs(Eocc-Evirt)
 
     case(MODEL_RIMP2)
        ! Energy error = difference between occ and virt energies
-       Eerr = max(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2)) &
+       dE_est1 = max(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2)) &
             & - min(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2))
     case default
        print *, 'Model is: ', DECinfo%ccmodel
        call lsquit('get_estimated_energy_error: Model needs implementation!',-1)
     end select
+
+    dE_est2 = 2.0E0_realk * nfrags * DECinfo%FOT
 
   end subroutine get_estimated_energy_error
 

@@ -147,6 +147,9 @@ contains
        fragment%EOSatoms(1) = MyAtom
        fragment%pairfrag=.false.
     end if IsThisAPairFragment
+    
+    ! Fragment has not been optimized
+    fragment%isopt=.false.
 
     ! Set model to use for fragment calculation (see define_pair_calculations for details)
     if(fragment%pairfrag) then
@@ -407,6 +410,9 @@ contains
     fragment%EoccFOP      = 0.0_realk
     fragment%EvirtFOP     = 0.0_realk
     fragment%LagFOP       = 0.0_realk
+    fragment%Eocc_err     = 0.0_realk
+    fragment%Evir_err     = 0.0_realk
+    fragment%Elag_err     = 0.0_realk
 
 
     ! Information related to singles amplitudes - only relevant for CC2 and CCSD
@@ -704,6 +710,7 @@ contains
     nfrags = MyMolecule%nfrags
 
     FragLoop: do i=1,nfrags
+
        if(.not. dofrag(i)) cycle FragLoop
 
        MyAtom=i
@@ -748,7 +755,9 @@ contains
           call atomic_fragment_init_within_distance(MyAtom,&
                & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
                & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
+
        end if
+
     end do FragLoop
 
   end subroutine init_estimated_atomic_fragments
@@ -1073,6 +1082,10 @@ contains
             & track_vir_priority_list,vir_priority_list)
          call mem_dealloc(vir_priority_list)
 
+      ! SCHEME 3:
+      else if (DECinfo%Frag_Exp_Scheme == 3) then
+         call get_abs_overlap_priority_list(MyMolecule,MyFragment,&
+            &track_occ_priority_list,track_vir_priority_list)
       else
          call lsquit('ERROR FOP: Expansion Scheme not defined',DECinfo%output)
       end if
@@ -1127,8 +1140,8 @@ contains
       real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
 
       ! Get nred_occ and nred_vir (5% of the expanded spaces)
-      nred_occ = max( ceiling(5.0E-2_realk*MyFragment%noccAOS), 1)
-      nred_vir = max( ceiling(5.0E-2_realk*MyFragment%nunoccAOS), 1)
+      nred_occ = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%noccAOS/100), 1)
+      nred_vir = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%nunoccAOS/100), 1)
 
 
       ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
@@ -1474,9 +1487,12 @@ contains
          ncore = 0
       end if
 
+      print *,"WE HAVE PABLO",MyFragment%noccEOS,MyFragment%nunoccEOS
+
       ! Get contribution to fock matrix for a given orbital as the maximum fock
       ! element between the given orbital and all the EOS orbitals.
       if (occ_list) then
+         ! core is excluded later
          do i=ncore+1,Nfull
             do j=1,MyFragment%noccEOS
                idx = MyFragment%occEOSidx(j)
@@ -1500,6 +1516,55 @@ contains
 
    end subroutine get_fock_priority_list
 
+   subroutine get_abs_overlap_priority_list(MyMolecule,MyFragment,o_list,v_list)
+      implicit none
+      type(fullmolecule), intent(in) :: MyMolecule
+      type(decfrag), intent(in) :: MyFragment
+      integer, intent(out) :: o_list(MyMolecule%nocc)
+      integer, intent(out) :: v_list(MyMolecule%nunocc)
+
+      real(realk), pointer :: list_to_sort(:)
+
+      integer :: no, nv, nc, nb, i, a, idx
+
+      if (DECinfo%frozencore) then
+         nc = MyMolecule%ncore
+      else
+         nc = 0
+      end if
+      
+      no = MyMolecule%nocc
+
+      nv = MyMolecule%nunocc
+
+      !alloc work space
+      call mem_alloc(list_to_sort,max(no,nv))
+
+      !Get virt list
+      list_to_sort = 0.0E0_realk
+      do a=1,nv
+         v_list(a) = a
+         do i=1,MyFragment%noccEOS
+            idx = MyFragment%occEOSidx(i)
+            list_to_sort(a) = max(list_to_sort(a), abs(MyMolecule%ov_abs_overlap(idx,a)))
+         end do
+      end do
+      call real_inv_sort_with_tracking(list_to_sort,v_list,nv)
+
+      !get occ list, core is excluded later
+      list_to_sort = 0.0E0_realk
+      do i=1,no
+         o_list(i) = i
+         do a=1,MyFragment%nunoccEOS
+            idx = MyFragment%unoccEOSidx(a)
+            list_to_sort(i) = max(list_to_sort(i), abs(MyMolecule%ov_abs_overlap(i,idx)))
+         end do
+      end do
+      call real_inv_sort_with_tracking(list_to_sort,o_list,no)
+
+      !done
+      call mem_dealloc(list_to_sort)
+   end subroutine get_abs_overlap_priority_list
 
   !> \brief Sanity check: The orbitals assigned to the central atom in the fragment should ALWAYS be included
   !> contributions according to the input threshold.
@@ -2226,10 +2291,30 @@ contains
     logical, intent(in) :: DoBasis
     logical, dimension(nunocc) :: Unocc_list
     logical, dimension(nocc) :: Occ_list
+    integer :: orb_idx
 
     ! All orbitals included in fragment
-    unocc_list=.true.
-    occ_list=.true.
+    if(DECinfo%all_init_radius<=0.0E0_realk)then
+
+       unocc_list = .true.
+       occ_list   = .true.
+
+    else
+
+       unocc_list = .false.
+       occ_list   = .false.
+
+       !loop over all valence orbitals and include them if within radius
+       do orb_idx=1, MyMolecule%nocc
+          occ_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomOcc(orb_idx,MyAtom)<=DECinfo%all_init_radius)
+       enddo
+       !loop over all virtual orbitals and include them if within radius
+       do orb_idx=1, MyMolecule%nunocc
+          unocc_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)<=DECinfo%all_init_radius)
+       enddo
+
+    endif
+
     if(DECinfo%frozencore) then  ! never include core orbitals for frozen core
        occ_list(1:MyMolecule%ncore)=.false.
     end if
@@ -2291,7 +2376,7 @@ contains
     ! Use estimated fragments?
     estimated_frags=.false.
     if(present(esti)) then
-       if(esti) estimated_frags=.true.
+       if(esti) estimated_frags=.true.          
     end if
 
     pairfrag=.true.
@@ -2417,6 +2502,13 @@ contains
     ! Distance between original fragments
     PairFragment%pairdist =  pairdist
     call mem_dealloc(EOSatoms)
+
+    ! Is pair fragment optimized?
+    if(Fragment1%isopt .and. fragment2%isopt) then
+       PairFragment%isopt=.true.
+    else
+       PairFragment%isopt=.false.
+    end if
 
     ! Print out summary
     if(DECinfo%PL>0) then
@@ -3519,8 +3611,11 @@ contains
        write(wunit) int(fragment%EOSatoms(i),kind=8)
     end do
 
-    ! Energies
+    ! Energies, and reference energies
     write(wunit) fragment%energies
+    write(wunit) fragment%Eocc_err
+    write(wunit) fragment%Evir_err
+    write(wunit) fragment%Elag_err
 
     ! Correlation density matrices
     CDset64    = fragment%CDset
@@ -3749,8 +3844,11 @@ contains
     call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nunocc, MyMolecule%nocc,&
          & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
-    ! Fragment energies
+    ! Fragment energies, and fragment approximate errors for the estimate
     read(runit) fragment%energies
+    read(runit) fragment%Eocc_err
+    read(runit) fragment%Evir_err
+    read(runit) fragment%Elag_err
 
     ! Correlation density matrices and fragment-adapted orbitals
     call read_64bit_to_int(runit,fragment%CDset)

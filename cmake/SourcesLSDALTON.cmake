@@ -101,6 +101,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
+    LSDALTON/deccc/ccsd_gradient.F90
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
     LSDALTON/deccc/snoop_main.F90
@@ -810,6 +811,7 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/tensor_basic.F90
     LSDALTON/lsutil/lspdm_tensor_operations.F90
     LSDALTON/lsutil/dec_workarounds.F90
+    LSDALTON/lsutil/tensor_algebra_dil.F90
     )
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90

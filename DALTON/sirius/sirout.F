@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -285,7 +285,7 @@ C
       REWIND LUIT1
       IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
          CALL READT(LUIT1,NORBT,WRK(KOCCNO))
-      ELSE IF (MCTYPE .EQ. 0) THEN
+      ELSE IF (MCTYPE .LE. 0) THEN
          DO, ISYM = 1,NSYM
             JOCC1  = KOCCNO -1 + IORB(ISYM)
             NISHI  = NISH(ISYM)
@@ -466,7 +466,7 @@ C       stamp date, time, and hostname to LUPRI
 C
 C     Natural orbital analysis of MCSCF, also when orbitals are not natural orbitals
 C
-      IF (MCTYPE .EQ. 0) THEN
+      IF (MCTYPE .LE. 0) THEN
          MOISNO = .TRUE.
       ELSE IF (.NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
      &         .NOT.(CICALC  .AND. DOCINO) ) THEN
