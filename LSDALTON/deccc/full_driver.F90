@@ -3538,7 +3538,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      INQUIRE(FILE='FULLMP2B.restart',EXIST=file_exists)
      IF(file_exists)THEN
         IF(master)THEN
-           WRITE(DECinfo%output,*)'Restart of Full molecular MP2 calculation:'
+           WRITE(DECinfo%output,*)'Restart of Full molecular MP2(MP2B) calculation:'
         ENDIF
         restart_lun = -1  !initialization
         call lsopen(restart_lun,'FULLMP2B.restart','OLD','FORMATTED')
@@ -3550,11 +3550,11 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
            print*,'Restart Error: nOccbatchesI       =',nOccbatchesI
            call lsquit('MP2 restart error first integer is wrong')
         ELSE
-           IF(noccIstart.EQ.nocc)THEN
+           IF(noccIstart.EQ.nOccbatchesI)THEN
               IF(master)WRITE(DECinfo%output,*)'All energies is on file'
               noccIstart = nocc+1
               read(restart_lun,'(F28.16)') mp2_energy
-           ELSEIF(noccIstart.GT.nocc.OR.noccIstart.LT.1)THEN
+           ELSEIF(noccIstart.GT.nOccbatchesI.OR.noccIstart.LT.1)THEN
               IF(master)THEN
                  WRITE(DECinfo%output,*)'MP2 restart error, second integer is wrong. Read:',noccIstart
               ENDIF
