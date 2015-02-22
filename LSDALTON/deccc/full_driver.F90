@@ -3746,7 +3746,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         CALL LS_GETTIM(CPU1,WALL1)
         nbuf1 = nvirt*nOccBatchDimI
         nbuf2 = dimAlpha2*dimGamma2
-        call ls_mpibcast(tmp6,nbuf1,,nodeLoop-1,comm)
+        call ls_mpibcast(tmp6,nbuf1,nbuf2,nodeLoop-1,comm)
         CALL LS_GETTIM(CPU2,WALL2)
         CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
         WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
