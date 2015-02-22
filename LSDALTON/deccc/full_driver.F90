@@ -1485,10 +1485,10 @@ contains
              CPU_MPICOMM = CPU_MPICOMM + (CPU1-CPU2)
              WALL_MPICOMM = WALL_MPICOMM + (WALL1-WALL2)             
              IF(master)THEN
-                call RIMP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
+                call MP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
              ENDIF
           enddo
-          !Restart 
+          !Write Restart File 
           restart_lun = -1  !initialization
           call lsopen(restart_lun,'FULLRIMP2.restart','UNKNOWN','FORMATTED')
           rewind restart_lun
@@ -1579,7 +1579,7 @@ contains
   end subroutine CalcBmat
 
   !FIXME USE A DOT - is that faster?
-  subroutine RIMP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
+  subroutine MP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
     implicit none
     integer,intent(in) :: nvirt
     real(realk),intent(in) :: Amat(nvirt*nvirt),Bmat(nvirt*nvirt)
@@ -1596,7 +1596,7 @@ contains
     ENDDO
     !$OMP END PARALLEL DO
     rimp2_energy = rimp2_energy + TMP
-  end subroutine RIMP2_EnergyContribution
+  end subroutine MP2_EnergyContribution
 
 ! Calculate canonical MP2 energy
 subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,rimp2_energy)
@@ -1832,6 +1832,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   integer :: MinAObatch,gammaB,alphaB,nOccBatchesI,nOccBatchesJ,jB,nOccBatchDimI,nOccBatchDimJ
   integer :: nbatchesGammaRestart,nbatchesAlphaRestart,dimGamma,GammaStart,GammaEnd,dimAlpha
   integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB 
+  integer :: nOccBatchesIrestart,noccIstart
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
   logical :: PermutationalSymmetryIJ
   logical,pointer :: JobsCompleted(:,:)
@@ -2375,7 +2376,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
                        CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
                        call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                        tmp_mp2_energy2 = 0.0E0_realk
-                       call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                       call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
                        WRITE(DECinfo%output,*)'E1(',iB,',',jB,')=',tmp_mp2_energy2
                        tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
                     enddo
@@ -2391,7 +2392,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
                        CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
                        call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                        tmp_mp2_energy2 = 0.0E0_realk
-                       call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                       call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
                        WRITE(DECinfo%output,*)'E2(',iB,',',jB,')=',tmp_mp2_energy2
                        tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
                     enddo
@@ -2405,7 +2406,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
                     CALL CalcAmat2(nOccBatchDimI,nOccBatchDimI,nvirt,VOVO,Amat,I,I)
                     call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                     tmp_mp2_energy2 = 0.0E0_realk
-                    call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                    call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
                     WRITE(DECinfo%output,*)'E3(',iB,',',jB,')=',tmp_mp2_energy2
                     tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
                  enddo
@@ -2420,7 +2421,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
                     CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
                     call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                     tmp_mp2_energy2 = 0.0E0_realk
-                    call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                    call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
                     WRITE(DECinfo%output,*)'E4(',iB,',',jB,')=',tmp_mp2_energy2
                     tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
                  enddo
@@ -2998,7 +2999,7 @@ maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlp
 !call mem_dealloc(tmp6)
 !call mem_dealloc(tmp4)
 !call mem_alloc(tmp7,dimAlphaMPI*nOccBatchDimJ,nvirt*nOccBatchDimI)
-maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp7
+maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ & 
      & + dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI
 !call mem_dealloc(tmp5)
 !call mem_alloc(VOVO,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
@@ -3084,6 +3085,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer :: sqrtnumnodes,gB,idx(1),dimAOoffset,kk,nBlocksG,nBlocksA
   integer :: dimGammaMPI,dimAlphaMPI,ibatchG,ibatchA,dimAlpha2,dimGamma2
   integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchesJ,nOccBatchDimJmax
+  integer :: nOccbatchesIrestart,noccIstart
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
   logical :: PermutationalSymmetryIJ,SetdimGamma
   logical,pointer :: JobsCompleted(:,:)
@@ -3527,6 +3529,50 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      EpsVirt(A) = MyMolecule%qqfock(A,A)
   enddo
   !$OMP END PARALLEL DO
+
+  ! ***************************************************************************************
+  ! Restart
+  ! ***************************************************************************************
+  IF(DECinfo%DECrestart)THEN
+     !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
+     INQUIRE(FILE='FULLMP2B.restart',EXIST=file_exists)
+     IF(file_exists)THEN
+        IF(master)THEN
+           WRITE(DECinfo%output,*)'Restart of Full molecular MP2 calculation:'
+        ENDIF
+        restart_lun = -1  !initialization
+        call lsopen(restart_lun,'FULLMP2B.restart','OLD','FORMATTED')
+        rewind restart_lun
+        read(restart_lun,'(I9)') nOccbatchesIrestart
+        read(restart_lun,'(I9)') noccIstart
+        IF(nOccbatchesIrestart.NE.nOccbatchesI)THEN
+           print*,'Restart Error: nOccbatchesIrestart=',nOccbatchesIrestart
+           print*,'Restart Error: nOccbatchesI       =',nOccbatchesI
+           call lsquit('MP2 restart error first integer is wrong')
+        ELSE
+           IF(noccIstart.EQ.nocc)THEN
+              IF(master)WRITE(DECinfo%output,*)'All energies is on file'
+              noccIstart = nocc+1
+              read(restart_lun,'(F28.16)') mp2_energy
+           ELSEIF(noccIstart.GT.nocc.OR.noccIstart.LT.1)THEN
+              IF(master)THEN
+                 WRITE(DECinfo%output,*)'MP2 restart error, second integer is wrong. Read:',noccIstart
+              ENDIF
+              call lsquit('MP2 restart error second integer is wrong')             
+           ELSE
+              noccIstart = noccIstart + 1
+              read(restart_lun,'(F28.16)') mp2_energy
+           ENDIF
+        ENDIF
+        call lsclose(restart_lun,'KEEP')
+     ELSE
+        noccIstart=1
+        mp2_energy = 0.0E0_realk
+     ENDIF
+  ELSE
+     noccIstart=1
+     mp2_energy = 0.0E0_realk
+  ENDIF
   
   ! ************************************************
   ! * Main Loop                                    *
@@ -3534,7 +3580,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   JobInfo1Free = .FALSE.
   FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
   
-  BatchOccI: do iB = 1,nOccbatchesI
+  BatchOccI: do iB = noccIstart,nOccbatchesI
      nOccBatchDimI = nOccBatchDimImax
      IF(MOD(nOcc,nOccBatchDimI).NE.0.AND.iB.EQ.nOccBatchesI)THEN
         !the remainder
@@ -3814,7 +3860,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
                     CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
                     call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                     tmp_mp2_energy2 = 0.0E0_realk
-                    call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                    call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
                     tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
                  enddo
               enddo
@@ -3829,7 +3875,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
                     CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
                     call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                     tmp_mp2_energy2 = 0.0E0_realk
-                    call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                    call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
                     tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
                  enddo
               enddo
@@ -3842,7 +3888,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
                  CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,I,I)
                  call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                  tmp_mp2_energy2 = 0.0E0_realk
-                 call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                 call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
                  tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
               enddo
               WRITE(DECinfo%output,*)'PermutationalSymmetryIJ E(Triangular+diagonal)',tmp_mp2_energy
@@ -3855,7 +3901,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
                  CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
                  call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                  tmp_mp2_energy2 = 0.0E0_realk
-                 call RIMP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+                 call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
                  tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
               enddo
            enddo
@@ -3883,8 +3929,17 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      CALL LS_GETTIM(CPU4,WALL4)
      CPU_ECONT = CPU_ECONT + (CPU4-CPU3)
      WALL_ECONT = WALL_ECONT + (WALL4-WALL3)           
-     
-     mp2_energy = mp2_energy + tmp_mp2_energy
+     IF(master)THEN 
+        mp2_energy = mp2_energy + tmp_mp2_energy        
+        !Write Restart File
+        restart_lun = -1  !initialization
+        call lsopen(restart_lun,'FULLMP2B.restart','UNKNOWN','FORMATTED')
+        rewind restart_lun
+        write(restart_lun,'(I9)') nOccbatchesI
+        write(restart_lun,'(I9)') iB
+        write(restart_lun,'(F28.16)') mp2_energy
+        call lsclose(restart_lun,'KEEP')
+     ENDIF
   enddo BatchOccI
   IF(master)THEN 
      print*,'FINAL MP2 ENERGY',mp2_energy,'MYNUM',MYNUM
