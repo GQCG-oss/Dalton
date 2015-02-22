@@ -100,16 +100,7 @@ contains
              if(DECinfo%use_canonical ) then
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
-#ifdef VAR_MPI
-                call canonical_mp2B_memreq_test(MyMolecule%nbasis,infpar%nodtot,Success)
-#else
-                Success = .FALSE.
-#endif
-                IF(Success)THEN
-                   call full_canonical_mp2B(MyMolecule,MyLsitem,Ecorr)       
-                ELSE
-                   call full_canonical_mp2(MyMolecule,MyLsitem,Ecorr)       
-                ENDIF
+                call full_canonical_mp2B(MyMolecule,MyLsitem,Ecorr)       
              else
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
@@ -2845,13 +2836,15 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvi
   integer :: iB,jB,iiB,jjB,nb,dimGamma,dimAlpha,AB,iGB,nTasks,K,tmprow,tmpcol,I,J
   real(realk) :: nbasisR,noccR,nvirtR,numnodesR
   logical :: Success
+  integer(kind=ls_mpik) :: nodtot 
   nbasisR = nbasis
   noccR = nocc
   nvirtR = nvirt
   numnodesR = numnodes   
 
   !The full_canonical_mp2B requires that (nb,nb,nb) can be distributed across all nodes 
-  call canonical_mp2B_memreq_test(nbasis,numnodes,Success)
+  nodtot = INT(numnodes)
+  call canonical_mp2B_memreq_test(nbasis,nodtot,Success)
 
   call get_currently_available_memory(MemoryAvailable)
   ! Note: We multiply by 85 % to be on the safe side!
@@ -3018,7 +3011,8 @@ end subroutine memestimateCANONMP2B
 !The full_canonical_mp2B requires that (nb,nb,nb) can be distributed across all nodes 
 subroutine canonical_mp2B_memreq_test(nbasis,numnodes,Success)
 implicit none
-integer,intent(in) :: nbasis,numnodes
+integer(kind=ls_mpik),intent(in) :: numnodes
+integer,intent(in) :: nbasis
 logical,intent(inout) :: Success
 !
 real(realk) :: MemoryAvailable,GB,nbasisR,numnodesR
@@ -3826,7 +3820,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
          IF(inode.EQ.1)THEN !I collect results
             do inodeLoop = 2,nrownodes !all send their contribution to inode=1,jnode=jnodeLoop
                sender = inodeLoop+(jnodeLoop-1)*nrownodes-1
-               call mem_alloc(VOVO2,nbuf1,nbuf2)
+               call mem_alloc(VOVO2,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
 #ifdef VAR_MPI
                call ls_mpisendrecv(VOVO2,nbuf1,nbuf2,comm,sender,receiver)               
 #endif
@@ -5223,7 +5217,7 @@ subroutine full_canonical_rimp2_slave
 end subroutine full_canonical_rimp2_slave
 
 subroutine full_canonical_mp2_slave
-  use full,only: full_canonical_mp2,full_canonical_mp2B,canonical_mp2B_memreq_test
+  use full,only: full_canonical_mp2,full_canonical_mp2B
   use infpar_module !infpar
   use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
        & LSMPIBROADCAST,MPI_COMM_LSDALTON 
@@ -5266,13 +5260,7 @@ subroutine full_canonical_mp2_slave
   ! *******************
   ! Main master:  Send stuff to local masters and deallocate temp. buffers
   ! Local master: Deallocate buffer etc.
-
-  call canonical_mp2B_memreq_test(MyMolecule%nbasis,infpar%nodtot,Success)
-  IF(Success)THEN
-     call full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
-  ELSE
-     call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
-  ENDIF
+  call full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
   
