@@ -3710,7 +3710,9 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
        IF(nodeLoop.EQ.mynum+1)THEN
 #ifdef VAR_MPI
         CALL LS_GETTIM(CPU1,WALL1)
-        call ls_mpibcast(tmp4,nvirt*nOccBatchDimI,dimAlphaMPI*dimGammaMPI,mynum,comm)
+        nbuf1 = nvirt*nOccBatchDimI
+        nbuf2 = dimAlphaMPI*dimGammaMPI
+        call ls_mpibcast(tmp4,nbuf1,nbuf2,mynum,comm)
         CALL LS_GETTIM(CPU2,WALL2)
         CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
         WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
@@ -3742,7 +3744,9 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         !recv
 #ifdef VAR_MPI
         CALL LS_GETTIM(CPU1,WALL1)
-        call ls_mpibcast(tmp6,nvirt*nOccBatchDimI,dimAlpha2*dimGamma2,nodeLoop-1,comm)
+        nbuf1 = nvirt*nOccBatchDimI
+        nbuf2 = dimAlpha2*dimGamma2
+        call ls_mpibcast(tmp6,nbuf1,,nodeLoop-1,comm)
         CALL LS_GETTIM(CPU2,WALL2)
         CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
         WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
