@@ -100,7 +100,7 @@ contains
              if(DECinfo%use_canonical ) then
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
-                call full_canonical_mp2B(MyMolecule,MyLsitem,Ecorr)       
+                call full_canonical_mp2(MyMolecule,MyLsitem,Ecorr)       
              else
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
@@ -3706,6 +3706,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         CALL LS_GETTIM(CPU1,WALL1)
         nbuf1 = nvirt*nOccBatchDimI
         nbuf2 = dimAlphaMPI*dimGammaMPI
+        print*,'BCAST4:',nbuf1,nbuf2
         call ls_mpibcast(tmp4,nbuf1,nbuf2,mynum,comm)
         CALL LS_GETTIM(CPU2,WALL2)
         CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
@@ -3740,6 +3741,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         CALL LS_GETTIM(CPU1,WALL1)
         nbuf1 = nvirt*nOccBatchDimI
         nbuf2 = dimAlpha2*dimGamma2
+        print*,'BCAST6:',nbuf1,nbuf2
         call ls_mpibcast(tmp6,nbuf1,nbuf2,nodeLoop-1,comm)
         CALL LS_GETTIM(CPU2,WALL2)
         CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
@@ -5260,7 +5262,7 @@ subroutine full_canonical_mp2_slave
   ! *******************
   ! Main master:  Send stuff to local masters and deallocate temp. buffers
   ! Local master: Deallocate buffer etc.
-  call full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
+  call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
   
