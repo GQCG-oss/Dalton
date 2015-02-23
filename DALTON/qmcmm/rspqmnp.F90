@@ -147,7 +147,8 @@
 
       use qmcmm, only: getdim_relmat, read_relmat
 
-#include "implicit.h"
+      implicit none
+
 #include "dummy.h"
 #include "maxorb.h"
 #include "inforb.h"
@@ -168,16 +169,37 @@
 #include "nuclei.h"
 #include "infpar.h"
 #include "qmnpmm.h"
-!
-      DIMENSION ETRS(KZYVR),XINDX(*)
-      DIMENSION UDV(NASHDI,NASHDI)
-      DIMENSION ZYM1(*),ZYM2(*),WORK(LWORK),CMO(*)
-      DIMENSION VEC1(KZYV1),VEC2(KZYV2)
-      DIMENSION MJWOP(2,MAXWOP,8)
-      LOGICAL   LCON, LORB, LREF
-!
-      PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
-!
+
+      integer :: kzyvr
+      integer :: kzyv1
+      integer :: kzyv2
+      integer :: lwork,igrsym,isymv1,isymv2,ispin0,ispin1,ispin2
+      real(8) :: etrs(kzyvr),xindx(*)
+      real(8) :: udv(nashdi,nashdi)
+      real(8) :: zym1(*),zym2(*),work(lwork),cmo(*)
+      real(8) :: vec1(kzyv1),vec2(kzyv2)
+      integer :: mjwop(2,maxwop,8)
+      integer :: i, j, ioff
+      logical   lcon, lorb, lref
+      integer :: kmqvec1
+      integer :: kmqvec2
+      integer :: kfvvec1
+      integer :: kfvvec2
+      integer :: kcref
+      integer :: ktres
+      integer :: kucmo
+      integer :: ktlma
+      integer :: ktlmb
+      integer :: ktrmo
+      integer :: krelmat
+      integer :: kutr
+      integer :: idim, idimx
+      integer :: isymt, isymv, isymst, jspin, nsim
+      integer :: lfree, kfree
+      integer :: nzyvec, nzcvec
+      integer :: ISYMDN, idum
+      real(8) :: ovlap
+
       CALL QENTER('QMNPMMQRO')
 !
       KFREE = 1
@@ -229,10 +251,10 @@
         CALL DZERO(WORK(KMQVEC2),NSIM*IDIM)
         DO I=1,NSIM
            IOFF = (I-1)*IDIM
-           CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC1+IOFF),1,D0,WORK(KMQVEC1+IOFF),1)
-           CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC2+IOFF),1,D0,WORK(KMQVEC2+IOFF),1)
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
+     &                WORK(KFVVEC1+IOFF),1,0.0d0,WORK(KMQVEC1+IOFF),1)
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
+     &                WORK(KFVVEC2+IOFF),1,0.0d0,WORK(KMQVEC2+IOFF),1)
           if (iprtlvl > 14) then
              write(lupri, '(/,2x,a,i0)') &
                  '*** Computed MQ vector start v1 1st-order density ', i
@@ -259,7 +281,7 @@
       END IF
 !     Set up paramterers for quadratic response gradient formation
       ISYMDN = 1
-      OVLAP  = D1
+      OVLAP  = 1.0d0
       JSPIN  = 0
       ISYMV  = IREFSY
       ISYMST = MULD2H(IGRSYM,IREFSY)
@@ -538,8 +560,6 @@
       DIMENSION FVVEC1(*), FVVEC2(*), WORK(LWORK)
       DIMENSION UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*)
 !
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-!
       LOGICAL TOFILE,TRIMAT,EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -591,12 +611,12 @@
      &                 NORBT)
              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
 !            Determine electric field component size
-             F1VAL = D0
-             F2VAL = D0
+             F1VAL = 0.0d0
+             F2VAL = 0.0d0
              IF (ISYMT.EQ.ISYMV1) THEN
                 CALL DZERO(WORK(KTLMA),N2ORBX)
                 CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,D1,F1VAL,200,             &
+                CALL MELONE(WORK(KTLMA),1,UDV,1.0d0,F1VAL,200,             &
      &                      'QMNPQRO')
                 FVVEC1(JOFF+1) = F1VAL
              END IF
@@ -605,7 +625,7 @@
                 CALL DZERO(WORK(KTLMB),N2ORBX)
                 CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
                 CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,D1,F2VAL,200,             &
+                CALL MELONE(WORK(KTLMB),1,UDV,1.0d0,F2VAL,200,             &
      &                      'QMNPQRO')
                 FVVEC2(JOFF+1) = F2VAL
              ENDIF
@@ -617,12 +637,12 @@
      &                 NBAST,NORBT)
              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
 !            Determine electric field component size
-             F1VAL = D0
-             F2VAL = D0
+             F1VAL = 0.0d0
+             F2VAL = 0.0d0
              IF (ISYMT.EQ.ISYMV1) THEN
                 CALL DZERO(WORK(KTLMA),N2ORBX)
                 CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,D1,F1VAL,200,             &
+                CALL MELONE(WORK(KTLMA),1,UDV,1.0d0,F1VAL,200,             &
      &                      'QMNPQRO')
                 FVVEC1(JOFF+2) = F1VAL
              END IF
@@ -631,7 +651,7 @@
                 CALL DZERO(WORK(KTLMB),N2ORBX)
                 CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
                 CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,D1,F2VAL,200,             &
+                CALL MELONE(WORK(KTLMB),1,UDV,1.0d0,F2VAL,200,             &
      &                      'QMNPQRO')
                 FVVEC2(JOFF+2) = F2VAL
              ENDIF
@@ -643,12 +663,12 @@
      &                 WORK(KFREE),NBAST,NORBT)
              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
 !            Determine electric field component size
-             F1VAL = D0
-             F2VAL = D0
+             F1VAL = 0.0d0
+             F2VAL = 0.0d0
              IF (ISYMT.EQ.ISYMV1) THEN
                 CALL DZERO(WORK(KTLMA),N2ORBX)
                 CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,D1,F1VAL,200,             &
+                CALL MELONE(WORK(KTLMA),1,UDV,1.0d0,F1VAL,200,             &
      &                      'QMNPQRO')
                 FVVEC1(JOFF+3) = F1VAL
              END IF
@@ -657,7 +677,7 @@
                 CALL DZERO(WORK(KTLMB),N2ORBX)
                 CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
                 CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,D1,F2VAL,200,             &
+                CALL MELONE(WORK(KTLMB),1,UDV,1.0d0,F2VAL,200,             &
      &                      'QMNPQRO')
                 FVVEC2(JOFF+3) = F2VAL
              ENDIF
@@ -705,12 +725,12 @@
      &                 NORBT)
              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
 !            Determine electric field component size
-             F1VAL = D0
-             F2VAL = D0
+             F1VAL = 0.0d0
+             F2VAL = 0.0d0
              IF (ISYMT.EQ.ISYMV1) THEN
                 CALL DZERO(WORK(KTLMA),N2ORBX)
                 CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,D1,F1VAL,200,             &
+                CALL MELONE(WORK(KTLMA),1,UDV,1.0d0,F1VAL,200,             &
      &                      'QMNPQRO')
                 FVVEC1(JOFF) = F1VAL
              END IF
@@ -719,7 +739,7 @@
                 CALL DZERO(WORK(KTLMB),N2ORBX)
                 CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
                 CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,D1,F2VAL,200,             &
+                CALL MELONE(WORK(KTLMB),1,UDV,1.0d0,F2VAL,200,             &
      &                      'QMNPQRO')
                 FVVEC2(JOFF) = F2VAL
              ENDIF
