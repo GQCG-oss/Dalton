@@ -604,8 +604,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       FragEnergies     = 0.0E0_realk
       FragEnergies_tmp = 0.0E0_realk
    
-      call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
+      if (DECinfo%DECNP) then
+         call decnp_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
          & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
+      else
+         call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
+         & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
+      end if
+
    
       if(ccmodel == MODEL_CCSDpT)then
          ! now we calculate fourth-order and fifth-order energies
