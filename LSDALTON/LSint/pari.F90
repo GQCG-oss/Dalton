@@ -647,6 +647,7 @@ CONTAINS
     TYPE(MoleculeInfo),target  :: neighbourFragtarget
     type(molecularorbitalinfo) :: orbitalInfoFrag
     integer                    :: nNeighbour
+    integer                    :: nBastReg
     integer                    :: iAtomB,iAtomC
     integer                    :: nRegA,startRegA,endRegA
     integer                    :: nAuxA,startAuxA,endAuxA
@@ -654,46 +655,35 @@ CONTAINS
     integer                    :: nAuxB,startAuxB,endAuxB
     integer                    :: nRegC,startRegC,endRegC
     integer                    :: nAuxC,startAuxC,endAuxC
-    integer                    :: iAuxA,iRegB,iRegC,nAtoms,nOcc,nRegFrag
+    integer                    :: iAuxA,iRegB,iRegC,nAtoms,nOcc,nRegFrag,iReg
     Real(realk),pointer        :: GQ_nusigma(:,:,:),GQ_sigmanu(:,:,:)
-    Real(realk),pointer        :: tmp(:,:,:),alpha_cd_neighbour(:,:,:)
+    Real(realk),pointer        :: matH_Q_trans(:,:,:)
+    Real(realk),pointer        :: tmp(:,:,:),alpha_cd(:,:,:),tmp1(:,:,:),tmp2(:,:,:)
     Real(realk)                :: ts,te
-    
-    call print_moleculeinfo(lupri,molecule,setting%basis(1)%p,1)
     
     call lstimer('START ',te,ts,lupri)
 
     nAtoms = orbitalInfo%nAtoms
+    nBastReg = molecule%nBastReg
     nOcc=molecule%nelectrons/2
 
     call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
          nAuxA,startAuxA,endAuxA) 
 
+    call mem_alloc(matH_Q_trans,nAuxA,nBastReg,nOcc)
+    matH_Q_trans=0E0_realk
+
     ! Loop over B
     do iAtomB=1,nAtoms
-       write(lupri,*) 'Loop over Atom B=',iAtomB
        call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
             nAuxB,startAuxB,endAuxB)
-       
-       call setNeighbourFragment(neighbourFrag,neighbourFragtarget,&
-            iAtomB,neighbourA,nNeighbour,&
-            setting%basis(1)%p,molecule,&
-            orbitalInfo,nRegFrag,atoms_A,setting,lupri,luerr)
-
-       call print_moleculeinfo(lupri,neighbourFrag,setting%basis(1)%p,1)
-
-       call setMolecularOrbitalInfo(neighbourFrag,orbitalInfoFrag)
 
        !get three-center integrals (Q|nu sigma) with Q in Aux(A), nu in Reg(B) and 
        !sigma in Reg(neighbour(C)) 
-       call mem_alloc(alpha_cd_neighbour,nAuxA,nRegB,nRegFrag)
-       call pari_alphacd_neighbour(alpha_cd_neighbour,orbitalInfo,setting,atoms_A,&
-            iAtomA,iAtomB,neighbourFrag,neighbourA,nNeighbour,nAuxA,nRegB,nRegFrag,&
-            regCSfull,auxCSfull,lupri,luerr)
-              
+       call mem_alloc(alpha_cd,nAuxA,nRegB,nBastReg)
+       call pari_alphac_fulld(alpha_cd,setting,molecule,atoms_A,iAtomA,&
+            iAtomB,nAuxA,nRegB,nBastReg,regCSfull,auxCSfull,lupri,luerr)
        
-       call typedef_setMolecules(setting,molecule,1,2,3,4)
-
        !Loop over C<>B (neighbours of B)
        do iAtomC=iAtomB,nAtoms
           if (neighbourA(iAtomB,iAtomC)) then
@@ -703,24 +693,16 @@ CONTAINS
              ! --- Construct GQ_nusigma
              ! --- Q in Aux(A), nu in Reg(B), sigma in Reg(C)
              call mem_alloc(GQ_nusigma,nAuxA,nRegB,nRegC)
-             call getGQcoeff(GQ_nusigma,calpha_ab_mo,alpha_cd_neighbour,&
+             call getGQcoeff(GQ_nusigma,calpha_ab_mo,alpha_cd,&
                   iAtomA,iAtomB,iAtomC,orbitalInfo,&
-                  orbitalInfoFrag,setting,molecule,atoms_A,regCSfull,auxCSfull,&
+                  setting,molecule,atoms_A,regCSfull,auxCSfull,&
                   lupri,luerr)
 
              ! --- Construct HQ_nui Q in Aux(A), nu in Reg(B), i in Occ
-             call mem_alloc(tmp,nAuxA,nRegB,nOcc)
+             !call mem_alloc(tmp,nAuxA,nRegB,nOcc)
              call dgemm('N','N',nAuxA*nRegB,nOcc,nRegC,1.0E0_realk,GQ_nusigma,&
-                  nAuxA*nRegB,MOcoeff(StartRegC:EndRegC,:),nRegC,0.0E0_realk,&
-                  tmp,nAuxA*nRegB)
-
-             do iRegB=1,nRegB
-                do iAuxA=1,nAuxA
-                   matH_Q(iRegB+StartRegB-1,iAuxA,:)=&
-                        matH_Q(iRegB+StartRegB-1,iAuxA,:)+tmp(iAuxA,iRegB,:)
-                enddo
-             enddo
-             call mem_dealloc(tmp)
+                  nAuxA*nRegB,MOcoeff(StartRegC:EndRegC,:),nRegC,1.0E0_realk,&
+                  matH_Q_trans(:,StartRegB:EndRegB,:),nAuxA*nRegB)
 
              if (.not.(iAtomB.eq.iAtomC)) then
                 call mem_alloc(GQ_sigmanu,nAuxA,nRegC,nRegB)
@@ -729,29 +711,27 @@ CONTAINS
                       GQ_sigmanu(:,iRegC,iRegB)=GQ_nusigma(:,iRegB,iRegC)
                    enddo
                 enddo
-                call mem_alloc(tmp,nAuxA,nRegC,nOcc)
                 call dgemm('N','N',nAuxA*nRegC,nOcc,nRegB,1.0E0_realk,&
                      GQ_sigmanu,nAuxA*nRegC,MOcoeff(StartRegB:EndRegB,:),&
-                     nRegB,0.0E0_realk,tmp,nAuxA*nRegC)
-
-                do iRegC=1,nRegC
-                   do iAuxA=1,nAuxA
-                      matH_Q(iRegC+StartRegC-1,iAuxA,:)=&
-                           matH_Q(iRegC+StartRegC-1,iAuxA,:)+tmp(iAuxA,iRegC,:)
-                   enddo
-                enddo
-                call mem_dealloc(tmp)
+                     nRegB,1.0E0_realk,matH_Q_trans(:,StartRegC:EndRegC,:),nAuxA*nRegC)
                 call mem_dealloc(GQ_sigmanu)
 
              endif
              call mem_dealloc(GQ_nusigma)
           endif !C is in neighbour(B)
        Enddo !Loop over C
-       call mem_dealloc(alpha_cd_neighbour)
-       call freeNeighbourFragment(neighbourFrag,nNeighbour)
-       CALL freeMolecularOrbitalInfo(orbitalInfoFrag)
-    Enddo !Loop over B
 
+       call mem_dealloc(alpha_cd)
+       call typedef_setMolecules(setting,molecule,1,2,3,4)
+    Enddo !Loop over B
+    
+    do iReg=1,nBastReg
+       do iAuxA=1,nAuxA
+         matH_Q(iReg,iAuxA,:)=matH_Q_trans(iAuxA,iReg,:) 
+       enddo
+    enddo
+
+    call mem_dealloc(matH_Q_trans)
     call lstimer('matH',te,ts,lupri)
   end subroutine getHQcoeff
 
@@ -777,16 +757,16 @@ CONTAINS
   !> \param auxCSfull Screening matrix G_alpha = log( sqrt( (alpha|alpha) ) )
   !> \param lupri Default print-unit for output
   !> \param luerr Default print-unit for termination
-  subroutine getGQcoeff(GQ_nusigma,calpha_ab_mo,alpha_cd_neighbour,&
+  subroutine getGQcoeff(GQ_nusigma,calpha_ab_mo,alpha_cd,&
        iAtomA,iAtomB,iAtomC,OrbitalInfo,&
-       orbitalInfoFrag,setting,molecule,atoms_A,regCSfull,auxCSfull,&
+       setting,molecule,atoms_A,regCSfull,auxCSfull,&
        lupri,luerr)
     implicit none
     real(realk),pointer                   :: GQ_nusigma(:,:,:)
-    real(realk),pointer                   :: alpha_cd_neighbour(:,:,:)
+    real(realk),pointer                   :: alpha_cd(:,:,:)
     Type(mat3d),pointer                   :: calpha_ab_mo(:,:)
     integer,intent(in)                    :: iAtomA,iAtomB,iAtomC
-    type(molecularorbitalinfo),intent(in) :: orbitalInfo,orbitalInfoFrag
+    type(molecularorbitalinfo),intent(in) :: orbitalInfo
     TYPE(LSSETTING),intent(inout)         :: SETTING
     Integer,intent(in)                    :: LUPRI,LUERR
     TYPE(LSTENSOR),pointer                :: regCSfull,auxCSfull
@@ -799,8 +779,8 @@ CONTAINS
     integer                               :: nAuxB,startAuxB,endAuxB
     integer                               :: nRegC,startRegC,endRegC
     integer                               :: nAuxC,startAuxC,endAuxC
-    integer                               :: nRegF,startRegF,endRegF
-    integer                               :: nAuxF,startAuxF,endAuxF
+    !integer                               :: nRegF,startRegF,endRegF
+    !integer                               :: nAuxF,startAuxF,endAuxF
     integer                               :: nBastReg,nBastAux
     integer                               :: nAuxAB,nAuxBC,nAuxAC
     integer                               :: nAtoms
@@ -881,17 +861,18 @@ CONTAINS
     
     !Get three-center integrals (Q|nu sigma) with Q in Aux(A), nu in Reg(B) and 
     !sigma in Reg(C)
-    call pari_alphacd(GQ_nusigma,setting,atoms_a,iAtomA,iAtomB,iAtomC,&
-         nAuxA,nRegB,nRegC,regCSfull,auxCSfull,lupri,luerr)
-    call mem_alloc(tmp,nAuxA,nRegB,nRegC)
+    !call pari_alphacd(GQ_nusigma,setting,atoms_a,iAtomA,iAtomB,iAtomC,&
+    !     nAuxA,nRegB,nRegC,regCSfull,auxCSfull,lupri,luerr)
+    !call mem_alloc(tmp,nAuxA,nRegB,nRegC)
 
-    call getAtomicOrbitalInfo(orbitalInfoFrag,1,nRegF,startRegF,endRegF,&
-         nAuxF,startAuxF,endAuxF)
-    tmp(:,:,:) = alpha_cd_neighbour(:,:,StartRegF:EndRegF)
-    do iRegC=1,nRegC
-       write(lupri,*) tmp(1,:,nRegC)-GQ_nusigma(1,:,nRegC)
-    enddo
-    call mem_dealloc(tmp)
+    !call getAtomicOrbitalInfo(orbitalInfoFrag,1,nRegF,startRegF,endRegF,&
+    !     nAuxF,startAuxF,endAuxF)
+    !tmp(:,:,:) = alpha_cd(:,:,StartRegC:EndRegC)
+    GQ_nusigma(1:nAuxA,1:nRegB,1:nRegC) = alpha_cd(1:nAuxA,1:nRegB,StartRegC:EndRegC)
+    !do iRegC=1,nRegC
+    !   write(lupri,*) tmp(1,:,nRegC)-GQ_nusigma(1,:,nRegC)
+    !enddo
+    !call mem_dealloc(tmp)
 
     !Construct GQ_nusigma 
     call DGEMM('N','N',nAuxA,nRegB*nRegC,nAuxBC,-0.5E0_realk,extracted_alpha_beta,&
@@ -1611,6 +1592,42 @@ SUBROUTINE pari_alphacd_neighbour(alpha_cd,orbitalInfo,setting,atoms,iAtomA,iAto
 
 END SUBROUTINE pari_alphacd_neighbour
 
+SUBROUTINE pari_alphac_fulld(alpha_cd,setting,molecule,atoms,iAtomA,&
+     iAtomC,nAuxA,nRegC,nRegD,regCSfull,auxCSfull,lupri,luerr)
+  implicit none
+  TYPE(lssetting),intent(inout) :: setting
+  Integer,intent(in)            :: iAtomA,iAtomC,nAuxA,nRegC,nRegD,lupri,luerr
+  TYPE(moleculeinfo),intent(in) :: molecule
+  TYPE(moleculeinfo),pointer    :: atoms(:)
+  Real(realk),intent(inout)     :: alpha_cd(nAuxA,nRegC,nRegD)
+  TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
+  
+  TYPE(LSTENSOR),pointer     :: auxCSatomA
+
+  !set threshold
+  SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+  
+  IF (setting%scheme%CS_SCREEN) THEN
+     call ls_subScreenAtomic(auxCSatomA,auxCSfull,iAtomA,1,nAuxA,1,.FALSE.)
+     setting%LST_GAB_LHS => auxCSatomA
+!     call ls_attach_gab_to_setting(setting,auxCSatomA,regCSfull)
+  ENDIF
+  
+  call typedef_setMolecules(setting,atoms(iAtomC),3,molecule,4,atoms(iAtomA),1)
+  call initIntegralOutputDims(setting%Output,nAuxA,1,nRegC,nRegD,1)
+  call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
+       RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+  CALL retrieve_Output(lupri,setting,alpha_cd,.FALSE.)
+  
+  IF (setting%scheme%CS_SCREEN) THEN
+     nullify(setting%LST_GAB_LHS)
+!     call ls_free_gab_from_setting(setting,lupri)
+     call lstensor_free(auxCSatomA)
+     deallocate(auxCSatomA)
+  endif
+
+END SUBROUTINE pari_alphac_fulld
+
 SUBROUTINE pari_alphacd_full(alpha_cd,setting,molecule,atoms,iAtomA,&
      nAuxA,nRegC,nRegD,regCSfull,auxCSfull,lupri,luerr)
   implicit none
@@ -1955,8 +1972,6 @@ subroutine setNeighbourFragment(neighbourFrag,neighbourFragTarget,&
   Type(lssetting),intent(inout)         :: setting
   
   Integer,pointer               :: iAtoms(:),tmp(:)
-  Character(len=80)             :: FRAGMENTNAME
-  Character(len=10)             :: FMT
   Integer                       :: nAtoms
   Integer                       :: iAtomB,nRegB,startRegB,endRegB
   Integer                       :: nAuxB,startAuxB,endAuxB
@@ -1983,10 +1998,8 @@ subroutine setNeighbourFragment(neighbourFrag,neighbourFragTarget,&
      call mem_alloc(iAtoms,nNeighbour) 
      iAtoms(:)=tmp(1:nNeighbour)
      call mem_dealloc(tmp)
-     write(lupri,*) 'build_fragment'
      call build_fragment(molecule,neighbourFrag,basis,iAtoms,nNeighbour,lupri)
      call mem_dealloc(iAtoms)
-     write(lupri,*) 'fragment build'
   endif
 end subroutine
 
