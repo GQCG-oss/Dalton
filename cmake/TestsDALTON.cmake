@@ -1,15 +1,8 @@
 macro(add_dalton_test _name _labels)
-    if("${_name}" STREQUAL "pehf_cube")
-        add_test(
-            ${_name}
-            ${CMAKE_SOURCE_DIR}/DALTON/test/TEST -param "-get *.cube" -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null -result-directory ${CMAKE_BINARY_DIR}/test_${_name} ${_name}
-            )
-    else()
-        add_test(
-            ${_name}
-            ${CMAKE_SOURCE_DIR}/DALTON/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null -result-directory ${CMAKE_BINARY_DIR}/test_${_name} ${_name}
-            )
-    endif()
+    add_test(
+        ${_name}
+        ${CMAKE_SOURCE_DIR}/DALTON/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null -result-directory ${CMAKE_BINARY_DIR}/test_${_name} ${_name}
+        )
     if(NOT "${_labels}" STREQUAL "")
         set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
     endif()
@@ -369,26 +362,26 @@ if(ENABLE_PELIB)
 add_dalton_runtest(pehf_iter          "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_direct        "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_gspol         "dalton;peqm;runtest;parallel;short")
-add_dalton_runtest(pehf_damp_ind      "dalton;peqm;runtest;parallel;short;multistep")
+add_dalton_runtest(pehf_isopol        "dalton;peqm;runtest;parallel;short")
+add_dalton_runtest(pehf_zero          "dalton;peqm;runtest;parallel;short")
+add_dalton_runtest(pehf_damp_ind      "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_damp_mul      "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_damp_core     "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_restart       "dalton;peqm;runtest;parallel;short;multistep")
-add_dalton_test(pehf_border           "dalton;peqm;parallel;short;multistep")
-add_dalton_test(pehf_cube             "dalton;peqm;parallel;short")
+add_dalton_runtest(pehf_border        "dalton;peqm;runtest;parallel;short")
+add_dalton_runtest(pehf_cube          "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehsrohf_wft       "dalton;peqm;runtest;parallel;short;essential")
-add_dalton_test(perohf_prop           "dalton;peqm;parallel;short")
+add_dalton_runtest(perohf_alpha       "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_1pa           "dalton;peqm;runtest;parallel;short;essential")
 add_dalton_runtest(pehf_2pa           "dalton;peqm;runtest;parallel;short;essential")
 add_dalton_runtest(pehf_alpha         "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_beta          "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_cpp           "dalton;peqm;runtest;parallel;short;essential")
-add_dalton_test(pehf_nomb             "dalton;peqm;parallel;short;multistep")
+add_dalton_runtest(pehf_nomb          "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_lao           "dalton;peqm;runtest;parallel;short")
 add_dalton_runtest(pehf_lao_redist    "dalton;peqm;runtest;parallel;short;essential")
-add_dalton_test(pemcscf_1             "dalton;peqm;parallel;short")
-add_dalton_test(pemcscf_2             "dalton;peqm;parallel;short")
-add_dalton_test(pemcscf_3             "dalton;peqm;parallel;short")
-add_dalton_test(pesoppa_excit         "dalton;peqm;soppa;short")
+add_dalton_runtest(pemcscf            "dalton;peqm;runtest;parallel;short")
+add_dalton_runtest(pesoppa_excit      "dalton;peqm;runtest;soppa;short")
 endif()
 
 if(ENABLE_QFITLIB)
