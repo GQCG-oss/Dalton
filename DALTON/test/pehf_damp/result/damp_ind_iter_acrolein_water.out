@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2014.0
+    This is output from DALTON 2015.0
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2014.0 (2014), see http://daltonprogram.org
+       Release DALTON2014.0 (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Dec  1 17:44:27 2014
+     Date and time (Linux)  : Mon Feb 23 18:48:40 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/convert
-   2) /home/magnus/Projects/dalton_devel/dalton/build_release/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pehf_damp
+   2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
 
 
 Compilation information
@@ -151,26 +151,22 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.17.3-200.fc20.x86_64
+ System                   | Linux-3.18.6-200.fc21.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- C++ compiler             | /usr/local/bin/mpicxx
- C++ compiler version     | unknown
- BLAS                     | /lib64/atlas-sse3/libf77blas.so;/lib64/atlas-sse3/
-                          | libcblas.so;/lib64/atlas-sse3/libatlas.so
- LAPACK                   | /lib64/atlas-sse3/libatlas.so;/lib64/atlas-sse3/li
-                          | blapack.so
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 33e513e6ec145230f67a26e0d0b2095c11a06f8e
- Configuration time       | 2014-12-01 16:28:52.079620
-
- * Sequential calculation.
+ Last Git revision        | 46c9aaba256772eebe3009de63bb35fbe126d126
+ Configuration time       | 2015-02-23 11:42:33.949754
 
 
    Content of the .dal input file
@@ -180,19 +176,11 @@ Compilation information
 .RUN WAVE FUNCTION                                
 .PEQM                                             
 *PEQM                                             
-.DAMP CORE                                        
-2.1304                                            
-POLARIZABILITIES                                  
-8                                                 
-8.6959                                            
-8.6959                                            
-8.6959                                            
-5.7494                                            
-2.7927                                            
-2.7927                                            
-2.7927                                            
-2.7927                                            
 .VERBOSE                                          
+.ITERATIVE                                        
+1.0d-10                                           
+.DAMP INDUCED                                     
+2.1304                                            
 **WAVE FUNCTIONS                                  
 .HF                                               
 **END OF                                          
@@ -254,7 +242,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -262,7 +250,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -270,7 +258,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -414,29 +402,21 @@ H              2.675323   -2.516779   -0.000673
 
   Reading potential input file for polarizable embedding calculation
 
-  Polarizable embedding information
-  ---------------------------------
+    .------------------------------------------------.
+    | Information from polarizable embedding library |
+    `------------------------------------------------´
 
-    Number of classical sites:     10
+      Number of classical sites:     10
 
-    Multipole moments upto 3rd order.
+      Multipole moments upto 2nd order.
 
-    Dipole-dipole polarizabilities.
+      Dipole-dipole polarizabilities.
 
-    Iterative solver for induced moments will be used
-    with convergence threshold: 1.0E-08
+      Iterative solver for induced moments will be used
+      with convergence threshold: 1.0E-10
 
-    Interactions between electrons/nuclei and inducible moments will be damped using Tholes scheme.
-    Damping coefficient:  2.1304
-    Core-region polarizabilities:
-            C    8.6959
-            C    8.6959
-            C    8.6959
-            O    5.7494
-            H    2.7927
-            H    2.7927
-            H    2.7927
-            H    2.7927
+      Interactions between inducible moments will be damped using Tholes scheme.
+      Damping coefficient:  2.1304
 
 
                      .---------------------------------------.
@@ -473,9 +453,9 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
- >>>  Time used in TWOINT     is   0.23 seconds
- >>>> Total CPU  time used in HERMIT:   0.28 seconds
- >>>> Total wall time used in HERMIT:   0.28 seconds
+ >>>  Time used in TWOINT     is   0.22 seconds
+ >>>> Total CPU  time used in HERMIT:   0.27 seconds
+ >>>> Total wall time used in HERMIT:   0.27 seconds
 
 
                         .----------------------------------.
@@ -511,7 +491,7 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Dec  1 17:44:27 2014
+     Date and time (Linux)  : Mon Feb 23 18:48:40 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -547,13 +527,13 @@ H              2.675323   -2.516779   -0.000673
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All |    1
-                                           |  A  
+@    Abelian symmetry species          All |    1
+@                                          |  A  
                                        --- |  ---
 @    Occupied SCF orbitals              15 |   15
-     Secondary orbitals                  9 |    9
-     Total number of orbitals           24 |   24
-     Number of basis functions          24 |   24
+@    Secondary orbitals                  9 |    9
+@    Total number of orbitals           24 |   24
+@    Number of basis functions          24 |   24
 
      Optimization information
      ========================
@@ -580,217 +560,219 @@ H              2.675323   -2.516779   -0.000673
       Threshold for discarding integrals :  1.00D-12 )
       Induced dipole moments converged in  4 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.03750715     0.04430148     0.00010040
+                 -0.03675728     0.04731446     0.00010781
 
-@  1  -187.948036166     -4.822330922526E-02    2.01316D+00   -1.88D+02
-      Virial theorem: -V/T =      2.003054
+@  1  -187.943406693     -4.359383679028E-02    2.01912D+00   -1.88D+02
+      Virial theorem: -V/T =      2.003029
 @      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
  -----------------------------------------------------------------------------
-      Induced dipole moments converged in  4 iterations.
+      Induced dipole moments converged in  5 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.00428539    -0.00533574    -0.00001170
+                 -0.00433070    -0.00619946    -0.00001295
 
-@  2  -188.184280723      2.403439388114E-03    1.37075D+00   -2.36D-01
-      Virial theorem: -V/T =      2.009437
-@      MULPOP C      -0.39; C      -0.18; C      -0.25; O       0.36; H       0.07; H       0.15; H       0.12; H       0.13; 
+@  2  -188.180185432      2.891639794154E-03    1.38082D+00   -2.37D-01
+      Virial theorem: -V/T =      2.009443
+@      MULPOP C      -0.40; C      -0.18; C      -0.25; O       0.37; H       0.07; H       0.15; H       0.12; H       0.12; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  5 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.02151563     0.02487135     0.00004036
+
+@  3  -188.313063112     -1.735394906130E-02    1.21415D-01   -1.33D-01
+      Virial theorem: -V/T =      2.007800
+@      MULPOP C       0.19; C      -0.10; C      -0.11; O      -0.29; H       0.05; H       0.09; H       0.08; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.02189911     0.02387173     0.00003780
+                 -0.01961678     0.02338079     0.00003937
 
-@  3  -188.315255245     -1.985561712884E-02    1.22158D-01   -1.31D-01
-      Virial theorem: -V/T =      2.007788
-@      MULPOP C       0.19; C      -0.10; C      -0.11; O      -0.30; H       0.05; H       0.09; H       0.08; H       0.08; 
+@  4  -188.314950178     -1.672786484453E-02    2.80998D-02   -1.89D-03
+      Virial theorem: -V/T =      2.007891
+@      MULPOP C       0.13; C      -0.09; C      -0.09; O      -0.26; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  4 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.01999726     0.02239824     0.00003681
+                 -0.01968025     0.02397049     0.00003841
 
-@  4  -188.317152622     -1.912239839313E-02    2.80567D-02   -1.90D-03
-      Virial theorem: -V/T =      2.007878
-@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.09; H       0.07; H       0.08; 
- -----------------------------------------------------------------------------
-      Induced dipole moments converged in  3 iterations.
-
-      Polarizable embedding information
-     -----------------------------------
-
-       Input density no.:   1
-
-                        Total induced dipole moment
-                       X              Y              Z
-                 -0.02005180     0.02297653     0.00003590
-
-@  5  -188.317306474     -1.908266495365E-02    9.69062D-03   -1.54D-04
-      Virial theorem: -V/T =      2.007839
+@  5  -188.315103989     -1.668050749180E-02    9.66324D-03   -1.54D-04
+      Virial theorem: -V/T =      2.007853
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-      Induced dipole moments converged in  3 iterations.
+      Induced dipole moments converged in  4 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.02003599     0.02281590     0.00003499
+                 -0.01966499     0.02380875     0.00003803
 
-@  6  -188.317320664     -1.909891287246E-02    2.78913D-03   -1.42D-05
-      Virial theorem: -V/T =      2.007838
+@  6  -188.315118226     -1.669617048475E-02    2.76308D-03   -1.42D-05
+      Virial theorem: -V/T =      2.007852
 @      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-      Induced dipole moments converged in  3 iterations.
+      Induced dipole moments converged in  4 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.02002588     0.02287212     0.00003445
+                 -0.01965490     0.02386584     0.00003764
 
-@  7  -188.317321721     -1.909637504059E-02    7.21847D-04   -1.06D-06
-      Virial theorem: -V/T =      2.007838
+@  7  -188.315119254     -1.669285964215E-02    7.00363D-04   -1.03D-06
+      Virial theorem: -V/T =      2.007852
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01966098     0.02386320     0.00003740
+
+@  8  -188.315119316     -1.669507711825E-02    1.37821D-04   -6.25D-08
+      Virial theorem: -V/T =      2.007851
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  3 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.02003204     0.02286936     0.00003416
+                 -0.01966177     0.02386423     0.00003731
 
-@  8  -188.317321778     -1.909888892532E-02    1.49844D-04   -5.68D-08
-      Virial theorem: -V/T =      2.007838
+@  9  -188.315119319     -1.669502372849E-02    3.08366D-05   -2.63D-09
+      Virial theorem: -V/T =      2.007851
 @      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
       Induced dipole moments converged in  3 iterations.
 
-      Polarizable embedding information
-     -----------------------------------
+      Info from polarizable embedding library:
+     ------------------------------------------
 
        Input density no.:   1
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.02003278     0.02287031     0.00003406
+                 -0.01966204     0.02386462     0.00003730
 
-@  9  -188.317321781     -1.909887914050E-02    3.45647D-05   -3.31D-09
-      Virial theorem: -V/T =      2.007837
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
- -----------------------------------------------------------------------------
-      Induced dipole moments converged in  3 iterations.
-
-      Polarizable embedding information
-     -----------------------------------
-
-       Input density no.:   1
-
-                        Total induced dipole moment
-                       X              Y              Z
-                 -0.02003303     0.02287064     0.00003403
-
-@ 10  -188.317321781     -1.909900950506E-02    9.33097D-06    2.20D-10
+@ 10  -188.315119319     -1.669510359984E-02    8.15574D-06   -1.59D-10
 
 @ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:   -188.317321780791    9.33D-06
+@     Converged SCF energy, gradient:   -188.315119318921    8.16D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
    (incl. contribution from polarizable embedding potential)
 
- Only the five lowest virtual orbital energies printed in each symmetry.
-
  Number of electrons :   30
  Orbital occupations :   15
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.28716170   -11.13960461   -11.05525425   -11.04603689    -1.34264733
-         -1.02339367    -0.82807349    -0.73617216    -0.61628712    -0.60494443
-         -0.52302545    -0.50351576    -0.47849722    -0.36278799    -0.32542297
-          0.20440899     0.38341384     0.59626937     0.62645987     0.65978355
+1 A     -20.28697870   -11.13826689   -11.05470126   -11.04546811    -1.34157738
+         -1.02289727    -0.82735972    -0.73561338    -0.61551597    -0.60376794
+         -0.52165232    -0.50287052    -0.47788105    -0.36057935    -0.32487252
+          0.20510172     0.38392375     0.59679979     0.62701169     0.66017582
+          0.73844830     0.84291291     0.92767642     1.04024862
 
-    E(LUMO) :     0.20440899 au (symmetry 1)
-  - E(HOMO) :    -0.32542297 au (symmetry 1)
+    E(LUMO) :     0.20510172 au (symmetry 1)
+  - E(HOMO) :    -0.32487252 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.52983196 au
+    gap     :     0.52997425 au
 
-      Polarizable embedding energy contributions:
-     ---------------------------------------------
+    .--------------------------------------------------.
+    | Final results from polarizable embedding library |
+    `--------------------------------------------------´
+
+        Polarizable embedding energy contributions:
+       ---------------------------------------------
 
        Electrostatic contributions:
-         Monopoles                 -0.015389703883
-         Dipoles                    0.004180617673
-         Quadrupoles               -0.004904567654
-         Octopoles                 -0.002291528269
+            Monopoles                 -0.015225368614
+            Dipoles                    0.004137730548
+            Quadrupoles               -0.004852904380
 
        Polarization contributions:
-         Electronic                -0.039440702540
-         Nuclear                    0.038623862816
-         Multipole                  0.000123012352
+            Electronic                -0.042866688060
+            Nuclear                    0.041989038211
+            Multipole                  0.000123088696
 
-       Total PE energy:            -0.019099009505
+       Total PE energy:            -0.016695103600
 
-      Polarizable embedding information:
-     ------------------------------------
+               Polarizable embedding information:
+              ------------------------------------
 
-                         Induced dipole moments
-         site          X              Y              Z
-            1     0.00468177     0.01002435     0.00000471
-            2     0.01214728     0.00652704     0.00000655
-            3     0.00143680     0.00040843     0.00000036
-            4     0.03225034     0.02258118     0.00002434
-            5     0.00215218    -0.00024020    -0.00000126
-            6    -0.01315821     0.00409903     0.00000289
-            7    -0.01386700    -0.00633340     0.00000068
-            8    -0.00136551    -0.00073412    -0.00000386
-            9    -0.04200280    -0.01326693     0.00000781
-           10    -0.00230788    -0.00019473    -0.00000819
+                       Induced dipole moments
+       site          X              Y              Z
+          1     0.00474778     0.01005367     0.00000467
+          2     0.01281977     0.00687945     0.00000685
+          3     0.00142965     0.00039454     0.00000035
+          4     0.03409291     0.02385453     0.00002572
+          5     0.00222942    -0.00030793    -0.00000124
+          6    -0.01348713     0.00420161     0.00000343
+          7    -0.01462315    -0.00665998     0.00000096
+          8    -0.00135029    -0.00072511    -0.00000378
+          9    -0.04321082    -0.01364648     0.00000834
+         10    -0.00231018    -0.00017968    -0.00000801
 
-                        Total induced dipole moment
-                       X              Y              Z
-                 -0.02003303     0.02287064     0.00003403
+                      Total induced dipole moment
+                     X              Y              Z
+               -0.01966204     0.02386462     0.00003730
 
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.472       0.472
+ >>>> CPU and wall time for SCF :       0.382       0.381
 
 
                        .-----------------------------------.
@@ -802,16 +784,18 @@ H              2.675323   -2.516779   -0.000673
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -188.317321780791                 
+@    Final HF energy:            -188.315119318921                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.963069631802
-@    Embedding energy:             -0.019099009505
+@    Electronic energy:          -290.963271075836
+@    Embedding energy:             -0.016695103600
 
-@    Final gradient norm:           0.000009330973
+@    Final gradient norm:           0.000008155743
 
  
-     Date and time (Linux)  : Mon Dec  1 17:44:28 2014
+     Date and time (Linux)  : Mon Feb 23 18:48:41 2015
      Host name              : foeroyar                                
+
+File label for MO orbitals:  23Feb15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -819,66 +803,108 @@ H              2.675323   -2.516779   -0.000673
  ------------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 C   :1s    -0.0005  -0.9926   0.0004   0.0013   0.1233  -0.0657   0.1392
-   2 C   :1s     0.0071  -0.0332  -0.0000  -0.0065  -0.2836   0.1853  -0.4285
-   3 C   :2px   -0.0021  -0.0003  -0.0001  -0.0043   0.0477   0.1137  -0.1057
-   4 C   :2py    0.0059  -0.0005   0.0002   0.0011  -0.1463  -0.0899   0.1304
-   6 C   :1s     0.0000   0.0004   0.0392   0.9914   0.0213  -0.1794   0.0530
-   7 C   :1s    -0.0003   0.0061  -0.0062   0.0366  -0.0515   0.4698  -0.1578
-   8 C   :2px    0.0000  -0.0040  -0.0012  -0.0004   0.0281  -0.0165   0.1812
-   9 C   :2py   -0.0006   0.0013   0.0043  -0.0016  -0.0077  -0.0928  -0.1653
-  11 C   :1s    -0.0000   0.0003   0.9916  -0.0386   0.0045  -0.1571  -0.1474
-  12 C   :1s    -0.0001  -0.0001   0.0353  -0.0091  -0.0107   0.4160   0.4325
-  13 C   :2px   -0.0001  -0.0000  -0.0004   0.0013   0.0023  -0.0398   0.0556
-  14 C   :2py   -0.0000   0.0000   0.0012  -0.0045  -0.0054   0.1050  -0.0566
-  16 O   :1s    -0.9943  -0.0002   0.0000  -0.0000   0.2184   0.0460  -0.0787
-  17 O   :1s    -0.0260   0.0058  -0.0001   0.0003  -0.7670  -0.1799   0.3406
-  18 O   :2px   -0.0019   0.0007  -0.0000   0.0002  -0.0542   0.0217  -0.0698
-  19 O   :2py    0.0052  -0.0016   0.0001  -0.0001   0.1483  -0.0078   0.1121
-  21 H   :1s    -0.0002   0.0065  -0.0001   0.0001  -0.0318   0.0480  -0.1541
-  22 H   :1s     0.0002  -0.0000  -0.0002  -0.0067  -0.0082   0.0990  -0.0508
-  23 H   :1s     0.0000   0.0001  -0.0067   0.0004  -0.0019   0.0983   0.1508
-  24 H   :1s     0.0000   0.0001  -0.0067   0.0004  -0.0011   0.0901   0.1894
+   1 C   :1s    -0.0005  -0.9926   0.0004   0.0013   0.1236  -0.0654   0.1388
+   2 C   :1s     0.0071  -0.0332  -0.0000  -0.0065  -0.2843   0.1846  -0.4273
+   3 C   :2px   -0.0021  -0.0003  -0.0001  -0.0043   0.0478   0.1137  -0.1064
+   4 C   :2py    0.0059  -0.0005   0.0002   0.0011  -0.1466  -0.0900   0.1309
+   6 C   :1s     0.0000   0.0004   0.0391   0.9914   0.0214  -0.1794   0.0534
+   7 C   :1s    -0.0003   0.0061  -0.0062   0.0366  -0.0517   0.4699  -0.1592
+   8 C   :2px    0.0000  -0.0040  -0.0012  -0.0004   0.0282  -0.0163   0.1811
+   9 C   :2py   -0.0006   0.0013   0.0043  -0.0016  -0.0078  -0.0927  -0.1656
+  11 C   :1s    -0.0000   0.0003   0.9916  -0.0385   0.0045  -0.1572  -0.1475
+  12 C   :1s    -0.0001  -0.0001   0.0353  -0.0091  -0.0108   0.4162   0.4328
+  13 C   :2px   -0.0001  -0.0000  -0.0004   0.0013   0.0023  -0.0397   0.0558
+  14 C   :2py   -0.0000   0.0000   0.0012  -0.0045  -0.0055   0.1050  -0.0571
+  16 O   :1s    -0.9943  -0.0002   0.0000  -0.0000   0.2181   0.0460  -0.0786
+  17 O   :1s    -0.0260   0.0058  -0.0001   0.0003  -0.7659  -0.1799   0.3399
+  18 O   :2px   -0.0019   0.0007  -0.0000   0.0002  -0.0546   0.0214  -0.0691
+  19 O   :2py    0.0052  -0.0016   0.0001  -0.0001   0.1494  -0.0072   0.1100
+  21 H   :1s    -0.0002   0.0065  -0.0001   0.0001  -0.0319   0.0478  -0.1538
+  22 H   :1s     0.0002  -0.0000  -0.0002  -0.0067  -0.0083   0.0990  -0.0514
+  23 H   :1s     0.0000   0.0001  -0.0067   0.0004  -0.0019   0.0983   0.1511
+  24 H   :1s     0.0000   0.0001  -0.0067   0.0004  -0.0011   0.0902   0.1898
 
     Orbital         8        9       10       11       12       13       14
-   1 C   :1s    -0.0909   0.0076   0.0546   0.0043   0.0290  -0.0000  -0.0049
-   2 C   :1s     0.2954  -0.0226  -0.1855  -0.0097  -0.1109   0.0000   0.0177
-   3 C   :2px   -0.2399  -0.3743   0.0232   0.0874  -0.1996   0.0004   0.2010
-   4 C   :2py   -0.1716  -0.1154  -0.2335  -0.3687   0.0749   0.0002   0.0582
-   5 C   :2pz    0.0002   0.0003   0.0000   0.0001   0.0002   0.5624  -0.0001
-   6 C   :1s     0.1078  -0.0314  -0.0341   0.0048  -0.0185   0.0000  -0.0358
-   7 C   :1s    -0.3318   0.1036   0.0973  -0.0027   0.0805  -0.0000   0.1572
-   8 C   :2px   -0.1323   0.3075  -0.0786  -0.0567   0.2255   0.0001  -0.3136
-   9 C   :2py   -0.1452  -0.0725  -0.2766   0.3253   0.2495   0.0000   0.0574
-  10 C   :2pz    0.0001  -0.0002   0.0001  -0.0000  -0.0001   0.2908   0.0002
-  11 C   :1s    -0.0570   0.0160   0.0142   0.0232   0.0106  -0.0000   0.0069
-  12 C   :1s     0.1779  -0.0655  -0.0632  -0.0646  -0.0296   0.0000  -0.0215
-  13 C   :2px   -0.0487   0.1924  -0.3274   0.1928  -0.3523   0.0001   0.0734
-  14 C   :2py   -0.1707   0.2759   0.2267  -0.2836  -0.2266   0.0001  -0.0641
-  15 C   :2pz    0.0001  -0.0002   0.0001  -0.0000   0.0003   0.1865  -0.0001
-  16 O   :1s     0.0421   0.0009  -0.0748  -0.0565   0.0109  -0.0000  -0.0014
-  17 O   :1s    -0.1930  -0.0063   0.3820   0.3140  -0.0632   0.0000   0.0095
-  18 O   :2px   -0.1248  -0.3473  -0.2213  -0.1862  -0.2257   0.0004  -0.7920
-  19 O   :2py   -0.1722  -0.1246   0.3548   0.4956  -0.1819   0.0002  -0.2833
-  20 O   :2pz    0.0001   0.0003   0.0000  -0.0000   0.0003   0.5787   0.0006
-  21 H   :1s     0.2761   0.2002   0.0382   0.2023   0.0099  -0.0000  -0.3536
-  22 H   :1s    -0.2439   0.1541  -0.1392   0.1750   0.3459  -0.0001  -0.1251
-  23 H   :1s     0.1768  -0.2786   0.0215   0.0443   0.3828  -0.0000  -0.0586
-  24 H   :1s     0.0720   0.0527  -0.3223   0.2084  -0.2832   0.0000   0.1042
+   1 C   :1s    -0.0911   0.0071   0.0550   0.0055   0.0289  -0.0000  -0.0048
+   2 C   :1s     0.2962  -0.0209  -0.1871  -0.0143  -0.1104   0.0000   0.0174
+   3 C   :2px   -0.2392  -0.3751   0.0200   0.0857  -0.2027   0.0004   0.1979
+   4 C   :2py   -0.1728  -0.1146  -0.2298  -0.3699   0.0784   0.0002   0.0576
+   5 C   :2pz    0.0002   0.0003   0.0000   0.0001   0.0002   0.5632  -0.0001
+   6 C   :1s     0.1076  -0.0309  -0.0344   0.0042  -0.0183   0.0000  -0.0360
+   7 C   :1s    -0.3314   0.1019   0.0982  -0.0006   0.0799  -0.0000   0.1580
+   8 C   :2px   -0.1333   0.3082  -0.0752  -0.0548   0.2281   0.0002  -0.3122
+   9 C   :2py   -0.1452  -0.0717  -0.2803   0.3251   0.2458   0.0000   0.0579
+  10 C   :2pz    0.0001  -0.0002   0.0001   0.0000  -0.0001   0.2917   0.0002
+  11 C   :1s    -0.0567   0.0157   0.0140   0.0234   0.0103  -0.0000   0.0069
+  12 C   :1s     0.1769  -0.0647  -0.0626  -0.0654  -0.0288   0.0000  -0.0217
+  13 C   :2px   -0.0493   0.1950  -0.3284   0.1857  -0.3538   0.0001   0.0722
+  14 C   :2py   -0.1705   0.2749   0.2313  -0.2836  -0.2230   0.0001  -0.0643
+  15 C   :2pz    0.0001  -0.0002   0.0001  -0.0000   0.0003   0.1872  -0.0000
+  16 O   :1s     0.0422   0.0014  -0.0747  -0.0576   0.0117  -0.0000  -0.0013
+  17 O   :1s    -0.1932  -0.0088   0.3807   0.3191  -0.0675   0.0000   0.0092
+  18 O   :2px   -0.1238  -0.3430  -0.2208  -0.1909  -0.2211   0.0004  -0.7941
+  19 O   :2py   -0.1702  -0.1255   0.3489   0.4971  -0.1868   0.0002  -0.2844
+  20 O   :2pz    0.0001   0.0002   0.0000  -0.0000   0.0002   0.5770   0.0006
+  21 H   :1s     0.2769   0.2013   0.0368   0.2023   0.0097  -0.0000  -0.3533
+  22 H   :1s    -0.2441   0.1541  -0.1392   0.1774   0.3447  -0.0000  -0.1237
+  23 H   :1s     0.1767  -0.2793   0.0196   0.0487   0.3820  -0.0000  -0.0578
+  24 H   :1s     0.0713   0.0553  -0.3243   0.2022  -0.2854   0.0000   0.1032
 
-    Orbital        15       16       17
-   5 C   :2pz    0.1682  -0.5379  -0.6702
-  10 C   :2pz   -0.5666  -0.3988   0.7308
-  15 C   :2pz   -0.5857   0.6323  -0.5309
-  20 O   :2pz    0.4119   0.5832   0.4466
+    Orbital        15       16       17       18       19       20       21
+   1 C   :1s    -0.0000   0.0000   0.0000   0.0143  -0.1917   0.0177  -0.0006
+   2 C   :1s     0.0000  -0.0000  -0.0000  -0.0883   1.1840  -0.1141   0.0217
+   3 C   :2px    0.0001  -0.0003  -0.0004  -0.3382   0.0346  -0.0618  -0.8905
+   4 C   :2py    0.0000  -0.0001  -0.0002  -0.2790  -0.4584   0.1676  -0.2491
+   5 C   :2pz    0.1701  -0.5362  -0.6705   0.0003   0.0001  -0.0000   0.0006
+   6 C   :1s    -0.0000  -0.0000   0.0000   0.0515   0.1061   0.0122  -0.1869
+   7 C   :1s     0.0000   0.0000  -0.0000  -0.3174  -0.6267  -0.0476   1.2332
+   8 C   :2px   -0.0003  -0.0002   0.0004  -0.5130   0.4220  -0.1284   0.0046
+   9 C   :2py   -0.0001  -0.0001   0.0001  -0.3426  -0.2335   0.2851   0.2005
+  10 C   :2pz   -0.5660  -0.4000   0.7302   0.0003  -0.0002   0.0000  -0.0000
+  11 C   :1s    -0.0000   0.0000  -0.0000  -0.0041  -0.0387  -0.2035   0.0529
+  12 C   :1s     0.0000  -0.0000   0.0000   0.0116   0.2262   1.3027  -0.3331
+  13 C   :2px   -0.0003   0.0004  -0.0003  -0.6033   0.3038   0.0476  -0.0080
+  14 C   :2py   -0.0001   0.0001  -0.0001  -0.1970  -0.0364  -0.4671  -0.4166
+  15 C   :2pz   -0.5857   0.6326  -0.5302   0.0004  -0.0002   0.0001   0.0001
+  16 O   :1s    -0.0000  -0.0000  -0.0000  -0.0178   0.0223   0.0101   0.0040
+  17 O   :1s     0.0000  -0.0000   0.0000   0.1244  -0.1270  -0.0743  -0.0284
+  18 O   :2px    0.0002   0.0003   0.0003   0.1660  -0.0369  -0.0319   0.2199
+  19 O   :2py    0.0001   0.0002   0.0001  -0.1106   0.1903   0.0786   0.1265
+  20 O   :2pz    0.4120   0.5837   0.4480  -0.0001  -0.0000  -0.0000  -0.0002
+  21 H   :1s     0.0000   0.0000  -0.0000  -0.3593  -0.9173   0.1873  -0.6370
+  22 H   :1s    -0.0000   0.0000   0.0001   0.8180   0.2527  -0.0677  -0.6990
+  23 H   :1s     0.0000   0.0000  -0.0000  -0.5802   0.1108  -0.9321  -0.0672
+  24 H   :1s    -0.0000   0.0000   0.0000   0.5294  -0.4409  -0.8055   0.0777
+
+    Orbital        22       23       24
+   1 C   :1s    -0.1183   0.0249  -0.0387
+   2 C   :1s     0.7778  -0.1794   0.2556
+   3 C   :2px   -0.1852  -0.6837  -0.1197
+   4 C   :2py    0.6537   0.2353   0.8371
+   6 C   :1s     0.0535   0.0303  -0.0695
+   7 C   :1s    -0.3753  -0.2462   0.5461
+   8 C   :2px    0.1995  -0.9720  -0.1125
+   9 C   :2py    0.4633   0.3092  -1.0292
+  11 C   :1s    -0.0307  -0.0449   0.0840
+  12 C   :1s     0.2257   0.3344  -0.6637
+  13 C   :2px   -0.6953   0.5633   0.3681
+  14 C   :2py    0.4007   0.6970  -0.7159
+  16 O   :1s     0.0882   0.0264   0.0681
+  17 O   :1s    -0.6324  -0.1996  -0.5182
+  18 O   :2px   -0.2581   0.0468  -0.2004
+  19 O   :2py    0.6638   0.2387   0.4946
+  21 H   :1s    -0.0793  -0.1650   0.2454
+  22 H   :1s    -0.2406   0.4030   0.3749
+  23 H   :1s    -0.2208   0.5470   0.0474
+  24 H   :1s     0.5318  -0.3790  -0.1526
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.48 seconds
- >>>> Total wall time used in SIRIUS :      0.48 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.39 seconds
+ >>>> Total wall time used in SIRIUS :      0.39 seconds
 
  
-     Date and time (Linux)  : Mon Dec  1 17:44:28 2014
+     Date and time (Linux)  : Mon Feb 23 18:48:41 2015
      Host name              : foeroyar                                
 
 
@@ -886,9 +912,9 @@ H              2.675323   -2.516779   -0.000673
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.76 seconds
- >>>> Total wall time used in DALTON:   0.76 seconds
+ >>>> Total CPU  time used in DALTON:   0.66 seconds
+ >>>> Total wall time used in DALTON:   0.66 seconds
 
  
-     Date and time (Linux)  : Mon Dec  1 17:44:28 2014
+     Date and time (Linux)  : Mon Feb 23 18:48:41 2015
      Host name              : foeroyar                                
