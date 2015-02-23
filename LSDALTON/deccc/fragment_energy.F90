@@ -281,6 +281,14 @@ contains
        if( (.not. present(Fragment1)) .or. (.not. present(Fragment2)) ) then
           call lsquit('fragment_energy_and_prop: Missing arguments for pair fragment!',-1)
        end if
+
+       if (DECinfo%DECNP) then
+          ! In DECNP No explicit Pair calculations are done
+          ! set pair energy to zero
+          ! TODO: Change dec structure from outside not to have anything 
+          !       related to pairs
+          call put_fragment_energy_contribs_main(0.0e0_realk,0.0e0_realk,myfragment)
+       end if
     end if
 
     times_ccsd => null()
@@ -299,32 +307,37 @@ contains
 
     case(MODEL_MP2) ! MP2 calculation
 
-       if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
-          ! calculate also MP2 density integrals
-          call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
-       else 
-          ! calculate only MP2 energy integrals and MP2 amplitudes
-          call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
-       end if
+       DECNP: if (DECinfo%DECNP) then
+          call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+          call get_decnp_fragment_energy(MyFragment,t1,t2,VOVO)
+       else
+          if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
+             ! calculate also MP2 density integrals
+             call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
+          else 
+             ! calculate only MP2 energy integrals and MP2 amplitudes
+             call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
+          end if
 
 #ifdef MOD_UNRELEASED
-       ! MP2-F12 Code
-       MP2F12: if(DECinfo%F12) then    
-          if(pair) then
-             if(MyFragment%isopt) then
-                call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
-                     &  Fragment1, Fragment2)
+          ! MP2-F12 Code
+          MP2F12: if(DECinfo%F12) then    
+             if(pair) then
+                if(MyFragment%isopt) then
+                   call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
+                      &  Fragment1, Fragment2)
+                end if
+             else
+                ! Calculate F12 only for optimized fragment or if it has been requested by input
+                if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                   call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
+                end if
              end if
-          else
-             ! Calculate F12 only for optimized fragment or if it has been requested by input
-             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
-                call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
-             end if
-          end if
-       !> Free cabs after each calculation
-       call free_cabs()
-    endif MP2F12
+             !> Free cabs after each calculation
+             call free_cabs()
+          end if MP2F12
 #endif
+       end if DECNP
 
     case(MODEL_RIMP2) ! RIMP2 calculation
 
@@ -507,59 +520,61 @@ contains
 
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
-
-       call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
-       if(pair) then
-          ! Pair fragment
-          call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
-               & Fragment1, Fragment2, MyFragment)
-             
-          !For sosex contribution, as the residual
-          !is the same for sosex and drpa
-          !the energies can be calculated in one step
-          if(MyFragment%ccmodel == MODEL_RPA) then
-            call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
-              & Fragment1, Fragment2, MyFragment,.true.)
-          endif
-       else
-          ! Atomic fragment
-          call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
-          !For sosex contribution, as the residual
-          !is the same for sosex and drpa
-          !the energies can be calculated in one step
-          if(MyFragment%ccmodel == MODEL_RPA) then
-            call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
-               & t2virt,MyFragment,doSOS=.true.)
-          endif
-       end if
-       call tensor_free(VOVOvirtTMP)
-
-    else ! use VOVOvirt as it is -- MOST COMMON CASE
-
-       if(pair) then
-          ! Pair fragment
-          call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
-               & Fragment1, Fragment2, MyFragment)
-          !For sosex contribution, as the residual
-          !is the same for sosex and drpa
-          !the energies can be calculated in one step
-          if(MyFragment%ccmodel == MODEL_RPA) then
+    if (.not.DECinfo%DECNP) then
+       if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
+        
+          call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
+          if(pair) then
+             ! Pair fragment
+             call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
+                  & Fragment1, Fragment2, MyFragment)
+                
+             !For sosex contribution, as the residual
+             !is the same for sosex and drpa
+             !the energies can be calculated in one step
+             if(MyFragment%ccmodel == MODEL_RPA) then
+               call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
+                 & Fragment1, Fragment2, MyFragment,.true.)
+             endif
+          else
+             ! Atomic fragment
+             call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
+             !For sosex contribution, as the residual
+             !is the same for sosex and drpa
+             !the energies can be calculated in one step
+             if(MyFragment%ccmodel == MODEL_RPA) then
+               call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
+                  & t2virt,MyFragment,doSOS=.true.)
+             endif
+          end if
+          call tensor_free(VOVOvirtTMP)
+        
+       else ! use VOVOvirt as it is -- MOST COMMON CASE
+        
+          if(pair) then
+             ! Pair fragment
              call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
-               & Fragment1, Fragment2, MyFragment,.true.)
-          endif
-       else
-          ! Atomic fragment
-          call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
-          !For sosex contribution, as the residual
-          !is the same for sosex and drpa
-          !the energies can be calculated in one step
-          if(MyFragment%ccmodel == MODEL_RPA) then
-             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
-                & t2occ,t2virt,MyFragment,doSOS=.true.)
-          endif
+                  & Fragment1, Fragment2, MyFragment)
+             !For sosex contribution, as the residual
+             !is the same for sosex and drpa
+             !the energies can be calculated in one step
+             if(MyFragment%ccmodel == MODEL_RPA) then
+                call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
+                  & Fragment1, Fragment2, MyFragment,.true.)
+             endif
+          else
+             ! Atomic fragment
+             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
+             !For sosex contribution, as the residual
+             !is the same for sosex and drpa
+             !the energies can be calculated in one step
+             if(MyFragment%ccmodel == MODEL_RPA) then
+                call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
+                   & t2occ,t2virt,MyFragment,doSOS=.true.)
+             endif
+          end if
+        
        end if
-
     end if
 
     !> Memory Stats
@@ -624,11 +639,13 @@ contains
     if(MyFragment%ccmodel == MODEL_CCSDpT)then
        call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
     endif
-    ! Free remaining arrays
-    call tensor_free(VOVOocc)
-    call tensor_free(t2occ)
-    call tensor_free(VOVOvirt)
-    call tensor_free(t2virt)
+    if (.not.DECinfo%DECNP) then
+       ! Free remaining arrays
+       call tensor_free(VOVOocc)
+       call tensor_free(t2occ)
+       call tensor_free(VOVOvirt)
+       call tensor_free(t2virt)
+    end if
     !print *,"s1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"s2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
     !print *,"s3",t2virt%initialized,associated(t2virt%elm1)
@@ -641,6 +658,42 @@ contains
     !print *,"s10",u%initialized,associated(u%elm1)
 
   end subroutine fragment_energy_and_prop
+
+
+  !> Purpose: Contract amplitudes and integrals to calculate DECNP fragment 
+  !           occupied and virtual energy:
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    Feb. 2015
+  subroutine get_decnp_fragment_energy(MyFragment,t1,t2,VOVO)
+
+     implicit none
+
+     !> Atomic fragment
+     type(decfrag),intent(inout) :: MyFragment
+     !> single and double amplitudes from CC calculation (MP2, CCSD...)
+     !  They span the full AOS space: t2(AOS,AOS,AOS,AOS)
+     type(tensor),intent(in) :: t1, t2
+     !> Energy integrals (ai|bj) also span the full AOS space
+     type(tensor),intent(in) :: VOVO
+
+     !TODO: DFor now we assume MP2 model:
+     if (myfragment%ccmodel/=MODEL_MP2) then
+        call lsquit("ERROR(get_decnp_fragment_energy): DECNP only implemented for MP2",&
+           & DECinfo%output)
+     end if
+
+     ! Extract EOS indices for amplitudes and integrals
+     ! ************************************************
+     !call tensor_extract_decnp_indices(t2,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
+     !call tensor_extract_decnp_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc,tensor_virtEOS=VOVOvirt)
+
+     ! Get energy contributions
+     ! Set to zero for now
+     call put_fragment_energy_contribs_main(0.0e0_realk,0.0e0_realk,myfragment)
+
+
+  end subroutine get_decnp_fragment_energy
 
 
   !> \brief Contract amplitudes, multipliers, and integrals to calculate atomic fragment Lagrangian energy.

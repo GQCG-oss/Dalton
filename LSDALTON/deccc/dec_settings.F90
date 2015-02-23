@@ -411,6 +411,8 @@ contains
           ! E_P = sum_(i \in P) sum_(j,a,b \in [P]) E^{ab}_{ij}
        case('.DECNP')
           DECinfo%DECNP=.true.
+          DECinfo%PairEstimate=.false.
+          !TODO: DECNP: Implement sanity check for options not compatible with DECNP
 
           ! CC model
        case('.MP2') 
@@ -905,6 +907,7 @@ contains
        end if
 
     end if DoDECCO
+
 
 
     ! Check that array4OnFile is only called for the cases where it is implemented

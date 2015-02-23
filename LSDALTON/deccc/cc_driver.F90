@@ -852,8 +852,8 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
    real(realk) :: ccenergy
    logical :: local
 
-   ! Sanity check: This routine is not intended for MP2
-   if(MyFragment%ccmodel == MODEL_MP2) then
+   ! Sanity check: This routine is not intended for MP2 (except for DECNP)
+   if(MyFragment%ccmodel == MODEL_MP2 .and. (.not.DECinfo%DECNP)) then
       call lsquit('fragment_ccsolver cannot be used for MP2!',&
       & DECinfo%output)
    end if

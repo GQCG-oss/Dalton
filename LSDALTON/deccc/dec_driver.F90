@@ -475,13 +475,15 @@ contains
 
     ! Plot pair interaction energies using occ. partitioning scheme
     ! *************************************************************
-    IF(DECinfo%onlyVirtPart)THEN
-       call get_virtfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
-    ELSE
-       call get_occfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
-    ENDIF
-    call plot_pair_energies(nfrags,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
-         & MyMolecule,dofrag)
+    if (.not.DECinfo%DECNP) then
+       IF(DECinfo%onlyVirtPart)THEN
+          call get_virtfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+       ELSE
+          call get_occfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+       ENDIF
+       call plot_pair_energies(nfrags,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
+            & MyMolecule,dofrag)
+    end if
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     mastertime = twall2-twall1
