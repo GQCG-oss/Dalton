@@ -2273,6 +2273,7 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
+    call ls_mpi_buffer(DECitem%DECNP,Master)
     call ls_mpi_buffer(DECitem%frozencore,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)

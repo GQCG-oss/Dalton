@@ -137,6 +137,8 @@ module dec_typedef_module
      logical :: gcbasis
      !> DEC-CC orbital-based (DECCO)
      logical :: DECCO
+     !> DEC-CC orbital-based (DECNP)
+     logical :: DECNP
 
 
 

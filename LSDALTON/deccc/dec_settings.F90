@@ -59,6 +59,9 @@ contains
     ! Orbital-based DEC scheme 
     DECinfo%DECCO = .false.
 
+    ! Alternative DEC with no pairs
+    DECinfo%DECNP = .false.
+
     ! Max memory measured in GB. By default set to 2 GB
     DECinfo%memory                 = 2.0E0_realk
     DECinfo%memory_defined         = .false.
@@ -402,6 +405,12 @@ contains
           ! DEC orbital-based
        case('.DECCO')
           DECinfo%DECCO=.true.
+
+          ! Alternaitve DEC energy formulation with no pairs:
+          ! E_corr = sum_P E_P
+          ! E_P = sum_(i \in P) sum_(j,a,b \in [P]) E^{ab}_{ij}
+       case('.DECNP')
+          DECinfo%DECNP=.true.
 
           ! CC model
        case('.MP2') 
