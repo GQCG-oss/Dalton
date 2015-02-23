@@ -302,9 +302,9 @@ contains
        if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating MP2 integrals (only energy) and MP2 amplitudes...'
     end if
     if(MyFragment%nEOSatoms==2) then ! pair fragment
-       if(master) write(DECinfo%output,'(a,3i8)') '#PAIRDIMS# basis,occ,virt ', nbasis,nocc,nvirt
+       if(master.and.DECinfo%print_small_calc) write(DECinfo%output,'(a,3i8)') '#PAIRDIMS# basis,occ,virt ', nbasis,nocc,nvirt
     else ! single fragment
-       if(master) write(DECinfo%output,'(a,3i8)') '#SINGLEDIMS# basis,occ,virt ', nbasis,nocc,nvirt
+       if(master.and.DECinfo%print_small_calc) write(DECinfo%output,'(a,3i8)') '#SINGLEDIMS# basis,occ,virt ', nbasis,nocc,nvirt
     end if
 
 
@@ -443,7 +443,7 @@ contains
 
     CALL LSTIMER('MP2workhorse BatchesInit: ',TS2,TE2,DECinfo%output,ForcePrint)
 
-    if(master) write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
+    if(master.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
     IF(.NOT.DECinfo%useIchor)THEN
        ! Translate batchindex to orbital index
@@ -489,7 +489,7 @@ contains
             & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
     ENDIF
 
-    if(master) write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
+    if(master.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
     IF(.NOT.DECinfo%useIchor)THEN
        ! Translate batchindex to orbital index
        ! -------------------------------------
@@ -530,7 +530,7 @@ contains
        V(2,i) = bat%virtbatch*i
     end do
     V(2,nvbatches)=nvirt
-    if(master) write(DECinfo%output,*) 'BATCH: Number of virtual batches =', nvbatches
+    if(master.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BATCH: Number of virtual batches =', nvbatches
 
 
     ! *************************************************************
@@ -3686,7 +3686,7 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
-  doprint = printstuff
+  doprint = (printstuff.and.DECinfo%print_small_calc)
   nnod = 1
 #ifdef VAR_MPI
   ! Only print for local master

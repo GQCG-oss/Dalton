@@ -2158,7 +2158,7 @@ CONTAINS
       integer nbast,idmat,LUADMM
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat),Ksave
-      logical :: PRINT_EK3
+      logical :: PRINT_EK3,unrest
       real(realk)  :: EcontADMM(5)
 #ifdef HAS_PCMSOLVER
       type(matrix) :: fockPCM(ndmat)
@@ -2200,7 +2200,7 @@ CONTAINS
             IF(PRINT_EK3)THEN
                ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
                call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),1,Dsym,K(idmat))
-               EK3 = mat_dotproduct(K(idmat),D(idmat))
+               EK3 = mat_dotproduct(K(idmat),D(idmat))*fac/2E0_realk
                EcontADMM(1) = EK3
                IF(ls%input%dalton%ADMMBASISFILE)THEN
                   !save matrix
@@ -2214,7 +2214,7 @@ CONTAINS
                  & EcontADMM,ls%input%dalton%ADMMBASISFILE)
             
             IF(PRINT_EK3)THEN
-               EK2 = mat_dotproduct(K(idmat),D(idmat))
+               EK2 = mat_dotproduct(K(idmat),D(idmat))*fac/2E0_realk
                write(*,*)     "E(K3)= ",EK3
                write(lupri,*) "E(K3)= ",EK3
                write(*,*)     "E(k2)= ",EK2

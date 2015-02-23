@@ -18,6 +18,15 @@ module cc_tools_module
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
    end interface get_tpl_and_tmi
    
+   abstract interface
+      function ab_eq_c(a,b) result(c)
+         use precision
+         import
+         implicit none
+         real(realk), intent(in) :: a, b
+         real(realk) :: c
+      end function ab_eq_c
+   end interface
    
    contains
 
@@ -1251,22 +1260,27 @@ module cc_tools_module
 #endif
    end subroutine get_I_cged
 
+   !Even though the following two functions are only needed inside
+   !get_I_plusminus_le, they were moved here since PGI decided that internal
+   !procedures may not be targets of function pointers
+   function a_plus_b(a,b) result(c)
+      implicit none
+      real(realk), intent(in)  :: a, b
+      real(realk) :: c
+      c = a + b
+   end function a_plus_b
+   function a_minus_b(a,b) result(c)
+      implicit none
+      real(realk), intent(in)  :: a, b
+      real(realk) :: c
+      c = a - b
+   end function a_minus_b
 
    !> \brief Construct symmetric and antisymmentric combinations of an itegral matrix 
    !> \author Patrick Ettenhuber
    !> \date October 2012
    subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,qu,quarry)
       implicit none
-
-      abstract interface
-      function simple_ab_return_c(a,b) result(c)
-         use precision
-         import
-         real(realk), intent(in) :: a,b
-         real(realk) :: c
-      end function simple_ab_return_c
-      end interface
-
       !> blank workspace
       real(realk),intent(inout) :: w0(:),w2(:)
       !> workspace containing the integrals
@@ -1294,7 +1308,7 @@ module cc_tools_module
       real(realk) ::chk,chk2,el
       real(realk),pointer :: trick(:,:,:)
       logical :: modb,query
-      procedure(simple_ab_return_c), pointer :: a_op_b => null()
+      procedure(ab_eq_c), pointer :: a_op_b => null()
 
       select case(op)
       case ('+')
@@ -1402,26 +1416,14 @@ module cc_tools_module
          enddo
 
          call array_reorder_3d(1.0E0_realk,w2,nb,nb,cagi,[2,3,1],0.0E0_realk,w0)
-         nullify(trick)
+         trick => null()
 
       endif
 
-      contains
 
-      function a_plus_b(a,b) result(c)
-         implicit none
-         real(realk), intent(in) :: a, b
-         real(realk) :: c
-         c = a + b
-      end function a_plus_b
-      function a_minus_b(a,b) result(c)
-         implicit none
-         real(realk), intent(in) :: a, b
-         real(realk) :: c
-         c = a - b
-      end function a_minus_b
 
    end subroutine get_I_plusminus_le
+
 
    !> \brief subroutine to add contributions to the sio4 matrix which enters the
    !B2.2 term in the "non"-parallel region

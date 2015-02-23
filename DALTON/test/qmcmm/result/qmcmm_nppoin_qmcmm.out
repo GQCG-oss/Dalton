@@ -1,0 +1,3034 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2016.alpha
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/bast/devel/dalton/qmcmm/DALTON/test/qmcmm
+   2) /home/bast/devel/dalton/qmcmm/build_opt/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | bast
+ Host                     | donkey
+ System                   | Linux-3.13.0-44-generic
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/intel/composer_xe_2015.0.090/bin/intel64/ifor
+                          | t
+ Fortran compiler version | ifort (IFORT) 15.0.0 20140723
+ C compiler               | /opt/intel/composer_xe_2015.0.090/bin/intel64/icc
+ C compiler version       | icc (ICC) 15.0.0 20140723
+ C++ compiler             | /opt/intel/composer_xe_2015.0.090/bin/intel64/icpc
+ C++ compiler version     | icpc (ICC) 15.0.0 20140723
+ Static linking           | OFF
+ Last Git revision        | f3c46f6a2c8efda1c5d71700de5a9a681d3210db
+ Git branch               | radovan/qmcmm
+ Configuration time       | 2015-02-17 10:46:12.758320
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE                                         
+.DIRECT                                           
+*QMNPMM                                           
+.QMNP                                             
+.NPPOIN                                           
+.PRINT                                            
+ 15                                               
+**WAVE FUNCTIONS                                  
+.HF                                               
+*END OF DALTON INPUT                              
+
+
+   Content of the .mol file
+ ----------------------------
+
+ATOMBASIS                                                                      
+HF on gold surface                                                             
+------------------------                                                       
+AtomTypes=2 NoSymmetry Angstroms                                               
+        9.0   1    Basis=cc-pVDZ                                               
+F            0.00000    0.000000     2.500000                                  
+        1.0   1    Basis=cc-pVDZ                                               
+H            0.00000    0.000000     3.600000                                  
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+                  *********************************************
+                  *** QM/NP Embedding: Nanoparticle(s) data ***
+                  *********************************************
+
+
+  Nanoparticle region contains single nanoparticle.
+
+  Nanoparticle  1 with charge 0.000. Coordinates in au.
+  --------------------------------------------------
+  Atom    Coord. X    Coord. Y    Coord. Z   FF Type
+  ==================================================
+   Au     4.34637     0.00000     0.00000      1
+   Au     0.00000     0.00000     0.00000      1
+   Au    -4.34637     0.00000     0.00000      1
+  ==================================================
+
+  Static force field(s) data for nanoparticle region.
+  -------------------------------------
+  FF Type Polarizability    Capacitance
+  =====================================
+    1        39.52970         1.21590
+  =====================================
+
+  Dynamic force field(s) data for nanoparticle region.
+  ---------------------------------------------------------
+  FF Type Omega(1)  Gamma(1)  Omega(2)  Gamma(2)  Factor
+  =========================================================
+    1      0.00000   0.00000   0.00000   0.00000   0.00000
+  =========================================================
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: HF on gold surface                                                      
+ 2: ------------------------                                                
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   9.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "cc-pVDZ" from the basis set library.
+  Basis set file used for this atomic type with Z =   9 :
+     "/home/bast/devel/dalton/qmcmm/build_opt/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "cc-pVDZ" from the basis set library.
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/bast/devel/dalton/qmcmm/build_opt/basis/cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           F          18.998403
+                           H           1.007825
+
+                       Total mass:    20.006228 amu
+                       Natural abundance:  99.985 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    4.829031
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  F           1    9.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H           1    1.0000     7     5      [4s1p|2s1p]                                        
+  ----------------------------------------------------------------------
+  total:      2   10.0000    33    19
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    6
+  F       :     1  x   0.0000000000    2  y   0.0000000000    3  z   4.7243153125
+  H       :     4  x   0.0000000000    5  y   0.0000000000    6  z   6.8030140500
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            F           H     
+            ------      ------
+ F     :    0.000000
+ H     :    1.100000    0.000000
+
+
+  Max    interatomic separation is    1.1000 Angstrom (    2.0787 Bohr)
+  between atoms    2 and    1, "H     " and "F     ".
+
+  Min HX interatomic separation is    1.1000 Angstrom (    2.0787 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          F            1.100000
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       1.158037          0.000000    1.000000    0.000000
+   IC       1.158037          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is linear.
+
+               B =       436410.12 MHz     (   14.557075 cm-1)
+
+
+@  Nuclear repulsion energy :    4.329631724727 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      4.829030931796
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    6
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -26.383492      -1.672506      -0.827058      -0.730000      -0.730000
+           -0.302144
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  
+
+ Title lines from ".mol" input file:
+     HF on gold surface                                                      
+     ------------------------                                                
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Hartree-Fock calculation.
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+@    QM part is embedded in an environment :
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> HF <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1
+@                                          |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               5 |    5
+@    Secondary orbitals                 14 |   14
+@    Total number of orbitals           19 |   19
+@    Number of basis functions          19 |   19
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations             70
+     ------------------------------------------
+@    Total number of variables               71
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy       Solvation energy    Error norm    Delta(E)
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  3.34D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.02435846     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.01217923
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.02435846     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.01217923     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       7      -0.00304481     0.00000000     0.00000000    -0.02435846     0.00000000
+       8       0.00000000     0.00152240     0.00000000     0.00000000     0.01217923
+       9       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.05293545     0.00000000
+      11      -0.05293545     0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.01323386     0.00000000     0.00000000    -0.05293545     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00304481     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+       3       0.01217923     0.00000000     0.00000000     0.00152240     0.00000000
+       4       0.00000000    -0.02435846     0.00000000     0.00000000     0.05293545
+       5       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.01217923     0.00000000
+       7       0.00000000     0.02529743     0.00000000     0.00000000     0.01323386
+       8       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       9       0.01217923     0.00000000     0.00000000     0.02529743     0.00000000
+      10       0.00000000     0.01323386     0.00000000     0.00000000    -0.82243606
+      11       0.00000000     0.05293545     0.00000000     0.00000000    -0.23007705
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.11503852
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+       1      -0.05293545    -0.01323386     0.00000000
+       4       0.00000000    -0.05293545     0.00000000
+       7       0.05293545     0.00000000     0.00000000
+      10      -0.23007705    -0.11503852     1.00000000
+      11      -0.82243606    -0.23007705     1.00000000
+      12      -0.23007705    -0.82243606     1.00000000
+      13       1.00000000     1.00000000     0.00000000
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1     -33.26554330     0.00000000     0.00000000   -67.79523878     0.00000000
+       2       0.00000000    54.15913917     0.00000000     0.00000000   -31.89902672
+       3       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       4     -67.79523878     0.00000000     0.00000000   -65.27714935     0.00000000
+       5       0.00000000   -31.89902672     0.00000000     0.00000000    70.24472244
+       6       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       7     -63.11134268     0.00000000     0.00000000   -67.79523878     0.00000000
+       8       0.00000000    12.09820493     0.00000000     0.00000000   -31.89902672
+       9       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+      10      -5.14294595     0.00000000     0.00000000    -6.15307206     0.00000000
+      11      -1.66351522     0.00000000     0.00000000    -0.00000000     0.00000000
+      12       6.80646117     0.00000000     0.00000000     6.15307206     0.00000000
+      13       0.59450254     0.00000000     0.00000000    -0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000   -63.11134268     0.00000000     0.00000000    -5.14294595
+       2       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+       3     -31.89902672     0.00000000     0.00000000    12.09820493     0.00000000
+       4       0.00000000   -67.79523878     0.00000000     0.00000000    -6.15307206
+       5       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       6      70.24472244     0.00000000     0.00000000   -31.89902672     0.00000000
+       7       0.00000000   -33.26554330     0.00000000     0.00000000    -6.80646117
+       8       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       9     -31.89902672     0.00000000     0.00000000    54.15913917     0.00000000
+      10       0.00000000    -6.80646117     0.00000000     0.00000000    -1.53350765
+      11       0.00000000     1.66351522     0.00000000     0.00000000     0.50895144
+      12       0.00000000     5.14294595     0.00000000     0.00000000     1.02455621
+      13       0.00000000    -0.59450254     0.00000000     0.00000000     0.38954089
+
+               Column  11     Column  12     Column  13
+       1      -1.66351522     6.80646117     0.59450254
+       4      -0.00000000     6.15307206     0.00000000
+       7       1.66351522     5.14294595    -0.59450254
+      10       0.50895144     1.02455621     0.38954089
+      11      -1.01790288     0.50895144     0.22091822
+      12       0.50895144    -1.53350765     0.38954089
+      13       0.22091822     0.38954089     0.42388046
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00439701
+       2       -0.00000000
+       3        0.00275100
+       4        0.00000000
+       5       -0.00000000
+       6        0.01205730
+       7        0.00439701
+       8       -0.00000000
+       9        0.00275100
+      10       -0.01751267
+      11       -0.03459409
+      12       -0.01751267
+      13        0.00000000
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.10281717
+       2        0.00000000
+       3       -0.20234240
+       4        0.00000000
+       5       -0.00000000
+       6        0.67145341
+       7        0.10281717
+       8        0.00000000
+       9       -0.20234240
+      10       -0.01600811
+      11        0.03201622
+      12       -0.01600811
+      13       -0.02651434
+
+  *** Computed MQ vector end ***
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4      -0.00091083    -0.00959650    -0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645     0.00168278
+       7      -0.00019031    -0.00978999    -0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363     0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926     0.00362027
+      13       0.00004588     0.00147207     0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343    -0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285    -0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641    -0.00611851
+      17      -0.00002294    -0.00177115    -0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658     0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000     0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230     0.00406971     0.00000000
+      10      -0.00641207     0.00000000     0.00000000    -0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670     0.00292777     0.00000000
+      13       0.00000000    -0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291    -0.00533497     0.00000000
+      15       0.00000000    -0.04140369    -0.00651634     0.00000000
+      16       0.00000000    -0.02523491    -0.00954379     0.00000000
+      17       0.00000000    -0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672     0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000     0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13      -0.00548721     0.00000000     0.00000000     0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17      -0.00394088     0.00000000     0.00000000    -0.00020626
+      18       0.00000000    -0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14       0.00087097    -0.15541865
+      15      -0.00081132    -0.00020046    -0.12387102
+      16      -0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054    -0.00066298    -0.00549776    -0.00487528
+      19       0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19       0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.21167088
+       2      -0.00000001    -0.21167088
+       3      -0.04089973    -0.19716734    -0.21167088
+       4       0.00000000     0.00000000     0.00000000    -0.20884645
+       6       0.00248391     0.02617061     0.02967174     0.00000000
+       7       0.00000000     0.00000000     0.00000000    -0.16481650
+       9       0.00051900     0.02669826     0.03573626     0.00000000
+      12      -0.00013338    -0.00427952    -0.00457196     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.01727713
+      15      -0.00867836    -0.07162024    -0.08735239     0.00000000
+      16      -0.01056664    -0.08303399    -0.10088287     0.00000000
+      17       0.00000000     0.00000000     0.00000000    -0.03445741
+      19       0.01084171     0.06584907     0.06972677     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.20884645
+       6       0.00000000    -0.21731972
+       7       0.00000000     0.00000000    -0.20484013
+       8      -0.16481650     0.00000000     0.00000000    -0.20484013
+       9       0.00000000    -0.17681308     0.00000000     0.00000000
+      11       0.01727713     0.00000000     0.00000000     0.01401944
+      12       0.00000000     0.02126745     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.01401944     0.00000000
+      15       0.00000000    -0.04804561     0.00000000     0.00000000
+      16       0.00000000    -0.02624472     0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.04938740     0.00000000
+      18      -0.03445741     0.00000000     0.00000000    -0.04938740
+      19       0.00000000     0.06235892     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.22533220
+      10       0.00000000    -0.20880910
+      11       0.00000000     0.00000000    -0.21299810
+      12       0.01760495     0.00000000     0.00000000    -0.21474003
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.07189880     0.00000000     0.00000000    -0.01283318
+      16      -0.04210680     0.00000000     0.00000000    -0.00243467
+      18       0.00000000     0.00000000    -0.02636670     0.00000000
+      19       0.05627915     0.00000000     0.00000000     0.03400722
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.21299810
+      14       0.00000000    -0.20880910
+      15       0.00000000    -0.00000000    -0.14699360
+      16       0.00000000     0.00000000    -0.13283611    -0.14699337
+      17      -0.02636670     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.01437961     0.01275149
+
+               Column  17     Column  18     Column  19
+      17      -0.14590147
+      18       0.00000000    -0.14590147
+      19       0.00000000     0.00000000    -0.14917807
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4       0.00091083     0.00959650     0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645    -0.00168278
+       7       0.00019031     0.00978999     0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363    -0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926    -0.00362027
+      13      -0.00004588    -0.00147207    -0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343     0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285     0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641     0.00611851
+      17       0.00002294     0.00177115     0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658    -0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000    -0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230    -0.00406971     0.00000000
+      10       0.00641207     0.00000000     0.00000000     0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670    -0.00292777     0.00000000
+      13       0.00000000     0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291     0.00533497     0.00000000
+      15       0.00000000    -0.04140369     0.00651634     0.00000000
+      16       0.00000000    -0.02523491     0.00954379     0.00000000
+      17       0.00000000     0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672    -0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000    -0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13       0.00548721     0.00000000     0.00000000    -0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17       0.00394088     0.00000000     0.00000000     0.00020626
+      18       0.00000000     0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14      -0.00087097    -0.15541865
+      15       0.00081132    -0.00020046    -0.12387102
+      16       0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054     0.00066298     0.00549776     0.00487528
+      19      -0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19      -0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+@  1  -99.9311782626     -4.216843591280E-03    1.01007D+00   -9.99D+01
+      Virial theorem: -V/T =      1.996967
+@      MULPOP F      -0.47; H       0.47; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  2.99D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.02435846     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.01217923
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.02435846     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.01217923     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       7      -0.00304481     0.00000000     0.00000000    -0.02435846     0.00000000
+       8       0.00000000     0.00152240     0.00000000     0.00000000     0.01217923
+       9       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.05293545     0.00000000
+      11      -0.05293545     0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.01323386     0.00000000     0.00000000    -0.05293545     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00304481     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+       3       0.01217923     0.00000000     0.00000000     0.00152240     0.00000000
+       4       0.00000000    -0.02435846     0.00000000     0.00000000     0.05293545
+       5       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.01217923     0.00000000
+       7       0.00000000     0.02529743     0.00000000     0.00000000     0.01323386
+       8       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       9       0.01217923     0.00000000     0.00000000     0.02529743     0.00000000
+      10       0.00000000     0.01323386     0.00000000     0.00000000    -0.82243606
+      11       0.00000000     0.05293545     0.00000000     0.00000000    -0.23007705
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.11503852
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+       1      -0.05293545    -0.01323386     0.00000000
+       4       0.00000000    -0.05293545     0.00000000
+       7       0.05293545     0.00000000     0.00000000
+      10      -0.23007705    -0.11503852     1.00000000
+      11      -0.82243606    -0.23007705     1.00000000
+      12      -0.23007705    -0.82243606     1.00000000
+      13       1.00000000     1.00000000     0.00000000
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1     -33.26554330     0.00000000     0.00000000   -67.79523878     0.00000000
+       2       0.00000000    54.15913917     0.00000000     0.00000000   -31.89902672
+       3       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       4     -67.79523878     0.00000000     0.00000000   -65.27714935     0.00000000
+       5       0.00000000   -31.89902672     0.00000000     0.00000000    70.24472244
+       6       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       7     -63.11134268     0.00000000     0.00000000   -67.79523878     0.00000000
+       8       0.00000000    12.09820493     0.00000000     0.00000000   -31.89902672
+       9       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+      10      -5.14294595     0.00000000     0.00000000    -6.15307206     0.00000000
+      11      -1.66351522     0.00000000     0.00000000    -0.00000000     0.00000000
+      12       6.80646117     0.00000000     0.00000000     6.15307206     0.00000000
+      13       0.59450254     0.00000000     0.00000000    -0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000   -63.11134268     0.00000000     0.00000000    -5.14294595
+       2       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+       3     -31.89902672     0.00000000     0.00000000    12.09820493     0.00000000
+       4       0.00000000   -67.79523878     0.00000000     0.00000000    -6.15307206
+       5       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       6      70.24472244     0.00000000     0.00000000   -31.89902672     0.00000000
+       7       0.00000000   -33.26554330     0.00000000     0.00000000    -6.80646117
+       8       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       9     -31.89902672     0.00000000     0.00000000    54.15913917     0.00000000
+      10       0.00000000    -6.80646117     0.00000000     0.00000000    -1.53350765
+      11       0.00000000     1.66351522     0.00000000     0.00000000     0.50895144
+      12       0.00000000     5.14294595     0.00000000     0.00000000     1.02455621
+      13       0.00000000    -0.59450254     0.00000000     0.00000000     0.38954089
+
+               Column  11     Column  12     Column  13
+       1      -1.66351522     6.80646117     0.59450254
+       4      -0.00000000     6.15307206     0.00000000
+       7       1.66351522     5.14294595    -0.59450254
+      10       0.50895144     1.02455621     0.38954089
+      11      -1.01790288     0.50895144     0.22091822
+      12       0.50895144    -1.53350765     0.38954089
+      13       0.22091822     0.38954089     0.42388046
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00289722
+       2       -0.00000000
+       3        0.00207792
+       4        0.00000000
+       5       -0.00000000
+       6        0.00706949
+       7        0.00289722
+       8        0.00000000
+       9        0.00207792
+      10       -0.01256021
+      11       -0.02259439
+      12       -0.01256021
+      13        0.00000000
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.06977778
+       2       -0.00000000
+       3       -0.08783191
+       4        0.00000000
+       5       -0.00000000
+       6        0.36402645
+       7        0.06977778
+       8        0.00000000
+       9       -0.08783191
+      10       -0.00992648
+      11        0.01985296
+      12       -0.00992648
+      13       -0.01822175
+
+  *** Computed MQ vector end ***
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4      -0.00091083    -0.00959650    -0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645     0.00168278
+       7      -0.00019031    -0.00978999    -0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363     0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926     0.00362027
+      13       0.00004588     0.00147207     0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343    -0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285    -0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641    -0.00611851
+      17      -0.00002294    -0.00177115    -0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658     0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000     0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230     0.00406971     0.00000000
+      10      -0.00641207     0.00000000     0.00000000    -0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670     0.00292777     0.00000000
+      13       0.00000000    -0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291    -0.00533497     0.00000000
+      15       0.00000000    -0.04140369    -0.00651634     0.00000000
+      16       0.00000000    -0.02523491    -0.00954379     0.00000000
+      17       0.00000000    -0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672     0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000     0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13      -0.00548721     0.00000000     0.00000000     0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17      -0.00394088     0.00000000     0.00000000    -0.00020626
+      18       0.00000000    -0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14       0.00087097    -0.15541865
+      15      -0.00081132    -0.00020046    -0.12387102
+      16      -0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054    -0.00066298    -0.00549776    -0.00487528
+      19       0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19       0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.21167088
+       2      -0.00000001    -0.21167088
+       3      -0.04089973    -0.19716734    -0.21167088
+       4       0.00000000     0.00000000     0.00000000    -0.20884645
+       6       0.00248391     0.02617061     0.02967174     0.00000000
+       7       0.00000000     0.00000000     0.00000000    -0.16481650
+       9       0.00051900     0.02669826     0.03573626     0.00000000
+      12      -0.00013338    -0.00427952    -0.00457196     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.01727713
+      15      -0.00867836    -0.07162024    -0.08735239     0.00000000
+      16      -0.01056664    -0.08303399    -0.10088287     0.00000000
+      17       0.00000000     0.00000000     0.00000000    -0.03445741
+      19       0.01084171     0.06584907     0.06972677     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.20884645
+       6       0.00000000    -0.21731972
+       7       0.00000000     0.00000000    -0.20484013
+       8      -0.16481650     0.00000000     0.00000000    -0.20484013
+       9       0.00000000    -0.17681308     0.00000000     0.00000000
+      11       0.01727713     0.00000000     0.00000000     0.01401944
+      12       0.00000000     0.02126745     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.01401944     0.00000000
+      15       0.00000000    -0.04804561     0.00000000     0.00000000
+      16       0.00000000    -0.02624472     0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.04938740     0.00000000
+      18      -0.03445741     0.00000000     0.00000000    -0.04938740
+      19       0.00000000     0.06235892     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.22533220
+      10       0.00000000    -0.20880910
+      11       0.00000000     0.00000000    -0.21299810
+      12       0.01760495     0.00000000     0.00000000    -0.21474003
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.07189880     0.00000000     0.00000000    -0.01283318
+      16      -0.04210680     0.00000000     0.00000000    -0.00243467
+      18       0.00000000     0.00000000    -0.02636670     0.00000000
+      19       0.05627915     0.00000000     0.00000000     0.03400722
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.21299810
+      14       0.00000000    -0.20880910
+      15       0.00000000    -0.00000000    -0.14699360
+      16       0.00000000     0.00000000    -0.13283611    -0.14699337
+      17      -0.02636670     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.01437961     0.01275149
+
+               Column  17     Column  18     Column  19
+      17      -0.14590147
+      18       0.00000000    -0.14590147
+      19       0.00000000     0.00000000    -0.14917807
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4       0.00091083     0.00959650     0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645    -0.00168278
+       7       0.00019031     0.00978999     0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363    -0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926    -0.00362027
+      13      -0.00004588    -0.00147207    -0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343     0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285     0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641     0.00611851
+      17       0.00002294     0.00177115     0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658    -0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000    -0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230    -0.00406971     0.00000000
+      10       0.00641207     0.00000000     0.00000000     0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670    -0.00292777     0.00000000
+      13       0.00000000     0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291     0.00533497     0.00000000
+      15       0.00000000    -0.04140369     0.00651634     0.00000000
+      16       0.00000000    -0.02523491     0.00954379     0.00000000
+      17       0.00000000     0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672    -0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000    -0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13       0.00548721     0.00000000     0.00000000    -0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17       0.00394088     0.00000000     0.00000000     0.00020626
+      18       0.00000000     0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14      -0.00087097    -0.15541865
+      15       0.00081132    -0.00020046    -0.12387102
+      16       0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054     0.00066298     0.00549776     0.00487528
+      19      -0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19      -0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+@  2  -99.9857729085     -1.405997276938E-03    2.90118D-01   -5.46D-02
+      Virial theorem: -V/T =      2.006750
+@      MULPOP F      -0.34; H       0.34; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  2.99D-02  7.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.02435846     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.01217923
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.02435846     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.01217923     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       7      -0.00304481     0.00000000     0.00000000    -0.02435846     0.00000000
+       8       0.00000000     0.00152240     0.00000000     0.00000000     0.01217923
+       9       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.05293545     0.00000000
+      11      -0.05293545     0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.01323386     0.00000000     0.00000000    -0.05293545     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00304481     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+       3       0.01217923     0.00000000     0.00000000     0.00152240     0.00000000
+       4       0.00000000    -0.02435846     0.00000000     0.00000000     0.05293545
+       5       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.01217923     0.00000000
+       7       0.00000000     0.02529743     0.00000000     0.00000000     0.01323386
+       8       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       9       0.01217923     0.00000000     0.00000000     0.02529743     0.00000000
+      10       0.00000000     0.01323386     0.00000000     0.00000000    -0.82243606
+      11       0.00000000     0.05293545     0.00000000     0.00000000    -0.23007705
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.11503852
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+       1      -0.05293545    -0.01323386     0.00000000
+       4       0.00000000    -0.05293545     0.00000000
+       7       0.05293545     0.00000000     0.00000000
+      10      -0.23007705    -0.11503852     1.00000000
+      11      -0.82243606    -0.23007705     1.00000000
+      12      -0.23007705    -0.82243606     1.00000000
+      13       1.00000000     1.00000000     0.00000000
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1     -33.26554330     0.00000000     0.00000000   -67.79523878     0.00000000
+       2       0.00000000    54.15913917     0.00000000     0.00000000   -31.89902672
+       3       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       4     -67.79523878     0.00000000     0.00000000   -65.27714935     0.00000000
+       5       0.00000000   -31.89902672     0.00000000     0.00000000    70.24472244
+       6       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       7     -63.11134268     0.00000000     0.00000000   -67.79523878     0.00000000
+       8       0.00000000    12.09820493     0.00000000     0.00000000   -31.89902672
+       9       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+      10      -5.14294595     0.00000000     0.00000000    -6.15307206     0.00000000
+      11      -1.66351522     0.00000000     0.00000000    -0.00000000     0.00000000
+      12       6.80646117     0.00000000     0.00000000     6.15307206     0.00000000
+      13       0.59450254     0.00000000     0.00000000    -0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000   -63.11134268     0.00000000     0.00000000    -5.14294595
+       2       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+       3     -31.89902672     0.00000000     0.00000000    12.09820493     0.00000000
+       4       0.00000000   -67.79523878     0.00000000     0.00000000    -6.15307206
+       5       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       6      70.24472244     0.00000000     0.00000000   -31.89902672     0.00000000
+       7       0.00000000   -33.26554330     0.00000000     0.00000000    -6.80646117
+       8       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       9     -31.89902672     0.00000000     0.00000000    54.15913917     0.00000000
+      10       0.00000000    -6.80646117     0.00000000     0.00000000    -1.53350765
+      11       0.00000000     1.66351522     0.00000000     0.00000000     0.50895144
+      12       0.00000000     5.14294595     0.00000000     0.00000000     1.02455621
+      13       0.00000000    -0.59450254     0.00000000     0.00000000     0.38954089
+
+               Column  11     Column  12     Column  13
+       1      -1.66351522     6.80646117     0.59450254
+       4      -0.00000000     6.15307206     0.00000000
+       7       1.66351522     5.14294595    -0.59450254
+      10       0.50895144     1.02455621     0.38954089
+      11      -1.01790288     0.50895144     0.22091822
+      12       0.50895144    -1.53350765     0.38954089
+      13       0.22091822     0.38954089     0.42388046
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00326334
+       2        0.00000000
+       3        0.00227305
+       4        0.00000000
+       5       -0.00000000
+       6        0.00819507
+       7        0.00326334
+       8       -0.00000000
+       9        0.00227305
+      10       -0.01389323
+      11       -0.02551611
+      12       -0.01389323
+      13        0.00000000
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.07806219
+       2        0.00000000
+       3       -0.11080874
+       4        0.00000000
+       5       -0.00000000
+       6        0.43064466
+       7        0.07806219
+       8       -0.00000000
+       9       -0.11080874
+      10       -0.01134410
+      11        0.02268820
+      12       -0.01134410
+      13       -0.02034106
+
+  *** Computed MQ vector end ***
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4      -0.00091083    -0.00959650    -0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645     0.00168278
+       7      -0.00019031    -0.00978999    -0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363     0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926     0.00362027
+      13       0.00004588     0.00147207     0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343    -0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285    -0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641    -0.00611851
+      17      -0.00002294    -0.00177115    -0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658     0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000     0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230     0.00406971     0.00000000
+      10      -0.00641207     0.00000000     0.00000000    -0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670     0.00292777     0.00000000
+      13       0.00000000    -0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291    -0.00533497     0.00000000
+      15       0.00000000    -0.04140369    -0.00651634     0.00000000
+      16       0.00000000    -0.02523491    -0.00954379     0.00000000
+      17       0.00000000    -0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672     0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000     0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13      -0.00548721     0.00000000     0.00000000     0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17      -0.00394088     0.00000000     0.00000000    -0.00020626
+      18       0.00000000    -0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14       0.00087097    -0.15541865
+      15      -0.00081132    -0.00020046    -0.12387102
+      16      -0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054    -0.00066298    -0.00549776    -0.00487528
+      19       0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19       0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.21167088
+       2      -0.00000001    -0.21167088
+       3      -0.04089973    -0.19716734    -0.21167088
+       4       0.00000000     0.00000000     0.00000000    -0.20884645
+       6       0.00248391     0.02617061     0.02967174     0.00000000
+       7       0.00000000     0.00000000     0.00000000    -0.16481650
+       9       0.00051900     0.02669826     0.03573626     0.00000000
+      12      -0.00013338    -0.00427952    -0.00457196     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.01727713
+      15      -0.00867836    -0.07162024    -0.08735239     0.00000000
+      16      -0.01056664    -0.08303399    -0.10088287     0.00000000
+      17       0.00000000     0.00000000     0.00000000    -0.03445741
+      19       0.01084171     0.06584907     0.06972677     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.20884645
+       6       0.00000000    -0.21731972
+       7       0.00000000     0.00000000    -0.20484013
+       8      -0.16481650     0.00000000     0.00000000    -0.20484013
+       9       0.00000000    -0.17681308     0.00000000     0.00000000
+      11       0.01727713     0.00000000     0.00000000     0.01401944
+      12       0.00000000     0.02126745     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.01401944     0.00000000
+      15       0.00000000    -0.04804561     0.00000000     0.00000000
+      16       0.00000000    -0.02624472     0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.04938740     0.00000000
+      18      -0.03445741     0.00000000     0.00000000    -0.04938740
+      19       0.00000000     0.06235892     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.22533220
+      10       0.00000000    -0.20880910
+      11       0.00000000     0.00000000    -0.21299810
+      12       0.01760495     0.00000000     0.00000000    -0.21474003
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.07189880     0.00000000     0.00000000    -0.01283318
+      16      -0.04210680     0.00000000     0.00000000    -0.00243467
+      18       0.00000000     0.00000000    -0.02636670     0.00000000
+      19       0.05627915     0.00000000     0.00000000     0.03400722
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.21299810
+      14       0.00000000    -0.20880910
+      15       0.00000000    -0.00000000    -0.14699360
+      16       0.00000000     0.00000000    -0.13283611    -0.14699337
+      17      -0.02636670     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.01437961     0.01275149
+
+               Column  17     Column  18     Column  19
+      17      -0.14590147
+      18       0.00000000    -0.14590147
+      19       0.00000000     0.00000000    -0.14917807
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4       0.00091083     0.00959650     0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645    -0.00168278
+       7       0.00019031     0.00978999     0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363    -0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926    -0.00362027
+      13      -0.00004588    -0.00147207    -0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343     0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285     0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641     0.00611851
+      17       0.00002294     0.00177115     0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658    -0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000    -0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230    -0.00406971     0.00000000
+      10       0.00641207     0.00000000     0.00000000     0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670    -0.00292777     0.00000000
+      13       0.00000000     0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291     0.00533497     0.00000000
+      15       0.00000000    -0.04140369     0.00651634     0.00000000
+      16       0.00000000    -0.02523491     0.00954379     0.00000000
+      17       0.00000000     0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672    -0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000    -0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13       0.00548721     0.00000000     0.00000000    -0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17       0.00394088     0.00000000     0.00000000     0.00020626
+      18       0.00000000     0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14      -0.00087097    -0.15541865
+      15       0.00081132    -0.00020046    -0.12387102
+      16       0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054     0.00066298     0.00549776     0.00487528
+      19      -0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19      -0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+@  3  -99.9887280720     -1.899303503100E-03    9.82975D-02   -2.96D-03
+      Virial theorem: -V/T =      2.000990
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  2.99D-02  7.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.02435846     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.01217923
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.02435846     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.01217923     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       7      -0.00304481     0.00000000     0.00000000    -0.02435846     0.00000000
+       8       0.00000000     0.00152240     0.00000000     0.00000000     0.01217923
+       9       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.05293545     0.00000000
+      11      -0.05293545     0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.01323386     0.00000000     0.00000000    -0.05293545     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00304481     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+       3       0.01217923     0.00000000     0.00000000     0.00152240     0.00000000
+       4       0.00000000    -0.02435846     0.00000000     0.00000000     0.05293545
+       5       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.01217923     0.00000000
+       7       0.00000000     0.02529743     0.00000000     0.00000000     0.01323386
+       8       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       9       0.01217923     0.00000000     0.00000000     0.02529743     0.00000000
+      10       0.00000000     0.01323386     0.00000000     0.00000000    -0.82243606
+      11       0.00000000     0.05293545     0.00000000     0.00000000    -0.23007705
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.11503852
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+       1      -0.05293545    -0.01323386     0.00000000
+       4       0.00000000    -0.05293545     0.00000000
+       7       0.05293545     0.00000000     0.00000000
+      10      -0.23007705    -0.11503852     1.00000000
+      11      -0.82243606    -0.23007705     1.00000000
+      12      -0.23007705    -0.82243606     1.00000000
+      13       1.00000000     1.00000000     0.00000000
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1     -33.26554330     0.00000000     0.00000000   -67.79523878     0.00000000
+       2       0.00000000    54.15913917     0.00000000     0.00000000   -31.89902672
+       3       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       4     -67.79523878     0.00000000     0.00000000   -65.27714935     0.00000000
+       5       0.00000000   -31.89902672     0.00000000     0.00000000    70.24472244
+       6       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       7     -63.11134268     0.00000000     0.00000000   -67.79523878     0.00000000
+       8       0.00000000    12.09820493     0.00000000     0.00000000   -31.89902672
+       9       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+      10      -5.14294595     0.00000000     0.00000000    -6.15307206     0.00000000
+      11      -1.66351522     0.00000000     0.00000000    -0.00000000     0.00000000
+      12       6.80646117     0.00000000     0.00000000     6.15307206     0.00000000
+      13       0.59450254     0.00000000     0.00000000    -0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000   -63.11134268     0.00000000     0.00000000    -5.14294595
+       2       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+       3     -31.89902672     0.00000000     0.00000000    12.09820493     0.00000000
+       4       0.00000000   -67.79523878     0.00000000     0.00000000    -6.15307206
+       5       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       6      70.24472244     0.00000000     0.00000000   -31.89902672     0.00000000
+       7       0.00000000   -33.26554330     0.00000000     0.00000000    -6.80646117
+       8       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       9     -31.89902672     0.00000000     0.00000000    54.15913917     0.00000000
+      10       0.00000000    -6.80646117     0.00000000     0.00000000    -1.53350765
+      11       0.00000000     1.66351522     0.00000000     0.00000000     0.50895144
+      12       0.00000000     5.14294595     0.00000000     0.00000000     1.02455621
+      13       0.00000000    -0.59450254     0.00000000     0.00000000     0.38954089
+
+               Column  11     Column  12     Column  13
+       1      -1.66351522     6.80646117     0.59450254
+       4      -0.00000000     6.15307206     0.00000000
+       7       1.66351522     5.14294595    -0.59450254
+      10       0.50895144     1.02455621     0.38954089
+      11      -1.01790288     0.50895144     0.22091822
+      12       0.50895144    -1.53350765     0.38954089
+      13       0.22091822     0.38954089     0.42388046
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00322571
+       2       -0.00000000
+       3        0.00225385
+       4        0.00000000
+       5       -0.00000000
+       6        0.00806897
+       7        0.00322571
+       8        0.00000000
+       9        0.00225385
+      10       -0.01375626
+      11       -0.02520408
+      12       -0.01375626
+      13        0.00000000
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.07723042
+       2       -0.00000000
+       3       -0.10805785
+       4        0.00000000
+       5       -0.00000000
+       6        0.42301092
+       7        0.07723042
+       8        0.00000000
+       9       -0.10805785
+      10       -0.01119241
+      11        0.02238481
+      12       -0.01119241
+      13       -0.02012068
+
+  *** Computed MQ vector end ***
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4      -0.00091083    -0.00959650    -0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645     0.00168278
+       7      -0.00019031    -0.00978999    -0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363     0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926     0.00362027
+      13       0.00004588     0.00147207     0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343    -0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285    -0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641    -0.00611851
+      17      -0.00002294    -0.00177115    -0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658     0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000     0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230     0.00406971     0.00000000
+      10      -0.00641207     0.00000000     0.00000000    -0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670     0.00292777     0.00000000
+      13       0.00000000    -0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291    -0.00533497     0.00000000
+      15       0.00000000    -0.04140369    -0.00651634     0.00000000
+      16       0.00000000    -0.02523491    -0.00954379     0.00000000
+      17       0.00000000    -0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672     0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000     0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13      -0.00548721     0.00000000     0.00000000     0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17      -0.00394088     0.00000000     0.00000000    -0.00020626
+      18       0.00000000    -0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14       0.00087097    -0.15541865
+      15      -0.00081132    -0.00020046    -0.12387102
+      16      -0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054    -0.00066298    -0.00549776    -0.00487528
+      19       0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19       0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.21167088
+       2      -0.00000001    -0.21167088
+       3      -0.04089973    -0.19716734    -0.21167088
+       4       0.00000000     0.00000000     0.00000000    -0.20884645
+       6       0.00248391     0.02617061     0.02967174     0.00000000
+       7       0.00000000     0.00000000     0.00000000    -0.16481650
+       9       0.00051900     0.02669826     0.03573626     0.00000000
+      12      -0.00013338    -0.00427952    -0.00457196     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.01727713
+      15      -0.00867836    -0.07162024    -0.08735239     0.00000000
+      16      -0.01056664    -0.08303399    -0.10088287     0.00000000
+      17       0.00000000     0.00000000     0.00000000    -0.03445741
+      19       0.01084171     0.06584907     0.06972677     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.20884645
+       6       0.00000000    -0.21731972
+       7       0.00000000     0.00000000    -0.20484013
+       8      -0.16481650     0.00000000     0.00000000    -0.20484013
+       9       0.00000000    -0.17681308     0.00000000     0.00000000
+      11       0.01727713     0.00000000     0.00000000     0.01401944
+      12       0.00000000     0.02126745     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.01401944     0.00000000
+      15       0.00000000    -0.04804561     0.00000000     0.00000000
+      16       0.00000000    -0.02624472     0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.04938740     0.00000000
+      18      -0.03445741     0.00000000     0.00000000    -0.04938740
+      19       0.00000000     0.06235892     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.22533220
+      10       0.00000000    -0.20880910
+      11       0.00000000     0.00000000    -0.21299810
+      12       0.01760495     0.00000000     0.00000000    -0.21474003
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.07189880     0.00000000     0.00000000    -0.01283318
+      16      -0.04210680     0.00000000     0.00000000    -0.00243467
+      18       0.00000000     0.00000000    -0.02636670     0.00000000
+      19       0.05627915     0.00000000     0.00000000     0.03400722
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.21299810
+      14       0.00000000    -0.20880910
+      15       0.00000000    -0.00000000    -0.14699360
+      16       0.00000000     0.00000000    -0.13283611    -0.14699337
+      17      -0.02636670     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.01437961     0.01275149
+
+               Column  17     Column  18     Column  19
+      17      -0.14590147
+      18       0.00000000    -0.14590147
+      19       0.00000000     0.00000000    -0.14917807
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4       0.00091083     0.00959650     0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645    -0.00168278
+       7       0.00019031     0.00978999     0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363    -0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926    -0.00362027
+      13      -0.00004588    -0.00147207    -0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343     0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285     0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641     0.00611851
+      17       0.00002294     0.00177115     0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658    -0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000    -0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230    -0.00406971     0.00000000
+      10       0.00641207     0.00000000     0.00000000     0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670    -0.00292777     0.00000000
+      13       0.00000000     0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291     0.00533497     0.00000000
+      15       0.00000000    -0.04140369     0.00651634     0.00000000
+      16       0.00000000    -0.02523491     0.00954379     0.00000000
+      17       0.00000000     0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672    -0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000    -0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13       0.00548721     0.00000000     0.00000000    -0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17       0.00394088     0.00000000     0.00000000     0.00020626
+      18       0.00000000     0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14      -0.00087097    -0.15541865
+      15       0.00081132    -0.00020046    -0.12387102
+      16       0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054     0.00066298     0.00549776     0.00487528
+      19      -0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19      -0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+@  4  -99.9891295941     -1.840336040428E-03    1.76800D-02   -4.02D-04
+      Virial theorem: -V/T =      2.002700
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  2.99D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.02435846     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.01217923
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.02435846     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.01217923     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       7      -0.00304481     0.00000000     0.00000000    -0.02435846     0.00000000
+       8       0.00000000     0.00152240     0.00000000     0.00000000     0.01217923
+       9       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.05293545     0.00000000
+      11      -0.05293545     0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.01323386     0.00000000     0.00000000    -0.05293545     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00304481     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+       3       0.01217923     0.00000000     0.00000000     0.00152240     0.00000000
+       4       0.00000000    -0.02435846     0.00000000     0.00000000     0.05293545
+       5       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.01217923     0.00000000
+       7       0.00000000     0.02529743     0.00000000     0.00000000     0.01323386
+       8       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       9       0.01217923     0.00000000     0.00000000     0.02529743     0.00000000
+      10       0.00000000     0.01323386     0.00000000     0.00000000    -0.82243606
+      11       0.00000000     0.05293545     0.00000000     0.00000000    -0.23007705
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.11503852
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+       1      -0.05293545    -0.01323386     0.00000000
+       4       0.00000000    -0.05293545     0.00000000
+       7       0.05293545     0.00000000     0.00000000
+      10      -0.23007705    -0.11503852     1.00000000
+      11      -0.82243606    -0.23007705     1.00000000
+      12      -0.23007705    -0.82243606     1.00000000
+      13       1.00000000     1.00000000     0.00000000
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1     -33.26554330     0.00000000     0.00000000   -67.79523878     0.00000000
+       2       0.00000000    54.15913917     0.00000000     0.00000000   -31.89902672
+       3       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       4     -67.79523878     0.00000000     0.00000000   -65.27714935     0.00000000
+       5       0.00000000   -31.89902672     0.00000000     0.00000000    70.24472244
+       6       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       7     -63.11134268     0.00000000     0.00000000   -67.79523878     0.00000000
+       8       0.00000000    12.09820493     0.00000000     0.00000000   -31.89902672
+       9       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+      10      -5.14294595     0.00000000     0.00000000    -6.15307206     0.00000000
+      11      -1.66351522     0.00000000     0.00000000    -0.00000000     0.00000000
+      12       6.80646117     0.00000000     0.00000000     6.15307206     0.00000000
+      13       0.59450254     0.00000000     0.00000000    -0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000   -63.11134268     0.00000000     0.00000000    -5.14294595
+       2       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+       3     -31.89902672     0.00000000     0.00000000    12.09820493     0.00000000
+       4       0.00000000   -67.79523878     0.00000000     0.00000000    -6.15307206
+       5       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       6      70.24472244     0.00000000     0.00000000   -31.89902672     0.00000000
+       7       0.00000000   -33.26554330     0.00000000     0.00000000    -6.80646117
+       8       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       9     -31.89902672     0.00000000     0.00000000    54.15913917     0.00000000
+      10       0.00000000    -6.80646117     0.00000000     0.00000000    -1.53350765
+      11       0.00000000     1.66351522     0.00000000     0.00000000     0.50895144
+      12       0.00000000     5.14294595     0.00000000     0.00000000     1.02455621
+      13       0.00000000    -0.59450254     0.00000000     0.00000000     0.38954089
+
+               Column  11     Column  12     Column  13
+       1      -1.66351522     6.80646117     0.59450254
+       4      -0.00000000     6.15307206     0.00000000
+       7       1.66351522     5.14294595    -0.59450254
+      10       0.50895144     1.02455621     0.38954089
+      11      -1.01790288     0.50895144     0.22091822
+      12       0.50895144    -1.53350765     0.38954089
+      13       0.22091822     0.38954089     0.42388046
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00325406
+       2       -0.00000000
+       3        0.00227015
+       4        0.00000000
+       5       -0.00000000
+       6        0.00815164
+       7        0.00325406
+       8        0.00000000
+       9        0.00227015
+      10       -0.01386369
+      11       -0.02542845
+      12       -0.01386369
+      13        0.00000000
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.07788177
+       2       -0.00000000
+       3       -0.10961569
+       4        0.00000000
+       5       -0.00000000
+       6        0.42777906
+       7        0.07788177
+       8        0.00000000
+       9       -0.10961569
+      10       -0.01129908
+      11        0.02259815
+      12       -0.01129908
+      13       -0.02028765
+
+  *** Computed MQ vector end ***
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4      -0.00091083    -0.00959650    -0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645     0.00168278
+       7      -0.00019031    -0.00978999    -0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363     0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926     0.00362027
+      13       0.00004588     0.00147207     0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343    -0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285    -0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641    -0.00611851
+      17      -0.00002294    -0.00177115    -0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658     0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000     0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230     0.00406971     0.00000000
+      10      -0.00641207     0.00000000     0.00000000    -0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670     0.00292777     0.00000000
+      13       0.00000000    -0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291    -0.00533497     0.00000000
+      15       0.00000000    -0.04140369    -0.00651634     0.00000000
+      16       0.00000000    -0.02523491    -0.00954379     0.00000000
+      17       0.00000000    -0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672     0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000     0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13      -0.00548721     0.00000000     0.00000000     0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17      -0.00394088     0.00000000     0.00000000    -0.00020626
+      18       0.00000000    -0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14       0.00087097    -0.15541865
+      15      -0.00081132    -0.00020046    -0.12387102
+      16      -0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054    -0.00066298    -0.00549776    -0.00487528
+      19       0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19       0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.21167088
+       2      -0.00000001    -0.21167088
+       3      -0.04089973    -0.19716734    -0.21167088
+       4       0.00000000     0.00000000     0.00000000    -0.20884645
+       6       0.00248391     0.02617061     0.02967174     0.00000000
+       7       0.00000000     0.00000000     0.00000000    -0.16481650
+       9       0.00051900     0.02669826     0.03573626     0.00000000
+      12      -0.00013338    -0.00427952    -0.00457196     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.01727713
+      15      -0.00867836    -0.07162024    -0.08735239     0.00000000
+      16      -0.01056664    -0.08303399    -0.10088287     0.00000000
+      17       0.00000000     0.00000000     0.00000000    -0.03445741
+      19       0.01084171     0.06584907     0.06972677     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.20884645
+       6       0.00000000    -0.21731972
+       7       0.00000000     0.00000000    -0.20484013
+       8      -0.16481650     0.00000000     0.00000000    -0.20484013
+       9       0.00000000    -0.17681308     0.00000000     0.00000000
+      11       0.01727713     0.00000000     0.00000000     0.01401944
+      12       0.00000000     0.02126745     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.01401944     0.00000000
+      15       0.00000000    -0.04804561     0.00000000     0.00000000
+      16       0.00000000    -0.02624472     0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.04938740     0.00000000
+      18      -0.03445741     0.00000000     0.00000000    -0.04938740
+      19       0.00000000     0.06235892     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.22533220
+      10       0.00000000    -0.20880910
+      11       0.00000000     0.00000000    -0.21299810
+      12       0.01760495     0.00000000     0.00000000    -0.21474003
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.07189880     0.00000000     0.00000000    -0.01283318
+      16      -0.04210680     0.00000000     0.00000000    -0.00243467
+      18       0.00000000     0.00000000    -0.02636670     0.00000000
+      19       0.05627915     0.00000000     0.00000000     0.03400722
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.21299810
+      14       0.00000000    -0.20880910
+      15       0.00000000    -0.00000000    -0.14699360
+      16       0.00000000     0.00000000    -0.13283611    -0.14699337
+      17      -0.02636670     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.01437961     0.01275149
+
+               Column  17     Column  18     Column  19
+      17      -0.14590147
+      18       0.00000000    -0.14590147
+      19       0.00000000     0.00000000    -0.14917807
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4       0.00091083     0.00959650     0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645    -0.00168278
+       7       0.00019031     0.00978999     0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363    -0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926    -0.00362027
+      13      -0.00004588    -0.00147207    -0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343     0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285     0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641     0.00611851
+      17       0.00002294     0.00177115     0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658    -0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000    -0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230    -0.00406971     0.00000000
+      10       0.00641207     0.00000000     0.00000000     0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670    -0.00292777     0.00000000
+      13       0.00000000     0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291     0.00533497     0.00000000
+      15       0.00000000    -0.04140369     0.00651634     0.00000000
+      16       0.00000000    -0.02523491     0.00954379     0.00000000
+      17       0.00000000     0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672    -0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000    -0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13       0.00548721     0.00000000     0.00000000    -0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17       0.00394088     0.00000000     0.00000000     0.00020626
+      18       0.00000000     0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14      -0.00087097    -0.15541865
+      15       0.00081132    -0.00020046    -0.12387102
+      16       0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054     0.00066298     0.00549776     0.00487528
+      19      -0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19      -0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+@  5  -99.9891511773     -1.878810384072E-03    2.16815D-03   -2.16D-05
+      Virial theorem: -V/T =      2.002430
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  2.99D-02  7.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.02435846     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.01217923
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.02435846     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.01217923     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       7      -0.00304481     0.00000000     0.00000000    -0.02435846     0.00000000
+       8       0.00000000     0.00152240     0.00000000     0.00000000     0.01217923
+       9       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.05293545     0.00000000
+      11      -0.05293545     0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.01323386     0.00000000     0.00000000    -0.05293545     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00304481     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+       3       0.01217923     0.00000000     0.00000000     0.00152240     0.00000000
+       4       0.00000000    -0.02435846     0.00000000     0.00000000     0.05293545
+       5       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.01217923     0.00000000
+       7       0.00000000     0.02529743     0.00000000     0.00000000     0.01323386
+       8       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       9       0.01217923     0.00000000     0.00000000     0.02529743     0.00000000
+      10       0.00000000     0.01323386     0.00000000     0.00000000    -0.82243606
+      11       0.00000000     0.05293545     0.00000000     0.00000000    -0.23007705
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.11503852
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+       1      -0.05293545    -0.01323386     0.00000000
+       4       0.00000000    -0.05293545     0.00000000
+       7       0.05293545     0.00000000     0.00000000
+      10      -0.23007705    -0.11503852     1.00000000
+      11      -0.82243606    -0.23007705     1.00000000
+      12      -0.23007705    -0.82243606     1.00000000
+      13       1.00000000     1.00000000     0.00000000
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1     -33.26554330     0.00000000     0.00000000   -67.79523878     0.00000000
+       2       0.00000000    54.15913917     0.00000000     0.00000000   -31.89902672
+       3       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       4     -67.79523878     0.00000000     0.00000000   -65.27714935     0.00000000
+       5       0.00000000   -31.89902672     0.00000000     0.00000000    70.24472244
+       6       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       7     -63.11134268     0.00000000     0.00000000   -67.79523878     0.00000000
+       8       0.00000000    12.09820493     0.00000000     0.00000000   -31.89902672
+       9       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+      10      -5.14294595     0.00000000     0.00000000    -6.15307206     0.00000000
+      11      -1.66351522     0.00000000     0.00000000    -0.00000000     0.00000000
+      12       6.80646117     0.00000000     0.00000000     6.15307206     0.00000000
+      13       0.59450254     0.00000000     0.00000000    -0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000   -63.11134268     0.00000000     0.00000000    -5.14294595
+       2       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+       3     -31.89902672     0.00000000     0.00000000    12.09820493     0.00000000
+       4       0.00000000   -67.79523878     0.00000000     0.00000000    -6.15307206
+       5       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       6      70.24472244     0.00000000     0.00000000   -31.89902672     0.00000000
+       7       0.00000000   -33.26554330     0.00000000     0.00000000    -6.80646117
+       8       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       9     -31.89902672     0.00000000     0.00000000    54.15913917     0.00000000
+      10       0.00000000    -6.80646117     0.00000000     0.00000000    -1.53350765
+      11       0.00000000     1.66351522     0.00000000     0.00000000     0.50895144
+      12       0.00000000     5.14294595     0.00000000     0.00000000     1.02455621
+      13       0.00000000    -0.59450254     0.00000000     0.00000000     0.38954089
+
+               Column  11     Column  12     Column  13
+       1      -1.66351522     6.80646117     0.59450254
+       4      -0.00000000     6.15307206     0.00000000
+       7       1.66351522     5.14294595    -0.59450254
+      10       0.50895144     1.02455621     0.38954089
+      11      -1.01790288     0.50895144     0.22091822
+      12       0.50895144    -1.53350765     0.38954089
+      13       0.22091822     0.38954089     0.42388046
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00326114
+       2       -0.00000000
+       3        0.00227409
+       4        0.00000000
+       5       -0.00000000
+       6        0.00817261
+       7        0.00326114
+       8        0.00000000
+       9        0.00227409
+      10       -0.01389003
+      11       -0.02548447
+      12       -0.01389003
+      13        0.00000000
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.07804371
+       2       -0.00000000
+       3       -0.11002290
+       4        0.00000000
+       5       -0.00000000
+       6        0.42900004
+       7        0.07804371
+       8        0.00000000
+       9       -0.11002290
+      10       -0.01132596
+      11        0.02265192
+      12       -0.01132596
+      13       -0.02032896
+
+  *** Computed MQ vector end ***
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4      -0.00091083    -0.00959650    -0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645     0.00168278
+       7      -0.00019031    -0.00978999    -0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363     0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926     0.00362027
+      13       0.00004588     0.00147207     0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343    -0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285    -0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641    -0.00611851
+      17      -0.00002294    -0.00177115    -0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658     0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000     0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230     0.00406971     0.00000000
+      10      -0.00641207     0.00000000     0.00000000    -0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670     0.00292777     0.00000000
+      13       0.00000000    -0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291    -0.00533497     0.00000000
+      15       0.00000000    -0.04140369    -0.00651634     0.00000000
+      16       0.00000000    -0.02523491    -0.00954379     0.00000000
+      17       0.00000000    -0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672     0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000     0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13      -0.00548721     0.00000000     0.00000000     0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17      -0.00394088     0.00000000     0.00000000    -0.00020626
+      18       0.00000000    -0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14       0.00087097    -0.15541865
+      15      -0.00081132    -0.00020046    -0.12387102
+      16      -0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054    -0.00066298    -0.00549776    -0.00487528
+      19       0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19       0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.21167088
+       2      -0.00000001    -0.21167088
+       3      -0.04089973    -0.19716734    -0.21167088
+       4       0.00000000     0.00000000     0.00000000    -0.20884645
+       6       0.00248391     0.02617061     0.02967174     0.00000000
+       7       0.00000000     0.00000000     0.00000000    -0.16481650
+       9       0.00051900     0.02669826     0.03573626     0.00000000
+      12      -0.00013338    -0.00427952    -0.00457196     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.01727713
+      15      -0.00867836    -0.07162024    -0.08735239     0.00000000
+      16      -0.01056664    -0.08303399    -0.10088287     0.00000000
+      17       0.00000000     0.00000000     0.00000000    -0.03445741
+      19       0.01084171     0.06584907     0.06972677     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.20884645
+       6       0.00000000    -0.21731972
+       7       0.00000000     0.00000000    -0.20484013
+       8      -0.16481650     0.00000000     0.00000000    -0.20484013
+       9       0.00000000    -0.17681308     0.00000000     0.00000000
+      11       0.01727713     0.00000000     0.00000000     0.01401944
+      12       0.00000000     0.02126745     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.01401944     0.00000000
+      15       0.00000000    -0.04804561     0.00000000     0.00000000
+      16       0.00000000    -0.02624472     0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.04938740     0.00000000
+      18      -0.03445741     0.00000000     0.00000000    -0.04938740
+      19       0.00000000     0.06235892     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.22533220
+      10       0.00000000    -0.20880910
+      11       0.00000000     0.00000000    -0.21299810
+      12       0.01760495     0.00000000     0.00000000    -0.21474003
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.07189880     0.00000000     0.00000000    -0.01283318
+      16      -0.04210680     0.00000000     0.00000000    -0.00243467
+      18       0.00000000     0.00000000    -0.02636670     0.00000000
+      19       0.05627915     0.00000000     0.00000000     0.03400722
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.21299810
+      14       0.00000000    -0.20880910
+      15       0.00000000    -0.00000000    -0.14699360
+      16       0.00000000     0.00000000    -0.13283611    -0.14699337
+      17      -0.02636670     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.01437961     0.01275149
+
+               Column  17     Column  18     Column  19
+      17      -0.14590147
+      18       0.00000000    -0.14590147
+      19       0.00000000     0.00000000    -0.14917807
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4       0.00091083     0.00959650     0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645    -0.00168278
+       7       0.00019031     0.00978999     0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363    -0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926    -0.00362027
+      13      -0.00004588    -0.00147207    -0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343     0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285     0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641     0.00611851
+      17       0.00002294     0.00177115     0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658    -0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000    -0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230    -0.00406971     0.00000000
+      10       0.00641207     0.00000000     0.00000000     0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670    -0.00292777     0.00000000
+      13       0.00000000     0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291     0.00533497     0.00000000
+      15       0.00000000    -0.04140369     0.00651634     0.00000000
+      16       0.00000000    -0.02523491     0.00954379     0.00000000
+      17       0.00000000     0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672    -0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000    -0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13       0.00548721     0.00000000     0.00000000    -0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17       0.00394088     0.00000000     0.00000000     0.00020626
+      18       0.00000000     0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14      -0.00087097    -0.15541865
+      15       0.00081132    -0.00020046    -0.12387102
+      16       0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054     0.00066298     0.00549776     0.00487528
+      19      -0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19      -0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+@  6  -99.9891516918     -1.888652392782E-03    5.15452D-04   -5.14D-07
+      Virial theorem: -V/T =      2.002440
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  2.98D-02  7.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.02435846     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.01217923
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.02435846     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.01217923     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       7      -0.00304481     0.00000000     0.00000000    -0.02435846     0.00000000
+       8       0.00000000     0.00152240     0.00000000     0.00000000     0.01217923
+       9       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.05293545     0.00000000
+      11      -0.05293545     0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.01323386     0.00000000     0.00000000    -0.05293545     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00304481     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+       3       0.01217923     0.00000000     0.00000000     0.00152240     0.00000000
+       4       0.00000000    -0.02435846     0.00000000     0.00000000     0.05293545
+       5       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.01217923     0.00000000
+       7       0.00000000     0.02529743     0.00000000     0.00000000     0.01323386
+       8       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       9       0.01217923     0.00000000     0.00000000     0.02529743     0.00000000
+      10       0.00000000     0.01323386     0.00000000     0.00000000    -0.82243606
+      11       0.00000000     0.05293545     0.00000000     0.00000000    -0.23007705
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.11503852
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+       1      -0.05293545    -0.01323386     0.00000000
+       4       0.00000000    -0.05293545     0.00000000
+       7       0.05293545     0.00000000     0.00000000
+      10      -0.23007705    -0.11503852     1.00000000
+      11      -0.82243606    -0.23007705     1.00000000
+      12      -0.23007705    -0.82243606     1.00000000
+      13       1.00000000     1.00000000     0.00000000
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1     -33.26554330     0.00000000     0.00000000   -67.79523878     0.00000000
+       2       0.00000000    54.15913917     0.00000000     0.00000000   -31.89902672
+       3       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       4     -67.79523878     0.00000000     0.00000000   -65.27714935     0.00000000
+       5       0.00000000   -31.89902672     0.00000000     0.00000000    70.24472244
+       6       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       7     -63.11134268     0.00000000     0.00000000   -67.79523878     0.00000000
+       8       0.00000000    12.09820493     0.00000000     0.00000000   -31.89902672
+       9       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+      10      -5.14294595     0.00000000     0.00000000    -6.15307206     0.00000000
+      11      -1.66351522     0.00000000     0.00000000    -0.00000000     0.00000000
+      12       6.80646117     0.00000000     0.00000000     6.15307206     0.00000000
+      13       0.59450254     0.00000000     0.00000000    -0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000   -63.11134268     0.00000000     0.00000000    -5.14294595
+       2       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+       3     -31.89902672     0.00000000     0.00000000    12.09820493     0.00000000
+       4       0.00000000   -67.79523878     0.00000000     0.00000000    -6.15307206
+       5       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       6      70.24472244     0.00000000     0.00000000   -31.89902672     0.00000000
+       7       0.00000000   -33.26554330     0.00000000     0.00000000    -6.80646117
+       8       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       9     -31.89902672     0.00000000     0.00000000    54.15913917     0.00000000
+      10       0.00000000    -6.80646117     0.00000000     0.00000000    -1.53350765
+      11       0.00000000     1.66351522     0.00000000     0.00000000     0.50895144
+      12       0.00000000     5.14294595     0.00000000     0.00000000     1.02455621
+      13       0.00000000    -0.59450254     0.00000000     0.00000000     0.38954089
+
+               Column  11     Column  12     Column  13
+       1      -1.66351522     6.80646117     0.59450254
+       4      -0.00000000     6.15307206     0.00000000
+       7       1.66351522     5.14294595    -0.59450254
+      10       0.50895144     1.02455621     0.38954089
+      11      -1.01790288     0.50895144     0.22091822
+      12       0.50895144    -1.53350765     0.38954089
+      13       0.22091822     0.38954089     0.42388046
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00326264
+       2       -0.00000000
+       3        0.00227495
+       4        0.00000000
+       5       -0.00000000
+       6        0.00817703
+       7        0.00326264
+       8        0.00000000
+       9        0.00227495
+      10       -0.01389570
+      11       -0.02549638
+      12       -0.01389570
+      13        0.00000000
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.07807805
+       2       -0.00000000
+       3       -0.11010701
+       4        0.00000000
+       5       -0.00000000
+       6        0.42925557
+       7        0.07807805
+       8        0.00000000
+       9       -0.11010701
+      10       -0.01133163
+      11        0.02266325
+      12       -0.01133163
+      13       -0.02033780
+
+  *** Computed MQ vector end ***
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4      -0.00091083    -0.00959650    -0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645     0.00168278
+       7      -0.00019031    -0.00978999    -0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363     0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926     0.00362027
+      13       0.00004588     0.00147207     0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343    -0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285    -0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641    -0.00611851
+      17      -0.00002294    -0.00177115    -0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658     0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000     0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230     0.00406971     0.00000000
+      10      -0.00641207     0.00000000     0.00000000    -0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670     0.00292777     0.00000000
+      13       0.00000000    -0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291    -0.00533497     0.00000000
+      15       0.00000000    -0.04140369    -0.00651634     0.00000000
+      16       0.00000000    -0.02523491    -0.00954379     0.00000000
+      17       0.00000000    -0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672     0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000     0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13      -0.00548721     0.00000000     0.00000000     0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17      -0.00394088     0.00000000     0.00000000    -0.00020626
+      18       0.00000000    -0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14       0.00087097    -0.15541865
+      15      -0.00081132    -0.00020046    -0.12387102
+      16      -0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054    -0.00066298    -0.00549776    -0.00487528
+      19       0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19       0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.21167088
+       2      -0.00000001    -0.21167088
+       3      -0.04089973    -0.19716734    -0.21167088
+       4       0.00000000     0.00000000     0.00000000    -0.20884645
+       6       0.00248391     0.02617061     0.02967174     0.00000000
+       7       0.00000000     0.00000000     0.00000000    -0.16481650
+       9       0.00051900     0.02669826     0.03573626     0.00000000
+      12      -0.00013338    -0.00427952    -0.00457196     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.01727713
+      15      -0.00867836    -0.07162024    -0.08735239     0.00000000
+      16      -0.01056664    -0.08303399    -0.10088287     0.00000000
+      17       0.00000000     0.00000000     0.00000000    -0.03445741
+      19       0.01084171     0.06584907     0.06972677     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.20884645
+       6       0.00000000    -0.21731972
+       7       0.00000000     0.00000000    -0.20484013
+       8      -0.16481650     0.00000000     0.00000000    -0.20484013
+       9       0.00000000    -0.17681308     0.00000000     0.00000000
+      11       0.01727713     0.00000000     0.00000000     0.01401944
+      12       0.00000000     0.02126745     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.01401944     0.00000000
+      15       0.00000000    -0.04804561     0.00000000     0.00000000
+      16       0.00000000    -0.02624472     0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.04938740     0.00000000
+      18      -0.03445741     0.00000000     0.00000000    -0.04938740
+      19       0.00000000     0.06235892     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.22533220
+      10       0.00000000    -0.20880910
+      11       0.00000000     0.00000000    -0.21299810
+      12       0.01760495     0.00000000     0.00000000    -0.21474003
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.07189880     0.00000000     0.00000000    -0.01283318
+      16      -0.04210680     0.00000000     0.00000000    -0.00243467
+      18       0.00000000     0.00000000    -0.02636670     0.00000000
+      19       0.05627915     0.00000000     0.00000000     0.03400722
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.21299810
+      14       0.00000000    -0.20880910
+      15       0.00000000    -0.00000000    -0.14699360
+      16       0.00000000     0.00000000    -0.13283611    -0.14699337
+      17      -0.02636670     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.01437961     0.01275149
+
+               Column  17     Column  18     Column  19
+      17      -0.14590147
+      18       0.00000000    -0.14590147
+      19       0.00000000     0.00000000    -0.14917807
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4       0.00091083     0.00959650     0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645    -0.00168278
+       7       0.00019031     0.00978999     0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363    -0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926    -0.00362027
+      13      -0.00004588    -0.00147207    -0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343     0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285     0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641     0.00611851
+      17       0.00002294     0.00177115     0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658    -0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000    -0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230    -0.00406971     0.00000000
+      10       0.00641207     0.00000000     0.00000000     0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670    -0.00292777     0.00000000
+      13       0.00000000     0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291     0.00533497     0.00000000
+      15       0.00000000    -0.04140369     0.00651634     0.00000000
+      16       0.00000000    -0.02523491     0.00954379     0.00000000
+      17       0.00000000     0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672    -0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000    -0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13       0.00548721     0.00000000     0.00000000    -0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17       0.00394088     0.00000000     0.00000000     0.00020626
+      18       0.00000000     0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14      -0.00087097    -0.15541865
+      15       0.00081132    -0.00020046    -0.12387102
+      16       0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054     0.00066298     0.00549776     0.00487528
+      19      -0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19      -0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+@  7  -99.9891517118     -1.890723992904E-03    7.64252D-05   -2.01D-08
+      Virial theorem: -V/T =      2.002446
+@      MULPOP F      -0.37; H       0.37; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  2.98D-02  8.00D-03
+
+  *** Computed Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1       0.02529743     0.00000000     0.00000000    -0.02435846     0.00000000
+       2       0.00000000     0.02529743     0.00000000     0.00000000     0.01217923
+       3       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       4      -0.02435846     0.00000000     0.00000000     0.02529743     0.00000000
+       5       0.00000000     0.01217923     0.00000000     0.00000000     0.02529743
+       6       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       7      -0.00304481     0.00000000     0.00000000    -0.02435846     0.00000000
+       8       0.00000000     0.00152240     0.00000000     0.00000000     0.01217923
+       9       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.05293545     0.00000000
+      11      -0.05293545     0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.01323386     0.00000000     0.00000000    -0.05293545     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000    -0.00304481     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00152240     0.00000000     0.00000000
+       3       0.01217923     0.00000000     0.00000000     0.00152240     0.00000000
+       4       0.00000000    -0.02435846     0.00000000     0.00000000     0.05293545
+       5       0.00000000     0.00000000     0.01217923     0.00000000     0.00000000
+       6       0.02529743     0.00000000     0.00000000     0.01217923     0.00000000
+       7       0.00000000     0.02529743     0.00000000     0.00000000     0.01323386
+       8       0.00000000     0.00000000     0.02529743     0.00000000     0.00000000
+       9       0.01217923     0.00000000     0.00000000     0.02529743     0.00000000
+      10       0.00000000     0.01323386     0.00000000     0.00000000    -0.82243606
+      11       0.00000000     0.05293545     0.00000000     0.00000000    -0.23007705
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.11503852
+      13       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  11     Column  12     Column  13
+       1      -0.05293545    -0.01323386     0.00000000
+       4       0.00000000    -0.05293545     0.00000000
+       7       0.05293545     0.00000000     0.00000000
+      10      -0.23007705    -0.11503852     1.00000000
+      11      -0.82243606    -0.23007705     1.00000000
+      12      -0.23007705    -0.82243606     1.00000000
+      13       1.00000000     1.00000000     0.00000000
+    ==== End of matrix output ====
+
+  *** Inverted Relay matrix ***
+
+               Column   1     Column   2     Column   3     Column   4     Column   5
+       1     -33.26554330     0.00000000     0.00000000   -67.79523878     0.00000000
+       2       0.00000000    54.15913917     0.00000000     0.00000000   -31.89902672
+       3       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       4     -67.79523878     0.00000000     0.00000000   -65.27714935     0.00000000
+       5       0.00000000   -31.89902672     0.00000000     0.00000000    70.24472244
+       6       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       7     -63.11134268     0.00000000     0.00000000   -67.79523878     0.00000000
+       8       0.00000000    12.09820493     0.00000000     0.00000000   -31.89902672
+       9       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+      10      -5.14294595     0.00000000     0.00000000    -6.15307206     0.00000000
+      11      -1.66351522     0.00000000     0.00000000    -0.00000000     0.00000000
+      12       6.80646117     0.00000000     0.00000000     6.15307206     0.00000000
+      13       0.59450254     0.00000000     0.00000000    -0.00000000     0.00000000
+
+               Column   6     Column   7     Column   8     Column   9     Column  10
+       1       0.00000000   -63.11134268     0.00000000     0.00000000    -5.14294595
+       2       0.00000000     0.00000000    12.09820493     0.00000000     0.00000000
+       3     -31.89902672     0.00000000     0.00000000    12.09820493     0.00000000
+       4       0.00000000   -67.79523878     0.00000000     0.00000000    -6.15307206
+       5       0.00000000     0.00000000   -31.89902672     0.00000000     0.00000000
+       6      70.24472244     0.00000000     0.00000000   -31.89902672     0.00000000
+       7       0.00000000   -33.26554330     0.00000000     0.00000000    -6.80646117
+       8       0.00000000     0.00000000    54.15913917     0.00000000     0.00000000
+       9     -31.89902672     0.00000000     0.00000000    54.15913917     0.00000000
+      10       0.00000000    -6.80646117     0.00000000     0.00000000    -1.53350765
+      11       0.00000000     1.66351522     0.00000000     0.00000000     0.50895144
+      12       0.00000000     5.14294595     0.00000000     0.00000000     1.02455621
+      13       0.00000000    -0.59450254     0.00000000     0.00000000     0.38954089
+
+               Column  11     Column  12     Column  13
+       1      -1.66351522     6.80646117     0.59450254
+       4      -0.00000000     6.15307206     0.00000000
+       7       1.66351522     5.14294595    -0.59450254
+      10       0.50895144     1.02455621     0.38954089
+      11      -1.01790288     0.50895144     0.22091822
+      12       0.50895144    -1.53350765     0.38954089
+      13       0.22091822     0.38954089     0.42388046
+    ==== End of matrix output ====
+
+  *** Computed FV vector start ***
+       1       -0.00326290
+       2       -0.00000000
+       3        0.00227511
+       4        0.00000000
+       5       -0.00000000
+       6        0.00817778
+       7        0.00326290
+       8        0.00000000
+       9        0.00227511
+      10       -0.01389675
+      11       -0.02549849
+      12       -0.01389675
+      13        0.00000000
+
+  *** Computed FV vector end ***
+
+  *** Computed MQ vector start ***
+       1       -0.07808419
+       2       -0.00000000
+       3       -0.11012019
+       4        0.00000000
+       5       -0.00000000
+       6        0.42929790
+       7        0.07808419
+       8        0.00000000
+       9       -0.11012019
+      10       -0.01133261
+      11        0.02266521
+      12       -0.01133261
+      13       -0.02033939
+
+  *** Computed MQ vector end ***
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4      -0.00091083    -0.00959650    -0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645     0.00168278
+       7      -0.00019031    -0.00978999    -0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363     0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926     0.00362027
+      13       0.00004588     0.00147207     0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343    -0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285    -0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641    -0.00611851
+      17      -0.00002294    -0.00177115    -0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658     0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000     0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230     0.00406971     0.00000000
+      10      -0.00641207     0.00000000     0.00000000    -0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670     0.00292777     0.00000000
+      13       0.00000000    -0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291    -0.00533497     0.00000000
+      15       0.00000000    -0.04140369    -0.00651634     0.00000000
+      16       0.00000000    -0.02523491    -0.00954379     0.00000000
+      17       0.00000000    -0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672     0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000     0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13      -0.00548721     0.00000000     0.00000000     0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17      -0.00394088     0.00000000     0.00000000    -0.00020626
+      18       0.00000000    -0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14       0.00087097    -0.15541865
+      15      -0.00081132    -0.00020046    -0.12387102
+      16      -0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054    -0.00066298    -0.00549776    -0.00487528
+      19       0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19       0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.21167088
+       2      -0.00000001    -0.21167088
+       3      -0.04089973    -0.19716734    -0.21167088
+       4       0.00000000     0.00000000     0.00000000    -0.20884645
+       6       0.00248391     0.02617061     0.02967174     0.00000000
+       7       0.00000000     0.00000000     0.00000000    -0.16481650
+       9       0.00051900     0.02669826     0.03573626     0.00000000
+      12      -0.00013338    -0.00427952    -0.00457196     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.01727713
+      15      -0.00867836    -0.07162024    -0.08735239     0.00000000
+      16      -0.01056664    -0.08303399    -0.10088287     0.00000000
+      17       0.00000000     0.00000000     0.00000000    -0.03445741
+      19       0.01084171     0.06584907     0.06972677     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.20884645
+       6       0.00000000    -0.21731972
+       7       0.00000000     0.00000000    -0.20484013
+       8      -0.16481650     0.00000000     0.00000000    -0.20484013
+       9       0.00000000    -0.17681308     0.00000000     0.00000000
+      11       0.01727713     0.00000000     0.00000000     0.01401944
+      12       0.00000000     0.02126745     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.01401944     0.00000000
+      15       0.00000000    -0.04804561     0.00000000     0.00000000
+      16       0.00000000    -0.02624472     0.00000000     0.00000000
+      17       0.00000000     0.00000000    -0.04938740     0.00000000
+      18      -0.03445741     0.00000000     0.00000000    -0.04938740
+      19       0.00000000     0.06235892     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.22533220
+      10       0.00000000    -0.20880910
+      11       0.00000000     0.00000000    -0.21299810
+      12       0.01760495     0.00000000     0.00000000    -0.21474003
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+      15      -0.07189880     0.00000000     0.00000000    -0.01283318
+      16      -0.04210680     0.00000000     0.00000000    -0.00243467
+      18       0.00000000     0.00000000    -0.02636670     0.00000000
+      19       0.05627915     0.00000000     0.00000000     0.03400722
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.21299810
+      14       0.00000000    -0.20880910
+      15       0.00000000    -0.00000000    -0.14699360
+      16       0.00000000     0.00000000    -0.13283611    -0.14699337
+      17      -0.02636670     0.00000000     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.01437961     0.01275149
+
+               Column  17     Column  18     Column  19
+      17      -0.14590147
+      18       0.00000000    -0.14590147
+      19       0.00000000     0.00000000    -0.14917807
+    ==== End of matrix output ====
+
+  *** jaimes AO matrix ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.15577517
+       2      -0.00000001    -0.15577517
+       3      -0.03009938    -0.14510156    -0.15577517
+       4       0.00091083     0.00959650     0.01088033    -0.15619757
+       6       0.00099003     0.01043098     0.01182645    -0.00168278
+       7       0.00019031     0.00978999     0.01310414    -0.12483452
+       9       0.00020686     0.01064129     0.01424363    -0.00238251
+      12      -0.00001661    -0.00053285    -0.00056926    -0.00362027
+      13      -0.00004588    -0.00147207    -0.00157266     0.00719546
+      14      -0.00002110    -0.00067715    -0.00072343     0.00651595
+      15      -0.00642068    -0.05561656    -0.06845285     0.00433169
+      16      -0.00779621    -0.06332803    -0.07752641     0.00611851
+      17       0.00002294     0.00177115     0.00247411    -0.02798907
+      19       0.00808223     0.05160258     0.05494658    -0.00242062
+
+               Column   5     Column   6     Column   7     Column   8
+       5      -0.15464941
+       6       0.00000000    -0.15647852
+       7       0.00000000    -0.00238251    -0.15679672
+       8      -0.12264262     0.00000000     0.00000000    -0.15305259
+       9       0.00000000    -0.12523230    -0.00406971     0.00000000
+      10       0.00641207     0.00000000     0.00000000     0.00522328
+      11       0.00696964     0.00000000     0.00000000     0.00567748
+      12       0.00000000     0.00813670    -0.00292777     0.00000000
+      13       0.00000000     0.00665753     0.00592029     0.00000000
+      14       0.00000000     0.00011291     0.00533497     0.00000000
+      15       0.00000000    -0.04140369     0.00651634     0.00000000
+      16       0.00000000    -0.02523491     0.00954379     0.00000000
+      17       0.00000000     0.00231313    -0.04079714     0.00000000
+      18      -0.02778361     0.00000000     0.00000000    -0.04045979
+      19       0.00000000     0.04965672    -0.00258463     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       9      -0.15747619
+      10       0.00000000    -0.15540689
+      11       0.00000000    -0.00084541    -0.15554804
+      12       0.00665132     0.00000000     0.00000000    -0.15612088
+      13       0.00548721     0.00000000     0.00000000    -0.00050821
+      14       0.00012141     0.00000000     0.00000000     0.00043980
+      15      -0.06257630     0.00000000     0.00000000    -0.01038613
+      16      -0.04035011     0.00000000     0.00000000    -0.00170658
+      17       0.00394088     0.00000000     0.00000000     0.00020626
+      18       0.00000000     0.00065424    -0.02106626     0.00000000
+      19       0.04495234     0.00000000     0.00000000     0.02765530
+
+               Column  13     Column  14     Column  15     Column  16
+      13      -0.15638138
+      14      -0.00087097    -0.15541865
+      15       0.00081132    -0.00020046    -0.12387102
+      16       0.00030058    -0.00028005    -0.11194061    -0.12387101
+      17      -0.02116054     0.00066298     0.00549776     0.00487528
+      19      -0.00202598     0.00014144     0.00860519     0.00763087
+
+               Column  17     Column  18     Column  19
+      17      -0.12378578
+      18       0.00000000    -0.12321741
+      19      -0.00088962     0.00000000    -0.12460986
+    ==== End of matrix output ====
+@  8  -99.9891517114     -1.891074190426E-03    8.34652D-06    3.82D-10
+
+@ *** DIIS converged in   8 iterations !
+@     Converged SCF energy, gradient:    -99.989151711444    8.35D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+    (incl. solvent contribution)
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Hartree-Fock orbital energies
+
+1 A     -26.29405904    -1.54895902    -0.69663136    -0.62832852    -0.62816171
+          0.12642449     0.66250886     1.33994369     1.34013429     1.46173965
+          1.61413025     1.61446833     2.00863805     2.21334973     4.00537327
+          4.00537616     4.12329789     4.12340432     4.76711443
+
+    E(LUMO) :     0.12642449 au (symmetry 1)
+  - E(HOMO) :    -0.62816171 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.75458620 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.527       0.132
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+
+     QM/NP/MM calculation converged     :
+
+     NP charges nuclear contribution    :      0.005963036766
+     NP charges electronic contribution :     -0.006094514689
+     NP dipoles nuclear contribution    :      0.084261498340
+     NP dipoles electronic contribution :     -0.086021094607
+     Total QM/NP/MM energy              :     -0.001891074190
+
+
+@    Final HF energy:             -99.989151711444                 
+@    Nuclear repulsion:             4.329631724727
+@    Electronic energy:          -104.316892361981
+
+@    Final gradient norm:           0.000008346524
+
+ 
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  
+
+File label for MO orbitals:  17Feb15   FOCKDIIS
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 F   :1s    -1.0002   0.0047   0.0017  -0.0000   0.0000  -0.0262  -0.0365
+   2 F   :1s    -0.0007  -0.9498  -0.1715  -0.0000   0.0000   0.1360  -0.2018
+   3 F   :1s     0.0011   0.0020  -0.0952  -0.0000   0.0000   0.4423   0.3325
+   4 F   :2px    0.0000  -0.0000  -0.0000  -0.0000  -0.9623   0.0000   0.0000
+   5 F   :2py    0.0000   0.0000   0.0000  -0.9621   0.0000  -0.0000  -0.0000
+   6 F   :2pz   -0.0012  -0.0470   0.7835   0.0000  -0.0000   0.4094  -0.4595
+   7 F   :2px    0.0000  -0.0000  -0.0000  -0.0000  -0.0398   0.0000   0.0000
+   8 F   :2py    0.0000   0.0000   0.0000  -0.0401   0.0000  -0.0000  -0.0000
+   9 F   :2pz    0.0013   0.0169  -0.0082   0.0000  -0.0000   0.1982   0.0906
+  12 F   :3d0    0.0002  -0.0037   0.0156   0.0000  -0.0000   0.0005   0.0496
+  15 H   :1s    -0.0008  -0.1755   0.5763   0.0000  -0.0000  -0.3313   2.2254
+  16 H   :1s    -0.0002   0.0761  -0.2014   0.0000  -0.0000  -0.9103  -2.2098
+  17 H   :2px    0.0000  -0.0000  -0.0000   0.0000  -0.0250   0.0000   0.0000
+  18 H   :2py    0.0000   0.0000   0.0000  -0.0249  -0.0000  -0.0000  -0.0000
+  19 H   :2pz    0.0002   0.0264  -0.0447   0.0000  -0.0000  -0.0083   0.1693
+
+    Orbital         8        9       10       11       12       13       14
+   1 F   :1s    -0.0000   0.0000   0.1128   0.0000  -0.0000  -0.3561   0.6112
+   2 F   :1s    -0.0000   0.0000   0.7337   0.0000  -0.0000  -1.8017   2.6395
+   3 F   :1s    -0.0000   0.0000  -0.3161   0.0000  -0.0000   1.6534  -3.6662
+   4 F   :2px    0.0001  -1.0309  -0.0000   0.0000  -0.8773   0.0000   0.0000
+   5 F   :2py   -1.0316  -0.0001   0.0000  -0.8768  -0.0000  -0.0000  -0.0000
+   6 F   :2pz    0.0000  -0.0000  -1.0366  -0.0000   0.0000  -0.8648  -0.2453
+   7 F   :2px   -0.0001   1.0836  -0.0000  -0.0000   1.3165   0.0000   0.0000
+   8 F   :2py    1.0844   0.0001   0.0000   1.3159   0.0000  -0.0000  -0.0000
+   9 F   :2pz    0.0000  -0.0000   1.8794  -0.0000   0.0000   0.7163  -0.6088
+  11 F   :3d1-   0.0379   0.0000  -0.0000  -0.0732  -0.0000   0.0000   0.0000
+  12 F   :3d0    0.0000  -0.0000  -0.0349  -0.0000   0.0000   0.0001   0.1325
+  13 F   :3d1+  -0.0000   0.0379   0.0000   0.0000  -0.0732  -0.0000  -0.0000
+  15 H   :1s     0.0000  -0.0000  -1.1941  -0.0000   0.0000  -0.1268   1.0004
+  16 H   :1s     0.0000  -0.0000   0.5245  -0.0000   0.0000   0.0397   0.0571
+  17 H   :2px   -0.0001   0.6213  -0.0000   0.0000  -0.8286   0.0000   0.0000
+  18 H   :2py    0.6208   0.0001   0.0000  -0.8290  -0.0000  -0.0000  -0.0000
+  19 H   :2pz    0.0000  -0.0000   0.5323  -0.0000   0.0000  -0.7633  -1.0017
+
+    Orbital        15
+  10 F   :3d2-   1.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.55 seconds
+ >>>> Total wall time used in SIRIUS :      0.14 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   0.59 seconds
+ >>>> Total wall time used in DALTON:   0.16 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 17 10:55:54 2015
+     Host name              : donkey                                  

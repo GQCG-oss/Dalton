@@ -1,0 +1,6 @@
+   perohf_alpha
+   -----------
+   Molecule:         Formaldehyde and two classical water molecules
+   Wave Function:    PE-ROHF / STO-3G
+   Test Purpose:     Testing restricted open-shell wavefunction and
+                     polarizability using the PE library
