@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-!  /* Deck qmnpmm_nlo */
       SUBROUTINE QMNPMM_LNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,   &
      &                      DVTR,EVECS,WORK,LWORK)
 !
@@ -48,19 +47,23 @@
 
       use qmcmm, only: getdim_relmat, read_relmat
 
-#include "implicit.h"
+      implicit none
+
 #include "inforb.h"
 #include "infdim.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
 #include "priunit.h"
 #include "qmnpmm.h"
-!
-      DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(NASHDI,NASHDI)
-      DIMENSION UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
-      DIMENSION WORK(LWORK), DV(*), CREF(*)
-!
-      PARAMETER (DM1 = -1.0D0, D1 = 1.0D0, D0 = 0.0D0)
+
+      integer, intent(in) :: nosim
+      integer, intent(in) :: lwork
+
+      real(8) :: BOVECS(*), CMO(*), XINDX(*), UDV(NASHDI,NASHDI)
+      real(8) :: UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
+      real(8) :: WORK(LWORK), DV(*), CREF(*)
+      integer :: i, j, idim, idimx, kfree, lfree, ioff
+      integer :: kbov, kcmo, kfvvec, kmqvec, krelmat, krxy, krxyt
 !
       KFREE = 1
       LFREE = LWORK
@@ -83,7 +86,7 @@
         CALL DZERO(WORK(KBOV),NOSIM*N2ORBX)
         IF (NOSIM.GT.0) THEN
            CALL RSPZYM(NOSIM,BOVECS,WORK(KBOV))
-           CALL DSCAL(NOSIM*N2ORBX,DM1,WORK(KBOV),1)
+           CALL DSCAL(NOSIM*N2ORBX,-1.0d0,WORK(KBOV),1)
         END IF
 !       Determine electric field/potential vector for perturbed
 !       density matrices
@@ -97,8 +100,8 @@
         CALL DZERO(WORK(KMQVEC),NOSIM*IDIM)
         DO I=1,NOSIM
            IOFF = (I-1)*IDIM
-           CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC+IOFF),1,D0,WORK(KMQVEC+IOFF),1)
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
+     &                WORK(KFVVEC+IOFF),1,0.0d0,WORK(KMQVEC+IOFF),1)
           if (iprtlvl > 14) then
              write(lupri, '(/,2x,a,i0)') &
                  '*** Computed MQ vector start 1st-order density ', i
@@ -136,9 +139,7 @@
 !
       CALL MEMREL('QMNPMM_LNO',WORK,1,1,KFREE,LFREE)
 !
-      RETURN
       end subroutine
-!  /* Deck qmnpmmqro */
       SUBROUTINE QMNPMMQRO(VEC1,VEC2,ETRS,XINDX,ZYM1,ZYM2,              &
      &                     UDV,WORK,LWORK,KZYVR,KZYV1,KZYV2,            &
      &                     IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,              &
@@ -281,10 +282,8 @@
 !
       CALL QEXIT('QMNPMMQRO')
 !
-      RETURN
       end subroutine
 
-!  /* Deck get_fvvec_lr */
       SUBROUTINE GET_FVVEC_LR(UDV,UDVTR,CMO,BOVECS,FVVEC,IDIM,NOSIM,    &
      &                        WORK,LWORK)
 !
@@ -503,10 +502,8 @@
          end if
       END DO
 !
-      RETURN
       end subroutine
 
-!  /* Deck get_fvvec_qr */
       SUBROUTINE GET_FVVEC_QR(FVVEC1,FVVEC2,IDIM,NSIM,UDV,UCMO,         &
      &                        ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WORK,LWORK)
 !
@@ -759,10 +756,8 @@
          end if
       END DO
 !
-      RETURN
       end subroutine
 
-!  /* Deck get_xyvec_lr */
       SUBROUTINE GET_XYVEC_LR(FMQVEC,CMO,IDIM,NOSIM,FXYVEC,WORK,LWORK)
 !
 ! Purpose:
@@ -914,10 +909,8 @@
       DIPORG(2) = RSAVORG(2)
       DIPORG(3) = RSAVORG(3)
 !
-      RETURN
       end subroutine
 
-!  /* Deck get_xyvec_qr */
       SUBROUTINE GET_XYVEC_QR(FMQVEC1,FMQVEC2,UCMO,IDIM,NSIM,FVEC,      &
      &                        ISYMT,ISYMV2,ZYM2,WORK,LWORK)
 !
@@ -1095,6 +1088,4 @@
       DIPORG(2) = RSAVORG(2)
       DIPORG(3) = RSAVORG(3)
 !
-      RETURN
       end subroutine
-
