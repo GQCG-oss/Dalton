@@ -6,7 +6,7 @@
 DALTON
 ------
 
-- Update PElib (v.1.2.2): Workaround for faulty system detection using Macports CMake
+- Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
 
 
 2015.0 (2015-02-18)
