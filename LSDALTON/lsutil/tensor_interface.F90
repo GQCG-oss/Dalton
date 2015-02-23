@@ -1278,9 +1278,7 @@ contains
 
         call tensor_zero(Arr)
 
-        ! TODO: fix PDM extraction!!
-        call lsquit("ERROR(tensor_extract_decnp_indices): Not implemented yet",DECinfo%output)
-        !call lspdm_extract_eos_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
+        call lspdm_extract_decnp_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
 
      case default
         call lsquit("ERROR(tensor_extract_eos_indices_occ): NO PDM version implemented yet",-1)

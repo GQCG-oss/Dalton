@@ -690,7 +690,7 @@ contains
      real(realk),pointer :: occ_tmp(:),virt_tmp(:)
      real(realk) :: prefac_coul,prefac_k
 
-     !TODO: DFor now we assume MP2 model:
+     !TODO: For now we assume MP2 model:
      if (myfragment%ccmodel/=MODEL_MP2) then
         call lsquit("ERROR(get_decnp_fragment_energy): DECNP only implemented for MP2",&
            & DECinfo%output)
@@ -857,7 +857,7 @@ contains
       
       
      call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-     call LSTIMER('L.ENERGY CONTR',tcpu,twall,DECinfo%output)
+     call LSTIMER('DECNP.ENERGY CONTR',tcpu,twall,DECinfo%output)
      
 
   end subroutine get_decnp_fragment_energy
