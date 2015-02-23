@@ -1443,9 +1443,6 @@ contains
     Real(realk),pointer        :: matH_Q(:,:,:),matD_Q(:,:,:)
     Real(realk),pointer        :: tmp(:,:,:)
 
-    call PRINT_MOLECULEINFO(LUPRI,setting%MOLECULE(1)%p,setting%BASIS(1)%p,1)
-
-
     IF (ndmat.GT.1) THEN
        WRITE(*,*)     &
             "The PARI approximation isn't implemented for unrestricted cases yet."
@@ -1729,10 +1726,11 @@ contains
     CALL freeMolecularOrbitalInfo(orbitalInfo)
     call mem_dealloc(Dfull)
 
+    call typedef_setMolecules(setting,molecule,1,2,3,4)
 
     !call free_AtomSparseMat(alphaBeta)
     CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
-call PRINT_MOLECULEINFO(LUPRI,setting%MOLECULE(1)%p,setting%BASIS(1)%p,1)
+    
   END SUBROUTINE II_get_pari_df_exchange_mat
 
   !> \brief Set up domains of atoms such that max(G_ab) > threshold
