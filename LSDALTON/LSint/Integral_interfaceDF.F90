@@ -1515,7 +1515,6 @@ contains
     ! --- nb. of orbitals/auxiliary functions
     ! --- Build another array to know where each atom start in the complete matrices
     call setMolecularOrbitalInfo(molecule,orbitalInfo)
-
     
     !--- MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
     if (setting%scheme%MOPARI_K) then
@@ -1554,10 +1553,11 @@ contains
        call get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
             atoms_A,lupri,luerr,setting)
 
-        call lstimer('neighbour',te,ts,lupri)
+       call lstimer('neighbour',te,ts,lupri)
                      
        ! Loop over A
        do iAtomA=1,nAtoms
+          write(lupri,*) 'Loop over Atom A=',iAtomA
           call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
                nAuxA,startAuxA,endAuxA) 
 
@@ -1567,21 +1567,18 @@ contains
           call getHQcoeff(matH_Q,calpha_ab_mo,iAtomA,neighbourA,MOcoeff,&
                orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
                lupri,luerr)
-          call lstimer('matH',te,ts,lupri)
-                    
+                              
           ! --- Construction of matrix D_i^muQ for AtomQ=AtomA
           call mem_alloc(matD_Q,nAuxA,nOcc,nBastReg)
           matD_Q=0E0_realk
           call getDQcoeff(matD_Q,calpha_ab_mo,iAtomA,neighbourA,MOcoeff,&
                orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
                lupri,luerr)
-           call lstimer('matD',te,ts,lupri)
-
+          
           ! --- Addition of the AtomQ=AtomA contribution to the matrix L^munu 
           call dgemm('N','N',nBastReg,nBastReg,nAuxA*nOcc,1.0E0_realk,matH_Q,&
                nBastReg,matD_Q,nAuxA*nOcc,1.0E0_realk,MOmatK,nBastReg)
-           call lstimer('matL',te,ts,lupri)
-          
+                    
           call mem_dealloc(matD_Q)
           call mem_dealloc(matH_Q)
        Enddo !Loop A
@@ -1596,8 +1593,7 @@ contains
           enddo
        enddo
        deallocate(calpha_ab_mo)
-       
-
+      
        ! --- Construct K_munu from L_munu
        do iRegA=1,nBastReg
           do iRegB=iRegA,nBastReg
@@ -1606,15 +1602,13 @@ contains
           enddo
        enddo
 
-       !write(lupri,'(/A/)') 'Final MOmatK'
-       !do iRegA=1,nBastReg
-       !   write(lupri,*) MOMatK(iRegA,:)
-       !enddo
-       
-       ! --- ADD THE EXCHANGE CONTRIBUTION (K) TO THE FOCK MATRIX (F)
+       ! --- Add the exchange contribution (K) to the Fock matrix (F)
        call mat_set_from_full(MOMatK(:,:),&
             -Setting%Scheme%exchangeFactor,F(1),'exchange')
-       deallocate(MOmatK)
+       
+       ! --- Deallocation, resetting molecule to default
+       call mem_dealloc(MOmatK)
+       call typedef_setMolecules(setting,molecule,1,2,3,4)
        
     else !PARI_K
 
@@ -1725,8 +1719,6 @@ contains
     
     CALL freeMolecularOrbitalInfo(orbitalInfo)
     call mem_dealloc(Dfull)
-
-    call typedef_setMolecules(setting,molecule,1,2,3,4)
 
     !call free_AtomSparseMat(alphaBeta)
     CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
