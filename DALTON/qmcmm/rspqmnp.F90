@@ -323,7 +323,8 @@
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+      implicit none
+
 #include "dummy.h"
 #include "priunit.h"
 #include "qmnpmm.h"
@@ -336,13 +337,26 @@
 #include "qm3.h"
 #include "infrsp.h"
 !
-      DIMENSION UDV(NASHDI,NASHDI), UDVTR(N2ASHX), CMO(NORBT*NBAST)
-      DIMENSION BOVECS(NOSIM*N2ORBX), FVVEC(*), WORK(LWORK)
+      real(8) :: UDV(NASHDI,NASHDI), UDVTR(N2ASHX), CMO(NORBT*NBAST)
+      real(8) :: BOVECS(NOSIM*N2ORBX), FVVEC(*), WORK(LWORK)
+      integer :: lwork
 !
       LOGICAL TOFILE,TRIMAT,EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      integer :: INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      DIMENSION RSAVORG(3)
+      real(8) :: RSAVORG(3)
+      integer :: kfree, lfree
+      integer :: i, j, ioff, joff, istart, idim, iblk
+      integer :: nsim, nosim
+      integer :: nocomp, kpatom
+      integer :: isymt, isymv1, isymv2
+      integer :: isimoff, kintao, kutr, ktlma, ktrmo, ktlmb
+      integer :: KUTRX, KURXAC
+      real(8) :: f1val, f2val
+      real(8) :: fact
+      real(8) :: tac
+      real(8), external :: slvtlm
+      real(8), external :: slvqlm
 !
       KFREE = 1
       LFREE = LWORK
@@ -544,7 +558,8 @@
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+      implicit none
+
 #include "dummy.h"
 #include "priunit.h"
 #include "qmnpmm.h"
@@ -557,13 +572,22 @@
 #include "qm3.h"
 #include "infrsp.h"
 !
-      DIMENSION FVVEC1(*), FVVEC2(*), WORK(LWORK)
-      DIMENSION UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*)
+      real(8) :: FVVEC1(*), FVVEC2(*), WORK(LWORK)
+      real(8) :: UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*)
+      integer :: lwork
 !
       LOGICAL TOFILE,TRIMAT,EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      integer :: INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      DIMENSION RSAVORG(3)
+      real(8) :: RSAVORG(3)
+      integer :: kfree, lfree
+      integer :: i, j, ioff, joff, istart, idim, iblk
+      integer :: nsim, nosim
+      integer :: nocomp, kpatom
+      integer :: isymt, isymv1, isymv2
+      integer :: isimoff, kintao, kutr, ktlma, ktrmo, ktlmb
+      real(8) :: f1val, f2val
+      real(8) :: fact
 !
       KFREE = 1
       LFREE = LWORK
@@ -797,7 +821,8 @@
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+      implicit none
+
 #include "dummy.h"
 #include "priunit.h"
 #include "qmnpmm.h"
@@ -810,13 +835,22 @@
 #include "qm3.h"
 #include "infrsp.h"
 !
-      DIMENSION FMQVEC(NOSIM*IDIM), CMO(NORBT*NBAST)
-      DIMENSION FXYVEC(NOSIM*N2ORBX), WORK(LWORK)
+      real(8) :: FMQVEC(NOSIM*IDIM), CMO(NORBT*NBAST)
+      real(8) :: FXYVEC(NOSIM*N2ORBX), WORK(LWORK)
+      integer :: lwork
 !
       LOGICAL TOFILE,TRIMAT,EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      integer :: INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      DIMENSION RSAVORG(3)
+      real(8) :: RSAVORG(3)
+      integer :: kfree, lfree
+      integer :: i, j, ioff, joff, istart, idim
+      integer :: nsim, nosim
+      integer :: nocomp, kpatom
+      integer :: isymt, isymv2
+      integer :: isimoff, kintao, kutr, ktlma, ktrmo
+      real(8) :: f1val, f2val
+      real(8) :: fact
 !
       KFREE = 1
       LFREE = LWORK
@@ -951,7 +985,9 @@
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
-#include "implicit.h"
+
+      implicit none
+
 #include "dummy.h"
 #include "priunit.h"
 #include "qmnpmm.h"
@@ -964,14 +1000,22 @@
 #include "qm3.h"
 #include "infrsp.h"
 !
-      DIMENSION FMQVEC1(NSIM*IDIM), FMQVEC2(NSIM*IDIM)
-      DIMENSION UCMO(NORBT*NBAST), ZYM2(*)
-      DIMENSION FVEC(NSIM*N2ORBX), WORK(LWORK)
+      real(8) :: FMQVEC1(NSIM*IDIM), FMQVEC2(NSIM*IDIM)
+      real(8) :: UCMO(NORBT*NBAST), ZYM2(*)
+      real(8) :: FVEC(NSIM*N2ORBX), WORK(LWORK)
+      integer :: lwork
 !
       LOGICAL TOFILE,TRIMAT,EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      integer :: INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      DIMENSION RSAVORG(3)
+      real(8) :: RSAVORG(3)
+      integer :: kfree, lfree
+      integer :: i, j, ioff, joff, istart, idim
+      integer :: nsim
+      integer :: nocomp, kpatom
+      integer :: isymt, isymv2
+      integer :: isimoff, kintao, kutr, ktlma, ktrmo
+      real(8) :: f1val, f2val
 !
       KFREE = 1
       LFREE = LWORK
