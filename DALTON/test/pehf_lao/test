@@ -30,6 +30,6 @@ f.add(from_string = 'Summary of chemical shieldings',
       num_lines = 18,
       abs_tolerance = 2.0e-4)
 
-test.run(['pehf_lao.dal'], ['pehf_lao.mol'], ['pehf_lao.pot'], f={'out': f})
+test.run(['pehf_lao.dal', 'pehf_lao_redist.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
 
 sys.exit(test.return_code)
