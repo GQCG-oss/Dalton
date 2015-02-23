@@ -785,7 +785,7 @@ contains
       
      ! Calculate e1 and e2
      ! *******************
-     do j=1,noccEOS
+     do j=1,noccAOS
         do b=1,nvirtAOS
            do i=1,noccEOS
               do a=1,nvirtAOS
