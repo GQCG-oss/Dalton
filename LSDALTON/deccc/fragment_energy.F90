@@ -288,6 +288,7 @@ contains
           ! TODO: Change dec structure from outside not to have anything 
           !       related to pairs
           call put_fragment_energy_contribs_main(0.0e0_realk,0.0e0_realk,myfragment)
+          return
        end if
     end if
 
@@ -673,9 +674,9 @@ contains
      type(decfrag), intent(inout) :: MyFragment
      !> single and double amplitudes from CC calculation (MP2, CCSD...)
      !  They span the full AOS space: t2(AOS,AOS,AOS,AOS)
-     type(tensor), intent(in) :: t1, t2
+     type(tensor), intent(inout) :: t1, t2
      !> Energy integrals (ai|bj) also span the full AOS space
-     type(tensor), intent(in) :: VOVO
+     type(tensor), intent(inout) :: VOVO
 
      ! Tensors used for energy calculation A^{AOS,AOS}_{EOS,AOS}
      type(tensor) :: t2occ, gocc
@@ -699,6 +700,10 @@ contains
      ! ************************************************
      call tensor_extract_decnp_indices(t2,MyFragment,t2occ)
      call tensor_extract_decnp_indices(VOVO,MyFragment,gocc)
+
+     ! Free stuff:
+     call tensor_free(t2)
+     call tensor_free(VOVO)
 
      ! Get occupied DECNP energy contributions:
      ! ----------------------------------------
@@ -821,6 +826,10 @@ contains
      call collect_thread_memory()
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
+
+     ! Free stuff:
+     call tensor_free(t2occ)
+     call tensor_free(gocc)
       
       
      ! Total atomic fragment energy
