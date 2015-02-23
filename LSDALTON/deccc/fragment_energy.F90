@@ -670,12 +670,24 @@ contains
      implicit none
 
      !> Atomic fragment
-     type(decfrag),intent(inout) :: MyFragment
+     type(decfrag), intent(inout) :: MyFragment
      !> single and double amplitudes from CC calculation (MP2, CCSD...)
      !  They span the full AOS space: t2(AOS,AOS,AOS,AOS)
-     type(tensor),intent(in) :: t1, t2
+     type(tensor), intent(in) :: t1, t2
      !> Energy integrals (ai|bj) also span the full AOS space
-     type(tensor),intent(in) :: VOVO
+     type(tensor), intent(in) :: VOVO
+
+     ! Tensors used for energy calculation A^{AOS,AOS}_{EOS,AOS}
+     type(tensor) :: t2occ, gocc
+
+     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
+     integer :: i,j,k,a,b,c
+     real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
+     real(realk) :: e1, e2, e3, e4,tmp,multaibj
+     logical ::  something_wrong,SOS,PerformLag! ,doOccPart, doVirtPart
+     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
+     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
+     real(realk) :: prefac_coul,prefac_k
 
      !TODO: DFor now we assume MP2 model:
      if (myfragment%ccmodel/=MODEL_MP2) then
@@ -685,13 +697,159 @@ contains
 
      ! Extract EOS indices for amplitudes and integrals
      ! ************************************************
-     !call tensor_extract_decnp_indices(t2,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
-     !call tensor_extract_decnp_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc,tensor_virtEOS=VOVOvirt)
+     call tensor_extract_decnp_indices(t2,MyFragment,t2occ)
+     call tensor_extract_decnp_indices(VOVO,MyFragment,gocc)
 
-     ! Get energy contributions
-     ! Set to zero for now
-     call put_fragment_energy_contribs_main(0.0e0_realk,0.0e0_realk,myfragment)
+     ! Get occupied DECNP energy contributions:
+     ! ----------------------------------------
+     !
+     ! E = sum_{ijab} t_{ij}^{ab} [ 2g_{aibj} - g_{biaj} ]
+     ! where index i is restricted to the occupied EOS space,
+     ! index j is restricted to the occupied AOS space,
+     ! and indices a and b are restricted to the virtual AOS space
+     ! 
+     ! MyFragment%OccContribs and MyFragment%VirtContribs contains the contributions from
+     ! each individual occupied and virtual orbital -- e.g. MyFragment%OccContribs(i)
+     ! is the estimated change in the energy if occupied orbital with index
+     ! MyFragment%occAOSidx(i) is removed from the fragment.
+      
+     call LSTIMER('START',tcpu,twall,DECinfo%output)
+     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+      
+     ! Init stuff
+     noccEOS  = MyFragment%noccEOS
+     nvirtEOS = MyFragment%nunoccEOS
+     noccAOS  = MyFragment%noccAOS
+     nvirtAOS = MyFragment%nunoccAOS
+     Eocc     = 0E0_realk
+     Evirt    = 0E0_realk
 
+     ! Just in case, zero individual orbital contributions for fragment
+     MyFragment%OccContribs=0E0_realk
+     MyFragment%VirtContribs=0E0_realk
+      
+     prefac_coul=2._realk
+     prefac_k=1._realk
+      
+      
+     ! Sanity checks
+     ! *************
+     something_wrong=.false.
+     if(t2occ%dims(1) /= nvirtAOS) something_wrong=.true.
+     if(t2occ%dims(2) /= noccEOS) something_wrong=.true.
+     if(t2occ%dims(3) /= nvirtAOS) something_wrong=.true.
+     if(t2occ%dims(4) /= noccAOS) something_wrong=.true.
+     
+     if(gocc%dims(1) /= nvirtAOS) something_wrong=.true.
+     if(gocc%dims(2) /= noccEOS) something_wrong=.true.
+     if(gocc%dims(3) /= nvirtAOS) something_wrong=.true.
+     if(gocc%dims(4) /= noccAOS) something_wrong=.true.
+      
+     !if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
+     !if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
+     !if(t2virt%dims(3) /= nvirtEOS) something_wrong=.true.
+     !if(t2virt%dims(4) /= noccAOS) something_wrong=.true.
+     !
+     !if(gvirt%dims(1) /= nvirtEOS) something_wrong=.true.
+     !if(gvirt%dims(2) /= noccAOS) something_wrong=.true.
+     !if(gvirt%dims(3) /= nvirtEOS) something_wrong=.true.
+     !if(gvirt%dims(4) /= noccAOS) something_wrong=.true.
+      
+     if(something_wrong) then
+        print *, 't2occ%dims =', t2occ%dims
+        print *, 'gocc%dims  =', gocc%dims
+        !print *, 't2virt%dims=', t2virt%dims
+        !print *, 'gvirt%dims =', gvirt%dims
+        print *, 'noccEOS  = ', noccEOS
+        print *, 'noccAOS  = ', noccAOS
+        !print *, 'nvirtEOS = ', nvirtEOS
+        !print *, 'nvirtAOS = ', nvirtAOS
+        call lsquit('get_decnp_fragment_energy: &
+             & Input dimensions do not match!',-1)
+     end if
+      
+     call mem_TurnONThread_Memory()
+     !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,j,b,i,a,c,virt_tmp)
+     call init_threadmemvar()
+     e1=0E0_realk
+     ! Contributions from each individual virtual orbital
+     call mem_alloc(virt_tmp,nvirtAOS)
+     virt_tmp = 0.0E0_realk       
+      
+     !$OMP DO SCHEDULE(dynamic,1)
+      
+     ! Calculate e1 and e2
+     ! *******************
+     do j=1,noccEOS
+        do b=1,nvirtAOS
+           do i=1,noccEOS
+              do a=1,nvirtAOS
+      
+      
+                 ! Contribution 1
+                 ! --------------
+      
+                 ! Energy contribution for orbitals (j,b,i,a)
+                 tmp = t2occ%elm4(a,i,b,j)*(prefac_coul*gocc%elm4(a,i,b,j) -prefac_k*gocc%elm4(b,i,a,j))
+      
+                 ! Update total atomic fragment energy contribution 1
+                 e1 = e1 + tmp
+      
+                 ! Update contribution from orbital a
+                 virt_tmp(a) = virt_tmp(a) + tmp
+                 ! Update contribution from orbital b (only if different from a to avoid double counting)
+                 if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+      
+      
+              end do
+           end do
+        end do
+     end do
+     !$OMP END DO NOWAIT
+      
+     ! Total e1 and individual virt atomic contributions are found by summing all thread contributions
+     !$OMP CRITICAL
+     Eocc = Eocc + e1
+      
+     ! Update total virtual contributions to fragment energy
+     do a=1,nvirtAOS
+        MyFragment%VirtContribs(a) =MyFragment%VirtContribs(a) + virt_tmp(a)
+     end do
+     !$OMP END CRITICAL
+      
+     call mem_dealloc(virt_tmp)
+     call collect_thread_memory()
+     !$OMP END PARALLEL
+     call mem_TurnOffThread_Memory()
+      
+      
+     ! Total atomic fragment energy
+     ! ****************************
+     call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
+      
+     ! Set energies used by fragment optimization
+     call get_occ_virt_lag_energies_fragopt(MyFragment)
+      
+     ! Print out contributions
+     ! ***********************
+     if( myfragment%isopt )then
+        write(DECinfo%output,*)
+        write(DECinfo%output,*)
+        write(DECinfo%output,*) '**********************************************************************'
+        write(DECinfo%output,'(1X,a,i7)') 'DECNP Energy summary for fragment: ', &
+           & MyFragment%EOSatoms(1)
+        write(DECinfo%output,*) '**********************************************************************'
+        write(DECinfo%output,'(1X,a,g20.10)') 'Single occupied energy = ', Eocc
+        write(DECinfo%output,'(1X,a,g20.10)') 'Single virtual  energy = ', Evirt
+      
+        write(DECinfo%output,*)
+        write(DECinfo%output,*)
+     endif
+      
+      
+     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+     call LSTIMER('L.ENERGY CONTR',tcpu,twall,DECinfo%output)
+     
 
   end subroutine get_decnp_fragment_energy
 
@@ -5136,9 +5294,11 @@ contains
          & red_list_occ,red_list_vir,nred_occ,nred_vir)
 
       ! Perform reduction:
-      call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
-            & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT)
+      if (.not.DECinfo%DECNP) then
+         call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
+               & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+               & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT)
+      end if
 
       !==================================================================================!
       !                              Finalize subroutine                                 !
