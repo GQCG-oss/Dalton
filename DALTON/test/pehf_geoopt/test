@@ -14,6 +14,6 @@ f.add(from_string = 'Final geometry (xyz',
       num_lines = 8,
       abs_tolerance = 2.0e-4)
 
-test.run(['pehf_geoopt.dal'], ['pehf_geoopt.mol'], {'out': f}, args='-put POTENTIAL.INP')
+test.run(['pehf_geoopt.dal'], ['water.mol'], ['14h2o.pot'], f={'out': f})
 
 sys.exit(test.return_code)

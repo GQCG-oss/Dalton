@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2015.0
+    This is output from DALTON 2016.alpha
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2014.0 (2015), see http://daltonprogram.org
+       Release DALTON2015.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 12:05:47 2015
+     Date and time (Linux)  : Mon Feb 23 15:13:01 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/test/pehf_nomb
-   2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build_pelib/test/pehf_nomb
+   2) /home/magnus/Projects/dalton_devel/dalton/build_pelib/basis
 
 
 Compilation information
@@ -155,18 +155,21 @@ Compilation information
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ MPI                      | ON
+ Fortran compiler         | /usr/local/bin/mpif90
  Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C compiler               | /usr/bin/gcc
+ C compiler               | /usr/local/bin/mpicc
  C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C++ compiler             | /usr/local/bin/mpicxx
+ C++ compiler version     | unknown
  BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 46c9aaba256772eebe3009de63bb35fbe126d126
- Configuration time       | 2015-02-23 11:42:33.949754
+ Last Git revision        | 5238537d2eab9c23858149b88466e4eda8e39bfc
+ Git branch               | [32mpe/develop[m
+ Configuration time       | 2015-02-23 15:06:18.814013
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -241,7 +244,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -249,7 +252,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -257,7 +260,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -451,9 +454,9 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
- >>>  Time used in TWOINT     is   0.22 seconds
- >>>> Total CPU  time used in HERMIT:   0.27 seconds
- >>>> Total wall time used in HERMIT:   0.27 seconds
+ >>>  Time used in TWOINT     is   0.39 seconds
+ >>>> Total CPU  time used in HERMIT:   0.46 seconds
+ >>>> Total wall time used in HERMIT:   0.46 seconds
 
 
                         .----------------------------------.
@@ -489,7 +492,7 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 23 12:05:47 2015
+     Date and time (Linux)  : Mon Feb 23 15:13:01 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -566,7 +569,7 @@ H              2.675323   -2.516779   -0.000673
                        X              Y              Z
                  -0.03644238     0.04747580     0.00010832
 
-@  1  -187.948623115     -4.881025852997E-02    2.01228D+00   -1.88D+02
+@  1  -187.948623115     -4.881025852998E-02    2.01228D+00   -1.88D+02
       Virial theorem: -V/T =      2.003057
 @      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
  -----------------------------------------------------------------------------
@@ -692,7 +695,7 @@ H              2.675323   -2.516779   -0.000673
                        X              Y              Z
                  -0.01973472     0.02432977     0.00003701
 
-@ 10  -188.317408681     -1.920858976908E-02    9.43215D-06   -2.15D-10
+@ 10  -188.317408681     -1.920858976909E-02    9.43215D-06   -2.16D-10
 
 @ *** DIIS converged in  10 iterations !
 @     Converged SCF energy, gradient:   -188.317408681189    9.43D-06
@@ -726,15 +729,16 @@ H              2.675323   -2.516779   -0.000673
        ---------------------------------------------
 
        Electrostatic contributions:
-            Monopoles                 -0.015407400479
-            Dipoles                    0.004184908365
-            Quadrupoles               -0.004910238413
-            Octopoles                 -0.002292996315
+            Electronic                -0.467233527439
+            Nuclear                    0.448807800596
+            Multipole                  0.000000000000
+            Total                     -0.018425726843
 
        Polarization contributions:
             Electronic                -0.044340712200
             Nuclear                    0.043425743604
             Multipole                  0.000132105670
+            Total                     -0.000782862927
 
        Total PE energy:            -0.019208589769
 
@@ -761,7 +765,7 @@ H              2.675323   -2.516779   -0.000673
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.446       0.446
+ >>>> CPU and wall time for SCF :       0.694       0.693
 
 
                        .-----------------------------------.
@@ -781,7 +785,7 @@ H              2.675323   -2.516779   -0.000673
 @    Final gradient norm:           0.000009432147
 
  
-     Date and time (Linux)  : Mon Feb 23 12:05:47 2015
+     Date and time (Linux)  : Mon Feb 23 15:13:02 2015
      Host name              : foeroyar                                
 
 File label for MO orbitals:  23Feb15   FOCKDIIS
@@ -889,11 +893,11 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.45 seconds
- >>>> Total wall time used in SIRIUS :      0.45 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.70 seconds
+ >>>> Total wall time used in SIRIUS :      0.70 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 12:05:47 2015
+     Date and time (Linux)  : Mon Feb 23 15:13:02 2015
      Host name              : foeroyar                                
 
 
@@ -901,9 +905,9 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.73 seconds
- >>>> Total wall time used in DALTON:   0.73 seconds
+ >>>> Total CPU  time used in DALTON:   1.17 seconds
+ >>>> Total wall time used in DALTON:   1.17 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 12:05:47 2015
+     Date and time (Linux)  : Mon Feb 23 15:13:02 2015
      Host name              : foeroyar                                

@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2015.0
+    This is output from DALTON 2016.alpha
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2014.0 (2015), see http://daltonprogram.org
+       Release DALTON2015.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/nonconverted_runtests/perohf_prop
-   2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build_pelib/test/perohf_alpha
+   2) /home/magnus/Projects/dalton_devel/dalton/build_pelib/basis
 
 
 Compilation information
@@ -155,18 +155,21 @@ Compilation information
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ MPI                      | ON
+ Fortran compiler         | /usr/local/bin/mpif90
  Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C compiler               | /usr/bin/gcc
+ C compiler               | /usr/local/bin/mpicc
  C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C++ compiler             | /usr/local/bin/mpicxx
+ C++ compiler version     | unknown
  BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 46c9aaba256772eebe3009de63bb35fbe126d126
- Configuration time       | 2015-02-23 11:42:33.949754
+ Last Git revision        | 5238537d2eab9c23858149b88466e4eda8e39bfc
+ Git branch               | [32mpe/develop[m
+ Configuration time       | 2015-02-23 15:06:18.814013
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -248,7 +251,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -256,7 +259,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -264,7 +267,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -459,7 +462,7 @@ H           -2.508043   -1.382001     .040282
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -526,7 +529,7 @@ H           -2.508043   -1.382001     .040282
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  1.89D-02  1.80D-02
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  2.44D-02  2.50D-02
       Induced dipole moments converged in  8 iterations.
 
       Info from polarizable embedding library:
@@ -542,7 +545,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.018564
 @      MULPOP C       1.20; O      -0.23; H       0.01; H       0.02; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  1.89D-02  1.90D-02
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  2.45D-02  2.40D-02
       Induced dipole moments converged in  7 iterations.
 
       Info from polarizable embedding library:
@@ -554,11 +557,11 @@ H           -2.508043   -1.382001     .040282
                        X              Y              Z
                   0.40866429     0.49052536     0.00698485
 
-@  2  -112.008183245     -4.386305153745E-03    1.01694D+00   -1.49D-01
+@  2  -112.008183245     -4.386305153746E-03    1.01694D+00   -1.49D-01
       Virial theorem: -V/T =      2.024706
 @      MULPOP C      -0.24; O       0.65; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  1.89D-02  1.90D-02
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  2.53D-02  2.60D-02
       Induced dipole moments converged in  7 iterations.
 
       Info from polarizable embedding library:
@@ -574,7 +577,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.020032
 @      MULPOP C       0.27; O       0.13; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  1.88D-02  1.90D-02
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  2.57D-02  2.60D-02
       Induced dipole moments converged in  7 iterations.
 
       Info from polarizable embedding library:
@@ -590,7 +593,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.020114
 @      MULPOP C       0.21; O       0.19; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    F  1.88D-02  1.90D-02
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    F  2.44D-02  2.40D-02
       Induced dipole moments converged in  7 iterations.
 
       Info from polarizable embedding library:
@@ -606,7 +609,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.019393
 @      MULPOP C       0.25; O       0.15; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    6    F  1.88D-02  1.80D-02
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    6    F  2.46D-02  2.50D-02
       Induced dipole moments converged in  6 iterations.
 
       Info from polarizable embedding library:
@@ -622,7 +625,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.019353
 @      MULPOP C       0.25; O       0.15; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    7    F  1.88D-02  1.90D-02
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    7    F  2.44D-02  2.40D-02
       Induced dipole moments converged in  5 iterations.
 
       Info from polarizable embedding library:
@@ -638,7 +641,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.019348
 @      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  1.88D-02  1.90D-02
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  2.52D-02  2.50D-02
       Induced dipole moments converged in  4 iterations.
 
       Info from polarizable embedding library:
@@ -654,7 +657,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.019350
 @      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    9    F  1.87D-02  1.90D-02
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    9    F  2.64D-02  2.70D-02
       Induced dipole moments converged in  4 iterations.
 
       Info from polarizable embedding library:
@@ -670,7 +673,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.019350
 @      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   10    F  1.88D-02  1.90D-02
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   10    F  2.47D-02  2.50D-02
       Induced dipole moments converged in  4 iterations.
 
       Info from polarizable embedding library:
@@ -686,7 +689,7 @@ H           -2.508043   -1.382001     .040282
       Virial theorem: -V/T =      2.019351
 @      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
  -----------------------------------------------------------------------------
-  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   11    F  1.88D-02  1.80D-02
+  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   11    F  2.65D-02  2.60D-02
       Induced dipole moments converged in  3 iterations.
 
       Info from polarizable embedding library:
@@ -698,7 +701,7 @@ H           -2.508043   -1.382001     .040282
                        X              Y              Z
                   0.32313865     0.53865822     0.00630372
 
-@ 11  -112.092713166     -1.515760714881E-02    6.91262D-06   -2.47D-10
+@ 11  -112.092713166     -1.515760714882E-02    6.91262D-06   -2.47D-10
 
 @ *** DIIS converged in  11 iterations !
 @     Converged SCF energy, gradient:   -112.092713165877    6.91D-06
@@ -741,14 +744,16 @@ and E(SOMO) :    -0.55638691 au (symmetry 1)
        ---------------------------------------------
 
        Electrostatic contributions:
-            Monopoles                 -0.004099754788
-            Dipoles                   -0.000603745241
-            Quadrupoles                0.002062426446
+            Electronic                -0.199142075552
+            Nuclear                    0.196501001970
+            Multipole                  0.000000000000
+            Total                     -0.002641073582
 
        Polarization contributions:
             Electronic                 0.107234942520
             Nuclear                   -0.115487119969
             Multipole                 -0.004264356121
+            Total                     -0.012516533570
 
        Total PE energy:            -0.015157607153
 
@@ -771,7 +776,7 @@ and E(SOMO) :    -0.55638691 au (symmetry 1)
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.280       0.280
+ >>>> CPU and wall time for SCF :       0.382       0.382
 
 
                        .-----------------------------------.
@@ -791,7 +796,7 @@ and E(SOMO) :    -0.55638691 au (symmetry 1)
 @    Final gradient norm:           0.000006912618
 
  
-     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
      Host name              : foeroyar                                
 
 File label for MO orbitals:  23Feb15   FOCKDIIS
@@ -831,11 +836,11 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.28 seconds
- >>>> Total wall time used in SIRIUS :      0.28 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.38 seconds
+ >>>> Total wall time used in SIRIUS :      0.38 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
      Host name              : foeroyar                                
 
 
@@ -884,7 +889,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Date and time (Linux)  : Mon Feb 23 15:12:39 2015
      Host name              : foeroyar                                
 
 
@@ -1360,7 +1365,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                        X              Y              Z
                   0.04119689     0.00799215    -0.00115026
 
- >>>  Time used in LNRABA     is   0.64 seconds
+ >>>  Time used in LNRABA     is   1.02 seconds
 
 
    ***************************************************************************
@@ -1369,7 +1374,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Mon Feb 23 13:29:09 2015
+     Date and time (Linux)  : Mon Feb 23 15:12:40 2015
      Host name              : foeroyar                                
 
 
@@ -1507,20 +1512,22 @@ Isotropic polarizability:   6.187792
  CPU time statistics for ABACUS
  ------------------------------
 
+ LNRABA     00:00:01      99 %
+
+ TOTAL      00:00:01     100 %
 
 
-
- >>>> Total CPU  time used in ABACUS:   0.65 seconds
- >>>> Total wall time used in ABACUS:   0.65 seconds
+ >>>> Total CPU  time used in ABACUS:   1.04 seconds
+ >>>> Total wall time used in ABACUS:   1.04 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.95 seconds
- >>>> Total wall time used in DALTON:   0.95 seconds
+ >>>> Total CPU  time used in DALTON:   1.45 seconds
+ >>>> Total wall time used in DALTON:   1.44 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 13:29:09 2015
+     Date and time (Linux)  : Mon Feb 23 15:12:40 2015
      Host name              : foeroyar                                
