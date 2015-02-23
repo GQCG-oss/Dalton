@@ -1,5 +1,7 @@
-      PARAMETER ( MXCROP = MAXLBL, MBCRFR = MAXLBL, MCCRFR = MAXLBL,    &
-     &            MDCRFR = MAXLBL)
+      integer, parameter :: MXCROP = MAXLBL
+      integer, parameter :: MBCRFR = MAXLBL
+      integer, parameter :: MCCRFR = MAXLBL
+      integer, parameter :: MDCRFR = MAXLBL
       LOGICAL CRSPEC,CRTHG,CRSHG,CRKERR,CRIDRI,INVEXP,CRCAL
       LOGICAL ACROP,BCROP,CCROP,DCROP,GAMALL
       CHARACTER*8 ACRLB,BCRLB,CCRLB,DCRLB
