@@ -1,5 +1,6 @@
 *.pyc
 build*/*
+*.swp
 LSDALTON/doc_LSDALTON/*.aux
 LSDALTON/doc_LSDALTON/*.pdf
 LSDALTON/doc_LSDALTON/*.log

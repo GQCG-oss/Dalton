@@ -618,9 +618,9 @@ C
   100 CONTINUE
       CALL GPCLOSE(LUSIFC,'KEEP')
       CALL GPCLOSE(LURSP ,'KEEP')
-      CALL GPCLOSE(LURSP3,'DELETE')
-      CALL GPCLOSE(LURSP4,'DELETE')
-      CALL GPCLOSE(LURSP5,'DELETE')
+      !CALL GPCLOSE(LURSP3,'DELETE')
+      !CALL GPCLOSE(LURSP4,'DELETE')
+      !CALL GPCLOSE(LURSP5,'DELETE')
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
       IF (LUMHSO .GT. 0) CALL DARMOV(LUMHSO)
 C
@@ -668,6 +668,8 @@ C
 #include "mxcent.h"
 #include "esrhfc.h"
 #include "abslrs.h"
+! JMHO: pcmlog.h included to check if CUBIC and PCM -> quit
+#include "pcmlog.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7
 C
@@ -757,6 +759,10 @@ C
       go to 200
 
  5    call cubic(word)
+! JMHO: quit if CUBIC and PCM (until bug is found)
+      if (pcm) then
+        call quit('PCM and cubic response not available')
+      end if
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
       if (dodft) then
          if (.not. fun_is_ready_for_cr()) then
