@@ -827,7 +827,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_amat(fmat)
+   subroutine get_amat(fmat)
       ! computes a matrix component of relay matrix for np and mm regions
 
       real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
@@ -941,7 +941,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_gg_afact(facta, factb, iatm, jatm, rad)
+   subroutine get_gg_afact(facta, factb, iatm, jatm, rad)
 !
 ! Purpose:
 !     Determines damping factors for T(2) operator for
@@ -992,7 +992,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_cmat(fmat)
+   subroutine get_cmat(fmat)
       ! computes c matrix component of relay matrix for np and mm regions
 
       real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
@@ -1040,7 +1040,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_gg_cfact(fact, iatm, jatm, rad)
+   subroutine get_gg_cfact(fact, iatm, jatm, rad)
 !
 ! Purpose:
 !     Determines damping factors for T(0) operator for
@@ -1080,7 +1080,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_mmat(fmat)
+   subroutine get_mmat(fmat)
       ! computes m matrix component of relay matrix for np and mm regions
 
       real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
@@ -1122,7 +1122,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_gg_mfact(fact, iatm, jatm, distance_i_j)
+   subroutine get_gg_mfact(fact, iatm, jatm, distance_i_j)
       ! determines damping factors for t(1) operator for
       ! gaussian/gaussian dipole model
 

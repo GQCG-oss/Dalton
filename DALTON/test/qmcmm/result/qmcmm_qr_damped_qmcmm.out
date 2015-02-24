@@ -136,7 +136,7 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Feb 17 16:10:39 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:09 2015
      Host name              : donkey                                  
 
  * Work memory size             :    64000000 =  488.28 megabytes.
@@ -156,12 +156,19 @@ Compilation information
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler         | /usr/bin/f95
  Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ Fortran flags            | -DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store -fcray
+                          | -pointer -m64 -O0 -g -fbacktrace -fcray-pointer -W
+                          | uninitialized
+ C compiler               | /usr/bin/cc
+ C compiler version       | unknown
+ C flags                  | -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAV
+                          | E_NO_LSEEK64 -ffloat-store -Wall -m64 -O0 -g3
+ C++ compiler             | /usr/bin/c++
+ C++ compiler version     | c++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C++ flags                | -g -Wall -fno-rtti -fno-exceptions -m64 -march=nat
+                          | ive -O0 -g3
  BLAS                     | /opt/intel/mkl/lib/intel64/libmkl_gf_lp64.so;/opt/
                           | intel/mkl/lib/intel64/libmkl_sequential.so;/opt/in
                           | tel/mkl/lib/intel64/libmkl_core.so;/usr/lib/x86_64
@@ -170,9 +177,9 @@ Compilation information
  LAPACK                   | /opt/intel/mkl/lib/intel64/libmkl_lapack95_lp64.a;
                           | /opt/intel/mkl/lib/intel64/libmkl_gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 3c27473a3d323dffb996b306883179654fdc12e7
+ Last Git revision        | b484c6390811746526bc4e585a1ea091d8867b56
  Git branch               | radovan/qmcmm
- Configuration time       | 2015-02-17 16:10:20.946366
+ Configuration time       | 2015-02-24 16:27:27.492503
 
 
    Content of the .dal input file
@@ -408,8 +415,8 @@ H            0.00000    0.000000     3.600000
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
- >>>> Total wall time used in HERMIT:   0.04 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -442,7 +449,7 @@ H            0.00000    0.000000     3.600000
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 17 16:10:39 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:09 2015
      Host name              : donkey                                  
 
  Title lines from ".mol" input file:
@@ -504,7 +511,7 @@ H            0.00000    0.000000     3.600000
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  2.35D-02  2.30D-02
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  2.14D-02  2.20D-02
 
   *** Computed Relay matrix ***
 
@@ -643,7 +650,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      1.997024
 @      MULPOP F      -0.47; H       0.47; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  1.87D-02  1.80D-02
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  1.72D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -782,7 +789,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      2.000873
 @      MULPOP F      -0.24; H       0.24; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  1.78D-02  1.80D-02
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -921,7 +928,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      2.000020
 @      MULPOP F      -0.30; H       0.30; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  1.81D-02  1.80D-02
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1060,7 +1067,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      1.999954
 @      MULPOP F      -0.30; H       0.30; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  1.83D-02  1.80D-02
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1199,7 +1206,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      1.999895
 @      MULPOP F      -0.30; H       0.30; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  1.80D-02  1.80D-02
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1346,7 +1353,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      1.999894
 @      MULPOP F      -0.30; H       0.30; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    2    F  1.80D-02  1.80D-02
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    2    F  1.72D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1485,7 +1492,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      1.999926
 @      MULPOP F      -0.30; H       0.30; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  1.82D-02  1.80D-02
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  1.70D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1624,7 +1631,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      1.999912
 @      MULPOP F      -0.30; H       0.30; 
  -----------------------------------------------------------------------------
-   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  1.81D-02  1.80D-02
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  1.69D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1763,7 +1770,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      1.999914
 @      MULPOP F      -0.30; H       0.30; 
  -----------------------------------------------------------------------------
-  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    5    F  1.82D-02  1.80D-02
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    5    F  1.69D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1925,7 +1932,7 @@ H            0.00000    0.000000     3.600000
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.382       0.383
+ >>>> CPU and wall time for SCF :       0.353       0.354
 
 
                        .-----------------------------------.
@@ -1953,10 +1960,10 @@ H            0.00000    0.000000     3.600000
 @    Final gradient norm:           0.000005720478
 
  
-     Date and time (Linux)  : Tue Feb 17 16:10:39 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:10 2015
      Host name              : donkey                                  
 
-File label for MO orbitals:  17Feb15   FOCKDIIS
+File label for MO orbitals:  24Feb15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -2006,11 +2013,11 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.39 seconds
- >>>> Total wall time used in SIRIUS :      0.39 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.36 seconds
+ >>>> Total wall time used in SIRIUS :      0.36 seconds
 
  
-     Date and time (Linux)  : Tue Feb 17 16:10:39 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:10 2015
      Host name              : donkey                                  
 
 
@@ -2108,7 +2115,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
  Operator symmetry = 1  ( A  ); triplet =   F
 
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00139122
        2        0.00000000
        3        0.00754178
@@ -2125,7 +2132,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00064424
        2       -0.00000000
        3       -0.00351589
@@ -2142,7 +2149,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1       -0.00116054
        2       -0.00000000
        3        0.00307770
@@ -2210,7 +2217,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00066552
        2       -0.00000000
        3        0.00199950
@@ -2227,7 +2234,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00147244
        2       -0.00000000
        3        0.00265311
@@ -2244,7 +2251,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1        0.00010864
        2        0.00000000
        3        0.00119692
@@ -2312,7 +2319,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00057125
        2        0.00000000
        3       -0.00086263
@@ -2329,7 +2336,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00066708
        2       -0.00000000
        3        0.00095189
@@ -2346,7 +2353,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1        0.00026041
        2        0.00000001
        3       -0.00000276
@@ -2414,7 +2421,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00025229
        2       -0.00000001
        3        0.00061776
@@ -2431,7 +2438,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00009122
        2       -0.00000005
        3       -0.00031468
@@ -2448,7 +2455,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1       -0.00069611
        2        0.00000002
        3        0.00091076
@@ -2564,7 +2571,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
  Operator symmetry = 1  ( A  ); triplet =   F
 
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00000000
        2        0.00512159
        3       -0.00000000
@@ -2581,7 +2588,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00000000
        2       -0.00237294
        3       -0.00000000
@@ -2598,7 +2605,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1        0.00000000
        2        0.00203882
        3       -0.00000000
@@ -2666,7 +2673,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00000000
        2        0.00131201
        3       -0.00000000
@@ -2683,7 +2690,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00000000
        2        0.00168395
        3       -0.00000000
@@ -2700,7 +2707,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1       -0.00000000
        2        0.00076564
        3        0.00000000
@@ -2768,7 +2775,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00000000
        2       -0.00058847
        3       -0.00000001
@@ -2785,7 +2792,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00000000
        2        0.00059090
        3       -0.00000001
@@ -2802,7 +2809,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1       -0.00000001
        2       -0.00001120
        3        0.00000004
@@ -2870,7 +2877,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00000000
        2        0.00039224
        3       -0.00000000
@@ -2887,7 +2894,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00000001
        2       -0.00019326
        3       -0.00000001
@@ -2904,7 +2911,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1       -0.00000002
        2        0.00060094
        3        0.00000006
@@ -3020,7 +3027,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
  Operator symmetry = 1  ( A  ); triplet =   F
 
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.01006903
        2       -0.00000000
        3       -0.00533930
@@ -3037,7 +3044,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00492276
        2       -0.00000000
        3        0.00213278
@@ -3054,7 +3061,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1        0.00368891
        2        0.00000000
        3       -0.00138082
@@ -3122,7 +3129,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00045149
        2       -0.00000000
        3       -0.00000556
@@ -3139,7 +3146,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00148242
        2       -0.00000000
        3        0.00057401
@@ -3156,7 +3163,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1        0.00158404
        2       -0.00000000
        3       -0.00037523
@@ -3224,7 +3231,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00000441
        2        0.00000000
        3        0.00034409
@@ -3241,7 +3248,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00230732
        2        0.00000000
        3        0.00010599
@@ -3258,7 +3265,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1       -0.00097977
        2        0.00000000
        3        0.00006301
@@ -3326,7 +3333,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00011921
        2        0.00000000
        3        0.00015128
@@ -3343,7 +3350,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00062934
        2        0.00000000
        3        0.00006933
@@ -3360,7 +3367,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 3
+  *** Computed FV vector start 1 3
        1        0.00050802
        2       -0.00000000
        3       -0.00017557
@@ -3611,7 +3618,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
  --------------------------------------------
 
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131052
        2       -0.00000000
        3       -0.00694334
@@ -3628,7 +3635,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00635834
        2       -0.00000000
        3       -0.00420715
@@ -3679,7 +3686,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131052
        2       -0.00000000
        3       -0.00694334
@@ -3696,7 +3703,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00635834
        2       -0.00000000
        3       -0.00420715
@@ -3750,7 +3757,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;X,X) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;X,X) =     -1.87604295
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131255
        2       -0.00000000
        3       -0.00695193
@@ -3767,7 +3774,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00638790
        2       -0.00000000
        3       -0.00422853
@@ -3818,7 +3825,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131052
        2       -0.00000000
        3       -0.00694334
@@ -3835,7 +3842,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00638790
        2       -0.00000000
        3       -0.00422853
@@ -3890,7 +3897,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.030000  C-freq = 0.000000     beta(Z;X,X) =     -1.88430089
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,X) = beta(Y,X,X)
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472147
        3        0.00000000
@@ -3907,7 +3914,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00000000
        2       -0.00021136
        3        0.00000000
@@ -3958,7 +3965,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131052
        2       -0.00000000
        3       -0.00694334
@@ -3975,7 +3982,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00000000
        2       -0.00021136
        3        0.00000000
@@ -4029,7 +4036,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,X) =     -0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Y,X) =      0.00000000
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472737
        3        0.00000000
@@ -4046,7 +4053,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00000000
        2       -0.00021281
        3        0.00000000
@@ -4097,7 +4104,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131052
        2       -0.00000000
        3       -0.00694334
@@ -4114,7 +4121,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00000000
        2       -0.00021281
        3        0.00000000
@@ -4170,7 +4177,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,X) = beta(Z,X,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,X) = beta(Z,Y,X)
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02640598
        2       -0.00000000
        3        0.01434125
@@ -4187,7 +4194,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00029988
        2        0.00000000
        3        0.00120110
@@ -4238,7 +4245,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131052
        2       -0.00000000
        3       -0.00694334
@@ -4255,7 +4262,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00029988
        2        0.00000000
        3        0.00120110
@@ -4309,7 +4316,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,X) =     -0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,X) =      0.00000000
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02646956
        2       -0.00000000
        3        0.01437728
@@ -4326,7 +4333,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00030192
        2        0.00000000
        3        0.00120650
@@ -4377,7 +4384,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131052
        2       -0.00000000
        3       -0.00694334
@@ -4394,7 +4401,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00030192
        2        0.00000000
        3        0.00120650
@@ -4451,7 +4458,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Y;X,X) = beta(Y,X,X)
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Z;X,X) = beta(Z,X,X)
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131255
        2       -0.00000000
        3       -0.00695193
@@ -4468,7 +4475,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00638605
        2       -0.00000000
        3       -0.00422692
@@ -4519,7 +4526,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131255
        2       -0.00000000
        3       -0.00695193
@@ -4536,7 +4543,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00638605
        2       -0.00000000
        3       -0.00422692
@@ -4590,7 +4597,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.030000  C-freq = 0.030000     beta(Y;X,X) =      0.00000000
 @ B-freq = 0.030000  C-freq = 0.030000     beta(Z;X,X) =     -1.88857994
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472147
        3        0.00000000
@@ -4607,7 +4614,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00000000
        2       -0.00021281
        3        0.00000000
@@ -4658,7 +4665,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131255
        2       -0.00000000
        3       -0.00695193
@@ -4675,7 +4682,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00000000
        2       -0.00021281
        3        0.00000000
@@ -4729,7 +4736,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Y;Y,X) =     -0.00000000
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Z;Y,X) =      0.00000000
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472737
        3        0.00000000
@@ -4746,7 +4753,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00000000
        2       -0.00021270
        3        0.00000000
@@ -4797,7 +4804,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131255
        2       -0.00000000
        3       -0.00695193
@@ -4814,7 +4821,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00000000
        2       -0.00021270
        3        0.00000000
@@ -4868,7 +4875,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.030000  C-freq = 0.030000     beta(Y;Y,X) =     -0.00000000
 @ B-freq = 0.030000  C-freq = 0.030000     beta(Z;Y,X) =      0.00000000
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02640598
        2       -0.00000000
        3        0.01434125
@@ -4885,7 +4892,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00030659
        2        0.00000000
        3        0.00121115
@@ -4936,7 +4943,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131255
        2       -0.00000000
        3       -0.00695193
@@ -4953,7 +4960,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00030659
        2        0.00000000
        3        0.00121115
@@ -5007,7 +5014,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Y;Z,X) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Z;Z,X) =      0.00000000
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02646956
        2       -0.00000000
        3        0.01437728
@@ -5024,7 +5031,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00030337
        2        0.00000000
        3        0.00120769
@@ -5075,7 +5082,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1        0.00131255
        2       -0.00000000
        3       -0.00695193
@@ -5092,7 +5099,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1       -0.00030337
        2        0.00000000
        3        0.00120769
@@ -5153,7 +5160,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.030000  C-freq = 0.000000     beta(Z;X,Y) = beta(Z,Y,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,Y) = beta(Y,Y,X)
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472147
        3        0.00000000
@@ -5170,7 +5177,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00628843
        2        0.00000000
        3       -0.00368102
@@ -5221,7 +5228,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472147
        3        0.00000000
@@ -5238,7 +5245,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00628843
        2        0.00000000
        3       -0.00368102
@@ -5292,7 +5299,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,Y) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Y,Y) =     -1.87780081
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472737
        3        0.00000000
@@ -5309,7 +5316,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00631766
        2        0.00000000
        3       -0.00369884
@@ -5360,7 +5367,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472147
        3        0.00000000
@@ -5377,7 +5384,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00631766
        2        0.00000000
        3       -0.00369884
@@ -5433,7 +5440,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,Y) = beta(Z,Y,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Y) = beta(Z,Y,Y)
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02640598
        2       -0.00000000
        3        0.01434125
@@ -5450,7 +5457,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00000000
        2        0.00087717
        3       -0.00000000
@@ -5501,7 +5508,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472147
        3        0.00000000
@@ -5518,7 +5525,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00000000
        2        0.00087717
        3       -0.00000000
@@ -5572,7 +5579,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Y) =     -1.87780120
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,Y) =      0.00000000
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02646956
        2       -0.00000000
        3        0.01437728
@@ -5589,7 +5596,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00000000
        2        0.00088095
        3       -0.00000000
@@ -5640,7 +5647,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472147
        3        0.00000000
@@ -5657,7 +5664,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00000000
        2        0.00088095
        3       -0.00000000
@@ -5720,7 +5727,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Y;Y,Y) = beta(Y,Y,Y)
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Z;Y,Y) = beta(Z,Y,Y)
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472737
        3        0.00000000
@@ -5737,7 +5744,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00631585
        2        0.00000000
        3       -0.00369750
@@ -5788,7 +5795,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472737
        3        0.00000000
@@ -5805,7 +5812,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00631585
        2        0.00000000
        3       -0.00369750
@@ -5859,7 +5866,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.030000  C-freq = 0.030000     beta(Y;Y,Y) =      0.00000000
 @ B-freq = 0.030000  C-freq = 0.030000     beta(Z;Y,Y) =     -1.89035388
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02640598
        2       -0.00000000
        3        0.01434125
@@ -5876,7 +5883,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00000000
        2        0.00088367
        3       -0.00000000
@@ -5927,7 +5934,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472737
        3        0.00000000
@@ -5944,7 +5951,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00000000
        2        0.00088367
        3       -0.00000000
@@ -5998,7 +6005,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Y;Z,Y) =     -1.89849978
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Z;Z,Y) =      0.00000000
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02646956
        2       -0.00000000
        3        0.01437728
@@ -6015,7 +6022,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00000000
        2        0.00088165
        3       -0.00000000
@@ -6066,7 +6073,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00472737
        3        0.00000000
@@ -6083,7 +6090,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.00000000
        2        0.00088165
        3       -0.00000000
@@ -6151,7 +6158,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,Z) = beta(Z,Z,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Z) = beta(Z,Z,Y)
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02640598
        2       -0.00000000
        3        0.01434125
@@ -6168,7 +6175,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.03680437
        2       -0.00000000
        3       -0.02341052
@@ -6219,7 +6226,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02640598
        2       -0.00000000
        3        0.01434125
@@ -6236,7 +6243,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.03680437
        2       -0.00000000
        3       -0.02341052
@@ -6290,7 +6297,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Z) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,Z) =    -24.29601992
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02646956
        2       -0.00000000
        3        0.01437728
@@ -6307,7 +6314,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.03693796
        2       -0.00000000
        3       -0.02349249
@@ -6358,7 +6365,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02640598
        2       -0.00000000
        3        0.01434125
@@ -6375,7 +6382,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.03693796
        2       -0.00000000
        3       -0.02349249
@@ -6444,7 +6451,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Y;Z,Z) = beta(Y,Z,Z)
 @ B-freq = 0.000000  C-freq = 0.030000     beta(Z;Z,Z) = beta(Z,Z,Z)
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02646956
        2       -0.00000000
        3        0.01437728
@@ -6461,7 +6468,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.03690121
        2       -0.00000000
        3       -0.02347064
@@ -6512,7 +6519,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start v1 2nd-order density 1
+  *** Computed FV vector start 1 1
        1       -0.02646956
        2       -0.00000000
        3        0.01437728
@@ -6529,7 +6536,7 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start v2 2nd-order density 1
+  *** Computed FV vector start 2 1
        1        0.03690121
        2       -0.00000000
        3       -0.02347064
@@ -6583,17 +6590,17 @@ File label for MO orbitals:  17Feb15   FOCKDIIS
 @ B-freq = 0.030000  C-freq = 0.030000     beta(Y;Z,Z) =      0.00000000
 @ B-freq = 0.030000  C-freq = 0.030000     beta(Z;Z,Z) =    -24.74483286
 
- >>>> Total CPU  time used in RESPONSE:   1.44 seconds
- >>>> Total wall time used in RESPONSE:   1.45 seconds
+ >>>> Total CPU  time used in RESPONSE:   1.36 seconds
+ >>>> Total wall time used in RESPONSE:   1.36 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.88 seconds
- >>>> Total wall time used in DALTON:   1.89 seconds
+ >>>> Total CPU  time used in DALTON:   1.76 seconds
+ >>>> Total wall time used in DALTON:   1.77 seconds
 
  
-     Date and time (Linux)  : Tue Feb 17 16:10:40 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:11 2015
      Host name              : donkey                                  
