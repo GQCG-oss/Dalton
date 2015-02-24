@@ -348,22 +348,30 @@ contains
 #include "qm3.h"
 #include "infrsp.h"
 
-      real(8), allocatable :: utr(:)
-      real(8), allocatable :: trmo(:)
-      real(8), allocatable :: intao(:)
-      real(8), allocatable :: tlma(:)
-
-      logical tofile,trimat,exp1vl
-      integer :: intrep(9*mxcent), intadr(9*mxcent)
-      character*8 labint(9*mxcent)
+      logical :: tofile
+      logical :: trimat
+      logical :: exp1vl
       real(8) :: dipole_origin_save(3)
-      integer :: i, j, ioff, joff, istart
-      integer :: nocomp, kpatom
+      integer :: i
+      integer :: j
+      integer :: ioff
+      integer :: joff
+      integer :: istart
+      integer :: kpatom
+      integer :: nocomp
       integer :: isimoff
       real(8) :: fact
       real(8) :: fact1
       real(8) :: fact2
       integer :: ixyz
+
+      real(8), allocatable :: utr(:)
+      real(8), allocatable :: trmo(:)
+      real(8), allocatable :: intao(:)
+      real(8), allocatable :: tlma(:)
+      integer, allocatable :: intrep(:)
+      integer, allocatable :: intadr(:)
+      character(8), allocatable :: labint(:)
 
       ! save origin coordinates
       dipole_origin_save = diporg
@@ -374,6 +382,9 @@ contains
       if (present(fmqvec2)) then
           allocate(tlma(n2orbx))
       end if
+      allocate(intrep(9*mxcent))
+      allocate(intadr(9*mxcent))
+      allocate(labint(9*mxcent))
 
       kpatom = 0
       tofile = .false.
@@ -457,10 +468,13 @@ contains
          end do
       end if
 
-      if (allocated(utr)) deallocate(utr)
-      if (allocated(trmo)) deallocate(trmo)
-      if (allocated(intao)) deallocate(intao)
-      if (allocated(tlma)) deallocate(tlma)
+      if (allocated(utr))    deallocate(utr)
+      if (allocated(trmo))   deallocate(trmo)
+      if (allocated(intao))  deallocate(intao)
+      if (allocated(tlma))   deallocate(tlma)
+      if (allocated(intrep)) deallocate(intrep)
+      if (allocated(intadr)) deallocate(intadr)
+      if (allocated(labint)) deallocate(labint)
 
       ! restore origin coordinates
       diporg = dipole_origin_save
