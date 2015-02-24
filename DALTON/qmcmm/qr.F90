@@ -338,7 +338,6 @@ contains
       real(8), intent(in), optional :: zym2(*)
 
 #include "dummy.h"
-#include "priunit.h"
 #include "qmnpmm.h"
 #include "inforb.h"
 #include "infdim.h"
@@ -349,32 +348,32 @@ contains
 #include "qm3.h"
 #include "infrsp.h"
 
+      real(8), allocatable :: utr(:)
+      real(8), allocatable :: trmo(:)
+      real(8), allocatable :: intao(:)
+      real(8), allocatable :: tlma(:)
+
       logical tofile,trimat,exp1vl
       integer :: intrep(9*mxcent), intadr(9*mxcent)
       character*8 labint(9*mxcent)
       real(8) :: dipole_origin_save(3)
-      integer :: kfree, lfree
       integer :: i, j, ioff, joff, istart
       integer :: nocomp, kpatom
-      integer :: isimoff, kintao, kutr, ktlma, ktrmo
+      integer :: isimoff
       real(8) :: fact
-!
-      KFREE = 1
-      LFREE = LWORK
 
       ! save origin coordinates
       dipole_origin_save = diporg
 
+      allocate(utr(n2orbx))
+      allocate(trmo(nnorbx))
+      allocate(intao(3*nnbasx))
+      if (present(fmqvec2)) then
+          allocate(tlma(n2orbx))
+      end if
+
 !     Induced dipole moment in NP region interaction with QM region
       IF (DONPPOL.AND.NOVDAMP) THEN
-!        Electronic interaction part
-         CALL MEMGET('REAL',KINTAO,3*NNBASX,WORK,KFREE,LFREE)
-!        Allocate temp. matrices used for integrals tranformations
-         CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-         if (present(FMQVEC2)) then
-         CALL MEMGET('REAL',KTLMA,N2ORBX,WORK,KFREE,LFREE)
-         end if
 !        Set integrals evaluation flags
          KPATOM = 0
          NOCOMP = 3
@@ -388,96 +387,84 @@ contains
             ISIMOFF = (I-1)*N2ORBX+1
             DO J=1,TNPATM
               JOFF = IOFF+(J-1)*3
-              DIPORG(1) = NPCORD(1,J)
-              DIPORG(2) = NPCORD(2,J)
-              DIPORG(3) = NPCORD(3,J)
-              CALL DZERO(WORK(KINTAO),3*NNBASX)
-              CALL GET1IN(WORK(KINTAO),'NEFIELD',NOCOMP,WORK(KFREE),    &
-     &                    LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,   &
+              DIPORG = NPCORD(:, J)
+              intao = 0.0d0
+              CALL GET1IN(INTAO,'NEFIELD',NOCOMP,WORK,           &
+     &                    lwork,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,   &
      &                    TRIMAT,DUMMY,EXP1VL,DUMMY,0)
 
 !             X-component
-              CALL DZERO(WORK(KTRMO),NNORBX)
-              CALL DZERO(WORK(KUTR),N2ORBX)
+              utr = 0.0d0
+              trmo = 0.0d0
 
 !             Transform integrals
-              CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST,NORBT)
-              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
+              CALL UTHU(INTAO,TRMO,CMO,WORK,NBAST,NORBT)
+              CALL DSPTSI(NORBT,TRMO,UTR)
 
 !             Determine MM region contribution
               if (present(FMQVEC2)) then
-              CALL DZERO(WORK(KTLMA),N2ORBX)
-              CALL OITH1(ISYMV2,ZYM2,WORK(KUTR),WORK(KTLMA),ISYMT)
-              fact = -FMQVEC1(JOFF+1)
-              CALL DAXPY(N2ORBX,fact,WORK(KTLMA),1,FVEC,1)
-              fact = -0.50D0*FMQVEC2(JOFF+1)
-              CALL DAXPY(N2ORBX,fact,WORK(KTLMA),1,FVEC,1)
+                 tlma = 0.0d0
+                 CALL OITH1(ISYMV2,ZYM2,UTR,TLMA,ISYMT)
+                 fact = -FMQVEC1(JOFF+1)
+                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
+                 fact = -0.50D0*FMQVEC2(JOFF+1)
+                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
               else
-               FACT = -fmqvec1(JOFF+1)
-               CALL DAXPY(N2ORBX,FACT,WORK(KUTR),1,FVEC(ISIMOFF),1)
+                 FACT = -fmqvec1(JOFF+1)
+                 CALL DAXPY(N2ORBX,FACT,UTR,1,FVEC(ISIMOFF),1)
               end if
 
 !             Y-component
-              CALL DZERO(WORK(KTRMO),NNORBX)
-              CALL DZERO(WORK(KUTR),N2ORBX)
+              utr = 0.0d0
+              trmo = 0.0d0
 
 !             Transform integrals
-              CALL UTHU(WORK(KINTAO+NNBASX),WORK(KTRMO),CMO,           &
-     &                  WORK(KFREE),NBAST,NORBT)
-              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
+              CALL UTHU(INTAO(NNBASX + 1),TRMO,CMO,           &
+     &                  WORK,NBAST,NORBT)
+              CALL DSPTSI(NORBT,TRMO,UTR)
 
 !             Determine MM region contribution
               if (present(FMQVEC2)) then
-              CALL DZERO(WORK(KTLMA),N2ORBX)
-              CALL OITH1(ISYMV2,ZYM2,WORK(KUTR),WORK(KTLMA),ISYMT)
-              fact = -FMQVEC1(JOFF+2)
-              CALL DAXPY(N2ORBX,fact,WORK(KTLMA),1,FVEC,1)
-              fact = -0.50D0*FMQVEC2(JOFF+2)
-              CALL DAXPY(N2ORBX,fact,WORK(KTLMA),1,FVEC,1)
+                 tlma = 0.0d0
+                 CALL OITH1(ISYMV2,ZYM2,UTR,TLMA,ISYMT)
+                 fact = -FMQVEC1(JOFF+2)
+                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
+                 fact = -0.50D0*FMQVEC2(JOFF+2)
+                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
               else
-               FACT = -fmqvec1(JOFF+2)
-               CALL DAXPY(N2ORBX,FACT,WORK(KUTR),1,FVEC(ISIMOFF),1)
+                 FACT = -fmqvec1(JOFF+2)
+                 CALL DAXPY(N2ORBX,FACT,UTR,1,FVEC(ISIMOFF),1)
               end if
 
 !             Z-component
-              CALL DZERO(WORK(KTRMO),NNORBX)
-              CALL DZERO(WORK(KUTR),N2ORBX)
+              utr = 0.0d0
+              trmo = 0.0d0
 
 !             Transform integrals
-              CALL UTHU(WORK(KINTAO+2*NNBASX),WORK(KTRMO),CMO,         &
-     &                  WORK(KFREE),NBAST,NORBT)
-              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
+              CALL UTHU(INTAO(2*NNBASX + 1),TRMO,CMO,         &
+     &                  WORK,NBAST,NORBT)
+              CALL DSPTSI(NORBT,TRMO,UTR)
 
 !             Determine MM region contribution
               if (present(FMQVEC2)) then
-              CALL DZERO(WORK(KTLMA),N2ORBX)
-              CALL OITH1(ISYMV2,ZYM2,WORK(KUTR),WORK(KTLMA),ISYMT)
-              fact = -FMQVEC1(JOFF+3)
-              CALL DAXPY(N2ORBX,fact,WORK(KTLMA),1,FVEC,1)
-              fact = -0.50D0*FMQVEC2(JOFF+3)
-              CALL DAXPY(N2ORBX,fact,WORK(KTLMA),1,FVEC,1)
+                 tlma = 0.0d0
+                 CALL OITH1(ISYMV2,ZYM2,UTR,TLMA,ISYMT)
+                 fact = -FMQVEC1(JOFF+3)
+                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
+                 fact = -0.50D0*FMQVEC2(JOFF+3)
+                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
               else
-               FACT = -fmqvec1(JOFF+3)
-               CALL DAXPY(N2ORBX,FACT,WORK(KUTR),1,FVEC(ISIMOFF),1)
+                 FACT = -fmqvec1(JOFF+3)
+                 CALL DAXPY(N2ORBX,FACT,UTR,1,FVEC(ISIMOFF),1)
               end if
             END DO
          END DO
          RUNQM3 = .FALSE.
-         CALL MEMREL('GET_XYVEC_QR',WORK,1,1,KFREE,LFREE)
       END IF
 !     Induced dipole moment in NP region interaction with QM region
       IF (DONPCAP.AND.NOVDAMP) THEN
          ISTART = 0
          IF (DONPPOL) ISTART = 3*TNPATM
-!        Fix me MM region shift
-!        Electronic interaction part
-         CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
-!        Allocate temp. matrices used for integrals tranformations
-         CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-         if (present(FMQVEC2)) then
-         CALL MEMGET('REAL',KTLMA,N2ORBX,WORK,KFREE,LFREE)
-         end if
 !        Set integrals evaluation flags
          KPATOM = 0
          NOCOMP = 1
@@ -494,37 +481,41 @@ contains
                DIPORG(1) = NPCORD(1,J)
                DIPORG(2) = NPCORD(2,J)
                DIPORG(3) = NPCORD(3,J)
-               CALL DZERO(WORK(KINTAO),NNBASX)
-               CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),   &
-     &                     LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,  &
+               intao = 0.0d0
+               CALL GET1IN(INTAO,'NPETES ',NOCOMP,WORK,   &
+     &                     lwork,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,  &
      &                     TRIMAT,DUMMY,EXP1VL,DUMMY,0)
 
 !             Zero integral buffers
-              CALL DZERO(WORK(KTRMO),NNORBX)
-              CALL DZERO(WORK(KUTR),N2ORBX)
+              utr = 0.0d0
+              trmo = 0.0d0
 
 !             Transform integrals
-              CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST,&
+              CALL UTHU(INTAO,TRMO,CMO,WORK,NBAST,&
      &                  NORBT)
-              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
+              CALL DSPTSI(NORBT,TRMO,UTR)
 
 !             Determine MM region contribution
               if (present(FMQVEC2)) then
-              CALL DZERO(WORK(KTLMA),N2ORBX)
-              CALL OITH1(ISYMV2,ZYM2,WORK(KUTR),WORK(KTLMA),ISYMT)
-              fact = FMQVEC1(JOFF)
-              CALL DAXPY(N2ORBX,fact,WORK(KTLMA),1,FVEC,1)
-              fact = 0.50D0*FMQVEC2(JOFF)
-              CALL DAXPY(N2ORBX,fact,WORK(KTLMA),1,FVEC,1)
+                 tlma = 0.0d0
+                 CALL OITH1(ISYMV2,ZYM2,UTR,TLMA,ISYMT)
+                 fact = FMQVEC1(JOFF)
+                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
+                 fact = 0.50D0*FMQVEC2(JOFF)
+                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
               else
-               FACT = fmqvec1(JOFF)
-               CALL DAXPY(N2ORBX,FACT,WORK(KUTR),1,fvec(ISIMOFF),1)
+                 FACT = fmqvec1(JOFF)
+                 CALL DAXPY(N2ORBX,FACT,UTR,1,fvec(ISIMOFF),1)
               end if
            END DO
          END DO
          RUNQM3 = .FALSE.
-         CALL MEMREL('GET_XYVEC_QR',WORK,1,1,KFREE,LFREE)
       END IF
+
+      if (allocated(utr)) deallocate(utr)
+      if (allocated(trmo)) deallocate(trmo)
+      if (allocated(intao)) deallocate(intao)
+      if (allocated(tlma)) deallocate(tlma)
 
       ! restore origin coordinates
       diporg = dipole_origin_save
