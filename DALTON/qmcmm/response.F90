@@ -77,6 +77,7 @@ contains
       integer :: nocomp, kpatom
       integer :: isimoff, kintao, kutr, ktlma, ktrmo, ktlmb
       integer :: KUTRX, KURXAC
+      integer :: ixyz
       real(8) :: f1val, f2val
       real(8) :: fact
       real(8) :: tac
@@ -130,147 +131,53 @@ contains
              CALL GET1IN(WORK(KINTAO),'NEFIELD',NOCOMP,WORK(KFREE),     &
      &                   LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,    &
      &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!            Compute X component of electric field
 
-!            zero temp. arrays
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-             if (.not. present(fvvec2)) then
-                CALL DZERO(WORK(KUTRX),N2ORBX)
-                CALL DZERO(WORK(KURXAC),N2ASHX)
-             end if
 
-!            Transform integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST, NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
+             do ixyz = 1, 3
+                CALL DZERO(WORK(KTRMO),NNORBX)
+                CALL DZERO(WORK(KUTR),N2ORBX)
+                if (.not. present(fvvec2)) then
+                   CALL DZERO(WORK(KUTRX),N2ORBX)
+                   CALL DZERO(WORK(KURXAC),N2ASHX)
+                end if
 
-             if (present(fvvec2)) then
-!            Determine electric field component size
-             F1VAL = 0.0d0
-             F2VAL = 0.0d0
-             IF (ISYMT.EQ.ISYMV1) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,1.0d0,F1VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC1(JOFF+1) = F1VAL
-             END IF
-             IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL DZERO(WORK(KTLMB),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,1.0d0,F2VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC2(JOFF+1) = F2VAL
-             ENDIF
-             else
-             CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
-!
-             IF (NASHT.GT.0) CALL GETACQ(WORK(KUTRX),WORK(KURXAC))
-             IF (TRPLET) THEN
-                 fvvec1(JOFF+1) = SLVTLM(UDVTR,WORK(KURXAC),WORK(KUTRX), &
-     &                                  TAC)
-             ELSE
-                 fvvec1(JOFF+1) = SLVQLM(UDV,WORK(KURXAC),WORK(KUTRX),   &
-     &                                  TAC)
-             ENDIF
-             end if
+                ! transform integrals
+                CALL UTHU(WORK(KINTAO+(ixyz-1)*NNBASX),WORK(KTRMO),CMO,          &
+                          WORK(KFREE),NBAST,NORBT)
+                CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
 
-!            Compute Y component of electric field
-!            zero temp. arrays
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-             if (.not. present(fvvec2)) then
-                CALL DZERO(WORK(KUTRX),N2ORBX)
-                CALL DZERO(WORK(KURXAC),N2ASHX)
-             end if
-
-!            Transform integrals
-             CALL UTHU(WORK(KINTAO+NNBASX),WORK(KTRMO),CMO,WORK(KFREE),&
-     &                 NBAST,NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-
-             if (present(fvvec2)) then
-!            Determine electric field component size
-             F1VAL = 0.0d0
-             F2VAL = 0.0d0
-             IF (ISYMT.EQ.ISYMV1) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,1.0d0,F1VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC1(JOFF+2) = F1VAL
-             END IF
-             IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL DZERO(WORK(KTLMB),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,1.0d0,F2VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC2(JOFF+2) = F2VAL
-             ENDIF
-             else
-             CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
-!
-             IF (NASHT.GT.0) CALL GETACQ(WORK(KUTRX),WORK(KURXAC))
-             IF (TRPLET) THEN
-                 fvvec1(JOFF+2) = SLVTLM(UDVTR,WORK(KURXAC),WORK(KUTRX), &
-     &                                  TAC)
-             ELSE
-                 fvvec1(JOFF+2) = SLVQLM(UDV,WORK(KURXAC),WORK(KUTRX),   &
-     &                                  TAC)
-             ENDIF
-             end if
-
-!            Compute Z component of electric field
-
-!            zero temp. arrays
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-             if (.not. present(fvvec2)) then
-                CALL DZERO(WORK(KUTRX),N2ORBX)
-                CALL DZERO(WORK(KURXAC),N2ASHX)
-             end if
-
-!            Transform integrals
-             CALL UTHU(WORK(KINTAO+2*NNBASX),WORK(KTRMO),CMO,          &
-     &                 WORK(KFREE),NBAST,NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-
-             if (present(fvvec2)) then
-!            Determine electric field component size
-             F1VAL = 0.0d0
-             F2VAL = 0.0d0
-             IF (ISYMT.EQ.ISYMV1) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,1.0d0,F1VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC1(JOFF+3) = F1VAL
-             END IF
-             IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL DZERO(WORK(KTLMB),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,1.0d0,F2VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC2(JOFF+3) = F2VAL
-             ENDIF
-             else
-             CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
-!
-             IF (NASHT.GT.0) CALL GETACQ(WORK(KUTRX),WORK(KURXAC))
-             IF (TRPLET) THEN
-                 fvvec1(JOFF+3) = SLVTLM(UDVTR,WORK(KURXAC),WORK(KUTRX), &
-     &                                  TAC)
-             ELSE
-                 fvvec1(JOFF+3) = SLVQLM(UDV,WORK(KURXAC),WORK(KUTRX),   &
-     &                                  TAC)
-             ENDIF
-             end if
+                if (present(fvvec2)) then
+                   ! determine electric field component size
+                   F1VAL = 0.0d0
+                   F2VAL = 0.0d0
+                   IF (ISYMT.EQ.ISYMV1) THEN
+                      CALL DZERO(WORK(KTLMA),N2ORBX)
+                      CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
+                      CALL MELONE(WORK(KTLMA),1,UDV,1.0d0,F1VAL,200,             &
+                                  'QMNPQRO')
+                      FVVEC1(JOFF+ixyz) = F1VAL
+                   END IF
+                   IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
+                      CALL DZERO(WORK(KTLMA),N2ORBX)
+                      CALL DZERO(WORK(KTLMB),N2ORBX)
+                      CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
+                      CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
+                      CALL MELONE(WORK(KTLMB),1,UDV,1.0d0,F2VAL,200,             &
+                                  'QMNPQRO')
+                      FVVEC2(JOFF+ixyz) = F2VAL
+                   ENDIF
+                else
+                   CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
+                   IF (NASHT.GT.0) CALL GETACQ(WORK(KUTRX),WORK(KURXAC))
+                   IF (TRPLET) THEN
+                       fvvec1(JOFF+ixyz) = SLVTLM(UDVTR,WORK(KURXAC),WORK(KUTRX), &
+                                              TAC)
+                   ELSE
+                       fvvec1(JOFF+ixyz) = SLVQLM(UDV,WORK(KURXAC),WORK(KUTRX),   &
+                                              TAC)
+                   ENDIF
+                end if
+             end do
 
            END DO
         END DO
