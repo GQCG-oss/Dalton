@@ -46,6 +46,8 @@
 !
 
       use qmcmm, only: getdim_relmat, read_relmat
+      use qmcmm_lr, only: get_fvvec_lr
+      use qmcmm_qr, only: get_xyvec
 
       implicit none
 
@@ -90,8 +92,8 @@
         END IF
 !       Determine electric field/potential vector for perturbed
 !       density matrices
-        CALL GET_FVVEC_LR(UDV,UDVTR,WORK(KCMO),WORK(KBOV),WORK(KFVVEC), &
-     &                    IDIM,NOSIM,WORK(KFREE),LFREE)
+        CALL GET_FVVEC_LR(WORK(KFVVEC), idim, nosim, UDV,UDVTR,WORK(KCMO),WORK(KBOV), &
+     &                    WORK(KFREE),LFREE)
 !       Allocate and compute Relay matrix
         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
         CALL MEMGET('REAL',KRELMAT,IDIMX,WORK,KFREE,LFREE)
@@ -118,14 +120,25 @@
            CALL MEMGET('REAL',KRXYT,NOSIM*N2ORBX,WORK,KFREE,LFREE)
            CALL DZERO(WORK(KRXYT),NOSIM*N2ORBX)
         END IF
-!       Compute XY contributions from induced dipoles and charges
-        IF (TRPLET) THEN
-           CALL GET_XYVEC_LR(WORK(KMQVEC),WORK(KCMO),IDIM,NOSIM,        &
-     &                       WORK(KRXYT),WORK(KFREE),LFREE)
-        ELSE
-           CALL GET_XYVEC_LR(WORK(KMQVEC),WORK(KCMO),IDIM,NOSIM,        &
-     &                       WORK(KRXY),WORK(KFREE),LFREE)
-        END IF
+
+         ! compute xy contributions from induced dipoles and charges
+         if (trplet) then
+            call get_xyvec(work(kcmo),    &
+                           idim,          &
+                           nosim,         &
+                           work(krxyt),   &
+                           work(kfree),   &
+                           lfree,         &
+                           work(kmqvec))
+         else
+            call get_xyvec(work(kcmo),    &
+                           idim,          &
+                           nosim,         &
+                           work(krxy),    &
+                           work(kfree),   &
+                           lfree,         &
+                           work(kmqvec))
+         end if
       ELSE
 !        Fix me
       END IF
@@ -146,6 +159,7 @@
      &                     ISPIN0,ISPIN1,ISPIN2)
 
       use qmcmm, only: getdim_relmat, read_relmat
+      use qmcmm_qr, only: get_fvvec_qr, get_xyvec
 
       implicit none
 
@@ -270,11 +284,20 @@
              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
           end if
         END DO
-!       Determine MM region contribution to QM region potential from
-!       second order density
-        CALL GET_XYVEC_QR(WORK(KFVVEC1),WORK(KFVVEC2),WORK(KUCMO),      &
-     &                    IDIM,NSIM,WORK(KTRES),ISYMT,ISYMV2,ZYM2,      &
-     &                    WORK(KFREE),LFREE)
+
+        ! determine mm region contribution to qm region potential from
+        ! second order density
+        call get_xyvec(work(kucmo),   &
+                       idim,          &
+                       nsim,          &
+                       work(ktres),   &
+                       work(kfree),   &
+                       lfree,         &
+                       work(kfvvec1), &
+                       work(kfvvec2), &
+                       isymt,         &
+                       isymv2,        &
+                       zym2)
 
       ELSE
 !       FIX ME: ITERATIVE METHOD
