@@ -2304,6 +2304,7 @@ contains
        unocc_list = .false.
        occ_list   = .false.
 
+
        !loop over all valence orbitals and include them if within radius
        do orb_idx=1, MyMolecule%nocc
           occ_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomOcc(orb_idx,MyAtom)<=DECinfo%occ_init_radius)
@@ -2312,6 +2313,18 @@ contains
        do orb_idx=1, MyMolecule%nunocc
           unocc_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)<=DECinfo%vir_init_radius)
           !unocc_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)>=10.0/bohr_to_angstrom)
+       enddo
+
+       !Make sure all the EOS orbtials are included
+       do orb_idx=1,MyMolecule%nocc
+          if(OccOrbitals(orb_idx)%centralatom == MyAtom)then
+             occ_list(orb_idx) = .true.
+          endif
+       enddo
+       do orb_idx=1,MyMolecule%nunocc
+          if(UnoccOrbitals(orb_idx)%centralatom == MyAtom)then
+             unocc_list(orb_idx) = .true.
+          endif
        enddo
 
     endif
