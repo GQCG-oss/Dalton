@@ -440,7 +440,7 @@ C
 #else              
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM) THEN
 #endif
-C     this also includes the case of MMPCM
+C     this also includes the case of MMPCM   
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
      &      ' Iter      Total energy       Solvation energy    '//
@@ -1041,7 +1041,7 @@ C            Now the PCM part ...
 C
          IF (PEQM) THEN
 #if defined (BUILD_PELIB)
-           IF (PCM .OR. FLAG(16) .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
+           IF (FLAG(16) .OR. PCM .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
              CALL QUIT(
      &             'PEQM is not compatible with other embedding models')
            END IF

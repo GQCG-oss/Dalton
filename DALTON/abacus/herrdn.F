@@ -2598,12 +2598,10 @@ C
 
          CALL PRICAR(WORK,LWORK)
 
-         IF (PEQM .OR. PEMEP
-#if defined (BUILD_PELIB)
-     &    .or. pe_savden
-#endif
-     &   ) THEN
+         IF (PEQM .OR. PEMEP) THEN
 #if defined(BUILD_PELIB)
+            CALL PE_IFC_INIT()
+	 ELSE IF (pe_savden) THEN
             CALL PE_IFC_INIT()
 #endif
          END IF

@@ -882,10 +882,6 @@ C
 C        CALL HEADER('GRADFT in DFT_MOLGRAD ',-1)
 C        CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
       END IF
-Ckr
-Ckr   Get QMMM gradient/Hessian integrals
-Ckr
-C
 
 C     ****************************************
 C     ***** PE contribution to gradient ******
@@ -899,7 +895,6 @@ C     *************************
 C     ***** Print Section *****
 C     *************************
 C
-
       IF (IPRINT .GT. 0) THEN
          IF (EXPGRA) THEN
             CALL HEADER('One-electron part of alpha gradient',-1)
@@ -909,7 +904,7 @@ C
             KCSTRA = 1
             KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
             KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
-            IF (KLAST .GT. LWORK)
+            IF (KLAST .GT. LWORK) 
      &           CALL STOPIT('ONEDR1','TRACOR',KLAST,LWORK)
             CALL HEADER('Kinetic energy integral gradient',-1)
             CALL PRIGRD(GRADKE,WORK(KCSTRA),WORK(KSCTRA))

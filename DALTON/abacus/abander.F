@@ -4565,13 +4565,11 @@ C
             INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
 C
 C           *** No hessian specified, we can safely write to file. ***
-            IF (HESEXS) WRITE(LUPRI,'(//A/A//)')
-     &            'Hessian file "DALTON.HES" already exists.' //
-     &              ' This file WILL be overwritten.'
+            IF (.NOT. HESEXS) THEN
 C
 C              *** Open hessian file. ***
                LUHES = -1
-               CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',
+               CALL GPOPEN(LUHES,'DALTON.HES','NEW',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
 C
 C              *** Checking if this is going to be used with SPECTRO.***
@@ -4588,7 +4586,7 @@ C
                ELSE
 C
 C              *** Printing necessary pre-hessian information. ***
-C                  WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
+                  WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
                   WRITE(LUHES,*) NCOOR
                   WRITE(LUHES,'(A)') '                                '
 C
@@ -4601,6 +4599,13 @@ C
                END IF
 CRF        Shouldn't this file be closed?
                CALL GPCLOSE(LUHES,'KEEP')
+            ELSE
+               WRITE (LUPRI,'(//A/A//)')
+     &            'Hessian file "DALTON.HES" already exists.' //
+     &              ' This file will NOT be overwritten.',
+     &            'Please restart the calculation without this file.'
+               CALL QUIT('"DALTON.HES" already exists. See output.')
+            END IF
          END IF
 C
 C        *** Print ***
