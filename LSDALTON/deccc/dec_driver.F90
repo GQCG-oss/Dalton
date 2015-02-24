@@ -353,7 +353,7 @@ contains
     calcAF = DECinfo%RepeatAF
     !This is a hack to specify that only pair fragment jobs should be done
     if(DECinfo%only_pair_frag_jobs) calcAF = .false.
-    ! Always calculate atomic fragment energies is AFset is true
+    ! Always calculate atomic fragment energies if AFset is true
     if(AFset) calcAF=.true.
 
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&

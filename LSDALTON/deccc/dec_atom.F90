@@ -5292,7 +5292,8 @@ contains
        do j=i+1,natoms
           if(.not. which_fragments(j)) cycle
           CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE .and. &
-               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold ) then
+               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold &
+               & .and. (.not. DECinfo%DECNP) ) then
              ! Pair needs to be computed
              npair = npair+1
           end if CheckPair
@@ -5312,53 +5313,55 @@ contains
 
     call init_joblist(njobs,jobs)
 
-    if(nred>0) then  
-       ! use reduced orbital spaces for some of the pair fragments
-       call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-            & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred, &
-            & occAOSred=occAOSred,unoccAOSred=unoccAOSred,Fragbasisred=Fragbasisred)
-    else
-       ! No reduced pair fragments
-       call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-            & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred)
-    end if
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '*****************************************************'
-    if(esti) then
-       write(DECinfo%output,*) '*      DEC ESTIMATED FRAGMENT JOB LIST              *'
-    else
-       write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
-    end if
-    write(DECinfo%output,*) '*****************************************************'
-    write(DECinfo%output,*) 'Number of jobs = ', njobs
-    write(DECinfo%output,*)
-    if(DECinfo%DECCO) then
-       write(DECinfo%output,*) 'JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis'
-    else
-       write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
-    end if
-
-
-    do i=1,njobs
-       if(jobs%atom1(i)==jobs%atom2(i)) then ! single
-          write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
-               &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
-       else ! pair
-          write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8,3X,i6,3X,i6,3X,i6)') &
-               &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+    if (jobs%njobs>0) then
+       if(nred>0) then  
+          ! use reduced orbital spaces for some of the pair fragments
+          call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+               & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred, &
+               & occAOSred=occAOSred,unoccAOSred=unoccAOSred,Fragbasisred=Fragbasisred)
+       else
+          ! No reduced pair fragments
+          call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+               & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred)
        end if
-    end do
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-    ! Summary print out
-    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of single jobs = ', nsingle
-    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of pair jobs   = ', npair
-    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Total number of jobs  = ', njobs
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+        
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) '*****************************************************'
+       if(esti) then
+          write(DECinfo%output,*) '*      DEC ESTIMATED FRAGMENT JOB LIST              *'
+       else
+          write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
+       end if
+       write(DECinfo%output,*) '*****************************************************'
+       write(DECinfo%output,*) 'Number of jobs = ', njobs
+       write(DECinfo%output,*)
+       if(DECinfo%DECCO) then
+          write(DECinfo%output,*) 'JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis'
+       else
+          write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
+       end if
+        
+        
+       do i=1,njobs
+          if(jobs%atom1(i)==jobs%atom2(i)) then ! single
+             write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
+                  &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+          else ! pair
+             write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8,3X,i6,3X,i6,3X,i6)') &
+                  &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+          end if
+       end do
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+        
+       ! Summary print out
+       write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of single jobs = ', nsingle
+       write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of pair jobs   = ', npair
+       write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Total number of jobs  = ', njobs
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+    end if
 
     call mem_dealloc( occAOS    )
     call mem_dealloc( unoccAOS  )
@@ -5633,7 +5636,8 @@ contains
           dist = DistanceTable(i,j)
 
           CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE .and. &
-               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold ) then
+               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold &
+               & .and. (.not. DECinfo%DECNP) ) then
              k=k+1
 
              ! **************

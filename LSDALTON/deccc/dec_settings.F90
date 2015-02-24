@@ -407,12 +407,8 @@ contains
           DECinfo%DECCO=.true.
 
           ! Alternaitve DEC energy formulation with no pairs:
-          ! E_corr = sum_P E_P
-          ! E_P = sum_(i \in P) sum_(j,a,b \in [P]) E^{ab}_{ij}
        case('.DECNP')
           DECinfo%DECNP=.true.
-          DECinfo%PairEstimate=.false.
-          !TODO: DECNP: Implement sanity check for options not compatible with DECNP
 
           ! CC model
        case('.MP2') 
@@ -806,6 +802,51 @@ contains
     nodtot = infpar%nodtot
 #endif
 
+    ! Check DECNP options compatibility:
+    ! ----------------------------------
+    if (DECinfo%DECNP) then
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) "WARNING: DECNP calculate no pairs explicitly!"
+       write(DECinfo%output,*) "--> All pair and pair estimate related keywords &
+         &will be ignored"
+       DECinfo%PairEstimate=.false.
+       DECinfo%PairEstimateIgnore = .true.
+
+       if (DECinfo%ccmodel==MODEL_RIMP2) call lsquit("RI-MP2 model is not &
+          &compatible with DECNP yet",DECinfo%output)
+
+       ! DECNP only tested for occupied partitioning scheme
+       if(.not. DECinfo%OnlyOccPart) then
+          write(DECinfo%output,*) 'WARNING: DECNP ONLY TESTED FOR OCCUPIED PART. SCHEME'
+          write(DECinfo%output,*) 'WARNING: I TURN ON OCCUPIED PART. SCHEME'
+          DECinfo%onlyoccpart=.true.
+          DECinfo%onlyvirtpart=.false.
+       end if
+
+       ! DECNP and SNOOP are not compatible yet
+       if(DECinfo%SNOOP) then
+          call lsquit("SNOOP and DECNP are not compatible yet!",DECinfo%output)
+       end if
+
+       !TODO: Add test for expansion reduction model and repeatAF !!!
+    end if
+
+
+    ! Repeat atomic fragment calcs after fragment optimization if:
+    ! --------------------------------------------------------
+    ! - First order properties are requested
+    ! - The model used in fragment reduction is different from the target CC model.
+    ! - Debug calculations: Include full Molecule
+    ! - MODIFY FOR NEW CORRECTION: A corection is requested in the target CC model (F12)
+    if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. DECinfo%F12 .or. &
+         & (DECinfo%ccmodel/=DECinfo%fragopt_red_model )) then
+       DECinfo%RepeatAF=.true.
+    else
+       DECinfo%RepeatAF=.false.
+    end if
+
+    
+    ! Local masters print less information if we use more than 100 nodes
     if( nodtot > 100 .and. DECinfo%PL<=1)then
        DECinfo%print_small_calc = .false.
     endif

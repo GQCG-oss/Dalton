@@ -283,12 +283,8 @@ contains
        end if
 
        if (DECinfo%DECNP) then
-          ! In DECNP No explicit Pair calculations are done
-          ! set pair energy to zero
-          ! TODO: Change dec structure from outside not to have anything 
-          !       related to pairs
-          call put_fragment_energy_contribs_main(0.0e0_realk,0.0e0_realk,myfragment)
-          return
+          ! In DECNP No explicit Pair calculations are done.
+          call lsquit("ERROR(fragment_energy_and_prop): No pairs in DECNP",DECinfo%output)
        end if
     end if
 
