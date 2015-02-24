@@ -786,9 +786,7 @@ contains
 
     ENDDO
 
-    ! Check that input is consistent to avoid weird segmentation fault etc...
-    call check_dec_input()
-
+    ! DEC input is checked internally latter in DEC_meaningful_input
 
   END SUBROUTINE config_dec_input
 
