@@ -136,13 +136,13 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 11:57:29 2015
+     Date and time (Linux)  : Mon Feb 23 13:34:26 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pehf_zero
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/nonconverted_runtests/pesoppa_excit
    2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
 
 
@@ -173,12 +173,18 @@ Compilation information
  ----------------------------------
 
 **DALTON                                          
-.RUN WAVE FUNCTION                                
+.RUN RESPONSE                                     
 .PEQM                                             
-*PEQM                                             
-.ZEROPOL                                          
 **WAVE FUNCTIONS                                  
 .HF                                               
+.MP2                                              
+**RESPONSE                                        
+.SOPPA                                            
+*LINEAR                                           
+.SINGLE RESIDUE                                   
+.DIPLEN                                           
+.ROOTS                                            
+ 2                                                
 **END OF                                          
 
 
@@ -214,6 +220,7 @@ H              2.675323   -2.516779   -0.000673
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
     Environment is modeled using polarizable embedding scheme (PE library)
  --------------------------------------------------------------------------------
 
@@ -406,6 +413,11 @@ H              2.675323   -2.516779   -0.000673
 
       Multipole moments upto 3rd order.
 
+      Dipole-dipole polarizabilities.
+
+      Iterative solver for induced moments will be used
+      with convergence threshold: 1.0E-08
+
 
                      .---------------------------------------.
                      | Starting in Integral Section (HERMIT) |
@@ -479,7 +491,7 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 23 11:57:29 2015
+     Date and time (Linux)  : Mon Feb 23 13:34:26 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -489,7 +501,11 @@ H              2.675323   -2.516779   -0.000673
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-@    Restricted, closed shell Hartree-Fock calculation.
+@    MP2, closed-shell Moeller-Plesset second-order calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
 
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option
@@ -504,7 +520,7 @@ H              2.675323   -2.516779   -0.000673
      Wave function environment is modeled using the
      polarizable embedding model (PE library).
 
-@    Wave function type        >>> PE-HF <<<
+@    Wave function type        >>> PE-MP2 <<<
 @    Number of closed shell electrons          30
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
@@ -533,7 +549,7 @@ H              2.675323   -2.516779   -0.000673
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
-     Threshold for SCF convergence     1.00D-05
+     Threshold for SCF convergence     1.00D-06
 
 
  ***********************************************
@@ -546,67 +562,59 @@ H              2.675323   -2.516779   -0.000673
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -187.942965358     -4.315250197799E-02    2.02599D+00   -1.88D+02
-      Virial theorem: -V/T =      2.003027
+@  1  -187.948496600     -4.868374348977E-02    2.01259D+00   -1.88D+02
+      Virial theorem: -V/T =      2.003056
 @      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
  -----------------------------------------------------------------------------
-@  2  -188.172265429      3.797418838888E-03    1.43152D+00   -2.29D-01
-      Virial theorem: -V/T =      2.009532
-@      MULPOP C      -0.41; C      -0.17; C      -0.26; O       0.39; H       0.07; H       0.14; H       0.12; H       0.12; 
+@  2  -188.184841194      2.344779659307E-03    1.36791D+00   -2.36D-01
+      Virial theorem: -V/T =      2.009438
+@      MULPOP C      -0.39; C      -0.18; C      -0.25; O       0.36; H       0.07; H       0.15; H       0.12; H       0.12; 
  -----------------------------------------------------------------------------
-@  3  -188.314506410     -1.884371288694E-02    1.23083D-01   -1.42D-01
-      Virial theorem: -V/T =      2.007825
-@      MULPOP C       0.19; C      -0.10; C      -0.10; O      -0.29; H       0.05; H       0.09; H       0.08; H       0.08; 
+@  3  -188.315331361     -1.994605857626E-02    1.22120D-01   -1.30D-01
+      Virial theorem: -V/T =      2.007786
+@      MULPOP C       0.19; C      -0.10; C      -0.11; O      -0.30; H       0.05; H       0.09; H       0.08; H       0.08; 
  -----------------------------------------------------------------------------
-@  4  -188.316469784     -1.814393997437E-02    2.80580D-02   -1.96D-03
-      Virial theorem: -V/T =      2.007924
-@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.26; H       0.07; H       0.09; H       0.07; H       0.08; 
+@  4  -188.317223363     -1.920849914129E-02    2.80029D-02   -1.89D-03
+      Virial theorem: -V/T =      2.007876
+@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.09; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  5  -188.316627482     -1.811206418059E-02    9.17002D-03   -1.58D-04
-      Virial theorem: -V/T =      2.007885
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.06; H       0.09; H       0.07; H       0.08; 
+@  5  -188.317376539     -1.916797097239E-02    9.68984D-03   -1.53D-04
+      Virial theorem: -V/T =      2.007837
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  6  -188.316640914     -1.812604512792E-02    2.62939D-03   -1.34D-05
-      Virial theorem: -V/T =      2.007885
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.06; H       0.09; H       0.07; H       0.08; 
+@  6  -188.317390806     -1.918432906120E-02    2.78666D-03   -1.43D-05
+      Virial theorem: -V/T =      2.007836
+@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  7  -188.316641800     -1.812422339068E-02    7.40682D-04   -8.86D-07
-      Virial theorem: -V/T =      2.007884
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.06; H       0.09; H       0.07; H       0.08; 
+@  7  -188.317391847     -1.918174369107E-02    7.23105D-04   -1.04D-06
+      Virial theorem: -V/T =      2.007836
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  8  -188.316641866     -1.812641891330E-02    1.44624D-04   -6.61D-08
-      Virial theorem: -V/T =      2.007884
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.06; H       0.09; H       0.07; H       0.08; 
+@  8  -188.317391913     -1.918427369673E-02    1.50542D-04   -6.63D-08
+      Virial theorem: -V/T =      2.007835
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@  9  -188.316641869     -1.812628309709E-02    3.20475D-05   -2.89D-09
-      Virial theorem: -V/T =      2.007884
-@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.26; H       0.06; H       0.09; H       0.07; H       0.08; 
+@  9  -188.317391916     -1.918426510508E-02    3.46603D-05   -3.15D-09
+      Virial theorem: -V/T =      2.007835
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
  -----------------------------------------------------------------------------
-@ 10  -188.316641869     -1.812637807559E-02    8.78333D-06   -1.77D-10
+@ 10  -188.317391916     -1.918439237827E-02    9.00492D-06   -2.13D-10
+      Virial theorem: -V/T =      2.007835
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+@ 11  -188.317391916     -1.918440073845E-02    2.13793D-06   -1.63D-11
+      Virial theorem: -V/T =      2.007835
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+@ 12  -188.317391916     -1.918441789292E-02    1.26195D-06   -4.83D-13
+      Virial theorem: -V/T =      2.007835
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+@ 13  -188.317391916     -1.918441806032E-02    5.51547D-07   -9.66D-13
 
-@ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:   -188.316641869204    8.78D-06
+@ *** DIIS converged in  13 iterations !
+@     Converged SCF energy, gradient:   -188.317391916176    5.52D-07
     - total time used in SIRFCK :              0.00 seconds
-
-
- *** SCF orbital energy analysis ***
-   (incl. contribution from polarizable embedding potential)
-
- Number of electrons :   30
- Orbital occupations :   15
-
- Sym       Hartree-Fock orbital energies
-
-1 A     -20.28570584   -11.13657149   -11.05350678   -11.04482541    -1.33941438
-         -1.02185644    -0.82609803    -0.73423414    -0.61418014    -0.60270860
-         -0.52051728    -0.50205341    -0.47571993    -0.35963302    -0.32365250
-          0.20670375     0.38538967     0.59746396     0.62833688     0.66102797
-          0.73968041     0.84446509     0.92873368     1.04156375
-
-    E(LUMO) :     0.20670375 au (symmetry 1)
-  - E(HOMO) :    -0.32365250 au (symmetry 1)
-  ------------------------------------------
-    gap     :     0.53035625 au
 
     .--------------------------------------------------.
     | Final results from polarizable embedding library |
@@ -616,16 +624,76 @@ H              2.675323   -2.516779   -0.000673
        ---------------------------------------------
 
        Electrostatic contributions:
-            Monopoles                 -0.015148547107
-            Dipoles                    0.004122762793
-            Quadrupoles               -0.004828810830
-            Octopoles                 -0.002271782931
+            Monopoles                 -0.015401667400
+            Dipoles                    0.004183504170
+            Quadrupoles               -0.004908356958
+            Octopoles                 -0.002292517211
 
-       Total PE energy:            -0.018126378076
+       Polarization contributions:
+            Electronic                -0.043153688616
+            Nuclear                    0.042259268631
+            Multipole                  0.000129039322
+
+       Total PE energy:            -0.019184418060
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.148       0.148
+ >>>> CPU and wall time for SCF :       0.518       0.518
+
+
+ >>>>> Output from SIRIUS MP2 module <<<<<
+
+ Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,
+            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
+
+ Checking that the closed shell orbitals are canonical Hartree-Fock orbitals
+
+    Number of electrons  :   30
+    Closed shell orbitals:   15
+
+ MP2 for embedded QM system, reading Fock matrix from SIRIFC
+
+@ NOTE: The present MP2 model is a PTE-like solvent MP2 model
+
+@ Please see JCC, 2012-2022, 33, (2012) for reference.
+
+ Hartree-Fock electronic energy:        -290.963054358631
+ Hartree-Fock total      energy:        -188.298207498116
+
+ Hartree-Fock orbital energies, symmetry 1 ( A  ),   15 occupied SCF orbitals
+
+       -20.28723553   -11.13975647   -11.05534289   -11.04610009    -1.34280971
+        -1.02347207    -0.82817321    -0.73627020    -0.61639427    -0.60505822
+        -0.52315104    -0.50359057    -0.47863649    -0.36294739    -0.32551276
+         0.20429347     0.38331434     0.59620656     0.62636534     0.65972007
+         0.73772250     0.84219147     0.92707703     1.03955701
+
+    E(LUMO) :     0.20429347   (in symmetry 1)
+  - E(HOMO) :    -0.32551276   (in symmetry 1)
+  --------------------------
+    gap     :     0.52980622
+
+ Integral transformation: Total CPU and WALL times (sec)       0.040       0.040
+
+ MP2 move   0.223605 electrons to unoccupied HF orbitals
+
+
+@   Hartree-Fock total energy   :          -188.2982074981
+@   + MP2 contribution          :            -0.2336030416
+@   = MP2 second order energy   :          -188.5318105397
+
+ Natural orbital occupation numbers, symmetry 1 (irrep A  )
+ Sum =    30.00000000; RHF =    30.00000000; Difference =     0.00000000
+
+         1.99999810     1.99996976     1.99996871     1.99996216     1.99790989
+         1.99406754     1.99168244     1.98946074     1.98826513     1.98739532
+         1.98558673     1.98119844     1.97723002     1.95303103     1.93381127
+         0.07151901     0.04549109     0.02292853     0.01745644     0.01524455
+         0.01371992     0.01190063     0.01121522     0.01098730
+
+ Time used for MP2 natural orbitals :       0.044 CPU seconds,       0.044 wall seconds.
+
+ >>>> CPU and wall time for MP2 :       0.044       0.044
 
 
                        .-----------------------------------.
@@ -637,18 +705,18 @@ H              2.675323   -2.516779   -0.000673
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -188.316641869204                 
+@    Final HF energy:            -188.317391916176                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.963362351643
-@    Embedding energy:             -0.018126378076
+@    Electronic energy:          -290.963054358631
+@    Embedding energy:             -0.019184418060
 
-@    Final gradient norm:           0.000008783332
+@    Final gradient norm:           0.000000551547
 
  
-     Date and time (Linux)  : Mon Feb 23 11:57:29 2015
+     Date and time (Linux)  : Mon Feb 23 13:34:27 2015
      Host name              : foeroyar                                
 
-File label for MO orbitals:  23Feb15   FOCKDIIS
+File label for MO orbitals:  23Feb15   MP2SAVE 
 
  (Only coefficients >0.0100 are printed.)
 
@@ -656,108 +724,108 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
  ------------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 C   :1s    -0.0005  -0.9926   0.0004   0.0014   0.1235  -0.0652   0.1387
-   2 C   :1s     0.0071  -0.0332  -0.0000  -0.0065  -0.2839   0.1838  -0.4267
-   3 C   :2px   -0.0021  -0.0003  -0.0001  -0.0043   0.0476   0.1134  -0.1068
-   4 C   :2py    0.0059  -0.0005   0.0002   0.0011  -0.1463  -0.0898   0.1308
-   6 C   :1s     0.0000   0.0004   0.0416   0.9913   0.0214  -0.1794   0.0539
-   7 C   :1s    -0.0003   0.0061  -0.0061   0.0366  -0.0518   0.4699  -0.1605
-   8 C   :2px    0.0000  -0.0040  -0.0012  -0.0004   0.0282  -0.0159   0.1810
-   9 C   :2py   -0.0006   0.0013   0.0043  -0.0016  -0.0078  -0.0930  -0.1654
-  11 C   :1s    -0.0000   0.0003   0.9915  -0.0410   0.0045  -0.1574  -0.1474
-  12 C   :1s    -0.0001  -0.0001   0.0353  -0.0092  -0.0109   0.4166   0.4325
-  13 C   :2px   -0.0001  -0.0000  -0.0004   0.0013   0.0024  -0.0396   0.0561
-  14 C   :2py   -0.0000   0.0000   0.0012  -0.0045  -0.0055   0.1050  -0.0577
-  16 O   :1s    -0.9943  -0.0002   0.0000  -0.0000   0.2183   0.0459  -0.0785
-  17 O   :1s    -0.0259   0.0058  -0.0001   0.0003  -0.7665  -0.1795   0.3393
-  18 O   :2px   -0.0019   0.0007  -0.0000   0.0002  -0.0544   0.0213  -0.0693
-  19 O   :2py    0.0052  -0.0016   0.0001  -0.0001   0.1489  -0.0072   0.1100
-  21 H   :1s    -0.0002   0.0065  -0.0001   0.0001  -0.0319   0.0477  -0.1535
-  22 H   :1s     0.0002  -0.0000  -0.0002  -0.0067  -0.0083   0.0993  -0.0521
-  23 H   :1s     0.0000   0.0001  -0.0067   0.0004  -0.0019   0.0985   0.1513
-  24 H   :1s     0.0000   0.0001  -0.0067   0.0004  -0.0011   0.0904   0.1902
+   1 C   :1s     0.0284   0.6626  -0.7322   0.0960   0.0364   0.0249  -0.1189
+   2 C   :1s     0.0059   0.0246  -0.0223  -0.0021  -0.0254  -0.0778   0.3382
+   3 C   :2px   -0.0014   0.0017   0.0014  -0.0035   0.0025  -0.1959  -0.0051
+   4 C   :2py    0.0038   0.0030  -0.0039   0.0015   0.0046  -0.0322  -0.0971
+   6 C   :1s    -0.0038  -0.4530  -0.3030   0.8283   0.0055   0.0253  -0.1601
+   7 C   :1s    -0.0001  -0.0247  -0.0101   0.0282  -0.0200  -0.0023   0.4247
+   8 C   :2px   -0.0004   0.0034  -0.0036  -0.0006   0.0149  -0.0660  -0.0177
+   9 C   :2py   -0.0006   0.0024   0.0036  -0.0039  -0.0028  -0.0074   0.0310
+  11 C   :1s    -0.0019   0.5830   0.5976   0.5360  -0.0015   0.0174  -0.1302
+  12 C   :1s    -0.0004   0.0239   0.0232   0.0149   0.0054  -0.0489   0.3414
+  13 C   :2px    0.0001  -0.0014  -0.0010  -0.0003  -0.0032   0.0326  -0.0241
+  14 C   :2py   -0.0002   0.0042   0.0036   0.0018   0.0049  -0.0218  -0.0108
+  16 O   :1s    -1.0011   0.0201  -0.0215  -0.0011   0.2257  -0.0070   0.0173
+  17 O   :1s     0.0053  -0.0046   0.0044  -0.0019  -0.9976   0.0347  -0.1109
+  18 O   :2px   -0.0053  -0.0009   0.0007   0.0014   0.0590  -0.8773  -0.1527
+  19 O   :2py    0.0150  -0.0024   0.0029  -0.0006  -0.1907  -0.3067  -0.1642
+  21 H   :1s     0.0004  -0.0068   0.0073  -0.0011  -0.0288  -0.1507   0.1191
+  22 H   :1s     0.0006   0.0038   0.0026  -0.0079  -0.0125  -0.0555   0.1622
+  23 H   :1s    -0.0000  -0.0048  -0.0049  -0.0053   0.0014  -0.0468   0.1401
+  24 H   :1s     0.0004  -0.0053  -0.0048  -0.0048  -0.0076   0.0315   0.1021
 
     Orbital         8        9       10       11       12       13       14
-   1 C   :1s    -0.0914   0.0062   0.0552   0.0057   0.0288  -0.0000  -0.0048
-   2 C   :1s     0.2970  -0.0177  -0.1874  -0.0149  -0.1100   0.0000   0.0171
-   3 C   :2px   -0.2366  -0.3756   0.0161   0.0845  -0.2034   0.0004   0.1981
-   4 C   :2py   -0.1722  -0.1131  -0.2299  -0.3700   0.0801   0.0002   0.0579
-   5 C   :2pz    0.0002   0.0003   0.0000   0.0001   0.0002   0.5627  -0.0001
-   6 C   :1s     0.1076  -0.0299  -0.0347   0.0040  -0.0181   0.0000  -0.0361
-   7 C   :1s    -0.3314   0.0987   0.0992  -0.0002   0.0789  -0.0000   0.1584
-   8 C   :2px   -0.1352   0.3083  -0.0719  -0.0540   0.2286   0.0001  -0.3123
-   9 C   :2py   -0.1447  -0.0701  -0.2816   0.3256   0.2435   0.0000   0.0582
-  10 C   :2pz    0.0001  -0.0002   0.0001  -0.0000  -0.0001   0.2939   0.0001
-  11 C   :1s    -0.0565   0.0154   0.0139   0.0235   0.0101  -0.0000   0.0070
-  12 C   :1s     0.1766  -0.0633  -0.0626  -0.0658  -0.0283   0.0000  -0.0218
-  13 C   :2px   -0.0500   0.1982  -0.3266   0.1830  -0.3545   0.0001   0.0721
-  14 C   :2py   -0.1713   0.2720   0.2345  -0.2843  -0.2214   0.0001  -0.0643
-  15 C   :2pz    0.0001  -0.0002   0.0001  -0.0000   0.0003   0.1893  -0.0001
-  16 O   :1s     0.0423   0.0023  -0.0744  -0.0575   0.0120  -0.0000  -0.0014
-  17 O   :1s    -0.1935  -0.0130   0.3795   0.3188  -0.0690   0.0000   0.0092
-  18 O   :2px   -0.1223  -0.3418  -0.2240  -0.1926  -0.2204   0.0004  -0.7938
-  19 O   :2py   -0.1703  -0.1298   0.3470   0.4969  -0.1898   0.0002  -0.2843
-  20 O   :2pz    0.0001   0.0003   0.0000  -0.0000   0.0003   0.5752   0.0006
-  21 H   :1s     0.2763   0.2023   0.0383   0.2026   0.0090  -0.0000  -0.3535
-  22 H   :1s    -0.2455   0.1542  -0.1385   0.1793   0.3441  -0.0001  -0.1237
-  23 H   :1s     0.1774  -0.2790   0.0169   0.0507   0.3818  -0.0000  -0.0578
-  24 H   :1s     0.0710   0.0589  -0.3242   0.2002  -0.2865   0.0000   0.1031
+   1 C   :1s     0.1429  -0.0352   0.0818   0.0390   0.0649   0.0334  -0.0000
+   2 C   :1s    -0.4274   0.1276  -0.2752  -0.1062  -0.1807  -0.0494   0.0000
+   3 C   :2px    0.0984  -0.1916  -0.0596  -0.4069  -0.0832   0.2325   0.0003
+   4 C   :2py    0.1274  -0.1206   0.0403  -0.1279  -0.2292  -0.4251   0.0001
+   5 C   :2pz   -0.0001   0.0001   0.0000   0.0003   0.0001  -0.0000   0.4648
+   6 C   :1s    -0.0045   0.1368  -0.0263   0.0438  -0.0683  -0.0036   0.0000
+   7 C   :1s     0.0069  -0.4343   0.0967  -0.1213   0.1528   0.0353  -0.0000
+   8 C   :2px    0.1025  -0.0863   0.1439   0.4573   0.0855  -0.2179   0.0003
+   9 C   :2py   -0.0565  -0.1871   0.0810   0.1652  -0.4228   0.2406   0.0001
+  10 C   :2pz   -0.0000   0.0001  -0.0001  -0.0003   0.0000   0.0001   0.4827
+  11 C   :1s    -0.1488  -0.0811   0.0029   0.0160  -0.0503   0.0497   0.0000
+  12 C   :1s     0.4360   0.2627  -0.0141  -0.0403   0.0929  -0.1372  -0.0000
+  13 C   :2px    0.1401  -0.1068  -0.4947   0.1523  -0.0994   0.0832   0.0002
+  14 C   :2py   -0.0793  -0.2068  -0.1166  -0.0354   0.4367  -0.2266   0.0001
+  15 C   :2pz   -0.0001   0.0001   0.0003  -0.0001  -0.0000  -0.0000   0.3975
+  16 O   :1s    -0.0135   0.0011  -0.0060   0.0051   0.0038   0.0279  -0.0000
+  17 O   :1s     0.1139  -0.0135   0.0567  -0.0099   0.0760   0.0368   0.0000
+  18 O   :2px   -0.0363   0.1181  -0.0761   0.0996  -0.0441  -0.2484   0.0002
+  19 O   :2py    0.1522   0.0150   0.0632   0.1092   0.2857   0.5255   0.0001
+  20 O   :2pz   -0.0000  -0.0001   0.0000  -0.0001  -0.0001  -0.0000   0.3669
+  21 H   :1s    -0.2565   0.2414  -0.0615   0.3554   0.1224   0.1097  -0.0000
+  22 H   :1s     0.0070  -0.2663   0.2196   0.3338  -0.1368   0.0481  -0.0000
+  23 H   :1s     0.1093   0.2664   0.3942  -0.0139  -0.1811   0.0268  -0.0000
+  24 H   :1s     0.2718   0.0548  -0.4098   0.0654  -0.1396   0.1029  -0.0000
 
     Orbital        15       16       17       18       19       20       21
-   1 C   :1s     0.0000   0.0000   0.0000  -0.0141  -0.1916   0.0182  -0.0010
-   2 C   :1s    -0.0000  -0.0000  -0.0000   0.0876   1.1831  -0.1177   0.0241
-   3 C   :2px    0.0001  -0.0003  -0.0004   0.3355   0.0362  -0.0617  -0.8903
-   4 C   :2py    0.0000  -0.0001  -0.0002   0.2777  -0.4579   0.1682  -0.2515
-   5 C   :2pz    0.1730  -0.5336  -0.6721  -0.0003   0.0001  -0.0000   0.0006
-   6 C   :1s     0.0000  -0.0000   0.0000  -0.0523   0.1064   0.0119  -0.1865
-   7 C   :1s     0.0000   0.0000  -0.0000   0.3221  -0.6286  -0.0457   1.2313
-   8 C   :2px   -0.0003  -0.0002   0.0004   0.5132   0.4214  -0.1295   0.0062
-   9 C   :2py   -0.0001  -0.0001   0.0001   0.3440  -0.2334   0.2856   0.1986
-  10 C   :2pz   -0.5644  -0.4030   0.7289  -0.0003  -0.0002   0.0000  -0.0000
-  11 C   :1s    -0.0000   0.0000  -0.0000   0.0043  -0.0394  -0.2034   0.0529
-  12 C   :1s     0.0000  -0.0000   0.0000  -0.0128   0.2301   1.3021  -0.3334
-  13 C   :2px   -0.0003   0.0004  -0.0003   0.6029   0.3051   0.0470  -0.0112
-  14 C   :2py   -0.0001   0.0001  -0.0001   0.1954  -0.0371  -0.4673  -0.4188
-  15 C   :2pz   -0.5858   0.6336  -0.5282  -0.0004  -0.0002   0.0001   0.0001
-  16 O   :1s    -0.0000  -0.0000  -0.0000   0.0177   0.0223   0.0100   0.0039
-  17 O   :1s     0.0000   0.0000   0.0000  -0.1241  -0.1268  -0.0735  -0.0278
-  18 O   :2px    0.0003   0.0003   0.0003  -0.1650  -0.0373  -0.0316   0.2201
-  19 O   :2py    0.0001   0.0002   0.0001   0.1105   0.1898   0.0776   0.1258
-  20 O   :2pz    0.4134   0.5830   0.4500   0.0001  -0.0000  -0.0000  -0.0002
-  21 H   :1s     0.0000   0.0000  -0.0000   0.3574  -0.9154   0.1898  -0.6394
-  22 H   :1s     0.0000   0.0000   0.0001  -0.8206   0.2535  -0.0683  -0.6965
-  23 H   :1s     0.0000   0.0000  -0.0000   0.5797   0.1089  -0.9323  -0.0703
-  24 H   :1s    -0.0000   0.0000   0.0000  -0.5288  -0.4439  -0.8044   0.0798
+   1 C   :1s    -0.0000   0.0000   0.0000  -0.1542  -0.0535  -0.1061  -0.1175
+   2 C   :1s     0.0000  -0.0000  -0.0000   0.9894   0.3566   0.6566   0.7220
+   3 C   :2px    0.0002  -0.0004  -0.0004  -0.1423  -0.5717   0.9290  -0.3453
+   4 C   :2py    0.0001  -0.0002  -0.0002   0.8391   0.1867  -0.1582  -0.7717
+   5 C   :2pz    0.3911  -0.5992  -0.5959  -0.0002   0.0003  -0.0005   0.0004
+   6 C   :1s    -0.0000  -0.0000   0.0000   0.0721  -0.1630   0.0953   0.0997
+   7 C   :1s     0.0000   0.0000  -0.0000  -0.4623   1.1514  -0.5584  -0.6249
+   8 C   :2px   -0.0002  -0.0002   0.0004   0.1387   0.1257   0.8085   0.0042
+   9 C   :2py   -0.0001  -0.0001   0.0001   0.2162  -0.7444  -0.6977   0.1636
+  10 C   :2pz   -0.4078  -0.3161   0.7743  -0.0001   0.0001  -0.0004  -0.0001
+  11 C   :1s    -0.0000   0.0000  -0.0000  -0.0588   0.1284   0.0580  -0.0854
+  12 C   :1s     0.0000  -0.0000   0.0000   0.3735  -0.9165  -0.4389   0.5760
+  13 C   :2px   -0.0003   0.0003  -0.0003  -0.1150   0.1610   0.1630  -0.2120
+  14 C   :2py   -0.0001   0.0001  -0.0001   0.3170  -0.8555  -0.2319   0.0615
+  15 C   :2pz   -0.4797   0.5564  -0.6014  -0.0000   0.0001  -0.0000   0.0001
+  16 O   :1s    -0.0000  -0.0000  -0.0000   0.1089   0.0381  -0.0049  -0.0110
+  17 O   :1s     0.0000   0.0000   0.0000  -0.7851  -0.2865   0.0523   0.1111
+  18 O   :2px    0.0003   0.0004   0.0002  -0.3519   0.0505  -0.1930   0.1767
+  19 O   :2py    0.0002   0.0002   0.0001   0.8232   0.3446  -0.1102  -0.0211
+  20 O   :2pz    0.5837   0.6506   0.3815  -0.0000  -0.0001   0.0001  -0.0001
+  21 H   :1s     0.0000   0.0000  -0.0000  -0.0747  -0.4349   0.0274  -1.0535
+  22 H   :1s    -0.0000   0.0000   0.0000  -0.0717  -0.1582   0.2490   0.3392
+  23 H   :1s     0.0000   0.0000  -0.0000  -0.0042   0.0153   0.2227  -0.3523
+  24 H   :1s    -0.0000   0.0000  -0.0000  -0.0624   0.1023  -0.0687  -0.0957
 
     Orbital        22       23       24
-   1 C   :1s    -0.1185   0.0246  -0.0390
-   2 C   :1s     0.7789  -0.1774   0.2574
-   3 C   :2px   -0.1826  -0.6864  -0.1207
-   4 C   :2py    0.6510   0.2362   0.8390
-   6 C   :1s     0.0537   0.0300  -0.0694
-   7 C   :1s    -0.3767  -0.2446   0.5454
-   8 C   :2px    0.2031  -0.9711  -0.1126
-   9 C   :2py    0.4648   0.3119  -1.0276
-  11 C   :1s    -0.0309  -0.0449   0.0839
-  12 C   :1s     0.2272   0.3349  -0.6627
-  13 C   :2px   -0.6974   0.5612   0.3672
-  14 C   :2py    0.4001   0.6978  -0.7146
-  16 O   :1s     0.0880   0.0266   0.0684
-  17 O   :1s    -0.6310  -0.2012  -0.5200
-  18 O   :2px   -0.2579   0.0466  -0.2010
-  19 O   :2py    0.6620   0.2405   0.4963
-  21 H   :1s    -0.0798  -0.1666   0.2452
-  22 H   :1s    -0.2423   0.4000   0.3740
-  23 H   :1s    -0.2228   0.5462   0.0474
-  24 H   :1s     0.5322  -0.3773  -0.1521
+   1 C   :1s     0.0090   0.0358   0.0015
+   2 C   :1s    -0.0594  -0.2286  -0.0490
+   3 C   :2px    0.1852   0.0429  -0.2463
+   4 C   :2py   -0.0093   0.4453   0.0119
+   6 C   :1s    -0.0410   0.0687   0.0149
+   7 C   :1s     0.3162  -0.3983  -0.0878
+   8 C   :2px    0.3349  -0.5975  -0.5425
+   9 C   :2py    0.1634  -0.6953  -0.1973
+  11 C   :1s    -0.1508  -0.0473  -0.0147
+  12 C   :1s     0.9460   0.2341   0.0850
+  13 C   :2px    0.2477  -0.1285   1.0985
+  14 C   :2py   -0.6852  -0.4074   0.2563
+  16 O   :1s    -0.0064   0.0168   0.0047
+  17 O   :1s     0.0501  -0.1432  -0.0363
+  18 O   :2px   -0.0305  -0.0726   0.0315
+  19 O   :2py   -0.0515   0.0880   0.0528
+  21 H   :1s     0.1939   0.3641  -0.1489
+  22 H   :1s    -0.4549   1.0166   0.3726
+  23 H   :1s    -0.7233  -0.5759   0.7372
+  24 H   :1s    -0.8984  -0.0398  -0.8613
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.15 seconds
- >>>> Total wall time used in SIRIUS :      0.15 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.57 seconds
+ >>>> Total wall time used in SIRIUS :      0.57 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 11:57:29 2015
+     Date and time (Linux)  : Mon Feb 23 13:34:27 2015
      Host name              : foeroyar                                
 
 
@@ -765,9 +833,180 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.42 seconds
- >>>> Total wall time used in DALTON:   0.42 seconds
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+@ **INFO** This is a SOPPA embedding calculation w/ dynamic
+
+@ **INFO** environment response at RPA level only,
+
+@ **INFO** cf. JCC, 2012-2022, 33, (2012) for reference.
+
+
+ CHANGES OF DEFAULTS FOR RSPINP:
+ -------------------------------
+
+
+ Second Order Polarization Propagator Approximation -- SOPPA
+
+ Default : Using Fock type decoupling of the two-electron density matrix :
+    Add DV*(FC+FV) instead of DV*FC to E[2] approximate orbital diagonal
+
+
+
+  Linear Response single residue calculation
+ -------------------------------------------
+
+ Environment is modeled using the polarizable embedding scheme (PE library)
+
+    3 input options by user.
+
+ Print level                                    : IPRPP  =   2
+ Maximum number of iterations for eigenval.eqs. : MAXITP =  60
+ Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-03
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+
+      2 Excitation energies are calculated for symmetry no.    1
+
+      3 property residues are calculated with labels:
+
+               XDIPLEN 
+               YDIPLEN 
+               ZDIPLEN 
+
+ Old direct access AO file found, SORTA skipped.
+
+ Integral transformation: Total CPU and WALL times (sec)       0.044       0.044
+
+
+   SCF energy         :     -188.317391916176121
+ -- inactive part     :     -290.963054358630984
+ -- nuclear repulsion :      102.664846860515169
+
+
+                     ***************************************
+                     *** RHF response calculation (TDHF) ***
+                     ***************************************
+
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    1  ( A  )
+
+ Number of excitations of this symmetry            2
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ p-h variables.             KZWOPT:     135
+ 2p-2h variables.           KZCONF:    9180
+ Total number of variables. KZVAR :    9315
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry = 1  ( A  ); triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   52)
+ RSP solution vector no.    1; norm of residual   9.35D-04
+ RSP solution vector no.    2; norm of residual   7.02D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ Transition operator type:    XDIPLEN 
+@ STATE NO:    1 *TRANSITION MOMENT: -7.25981976E-06 *ENERGY(eV):   3.7523004    
+@ STATE NO:    2 *TRANSITION MOMENT:  0.83810564     *ENERGY(eV):   8.8318483    
+
+@ Transition operator type:    YDIPLEN 
+@ STATE NO:    1 *TRANSITION MOMENT:  1.08422954E-05 *ENERGY(eV):   3.7523004    
+@ STATE NO:    2 *TRANSITION MOMENT:  -1.2213713     *ENERGY(eV):   8.8318483    
+
+@ Transition operator type:    ZDIPLEN 
+@ STATE NO:    1 *TRANSITION MOMENT:  1.02309503E-02 *ENERGY(eV):   3.7523004    
+@ STATE NO:    2 *TRANSITION MOMENT: -2.58609998E-04 *ENERGY(eV):   8.8318483    
+
+
+ **************************************************************************************
+ *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1  ( A  ) ***
+ **************************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry 1  ( A  )
+ ----------------------------------------------
+
+@ Excitation energy :  0.13789451     au
+@                      3.7523004     eV;   30264.346     cm-1;   362.04197     kJ / mol
+
+@ Total energy :      -188.17950     au
+
+@ SOPPA  p-h  weight in excitation operator:   95.20 %
+@ SOPPA 2p-2h weight in excitation operator:    4.80 %
+
+@ Operator type:    XDIPLEN 
+@ Oscillator strength (LENGTH)   :  4.84515179E-12  (Transition moment : -7.25981976E-06 )
+
+@ Operator type:    YDIPLEN 
+@ Oscillator strength (LENGTH)   :  1.08068265E-11  (Transition moment :  1.08422954E-05 )
+
+@ Operator type:    ZDIPLEN 
+@ Oscillator strength (LENGTH)   :  9.62249425E-06  (Transition moment :  1.02309503E-02 )
+
+
+ @ Excited state no:    2 in symmetry 1  ( A  )
+ ----------------------------------------------
+
+@ Excitation energy :  0.32456446     au
+@                      8.8318483     eV;   71233.665     cm-1;   852.14387     kJ / mol
+
+@ Total energy :      -187.99283     au
+
+@ SOPPA  p-h  weight in excitation operator:   94.52 %
+@ SOPPA 2p-2h weight in excitation operator:    5.48 %
+
+@ Operator type:    XDIPLEN 
+@ Oscillator strength (LENGTH)   :  0.15198728      (Transition moment :  0.83810564     )
+
+@ Operator type:    YDIPLEN 
+@ Oscillator strength (LENGTH)   :  0.32277890      (Transition moment :  -1.2213713     )
+
+@ Operator type:    ZDIPLEN 
+@ Oscillator strength (LENGTH)   :  1.44710595E-08  (Transition moment : -2.58609998E-04 )
+
+
+ Time used in polarization propagator calculation is      0.60 CPU seconds for symmetry 1
+
+ >>>> Total CPU  time used in RESPONSE:   0.65 seconds
+ >>>> Total wall time used in RESPONSE:   0.65 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   1.49 seconds
+ >>>> Total wall time used in DALTON:   1.49 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 11:57:29 2015
+     Date and time (Linux)  : Mon Feb 23 13:34:28 2015
      Host name              : foeroyar                                

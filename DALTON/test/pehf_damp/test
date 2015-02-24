@@ -11,9 +11,9 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
-      num_lines = 12,
+      num_lines = 34,
       abs_tolerance = 1.0e-6)
 
-test.run(['zeromul.dal', 'zeropol.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
+test.run(['damp_ind_iter.dal', 'damp_ind_direct.dal', 'damp_mul.dal', 'damp_core.dal'], ['acrolein.mol'], ['water.pot'], f={'out': f})
 
 sys.exit(test.return_code)

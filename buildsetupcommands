@@ -1,2 +1,0 @@
-# setup command was executed 20-December-2013 09:35:20
-./setup dalton_intel --fc=mpif90 --cc=mpicc --cxx=icpc --mpi
