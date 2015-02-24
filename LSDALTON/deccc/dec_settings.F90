@@ -977,7 +977,7 @@ contains
 
     ! Set CC residual threshold to be 0.01*FOT
     ! - unless it was specified explicitly in the input.
-    if(.not. DECinfo%CCthrSpecified) then
+    if(.not. DECinfo%CCthrSpecified .and. (.not. DECinfo%full_molecular_cc) ) then
        DECinfo%ccConvergenceThreshold=0.01E0_realk*DECinfo%FOT
     end if
 
