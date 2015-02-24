@@ -4488,6 +4488,8 @@ C     /*Deck gsphes*/
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "cbinum.h"
+! gnrinf.h: PEQM
+#include "gnrinf.h"
       INTEGER BEGIN, LAST
       LOGICAL HESEXS
       CHARACTER TEXT*(*)
@@ -4598,6 +4600,19 @@ C
  800              CONTINUE
                END IF
 CRF        Shouldn't this file be closed?
+               CALL GPCLOSE(LUHES,'KEEP')
+            ELSE IF (PEQM) THEN
+               LUHES = -1
+               CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',
+     &                     IDUMMY,.FALSE.)
+               WRITE(LUHES,*) NCOOR
+               WRITE(LUHES,'(A)') '                                '
+               DO ICOOR2 = 1, NCOOR
+                  DO ICOOR1 = 1, NCOOR
+                     WRITE (LUHES,'(F22.12)') CHESS2(ICOOR1,ICOOR2)
+                  END DO
+                  WRITE (LUHES,'(A)') '                            '
+               END DO
                CALL GPCLOSE(LUHES,'KEEP')
             ELSE
                WRITE (LUPRI,'(//A/A//)')

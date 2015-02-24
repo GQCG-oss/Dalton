@@ -8297,12 +8297,15 @@ C
 #include "numder.h"
 #include "cbinum.h"
       INTEGER IORDR
+      LOGICAL SAVE_REUHES
 
       CALL NMDINI(IPRUSR)
       NAORDR = IORDR
+      SAVE_REUHES = REUHES
       REUHES = .TRUE.
       NMORDR = 2 - NAORDR
       CALL NUMDRV(WRK,LWRK,IPRUSR,WRKDLM)
+      REUHES = SAVE_REUHES
       HESFIL = .TRUE.
       END
 
