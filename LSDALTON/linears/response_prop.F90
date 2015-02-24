@@ -5173,6 +5173,8 @@ end subroutine write_transition_density_matrix
   WRITE(lupri,'(A)')'Column 0 indicate the Ground State. Element (0,0) is therefore the ground state dipole moment'
   WRITE(lupri,'(A)')'Elements (0,X) is therefore the transition state dipole moment of the X. excited state'
   WRITE(lupri,'(A)')'Elements (X,Y) is the transition dipole moment between state X and Y'
+  WRITE(lupri,'(A)')'Note (X,X) X!=0, denotes <X|A|X> - <A> = <X|A|X> - <0|A|0>'
+
   do J=1,3
      WRITE(lupri,'(A,A12)')'Dipole Moment Matrix for ',Dir(J)
      WRITE(lupri,'(A)')' '
