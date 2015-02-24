@@ -3044,7 +3044,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   !> Canonical MP2 correlation energy
   real(realk),intent(inout) :: mp2_energy    
   !
-  integer :: nbasis,nocc,nvirt,naux,noccfull,mynum,numnodes
+  integer :: nbasis,nocc,nvirt,naux,noccfull,numnodes
   logical :: master,wakeslaves
   real(realk),pointer :: EpsOcc(:),EpsVirt(:)
   integer :: J,I,node,natoms,A,lupri,restart_lun
@@ -3079,7 +3079,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer :: sqrtnumnodes,gB,idx(1),dimAOoffset,kk,nBlocksG,nBlocksA
   integer :: dimGammaMPI,dimAlphaMPI,ibatchG,ibatchA,dimAlpha2,dimGamma2
   integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchesJ,nOccBatchDimJmax
-  integer :: nOccbatchesIrestart,noccIstart
+  integer :: nOccbatchesIrestart,noccIstart,nbuf1,nbuf2
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
   logical :: PermutationalSymmetryIJ,SetdimGamma
   logical,pointer :: JobsCompleted(:,:)
@@ -3087,7 +3087,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   TYPE(DECscreenITEM)   :: DecScreen
   Character            :: intSpec(5)
   integer(kind=ls_mpik)  :: nMPI,TAG,IERR,request,Receiver,sender,comm,TAG1,TAG2
-  integer(kind=ls_mpik)  :: request1,request2,masterrank,senderID,nbuf1,nbuf2
+  integer(kind=ls_mpik)  :: request1,request2,masterrank,senderID,mynum,lsmpinode
 !  integer(kind=ls_mpik)  :: Sender
 #ifdef VAR_MPI
   integer(kind=ls_mpik)  :: mpistatus(MPI_STATUS_SIZE)
@@ -3742,7 +3742,8 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         nbuf1 = nvirt*nOccBatchDimI
         nbuf2 = dimAlpha2*dimGamma2
         print*,'BCAST6:',nbuf1,nbuf2
-        call ls_mpibcast(tmp6,nbuf1,nbuf2,nodeLoop-1,comm)
+        lsmpinode = nodeLoop-1
+        call ls_mpibcast(tmp6,nbuf1,nbuf2,lsmpinode,comm)
         CALL LS_GETTIM(CPU2,WALL2)
         CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
         WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)

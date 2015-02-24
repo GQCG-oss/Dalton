@@ -19,6 +19,7 @@ f.add(from_string = 'Electric transition dipole moments (au)',
       num_lines = 9,
       rel_tolerance = 1.0e-4)
 
-test.run(['pemcscf_1.dal', 'pemcscf_2.dal', 'pemcscf_3.dal'], ['formaldehyde.mol'], ['2h2o.pot'], f={'out': f})
+test.run(['pemcscf_1.dal', 'pemcscf_2.dal', 'pemcscf_3.dal'], ['formaldehyde.mol'], ['2h2o.pot'], f={'out': f},
+         accepted_errors = ["not implemented for parallel calculations"])
 
 sys.exit(test.return_code)
