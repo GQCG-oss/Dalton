@@ -1424,7 +1424,7 @@ contains
     Integer                    :: endRegA,endRegB,endRegC,endRegD
     Integer                    :: endAuxA,endAuxB,endAuxC,endAuxD
     Integer                    :: iAlpha,iRegA,iRegB,iRegC,iRegD,iAuxA
-    Integer                    :: nElec,nOcc,iOcc
+    Integer                    :: nElec,nOcc,iOcc,i
     !
     TYPE(AtomSparseMat)        :: alphaBeta
     TYPE(MoleculeInfo),pointer :: molecule
@@ -1433,8 +1433,8 @@ contains
     integer                    :: idmat,nmat,nrow,ncol
     TYPE(LSTENSOR),pointer     :: regCSfull,auxCSfull
     !
-    Real(realk)                :: threshold
-    Logical,pointer            :: neighbourA(:,:)
+    Real(realk)                :: threshold,norm,dasum
+    Logical,pointer            :: neighbours(:,:),MOcontrib(:,:)
     Real(realk)                :: minEigv,maxEigv,conditionNum
     Type(moleculeinfo),pointer :: atoms_A(:)
     Type(mat3d),pointer        :: calpha_ab_mo(:,:)
@@ -1532,6 +1532,22 @@ contains
        MOcoeff=0E0_realk
        call get_chol_coeff(Dfull(:,:,1),MOcoeff,molecule,lupri,luerr)
 
+       !write(lupri,'(/A/)') 'Atomic Contributions to the MO'
+       !call mem_alloc(MOcontrib,nAtoms,nOcc)
+       !MOcontrib=.false.
+       !do iOcc=1,nOcc
+       !   do iAtomA=1,nAtoms
+       !      call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+       !        nAuxA,startAuxA,endAuxA) 
+       !      norm= dasum(nRegA,MOcoeff(startRegA:endRegA,iOcc),1)
+       !      if (CEILING(LOG10(norm)).gt.-4) then
+       !         MOContrib(iAtomA,iOcc)=.true.
+       !      endif
+       !   enddo
+       !   write(lupri,*) MOcontrib(:,iOcc)
+       !enddo
+       !call mem_dealloc(MOcontrib)
+
        ! --- each molecule made of only one atom 
        allocate(atoms_A(nAtoms))  
  
@@ -1548,10 +1564,14 @@ contains
        ! --- Set up domains of atoms
        ! --- For B>=A neighbour(iAtomA,iAtomB= .true. if
        ! --- max(G_ab) > threshold with a in Reg(A) and b in Reg(B)
-       call mem_alloc(neighbourA,nAtoms,nAtoms)
-       neighbourA(:,:) = .false.
-       call get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
+       call mem_alloc(neighbours,nAtoms,nAtoms)
+       neighbours(:,:) = .false.
+       call get_neighbours(neighbours,orbitalInfo,regCSfull,threshold,molecule,&
             atoms_A,lupri,luerr,setting)
+       write(lupri,'(/A/)') 'Matrix of atomic neighbours'
+       do iAtomA=1,nAtoms
+          write(lupri,*) neighbours(iAtomA,:)
+       enddo
 
        call lstimer('neighbour',te,ts,lupri)
                      
@@ -1564,14 +1584,14 @@ contains
           ! --- Construction of matrix H_i^nuQ for AtomQ=AtomA
           call mem_alloc(matH_Q,nBastReg,nAuxA,nOcc)
           matH_Q=0E0_realk
-          call getHQcoeff(matH_Q,calpha_ab_mo,iAtomA,neighbourA,MOcoeff,&
+          call getHQcoeff(matH_Q,calpha_ab_mo,iAtomA,neighbours,MOcoeff,&
                orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
                lupri,luerr)
                               
           ! --- Construction of matrix D_i^muQ for AtomQ=AtomA
           call mem_alloc(matD_Q,nAuxA,nOcc,nBastReg)
           matD_Q=0E0_realk
-          call getDQcoeff(matD_Q,calpha_ab_mo,iAtomA,neighbourA,MOcoeff,&
+          call getDQcoeff(matD_Q,calpha_ab_mo,iAtomA,neighbours,MOcoeff,&
                orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
                lupri,luerr)
           
@@ -1582,16 +1602,18 @@ contains
           call mem_dealloc(matD_Q)
           call mem_dealloc(matH_Q)
        Enddo !Loop A
-            
-       call mem_dealloc(MOcoeff)
-       call mem_dealloc(neighbourA)
-       call pari_free_atomic_fragments(atoms_A,nAtoms)
-       deallocate(atoms_A) 
-       do iAtomA=1,nAtoms
+       
+        do iAtomA=1,nAtoms
           do iAtomB=iAtomA,nAtoms
-             call free_MAT3D(calpha_ab_mo(iAtomA,iAtomB))
+             if (neighbours(iAtomA,iAtomB)) then
+                call free_MAT3D(calpha_ab_mo(iAtomA,iAtomB))
+             endif
           enddo
        enddo
+       call mem_dealloc(MOcoeff)
+       call mem_dealloc(neighbours)
+       call pari_free_atomic_fragments(atoms_A,nAtoms)
+       deallocate(atoms_A) 
        deallocate(calpha_ab_mo)
       
        ! --- Construct K_munu from L_munu
@@ -1722,14 +1744,14 @@ contains
 
     !call free_AtomSparseMat(alphaBeta)
     CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
-    
+    call lsquit('End of PARI-k',-1)
   END SUBROUTINE II_get_pari_df_exchange_mat
 
   !> \brief Set up domains of atoms such that max(G_ab) > threshold
   !> \brief with a in Reg(A) and b in Reg(B)
   !> \author E. Rebolini
   !> \date 2015-02
-  !> \param neighbourA (iAtomA,1:M) contains the indices of the M neighbours B 
+  !> \param neighbours (iAtomA,1:M) contains the indices of the M neighbours B 
   !> \param orbitalInfo Orbital information
   !> \param regCSfull Screening matrix G_ab = log( sqrt( (ab|ab) ) )
   !> \param threshold Minimum value for G_ab
@@ -1738,10 +1760,10 @@ contains
   !> \param lupri Default print-unit for output
   !> \param luerr Default print-unit for termination
   !> \param setting Contains information about the integral settings
-subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
+subroutine get_neighbours(neighbours,orbitalInfo,regCSfull,threshold,molecule,&
      atoms,lupri,luerr,setting)
   implicit none
-  Logical,pointer                       :: neighbourA(:,:)
+  Logical,pointer                       :: neighbours(:,:)
   Type(molecularorbitalinfo),intent(in) :: orbitalInfo
   Type(lstensor),pointer                :: regCSfull
   Real(realk)                           :: threshold
@@ -1763,11 +1785,12 @@ subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
   Integer(kind=short)                   :: maxgab
  
   nAtoms=orbitalInfo%nAtoms
+  write(lupri,*) 'threshold',threshold
   do iAtomA=1,nAtoms
        call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
             nAuxA,startAuxA,endAuxA)
        !Case A=B
-       neighbourA(iAtomA,iAtomA)=.true.
+       neighbours(iAtomA,iAtomA)=.true.
        !Case A<>B
        do iAtomB=iAtomA+1,nAtoms
           call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
@@ -1781,8 +1804,9 @@ subroutine get_neighbours(neighbourA,orbitalInfo,regCSfull,threshold,molecule,&
           call ls_subScreenAtomic(regCSab,regCSfull,iAtomA,iAtomB,&
                nRegA,nRegB,.FALSE.)
           maxgab=regCSab%maxgabelm
-          if (maxgab.GE.(CEILING(LOG10(threshold)))) then
-             neighbourA(iAtomA,iAtomB)=.true.
+          !write(lupri,*) iAtomA,iAtomB,maxgab
+          if (2*maxgab.GE.(CEILING(LOG10(threshold)))) then
+             neighbours(iAtomA,iAtomB)=.true.
           endif
           call lstensor_free(regCSab)
           DEALLOCATE(regCSab)
