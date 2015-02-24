@@ -361,6 +361,9 @@ contains
       integer :: nocomp, kpatom
       integer :: isimoff
       real(8) :: fact
+      real(8) :: fact1
+      real(8) :: fact2
+      integer :: ixyz
 
       ! save origin coordinates
       dipole_origin_save = diporg
@@ -372,145 +375,87 @@ contains
           allocate(tlma(n2orbx))
       end if
 
-!     Induced dipole moment in NP region interaction with QM region
-      IF (DONPPOL.AND.NOVDAMP) THEN
-!        Set integrals evaluation flags
-         KPATOM = 0
-         NOCOMP = 3
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         RUNQM3 = .TRUE.
-!        Compute contributions
-         DO I=1,NSIM
-            IOFF = (I-1)*IDIM
-            ISIMOFF = (I-1)*N2ORBX+1
-            DO J=1,TNPATM
-              JOFF = IOFF+(J-1)*3
-              DIPORG = NPCORD(:, J)
-              intao = 0.0d0
-              CALL GET1IN(INTAO,'NEFIELD',NOCOMP,WORK,           &
-     &                    lwork,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,   &
-     &                    TRIMAT,DUMMY,EXP1VL,DUMMY,0)
+      kpatom = 0
+      tofile = .false.
+      trimat = .true.
+      exp1vl = .false.
+      runqm3 = .true.
 
-!             X-component
-              utr = 0.0d0
-              trmo = 0.0d0
-
-!             Transform integrals
-              CALL UTHU(INTAO,TRMO,CMO,WORK,NBAST,NORBT)
-              CALL DSPTSI(NORBT,TRMO,UTR)
-
-!             Determine MM region contribution
-              if (present(FMQVEC2)) then
-                 tlma = 0.0d0
-                 CALL OITH1(ISYMV2,ZYM2,UTR,TLMA,ISYMT)
-                 fact = -FMQVEC1(JOFF+1)
-                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
-                 fact = -0.50D0*FMQVEC2(JOFF+1)
-                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
-              else
-                 FACT = -fmqvec1(JOFF+1)
-                 CALL DAXPY(N2ORBX,FACT,UTR,1,FVEC(ISIMOFF),1)
-              end if
-
-!             Y-component
-              utr = 0.0d0
-              trmo = 0.0d0
-
-!             Transform integrals
-              CALL UTHU(INTAO(NNBASX + 1),TRMO,CMO,           &
-     &                  WORK,NBAST,NORBT)
-              CALL DSPTSI(NORBT,TRMO,UTR)
-
-!             Determine MM region contribution
-              if (present(FMQVEC2)) then
-                 tlma = 0.0d0
-                 CALL OITH1(ISYMV2,ZYM2,UTR,TLMA,ISYMT)
-                 fact = -FMQVEC1(JOFF+2)
-                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
-                 fact = -0.50D0*FMQVEC2(JOFF+2)
-                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
-              else
-                 FACT = -fmqvec1(JOFF+2)
-                 CALL DAXPY(N2ORBX,FACT,UTR,1,FVEC(ISIMOFF),1)
-              end if
-
-!             Z-component
-              utr = 0.0d0
-              trmo = 0.0d0
-
-!             Transform integrals
-              CALL UTHU(INTAO(2*NNBASX + 1),TRMO,CMO,         &
-     &                  WORK,NBAST,NORBT)
-              CALL DSPTSI(NORBT,TRMO,UTR)
-
-!             Determine MM region contribution
-              if (present(FMQVEC2)) then
-                 tlma = 0.0d0
-                 CALL OITH1(ISYMV2,ZYM2,UTR,TLMA,ISYMT)
-                 fact = -FMQVEC1(JOFF+3)
-                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
-                 fact = -0.50D0*FMQVEC2(JOFF+3)
-                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
-              else
-                 FACT = -fmqvec1(JOFF+3)
-                 CALL DAXPY(N2ORBX,FACT,UTR,1,FVEC(ISIMOFF),1)
-              end if
-            END DO
-         END DO
-         RUNQM3 = .FALSE.
-      END IF
-!     Induced dipole moment in NP region interaction with QM region
-      IF (DONPCAP.AND.NOVDAMP) THEN
-         ISTART = 0
-         IF (DONPPOL) ISTART = 3*TNPATM
-!        Set integrals evaluation flags
-         KPATOM = 0
-         NOCOMP = 1
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         RUNQM3 = .TRUE.
-!        Compute contributions
-         DO I=1,NSIM
-            IOFF = (I-1)*IDIM
-            ISIMOFF = (I-1)*N2ORBX+1
-            DO J=1,TNPATM
-               JOFF = IOFF+ISTART+J
-               DIPORG(1) = NPCORD(1,J)
-               DIPORG(2) = NPCORD(2,J)
-               DIPORG(3) = NPCORD(3,J)
+      ! induced dipole moment in np region interaction with qm region
+      if (donppol .and. novdamp) then
+         nocomp = 3
+         do i = 1, nsim
+            ioff = (i - 1)*idim
+            isimoff = (i - 1)*n2orbx + 1
+            do j = 1, tnpatm
+               joff = ioff + (j - 1)*3
+               diporg = npcord(:, j)
                intao = 0.0d0
-               CALL GET1IN(INTAO,'NPETES ',NOCOMP,WORK,   &
-     &                     lwork,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,  &
-     &                     TRIMAT,DUMMY,EXP1VL,DUMMY,0)
+               call get1in(intao, 'NEFIELD', nocomp, work,                   &
+                           lwork, labint, intrep, intadr, j, tofile, kpatom, &
+                           trimat, dummy, exp1vl, dummy, 0)
 
-!             Zero integral buffers
-              utr = 0.0d0
-              trmo = 0.0d0
+               ! loop over x, y, z
+               do ixyz = 1, 3
 
-!             Transform integrals
-              CALL UTHU(INTAO,TRMO,CMO,WORK,NBAST,&
-     &                  NORBT)
-              CALL DSPTSI(NORBT,TRMO,UTR)
+                  ! transform integrals
+                  utr = 0.0d0
+                  trmo = 0.0d0
+                  call uthu(intao((ixyz - 1)*nnbasx + 1), trmo, cmo, work, nbast, norbt)
+                  call dsptsi(norbt, trmo, utr)
 
-!             Determine MM region contribution
-              if (present(FMQVEC2)) then
-                 tlma = 0.0d0
-                 CALL OITH1(ISYMV2,ZYM2,UTR,TLMA,ISYMT)
-                 fact = FMQVEC1(JOFF)
-                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
-                 fact = 0.50D0*FMQVEC2(JOFF)
-                 CALL DAXPY(N2ORBX,fact,TLMA,1,FVEC,1)
-              else
-                 FACT = fmqvec1(JOFF)
-                 CALL DAXPY(N2ORBX,FACT,UTR,1,fvec(ISIMOFF),1)
-              end if
-           END DO
-         END DO
-         RUNQM3 = .FALSE.
-      END IF
+                  ! determine mm region contribution
+                  fact1 = -fmqvec1(joff + ixyz)
+                  if (present(fmqvec2)) then
+                     tlma = 0.0d0
+                     call oith1(isymv2, zym2, utr, tlma, isymt)
+                     call daxpy(n2orbx, fact1, tlma, 1, fvec, 1)
+                     fact2 = -0.5d0*fmqvec2(joff + ixyz)
+                     call daxpy(n2orbx, fact2, tlma, 1, fvec, 1)
+                  else
+                     call daxpy(n2orbx, fact1, utr, 1, fvec(isimoff), 1)
+                  end if
+               end do
+            end do
+         end do
+      end if
+
+      ! induced dipole moment in np region interaction with qm region
+      if (donpcap .and. novdamp) then
+         istart = 0
+         if (donppol) istart = 3*tnpatm
+         nocomp = 1
+         do i = 1, nsim
+            ioff = (i - 1)*idim
+            isimoff = (i - 1)*n2orbx + 1
+            do j = 1, tnpatm
+               joff = ioff + istart + j
+               diporg = npcord(:, j)
+               intao = 0.0d0
+               call get1in(intao, 'NPETES ', nocomp, work,                   &
+                           lwork, labint, intrep, intadr, j, tofile, kpatom, &
+                           trimat, dummy, exp1vl, dummy, 0)
+
+               ! transform integrals
+               utr = 0.0d0
+               trmo = 0.0d0
+               call uthu(intao, trmo, cmo, work, nbast, norbt)
+               call dsptsi(norbt, trmo, utr)
+
+               ! determine mm region contribution
+               fact1 = fmqvec1(joff)
+               if (present(fmqvec2)) then
+                  tlma = 0.0d0
+                  call oith1(isymv2, zym2, utr, tlma, isymt)
+                  call daxpy(n2orbx, fact1, tlma, 1, fvec, 1)
+                  fact2 = 0.5d0*fmqvec2(joff)
+                  call daxpy(n2orbx, fact2, tlma, 1, fvec, 1)
+               else
+                  call daxpy(n2orbx, fact1, utr, 1, fvec(isimoff), 1)
+               end if
+            end do
+         end do
+      end if
 
       if (allocated(utr)) deallocate(utr)
       if (allocated(trmo)) deallocate(trmo)
