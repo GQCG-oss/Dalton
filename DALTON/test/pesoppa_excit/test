@@ -16,6 +16,7 @@ f.add(string = '@ STATE NO:',
       ignore_sign = True,
       abs_tolerance = 1.0e-4)
 
-test.run(['pesoppa_excit.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
+test.run(['pesoppa_excit.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f},
+         accepted_errors = ["not implemented for parallel calculations"])
 
 sys.exit(test.return_code)
