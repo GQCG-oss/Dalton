@@ -75,9 +75,7 @@ contains
       CALL DZERO(FVVEC2,IDIM*NSIM)
 
 !     Save origin coordinates
-      dipole_origin_save(1) = DIPORG(1)
-      dipole_origin_save(2) = DIPORG(2)
-      dipole_origin_save(3) = DIPORG(3)
+      dipole_origin_save = DIPORG
 !     Compute electric field if needed
       IF (DONPPOL) THEN
 !       Allocate integrals buffer
@@ -111,12 +109,12 @@ contains
      &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
 !            Compute X component of electric field
 
+!            zero temp. arrays
              CALL DZERO(WORK(KTRMO),NNORBX)
              CALL DZERO(WORK(KUTR),N2ORBX)
 
 !            Transform integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST, &
-     &                 NORBT)
+             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST, NORBT)
              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
 !            Determine electric field component size
              F1VAL = 0.0d0
@@ -237,8 +235,7 @@ contains
              CALL DZERO(WORK(KUTR),N2ORBX)
 
 !            Transform integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST, &
-     &                 NORBT)
+             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST, NORBT)
              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
 !            Determine electric field component size
              F1VAL = 0.0d0
@@ -271,9 +268,7 @@ contains
         CALL MEMREL('GET_FVVEC_QR',WORK,1,1,KFREE,LFREE)
       END IF
 !     Restore origin coordinates
-      DIPORG(1) = dipole_origin_save(1)
-      DIPORG(2) = dipole_origin_save(2)
-      DIPORG(3) = dipole_origin_save(3)
+      DIPORG = dipole_origin_save
 !     Print final FV vector
       DO I=1,NSIM
          if (iprtlvl > 14 .and. .not. mqiter) then

@@ -53,7 +53,7 @@ contains
       LOGICAL TOFILE,TRIMAT,EXP1VL
       integer :: INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      real(8) :: RSAVORG(3)
+      real(8) :: dipole_origin_save(3)
       integer :: kfree, lfree
       integer :: i, j, ioff, joff, istart, idim, iblk
       integer :: nsim
@@ -72,9 +72,7 @@ contains
 !
       CALL DZERO(FVVEC,IDIM*NSIM)
 !     Save origin coordinates
-      RSAVORG(1) = DIPORG(1)
-      RSAVORG(2) = DIPORG(2)
-      RSAVORG(3) = DIPORG(3)
+      dipole_origin_save = DIPORG
 !     Compute electric field if needed
       IF (DONPPOL) THEN
 !       Allocate integrals buffer
@@ -115,8 +113,7 @@ contains
              CALL DZERO(WORK(KURXAC),N2ASHX)
 
 !            Transform integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST,  &
-     &                 NORBT)
+             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST, NORBT)
              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
              CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
 !
@@ -216,8 +213,7 @@ contains
              CALL DZERO(WORK(KURXAC),N2ASHX)
 
 !            Transform integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST,  &
-     &                 NORBT)
+             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST, NORBT)
              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
              CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
 !
@@ -240,9 +236,7 @@ contains
         CALL MEMREL('GET_FVVEC_LR',WORK,1,1,KFREE,LFREE)
       END IF
 !     Restore origin coordinates
-      DIPORG(1) = RSAVORG(1)
-      DIPORG(2) = RSAVORG(2)
-      DIPORG(3) = RSAVORG(3)
+      DIPORG = dipole_origin_save
 !     Print final FV vector
       DO I=1,NSIM
          if (iprtlvl > 14 .and. .not. mqiter) then
