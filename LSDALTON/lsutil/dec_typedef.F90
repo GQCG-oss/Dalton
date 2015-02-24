@@ -382,6 +382,8 @@ module dec_typedef_module
      logical :: PurifyMOs
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
+     !> avoid all pair calculations:
+     logical         :: no_pairs
      !> Hack to only do fragment optimization
      integer         :: only_n_frag_jobs
      integer,pointer :: frag_job_nr(:)

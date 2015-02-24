@@ -167,6 +167,7 @@ contains
     DECinfo%frag_red_occ           = .false.
     DECinfo%frag_red_virt          = .false.
     DECinfo%fragadapt              = .false.
+    DECinfo%no_pairs               = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
     DECinfo%only_pair_frag_jobs    =  .false.
@@ -741,6 +742,7 @@ contains
        case('.FRAG_RED_OCC');  DECinfo%frag_red_occ  = .true.
        case('.FRAG_RED_VIRT'); DECinfo%frag_red_virt = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
+       case('.NO_PAIRS'); DECinfo%No_Pairs = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
           read(input,*)DECinfo%only_n_frag_jobs
@@ -811,6 +813,7 @@ contains
          &will be ignored"
        DECinfo%PairEstimate=.false.
        DECinfo%PairEstimateIgnore = .true.
+       DECinfo%no_pairs = .true.
 
        if (DECinfo%ccmodel==MODEL_RIMP2) call lsquit("RI-MP2 model is not &
           &compatible with DECNP yet",DECinfo%output)
@@ -1174,6 +1177,8 @@ contains
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
     write(lupri,*) 'doDEC ', DECitem%doDEC
+    write(lupri,*) 'DECCO ', DECitem%DECCO
+    write(lupri,*) 'DECNP ', DECitem%DECNP
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
     write(lupri,*) 'use_canonical ', DECitem%use_canonical
@@ -1258,6 +1263,7 @@ contains
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
+    write(lupri,*) 'No_Pairs ', DECitem%no_pairs
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs

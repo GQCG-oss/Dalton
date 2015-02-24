@@ -5021,6 +5021,7 @@ contains
     real(realk) :: avDmaxAOS, avDmaxAE, maxDmaxAOS, maxDmaxAE, minDmaxAOS, minDmaxAE
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
     logical,pointer :: occAOSred(:,:,:),unoccAOSred(:,:,:),fragbasisred(:,:,:)
+    logical :: no_pairs
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -5055,6 +5056,12 @@ contains
     avDmaxAE   = 0.0E0_realk
     minDmaxAOS = huge(minDmaxAOS)
     minDmaxAE  = huge(minDmaxAE)
+
+    ! Do pair calculations?
+    no_pairs = .false.
+    if (DECinfo%no_pairs .and. .not. esti) then
+       no_pairs = .true.
+    end if
 
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
@@ -5293,7 +5300,7 @@ contains
           if(.not. which_fragments(j)) cycle
           CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE .and. &
                & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold &
-               & .and. (.not. DECinfo%DECNP) ) then
+               & .and. (.not. no_pairs)) then
              ! Pair needs to be computed
              npair = npair+1
           end if CheckPair
@@ -5556,6 +5563,7 @@ contains
     integer,pointer :: atom1(:),atom2(:),order(:),tmpnocc(:),tmpnunocc(:),tmpnbasis(:)
     logical,pointer :: MyOccAOS1(:), MyUnoccAOS1(:), MyFragBasis1(:)
     logical,pointer :: MyOccAOS2(:), MyUnoccAOS2(:), MyFragBasis2(:)
+    logical :: no_pairs
 
     ! Sanity check for reduced fragments
     if(nred/=0) then
@@ -5568,6 +5576,12 @@ contains
        if(.not. present(FragBasisRed)) then
           call lsquit('set_dec_joblist: FragBasisRed argument not present!',-1)
        end if
+    end if
+
+    ! Do pair calculations?
+    no_pairs = .false.
+    if (DECinfo%no_pairs .and. .not. esti) then
+       no_pairs = .true.
     end if
 
     ! Init stuff
@@ -5637,7 +5651,7 @@ contains
 
           CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE .and. &
                & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold &
-               & .and. (.not. DECinfo%DECNP) ) then
+               & .and. (.not. no_pairs)) then
              k=k+1
 
              ! **************

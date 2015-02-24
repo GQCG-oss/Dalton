@@ -475,7 +475,7 @@ contains
 
     ! Plot pair interaction energies using occ. partitioning scheme
     ! *************************************************************
-    if (.not.DECinfo%DECNP) then
+    if (.not. DECinfo%no_pairs) then 
        IF(DECinfo%onlyVirtPart)THEN
           call get_virtfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
        ELSE
@@ -1344,6 +1344,11 @@ subroutine print_dec_info()
        call restart_atomic_fragments_from_file(MyMolecule,MyLsitem,OccOrbitals,&
             & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
     end if
+
+    ! Sanity Check:
+    if (DECinfo%DECNP .and. esti) call lsquit("ERROR(fragopt_and_estimated_frags): &
+       &Pair estimates should be turned off in combination with DECNP!!",DECinfo%output)
+
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)

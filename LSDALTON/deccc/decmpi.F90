@@ -2428,6 +2428,7 @@ contains
     call ls_mpi_buffer(DECitem%ncalc,nFOTs,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
+    call ls_mpi_buffer(DECitem%no_pairs,Master)
     call ls_mpi_buffer(DECitem%only_pair_frag_jobs,Master)
     call ls_mpi_buffer(DECitem%only_n_frag_jobs,Master)
     if(DECitem%only_n_frag_jobs>0)then

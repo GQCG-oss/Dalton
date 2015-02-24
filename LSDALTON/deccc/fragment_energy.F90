@@ -283,8 +283,7 @@ contains
        end if
 
        if (DECinfo%DECNP) then
-          ! In DECNP No explicit Pair calculations are done.
-          call lsquit("ERROR(fragment_energy_and_prop): No pairs in DECNP",DECinfo%output)
+          call lsquit("ERROR(fragment_energy_and_prop): DECNP inconsistent input",DECinfo%output)
        end if
     end if
 
