@@ -100,7 +100,7 @@ contains
              if(DECinfo%use_canonical ) then
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
-                call full_canonical_mp2(MyMolecule,MyLsitem,Ecorr)       
+                call full_canonical_mp2B(MyMolecule,MyLsitem,Ecorr)       
              else
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
@@ -3079,7 +3079,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer :: sqrtnumnodes,gB,idx(1),dimAOoffset,kk,nBlocksG,nBlocksA
   integer :: dimGammaMPI,dimAlphaMPI,ibatchG,ibatchA,dimAlpha2,dimGamma2
   integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchesJ,nOccBatchDimJmax
-  integer :: nOccbatchesIrestart,noccIstart,nbuf1,nbuf2
+  integer :: nOccbatchesIrestart,noccIstart,nbuf1,nbuf2,Ibuf(8)
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
   logical :: PermutationalSymmetryIJ,SetdimGamma
   logical,pointer :: JobsCompleted(:,:)
@@ -3218,20 +3218,48 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
        & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
        & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
 
-  write(DECinfo%output,*)'nbasis               ',nbasis
-  write(DECinfo%output,*)'nocc                 ',nocc
-  write(DECinfo%output,*)'nvirt                ',nvirt
-  write(DECinfo%output,*)'MinAObatch           ',MinAObatch
-  write(DECinfo%output,*)'numnodes             ',numnodes
-  write(DECinfo%output,*)'nrownodes            ',nrownodes
-  write(DECinfo%output,*)'ncolnodes            ',ncolnodes
-  write(DECinfo%output,*)'MaxAllowedDimAlpha   ',MaxAllowedDimAlpha
-  write(DECinfo%output,*)'MaxAllowedDimGamma   ',MaxAllowedDimGamma
-  write(DECinfo%output,*)'MaxAllowedDimAlphaMPI',MaxAllowedDimAlphaMPI
-  write(DECinfo%output,*)'MaxAllowedDimGammaMPI',MaxAllowedDimGammaMPI
-  write(DECinfo%output,*)'nOccBatchDimImax     ',nOccBatchDimImax
-  write(DECinfo%output,*)'nOccBatchDimJmax     ',nOccBatchDimJmax
-  
+#ifdef VAR_MPI
+  !use the numbers obtained by master  
+  IF(master)THEN
+     Ibuf(1) = nrownodes
+     Ibuf(2) = ncolnodes
+     Ibuf(3) = MaxAllowedDimAlpha
+     Ibuf(4) = MaxAllowedDimGamma
+     Ibuf(5) = MaxAllowedDimAlphaMPI
+     Ibuf(6) = MaxAllowedDimGammaMPI
+     Ibuf(7) = nOccBatchDimImax
+     Ibuf(8) = nOccBatchDimJmax
+  ENDIF
+  nbuf1 = 8 
+  call ls_mpibcast(Ibuf,nbuf1,mynum,comm)
+  IF(.NOT.master)THEN
+     nrownodes = Ibuf(1) 
+     ncolnodes = Ibuf(2)
+     MaxAllowedDimAlpha = Ibuf(3)
+     MaxAllowedDimGamma = Ibuf(4)
+     MaxAllowedDimAlphaMPI = Ibuf(5)
+     MaxAllowedDimGammaMPI = Ibuf(6)
+     nOccBatchDimImax = Ibuf(7)
+     nOccBatchDimJmax = Ibuf(8)
+  ENDIF
+#endif
+
+  IF(master)THEN
+     write(DECinfo%output,*)'nbasis               ',nbasis
+     write(DECinfo%output,*)'nocc                 ',nocc
+     write(DECinfo%output,*)'nvirt                ',nvirt
+     write(DECinfo%output,*)'MinAObatch           ',MinAObatch
+     write(DECinfo%output,*)'numnodes             ',numnodes
+     write(DECinfo%output,*)'nrownodes            ',nrownodes
+     write(DECinfo%output,*)'ncolnodes            ',ncolnodes
+     write(DECinfo%output,*)'MaxAllowedDimAlpha   ',MaxAllowedDimAlpha
+     write(DECinfo%output,*)'MaxAllowedDimGamma   ',MaxAllowedDimGamma
+     write(DECinfo%output,*)'MaxAllowedDimAlphaMPI',MaxAllowedDimAlphaMPI
+     write(DECinfo%output,*)'MaxAllowedDimGammaMPI',MaxAllowedDimGammaMPI
+     write(DECinfo%output,*)'nOccBatchDimImax     ',nOccBatchDimImax
+     write(DECinfo%output,*)'nOccBatchDimJmax     ',nOccBatchDimJmax
+  ENDIF
+
   ! ************************************************
   ! * Determine batch information for Gamma batch  *
   ! * And 
@@ -3311,9 +3339,11 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      end do
   ENDIF
 
-  write(DECinfo%output,*)'MaxActualDimAlpha    ',MaxActualDimAlpha
-  write(DECinfo%output,*)'MaxActualDimGamma    ',MaxActualDimGamma
-  
+  IF(master)THEN
+     write(DECinfo%output,*)'MaxActualDimAlpha    ',MaxActualDimAlpha
+     write(DECinfo%output,*)'MaxActualDimGamma    ',MaxActualDimGamma
+  ENDIF
+
   ! ************************************************
   ! * Screening                                    *
   ! ************************************************
@@ -3706,7 +3736,6 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         CALL LS_GETTIM(CPU1,WALL1)
         nbuf1 = nvirt*nOccBatchDimI
         nbuf2 = dimAlphaMPI*dimGammaMPI
-        print*,'BCAST4:',nbuf1,nbuf2
         call ls_mpibcast(tmp4,nbuf1,nbuf2,mynum,comm)
         CALL LS_GETTIM(CPU2,WALL2)
         CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
@@ -3741,7 +3770,6 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         CALL LS_GETTIM(CPU1,WALL1)
         nbuf1 = nvirt*nOccBatchDimI
         nbuf2 = dimAlpha2*dimGamma2
-        print*,'BCAST6:',nbuf1,nbuf2
         lsmpinode = nodeLoop-1
         call ls_mpibcast(tmp6,nbuf1,nbuf2,lsmpinode,comm)
         CALL LS_GETTIM(CPU2,WALL2)
@@ -5263,7 +5291,7 @@ subroutine full_canonical_mp2_slave
   ! *******************
   ! Main master:  Send stuff to local masters and deallocate temp. buffers
   ! Local master: Deallocate buffer etc.
-  call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
+  call full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
   
