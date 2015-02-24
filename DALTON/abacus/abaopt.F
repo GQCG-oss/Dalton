@@ -6405,7 +6405,8 @@ C
          END IF
          DO I = 1, NVEC
             IF (EVAL(I) .LT. -THR_ZERO_EVAL) INDTOT_eff = INDTOT_eff + 1
-            IF (ABS(EVAL(I)) .LT. THRLDP) THEN ! do not divide by zero, or very small unreliable values
+            ! do not divide by zero, or very small unreliable values
+            IF (ABS(EVAL(I)) .LT. THRLDP) THEN
                EVAL_EFF = SIGN(THRLDP, EVAL(I))
             ELSE
                EVAL_EFF = EVAL(I)
@@ -6413,9 +6414,11 @@ C
             STPDIA(I) = -GRDDIA(I)/EVAL_EFF
          END DO
          IF (INDTOT .NE. INDHES(0) .AND. .NOT. NOBRKS) THEN
-            INDTOT_eff = INDTOT ! Do not reset INDTOT because we probably want to break symmetry
-                                ! Instead we reset INDTOT_eff because it is used below
-         ELSE IF (INDTOT_eff .NE. INDTOT) THEN
+            ! Do not reset INDTOT because we probably want to break 
+            ! symmetry. Instead we reset INDTOT_eff because it is used
+            ! below
+            INDTOT_eff = INDTOT
+         ELSE IF (INDTOT_eff .NE. INDTOT .AND. .NOT. SADDLE) THEN
             WRITE(LUPRI,'(/A,I3,A,I3/A/A)')
      &      ' Calculated Hessian index',INDTOT,
      &        ' is reset to effective Hessian index',INDTOT_eff,
