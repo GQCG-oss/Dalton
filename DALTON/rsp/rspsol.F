@@ -1107,7 +1107,7 @@ C
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
       IF ( KZCONF.GT.0 .AND. IREFSY.EQ.KSYMST) THEN
-!         IF (NCREF .NE. KZCONF) CALL QUIT('SLVLNO: NCREF .ne. KZCONF')
+         IF (NCREF .NE. KZCONF) CALL QUIT('SLVLNO: NCREF .ne. KZCONF')
 C
 C        ... test orthogonality
 C
@@ -1268,7 +1268,8 @@ C    *                         - D2 * TRXAC(ICSIM) * CREF(NA)
                WRITE(LUPRI,*)' <0/Tg/0> S(j) subtracted '
                CALL OUTPUT(SVECS(1,ICSIM),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
             END IF
-            IF (IREFSY .EQ. KSYMST .AND. .NOT. TRPLET) THEN
+!            IF (IREFSY .EQ. KSYMST .AND. .NOT. TRPLET) THEN
+            IF (IREFSY .EQ. KSYMST) THEN
                FAC = DDOT(KZCONF,SVECS(1,ICSIM),1,CREF,1)
                CALL DAXPY(KZCONF,(-FAC),CREF,1,SVECS(1,ICSIM),1)
                IF (IPRRSP.GT.101) THEN
@@ -1312,7 +1313,8 @@ C           CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,
 C    &                  BCVECS(1,ICSIM),SVECS(1,ICSIM),
 C    &                  WRK(KURYAC),DUMMY,
 C    &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
-            IF (IREFSY .EQ. KSYMST .AND. .NOT. TRPLET) THEN
+!            IF (IREFSY .EQ. KSYMST .AND. .NOT. TRPLET) THEN
+            IF (IREFSY .EQ. KSYMST) THEN
                FAC = DDOT(KZCONF,SVECS(1+KZVAR,ICSIM),1,CREF,1)
                CALL DAXPY(KZCONF,(-FAC),CREF,1,SVECS(1+KZVAR,ICSIM),1)
 C              DO 201 NA = 1,KZCONF
@@ -1365,8 +1367,9 @@ C
             END IF
 C           Remove CREF component of SVECS (inactive contribution
 C           not needed because of this projection)
-            ! Projection not required for triplet response
-            IF (IREFSY .EQ. KSYMST .AND. .NOT. TRPLET) THEN
+!            ! Projection not required for triplet response
+!            IF (IREFSY .EQ. KSYMST .AND. .NOT. TRPLET) THEN
+            IF (IREFSY .EQ. KSYMST) THEN
                FAC = DDOT(KZCONF,SVECS(1,IOSIM),1,CREF,1)
                CALL DAXPY(KZCONF,(-FAC),CREF,1,SVECS(1,IOSIM),1)
                IF (IPRRSP.GT.101) THEN
@@ -1431,7 +1434,8 @@ C           now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
             END IF
 C           Remove CREF component of SVECS (inactive contribution
 C           not needed because of this projection)
-            IF (IREFSY .EQ. KSYMST .AND. .NOT. TRPLET) THEN
+!            IF (IREFSY .EQ. KSYMST .AND. .NOT. TRPLET) THEN
+            IF (IREFSY .EQ. KSYMST) THEN
                FAC = DDOT(KZCONF,SVECS(1+KZVAR,IOSIM),1,CREF,1)
                CALL DAXPY(KZCONF,(-FAC),CREF,1,SVECS(1+KZVAR,IOSIM),1)
                IF (IPRRSP.GT.101) THEN
