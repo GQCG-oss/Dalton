@@ -1438,6 +1438,7 @@ contains
     Real(realk)                :: minEigv,maxEigv,conditionNum
     Type(moleculeinfo),pointer :: atoms_A(:)
     Type(mat3d),pointer        :: calpha_ab_mo(:,:)
+    Type(mat2d),pointer        :: alpha_beta_mo(:,:)
     Real(realk),pointer        :: MOcoeff(:,:),calpha_ab_block(:,:,:)
     Real(realk),pointer        :: MOmatK(:,:)
     Real(realk),pointer        :: matH_Q(:,:,:),matD_Q(:,:,:)
@@ -1559,6 +1560,14 @@ contains
           enddo
        enddo
 
+       ! --- Initialize matrix of 2-center integrals
+       allocate(alpha_beta_mo(nAtoms,nAtoms))
+       do iAtomA=1,nAtoms
+          do iAtomB=1,nAtoms
+             nullify(alpha_beta_mo(iAtomA,iAtomB)%elements)
+          enddo
+       enddo
+
        call pari_set_atomic_fragments(molecule,atoms_A,nAtoms,lupri)
 
        ! --- Set up domains of atoms
@@ -1577,14 +1586,13 @@ contains
                      
        ! Loop over A
        do iAtomA=1,nAtoms
-          write(lupri,*) 'Loop over Atom A=',iAtomA
           call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
                nAuxA,startAuxA,endAuxA) 
 
           ! --- Construction of matrix H_i^nuQ for AtomQ=AtomA
           call mem_alloc(matH_Q,nBastReg,nAuxA,nOcc)
           matH_Q=0E0_realk
-          call getHQcoeff(matH_Q,calpha_ab_mo,iAtomA,neighbours,MOcoeff,&
+          call getHQcoeff(matH_Q,calpha_ab_mo,alpha_beta_mo,iAtomA,neighbours,MOcoeff,&
                orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
                lupri,luerr)
                               
@@ -1610,11 +1618,19 @@ contains
              endif
           enddo
        enddo
+       do iAtomA=1,nAtoms
+          do iAtomB=1,nAtoms
+             if (associated(alpha_beta_mo(iAtomA,iAtomB)%elements)) then
+                call free_mat2d(alpha_beta_mo(iAtomA,iAtomB))
+             endif
+          enddo
+       enddo
        call mem_dealloc(MOcoeff)
        call mem_dealloc(neighbours)
        call pari_free_atomic_fragments(atoms_A,nAtoms)
        deallocate(atoms_A) 
        deallocate(calpha_ab_mo)
+       deallocate(alpha_beta_mo)
       
        ! --- Construct K_munu from L_munu
        do iRegA=1,nBastReg
@@ -1744,7 +1760,7 @@ contains
 
     !call free_AtomSparseMat(alphaBeta)
     CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
-    call lsquit('End of PARI-k',-1)
+    !call lsquit('End of PARI-k',-1)
   END SUBROUTINE II_get_pari_df_exchange_mat
 
   !> \brief Set up domains of atoms such that max(G_ab) > threshold
