@@ -46,8 +46,7 @@
 !
 
       use qmcmm, only: getdim_relmat, read_relmat
-      use qmcmm_lr, only: get_fvvec_lr
-      use qmcmm_qr, only: get_xyvec
+      use qmcmm_response, only: get_xyvec, get_fvvec
 
       implicit none
 
@@ -90,10 +89,19 @@
            CALL RSPZYM(NOSIM,BOVECS,WORK(KBOV))
            CALL DSCAL(NOSIM*N2ORBX,-1.0d0,WORK(KBOV),1)
         END IF
+
 !       Determine electric field/potential vector for perturbed
 !       density matrices
-        CALL GET_FVVEC_LR(WORK(KFVVEC), idim, nosim, UDV,UDVTR,WORK(KCMO),WORK(KBOV), &
-     &                    WORK(KFREE),LFREE)
+        call get_fvvec(idim=idim,           &
+                       nsim=nosim,          &
+                       udv=udv,             &
+                       cmo=work(kcmo),      &
+                       work=work(kfree),    &
+                       lwork=lfree,         &
+                       fvvec1=work(kfvvec), &
+                       udvtr=udvtr,         &
+                       bovecs=work(kbov))
+
 !       Allocate and compute Relay matrix
         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
         CALL MEMGET('REAL',KRELMAT,IDIMX,WORK,KFREE,LFREE)
@@ -159,7 +167,7 @@
      &                     ISPIN0,ISPIN1,ISPIN2)
 
       use qmcmm, only: getdim_relmat, read_relmat
-      use qmcmm_qr, only: get_fvvec_qr, get_xyvec
+      use qmcmm_response, only: get_fvvec, get_xyvec
 
       implicit none
 
@@ -252,10 +260,22 @@
         CALL MEMGET('REAL',KMQVEC2,NSIM*IDIM,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFVVEC1,NSIM*IDIM,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFVVEC2,NSIM*IDIM,WORK,KFREE,LFREE)
-!       Compute FV vectors for second order pertubed densities
-        CALL GET_FVVEC_QR(WORK(KFVVEC1),WORK(KFVVEC2),IDIM,NSIM,        &
-     &                    UDV,WORK(KUCMO),ISYMT,ISYMV1,ISYMV2,          &
-     &                    ZYM1,ZYM2,WORK(KFREE),LFREE)
+
+!       compute fv vectors for second order pertubed densities
+        call get_fvvec(idim=idim,            &
+                       nsim=nsim,            &
+                       udv=udv,              &
+                       cmo=work(kucmo),      &
+                       work=work(kfree),     &
+                       lwork=lfree,          &
+                       fvvec1=work(kfvvec1), &
+                       fvvec2=work(kfvvec2), &
+                       isymt=isymt,          &
+                       isymv1=isymv1,        &
+                       isymv2=isymv2,        &
+                       zym1=zym1,            &
+                       zym2=zym2)
+
 !       Allocate and compute Relay matrix
         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
         CALL MEMGET('REAL',KRELMAT,IDIMX,WORK,KFREE,LFREE)

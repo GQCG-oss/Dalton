@@ -136,7 +136,7 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 09:58:35 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:11 2015
      Host name              : donkey                                  
 
  * Work memory size             :    64000000 =  488.28 megabytes.
@@ -156,12 +156,19 @@ Compilation information
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler         | /usr/bin/f95
  Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ Fortran flags            | -DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store -fcray
+                          | -pointer -m64 -O0 -g -fbacktrace -fcray-pointer -W
+                          | uninitialized
+ C compiler               | /usr/bin/cc
+ C compiler version       | unknown
+ C flags                  | -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1 -DHAV
+                          | E_NO_LSEEK64 -ffloat-store -Wall -m64 -O0 -g3
+ C++ compiler             | /usr/bin/c++
+ C++ compiler version     | c++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C++ flags                | -g -Wall -fno-rtti -fno-exceptions -m64 -march=nat
+                          | ive -O0 -g3
  BLAS                     | /opt/intel/mkl/lib/intel64/libmkl_gf_lp64.so;/opt/
                           | intel/mkl/lib/intel64/libmkl_sequential.so;/opt/in
                           | tel/mkl/lib/intel64/libmkl_core.so;/usr/lib/x86_64
@@ -170,9 +177,9 @@ Compilation information
  LAPACK                   | /opt/intel/mkl/lib/intel64/libmkl_lapack95_lp64.a;
                           | /opt/intel/mkl/lib/intel64/libmkl_gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 8f64f6137482df97c82679b221fda9fdefadb4de
+ Last Git revision        | b484c6390811746526bc4e585a1ea091d8867b56
  Git branch               | radovan/qmcmm
- Configuration time       | 2015-02-23 09:53:29.794243
+ Configuration time       | 2015-02-24 16:27:27.492503
 
 
    Content of the .dal input file
@@ -441,7 +448,7 @@ H            0.00000    0.000000     3.600000
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 23 09:58:35 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:11 2015
      Host name              : donkey                                  
 
  Title lines from ".mol" input file:
@@ -503,7 +510,7 @@ H            0.00000    0.000000     3.600000
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  1.89D-02  1.90D-02
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -805,7 +812,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      1.996963
 @      MULPOP F      -0.47; H       0.47; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  2.32D-02  2.20D-02
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  1.69D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1107,7 +1114,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      2.006797
 @      MULPOP F      -0.34; H       0.34; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  2.30D-02  2.30D-02
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1409,7 +1416,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      2.000983
 @      MULPOP F      -0.37; H       0.37; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  2.29D-02  2.20D-02
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -1711,7 +1718,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      2.002703
 @      MULPOP F      -0.36; H       0.36; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  2.28D-02  2.30D-02
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -2013,7 +2020,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      2.002430
 @      MULPOP F      -0.37; H       0.37; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  2.26D-02  2.20D-02
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  1.71D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -2315,7 +2322,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      2.002440
 @      MULPOP F      -0.37; H       0.37; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  1.81D-02  1.80D-02
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  1.76D-02  1.70D-02
 
   *** Computed Relay matrix ***
 
@@ -2617,7 +2624,7 @@ H            0.00000    0.000000     3.600000
       Virial theorem: -V/T =      2.002446
 @      MULPOP F      -0.37; H       0.37; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  1.83D-02  1.80D-02
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  1.76D-02  1.80D-02
 
   *** Computed Relay matrix ***
 
@@ -2942,7 +2949,7 @@ H            0.00000    0.000000     3.600000
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.361       0.361
+ >>>> CPU and wall time for SCF :       0.290       0.290
 
 
                        .-----------------------------------.
@@ -2970,10 +2977,10 @@ H            0.00000    0.000000     3.600000
 @    Final gradient norm:           0.000008257507
 
  
-     Date and time (Linux)  : Mon Feb 23 09:58:35 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:12 2015
      Host name              : donkey                                  
 
-File label for MO orbitals:  23Feb15   FOCKDIIS
+File label for MO orbitals:  24Feb15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -3021,11 +3028,11 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.37 seconds
- >>>> Total wall time used in SIRIUS :      0.37 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.29 seconds
+ >>>> Total wall time used in SIRIUS :      0.29 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 09:58:35 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:12 2015
      Host name              : donkey                                  
 
 
@@ -3107,7 +3114,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
  Operator symmetry = 1  ( A  ); triplet =   F
 
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00142716
        2       -0.00000000
        3        0.00759743
@@ -3124,7 +3131,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00062270
        2       -0.00000000
        3       -0.00353292
@@ -3175,7 +3182,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00018905
        2       -0.00000000
        3       -0.00035047
@@ -3192,7 +3199,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00067892
        2        0.00000000
        3       -0.00257381
@@ -3243,7 +3250,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00072527
        2       -0.00000000
        3        0.00157521
@@ -3260,7 +3267,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00110467
        2        0.00000000
        3        0.00304320
@@ -3311,7 +3318,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00129393
        2       -0.00000000
        3        0.00211135
@@ -3328,7 +3335,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00018355
        2        0.00000000
        3        0.00010921
@@ -3403,7 +3410,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
  Operator symmetry = 1  ( A  ); triplet =   F
 
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2        0.00515666
        3        0.00000000
@@ -3420,7 +3427,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00000000
        2       -0.00238440
        3        0.00000000
@@ -3471,7 +3478,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2       -0.00022773
        3       -0.00000000
@@ -3488,7 +3495,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00000000
        2       -0.00172972
        3       -0.00000000
@@ -3539,7 +3546,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2        0.00099686
        3        0.00000000
@@ -3556,7 +3563,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00000000
        2        0.00194289
        3       -0.00000000
@@ -3607,7 +3614,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00000000
        2        0.00137890
        3       -0.00000000
@@ -3624,7 +3631,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00000000
        2        0.00005777
        3       -0.00000000
@@ -3699,7 +3706,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
  Operator symmetry = 1  ( A  ); triplet =   F
 
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00991707
        2        0.00000000
        3       -0.00522045
@@ -3716,7 +3723,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00518256
        2       -0.00000000
        3        0.00221457
@@ -3767,7 +3774,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00025496
        2       -0.00000000
        3        0.00020665
@@ -3784,7 +3791,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1       -0.00214087
        2       -0.00000000
        3        0.00085771
@@ -3835,7 +3842,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00084265
        2        0.00000000
        3       -0.00013079
@@ -3852,7 +3859,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00392946
        2       -0.00000000
        3       -0.00062335
@@ -3903,7 +3910,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00124260
        2        0.00000000
        3       -0.00014608
@@ -3920,7 +3927,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00074455
        2       -0.00000000
        3       -0.00048940
@@ -3971,7 +3978,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1        0.00061891
        2        0.00000000
        3       -0.00044499
@@ -3988,7 +3995,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00063564
        2       -0.00000000
        3       -0.00082862
@@ -4039,7 +4046,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed MQ vector end ***
 
-  *** Computed FV vector start 1st-order density 1
+  *** Computed FV vector start 1 1
        1       -0.00075540
        2        0.00000000
        3       -0.00012965
@@ -4056,7 +4063,7 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
   *** Computed FV vector end ***
 
-  *** Computed FV vector start 1st-order density 2
+  *** Computed FV vector start 1 2
        1        0.00048214
        2        0.00000000
        3       -0.00031377
@@ -4152,19 +4159,19 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 @ -<< ZDIPLEN  ; ZDIPLEN  >> =  6.570598267168D+00
 
 
- Time used in linear response calculation is      0.82 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.76 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   0.82 seconds
- >>>> Total wall time used in RESPONSE:   0.82 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.76 seconds
+ >>>> Total wall time used in RESPONSE:   0.76 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.23 seconds
- >>>> Total wall time used in DALTON:   1.23 seconds
+ >>>> Total CPU  time used in DALTON:   1.09 seconds
+ >>>> Total wall time used in DALTON:   1.09 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 09:58:36 2015
+     Date and time (Linux)  : Tue Feb 24 16:28:12 2015
      Host name              : donkey                                  
