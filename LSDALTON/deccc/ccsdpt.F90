@@ -2609,11 +2609,11 @@ contains
 !$acc enter data copyin(ccsd_doubles(:,:,:,b)) async(async_id(1))
 
 #ifdef VAR_OPENACC
-                   call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
-                           & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b,async_id(1))
+                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
+                              & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b,async_id(1))
 #else
-                   call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
-                           & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
+                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
+                              & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
 #endif
 
 !$acc enter data copyin(ooov(:,:,:,b)) async(async_id(2))
