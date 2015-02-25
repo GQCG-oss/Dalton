@@ -279,6 +279,8 @@ module dec_typedef_module
      integer :: ijk_nbuffs
      !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
      integer :: abc_nbuffs
+     !> do we want to do gpu computations synchronous?
+     logical :: acc_sync
 
      !> F12 settings
      !> ************

@@ -232,6 +232,7 @@ contains
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
+    DECinfo%acc_sync          = .false.
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -452,10 +453,11 @@ contains
 
           ! CCSD(T) INFO
           ! ==============
-       case('.PT_ABC'); DECinfo%abc= .true.
+       case('.PT_ABC'); DECinfo%abc = .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
+       case('.ACC_SYNC'); DECinfo%acc_sync = .true.
 
 
           ! DEC CALCULATION 
