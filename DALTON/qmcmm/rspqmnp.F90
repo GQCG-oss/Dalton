@@ -88,51 +88,53 @@
           rxyt = 0.0d0
       end if
 
-!     Non-iterative method
-      IF (.NOT.MQITER) THEN
-        CALL GETDIM_RELMAT(IDIM,.FALSE.)
-!       Zero & unpack CMO and ZY vectors
-        CALL UPKCMO(CMO,uCMO)
-        IF (NOSIM.GT.0) THEN
-           CALL RSPZYM(NOSIM,BOVECS,BOV)
-           CALL DSCAL(NOSIM*N2ORBX,-1.0d0,BOV,1)
-        END IF
+      if (mqiter) then ! iterative method
+         call quit('mqiter not implemented in rspqmnp.F90')
+      else ! non iterative method
+         CALL GETDIM_RELMAT(IDIM,.FALSE.)
 
-        allocate(mqvec(nosim*idim))
-        mqvec = 0.0d0
-        allocate(fvvec(nosim*idim))
-        fvvec = 0.0d0
+         ! Zero & unpack CMO and ZY vectors
+         CALL UPKCMO(CMO,uCMO)
+         IF (NOSIM.GT.0) THEN
+            CALL RSPZYM(NOSIM,BOVECS,BOV)
+            CALL DSCAL(NOSIM*N2ORBX,-1.0d0,BOV,1)
+         END IF
 
-!       Determine electric field/potential vector for perturbed
-!       density matrices
-        call get_fvvec(idim=idim,    &
-                       nsim=nosim,   &
-                       udv=udv,      &
-                       cmo=ucmo,     &
-                       work=work,    &
-                       lwork=lwork,  &
-                       fvvec1=fvvec, &
-                       udvtr=udvtr,  &
-                       bovecs=bov)
+         allocate(mqvec(nosim*idim))
+         mqvec = 0.0d0
+         allocate(fvvec(nosim*idim))
+         fvvec = 0.0d0
 
-!       Allocate and compute Relay matrix
-        CALL GETDIM_RELMAT(IDIMX,.TRUE.)
-        allocate(relmat(idimx))
-        CALL READ_RELMAT(RELMAT)
-        DO I=1,NOSIM
-           IOFF = (I-1)*IDIM
-           CALL DGEMV('N',IDIM,IDIM,1.0d0,RELMAT,IDIM,              &
-     &                FVVEC(IOFF + 1),1,0.0d0,MQVEC(IOFF + 1),1)
-          if (iprtlvl > 14) then
-             write(lupri, '(/,2x,a,i0)') &
-                 '*** Computed MQ vector start 1st-order density ', i
-             do j = 1, idim
-                write(lupri, '(i8, f18.8)') j, MQVEC(IOFF + j)
-             end do
-             write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
-          end if
-        END DO
-        deallocate(relmat)
+         ! Determine electric field/potential vector for perturbed
+         ! density matrices
+         call get_fvvec(idim=idim,    &
+                        nsim=nosim,   &
+                        udv=udv,      &
+                        cmo=ucmo,     &
+                        work=work,    &
+                        lwork=lwork,  &
+                        fvvec1=fvvec, &
+                        udvtr=udvtr,  &
+                        bovecs=bov)
+
+         ! Allocate and compute Relay matrix
+         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
+         allocate(relmat(idimx))
+         CALL READ_RELMAT(RELMAT)
+         DO I=1,NOSIM
+            IOFF = (I-1)*IDIM
+            CALL DGEMV('N',IDIM,IDIM,1.0d0,RELMAT,IDIM,              &
+                       FVVEC(IOFF + 1),1,0.0d0,MQVEC(IOFF + 1),1)
+           if (iprtlvl > 14) then
+              write(lupri, '(/,2x,a,i0)') &
+                  '*** Computed MQ vector start 1st-order density ', i
+              do j = 1, idim
+                 write(lupri, '(i8, f18.8)') j, MQVEC(IOFF + j)
+              end do
+              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
+           end if
+         END DO
+         deallocate(relmat)
 
          ! compute xy contributions from induced dipoles and charges
          if (trplet) then
@@ -152,8 +154,6 @@
                            lwork, &
                            mqvec)
          end if
-      ELSE
-!        Fix me
       END IF
 
       ! add qm/np/mm contributions to transformed resp. vectors
