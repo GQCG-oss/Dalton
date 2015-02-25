@@ -158,6 +158,7 @@
 
       ! add qm/np/mm contributions to transformed resp. vectors
       if (trplet) then
+         ! fixme: i wonder whether this is right, rxy is then never computed
          call slvsor(.true.,.false.,nosim,udvtr,evecs(1,1),rxy)
          call slvsor(.true.,.true.,nosim,udv,evecs(1,1),rxyt)
       else
