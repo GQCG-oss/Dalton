@@ -62,105 +62,117 @@
 
       real(8) :: BOVECS(*), CMO(*), XINDX(*), UDV(NASHDI,NASHDI)
       real(8) :: UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
-      real(8) :: WORK(LWORK), DV(*), CREF(*)
-      integer :: i, j, idim, idimx, kfree, lfree, ioff
-      integer :: kbov, kcmo, kfvvec, kmqvec, krelmat, krxy, krxyt
-!
-      KFREE = 1
-      LFREE = LWORK
-!
-!     NP/MM contribution to response matrix is zero for triplet
+      real(8) :: WORK(*), DV(*), CREF(*)
+      integer :: i, j, idim, idimx, ioff
+
+      real(8), allocatable :: mqvec(:)
+      real(8), allocatable :: fvvec(:)
+      real(8), allocatable :: ucmo(:)
+      real(8), allocatable :: bov(:)
+      real(8), allocatable :: relmat(:)
+      real(8), allocatable :: rxy(:)
+      real(8), allocatable :: rxyt(:)
+
+!     np/mm contribution to response matrix is zero for triplet
 !     perturbations applied to singlet reference state
-      IF ((NASHT.EQ.0).AND.(TRPLET)) RETURN
+      if ((nasht == 0) .and. (trplet)) return
+
+      allocate(ucmo(nbast*norbt))
+      ucmo = 0.0d0
+      allocate(bov(nosim*n2orbx))
+      bov = 0.0d0
+      allocate(rxy(nosim*n2orbx))
+      rxy = 0.0d0
+      if (trplet) then
+          allocate(rxyt(nosim*n2orbx))
+          rxyt = 0.0d0
+      end if
+
 !     Non-iterative method
       IF (.NOT.MQITER) THEN
         CALL GETDIM_RELMAT(IDIM,.FALSE.)
-!       Allocate FV and MQ vectors for all perturbed densities
-        CALL MEMGET('REAL',KMQVEC,NOSIM*IDIM,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFVVEC,NOSIM*IDIM,WORK,KFREE,LFREE)
-!       Allocate unpacked temporary CMO, etc vectors
-        CALL MEMGET('REAL',KCMO,NBAST*NORBT,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBOV,NOSIM*N2ORBX,WORK,KFREE,LFREE)
 !       Zero & unpack CMO and ZY vectors
-        CALL DZERO(WORK(KCMO),NORBT*NBAST)
-        CALL UPKCMO(CMO,WORK(KCMO))
-        CALL DZERO(WORK(KBOV),NOSIM*N2ORBX)
+        CALL UPKCMO(CMO,uCMO)
         IF (NOSIM.GT.0) THEN
-           CALL RSPZYM(NOSIM,BOVECS,WORK(KBOV))
-           CALL DSCAL(NOSIM*N2ORBX,-1.0d0,WORK(KBOV),1)
+           CALL RSPZYM(NOSIM,BOVECS,BOV)
+           CALL DSCAL(NOSIM*N2ORBX,-1.0d0,BOV,1)
         END IF
+
+        allocate(mqvec(nosim*idim))
+        mqvec = 0.0d0
+        allocate(fvvec(nosim*idim))
+        fvvec = 0.0d0
 
 !       Determine electric field/potential vector for perturbed
 !       density matrices
-        call get_fvvec(idim=idim,           &
-                       nsim=nosim,          &
-                       udv=udv,             &
-                       cmo=work(kcmo),      &
-                       work=work(kfree),    &
-                       lwork=lfree,         &
-                       fvvec1=work(kfvvec), &
-                       udvtr=udvtr,         &
-                       bovecs=work(kbov))
+        call get_fvvec(idim=idim,    &
+                       nsim=nosim,   &
+                       udv=udv,      &
+                       cmo=ucmo,     &
+                       work=work,    &
+                       lwork=lwork,  &
+                       fvvec1=fvvec, &
+                       udvtr=udvtr,  &
+                       bovecs=bov)
 
 !       Allocate and compute Relay matrix
         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
-        CALL MEMGET('REAL',KRELMAT,IDIMX,WORK,KFREE,LFREE)
-        CALL READ_RELMAT(WORK(KRELMAT))
-!       Determine induced induced dipoles and charges
-        CALL DZERO(WORK(KMQVEC),NOSIM*IDIM)
+        allocate(relmat(idimx))
+        CALL READ_RELMAT(RELMAT)
         DO I=1,NOSIM
            IOFF = (I-1)*IDIM
-           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC+IOFF),1,0.0d0,WORK(KMQVEC+IOFF),1)
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,RELMAT,IDIM,              &
+     &                FVVEC(IOFF + 1),1,0.0d0,MQVEC(IOFF + 1),1)
           if (iprtlvl > 14) then
              write(lupri, '(/,2x,a,i0)') &
                  '*** Computed MQ vector start 1st-order density ', i
              do j = 1, idim
-                write(lupri, '(i8, f18.8)') j, WORK(KMQVEC+IOFF - 1 + j)
+                write(lupri, '(i8, f18.8)') j, MQVEC(IOFF + j)
              end do
              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
           end if
         END DO
-!       Allocate temporary XY vector contributions
-        CALL MEMGET('REAL',KRXY,NOSIM*N2ORBX,WORK,KFREE,LFREE)
-        CALL DZERO(WORK(KRXY),NOSIM*N2ORBX)
-        IF (TRPLET) THEN
-           CALL MEMGET('REAL',KRXYT,NOSIM*N2ORBX,WORK,KFREE,LFREE)
-           CALL DZERO(WORK(KRXYT),NOSIM*N2ORBX)
-        END IF
+        deallocate(relmat)
 
          ! compute xy contributions from induced dipoles and charges
          if (trplet) then
-            call get_xyvec(work(kcmo),    &
-                           idim,          &
-                           nosim,         &
-                           work(krxyt),   &
-                           work(kfree),   &
-                           lfree,         &
-                           work(kmqvec))
+            call get_xyvec(ucmo,  &
+                           idim,  &
+                           nosim, &
+                           rxyt,  &
+                           work,  &
+                           lwork, &
+                           mqvec)
          else
-            call get_xyvec(work(kcmo),    &
-                           idim,          &
-                           nosim,         &
-                           work(krxy),    &
-                           work(kfree),   &
-                           lfree,         &
-                           work(kmqvec))
+            call get_xyvec(ucmo,  &
+                           idim,  &
+                           nosim, &
+                           rxy,   &
+                           work,  &
+                           lwork, &
+                           mqvec)
          end if
       ELSE
 !        Fix me
       END IF
-!     Add QM/NP/MM contributions to transformed resp. vectors
-      IF (TRPLET) THEN
-         CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,EVECS(1,1),WORK(KRXY))
-         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WORK(KRXYT))
-      ELSE
-         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WORK(KRXY))
-      ENDIF
-!
-      CALL MEMREL('QMNPMM_LNO',WORK,1,1,KFREE,LFREE)
-!
-      end subroutine
+
+      ! add qm/np/mm contributions to transformed resp. vectors
+      if (trplet) then
+         call slvsor(.true.,.false.,nosim,udvtr,evecs(1,1),rxy)
+         call slvsor(.true.,.true.,nosim,udv,evecs(1,1),rxyt)
+      else
+         call slvsor(.true.,.true.,nosim,udv,evecs(1,1),rxy)
+      endif
+
+      if (allocated(mqvec)) deallocate(mqvec)
+      if (allocated(fvvec)) deallocate(fvvec)
+      if (allocated(ucmo))  deallocate(ucmo)
+      if (allocated(bov))   deallocate(bov)
+      if (allocated(rxy))   deallocate(rxy)
+      if (allocated(rxyt))  deallocate(rxyt)
+
+   end subroutine
+
       SUBROUTINE QMNPMMQRO(VEC1,VEC2,ETRS,XINDX,ZYM1,ZYM2,              &
      &                     UDV,WORK,LWORK,KZYVR,KZYV1,KZYV2,            &
      &                     IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,              &
