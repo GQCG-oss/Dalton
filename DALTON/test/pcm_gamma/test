@@ -12,6 +12,7 @@ f = Filter()
 f.add(string = '@ gamma',
       abs_tolerance = 1.0e-3)
 
-test.run(['pcm_gamma.dal'], ['OH.mol'], f={'out': f})
+test.run(['pcm_gamma.dal'], ['OH.mol'], f={'out': f},
+         accepted_errors='PCM and cubic response not available')
 
 sys.exit(test.return_code)
