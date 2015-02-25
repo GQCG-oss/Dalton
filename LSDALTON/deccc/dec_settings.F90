@@ -278,6 +278,7 @@ contains
     DECitem%cc_models(MODEL_CCSD)  ='CCSD    '
     DECitem%cc_models(MODEL_CCSDpT)='CCSD(T) '
     DECitem%cc_models(MODEL_RPA)   ='RPA     '
+    DECitem%cc_models(MODEL_SOSEX) ='SOSEX   '
     DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
 
   end subroutine dec_set_model_names
@@ -437,6 +438,10 @@ contains
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA')
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles=.false.
+          DECinfo%solver_par=.true.
+       case('.SOSEX')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.
           DECinfo%solver_par=.true.
@@ -638,7 +643,7 @@ contains
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.CC_TILE_SIZE_GB');read(input,*) DECinfo%cc_solver_tile_mem 
-       case('.SOSEX');   DECinfo%SOS = .true.
+       !case('.SOSEX');   DECinfo%SOS = .true.
        case('.NOTPREC');      DECinfo%use_preconditioner=.false.; DECinfo%ccsolver_overwrite_prec = .true.
        case('.NOTBPREC');     DECinfo%use_preconditioner_in_b=.false.; DECinfo%ccsolver_overwrite_prec = .true.
        case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.; DECinfo%ccsolver_overwrite_prec = .true.
@@ -1333,6 +1338,7 @@ contains
     case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
     case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
     case('.RPA');     modelnumber = MODEL_RPA
+    case('.SOSEX');   modelnumber = MODEL_SOSEX
     case('.RIMP2');   modelnumber = MODEL_RIMP2
     case default
        print *, 'Model not found: ', myword
@@ -1344,6 +1350,7 @@ contains
        write(DECinfo%output,*)'.CCD'
        write(DECinfo%output,*)'.CCSD(T)'
        write(DECinfo%output,*)'.RPA'
+       write(DECinfo%output,*)'.SOSEX'
        write(DECinfo%output,*)'.RIMP2'
        call lsquit('Requested model not found!',-1)
     end SELECT

@@ -27,7 +27,7 @@ module dec_typedef_module
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
   !> how many real models in total are there, disregard MODEL_NONE
-  integer,parameter :: ndecmodels   = 6
+  integer,parameter :: ndecmodels   = 7
   !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
@@ -36,6 +36,7 @@ module dec_typedef_module
   integer,parameter :: MODEL_CCSDpT = 4
   integer,parameter :: MODEL_RPA    = 5
   integer,parameter :: MODEL_RIMP2  = 6
+  integer,parameter :: MODEL_SOSEX  = 7
 
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8

@@ -633,6 +633,12 @@ contains
            Ecorr = energies(FRAGMODEL_OCCRPA)
          ENDIF
        ENDIF
+    case(MODEL_SOSEX)
+      IF(DECinfo%onlyVirtPart)THEN
+        Ecorr = energies(FRAGMODEL_VIRTSOS)
+      ELSE
+        Ecorr = energies(FRAGMODEL_OCCSOS)
+      ENDIF
     case(MODEL_CC2)
        ! CC2, use occ energy
        IF(DECinfo%onlyVirtPart)THEN
