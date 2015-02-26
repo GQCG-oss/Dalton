@@ -1,6 +1,0 @@
-   pehf_mmdamp
-   -----------
-   Molecule:         Acrolein and two classical water molecules
-   Wave Function:    PE-HF / STO-3G
-   Test Purpose:     Testing the damping of induced dipoles
-                     using the PE library

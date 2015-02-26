@@ -59,6 +59,9 @@ contains
     ! Orbital-based DEC scheme 
     DECinfo%DECCO = .false.
 
+    ! Alternative DEC with no pairs
+    DECinfo%DECNP = .false.
+
     ! Max memory measured in GB. By default set to 2 GB
     DECinfo%memory                 = 2.0E0_realk
     DECinfo%memory_defined         = .false.
@@ -164,6 +167,7 @@ contains
     DECinfo%frag_red_occ           = .false.
     DECinfo%frag_red_virt          = .false.
     DECinfo%fragadapt              = .false.
+    DECinfo%no_pairs               = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
     DECinfo%only_pair_frag_jobs    =  .false.
@@ -185,6 +189,8 @@ contains
     DECinfo%FracOfOrbSpace_red     = 5.0E0_realk
     ! If this is set larger than 0. atomic fragments are initialized with this,
     DECinfo%all_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    DECinfo%occ_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    DECinfo%vir_init_radius        = -1.0E0_realk/bohr_to_angstrom 
     !> use numerical integration info
     DECinfo%use_abs_overlap        = .false.
 
@@ -404,6 +410,10 @@ contains
        case('.DECCO')
           DECinfo%DECCO=.true.
 
+          ! Alternaitve DEC energy formulation with no pairs:
+       case('.DECNP')
+          DECinfo%DECNP=.true.
+
           ! CC model
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
@@ -600,9 +610,20 @@ contains
           ! set the fraction of the fully extended orbital space that is used as tolerance in an incomplete binary search
        case('.FRACOFORBSPACE_RED'); read(input,*) DECinfo%FracOfOrbSpace_red
           ! include all orbitals for a fragment within a given radius and calculate the fragment energies in Angstrom
-       case('.FRAG_INIT_RADIUS_NO_OPT')
+       case('.FRAG_INIT_RADIUS_NO_OPT_ALL')
           read(input,*) DECinfo%all_init_radius
           DECinfo%all_init_radius = DECinfo%all_init_radius/bohr_to_angstrom
+          DECinfo%occ_init_radius = DECinfo%all_init_radius
+          DECinfo%vir_init_radius = DECinfo%all_init_radius
+       case('.FRAG_INIT_RADIUS_NO_OPT_OCC')
+          read(input,*) DECinfo%occ_init_radius
+          DECinfo%occ_init_radius = DECinfo%occ_init_radius/bohr_to_angstrom
+          DECinfo%all_init_radius = 0.0E0_realk
+       case('.FRAG_INIT_RADIUS_NO_OPT_VIR')
+          read(input,*) DECinfo%vir_init_radius
+          DECinfo%vir_init_radius = DECinfo%vir_init_radius/bohr_to_angstrom
+          DECinfo%all_init_radius = 0.0E0_realk
+
 
 
        !KEYWORDS FOR INTEGRAL INFO
@@ -736,6 +757,7 @@ contains
        case('.FRAG_RED_OCC');  DECinfo%frag_red_occ  = .true.
        case('.FRAG_RED_VIRT'); DECinfo%frag_red_virt = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
+       case('.NO_PAIRS'); DECinfo%No_Pairs = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
           read(input,*)DECinfo%only_n_frag_jobs
@@ -779,9 +801,7 @@ contains
 
     ENDDO
 
-    ! Check that input is consistent to avoid weird segmentation fault etc...
-    call check_dec_input()
-
+    ! DEC input is checked internally latter in DEC_meaningful_input
 
   END SUBROUTINE config_dec_input
 
@@ -797,6 +817,52 @@ contains
     nodtot = infpar%nodtot
 #endif
 
+    ! Check DECNP options compatibility:
+    ! ----------------------------------
+    if (DECinfo%DECNP) then
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) "WARNING: DECNP calculate no pairs explicitly!"
+       write(DECinfo%output,*) "--> All pair and pair estimate related keywords &
+         &will be ignored"
+       DECinfo%PairEstimate=.false.
+       DECinfo%PairEstimateIgnore = .true.
+       DECinfo%no_pairs = .true.
+
+       if (DECinfo%ccmodel==MODEL_RIMP2) call lsquit("RI-MP2 model is not &
+          &compatible with DECNP yet",DECinfo%output)
+
+       ! DECNP only tested for occupied partitioning scheme
+       if(.not. DECinfo%OnlyOccPart) then
+          write(DECinfo%output,*) 'WARNING: DECNP ONLY TESTED FOR OCCUPIED PART. SCHEME'
+          write(DECinfo%output,*) 'WARNING: I TURN ON OCCUPIED PART. SCHEME'
+          DECinfo%onlyoccpart=.true.
+          DECinfo%onlyvirtpart=.false.
+       end if
+
+       ! DECNP and SNOOP are not compatible yet
+       if(DECinfo%SNOOP) then
+          call lsquit("SNOOP and DECNP are not compatible yet!",DECinfo%output)
+       end if
+
+       !TODO: Add test for expansion reduction model and repeatAF !!!
+    end if
+
+
+    ! Repeat atomic fragment calcs after fragment optimization if:
+    ! --------------------------------------------------------
+    ! - First order properties are requested
+    ! - The model used in fragment reduction is different from the target CC model.
+    ! - Debug calculations: Include full Molecule
+    ! - MODIFY FOR NEW CORRECTION: A corection is requested in the target CC model (F12)
+    if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. DECinfo%F12 .or. &
+         & (DECinfo%ccmodel/=DECinfo%fragopt_red_model )) then
+       DECinfo%RepeatAF=.true.
+    else
+       DECinfo%RepeatAF=.false.
+    end if
+
+    
+    ! Local masters print less information if we use more than 100 nodes
     if( nodtot > 100 .and. DECinfo%PL<=1)then
        DECinfo%print_small_calc = .false.
     endif
@@ -900,6 +966,7 @@ contains
     end if DoDECCO
 
 
+
     ! Check that array4OnFile is only called for the cases where it is implemented
     ArraysOnFile: if(DECinfo%array4OnFile) then
 
@@ -979,7 +1046,7 @@ contains
 
     ! Set CC residual threshold to be 0.01*FOT
     ! - unless it was specified explicitly in the input.
-    if(.not. DECinfo%CCthrSpecified) then
+    if(.not. DECinfo%CCthrSpecified .and. (.not. DECinfo%full_molecular_cc) ) then
        DECinfo%ccConvergenceThreshold=0.01E0_realk*DECinfo%FOT
     end if
 
@@ -1123,6 +1190,8 @@ contains
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
     write(lupri,*) 'doDEC ', DECitem%doDEC
+    write(lupri,*) 'DECCO ', DECitem%DECCO
+    write(lupri,*) 'DECNP ', DECitem%DECNP
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
     write(lupri,*) 'use_canonical ', DECitem%use_canonical
@@ -1207,6 +1276,7 @@ contains
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
+    write(lupri,*) 'No_Pairs ', DECitem%no_pairs
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs

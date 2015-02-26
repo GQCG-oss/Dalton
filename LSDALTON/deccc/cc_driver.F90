@@ -604,8 +604,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       FragEnergies     = 0.0E0_realk
       FragEnergies_tmp = 0.0E0_realk
    
-      call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
+      if (DECinfo%DECNP) then
+         call decnp_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
          & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
+      else
+         call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
+         & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
+      end if
+
    
       if(ccmodel == MODEL_CCSDpT)then
          ! now we calculate fourth-order and fifth-order energies
@@ -852,8 +858,8 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
    real(realk) :: ccenergy
    logical :: local
 
-   ! Sanity check: This routine is not intended for MP2
-   if(MyFragment%ccmodel == MODEL_MP2) then
+   ! Sanity check: This routine is not intended for MP2 (except for DECNP)
+   if(MyFragment%ccmodel == MODEL_MP2 .and. (.not.DECinfo%DECNP)) then
       call lsquit('fragment_ccsolver cannot be used for MP2!',&
       & DECinfo%output)
    end if

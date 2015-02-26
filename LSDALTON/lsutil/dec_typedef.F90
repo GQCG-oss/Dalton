@@ -137,6 +137,8 @@ module dec_typedef_module
      logical :: gcbasis
      !> DEC-CC orbital-based (DECCO)
      logical :: DECCO
+     !> DEC-CC orbital-based (DECNP)
+     logical :: DECNP
 
 
 
@@ -382,6 +384,8 @@ module dec_typedef_module
      logical :: PurifyMOs
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
+     !> avoid all pair calculations:
+     logical         :: no_pairs
      !> Hack to only do fragment optimization
      integer         :: only_n_frag_jobs
      integer,pointer :: frag_job_nr(:)
@@ -433,6 +437,8 @@ module dec_typedef_module
      logical :: OnlyVirtPart
      !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
      real(realk) :: all_init_radius
+     real(realk) :: vir_init_radius
+     real(realk) :: occ_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF

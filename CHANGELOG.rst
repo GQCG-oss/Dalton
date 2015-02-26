@@ -1,6 +1,15 @@
 
 
-2015.0 (2015-02-03)
+2015.1 (????-??-??)
+===================
+
+DALTON
+------
+
+- Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
+
+
+2015.0 (2015-02-18)
 ===================
 
 See the release notes at http://daltonprogram.org for a list of new features in

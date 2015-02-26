@@ -108,7 +108,7 @@ C
   300 CONTINUE
 
  9000 CONTINUE
-      WRITE(LUMOLDEN,'(A)') '[End of Molden output from Dalton2013]'
+      WRITE(LUMOLDEN,'(A)') '[End of Molden output from Dalton]'
       CALL GPCLOSE(LUMOLDEN    ,'KEEP')
       CALL GPCLOSE(LUMOLDEN_MOS,'KEEP')
       RETURN
@@ -388,7 +388,7 @@ C           2 : save orbital energies in OREN in molde.h
          CALL GETDAT(MDATE,MTIME)
          WRITE(LUMOLDEN_MOS,'(A/2A,2X,A,2X,A)')
      &      '[TITLE]',
-     &      '*** Dalton2013 interface to Molden, wave function type : ',
+     &      '*** Dalton interface to Molden, wave function type : ',
      &         WFTYPE,MDATE,MTIME
 
          CALL MOLDEN_ATOMS('ATOM',LUMOLDEN_MOS) ! atomic coordinates are OK, also for Cartesian GTOs ;-)

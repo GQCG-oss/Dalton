@@ -822,6 +822,20 @@ C
             end if
 
             DNORM_GD = DNRM2(KZYVAR,WRK(KGD),1)
+            IF (SOPPA) THEN ! for small test cases you may have that 2p-2h non-zero, but p-h zero
+               KGDO_X = KGD + KZCONF
+               KGDO_Y = KGDO_X + KZVAR
+               DNORM_GDORB = DDOT(KZWOPT,WRK(KGDO_X),1,WRK(KGDO_X),1)
+     &                     + DDOT(KZWOPT,WRK(KGDO_Y),1,WRK(KGDO_Y),1)
+               DNORM_GDORB = SQRT(DNORM_GDORB)
+               IF (DNORM_GDORB .LT. 1.0D-9) THEN
+                  WRITE (LUPRI,'(//A/3A,1P,D10.2/A,D10.2)')
+     &   ' >>> Solving SOPPA linear response skipped because norm of',
+     &   '     p-h property vector '//LABEL//' is only',DNORM_GDORB,
+     &   '     although 2p-2h property vecor has norm ',DNORM_GD
+                  DNORM_GD = 0.0D0
+               END IF
+            END IF
 C
             DO I = 1,NFREQ
                WRK(KEIVAL-1+I) = FREQ(I)
@@ -833,7 +847,7 @@ C     Call RSPCTL to solve linear set of response equations
 C
             IF (DNORM_GD .LT. 1.0D-9) THEN
 
-              WRITE (LUPRI,'(//A,3A,1P,D10.2)')
+              WRITE (LUPRI,'(//A/3A,1P,D10.2)')
      &         ' >>> Solving linear response skipped because norm of',
      &         '     property vector '//LABEL//' is only',DNORM_GD
 

@@ -827,7 +827,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_amat(fmat)
+   subroutine get_amat(fmat)
       ! computes a matrix component of relay matrix for np and mm regions
 
       real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
@@ -941,7 +941,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_gg_afact(facta, factb, iatm, jatm, rad)
+   subroutine get_gg_afact(facta, factb, iatm, jatm, rad)
 !
 ! Purpose:
 !     Determines damping factors for T(2) operator for
@@ -974,7 +974,7 @@ contains
       real(8) :: rjm
       real(8) :: rijm
       real(8) :: rval
-
+      real(8),external :: erf
 !     Get polarizabilities
       RIPOL = NPFPOL(NPFTYP(IATM))/3.0d0
       RJPOL = NPFPOL(NPFTYP(JATM))/3.0d0
@@ -985,14 +985,14 @@ contains
       RIJM = dsqrt(RIM*RIM+RJM*RJM)
       RVAL = RAD/RIJM
 !     Compute factors
-      FACTA = DERF(RVAL)-2.0d0*RVAL*DEXP(-RVAL*RVAL)/SQRTPI
+      FACTA = ERF(RVAL)-2.0d0*RVAL*DEXP(-RVAL*RVAL)/SQRTPI
       FACTB = 4.0d0*DEXP(-RVAL*RVAL)
       FACTB = FACTB/(RAD*RAD*RIJM*RIJM*RIJM*SQRTPI)
 !
    end subroutine
 
 
-   pure subroutine get_cmat(fmat)
+   subroutine get_cmat(fmat)
       ! computes c matrix component of relay matrix for np and mm regions
 
       real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
@@ -1040,7 +1040,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_gg_cfact(fact, iatm, jatm, rad)
+   subroutine get_gg_cfact(fact, iatm, jatm, rad)
 !
 ! Purpose:
 !     Determines damping factors for T(0) operator for
@@ -1067,19 +1067,20 @@ contains
       real(8) :: ricap
       real(8) :: rjcap
       real(8) :: rijm
-
+      real(8),external :: erf
+      
 !     Get capacitancies
       RICAP = 1.41421356237309504880D0*NPFCAP(NPFTYP(IATM))/SQRTPI
       RJCAP = 1.41421356237309504880D0*NPFCAP(NPFTYP(JATM))/SQRTPI
 
 !     Get damping radius & scalling factor
       RIJM = dsqrt(RICAP*RICAP+RJCAP*RJCAP)
-      FACT = DERF(RAD/RIJM)
+      FACT = ERF(RAD/RIJM)
 
    end subroutine
 
 
-   pure subroutine get_mmat(fmat)
+   subroutine get_mmat(fmat)
       ! computes m matrix component of relay matrix for np and mm regions
 
       real(8), intent(inout) :: fmat(:, :, :) ! relay matrix with m matrix contribution added up
@@ -1121,7 +1122,7 @@ contains
    end subroutine
 
 
-   pure subroutine get_gg_mfact(fact, iatm, jatm, distance_i_j)
+   subroutine get_gg_mfact(fact, iatm, jatm, distance_i_j)
       ! determines damping factors for t(1) operator for
       ! gaussian/gaussian dipole model
 
@@ -1143,6 +1144,7 @@ contains
       real(8) :: rjcap
       real(8) :: rijm
       real(8) :: radx
+      real(8),external :: erf
 
 !     get polarizabilities
       ripol = npfpol(npftyp(iatm))/3.0d0
@@ -1154,7 +1156,7 @@ contains
 !     get damping radius & scalling factor
       rijm = dsqrt(rim*rim+rjcap*rjcap)
       radx = distance_i_j/rijm
-      fact = derf(radx)-2.0d0*radx*dexp(-radx*radx)/sqrtpi
+      fact = erf(radx)-2.0d0*radx*dexp(-radx*radx)/sqrtpi
 
    end subroutine
 

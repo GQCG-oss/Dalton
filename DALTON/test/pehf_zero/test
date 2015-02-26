@@ -14,6 +14,6 @@ f.add(from_string = 'Polarizable embedding energy contributions:',
       num_lines = 12,
       abs_tolerance = 1.0e-6)
 
-test.run(['zeromul.dal', 'zeropol.dal', 'isopol.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
+test.run(['zeromul.dal', 'zeropol.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
 
 sys.exit(test.return_code)

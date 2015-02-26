@@ -379,12 +379,12 @@ C
 C
 C     Delete LR files to save disk space /910109-hjaaj
 C
-      LURSP1 = -1
-      CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
-      CALL GPCLOSE(LURSP1,'DELETE')
-      CALL GPCLOSE(LURSP3,'DELETE')
-      CALL GPCLOSE(LURSP5,'DELETE')
+C     LURSP1 = -1
+C     CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
+C    &            IDUMMY,.FALSE.)
+      !CALL GPCLOSE(LURSP1,'DELETE')
+      !CALL GPCLOSE(LURSP3,'DELETE')
+      !CALL GPCLOSE(LURSP5,'DELETE')
 C
 C     *******************************************
 C
@@ -948,6 +948,7 @@ C
      &          SPNSD(*), SPNSU1(*), SPNSU2(*), SPNSU(*)
 C
       PARAMETER ( D0 = 0.0D0, THRFRQ = 1.0D-14, BLANK = '        ')
+      PARAMETER ( D1 = 1.0D0 )
 C
 #include "priunit.h"
 #include "pgroup.h"
@@ -971,10 +972,22 @@ C
 C
 C     Local variables:
 C
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GBC
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GA1
+
+      DOUBLE PRECISION GSUM1, GSUM2
       DIMENSION HYPVAL(MXQROP), MJWOP(2,MAXWOP,8)
       LOGICAL   DIPLEN, DOCAL, FOUND, CONV, DFTADX
 C
       CALL QENTER('QRHYP')
+
+      IF (QLOP) THEN
+         MZYMAX = MAXVAL(MZYVAR)
+         ALLOCATE(GA1(MZYMAX))
+         ALLOCATE(GBC(MZYMAX))
+      END IF
+
+
       IF (SOCOLL) CALL SOINIT
       IF (SSCOLL) CALL SSINIT(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,
      &                        SPNSU1,SPNSU2,SPNSU)
@@ -1045,6 +1058,7 @@ C    *                      ' FREQUENCY ',TRFREQ(ICFRNU-NEXLB2-NLRLBL),
                      END IF
                      DO 700 IBOP = 1,NBQROP(MSYMB)
                         DO 800 IBFR = 1,NBQRFR
+                          CALL DZERO(HYPVAL,NAQROP(MSYMA))
 C
 C  Check for special processes.
 C
@@ -1263,6 +1277,11 @@ C
      *                            -FREQB,-FREQC,XINDX,
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
+                              IF (QLOP) THEN
+                                 CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
+     &                           1,GBC,1)
+                                 CALL DSCAL(MZYVAR(MSYMA),-D1,GBC,1)
+                              END IF
                               IF (E3TEST) THEN
                                  CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
      *                                      WRK(1),1)
@@ -1272,6 +1291,7 @@ C
                               CALL FLSHFO(LUPRI)
                               IF (ITSTLP.NE.0)
      *                           CALL QUIT('QRHYP:TSTJEP COMPLETED')
+                              IF (QLOP) GOTO 911
                               DO 910 IAOP = 1,NAQROP(MSYMA)
                                  IF ( ISPINA.EQ.0 ) THEN
                                     IAFRNU = NEXLB2 + INQRLR(
@@ -1338,6 +1358,7 @@ c                                   END IF
                                  END IF
                                  CALL FLSHFO(LUPRI)
   910                         CONTINUE
+  911                         CONTINUE
                            END IF
 C
 C  B[2] Nc term
@@ -1386,6 +1407,11 @@ C
      *                              UDV,PV,
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
+                           IF (QLOP) THEN
+                              CALL DAXPY(MZYVAR(MSYMA),D1,WRK(KB2C),
+     *                        1,GBC,1) 
+                           END IF
+                           IF (QLOP) GOTO 921
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1446,6 +1472,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   920                      CONTINUE
+  921                      CONTINUE
 C
 C  C[2] Nb term
 C  Calculate C[2] Nb and store in WRK(KC2B)
@@ -1492,6 +1519,11 @@ C
      *                           UDV,PV,
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
+                           IF (QLOP) THEN
+                              CALL DAXPY(MZYVAR(MSYMA),D1,WRK(KC2B),
+     *                        1,GBC,1) 
+                           END IF
+                           IF (QLOP) GOTO 931
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1543,6 +1575,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
+  931                      CONTINUE
 C
 C A2TEST
 C
@@ -1591,6 +1624,39 @@ C
                               END IF
                               CALL FLSHFO(LUPRI)
  940                       CONTINUE
+                        IF (QLOP) THEN
+C Subsection to save quadratic response vector on file for second order
+C density perturbation, for later python / loprop usage
+      !Allocate memory for vector called in CRLRV3
+C Add individual contributions from T3DRV, and both X2INIT contributions
+!Call RSPCTL through CRLRV3, right hand side is our vec from T3DRV + X2 + X2
+
+                        CALL CRLRV3( GBC, BQRLB(MSYMB,IBOP),
+     &                  CQRLB(MSYMC,ICOP),FREQB, FREQC, 
+     &                  CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+     &                  XINDX, MJWOP, WRK, LWRK)
+                          CALL REARSP(LURSP,MZYVAR(MSYMA),GBC,
+     &                    BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP),
+     &                    FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
+
+C Add individual contributions from T3DRV, and both X2INIT contributions
+
+                           DO 960 IAOP = 1,NAQROP(MSYMA)
+C QLOP specifies to save quadratic RSPVEC for loprop/python usage 
+                              CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,
+     &                        UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+                              CALL DCOPY( MZYVAR(MSYMA),WRK,1,GA1,1)
+!                             CALL REARSP(LURSP,MZYVAR(MSYMA),GNA,
+!    &                        AQRLB(MSYMA,IAOP),BLANK,
+!    &                        FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
+!       call qexit('A:'//AQRLB(MSYMA,IAOP)//BLANK)
+                              !GSUM1 = DDOT(MZYVAR(MSYMA),GNA,1,GXCB,1)
+!                             GSUM2 = DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
+!                             WRITE(LUPRI,*) "GSUM1, GSUM2", GSUM1,GSUM2
+                              HYPVAL(IAOP) = HYPVAL(IAOP)
+     &                              + DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
+ 960                       CONTINUE
+                        END IF
                            DO 950 IAOP = 1,NAQROP(MSYMA)
 C
                               DIPLEN = .FALSE.
@@ -1661,6 +1727,12 @@ C
          CALL SPNSO(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,SPNSU1,
      &               SPNSU2,SPNSU,WRK(KCSTRA),WRK(KSCTRA))
       END IF
+
+      IF (QLOP) THEN
+         DEALLOCATE(GA1)
+         DEALLOCATE(GBC)
+      END IF
+
       CALL GPCLOSE(LURSPRES,'KEEP')
       CALL QEXIT('QRHYP')
       RETURN
