@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rpa_cis.info <<'%EOF%'
-   rpa_cis
+cat > rsp_rpa_cis.info <<'%EOF%'
+   rsp_rpa_cis
    ---------
    Molecule:         H2O
    Wave Function:    Configuration Interaction Singles calculation
@@ -28,7 +28,7 @@ cat > rpa_cis.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rpa_cis.mol <<'%EOF%'
+cat > rsp_rpa_cis.mol <<'%EOF%'
 ATOMBASIS
 Energy calculation without symmetry
 Basis set specified with ATOMBASIS
@@ -43,7 +43,7 @@ H2   -1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rpa_cis.dal <<'%EOF%'
+cat > rsp_rpa_cis.dal <<'%EOF%'
 *DALTON INPUT
 .RUN RESPONSE
 **WAVE FUNCTIONS
@@ -69,8 +69,8 @@ cat > rpa_cis.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > rpa_cis.check
-cat >> rpa_cis.check <<'%EOF%'
+echo $CHECK_SHELL > rsp_rpa_cis.check
+cat >> rsp_rpa_cis.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
