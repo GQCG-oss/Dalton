@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > drpa_grad_ch4.info <<'%EOF%'
-   drpa_grad_ch4
+cat > cc_drpa_grad_ch4.info <<'%EOF%'
+   cc_drpa_grad_ch4
    -------------
    Molecule:         Distorted CH4 in C1
    Wave Function:    Direct RPA / cc-pVTZ
@@ -28,7 +28,7 @@ cat > drpa_grad_ch4.info <<'%EOF%'
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > drpa_grad_ch4.mol <<'%EOF%'
+cat > cc_drpa_grad_ch4.mol <<'%EOF%'
 BASIS
 cc-pVTZ
 Distorted methane CH4
@@ -46,7 +46,7 @@ H4   -0.500000      0.500000     -0.500000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > drpa_grad_ch4.dal <<'%EOF%'
+cat > cc_drpa_grad_ch4.dal <<'%EOF%'
 **DALTON INPUT
 .DIRECT
 .RUN WAVE FUNCTION
@@ -79,8 +79,8 @@ cat > drpa_grad_ch4.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > drpa_grad_ch4.check
-cat >>drpa_grad_ch4.check <<'%EOF%'
+echo $CHECK_SHELL > cc_drpa_grad_ch4.check
+cat >>cc_drpa_grad_ch4.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -162,5 +162,5 @@ else
   exit 1
 fi
 %EOF%
-chmod +x drpa_grad_ch4.check
+chmod +x cc_drpa_grad_ch4.check
 #######################################################################
