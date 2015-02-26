@@ -282,6 +282,8 @@ module dec_typedef_module
      integer :: ijk_nbuffs
      !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
      integer :: abc_nbuffs
+     !> do we want to do gpu computations synchronous?
+     logical :: acc_sync
 
      !> F12 settings
      !> ************
@@ -436,6 +438,8 @@ module dec_typedef_module
      logical :: OnlyVirtPart
      !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
      real(realk) :: all_init_radius
+     real(realk) :: vir_init_radius
+     real(realk) :: occ_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
