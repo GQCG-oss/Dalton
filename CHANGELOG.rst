@@ -7,6 +7,7 @@ DALTON
 ------
 
 - Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
+- Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
 
 
 2015.0 (2015-02-18)
