@@ -783,7 +783,7 @@ contains
      virt_tmp = 0.0E0_realk       
       
      ! Calculate Eocc
-     ! *******************
+     ! **************
      !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
      do j=1,noccAOS
         do b=1,nvirtAOS
@@ -795,7 +795,6 @@ contains
                  ! --------------
       
                  ! Energy contribution for orbitals (j,b,i,a)
-                 !tmp = t2occ%elm4(a,i,b,j)*(prefac_coul*gocc%elm4(a,i,b,j) -prefac_k*gocc%elm4(b,i,a,j))
                  tmp = t(a,i,b,j)*(prefac_coul*g(a,i,b,j) -prefac_k*g(b,i,a,j))
       
                  ! Update total atomic fragment energy contribution 1
@@ -882,28 +881,31 @@ contains
     type(decfrag), intent(inout) :: myfragment
     !>SOSEX cont
     logical,intent(in),optional :: doSOS
+
+    real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
+    real(realk) :: Eocc,lag_occ,Evirt,lag_virt,tmp,multaibj
+    real(realk) :: prefac_coul,prefac_k
+    real(realk),pointer :: occ_tmp(:),virt_tmp(:)
+    real(realk),pointer :: t(:,:,:,:), g(:,:,:,:), f(:,:)
+    logical ::  something_wrong,SOS,PerformLag! ,doOccPart, doVirtPart
     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
     integer :: i,j,k,a,b,c
-    real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
-    real(realk) :: e1, e2, e3, e4,tmp,multaibj
-    logical ::  something_wrong,SOS,PerformLag! ,doOccPart, doVirtPart
-    real(realk) :: Eocc, lag_occ,Evirt,lag_virt
-    real(realk),pointer :: occ_tmp(:),virt_tmp(:)
-    real(realk) :: prefac_coul,prefac_k
+
     PerformLag = MyFragment%ccmodel==MODEL_MP2 .OR. MyFragment%ccmodel==MODEL_RIMP2
     ! Lagrangian energy can be split into four contributions:
-    ! The first two (e1 and e2) use occupied EOS orbitals and virtual AOS orbitals.
-    ! The last two (e3 and e4) use virtual EOS orbitals and occupied AOS orbitals.
+    ! The first two (Eocc and lag_occ) use occupied EOS orbitals and virtual AOS orbitals.
+    ! The last two (Evirt and lag_virt) use virtual EOS orbitals and occupied AOS orbitals.
     !
     ! With the restrictions above the Lagrangian energy is given by:
-    ! energy = e1 + e2 + e3 + e4
-    ! e1 = sum_{ijab} t_{ij}^{ab} [ 2g_{aibj} - g_{biaj} ]
-    ! e2 = 1/2 sum_{ijabc} mult_{ij}^{ab} [ t_{ij}^{cb} F_{ac} + t_{ij}^{ac} F_{bc} ]
-    ! e3 = 1/2 sum_{ijab} mult_{ij}^{ab} g_{aibj}
-    ! e4 = - 1/2 sum_{ijkab} mult_{ij}^{ab} [ t_{kj}^{ab} F_{ki} + t_{ik}^{ab} F_{kj} ]
+    ! energy  = Eocc + lag_occ + Evirt + lag_virt
+    !
+    ! Eocc     = sum_{ijab} t_{ij}^{ab} [ 2g_{aibj} - g_{biaj} ]
+    ! lag_occ  = 1/2 sum_{ijabc} mult_{ij}^{ab} [ t_{ij}^{cb} F_{ac} + t_{ij}^{ac} F_{bc} ]
+    ! Evirt    = 1/2 sum_{ijab} mult_{ij}^{ab} g_{aibj}
+    ! lag_virt = - 1/2 sum_{ijkab} mult_{ij}^{ab} [ t_{kj}^{ab} F_{ki} + t_{ik}^{ab} F_{kj} ]
     !
     ! IF -and only if- the fragment is the full molecule, the following simple relations hold:
-    ! energy = e1 = e2 = -e3-e4
+    ! energy = Eocc = Evirt = -lag_occ - lag_virt
     !
     ! Important: For MP2 the multipliers can be determined directly from the amplitudes
     !            using the simple relation:
@@ -983,19 +985,26 @@ contains
             & Input dimensions do not match!',-1)
     end if
 
+
+    ! Calculate Eocc and lag_occ
+    ! **************************
+
+    ! Point to tensor structure to avoid OMP problems:
+    t => t2occ%elm4
+    g => gocc%elm4
+    f => MyFragment%qqfock
+
     call mem_TurnONThread_Memory()
-    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c,virt_tmp)
+    !$OMP PARALLEL DEFAULT(none) PRIVATE(multaibj,tmp,j,b,i,a,c,virt_tmp) &
+    !$OMP SHARED(t,g,f,nvirtAOS,noccEOS,prefac_coul,prefac_k,myfragment, &
+    !$OMP PerformLag) REDUCTION(+:Eocc,lag_occ)
     call init_threadmemvar()
-    e1=0E0_realk
-    e2=0E0_realk
+
     ! Contributions from each individual virtual orbital
     call mem_alloc(virt_tmp,nvirtAOS)
     virt_tmp = 0.0E0_realk       
 
-    !$OMP DO SCHEDULE(dynamic,1)
-
-    ! Calculate e1 and e2
-    ! *******************
+    !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
     do j=1,noccEOS
        do b=1,nvirtAOS
           do i=1,noccEOS
@@ -1006,10 +1015,10 @@ contains
                 ! --------------
 
                 ! Energy contribution for orbitals (j,b,i,a)
-                tmp = t2occ%elm4(a,i,b,j)*(prefac_coul*gocc%elm4(a,i,b,j) -prefac_k*gocc%elm4(b,i,a,j))
+                tmp = t(a,i,b,j)*(prefac_coul*g(a,i,b,j) -prefac_k*g(b,i,a,j))
 
                 ! Update total atomic fragment energy contribution 1
-                e1 = e1 + tmp
+                Eocc = Eocc + tmp
 
                 ! Update contribution from orbital a
                 virt_tmp(a) = virt_tmp(a) + tmp
@@ -1023,16 +1032,16 @@ contains
                 ! Skip contribution 2 for anything but MP2 and RIMP2
                 if(PerformLag) then
                    ! Multiplier (multiplied by one half)
-                   multaibj = prefac_coul*t2occ%elm4(a,i,b,j) - prefac_k*t2occ%elm4(b,i,a,j)
+                   multaibj = prefac_coul*t(a,i,b,j) - prefac_k*t(b,i,a,j)
 
                    do c=1,nvirtAOS
 
                       ! Energy contribution for orbitals (j,b,i,a,c)
-                      tmp = t2occ%elm4(c,i,b,j)*MyFragment%qqfock(c,a) + t2occ%elm4(a,i,c,j)*MyFragment%qqfock(c,b)
+                      tmp = t(c,i,b,j)*f(c,a) + t(a,i,c,j)*f(c,b)
                       tmp = multaibj*tmp
 
                       ! Update total atomic fragment energy contribution 2
-                      e2 = e2 + tmp
+                      lag_occ = lag_occ + tmp
 
                       ! Update contribution from orbital a
                       virt_tmp(a) = virt_tmp(a) + tmp
@@ -1052,12 +1061,8 @@ contains
     end do
     !$OMP END DO NOWAIT
 
-    ! Total e1, e2, and individual virt atomic contributions are found by summing all thread contributions
-    !$OMP CRITICAL
-    Eocc = Eocc + e1
-    lag_occ = lag_occ + e2
-
     ! Update total virtual contributions to fragment energy
+    !$OMP CRITICAL
     do a=1,nvirtAOS
        MyFragment%VirtContribs(a) =MyFragment%VirtContribs(a) + virt_tmp(a)
     end do
@@ -1069,21 +1074,25 @@ contains
     call mem_TurnOffThread_Memory()
 
 
-    ! Calculate e3 and e4
-    ! *******************
+    ! Calculate Evirt and lag_virt
+    ! ****************************
+
+    ! Point to tensor structure to avoid OMP problems:
+    t => t2virt%elm4
+    g => gvirt%elm4
+    f => MyFragment%ppfock
 
     call mem_TurnONThread_Memory()
-    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k,occ_tmp)
+    !$OMP PARALLEL DEFAULT(none) PRIVATE(multaibj,tmp,j,b,i,a,k,occ_tmp) &
+    !$OMP SHARED(t,g,f,noccAOS,nvirtEOS,prefac_coul,prefac_k,myfragment, &
+    !$OMP Performlag) REDUCTION(+:Evirt,lag_virt)
     call init_threadmemvar()
-    e3=0E0_realk
-    e4=0E0_realk
 
     ! Contributions from each individual occupied orbital
     call mem_alloc(occ_tmp,noccAOS)
     occ_tmp = 0.0E0_realk
 
-
-    !$OMP DO SCHEDULE(dynamic,1)
+    !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
     do j=1,noccAOS
        do b=1,nvirtEOS
           do i=1,noccAOS
@@ -1094,13 +1103,13 @@ contains
                 ! --------------
 
                 ! Multiplier (multiplied by one half)
-                multaibj = prefac_coul*t2virt%elm4(a,i,b,j) -prefac_k*t2virt%elm4(b,i,a,j)
+                multaibj = prefac_coul*t(a,i,b,j) -prefac_k*t(b,i,a,j)
 
 
                 ! Energy contribution for orbitals (j,b,i,a)
-                tmp = multaibj*gvirt%elm4(a,i,b,j)
+                tmp = multaibj*g(a,i,b,j)
                 ! Update total atomic fragment energy contribution 3
-                e3 = e3 + tmp
+                Evirt = Evirt + tmp
 
                 ! Update contribution from orbital i
                 occ_tmp(i) = occ_tmp(i) + tmp
@@ -1115,12 +1124,11 @@ contains
 
                    do k=1,noccAOS
 
-                      tmp =  t2virt%elm4(a,k,b,j)*MyFragment%ppfock(k,i) &
-                           & + t2virt%elm4(a,i,b,k)*MyFragment%ppfock(k,j)
+                      tmp =  t(a,k,b,j)*f(k,i) + t(a,i,b,k)*f(k,j)
                       tmp = -multaibj*tmp
 
                       ! Update total atomic fragment energy contribution 4
-                      e4 = e4 + tmp
+                      lag_virt = lag_virt + tmp
 
                       ! Update contribution from orbital i
                       occ_tmp(i) = occ_tmp(i) + tmp
@@ -1139,11 +1147,7 @@ contains
     end do
     !$OMP END DO NOWAIT
 
-    ! Total e3, e4, and individual occ atomic contributions are found by summing all thread contributions
     !$OMP CRITICAL
-    Evirt = Evirt + e3
-    lag_virt = lag_virt + e4
-
     ! Update total occupied contributions to fragment energy
     do i=1,noccAOS
        MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
@@ -1154,6 +1158,10 @@ contains
     call collect_thread_memory()
     !$OMP END PARALLEL
     call mem_TurnOffThread_Memory()
+
+    t => null()
+    g => null()
+    f => null()
 
 
     ! Total atomic fragment energy
@@ -1323,34 +1331,36 @@ contains
      type(decfrag),intent(in) :: Fragment2
      !> Pair fragment formed from fragment 1 and 2
      type(decfrag), intent(inout) :: PairFragment
+    !>SOSEX cont
      logical,intent(in),optional :: doSOS
+
+     real(realk) :: tcpu,twall,tcpu1,tcpu2,twall1,twall2
+     real(realk) :: pairdist,tmp,multaibj,prefac_coul,prefac_k
+     real(realk) :: Eocc,lag_occ,Evirt,lag_virt
+     real(realk),pointer :: t(:,:,:,:), g(:,:,:,:), f(:,:)
+     logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
+     logical :: something_wrong, do_non_pdm,SOS,PerformLag
      integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
      integer :: i,j,k,a,b,c
-     real(realk) :: tcpu, twall,pairdist
-     real(realk) :: e1, e2, e3, e4,tmp,multaibj
-     real(realk) :: tcpu1,tcpu2,twall1,twall2
-     logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
-     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
-     logical :: something_wrong, do_non_pdm,SOS,PerformLag
-     real(realk) :: prefac_coul,prefac_k
 
      PerformLag = pairfragment%ccmodel==MODEL_MP2 .OR. pairfragment%ccmodel==MODEL_RIMP2
      ! Pair interaction Lagrangian energy can be split into four contributions:
-     ! The first two (e1 and e2) use occupied EOS orbitals and virtual AOS orbitals.
-     ! The last two (e3 and e4) use virtual EOS orbitals and occupied AOS orbitals.
+     ! The first two (Eocc and lag_occ) use occupied EOS orbitals and virtual AOS orbitals.
+     ! The last two (Evirt and lag_virt) use virtual EOS orbitals and occupied AOS orbitals.
      !
      ! With the restrictions above the Lagrangian energy is given by:
-     ! energy = e1 + e2 + e3 + e4
-     ! e1 = sum_{ijab} t_{ij}^{ab} [ 2g_{aibj} - g_{biaj} ]
-     ! e2 = 1/2 sum_{ijabc} mult_{ij}^{ab} [ t_{ij}^{cb} F_{ac} + t_{ij}^{ac} F_{bc} ]
-     ! e3 = 1/2 sum_{ijab} mult_{ij}^{ab} g_{aibj}
-     ! e4 = - 1/2 sum_{ijkab} mult_{ij}^{ab} [ t_{kj}^{ab} F_{ki} + t_{ik}^{ab} F_{kj} ]
+     ! energy  = Eocc + lag_occ + Evirt + lag_virt
+     !
+     ! Eocc     = sum_{ijab} t_{ij}^{ab} [ 2g_{aibj} - g_{biaj} ]
+     ! lag_occ  = 1/2 sum_{ijabc} mult_{ij}^{ab} [ t_{ij}^{cb} F_{ac} + t_{ij}^{ac} F_{bc} ]
+     ! Evirt    = 1/2 sum_{ijab} mult_{ij}^{ab} g_{aibj}
+     ! lag_virt = - 1/2 sum_{ijkab} mult_{ij}^{ab} [ t_{kj}^{ab} F_{ki} + t_{ik}^{ab} F_{kj} ]
      !
      ! Additional restriction to avoid double counting:
-     ! e1 and e2: i and j must belong to two different atoms,
-     !            e.g., i belongs to atom1 and j belongs to atom2 - or vice versa
-     ! e1 and e2: a and b must belong to two different atoms,
-     !            e.g., a belongs to atom1 and b belongs to atom2 - or vice versa
+     ! Eocc  and lag_occ:  i and j must belong to two different atoms,
+     !                     e.g., i belongs to atom1 and j belongs to atom2 - or vice versa
+     ! Evirt and lag_virt: a and b must belong to two different atoms,
+     !                     e.g., a belongs to atom1 and b belongs to atom2 - or vice versa
      !
      ! Important: For MP2 the multipliers can be determined directly from the amplitudes
      !            using the simple relation:
@@ -1444,17 +1454,21 @@ contains
 
         if(.not. DECinfo%onlyVirtpart) then
 
-           ! Calculate e1 and e2
-           ! *******************
+           ! Calculate Eocc and lag_occ
+           ! **************************
+
+           ! Point to tensor structure to avoid OMP problems:
+           t => t2occ%elm4
+           g => gocc%elm4
+           f => PairFragment%qqfock
 
            call mem_TurnONThread_Memory()
-           !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c)
+           !$OMP PARALLEL DEFAULT(none) PRIVATE(multaibj,tmp,j,b,i,a,c) &
+           !$OMP SHARED(t,g,f,nvirtAOS,noccEOS,prefac_coul,prefac_k,pairfragment, &
+           !$OMP PerformLag,dopair_occ) REDUCTION(+:Eocc,lag_occ)
            call init_threadmemvar()
-           e1=0E0_realk
-           e2=0E0_realk
 
-           !$OMP DO SCHEDULE(dynamic,1)
-
+           !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
            do j=1,noccEOS
               do b=1,nvirtAOS
                  do i=1,noccEOS
@@ -1465,23 +1479,22 @@ contains
                        do a=1,nvirtAOS
 
                           ! Update pair interaction energy contribution 1
-                          e1 = e1 + t2occ%elm4(a,i,b,j)*(prefac_coul*gocc%elm4(a,i,b,j) -prefac_k*gocc%elm4(b,i,a,j))
+                          Eocc = Eocc + t(a,i,b,j)*(prefac_coul*g(a,i,b,j) -prefac_k*g(b,i,a,j))
 
 
                           ! Skip contribution 2 for anything but MP2 and RIMP2
                           if(PerformLag) then
 
                              ! Multiplier (multiplied by one half)
-                             multaibj = prefac_coul*t2occ%elm4(a,i,b,j) - prefac_k*t2occ%elm4(b,i,a,j)
+                             multaibj = prefac_coul*t(a,i,b,j) - prefac_k*t(b,i,a,j)
 
                              tmp = 0E0_realk
                              do c=1,nvirtAOS
-                                tmp = tmp + t2occ%elm4(c,i,b,j)*PairFragment%qqfock(c,a) &
-                                   & + t2occ%elm4(a,i,c,j)*PairFragment%qqfock(c,b)
+                                tmp = tmp + t(c,i,b,j)*f(c,a) + t(a,i,c,j)*f(c,b)
                              end do
 
                              ! Update pair interaction energy contribution 2
-                             e2 = e2 + multaibj*tmp
+                             lag_occ = lag_occ + multaibj*tmp
 
                           end if
 
@@ -1493,36 +1506,32 @@ contains
                  end do
               end do
            end do
-
            !$OMP END DO NOWAIT
-
-           ! Total e1 and e2 contributions are found by summing all thread contributions
-           !$OMP CRITICAL
-           Eocc = Eocc + e1
-           lag_occ = lag_occ + e2
-           !$OMP END CRITICAL
-
            call collect_thread_memory()
            !$OMP END PARALLEL
            call mem_TurnOffThread_Memory()
         ELSE
-           Eocc = 0.0E0_realk
+           Eocc    = 0.0E0_realk
            lag_occ = 0.0E0_realk
         ENDIF
 
         if(.not. DECinfo%onlyoccpart) then
 
-           ! Calculate e3 and e4
-           ! *******************
+           ! Calculate Evirt and lag_virt
+           ! ****************************
+
+           ! Point to tensor structure to avoid OMP problems:
+           t => t2virt%elm4
+           g => gvirt%elm4
+           f => PairFragment%ppfock
 
            call mem_TurnONThread_Memory()
-           !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k)
+           !$OMP PARALLEL DEFAULT(none) PRIVATE(multaibj,tmp,j,b,i,a,k) &
+           !$OMP SHARED(t,g,f,noccAOS,nvirtEOS,prefac_coul,prefac_k,pairfragment, &
+           !$OMP Performlag,dopair_virt) REDUCTION(+:Evirt,lag_virt)
            call init_threadmemvar()
-           e3=0e0_realk
-           e4=0e0_realk
 
-           !$OMP DO SCHEDULE(dynamic,1)
-
+           !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
            do j=1,noccAOS
               do b=1,nvirtEOS
                  do i=1,noccAOS
@@ -1532,10 +1541,10 @@ contains
                        if( dopair_virt(a,b) ) then !Dopair3and4
 
                           ! Multiplier (multiplied by one half)
-                          multaibj = prefac_coul*t2virt%elm4(a,i,b,j) - prefac_k*t2virt%elm4(b,i,a,j)
+                          multaibj = prefac_coul*t(a,i,b,j) - prefac_k*t(b,i,a,j)
 
                           ! Update total atomic fragment energy contribution 3
-                          e3 = e3 + multaibj*gvirt%elm4(a,i,b,j)
+                          Evirt = Evirt + multaibj*g(a,i,b,j)
 
 
                           ! Skip contribution 4 for anything but MP2 and RIMP2
@@ -1543,12 +1552,11 @@ contains
 
                              tmp=0E0_realk
                              do k=1,noccAOS
-                                tmp = tmp + t2virt%elm4(a,k,b,j)*PairFragment%ppfock(k,i) &
-                                   & + t2virt%elm4(a,i,b,k)*PairFragment%ppfock(k,j)
+                                tmp = tmp + t(a,k,b,j)*f(k,i) + t(a,i,b,k)*f(k,j)
                              end do
 
                              ! Update pair interaction energy contribution 4
-                             e4 = e4 - multaibj*tmp
+                             lag_virt = lag_virt - multaibj*tmp
 
                           end if
 
@@ -1558,20 +1566,12 @@ contains
                  end do
               end do
            end do
-
            !$OMP END DO NOWAIT
-
-           ! Total e3 and e4 contributions are found by summing all thread contributions
-           !$OMP CRITICAL
-           Evirt = Evirt + e3
-           lag_virt = lag_virt + e4
-           !$OMP END CRITICAL
-
            call collect_thread_memory()
            !$OMP END PARALLEL
            call mem_TurnOffThread_Memory()
         ELSE
-           Evirt = 0.0E0_realk
+           Evirt    = 0.0E0_realk
            lag_virt = 0.0E0_realk      
         ENDIF
 
