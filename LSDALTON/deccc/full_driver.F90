@@ -2857,7 +2857,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer, pointer :: AOstartGamma(:,:),AOendGamma(:,:),AOdimGamma(:,:),AOdimGammaMPI(:)
   integer, pointer :: batchdimAlpha(:),dimAlphaArray(:),AlphaIndexArray(:),offsetAlpha(:,:)
   integer, pointer :: AOstartAlpha(:,:),AOendAlpha(:,:),AOdimAlpha(:,:),AOdimAlphaMPI(:)
-  integer, pointer :: nBlocksGamma(:),nBlocksAlpha(:)
+  integer, pointer :: nBlocksGamma(:),nBlocksAlpha(:),nOccBatchDimJrank(:),OccIndexJrank(:,:)
   integer :: inodeLoop,jnodeLoop,nodeLoop,nrownodes,ncolnodes,nBlocks,MAXnBlocksGamma,MAXnBlocksAlpha
   integer :: MaxAllowedDimAlpha,MaxAllowedDimGamma,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI
   integer :: MaxActualDimAlpha,MaxActualDimGamma,dimAOoffsetG,dimAOoffsetA
@@ -2868,10 +2868,10 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB,idxx
   integer :: sqrtnumnodes,gB,idx(1),dimAOoffset,kk,nBlocksG,nBlocksA
   integer :: dimGammaMPI,dimAlphaMPI,ibatchG,ibatchA,dimAlpha2,dimGamma2
-  integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchesJ,nOccBatchDimJmax
+  integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchDimJmax
   integer :: nOccbatchesIrestart,noccIstart,nbuf1,nbuf2,Ibuf(8)
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
-  logical :: PermutationalSymmetryIJ,SetdimGamma
+  logical :: PermutationalSymmetryIJ,SetdimGamma,dim1Includezero,dim2Includezero
   logical,pointer :: JobsCompleted(:,:)
   integer(kind=8) :: maxsize
   TYPE(DECscreenITEM)   :: DecScreen
@@ -3316,17 +3316,44 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   dimAlphaMPI = AOdimAlphaMPI(inode)
   dimGammaMPI = AOdimGammaMPI(jnode)
 
+  !building
+  !nOccBatchDimJrank(mynum)
+  !OccIndexJrank(J,mynum)              
+  IF(numnodes.GT.nocc)THEN
+     call lsquit('Error more nodes then occupied orbitals: FIXME',-1)
+  ENDIF
+
+  dim1Includezero = .TRUE.
+  J = numnodes-1
+  call mem_alloc(nOccBatchDimJrank,J,dim1Includezero) !include zero nOccBatchDimJrank(0:numnodes-1)
+  nOccBatchDimJrank = 0
+  do J=1,nocc
+     idx = MINLOC(nOccBatchDimJrank(0:numnodes-1))     
+     nOccBatchDimJrank(idx(1)-1) = nOccBatchDimJrank(idx(1)-1) + 1
+  enddo
+  J = numnodes-1
+  IF(MAXVAL(nOccBatchDimJrank).GT.nOccBatchDimJmax.OR.MAXVAL(nOccBatchDimJrank).LT.0)THEN
+     print*,'nOccBatchDimJrank',nOccBatchDimJrank
+     print*,'nOccBatchDimJmax',nOccBatchDimJmax
+     print*,'MAXVAL(nOccBatchDimJrank)',MAXVAL(nOccBatchDimJrank)
+     call lsquit('miscalc nOccBatchDimJrank full canon mp2b ',-1)
+  ENDIF
+  dim1Includezero = .FALSE.
+  dim2Includezero = .TRUE.
+  I = MAXVAL(nOccBatchDimJrank)
+  J = numnodes-1
+  call mem_alloc(OccIndexJrank,I,J,dim1Includezero,dim2Includezero)   
+  nOccBatchDimJrank = 0
+  do J=1,nocc
+     idx = MINLOC(nOccBatchDimJrank(0:numnodes-1))
+     nOccBatchDimJrank(idx(1)-1) = nOccBatchDimJrank(idx(1)-1) + 1
+     OccIndexJrank(nOccBatchDimJrank(idx(1)-1),idx(1)-1) = J
+  enddo
+
   nOccBatchesI = nOcc/nOccBatchDimImax
   IF(MOD(nOcc,nOccBatchDimImax).NE.0)nOccBatchesI = nOccBatchesI + 1  
-  nOccBatchesJ = nOcc/nOccBatchDimJmax
-  IF(MOD(nOcc,nOccBatchDimJmax).NE.0)nOccBatchesJ = nOccBatchesJ + 1  
   PermutationalSymmetryIJ = .FALSE.
-  IF(nOccBatchesJ.EQ.nOccBatchesI.AND.nOccBatchDimImax.EQ.nOccBatchDimJmax)THEN
-     PermutationalSymmetryIJ = .TRUE.
-  ENDIF
-!  print*,'PermutationalSymmetryIJ',PermutationalSymmetryIJ
   write(DECinfo%output,*)'nOccBatchesI         ',nOccBatchesI
-  write(DECinfo%output,*)'nOccBatchesJ         ',nOccBatchesJ
   !IF(nrownodes.NE.nOccBatchesI)call lsquit('error in nocbatches in mp2',-1)
 
   call mem_alloc(EpsOcc,nocc)
@@ -3505,12 +3532,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      call dgemm('T','N',M,N,K,1.0E0_realk,MyMolecule%Cv,K,tmp3,K,0.0E0_realk,tmp4,M)
      call mem_dealloc(tmp3)
      
-     jB = jnode
-     nOccBatchDimJ = nOccBatchDimJmax
-     IF(MOD(nOcc,nOccBatchDimJ).NE.0.AND.jB.EQ.nOccBatchesJ)THEN
-        !the remainder
-        nOccBatchDimJ = MOD(nOcc,nOccBatchDimJmax)
-     ENDIF
+     nOccBatchDimJ = nOccBatchDimJrank(mynum)
       
      call mem_alloc(tmp5,nvirt*nOccBatchDimI,dimAlphaMPI*nOccBatchDimJ)
      tmp5 = 0.0E0_realk
@@ -3536,9 +3558,10 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         CALL LS_GETTIM(CPU3,WALL3)
         call mem_alloc(CgammaMPI,dimGammaMPI,nOccBatchDimJ)
         do J=1,nOccBatchDimJ
+         JB = OccIndexJrank(J,mynum)
          do kk = 1,nBlocksGamma(jnodeLoop)
             CgammaMPI(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J)=&
-                 &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),J+(jB-1)*nOccBatchDimJmax)
+                 &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),JB)
          enddo
         enddo        
 
@@ -3568,13 +3591,14 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 #endif
         CALL LS_GETTIM(CPU3,WALL3)
         IF(inodeLoop.EQ.inode)THEN
-         !same Alpha Batch - receiving a Gamma Batch and contract to Occ
+         !same Alpha Batch - receiving a Gamma Batch and contract to OccJ
          IF(dimAlpha2.NE.dimAlphaMPI)call lsquit('dimAlpha2.NE.dimAlphaMPI',-1)
-         call mem_alloc(CgammaMPI2,dimGamma2,nOccBatchDimJ)
+         call mem_alloc(CgammaMPI2,dimGamma2,nOccBatchDimJ)         
          do J=1,nOccBatchDimJ
+          JB = OccIndexJrank(J,mynum)
           do kk = 1,nBlocksGamma(jnodeLoop)
            CgammaMPI2(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J) = &
-                & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),J+(jB-1)*nOccBatchDimJmax)
+                & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),JB)
           enddo
          enddo
          !share alpha batches
@@ -3670,56 +3694,17 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         tmp_mp2_energy = 0.0E0_realk
 
         !VOVO(nvirt,nOccBatchDimJ,nvirt,nOccBatchDimI) (partial cont from Alpha Batch)
-        IF(PermutationalSymmetryIJ)THEN
-           IF(iB.NE.jB)THEN 
-              do I=1,nOccBatchDimI
-                 do J=1,nOccBatchDimJ
-                    epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
-                    CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
-                    call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-                    tmp_mp2_energy2 = 0.0E0_realk
-                    call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                    tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-                 enddo
-              enddo
-              !all these contributions appear twice due to permutational symmetry ( I <-> J )
-              !tmp_mp2_energy = 2.0E0_realk*tmp_mp2_energy
-              !however right now we do not have a iB.GT.jB CYCLE in place
-           ELSE !iB = jB same block 
-              do I=1,nOccBatchDimI
-                 do J=I+1,nOccBatchDimJ
-                    epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
-                    CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
-                    call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-                    tmp_mp2_energy2 = 0.0E0_realk
-                    call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                    tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-                 enddo
-              enddo
-              !all these contributions appear twice due to permutational symmetry ( I <-> J )
-              tmp_mp2_energy = 2.0E0_realk*tmp_mp2_energy
-              !all these contributions only appear once since I=J in diagonal (iB,iB) block
-              do I=1,nOccBatchDimI
-                 epsIJ = 2.0E0_realk*EpsOcc(I+(iB-1)*nOccBatchDimImax)
-                 CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,I,I)
-                 call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-                 tmp_mp2_energy2 = 0.0E0_realk
-                 call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                 tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-              enddo
-           ENDIF
-        ELSE
-           do I=1,nOccBatchDimI
-              do J=1,nOccBatchDimJ
-                 epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
-                 CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
-                 call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-                 tmp_mp2_energy2 = 0.0E0_realk
-                 call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                 tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-              enddo
+        do I=1,nOccBatchDimI
+           do J=1,nOccBatchDimJ
+              JB = OccIndexJrank(J,mynum)              
+              epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(JB)
+              CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
+              call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
+              tmp_mp2_energy2 = 0.0E0_realk
+              call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+              tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
            enddo
-        ENDIF
+        enddo
 !        call lsmpi_reduction(tmp_mp2_energy,infpar%master,comm)
         receiver = 0 !master ?        
         IF(master)THEN 
@@ -3757,6 +3742,9 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   IF(master)THEN 
      print*,'FINAL MP2 ENERGY',mp2_energy,'MYNUM',MYNUM
   ENDIF
+
+  call mem_dealloc(nOccBatchDimJrank)
+  call mem_dealloc(OccIndexJrank)
   call mem_dealloc(JobAlpha)
   call mem_dealloc(JobGamma)
   call mem_dealloc(nBlocksAlpha)
