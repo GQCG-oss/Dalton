@@ -676,14 +676,15 @@ contains
      ! Tensors used for energy calculation A^{AOS,AOS}_{EOS,AOS}
      type(tensor) :: t2occ, gocc
 
-     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
-     integer :: i,j,k,a,b,c
+     real(realk), pointer :: occ_tmp(:), virt_tmp(:)
+     real(realk), pointer :: t(:,:,:,:), g(:,:,:,:)
+
      real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
-     real(realk) :: e1, e2, e3, e4,tmp,multaibj
+     real(realk) :: Eocc, lag_occ, Evirt, lag_virt
+     real(realk) :: prefac_coul, prefac_k, tmp
      logical ::  something_wrong,SOS,PerformLag! ,doOccPart, doVirtPart
-     real(realk) :: Eocc, lag_occ,Evirt,lag_virt
-     real(realk),pointer :: occ_tmp(:),virt_tmp(:)
-     real(realk) :: prefac_coul,prefac_k
+     integer :: noccEOS, nvirtEOS, noccAOS, nvirtAOS
+     integer :: i,j,k,a,b
 
      !TODO: For now we assume MP2 model:
      if (myfragment%ccmodel/=MODEL_MP2) then
@@ -768,18 +769,22 @@ contains
              & Input dimensions do not match!',-1)
      end if
       
+     ! Point to tensor structure to avoid OMP problems:
+     t => t2occ%elm4
+     g => gocc%elm4
+
      call mem_TurnONThread_Memory()
-     !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,j,b,i,a,c,virt_tmp)
+     !$OMP PARALLEL DEFAULT(none) PRIVATE(tmp,j,b,i,a,virt_tmp) &
+     !$OMP SHARED(t,g,noccAOS,nvirtAOS,noccEOS,prefac_coul,prefac_k,myfragment) &
+     !$OMP REDUCTION(+:Eocc)
      call init_threadmemvar()
-     e1=0E0_realk
      ! Contributions from each individual virtual orbital
      call mem_alloc(virt_tmp,nvirtAOS)
      virt_tmp = 0.0E0_realk       
       
-     !$OMP DO SCHEDULE(dynamic,1)
-      
-     ! Calculate e1 and e2
+     ! Calculate Eocc
      ! *******************
+     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
      do j=1,noccAOS
         do b=1,nvirtAOS
            do i=1,noccEOS
@@ -790,10 +795,11 @@ contains
                  ! --------------
       
                  ! Energy contribution for orbitals (j,b,i,a)
-                 tmp = t2occ%elm4(a,i,b,j)*(prefac_coul*gocc%elm4(a,i,b,j) -prefac_k*gocc%elm4(b,i,a,j))
+                 !tmp = t2occ%elm4(a,i,b,j)*(prefac_coul*gocc%elm4(a,i,b,j) -prefac_k*gocc%elm4(b,i,a,j))
+                 tmp = t(a,i,b,j)*(prefac_coul*g(a,i,b,j) -prefac_k*g(b,i,a,j))
       
                  ! Update total atomic fragment energy contribution 1
-                 e1 = e1 + tmp
+                 Eocc = Eocc + tmp
       
                  ! Update contribution from orbital a
                  virt_tmp(a) = virt_tmp(a) + tmp
@@ -807,11 +813,8 @@ contains
      end do
      !$OMP END DO NOWAIT
       
-     ! Total e1 and individual virt atomic contributions are found by summing all thread contributions
-     !$OMP CRITICAL
-     Eocc = Eocc + e1
-      
      ! Update total virtual contributions to fragment energy
+     !$OMP CRITICAL
      do a=1,nvirtAOS
         MyFragment%VirtContribs(a) =MyFragment%VirtContribs(a) + virt_tmp(a)
      end do
@@ -825,7 +828,8 @@ contains
      ! Free stuff:
      call tensor_free(t2occ)
      call tensor_free(gocc)
-      
+     t => null() 
+     g => null() 
       
      ! Total atomic fragment energy
      ! ****************************
