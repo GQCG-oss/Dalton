@@ -189,6 +189,8 @@ contains
     DECinfo%FracOfOrbSpace_red     = 5.0E0_realk
     ! If this is set larger than 0. atomic fragments are initialized with this,
     DECinfo%all_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    DECinfo%occ_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    DECinfo%vir_init_radius        = -1.0E0_realk/bohr_to_angstrom 
     !> use numerical integration info
     DECinfo%use_abs_overlap        = .false.
 
@@ -236,6 +238,7 @@ contains
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
+    DECinfo%acc_sync          = .false.
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -278,6 +281,7 @@ contains
     DECitem%cc_models(MODEL_CCSD)  ='CCSD    '
     DECitem%cc_models(MODEL_CCSDpT)='CCSD(T) '
     DECitem%cc_models(MODEL_RPA)   ='RPA     '
+    DECitem%cc_models(MODEL_SOSEX) ='SOSEX   '
     DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
 
   end subroutine dec_set_model_names
@@ -440,6 +444,10 @@ contains
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.
           DECinfo%solver_par=.true.
+       case('.SOSEX')
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles=.false.
+          DECinfo%solver_par=.true.
 
 
           ! CC SOLVER INFO
@@ -460,10 +468,11 @@ contains
 
           ! CCSD(T) INFO
           ! ==============
-       case('.PT_ABC'); DECinfo%abc= .true.
+       case('.PT_ABC'); DECinfo%abc = .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
+       case('.ACC_SYNC'); DECinfo%acc_sync = .true.
 
 
           ! DEC CALCULATION 
@@ -606,9 +615,20 @@ contains
           ! set the fraction of the fully extended orbital space that is used as tolerance in an incomplete binary search
        case('.FRACOFORBSPACE_RED'); read(input,*) DECinfo%FracOfOrbSpace_red
           ! include all orbitals for a fragment within a given radius and calculate the fragment energies in Angstrom
-       case('.FRAG_INIT_RADIUS_NO_OPT')
+       case('.FRAG_INIT_RADIUS_NO_OPT_ALL')
           read(input,*) DECinfo%all_init_radius
           DECinfo%all_init_radius = DECinfo%all_init_radius/bohr_to_angstrom
+          DECinfo%occ_init_radius = DECinfo%all_init_radius
+          DECinfo%vir_init_radius = DECinfo%all_init_radius
+       case('.FRAG_INIT_RADIUS_NO_OPT_OCC')
+          read(input,*) DECinfo%occ_init_radius
+          DECinfo%occ_init_radius = DECinfo%occ_init_radius/bohr_to_angstrom
+          DECinfo%all_init_radius = 0.0E0_realk
+       case('.FRAG_INIT_RADIUS_NO_OPT_VIR')
+          read(input,*) DECinfo%vir_init_radius
+          DECinfo%vir_init_radius = DECinfo%vir_init_radius/bohr_to_angstrom
+          DECinfo%all_init_radius = 0.0E0_realk
+
 
 
        !KEYWORDS FOR INTEGRAL INFO
@@ -638,7 +658,7 @@ contains
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.CC_TILE_SIZE_GB');read(input,*) DECinfo%cc_solver_tile_mem 
-       case('.SOSEX');   DECinfo%SOS = .true.
+       !case('.SOSEX');   DECinfo%SOS = .true.
        case('.NOTPREC');      DECinfo%use_preconditioner=.false.; DECinfo%ccsolver_overwrite_prec = .true.
        case('.NOTBPREC');     DECinfo%use_preconditioner_in_b=.false.; DECinfo%ccsolver_overwrite_prec = .true.
        case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.; DECinfo%ccsolver_overwrite_prec = .true.
@@ -1333,6 +1353,7 @@ contains
     case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
     case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
     case('.RPA');     modelnumber = MODEL_RPA
+    case('.SOSEX');   modelnumber = MODEL_SOSEX
     case('.RIMP2');   modelnumber = MODEL_RIMP2
     case default
        print *, 'Model not found: ', myword
@@ -1344,6 +1365,7 @@ contains
        write(DECinfo%output,*)'.CCD'
        write(DECinfo%output,*)'.CCSD(T)'
        write(DECinfo%output,*)'.RPA'
+       write(DECinfo%output,*)'.SOSEX'
        write(DECinfo%output,*)'.RIMP2'
        call lsquit('Requested model not found!',-1)
     end SELECT

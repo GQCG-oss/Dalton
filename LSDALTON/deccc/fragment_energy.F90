@@ -340,7 +340,7 @@ contains
        if(DECinfo%first_order)call lsquit('no first order RIMP2',-1)
        call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
 
-    case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
+    case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX) ! higher order CC (-like)
 
        call dec_fragment_time_init(times_ccsd)
 
@@ -943,6 +943,9 @@ contains
       prefac_coul=1._realk
       prefac_k=0.0_realk
       if(SOS) prefac_k=0.5_realk
+    elseif(MyFragment%ccmodel==MODEL_SOSEX) then
+      prefac_coul=1._realk
+      prefac_k=0.5_realk
     else
        prefac_coul=2._realk
        prefac_k=1._realk
@@ -1390,9 +1393,12 @@ contains
      ! Distance between fragments in Angstrom
      pairdist = bohr_to_angstrom*PairFragment%pairdist
      if(PairFragment%ccmodel==MODEL_RPA) then
-        prefac_coul = 1._realk
-        prefac_k=0.0_realk
-        if(SOS) prefac_k=0.5_realk
+       prefac_coul = 1._realk
+       prefac_k=0.0_realk
+       if(SOS) prefac_k=0.5_realk
+     elseif(PairFragment%ccmodel==MODEL_SOSEX) then
+       prefac_coul = 1._realk
+       prefac_k=0.5_realk
      else
         prefac_coul =2._realk
         prefac_k = 1._realk
@@ -4844,6 +4850,12 @@ contains
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
        !fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRPA)
+    case(MODEL_SOSEX)
+       ! RPA
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCSOS)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTSOS)
+       ! simply use average of occ and virt energies since Lagrangian is not yet implemented
+       fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
     case(MODEL_CCSD)
        ! CCSD
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD)
@@ -4916,6 +4928,10 @@ contains
        ! RPA
        fragment%energies(FRAGMODEL_OCCRPA) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTRPA) = fragment%EvirtFOP
+    case(MODEL_SOSEX)
+       ! SOSEX
+       fragment%energies(FRAGMODEL_OCCSOS) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTSOS) = fragment%EvirtFOP
     case(MODEL_CCSD)
        ! CCSD
        fragment%energies(FRAGMODEL_OCCCCSD) = fragment%EoccFOP 
@@ -5025,6 +5041,10 @@ contains
          energies(FRAGMODEL_OCCRPA) = Eocc   ! occupied
          energies(FRAGMODEL_VIRTRPA) = Evirt   ! virtual
        endif
+    case(MODEL_SOSEX)
+       !SOSEX
+       energies(FRAGMODEL_OCCSOS) = Eocc   ! occupied
+       energies(FRAGMODEL_VIRTSOS) = Evirt   ! virtual
     case(MODEL_CCSD)
        ! CCSD
        energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied

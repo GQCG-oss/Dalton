@@ -100,7 +100,7 @@ contains
              if(DECinfo%use_canonical ) then
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
-                call full_canonical_mp2(MyMolecule,MyLsitem,Ecorr)       
+                call full_canonical_mp2B(MyMolecule,MyLsitem,Ecorr)       
              else
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
@@ -2408,7 +2408,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
               tmp_mp2_energy = 0.0E0_realk
               do I=1,nOccBatchDimI
                  do J=1,nOccBatchDimJ
-                    epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
+                    epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)                    
                     CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
                     call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                     tmp_mp2_energy2 = 0.0E0_realk
@@ -2822,216 +2822,6 @@ subroutine memestimateCANONMP2(iB,jB,dimAlpha,dimGamma,nbasis,nvirt,maxsize)
 !  WRITE(DECinfo%output,*)'DECinfo%memory',DECinfo%memory
 end subroutine memestimateCANONMP2
 
-subroutine get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvirt,&
-     & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-     & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
-  implicit none
-  integer,intent(in) :: MinAObatch,nbasis,nocc,nvirt,numnodes
-  integer,intent(inout) :: MaxAllowedDimAlpha,MaxAllowedDimGamma
-  integer,intent(inout) :: MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI
-  integer,intent(inout) :: nOccBatchDimImax,nOccBatchDimJmax
-  integer,intent(inout) :: nrownodes,ncolnodes
-  !local variables
-  real(realk) :: MemoryAvailable,GB,AG,maxsize
-  integer :: iB,jB,iiB,jjB,nb,dimGamma,dimAlpha,AB,iGB,nTasks,K,tmprow,tmpcol,I,J
-  real(realk) :: nbasisR,noccR,nvirtR,numnodesR
-  logical :: Success
-  integer(kind=ls_mpik) :: nodtot 
-  nbasisR = nbasis
-  noccR = nocc
-  nvirtR = nvirt
-  numnodesR = numnodes   
-
-  !The full_canonical_mp2B requires that (nb,nb,nb) can be distributed across all nodes 
-  nodtot = INT(numnodes)
-  call canonical_mp2B_memreq_test(nbasis,nodtot,Success)
-
-  call get_currently_available_memory(MemoryAvailable)
-  ! Note: We multiply by 85 % to be on the safe side!
-  MemoryAvailable = 0.85E0_realk*MemoryAvailable
-  GB = 1.000E-9_realk 
-
-  !assume you have 
-  !numnodes = 144
-  !nbasis = 3772
-  !nvirt = 3508
-  !nocc = 264
-  !1. canonical_mp2B_memreq_test already done
-  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 144 nodes (3 GB on each)  
-
-  !2.Choose  nOccBatchDimImax as big as possible (nb*dimAlphaMPI*dimGammaMPI*nOccBatchDimImax) need to fit in mem!
-  !          Same as (nb*nb*nb*nOccBatchDimImax/numnodes) 
-  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*GB))) 
-  !nOccBatchDimImax = 10 for this example 
-  !This means recalculation of integrals 26 times for this example 
-  
-  !We divide the numnodes into an array of nodes (inode,jnode)
-  !for numnodes=4 
-  !mynum=0    means inode=1, jnode=1
-  !mynum=1    means inode=2, jnode=1
-  !mynum=2    means inode=1, jnode=2
-  !mynum=3    means inode=2, jnode=2
-  !Chose nrownodes and ncolnodes so that: 
-  !numnodes = nrownodes*ncolnodes
-  !and as square as possible (but VOVO should still fit in mem)
-  !ncolnodes .GE. nrownodes
-  ncolnodes = numnodes
-  nrownodes = 1
-  K=1
-  do 
-     K=K+1
-     IF(numnodes+1.LE.K*K)EXIT
-     tmprow = K
-     tmpcol = numnodes/K
-     IF(tmprow*tmpcol.EQ.numnodes)THEN
-        IF(tmprow+tmpcol.LE.ncolnodes+ncolnodes)THEN
-           MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes) 
-           MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes) 
-           nOccBatchDimJmax = CEILING(1.0E0_realk*nocc/ncolnodes) 
-!           print*,'CANONMP2B MinAObatch',MinAObatch
-!           print*,'CANONMP2B MinAObatch',MinAObatch
-!           print*,'CANONMP2B MaxAllowedDimAlphaMPI',MaxAllowedDimAlphaMPI
-!           print*,'CANONMP2B MaxAllowedDimGammaMPI',MaxAllowedDimGammaMPI
-!           print*,'CANONMP2B nbasis',nbasis
-!           print*,'CANONMP2B nvirt',nvirt
-!           print*,'CANONMP2B nOccBatchDimImax',nOccBatchDimImax
-!           print*,'CANONMP2B nOccBatchDimJmax',nOccBatchDimJmax
-           call memestimateCANONMP2B(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
-                & nbasis,nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
-!           print*,'TRY tmprow,tmpcol',tmprow,tmpcol,'maxsize',maxsize,'MemoryAvailable',MemoryAvailable
-           IF(maxsize.LT.MemoryAvailable)THEN
-              nrownodes = tmprow
-              ncolnodes = tmpcol
-           ENDIF
-        ENDIF
-     ENDIF
-  enddo
-  !nOccBatchesI must match number of Alpha batches(1dim) = nrownodes
-  MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes) !19/2 = 10
-  MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes) !19/2 = 10
-  nOccBatchDimJmax = CEILING(1.0E0_realk*nocc/ncolnodes) 
-!  print*,'MinAObatch',MinAObatch
-  call memestimateCANONMP2B(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
-          & nbasis,nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
-  IF(maxsize.GT.MemoryAvailable)THEN
-     call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatches',-1)        
-  ENDIF
-
-  !assume 
-  MaxAllowedDimGamma = MinAObatch  
-  !find MaxAllowedDimAlpha as big as possible
-  DO I=MaxAllowedDimAlphaMPI,MinAObatch,-1  
-     call memestimateCANONMP2B(I,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nbasis,&
-          & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
-     MaxAllowedDimAlpha = I
-     IF(maxsize.LT.MemoryAvailable)EXIT
-     IF(I.EQ.MinAObatch)THEN
-        call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatchAlpha',-1)        
-     ENDIF
-  ENDDO
-
-  DO I=MaxAllowedDimGammaMPI,MinAObatch,-1
-     call memestimateCANONMP2B(MaxAllowedDimAlpha,I,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nbasis,&
-          & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
-     MaxAllowedDimGamma = I
-     IF(maxsize.LT.MemoryAvailable)EXIT
-     IF(I.EQ.MinAObatch)THEN
-        call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatchGamma',-1)        
-     ENDIF
-  ENDDO  
-
-end subroutine get_optimal_batch_sizes_for_canonical_mp2B
-
-subroutine memestimateCANONMP2B(MaxAllowedDimAlpha,MaxAllowedDimGamma,dimAlphaMPI,dimGammaMPI,nb,&
-          & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
-implicit none
-integer,intent(in) :: MaxAllowedDimAlpha,MaxAllowedDimGamma,dimAlphaMPI,dimGammaMPI,nb
-integer,intent(in) :: nvirt,nOccBatchDimImax,nOccBatchDimJmax
-real(realk),intent(inout) :: maxsize
-real(realk) :: GB,nOccBatchDimI,nOccBI,nOccBatchDimJ,dimAlpha,dimGamma
-nOccBatchDimI = nOccBatchDimImax
-nOccBI = nOccBatchDimI
-nOccBatchDimJ = nOccBatchDimJmax
-dimAlpha=MaxAllowedDimAlpha
-dimGamma=MaxAllowedDimGamma
-!construct CoI(nb,nOccBatchDimI)
-maxsize = nb*nOccBI
-!call mem_alloc(tmp2,dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
-maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI
-!BatchGamma: do gammaB = 1,nbatchesGamma
-! BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
-!  call mem_alloc(tmp1,dimAlpha*dimGamma,nb*nb)
-maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+dimAlpha*dimGamma*nb*nb
-!  call mem_alloc(tmp1b,dimAlpha,dimGamma,nb,nOccBatchDimI)
-maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+dimAlpha*dimGamma*nb*nb+&
-     & dimAlpha*dimGamma*nb*nOccBatchDimI
-!  call mem_dealloc(tmp1)
-!  call mem_dealloc(tmp1b)
-! enddo BatchAlpha
-!enddo BatchGamma
-!call mem_dealloc(CoI)
-!call mem_alloc(tmp3,nb*nOccBatchDimI,dimAlphaMPI*dimGammaMPI)
-maxsize = dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI !tmp2+tmp3
-!call mem_dealloc(tmp2)
-!call mem_alloc(tmp4,nvirt*nOccBatchDimI,dimAlphaMPI*dimGammaMPI)
-maxsize = nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI !tmp3+tmp4
-!call mem_dealloc(tmp3)
-!call mem_alloc(tmp5,nvirt*nOccBatchDimI,dimAlphaMPI*nOccBatchDimJ)
-maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ !tmp5+tmp4
-!OPTION1
-!call mem_alloc(CgammaMPI,dimGammaMPI,nOccBatchDimJ)
-maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp4
-     & dimGammaMPI*nOccBatchDimJ
-!call mem_dealloc(CgammaMPI)
-!OPTION1
-!call mem_alloc(tmp6,nvirt*nOccBatchDimI,dimAlpha2*dimGamma2)              
-!call mem_alloc(CgammaMPI2,dimGamma2,nOccBatchDimJ)
-maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp4
-     & nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI + dimGammaMPI*nOccBatchDimJ !tmp6
-!call mem_dealloc(CgammaMPI2)
-!call mem_dealloc(tmp6)
-!call mem_dealloc(tmp4)
-!call mem_alloc(tmp7,dimAlphaMPI*nOccBatchDimJ,nvirt*nOccBatchDimI)
-maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ & 
-     & + dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI
-!call mem_dealloc(tmp5)
-!call mem_alloc(VOVO,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
-maxsize = dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI !tmp7+VOVOV
-!call mem_alloc(CAV,dimAlphaMPI,nvirt)     
-maxsize = dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI+& !tmp7+VOVOV
-     & dimAlphaMPI*nvirt
-!VOVO(nvirt,noccBJ,nvirt,noccBI) = CAV(dimAlpha,nvirt)*tmp7(dimAlpha*nOccBatchDimJ,nvirt*nOccBatchDimI)
-!call mem_dealloc(CAV)
-!call mem_dealloc(tmp7)
-maxsize = nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI*2 !2 VOVO 
-GB = 1.000E-9_realk 
-maxsize = maxsize*GB
-end subroutine memestimateCANONMP2B
-
-!The full_canonical_mp2B requires that (nb,nb,nb) can be distributed across all nodes 
-subroutine canonical_mp2B_memreq_test(nbasis,numnodes,Success)
-implicit none
-integer(kind=ls_mpik),intent(in) :: numnodes
-integer,intent(in) :: nbasis
-logical,intent(inout) :: Success
-!
-real(realk) :: MemoryAvailable,GB,nbasisR,numnodesR
-! Memory currently available
-! **************************
-call get_currently_available_memory(MemoryAvailable)
-! Note: We multiply by 85 % to be on the safe side!
-MemoryAvailable = 0.85E0_realk*MemoryAvailable
-GB = 1.000E-9_realk 
-nbasisR = nbasis
-numnodesR = numnodes
-print*,'canonical_mp2B_memreq_test  size(nb*nb*nb/numnodes) =',nbasisR*nbasisR*(nbasisR*GB)/numnodesR,' GB'
-print*,'canonical_mp2B_memreq_test  MemoryAvailable         =',MemoryAvailable,' GB'
-IF(nbasisR*nbasisR*nbasisR*GB/numnodesR.GT.MemoryAvailable)THEN
-   call lsquit('canonical_mp2B_memreq_test failure',-1)
-ENDIF
-Success = .TRUE.
-end subroutine canonical_mp2B_memreq_test
-
 !> \brief Calculate canonical MP2 energy for full molecular system
 !> \author Thomas Kjaergaard
 !> \date October 2014
@@ -3067,7 +2857,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer, pointer :: AOstartGamma(:,:),AOendGamma(:,:),AOdimGamma(:,:),AOdimGammaMPI(:)
   integer, pointer :: batchdimAlpha(:),dimAlphaArray(:),AlphaIndexArray(:),offsetAlpha(:,:)
   integer, pointer :: AOstartAlpha(:,:),AOendAlpha(:,:),AOdimAlpha(:,:),AOdimAlphaMPI(:)
-  integer, pointer :: nBlocksGamma(:),nBlocksAlpha(:)
+  integer, pointer :: nBlocksGamma(:),nBlocksAlpha(:),nOccBatchDimJrank(:),OccIndexJrank(:,:)
   integer :: inodeLoop,jnodeLoop,nodeLoop,nrownodes,ncolnodes,nBlocks,MAXnBlocksGamma,MAXnBlocksAlpha
   integer :: MaxAllowedDimAlpha,MaxAllowedDimGamma,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI
   integer :: MaxActualDimAlpha,MaxActualDimGamma,dimAOoffsetG,dimAOoffsetA
@@ -3078,10 +2868,10 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB,idxx
   integer :: sqrtnumnodes,gB,idx(1),dimAOoffset,kk,nBlocksG,nBlocksA
   integer :: dimGammaMPI,dimAlphaMPI,ibatchG,ibatchA,dimAlpha2,dimGamma2
-  integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchesJ,nOccBatchDimJmax
+  integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchDimJmax
   integer :: nOccbatchesIrestart,noccIstart,nbuf1,nbuf2,Ibuf(8)
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
-  logical :: PermutationalSymmetryIJ,SetdimGamma
+  logical :: PermutationalSymmetryIJ,SetdimGamma,dim1Includezero,dim2Includezero
   logical,pointer :: JobsCompleted(:,:)
   integer(kind=8) :: maxsize
   TYPE(DECscreenITEM)   :: DecScreen
@@ -3231,7 +3021,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      Ibuf(8) = nOccBatchDimJmax
   ENDIF
   nbuf1 = 8 
-  call ls_mpibcast(Ibuf,nbuf1,mynum,comm)
+  call ls_mpibcast(Ibuf,nbuf1,infpar%master,comm)
   IF(.NOT.master)THEN
      nrownodes = Ibuf(1) 
      ncolnodes = Ibuf(2)
@@ -3526,17 +3316,44 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   dimAlphaMPI = AOdimAlphaMPI(inode)
   dimGammaMPI = AOdimGammaMPI(jnode)
 
+  !building
+  !nOccBatchDimJrank(mynum)
+  !OccIndexJrank(J,mynum)              
+  IF(numnodes.GT.nocc)THEN
+     call lsquit('Error more nodes then occupied orbitals: FIXME',-1)
+  ENDIF
+
+  dim1Includezero = .TRUE.
+  J = numnodes-1
+  call mem_alloc(nOccBatchDimJrank,J,dim1Includezero) !include zero nOccBatchDimJrank(0:numnodes-1)
+  nOccBatchDimJrank = 0
+  do J=1,nocc
+     idx = MINLOC(nOccBatchDimJrank(0:numnodes-1))     
+     nOccBatchDimJrank(idx(1)-1) = nOccBatchDimJrank(idx(1)-1) + 1
+  enddo
+  J = numnodes-1
+  IF(MAXVAL(nOccBatchDimJrank).GT.nOccBatchDimJmax.OR.MAXVAL(nOccBatchDimJrank).LT.0)THEN
+     print*,'nOccBatchDimJrank',nOccBatchDimJrank
+     print*,'nOccBatchDimJmax',nOccBatchDimJmax
+     print*,'MAXVAL(nOccBatchDimJrank)',MAXVAL(nOccBatchDimJrank)
+     call lsquit('miscalc nOccBatchDimJrank full canon mp2b ',-1)
+  ENDIF
+  dim1Includezero = .FALSE.
+  dim2Includezero = .TRUE.
+  I = MAXVAL(nOccBatchDimJrank)
+  J = numnodes-1
+  call mem_alloc(OccIndexJrank,I,J,dim1Includezero,dim2Includezero)   
+  nOccBatchDimJrank = 0
+  do J=1,nocc
+     idx = MINLOC(nOccBatchDimJrank(0:numnodes-1))
+     nOccBatchDimJrank(idx(1)-1) = nOccBatchDimJrank(idx(1)-1) + 1
+     OccIndexJrank(nOccBatchDimJrank(idx(1)-1),idx(1)-1) = J
+  enddo
+
   nOccBatchesI = nOcc/nOccBatchDimImax
   IF(MOD(nOcc,nOccBatchDimImax).NE.0)nOccBatchesI = nOccBatchesI + 1  
-  nOccBatchesJ = nOcc/nOccBatchDimJmax
-  IF(MOD(nOcc,nOccBatchDimJmax).NE.0)nOccBatchesJ = nOccBatchesJ + 1  
   PermutationalSymmetryIJ = .FALSE.
-  IF(nOccBatchesJ.EQ.nOccBatchesI)THEN
-     PermutationalSymmetryIJ = .TRUE.
-  ENDIF
-!  print*,'PermutationalSymmetryIJ',PermutationalSymmetryIJ
   write(DECinfo%output,*)'nOccBatchesI         ',nOccBatchesI
-  write(DECinfo%output,*)'nOccBatchesJ         ',nOccBatchesJ
   !IF(nrownodes.NE.nOccBatchesI)call lsquit('error in nocbatches in mp2',-1)
 
   call mem_alloc(EpsOcc,nocc)
@@ -3715,12 +3532,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      call dgemm('T','N',M,N,K,1.0E0_realk,MyMolecule%Cv,K,tmp3,K,0.0E0_realk,tmp4,M)
      call mem_dealloc(tmp3)
      
-     jB = jnode
-     nOccBatchDimJ = nOccBatchDimJmax
-     IF(MOD(nOcc,nOccBatchDimJ).NE.0.AND.jB.EQ.nOccBatchesJ)THEN
-        !the remainder
-        nOccBatchDimJ = MOD(nOcc,nOccBatchDimJmax)
-     ENDIF
+     nOccBatchDimJ = nOccBatchDimJrank(mynum)
       
      call mem_alloc(tmp5,nvirt*nOccBatchDimI,dimAlphaMPI*nOccBatchDimJ)
      tmp5 = 0.0E0_realk
@@ -3746,9 +3558,10 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         CALL LS_GETTIM(CPU3,WALL3)
         call mem_alloc(CgammaMPI,dimGammaMPI,nOccBatchDimJ)
         do J=1,nOccBatchDimJ
+         JB = OccIndexJrank(J,mynum)
          do kk = 1,nBlocksGamma(jnodeLoop)
             CgammaMPI(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J)=&
-                 &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),J+(jB-1)*nOccBatchDimJmax)
+                 &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),JB)
          enddo
         enddo        
 
@@ -3778,13 +3591,14 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 #endif
         CALL LS_GETTIM(CPU3,WALL3)
         IF(inodeLoop.EQ.inode)THEN
-         !same Alpha Batch - receiving a Gamma Batch and contract to Occ
+         !same Alpha Batch - receiving a Gamma Batch and contract to OccJ
          IF(dimAlpha2.NE.dimAlphaMPI)call lsquit('dimAlpha2.NE.dimAlphaMPI',-1)
-         call mem_alloc(CgammaMPI2,dimGamma2,nOccBatchDimJ)
+         call mem_alloc(CgammaMPI2,dimGamma2,nOccBatchDimJ)         
          do J=1,nOccBatchDimJ
+          JB = OccIndexJrank(J,mynum)
           do kk = 1,nBlocksGamma(jnodeLoop)
            CgammaMPI2(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J) = &
-                & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),J+(jB-1)*nOccBatchDimJmax)
+                & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),JB)
           enddo
          enddo
          !share alpha batches
@@ -3880,62 +3694,17 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         tmp_mp2_energy = 0.0E0_realk
 
         !VOVO(nvirt,nOccBatchDimJ,nvirt,nOccBatchDimI) (partial cont from Alpha Batch)
-        IF(PermutationalSymmetryIJ)THEN
-           WRITE(DECinfo%output,*)'Occ Contribution iB=',iB,', jB=',jB
-           IF(iB.NE.jB)THEN 
-              do I=1,nOccBatchDimI
-                 do J=1,nOccBatchDimJ
-                    epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimImax)
-                    CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
-                    call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-                    tmp_mp2_energy2 = 0.0E0_realk
-                    call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                    tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-                 enddo
-              enddo
-              !all these contributions appear twice due to permutational symmetry ( I <-> J )
-              !tmp_mp2_energy = 2.0E0_realk*tmp_mp2_energy
-              !however right now we do not have a iB.GT.jB CYCLE in place
-              WRITE(DECinfo%output,*)'PermutationalSymmetryIJ E(Triangular)',tmp_mp2_energy
-           ELSE !iB = jB same block 
-              do I=1,nOccBatchDimI
-                 do J=I+1,nOccBatchDimJ
-                    epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
-                    CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
-                    call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-                    tmp_mp2_energy2 = 0.0E0_realk
-                    call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                    tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-                 enddo
-              enddo
-              !all these contributions appear twice due to permutational symmetry ( I <-> J )
-              tmp_mp2_energy = 2.0E0_realk*tmp_mp2_energy
-              WRITE(DECinfo%output,*)'PermutationalSymmetryIJ E(Triangular)',tmp_mp2_energy
-              !all these contributions only appear once since I=J in diagonal (iB,iB) block
-              do I=1,nOccBatchDimI
-                 epsIJ = 2.0E0_realk*EpsOcc(I+(iB-1)*nOccBatchDimImax)
-                 CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,I,I)
-                 call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-                 tmp_mp2_energy2 = 0.0E0_realk
-                 call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                 tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-              enddo
-              WRITE(DECinfo%output,*)'PermutationalSymmetryIJ E(Triangular+diagonal)',tmp_mp2_energy
-           ENDIF
-           WRITE(DECinfo%output,*)'canon MP2 energy contribution =',tmp_mp2_energy
-        ELSE
-           do I=1,nOccBatchDimI
-              do J=1,nOccBatchDimJ
-                 epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
-                 CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
-                 call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-                 tmp_mp2_energy2 = 0.0E0_realk
-                 call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                 tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-              enddo
+        do I=1,nOccBatchDimI
+           do J=1,nOccBatchDimJ
+              JB = OccIndexJrank(J,mynum)              
+              epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(JB)
+              CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
+              call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
+              tmp_mp2_energy2 = 0.0E0_realk
+              call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
+              tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
            enddo
-           WRITE(DECinfo%output,*)'canon MP2 energy contribution =',tmp_mp2_energy
-        ENDIF
+        enddo
 !        call lsmpi_reduction(tmp_mp2_energy,infpar%master,comm)
         receiver = 0 !master ?        
         IF(master)THEN 
@@ -3945,7 +3714,6 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 #ifdef VAR_MPI
               call ls_mpisendrecv(tmp_mp2_energy2,comm,sender,receiver)
 #endif
-              WRITE(DECinfo%output,*)'MP2 energy contribution from jnode=',jnodeLoop,')=',tmp_mp2_energy2
               tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
            enddo
         ELSE
@@ -3959,6 +3727,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      CPU_ECONT = CPU_ECONT + (CPU4-CPU3)
      WALL_ECONT = WALL_ECONT + (WALL4-WALL3)           
      IF(master)THEN 
+        WRITE(DECinfo%output,*)'MP2 Energy(iB=',iB,') = ',tmp_mp2_energy
         mp2_energy = mp2_energy + tmp_mp2_energy        
         !Write Restart File
         restart_lun = -1  !initialization
@@ -3973,6 +3742,9 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   IF(master)THEN 
      print*,'FINAL MP2 ENERGY',mp2_energy,'MYNUM',MYNUM
   ENDIF
+
+  call mem_dealloc(nOccBatchDimJrank)
+  call mem_dealloc(OccIndexJrank)
   call mem_dealloc(JobAlpha)
   call mem_dealloc(JobGamma)
   call mem_dealloc(nBlocksAlpha)
@@ -4055,6 +3827,216 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 #endif    
   write(lupri,*) ' '
 end subroutine full_canonical_mp2B
+
+subroutine get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvirt,&
+     & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+     & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
+  implicit none
+  integer,intent(in) :: MinAObatch,nbasis,nocc,nvirt,numnodes
+  integer,intent(inout) :: MaxAllowedDimAlpha,MaxAllowedDimGamma
+  integer,intent(inout) :: MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI
+  integer,intent(inout) :: nOccBatchDimImax,nOccBatchDimJmax
+  integer,intent(inout) :: nrownodes,ncolnodes
+  !local variables
+  real(realk) :: MemoryAvailable,GB,AG,maxsize
+  integer :: iB,jB,iiB,jjB,nb,dimGamma,dimAlpha,AB,iGB,nTasks,K,tmprow,tmpcol,I,J
+  real(realk) :: nbasisR,noccR,nvirtR,numnodesR
+  logical :: Success
+  integer(kind=ls_mpik) :: nodtot 
+  nbasisR = nbasis
+  noccR = nocc
+  nvirtR = nvirt
+  numnodesR = numnodes   
+
+  !The full_canonical_mp2B requires that (nb,nb,nb) can be distributed across all nodes 
+  nodtot = INT(numnodes)
+  call canonical_mp2B_memreq_test(nbasis,nodtot,Success)
+
+  call get_currently_available_memory(MemoryAvailable)
+  ! Note: We multiply by 85 % to be on the safe side!
+  MemoryAvailable = 0.85E0_realk*MemoryAvailable
+  GB = 1.000E-9_realk 
+
+  !assume you have 
+  !numnodes = 144
+  !nbasis = 3772
+  !nvirt = 3508
+  !nocc = 264
+  !1. canonical_mp2B_memreq_test already done
+  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 144 nodes (3 GB on each)  
+
+  !2.Choose  nOccBatchDimImax as big as possible (nb*dimAlphaMPI*dimGammaMPI*nOccBatchDimImax) need to fit in mem!
+  !          Same as (nb*nb*nb*nOccBatchDimImax/numnodes) 
+  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*GB))) 
+  !nOccBatchDimImax = 10 for this example 
+  !This means recalculation of integrals 26 times for this example 
+  
+  !We divide the numnodes into an array of nodes (inode,jnode)
+  !for numnodes=4 
+  !mynum=0    means inode=1, jnode=1
+  !mynum=1    means inode=2, jnode=1
+  !mynum=2    means inode=1, jnode=2
+  !mynum=3    means inode=2, jnode=2
+  !Chose nrownodes and ncolnodes so that: 
+  !numnodes = nrownodes*ncolnodes
+  !and as square as possible (but VOVO should still fit in mem)
+  !ncolnodes .GE. nrownodes
+  ncolnodes = numnodes
+  nrownodes = 1
+  K=1
+  do 
+     K=K+1
+     IF(numnodes+1.LE.K*K)EXIT
+     tmprow = K
+     tmpcol = numnodes/K
+     IF(tmprow*tmpcol.EQ.numnodes)THEN
+        IF(tmprow+tmpcol.LE.ncolnodes+ncolnodes)THEN
+           MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes) 
+           MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes) 
+           nOccBatchDimJmax = CEILING(1.0E0_realk*nocc/ncolnodes) 
+!           print*,'CANONMP2B MinAObatch',MinAObatch
+!           print*,'CANONMP2B MinAObatch',MinAObatch
+!           print*,'CANONMP2B MaxAllowedDimAlphaMPI',MaxAllowedDimAlphaMPI
+!           print*,'CANONMP2B MaxAllowedDimGammaMPI',MaxAllowedDimGammaMPI
+!           print*,'CANONMP2B nbasis',nbasis
+!           print*,'CANONMP2B nvirt',nvirt
+!           print*,'CANONMP2B nOccBatchDimImax',nOccBatchDimImax
+!           print*,'CANONMP2B nOccBatchDimJmax',nOccBatchDimJmax
+           call memestimateCANONMP2B(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
+                & nbasis,nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
+!           print*,'TRY tmprow,tmpcol',tmprow,tmpcol,'maxsize',maxsize,'MemoryAvailable',MemoryAvailable
+           IF(maxsize.LT.MemoryAvailable)THEN
+              nrownodes = tmprow
+              ncolnodes = tmpcol
+           ENDIF
+        ENDIF
+     ENDIF
+  enddo
+  !nOccBatchesI must match number of Alpha batches(1dim) = nrownodes
+  MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes) !19/2 = 10
+  MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes) !19/2 = 10
+  nOccBatchDimJmax = CEILING(1.0E0_realk*nocc/ncolnodes) 
+!  print*,'MinAObatch',MinAObatch
+  call memestimateCANONMP2B(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
+          & nbasis,nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
+  IF(maxsize.GT.MemoryAvailable)THEN
+     call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatches',-1)        
+  ENDIF
+
+  !assume 
+  MaxAllowedDimGamma = MinAObatch  
+  !find MaxAllowedDimAlpha as big as possible
+  DO I=MaxAllowedDimAlphaMPI,MinAObatch,-1  
+     call memestimateCANONMP2B(I,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nbasis,&
+          & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
+     MaxAllowedDimAlpha = I
+     IF(maxsize.LT.MemoryAvailable)EXIT
+     IF(I.EQ.MinAObatch)THEN
+        call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatchAlpha',-1)        
+     ENDIF
+  ENDDO
+
+  DO I=MaxAllowedDimGammaMPI,MinAObatch,-1
+     call memestimateCANONMP2B(MaxAllowedDimAlpha,I,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nbasis,&
+          & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
+     MaxAllowedDimGamma = I
+     IF(maxsize.LT.MemoryAvailable)EXIT
+     IF(I.EQ.MinAObatch)THEN
+        call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatchGamma',-1)        
+     ENDIF
+  ENDDO  
+
+end subroutine get_optimal_batch_sizes_for_canonical_mp2B
+
+subroutine memestimateCANONMP2B(MaxAllowedDimAlpha,MaxAllowedDimGamma,dimAlphaMPI,dimGammaMPI,nb,&
+          & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
+implicit none
+integer,intent(in) :: MaxAllowedDimAlpha,MaxAllowedDimGamma,dimAlphaMPI,dimGammaMPI,nb
+integer,intent(in) :: nvirt,nOccBatchDimImax,nOccBatchDimJmax
+real(realk),intent(inout) :: maxsize
+real(realk) :: GB,nOccBatchDimI,nOccBI,nOccBatchDimJ,dimAlpha,dimGamma
+nOccBatchDimI = nOccBatchDimImax
+nOccBI = nOccBatchDimI
+nOccBatchDimJ = nOccBatchDimJmax
+dimAlpha=MaxAllowedDimAlpha
+dimGamma=MaxAllowedDimGamma
+!construct CoI(nb,nOccBatchDimI)
+maxsize = nb*nOccBI
+!call mem_alloc(tmp2,dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
+maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI
+!BatchGamma: do gammaB = 1,nbatchesGamma
+! BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
+!  call mem_alloc(tmp1,dimAlpha*dimGamma,nb*nb)
+maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+dimAlpha*dimGamma*nb*nb
+!  call mem_alloc(tmp1b,dimAlpha,dimGamma,nb,nOccBatchDimI)
+maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+dimAlpha*dimGamma*nb*nb+&
+     & dimAlpha*dimGamma*nb*nOccBatchDimI
+!  call mem_dealloc(tmp1)
+!  call mem_dealloc(tmp1b)
+! enddo BatchAlpha
+!enddo BatchGamma
+!call mem_dealloc(CoI)
+!call mem_alloc(tmp3,nb*nOccBatchDimI,dimAlphaMPI*dimGammaMPI)
+maxsize = dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI !tmp2+tmp3
+!call mem_dealloc(tmp2)
+!call mem_alloc(tmp4,nvirt*nOccBatchDimI,dimAlphaMPI*dimGammaMPI)
+maxsize = nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI !tmp3+tmp4
+!call mem_dealloc(tmp3)
+!call mem_alloc(tmp5,nvirt*nOccBatchDimI,dimAlphaMPI*nOccBatchDimJ)
+maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ !tmp5+tmp4
+!OPTION1
+!call mem_alloc(CgammaMPI,dimGammaMPI,nOccBatchDimJ)
+maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp4
+     & dimGammaMPI*nOccBatchDimJ
+!call mem_dealloc(CgammaMPI)
+!OPTION1
+!call mem_alloc(tmp6,nvirt*nOccBatchDimI,dimAlpha2*dimGamma2)              
+!call mem_alloc(CgammaMPI2,dimGamma2,nOccBatchDimJ)
+maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp4
+     & nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI + dimGammaMPI*nOccBatchDimJ !tmp6
+!call mem_dealloc(CgammaMPI2)
+!call mem_dealloc(tmp6)
+!call mem_dealloc(tmp4)
+!call mem_alloc(tmp7,dimAlphaMPI*nOccBatchDimJ,nvirt*nOccBatchDimI)
+maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ & 
+     & + dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI
+!call mem_dealloc(tmp5)
+!call mem_alloc(VOVO,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
+maxsize = dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI !tmp7+VOVOV
+!call mem_alloc(CAV,dimAlphaMPI,nvirt)     
+maxsize = dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI+& !tmp7+VOVOV
+     & dimAlphaMPI*nvirt
+!VOVO(nvirt,noccBJ,nvirt,noccBI) = CAV(dimAlpha,nvirt)*tmp7(dimAlpha*nOccBatchDimJ,nvirt*nOccBatchDimI)
+!call mem_dealloc(CAV)
+!call mem_dealloc(tmp7)
+maxsize = nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI*2 !2 VOVO 
+GB = 1.000E-9_realk 
+maxsize = maxsize*GB
+end subroutine memestimateCANONMP2B
+
+!The full_canonical_mp2B requires that (nb,nb,nb) can be distributed across all nodes 
+subroutine canonical_mp2B_memreq_test(nbasis,numnodes,Success)
+implicit none
+integer(kind=ls_mpik),intent(in) :: numnodes
+integer,intent(in) :: nbasis
+logical,intent(inout) :: Success
+!
+real(realk) :: MemoryAvailable,GB,nbasisR,numnodesR
+! Memory currently available
+! **************************
+call get_currently_available_memory(MemoryAvailable)
+! Note: We multiply by 85 % to be on the safe side!
+MemoryAvailable = 0.85E0_realk*MemoryAvailable
+GB = 1.000E-9_realk 
+nbasisR = nbasis
+numnodesR = numnodes
+IF(nbasisR*nbasisR*nbasisR*GB/numnodesR.GT.MemoryAvailable)THEN
+   print*,'canonical_mp2B_memreq_test  size(nb*nb*nb/numnodes) =',nbasisR*nbasisR*(nbasisR*GB)/numnodesR,' GB'
+   print*,'canonical_mp2B_memreq_test  MemoryAvailable         =',MemoryAvailable,' GB'
+   call lsquit('canonical_mp2B_memreq_test failure',-1)
+ENDIF
+Success = .TRUE.
+end subroutine canonical_mp2B_memreq_test
 
 subroutine CalcAmat2(nOccBatchDimI,nOccBatchDimJ,nvirt,tmp7,Amat,I,J)
   implicit none
@@ -5291,7 +5273,7 @@ subroutine full_canonical_mp2_slave
   ! *******************
   ! Main master:  Send stuff to local masters and deallocate temp. buffers
   ! Local master: Deallocate buffer etc.
-  call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
+  call full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
   
