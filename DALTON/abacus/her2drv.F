@@ -3576,12 +3576,24 @@ C
 C
 C     Determine NORBSH()
 C
-      DO 300 I = 1, MAXSHL
-         NORBSH(I) = 0
-         DO 310 J = 1, KMAX
-            IF (IPTSHL(J) .EQ. I) NORBSH(I) = NORBSH(I) + 1
-  310    CONTINUE
-  300 CONTINUE
+C jars 20150226 : This breaks with ICC 15 and -O2 or higher; last
+C                 elements never get updated
+
+C      DO 300 I = 1, MAXSHL
+C         NORBSH(I) = 0
+C         DO 310 J = 1, KMAX
+C            IF (IPTSHL(J) .EQ. I) NORBSH(I) = NORBSH(I) + 1
+C  310    CONTINUE
+C  300 CONTINUE
+
+C jars 20150226 : Use a simpler approach to count orbital shells
+      do i=1, maxshl
+          norbsh(i) = 0
+      enddo
+      do j=1,kmax
+          i = iptshl(j)
+          norbsh(i) = norbsh(i) + 1
+      enddo
 C
 C     Determine and NSTRSH()
 C

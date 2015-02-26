@@ -27,7 +27,7 @@ module dec_typedef_module
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
   !> how many real models in total are there, disregard MODEL_NONE
-  integer,parameter :: ndecmodels   = 6
+  integer,parameter :: ndecmodels   = 7
   !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
@@ -36,6 +36,7 @@ module dec_typedef_module
   integer,parameter :: MODEL_CCSDpT = 4
   integer,parameter :: MODEL_RPA    = 5
   integer,parameter :: MODEL_RIMP2  = 6
+  integer,parameter :: MODEL_SOSEX  = 7
 
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
@@ -137,6 +138,8 @@ module dec_typedef_module
      logical :: gcbasis
      !> DEC-CC orbital-based (DECCO)
      logical :: DECCO
+     !> DEC-CC orbital-based (DECNP)
+     logical :: DECNP
 
 
 
@@ -279,6 +282,8 @@ module dec_typedef_module
      integer :: ijk_nbuffs
      !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
      integer :: abc_nbuffs
+     !> do we want to do gpu computations synchronous?
+     logical :: acc_sync
 
      !> F12 settings
      !> ************
@@ -380,6 +385,8 @@ module dec_typedef_module
      logical :: PurifyMOs
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
+     !> avoid all pair calculations:
+     logical         :: no_pairs
      !> Hack to only do fragment optimization
      integer         :: only_n_frag_jobs
      integer,pointer :: frag_job_nr(:)
@@ -431,6 +438,8 @@ module dec_typedef_module
      logical :: OnlyVirtPart
      !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
      real(realk) :: all_init_radius
+     real(realk) :: vir_init_radius
+     real(realk) :: occ_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
