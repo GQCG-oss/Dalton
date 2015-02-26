@@ -189,6 +189,8 @@ contains
     DECinfo%FracOfOrbSpace_red     = 5.0E0_realk
     ! If this is set larger than 0. atomic fragments are initialized with this,
     DECinfo%all_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    DECinfo%occ_init_radius        = -1.0E0_realk/bohr_to_angstrom 
+    DECinfo%vir_init_radius        = -1.0E0_realk/bohr_to_angstrom 
     !> use numerical integration info
     DECinfo%use_abs_overlap        = .false.
 
@@ -236,6 +238,7 @@ contains
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
+    DECinfo%acc_sync          = .false.
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -460,10 +463,11 @@ contains
 
           ! CCSD(T) INFO
           ! ==============
-       case('.PT_ABC'); DECinfo%abc= .true.
+       case('.PT_ABC'); DECinfo%abc = .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
+       case('.ACC_SYNC'); DECinfo%acc_sync = .true.
 
 
           ! DEC CALCULATION 
@@ -606,9 +610,20 @@ contains
           ! set the fraction of the fully extended orbital space that is used as tolerance in an incomplete binary search
        case('.FRACOFORBSPACE_RED'); read(input,*) DECinfo%FracOfOrbSpace_red
           ! include all orbitals for a fragment within a given radius and calculate the fragment energies in Angstrom
-       case('.FRAG_INIT_RADIUS_NO_OPT')
+       case('.FRAG_INIT_RADIUS_NO_OPT_ALL')
           read(input,*) DECinfo%all_init_radius
           DECinfo%all_init_radius = DECinfo%all_init_radius/bohr_to_angstrom
+          DECinfo%occ_init_radius = DECinfo%all_init_radius
+          DECinfo%vir_init_radius = DECinfo%all_init_radius
+       case('.FRAG_INIT_RADIUS_NO_OPT_OCC')
+          read(input,*) DECinfo%occ_init_radius
+          DECinfo%occ_init_radius = DECinfo%occ_init_radius/bohr_to_angstrom
+          DECinfo%all_init_radius = 0.0E0_realk
+       case('.FRAG_INIT_RADIUS_NO_OPT_VIR')
+          read(input,*) DECinfo%vir_init_radius
+          DECinfo%vir_init_radius = DECinfo%vir_init_radius/bohr_to_angstrom
+          DECinfo%all_init_radius = 0.0E0_realk
+
 
 
        !KEYWORDS FOR INTEGRAL INFO
