@@ -178,9 +178,9 @@ module lspdm_tensor_operations_module
 #endif
 #endif
 
-  !procedure(lsmpi_put_realkV_w8),pointer :: put_rk8 
-  !procedure(lsmpi_get_realkV_w8),pointer :: get_rk8 
-  !procedure(lsmpi_acc_realkV_w8),pointer :: acc_rk8 
+  !procedure(lsmpi_put_realkV_dummy),pointer :: put_rk8 
+  !procedure(lsmpi_get_realkV_dummy),pointer :: get_rk8 
+  !procedure(lsmpi_acc_realkV_dummy),pointer :: acc_rk8 
   contains
 
   !>  \brief intitialize storage room for the tiled distributed arrays
@@ -4353,14 +4353,14 @@ module lspdm_tensor_operations_module
        call lsquit("ERROR(tensor_two_dim_1batch):unknown choice of operator",-1)
     endif 
     if(op=='p')then
-       pga  => lsmpi_put_realk
-       pgav => lsmpi_put_realkV_w8
+       pga  => lsmpi_put_realk_dummy
+       pgav => lsmpi_put_realkV_dummy
     else if(op=='g')then
        pga  => lsmpi_get_realk
-       pgav => lsmpi_get_realkV_w8
+       pgav => lsmpi_get_realkV_dummy
     else if(op=='a')then
        pga  => lsmpi_acc_realk
-       pgav => lsmpi_acc_realkV_w8
+       pgav => lsmpi_acc_realkV_dummy
     endif
 
     do i = 1,arr%mode
@@ -5173,14 +5173,14 @@ module lspdm_tensor_operations_module
       call lsquit("ERROR(tensor_two_dim_2batch):unknown choice of operator",-1)
     endif 
     if(op=='p')then
-      pga  => lsmpi_put_realk
-      pgav => lsmpi_put_realkV_w8
+      pga  => lsmpi_put_realk_dummy
+      pgav => lsmpi_put_realkV_dummy
     else if(op=='g')then
       pga  => lsmpi_get_realk
-      pgav => lsmpi_get_realkV_w8
+      pgav => lsmpi_get_realkV_dummy
     else if(op=='a')then
       pga  => lsmpi_acc_realk
-      pgav => lsmpi_acc_realkV_w8
+      pgav => lsmpi_acc_realkV_dummy
     endif
 
     do i = 1,arr%mode
@@ -6705,7 +6705,20 @@ module lspdm_tensor_operations_module
       call tensor_deallocate_dense(arr)
   end subroutine memory_deallocate_tensor_dense_pc
 
-  subroutine lsmpi_put_realkV_w8(buf,nelms,pos,dest,win)
+  subroutine lsmpi_put_realk_dummy(buf,pos,dest,win)
+    implicit none
+    real(realk),intent(inout) :: buf
+    integer, intent(in) :: pos
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: n,ierr
+    integer(kind=MPI_ADDRESS_KIND) :: offset
+    call lsmpi_put_realk(buf,pos,dest,win)
+#endif
+  end subroutine lsmpi_put_realk_dummy
+
+  subroutine lsmpi_put_realkV_dummy(buf,nelms,pos,dest,win)
     implicit none
     real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
@@ -6716,8 +6729,8 @@ module lspdm_tensor_operations_module
     call time_start_phase( PHASE_COMM )
     call lsmpi_put_realkV_wrapper8(buf,nelms,pos,dest,win)
 #endif
-  end subroutine lsmpi_put_realkV_w8
-  subroutine lsmpi_get_realkV_w8(buf,nelms,pos,dest,win)
+  end subroutine lsmpi_put_realkV_dummy
+  subroutine lsmpi_get_realkV_dummy(buf,nelms,pos,dest,win)
     implicit none
     real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
@@ -6728,8 +6741,8 @@ module lspdm_tensor_operations_module
     call time_start_phase( PHASE_COMM )
     call lsmpi_get_realkV_wrapper8(buf,nelms,pos,dest,win)
 #endif
-  end subroutine lsmpi_get_realkV_w8
-  subroutine lsmpi_acc_realkV_w8(buf,nelms,pos,dest,win)
+  end subroutine lsmpi_get_realkV_dummy
+  subroutine lsmpi_acc_realkV_dummy(buf,nelms,pos,dest,win)
     implicit none
     real(realk),intent(inout) :: buf(*)
     integer, intent(in) :: pos
@@ -6740,7 +6753,7 @@ module lspdm_tensor_operations_module
     call time_start_phase( PHASE_COMM )
     call lsmpi_acc_realkV_wrapper8(buf,nelms,pos,dest,win)
 #endif
-  end subroutine lsmpi_acc_realkV_w8
+  end subroutine lsmpi_acc_realkV_dummy
 
   subroutine tensor_flush_win(T,node,gtidx,local,only_owner)
      implicit none
