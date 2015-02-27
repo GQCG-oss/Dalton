@@ -147,9 +147,10 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_TENSOR_CONTRACT_BDENSE = 29
   integer,parameter :: JOB_TENSOR_EXTRACT_VEOS    = 30
   integer,parameter :: JOB_TENSOR_EXTRACT_OEOS    = 31
-  integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 32
-  integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 33
-  integer,parameter :: JOB_GET_MP2_ST_GUESS       = 34
+  integer,parameter :: JOB_TENSOR_EXTRACT_ODECNP  = 32
+  integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 33
+  integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 34
+  integer,parameter :: JOB_GET_MP2_ST_GUESS       = 35
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -1245,6 +1246,103 @@ module lspdm_tensor_operations_module
 #endif
 
   end subroutine lspdm_extract_eos_indices_occ
+
+  subroutine lspdm_extract_decnp_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
+     implicit none
+     !> Array where EOS indices where are extracted
+     type(tensor),intent(inout) :: Arr
+     !> Original array in the order nv,no,nv,no
+     type(tensor),intent(in) :: tensor_full
+     !> Number of EOS indices
+     integer,intent(in) :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, dimension(nEOS),intent(in) :: EOS_idx
+     integer :: nocc,nvirt,i,a,b,j,ix
+     integer, dimension(4) :: new_dims, o
+     integer, pointer :: idxitil(:)
+     integer :: lt, di, da, dj, db, nidxi, i_eos
+     real(realk), pointer :: tile(:,:,:,:)
+     call time_start_phase( PHASE_WORK )
+
+     ! Initialize stuff
+     ! ****************
+     nocc     = tensor_full%dims(2)     ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)     ! Total number of virtual orbitals
+     new_dims = [nvirt,nEOS,nvirt,nocc] ! nEOS=Number of occupied EOS orbitals
+
+#ifdef VAR_MPI
+     if(infpar%lg_mynum == infpar%master.and. &
+        & tensor_full%access_type==AT_MASTER_ACCESS)then
+        call time_start_phase( PHASE_COMM )
+        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_ODECNP,tensor_full)
+        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call ls_mpi_buffer(nEOS,infpar%master)
+        call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
+        call ls_mpi_buffer(4,infpar%master)
+        call ls_mpi_buffer(new_dims,4,infpar%master)
+        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call time_start_phase( PHASE_WORK )
+     endif
+
+     call mem_alloc(idxitil,nEOS)
+
+     do lt=1,tensor_full%nlti
+
+        call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
+
+        call ass_D1to4(tensor_full%ti(lt)%t,tile,tensor_full%ti(lt)%d)
+
+        !get offset for tile counting
+        do j=1,tensor_full%mode
+           o(j)=(o(j)-1)*tensor_full%tdim(j)
+        enddo
+
+        da = tensor_full%ti(lt)%d(1)
+        di = tensor_full%ti(lt)%d(2)
+        db = tensor_full%ti(lt)%d(3)
+        dj = tensor_full%ti(lt)%d(4)
+
+        ! GET EOS mapping to the tile
+        nidxi = 0
+        do i_eos = 1, nEOS
+           do i = 1, di
+              if( o(2) + i == EOS_idx(i_eos))then
+                 idxitil(nidxi+1) = i
+                 nidxi = nidxi + 1
+              endif
+           enddo
+        enddo
+
+        if(nidxi > 0)then
+
+           do j=1,dj
+              do b=1,db
+                 do i=1,nidxi
+                    do a=1,da
+                       Arr%elm4(o(1)+a,o(2)+idxitil(i),o(3)+b,o(4)+j) = tile(a,idxitil(i),b,j)
+                    end do
+                 end do
+              end do
+           end do
+
+        endif
+
+        tile => null()
+     enddo
+
+     call mem_dealloc(idxitil)
+
+     call time_start_phase( PHASE_COMM )
+     if(tensor_full%access_type==AT_MASTER_ACCESS)then
+        call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
+     else if(tensor_full%access_type==AT_ALL_ACCESS)then
+        call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
+     endif
+     call time_start_phase( PHASE_WORK )
+
+#endif
+
+  end subroutine lspdm_extract_decnp_indices_occ
   
   subroutine lspdm_get_combined_SingleDouble_amplitudes(t1,t2,u)
      implicit none

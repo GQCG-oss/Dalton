@@ -38,7 +38,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
-     & check_cc_input
+     & check_cc_input, check_dec_input
 use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
@@ -1072,6 +1072,15 @@ subroutine DEC_meaningful_input(config)
         ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
 
+        ! Modify DECinfo to calculate first order properties (gradient) for MP2
+        DECinfo%gradient=.true.
+        DECinfo%first_order=.true.
+        if (DECinfo%ccmodel /= MODEL_MP2) then
+           write(DECinfo%output,*) "WARNING: DEC Geometry optimization only available for MP2"
+           write(DECinfo%output,*) "WARNING: We are switching to DEC-MP2  !!!"
+           DECinfo%ccmodel = MODEL_MP2
+        end if 
+
         ! DEC restart for geometry optimizations not implemented
         if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
            write(config%lupri,*) 'Warning: DEC restart not implemented for geometry optimization...'
@@ -1123,6 +1132,9 @@ subroutine DEC_meaningful_input(config)
         end if
 #endif
      end if OrbLocCheck
+
+     ! Check DEC input internally
+     call check_dec_input()
 
   end if DECcalculation
 

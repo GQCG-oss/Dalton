@@ -604,8 +604,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       FragEnergies     = 0.0E0_realk
       FragEnergies_tmp = 0.0E0_realk
    
-      call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
+      if (DECinfo%DECNP) then
+         call decnp_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
          & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
+      else
+         call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
+         & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
+      end if
+
    
       if(ccmodel == MODEL_CCSDpT)then
          ! now we calculate fourth-order and fifth-order energies
@@ -735,6 +741,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       if(ccmodel == MODEL_RPA)then
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA ', &
             & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+      elseif(ccmodel == MODEL_SOSEX)then
+         write(DECinfo%output,'(1X,a,a,a,g20.10)') 'SOSEX ', &
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
       else if(ccmodel == MODEL_MP2)then
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'MP2 ', &
             & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
@@ -779,7 +788,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    else if (ccmodel == MODEL_RIMP2) then
       write(DECinfo%output,'(1X,a)') '*                      Full RI-MP2 calculation is done !                    *'
    else if (ccmodel == MODEL_RPA ) then
-      write(DECinfo%output,'(1X,a)') '*                      Full RPA calculation is done !                       *'
+      write(DECinfo%output,'(1X,a)') '*                      Full dRPA calculation is done !                       *'
+   else if (ccmodel == MODEL_SOSEX ) then
+      write(DECinfo%output,'(1X,a)') '*                      Full SOSEX calculation is done !                       *'
    else
       call lsquit("ERROR(ccsolver_justenergy)model not recognized",-1)
    endif
@@ -800,7 +811,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       endif
    endif
 
-   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
+     &.and. ccmodel /= MODEL_SOSEX ) then
       ! free amplitude arrays
       call tensor_free(t1_final)
    endif
@@ -814,7 +826,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergy,&
       & VOVO,.false.,local,t1_final,t2_final)
 
-   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
+     & ccmodel /= MODEL_SOSEX) then
       call tensor_free(t1_final)
    endif
    call tensor_free(t2_final)
@@ -852,8 +865,8 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
    real(realk) :: ccenergy
    logical :: local
 
-   ! Sanity check: This routine is not intended for MP2
-   if(MyFragment%ccmodel == MODEL_MP2) then
+   ! Sanity check: This routine is not intended for MP2 (except for DECNP)
+   if(MyFragment%ccmodel == MODEL_MP2 .and. (.not.DECinfo%DECNP)) then
       call lsquit('fragment_ccsolver cannot be used for MP2!',&
       & DECinfo%output)
    end if
@@ -1915,6 +1928,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       use_singles = .false.
       atype = 'LDAR'
 
+   case(MODEL_SOSEX)
+
+      use_singles = .false.
+      atype = 'LDAR'
+
    case default
 
       call lsquit("ERROR(ccsolver_par): requested model not yet implemented",-1)
@@ -2189,7 +2207,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end if
 
-   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA )then
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
+    &.and. ccmodel /= MODEL_SOSEX )then
       call tensor_change_atype_to_d( ppfock_prec )
       call tensor_change_atype_to_d( qqfock_prec )
    endif
@@ -2218,7 +2237,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc( omega2, DECinfo%ccMaxDIIS )
 
    ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-   if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA) then
+   if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
+     &.and. ccmodel /= MODEL_SOSEX) then
       call tensor_minit(xo, occ_dims, 2, local=local, atype='LDAR' )
       call tensor_minit(yo, occ_dims, 2, local=local, atype='LDAR' )
       call tensor_minit(xv, virt_dims,2, local=local, atype='LDAR' )
@@ -2459,6 +2479,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter_idx),iajb,no,nv)
                endif
 
+            case(MODEL_SOSEX)
+               ccenergy = get_RPA_energy_arrnew(t2(iter_idx),iajb,no,nv)
+               ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter_idx),iajb,no,nv)
 
             case default
                ! MODEL RIMP2 defaults here since it shoule not use this solver
@@ -2590,8 +2613,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          case(MODEL_RPA)
             ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
             if(DECinfo%SOS) then
-               ccenergy_check =ccenergy+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
+               ccenergy_check =ccenergy_check+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
             endif
+         case(MODEL_SOSEX)
+            ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
+            ccenergy_check =ccenergy_check+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
          case default
             call lsquit("ERROR(ccsolver_par):energy expression for your model&
                & not yet implemented",-1)
@@ -2721,7 +2747,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    end if
 
 
-   if(ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA)then
+   if(ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
+     &.and. ccmodel /= MODEL_SOSEX)then
       call tensor_free(ppfock)
       call tensor_free(qqfock)
    endif
@@ -2858,7 +2885,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,delta_fock,omega2,t2,&
          call lsquit("ERROR(ccsolver_get_residual): job not implemented for CC2, CCSD or CCSD(T)",-1)
       end select
 
-   case( MODEL_RPA )
+   case( MODEL_RPA,MODEL_SOSEX )
 
       call RPA_residual_par(omega2(use_i),t2(use_i),iajb,ppfock_prec,qqfock_prec,no,nv,local)
 
@@ -2887,7 +2914,7 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
    ! MODIFY FOR NEW MODEL
    ! If you implement a new model, please insert call to your own residual routine here!
    SelectCoupledClusterModel : select case( CCmodel )
-   case( MODEL_RPA, MODEL_MP2 ) 
+   case( MODEL_RPA, MODEL_MP2,MODEL_SOSEX ) 
 
       do i=1,nSS
          do j=1,i
@@ -2951,7 +2978,7 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
 
    mo_ccsd = .true.
    if (DECinfo%NO_MO_CCSD.or.(no+nv>200).or.use_pnos.or.(ccmodel==MODEL_MP2) &
-      & .or. (ccmodel==MODEL_RPA)) mo_ccsd = .false.
+      & .or. (ccmodel==MODEL_RPA).or.(ccmodel==MODEL_SOSEX) ) mo_ccsd = .false.
 
    if (DECinfo%force_scheme) then
       if (DECinfo%en_mem<5) then
@@ -2972,7 +2999,8 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
    ! Check if there is enough memory to performed an MO-CCSD calculation.
    !   YES: get full set of t1 free gmo and pack them
    !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-   if (mo_ccsd.and.(.not.ccmodel==MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
+   if (mo_ccsd.and.(.not.ccmodel==MODEL_RPA).and.(.not.ccmodel==MODEL_MP2) &
+     & .and. (.not.ccmodel==MODEL_SOSEX)) then
       if(DECinfo%PL>1)call time_start_phase( PHASE_work, twall = time_mo_ints ) 
 
       call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,pgmo_diag,pgmo_up, &
@@ -3157,6 +3185,8 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
    case(MODEL_CCSD)
       use_singles = .true.
    case(MODEL_RPA)
+      use_singles = .false.
+   case(MODEL_SOSEX)
       use_singles = .false.
    case default
       call lsquit("ERROR(get_guess_vectors) unknown model",-1)
