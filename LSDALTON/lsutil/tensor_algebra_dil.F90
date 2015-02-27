@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/02/13 (started 2014/09/01).
+!REVISION: 2015/02/26 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -418,12 +418,12 @@
         if(nl.gt.0) call permutation_invert(nl,cspec%lprmn,prm1,i)
         if(nr.gt.0) call permutation_invert(nr,cspec%rprmn,prm2,i)
         if(DIL_DEBUG) then
-         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): ddims:",64(1x,i4))') cspec%ddims(1:nd)
-         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): ldims:",64(1x,i4))') cspec%ldims(1:nl)
-         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): rdims:",64(1x,i4))') cspec%rdims(1:nr)
-         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): dbase:",64(1x,i4))') cspec%dbase(1:nd)
-         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): lbase:",64(1x,i4))') cspec%lbase(1:nl)
-         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): rbase:",64(1x,i4))') cspec%rbase(1:nr)
+         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): ddims:",64(1x,i6))') cspec%ddims(1:nd)
+         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): ldims:",64(1x,i6))') cspec%ldims(1:nl)
+         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): rdims:",64(1x,i6))') cspec%rdims(1:nr)
+         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): dbase:",64(1x,i6))') cspec%dbase(1:nd)
+         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): lbase:",64(1x,i6))') cspec%lbase(1:nl)
+         write(CONS_OUT,'("#DEBUG(dil_tens_contr_spec_check): rbase:",64(1x,i6))') cspec%rbase(1:nr)
         endif
         do i=1,cspec%ndims_left
          j=prm0(i); k=prm1(cspec%ndims_contr+i)
@@ -2805,10 +2805,10 @@
           endif
          enddo
          if(DIL_DEBUG) then
-          write(CONS_OUT,'(1x,"#DEBUG(DIL): markers:",64(5x,A1))') (/('c',i=1,tcontr%contr_spec%ndims_contr)/),&
+          write(CONS_OUT,'(1x,"#DEBUG(DIL): markers:",64(6x,A1))') (/('c',i=1,tcontr%contr_spec%ndims_contr)/),&
           &(/('l',i=1,tcontr%contr_spec%ndims_left)/),(/('r',i=1,tcontr%contr_spec%ndims_right)/) !markers
-          write(CONS_OUT,'(1x,"#DEBUG(DIL): dims   :",64(1x,i5))') tcc(1:ni)
-          write(CONS_OUT,'(1x,"#DEBUG(DIL): tiling :",64(1x,i5))') tct(1:ni)
+          write(CONS_OUT,'(1x,"#DEBUG(DIL): dims   :",64(1x,i6))') tcc(1:ni)
+          write(CONS_OUT,'(1x,"#DEBUG(DIL): tiling :",64(1x,i6))') tct(1:ni)
           write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: Global TC Volume ",i24," for ",i6, " procs.")')&
           &impir,tcvol,impis
          endif
@@ -2851,7 +2851,7 @@
           endif
           sbvol=1_INTL; do i=1,ni; sbvol=sbvol*tcs(i); enddo !subblock volume
           npieces=1_INTL; do i=1,ni; npieces=npieces*((tcc(i)-1_INTD)/tcs(i)+1_INTD); enddo !number of work pieces
-          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial subblock segs:",64(1x,i5))')&
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial subblock segs:",64(1x,i6))')&
           &impir,tcs(1:ni)
           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: initial subblock volume = ",i12)')&
           &impir,sbvol
@@ -2880,7 +2880,7 @@
             endif
            enddo
            sbvol=1_INTL; do i=1,ni; sbvol=sbvol*tcs(i); enddo !subblock volume
-           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock segs:",64(1x,i5))')&
+           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock segs:",64(1x,i6))')&
            &impir,tcs(1:ni)
            if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock volume = ",i12)')&
            &impir,sbvol
@@ -2914,7 +2914,7 @@
            enddo
           enddo
           sbvol=1_INTL; do i=1,ni; sbvol=sbvol*tcs(i); enddo !subblock volume
-          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock segs:",64(1x,i5))')&
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock segs:",64(1x,i6))')&
           &impir,tcs(1:ni)
           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted subblock volume = ",i12)')&
           &impir,sbvol
@@ -3262,12 +3262,12 @@
          ierr=16; return
         endif
         if(DIL_DEBUG) then
-         write(CONS_OUT,'(1x,"#DEBUG(DIL): XX:",64(4x,A1))') (/('c',i=1,cspec%ndims_contr)/),&
+         write(CONS_OUT,'(1x,"#DEBUG(DIL): XX:",64(6x,A1))') (/('c',i=1,cspec%ndims_contr)/),&
          &(/('l',i=1,cspec%ndims_left)/),(/('r',i=1,cspec%ndims_right)/) !markers
-         write(CONS_OUT,'(1x,"#DEBUG(DIL): LB:",64(1x,i4))') lb(1:ni) !index lower bounds
-         write(CONS_OUT,'(1x,"#DEBUG(DIL): UB:",64(1x,i4))') ub(1:ni) !index upper bounds
-         write(CONS_OUT,'(1x,"#DEBUG(DIL): SB:",64(1x,i4))') sb(1:ni) !index natural segments (for storage)
-         write(CONS_OUT,'(1x,"#DEBUG(DIL): TS:",64(1x,i4))') ts(1:ni) !index segments for work partitioning
+         write(CONS_OUT,'(1x,"#DEBUG(DIL): LB:",64(1x,i6))') lb(1:ni) !index lower bounds
+         write(CONS_OUT,'(1x,"#DEBUG(DIL): UB:",64(1x,i6))') ub(1:ni) !index upper bounds
+         write(CONS_OUT,'(1x,"#DEBUG(DIL): SB:",64(1x,i6))') sb(1:ni) !index natural segments (for storage)
+         write(CONS_OUT,'(1x,"#DEBUG(DIL): TS:",64(1x,i6))') ts(1:ni) !index segments for work partitioning
         endif
  !Check segmentation:
         lsm=1_INTL; do i=1,nl; lsm=lsm*ts(i); enddo
@@ -3447,6 +3447,8 @@
         hbuf=>NULL(); hbuf_cp=C_NULL_PTR; buf_alloc=.false.
         num_dev=1; gpu_on=.false.; mic_on=.false.
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: OUTSIDE LOCK = ",l1)')&
+         &impir,win_lck !debug
         contr_case=darg%store_type//larg%store_type//rarg%store_type !contraction case
 !Check input arguments:
         if(mem_lim.lt.MIN_BUF_MEM) then; call cleanup(1_INTD); return; endif
@@ -3499,43 +3501,43 @@
         if(DIL_DEBUG) then
          select case(darg%store_type)
          case('l','L')
-          write(CONS_OUT,'("#DEBUG(DIL): LOC DEST STORED LBND:",16(1x,i4))') darg%tens_loc%base(1:nd)+IND_NUM_START
-          write(CONS_OUT,'("#DEBUG(DIL): LOC DEST STORED UBND:",16(1x,i4))') darg%tens_loc%base(1:nd)+darg%tens_loc%dims(1:nd)&
+          write(CONS_OUT,'("#DEBUG(DIL): LOC DEST STORED LBND:",16(1x,i6))') darg%tens_loc%base(1:nd)+IND_NUM_START
+          write(CONS_OUT,'("#DEBUG(DIL): LOC DEST STORED UBND:",16(1x,i6))') darg%tens_loc%base(1:nd)+darg%tens_loc%dims(1:nd)&
           &+IND_NUM_START-1
          case('d','D')
           if(associated(darg%tens_distr_p)) then
-           write(CONS_OUT,'("#DEBUG(DIL): DISTR DEST STORED LBND:",16(1x,i4))') (/(IND_NUM_START,i=1,nd)/)
-           write(CONS_OUT,'("#DEBUG(DIL): DISTR DEST STORED UBND:",16(1x,i4))') darg%tens_distr_p%dims(1:nd)+IND_NUM_START-1
+           write(CONS_OUT,'("#DEBUG(DIL): DISTR DEST STORED LBND:",16(1x,i6))') (/(IND_NUM_START,i=1,nd)/)
+           write(CONS_OUT,'("#DEBUG(DIL): DISTR DEST STORED UBND:",16(1x,i6))') darg%tens_distr_p%dims(1:nd)+IND_NUM_START-1
           endif
          end select
-         write(CONS_OUT,'("#DEBUG(DIL): DEST PROCESSED LBND:",16(1x,i4))') cspec%dbase(1:nd)+IND_NUM_START
-         write(CONS_OUT,'("#DEBUG(DIL): DEST PROCESSED UBND:",16(1x,i4))') cspec%dbase(1:nd)+cspec%ddims(1:nd)+IND_NUM_START-1
+         write(CONS_OUT,'("#DEBUG(DIL): DEST PROCESSED LBND:",16(1x,i6))') cspec%dbase(1:nd)+IND_NUM_START
+         write(CONS_OUT,'("#DEBUG(DIL): DEST PROCESSED UBND:",16(1x,i6))') cspec%dbase(1:nd)+cspec%ddims(1:nd)+IND_NUM_START-1
          select case(larg%store_type)
          case('l','L')
-          write(CONS_OUT,'("#DEBUG(DIL): LOC LEFT STORED LBND:",16(1x,i4))') larg%tens_loc%base(1:nl)+IND_NUM_START
-          write(CONS_OUT,'("#DEBUG(DIL): LOC LEFT STORED UBND:",16(1x,i4))') larg%tens_loc%base(1:nl)+larg%tens_loc%dims(1:nl)&
+          write(CONS_OUT,'("#DEBUG(DIL): LOC LEFT STORED LBND:",16(1x,i6))') larg%tens_loc%base(1:nl)+IND_NUM_START
+          write(CONS_OUT,'("#DEBUG(DIL): LOC LEFT STORED UBND:",16(1x,i6))') larg%tens_loc%base(1:nl)+larg%tens_loc%dims(1:nl)&
           &+IND_NUM_START-1
          case('d','D')
           if(associated(larg%tens_distr_p)) then
-           write(CONS_OUT,'("#DEBUG(DIL): DISTR LEFT STORED LBND:",16(1x,i4))') (/(IND_NUM_START,i=1,nl)/)
-           write(CONS_OUT,'("#DEBUG(DIL): DISTR LEFT STORED UBND:",16(1x,i4))') larg%tens_distr_p%dims(1:nl)+IND_NUM_START-1
+           write(CONS_OUT,'("#DEBUG(DIL): DISTR LEFT STORED LBND:",16(1x,i6))') (/(IND_NUM_START,i=1,nl)/)
+           write(CONS_OUT,'("#DEBUG(DIL): DISTR LEFT STORED UBND:",16(1x,i6))') larg%tens_distr_p%dims(1:nl)+IND_NUM_START-1
           endif
          end select
-         write(CONS_OUT,'("#DEBUG(DIL): LEFT PROCESSED LBND:",16(1x,i4))') cspec%lbase(1:nl)+IND_NUM_START
-         write(CONS_OUT,'("#DEBUG(DIL): LEFT PROCESSED UBND:",16(1x,i4))') cspec%lbase(1:nl)+cspec%ldims(1:nl)+IND_NUM_START-1
+         write(CONS_OUT,'("#DEBUG(DIL): LEFT PROCESSED LBND:",16(1x,i6))') cspec%lbase(1:nl)+IND_NUM_START
+         write(CONS_OUT,'("#DEBUG(DIL): LEFT PROCESSED UBND:",16(1x,i6))') cspec%lbase(1:nl)+cspec%ldims(1:nl)+IND_NUM_START-1
          select case(rarg%store_type)
          case('l','L')
-          write(CONS_OUT,'("#DEBUG(DIL): LOC RIGT STORED LBND:",16(1x,i4))') rarg%tens_loc%base(1:nr)+IND_NUM_START
-          write(CONS_OUT,'("#DEBUG(DIL): LOC RIGT STORED UBND:",16(1x,i4))') rarg%tens_loc%base(1:nr)+rarg%tens_loc%dims(1:nr)&
+          write(CONS_OUT,'("#DEBUG(DIL): LOC RIGT STORED LBND:",16(1x,i6))') rarg%tens_loc%base(1:nr)+IND_NUM_START
+          write(CONS_OUT,'("#DEBUG(DIL): LOC RIGT STORED UBND:",16(1x,i6))') rarg%tens_loc%base(1:nr)+rarg%tens_loc%dims(1:nr)&
           &+IND_NUM_START-1
          case('d','D')
           if(associated(rarg%tens_distr_p)) then
-           write(CONS_OUT,'("#DEBUG(DIL): DISTR RIGT STORED LBND:",16(1x,i4))') (/(IND_NUM_START,i=1,nr)/)
-           write(CONS_OUT,'("#DEBUG(DIL): DISTR RIGT STORED UBND:",16(1x,i4))') rarg%tens_distr_p%dims(1:nr)+IND_NUM_START-1
+           write(CONS_OUT,'("#DEBUG(DIL): DISTR RIGT STORED LBND:",16(1x,i6))') (/(IND_NUM_START,i=1,nr)/)
+           write(CONS_OUT,'("#DEBUG(DIL): DISTR RIGT STORED UBND:",16(1x,i6))') rarg%tens_distr_p%dims(1:nr)+IND_NUM_START-1
           endif
          end select
-         write(CONS_OUT,'("#DEBUG(DIL): RIGT PROCESSED LBND:",16(1x,i4))') cspec%rbase(1:nr)+IND_NUM_START
-         write(CONS_OUT,'("#DEBUG(DIL): RIGT PROCESSED UBND:",16(1x,i4))') cspec%rbase(1:nr)+cspec%rdims(1:nr)+IND_NUM_START-1
+         write(CONS_OUT,'("#DEBUG(DIL): RIGT PROCESSED LBND:",16(1x,i6))') cspec%rbase(1:nr)+IND_NUM_START
+         write(CONS_OUT,'("#DEBUG(DIL): RIGT PROCESSED UBND:",16(1x,i6))') cspec%rbase(1:nr)+cspec%rdims(1:nr)+IND_NUM_START-1
         endif
  !Destination tensor argument:
         if(nd.gt.0) then

@@ -113,13 +113,15 @@ module cc_tools_module
    end subroutine get_tpl_and_tmi_tensors
 
    subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
+      use, intrinsic:: ISO_C_BINDING
       implicit none
-      type(tensor),intent(inout) :: t2, tpl, tmi !`DIL: Is t2 intent(in)? I assume so. Also, tpl & tmi have been already created.
+      type(tensor),intent(inout) :: t2 !`DIL: Is t2 intent(in)? I assume so. Also, tpl & tmi have been already created
+      type(tensor),intent(inout) :: tpl, tmi !tpl[nor,nvr],tmi[nor,nvr]
 
       integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
       integer :: otmi(2),otpl(2),ot2(4)
-      real(realk), pointer :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
-      real(realk), pointer :: buf1(:),buf2(:)
+      real(realk), pointer, contiguous :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
+      real(realk), pointer, contiguous :: buf1(:),buf2(:)
       integer :: dcged,dilej,ccged,cilej,gcged,gilej
       real(realk) :: sol
       integer :: nor,no,nvr,nv,k,c,d
@@ -157,7 +159,8 @@ module cc_tools_module
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
 
          !Facilitate access
-         call ass_D1to2( tpl%ti(lt)%t, tpm, tpl%ti(lt)%d )
+!         call ass_D1to2( tpl%ti(lt)%t, tpm, tpl%ti(lt)%d )
+         call c_f_pointer(c_loc(tpl%ti(lt)%t),tpm,shape=tpl%ti(lt)%d(1:2)) !`DIL
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -224,11 +227,14 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call ass_D1to4( buf1, tt1, tdim )
+!            call ass_D1to4( buf1, tt1, tdim )
+            call c_f_pointer(c_loc(buf1),tt1,shape=tdim(1:4)) !`DIL
             if(mtile(2)==mtile(1))then
-               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer(c_loc(buf1),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
             else
-               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
             endif
 
             !get offset for tile counting
@@ -277,7 +283,6 @@ module cc_tools_module
                                  ccged = mod(gcged-1,nvrs)+1
                                  cilej = mod(gilej-1,nors)+1
 
-
                                  tpm(cilej,ccged) = 0.5E0_realk*(tt1(a,b,i,j)+tt2(b,a,i,j))
 
                                  contributed  = .true.
@@ -306,7 +311,8 @@ module cc_tools_module
          call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
 
          !Facilitate access
-         call ass_D1to2( tmi%ti(lt)%t, tpm, tmi%ti(lt)%d )
+!         call ass_D1to2( tmi%ti(lt)%t, tpm, tmi%ti(lt)%d )
+         call c_f_pointer(c_loc(tmi%ti(lt)%t),tpm,shape=tmi%ti(lt)%d(1:2)) !`DIL
 
          !build list of tiles to get for the current tmi tile
          !get offset for tile counting
@@ -373,11 +379,14 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call ass_D1to4( buf1, tt1, tdim )
+!            call ass_D1to4( buf1, tt1, tdim )
+            call c_f_pointer(c_loc(buf1),tt1,shape=tdim(1:4)) !`DIL
             if(mtile(2)==mtile(1))then
-               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer(c_loc(buf1),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
             else
-               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
             endif
 
             !get offset for tile counting
@@ -630,7 +639,7 @@ module cc_tools_module
       real(realk),intent(inout) :: w0(:),w2(:),w3(:)
       !> the t+ and t- combinations with a value of the amplitudes with the
       !diagonal elements divided by two
-      type(tensor),intent(inout) :: tpl,tmi
+      type(tensor),intent(inout) :: tpl,tmi !tpl[nor,nvr],tmi[nor,nvr]
       !> number of occupied, virutal and ao indices
       integer, intent(in) :: no,nv,nb
       !> first alpha and first gamma indices of the current loop
@@ -730,7 +739,7 @@ module cc_tools_module
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 6:")')&
           &infpar%lg_mynum,infpar%mynum
          endif
-         tcs='D(z,y)+=L(z,x)*R(x,y)'
+         tcs='D(z,y)+=L(z,x)*R(y,x)'
          call dil_clean_tens_contr(tch)
          tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
          call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,w3)
@@ -768,7 +777,7 @@ module cc_tools_module
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 7:")')&
           &infpar%lg_mynum,infpar%mynum
          endif
-         tcs='D(z,y)+=L(z,x)*R(x,y)'
+         tcs='D(z,y)+=L(z,x)*R(y,x)'
          call dil_clean_tens_contr(tch)
          tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
          call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,w3(tred*nor+1:))

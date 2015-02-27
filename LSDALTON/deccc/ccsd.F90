@@ -1092,7 +1092,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      vs                       = t2%tdim(1)
      os                       = t2%tdim(3)
      residual_nr              = RN_RESIDUAL_INT_DRIVEN
-
+#ifdef DIL_ACTIVE
+     nors                     = get_split_scheme_0(nor)
+     nvrs                     = get_split_scheme_0(nvr)
+#endif
 
      ! Memory info
      ! ***********
@@ -1217,7 +1220,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! for the calculations is chosen, hereby the schemes 4-1 are the MPI
         ! schemes with decreasing memory reqirements. Hereby scheme 4 and 0 can be
         ! used without MPI. Scheme 0 should never be chosen with MPI and
-        ! schemes 2,3 should never be chosen without MPI
+        ! schemes 1,2,3 should never be chosen without MPI
 
         ! scheme 4: everything is treated locally, only the main integral driven
         !           loop is MPI-parallel
@@ -1225,21 +1228,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! scheme 2: additionally to 3 also the amplitudes, u, the residual are
         !           treated in PDM, the strategy is to only use one V^2O^2 in 
         !           local mem
-        ! scheme 1: All 4 dimensional quantities are stored in PDM
+        ! scheme 1: All full 4 dimensional quantities are stored in PDM
 
 #ifndef VAR_MPI
         if(scheme==3.or.scheme==2.or.scheme==1) call lsquit("ERROR(ccsd_residual_integral_driven): wrong choice of scheme",-1)
 #endif
-#ifdef DIL_ACTIVE
-        if(scheme==1) then
-         if(.not.alloc_in_dummy) call lsquit("ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3",-1)
-         DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
-        else
-         DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
-        endif
-#endif
      endif
 
+#ifdef DIL_ACTIVE
+!     scheme=1 !``DIL: remove
+     if(scheme==1) then
+      if(.not.alloc_in_dummy) call lsquit('ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3!',-1)
+      DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
+     else
+      DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
+     endif
+#endif
 #ifdef VAR_MPI
      if(.not.local) then
         t2%access_type = AT_ALL_ACCESS
@@ -1253,6 +1257,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         endif
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !``DIL: remove
+#endif
 
      !all communication for MPI prior to the loop
      call time_start_phase(PHASE_COMM, at = time_init_work )
@@ -1429,10 +1436,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ------------------------
 
      !get the t+ and t- for the Kobayshi-like B2 term
+#ifdef DIL_ACTIVE
+!     scheme=1 !``DIL: remove
+#endif
      if(scheme==1) then !`DIL: Create TPL & TMI
 #ifdef DIL_ACTIVE
-      nors = get_split_scheme_0(nor)
-      nvrs = get_split_scheme_0(nvr)
       call tensor_ainit(tpld,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
       call tensor_ainit(tmid,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype="TDAR")
 #else
@@ -1442,18 +1450,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call mem_alloc( tpl, int(i8*nor*nvr,kind=long), simple = .true. )
       call mem_alloc( tmi, int(i8*nor*nvr,kind=long), simple = .true. )
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !``DIL: remove
+#endif
 
 !#ifdef VAR_MPI
 !     call tensor_unlock_wins(t2,.true.)
 !#endif
 
      !if I am the working process, then
+#ifdef DIL_ACTIVE
+!     scheme=1 !``DIL: remove
+#endif
      if(scheme==1) then !`DIL: Define TPL & TMI
 #ifdef DIL_ACTIVE
       call get_tpl_and_tmi(t2,tpld,tmid)
       if(DIL_DEBUG)then
-       call print_norm(tpld," NORM(tpl)   :",print_on_rank=0)
-       call print_norm(tmid," NORM(tmi)   :",print_on_rank=0)
+       call print_norm(tpld," NORM(tpld)   :",print_on_rank=0)
+       call print_norm(tmid," NORM(tmid)   :",print_on_rank=0)
       endif
 #else
       call lsquit('ERROR(ccsd_residual_integral_driven): This part (2) of Scheme 1 requires DIL backend!',-1)
@@ -1465,8 +1479,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        call print_norm(tmi%d,int(nor*nvr,kind=8)," NORM(tmi)   :")
       endif
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !``DIL: remove
+#endif
 
      !get u2 in pdm or local
+#ifdef DIL_ACTIVE
+!     scheme=1 !``DIL: remove
+#endif
      if(scheme==2.or.scheme==1)then
 #ifdef VAR_MPI
         if(scheme/=1) call tensor_deallocate_dense(t2)
@@ -1494,6 +1514,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call array_reorder_4d(  2.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
         call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !``DIL: remove
+#endif
 
      if(print_debug) call print_norm(u2," NORM(u2)    :",print_on_rank=0)
 
@@ -1568,7 +1591,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
 
      ! allocate working arrays depending on the batch sizes
-!     if(scheme/=1) then !`DIL: These arrays must be reduced or not used in Scheme 1
       w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
       call mem_alloc( w0, w0size , simple = .false. )
@@ -1578,13 +1600,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call mem_alloc( w1, w1size , simple = .false.)
 
       w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !``DIL: w2 size must be reduced when DIL
       call mem_alloc( w2, w2size , simple = .false. )
 
       w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
       call mem_alloc( w3, w3size , simple = .false. )
-!     endif
 
      !call get_currently_available_memory(MemFree3)
 
@@ -2132,6 +2153,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  !the gamma batch, chose the trafolength as minimum of alpha batch-length
                  !and the difference between first element of alpha batch and last element
                  !of gamma batch
+#ifdef DIL_ACTIVE
+!                 scheme=1 !``DIL: remove
+#endif
                  if(scheme /= 1) then
                   call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
                         &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
@@ -2139,13 +2163,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  else !`DIL: Scheme 1: TPL and TMI are distributed tensors
 #ifdef DIL_ACTIVE
                   call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpld,tmid,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
-                        &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,DIL_LOCK_OUTSIDE,&
+                        &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,.false.,&
                         &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
 #else
                   call lsquit('ERROR(ccsd_residual_integral_driven): This part (6) of Scheme 1 requires DIL backend!',-1)
 #endif
                  endif
-
+#ifdef DIL_ACTIVE
+                 scheme=2 !``DIL: remove
+#endif
                  !start a new timing phase after these terms
                  call time_start_phase(PHASE_WORK)
 
