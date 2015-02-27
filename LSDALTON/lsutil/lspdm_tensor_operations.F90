@@ -5377,7 +5377,7 @@ module lspdm_tensor_operations_module
   subroutine cp_data2tiled_lowmem(arr,A,dims,mode)
     implicit none
     type(tensor),intent(inout) :: arr
-    real(realk),intent(inout) :: A(*)
+    real(realk),intent(in) :: A(*)
     integer,intent(in) :: mode, dims(mode)
     integer :: fib,lt,ce,j,step,mod_step,iter,nccblocks,st
     integer(kind=ls_mpik) :: nnod, me, dest, assert,ierr, act_step
@@ -6566,8 +6566,7 @@ module lspdm_tensor_operations_module
     real(realk) :: sc
 #ifdef VAR_MPI
     integer     :: i
-
-    if(arr%access_type==AT_MASTER_ACCESS)then
+    if(arr%access_type==AT_MASTER_ACCESS.AND.infpar%lg_mynum==0)then
       call time_start_phase( PHASE_COMM )
       call PDM_tensor_SYNC(infpar%lg_comm,JOB_tensor_SCALE,arr)
       call ls_mpibcast(sc,infpar%master,infpar%lg_comm)
