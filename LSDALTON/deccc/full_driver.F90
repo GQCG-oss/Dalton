@@ -100,7 +100,7 @@ contains
              if(DECinfo%use_canonical ) then
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
-                call full_canonical_mp2B(MyMolecule,MyLsitem,Ecorr)       
+                call full_canonical_mp2(MyMolecule,MyLsitem,Ecorr)       
              else
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
@@ -3703,6 +3703,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
               tmp_mp2_energy2 = 0.0E0_realk
               call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
               tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
+              print*,'tmp_mp2_energy2(I=',I+(iB-1)*nOccBatchDimImax,',JB=',JB,',mynum=',mynum,') ',tmp_mp2_energy2
            enddo
         enddo
 !        call lsmpi_reduction(tmp_mp2_energy,infpar%master,comm)
@@ -3714,6 +3715,8 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 #ifdef VAR_MPI
               call ls_mpisendrecv(tmp_mp2_energy2,comm,sender,receiver)
 #endif
+              print*,'MASTER MP2 Energy(iB=',iB,',mynum=',sender,') = ',tmp_mp2_energy
+              WRITE(DECinfo%output,*)'MP2 Energy(iB=',iB,',mynum=',sender,') = ',tmp_mp2_energy
               tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
            enddo
         ELSE
@@ -5273,7 +5276,7 @@ subroutine full_canonical_mp2_slave
   ! *******************
   ! Main master:  Send stuff to local masters and deallocate temp. buffers
   ! Local master: Deallocate buffer etc.
-  call full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
+  call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
   
