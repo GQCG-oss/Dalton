@@ -786,7 +786,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
           else
 
-             call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
+             call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t1,t2,&
                 & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,&
                 & xo%elm1,xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,&
                 & rest=rest)
@@ -796,7 +796,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        end if
     endif
 #else
-    call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
+    call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t1,t2,&
        & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
        & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
 #endif
@@ -853,7 +853,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !
   !rest = tells the routine wheter the calculation has been restarted from
   !amplitude files
-  subroutine get_ccsd_residual_integral_driven(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
+  subroutine get_ccsd_residual_integral_driven(ccmodel,deltafock,omega2,t1,t2,fock,govov,no,nv,&
         ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
 !`DIL:
@@ -884,7 +884,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(tensor),intent(inout) :: omega2
      !> the current guess amplitudes
      !real(realk),pointer,intent(in) ::t2(:)
-     type(tensor),intent(inout) :: t2
+     type(tensor),intent(inout) :: t1,t2
      !> on output this contains the occupied-occupied block of the t1-fock matrix
      real(realk),intent(inout) :: ppfock(no*no)
      !> on output this contains the virtual-virtual block of the t1-fock matrix
@@ -2709,22 +2709,40 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call mem_alloc(w0,i8*nb*nb, simple=.true.)
      call mem_alloc(w2,i8*nb*nb, simple=.true.)
 
-     !calculate inactive fock matrix in ao basis
-     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w0%d,nb)
+     !!calculate inactive fock matrix in ao basis
+     !call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w0%d,nb)
+     !call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
+     !call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,w0%d,nb,nb,AORdefault,AORdefault)
+     !! Add one- and two-electron contributions to Fock matrix
+     !call daxpy(nb2,1.0E0_realk,w0%d,1,w2%d,1)
 
+     call dgemm('n','n',nb,no,nv,1.0E0_realk,yv,nb,t1%elm1,nv,0.0E0_realk,w1%d,nb)
+     call dgemm('n','t',nb,nb,no,1.0E0_realk,xo,nb,w1%d,nb,0.0E0_realk,w0%d,nb)
      call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
+     call daxpy(nb2,1.0E0_realk,fock,1,w2%d,1)
 
-     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-        & w0%d,nb,nb,AORdefault,AORdefault)
+     if(DECinfo%full_molecular_cc.and.DECinfo%HACK2)then
+        print *,"Write, full_t1fock_test.restart"
+        OPEN(4456,FILE='full_t1fock_test.restart',STATUS='REPLACE',FORM='UNFORMATTED')
+        WRITE(4456)w2%d
+        ENDFILE(4456)
+        CLOSE(4456)
+     endif
+     if(.not.DECinfo%full_molecular_cc.and.DECinfo%HACK2)then
+        print *,"Read, full_t1fock_test.restart"
+        OPEN(4456,FILE='full_t1fock_test.restart',STATUS='OLD',FORM='UNFORMATTED')
+        READ(4456)w2%d
+        CLOSE(4456)
+     else
+        ! KK: Add long-range Fock correction
+        !call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
+     endif
 
-     ! Add one- and two-electron contributions to Fock matrix
-     call daxpy(nb2,1.0E0_realk,w0%d,1,w2%d,1)
+
      !Free the density matrix
 
      call mem_dealloc(w0)
 
-     ! KK: Add long-range Fock correction
-     call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
 
      call time_start_phase(PHASE_WORK, ttot = time_get_ao_fock, twall = time_get_mo_fock)
 
@@ -4473,8 +4491,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call daxpy(nb2,1.0E0_realk,w0%d,1,iFock%elm1,1)
      !Free the density matrix
 
-     ! KK: Add long-range Fock correction
-     call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elm1,1)
+     if(DECinfo%full_molecular_cc.and.DECinfo%HACK2)then
+        OPEN(4456,FILE='full_t1fock_test.restart',STATUS='REPLACE',FORM='UNFORMATTED')
+        WRITE(4456)iFock%elm1
+        ENDFILE(4456)
+        CLOSE(4456)
+     endif
+     if(.not.DECinfo%full_molecular_cc.and.DECinfo%HACK2)then
+        OPEN(4456,FILE='full_t1fock_test.restart',STATUS='OLD',FORM='UNFORMATTED')
+        READ(4456)iFock%elm1
+        CLOSE(4456)
+     else
+        ! KK: Add long-range Fock correction
+        call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elm1,1)
+     endif
+
 
      call tensor_sync_replicated(iFock)
 
@@ -7821,9 +7852,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call mat_zero(iFock)
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
          & iFock%elms,nbas,nbas,AORdefault,AORdefault)
+     if(DECinfo%full_molecular_cc.and.DECinfo%HACK2)then
+        print *,"Write, full_t1fock_test.restart"
+        OPEN(4456,FILE='full_t1fock_test.restart',STATUS='REPLACE',FORM='UNFORMATTED')
+        WRITE(4456)iFock%elms
+        ENDFILE(4456)
+        CLOSE(4456)
+     endif
+     if(.not.DECinfo%full_molecular_cc.and.DECinfo%HACK2)then
+        print *,"Read, full_t1fock_test.restart"
+        OPEN(4456,FILE='full_t1fock_test.restart',STATUS='OLD',FORM='UNFORMATTED')
+        READ(4456)iFock%elms
+        CLOSE(4456)
+     else
+        ! KK: Add long-range Fock correction
+        call daxpy(nbas*nbas,1.0E0_realk,deltafock,1,iFock%elms,1)
+     endif
 
-    ! KK: Add long-range Fock correction
-    call daxpy(nbas*nbas,1.0E0_realk,deltafock,1,iFock%elms,1)
 
 
     !Transform 1-electron inactive Fock matrix into the different MO subspaces
