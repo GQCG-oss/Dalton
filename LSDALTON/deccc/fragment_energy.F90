@@ -323,10 +323,6 @@ contains
              ! **********
              call tensor_free(VOVO)
              call tensor_free(t2)
-           
-             ! Calculate energy contribution here
-             ! **********************************
-             call get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
           else
              ! calculate only MP2 energy integrals and MP2 amplitudes
              ! ******************************************************
@@ -500,19 +496,6 @@ contains
           call tensor_extract_decnp_indices(u,MyFragment,t2occ)
           call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc)
 
-          ! free stuff
-          ! **********
-          call tensor_free(VOVO)
-          call tensor_free(u)
-          call tensor_free(t2)
-          if(DECinfo%use_singles)then
-             call tensor_free(t1)
-          endif
-
-          ! Calculate energy contribution here
-          ! **********************************
-          call  get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
-
        else
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
@@ -521,16 +504,16 @@ contains
           call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc, &
              & tensor_virtEOS=VOVOvirt)
            
-          ! free stuff
-          ! **********
-          call tensor_free(VOVO)
-          call tensor_free(u)
-          call tensor_free(t2)
-          if(DECinfo%use_singles)then
-             call tensor_free(t1)
-          endif
-
        end if
+
+       ! free stuff
+       ! **********
+       call tensor_free(VOVO)
+       call tensor_free(u)
+       call tensor_free(t2)
+       if(DECinfo%use_singles)then
+          call tensor_free(t1)
+       endif
 
     case default
 
@@ -550,64 +533,68 @@ contains
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make new atomic/pair fragment energy subroutines and call it from
     !     here instead of calling get_atomic_fragment_energy and get_pair_fragment_energy.
-
+    !
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if (.not.DECinfo%DECNP) then
-       if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
-        
-          call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
-          if(pair) then
-             ! Pair fragment
-             call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
-                  & Fragment1, Fragment2, MyFragment)
-                
-             !For sosex contribution, as the residual
-             !is the same for sosex and drpa
-             !the energies can be calculated in one step
-             if(MyFragment%ccmodel == MODEL_RPA) then
-               call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
-                 & Fragment1, Fragment2, MyFragment,.true.)
-             endif
-          else
-             ! Atomic fragment
-             call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
-             !For sosex contribution, as the residual
-             !is the same for sosex and drpa
-             !the energies can be calculated in one step
-             if(MyFragment%ccmodel == MODEL_RPA) then
-               call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
-                  & t2virt,MyFragment,doSOS=.true.)
-             endif
-          end if
-          call tensor_free(VOVOvirtTMP)
-        
-       else ! use VOVOvirt as it is -- MOST COMMON CASE
-        
-          if(pair) then
-             ! Pair fragment
-             call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
-                  & Fragment1, Fragment2, MyFragment)
-             !For sosex contribution, as the residual
-             !is the same for sosex and drpa
-             !the energies can be calculated in one step
-             if(MyFragment%ccmodel == MODEL_RPA) then
-                call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
-                  & Fragment1, Fragment2, MyFragment,.true.)
-             endif
-          else
-             ! Atomic fragment
-             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
-             !For sosex contribution, as the residual
-             !is the same for sosex and drpa
-             !the energies can be calculated in one step
-             if(MyFragment%ccmodel == MODEL_RPA) then
-                call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
-                   & t2occ,t2virt,MyFragment,doSOS=.true.)
-             endif
-          end if
-        
+    if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
+     
+       call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
+       if(pair) then
+          ! Pair fragment
+          call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
+               & Fragment1, Fragment2, MyFragment)
+             
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+            call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
+              & Fragment1, Fragment2, MyFragment,.true.)
+          endif
+       else
+          ! Atomic fragment
+          call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+            call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
+               & t2virt,MyFragment,doSOS=.true.)
+          endif
        end if
+       call tensor_free(VOVOvirtTMP)
+     
+    else if (DECinfo%DECNP)
+
+       ! Pair and fragment energy contributions are calculated together
+       ! **************************************************************
+       call  get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
+
+    else ! use VOVOvirt as it is -- MOST COMMON CASE
+     
+       if(pair) then
+          ! Pair fragment
+          call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
+               & Fragment1, Fragment2, MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+             call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
+               & Fragment1, Fragment2, MyFragment,.true.)
+          endif
+       else
+          ! Atomic fragment
+          call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
+                & t2occ,t2virt,MyFragment,doSOS=.true.)
+          endif
+       end if
+     
     end if
 
     !> Memory Stats
@@ -666,7 +653,7 @@ contains
        end if
     end if
     !
-    if(MyFragment%ccmodel /= MODEL_MP2.AND.MyFragment%ccmodel.NE.MODEL_RIMP2)then
+    if(MyFragment%ccmodel /= MODEL_MP2.AND.MyFragment%ccmodel /= MODEL_RIMP2)then
        call dec_time_evaluate_efficiency_frag(MyFragment,times_ccsd,MODEL_CCSD,'CCSD part')
     endif
     if(MyFragment%ccmodel == MODEL_CCSDpT)then
@@ -5144,7 +5131,7 @@ contains
       !  last two steps of the binary search.
       integer :: nred_occ, nred_vir
       !> true if/when the fragment include the full molecule:
-      logical :: full_mol
+      logical :: full_mol, dored
       !> Timings for frag opt
       real(realk), pointer :: times_fragopt(:)  
       !> number of core orbitals
@@ -5341,8 +5328,15 @@ contains
       call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
          & red_list_occ,red_list_vir,nred_occ,nred_vir)
 
+
+      ! For DECNP no pairs are calculated so we do reduction only if:
+      !    CC-model /= Exp-model .and. CC-model /= Red-model
+      dored = .true.
+      if (DECinfo%DECNP) dored = ( (DECinfo%ccmodel/=DECinfo%fragopt_exp_model) .and. &
+         & (DECinfo%ccmodel/=DECinfo%fragopt_red_model) )
+
       ! Perform reduction:
-      if (.not.DECinfo%DECNP) then
+      if (dored) then
          call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
                & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
                & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT)
