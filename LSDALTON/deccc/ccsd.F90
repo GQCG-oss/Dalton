@@ -73,7 +73,9 @@ module ccsd_module
     end interface Get_AOt1Fock
 
     interface get_fock_matrix_for_dec
-       module procedure get_fock_matrix_for_dec_oa,get_fock_matrix_for_dec_arraywrapper
+       module procedure get_fock_matrix_for_dec_oa,&
+          &get_fock_matrix_for_dec_arraywrapper,&
+          &get_fock_matrix_for_dec_basic
     end interface get_fock_matrix_for_dec
 
     interface precondition_singles
@@ -6255,6 +6257,32 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !call print_norm(fockt1)
   end subroutine Get_AOt1Fock_oa
 
+
+  subroutine get_fock_matrix_for_dec_basic(nbasis,dens,mylsitem,fock,add_one_electron)
+    implicit none
+    !> Number of basis functions
+    integer,intent(in) :: nbasis
+    !> Density matrix for fragment (or full molecule), in any case it equals Cocc Cocc^T
+    real(realk),intent(in) :: dens(nbasis,nbasis)
+    !> Ls item information for fragment (or full molecule)
+    type(lsitem), intent(inout) :: mylsitem
+    !> Fock matrix in array2 form
+    real(realk), intent(inout) :: fock(nbasis,nbasis)
+    !> Add one electron matrix to Fock matrix
+    logical,intent(in) :: add_one_electron
+    integer :: nocc,i,idx1,idx2
+    real(realk) :: buffer(nbasis,nbasis)
+
+    call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+       &nbasis,dens,.false.,fock)
+    if(add_one_electron) then
+       ! Get one-electron contribution to Fock matrix
+       call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+          & buffer,nbasis,nbasis,AORdefault,AORdefault)
+       call daxpy(nbasis*nbasis,1.0E0_realk,buffer,1,fock,1)
+    end if
+
+  end subroutine get_fock_matrix_for_dec_basic
 
   subroutine get_fock_matrix_for_dec_arraywrapper(nbasis,dens,mylsitem,fock_array,add_one_electron)
     implicit none

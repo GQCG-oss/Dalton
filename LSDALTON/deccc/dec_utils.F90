@@ -2690,9 +2690,9 @@ end function max_batch_dimension
   end subroutine free_SPgridbox
 
   !> Get density D = Cocc Cocc^T from occupied orbitals
-  !> \author Kasper Kristensen
+  !> \author Kasper Kristensen, mod by PE
   !> \date November 2012
-  subroutine get_density_from_occ_orbitals(nbasis,nocc,Cocc,dens)
+  subroutine get_density_from_occ_orbitals(nbasis,nocc,Cocc,dens,Cocc2)
     implicit none
     !> Number of basis functions
     integer,intent(in) :: nbasis
@@ -2700,19 +2700,25 @@ end function max_batch_dimension
     integer,intent(in) :: nocc
     !> Occupied MO coefficients (can be only valence orbitals for frozen core)
     real(realk),intent(in),dimension(nbasis,nocc) :: Cocc
+    real(realk),intent(in),dimension(nbasis,nocc),optional :: Cocc2
     !> Density
     real(realk),intent(inout),dimension(nbasis,nbasis) :: dens
     real(realk),pointer :: Cocc_copy(:,:)
     integer :: i,j
 
-    ! Cocc copy (avoid passing the same element into dgemm twice)
-    call mem_alloc(Cocc_copy,nbasis,nocc)
-    Cocc_copy = Cocc
+    if(present(Cocc2))then
+       ! density = Cocc Cocc^T 
+       call dec_simple_dgemm(nbasis,nocc,nbasis,Cocc,Cocc2,dens,'n','t')
+    else
+       ! Cocc copy (avoid passing the same element into dgemm twice)
+       call mem_alloc(Cocc_copy,nbasis,nocc)
+       Cocc_copy = Cocc
 
-    ! density = Cocc Cocc^T 
-    call dec_simple_dgemm(nbasis,nocc,nbasis,Cocc,Cocc_copy,dens,'n','t')
-    call mem_dealloc(Cocc_copy)
+       ! density = Cocc Cocc^T 
+       call dec_simple_dgemm(nbasis,nocc,nbasis,Cocc,Cocc_copy,dens,'n','t')
+       call mem_dealloc(Cocc_copy)
 
+    endif
 
   end subroutine get_density_from_occ_orbitals
 

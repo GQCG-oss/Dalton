@@ -341,7 +341,7 @@ contains
 
          if(DECinfo%use_pnos)then
 
-            call ccsolver_par(MODEL_MP2,Co,Cv,fock,nb,no,nv,myls,ccPr,oof,vvf,&
+            call ccsolver_par(MODEL_MP2,Co,Cv,fock,nb,no,nv,myls,ccPr,&
                &e,vovo,lrt1,loc,SOLVE_AMPLITUDES,p4=mp2_amp,frag=frag)
 
             if(fj)then
@@ -354,14 +354,14 @@ contains
             solver_job = SOLVE_AMPLITUDES
          endif
 
-         call ccsolver_par(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,oof,vvf,e,&
+         call ccsolver_par(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,e,&
             & vovo,lrt1,loc,solver_job, p2=t1f, p4=t2f, m4=mp2_amp, vovo_supplied=DECinfo%use_pnos, frag=frag )
 
          if(DECinfo%use_pnos) call tensor_free( mp2_amp )
 
 #ifdef MOD_UNRELEASED
          if(DECinfo%CCSDmultipliers)then
-            call ccsolver_par(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,oof,vvf,e,&
+            call ccsolver_par(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,e,&
                & vovo,lrt1,loc,SOLVE_MULTIPLIERS, p2=m1f, p4=m2f, m2=t1f, m4=t2f,vovo_supplied=.true., frag=frag )
          endif
 
@@ -403,6 +403,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    type(tensor) :: t2_final,ccsdpt_t2,VOVO, mp2_amp
    type(tensor) :: t1_final,ccsdpt_t1,e4_mat_tot,e4_mat_tmp,e5_mat_tot
    type(tensor) :: t2f_local, VOVO_local
+   type(tensor) :: m1_final, m2_final
    integer :: natoms,nfrags,ncore,nocc_tot,p,pdx,i
    type(decorbital), pointer :: occ_orbitals(:)
    type(decorbital), pointer :: unocc_orbitals(:)
@@ -468,7 +469,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    if (DECinfo%print_frags) then ! should we print fragment energies?
 
       call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
-         & VOVO,.false.,local,t1_final,t2_final)
+         & VOVO,.false.,local,t1_final,t2_final,m1f=m1_final, m2f=m2_final)
+
+      if(DECinfo%CCSDmultipliers)then
+         call tensor_free(m2_final)
+         if(DECinfo%use_singles)then
+            call tensor_free(m1_final)
+         endif
+      endif
    
       if(DECinfo%PL>1)then
          call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
@@ -653,7 +661,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    else ! we do not print fragment energies
 
       call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
-         & VOVO,.false.,local,t1_final,t2_final)
+         & VOVO,.false.,local,t1_final,t2_final,m1f=m1_final, m2f=m2_final)
+
+      if(DECinfo%CCSDmultipliers)then
+         call tensor_free(m2_final)
+         if(DECinfo%use_singles)then
+            call tensor_free(m1_final)
+         endif
+      endif
 
       if(DECinfo%PL>1)then
          call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
@@ -942,8 +957,7 @@ subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
    Ncore = frag%ncore
 
    call ccsolver_par(MODEL_MP2,frag%Co,frag%Cv,frag%fock,nb,&
-      & no,nv, frag%mylsitem,DECinfo%PL,frag%ppfock,&
-      & frag%qqfock,e,RHS,.false.,local,SOLVE_AMPLITUDES,frag=frag,&
+      & no,nv, frag%mylsitem,DECinfo%PL,e,RHS,.false.,local,SOLVE_AMPLITUDES,frag=frag,&
       & vovo_supplied = rhs_input, p4=t2)
 
    if(present(mp2_energy)) mp2_energy = e
@@ -1033,8 +1047,8 @@ subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
 
    end if
 
-   call ccsolver_par(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,oof,&
-      & mol%qqfock,e,RHS,.false.,local,SOLVE_AMPLITUDES, vovo_supplied=rhs_input, p4=t2)
+   call ccsolver_par(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,&
+      & e,RHS,.false.,local,SOLVE_AMPLITUDES, vovo_supplied=rhs_input, p4=t2)
 
    if(present(mp2_energy)) mp2_energy = e
 
@@ -1698,8 +1712,6 @@ end subroutine mp2_solver_mol
 ! mylsitem    : the typical lsitem structure
 ! ccPrintLevel: print level (might be removed due to DECinfo%PL)
 ! fragment_job: specify whether it is a fragment job or a full calc
-! ppfock_f    : occ occ fock matrix
-! qqfock_f    : virt virt fock matrix
 ! longrange_singles : the longrange singles correction for the fock matrix on input
 ! local       : boolean which steers whether everything should be treated locally
 ! m1,m2 ...   : additional parameter sets needed for special calcultions (pno ccsd, multipliers)
@@ -1713,8 +1725,7 @@ end subroutine mp2_solver_mol
 ! p1,p2 ...   : parameter sets p with mode number containing the final parameters
 !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
 subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
-      & mylsitem,ccPrintLevel,ppfock_f,qqfock_f,ccenergy, &
-      & VOVO,longrange_singles,local,JOB, &
+      & mylsitem,ccPrintLevel,ccenergy,VOVO,longrange_singles,local,JOB, &
       & frag,vovo_supplied,p1,p2,p3,p4,m1,m2,m3,m4)
 
    implicit none
@@ -1728,16 +1739,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !> Number of basis functions in full molecule/atomic extent
    integer, intent(in)                       :: nb
    !> Fock matrix in AO basis for fragment or full molecule
-   real(realk), dimension(nb,nb), target, intent(in) :: fock_f
+   real(realk), target, intent(in) :: fock_f(nb,nb)
    !> Occupied MO coefficients for fragment/full molecule
-   real(realk), dimension(nb,no), intent(in) :: Co_f
+   real(realk), target, intent(in) :: Co_f(nb,no)
    !> Virtual MO coefficients for fragment/full molecule
-   real(realk), dimension(nb,nv), intent(in) :: Cv_f
-   !> Occ-occ block of Fock matrix in MO basis
-   real(realk), dimension(no,no), intent(in) :: ppfock_f
-   !> Virt-virt block of Fock matrix in MO basis
-   real(realk), dimension(nv,nv), intent(in) :: qqfock_f
-   real(realk),pointer                       :: dens(:,:)
+   real(realk), target, intent(in) :: Cv_f(nb,nv)
    !> LS item information
    type(lsitem), intent(inout)               :: mylsitem
    !> How much to print? ( ccPrintLevel>0 --> print info stuff)
@@ -1760,6 +1766,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(decfrag), intent(inout), optional    :: frag
    logical, intent(in), optional             :: vovo_supplied
    !
+   !> Occ-occ block of Fock matrix in MO basis
+   type(tensor)        :: oo_fock
+   !> Virt-virt block of Fock matrix in MO basis
+   type(tensor)        :: vv_fock
+   !> density matrix
+   real(realk),pointer :: dens(:,:)
+
    !> Do an MO-based CCSD calculation?
    logical :: mo_ccsd
    !> full set of MO integrals (non-T1-transformed)
@@ -1767,8 +1780,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(MObatchInfo) :: MOinfo
    !
    !work stuff
-   real(realk),pointer :: Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:), dummy(:,:)
-   real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:)
+   real(realk),pointer :: Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:)
+   real(realk),pointer :: Co_b1(:,:),Co_b2(:,:),Cv_b1(:,:),Cv_b2(:,:)
+   real(realk),pointer :: fock_(:,:),ppfock_d(:,:),qqfock_d(:,:),t1fock(:,:)
    real(realk) :: ccenergy_check
    integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims, ord2
    integer, dimension(4) :: ampl4_dims
@@ -1781,7 +1795,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(tensor) :: omega1_opt, t1_opt, omega1_prec
    type(tensor) :: omega2_opt, t2_opt, omega2_prec, u
    type(tensor) :: xo,yo,xv,yv,h1
-   type(tensor) :: Lmo
+   type(tensor) :: Lmo, Co_orig, Cv_orig
    real(realk)             :: test_norm,two_norm_total, one_norm_total,one_norm1, one_norm2, prev_norm
    real(realk), pointer    :: B(:,:),c(:)
    integer                 :: iter,last_iter,i,j,k,l,iter_idx,next,nSS
@@ -1927,6 +1941,42 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end select ModelSpecificSettings
 
+   ! dimension vectors
+   occ_dims   = [nb,no]
+   virt_dims  = [nb,nv]
+   ao2_dims   = [nb,nb]
+   ampl4_dims = [nv,nv,no,no]
+   ampl2_dims = [nv,no]
+
+
+   ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
+   if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA) then
+      call tensor_minit(xo, occ_dims, 2, local=local, atype='LDAR' )
+      call tensor_minit(yo, occ_dims, 2, local=local, atype='LDAR' )
+      call tensor_minit(xv, virt_dims,2, local=local, atype='LDAR' )
+      call tensor_minit(yv, virt_dims,2, local=local, atype='LDAR' )
+   end if
+
+   ! allocate things
+   if(use_singles) then
+      call mem_alloc( t1,     DECinfo%ccMaxIter )
+      call mem_alloc( omega1, DECinfo%ccMaxIter )
+      call tensor_minit(ppfock, [no,no], 2, local=local, atype='LDAR' )
+      call tensor_minit(pqfock, [no,nv], 2, local=local, atype='LDAR' )
+      call tensor_minit(qpfock, [nv,no], 2, local=local, atype='LDAR' )
+      call tensor_minit(qqfock, [nv,nv], 2, local=local, atype='LDAR' )
+
+      call tensor_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
+   end if
+
+   call mem_alloc( t2,     DECinfo%ccMaxDIIS )
+   call mem_alloc( omega2, DECinfo%ccMaxDIIS )
+
+   call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+
+   ! Density corresponding to input MOs
+   call mem_alloc(dens,nb,nb)
+
    !set job related
    select case(JOB)
    case(SOLVE_AMPLITUDES)
@@ -1936,6 +1986,16 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       prec_in_b       = .true.
       trafo_m4        = .false.
       trafo_m2        = .false.
+
+      Co_b1 => Co_f
+      Co_b2 => Co_f
+
+      Cv_b1 => Cv_f
+      Cv_b2 => Cv_f
+
+      fock_ => fock_f
+
+      call get_density_from_occ_orbitals(nb,no,Co_f,dens)
 
    case(SOLVE_AMPLITUDES_PNO)
 
@@ -1950,6 +2010,16 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       trafo_m4 = .true.
       trafo_m2 = .false.
+
+      Co_b1 => Co_f
+      Co_b2 => Co_f
+
+      Cv_b1 => Cv_f
+      Cv_b2 => Cv_f
+
+      fock_ => fock_f
+
+      call get_density_from_occ_orbitals(nb,no,Co_f,dens)
 
    case(SOLVE_MULTIPLIERS)
 
@@ -1973,6 +2043,40 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          trafo_m2 = .false.
       endif
 
+   print *,"shoot"
+      call tensor_minit(Co_orig, occ_dims, 2, local=local, atype='LDAR' )
+      call tensor_minit(Cv_orig, virt_dims,2, local=local, atype='LDAR' )
+
+      Co_b1 => Co_f
+      Cv_b1 => Cv_f
+      call tensor_convert( Co_b1, Co_orig )
+      call tensor_convert( Cv_b1, Cv_orig )
+
+      call get_t1_trafo_matrices(m2,Co_orig,Cv_orig,xo,yo,xv,yv)
+
+      call tensor_free(Co_orig)
+      call tensor_free(Cv_orig)
+
+
+      Co_b1 => xo%elm2
+      Co_b2 => yo%elm2
+
+      Cv_b1 => xv%elm2
+      Cv_b2 => yv%elm2
+
+      call get_density_from_occ_orbitals(nb,no,Co_b1,dens,Co_b2)
+      call mem_alloc(t1fock,nb,nb)
+      call get_fock_matrix_for_dec(nb,dens,mylsitem,t1fock,.true.)
+
+      fock_ => t1fock
+
+      Co_b1 => Co_f
+      Co_b2 => Co_f
+
+      Cv_b1 => Cv_f
+      Cv_b2 => Cv_f
+
+      fock_ => fock_f
    case default
       call lsquit("ERROR(ccsolver_par):unknown jobid",-1)
    end select
@@ -2002,8 +2106,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    endif
 
-   !see if m2 has to be transformed to the pseudo diag basis
-
 
    ! go to a (pseudo) canonical basis
    call mem_alloc( focc,     no     )
@@ -2014,6 +2116,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc( qqfock_d, nv, nv )
    call tensor_minit(Uo,   [no,no],  2, local=local, atype="TDPD", tdims = [os,os] )
    call tensor_minit(Uv,   [nv,nv],  2, local=local, atype="TDPD", tdims = [vs,vs] )
+   call tensor_minit( oo_fock, [no,no], 2 )
+   call tensor_minit( vv_fock, [nv,nv], 2 )
+
+   !misuse Co_d and Cv_d as workspaces
+   call dgemm('n','n',nb,no,nb,1.0E0_realk,fock_,nb,Co_b2,nb,0.0E0_realk,Co_d,nb)
+   call dgemm('t','n',no,no,nb,1.0E0_realk,Co_b1,nb,Co_d,nb,0.0E0_realk,oo_fock%elm1,no)
+
+   call dgemm('n','n',nb,nv,nb,1.0E0_realk,fock_,nb,Cv_b2,nb,0.0E0_realk,Cv_d,nb)
+   call dgemm('t','n',nv,nv,nb,1.0E0_realk,Cv_b1,nb,Cv_d,nb,0.0E0_realk,vv_fock%elm1,nv)
+
+   Co_b1 => null()
+   Co_b2 => null()
+
+   Cv_b1 => null()
+   Cv_b2 => null()
 
    use_pseudo_diag_basis = .not.(DECinfo%CCSDpreventcanonical)
 
@@ -2021,7 +2138,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    diag_vv_block = use_pseudo_diag_basis
 
    if(use_pseudo_diag_basis)then
-      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
+      call get_canonical_integral_transformation_matrices(no,nv,nb,oo_fock%elm1,vv_fock%elm1,Co_f,Cv_f,&
          & Co_d,Cv_d,Uo%elm2,Uv%elm2,focc,fvirt)
    endif
 
@@ -2033,7 +2150,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       enddo
    else
       Co_d     = Co_f
-      ppfock_d = ppfock_f
+      ppfock_d = oo_fock%elm2
       Uo%elm2  = 0.0E0_realk
       do ii=1,no
          Uo%elm2(ii,ii) = 1.0E0_realk
@@ -2048,12 +2165,15 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       enddo
    else
       Cv_d     = Cv_f
-      qqfock_d = qqfock_f
+      qqfock_d = vv_fock%elm2
       Uv%elm2  = 0.0E0_realk
       do aa=1,nv
          Uv%elm2(aa,aa) = 1.0E0_realk
       enddo
    endif
+
+   call tensor_free(oo_fock)
+   call tensor_free(vv_fock)
 
    call mem_dealloc( focc  )
    call mem_dealloc( fvirt )
@@ -2071,27 +2191,23 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    if(fragment_job.and.use_pnos)then
       call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,vv=frag%VirtMat,oo=frag%OccMat)
    endif
-
-
-   ! dimension vectors
-   occ_dims   = [nb,no]
-   virt_dims  = [nb,nv]
-   ao2_dims   = [nb,nb]
-   ampl4_dims = [nv,nv,no,no]
-   ampl2_dims = [nv,no]
+   if(JOB==SOLVE_MULTIPLIERS)then
+      call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,bo=xo%elm1,bv=xv%elm1)
+      call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,bo=yo%elm1,bv=yv%elm1)
+   endif
 
    ! create transformation matrices in array form
    call tensor_minit(Co  , occ_dims, 2, local=local, atype="REAR" )
    call tensor_minit(Cv  , virt_dims,2, local=local, atype="REAR" )
    call tensor_minit(fock, ao2_dims, 2, local=local, atype=atype )
 
-   dummy => fock_f
    call tensor_convert( Co_d,   Co   )
    call tensor_convert( Cv_d,   Cv   )
-   call tensor_convert( dummy,  fock )
+   call tensor_convert( fock_,  fock )
 
    call mem_dealloc( Co_d )
    call mem_dealloc( Cv_d )
+
 
    ! Get Fock matrix correction (for fragment and/or frozen core)
    ! ************************************************************
@@ -2103,9 +2219,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !           orbitals).
    call time_start_phase(PHASE_work, at = time_work, twall = time_fock_mat)
 
-   ! Density corresponding to input MOs
-   call mem_alloc(dens,nb,nb)
-   call get_density_from_occ_orbitals(nb,no,Co%elm2,dens)
 
    call tensor_minit(ifock, ao2_dims, 2, local=local, atype='LDAR' )
 
@@ -2211,26 +2324,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc( ppfock_d )
    call mem_dealloc( qqfock_d )
 
-   ! allocate things
-   if(use_singles) then
-      call mem_alloc( t1,     DECinfo%ccMaxIter )
-      call mem_alloc( omega1, DECinfo%ccMaxIter )
-      call tensor_minit(ppfock, [no,no], 2, local=local, atype='LDAR' )
-      call tensor_minit(pqfock, [no,nv], 2, local=local, atype='LDAR' )
-      call tensor_minit(qpfock, [nv,no], 2, local=local, atype='LDAR' )
-      call tensor_minit(qqfock, [nv,nv], 2, local=local, atype='LDAR' )
-   end if
-   call mem_alloc( t2,     DECinfo%ccMaxDIIS )
-   call mem_alloc( omega2, DECinfo%ccMaxDIIS )
-
-   ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-   if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA) then
-      call tensor_minit(xo, occ_dims, 2, local=local, atype='LDAR' )
-      call tensor_minit(yo, occ_dims, 2, local=local, atype='LDAR' )
-      call tensor_minit(xv, virt_dims,2, local=local, atype='LDAR' )
-      call tensor_minit(yv, virt_dims,2, local=local, atype='LDAR' )
-   end if
-
    !GET OVOV integrals from NON-T_1 transformed VOVO integrals or generate
    call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
    if(.not.vovo_avail)then
@@ -2252,15 +2345,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    two_norm_total = DECinfo%ccConvergenceThreshold + 1.0E0_realk
    if(use_singles)then
 
-      call tensor_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
-      call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-
       call get_guess_vectors(ccmodel,JOB,prec,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
          & ppfock_prec,qqfock_prec,qpfock_prec, pqfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
          & t1(1),safefilet11,safefilet12, safefilet1f  )
-   else
 
-      call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+   else
 
       call get_guess_vectors(ccmodel,JOB,prec,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
          & ppfock_prec,qqfock_prec,qpfock_prec,pqfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
@@ -2283,6 +2372,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
    If_not_converged: if(.not.restart_from_converged)then
+
 
       !set special quantities, if the mos are precalculated set mos, if a PNO
       !calculation is requested, set the pno space information
@@ -2315,29 +2405,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
          ! get singles
          T1Related : if(use_singles) then
-
-            ! synchronize singles data on slaves
-            call tensor_sync_replicated(t1(iter_idx))
-
-            ! get the T1 transformation matrices
-            call tensor_cp_data(Cv,yv)
-            call tensor_cp_data(Cv,xv)
-            ord2 = [1,2]
-            if(JOB==SOLVE_MULTIPLIERS)then
-               call tensor_contract(-1.0E0_realk,Co,m2,[2],[2],1,1.0E0_realk,xv,ord2)
-            else
-               call tensor_contract(-1.0E0_realk,Co,t1(iter_idx),[2],[2],1,1.0E0_realk,xv,ord2)
-            endif
-            
-
-            call tensor_cp_data(Co,yo)
-            call tensor_cp_data(Co,xo)
-            if(JOB==SOLVE_MULTIPLIERS)then
-               call tensor_contract(1.0E0_realk,Cv,m2,[2],[1],1,1.0E0_realk,yo,ord2)
-            else
-               call tensor_contract(1.0E0_realk,Cv,t1(iter_idx),[2],[1],1,1.0E0_realk,yo,ord2)
-            endif
-
+            select case( JOB )
+            case( SOLVE_AMPLITUDES, SOLVE_AMPLITUDES_PNO)
+               call get_t1_trafo_matrices(t1(iter_idx),Co,Cv,xo,yo,xv,yv)
+            end select
          end if T1Related
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_t1_trafo, &
@@ -2711,8 +2782,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! remove fock correction
    call tensor_free(delta_fock)
-
-
    call tensor_free(ppfock_prec)
    call tensor_free(qqfock_prec)
 
@@ -2725,6 +2794,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_free(pqfock)
       call tensor_free(qpfock)
    end if
+   if(JOB==SOLVE_MULTIPLIERS)then
+      call mem_dealloc(t1fock)
+   endif
 
 
    if(ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA)then
@@ -2766,6 +2838,27 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
 
 end subroutine ccsolver_par
+
+subroutine get_t1_trafo_matrices(t1,Co,Cv,xo,yo,xv,yv)
+   implicit none
+   type(tensor), intent(inout) :: t1, Co, Cv
+   type(tensor), intent(inout) :: xo,xv,yo,yv
+   integer :: ord2(2)
+
+   ! synchronize singles data on slaves
+   call tensor_sync_replicated(t1)
+
+   ! get the T1 transformation matrices
+   call tensor_cp_data(Cv,yv)
+   call tensor_cp_data(Cv,xv)
+   ord2 = [1,2]
+   call tensor_contract(-1.0E0_realk,Co,t1,[2],[2],1,1.0E0_realk,xv,ord2)
+
+
+   call tensor_cp_data(Co,yo)
+   call tensor_cp_data(Co,xo)
+   call tensor_contract(1.0E0_realk,Cv,t1,[2],[1],1,1.0E0_realk,yo,ord2)
+end subroutine get_t1_trafo_matrices
 
 function get_iter_idx(iter) result(iter_idx)
    implicit none
