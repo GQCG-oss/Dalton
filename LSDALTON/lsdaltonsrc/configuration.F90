@@ -172,6 +172,7 @@ implicit none
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
+  print*,'config_set_default_config:',infpar%inputBLOCKSIZE
 #endif
 end subroutine config_set_default_config
 
@@ -1248,12 +1249,17 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            config%SubSystemDensity = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
+        CASE('.PDMM');  config%opt%cfg_prefer_PDMM = .true.
 #ifdef VAR_MPI
+        CASE('.PDMMBLOCKSIZE');  
+           print*,'PDMMBLOCKSIZE CHOSEN'
+           READ(LUCMD,*) infpar%inputBLOCKSIZE
         CASE('.SCALAPACKGROUPSIZE');
            READ(LUCMD,*) infpar%ScalapackGroupSize
         CASE('.SCALAPACKAUTOGROUPSIZE');
            infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
+           print*,'SCALAPACKBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
         CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
@@ -3923,6 +3929,27 @@ IF(nthreads_test.NE.1)THEN
 ENDIF
 #endif
 
+!PDMM sanity check:
+!==================
+
+if (config%opt%cfg_prefer_PDMM) then
+   if (matrix_type == mtype_unres_dense) then
+      call lsquit('PDMM not implemented for unrestricted!',config%lupri)
+   else
+#ifdef VAR_MPI
+      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+      WRITE(lupri,'(4X,A)')'with PDMM for memory distribution and parallelization.'
+      CALL mat_select_type(mtype_pdmm,lupri,nbast)      
+#else
+      !no VAR_MPI
+      WRITE(lupri,'(4X,A)')'This is a Standard Serial compilation.'
+      WRITE(lupri,'(4X,A)')'.PDMM requires compilation using MPI.'
+      print*,'This is a Standard Serial compilation.'
+      print*,'.PDMM requires compilation using MPI.'
+      CALL LSQUIT('PDMM requires MPI - recompile using MPI and the -DVAR_MPI flag',config%lupri)
+#endif
+   endif
+endif
 
 !SCALAPACK sanity check:
 !==================

@@ -114,6 +114,7 @@ F90_OBJS = \
 	ProfileType.o\
 	lsmpiType.o\
 	lsmpi-operations.o\
+	matop_pdm.o\
 	matop_scalapack.o\
 	matop_dense.o\
 	matop_csr.o\
@@ -155,6 +156,8 @@ F90_OBJS = \
 	response_prop_type.o\
         fundamental.o\
 	lspdm_tensor_operations.o\
+	tensor_algebra_dil.o\
+	tensor_interface.o\
 	papi.o
 
 

@@ -75,6 +75,8 @@ MODULE Matrix_module
       integer, pointer :: addr_on_grid(:,:)
       real(REALK), pointer :: p(:,:)
 #endif
+      !> Parallel Distributed Memory Matrix Identification 
+      INTEGER :: PDMID
    END TYPE Matrix
 
    !> Pointer to a type(matrix). Necessary if we want arrays of derived types!
