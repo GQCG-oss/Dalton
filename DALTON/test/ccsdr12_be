@@ -161,7 +161,7 @@ TEST[1]=`expr $CRIT1`
 CTRL[1]=2
 ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"
 
-CRIT2=`$GREP "Total CC2-R12/B energy: *\-14\.6324488[39|40]." $log | wc -l`
+CRIT2=`$GREP "Total CC2-R12/B energy: *\-14\.6324488399" $log | wc -l`
 TEST[2]=`expr $CRIT2`
 CTRL[2]=2
 ERROR[2]="CC2-R12/B ENERGY NOT CORRECT"

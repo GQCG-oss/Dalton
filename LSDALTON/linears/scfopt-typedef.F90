@@ -63,6 +63,8 @@ type OptItem
       logical     :: cfg_prefer_CSR
       !> Use SCALAPACK Matrices:
       logical     :: cfg_prefer_SCALAPACK
+      !> Use PDMM Matrices:
+      logical     :: cfg_prefer_PDMM
       !> Should we crash the calculation - for debugging purposes
       logical     :: crashcalc
       !> Should incremental scheme be used for integrals?

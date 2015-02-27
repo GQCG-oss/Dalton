@@ -78,6 +78,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Ground state energies
 CRIT1=`$GREP "Final HF energy\: * \-72\.73901238[0-9][0-9][0-9][0-9]" $log | wc -l`
 CRIT2=`$GREP "Nuclear repulsion\: * 9\.18370623[0-9][0-9][0-9][0-9]" $log | wc -l`
@@ -98,7 +103,7 @@ CRIT8=`$GREP "3 * 3 * 1\.5291[0-9][0-9] *" $log | wc -l`
 CRIT9=`$GREP "3 * 4 * 19\.5471[0-9][0-9] *" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
-CTRL[2]=18
+CTRL[2]=9
 ERROR[2]="EXCITED SINGLET STATE ENERGIES NOT CORRECT"
 
 PASSED=1

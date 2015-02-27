@@ -1,0 +1,533 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2015.0
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release Dalton2015.0 (2015), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Thu Feb 26 07:53:42 2015
+     Host name              : foeroyar                                
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/gen1int_fluorobenzene
+   2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-3.18.6-200.fc21.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
+ Static linking           | OFF
+ Last Git revision        | 13530b928fe3cb369e0384a82b83e470c1b16bd2
+ Configuration time       | 2015-02-25 17:52:19.571107
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.INTEGRALS                                        
+.DIRECT                                           
+**INTEGRAL                                        
+.GENINT                                           
+*END OF                                           
+**END OF INPUT                                    
+
+
+   Content of the .mol file
+ ----------------------------
+
+ATOMBASIS                                                                      
+test GEN1INT using fluorobenzene molecule (without symmetry)                   
+you may test f, g, h,i orbitals using cc-pVTZ, cc-pVQZ, cc-pV5Z, cc-pV6Z       
+Atomtypes=3  Charge=0  Nosymmetry  Cartesian                                   
+Charge=6.0  Atoms=6  Basis=cc-pVTZ                                             
+C1         0.0000000000           -3.6019849275            0.0000000000        
+C2         2.2746863692           -2.2844271478            0.0000000000        
+C3        -2.2746863692           -2.2844271478            0.0000000000        
+C4         2.2916299551            0.3437123383            0.0000000000        
+C5        -2.2916299551            0.3437123383            0.0000000000        
+C6         0.0000000000            1.6046504042            0.0000000000        
+Charge=9.0  Atoms=1  Basis=cc-pV6Z                                             
+F1         0.0000000000            4.1568833610            0.0000000000        
+Charge=1.0  Atoms=5  Basis=cc-pVQZ                                             
+H1         0.0000000000           -5.6456667396            0.0000000000        
+H2         4.0333157589            1.4110328255            0.0000000000        
+H3        -4.0333157589            1.4110328255            0.0000000000        
+H4         4.0486115823           -3.3009875717            0.0000000000        
+H5        -4.0486115823           -3.3009875717            0.0000000000        
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: test GEN1INT using fluorobenzene molecule (without symmetry)            
+ 2: you may test f, g, h,i orbitals using cc-pVTZ, cc-pVQZ, cc-pV5Z, cc-pV6Z
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    6
+  Number of basis sets to read;    2
+  The basis set is "cc-pVTZ" from the basis set library.
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/cc-pVTZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   9.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  The basis set is "cc-pV6Z" from the basis set library.
+  Basis set file used for this atomic type with Z =   9 :
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/cc-pV6Z"
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    5
+  Number of basis sets to read;    2
+  The basis set is "cc-pVQZ" from the basis set library.
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/cc-pVQZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C1         12.000000
+                           C2         12.000000
+                           C3         12.000000
+                           C4         12.000000
+                           C5         12.000000
+                           C6         12.000000
+                           F1         18.998403
+                           H1          1.007825
+                           H2          1.007825
+                           H3          1.007825
+                           H4          1.007825
+                           H5          1.007825
+
+                       Total mass:    96.037528 amu
+                       Natural abundance:  93.509 %
+
+ Center-of-mass coordinates (a.u.):    0.000000   -0.011145    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    3
+  Total number of atoms:   12
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  C6          6    6.0000    47    35      [10s5p2d1f|4s3p2d1f]                               
+  F1          1    9.0000   231   210      [16s10p5d4f3g2h1i|7s6p5d4f3g2h1i]                  
+  H5          5    1.0000    37    35      [6s3p2d1f|4s3p2d1f]                                
+  ----------------------------------------------------------------------
+  total:     12   50.0000   698   595
+  ----------------------------------------------------------------------
+  Cartesian basis used.
+  (Note that d, f, ... atomic GTOs are not all normalized.)
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   36
+  C1      :     1  x   0.0000000000    2  y  -3.6019849275    3  z   0.0000000000
+  C2      :     4  x   2.2746863692    5  y  -2.2844271478    6  z   0.0000000000
+  C3      :     7  x  -2.2746863692    8  y  -2.2844271478    9  z   0.0000000000
+  C4      :    10  x   2.2916299551   11  y   0.3437123383   12  z   0.0000000000
+  C5      :    13  x  -2.2916299551   14  y   0.3437123383   15  z   0.0000000000
+  C6      :    16  x   0.0000000000   17  y   1.6046504042   18  z   0.0000000000
+  F1      :    19  x   0.0000000000   20  y   4.1568833610   21  z   0.0000000000
+  H1      :    22  x   0.0000000000   23  y  -5.6456667396   24  z   0.0000000000
+  H2      :    25  x   4.0333157589   26  y   1.4110328255   27  z   0.0000000000
+  H3      :    28  x  -4.0333157589   29  y   1.4110328255   30  z   0.0000000000
+  H4      :    31  x   4.0486115823   32  y  -3.3009875717   33  z   0.0000000000
+  H5      :    34  x  -4.0486115823   35  y  -3.3009875717   36  z   0.0000000000
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C1          C2          C3          C4          C5          C6    
+            ------      ------      ------      ------      ------      ------
+ C1    :    0.000000
+ C2    :    1.391057    0.000000
+ C3    :    1.391057    2.407424    0.000000
+ C4    :    2.414585    1.390780    2.788034    0.000000
+ C5    :    2.414585    2.788034    1.390780    2.425357    0.000000
+ C6    :    2.755233    2.384184    2.384184    1.384133    1.384133    0.000000
+ F1    :    4.105816    3.614892    3.614892    2.354205    2.354205    1.350584
+ H1    :    1.081470    2.147712    2.147712    3.393517    3.393517    3.836703
+ H2    :    3.404793    2.165699    3.868691    1.080953    3.394337    2.136797
+ H3    :    3.404793    3.868691    2.165699    3.394337    1.080953    2.136797
+ H4    :    2.148346    1.081932    3.389110    2.141097    3.869965    3.365856
+ H5    :    2.148346    3.389110    1.081932    3.869965    2.141097    3.365856
+
+            F1          H1          H2          H3          H4          H5    
+            ------      ------      ------      ------      ------      ------
+ F1    :    0.000000
+ H1    :    5.187286    0.000000
+ H2    :    2.582001    4.301161    0.000000
+ H3    :    2.582001    4.301161    4.268678    0.000000
+ H4    :    4.490563    2.475779    2.493507    4.950585    0.000000
+ H5    :    4.490563    2.475779    4.950585    2.493507    4.284866    0.000000
+
+
+  Max    interatomic separation is    5.1873 Angstrom (    9.8026 Bohr)
+  between atoms    8 and    7, "H1    " and "F1    ".
+
+  Min HX interatomic separation is    1.0810 Angstrom (    2.0427 Bohr)
+
+  Min YX interatomic separation is    1.3506 Angstrom (    2.5522 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C2         C1           1.391057
+  bond distance:  C3         C1           1.391057
+  bond distance:  C4         C2           1.390780
+  bond distance:  C5         C3           1.390780
+  bond distance:  C6         C4           1.384133
+  bond distance:  C6         C5           1.384133
+  bond distance:  F1         C6           1.350584
+  bond distance:  H1         C1           1.081470
+  bond distance:  H2         C4           1.080953
+  bond distance:  H3         C5           1.080953
+  bond distance:  H4         C2           1.081932
+  bond distance:  H5         C3           1.081932
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C2         C1         C3           119.839
+  bond angle:     C2         C1         H1           120.081
+  bond angle:     C3         C1         H1           120.081
+  bond angle:     C1         C2         C4           120.450
+  bond angle:     C1         C2         H4           120.104
+  bond angle:     C4         C2         H4           119.446
+  bond angle:     C1         C3         C5           120.450
+  bond angle:     C1         C3         H5           120.104
+  bond angle:     C5         C3         H5           119.446
+  bond angle:     C2         C4         C6           118.452
+  bond angle:     C2         C4         H2           121.870
+  bond angle:     C6         C4         H2           119.678
+  bond angle:     C3         C5         C6           118.452
+  bond angle:     C3         C5         H3           121.870
+  bond angle:     C6         C5         H3           119.678
+  bond angle:     C4         C6         C5           122.358
+  bond angle:     C4         C6         F1           118.821
+  bond angle:     C5         C6         F1           118.821
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA      88.502251          0.000000    1.000000    0.000000
+   IB     196.312979          1.000000    0.000000    0.000000
+   IC     284.815230          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+           5710.3520           2574.3535           1774.4100 MHz
+            0.190477            0.085871            0.059188 cm-1
+
+
+@  Nuclear repulsion energy :  269.850459222392 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000     -0.011145182301      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>  Time used in ONEDRV     is   0.86 seconds
+ >>>  Time used in HUCKEL     is   0.23 seconds
+ >>>  Time used in OVERLAP    is   0.12 seconds
+ >>>  Time used in POPOVLP    is   0.22 seconds
+ >>>  Time used in DIPLEN     is   0.14 seconds
+ >>>  Time used in QUADRUP    is   0.51 seconds
+ >>>  Time used in KINENE     is   0.47 seconds
+ >>>  Time used in GABGEN     is   6.51 seconds
+gen1int_host_test>> number of orbitals     595
+gen1int_host_test>> threshold of error    1.000000E-08
+gen1int_host_test>> threshold of ratio to the referenced result    1.000000E-06
+$$ CPU TIME of INT_KIN_ENERGY@gen1int_host_get_int     0.245255 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_KIN_ENERGY
+gen1int_host_test>> test of INT_KIN_ENERGY.Gen1Int passed!
+$$ CPU TIME of INT_OVERLAP@gen1int_host_get_int     0.265396 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_OVERLAP
+gen1int_host_test>> test of INT_OVERLAP.Gen1Int passed!
+$$ CPU TIME of INT_POT_ENERGY@gen1int_host_get_int     1.078443 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_POT_ENERGY
+gen1int_host_test>> test of INT_POT_ENERGY.Gen1Int passed!
+$$ CPU TIME of INT_CART_MULTIPOLE@gen1int_host_get_int     0.174588 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_CART_MULTIPOLE
+gen1int_host_test>> test of INT_CART_MULTIPOLE.Gen1Int passed!
+$$ CPU TIME of INT_ANGMOM@gen1int_host_get_int     0.348786 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_ANGMOM
+gen1int_host_test>> test of INT_ANGMOM.Gen1Int passed!
+$$ CPU TIME of INT_ONE_HAMIL@gen1int_host_get_int     3.483618 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_ONE_HAMIL
+gen1int_host_test>> test of INT_ONE_HAMIL.Gen1Int passed!
+$$ CPU TIME of INT_ONE_HAMIL@gen1int_host_get_int     0.378054 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_ONE_HAMIL
+gen1int_host_test>> test of INT_ONE_HAMIL.Gen1Int passed!
+$$ CPU TIME of INT_OVERLAP@gen1int_host_get_int     0.127768 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_OVERLAP
+gen1int_host_test>> test of INT_OVERLAP.Gen1Int passed!
+$$ CPU TIME of INT_OVERLAP@gen1int_host_get_int     0.243558 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_OVERLAP
+gen1int_host_test>> test of INT_OVERLAP.Gen1Int passed!
+$$ CPU TIME of INT_OVERLAP@gen1int_host_get_int     0.259344 seconds
+gen1int_host_test>> gets the referenced results from HERMIT ...
+gen1int_host_test>> checks the results of INT_OVERLAP
+gen1int_host_test>> test of INT_OVERLAP.Gen1Int passed!
+ >>>> Total CPU  time used in HERMIT:  24.62 seconds
+ >>>> Total wall time used in HERMIT:  24.62 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+ PLTORB knows S,P,D,F,G shells. The basis set contains orbital(s) with higher angular momentum,
+ and the writing of MOLPLT file is thus abandoned.
+
+ >>>> Total CPU  time used in DALTON:  24.63 seconds
+ >>>> Total wall time used in DALTON:  24.63 seconds
+
+ 
+     Date and time (Linux)  : Thu Feb 26 07:54:06 2015
+     Host name              : foeroyar                                
