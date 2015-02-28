@@ -62,9 +62,9 @@ cat > cc2_r12_aux_ch4_sym_a2.dal <<'%EOF%'
 .NOSUPSYM
 .MOSTART
  H1DIAG
-!*SCF INPUT
-!.THRESH
-! 1.0D-11
+*SCF INPUT
+.THRESH
+ 1.0D-11
 *CC INPUT
 .CC2
 .PRINT
@@ -72,13 +72,13 @@ cat > cc2_r12_aux_ch4_sym_a2.dal <<'%EOF%'
 .FROIMP
   1 0 0 0
   0 0 0 0
-!.THRENR
-! 1.0D-10
+.THRENR
+ 1.0D-10
 .MAX IT
  400
 *CCEXCI
-!.THREXC
-! 1.D-8
+.THREXC
+ 1.D-8
 .NCCEXCI
  4 4 4 4 
 *R12 INPUT
@@ -144,11 +144,11 @@ fi
 #  +=============================================================================+
 # 
 #
-CRIT1=`$GREP "Total MP2-R12/B energy:     * \-40\.3940351..." $log | wc -l`
+CRIT1=`$GREP "Total MP2-R12/B energy:     * \-40\.3940351575" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=2
 ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"
-CRIT2=`$GREP "Total CC2-R12/B energy:     *  \-40\.3953862..." $log | wc -l`
+CRIT2=`$GREP "Total CC2-R12/B energy:     *  \-40\.3953862545" $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=2
 ERROR[2]="CC2-R12/B ENERGY NOT CORRECT"
