@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON 2015.0
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release Dalton2016.alpha (2015), see http://daltonprogram.org
+       Release Dalton2015.0 (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Feb 27 09:29:10 2015
+     Date and time (Linux)  : Sat Feb 28 09:56:47 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
    1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pcm_polar
-   2) /home/magnus/Projects/dalton_devel/dalton/build_master/basis
+   2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
 
 
 Compilation information
@@ -155,21 +155,18 @@ Compilation information
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
  Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C compiler               | /usr/local/bin/mpicc
+ C compiler               | /usr/bin/gcc
  C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C++ compiler             | /usr/local/bin/mpicxx
- C++ compiler version     | unknown
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
  BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 21bd27042943decc089c00dd1708891a923fd2b4
- Git branch               | [32mmaster[m
- Configuration time       | 2015-02-26 18:21:13.308155
-
- * Sequential calculation.
+ Last Git revision        | 59084354e7ddd019ccce29b64702ef6120c4a7ca
+ Configuration time       | 2015-02-27 08:37:34.602679
 
 
    Content of the .dal input file
@@ -273,7 +270,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G  Radius=1.6 Alpha=1.2" from the basis set library.
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_master/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -282,7 +279,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G  Radius=1.5 Alpha=1.2" from the basis set library.
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_master/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -291,7 +288,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G  Radius=1.2 Alpha=1.2" from the basis set library.
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_master/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -550,10 +547,6 @@ H     0.943102     0.000000    -0.544500
 
  MEMORY USED TO GENERATE CAVITY =    432802
 
- in pcmtns, vmat is
-   0.0000000000000000        0.0000000000000000        1.0000000000000000     
-   0.0000000000000000        1.0000000000000000        0.0000000000000000     
-   1.0000000000000000        0.0000000000000000        0.0000000000000000     
  Tessera cut in pieces and removed.
 
  Total number of spheres =    4
@@ -566,15 +559,13 @@ H     0.943102     0.000000    -0.544500
  Total number of tesserae =     268
  Surface area =   65.10262090 (A^2)    Cavity volume =   45.75393835 (A^3)
 
- Surface area =  232.48567836045507 (AU^2)    Cavity volume =  308.76286956027883 (AU^3)
-
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
 
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>> Total CPU  time used in HERMIT:   0.07 seconds
- >>>> Total wall time used in HERMIT:   0.07 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -609,7 +600,7 @@ H     0.943102     0.000000    -0.544500
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Feb 27 09:29:10 2015
+     Date and time (Linux)  : Sat Feb 28 09:56:47 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -749,7 +740,7 @@ H     0.943102     0.000000    -0.544500
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       1.083       1.082
+ >>>> CPU and wall time for SCF :       0.460       0.461
 
 
                        .-----------------------------------.
@@ -771,10 +762,10 @@ H     0.943102     0.000000    -0.544500
 @    Final gradient norm:           0.000002709500
 
  
-     Date and time (Linux)  : Fri Feb 27 09:29:11 2015
+     Date and time (Linux)  : Sat Feb 28 09:56:48 2015
      Host name              : foeroyar                                
 
-File label for MO orbitals:  27Feb15   FOCKDIIS
+File label for MO orbitals:  28Feb15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -807,11 +798,11 @@ File label for MO orbitals:  27Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.08 seconds
- >>>> Total wall time used in SIRIUS :      1.08 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.46 seconds
+ >>>> Total wall time used in SIRIUS :      0.46 seconds
 
  
-     Date and time (Linux)  : Fri Feb 27 09:29:11 2015
+     Date and time (Linux)  : Sat Feb 28 09:56:48 2015
      Host name              : foeroyar                                
 
 
@@ -864,8 +855,8 @@ File label for MO orbitals:  27Feb15   FOCKDIIS
  Integral transformation: Total CPU and WALL times (sec)       0.001       0.001
 
 
-   SCF energy         :     -111.716485633676399
- -- inactive part     :     -142.398778022429838
+   SCF energy         :     -111.716485633676299
+ -- inactive part     :     -142.398778022429724
  -- nuclear repulsion :       31.163673729192165
 
 
@@ -927,7 +918,7 @@ File label for MO orbitals:  27Feb15   FOCKDIIS
 @ -<< ZDIPLEN  ; ZDIPLEN  >> =  1.211571219624D+01
 
 
- Time used in linear response calculation is      0.33 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.14 CPU seconds for symmetry 1
 
 
  >>>>>>>>>> Linear response calculation
@@ -982,7 +973,7 @@ File label for MO orbitals:  27Feb15   FOCKDIIS
 @ -<< XDIPLEN  ; XDIPLEN  >> =  7.327581497501D+00
 
 
- Time used in linear response calculation is      0.40 CPU seconds for symmetry 2
+ Time used in linear response calculation is      0.18 CPU seconds for symmetry 2
 
 
  >>>>>>>>>> Linear response calculation
@@ -1037,19 +1028,19 @@ File label for MO orbitals:  27Feb15   FOCKDIIS
 @ -<< YDIPLEN  ; YDIPLEN  >> =  2.908428660530D+00
 
 
- Time used in linear response calculation is      0.27 CPU seconds for symmetry 3
+ Time used in linear response calculation is      0.12 CPU seconds for symmetry 3
 
- >>>> Total CPU  time used in RESPONSE:   1.01 seconds
- >>>> Total wall time used in RESPONSE:   1.01 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.45 seconds
+ >>>> Total wall time used in RESPONSE:   0.45 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.17 seconds
- >>>> Total wall time used in DALTON:   2.17 seconds
+ >>>> Total CPU  time used in DALTON:   0.94 seconds
+ >>>> Total wall time used in DALTON:   0.94 seconds
 
  
-     Date and time (Linux)  : Fri Feb 27 09:29:12 2015
+     Date and time (Linux)  : Sat Feb 28 09:56:48 2015
      Host name              : foeroyar                                
