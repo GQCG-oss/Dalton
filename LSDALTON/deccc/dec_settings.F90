@@ -569,6 +569,7 @@ contains
        case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
        case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
+       case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.CRASHCALC'); DECinfo%CRASHCALC=.true.
        case('.PUREHYDROGENDEBUG'); DECinfo%PureHydrogenDebug=.true.
        case('.STRESSTEST')     
@@ -577,6 +578,11 @@ contains
        case('.PRINTFRAGS')
           ! Print fragment energies for full molecular cc calculation
           DECinfo%print_frags = .true.
+       ! Check that input orbitals are orthogonal (debug)
+       case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
+       case('.CHECKSUBSYSTEMLOC'); DECinfo%check_Occ_SubSystemLocality=.true.
+       case('.FORCESUBSYSTEMLOC'); DECinfo%force_Occ_SubSystemLocality=.true.
+
 
     
 
@@ -846,26 +852,25 @@ contains
        case('.NOTKAPPABPREC'); DECinfo%kappa_use_preconditioner_in_b=.false.
 
 
-       ! Check that input orbitals are orthogonal (debug)
-       case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
-       case('.CHECKSUBSYSTEMLOC'); DECinfo%check_Occ_SubSystemLocality=.true.
-       case('.FORCESUBSYSTEMLOC'); DECinfo%force_Occ_SubSystemLocality=.true.
-
-
-       !OTHER STUFF FIXME: SORT IT INTO BLOCKS
-       !**************************************
+       ! DEC ORBITAL TREATMENT
+       ! *********************
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
-       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.MULLIKEN'); DECinfo%mulliken=.true.
        case('.DISTANCE'); DECinfo%distance=.true.
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')
           read(input,*) DECinfo%simple_orbital_threshold
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
-       case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
-       case('.SKIPREADIN'); DECinfo%SkipReadIn=.true.
+
+
+       ! SINGLE POLARIZATION
+       ! *******************
        case('.SINGLESPOLARI'); DECinfo%SinglesPolari=.true.
        case('.SINGLESTHR'); read(input,*) DECinfo%SinglesThr
+
+
+       ! KEYWORDS RELATED TO I/O
+       ! ***********************
        case('.CONVERT64TO32')
           DECinfo%convert64to32=.true.
        case('.CONVERT32TO64')
@@ -873,6 +878,10 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
+       case('.SKIPREADIN')
+          ! Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
+          DECinfo%SkipReadIn=.true.
+       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
 
 #endif
 
