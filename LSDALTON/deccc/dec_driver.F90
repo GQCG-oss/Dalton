@@ -499,7 +499,7 @@ contains
     ! Print MPI statistics
     if(DECinfo%RepeatAF) then
        call print_MPI_fragment_statistics(jobs,mastertime,'ALL FRAGMENTS')
-    else if (.not.DECinfo%no_pairs)
+    else if (.not.DECinfo%no_pairs) then
        call print_MPI_fragment_statistics(jobs,mastertime,'PAIR FRAGMENTS')
     end if
 #endif
@@ -847,39 +847,41 @@ subroutine print_dec_info()
     fragenergy=0.0_realk
     only_update=.true.
 
-    ! Do any fragment optimizations?
-    dofragopt=any(jobs%dofragopt)
-    ! Number of fragment optimizations
-    nfragopt = count(jobs%dofragopt)
+    if (jobs%njobs>0) then
+       ! Do any fragment optimizations?
+       dofragopt=any(jobs%dofragopt)
+       ! Number of fragment optimizations
+       nfragopt = count(jobs%dofragopt)
+
+       ! Sanity check for estimated fragments
+       if(any(jobs%esti)) then
+          if(.not. present(EstAtomicFragments)) then
+             call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
+                  & atomic fragments are not present!',-1)
+          end if
+          if(.not. present(estijobs) ) then
+             call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
+                  & pair fragment job list is not present!',-1)
+          end if
+       end if
+        
+       ! Sanity check for singles polarization effects
+       if(DECinfo%SinglesPolari) then
+          if( (.not. present(t1old)) .or. (.not. present(t1new)) ) then
+             call lsquit('fragment_jobs: Singles polarization requested but no &
+                  & t1 amplitudes present!',-1)
+          end if
+          if(any(jobs%esti)) then
+             call lsquit('fragment_jobs: Singles polarization not implemented for estimated fragments',-1)
+          end if
+       end if
+    end if 
 
     ! Sanity check for atomic fragment optimization 
     if(dofragopt .and. esti) then
        if(.not. present(fragoptjobs) ) then
           call lsquit('fragment_jobs: Atomic fragment optimization in job list, but &
                & fragment opt. job list is not present!',-1)
-       end if
-    end if
-
-    ! Sanity check for estimated fragments
-    if(any(jobs%esti)) then
-       if(.not. present(EstAtomicFragments)) then
-          call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
-               & atomic fragments are not present!',-1)
-       end if
-       if(.not. present(estijobs) ) then
-          call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
-               & pair fragment job list is not present!',-1)
-       end if
-    end if
-
-    ! Sanity check for singles polarization effects
-    if(DECinfo%SinglesPolari) then
-       if( (.not. present(t1old)) .or. (.not. present(t1new)) ) then
-          call lsquit('fragment_jobs: Singles polarization requested but no &
-               & t1 amplitudes present!',-1)
-       end if
-       if(any(jobs%esti)) then
-          call lsquit('fragment_jobs: Singles polarization not implemented for estimated fragments',-1)
        end if
     end if
 

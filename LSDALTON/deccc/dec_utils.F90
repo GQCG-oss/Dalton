@@ -3620,6 +3620,7 @@ end function max_batch_dimension
     !> Job list
     type(joblist),intent(inout) ::  jobs
 
+    if (jobs%njobs>0) then
     ! Deallocate pointers and nullify
     if(associated(jobs%atom1)) then
        call mem_dealloc(jobs%atom1)
@@ -3699,6 +3700,7 @@ end function max_batch_dimension
     if(associated(jobs%idlet)) then
        call mem_dealloc(jobs%idlet)
        nullify(jobs%idlet)
+    end if
     end if
 
   end subroutine free_joblist
@@ -4458,7 +4460,7 @@ end function max_batch_dimension
 
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
-    print_pair = count(dofrag)>1
+    print_pair = count(dofrag)>1 .and. (.not. DECinfo%no_pairs)
     
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
