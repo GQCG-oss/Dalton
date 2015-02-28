@@ -4916,7 +4916,7 @@ end function max_batch_dimension
     integer :: iCorrLen, cc_sol, pT_full, pT_4, pT_5
     logical :: print_pair
 
-    print_pair = count(dofrag)>1
+    print_pair = count(dofrag)>1 .and. (.not. DECinfo%no_pairs)
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
     cc_sol  = 1
