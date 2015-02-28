@@ -368,54 +368,60 @@ contains
        DEC_INPUT_INFO: SELECT CASE(WORD)
 
 
-          ! ****************************************************************************
-          ! *               Keywords available for the general user                    *
-          ! ****************************************************************************
-          ! These keywords should be properly documented for the release.
+       ! ****************************************************************************
+       ! *               Keywords available for the general user                    *
+       ! ****************************************************************************
+       ! These keywords should be properly documented for the release.
 
 
-          ! SNOOP
-          ! =====
-
-          ! Perform SNOOP calculation rather than DEC (will be merged at some point)
+       ! SNOOP
+       ! =====
        case('.SNOOP') 
+          ! Perform SNOOP calculation rather than DEC (will be merged at some point)
           DECinfo%SNOOP=.true.
 
-          ! Just do HF calculation in SNOOP and skip correlated CC calculation?
        case('.SNOOPJUSTHF') 
+          ! Just do HF calculation in SNOOP and skip correlated CC calculation?
           DECinfo%SNOOPjustHF=.true.
 
-          ! Threshold for residual norm in SNOOP HF calculations
        case('.SNOOPTHR') 
+          ! Threshold for residual norm in SNOOP HF calculations
           read(input,*) DECinfo%SNOOPthr
 
+       case('.SNOOPMAXITER')
           ! Maximum number of iterations in SNOOP HF calculations
-       case('.SNOOPMAXITER'); read(input,*) DECinfo%SNOOPMaxIter
+          read(input,*) DECinfo%SNOOPMaxIter
+
+       case('.SNOOPMAXDIIS')
           ! Maximum number of DIIS vectors to store in SNOOP HF calculations (RH/DIIS scheme)
-       case('.SNOOPMAXDIIS'); read(input,*) DECinfo%SNOOPMaxDIIS
+          read(input,*) DECinfo%SNOOPMaxDIIS
+       case('.SNOOP_DEBUG')
           ! Debug prints for SNOOP
-       case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
+          DECinfo%SNOOPdebug=.true.
+       case('.SNOOPORT')
           ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
-       case('.SNOOPORT'); DECinfo%SNOOPort=.true.
+          DECinfo%SNOOPort=.true.
+
+       case('.SNOOPNOTSAMESPACE')
           !> Do not use full orbital spaces for monomer calculation as defined by natural connection,
           !> rather simply do independent DEC fragment optimization for monomers.
-       case('.SNOOPNOTSAMESPACE'); DECinfo%SNOOPsamespace=.false.
-       case('.SNOOPLOCALIZE'); DECinfo%SNOOPlocalize=.true.
+          DECinfo%SNOOPsamespace=.false.
+
+       case('.SNOOPLOCALIZE')
+          DECinfo%SNOOPlocalize=.true.
 
 
-          ! GENERAL INFO
-          ! ============
-
-
-          ! DEC orbital-based
+       ! GENERAL INFO
+       ! ============
        case('.DECCO')
+          ! DEC orbital-based
           DECinfo%DECCO=.true.
 
-          ! Alternaitve DEC energy formulation with no pairs:
        case('.DECNP')
+          ! Alternaitve DEC energy formulation with no pairs:
           DECinfo%DECNP=.true.
 
-          ! CC model
+          !> select CC model
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
@@ -450,24 +456,28 @@ contains
           DECinfo%solver_par=.true.
 
 
-          ! CC SOLVER INFO
-          ! ==============
-
+       ! CC SOLVER INFO
+       ! ==============
+       case('.CCSDNOSAFE')
           ! Save CCSD amplitudes to be able to restart full CCSD calculation
-       case('.CCSDNOSAFE'); DECinfo%CCSDnosaferun=.true.
+          DECinfo%CCSDnosaferun=.true.
 
+       case('.CCMAXITER')
           ! Maximum number of CC iterations
-       case('.CCMAXITER'); read(input,*) DECinfo%ccMaxIter 
+          read(input,*) DECinfo%ccMaxIter 
 
-          ! Residual norm threshold for CC amplitude equation
        case('.CCTHR') 
+          ! Residual norm threshold for CC amplitude equation
           read(input,*) DECinfo%ccConvergenceThreshold
           DECinfo%CCthrSpecified=.true.
-          ! Number of residual vectors to save when solving CC amplitude equation
-       case('.SUBSIZE'); read(input,*) DECinfo%ccMaxDIIS
 
-          ! CCSD(T) INFO
-          ! ==============
+       case('.SUBSIZE')
+          read(input,*) DECinfo%ccMaxDIIS
+          ! Number of residual vectors to save when solving CC amplitude equation
+
+
+       ! CCSD(T) INFO
+       ! ==============
        case('.PT_ABC'); DECinfo%abc = .true.
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
@@ -475,37 +485,25 @@ contains
        case('.ACC_SYNC'); DECinfo%acc_sync = .true.
 
 
-          ! DEC CALCULATION 
-          ! ===============
-
-          ! Restart DEC calculation (only for single point calculations, not geometry optimization)
+       ! DEC CALCULATION 
+       ! ===============
        case('.RESTART') 
+          !> Restart DEC calculation (only for single point calculations, not geometry optimization)
           DECinfo%HFrestart=.true.           
           DECinfo%DECrestart=.true.           
 
-          ! Use HF info generated from previous calculation but run DEC calculation from scratch
        case('.HFRESTART') 
+          !> Use HF info generated from previous calculation but run DEC calculation from scratch
           DECinfo%HFrestart=.true.           
           DECinfo%DECrestart=.false.           
 
-          ! Do not absorb H atoms when assigning orbitals
-       case('.NOTABSORBH'); DECinfo%AbsorbHatoms=.false.
+       case('.NOTABSORBH')
+          !> Do not absorb H atoms when assigning orbitals
+          DECinfo%AbsorbHatoms=.false.
 
-          ! FOT
        case('.FOT')  
+          !> Fragment Optimization Threshold 
           read(input,*) DECinfo%FOT
-
-          !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
-       case('.CORRDENS')  
-          read(input,*) DECinfo%CorrDensScheme
-
-          !> Number of reduced fragments to consider
-       case('.NFRAGSRED')
-          read(input,*) DECinfo%nFRAGSred
-
-          !> Factor to scale FOT by for reduced fragments
-       case('.FOTSCALING')
-          read(input,*) DECinfo%FOTscaling
 
           ! Use frozen core approximation
        case('.FROZENCORE') 
@@ -519,49 +517,67 @@ contains
        case('.USE_SYS_MEM_INFO') 
           DECinfo%use_system_memory_info = .true.
 
-       case('.PAIRTHR') 
-          ! Threshold in a.u.
-          read(input,*) DECinfo%pair_distance_threshold
-       case('.PAIRTHRANGSTROM') 
-          ! Input in Angstrom
-          read(input,*) DECinfo%pair_distance_threshold
-          DECinfo%pair_distance_threshold=DECinfo%pair_distance_threshold/bohr_to_angstrom
-
-          ! Calculate MP2 gradient (without necessarily doing geometry optimization)
        case('.GRADIENT') 
+          ! Calculate MP2 gradient (without necessarily doing geometry optimization)
           DECinfo%gradient=.true.
           DECinfo%first_order=.true.
 
-          !> Carry out MP2 density calculation (subset of gradient calculation)
        case('.DENSITY') 
+          !> Carry out MP2 density calculation (subset of gradient calculation)
           DECinfo%density=.true.
           DECinfo%first_order=.true.
 
-          ! Threshold for residual norm of kappabar multiplier equation in first-order MP2 calculations
        case('.KAPPATHR') 
+          ! Threshold for residual norm of kappabar multiplier equation in first-order MP2 calculations
           read(input,*) DECinfo%kappaTHR
 
+       case('.DECPRINT')
+          ! DEC print level
+          read(input,*) DECinfo%PL
 
-          ! CHOICE OF ORBITALS
-          ! ==================
+       case('.ONLYOCCPART')
+          ! Use only occupied partitioning scheme
+          DECinfo%OnlyOccPart=.true.
+
+       case('.ONLYVIRTPART')
+          ! Use only virtual partitioning scheme
+          DECinfo%OnlyVirtPart=.true.
+
+
+
+       ! CHOICE OF ORBITALS
+       ! ==================
+       case('.CANONICAL') 
           ! By default orbitals from the lcm_orbitals.u file are used for DEC or full calculation.
           ! Canonical orbitals can be invoked by this keyword
-       case('.CANONICAL') 
           DECinfo%use_canonical=.true.
 
 
-          ! ****************************************************************************
-          ! *               Keywords only available for developers                     *
-          ! ****************************************************************************
+       ! ****************************************************************************
+       ! *               Keywords only available for developers                     *
+       ! ****************************************************************************
 
-          ! Keywords only used for testing in release branch, not intended to be used by end-users,
-          ! so on purpose there is no documentation for those in the LSDALTON manual.
+       ! Keywords only used for testing in release branch, not intended to be used by end-users,
+       ! so on purpose there is no documentation for those in the LSDALTON manual.
 
 
-       !KEYWORDS FOR TESTCASES
-       !**********************
+       !KEYWORDS FOR DEC DEBUGGING AND TESTING
+       !**************************************
+       case('.HACK'); DECinfo%hack=.true.
+       case('.HACK2'); DECinfo%hack2=.true.
        case('.TESTARRAY'); DECinfo%tensor_test=.true.
        case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
+       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
+       case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
+       case('.CRASHCALC'); DECinfo%CRASHCALC=.true.
+       case('.PUREHYDROGENDEBUG'); DECinfo%PureHydrogenDebug=.true.
+       case('.STRESSTEST')     
+          !Calculate biggest 2 atomic fragments and the biggest pair fragment
+          DECinfo%StressTest = .true.
+       case('.PRINTFRAGS')
+          ! Print fragment energies for full molecular cc calculation
+          DECinfo%print_frags = .true.
+
     
 
        !KEYWORDS FOR DEC PARALLELISM
@@ -584,38 +600,77 @@ contains
 #endif
 
 
-       !KEYWORDS FOR DEC DEBUGGING AND TESTING
-       !**************************************
-       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
-          ! Size of local groups in MPI scheme
-       case('.CRASHCALC') 
-          DECinfo%CRASHCALC= .true.
-       case('.STRESSTEST')     
-          !Calculate biggest 2 atomic fragments and the biggest pair fragment
-          DECinfo%StressTest  = .true.
-       case('.FRAG_EXP_SCHEME');
+       !KEYWORDS RELATED TO FRAGMENT SPACES
+       !***********************************
+       case('.FRAGEXPMODEL') 
+          ! CC model used in the expansion part of the fragment optimization
+          read(input,*) myword
+          call find_model_number_from_input(myword,DECinfo%fragopt_exp_model)
+
+       case('.FRAGREDMODEL') 
+          ! CC model used in the reduction part of the fragment optimization
+          read(input,*) myword
+          call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
+
+       case('.FRAG_EXP_SCHEME')
+          ! Orbital list used in the expanion: (see define_frag_expansion for details)
           read(input,*) DECinfo%Frag_Exp_Scheme
           DECinfo%use_abs_overlap = (DECinfo%Frag_Exp_Scheme==3)
-       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
-       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
-       case('.FRAG_INIT_SIZE');     read(input,*) DECinfo%Frag_Init_Size
-       case('.FRAG_EXP_SIZE');      read(input,*) DECinfo%Frag_Exp_Size
 
-       case('.ATOMICEXTENT')
-          !Include all atomic orbitals on atoms in the fragment 
-          DECinfo%AtomicExtent  = .true.
-       case('.AUXATOMICEXTENT')
-          !Include all atomic orbitals on all atoms in the molecule (not just fragment) 
-          !maybe need to have a procedure to optimize this set of atoms
-          DECinfo%AuxAtomicExtent  = .true.
-       case('.PRINTFRAGS')
-          ! Print fragment energies for full molecular cc calculation
-          DECinfo%print_frags   = .true.
+       case('.FRAG_REDOCC_SCHEME')
+          ! Occupied orbital list used in the expanion: (see define_frag_reduction for details)
+          read(input,*) DECinfo%Frag_RedOcc_Scheme
 
-          ! set the fraction of the fully extended orbital space that is used as tolerance in an incomplete binary search
-       case('.FRACOFORBSPACE_RED'); read(input,*) DECinfo%FracOfOrbSpace_red
-          ! include all orbitals for a fragment within a given radius and calculate the fragment energies in Angstrom
+       case('.FRAG_REDVIR_SCHEME')
+          ! Virtual orbital list used in the expanion: (see define_frag_reduction for details)
+          read(input,*) DECinfo%Frag_RedVir_Scheme
+
+       case('.FRAG_INIT_SIZE')
+          ! Number of "average" atoms used to initialize a fragment (Excluded EOS)
+          ! (one "average" atom corresponds to the average number of orbital per atom)
+          read(input,*) DECinfo%Frag_Init_Size
+
+       case('.FRAG_EXP_SIZE')
+          ! Number of "average" atoms used to expand a fragment
+          ! (one "average" atom corresponds to the average number of orbital per atom)
+          read(input,*) DECinfo%Frag_Exp_Size
+
+       case('.FRAG_RED_OCC')
+          ! Start reducting occupied space first
+          DECinfo%frag_red_occ  = .true.
+       case('.FRAG_RED_VIRT')
+          ! Start reducting virtual space first
+          DECinfo%frag_red_virt = .true.
+       case('.FRAG_RED1_THR')
+          ! Threshold for convergence of first reduced space (occ or virt) 
+          ! should be a number between 0 and 1 which is then multiplied to the FOT
+          read(input,*) DECinfo%frag_red1_thr
+       case('.FRAG_RED2_THR')
+          ! Threshold for convergence of second reduced space (occ or virt)
+          ! should be a number between 0 and 1 which is then multiplied to the FOT
+          read(input,*) DECinfo%frag_red2_thr
+
+       case('.NO_ORB_BASED_FRAGOPT')
+          ! Use old Fragment optimization routines
+          DECinfo%no_orb_based_fragopt = .true.
+
+       case('.FRAGMENTADAPTED')
+          ! Fragment adapted orbital instead of reduction (??)
+          DECinfo%fragadapt = .true.
+          DECinfo%no_orb_based_fragopt = .true.
+
+       case('.CORRDENS')  
+          !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
+          read(input,*) DECinfo%CorrDensScheme
+
+       case('.FRACOFORBSPACE_RED')
+          ! set the fraction of the fully extended orbital space that is used as 
+          ! tolerance in an incomplete binary search
+          read(input,*) DECinfo%FracOfOrbSpace_red
+
        case('.FRAG_INIT_RADIUS_NO_OPT_ALL')
+          ! include all orbitals for a fragment within a given radius and calculate 
+          ! the fragment energies in Angstrom
           read(input,*) DECinfo%all_init_radius
           DECinfo%all_init_radius = DECinfo%all_init_radius/bohr_to_angstrom
           DECinfo%occ_init_radius = DECinfo%all_init_radius
@@ -629,10 +684,18 @@ contains
           DECinfo%vir_init_radius = DECinfo%vir_init_radius/bohr_to_angstrom
           DECinfo%all_init_radius = 0.0E0_realk
 
+       case('.ATOMICEXTENT')
+          !Include all atomic orbitals on atoms in the fragment 
+          DECinfo%AtomicExtent  = .true.
+       case('.AUXATOMICEXTENT')
+          !Include all atomic orbitals on all atoms in the molecule (not just fragment) 
+          !maybe need to have a procedure to optimize this set of atoms
+          DECinfo%AuxAtomicExtent  = .true.
+
 
 
        !KEYWORDS FOR INTEGRAL INFO
-       !**************************************
+       !**************************
        case('.INTEGRALTHRESHOLD')
           read(input,*) DECinfo%IntegralThreshold
           IF(DECinfo%IntegralThreshold.LT.shortintCRIT)THEN
@@ -647,26 +710,36 @@ contains
        !Use the Ichor Integral Code (default is Thermite Code)   
        case('.ICHOR'); DECinfo%UseIchor = .true.
 
-#ifdef MOD_UNRELEASED
 
-       !CCSD SPECIFIC KEYWORDS
-       !**********************
-       ! - CCSOLVER SPECIFIC KEYWORDS
+#ifdef MOD_UNRELEASED
+       ! CCSOLVER SPECIFIC KEYWORDS
+       ! **************************
        case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
+       case('.CCDRIVERDEBUG');            DECinfo%cc_driver_debug      = .true.
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
-       case('.CC_TILE_SIZE_GB');read(input,*) DECinfo%cc_solver_tile_mem 
-       !case('.SOSEX');   DECinfo%SOS = .true.
-       case('.NOTPREC');      DECinfo%use_preconditioner=.false.; DECinfo%ccsolver_overwrite_prec = .true.
-       case('.NOTBPREC');     DECinfo%use_preconditioner_in_b=.false.; DECinfo%ccsolver_overwrite_prec = .true.
-       case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.; DECinfo%ccsolver_overwrite_prec = .true.
-       case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
-       case('.MAXITER'); read(input,*) DECinfo%MaxIter
-       case('.TENSOR_SEGMENTING_SCHEME'); read(input,*) DECinfo%tensor_segmenting_scheme
+       case('.DIIS');                     DECinfo%use_crop             = .false.
+       case('.CC_TILE_SIZE_GB')
+          read(input,*) DECinfo%cc_solver_tile_mem 
+       case('.NOTPREC')                 
+          DECinfo%use_preconditioner=.false.
+          DECinfo%ccsolver_overwrite_prec = .true.
+       case('.NOTBPREC')
+          DECinfo%use_preconditioner_in_b=.false.
+          DECinfo%ccsolver_overwrite_prec = .true.
+       case('.PRECWITHFULL')
+          DECinfo%precondition_with_full=.true.
+          DECinfo%ccsolver_overwrite_prec = .true.
+       case('.MAXITER')
+          read(input,*) DECinfo%MaxIter
+       case('.TENSOR_SEGMENTING_SCHEME')
+          read(input,*) DECinfo%tensor_segmenting_scheme
 
-       ! - CCSD RESIDUAL SPECIFIC KEYWORDS
+
+       ! CCSD RESIDUAL SPECIFIC KEYWORDS
+       ! *******************************
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
        case('.CCSDNODYNAMIC_LOAD');       DECinfo%dyn_load             = .false.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
@@ -678,8 +751,10 @@ contains
                                           read(input,*) DECinfo%en_mem
        case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
+
 #ifdef MOD_UNRELEASED
-       ! - PNO-CCSD SPECIFIC KEYWORDS
+       ! PNO-CCSD SPECIFIC KEYWORDS
+       ! **************************
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
        case('.PNOTHR');        read(input,*) DECinfo%simplePNOthr
@@ -693,22 +768,8 @@ contains
        case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
 
 
-       !OTHER STUFF FIXME: SORT IT INTO BLOCKS
-       !***********
-
-       case('.HACK'); DECinfo%hack=.true.
-       case('.HACK2'); DECinfo%hack2=.true.
-       case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
-       case('.FRAGEXPMODEL') 
-          read(input,*) myword
-          call find_model_number_from_input(myword,DECinfo%fragopt_exp_model)
-       case('.FRAGREDMODEL') 
-          read(input,*) myword
-          call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
-
-       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
-       case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
-       case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
+       ! KEYWORDS RELATED TO F12
+       ! ***********************
        case('.F12')
           DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12FRAGOPT')     
@@ -719,14 +780,17 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
-       case('.PUREHYDROGENDEBUG')     
-          DECinfo%PureHydrogenDebug       = .true.
-       case('.MULLIKEN'); DECinfo%mulliken=.true.
-       case('.DISTANCE'); DECinfo%distance=.true.
-       case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
-       case('.SIMPLEORBITALTHRESH')
-          read(input,*) DECinfo%simple_orbital_threshold
-       case('.DECPRINT'); read(input,*) DECinfo%PL
+
+
+       ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
+       ! ***********************************************
+       case('.PAIRTHR') 
+          ! Threshold in a.u.
+          read(input,*) DECinfo%pair_distance_threshold
+       case('.PAIRTHRANGSTROM') 
+          ! Input in Angstrom
+          read(input,*) DECinfo%pair_distance_threshold
+          DECinfo%pair_distance_threshold=DECinfo%pair_distance_threshold/bohr_to_angstrom
        case('.CHECKPAIRS') 
           DECinfo%checkpairs=.true.
        case('.PAIRMINDIST'); read(input,*) DECinfo%PairMinDist
@@ -744,8 +808,60 @@ contains
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
+       case('.NFRAGSRED')
+          ! Number of reduced space to consider in multi-FOT treatment of pairs
+          read(input,*) DECinfo%nFRAGSred
+       case('.FOTSCALING')
+          ! Factor to scale FOT by for reduced pair fragments
+          read(input,*) DECinfo%FOTscaling
+       case('.NO_PAIRS'); DECinfo%No_Pairs = .true.
+       case('.ONLY_N_JOBS')
+          read(input,*)DECinfo%only_n_frag_jobs
+          call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
+          read(input,*)DECinfo%frag_job_nr(1:DECinfo%only_n_frag_jobs)
+       case('.ONLY_PAIR_FRAG_JOBS'); DECinfo%only_pair_frag_jobs = .true.
+
+
+       ! FIRST ORDER PROPERTIES KEYWORD
+       ! ******************************
+       case('.UNRELAXDENSITY') 
+          ! Calculate unrelaxed density
+          DECinfo%unrelaxed =.true.
+          DECinfo%density =.true.
+          DECinfo%first_order=.true.
+
+       case('.SKIPFULL') 
+          !> Collect fragment contributions to calculate full molecular MP2 density
+          DECinfo%SkipFull=.true.
+
+       case('.ERRORFACTOR') 
+          ! scaling factor for estimated error in DEC geometry optimization
+          read(input,*) DECinfo%EerrFactor
+
+       ! kappabar multiplier equation
+       case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 
+       case('.KAPPAMAXDIIS'); read(input,*) DECinfo%kappaMaxDIIS
+       case('.KAPPA_DEBUG'); DECinfo%kappa_driver_debug=.true.
+       case('.NOTKAPPAPREC'); DECinfo%kappa_use_preconditioner=.false.
+       case('.NOTKAPPABPREC'); DECinfo%kappa_use_preconditioner_in_b=.false.
+
+
+       ! Check that input orbitals are orthogonal (debug)
+       case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
+       case('.CHECKSUBSYSTEMLOC'); DECinfo%check_Occ_SubSystemLocality=.true.
+       case('.FORCESUBSYSTEMLOC'); DECinfo%force_Occ_SubSystemLocality=.true.
+
+
+       !OTHER STUFF FIXME: SORT IT INTO BLOCKS
+       !**************************************
+       case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
+       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
+       case('.MULLIKEN'); DECinfo%mulliken=.true.
+       case('.DISTANCE'); DECinfo%distance=.true.
+       case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
+       case('.SIMPLEORBITALTHRESH')
+          read(input,*) DECinfo%simple_orbital_threshold
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
-       case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.SKIPREADIN'); DECinfo%SkipReadIn=.true.
        case('.SINGLESPOLARI'); DECinfo%SinglesPolari=.true.
@@ -757,44 +873,7 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAG_RED1_THR'); read(input,*) DECinfo%frag_red1_thr
-       case('.FRAG_RED2_THR'); read(input,*) DECinfo%frag_red2_thr
-       case('.FRAG_RED_OCC');  DECinfo%frag_red_occ  = .true.
-       case('.FRAG_RED_VIRT'); DECinfo%frag_red_virt = .true.
-       case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
-       case('.NO_PAIRS'); DECinfo%No_Pairs = .true.
-       case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
-       case('.ONLY_N_JOBS')
-          read(input,*)DECinfo%only_n_frag_jobs
-          call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
-          read(input,*)DECinfo%frag_job_nr(1:DECinfo%only_n_frag_jobs)
-       case('.ONLY_PAIR_FRAG_JOBS'); DECinfo%only_pair_frag_jobs = .true.
 
-          ! Calculate unrelaxed density
-       case('.UNRELAXDENSITY') 
-          DECinfo%unrelaxed =.true.
-          DECinfo%density =.true.
-          DECinfo%first_order=.true.
-
-          ! kappabar multiplier equation
-       case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 
-       case('.KAPPAMAXDIIS'); read(input,*) DECinfo%kappaMaxDIIS
-       case('.KAPPA_DEBUG'); DECinfo%kappa_driver_debug=.true.
-       case('.NOTKAPPAPREC'); DECinfo%kappa_use_preconditioner=.false.
-       case('.NOTKAPPABPREC'); DECinfo%kappa_use_preconditioner_in_b=.false.
-
-          ! Check that input orbitals are orthogonal (debug)
-       case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
-       case('.CHECKSUBSYSTEMLOC'); DECinfo%check_Occ_SubSystemLocality=.true.
-       case('.FORCESUBSYSTEMLOC'); DECinfo%force_Occ_SubSystemLocality=.true.
-
-          !> Collect fragment contributions to calculate full molecular MP2 density
-       case('.SKIPFULL') 
-          DECinfo%SkipFull=.true.
-       case('.ERRORFACTOR') 
-          read(input,*) DECinfo%EerrFactor
-       case('.CCDRIVERDEBUG')
-          DECinfo%cc_driver_debug=.true.
 #endif
 
        CASE DEFAULT
@@ -805,8 +884,6 @@ contains
        END SELECT DEC_INPUT_INFO
 
     ENDDO
-
-    ! DEC input is checked internally latter in DEC_meaningful_input
 
   END SUBROUTINE config_dec_input
 

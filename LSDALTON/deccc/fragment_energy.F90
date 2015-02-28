@@ -564,7 +564,7 @@ contains
        end if
        call tensor_free(VOVOvirtTMP)
      
-    else if (DECinfo%DECNP)
+    else if (DECinfo%DECNP) then
 
        ! Pair and fragment energy contributions are calculated together
        ! **************************************************************
