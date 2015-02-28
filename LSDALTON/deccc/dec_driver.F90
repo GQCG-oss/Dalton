@@ -499,7 +499,7 @@ contains
     ! Print MPI statistics
     if(DECinfo%RepeatAF) then
        call print_MPI_fragment_statistics(jobs,mastertime,'ALL FRAGMENTS')
-    else
+    else if (.not.DECinfo%no_pairs)
        call print_MPI_fragment_statistics(jobs,mastertime,'PAIR FRAGMENTS')
     end if
 #endif
