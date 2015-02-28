@@ -833,8 +833,17 @@ contains
        DECinfo%PairEstimateIgnore = .true.
        DECinfo%no_pairs = .true.
 
-       if (DECinfo%ccmodel==MODEL_RIMP2) call lsquit("RI-MP2 model is not &
-          &compatible with DECNP yet",DECinfo%output)
+       ! Some models are not compatible with DECNP
+       select case(DECinfo%ccmodel) 
+       case (MODEL_CCSDpT)
+          call lsquit("CCSD(T) model is not compatible with DECNP yet",DECinfo%output)
+       case (MODEL_RPA)
+          call lsquit("RPA model is not compatible with DECNP yet",DECinfo%output)
+       case (MODEL_SOSEX)
+          call lsquit("SOSEX model is not compatible with DECNP yet",DECinfo%output)
+       case (MODEL_RIMP2)
+          call lsquit("RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
+       end select
 
        ! DECNP only tested for occupied partitioning scheme
        if(.not. DECinfo%OnlyOccPart) then
@@ -844,8 +853,12 @@ contains
           DECinfo%onlyvirtpart=.false.
        end if
 
+       if (DECinfo%first_order) then
+          call lsquit("No first_order properties with DECNP",DECinfo%output)
+       end if
+
        ! DECNP and SNOOP are not compatible yet
-       if(DECinfo%SNOOP) then
+       if (DECinfo%SNOOP) then
           call lsquit("SNOOP and DECNP are not compatible yet!",DECinfo%output)
        end if
 
@@ -856,11 +869,11 @@ contains
     ! Repeat atomic fragment calcs after fragment optimization if:
     ! --------------------------------------------------------
     ! - First order properties are requested
-    ! - The model used in fragment reduction is different from the target CC model.
-    ! - Debug calculations: Include full Molecule
+    ! - Debug calculations: Include full Molecule, simulate full molecule:
     ! - MODIFY FOR NEW CORRECTION: A corection is requested in the target CC model (F12)
-    if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. DECinfo%F12 .or. &
-         & (DECinfo%ccmodel/=DECinfo%fragopt_red_model )) then
+    ! - The model used in fragment reduction is different from the target CC model.
+    if ( DECinfo%first_order .or. DECinfo%InclFullMolecule .or. DECinfo%simulate_full .or. &
+       & DECinfo%F12 .or. (DECinfo%ccmodel/=DECinfo%fragopt_red_model )) then
        DECinfo%RepeatAF=.true.
     else
        DECinfo%RepeatAF=.false.

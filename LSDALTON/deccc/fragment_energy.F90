@@ -303,15 +303,33 @@ contains
 
     case(MODEL_MP2) ! MP2 calculation
 
-       DECNP: if (DECinfo%DECNP) then
-          call fragment_ccsolver(MyFragment,t1,t2,VOVO)
-          call get_decnp_fragment_energy(MyFragment,t1,t2,VOVO)
-       else
           if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
              ! calculate also MP2 density integrals
+             ! ************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
-          else 
+
+          else if (DECinfo%DECNP) then
+             ! Get MP2 amplitudes and integrals using ccsolver
+             ! ***********************************************
+             call mp2_solver(MyFragment,VOVO,t2,.false.)
+           
+             ! Extract EOS indices for amplitudes and integrals
+             ! ************************************************
+             ! Note: EOS space is different for DECNP !!
+             call tensor_extract_decnp_indices(t2,MyFragment,t2occ)
+             call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc)
+           
+             ! free stuff
+             ! **********
+             call tensor_free(VOVO)
+             call tensor_free(t2)
+           
+             ! Calculate energy contribution here
+             ! **********************************
+             call get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
+          else
              ! calculate only MP2 energy integrals and MP2 amplitudes
+             ! ******************************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
           end if
 
@@ -333,7 +351,6 @@ contains
              call free_cabs()
           end if MP2F12
 #endif
-       end if DECNP
 
     case(MODEL_RIMP2) ! RIMP2 calculation
 
@@ -360,13 +377,7 @@ contains
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
 #ifdef MOD_UNRELEASED
        endif
-#endif
 
-       ! Extract EOS indices for integrals
-       ! *********************************
-       call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc,tensor_virtEOS=VOVOvirt)
-
-#ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
           !call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
           !call tensor_free(m2)
@@ -374,20 +385,11 @@ contains
        endif
 #endif
 
-       ! Calculate combined single+doubles amplitudes
-       ! ********************************************
-       ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)          
-       call get_combined_SingleDouble_amplitudes(t1,t2,u)
-
-       ! Extract EOS indices for amplitudes
-       ! **********************************
-       call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
-       ! Note, t2occ and t2virt also contain singles contributions
-       call tensor_free(u)
-
        call dec_fragment_time_get(times_ccsd)
 
 #ifdef MOD_UNRELEASED
+       ! TODO: write pT energy routines for DECNP !!
+       !
        ! calculate ccsd(t) fragment energies
        ! ***********************************
 
@@ -462,9 +464,7 @@ contains
           call tensor_free(VOVO_local)
           call tensor_free(t2f_local)
        end if
-#endif 
 
-#ifdef MOD_UNRELEASED
        ! CCSD-F12 Code
        CCSDF12: if(DECinfo%F12) then
 
@@ -486,14 +486,51 @@ contains
 
        endif CCSDF12
 #endif
-       ! free vovo integrals
-       call tensor_free(VOVO)
 
-       if(DECinfo%use_singles)then
-          call tensor_free(t1)
-       endif
-       call tensor_free(t2)
+       ! Calculate combined single+doubles amplitudes
+       ! ********************************************
+       ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)          
+       call get_combined_SingleDouble_amplitudes(t1,t2,u)
 
+
+       if (DECinfo%DECNP) then
+          ! Extract EOS indices for amplitudes and integrals
+          ! ************************************************
+          ! Note: EOS space is different for DECNP !!
+          call tensor_extract_decnp_indices(u,MyFragment,t2occ)
+          call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc)
+
+          ! free stuff
+          ! **********
+          call tensor_free(VOVO)
+          call tensor_free(u)
+          call tensor_free(t2)
+          if(DECinfo%use_singles)then
+             call tensor_free(t1)
+          endif
+
+          ! Calculate energy contribution here
+          ! **********************************
+          call  get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
+
+       else
+          ! Extract EOS indices for amplitudes and integrals
+          ! ************************************************
+          ! Note, t2occ and t2virt also contain singles contributions
+          call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
+          call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc, &
+             & tensor_virtEOS=VOVOvirt)
+           
+          ! free stuff
+          ! **********
+          call tensor_free(VOVO)
+          call tensor_free(u)
+          call tensor_free(t2)
+          if(DECinfo%use_singles)then
+             call tensor_free(t1)
+          endif
+
+       end if
 
     case default
 
@@ -635,13 +672,16 @@ contains
     if(MyFragment%ccmodel == MODEL_CCSDpT)then
        call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
     endif
+
+    ! Free remaining arrays
+    call tensor_free(VOVOocc)
+    call tensor_free(t2occ)
     if (.not.DECinfo%DECNP) then
-       ! Free remaining arrays
-       call tensor_free(VOVOocc)
-       call tensor_free(t2occ)
+       ! TODO: free this when virt part is implemented:
        call tensor_free(VOVOvirt)
        call tensor_free(t2virt)
     end if
+
     !print *,"s1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"s2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
     !print *,"s3",t2virt%initialized,associated(t2virt%elm1)
@@ -661,20 +701,18 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    Feb. 2015
-  subroutine get_decnp_fragment_energy(MyFragment,t1,t2,VOVO)
+  subroutine get_decnp_fragment_energy(MyFragment,gocc,t2occ)
 
      implicit none
 
      !> Atomic fragment
      type(decfrag), intent(inout) :: MyFragment
-     !> single and double amplitudes from CC calculation (MP2, CCSD...)
-     !  They span the full AOS space: t2(AOS,AOS,AOS,AOS)
-     type(tensor), intent(inout) :: t1, t2
-     !> Energy integrals (ai|bj) also span the full AOS space
-     type(tensor), intent(inout) :: VOVO
-
-     ! Tensors used for energy calculation A^{AOS,AOS}_{EOS,AOS}
-     type(tensor) :: t2occ, gocc
+     !> Energy integrals (ai|bj)
+     type(tensor), intent(inout) :: gocc
+     !> double amplitudes from CC calculation (MP2, CCSD...)
+     !  singles might be included as:
+     !  t2(a,i,b,j) := t2(a,i,b,j) + t1(a,i)*t1(b,j)
+     type(tensor), intent(inout) :: t2occ
 
      real(realk), pointer :: occ_tmp(:), virt_tmp(:)
      real(realk), pointer :: t(:,:,:,:), g(:,:,:,:)
@@ -685,21 +723,6 @@ contains
      logical ::  something_wrong,SOS,PerformLag! ,doOccPart, doVirtPart
      integer :: noccEOS, nvirtEOS, noccAOS, nvirtAOS
      integer :: i,j,k,a,b
-
-     !TODO: For now we assume MP2 model:
-     if (myfragment%ccmodel/=MODEL_MP2) then
-        call lsquit("ERROR(get_decnp_fragment_energy): DECNP only implemented for MP2",&
-           & DECinfo%output)
-     end if
-
-     ! Extract EOS indices for amplitudes and integrals
-     ! ************************************************
-     call tensor_extract_decnp_indices(t2,MyFragment,t2occ)
-     call tensor_extract_decnp_indices(VOVO,MyFragment,gocc)
-
-     ! Free stuff:
-     call tensor_free(t2)
-     call tensor_free(VOVO)
 
      ! Get occupied DECNP energy contributions:
      ! ----------------------------------------
@@ -824,9 +847,6 @@ contains
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
 
-     ! Free stuff:
-     call tensor_free(t2occ)
-     call tensor_free(gocc)
      t => null() 
      g => null() 
       
