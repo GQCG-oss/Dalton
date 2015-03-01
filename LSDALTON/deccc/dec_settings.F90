@@ -1097,8 +1097,7 @@ contains
        ENDIF
     ENDIF
 
-    FirstOrderModel: if(DECinfo%ccModel /= MODEL_MP2.and.DECinfo%ccModel /= MODEL_CCSD) then
-
+    FirstOrderModel: if(DECinfo%ccModel /= MODEL_MP2.and.DECinfo%ccModel /= MODEL_CCSD.and.DECinfo%ccModel /= MODEL_RIMP2) then
 
        if(DECinfo%density) then
           call lsquit('Calculation of density matrix is only implemented for MP2/CCSD!', DECinfo%output)
@@ -1109,8 +1108,6 @@ contains
        end if
 
     end if FirstOrderModel
-
-
 
     MP2gradientCalculation: if(DECinfo%first_order) then
 

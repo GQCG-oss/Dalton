@@ -350,8 +350,13 @@ contains
 
     case(MODEL_RIMP2) ! RIMP2 calculation
 
-       if(DECinfo%first_order)call lsquit('no first order RIMP2',-1)
-       call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
+       if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
+          ! calculate also RIMP2 density integrals
+          call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
+       else
+          ! calculate also RIMP2 density integrals
+          call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
+       endif
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX) ! higher order CC (-like)
 
