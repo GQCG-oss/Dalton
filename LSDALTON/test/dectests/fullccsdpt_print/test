@@ -4,9 +4,17 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..','..','tools',))
+
 from runtest_lsdalton import Filter, TestRun
+from output_parser import *
 
 test = TestRun(__file__, sys.argv)
+
+# Input files:
+# ============
+DAL = "fullccsdpt_print"
+MOL = "H2O"
 
 f = Filter()
 f.add(string = 'Final HF energy',
@@ -28,7 +36,14 @@ f.add(string = 'Allocated memory (TOTAL)')
 
 f.add(string = 'Allocated MPI memory a cross all slaves')
 
-test.run(['fullccsdpt_print.dal'], ['H2O.mol'], {'out': f})
+test.run([DAL+'.dal'], [MOL+'.mol'], {'out': f})
+
+
+name = "_".join([DAL,MOL])
+
+# Test LSDalton Output parser script
+# ==================================
+fullccsdpt = lsoutput(name+'.out')
 
 sys.exit(test.return_code)
 
