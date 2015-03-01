@@ -10,7 +10,6 @@ from runtest_lsdalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 # Input files:
-# ============
 DAL1 = "decccsd_crashcalc"
 DAL2 = "decccsd_restart"
 MOL  = "B3H3"
