@@ -353,7 +353,7 @@ contains
     calcAF = DECinfo%RepeatAF
     !This is a hack to specify that only pair fragment jobs should be done
     if(DECinfo%only_pair_frag_jobs) calcAF = .false.
-    ! Always calculate atomic fragment energies is AFset is true
+    ! Always calculate atomic fragment energies if AFset is true
     if(AFset) calcAF=.true.
 
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
@@ -475,13 +475,15 @@ contains
 
     ! Plot pair interaction energies using occ. partitioning scheme
     ! *************************************************************
-    IF(DECinfo%onlyVirtPart)THEN
-       call get_virtfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
-    ELSE
-       call get_occfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
-    ENDIF
-    call plot_pair_energies(nfrags,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
-         & MyMolecule,dofrag)
+    if (.not. DECinfo%no_pairs) then 
+       IF(DECinfo%onlyVirtPart)THEN
+          call get_virtfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+       ELSE
+          call get_occfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+       ENDIF
+       call plot_pair_energies(nfrags,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
+            & MyMolecule,dofrag)
+    end if
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     mastertime = twall2-twall1
@@ -497,7 +499,7 @@ contains
     ! Print MPI statistics
     if(DECinfo%RepeatAF) then
        call print_MPI_fragment_statistics(jobs,mastertime,'ALL FRAGMENTS')
-    else
+    else if (.not.DECinfo%no_pairs) then
        call print_MPI_fragment_statistics(jobs,mastertime,'PAIR FRAGMENTS')
     end if
 #endif
@@ -631,6 +633,12 @@ contains
            Ecorr = energies(FRAGMODEL_OCCRPA)
          ENDIF
        ENDIF
+    case(MODEL_SOSEX)
+      IF(DECinfo%onlyVirtPart)THEN
+        Ecorr = energies(FRAGMODEL_VIRTSOS)
+      ELSE
+        Ecorr = energies(FRAGMODEL_OCCSOS)
+      ENDIF
     case(MODEL_CC2)
        ! CC2, use occ energy
        IF(DECinfo%onlyVirtPart)THEN
@@ -839,39 +847,41 @@ subroutine print_dec_info()
     fragenergy=0.0_realk
     only_update=.true.
 
-    ! Do any fragment optimizations?
-    dofragopt=any(jobs%dofragopt)
-    ! Number of fragment optimizations
-    nfragopt = count(jobs%dofragopt)
+    if (jobs%njobs>0) then
+       ! Do any fragment optimizations?
+       dofragopt=any(jobs%dofragopt)
+       ! Number of fragment optimizations
+       nfragopt = count(jobs%dofragopt)
+
+       ! Sanity check for estimated fragments
+       if(any(jobs%esti)) then
+          if(.not. present(EstAtomicFragments)) then
+             call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
+                  & atomic fragments are not present!',-1)
+          end if
+          if(.not. present(estijobs) ) then
+             call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
+                  & pair fragment job list is not present!',-1)
+          end if
+       end if
+        
+       ! Sanity check for singles polarization effects
+       if(DECinfo%SinglesPolari) then
+          if( (.not. present(t1old)) .or. (.not. present(t1new)) ) then
+             call lsquit('fragment_jobs: Singles polarization requested but no &
+                  & t1 amplitudes present!',-1)
+          end if
+          if(any(jobs%esti)) then
+             call lsquit('fragment_jobs: Singles polarization not implemented for estimated fragments',-1)
+          end if
+       end if
+    end if 
 
     ! Sanity check for atomic fragment optimization 
     if(dofragopt .and. esti) then
        if(.not. present(fragoptjobs) ) then
           call lsquit('fragment_jobs: Atomic fragment optimization in job list, but &
                & fragment opt. job list is not present!',-1)
-       end if
-    end if
-
-    ! Sanity check for estimated fragments
-    if(any(jobs%esti)) then
-       if(.not. present(EstAtomicFragments)) then
-          call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
-               & atomic fragments are not present!',-1)
-       end if
-       if(.not. present(estijobs) ) then
-          call lsquit('fragment_jobs: Estimated pair fragments requested, but estimated &
-               & pair fragment job list is not present!',-1)
-       end if
-    end if
-
-    ! Sanity check for singles polarization effects
-    if(DECinfo%SinglesPolari) then
-       if( (.not. present(t1old)) .or. (.not. present(t1new)) ) then
-          call lsquit('fragment_jobs: Singles polarization requested but no &
-               & t1 amplitudes present!',-1)
-       end if
-       if(any(jobs%esti)) then
-          call lsquit('fragment_jobs: Singles polarization not implemented for estimated fragments',-1)
        end if
     end if
 
@@ -1342,6 +1352,11 @@ subroutine print_dec_info()
        call restart_atomic_fragments_from_file(MyMolecule,MyLsitem,OccOrbitals,&
             & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
     end if
+
+    ! Sanity Check:
+    if (DECinfo%DECNP .and. esti) call lsquit("ERROR(fragopt_and_estimated_frags): &
+       &Pair estimates should be turned off in combination with DECNP!!",DECinfo%output)
+
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)

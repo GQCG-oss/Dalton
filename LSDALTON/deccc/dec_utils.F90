@@ -3571,40 +3571,42 @@ end function max_batch_dimension
     jobs%njobs = njobs
 
     ! Set all pointers to be of size njobs and equal to 0
-    call mem_alloc(jobs%atom1,njobs)
-    call mem_alloc(jobs%atom2,njobs)
-    call mem_alloc(jobs%jobsize,njobs)
-    call mem_alloc(jobs%jobsdone,njobs)
-    call mem_alloc(jobs%dofragopt,njobs)
-    call mem_alloc(jobs%esti,njobs)
-    jobs%atom1     = 0
-    jobs%atom2     = 0
-    jobs%jobsize   = 0
-    jobs%jobsdone  = .false. ! no jobs are done
-    jobs%dofragopt = .false. 
-    jobs%esti      = .false.
-
-    ! MPI fragment statistics
-    call mem_alloc(jobs%nslaves,njobs)
-    call mem_alloc(jobs%nocc,njobs)
-    call mem_alloc(jobs%nunocc,njobs)
-    call mem_alloc(jobs%nbasis,njobs)
-    call mem_alloc(jobs%ntasks,njobs)
-    call mem_alloc(jobs%flops,njobs)
-    call mem_alloc(jobs%LMtime,njobs)
-    call mem_alloc(jobs%commt,njobs)
-    call mem_alloc(jobs%workt,njobs)
-    call mem_alloc(jobs%idlet,njobs)
-    jobs%nslaves = 0
-    jobs%nocc    = 0
-    jobs%nunocc  = 0
-    jobs%nbasis  = 0
-    jobs%ntasks  = 0
-    jobs%flops   = 0.0E0_realk
-    jobs%LMtime  = 0.0E0_realk
-    jobs%commt   = 0.0E0_realk
-    jobs%workt   = 0.0E0_realk
-    jobs%idlet   = 0.0E0_realk
+    if (njobs>0) then
+       call mem_alloc(jobs%atom1,njobs)
+       call mem_alloc(jobs%atom2,njobs)
+       call mem_alloc(jobs%jobsize,njobs)
+       call mem_alloc(jobs%jobsdone,njobs)
+       call mem_alloc(jobs%dofragopt,njobs)
+       call mem_alloc(jobs%esti,njobs)
+       jobs%atom1     = 0
+       jobs%atom2     = 0
+       jobs%jobsize   = 0
+       jobs%jobsdone  = .false. ! no jobs are done
+       jobs%dofragopt = .false. 
+       jobs%esti      = .false.
+        
+       ! MPI fragment statistics
+       call mem_alloc(jobs%nslaves,njobs)
+       call mem_alloc(jobs%nocc,njobs)
+       call mem_alloc(jobs%nunocc,njobs)
+       call mem_alloc(jobs%nbasis,njobs)
+       call mem_alloc(jobs%ntasks,njobs)
+       call mem_alloc(jobs%flops,njobs)
+       call mem_alloc(jobs%LMtime,njobs)
+       call mem_alloc(jobs%commt,njobs)
+       call mem_alloc(jobs%workt,njobs)
+       call mem_alloc(jobs%idlet,njobs)
+       jobs%nslaves = 0
+       jobs%nocc    = 0
+       jobs%nunocc  = 0
+       jobs%nbasis  = 0
+       jobs%ntasks  = 0
+       jobs%flops   = 0.0E0_realk
+       jobs%LMtime  = 0.0E0_realk
+       jobs%commt   = 0.0E0_realk
+       jobs%workt   = 0.0E0_realk
+       jobs%idlet   = 0.0E0_realk
+    end if
 
   end subroutine init_joblist
 
@@ -3618,6 +3620,7 @@ end function max_batch_dimension
     !> Job list
     type(joblist),intent(inout) ::  jobs
 
+    if (jobs%njobs>0) then
     ! Deallocate pointers and nullify
     if(associated(jobs%atom1)) then
        call mem_dealloc(jobs%atom1)
@@ -3697,6 +3700,7 @@ end function max_batch_dimension
     if(associated(jobs%idlet)) then
        call mem_dealloc(jobs%idlet)
        nullify(jobs%idlet)
+    end if
     end if
 
   end subroutine free_joblist
@@ -4330,6 +4334,12 @@ end function max_batch_dimension
           endif
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)')  'G: Total CCSD(T) energy:', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_SOSEX) then
+         write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy   :', Ehf+Ecorr
+         IF(DECinfo%DFTreference) then
+           write(lupri,'(15X,a,f20.10)') 'G: KS + SOSEX energy   :',&
+             & Edft+Ecorr
+         endif
        elseif(DECinfo%ccmodel==MODEL_RPA) then
          if(.not. SOS) then
            write(lupri,'(15X,a,f20.10)') 'G: HF + dRPA energy    :', Ehf+Ecorr
@@ -4389,6 +4399,12 @@ end function max_batch_dimension
           endif
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_SOSEX) then
+         write(lupri,'(15X,a,f20.10)') 'E: HF + SOSEX energy   :', Ehf+Ecorr
+         IF(DECinfo%DFTreference) then
+           write(lupri,'(15X,a,f20.10)') 'E: KS + SOSEX energy   :',&
+             & Edft+Ecorr
+         endif
        elseif(DECinfo%ccmodel==MODEL_RPA) then
           if(.not. SOS) then
              write(lupri,'(15X,a,f20.10)') 'E: HF + dRPA energy    :', Ehf+Ecorr
@@ -4444,7 +4460,7 @@ end function max_batch_dimension
 
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
-    print_pair = count(dofrag)>1
+    print_pair = count(dofrag)>1 .and. (.not. DECinfo%no_pairs)
     
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
@@ -4513,6 +4529,35 @@ end function max_batch_dimension
        if(.not.DECinfo%onlyoccpart) then
           write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CC2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTCC2)
+       end if
+       write(DECinfo%output,*)
+
+    case(MODEL_SOSEX)
+
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCSOS),dofrag,&
+               & 'SOSEX occupied single energies','AF_SOS_OCC')
+       endif
+       if(.not.DECinfo%onlyoccpart) then
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTSOS),dofrag,&
+               & 'SOSEX virtual single energies','AF_SOS_VIR')
+       endif
+
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCSOS),dofrag,&
+               & DistanceTable, 'SOSEX occupied pair energies','PF_SOS_OCC')
+       endif
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTSOS),dofrag,&
+               & DistanceTable, 'SOSEX virtual pair energies','PF_SOS_VIR')
+       endif
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'SOSEX occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
+            & energies(FRAGMODEL_OCCSOS)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'SOSEX virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
+               & energies(FRAGMODEL_VIRTSOS)
        end if
        write(DECinfo%output,*)
 
@@ -4875,7 +4920,7 @@ end function max_batch_dimension
     integer :: iCorrLen, cc_sol, pT_full, pT_4, pT_5
     logical :: print_pair
 
-    print_pair = count(dofrag)>1
+    print_pair = count(dofrag)>1 .and. (.not. DECinfo%no_pairs)
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
     cc_sol  = 1
@@ -4901,7 +4946,20 @@ end function max_batch_dimension
           write(DECinfo%output,*)
           write(DECinfo%output,*)
           write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'RPA ', &
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'dRPA ', &
+             & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
+          write(DECinfo%output,*)
+
+       else if( DECinfo%ccmodel == MODEL_SOSEX)then
+          call print_atomic_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),dofrag,&
+             & 'SOSEX occupied single energies','AF_SOS_OCC')
+          if (print_pair) call print_pair_fragment_energies(nfrags,FragEnergies(:,:,cc_sol),&
+             & dofrag,Distancetable, 'SOSEX occupied pair energies','PF_SOS_OCC')
+
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') 'SOSEX ', &
              & CorrEnergyString(1:iCorrLen),' : ',ccenergies(cc_sol)
           write(DECinfo%output,*)
 
@@ -5236,6 +5294,10 @@ end function max_batch_dimension
 
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCRPA)
 
+    case(MODEL_SOSEX)
+
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCSOS)
+
     case(MODEL_CCSD)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCCCSD)
 
@@ -5280,6 +5342,10 @@ end function max_batch_dimension
     case(MODEL_RPA)
 
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTRPA)
+
+    case(MODEL_SOSEX)
+
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTSOS)
 
     case(MODEL_CCSD)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTCCSD)
@@ -5334,6 +5400,10 @@ end function max_batch_dimension
        else
          dE_est1 = abs(energies(FRAGMODEL_OCCRPA) - energies(FRAGMODEL_VIRTRPA))
        endif
+
+    case(MODEL_SOSEX)
+         ! Energy error = difference between occ and virt energies
+         dE_est1 = abs(energies(FRAGMODEL_OCCSOS) - energies(FRAGMODEL_VIRTSOS))
 
     case(MODEL_CCSD)
        dE_est1 = abs(energies(FRAGMODEL_OCCCCSD) - energies(FRAGMODEL_VIRTCCSD))

@@ -51,7 +51,7 @@ cat > cc3_HF_631G_2hyp_noddy.dal <<%EOF%
 .CC
 *SCF INPUT
 .THRESH
- 1.0D-8
+ 1.0D-12
 .NODIIS
 *ORBITAL INPUT
 .MOSTART
@@ -59,9 +59,9 @@ cat > cc3_HF_631G_2hyp_noddy.dal <<%EOF%
 *CC INP
 .CC3
 .THRENR
-1.0D-8
+1.0D-12
 .THRLEQ
-1.0D-8
+1.0D-12
 *CCLR
 .OPERATOR
 ZDIPLEN ZDIPLEN
@@ -135,9 +135,9 @@ if $GREP -q "not implemented for parallel calculations" $log; then
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -99\.98340893.." $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -100\.11210316.." $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -100\.11534275.." $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -99\.9834089353" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -100\.1121031642" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -100\.1153427592" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT (noddy)"

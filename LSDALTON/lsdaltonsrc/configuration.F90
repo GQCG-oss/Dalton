@@ -38,7 +38,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
-     & check_cc_input
+     & check_cc_input, check_dec_input
 use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
@@ -172,6 +172,7 @@ implicit none
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
+  print*,'config_set_default_config:',infpar%inputBLOCKSIZE
 #endif
 end subroutine config_set_default_config
 
@@ -1071,6 +1072,15 @@ subroutine DEC_meaningful_input(config)
         ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
 
+        ! Modify DECinfo to calculate first order properties (gradient) for MP2
+        DECinfo%gradient=.true.
+        DECinfo%first_order=.true.
+        if (DECinfo%ccmodel /= MODEL_MP2) then
+           write(DECinfo%output,*) "WARNING: DEC Geometry optimization only available for MP2"
+           write(DECinfo%output,*) "WARNING: We are switching to DEC-MP2  !!!"
+           DECinfo%ccmodel = MODEL_MP2
+        end if 
+
         ! DEC restart for geometry optimizations not implemented
         if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
            write(config%lupri,*) 'Warning: DEC restart not implemented for geometry optimization...'
@@ -1122,6 +1132,9 @@ subroutine DEC_meaningful_input(config)
         end if
 #endif
      end if OrbLocCheck
+
+     ! Check DEC input internally
+     call check_dec_input()
 
   end if DECcalculation
 
@@ -1236,12 +1249,17 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            config%SubSystemDensity = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
+        CASE('.PDMM');  config%opt%cfg_prefer_PDMM = .true.
 #ifdef VAR_MPI
+        CASE('.PDMMBLOCKSIZE');  
+           print*,'PDMMBLOCKSIZE CHOSEN'
+           READ(LUCMD,*) infpar%inputBLOCKSIZE
         CASE('.SCALAPACKGROUPSIZE');
            READ(LUCMD,*) infpar%ScalapackGroupSize
         CASE('.SCALAPACKAUTOGROUPSIZE');
            infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
+           print*,'SCALAPACKBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
         CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
@@ -3911,6 +3929,27 @@ IF(nthreads_test.NE.1)THEN
 ENDIF
 #endif
 
+!PDMM sanity check:
+!==================
+
+if (config%opt%cfg_prefer_PDMM) then
+   if (matrix_type == mtype_unres_dense) then
+      call lsquit('PDMM not implemented for unrestricted!',config%lupri)
+   else
+#ifdef VAR_MPI
+      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+      WRITE(lupri,'(4X,A)')'with PDMM for memory distribution and parallelization.'
+      CALL mat_select_type(mtype_pdmm,lupri,nbast)      
+#else
+      !no VAR_MPI
+      WRITE(lupri,'(4X,A)')'This is a Standard Serial compilation.'
+      WRITE(lupri,'(4X,A)')'.PDMM requires compilation using MPI.'
+      print*,'This is a Standard Serial compilation.'
+      print*,'.PDMM requires compilation using MPI.'
+      CALL LSQUIT('PDMM requires MPI - recompile using MPI and the -DVAR_MPI flag',config%lupri)
+#endif
+   endif
+endif
 
 !SCALAPACK sanity check:
 !==================

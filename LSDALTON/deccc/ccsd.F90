@@ -63,7 +63,7 @@ module ccsd_module
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
          & get_max_batch_sizes, ccsd_energy_full_occ,print_fragment_energies_full, &
-         & mo_work_dist, check_job, get_mo_ccsd_residual, &
+         & mo_work_dist, check_job, get_mo_ccsd_residual,decnp_energy_full_occ, &
          & wrapper_get_ccsd_batch_sizes, yet_another_ccsd_residual,&
          & RN_RESIDUAL_INT_DRIVEN, RN_YET_ANOTHER_RES
     private
@@ -6470,6 +6470,100 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! ******************************************************************
 
   end subroutine ccsd_energy_full_occ
+
+
+  !> Purpose: calculate atomic fragment contributions to CCSD-like
+  !           correlation energy for full molecule calculation.
+  !           works for MP2, RPA, CC2, CCD, CCSD...
+  !
+  !> Author:  Pablo Baudin (Based on Janus's routine)
+  !> Date:    Feb. 2015
+  subroutine decnp_energy_full_occ(nocc,nvirt,nfrags,offset,t2,t1,integral,occ_orbitals,&
+           & FragEnergies,tmp_fragener)
+
+    implicit none
+
+    !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
+    type(tensor), intent(inout) :: t2, integral
+    !> ccsd singles amplitudes
+    type(tensor), intent(inout) :: t1
+    !> dimensions
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
+    !> occupied orbital information
+    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    !> etot
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: FragEnergies, tmp_fragener
+    !> integers
+    integer :: i,j,a,b,atomI
+    !> energy reals
+    real(realk) :: energy_tmp_1, energy_tmp_2
+
+    ! *************************************************************
+    ! ************** do energy for full molecule ******************
+    ! *************************************************************
+
+    ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
+    ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
+
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
+    !$OMP REDUCTION(+:FragEnergies),&
+    !$OMP SHARED(t2,t1,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
+    do j=1,nocc
+       do i=1,nocc
+          atomI = occ_orbitals(i+offset)%CentralAtom
+
+          do b=1,nvirt
+             do a=1,nvirt
+
+                energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                if(DECinfo%use_singles)then
+                   energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                else
+                   energy_tmp_2 = 0.0E0_realk
+                endif
+                FragEnergies(AtomI,AtomI) = FragEnergies(AtomI,AtomI) &
+                                        & + energy_tmp_1 + energy_tmp_2
+
+             end do
+          end do
+
+       end do
+    end do
+    !$OMP END PARALLEL DO
+
+    ! reorder from (a,b,i,j) to (a,b,j,i)
+    call tensor_reorder(integral,[1,2,4,3])
+
+    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
+    !$OMP REDUCTION(+:tmp_fragener),&
+    !$OMP SHARED(t2,t1,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
+    do j=1,nocc
+       do i=1,nocc
+          atomI = occ_orbitals(i+offset)%CentralAtom
+
+          do b=1,nvirt
+             do a=1,nvirt
+
+                energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                if(DECinfo%use_singles)then
+                   energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                else
+                   energy_tmp_2 = 0.0E0_realk
+                endif
+                tmp_fragener(AtomI,AtomI) = tmp_fragener(AtomI,AtomI) &
+                                        & + energy_tmp_1 + energy_tmp_2
+
+             end do
+          end do
+
+       end do
+    end do
+    !$OMP END PARALLEL DO
+
+    ! get total fourth--order energy contribution
+    FragEnergies = 2.0E0_realk * FragEnergies - tmp_fragener
+
+  end subroutine decnp_energy_full_occ
 
 
 #ifdef MOD_UNRELEASED
