@@ -4684,10 +4684,12 @@ end subroutine get_simple_parallel_mp2_residual_slave
 !> \March 2014
 subroutine RIMP2_integrals_and_amplitudes_slave()
   use precision
+  use infpar_module
   use dec_typedef_module
   use lstiming
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
+  use lsmpi_type, only: ls_mpibcast
   use decmpi_module, only: mpi_communicate_mp2_int_and_amp
   use mp2_module,only: RIMP2_integrals_and_amplitudes
   use tensor_type_def_module, only: tensor

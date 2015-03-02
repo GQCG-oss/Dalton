@@ -3571,40 +3571,42 @@ end function max_batch_dimension
     jobs%njobs = njobs
 
     ! Set all pointers to be of size njobs and equal to 0
-    call mem_alloc(jobs%atom1,njobs)
-    call mem_alloc(jobs%atom2,njobs)
-    call mem_alloc(jobs%jobsize,njobs)
-    call mem_alloc(jobs%jobsdone,njobs)
-    call mem_alloc(jobs%dofragopt,njobs)
-    call mem_alloc(jobs%esti,njobs)
-    jobs%atom1     = 0
-    jobs%atom2     = 0
-    jobs%jobsize   = 0
-    jobs%jobsdone  = .false. ! no jobs are done
-    jobs%dofragopt = .false. 
-    jobs%esti      = .false.
-
-    ! MPI fragment statistics
-    call mem_alloc(jobs%nslaves,njobs)
-    call mem_alloc(jobs%nocc,njobs)
-    call mem_alloc(jobs%nunocc,njobs)
-    call mem_alloc(jobs%nbasis,njobs)
-    call mem_alloc(jobs%ntasks,njobs)
-    call mem_alloc(jobs%flops,njobs)
-    call mem_alloc(jobs%LMtime,njobs)
-    call mem_alloc(jobs%commt,njobs)
-    call mem_alloc(jobs%workt,njobs)
-    call mem_alloc(jobs%idlet,njobs)
-    jobs%nslaves = 0
-    jobs%nocc    = 0
-    jobs%nunocc  = 0
-    jobs%nbasis  = 0
-    jobs%ntasks  = 0
-    jobs%flops   = 0.0E0_realk
-    jobs%LMtime  = 0.0E0_realk
-    jobs%commt   = 0.0E0_realk
-    jobs%workt   = 0.0E0_realk
-    jobs%idlet   = 0.0E0_realk
+    if (njobs>0) then
+       call mem_alloc(jobs%atom1,njobs)
+       call mem_alloc(jobs%atom2,njobs)
+       call mem_alloc(jobs%jobsize,njobs)
+       call mem_alloc(jobs%jobsdone,njobs)
+       call mem_alloc(jobs%dofragopt,njobs)
+       call mem_alloc(jobs%esti,njobs)
+       jobs%atom1     = 0
+       jobs%atom2     = 0
+       jobs%jobsize   = 0
+       jobs%jobsdone  = .false. ! no jobs are done
+       jobs%dofragopt = .false. 
+       jobs%esti      = .false.
+        
+       ! MPI fragment statistics
+       call mem_alloc(jobs%nslaves,njobs)
+       call mem_alloc(jobs%nocc,njobs)
+       call mem_alloc(jobs%nunocc,njobs)
+       call mem_alloc(jobs%nbasis,njobs)
+       call mem_alloc(jobs%ntasks,njobs)
+       call mem_alloc(jobs%flops,njobs)
+       call mem_alloc(jobs%LMtime,njobs)
+       call mem_alloc(jobs%commt,njobs)
+       call mem_alloc(jobs%workt,njobs)
+       call mem_alloc(jobs%idlet,njobs)
+       jobs%nslaves = 0
+       jobs%nocc    = 0
+       jobs%nunocc  = 0
+       jobs%nbasis  = 0
+       jobs%ntasks  = 0
+       jobs%flops   = 0.0E0_realk
+       jobs%LMtime  = 0.0E0_realk
+       jobs%commt   = 0.0E0_realk
+       jobs%workt   = 0.0E0_realk
+       jobs%idlet   = 0.0E0_realk
+    end if
 
   end subroutine init_joblist
 
@@ -3618,6 +3620,7 @@ end function max_batch_dimension
     !> Job list
     type(joblist),intent(inout) ::  jobs
 
+    if (jobs%njobs>0) then
     ! Deallocate pointers and nullify
     if(associated(jobs%atom1)) then
        call mem_dealloc(jobs%atom1)
@@ -3697,6 +3700,7 @@ end function max_batch_dimension
     if(associated(jobs%idlet)) then
        call mem_dealloc(jobs%idlet)
        nullify(jobs%idlet)
+    end if
     end if
 
   end subroutine free_joblist
@@ -4456,7 +4460,7 @@ end function max_batch_dimension
 
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
-    print_pair = count(dofrag)>1
+    print_pair = count(dofrag)>1 .and. (.not. DECinfo%no_pairs)
     
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
@@ -4916,7 +4920,7 @@ end function max_batch_dimension
     integer :: iCorrLen, cc_sol, pT_full, pT_4, pT_5
     logical :: print_pair
 
-    print_pair = count(dofrag)>1
+    print_pair = count(dofrag)>1 .and. (.not. DECinfo%no_pairs)
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
     cc_sol  = 1
