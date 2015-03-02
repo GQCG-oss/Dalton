@@ -1711,6 +1711,7 @@ SUBROUTINE pari_alphaBeta_block(alphaBeta,setting,molecule,&
   
   TYPE(LSTENSOR),pointer     :: auxCSa,auxCSb
   INTEGER                    :: atomsAB(2),dummyAtoms(1)
+  Real(realk)                :: ts,te
 
   !set threshold
   SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%PARI_THRESHOLD
@@ -1731,8 +1732,10 @@ SUBROUTINE pari_alphaBeta_block(alphaBeta,setting,molecule,&
   call typedef_setMolecules(setting,atoms(iAtomA),1,atoms(iAtomB),3)
   call initIntegralOutputDims(setting%Output,nAuxA,1,nAuxB,1,1)
   IF (setting%scheme%CS_SCREEN) call ls_attach_gab_to_setting(setting,auxCSa,auxCSb)
+  CALL LSTIMER('START ',te,ts,lupri)
   call ls_getIntegrals(AODFdefault,AOEmpty,AODFdefault,AOEmpty,&
        CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+  CALL LSTIMER('(al|be)',te,ts,lupri)
   CALL retrieve_Output(lupri,setting,alphaBeta,.FALSE.)
   IF (setting%scheme%CS_SCREEN) THEN
      call ls_free_gab_from_setting(setting,lupri)
