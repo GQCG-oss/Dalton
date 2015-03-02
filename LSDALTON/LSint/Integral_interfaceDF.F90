@@ -1443,6 +1443,8 @@ contains
     Real(realk),pointer        :: MOmatK(:,:)
     Real(realk),pointer        :: matH_Q(:,:,:),matD_Q(:,:,:)
     Real(realk),pointer        :: tmp(:,:,:)
+    Logical                    :: compute_coeff
+    Character(80)              :: C_filename
 
     IF (ndmat.GT.1) THEN
        WRITE(*,*)     &
@@ -1560,6 +1562,17 @@ contains
           enddo
        enddo
 
+       ! --- Check if Pari-coeff have been computed and stored in previous 
+       ! --- SCF iteration
+       compute_coeff = .false.
+       C_filename = 'CALPHA_AB'
+       if (io_file_exist(C_filename,setting%IO)) then
+          call io_read_mat3d_mo(calpha_ab_mo,nAtoms,nAtoms,C_filename,&
+               setting%io,lupri,luerr)
+       else 
+          compute_coeff = .true.
+       endif
+
        ! --- Initialize matrix of 2-center integrals
        allocate(alpha_beta_mo(nAtoms,nAtoms))
        do iAtomA=1,nAtoms
@@ -1611,7 +1624,13 @@ contains
           call mem_dealloc(matH_Q)
        Enddo !Loop A
        
-        do iAtomA=1,nAtoms
+       if (compute_coeff) then
+          CALL io_add_filename(setting%io,C_filename,lupri)
+          CALL io_write_mat3d_mo(calpha_ab_mo,nAtoms,nAtoms,C_filename,&
+               setting%io,lupri,luerr) 
+       endif
+
+       do iAtomA=1,nAtoms
           do iAtomB=iAtomA,nAtoms
              if (neighbours(iAtomA,iAtomB)) then
                 call free_MAT3D(calpha_ab_mo(iAtomA,iAtomB))

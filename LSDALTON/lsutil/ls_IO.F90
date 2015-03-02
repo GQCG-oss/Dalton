@@ -12,7 +12,7 @@ use mat3d_mod, only: read_mat3d_from_disk, mat3d
 use molecule_type
 use molecule_typetype
 use LSTENSOR_OPERATIONSMOD, only: LSTENSOR
-use mat3d_mod, only: write_mat3d_to_disk, mat3d
+use mat3d_mod, only: write_mat3d_to_disk, mat3d, init_mat3d
 CONTAINS
 !> \brief initialise the IOitem
 !> \author S. Reine and T. Kjaergaard
@@ -820,6 +820,78 @@ DO imat=1,nmat
 ENDDO
 CALL io_close(Filename,IO,LUPRI,LUERR)
 END SUBROUTINE io_write_mat3d
+
+!> \brief read mat3d from disk
+!> \author E. Rebolini
+!> \date 2015-03
+!> \param mat  The MAT3D's to be written to disk  
+!> \param Filename the filename
+!> \param IO the IOITEM
+!> \param LUPRI the logical unit number for the output file
+!> \param LUERR the logical unit number for the error file
+SUBROUTINE io_read_mat3d_mo(mat,dim1,dim2,Filename,IO,LUPRI,LUERR)
+implicit none
+Character(80)  :: Filename
+Integer        :: LUPRI,LUERR,dim1,dim2
+type(MAT3D)    :: mat(dim1,dim2)
+TYPE(IOITEM)   :: IO
+!
+Integer :: i,j,i_file,j_file,dim1_file,dim2_file,m,n,k
+Logical :: assoc
+
+CALL io_open(Filename,IO,LUPRI,LUERR)
+read(io_iunit(IO,Filename)) dim1_file,dim2_file
+
+IF ((dim1_file.NE.dim1).or.(dim2_file.NE.dim2)) then
+   CALL LSQUIT('io_read_mat3d_mo',LUPRI)
+endif
+
+DO i=1,dim1
+   do j=1,dim2
+      assoc = .false.
+      read(io_iunit(IO,Filename)) i_file,j_file,assoc
+      if (assoc) then
+         read(io_iunit(IO,Filename)) m,n,k
+         call init_mat3d(mat(i,j),m,n,k)
+         read(io_iunit(IO,Filename)) mat(i,j)%elements
+      endif
+   ENDDO
+enddo
+
+CALL io_close(Filename,IO,LUPRI,LUERR)
+END SUBROUTINE io_read_mat3d_mo
+
+!> \brief write mat3d from disk
+!> \author E.Rebolini
+!> \date 2015-03
+!> \param mat the MAT3D to be written to disk  
+!> \param Filename the filename
+!> \param IO the IOITEM
+!> \param LUPRI the logical unit number for the output file
+!> \param LUERR the logical unit number for the error file
+SUBROUTINE io_write_mat3d_mo(mat,dim1,dim2,Filename,IO,LUPRI,LUERR)
+implicit none
+Character(80)  :: Filename
+Integer        :: LUPRI,LUERR,dim1,dim2
+type(MAT3D)    :: mat(dim1,dim2)
+TYPE(IOITEM)   :: IO
+!
+Integer :: i,j
+CALL io_open(Filename,IO,LUPRI,LUERR)
+write(io_iunit(IO,Filename)) dim1,dim2
+DO i=1,dim1
+   do j=1,dim2
+      if (associated(mat(i,j)%elements)) then
+         write(io_iunit(IO,Filename)) i,j,.true.
+         write(io_iunit(IO,Filename)) mat(i,j)%dim1,mat(i,j)%dim2,mat(i,j)%dim3
+         write(io_iunit(IO,Filename)) mat(i,j)%elements
+      else
+         write(io_iunit(IO,Filename)) i,j,.false.
+      endif
+   ENDDO
+enddo
+CALL io_close(Filename,IO,LUPRI,LUERR)
+END SUBROUTINE io_write_mat3d_mo
 
   
 END MODULE io

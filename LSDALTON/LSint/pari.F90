@@ -274,7 +274,7 @@ CONTAINS
   !> \param auxCSfull
   subroutine getPariCoefficientsBlock(lupri,luerr,setting,iAtomA,iAtomB,&
        Calpha_ab_block,orbitalInfo,regCSfull,auxCSfull,molecule,atoms,&
-       minEigV,maxEigV,conditionNum)
+       minEigV,maxEigV,conditionNum,alpha_beta_mo)
     implicit none
     Type(lssetting),intent(inout)         :: setting
     Integer,intent(in)                    :: lupri,luerr
@@ -284,6 +284,7 @@ CONTAINS
     Type(lstensor),pointer                :: regCSfull,auxCSfull
     Type(moleculeinfo),pointer            :: molecule
     Type(moleculeinfo),pointer            :: atoms(:)
+    Type(mat2d),pointer,optional          :: alpha_beta_mo(:,:)
     Real(realk)                           :: minEigv,maxEigv,conditionNum
     !
     Integer                    :: nRegA,nRegB,nAuxA,nAuxB
@@ -330,8 +331,9 @@ CONTAINS
     endif
 
     call mem_alloc(alpha_ab,nAux,nRegA,nRegB)
-    call mem_alloc(alphaBeta,nAux,nAux)
     call ls_dzero(alpha_ab,nAux*nRegA*nRegB)
+
+    call mem_alloc(alphaBeta,nAux,nAux)
     call ls_dzero(alphaBeta,nAux*nAux)
 
     ! --- extract (alpha | beta) and (alpha | ab) with 
@@ -340,8 +342,22 @@ CONTAINS
     call pari_alphaab(alpha_ab,setting,molecule,atoms,iAtomA,iAtomB,&
          nAuxA,nAuxB,nRegA,nRegB,regCSfull,auxCSfull,lupri,luerr)
 
-    call pari_alphaBeta(alphaBeta,setting,molecule,atoms,iAtomA,iAtomB,&
-         nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
+    if (present(alpha_beta_mo)) then
+       call getQR(alphabeta(1:nAuxA,1:nAuxA),alpha_beta_mo,iAtomA,iAtomA,nAuxA,&
+            nAuxA,setting,molecule,atoms,regCSfull,auxCSfull,lupri,luerr)
+       if (.not.(iAtomA.eq.iAtomB)) then
+          call getQR(alphabeta(1:nAuxA,1+nAuxA:nAux),alpha_beta_mo,iAtomA,iAtomB,&
+            nAuxA,nAuxB,setting,molecule,atoms,regCSfull,auxCSfull,lupri,luerr)
+          call getQR(alphabeta(1+nAuxA:nAux,1:nAuxA),alpha_beta_mo,iAtomA,iAtomB,&
+            nAuxA,nAuxB,setting,molecule,atoms,regCSfull,auxCSfull,lupri,luerr)
+          call getQR(alphabeta(1+nAuxA:nAux,1+nAuxA:nAux),alpha_beta_mo,&
+               iAtomB,iAtomB,nAuxB,nAuxB,setting,molecule,atoms,&
+               regCSfull,auxCSfull,lupri,luerr)
+       endif
+    else
+       call pari_alphaBeta(alphaBeta,setting,molecule,atoms,iAtomA,iAtomB,&
+            nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
+    endif
 
 #if 0
     ! Checking eigenvalues of (alpha|beta) matrices
@@ -696,7 +712,7 @@ CONTAINS
             auxCSfull,lupri,luerr)
        
        iAtomCfrag=0
-       !Loop over C<>B (neighbours of B)
+       !Loop over C>B (neighbours of B)
        do iAtomC=iAtomB,nAtoms
           if (neighbours(iAtomB,iAtomC)) then
              iAtomCfrag = iAtomCfrag+1
@@ -861,7 +877,7 @@ CONTAINS
        call init_mat3d(calpha_ab_mo(iAtomB,iAtomC),nAuxBC,nRegB,nRegC)
        call getPariCoefficientsBlock(lupri,luerr,setting,iAtomB,iAtomC,&
             Calpha_ab_block,orbitalInfo,regCSfull,auxCSfull,molecule,atoms,&
-            minEigV,maxEigV,conditionNum)
+            minEigV,maxEigV,conditionNum,alpha_beta_mo)
        calpha_ab_mo(iAtomB,iAtomC)%elements(:,:,:)=calpha_ab_block(:,:,:)
     endif
     
@@ -1714,10 +1730,8 @@ SUBROUTINE pari_alphaBeta_block(alphaBeta,setting,molecule,&
 
   !set threshold
   SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%PARI_THRESHOLD
-  
-!CALL pariSetPairFragment(AB,ABtarget,setting%basis(1)%p,molecule,atoms,&
-!     molecule%nAtoms,iAtomA,iAtomB,nAuxA,nAuxB,nAux,lupri)
-  
+
+
   IF (setting%scheme%CS_SCREEN) THEN
      NULLIFY(auxCSa)
      ALLOCATE(auxCSa)
