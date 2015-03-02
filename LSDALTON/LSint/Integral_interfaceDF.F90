@@ -1605,8 +1605,8 @@ contains
           ! --- Construction of matrix H_i^nuQ for AtomQ=AtomA
           call mem_alloc(matH_Q,nBastReg,nAuxA,nOcc)
           matH_Q=0E0_realk
-          call getHQcoeff(matH_Q,calpha_ab_mo,alpha_beta_mo,iAtomA,neighbours,MOcoeff,&
-               orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
+          call getHQcoeff(matH_Q,calpha_ab_mo,alpha_beta_mo,iAtomA,neighbours,&
+               MOcoeff,orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
                lupri,luerr)
                               
           ! --- Construction of matrix D_i^muQ for AtomQ=AtomA
@@ -1631,8 +1631,8 @@ contains
        endif
 
        do iAtomA=1,nAtoms
-          do iAtomB=iAtomA,nAtoms
-             if (neighbours(iAtomA,iAtomB)) then
+          do iAtomB=1,nAtoms
+             if (associated(calpha_ab_mo(iAtomA,iAtomB)%elements)) then
                 call free_MAT3D(calpha_ab_mo(iAtomA,iAtomB))
              endif
           enddo

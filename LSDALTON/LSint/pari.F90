@@ -752,6 +752,7 @@ CONTAINS
        Enddo !Loop over C
 
        call mem_dealloc(alpha_cd)
+       CALL freeMolecularOrbitalInfo(orbitalInfoFrag)
        call freeNeighbourFragment(neighbourFrag,nNeighbour)
        call typedef_setMolecules(setting,molecule,1,2,3,4)
     Enddo !Loop over B
@@ -1482,6 +1483,8 @@ IF (setting%scheme%CS_SCREEN) THEN
    call lstensor_free(auxCSab)
    DEALLOCATE(auxCSab)
    DEALLOCATE(regCSab)
+   nullify(auxCSab)
+   nullify(regCSab)
 ENDIF
 
 CALL pariFreePairFragment(AB,iAtomA,iAtomB)
@@ -1680,6 +1683,7 @@ IF (setting%scheme%CS_SCREEN) THEN
    call ls_free_gab_from_setting(setting,lupri)
    call lstensor_free(auxCSab)
    DEALLOCATE(auxCSab)
+   nullify(auxCSab)
 ENDIF
 CALL pariFreePairFragment(AB,iAtomA,iAtomB)
 
@@ -2048,13 +2052,14 @@ subroutine setNeighbourFragment(neighbourFrag,neighbourFragTarget,&
      call build_fragment(molecule,neighbourFrag,basis,iAtoms,nNeighbour,lupri)
      call mem_dealloc(iAtoms)
   endif
-end subroutine
+end subroutine setNeighbourFragment
 
 subroutine freeNeighbourFragment(neighbourFrag,nNeighbour)
   implicit none
   TYPE(moleculeinfo),pointer    :: neighbourFrag
   integer                       :: nNeighbour
-  if (nNeighbour.gt.1) call free_moleculeinfo(neighbourFrag)
+  if (nNeighbour.gt.1) &
+       call free_moleculeinfo(neighbourFrag)
 end subroutine
 
 !> \brief Calculate eigenvalues(W)/eigenvectors(A) of a square (symmetric or not) matrix A with rank rankA

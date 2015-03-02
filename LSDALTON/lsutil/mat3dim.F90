@@ -97,7 +97,7 @@ subroutine init_mat2d(mat,m,n)
   integer,intent(in)        :: m,n
   mat%dim1=m
   mat%dim2=n
-  allocate(mat%elements(m,n))
+  call mem_alloc(mat%elements,m,n)
   mat%elements=0E0_realk
 end subroutine
 
@@ -107,7 +107,7 @@ subroutine free_mat2d(mat)
   type(mat2d),intent(inout) :: mat
   mat%dim1=0
   mat%dim2=0
-  deallocate(mat%elements)
+  call mem_dealloc(mat%elements)
 end subroutine free_mat2d
 
 end module mat2d_mod
