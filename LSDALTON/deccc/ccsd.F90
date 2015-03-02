@@ -2709,17 +2709,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call mem_alloc(w0,i8*nb*nb, simple=.true.)
      call mem_alloc(w2,i8*nb*nb, simple=.true.)
 
-     !!calculate inactive fock matrix in ao basis
-     !call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w0%d,nb)
-     !call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
-     !call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,w0%d,nb,nb,AORdefault,AORdefault)
-     !! Add one- and two-electron contributions to Fock matrix
-     !call daxpy(nb2,1.0E0_realk,w0%d,1,w2%d,1)
+     !if(DECinfo%HACK2)then
+        !ONLY USE T1 PART OF THE DENSITY MATRIX AND THE FOCK 
+        call dgemm('n','n',nb,no,nv,1.0E0_realk,yv,nb,t1%elm1,nv,0.0E0_realk,w1%d,nb)
+        call dgemm('n','t',nb,nb,no,1.0E0_realk,w1%d,nb,xo,nb,0.0E0_realk,w0%d,nb)
+        call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
+        call daxpy(nb2,1.0E0_realk,fock,1,w2%d,1)
+     !else
+     !   !calculate inactive fock matrix in ao basis
+     !   call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w0%d,nb)
+     !   call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
+     !   call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,w0%d,nb,nb,AORdefault,AORdefault)
+     !   ! Add one- and two-electron contributions to Fock matrix
+     !   call daxpy(nb2,1.0E0_realk,w0%d,1,w2%d,1)
+     !   ! KK: Add long-range Fock correction
+     !   call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
+     !endif
 
-     call dgemm('n','n',nb,no,nv,1.0E0_realk,yv,nb,t1%elm1,nv,0.0E0_realk,w1%d,nb)
-     call dgemm('n','t',nb,nb,no,1.0E0_realk,xo,nb,w1%d,nb,0.0E0_realk,w0%d,nb)
-     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
-     call daxpy(nb2,1.0E0_realk,fock,1,w2%d,1)
 
      if(DECinfo%full_molecular_cc.and.DECinfo%HACK2)then
         print *,"Write, full_t1fock_test.restart"
@@ -2733,9 +2739,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         OPEN(4456,FILE='full_t1fock_test.restart',STATUS='OLD',FORM='UNFORMATTED')
         READ(4456)w2%d
         CLOSE(4456)
-     else
-        ! KK: Add long-range Fock correction
-        !call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
      endif
 
 
