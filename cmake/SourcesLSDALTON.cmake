@@ -740,6 +740,9 @@ set(LSUTIL_PRECISION_SOURCES
 set(LSUTIL_MATRIXM_SOURCES
     LSDALTON/lsutil/matrix_module.F90
     )
+set(LSUTIL_COMMON_C_SOURCES
+    LSDALTON/lsutil/myPAPI_set_inherit.c
+    )
 set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/rsp-typedef.F90
     LSDALTON/lsutil/tensor_type_def.F90
