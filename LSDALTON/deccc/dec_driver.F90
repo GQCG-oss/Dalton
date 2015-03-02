@@ -846,6 +846,7 @@ subroutine print_dec_info()
     master = 0
     fragenergy=0.0_realk
     only_update=.true.
+    dofragopt=.false.
 
     if (jobs%njobs>0) then
        ! Do any fragment optimizations?
