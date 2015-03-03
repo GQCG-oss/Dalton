@@ -12,7 +12,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 
 # surf
-f.add(string = 'Surface area',
+f.add(re = 'Surface area .* \(A\^',
       rel_tolerance = 1.0e-7)
 
 # enehf

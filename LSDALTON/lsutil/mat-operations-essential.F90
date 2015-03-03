@@ -301,7 +301,8 @@ MODULE matrix_operations
      subroutine DetermineBlockSize(blocksize,nodtot,nbast,lupri)
        implicit none
        integer,intent(inout) :: blocksize
-       integer,intent(in) :: nodtot,nbast,lupri
+       integer(kind=ls_mpik),intent(in) :: nodtot
+       integer,intent(in) :: nbast,lupri
        integer,parameter :: blocklist(4)=(/1024,512,256,128/)
        !
        integer :: I,nblocks

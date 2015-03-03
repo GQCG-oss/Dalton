@@ -12,20 +12,16 @@ f = Filter()
 f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
-# Not printed in Output file in case of MPI
-#f.add(string = 'WANGY TOYCODE',
-#      rel_tolerance = 1.0e-4)
 
-f.add(string = 'AF_MP2_OCC',rel_tolerance = 1.0e-4)
-f.add(string = 'AF_MP2_VIR',rel_tolerance = 1.0e-4)
-f.add(string = 'AF_MP2_LAG',rel_tolerance = 1.0e-4)
-f.add(string = 'AF_MP2f12_OCC',rel_tolerance = 1.0e-4)
+f.add(from_string = 'Print single and pair fragment energies',
+      to_string   = 'MP2-F12 CORRELATION ENERGY:',
+      abs_tolerance = 1.0e-6)
 
 f.add(string = 'E: Correlation energy',rel_tolerance = 1.0e-4)
 f.add(string = 'E: Total MP2-F12 energy',rel_tolerance = 1.0e-4)
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['decmp2f12.dal'], ['h2.mol'], {'out': f})
+test.run(['decmp2f12.dal'], ['h2o.mol'], {'out': f})
 
 sys.exit(test.return_code)
