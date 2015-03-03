@@ -76,6 +76,9 @@ module cc_tools_module
       endif
 
    end subroutine mo_work_dist
+
+
+
    !> \brief Reorder t to use symmetry in both occupied and virtual indices,
    !> thereby restricting the first virtual to be less equal to the second and
    !> make symmetric and antisymmetric combinations of these 
