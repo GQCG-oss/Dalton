@@ -454,7 +454,7 @@ contains
       integer(kind=ls_mpik),intent(in) :: comm
       integer(kind=ls_mpik),intent(in) :: master
       integer(kind=8), intent(in)     :: n1,n2
-      integer(kind=8),target :: buffer(:,:)
+      integer(kind=8),target :: buffer(n1,n2)
 #ifdef VAR_MPI
       integer(kind=8),pointer :: buffertmp(:)
       integer(kind=8) :: i,k,n
@@ -462,7 +462,7 @@ contains
       IERR=0
       DATATYPE = MPI_INTEGER8
       n=n1*n2
-      call c_f_pointer(c_loc(buffer),buffertmp,[(i8*n1)*n2])
+      call c_f_pointer(c_loc(buffer(1,1)),buffertmp,[(i8*n1)*n2])
       k=SPLIT_MPI_MSG
       do i=1,n,k
          nMPI=k
@@ -492,7 +492,7 @@ contains
       integer(kind=ls_mpik),intent(in) :: comm
       integer(kind=ls_mpik),intent(in) :: master
       integer(kind=8) :: n1,n2
-      integer(kind=4),target :: buffer(:,:)
+      integer(kind=4),target :: buffer(n1,n2)
 #ifdef VAR_MPI
       integer(kind=4),pointer :: buffertmp(:)
       integer(kind=8) :: i,k,n
@@ -500,7 +500,7 @@ contains
       IERR=0
       DATATYPE = MPI_INTEGER4
       n=n1*n2
-      call c_f_pointer(c_loc(buffer),buffertmp,[(i8*n1)*n2])
+      call c_f_pointer(c_loc(buffer(1,1)),buffertmp,[(i8*n1)*n2])
       k=SPLIT_MPI_MSG
       do i=1,n,k
          nMPI=k
@@ -578,7 +578,7 @@ contains
       implicit none
       integer :: n1,n2
       integer(kind=ls_mpik) :: master
-      real(realk),target :: buffer(:,:)
+      real(realk),target :: buffer(n1,n2)
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
@@ -587,7 +587,7 @@ contains
       IERR=0
       DATATYPE = MPI_DOUBLE_PRECISION
       n=n1*n2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
       k=SPLIT_MPI_MSG
       do i=1,n,k
          nMPI=k
@@ -603,11 +603,11 @@ contains
       implicit none
       integer(kind=ls_mpik) :: master
       integer :: nbuf1,nbuf2,nbuf3
-      real(realk),target :: buffer(:,:,:)
+      real(realk),target :: buffer(nbuf1,nbuf2,nbuf3)
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3])
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
       call ls_mpibcast_realkV_wrapper8(buf,((i8*nbuf1)*nbuf2)*nbuf3,master,comm)
       buf => null()
 #endif
@@ -618,10 +618,10 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=ls_mpik) :: comm   ! communicator
       integer :: nbuf1,nbuf2,nbuf3,nbuf4
-      real(realk),target :: buffer(:,:,:,:)
+      real(realk),target :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
       real(realk),pointer :: buf(:)
 #ifdef VAR_MPI
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
       call ls_mpibcast_realkV_wrapper8(buf,(((i8*nbuf1)*nbuf2)*nbuf3)*nbuf4,master,comm)
       buf => null()
 #endif
@@ -797,13 +797,13 @@ contains
       implicit none
       integer(kind=4),intent(in) :: nbuf1,nbuf2
       integer(kind=ls_mpik),intent(in) :: master
-      logical(kind=4),target,intent(inout) :: buffer(:,:)
+      logical(kind=4),target,intent(inout) :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik),intent(in) :: comm   ! communicator
 #ifdef VAR_MPI
       logical(kind=4),pointer :: buf(:)
       integer(kind=8) :: n
       n=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpibcast_logical4V_wrapper8(buf,n,master,comm)
       nullify(buf)
 #endif
@@ -813,13 +813,13 @@ contains
       implicit none
       integer(kind=8),intent(in) :: nbuf1,nbuf2
       integer(kind=ls_mpik),intent(in) :: master
-      logical(kind=4),target,intent(inout) :: buffer(:,:)
+      logical(kind=4),target,intent(inout) :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik),intent(in) :: comm   ! communicator
 #ifdef VAR_MPI
       logical(kind=4),pointer :: buf(:)
       integer(kind=8) :: n
       n=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpibcast_logical4V_wrapper8(buf,n,master,comm)
       nullify(buf)
 #endif
@@ -828,13 +828,13 @@ contains
       implicit none
       integer(kind=4),intent(in) :: nbuf1,nbuf2
       integer(kind=ls_mpik),intent(in) :: master
-      logical(kind=8),target,intent(inout) :: buffer(:,:)
+      logical(kind=8),target,intent(inout) :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik),intent(in) :: comm   ! communicator
 #ifdef VAR_MPI
       logical(kind=8),pointer :: buf(:)
       integer(kind=8) :: n
       n=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpibcast_logical8V_wrapper8(buf,n,master,comm)
       nullify(buf)
 #endif
@@ -843,13 +843,13 @@ contains
       implicit none
       integer(kind=8),intent(in) :: nbuf1,nbuf2
       integer(kind=ls_mpik),intent(in) :: master
-      logical(kind=8),target,intent(inout) :: buffer(:,:)
+      logical(kind=8),target,intent(inout) :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik),intent(in) :: comm   ! communicator
 #ifdef VAR_MPI
       logical(kind=8),pointer :: buf(:)
       integer(kind=8) :: n
       n=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpibcast_logical8V_wrapper8(buf,n,master,comm)
       nullify(buf)
 #endif
@@ -1355,12 +1355,12 @@ contains
     subroutine ls_mpisendrecv_realkM(buffer,nbuf1,nbuf2,comm,sender,receiver)
       implicit none
       integer :: nbuf1,nbuf2
-      real(realk),target :: buffer(:,:)
+      real(realk),target :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpisendrecv_realkV_wrapper8(buf,(i8*nbuf1)*nbuf2,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -1369,12 +1369,12 @@ contains
     subroutine ls_mpisendrecv_realkT(buffer,nbuf1,nbuf2,nbuf3,comm,sender,receiver)
       implicit none
       integer :: nbuf1,nbuf2,nbuf3
-      real(realk),target :: buffer(:,:,:)
+      real(realk),target :: buffer(nbuf1,nbuf2,nbuf3)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3])
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
       call ls_mpisendrecv_realkV_wrapper8(buf,((i8*nbuf1)*nbuf2)*nbuf3,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -1383,12 +1383,12 @@ contains
     subroutine ls_mpisendrecv_realkQ(buffer,nbuf1,nbuf2,nbuf3,nbuf4,comm,sender,receiver)
       implicit none
       integer :: nbuf1,nbuf2,nbuf3,nbuf4
-      real(realk),target :: buffer(:,:,:,:)
+      real(realk),target :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
       call ls_mpisendrecv_realkV_wrapper8(buf,(((i8*nbuf1)*nbuf2)*nbuf3)*nbuf4,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -1627,14 +1627,14 @@ contains
     subroutine ls_mpisendrecv_logical4M(buffer,nbuf1,nbuf2,comm,sender,receiver)
       implicit none
       integer(kind=4) :: nbuf1,nbuf2
-      logical(kind=4),target :: buffer(:,:)
+      logical(kind=4),target :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       integer(kind=8) :: n1,n2
       logical(kind=4),pointer :: buf(:)      
       n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+      call c_f_pointer(c_loc(buffer(1)),buf,[(i8*n1)*n2])
       call ls_mpisendrecv_logical4V_wrapper8(buf,n1*n2,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -1643,14 +1643,14 @@ contains
     subroutine ls_mpisendrecv_logical4M_wrapper8(buffer,nbuf1,nbuf2,comm,sender,receiver)
       implicit none
       integer(kind=8) :: nbuf1,nbuf2
-      logical(kind=4),target :: buffer(:,:)
+      logical(kind=4),target :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       integer(kind=8) :: n1,n2
       logical(kind=4),pointer :: buf(:)      
       n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
       call ls_mpisendrecv_logical4V_wrapper8(buf,n1*n2,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -1659,14 +1659,14 @@ contains
     subroutine ls_mpisendrecv_logical8M(buffer,nbuf1,nbuf2,comm,sender,receiver)
       implicit none
       integer(kind=4) :: nbuf1,nbuf2
-      logical(kind=8),target :: buffer(:,:)
+      logical(kind=8),target :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       integer(kind=8) :: n1,n2
       logical(kind=8),pointer :: buf(:)      
       n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
       call ls_mpisendrecv_logical8V_wrapper8(buf,n1*n2,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -1675,14 +1675,14 @@ contains
     subroutine ls_mpisendrecv_logical8M_wrapper8(buffer,nbuf1,nbuf2,comm,sender,receiver)
       implicit none
       integer(kind=8) :: nbuf1,nbuf2
-      logical(kind=8),target :: buffer(:,:)
+      logical(kind=8),target :: buffer(nbuf1,nbuf2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       integer(kind=8) :: n1,n2
       logical(kind=8),pointer :: buf(:)      
       n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
       call ls_mpisendrecv_logical8V_wrapper8(buf,n1*n2,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -1924,7 +1924,7 @@ contains
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4M_wrapper4
@@ -1936,7 +1936,7 @@ contains
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4M_wrapper8
@@ -1948,7 +1948,7 @@ contains
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8M_wrapper4
@@ -1960,7 +1960,7 @@ contains
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8M_wrapper8
@@ -1974,7 +1974,7 @@ contains
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3])
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4T_wrapper4
@@ -1986,7 +1986,7 @@ contains
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3])
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4T_wrapper8
@@ -1998,7 +1998,7 @@ contains
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3])
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8T_wrapper4
@@ -2010,7 +2010,7 @@ contains
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3])
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8T_wrapper8
@@ -2024,7 +2024,7 @@ contains
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3*nbuf4
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4Q_wrapper4
@@ -2036,7 +2036,7 @@ contains
       integer(kind=4),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3*nbuf4
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
       call ls_mpi_buffer_integer4V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4Q_wrapper8
@@ -2048,7 +2048,7 @@ contains
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3*nbuf4
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8Q_wrapper4
@@ -2060,7 +2060,7 @@ contains
       integer(kind=8),pointer :: buf(:)
       integer(kind=8) :: nbuf
       nbuf=nbuf1*nbuf2*nbuf3*nbuf4
-      call c_f_pointer(c_loc(buffer),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
       call ls_mpi_buffer_integer8V(buf,nbuf,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8Q_wrapper8
@@ -3191,7 +3191,7 @@ contains
     integer(kind=8) :: n
     integer(kind=4), pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
     call lsmpi_reduction_integer4_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3206,7 +3206,7 @@ contains
     integer(kind=8) :: n
     integer(kind=4), pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
     call lsmpi_reduction_integer4_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3222,7 +3222,7 @@ contains
     integer(kind=4) :: n4
     integer(kind=8), pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
     call lsmpi_reduction_integer8_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3236,7 +3236,7 @@ contains
 #ifdef VAR_MPI
     integer(kind=8) :: n
     integer(kind=8), pointer :: buf(:)
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
     n=n1*n2
     call lsmpi_reduction_integer8_wrapper8(buf,n,master,comm)
     nullify(buf)
@@ -3322,7 +3322,7 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3337,7 +3337,7 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3353,7 +3353,7 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2*n3])
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2*n3])
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3368,7 +3368,7 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2*n3])
+    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3384,7 +3384,7 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3*n4
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2*n3*n4])
+    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3399,7 +3399,7 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3*n4
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2*n3*n4])
+    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3797,7 +3797,7 @@ contains
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
     n=(i8*n1)*n2
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2])
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif
@@ -3813,7 +3813,7 @@ contains
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
     n=(i8*n1)*n2*n3
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2*n3])
+    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif
@@ -3829,7 +3829,7 @@ contains
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
     n=((i8*n1)*n2)*n3*n4
-    call c_f_pointer(c_loc(buffer),buf,[(i8*n1)*n2*n3*n4])
+    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif
