@@ -3378,10 +3378,10 @@ end if UNRELAXED2
        call lsquit('dec_solve_kappabar_equation: Not implemented for full equation AND frozen core!',-1)
     end if
 
-    if(DECinfo%ccModel /= MODEL_MP2) then
+    if(DECinfo%ccModel /= MODEL_MP2 .and. DECinfo%ccModel /= MODEL_RIMP2) then
        print *, 'CC model: ', DECinfo%ccModel
        call lsquit('dec_solve_kappabar_equation:&
-            & kappabar multiplier equation is only implemented for MP2',-1)
+            & kappabar multiplier equation is only implemented for RIMP2 and MP2',-1)
     end if
 
     write(DECinfo%output,*)
