@@ -8254,7 +8254,7 @@ subroutine ccsd_data_preparation()
   !type(mp2_batch_construction) :: bat
   type(array2) :: deltafock,ppfock,qqfock,pqfock,qpfock,omega1,fock
   type(array2) :: xocc,xvirt,yocc,yvirt
-  type(tensor)  :: om2,t2,govov
+  type(tensor)  :: om2,t2,govov,dummy
   type(lsitem) :: MyLsItem
   logical :: local
   integer :: nbas,nocc,nvirt,scheme,ccmodel,res_nr
@@ -8335,7 +8335,7 @@ subroutine ccsd_data_preparation()
   ! ********************************************************
   select case (res_nr)
   case( RN_RESIDUAL_INT_DRIVEN )
-     call get_ccsd_residual_integral_driven(ccmodel,df,om2,t2,f,govov,nocc,nvirt,&
+     call get_ccsd_residual_integral_driven(ccmodel,df,om2,dummy,t2,f,govov,nocc,nvirt,&
         ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
   case( RN_YET_ANOTHER_RES )
      call yet_another_ccsd_residual(ccmodel,df,om2,t2,f,govov,nocc,nvirt,&
