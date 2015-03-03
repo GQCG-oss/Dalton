@@ -10456,7 +10456,7 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call c_f_pointer(c_loc(ovoo%elm1),dummy2,[(i8*nocc*nvirt)*nocc*nocc])
+       call c_f_pointer(c_loc(ovoo%elm1(1)),dummy2,[(i8*nocc*nvirt)*nocc*nocc])
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
@@ -10989,7 +10989,7 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call c_f_pointer(c_loc(ooov%elm1),dummy2,[(i8*nocc*nocc)*nocc*nvirt])
+       call c_f_pointer(c_loc(ooov%elm1(1)),dummy2,[(i8*nocc*nocc)*nocc*nvirt])
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
