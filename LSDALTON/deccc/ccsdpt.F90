@@ -4,6 +4,7 @@
 !> \author: Janus Juul Eriksen
 !> \date: 2012-2014, Aarhus
 module ccsdpt_module
+  use,intrinsic :: iso_c_binding,only:c_f_pointer,c_loc
 
 #ifdef VAR_MPI
   use infpar_module
@@ -24,7 +25,6 @@ module ccsdpt_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use lspdm_tensor_operations_module
-  use ptr_assoc_module 
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -10456,7 +10456,7 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call ass_D4to1(ovoo%elm1,dummy2,[nocc,nvirt,nocc,nocc])
+       call c_f_pointer(c_loc(ovoo%elm1),dummy2,[nocc,nvirt,nocc,nocc])
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
@@ -10989,7 +10989,7 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call ass_D4to1(ooov%elm1,dummy2,[nocc,nocc,nocc,nvirt])
+       call c_f_pointer(c_loc(ooov%elm1),dummy2,[nocc,nocc,nocc,nvirt])
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)

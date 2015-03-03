@@ -1,8 +1,8 @@
 !Simple tools common for cc routines
 module cc_tools_module
+   use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
 
    use precision
-   use ptr_assoc_module
 #ifdef VAR_MPI
    use lsmpi_type
 #endif
@@ -156,7 +156,7 @@ module cc_tools_module
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
 
          !Facilitate access
-         call ass_D1to2( tpl%ti(lt)%t, tpm, tpl%ti(lt)%d )
+         call c_f_pointer(c_loc(tpl%ti(lt)%t),tpm,tpl%ti(lt)%d)
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -223,11 +223,12 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call ass_D1to4( buf1, tt1, tdim )
+            call c_f_pointer(c_loc(buf1),tt1,tdim)
+
             if(mtile(2)==mtile(1))then
-               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer( c_loc(buf1), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer( c_loc(buf2), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
 
             !get offset for tile counting
@@ -305,7 +306,7 @@ module cc_tools_module
          call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
 
          !Facilitate access
-         call ass_D1to2( tmi%ti(lt)%t, tpm, tmi%ti(lt)%d )
+         call c_f_pointer( c_loc(tmi%ti(lt)%t), tpm, tmi%ti(lt)%d )
 
          !build list of tiles to get for the current tmi tile
          !get offset for tile counting
@@ -372,11 +373,11 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call ass_D1to4( buf1, tt1, tdim )
+            call c_f_pointer( c_loc(buf1), tt1, tdim )
             if(mtile(2)==mtile(1))then
-               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer( c_loc( buf1 ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer( c_loc( buf2 ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
 
             !get offset for tile counting
@@ -633,7 +634,7 @@ module cc_tools_module
       !> w0 is just some workspace on input
       real(realk),intent(inout) :: w0(:)
       !> w2 is just some workspace on input
-      real(realk),intent(inout) :: w2(:)
+      real(realk),intent(inout),target :: w2(:)
       !> w3 contains the symmetric and antisymmetric combinations 
       real(realk),intent(inout) :: w3(:)
       !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
@@ -1140,8 +1141,8 @@ module cc_tools_module
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             else
-               call ass_D1to3(w2,t1,[no2,no2,nor])
-               call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
+               call c_f_pointer(c_loc(w2),t1,[no2,no2,nor])
+               call c_f_pointer(c_loc(sio4%elm1),h1,[no,no,no2,no2])
                do j=no,1,-1
                   do i=j,1,-1
                      call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1193,8 +1194,8 @@ module cc_tools_module
 #endif
                else
 
-                  call ass_D1to3(w2,t1,[no2,no2,nor])
-                  call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
+                  call c_f_pointer(c_loc(w2),t1,[no2,no2,nor])
+                  call c_f_pointer(c_loc(sio4%elm1),h1,[no,no,no2,no2])
                   do j=no,1,-1
                      do i=j,1,-1
                         call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1282,7 +1283,8 @@ module cc_tools_module
    subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,qu,quarry)
       implicit none
       !> blank workspace
-      real(realk),intent(inout) :: w0(:),w2(:)
+      real(realk),intent(inout) :: w0(:)
+      real(realk),intent(inout),target :: w2(:)
       !> workspace containing the integrals
       real(realk),intent(in) :: w1(:)
       !> integer specifying the first element in alpha and gamma batch
@@ -1337,7 +1339,7 @@ module cc_tools_module
          quarry(2) = max(quarry(2),(i8*la*nb)*lg*nb)
          quarry(3) = max(quarry(3),(i8*nb*nb)*cagi)
       else
-         call ass_D1to3(w2,trick,[nb,nb,cagi])
+         call c_f_pointer(c_loc(w2),trick,[nb,nb,cagi])
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          aleg=0
 
