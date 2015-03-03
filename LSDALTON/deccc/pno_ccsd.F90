@@ -3,6 +3,7 @@
 !author: Patrick Ettenhuber
 
 module pno_ccsd_module
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_loc
 
   use precision
   use typedef
@@ -55,8 +56,8 @@ module pno_ccsd_module
      integer, intent(in) :: no, nv, nb,iter,nspaces
      logical, intent(in) :: fj
      real(realk), intent(inout) :: t1(nv,no), t2(nv,no,nv,no)
-     real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no), govov(no*nv*no*nv)
-     real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
+     real(realk), intent(inout),target :: o1(nv,no), o2(nv,no,nv,no), govov(no*nv*no*nv)
+     real(realk), intent(in),target :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
      type(lsitem), intent(inout) :: mylsitem
      real(realk), intent(inout) :: oof(no,no),vvf(nv,nv)
      type(decfrag),intent(in),optional :: f
@@ -280,7 +281,7 @@ module pno_ccsd_module
      Gkj = oof
 
      ! D1 term
-     call ass_D2to1(o1,h1,[nv,no])
+     call c_f_pointer(c_loc(o1),h1,[(i8*nv)*no])
      h1 = vof
      h1 => null()
      ! A1 term
@@ -378,8 +379,8 @@ module pno_ccsd_module
         !!!  B1 Term !!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !get gooov(kilc) as klic and transform c to pno basis
-        call ass_D1to4( w3,    p3, [rpd,rpd,no, nv] )
-        call ass_D1to4( gooov, p2, [no, no, no, nv] )
+        call c_f_pointer( c_loc(w3),    p3, [rpd,rpd,no, nv] )
+        call c_f_pointer( c_loc(gooov), p2, [no, no, no, nv] )
 
         if( PS )then
 
@@ -627,8 +628,8 @@ module pno_ccsd_module
                  endif
 
                  !get fock matrix in the current space and transform virtual idx
-                 call ass_D1to2( w1, r1, [rpd,nv] )
-                 call ass_D1to2( ovf, r2,[ no,nv] )
+                 call c_f_pointer( c_loc(w1), r1, [rpd,nv] )
+                 call c_f_pointer( c_loc(ovf), r2,[ no,nv] )
                  r1(1,:) = r2(k,:)
 
                  call dgemm('t','t',pnv,rpd,nv,p10,d,nv,w1,rpd,nul,w2,pnv)
@@ -644,8 +645,8 @@ module pno_ccsd_module
            else
 
               !extract amplitudes as u aick with i = nc2
-              call ass_D1to4( w3, p3, [pnv,1,pnv,rpd] )
-              call ass_D1to4( t,  p2, [pnv,rpd,pnv,rpd] )
+              call c_f_pointer( c_loc(w3), p3, [pnv,1,pnv,rpd] )
+              call c_f_pointer( c_loc(t),  p2, [pnv,rpd,pnv,rpd] )
               do b=1,pnv
                  do jc=1,pno
                     do a=1,pnv
@@ -657,8 +658,8 @@ module pno_ccsd_module
               p3 => null()
 
               !get fock matrix in the current space and transform virtual idx
-              call ass_D1to2( w1, r1, [rpd,nv] )
-              call ass_D1to2( ovf, r2,[ no,nv] )
+              call c_f_pointer( c_loc(w1), r1, [rpd,nv] )
+              call c_f_pointer( c_loc(ovf), r2,[ no,nv] )
               do b=1,nv
                  do jc=1,pno
                     r1(jc,b) = r2(idx(jc),b)
@@ -1447,7 +1448,7 @@ module pno_ccsd_module
 
            !sort the contribution back and add up, again, because we assume a
            !symmetrized contribution in pno_o2 we can add up without taking care
-           call ass_D1to4(tmp1,w1,[nv,rpd,nv,rpd])
+           call c_f_pointer(c_loc(tmp1),w1,[nv,rpd,nv,rpd])
 
            if(pno/=2.or.pno_cv(ns)%is_FA_space)then
               do j = 1, pno
@@ -1859,7 +1860,7 @@ module pno_ccsd_module
 
            call tensor_init(pno_t2(nn), [pnv,rpd,pnv,rpd],4)
 
-           call ass_D1to4(tmp1,w1,[nv,rpd,nv,rpd])
+           call c_f_pointer(c_loc(tmp1),w1,[nv,rpd,nv,rpd])
 
            if( PS )then
               i           = cv(nn)%iaos(1)
@@ -2182,7 +2183,7 @@ module pno_ccsd_module
      type(int_batch),intent(in) :: a_batch, g_batch
      type(tensor), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
-     real(realk), intent(in) :: xo(:,:), xv(:,:), yo(:,:), yv(:,:)
+     real(realk), intent(in), target :: xo(:,:), xv(:,:), yo(:,:), yv(:,:)
      real(realk), intent(inout) :: gooov(:), goovv(:),govov(:),Lvoov(:),Gai(:,:)
      type(pno_query_info),optional, intent(inout) :: query
      !internal variables
@@ -2608,7 +2609,7 @@ module pno_ccsd_module
                  !Get G_{\alpha i}
 
                  if( PS )then
-                    call ass_D1to2(my_w5,r1,[la,rpd])
+                    call c_f_pointer(c_loc(my_w5),r1,[la,rpd])
                     do pair = 1,2
                        call dgemm('t','n',rpd,lg*la*nb,nb,p10,xo_pair(1,pair,tid+1),nb,w3,nb,nul,my_w2,rpd)
                        call dgemm('n','n',rpd*lg*la,pnv,nb,p10,my_w2,rpd*lg*la,yv_pair(1,1,tid+1),nb,nul,my_w1,rpd*lg*la)
@@ -2664,7 +2665,7 @@ module pno_ccsd_module
 
                     call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
 
-                    call ass_D1to2(my_w5,r1,[la,rpd])
+                    call c_f_pointer(c_loc(my_w5),r1,[la,rpd])
                     !$OMP CRITICAL
                     do ic = 1, rpd
                        Gai(fa:xa,idx(ic)) = Gai(fa:xa,idx(ic)) + r1(:,ic)
@@ -2855,8 +2856,9 @@ module pno_ccsd_module
                     call time_start_phase(PHASE_WORK, twall = times(2), at = times_in_loops(3,3) )
 
 
-                    call ass_D2to1(xo,h1,[nb,no])
-                    call ass_D2to1(xv_pair(:,:,tid+1),h3,[nb,pnv])
+                    call c_f_pointer(c_loc(xo),h1,[(i8*nb)*no])
+                    !call c_f_pointer(c_loc(xv_pair(:,:,tid+1)),h3,[nb,pnv])
+                    call c_f_pointer(c_loc(xv_pair(1,1,tid+1)),h3,[(i8*nb)*pnv])
                  endif
 
                  if( PS )then
@@ -3021,7 +3023,7 @@ module pno_ccsd_module
      type(tensor), intent(in) :: pno_t2(nspaces),sio4(nspaces)
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
-     real(realk),intent(in) :: govov(:),vvf(:,:)
+     real(realk),intent(in),target :: govov(:),vvf(:,:)
      character :: tr11,tr12,tr21,tr22
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:),d(:,:),d1(:,:)
      real(realk),pointer :: o(:),t(:),S1(:,:), t21(:)
@@ -3070,7 +3072,7 @@ module pno_ccsd_module
      paircontrib(1:2,2) = [2,1]
 
      !jilk = ijkl
-     call ass_D1to4(sio4(ns)%elm1,sig,[rpd,rpd,no,no])
+     call c_f_pointer(c_loc(sio4(ns)%elm1),sig,[rpd,rpd,no,no])
 
      !!!!!!!!!!!!!!!!!!!!!!!!!
      !!!  E2 Term part 1!!!!!! -- continued in the following loop and after the loop
@@ -3107,8 +3109,8 @@ module pno_ccsd_module
         !!!  E2 Term part1!!!!!!! - quadratic contribution
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !Get the integral contribution, sort it first like the integrals then transform it, govov
-        call ass_D1to4( w1,    p1, [rpd1,nv,rpd1,nv] )
-        call ass_D1to4( govov, p2, [no,   nv,no, nv] )
+        call c_f_pointer( c_loc(w1),    p1, [rpd1,nv,rpd1,nv] )
+        call c_f_pointer( c_loc(govov), p2, [no,   nv,no, nv] )
 
         if( PS1 )then
 
@@ -3164,10 +3166,11 @@ module pno_ccsd_module
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
         !prepare 4 occupied integral goooo for B2 term
-        call ass_D1to4( w3(1:rpd**2*rpd1**2), p1, [rpd,rpd,rpd1,rpd1] )
+        !call c_f_pointer( c_loc(w3(1:rpd**2*rpd1**2)), p1, [rpd,rpd,rpd1,rpd1] )
+        call c_f_pointer( c_loc(w3), p1, [rpd,rpd,rpd1,rpd1] )
         !Get the integral contribution, sort it first like the integrals then transform it, govov
-        call ass_D1to4( w1,    p3, [rpd1,nv,rpd1,nv] )
-        call ass_D1to4( govov, p4, [no,  nv,no,  nv] )
+        call c_f_pointer( c_loc(w1),    p3, [rpd1,nv,rpd1,nv] )
+        call c_f_pointer( c_loc(govov), p4, [no,  nv,no,  nv] )
 
         !print *," CONRTIB LOOP", ns, ns2
         !print *,""
@@ -3269,7 +3272,7 @@ module pno_ccsd_module
 
            !!call dgemm( 'n', 'n', rpd**2, pnv1**2, rpd1**2, p10, w3, rpd**2, w1, rpd1**2, nul, w2, rpd**2 )
 
-           call ass_D1to4(w3,p1,[rpd,rpd,pno1,pno1])
+           call c_f_pointer(c_loc(w3),p1,[rpd,rpd,pno1,pno1])
            do l=1,pno1
               do k=1,pno1
                  p1(:,:,l,k) = sig(:,:,idx1(l),idx1(k))
@@ -3384,7 +3387,7 @@ module pno_ccsd_module
      type(tensor), intent(in) :: pno_t2(nspaces)
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
-     real(realk),intent(in) :: goovv(:),govov(:),Lvoov(:),oof(:,:)
+     real(realk),intent(in),target :: goovv(:),govov(:),Lvoov(:),oof(:,:)
      integer,intent(in)    :: p_idx(:,:),p_nidx(:)
      integer,intent(inout) :: oidx1(:,:),oidx2(:,:)
      character :: tr11,tr12,tr21,tr22,TRamp_pos1(2),TRamp_pos2(2),trh1,trh2
@@ -3479,7 +3482,7 @@ module pno_ccsd_module
         !might easily move the following part outside the loop and add stuff
         !up during the loops -> please note that we use the reordered goovv, to
         !avoid cache misses here
-        call ass_D1to4( goovv, p2o, [nv,  nv, no, no] )
+        call c_f_pointer( c_loc(goovv), p2o, [nv,  nv, no, no] )
         if( PS )then
 
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3488,9 +3491,10 @@ module pno_ccsd_module
 
            !associate pointers such as to write k last in this case, does not
            !change anything for the pno1==2 case but helps a lot otherwise
-           call ass_D1to4( w1,    p1, [nv,rpd,nv,rpd1] )
+           call c_f_pointer( c_loc(w1),    p1, [nv,rpd,nv,rpd1] )
            !store also the part for Pij
-           call ass_D1to4( w1(nv*rpd1*rpd*nv+1:2*nv*rpd1*rpd*nv), p3, [nv,rpd,nv,rpd1] )
+           !call c_f_pointer( c_loc(w1(nv*rpd1*rpd*nv+1:2*nv*rpd1*rpd*nv)), p3, [nv,rpd,nv,rpd1] )
+           call c_f_pointer( c_loc(w1(nv*rpd1*rpd*nv+1)), p3, [nv,rpd,nv,rpd1] )
 
            !FIND OUT WHICH CONTRIBUTION TO ADD AND SKIP THE OTHER, FROM THE
            !BEGINNING bpc and epc are set such that no looping occurs, both are
@@ -3549,9 +3553,10 @@ module pno_ccsd_module
               j = idx(paircontrib(2,pair1))
 
               if(pair1==1)then
-                 call ass_D1to4( w1,    p4, [nv,rpd,nv,rpd1] )
+                 call c_f_pointer( c_loc(w1),    p4, [nv,rpd,nv,rpd1] )
               else if(pair1==2)then
-                 call ass_D1to4( w1(nv*rpd1*rpd*nv+1:2*nv*rpd1*rpd*nv), p4, [nv,rpd,nv,rpd1] )
+                 !call c_f_pointer( c_loc(w1(nv*rpd1*rpd*nv+1:2*nv*rpd1*rpd*nv)), p4, [nv,rpd,nv,rpd1] )
+                 call c_f_pointer( c_loc(w1(nv*rpd1*rpd*nv+1)), p4, [nv,rpd,nv,rpd1] )
               endif
 
               if( PS1 ) then
@@ -3660,8 +3665,8 @@ module pno_ccsd_module
 
                  !Get the integrals kdlc -> ckld and transform c and d to their
                  !corresponding spaces, (iajb -> bija) 
-                 call ass_D1to4( govov, p2i, [no, nv, no, nv]  )
-                 call ass_D1to4( w1,    p1, [rpd1,rpd2,nv,nv] )
+                 call c_f_pointer( c_loc(govov), p2i, [no, nv, no, nv]  )
+                 call c_f_pointer( c_loc(w1),    p1, [rpd1,rpd2,nv,nv] )
                  if( PS1 ) then
 
                     if( PS2 )then
@@ -3703,13 +3708,13 @@ module pno_ccsd_module
 
                  !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
                  ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
-                 call ass_D1to4( t22, p2i, [pnv2,rpd2,pnv2,rpd2] )
+                 call c_f_pointer( c_loc(t22), p2i, [pnv2,rpd2,pnv2,rpd2] )
                  if( PS2 )then
                     if(l>j) call array_reorder_2d(p10,t22,pnv2,pnv2,[1,2],nul,w3)
                     if(j>l) call array_reorder_2d(p10,t22,pnv2,pnv2,[2,1],nul,w3)
                     nidx_h2 = 1
                  else
-                    call ass_D1to4( w3,  p3, [rpd2,pnv2,nidx_h2,pnv2] )
+                    call c_f_pointer( c_loc(w3),  p3, [rpd2,pnv2,nidx_h2,pnv2] )
                     do b=1,pnv2
                        do jc=1,nidx2
                           do a=1,pnv2
@@ -3726,8 +3731,8 @@ module pno_ccsd_module
 
                  call dgemm('n','n', pnv1*rpd1, nidx_h2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1i, rpd2*pnv2, nul, h2i, pnv1*rpd1)
 
-                 call ass_D1to4( h2i, p3, [pnv1,rpd1,nidx_h2,pnv] )
-                 call ass_D1to4( w4, p4, [rpd,pnv,pnv1,rpd1] )
+                 call c_f_pointer( c_loc(h2i), p3, [pnv1,rpd1,nidx_h2,pnv] )
+                 call c_f_pointer( c_loc(w4), p4, [rpd,pnv,pnv1,rpd1] )
 
 
                  !FIXME: introduce the tensor_reorder_3/2d
@@ -3764,8 +3769,8 @@ module pno_ccsd_module
 
               else
 
-                 call ass_D1to4( w1,  p5, [pnv1,1   ,pnv1, rpd1] )
-                 call ass_D1to4( t21, p6, [pnv1,rpd1,pnv1, rpd1] )
+                 call c_f_pointer( c_loc(w1),  p5, [pnv1,1   ,pnv1, rpd1] )
+                 call c_f_pointer( c_loc(t21), p6, [pnv1,rpd1,pnv1, rpd1] )
 
                  !call print_tensor_unfolding_with_labels(t21,&
                  !   &[pnv1,pno1],'bi',2,[pnv1,pno1],'ck',2,'t - pair')
@@ -3816,7 +3821,7 @@ module pno_ccsd_module
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-           call ass_D1to4( w1, p1, [rpd1,rpd,nv,nv] )
+           call c_f_pointer( c_loc(w1), p1, [rpd1,rpd,nv,nv] )
            if( PS1 )then
 #ifdef VAR_LSDEBUG
               if(diff12 /= 1.or.nidx1/=1) then
@@ -3868,8 +3873,8 @@ module pno_ccsd_module
 
               !Get the integrals kdlc -> ckld and transform c and d to their
               !corresponding spaces, (iajb -> bija) 
-              call ass_D1to4( govov, p2i, [no, nv, no, nv]  )
-              call ass_D1to4( w1,    p1, [rpd1,rpd2,nv,nv] )
+              call c_f_pointer( c_loc(govov), p2i, [no, nv, no, nv]  )
+              call c_f_pointer( c_loc(w1),    p1, [rpd1,rpd2,nv,nv] )
               if( PS1 ) then
                  if( PS2 )then
                     p1(1,1,:,:) = p2i(oidx1(nidx1+diff11+1,3),:,oidx2(nidx2+diff21+1,3),:)
@@ -3899,8 +3904,8 @@ module pno_ccsd_module
 
               !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
               ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
-              call ass_D1to4( w3,  p3, [rpd2,pnv2,nidx2,pnv2] )
-              call ass_D1to4( t22, p2i, [pnv2,rpd2,pnv2,rpd2] )
+              call c_f_pointer( c_loc(w3),  p3, [rpd2,pnv2,nidx2,pnv2] )
+              call c_f_pointer( c_loc(t22), p2i, [pnv2,rpd2,pnv2,rpd2] )
               if( PS2 )then
 #ifdef VAR_LSDEBUG
                  if(nidx2/=1)call lsquit("ERRROROROROOROROROR",-1)
@@ -3930,8 +3935,8 @@ module pno_ccsd_module
 
               call dgemm('n','n', pnv1*rpd1, nidx2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1, rpd2*pnv2, nul, h2, pnv1*rpd1)
 
-              call ass_D1to4( h2, p3, [pnv1,rpd1,nidx2,pnv] )
-              call ass_D1to4( w4, p4, [rpd,pnv,pnv1,rpd1] )
+              call c_f_pointer( c_loc(h2), p3, [pnv1,rpd1,nidx2,pnv] )
+              call c_f_pointer( c_loc(w4), p4, [rpd,pnv,pnv1,rpd1] )
               if( PS1 )then
                  if( PS2 )then
                     do c=1,pnv1
@@ -3976,8 +3981,8 @@ module pno_ccsd_module
            !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
            !bick ja,ck^T = bija, do the permutation and addition of the contribution
 
-           call ass_D1to4( t21, p2o, [pnv1,rpd1,pnv1, rpd1] )
-           call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,rpd1] )
+           call c_f_pointer( c_loc(t21), p2o, [pnv1,rpd1,pnv1, rpd1] )
+           call c_f_pointer( c_loc(w1),  p1, [pnv1,nidx1,pnv1,rpd1] )
            if( PS1 )then
 
               k = oidx1(nidx1+diff11+1,3)
@@ -4013,8 +4018,8 @@ module pno_ccsd_module
            !call print_tensor_unfolding_with_labels(h2,&
            !   &[pnv,nidx1],'bi',2,[rpd,pnv],'ja',2,'res - rect')
 
-           call ass_D1to4( h2, p2o, [pnv,nidx1,rpd,pnv ] )
-           call ass_D1to4( o,  p1,  [pnv,rpd, pnv, rpd ] )
+           call c_f_pointer( c_loc(h2), p2o, [pnv,nidx1,rpd,pnv ] )
+           call c_f_pointer( c_loc(o),  p1,  [pnv,rpd, pnv, rpd ] )
 
            do a=1,pnv
               do j=1,pno
@@ -4088,11 +4093,11 @@ module pno_ccsd_module
 
               !Similar procedure as for the C2 term, just with the L integrals (which
               !could also be produced on-the-fly to reduce the memory requirements
-              call ass_D1to4( Lvoov, p2o, [nv, no, no, nv] )
+              call c_f_pointer( c_loc(Lvoov), p2o, [nv, no, no, nv] )
               ! extract and transform c to \bar(c} of (jk)  and a to \bar{a} of (ij) and reorder
               ! to the in which it will be used later we got w4:\bar{c}k\bar{a}i
               if( PS1 )then
-                 call ass_D1to4( w1, p1, [nv,rpd,rpd1,nv] )
+                 call c_f_pointer( c_loc(w1), p1, [nv,rpd,rpd1,nv] )
 
                  if(ns==ns1)then
                     k = idx1(paircontrib(1,pair1))
@@ -4104,7 +4109,7 @@ module pno_ccsd_module
                  call dgemm('n','n', pnv, pnv1, nv, p10, w2, pnv, d1, nv, nul, w4, pnv)
 
               else
-                 call ass_D1to4( w1, p1, [nv,rpd,nv,rpd1] )
+                 call c_f_pointer( c_loc(w1), p1, [nv,rpd,nv,rpd1] )
                  do kc=1,pno1
                     p1(:,1,:,kc) = p2o(:,i, idx1(kc),:)
                     call dgemm('t','n', pnv, nv,   nv, p10,  d,  nv, p1(1,1,1,kc), nv, nul, w2, pnv)
@@ -4175,8 +4180,8 @@ module pno_ccsd_module
 
               !Get the L integrals lfkc -> cklf and transform c and d to their
               !corresponding spaces, (iajb -> bjia) 
-              call ass_D1to4( w1,    p1, [nv,rpd1,rpd2,nv] )
-              call ass_D1to4( govov, p2i, [no, nv, no,  nv] )
+              call c_f_pointer( c_loc(w1),    p1, [nv,rpd1,rpd2,nv] )
+              call c_f_pointer( c_loc(govov), p2i, [no, nv, no,  nv] )
               if( PS1 )then
                  if( PS2 )then
                     do a=1,nv
@@ -4235,8 +4240,8 @@ module pno_ccsd_module
                  endif
                  nidx_h2 = 1
               else
-                 call ass_D1to4( w3,  p3, [pnv2,nidx2,pnv2,rpd2] )
-                 call ass_D1to4( t22, p2i, [pnv2,rpd2, pnv2,rpd2] )
+                 call c_f_pointer( c_loc(w3),  p3, [pnv2,nidx2,pnv2,rpd2] )
+                 call c_f_pointer( c_loc(t22), p2i, [pnv2,rpd2, pnv2,rpd2] )
                  do jc=1,pno2
                     do b=1,pnv2
                        do ic=1,nidx2
@@ -4280,8 +4285,8 @@ module pno_ccsd_module
 
            else
 
-              call ass_D1to4( w1,  p5, [pnv1,1,pnv1,rpd1] )
-              call ass_D1to4( t21, p6, [pnv1,rpd1,pnv1,rpd1] )
+              call c_f_pointer( c_loc(w1),  p5, [pnv1,1,pnv1,rpd1] )
+              call c_f_pointer( c_loc(t21), p6, [pnv1,rpd1,pnv1,rpd1] )
 
               do kc=1,pno1
                  p5(:,1,:,kc) = p20 * p6(:,oidx1(1,2),:,kc) - p6(:,kc,:,oidx1(1,2))
@@ -4326,8 +4331,8 @@ module pno_ccsd_module
 
            !Similar procedure as for the C2 term, just with the L integrals (which
            !could also be produced on-the-fly to reduce the memory requirements
-           call ass_D1to4( w1,    p1,  [nv,rpd,rpd1,nv] )
-           call ass_D1to4( Lvoov, p2o, [nv, no, no, nv] )
+           call c_f_pointer( c_loc(w1),    p1,  [nv,rpd,rpd1,nv] )
+           call c_f_pointer( c_loc(Lvoov), p2o, [nv, no, no, nv] )
            if( PS1 )then
               do ic=1,pno
                  p1(:,ic,1,:) = p2o(:,idx(ic), oidx1(nidx1+diff11+1,3),:)
@@ -4375,8 +4380,8 @@ module pno_ccsd_module
 
               !Get the L integrals lfkc -> cklf and transform c and d to their
               !corresponding spaces, (iajb -> bjia) 
-              call ass_D1to4( w1,    p1, [nv,rpd1,rpd2,nv] )
-              call ass_D1to4( govov, p2i, [no, nv, no,  nv] )
+              call c_f_pointer( c_loc(w1),    p1, [nv,rpd1,rpd2,nv] )
+              call c_f_pointer( c_loc(govov), p2i, [no, nv, no,  nv] )
               if( PS1 )then
                  if( PS2 )then
                     do a=1,nv
@@ -4436,8 +4441,8 @@ module pno_ccsd_module
                     call array_reorder_2d(m10,t22,pnv2,pnv2,[2,1],p10,w3)
                  endif
               else
-                 call ass_D1to4( w3,  p3, [pnv2,nidx2,pnv2,rpd2] )
-                 call ass_D1to4( t22, p2i, [pnv2,rpd2, pnv2,rpd2] )
+                 call c_f_pointer( c_loc(w3),  p3, [pnv2,nidx2,pnv2,rpd2] )
+                 call c_f_pointer( c_loc(t22), p2i, [pnv2,rpd2, pnv2,rpd2] )
                  do j=1,pno2
                     do b=1,pnv2
                        do i=1,nidx2
@@ -4464,8 +4469,8 @@ module pno_ccsd_module
               !call print_tensor_unfolding_with_labels(h2,&
               !   &[pnv,rpd1],'ck',2,[pnv,nidx2],'ai',2,'res -- inner -- rect')
 
-              call ass_D1to4( h1, p2i, [pnv1,rpd1,pnv,nidx2] )
-              call ass_D1to4( w4, p4, [pnv,rpd,pnv1,rpd1] )
+              call c_f_pointer( c_loc(h1), p2i, [pnv1,rpd1,pnv,nidx2] )
+              call c_f_pointer( c_loc(w4), p4, [pnv,rpd,pnv1,rpd1] )
               if( PS1 )then
                  if( PS2 )then
                     do b=1,pnv
@@ -4510,8 +4515,8 @@ module pno_ccsd_module
            enddo OneIdxSpaceLoop32
 
            !exctract amplitudes as u bjck and contract with w4 ckai
-           call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,rpd1] )
-           call ass_D1to4( t21, p2o, [pnv1,rpd1,pnv1,rpd1] )
+           call c_f_pointer( c_loc(w1),  p1, [pnv1,nidx1,pnv1,rpd1] )
+           call c_f_pointer( c_loc(t21), p2o, [pnv1,rpd1,pnv1,rpd1] )
 
            if( PS1 )then
 
@@ -4552,8 +4557,8 @@ module pno_ccsd_module
            !   &[pnv,rpd],'ai',2,[pnv,nidx1],'ck',2,'res rect')
 
            !add D2 contribution to o
-           call ass_D1to4( h2, p5, [pnv,rpd,pnv,nidx1] )
-           call ass_D1to4( o,  p1, [pnv,rpd, pnv, rpd ] )
+           call c_f_pointer( c_loc(h2), p5, [pnv,rpd,pnv,nidx1] )
+           call c_f_pointer( c_loc(o),  p1, [pnv,rpd, pnv, rpd ] )
 
            !call print_tensor_unfolding_with_labels(o,&
            !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA rect before add')
@@ -4630,7 +4635,7 @@ module pno_ccsd_module
               i = idx(paircontrib(1,pair1))
               j = idx(paircontrib(2,pair1))
 
-              call ass_D1to2( w4,  r1, [ rpd1,rpd ] )
+              call c_f_pointer( c_loc(w4),  r1, [ rpd1,rpd ] )
               if( PS1 )then
                  if(ns==ns1)then
                     k = idx1(paircontrib(2,pair1))
@@ -4779,8 +4784,8 @@ module pno_ccsd_module
 
 
               !extract amplitudes like in C2 as aibk
-              call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
-              call ass_D1to4( t21, p2o, [pnv1,pno1,pnv1,pno1] )
+              call c_f_pointer( c_loc(w1),  p1, [pnv1,nidx1,pnv1,pno1] )
+              call c_f_pointer( c_loc(t21), p2o, [pnv1,pno1,pnv1,pno1] )
               if( PS1 )then
                  if(i<k)call array_reorder_2d(p10,t21,pnv1,pnv1,[1,2],nul,p1)
                  if(i>k)call array_reorder_2d(p10,t21,pnv1,pnv1,[2,1],nul,p1)
@@ -4807,7 +4812,7 @@ module pno_ccsd_module
 
         else
 
-           call ass_D1to2( w4,  r1, [ rpd1,rpd ] )
+           call c_f_pointer( c_loc(w4),  r1, [ rpd1,rpd ] )
            if( PS1 )then
               do jc=1,pno
                  r1(1,jc) = oof(oidx1(nidx1+diff11+1,3), idx(jc))
@@ -4929,8 +4934,8 @@ module pno_ccsd_module
               if(i<k)call array_reorder_2d(p10,t21,pnv1,pnv1,[1,2],nul,w1)
               if(i>k)call array_reorder_2d(p10,t21,pnv1,pnv1,[2,1],nul,w1)
            else
-              call ass_D1to4( w1,  p1, [pnv1,nidx1,pnv1,pno1] )
-              call ass_D1to4( t21, p2o, [pnv1,pno1,pnv1,pno1] )
+              call c_f_pointer( c_loc(w1),  p1, [pnv1,nidx1,pnv1,pno1] )
+              call c_f_pointer( c_loc(t21), p2o, [pnv1,pno1,pnv1,pno1] )
               do j=1,pno1
                  do i=1,nidx1
                     p1(:,i,:,j) = p2o(:,oidx1(i,2),:,j)
@@ -4956,8 +4961,8 @@ module pno_ccsd_module
            !transform b index to the correct space
            call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,rpd*pnv*nidx1,pnv1,h1,h2,ptr=h1)
 
-           call ass_D1to4( h1, p2o, [pnv,rpd,pnv,nidx1] )
-           call ass_D1to4( o,  p1, [pnv,rpd, pnv, rpd] )
+           call c_f_pointer( c_loc(h1), p2o, [pnv,rpd,pnv,nidx1] )
+           call c_f_pointer( c_loc(o),  p1, [pnv,rpd, pnv, rpd] )
            do i=1,nidx1
               do a=1,pnv
                  do j=1,pno

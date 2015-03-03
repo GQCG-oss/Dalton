@@ -3,10 +3,9 @@
 !> \author Patrick Ettenhuber, Marcin Ziolkowski, and Kasper Kristensen
 module ccsd_module
   
-  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr,c_loc
 
   use precision
-  use ptr_assoc_module!,only:ass_D4to1,ass_D2to1,ass_D1to3
   use lstiming!, only: lstimer
   use typedeftype!, only: lsitem,lssetting
   use matrix_module!, only:matrix
@@ -616,70 +615,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 
-  !subroutine get_ccsd_residual_integral_driven_oldtensor_wrapper(deltafock,omega2,t2,fock,govov,nocc,nvirt,&
-  !     & ppfock,qqfock,pqfock,qpfock,xocc,xvirt,yocc,yvirt,nbas,MyLsItem, omega1,iter)
-  !     implicit none
-  !     type(array2),intent(in) :: deltafock
-  !     type(array4), intent(inout) :: omega2,t2
-  !     type(array2), intent(inout) :: ppfock, qqfock,pqfock,qpfock,omega1,fock
-  !     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
-  !     type(lsitem), intent(inout) :: MyLsItem
-  !     integer,intent(in) :: nbas
-  !     integer,intent(in) :: nocc
-  !     integer,intent(in) :: nvirt
-  !     integer,intent(in) :: iter
-  !     real(realk),target,intent(inout) :: govov(nvirt*nocc*nvirt*nocc)
-  !     real(realk),pointer :: t2_p(:),xo_p(:),xv_p(:),yo_p(:),yv_p(:)
-  !     type(tensor) :: t2a,ga,o2
-
-  !    ! get t2 and omega2 into the correct order
-  !    call array4_reorder(t2,[1,3,2,4])
-  !    call ass_D4to1(t2%val,t2_p,t2%dims)
-  !    t2a=tensor_init(t2%dims,4)
-  !    call memory_deallocate_tensor_dense(t2a)
-  !    call ass_D4to1(t2%val,t2a%elm1,t2%dims)
-  !    call assoc_ptr_arr(t2a)
-
-  !    call array4_reorder(omega2,[1,3,2,4])
-  !    o2=tensor_init(omega2%dims,4)
-  !    call memory_deallocate_tensor_dense(o2)
-  !    call ass_D4to1(omega2%val,o2%elm1,omega2%dims)
-  !    call assoc_ptr_arr(o2)
-  !
-  !    ga=tensor_init([nocc,nvirt,nocc,nvirt],4)
-  !    call memory_deallocate_tensor_dense(ga)
-  !    ga%elm1 => govov
-  !    call assoc_ptr_arr(ga)
-
-  !    call ass_D2to1(xocc%val,xo_p,xocc%dims)
-  !    call ass_D2to1(xvirt%val,xv_p,xvirt%dims)
-  !    call ass_D2to1(yocc%val,yo_p,yocc%dims)
-  !    call ass_D2to1(yvirt%val,yv_p,yvirt%dims)
-  !    !call get_ccsd_residual_integral_driven(deltafock%val,omega2%val,t2_p,fock%val,govov,nocc,nvirt,&
-  !    ! & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
-  !    ! & omega1%val,iter)
-  !    call get_ccsd_residual_integral_driven(deltafock%val,o2,t2a,fock%val,ga,nocc,nvirt,&
-  !     & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
-  !     & omega1%val,iter,.true.)
-
-  !    nullify(t2a%elm1)
-  !    nullify(t2a%elm4)
-  !    call tensor_free(t2a)
-  !    nullify(o2%elm1)
-  !    nullify(o2%elm4)
-  !    call tensor_free(o2)
-  !    nullify(ga%elm1)
-  !    nullify(ga%elm4)
-  !    call tensor_free(ga)
-
-  !    !reorder ampitudes and residuals for use within the solver
-  !    call array4_reorder(t2,[1,3,2,4])
-  !    call array4_reorder(omega2,[1,3,2,4])
-  !    nullify(xo_p)
-  !    nullify(yo_p)
-  !    nullify(xv_p)
-  !    nullify(yv_p)
-  !end subroutine get_ccsd_residual_integral_driven_oldtensor_wrapper
   subroutine ccsd_residual_wrapper(ccmodel,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
@@ -2709,17 +2644,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call mem_alloc(w0,i8*nb*nb, simple=.true.)
      call mem_alloc(w2,i8*nb*nb, simple=.true.)
 
-     !!calculate inactive fock matrix in ao basis
-     !call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w0%d,nb)
-     !call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
-     !call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,w0%d,nb,nb,AORdefault,AORdefault)
-     !! Add one- and two-electron contributions to Fock matrix
-     !call daxpy(nb2,1.0E0_realk,w0%d,1,w2%d,1)
+     !if(DECinfo%HACK2)then
+        !ONLY USE T1 PART OF THE DENSITY MATRIX AND THE FOCK 
+        call dgemm('n','n',nb,no,nv,1.0E0_realk,yv,nb,t1%elm1,nv,0.0E0_realk,w1%d,nb)
+        call dgemm('n','t',nb,nb,no,1.0E0_realk,w1%d,nb,xo,nb,0.0E0_realk,w0%d,nb)
+        call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
+        call daxpy(nb2,1.0E0_realk,fock,1,w2%d,1)
+     !else
+     !   !calculate inactive fock matrix in ao basis
+     !   call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w0%d,nb)
+     !   call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
+     !   call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,w0%d,nb,nb,AORdefault,AORdefault)
+     !   ! Add one- and two-electron contributions to Fock matrix
+     !   call daxpy(nb2,1.0E0_realk,w0%d,1,w2%d,1)
+     !   ! KK: Add long-range Fock correction
+     !   call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
+     !endif
 
-     call dgemm('n','n',nb,no,nv,1.0E0_realk,yv,nb,t1%elm1,nv,0.0E0_realk,w1%d,nb)
-     call dgemm('n','t',nb,nb,no,1.0E0_realk,xo,nb,w1%d,nb,0.0E0_realk,w0%d,nb)
-     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
-     call daxpy(nb2,1.0E0_realk,fock,1,w2%d,1)
 
      if(DECinfo%full_molecular_cc.and.DECinfo%HACK2)then
         print *,"Write, full_t1fock_test.restart"
@@ -2733,9 +2674,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         OPEN(4456,FILE='full_t1fock_test.restart',STATUS='OLD',FORM='UNFORMATTED')
         READ(4456)w2%d
         CLOSE(4456)
-     else
-        ! KK: Add long-range Fock correction
-        !call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
      endif
 
 
@@ -3692,7 +3630,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_convGBI )
            if( me == 0 )then
               call tensor_convert(int3,w0%d,wrk=w1%d,iwrk=w1%n)
-              call ass_D1to2(w0%d,p2,[la,no])
+              call c_f_pointer(c_loc(w0%d),p2,[la,no])
               !$OMP WORKSHARE
               Gbi_local%elm2(fa:fa+la-1,:) = Gbi_local%elm2(fa:fa+la-1,:) + p2(:,:)
               !$OMP END WORKSHARE
@@ -6195,11 +6133,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     Cv_a2%dims     = Cv%dims
     t1_a2%dims     = t1%dims
 
-    call ass_D1to2( fockt1%elm1,fockt1_a2%val,fockt1%dims )
-    call ass_D1to2( Co%elm1,    Co_a2%val,    Co%dims     )
-    call ass_D1to2( Co2%elm1,   Co2_a2%val,   Co2%dims    )
-    call ass_D1to2( Cv%elm1,    Cv_a2%val,    Cv%dims     )
-    call ass_D1to2( t1%elm1,    t1_a2%val,    t1%dims     )
+    call c_f_pointer( c_loc(fockt1%elm1),fockt1_a2%val,fockt1%dims )
+    call c_f_pointer( c_loc(Co%elm1),    Co_a2%val,    Co%dims     )
+    call c_f_pointer( c_loc(Co2%elm1),   Co2_a2%val,   Co2%dims    )
+    call c_f_pointer( c_loc(Cv%elm1),    Cv_a2%val,    Cv%dims     )
+    call c_f_pointer( c_loc(t1%elm1),    t1_a2%val,    t1%dims     )
 
     call Get_AOt1Fock(mylsitem,t1_a2,fockt1_a2,nocc,nvirt,nbasis,Co_a2,Co2_a2,Cv_a2)
 

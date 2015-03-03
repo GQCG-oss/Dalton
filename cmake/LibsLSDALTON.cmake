@@ -128,6 +128,7 @@ unset(LIST_OF_DEFINITIONS)
 add_library(
     lsutillib_common
     ${MANUAL_REORDERING_SOURCES}
+    ${LSUTIL_COMMON_C_SOURCES}
     ${LSUTIL_COMMON_SOURCES}
     )
 

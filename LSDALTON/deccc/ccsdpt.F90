@@ -4,6 +4,7 @@
 !> \author: Janus Juul Eriksen
 !> \date: 2012-2014, Aarhus
 module ccsdpt_module
+  use,intrinsic :: iso_c_binding,only:c_f_pointer,c_loc
 
 #ifdef VAR_MPI
   use infpar_module
@@ -24,7 +25,6 @@ module ccsdpt_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use lspdm_tensor_operations_module
-  use ptr_assoc_module 
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -163,7 +163,6 @@ contains
     !> device type
     integer(acc_device_kind) :: acc_device_type
 #endif
-    logical :: acc_sync
     real(realk) :: tcpu,twall
 
     call time_start_phase(PHASE_WORK)
@@ -174,10 +173,6 @@ contains
     master = (infpar%lg_mynum .eq. infpar%master)
     nodtotal = infpar%lg_nodtot
 #endif
-
-    acc_sync = .false.
-
-    if (DECinfo%acc_sync) acc_sync = .true.
 
     if (master) then
 
@@ -276,7 +271,7 @@ contains
     end if waking_the_slaves
 #endif
 
-    call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal,acc_sync)
+    call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
 
 #ifdef VAR_MPI
     ! Communicate important information:
@@ -374,13 +369,13 @@ contains
 
           call abc_loop_par(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
                           & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
-                          & ccsdpt_singles%elm1,acc_sync,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                          & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
 
        else
 
           call abc_loop_par(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
                           & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
-                          & ccsdpt_singles%elm1,acc_sync,e4=e4)
+                          & ccsdpt_singles%elm1,e4=e4)
 
        endif
 
@@ -391,13 +386,13 @@ contains
    
           call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
                           & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
-                          & ccsdpt_singles%elm1,acc_sync,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                          & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
    
        else
    
           call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
                           & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
-                          & ccsdpt_singles%elm1,acc_sync,e4=e4)
+                          & ccsdpt_singles%elm1,e4=e4)
    
        endif
 
@@ -413,13 +408,13 @@ contains
        if (print_frags) then
 
           call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,acc_sync,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
                           & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
 
        else
 
           call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,acc_sync,e4=e4)
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
 
        endif
 
@@ -429,13 +424,13 @@ contains
        if (print_frags) then
    
           call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,acc_sync,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
                           & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
    
        else
    
           call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,acc_sync,e4=e4)
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
    
        endif
 
@@ -588,7 +583,7 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: january 2014
   subroutine ijk_loop_par(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
-                        & eivalocc,eivalvirt,nodtotal,nbuffs,ccsdpt_singles,acc_sync,&
+                        & eivalocc,eivalvirt,nodtotal,nbuffs,ccsdpt_singles,&
                         & ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
@@ -607,7 +602,6 @@ contains
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates 
     real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
-    logical :: acc_sync
     real(realk), dimension(nvirt,nvirt,nocc,nocc),optional :: ccsdpt_doubles
     real(realk), dimension(nocc,nvirt,nvirt,nocc),optional :: ccsdpt_doubles_2
     real(realk),optional :: e4
@@ -727,7 +721,7 @@ contains
 
 #ifdef VAR_OPENACC
 
-    if (acc_sync) then
+    if (DECinfo%acc_sync) then
        async_id = int(1,kind=acc_handle_kind)
     else
        do m = 1,num_ids
@@ -737,8 +731,8 @@ contains
 
 #else
 
-    if (acc_sync) then
-       async_id = 1
+    if (DECinfo%acc_sync) then
+       async_id = 0
     else
        do m = 1,num_ids
           async_id(m) = -m
@@ -746,6 +740,8 @@ contains
     endif
 
 #endif
+
+    print *,'proc. = ',infpar%lg_mynum,'async_id = ',async_id
 
 !#ifdef VAR_OPENACC
 !
@@ -1751,7 +1747,7 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: january 2014
   subroutine ijk_loop_ser(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
-                        & eivalocc,eivalvirt,ccsdpt_singles,acc_sync,&
+                        & eivalocc,eivalvirt,ccsdpt_singles,&
                         & ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
@@ -1770,7 +1766,6 @@ contains
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates
     real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
-    logical :: acc_sync
     real(realk), dimension(nvirt,nvirt,nocc,nocc),optional :: ccsdpt_doubles
     real(realk), dimension(nocc,nvirt,nvirt,nocc),optional :: ccsdpt_doubles_2
     real(realk),optional :: e4
@@ -1818,7 +1813,7 @@ contains
 
 #ifdef VAR_OPENACC
 
-    if (acc_sync) then
+    if (DECinfo%acc_sync) then
        async_id = int(1,kind=acc_handle_kind)
     else
        do m = 1,num_ids
@@ -1828,8 +1823,8 @@ contains
 
 #else
 
-    if (acc_sync) then
-       async_id = 1
+    if (DECinfo%acc_sync) then
+       async_id = 0
     else
        do m = 1,num_ids
           async_id(m) = -m
@@ -1837,6 +1832,8 @@ contains
     endif
 
 #endif
+
+    print *,'async_id = ',async_id
 
 !#ifdef VAR_OPENACC
 !
@@ -2293,7 +2290,7 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
   subroutine abc_loop_par(nocc,nvirt,ooov,oovv,vovv,ccsd_doubles,&
-                        & eivalocc,eivalvirt,nodtotal,nbuffs,tile_size,ccsdpt_singles,acc_sync,&
+                        & eivalocc,eivalvirt,nodtotal,nbuffs,tile_size,ccsdpt_singles,&
                         & ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
@@ -2315,7 +2312,6 @@ contains
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates
     real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
-    logical :: acc_sync
     real(realk), dimension(nocc,nocc,nvirt,nvirt), optional :: ccsdpt_doubles
     real(realk), dimension(nvirt,nocc,nocc,nvirt), optional :: ccsdpt_doubles_2
     real(realk),optional :: e4
@@ -2403,7 +2399,7 @@ contains
 
 #ifdef VAR_OPENACC
 
-    if (acc_sync) then
+    if (DECinfo%acc_sync) then
        async_id = int(1,kind=acc_handle_kind)
     else
        do m = 1,num_ids
@@ -2413,8 +2409,8 @@ contains
 
 #else
 
-    if (acc_sync) then
-       async_id = 1
+    if (DECinfo%acc_sync) then
+       async_id = 0
     else
        do m = 1,num_ids
           async_id(m) = -m
@@ -3306,7 +3302,7 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
   subroutine abc_loop_ser(nocc,nvirt,ooov,oovv,vovv,ccsd_doubles,&
-                        & eivalocc,eivalvirt,ccsdpt_singles,acc_sync,&
+                        & eivalocc,eivalvirt,ccsdpt_singles,&
                         & ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
@@ -3325,7 +3321,6 @@ contains
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates
     real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
-    logical :: acc_sync
     real(realk), dimension(nocc,nocc,nvirt,nvirt), optional :: ccsdpt_doubles
     real(realk), dimension(nvirt,nocc,nocc,nvirt), optional :: ccsdpt_doubles_2
     real(realk),optional :: e4
@@ -3373,7 +3368,7 @@ contains
 
 #ifdef VAR_OPENACC
 
-    if (acc_sync) then
+    if (DECinfo%acc_sync) then
        async_id = int(1,kind=acc_handle_kind)
     else
        do m = 1,num_ids
@@ -3383,8 +3378,8 @@ contains
 
 #else
 
-    if (acc_sync) then
-       async_id = 1
+    if (DECinfo%acc_sync) then
+       async_id = 0
     else
        do m = 1,num_ids
           async_id(m) = -m
@@ -10461,7 +10456,7 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call ass_D4to1(ovoo%elm1,dummy2,[nocc,nvirt,nocc,nocc])
+       call c_f_pointer(c_loc(ovoo%elm1),dummy2,[nocc,nvirt,nocc,nocc])
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
@@ -10994,7 +10989,7 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call ass_D4to1(ooov%elm1,dummy2,[nocc,nocc,nocc,nvirt])
+       call c_f_pointer(c_loc(ooov%elm1),dummy2,[nocc,nocc,nocc,nvirt])
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
@@ -11383,7 +11378,7 @@ contains
 
   end subroutine get_max_arraysizes_for_ccsdpt_integrals
 
-  subroutine ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal,acc_sync)
+  subroutine ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
 
       use iso_c_binding
       implicit none
@@ -11395,7 +11390,6 @@ contains
       integer, intent(inout) :: ijk_nbuffs,abc_nbuffs,abc_tile_size
       integer :: num_gpu,me
       logical :: master
-      logical :: acc_sync
 #ifdef VAR_OPENACC
       integer(kind=acc_device_kind) :: acc_device_type
 #endif
@@ -11418,7 +11412,7 @@ contains
       free_gpu = 0
       acc_async = .true.
 
-      if (acc_sync) acc_async = .false.
+      if (DECinfo%acc_sync) acc_async = .false.
 
       call get_currently_available_memory(free_cpu)
 
@@ -11724,7 +11718,7 @@ end module ccsdpt_module
     type(tensor) :: vovo,ccsd_t2, ccsdpt_t2
     real(realk) :: ccsdpt_e4
     type(lsitem) :: mylsitem
-    logical :: print_frags,abc,acc_sync
+    logical :: print_frags,abc
 
     abc = .false.
     print_frags = .false.
