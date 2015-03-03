@@ -1296,6 +1296,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     ENDIF
                  ENDIF
                  IF(KNTORB.NE.nOrbital)THEN
+                    IF (segmentedFormat) exit
                     FOUNDnewContractionCoeffLine = .FALSE.
                     DO WHILE(.NOT.FOUNDnewContractionCoeffLine)
                        READ(LUBAS, '(A280)', IOSTAT = IOS) STRING

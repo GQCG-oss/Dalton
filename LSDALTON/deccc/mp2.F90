@@ -1942,21 +1942,26 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
 !> \author Thomas Kjaergaard
 !> \date Marts 2014
 subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
-     & goccEOS, toccEOS,gvirtEOS, tvirtEOS) 
+     & goccEOS, toccEOS,gvirtEOS, tvirtEOS, djik,blad)
+
   implicit none
-!FIXME : Memory Usage RIMP2MEM, 
-!FIXME : nAux distribution better - for better load balancing - split atoms
+  !FIXME : Memory Usage RIMP2MEM, 
+  !FIXME : nAux distribution better - for better load balancing - split atoms
 
   !> Atomic fragment (or pair fragment)
   type(decfrag), intent(inout) :: MyFragment
-  !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
+  !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) 
   type(tensor),intent(inout) :: goccEOS
-  !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
+  !> Amplitudes for occ EOS in the order (d,j,c,i) 
   type(tensor),intent(inout) :: toccEOS
-  !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
+  !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) 
   type(tensor),intent(inout) :: gvirtEOS
-  !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
+  !> Amplitudes for virt EOS in the order (b,l,a,k) 
   type(tensor),intent(inout) :: tvirtEOS
+  !> Occ EOS integrals (d j | i k) in the order (d,j,i,k)  
+  type(tensor),optional :: djik  !V_aos*O_eos*O_eos*O_aos
+  !> Virt EOS integrals (b l | a d) in the order (b,l,a,d)  
+  type(tensor),optional :: blad  !V_eos*O_aos*V_eos*V_aos
   !local variables
   type(mp2_batch_construction) :: bat
   type(array2) :: CDIAGocc, CDIAGvirt, Uocc, Uvirt
@@ -1976,7 +1981,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk),pointer :: tocc(:,:,:,:),UoccEOST(:,:),UvirtT(:,:),tocc3(:,:,:,:)
   real(realk),pointer :: toccTMP(:,:),TMPAlphaBeta_minus_sqrt(:,:),tocc2(:,:,:,:)
   real(realk),pointer :: tvirtTMP(:,:),tvirt(:,:,:,:),UoccT(:,:),UvirtEOST(:,:)
-  real(realk),pointer :: tvirt2(:,:,:,:),tvirt3(:,:,:,:)
+  real(realk),pointer :: tvirt2(:,:,:,:),tvirt3(:,:,:,:),Calpha4(:,:,:)
+  real(realk),pointer :: OccToVirt(:,:),OccToVirtAOS(:,:)
+  real(realk),pointer :: VirtToOcc(:,:),VirtToOccEOS(:,:)
   real(realk) :: deltaEPS,goccAIBJ,goccBIAJ,Gtmp,Ttmp,Eocc,TMP,Etmp,twmpi2
   real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
@@ -1997,7 +2004,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk) :: TS,TE,TS2,TE2,TS3,TE3
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
-  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault
+  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases)
   integer(kind=long) :: nSize
@@ -2007,6 +2014,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 131124879
 #endif  
+  IF(present(djik))THEN
+     IF(present(blad))THEN
+        first_order=.TRUE.
+     ELSE
+        call lsquit('RIMP2 prog error: djik is present but blad is not',-1)
+     ENDIF
+  ELSE
+     first_order=.FALSE.     
+  ENDIF
 
 #ifdef VAR_TIME
   ForcePrint = .TRUE.
@@ -2167,6 +2183,37 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   call array2_free(Uocc)
   call array2_free(Uvirt)
 
+
+  IF(first_order)THEN
+     call mem_alloc(OccToVirt,nocc,nvirt)
+     !OccToVirt(nocc,nvirt) = Cocc(nbasis,nocc)**T*Cvirt(nbasis,nvirt)
+     M = nocc              !rows of Output Matrix
+     N = nvirt             !columns of Output Matrix
+     K = nbasis            !summation dimension
+     call dgemm('T','N',M,N,K,1.0E0_realk,Cocc,K,Cvirt,K,0.0E0_realk,OccToVirt,M)
+     call mem_alloc(OccToVirtAOS,nocc,nvirt)
+     !OccToVirtAOS(nocc,nvirtAOS) = OccToVirt(nocc,nvirt)*UvirtT(nvirt,nvirtAOS)
+     M = nocc              !rows of Output Matrix
+     N = nvirt             !columns of Output Matrix
+     K = nvirt             !summation dimension
+     call dgemm('N','N',M,N,K,1.0E0_realk,OccToVirt,M,UvirtT,K,0.0E0_realk,OccToVirtAOS,M)
+     call mem_dealloc(OccToVirt)
+
+     call mem_alloc(VirtToOcc,nvirt,nocc)
+     M = nvirt             !rows of Output Matrix
+     N = nocc              !columns of Output Matrix
+     K = nbasis            !summation dimension
+     !VirtToOcc(nvirt,nocc) = Cvirt(nbasis,nvirt)**T*Cocc(nbasis,nocc)
+     call dgemm('T','N',M,N,K,1.0E0_realk,Cvirt,K,Cocc,K,0.0E0_realk,VirtToOcc,M)
+     call mem_alloc(VirtToOccEOS,nvirt,nocc)
+     !VirtToOcc(nvirt,noccEOS) = VirtToOcc(nvirt,nocc)*UoccEOST(nocc,noccEOS)
+     M = nvirt             !rows of Output Matrix
+     N = noccEOS           !columns of Output Matrix
+     K = nocc              !summation dimension
+     call dgemm('N','N',M,N,K,1.0E0_realk,VirtToOcc,M,UoccEOST,K,0.0E0_realk,VirtToOccEOS,M)
+     call mem_dealloc(VirtToOcc)
+  ENDIF
+
   CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
 
   ! *************************************************************
@@ -2202,15 +2249,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      end if
 
      call time_start_phase( PHASE_COMM )
-
      ! Wake up slaves to do the job: slaves awoken up with (RIMP2INAMP)
      ! and call MP2_RI_EnergyContribution_slave which calls
      ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
      call ls_mpibcast(RIMP2INAMP,infpar%master,infpar%lg_comm)
-
      ! Communicate fragment information to slaves
      call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order_integrals,.true.)
-
+     call ls_mpibcast(first_order,infpar%master,infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
   endif StartUpSlaves
   CALL LSTIMER('DECRIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
@@ -2693,14 +2738,14 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,nocc,0.0E0_realk,Calpha2,M)
      CALL LSTIMER('DGEMM2',TS3,TE3,LUPRI,FORCEPRINT)
-     call mem_dealloc(UoccEOST)
+     IF(.NOT.first_order)call mem_dealloc(UoccEOST)
 
      call mem_alloc(Calpha3,nba,nvirt,noccEOS)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,Calpha2,Calpha3)
      CALL LSTIMER('RIMP2_TransAlpha1',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(Calpha2)
-     call mem_dealloc(UvirtT)
+     IF(.NOT.first_order)call mem_dealloc(UvirtT)
      
      call tensor_ainit(goccEOS,dimocc,4)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
@@ -2708,8 +2753,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('RIMP2_calc_gocc',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(Calpha3)
   ELSE
-     call mem_dealloc(UoccEOST)
-     call mem_dealloc(UvirtT)
+     IF(.NOT.first_order)call mem_dealloc(UoccEOST)
+     IF(.NOT.first_order)call mem_dealloc(UvirtT)
      call tensor_ainit(goccEOS,dimocc,4)
      nSize = nvirt*noccEOS*nvirt*noccEOS
      call ls_dzero8(goccEOS%elm1,nsize)
@@ -2743,14 +2788,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,nocc,0.0E0_realk,Calpha2,M)
      CALL LSTIMER('DGEMM4 ',TS3,TE3,LUPRI,FORCEPRINT)
-     call mem_dealloc(UoccT)
-     call mem_dealloc(Calpha)
-
+     IF(.NOT.first_order)call mem_dealloc(UoccT)
+     IF(.NOT.first_order)call mem_dealloc(Calpha)
      call mem_alloc(Calpha3,nba,nvirtEOS,nocc)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
      CALL LSTIMER('RIMP2_TransAlpha2',TS3,TE3,LUPRI,FORCEPRINT)
-     call mem_dealloc(UvirtEOST)
+     IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
      call mem_dealloc(Calpha2)
 
      call tensor_ainit(gvirtEOS,dimvirt,4)
@@ -2759,8 +2803,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('RIMP2_calc_gvirt',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(Calpha3)
   ELSE
-     call mem_dealloc(UvirtEOST)
-     call mem_dealloc(UoccT)
+     IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
+     IF(.NOT.first_order)call mem_dealloc(UoccT)
      call tensor_ainit(gvirtEOS,dimvirt,4)
      nSize = nvirtEOS*nocc*nvirtEOS*nocc
      call ls_dzero8(gvirtEOS%elm1,nsize)
@@ -2778,6 +2822,146 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
 #endif
   CALL LSTIMER('DECRIMP2: gvirt Reduction',TS2,TE2,LUPRI,FORCEPRINT)
+
+
+  IF(first_order)THEN
+     !=====================================================================================
+     !  first_order prop: Generate djik(nvirtAOS,noccEOS,noccEOS,noccAOS)
+     !=====================================================================================
+     dimvirt = [nvirt,noccEOS,noccEOS,nocc]   ! Output order
+     IF(NBA.GT.0)THEN
+        !(alphaAux;nvirt,JnoccEOS) = (alphaAux;nvirt,J)*U(J,JnoccEOS)
+        M = nba*nvirt        !rows of Output Matrix
+        N = noccEOS          !columns of Output Matrix
+        K = nocc             !summation dimension
+        call mem_alloc(Calpha2,nba,nvirt,noccEOS)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
+        CALL LSTIMER('DGEMM4 ',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(UoccEOST)
+        
+        !(alphaAux,nvirtAOS,noccEOS) = (alphaAux;nvirt,noccEOS)*Uvirt(nvirt,nvirtAOS)
+        call mem_alloc(Calpha3,nba,nvirt,noccEOS)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call RIMP2_TransAlpha2(noccEOS,nvirt,nvirt,nba,UvirtT,Calpha2,Calpha3)
+        CALL LSTIMER('RIMP2_TransAlpha2',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(UvirtT)
+        call mem_dealloc(Calpha2)
+        
+        !(alphaAux;nvirt,noccAOS) = (alphaAux;nvirt,nocc)*U(nocc,noccAOS)
+        M = nba*nocc         !rows of Output Matrix
+        N = nocc             !columns of Output Matrix
+        K = nocc             !summation dimension
+        call mem_alloc(Calpha2,nba,nocc,nocc)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+        CALL LSTIMER('DGEMM4 ',TS3,TE3,LUPRI,FORCEPRINT)
+        
+        !(alphaAux,noccEOS,noccAOS) = (alphaAux;nvirt,noccAOS)*VirtToOccEOS(nvirt,noccEOS)
+        call mem_alloc(Calpha4,nba,noccEOS,nocc)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call RIMP2_TransAlpha2(nocc,nvirt,noccEOS,nba,VirtToOccEOS,Calpha2,Calpha4)
+        CALL LSTIMER('RIMP2_TransAlpha2',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(Calpha2)
+        call mem_dealloc(VirtToOccEOS)
+        
+        !  djikEOS(nvirtAOS,noccEOS,noccEOS,noccAOS)
+        call tensor_ainit(djik,dimvirt,4)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,Calpha4,noccEOS,nocc,djik%elm1)
+        CALL LSTIMER('RIMP2_calc_gvirt',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(Calpha3)
+        call mem_dealloc(Calpha4)
+     ELSE
+        call mem_dealloc(UoccEOST)
+        call mem_dealloc(UvirtT)
+        call tensor_ainit(djik,dimvirt,4)
+        nSize = nvirt*noccEOS*noccEOS*nvirt
+        call ls_dzero8(djik%elm1,nsize)
+     ENDIF
+     CALL LSTIMER('DECRIMP2: gvirt          ',TS2,TE2,LUPRI,FORCEPRINT)
+#ifdef VAR_MPI
+     IF(CollaborateWithSlaves) then         
+        call time_start_phase( PHASE_IDLE )
+        call lsmpi_barrier(infpar%lg_comm)
+        call time_start_phase( PHASE_COMM )
+        nSize = nvirt*noccEOS*noccEOS*nvirt
+        call lsmpi_reduction(djik%elm1,nsize,infpar%master,infpar%lg_comm)
+        call time_start_phase( PHASE_WORK )   
+        IF(.NOT.Master )call tensor_free(djik)
+     ENDIF
+#endif
+     CALL LSTIMER('DECRIMP2: djik Reduction',TS2,TE2,LUPRI,FORCEPRINT)
+
+     !=====================================================================================
+     !  first_order prop: Generate blad(nvirtEOS,noccAOS,nvirtEOS,nvirtAOS)
+     !=====================================================================================  
+     dimvirt = [nvirtEOS,nocc,nvirtEOS,nvirt]   ! Output order
+     IF(NBA.GT.0)THEN
+        !(alphaAux;nvirt,noccAOS) = (alphaAux;nvirt,nocc)*U(nocc,noccAOS)
+        M = nba*nvirt        !rows of Output Matrix
+        N = nocc             !columns of Output Matrix
+        K = nocc             !summation dimension
+        call mem_alloc(Calpha2,nba,nvirt,nocc)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+        CALL LSTIMER('DGEMM4 ',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(UoccT)
+        
+        !(alphaAux,nvirtEOS,noccAOS) = (alphaAux;nvirt,noccAOS)*Uvirt(nvirt,nvirtEOS)
+        call mem_alloc(Calpha3,nba,nvirtEOS,nocc)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
+        CALL LSTIMER('RIMP2_TransAlpha2',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(Calpha2)
+   
+        !(alphaAux;nvirt,nvirtAOS) = (alphaAux;nvirt,nocc)*OccToVirtAOS(nocc,nvirtAOS)
+        M = nba*nvirt        !rows of Output Matrix
+        N = nvirt            !columns of Output Matrix
+        K = nocc             !summation dimension
+        call mem_alloc(Calpha2,nba,nvirt,nvirt)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,OccToVirtAOS,K,0.0E0_realk,Calpha2,M)
+        CALL LSTIMER('DGEMM4 ',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(OccToVirtAOS)
+        call mem_dealloc(Calpha)
+        
+        !(alphaAux,nvirtEOS,nvirtAOS) = (alphaAux;nvirt,nvirtAOS)*UvirtEOST(nvirt,nvirtEOS)
+        call mem_alloc(Calpha4,nba,nvirtEOS,nvirt)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call RIMP2_TransAlpha2(nvirt,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha4)
+        CALL LSTIMER('RIMP2_TransAlpha2',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(UvirtEOST)
+        call mem_dealloc(Calpha2)
+        
+        !generate blad(nvirtEOS,noccAOS,nvirtEOS,nvirtAOS)
+        call tensor_ainit(blad,dimvirt,4)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirtEOS,nocc,Calpha4,nvirtEOS,nvirt,blad%elm1)
+        CALL LSTIMER('RIMP2_calc_blad',TS3,TE3,LUPRI,FORCEPRINT)
+        call mem_dealloc(Calpha3)
+        call mem_dealloc(Calpha4)
+     ELSE
+        call mem_dealloc(UoccT)
+        call mem_dealloc(UvirtEOST)
+        call tensor_ainit(djik,dimvirt,4)
+        nSize = nvirtEOS*nocc*nvirtEOS*nvirt
+        call ls_dzero8(djik%elm1,nsize)
+     ENDIF
+     CALL LSTIMER('DECRIMP2: gvirt          ',TS2,TE2,LUPRI,FORCEPRINT)
+#ifdef VAR_MPI
+     IF(CollaborateWithSlaves) then         
+        call time_start_phase( PHASE_IDLE )
+        call lsmpi_barrier(infpar%lg_comm)
+        call time_start_phase( PHASE_COMM )
+        nSize = nvirtEOS*nocc*nvirtEOS*nvirt
+        call lsmpi_reduction(blad%elm1,nsize,infpar%master,infpar%lg_comm)
+        call time_start_phase( PHASE_WORK )   
+        IF(.NOT.Master )call tensor_free(blad)
+     ENDIF
+#endif
+     CALL LSTIMER('DECRIMP2: blad Reduction',TS2,TE2,LUPRI,FORCEPRINT)
+  ENDIF
 
   call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
   tmpidiff = twmpi2-twmpi1
@@ -2991,24 +3175,24 @@ subroutine RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,AlphaCD4,AlphaCD5)
   !$OMP END PARALLEL DO
 end subroutine RIMP2_TransAlpha1
 
-subroutine RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,AlphaCD4,AlphaCD5)
+!AlphaCD5(NBA,n3,n2) = UvirtEOST(n1,n3)*AlphaCD4(NBA,n1,n2)
+subroutine RIMP2_TransAlpha2(n2,n1,n3,nba,UvirtEOST,AlphaCD4,AlphaCD5)
   implicit none
-  integer,intent(in) :: nvirt,nvirtEOS,nocc,nba
-  real(realk),intent(in) :: UvirtEOST(nvirt,nvirtEOS)
-  real(realk),intent(in) :: AlphaCD4(NBA,nvirt,nocc)
-  real(realk),intent(inout) :: AlphaCD5(NBA,nvirtEOS,nocc)
+  integer,intent(in) :: nba,n1,n2,n3
+  real(realk),intent(in) :: UvirtEOST(n1,n3)
+  real(realk),intent(in) :: AlphaCD4(NBA,n1,n2)
+  real(realk),intent(inout) :: AlphaCD5(NBA,n3,n2)
   !
   integer :: JLOC,BLOC,ALPHAAUX,BDIAG
   real(realk) :: TMP
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
   !$OMP PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP) &
-  !$OMP SHARED(nocc,nvirt,nvirtEOS,nba,&
-  !$OMP UvirtEOST,AlphaCD4,AlphaCD5)
-  do JLOC = 1,nocc
-     do BLOC = 1,nvirtEOS
+  !$OMP SHARED(n1,n2,n3,nba,UvirtEOST,AlphaCD4,AlphaCD5)
+  do JLOC = 1,n2
+     do BLOC = 1,n3
         do ALPHAAUX = 1,nba
            TMP = 0.0E0_realk
-           do BDIAG = 1,nvirt
+           do BDIAG = 1,n1
               TMP = TMP + UvirtEOST(BDIAG,BLOC)*AlphaCD4(ALPHAAUX,BDIAG,JLOC)
            enddo
            AlphaCD5(ALPHAAUX,BLOC,JLOC) = TMP
@@ -3071,6 +3255,33 @@ subroutine RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS)
   enddo
   !$OMP END PARALLEL DO
 end subroutine RIMP2_calc_gvirt
+
+subroutine RIMP2_calc_gen4DimFO(NBA,Calpha3,n1,n2,Calpha4,n3,n4,djik)
+  implicit none
+  integer,intent(in) :: NBA,n1,n2,n3,n4
+  real(realk),intent(in) :: Calpha3(NBA,n1,n2),Calpha4(NBA,n3,n4)
+  real(realk),intent(inout) :: djik(n1,n2,n3,n4)
+  !local variables
+  integer :: A,B,C,D,ALPHAAUX
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
+  !$OMP PRIVATE(A,B,C,D,ALPHAAUX,TMP) &
+  !$OMP SHARED(n1,n2,n3,n4,NBA,Calpha3,Calpha4,djik)
+  do d=1,n4
+     do c=1,n3
+        do b=1,n2
+           do a=1,n1
+              TMP = 0.0E0_realk
+              do ALPHAAUX = 1,nba
+                 tmp = tmp + Calpha3(alphaAUX,A,B)*Calpha4(alphaAUX,C,D)
+              enddo
+              djik(A,B,C,D) = tmp
+           enddo
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine RIMP2_calc_gen4DimFO
 
 subroutine RIMP2_buildCalpha(nocc,nvirt,nBasisaux,AlphaBeta_inv,AlphaCD3,Calpha)
   implicit none
@@ -4473,10 +4684,12 @@ end subroutine get_simple_parallel_mp2_residual_slave
 !> \March 2014
 subroutine RIMP2_integrals_and_amplitudes_slave()
   use precision
+  use infpar_module
   use dec_typedef_module
   use lstiming
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
+  use lsmpi_type, only: ls_mpibcast
   use decmpi_module, only: mpi_communicate_mp2_int_and_amp
   use mp2_module,only: RIMP2_integrals_and_amplitudes
   use tensor_type_def_module, only: tensor
@@ -4495,16 +4708,27 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   type(tensor) :: gvirtEOS
   !> Amplitudes for virt EOS in the order (b,l,a,k) [see notation inside]
   type(tensor) :: tvirtEOS
+  !> Occ EOS integrals (d j | i k) in the order (d,j,i,k)  
+  type(tensor) :: djik  !V_aos*O_eos*O_eos*O_aos
+  !> Virt EOS integrals (b l | a d) in the order (b,l,a,d)  
+  type(tensor) :: blad  !V_eos*O_aos*V_eos*V_aos
+  logical :: first_order
 
   ! Receive fragment structure and other information from master rank
   ! *****************************************************************
   call time_start_phase( PHASE_COMM)
   call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order_integrals,.true.)
+  call ls_mpibcast(first_order,infpar%master,infpar%lg_comm)
   call time_start_phase( PHASE_WORK)
-  ! Calculate contribution to integrals/amplitudes for slave
-  ! ********************************************************
-  call RIMP2_integrals_and_amplitudes(MyFragment,&
-       & goccEOS,toccEOS,gvirtEOS,tvirtEOS)
+  IF(first_order)THEN
+     call RIMP2_integrals_and_amplitudes(MyFragment,&
+          & goccEOS,toccEOS,gvirtEOS,tvirtEOS,djik,blad)
+  ELSE
+     ! Calculate contribution to integrals/amplitudes for slave
+     ! ********************************************************
+     call RIMP2_integrals_and_amplitudes(MyFragment,&
+          & goccEOS,toccEOS,gvirtEOS,tvirtEOS)
+  ENDIF
 
 end subroutine RIMP2_integrals_and_amplitudes_slave
 
