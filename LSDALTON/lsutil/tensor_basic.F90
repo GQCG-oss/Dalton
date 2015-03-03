@@ -330,17 +330,17 @@ module tensor_basic_module
        type(tensor)::arr
        select case(arr%mode)
        case(2)
-          call c_f_pointer(c_loc(arr%elm1),arr%elm2,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm2,arr%dims)
        case(3)
-          call c_f_pointer(c_loc(arr%elm1),arr%elm3,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm3,arr%dims)
        case(4)
-          call c_f_pointer(c_loc(arr%elm1),arr%elm4,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm4,arr%dims)
        case(5)
-          call c_f_pointer(c_loc(arr%elm1),arr%elm5,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm5,arr%dims)
        case(6)
-          call c_f_pointer(c_loc(arr%elm1),arr%elm6,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm6,arr%dims)
        case(7)
-          call c_f_pointer(c_loc(arr%elm1),arr%elm7,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm7,arr%dims)
        case default
           return
        end select
