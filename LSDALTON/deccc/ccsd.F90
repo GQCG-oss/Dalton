@@ -6133,11 +6133,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     Cv_a2%dims     = Cv%dims
     t1_a2%dims     = t1%dims
 
-    call c_f_pointer( c_loc(fockt1%elm1),fockt1_a2%val,fockt1%dims )
-    call c_f_pointer( c_loc(Co%elm1),    Co_a2%val,    Co%dims     )
-    call c_f_pointer( c_loc(Co2%elm1),   Co2_a2%val,   Co2%dims    )
-    call c_f_pointer( c_loc(Cv%elm1),    Cv_a2%val,    Cv%dims     )
-    call c_f_pointer( c_loc(t1%elm1),    t1_a2%val,    t1%dims     )
+    call c_f_pointer( c_loc(fockt1%elm1(1)),fockt1_a2%val,fockt1%dims )
+    call c_f_pointer( c_loc(Co%elm1(1)),    Co_a2%val,    Co%dims     )
+    call c_f_pointer( c_loc(Co2%elm1(1)),   Co2_a2%val,   Co2%dims    )
+    call c_f_pointer( c_loc(Cv%elm1(1)),    Cv_a2%val,    Cv%dims     )
+    call c_f_pointer( c_loc(t1%elm1(1)),    t1_a2%val,    t1%dims     )
 
     call Get_AOt1Fock(mylsitem,t1_a2,fockt1_a2,nocc,nvirt,nbasis,Co_a2,Co2_a2,Cv_a2)
 
