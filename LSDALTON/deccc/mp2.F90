@@ -2828,7 +2828,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !=====================================================================================
      !  first_order prop: Generate djik(nvirtAOS,noccEOS,noccEOS,noccAOS)
      !=====================================================================================
-     dimvirt = [nvirt,noccEOS,noccEOS,nvirt]   ! Output order
+     dimvirt = [nvirt,noccEOS,noccEOS,nocc]   ! Output order
      IF(NBA.GT.0)THEN
         !(alphaAux;nvirt,JnoccEOS) = (alphaAux;nvirt,J)*U(J,JnoccEOS)
         M = nba*nvirt        !rows of Output Matrix
