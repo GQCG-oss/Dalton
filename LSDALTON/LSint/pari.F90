@@ -1431,63 +1431,70 @@ END SUBROUTINE pariK_TwoCenter
 !> a in Reg(A)
 !> b in Reg(B)
 SUBROUTINE pari_alphaab(alpha_ab,setting,molecule,atoms,iAtomA,iAtomB,&
-     &                  nAuxA,nAuxB,nRegA,nRegB,regCSfull,auxCSfull,lupri,luerr)
-implicit none
-TYPE(lssetting),intent(inout) :: setting
-Integer,intent(in)            :: iAtomA,iAtomB,nAuxA,nAuxB,nRegA,nRegB,lupri,luerr
-TYPE(moleculeinfo),pointer    :: atoms(:)
-TYPE(moleculeinfo),intent(in) :: molecule
-Real(realk),pointer           :: alpha_ab(:,:,:) !nAux,nRegA,nRegB
-TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
-!
-Logical                    :: sameAtoms
-TYPE(moleculeinfo),pointer :: AB
-TYPE(moleculeinfo),target  :: ABtarget
-Integer                    :: nAux
-TYPE(LSTENSOR),pointer     :: auxCSab,regCSab
-INTEGER                    :: atomsAB(2),dummyAtoms(1)
+     nAuxA,nAuxB,nRegA,nRegB,regCSfull,auxCSfull,lupri,luerr)
+  implicit none
+  TYPE(lssetting),intent(inout) :: setting
+  Integer,intent(in)            :: iAtomA,iAtomB,nAuxA,nAuxB,nRegA,nRegB,lupri,luerr
+  TYPE(moleculeinfo),pointer    :: atoms(:)
+  TYPE(moleculeinfo),intent(in) :: molecule
+  Real(realk),pointer           :: alpha_ab(:,:,:) !nAux,nRegA,nRegB
+  TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
+  !
+  Logical                    :: sameAtoms
+  TYPE(moleculeinfo),pointer :: AB
+  TYPE(moleculeinfo),target  :: ABtarget
+  Integer                    :: nAux
+  TYPE(LSTENSOR),pointer     :: auxCSab,regCSab
+  INTEGER                    :: atomsAB(2),dummyAtoms(1)
 
-!set threshold
-SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%PARI_THRESHOLD
+   
+  !set threshold
+  SETTING%SCHEME%intTHRESHOLD = &
+       SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%PARI_THRESHOLD
 
-!build fragment molecule composed only of atoms A and B
-CALL pariSetPairFragment(AB,ABtarget,setting%basis(1)%p,molecule,atoms,&
-     molecule%nAtoms,iAtomA,iAtomB,nAuxA,nAuxB,nAux,lupri)
+  !build fragment molecule composed only of atoms A and B
+  CALL pariSetPairFragment(AB,ABtarget,setting%basis(1)%p,molecule,atoms,&
+       molecule%nAtoms,iAtomA,iAtomB,nAuxA,nAuxB,nAux,lupri)
+  
+  !get screening integrals for the fragment AB
+  IF (setting%scheme%CS_SCREEN) THEN
+     !NULLIFY(auxCSab)
+     ALLOCATE(auxCSab)
+     !NULLIFY(regCSab)
+     ALLOCATE(regCSab)
+     call ls_subScreenAtomic(regCSab,regCSfull,iAtomA,iAtomB,nRegA,nRegB,.FALSE.)
+     IF (iAtomA.Eq.iAtomB) THEN
+        call ls_subScreenAtomic(auxCSab,auxCSfull,iAtomA,1,nAuxA,1,.FALSE.)
+     ELSE
+        atomsAB(1)    = iAtomA
+        atomsAB(2)    = iAtomB
+        dummyAtoms(1) = 1
+        call ls_subScreenFromList(auxCSab,auxCSfull,atomsAB,dummyAtoms,2,1,&
+             nAux,1,.FALSE.)
+     ENDIF
+  ENDIF
+  
+  !call typedef_setMolecules(setting,AB,1,atoms(iAtomA),3,atoms(iAtomB),4)
+  !call initIntegralOutputDims(setting%Output,nAux,1,nRegA,nRegB,1)
 
-IF (setting%scheme%CS_SCREEN) THEN
-   NULLIFY(auxCSab)
-   ALLOCATE(auxCSab)
-   NULLIFY(regCSab)
-   ALLOCATE(regCSab)
-   call ls_subScreenAtomic(regCSab,regCSfull,iAtomA,iAtomB,nRegA,nRegB,.FALSE.)
-   IF (iAtomA.Eq.iAtomB) THEN
-      call ls_subScreenAtomic(auxCSab,auxCSfull,iAtomA,1,nAuxA,1,.FALSE.)
-   ELSE
-      atomsAB(1)    = iAtomA
-      atomsAB(2)    = iAtomB
-      dummyAtoms(1) = 1
-      call ls_subScreenFromList(auxCSab,auxCSfull,atomsAB,dummyAtoms,2,1,&
-           nAux,1,.FALSE.)
-   ENDIF
-ENDIF
+  !IF (setting%scheme%CS_SCREEN) &
+  !     call ls_attach_gab_to_setting(setting,auxCSab,regCSab)
 
-call typedef_setMolecules(setting,AB,1,atoms(iAtomA),3,atoms(iAtomB),4)
-call initIntegralOutputDims(setting%Output,nAux,1,nRegA,nRegB,1)
-IF (setting%scheme%CS_SCREEN) call ls_attach_gab_to_setting(setting,auxCSab,regCSab)
-call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
-     RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,alpha_ab,.FALSE.)
-IF (setting%scheme%CS_SCREEN) THEN
-   call ls_free_gab_from_setting(setting,lupri)
-   call lstensor_free(regCSab)
-   call lstensor_free(auxCSab)
-   DEALLOCATE(auxCSab)
-   DEALLOCATE(regCSab)
-   nullify(auxCSab)
-   nullify(regCSab)
-ENDIF
+  !call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
+  !     RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+  !CALL retrieve_Output(lupri,setting,alpha_ab,.FALSE.)
 
-CALL pariFreePairFragment(AB,iAtomA,iAtomB)
+  IF (setting%scheme%CS_SCREEN) THEN
+  !   call ls_free_gab_from_setting(setting,lupri)
+     call lstensor_free(regCSab)
+     call lstensor_free(auxCSab)
+     DEALLOCATE(auxCSab)
+     DEALLOCATE(regCSab)
+     !nullify(auxCSab)
+     !nullify(regCSab)
+  ENDIF
+  
+  CALL pariFreePairFragment(AB,iAtomA,iAtomB)
 
 END SUBROUTINE pari_alphaab
 
@@ -1617,6 +1624,7 @@ SUBROUTINE pari_alphacd_full(alpha_cd,setting,molecule,atoms,iAtomA,&
   SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
   
   IF (setting%scheme%CS_SCREEN) THEN
+     allocate(auxCSatomA)
      call ls_subScreenAtomic(auxCSatomA,auxCSfull,iAtomA,1,nAuxA,1,.FALSE.)
      call ls_attach_gab_to_setting(setting,auxCSatomA,regCSfull)
   ENDIF
