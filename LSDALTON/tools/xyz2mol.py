@@ -4,6 +4,9 @@
 # Title:   xyz2mol.py
 # 
 # Purpose: convert xyz file to DALTON MOLECULE.INP format
+#          
+# Usage:   $ ./xyz2mol.py filename.xyz
+#          $ python xyz2mol.py filename.xyz
 #
 # Author:  Pablo Baudin
 # Date:    Feb. 2015
@@ -22,8 +25,9 @@ verbose=False
 
 # Check that user provided an xyz file in input
 if (len(sys.argv)!=2):
-    print 'You need to provide as only argument the .xyz file'
-    print 'you wish to convert to (LS)DALTON format: ./xyz2mol.py file.xyz'
+    print 'You need to provide only one argument, the .xyz file:\n'
+    print '$ ./xyz2mol.py file.xyz'
+    print '$ python xyz2mol.py file.xyz'
     exit()
 
 
@@ -128,5 +132,8 @@ for atype in Atomtypes:
                 print (labels[i]+'  {:10.6f}  {:10.6f}  {:10.6f}').format(coord[i,0],coord[i,1],coord[i,2])
 
 output.close()
+
+
+print "(LS)DALTON molecule file: "+name+".mol has been created"
 
 
