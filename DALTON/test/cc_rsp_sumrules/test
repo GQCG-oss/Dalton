@@ -10,7 +10,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-f.add(string = '@    Final HF energy:',
+f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
 f.add(from_string = 'CCS        Excitation energies',
@@ -25,6 +25,7 @@ f.add(from_string = 'CC Oscillator strength sum rules',
       num_lines = 48,
       abs_tolerance = 1.0e-5)
 
-test.run(['cc_rsp_sumrules.dal'], ['helium.mol'], f={'out': f})
+test.run(['cc_rsp_sumrules.dal'], ['helium.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)

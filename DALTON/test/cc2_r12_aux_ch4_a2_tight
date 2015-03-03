@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc2_r12_aux_ch4_a2.info <<'%EOF%'
-   cc2_r12_aux_ch4_a2
+cat > cc2_r12_aux_ch4_a2_tight.info <<'%EOF%'
+   cc2_r12_aux_ch4_a2_tight
    -------------
    Molecule:         Methane (CH4)
    Wave Function:    CC2-R12 / 6-311G**
@@ -29,7 +29,7 @@ cat > cc2_r12_aux_ch4_a2.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > cc2_r12_aux_ch4_a2.mol <<'%EOF%'
+cat > cc2_r12_aux_ch4_a2_tight.mol <<'%EOF%'
 INTGRL
 CC2-R12/B calculation without symmetry                                          
                                                                                 
@@ -117,7 +117,7 @@ F   1    0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc2_r12_aux_ch4_a2.dal <<'%EOF%'
+cat > cc2_r12_aux_ch4_a2_tight.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
@@ -133,7 +133,7 @@ cat > cc2_r12_aux_ch4_a2.dal <<'%EOF%'
  H1DIAG
 *SCF INPUT
 .THRESH
- 1.0D-11
+ 1.0D-10
 *CC INPUT
 .CC2
 .PRINT
@@ -142,14 +142,14 @@ cat > cc2_r12_aux_ch4_a2.dal <<'%EOF%'
   1 
   0 
 .THRENR
- 1.0D-12
+ 1.0D-10
 .MAX IT
  120
 .MAXRED
  900
 *CCEXCI
 .THREXC
- 1.D-9
+ 1.D-8
 .NCCEXCI
  8 
 *R12 INPUT
@@ -168,8 +168,8 @@ cat > cc2_r12_aux_ch4_a2.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >cc2_r12_aux_ch4_a2.check
-cat >>cc2_r12_aux_ch4_a2.check <<'%EOF%'
+echo $CHECK_SHELL >cc2_r12_aux_ch4_a2_tight.check
+cat >>cc2_r12_aux_ch4_a2_tight.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then

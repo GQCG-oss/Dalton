@@ -54,7 +54,7 @@ CONTAINS
     profinput%IchorProfInputBasisString(4) = '                    '
     profinput%IchorProfDoThermite = .FALSE.
     profinput%IchorProfDoIchor = .FALSE.
-
+    profinput%IchorProfdoLink = .FALSE.
   end subroutine prof_set_default_config
   
 end module profile_type
