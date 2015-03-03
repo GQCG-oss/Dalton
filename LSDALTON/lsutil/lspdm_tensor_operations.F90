@@ -4087,9 +4087,8 @@ module lspdm_tensor_operations_module
       else
         tmp  => null()
       endif
+      call mem_dealloc(req)
     endif
-
-    call mem_dealloc(req)
     if( alloc_in_dummy .and. lock_was_not_set )call tensor_unlock_wins(arr, all_nodes = .true. )
 #else
     call lsquit('ERROR(tensor_gather):this routine is MPI only',-1)
