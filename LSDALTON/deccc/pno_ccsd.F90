@@ -2183,7 +2183,8 @@ module pno_ccsd_module
      type(int_batch),intent(in) :: a_batch, g_batch
      type(tensor), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
-     real(realk), intent(in), target :: xo(:,:), xv(:,:), yo(:,:), yv(:,:)
+     real(realk), intent(in), target :: xo(nb,no)
+     real(realk), intent(in) :: xv(:,:), yo(:,:), yv(:,:)
      real(realk), intent(inout) :: gooov(:), goovv(:),govov(:),Lvoov(:),Gai(:,:)
      type(pno_query_info),optional, intent(inout) :: query
      !internal variables
