@@ -2850,6 +2850,7 @@ module lspdm_tensor_operations_module
      integer(kind=ls_mpik),pointer :: reqA(:),reqB(:)
      integer, pointer :: buf_posA(:), buf_posB(:)
      logical, pointer :: buf_logA(:), buf_logB(:), nfA(:), nfB(:)
+     real(realk), pointer :: w(:)
 
      call time_start_phase( PHASE_WORK )
 
@@ -3046,15 +3047,16 @@ module lspdm_tensor_operations_module
 
      
      if(use_wrk_space)then
-        call c_f_pointer(c_loc(wrk(1)),buffA,[A%tsize,nbuffsA])
+        w => wrk
+        call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,nbuffsA])
         if(B_dense)then
            buffB => null()
         else
-           call c_f_pointer(c_loc(wrk(nbuffsA*A%tsize+1)),buffB,[tsizeB,nbuffsB])
+           call c_f_pointer(c_loc(w(nbuffsA*A%tsize+1)),buffB,[tsizeB,nbuffsB])
         endif
-        wA => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize)
-        wB => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB)
-        wC => wrk(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize)
+        wA => w(nbuffsA*A%tsize+nbuffsB*tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize)
+        wB => w(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB)
+        wC => w(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize)
      else
         call mem_alloc(buffA,A%tsize,nbuffs)
         if(.not.B_dense)then
