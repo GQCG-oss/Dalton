@@ -2,13 +2,11 @@
 module cc_tools_module
    use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
 
-!`DIL backend (depends on Fortran 2003/2008, MPI, OMP):
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+!`DIL backend (depends on Fortran-2008, MPI-3):
+#ifdef FORTRAN_2008
 #ifdef VAR_MPI
-#ifdef VAR_OMP
 !#define DIL_ACTIVE
 !#define DIL_DEBUG_ON
-#endif
 #endif
 #endif
 
@@ -124,7 +122,7 @@ module cc_tools_module
    subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
       use, intrinsic:: ISO_C_BINDING
       implicit none
-      type(tensor),intent(inout) :: t2 !`DIL: Is t2 intent(in)? I assume so. Also, tpl & tmi have been already created
+      type(tensor),intent(inout) :: t2 !intent(in)
       type(tensor),intent(inout) :: tpl, tmi !tpl[nor,nvr],tmi[nor,nvr]
 
       integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
@@ -169,7 +167,7 @@ module cc_tools_module
 
          !Facilitate access
          call c_f_pointer(c_loc(tpl%ti(lt)%t),tpm,shape=tpl%ti(lt)%d(1:2)) !`DIL
-!        call c_f_pointer(c_loc(tpl%ti(lt)%t(1)),tpm,tpl%ti(lt)%d)
+!        call c_f_pointer(c_loc(tpl%ti(lt)%t(1)),tpm,tpl%ti(lt)%d) !Is there is particular reason for this form?
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -637,7 +635,7 @@ module cc_tools_module
 
 #ifdef DIL_ACTIVE
    !> \brief calculate a and b terms in a Kobayashi fashion
-   !> \author Patrick Ettenhuber, Dmitry I. Lyakh
+   !> \author Patrick Ettenhuber, Dmitry I. Lyakh (`DIL)
    !> \date December 2012
    subroutine get_a22_and_prepb22_terms_exd(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
          &xo,yo,xv,yv,om2,sio4,s,wszes,lo,dil_lock_out,twork,tcomm,order,rest_occ_om2,scal)

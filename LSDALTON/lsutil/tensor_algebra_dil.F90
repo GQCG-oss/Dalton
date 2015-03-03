@@ -23,7 +23,7 @@
 !   (a) is small enough to fit into the local RAM buffer;
 !   (b) consists of an integer number of whole tiles the tensor is stored in terms of
 !       (this applies to distributed tensors only).
-!   Ultimately, a distributed tensor part can consist of a single tile, no less.
+!   Ultimately, a part of a distributed tensor can consist of a single tile, but no less.
 !   No such restrictions are imposed on the parts of local dense tensors.
 ! * Dimensions of a distributed tensor are split into segments,
 !   thus defining the tiles the tensor is stored in terms of.
@@ -49,14 +49,25 @@
 !   may have different segment lengths. The tensor tiles are enumerated in Fortran style
 !   (1st dimenstion, 2nd dimension, and so on), flat (global) tile numeration starts from 1.
 !NOTES:
-! * The code is written in Fortran 2008 + OpenMP 3.0 (optional).
-! * The code assumes MPI-3 standard at least (RMA specification), that is,
-!   if MPI is used it must be MPI-3 (for RMA). If MPI is not used, it is fine.
+! * The code assumes Fortran-2008, MPI-3 (defined FORTRAN_2008 and VAR_MPI)!
 ! * The number of OMP threads spawned on CPU or MIC must not exceed the MAX_THREADS parameter!
-! * In order to activate debugging mode, set global variable DIL_DEBUG to true.
+! * In order to activate the debugging mode, set macro DIL_DEBUG_ON.
+!PREPROCESSOR:
+! * VAR_OMP: use OpenMP;
+! * USE_OMP_MOD: "use omp_lib" module;
+! * USE_BASIC_ALLOC: disable MPI_ALLOC_MEM() calls and stick to malloc();
+! * DIL_DEBUG_ON: enable debugging information;
+! * USE_MIC: enable Intel MIC accelerators (not implemented).
        module tensor_algebra_dil
         use lspdm_tensor_operations_module
 #ifdef FORTRAN_2008
+#ifdef VAR_MPI
+!#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
+#endif
+#endif
+
+#ifdef DIL_ACTIVE
         use, intrinsic:: ISO_C_BINDING
 #ifdef VAR_OMP
 #ifdef USE_OMP_MOD
@@ -108,7 +119,7 @@
         logical, parameter, public:: DIL_TC_EACH=.false.                !each MPI process will have its own tensor contraction
         logical, parameter, public:: DIL_TC_ALL=.true.                  !MPI processes work collectively on a tensor contraction
 !VARIABLES:
-#ifdef VAR_MPI
+#ifndef USE_BASIC_ALLOC
         integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_MPI           !allocator type for communication buffers
 #else
         integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_BASIC         !allocator type for communication buffers
@@ -116,7 +127,11 @@
         integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device (defaults to screen)
         integer(INTD), public:: DIL_CONS_OUT=6                          !console output device for external use (defaults to screen)
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
-        logical, public:: DIL_DEBUG=.false.                              !debugging
+#ifdef DIL_DEBUG_ON
+        logical, public:: DIL_DEBUG=.true.                              !debugging
+#else
+        logical, public:: DIL_DEBUG=.false.                             !debugging
+#endif
         integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC
@@ -1244,10 +1259,9 @@
         type(C_PTR):: caddr
         real(realk), pointer, contiguous:: fptr(:)
         real(realk):: val
-#ifdef VAR_MPI
         integer(MPI_ADDRESS_KIND):: mpi_size
         integer(ls_mpik):: mpi_err
-#endif
+
         ierr=0
         if(nelems.gt.0_INTL) then
          if(present(attr)) then; flags=attr; else; flags=DIL_ALLOC_BASIC; endif
@@ -1265,7 +1279,6 @@
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
          case(DIL_ALLOC_MPI)
           caddr=C_NULL_PTR
-#ifdef VAR_MPI
           val=0E0_realk; mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND)
           call MPI_ALLOC_MEM(mpi_size,MPI_INFO_NULL,caddr,mpi_err)
           if(mpi_err.ne.0) then
@@ -1275,9 +1288,6 @@
           else
            call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
           endif
-#else
-          ierr=3
-#endif
          case default
           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): invalid allocation attributes: ",i11)') flags
           ierr=4
@@ -1294,15 +1304,11 @@
         integer(ls_mpik), intent(in), optional:: my_comm !in: MPI communicator
         integer(ls_mpik):: i,ierr
         i=0
-#ifdef VAR_MPI
         if(present(my_comm)) then !explicit communicator
          call MPI_COMM_SIZE(my_comm,i,ierr); if(ierr.ne.0) i=-1
         else !default communicator
          call MPI_COMM_SIZE(MPI_COMM_WORLD,i,ierr); if(ierr.ne.0) i=-1
         endif
-#else
-        i=1
-#endif
         my_mpi_size=i
         return
         end function my_mpi_size
@@ -1313,15 +1319,11 @@
         integer(ls_mpik), intent(in), optional:: my_comm !in: MPI communicator
         integer(ls_mpik):: i,ierr
         i=-1
-#ifdef VAR_MPI
         if(present(my_comm)) then !explicit communicator
          call MPI_COMM_RANK(my_comm,i,ierr); if(ierr.ne.0) i=-1
         else !default communicator
          call MPI_COMM_RANK(MPI_COMM_WORLD,i,ierr); if(ierr.ne.0) i=-1
         endif
-#else
-        i=0
-#endif
         my_mpi_rank=i
         return
         end function my_mpi_rank
@@ -1875,15 +1877,7 @@
         implicit none
         real(8), intent(in), optional:: time_start !in: clock start time
         real(8):: thw
-#ifdef VAR_MPI
         thw=MPI_WTIME()
-#else
-#ifdef VAR_OMP
-        thw=omp_get_wtime()
-#else
-        call cpu_time(thw)
-#endif
-#endif
         if(present(time_start)) thw=thw-time_start
         return
         end function process_wtime
@@ -2384,9 +2378,7 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-#ifdef VAR_MPI
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
-#endif
           call tensor_get_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i3))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
@@ -2420,7 +2412,6 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-#ifdef VAR_MPI
           if(new_rw) then
            if(win_lck) then
             call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
@@ -2428,7 +2419,6 @@
             call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
            endif
           endif
-#endif
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
          elseif(k.gt.0) then
           ierr=-1; return
@@ -2462,9 +2452,7 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-#ifdef VAR_MPI
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
-#endif
           call tensor_accumulate_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
@@ -2498,7 +2486,6 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-#ifdef VAR_MPI
           if(new_rw) then
            if(win_lck) then
             call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
@@ -2506,7 +2493,6 @@
             call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
            endif
           endif
-#endif
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
          elseif(k.gt.0) then
           ierr=-1; return
@@ -3067,9 +3053,7 @@
 !        index_pos(i)=mod(abs(i)-1,MAX_TENSOR_RANK)+1 !index code --> index (dimension) position
 
         ierr=0; tmb=thread_wtime(); impir=0
-#ifdef VAR_MPI
         impir=my_mpi_rank(infpar%lg_comm)
-#endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tens_contr_partition)[",i2,"]: Entered ...")') impir !debug
 !Argument check:
         do i=1,3
@@ -3437,9 +3421,7 @@
         real(realk):: val
 
         ierr=0; tmb=thread_wtime(); impir=0
-#ifdef VAR_MPI
         impir=my_mpi_rank(infpar%lg_comm)
-#endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Entered ...")') impir !debug
 !Init:
         val=0E0_realk; size_of_real=sizeof(val)
@@ -4241,10 +4223,8 @@
         logical:: win_lck
 
         ierr=0
-#ifdef VAR_MPI
         impis=my_mpi_size(infpar%lg_comm); if(impis.le.0) then; ierr=1; return; endif
         impir=my_mpi_rank(infpar%lg_comm); if(impir.lt.0) then; ierr=2; return; endif
-#endif
         impir_world=my_mpi_rank()
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         if(present(num_gpus)) then; ngpus=max(num_gpus,0); else; ngpus=0; endif
@@ -4317,12 +4297,8 @@
 !$OMP END DO
         enddo
 !$OMP END PARALLEL
-#ifdef VAR_MPI
         if(realk.eq.8) then; mpi_dtyp=MPI_REAL8; elseif(realk.eq.4) then; mpi_dtyp=MPI_REAL4; endif
         call MPI_ALLREDUCE(nrm1,dil_tensor_norm1,1_INTD,mpi_dtyp,MPI_SUM,infpar%lg_comm,ierr)
-#else
-        dil_tensor_norm1=nrm1
-#endif
         return
         end function dil_tensor_norm1
 !----------------------------------------
@@ -4332,12 +4308,10 @@
         real(realk), intent(in), optional:: val
         integer(INTD):: lti
         real(realk):: vlu
-#ifdef VAR_MPI
  !get the slaves here
         if(a%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master) then
          call pdm_tensor_sync(infpar%lg_comm,JOB_tensor_ZERO,a)
         endif
-#endif
  !loop over local tiles and zero them individually
         vlu=0E0_realk; if(present(val)) vlu=val
         do lti=1,a%nlti
@@ -4357,11 +4331,7 @@
 
         if(present(ierr)) ierr=0
         if(CONS_OUT_SAVED.le.0) then
-#ifdef VAR_MPI
          impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
-#else
-         impir_world=0; impir=0
-#endif
          deb_fname='dil_debug.'; call int2str(impir_world,deb_fname(11:),i); deb_fname(11+i:11+i+3)='.log'; i=11+i+3
          open(DIL_DEBUG_FILE,file=deb_fname(1:i),form='FORMATTED',status='UNKNOWN')
          CONS_OUT_SAVED=CONS_OUT; CONS_OUT=DIL_DEBUG_FILE; DIL_CONS_OUT=DIL_DEBUG_FILE
@@ -4380,11 +4350,7 @@
 
         if(present(ierr)) ierr=0
         if(CONS_OUT_SAVED.gt.0) then
-#ifdef VAR_MPI
          impir_world=my_mpi_rank(); impir=my_mpi_rank(infpar%lg_comm)
-#else
-         impir_world=0; impir=0
-#endif
          write(CONS_OUT,'("### DEBUG END: Global Rank ",i7," (Local Rank ",i7,")")') impir_world,impir
          CONS_OUT=CONS_OUT_SAVED; DIL_CONS_OUT=CONS_OUT_SAVED; CONS_OUT_SAVED=0; close(DIL_DEBUG_FILE)
         else
@@ -4411,7 +4377,6 @@
         real(8):: tmb,tm
 
         errc=0
-#ifdef VAR_MPI
         impir=my_mpi_rank(infpar%lg_comm); impir_world=my_mpi_rank()
         call dil_debug_to_file_start()
 !Check tensor kernels:
@@ -4667,8 +4632,8 @@
         if(associated(rarr)) deallocate(rarr)
         call lsmpi_barrier(infpar%lg_comm)
         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
-#endif
         return
         end subroutine dil_test
+!DIL_ACTIVE (assumes Fortran-2008, MPI-3):
 #endif
        end module tensor_algebra_dil

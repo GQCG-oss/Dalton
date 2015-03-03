@@ -4,6 +4,13 @@
 
 module tensor_interface_module
 
+!`DIL backend (requires Fortran-2008, MPI-3):
+#ifdef FORTRAN_2008
+#ifdef VAR_MPI
+!#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
+#endif
+#endif
 
   ! Outside DEC directory
   use memory_handling
@@ -14,9 +21,8 @@ module tensor_interface_module
   use lspdm_tensor_operations_module
   use matrix_module
   use dec_workarounds_module
-  use tensor_algebra_dil
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
-!Tensor algebra (`DIL backend):
+#ifdef DIL_ACTIVE
+  use tensor_algebra_dil  !`DIL: Tensor Algebra
   public INTD,INTL        !integer sizes for DIL tensor algebra (default, long)
   public MAX_TENSOR_RANK  !max allowed tensor rank for DIL tensor algebra
   public DIL_TC_EACH      !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
@@ -160,13 +166,13 @@ contains
 
   subroutine tensor_set_dil_backend_true()
      implicit none
-     tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
+     tensor_contract_dil_backend = alloc_in_dummy !`DIL: works only with MPI-3
   end subroutine tensor_set_dil_backend_true
 
   subroutine tensor_set_dil_backend(lv)
    implicit none
    logical, intent(in):: lv
-   tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
+   tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !`DIL: works only with MPI-3
    return
   end subroutine tensor_set_dil_backend
 
@@ -489,7 +495,7 @@ contains
      integer:: i,j,k
      logical:: contraction_mode
      integer:: rorder(C%mode)
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef DIL_ACTIVE
      !internal variables (DIL)
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -618,8 +624,8 @@ contains
         call lsquit("ERROR(tensor_contract_simple): A%itype not implemented",-1)
       end select
 
-     else !DIL backend (MPI-3 only)
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+     else !`DIL backend (Fortran-2008 & MPI-3)
+#ifdef DIL_ACTIVE
         !Get the symbolic tensor contraction pattern:
         tcs(1:2)='D('; tcl=2; i1=C%mode
         do i0=1,i1; tcs(tcl+1:tcl+2)=elett(i0:i0)//','; tcl=tcl+2; enddo
@@ -657,12 +663,12 @@ contains
            !Perform the tensor contraction:
 
 #else
-           call lsquit("ERROR(tensor_contract_simple): DIL backend requires Fortran 2003/2008",-1)
+           call lsquit('ERROR(tensor_contract_simple): DIL backend requires Fortran-2008 and MPI-3 at least!',-1)
 #endif
-        endif
+     endif
 
-        call time_start_phase( PHASE_WORK )
-     end subroutine tensor_contract
+     call time_start_phase( PHASE_WORK )
+  end subroutine tensor_contract
 
   subroutine tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
      implicit none
