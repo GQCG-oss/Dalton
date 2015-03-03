@@ -3630,7 +3630,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_convGBI )
            if( me == 0 )then
               call tensor_convert(int3,w0%d,wrk=w1%d,iwrk=w1%n)
-              call c_f_pointer(c_loc(w0%d),p2,[la,no])
+              call c_f_pointer(c_loc(w0%d(1)),p2,[la,no])
               !$OMP WORKSHARE
               Gbi_local%elm2(fa:fa+la-1,:) = Gbi_local%elm2(fa:fa+la-1,:) + p2(:,:)
               !$OMP END WORKSHARE
