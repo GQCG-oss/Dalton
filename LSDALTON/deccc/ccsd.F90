@@ -858,8 +858,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
 #ifdef VAR_MPI
 #ifdef VAR_OMP
-#define DIL_ACTIVE
-#define DIL_DEBUG_ON
+!#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
 #endif
 #endif
 #endif
@@ -1236,7 +1236,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
 #ifdef DIL_ACTIVE
-!     scheme=1 !``DIL: remove
+     scheme=1 !``DIL: remove
      if(scheme==1) then
       if(.not.alloc_in_dummy) call lsquit('ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3!',-1)
       DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
@@ -1437,7 +1437,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !get the t+ and t- for the Kobayshi-like B2 term
 #ifdef DIL_ACTIVE
-!     scheme=1 !``DIL: remove
+     scheme=1 !``DIL: remove
 #endif
      if(scheme==1) then !`DIL: Create TPL & TMI
 #ifdef DIL_ACTIVE
@@ -1460,7 +1460,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !if I am the working process, then
 #ifdef DIL_ACTIVE
-!     scheme=1 !``DIL: remove
+     scheme=1 !``DIL: remove
 #endif
      if(scheme==1) then !`DIL: Define TPL & TMI
 #ifdef DIL_ACTIVE
@@ -1485,7 +1485,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !get u2 in pdm or local
 #ifdef DIL_ACTIVE
-!     scheme=1 !``DIL: remove
+     scheme=1 !``DIL: remove
 #endif
      if(scheme==2.or.scheme==1)then
 #ifdef VAR_MPI
@@ -2154,7 +2154,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  !and the difference between first element of alpha batch and last element
                  !of gamma batch
 #ifdef DIL_ACTIVE
-!                 scheme=1 !``DIL: remove
+                 scheme=1 !``DIL: remove
 #endif
                  if(scheme /= 1) then
                   call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
