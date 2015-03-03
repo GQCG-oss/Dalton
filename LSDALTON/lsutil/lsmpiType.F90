@@ -1360,7 +1360,7 @@ contains
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer(1)),buf,[(i8*nbuf1)*nbuf2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
       call ls_mpisendrecv_realkV_wrapper8(buf,(i8*nbuf1)*nbuf2,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -1634,7 +1634,7 @@ contains
       integer(kind=8) :: n1,n2
       logical(kind=4),pointer :: buf(:)      
       n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer(1)),buf,[(i8*n1)*n2])
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
       call ls_mpisendrecv_logical4V_wrapper8(buf,n1*n2,comm,sender,receiver)
       nullify(buf)
 #endif
@@ -3353,7 +3353,7 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3
-    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2*n3])
+    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
