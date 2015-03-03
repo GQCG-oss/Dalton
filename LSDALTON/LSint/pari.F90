@@ -1474,18 +1474,18 @@ SUBROUTINE pari_alphaab(alpha_ab,setting,molecule,atoms,iAtomA,iAtomB,&
      ENDIF
   ENDIF
   
-  !call typedef_setMolecules(setting,AB,1,atoms(iAtomA),3,atoms(iAtomB),4)
-  !call initIntegralOutputDims(setting%Output,nAux,1,nRegA,nRegB,1)
+  call typedef_setMolecules(setting,AB,1,atoms(iAtomA),3,atoms(iAtomB),4)
+  call initIntegralOutputDims(setting%Output,nAux,1,nRegA,nRegB,1)
 
-  !IF (setting%scheme%CS_SCREEN) &
-  !     call ls_attach_gab_to_setting(setting,auxCSab,regCSab)
+  IF (setting%scheme%CS_SCREEN) &
+       call ls_attach_gab_to_setting(setting,auxCSab,regCSab)
 
-  !call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
-  !     RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
-  !CALL retrieve_Output(lupri,setting,alpha_ab,.FALSE.)
+  call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
+       RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+  CALL retrieve_Output(lupri,setting,alpha_ab,.FALSE.)
 
   IF (setting%scheme%CS_SCREEN) THEN
-  !   call ls_free_gab_from_setting(setting,lupri)
+     call ls_free_gab_from_setting(setting,lupri)
      call lstensor_free(regCSab)
      call lstensor_free(auxCSab)
      DEALLOCATE(auxCSab)
