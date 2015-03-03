@@ -410,6 +410,9 @@ contains
     fragment%EoccFOP      = 0.0_realk
     fragment%EvirtFOP     = 0.0_realk
     fragment%LagFOP       = 0.0_realk
+    fragment%Eocc_err     = 0.0_realk
+    fragment%Evir_err     = 0.0_realk
+    fragment%Elag_err     = 0.0_realk
 
 
     ! Information related to singles amplitudes - only relevant for CC2 and CCSD
@@ -2291,7 +2294,7 @@ contains
     integer :: orb_idx
 
     ! All orbitals included in fragment
-    if(DECinfo%all_init_radius<=0.0E0_realk)then
+    if(DECinfo%all_init_radius<0.0E0_realk)then
 
        unocc_list = .true.
        occ_list   = .true.
@@ -2301,13 +2304,27 @@ contains
        unocc_list = .false.
        occ_list   = .false.
 
+
        !loop over all valence orbitals and include them if within radius
        do orb_idx=1, MyMolecule%nocc
-          occ_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomOcc(orb_idx,MyAtom)<=DECinfo%all_init_radius)
+          occ_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomOcc(orb_idx,MyAtom)<=DECinfo%occ_init_radius)
        enddo
        !loop over all virtual orbitals and include them if within radius
        do orb_idx=1, MyMolecule%nunocc
-          unocc_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)<=DECinfo%all_init_radius)
+          unocc_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)<=DECinfo%vir_init_radius)
+          !unocc_list(orb_idx) = (MyMolecule%DistanceTableOrbAtomVirt(orb_idx,MyAtom)>=10.0/bohr_to_angstrom)
+       enddo
+
+       !Make sure all the EOS orbtials are included
+       do orb_idx=1,MyMolecule%nocc
+          if(OccOrbitals(orb_idx)%centralatom == MyAtom)then
+             occ_list(orb_idx) = .true.
+          endif
+       enddo
+       do orb_idx=1,MyMolecule%nunocc
+          if(UnoccOrbitals(orb_idx)%centralatom == MyAtom)then
+             unocc_list(orb_idx) = .true.
+          endif
        enddo
 
     endif
@@ -3608,8 +3625,11 @@ contains
        write(wunit) int(fragment%EOSatoms(i),kind=8)
     end do
 
-    ! Energies
+    ! Energies, and reference energies
     write(wunit) fragment%energies
+    write(wunit) fragment%Eocc_err
+    write(wunit) fragment%Evir_err
+    write(wunit) fragment%Elag_err
 
     ! Correlation density matrices
     CDset64    = fragment%CDset
@@ -3838,8 +3858,11 @@ contains
     call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nunocc, MyMolecule%nocc,&
          & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
-    ! Fragment energies
+    ! Fragment energies, and fragment approximate errors for the estimate
     read(runit) fragment%energies
+    read(runit) fragment%Eocc_err
+    read(runit) fragment%Evir_err
+    read(runit) fragment%Elag_err
 
     ! Correlation density matrices and fragment-adapted orbitals
     call read_64bit_to_int(runit,fragment%CDset)
@@ -5012,6 +5035,7 @@ contains
     real(realk) :: avDmaxAOS, avDmaxAE, maxDmaxAOS, maxDmaxAE, minDmaxAOS, minDmaxAE
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),fragbasis(:,:)
     logical,pointer :: occAOSred(:,:,:),unoccAOSred(:,:,:),fragbasisred(:,:,:)
+    logical :: no_pairs
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -5046,6 +5070,12 @@ contains
     avDmaxAE   = 0.0E0_realk
     minDmaxAOS = huge(minDmaxAOS)
     minDmaxAE  = huge(minDmaxAE)
+
+    ! Do pair calculations?
+    no_pairs = .false.
+    if (DECinfo%no_pairs .and. .not. esti) then
+       no_pairs = .true.
+    end if
 
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
@@ -5283,7 +5313,8 @@ contains
        do j=i+1,natoms
           if(.not. which_fragments(j)) cycle
           CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE .and. &
-               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold ) then
+               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold &
+               & .and. (.not. no_pairs)) then
              ! Pair needs to be computed
              npair = npair+1
           end if CheckPair
@@ -5303,53 +5334,55 @@ contains
 
     call init_joblist(njobs,jobs)
 
-    if(nred>0) then  
-       ! use reduced orbital spaces for some of the pair fragments
-       call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-            & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred, &
-            & occAOSred=occAOSred,unoccAOSred=unoccAOSred,Fragbasisred=Fragbasisred)
-    else
-       ! No reduced pair fragments
-       call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
-            & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred)
-    end if
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '*****************************************************'
-    if(esti) then
-       write(DECinfo%output,*) '*      DEC ESTIMATED FRAGMENT JOB LIST              *'
-    else
-       write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
-    end if
-    write(DECinfo%output,*) '*****************************************************'
-    write(DECinfo%output,*) 'Number of jobs = ', njobs
-    write(DECinfo%output,*)
-    if(DECinfo%DECCO) then
-       write(DECinfo%output,*) 'JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis'
-    else
-       write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
-    end if
-
-
-    do i=1,njobs
-       if(jobs%atom1(i)==jobs%atom2(i)) then ! single
-          write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
-               &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
-       else ! pair
-          write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8,3X,i6,3X,i6,3X,i6)') &
-               &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+    if (jobs%njobs>0) then
+       if(nred>0) then  
+          ! use reduced orbital spaces for some of the pair fragments
+          call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+               & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred, &
+               & occAOSred=occAOSred,unoccAOSred=unoccAOSred,Fragbasisred=Fragbasisred)
+       else
+          ! No reduced pair fragments
+          call set_dec_joblist(MyMolecule,calcAF,natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+               & FragBasis,which_fragments, mymolecule%DistanceTable, esti,jobs,nred)
        end if
-    end do
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-    ! Summary print out
-    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of single jobs = ', nsingle
-    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of pair jobs   = ', npair
-    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Total number of jobs  = ', njobs
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+        
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) '*****************************************************'
+       if(esti) then
+          write(DECinfo%output,*) '*      DEC ESTIMATED FRAGMENT JOB LIST              *'
+       else
+          write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
+       end if
+       write(DECinfo%output,*) '*****************************************************'
+       write(DECinfo%output,*) 'Number of jobs = ', njobs
+       write(DECinfo%output,*)
+       if(DECinfo%DECCO) then
+          write(DECinfo%output,*) 'JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis'
+       else
+          write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
+       end if
+        
+        
+       do i=1,njobs
+          if(jobs%atom1(i)==jobs%atom2(i)) then ! single
+             write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
+                  &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+          else ! pair
+             write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8,3X,i6,3X,i6,3X,i6)') &
+                  &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
+          end if
+       end do
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+        
+       ! Summary print out
+       write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of single jobs = ', nsingle
+       write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of pair jobs   = ', npair
+       write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Total number of jobs  = ', njobs
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+    end if
 
     call mem_dealloc( occAOS    )
     call mem_dealloc( unoccAOS  )
@@ -5544,6 +5577,7 @@ contains
     integer,pointer :: atom1(:),atom2(:),order(:),tmpnocc(:),tmpnunocc(:),tmpnbasis(:)
     logical,pointer :: MyOccAOS1(:), MyUnoccAOS1(:), MyFragBasis1(:)
     logical,pointer :: MyOccAOS2(:), MyUnoccAOS2(:), MyFragBasis2(:)
+    logical :: no_pairs
 
     ! Sanity check for reduced fragments
     if(nred/=0) then
@@ -5556,6 +5590,12 @@ contains
        if(.not. present(FragBasisRed)) then
           call lsquit('set_dec_joblist: FragBasisRed argument not present!',-1)
        end if
+    end if
+
+    ! Do pair calculations?
+    no_pairs = .false.
+    if (DECinfo%no_pairs .and. .not. esti) then
+       no_pairs = .true.
     end if
 
     ! Init stuff
@@ -5624,7 +5664,8 @@ contains
           dist = DistanceTable(i,j)
 
           CheckPair: if(MyMolecule%ccmodel(i,j) /= MODEL_NONE .and. &
-               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold ) then
+               & MyMolecule%distancetable(i,j)<DECinfo%pair_distance_threshold &
+               & .and. (.not. no_pairs)) then
              k=k+1
 
              ! **************

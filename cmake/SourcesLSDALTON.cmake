@@ -101,6 +101,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
+    LSDALTON/deccc/ccsd_gradient.F90
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
     LSDALTON/deccc/snoop_main.F90
@@ -733,11 +734,13 @@ set(LSINT_SOURCES
 ############################################################
 set(LSUTIL_PRECISION_SOURCES
     LSDALTON/lsutil/ls_precision.F90
-    LSDALTON/lsutil/ptr_assoc.F90
     LSDALTON/lsutil/lsmpi_mod.F90
     )
 set(LSUTIL_MATRIXM_SOURCES
-    LSDALTON/lsutil/matrix_module.F90    LSDALTON/
+    LSDALTON/lsutil/matrix_module.F90
+    )
+set(LSUTIL_COMMON_C_SOURCES
+    LSDALTON/lsutil/myPAPI_set_inherit.c
     )
 set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/rsp-typedef.F90
@@ -775,11 +778,20 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/OverlapDistributionType.F90
     LSDALTON/lsutil/pbc_lattice_type.F90
     )
+set(LSUTIL_TENSOR_SOURCES
+    LSDALTON/lsutil/dec_workarounds.F90
+    LSDALTON/lsutil/tensor_interface.F90
+    LSDALTON/lsutil/lspdm_tensor_operations.F90
+    LSDALTON/lsutil/tensor_algebra_dil.F90
+    LSDALTON/lsutil/tensor_basic.F90
+    LSDALTON/lsutil/lspdm_basic.F90
+    )
 set(LSUTIL_MATRIXO_SOURCES
     LSDALTON/lsutil/matop_csr.F90
     LSDALTON/lsutil/matop_dense.F90
     LSDALTON/lsutil/matop_dense_unrest.F90
-    LSDALTON/lsutil/matop_scalapack.F90    LSDALTON/
+    LSDALTON/lsutil/matop_scalapack.F90
+    LSDALTON/lsutil/matop_pdm.F90
     )
 set(LSUTIL_MATRIXO_C_SOURCES
     LSDALTON/lsutil/matop_csr_aux.c
@@ -806,11 +818,6 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/TYPE-OP.F90
     LSDALTON/lsutil/GCtrans.F90
     LSDALTON/lsutil/Build_AOBATCH.F90
-    LSDALTON/lsutil/lspdm_basic.F90
-    LSDALTON/lsutil/tensor_basic.F90
-    LSDALTON/lsutil/lspdm_tensor_operations.F90
-    LSDALTON/lsutil/dec_workarounds.F90
-    LSDALTON/lsutil/tensor_algebra_dil.F90
     )
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90
@@ -823,7 +830,6 @@ set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/ddynType.F90
     LSDALTON/lsutil/ProfileType.F90
     LSDALTON/lsutil/pbc_lattice_vectors.F90
-    LSDALTON/lsutil/tensor_interface.F90
     LSDALTON/lsutil/lspdm_slave.F90
     )
 set(LSLIB_SOURCES

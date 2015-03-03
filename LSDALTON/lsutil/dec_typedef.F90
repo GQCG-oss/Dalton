@@ -27,7 +27,7 @@ module dec_typedef_module
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
   !> how many real models in total are there, disregard MODEL_NONE
-  integer,parameter :: ndecmodels   = 6
+  integer,parameter :: ndecmodels   = 7
   !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
@@ -36,6 +36,7 @@ module dec_typedef_module
   integer,parameter :: MODEL_CCSDpT = 4
   integer,parameter :: MODEL_RPA    = 5
   integer,parameter :: MODEL_RIMP2  = 6
+  integer,parameter :: MODEL_SOSEX  = 7
 
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
@@ -87,6 +88,8 @@ module dec_typedef_module
      ! *****************************************************************************************
 
 
+     ! SNOOP
+     ! =====
      !> Do a SNOOP calculation rather than DEC? (later SNOOP and DEC will be somewhat merged)
      logical :: SNOOP
      !> Skip CC calculation in SNOOP and just do HF
@@ -137,7 +140,8 @@ module dec_typedef_module
      logical :: gcbasis
      !> DEC-CC orbital-based (DECCO)
      logical :: DECCO
-
+     !> DEC-CC orbital-based (DECNP)
+     logical :: DECNP
 
 
 
@@ -159,6 +163,7 @@ module dec_typedef_module
      real(realk) :: IntegralThreshold
      !> Use Ichor Integral Code
      logical :: UseIchor
+
 
      !> Memory stuff
      !> ************
@@ -214,6 +219,8 @@ module dec_typedef_module
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
      logical :: CCSDmultipliers
+     !> use debug multiplier residual
+     logical :: simple_multipler_residual
      !> use pnos in dec
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
@@ -268,7 +275,7 @@ module dec_typedef_module
      integer :: tensor_segmenting_scheme
 
      !> ccsd(T) settings
-     !> *****************************
+     !> ****************
      !> logical for abc scheme
      logical :: abc
      !> force a specific tile size for use with abc scheme
@@ -277,6 +284,8 @@ module dec_typedef_module
      integer :: ijk_nbuffs
      !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
      integer :: abc_nbuffs
+     !> do we want to do gpu computations synchronous?
+     logical :: acc_sync
 
      !> F12 settings
      !> ************
@@ -286,7 +295,7 @@ module dec_typedef_module
      logical :: F12fragopt
 
      !> F12 debug settings
-     !> ************
+     !> ******************
      !> Use F12 correction
      logical :: F12DEBUG
 
@@ -327,7 +336,7 @@ module dec_typedef_module
      logical :: test_fully_distributed_integrals
 
      !> MP2 occupied batching
-     !> *****************
+     !> *********************
      !> Set batch sizes manually
      logical :: manual_occbatchsizes
      !> Sizes of I and J occupied batches defined manually
@@ -352,6 +361,8 @@ module dec_typedef_module
      logical :: force_Occ_SubSystemLocality
      !> Debug print level
      integer :: PL
+     !> reduce the output if a big calculation is done
+     logical :: print_small_calc
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
      !> set fraction of extended orbital space to reduce to in the binary search
@@ -374,13 +385,6 @@ module dec_typedef_module
      real(realk) :: simple_orbital_threshold
      !> Purify fitted MO coefficients (projection + orthogonalization)
      logical :: PurifyMOs
-     !> Use fragment-adapted orbitals for fragment calculations
-     logical :: FragAdapt
-     !> Hack to only do fragment optimization
-     integer         :: only_n_frag_jobs
-     integer,pointer :: frag_job_nr(:)
-     !> Use hack to specify only pair fragment jobs
-     logical         :: only_pair_frag_jobs
      !> Use Mulliken population analysis to assign orbitals (default: Lowdin, only for Boughton-Pulay)
      logical :: mulliken
      !> Use Distance criteria to determine central atom
@@ -427,6 +431,8 @@ module dec_typedef_module
      logical :: OnlyVirtPart
      !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
      real(realk) :: all_init_radius
+     real(realk) :: vir_init_radius
+     real(realk) :: occ_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
@@ -440,6 +446,16 @@ module dec_typedef_module
      integer :: CorrDensScheme
      ! --  
      logical :: use_abs_overlap
+     !> Use fragment-adapted orbitals for fragment calculations
+     logical :: FragAdapt
+     !> avoid all pair calculations:
+     logical         :: no_pairs
+     !> Hack to only do fragment optimization
+     integer         :: only_n_frag_jobs
+     integer,pointer :: frag_job_nr(:)
+     !> Use hack to specify only pair fragment jobs
+     logical         :: only_pair_frag_jobs
+
 
      !> Pair fragments
      !> **************
@@ -467,8 +483,6 @@ module dec_typedef_module
      integer :: nFRAGSred
      !> Factor to scale FOT by for reduced fragments
      integer :: FOTscaling
-
-
      ! --
 
 
@@ -798,6 +812,10 @@ module dec_typedef_module
      !> Lagrangian energy 
      !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
      real(realk) :: LagFOP
+     !> energy error estimates
+     real(realk) :: Eocc_err
+     real(realk) :: Evir_err
+     real(realk) :: Elag_err
 
      !> Contributions to the fragment Lagrangian energy from each individual
      !  occupied or virtual orbital.

@@ -26,6 +26,6 @@ f.add(string = 'E: Total MP2-F12 energy',rel_tolerance = 1.0e-4)
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['decmp2f12_h2.dal'], ['h2.mol'], {'out': f})
+test.run(['decmp2f12.dal'], ['h2.mol'], {'out': f})
 
 sys.exit(test.return_code)

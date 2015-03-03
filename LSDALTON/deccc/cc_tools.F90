@@ -1,5 +1,6 @@
 !Simple tools common for cc routines
 module cc_tools_module
+   use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
 
 !`DIL backend (depends on Fortran 2003/2008, MPI, OMP):
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -12,7 +13,6 @@ module cc_tools_module
 #endif
 
    use precision
-   use ptr_assoc_module
 #ifdef VAR_MPI
    use lsmpi_type
 #endif
@@ -28,6 +28,15 @@ module cc_tools_module
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
    end interface get_tpl_and_tmi
    
+   abstract interface
+      function ab_eq_c(a,b) result(c)
+         use precision
+         import
+         implicit none
+         real(realk), intent(in) :: a, b
+         real(realk) :: c
+      end function ab_eq_c
+   end interface
    
    contains
 
@@ -159,8 +168,8 @@ module cc_tools_module
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
 
          !Facilitate access
-!         call ass_D1to2( tpl%ti(lt)%t, tpm, tpl%ti(lt)%d )
          call c_f_pointer(c_loc(tpl%ti(lt)%t),tpm,shape=tpl%ti(lt)%d(1:2)) !`DIL
+!        call c_f_pointer(c_loc(tpl%ti(lt)%t(1)),tpm,tpl%ti(lt)%d)
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -227,14 +236,14 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-!            call ass_D1to4( buf1, tt1, tdim )
             call c_f_pointer(c_loc(buf1),tt1,shape=tdim(1:4)) !`DIL
+!           call c_f_pointer(c_loc(buf1(1)),tt1,tdim)
             if(mtile(2)==mtile(1))then
-!               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
                call c_f_pointer(c_loc(buf1),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+!              call c_f_pointer( c_loc(buf1(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-!               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
                call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+!              call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
 
             !get offset for tile counting
@@ -311,8 +320,8 @@ module cc_tools_module
          call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
 
          !Facilitate access
-!         call ass_D1to2( tmi%ti(lt)%t, tpm, tmi%ti(lt)%d )
          call c_f_pointer(c_loc(tmi%ti(lt)%t),tpm,shape=tmi%ti(lt)%d(1:2)) !`DIL
+!        call c_f_pointer( c_loc(tmi%ti(lt)%t(1)), tpm, tmi%ti(lt)%d )
 
          !build list of tiles to get for the current tmi tile
          !get offset for tile counting
@@ -379,14 +388,14 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-!            call ass_D1to4( buf1, tt1, tdim )
             call c_f_pointer(c_loc(buf1),tt1,shape=tdim(1:4)) !`DIL
+!           call c_f_pointer( c_loc(buf1(1)), tt1, tdim )
             if(mtile(2)==mtile(1))then
-!               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
                call c_f_pointer(c_loc(buf1),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+!              call c_f_pointer( c_loc( buf1(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-!               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
                call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+!              call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
 
             !get offset for tile counting
@@ -507,10 +516,12 @@ module cc_tools_module
    subroutine get_a22_and_prepb22_terms_ex(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
          &xo,yo,xv,yv,om2,sio4,s,wszes,lo,twork,tcomm,order,rest_occ_om2,scal)
       implicit none
+      !> W0 SIZE
+      integer(kind=8),intent(in)  :: wszes(4)
       !> workspace with exchange integrals
-      real(realk),intent(inout) :: w1(:)
+      real(realk),intent(inout) :: w1(wszes(2))
       !> empty workspace of correct sizes
-      real(realk),intent(inout) :: w0(:),w2(:),w3(:)
+      real(realk),intent(inout) :: w0(wszes(1)),w2(wszes(3)),w3(wszes(4))
       !> the t+ and t- combinations with a value of the amplitudes with the
       !diagonal elements divided by two
       real(realk),intent(inout) :: tpl(:),tmi(:)
@@ -532,8 +543,6 @@ module cc_tools_module
       logical,intent(in) :: lo
       !timing information
       real(realk) :: twork,tcomm
-      !> W0 SIZE
-      integer(kind=8),intent(in)  :: wszes(4)
       integer,optional,intent(in) :: order(4)
       logical,optional,intent(in) :: rest_occ_om2
       real(realk),optional :: scal
@@ -590,7 +599,7 @@ module cc_tools_module
       case(4,3,2)
          !!SYMMETRIC COMBINATION
          !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs)
+         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
          !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -602,7 +611,7 @@ module cc_tools_module
 
          !!ANTI-SYMMETRIC COMBINATION
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs)
+         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
          !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -821,16 +830,18 @@ module cc_tools_module
    subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
          & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej, query )
       implicit none
+      !> size of w0
+      integer(kind=8),intent(inout)   :: wszes(3)
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
       !real(realk),intent(inout) :: omega(nv*nv*no*no)
       type(tensor),intent(inout) :: omega
       !> w0 is just some workspace on input
-      real(realk),intent(inout) :: w0(:)
+      real(realk),intent(inout) :: w0(wszes(1))
       !> w2 is just some workspace on input
-      real(realk),intent(inout) :: w2(:)
+      real(realk),intent(inout),target :: w2(wszes(2))
       !> w3 contains the symmetric and antisymmetric combinations 
-      real(realk),intent(inout) :: w3(:)
+      real(realk),intent(inout) :: w3(wszes(3))
       !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
       !contribution after the loop, update them in the loops
       type(tensor),intent(inout) :: sio4
@@ -856,8 +867,6 @@ module cc_tools_module
       !> scheme
       integer,intent(in) :: s
       logical,intent(in) :: lock_outside
-      !> size of w0
-      integer(kind=8),intent(inout)   :: wszes(3)
       integer,optional,intent(in)  :: order(4),act_no
       !restricted i<=j in the omega2 and or sio4
       logical,optional, intent(in) :: rest_occ_om2, sio4_ilej, query
@@ -1335,8 +1344,8 @@ module cc_tools_module
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             else
-               call ass_D1to3(w2,t1,[no2,no2,nor])
-               call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
+               call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
+               call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
                do j=no,1,-1
                   do i=j,1,-1
                      call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1388,8 +1397,8 @@ module cc_tools_module
 #endif
                else
 
-                  call ass_D1to3(w2,t1,[no2,no2,nor])
-                  call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
+                  call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
+                  call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
                   do j=no,1,-1
                      do i=j,1,-1
                         call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1455,26 +1464,33 @@ module cc_tools_module
 #endif
    end subroutine get_I_cged
 
+   !Even though the following two functions are only needed inside
+   !get_I_plusminus_le, they were moved here since PGI decided that internal
+   !procedures may not be targets of function pointers
+   function a_plus_b(a,b) result(c)
+      implicit none
+      real(realk), intent(in)  :: a, b
+      real(realk) :: c
+      c = a + b
+   end function a_plus_b
+   function a_minus_b(a,b) result(c)
+      implicit none
+      real(realk), intent(in)  :: a, b
+      real(realk) :: c
+      c = a - b
+   end function a_minus_b
 
    !> \brief Construct symmetric and antisymmentric combinations of an itegral matrix 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,qu,quarry)
+   subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,s0,s1,s2,qu,quarry)
       implicit none
-
-      abstract interface
-      function simple_ab_return_c(a,b) result(c)
-         use precision
-         import
-         real(realk), intent(in) :: a,b
-         real(realk) :: c
-      end function simple_ab_return_c
-      end interface
-
+      integer(kind=8), intent(in) :: s0,s1,s2
       !> blank workspace
-      real(realk),intent(inout) :: w0(:),w2(:)
+      real(realk),intent(inout) :: w0(s0)
+      real(realk),intent(inout),target :: w2(s2)
       !> workspace containing the integrals
-      real(realk),intent(in) :: w1(:)
+      real(realk),intent(in) :: w1(s1)
       !> integer specifying the first element in alpha and gamma batch
       integer,intent(in) :: fa,fg
       !> integer specifying the length of alpha and gamma batches
@@ -1498,7 +1514,7 @@ module cc_tools_module
       real(realk) ::chk,chk2,el
       real(realk),pointer :: trick(:,:,:)
       logical :: modb,query
-      procedure(simple_ab_return_c), pointer :: a_op_b => null()
+      procedure(ab_eq_c), pointer :: a_op_b => null()
 
       select case(op)
       case ('+')
@@ -1527,7 +1543,7 @@ module cc_tools_module
          quarry(2) = max(quarry(2),(i8*la*nb)*lg*nb)
          quarry(3) = max(quarry(3),(i8*nb*nb)*cagi)
       else
-         call ass_D1to3(w2,trick,[nb,nb,cagi])
+         call c_f_pointer(c_loc(w2(1)),trick,[nb,nb,cagi])
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          aleg=0
 
@@ -1606,26 +1622,14 @@ module cc_tools_module
          enddo
 
          call array_reorder_3d(1.0E0_realk,w2,nb,nb,cagi,[2,3,1],0.0E0_realk,w0)
-         nullify(trick)
+         trick => null()
 
       endif
 
-      contains
 
-      function a_plus_b(a,b) result(c)
-         implicit none
-         real(realk), intent(in) :: a, b
-         real(realk) :: c
-         c = a + b
-      end function a_plus_b
-      function a_minus_b(a,b) result(c)
-         implicit none
-         real(realk), intent(in) :: a, b
-         real(realk) :: c
-         c = a - b
-      end function a_minus_b
 
    end subroutine get_I_plusminus_le
+
 
    !> \brief subroutine to add contributions to the sio4 matrix which enters the
    !B2.2 term in the "non"-parallel region
