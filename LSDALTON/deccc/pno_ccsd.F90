@@ -2720,9 +2720,9 @@ module pno_ccsd_module
                     call array_reorder_4d(p10,w3,nb,lg,la,nb,[3,4,2,1],nul,w1)
                  endif
 
-                 call get_I_plusminus_le(w4,w1,w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,&
+                 call get_I_plusminus_le(w4,w1,w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s4,s1,s3,&
                     &qu = this_is_query, quarry = var_inp(1:3))
-                 call get_I_plusminus_le(w5,w1,w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,&
+                 call get_I_plusminus_le(w5,w1,w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s5,s1,s3,&
                     &qu = this_is_query, quarry = var_inp(1:3))
 
 
@@ -3023,7 +3023,8 @@ module pno_ccsd_module
      type(tensor), intent(in) :: pno_t2(nspaces),sio4(nspaces)
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
-     real(realk),intent(in),target :: govov(:),vvf(:,:)
+     real(realk),intent(in),target :: govov(no**2*pno_cv(ns)%ns1**2)
+     real(realk),intent(in) :: vvf(:,:)
      character :: tr11,tr12,tr21,tr22
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:),d(:,:),d1(:,:)
      real(realk),pointer :: o(:),t(:),S1(:,:), t21(:)
@@ -3110,7 +3111,7 @@ module pno_ccsd_module
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !Get the integral contribution, sort it first like the integrals then transform it, govov
         call c_f_pointer( c_loc(w1),    p1, [rpd1,nv,rpd1,nv] )
-        call c_f_pointer( c_loc(govov), p2, [no,   nv,no, nv] )
+        call c_f_pointer( c_loc(govov(1)), p2, [no,   nv,no, nv] )
 
         if( PS1 )then
 
@@ -3170,7 +3171,7 @@ module pno_ccsd_module
         call c_f_pointer( c_loc(w3), p1, [rpd,rpd,rpd1,rpd1] )
         !Get the integral contribution, sort it first like the integrals then transform it, govov
         call c_f_pointer( c_loc(w1),    p3, [rpd1,nv,rpd1,nv] )
-        call c_f_pointer( c_loc(govov), p4, [no,  nv,no,  nv] )
+        call c_f_pointer( c_loc(govov(1)), p4, [no,  nv,no,  nv] )
 
         !print *," CONRTIB LOOP", ns, ns2
         !print *,""
@@ -3387,7 +3388,9 @@ module pno_ccsd_module
      type(tensor), intent(in) :: pno_t2(nspaces)
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
-     real(realk),intent(in),target :: goovv(:),govov(:),Lvoov(:),oof(:,:)
+     real(realk),intent(in),target :: goovv(no*no*pno_cv(ns)%ns1**2),govov(no*no*pno_cv(ns)%ns1**2)
+     real(realk),intent(in),target :: Lvoov(no*no*pno_cv(ns)%ns1**2)
+     real(realk),intent(in) :: oof(:,:)
      integer,intent(in)    :: p_idx(:,:),p_nidx(:)
      integer,intent(inout) :: oidx1(:,:),oidx2(:,:)
      character :: tr11,tr12,tr21,tr22,TRamp_pos1(2),TRamp_pos2(2),trh1,trh2
@@ -3482,7 +3485,7 @@ module pno_ccsd_module
         !might easily move the following part outside the loop and add stuff
         !up during the loops -> please note that we use the reordered goovv, to
         !avoid cache misses here
-        call c_f_pointer( c_loc(goovv), p2o, [nv,  nv, no, no] )
+        call c_f_pointer( c_loc(goovv(1)), p2o, [nv,  nv, no, no] )
         if( PS )then
 
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3665,7 +3668,7 @@ module pno_ccsd_module
 
                  !Get the integrals kdlc -> ckld and transform c and d to their
                  !corresponding spaces, (iajb -> bija) 
-                 call c_f_pointer( c_loc(govov), p2i, [no, nv, no, nv]  )
+                 call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no, nv]  )
                  call c_f_pointer( c_loc(w1),    p1, [rpd1,rpd2,nv,nv] )
                  if( PS1 ) then
 
@@ -3873,7 +3876,7 @@ module pno_ccsd_module
 
               !Get the integrals kdlc -> ckld and transform c and d to their
               !corresponding spaces, (iajb -> bija) 
-              call c_f_pointer( c_loc(govov), p2i, [no, nv, no, nv]  )
+              call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no, nv]  )
               call c_f_pointer( c_loc(w1),    p1, [rpd1,rpd2,nv,nv] )
               if( PS1 ) then
                  if( PS2 )then
@@ -4093,7 +4096,7 @@ module pno_ccsd_module
 
               !Similar procedure as for the C2 term, just with the L integrals (which
               !could also be produced on-the-fly to reduce the memory requirements
-              call c_f_pointer( c_loc(Lvoov), p2o, [nv, no, no, nv] )
+              call c_f_pointer( c_loc(Lvoov(1)), p2o, [nv, no, no, nv] )
               ! extract and transform c to \bar(c} of (jk)  and a to \bar{a} of (ij) and reorder
               ! to the in which it will be used later we got w4:\bar{c}k\bar{a}i
               if( PS1 )then
@@ -4181,7 +4184,7 @@ module pno_ccsd_module
               !Get the L integrals lfkc -> cklf and transform c and d to their
               !corresponding spaces, (iajb -> bjia) 
               call c_f_pointer( c_loc(w1),    p1, [nv,rpd1,rpd2,nv] )
-              call c_f_pointer( c_loc(govov), p2i, [no, nv, no,  nv] )
+              call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no,  nv] )
               if( PS1 )then
                  if( PS2 )then
                     do a=1,nv
@@ -4332,7 +4335,7 @@ module pno_ccsd_module
            !Similar procedure as for the C2 term, just with the L integrals (which
            !could also be produced on-the-fly to reduce the memory requirements
            call c_f_pointer( c_loc(w1),    p1,  [nv,rpd,rpd1,nv] )
-           call c_f_pointer( c_loc(Lvoov), p2o, [nv, no, no, nv] )
+           call c_f_pointer( c_loc(Lvoov(1)), p2o, [nv, no, no, nv] )
            if( PS1 )then
               do ic=1,pno
                  p1(:,ic,1,:) = p2o(:,idx(ic), oidx1(nidx1+diff11+1,3),:)
@@ -4381,7 +4384,7 @@ module pno_ccsd_module
               !Get the L integrals lfkc -> cklf and transform c and d to their
               !corresponding spaces, (iajb -> bjia) 
               call c_f_pointer( c_loc(w1),    p1, [nv,rpd1,rpd2,nv] )
-              call c_f_pointer( c_loc(govov), p2i, [no, nv, no,  nv] )
+              call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no,  nv] )
               if( PS1 )then
                  if( PS2 )then
                     do a=1,nv
