@@ -1185,7 +1185,7 @@ subroutine print_dec_info()
 !          call free_mp2grad(grad)
 !        endif
 #endif
-        if(DECinfo%ccmodel == MODEL_MP2)then
+        if(DECinfo%ccmodel == MODEL_MP2 .or. DECinfo%ccmodel == MODEL_RIMP2) then
           call update_full_mp2gradient(grad,fullgrad)
           call free_mp2grad(grad)
         end if
