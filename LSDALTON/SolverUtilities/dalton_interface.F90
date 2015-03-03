@@ -134,7 +134,7 @@ CONTAINS
          IF(ABS(E-Etest).GT.1.0E-14)THEN
             CALL LSQUIT('CGTO_DIFF_ERI E ERROR',lupri)
          ELSE
-            WRITE(lupri,'(A)')'CGTO Energy Cont Succesfull'
+            WRITE(lupri,'(A)')'CGTO Energy Cont Successful'
          ENDIF
 #else
          call lsquit('.DEBUGCGTODIFF requires OpenRSP -DBUILD_CGTODIFF',lupri)
@@ -1136,7 +1136,7 @@ CONTAINS
 !!$      write(lupri,*) 'QQQ DI_DEBUG_4CENTER STD ',mat_trab(tempm1,tempm1)
 !!$      write(lupri,*) 'QQQ DI_DEBUG_4CENTER CHOL',mat_trab(tempm2,tempm2)
 !!$      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-!!$         write(lupri,*)'QQQ SUCCESFUL CHOLESKY TEST'
+!!$         write(lupri,*)'QQQ SUCCESSFUL CHOLESKY TEST'
 !!$      ELSE
 !!$         CALL lsQUIT('CHOLESKY TEST TEST',lupri)
 !!$      ENDIF
@@ -1409,7 +1409,7 @@ CONTAINS
          print*,'EP 3 =',output2(1)
          CALL LSQUIT('EP error EP integrals are wrong',lupri)
       ELSE
-         WRITE(lupri,*)'EP integrals calculated succesfully'
+         WRITE(lupri,*)'EP integrals calculated successfully'
       ENDIF
       call mem_dealloc(output2)
       call mem_dealloc(R2)
@@ -1612,7 +1612,7 @@ CONTAINS
 !      setting%scheme%ReCalcGab = SAVEReCalcGab
       call mem_dealloc(integrals)
       call mem_dealloc(integrals2)
-      WRITE(lupri,*)'di_screen_test SUCCESSFULL'
+      WRITE(lupri,*)'di_screen_test SUCCESSFUL'
 
     end subroutine di_screen_test
 
@@ -2088,7 +2088,7 @@ CONTAINS
 !!$!         write(lupri,*) 'QQQ DI_DEBUG lsfragment',iorb,'  :',mat_trab(tempm1,tempm1)
 !!$!         write(lupri,*) 'QQQ DIFF                         :',mat_trab(tempm4,tempm4)
 !!$!         IF(ABS(mat_trab(tempm4,tempm4)).LE. 1E-8_realk)THEN
-!!$!            write(lupri,*)'QQQ SUCCESFUL'
+!!$!            write(lupri,*)'QQQ SUCCESSFUL'
 !!$!         ELSE
 !!$!            WRITE(lupri,*)'ZZ THE FULL DMAT IORB =',iorb
 !!$!            call mat_print(D2,1,nbast,1,nbast,lupri)
@@ -2119,7 +2119,7 @@ CONTAINS
 !!$      write(lupri,*) 'QQQ DI_DEBUG lsfragment',mat_trab(tempm3,tempm3)
 !!$      write(lupri,*) 'QQQ DIFF               ',mat_trab(tempm4,tempm4)
 !!$      IF(ABS(mat_trab(tempm4,tempm4)).LE. 1E-8_realk)THEN
-!!$         write(lupri,*)'QQQ SUCCESFUL'
+!!$         write(lupri,*)'QQQ SUCCESSFUL'
 !!$      ELSE
 !!$         WRITE(lupri,*)'THE DIFF'
 !!$         call mat_print(tempm4,1,nbast,1,nbast,lupri)
@@ -3125,7 +3125,7 @@ CONTAINS
       write(lupri,*) 'QQQ DI_DEBUG_DECPACK K DECPACK',mat_trab(Kdec,Kdec)
       write(lupri,*) 'QQQ DIFF',ABS(mat_trab(tempm3,tempm3))
       IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL DECPACK K TEST'
+         write(lupri,*)'QQQ SUCCESSFUL DECPACK K TEST'
       ELSE
          WRITE(lupri,*)'the Kref'
          call mat_print(K,1,nbast,1,nbast,lupri)
@@ -3271,7 +3271,7 @@ CONTAINS
       write(lupri,*) 'QQQ DI_DEBUG_DECPACK J DECPACK',mat_trab(Jdec,Jdec)
       write(lupri,*) 'QQQ DIFF',ABS(mat_trab(tempm3,tempm3))
       IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL DECPACK J TEST'
+         write(lupri,*)'QQQ SUCCESSFUL DECPACK J TEST'
       ELSE
          ! WARNING THIS COULD BE DUE TO FAMILY BASISSET 
          WRITE(lupri,*)'the Jref'
@@ -3442,7 +3442,7 @@ CONTAINS
       write(lupri,*) 'QQQ OLD DI_DEBUG_DECPACK J DECPACK',mat_trab(Jdec,Jdec)
       write(lupri,*) 'QQQ OLD DIFF',ABS(mat_trab(tempm3,tempm3))
       IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-         write(lupri,*)'QQQ SUCCESFUL DECPACK JOLD TEST'
+         write(lupri,*)'QQQ SUCCESSFUL DECPACK JOLD TEST'
       ELSE
          WRITE(lupri,*)'the Jref'
          call mat_print(J,1,nbast,1,nbast,lupri)
