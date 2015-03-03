@@ -75,17 +75,17 @@
        enddo
 
        !Test pointer reshape II
-       fptr4(1:2,1:1,1:2,1:2) => fptr1
+       !fptr4(1:2,1:1,1:2,1:2) => fptr1
 
-       do a=1,2
-          do b=1,2
-             do c=1,2
-                if(fptr4(a,1,b,c) /= fptr1(a+(b-1)*2+(c-1)*4))then
-                   success = .false.
-                endif
-             enddo
-          enddo
-       enddo
+       !do a=1,2
+       !   do b=1,2
+       !      do c=1,2
+       !         if(fptr4(a,1,b,c) /= fptr1(a+(b-1)*2+(c-1)*4))then
+       !            success = .false.
+       !         endif
+       !      enddo
+       !   enddo
+       !enddo
 
        deallocate(fptr1)
 
