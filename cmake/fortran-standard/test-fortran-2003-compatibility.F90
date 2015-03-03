@@ -62,7 +62,7 @@
        fptr2 => null()
 
        !Test pointer reshape I
-       call c_f_pointer(c_loc(fptr1),fptr3,[2,2,2])
+       call c_f_pointer(c_loc(fptr1(1)),fptr3,[2,2,2])
 
        do a=1,2
           do b=1,2
