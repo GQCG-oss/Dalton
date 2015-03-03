@@ -156,7 +156,7 @@ module cc_tools_module
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
 
          !Facilitate access
-         call c_f_pointer(c_loc(tpl%ti(lt)%t),tpm,tpl%ti(lt)%d)
+         call c_f_pointer(c_loc(tpl%ti(lt)%t(1)),tpm,tpl%ti(lt)%d)
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -223,12 +223,12 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call c_f_pointer(c_loc(buf1),tt1,tdim)
+            call c_f_pointer(c_loc(buf1(1)),tt1,tdim)
 
             if(mtile(2)==mtile(1))then
-               call c_f_pointer( c_loc(buf1), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer( c_loc(buf1(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-               call c_f_pointer( c_loc(buf2), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
 
             !get offset for tile counting
@@ -306,7 +306,7 @@ module cc_tools_module
          call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
 
          !Facilitate access
-         call c_f_pointer( c_loc(tmi%ti(lt)%t), tpm, tmi%ti(lt)%d )
+         call c_f_pointer( c_loc(tmi%ti(lt)%t(1)), tpm, tmi%ti(lt)%d )
 
          !build list of tiles to get for the current tmi tile
          !get offset for tile counting
@@ -373,11 +373,11 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call c_f_pointer( c_loc(buf1), tt1, tdim )
+            call c_f_pointer( c_loc(buf1(1)), tt1, tdim )
             if(mtile(2)==mtile(1))then
-               call c_f_pointer( c_loc( buf1 ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer( c_loc( buf1(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-               call c_f_pointer( c_loc( buf2 ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
 
             !get offset for tile counting
