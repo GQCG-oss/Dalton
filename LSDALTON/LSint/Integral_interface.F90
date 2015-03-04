@@ -5586,7 +5586,7 @@ TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33,Ftmp(1)
 TYPE(Matrix)        :: S22
 real(realk)         :: var
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
-real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
+real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,tsfull,tefull,hfweight
 integer             :: nbast,nbast2,AORold,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
@@ -5617,6 +5617,7 @@ ENDIF
 nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
 
+CALL lstimer('START',tsfull,tefull,lupri)
 CALL lstimer('START',ts,te,lupri)
 
 nbast2 = getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
@@ -5809,6 +5810,7 @@ call mat_free(TMPF)
 call mat_free(k2(1))
 call mat_free(x2(1))
 call mat_free(D2(1))
+CALL lstimer('ADMM',tsfull,tefull,lupri)
 END SUBROUTINE II_get_admm_exchange_mat
 
 !> \brief Calculates the ADMM exchange contribution to the molecular gradient
