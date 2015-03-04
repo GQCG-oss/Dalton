@@ -11,8 +11,7 @@
 !> NEVER think that e.g. A%elms = matrix will copy the matrix elements from 
 !>       matrix to A%elms, it will only associate the pointer with the array
 !>       matrix. \n
-!> BUT type(Matrix) :: A,B; A = B SHOULD copy the matrix elements from matrix B to A
-!>     see mat_assign. \n
+!> Use mat_assign for A = B operation
 !> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init
 !>
 MODULE Matrix_module  

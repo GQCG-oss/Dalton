@@ -146,10 +146,24 @@ SUBROUTINE open_lsdalton_files(lupri,luerr)
   integer,intent(inout) :: lupri
   !> Logical unit number for LSDALTON.ERR
   integer,intent(inout) :: luerr
-
+  !
+  logical :: file_exists
   LUPRI=-1
-  LUERR=-1
+  INQUIRE(FILE='LSDALTON.OUT',EXIST=file_exists)
+  IF(file_exists)THEN
+     CALL LSOPEN(LUPRI,'LSDALTON.OUT','OLD','FORMATTED')
+     call lsclose(LUPRI,'DELETE')
+     LUPRI=-1
+  ENDIF
   CALL LSOPEN(LUPRI,'LSDALTON.OUT','NEW','FORMATTED')
+
+  LUERR=-1
+  INQUIRE(FILE='LSDALTON.ERR',EXIST=file_exists)
+  IF(file_exists)THEN
+     CALL LSOPEN(LUERR,'LSDALTON.ERR','OLD','FORMATTED')
+     call lsclose(LUERR,'DELETE')
+     LUERR=-1
+  ENDIF
   CALL LSOPEN(LUERR,'LSDALTON.ERR','NEW','FORMATTED')
 
 end SUBROUTINE open_lsdalton_files
