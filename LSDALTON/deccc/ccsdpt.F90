@@ -24,7 +24,7 @@ module ccsdpt_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use lspdm_tensor_operations_module
-  use, intrinsic :: iso_c_bindings, only: c_loc, c_f_pointer
+  use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -9217,9 +9217,9 @@ contains
        energy_res_cou = 0.0E0_realk
        energy_res_exc = 0.0E0_realk
    
-!       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-!       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
-!       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
        do j=1,nocc_eos
           j_eos = MyFragment%idxo(j)
           do i=1,nocc_eos
@@ -9244,14 +9244,14 @@ contains
    
           end do
        end do
-!       !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
        call tensor_reorder(ccsd_doubles,[1,2,4,3])
    
-!       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-!       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
-!       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:virt_contribs)
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:virt_contribs)
        do j=1,nocc_eos
           j_eos = MyFragment%idxo(j)
           do i=1,nocc_eos
@@ -9276,7 +9276,7 @@ contains
    
           end do
        end do
-!       !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
    
        !get total fourth--order energy contribution
        MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
@@ -9313,9 +9313,9 @@ contains
        energy_res_cou = 0.0E0_realk
        energy_res_exc = 0.0E0_realk
    
-!       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-!       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
-!       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
        do b=1,nvirt_eos
           b_eos = MyFragment%idxu(b)
           do a=1,nvirt_eos
@@ -9340,14 +9340,14 @@ contains
    
           end do
        end do
-!       !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
        call tensor_reorder(ccsd_doubles,[2,1,3,4])
    
-!       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-!       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
-!       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
        do b=1,nvirt_eos
           b_eos = MyFragment%idxu(b)
           do a=1,nvirt_eos
@@ -9372,7 +9372,7 @@ contains
    
           end do
        end do
-!       !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
    
        !get total fourth--order energy contribution
        MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
@@ -9502,9 +9502,9 @@ contains
        energy_res_cou = 0.0E0_realk
        energy_res_exc = 0.0E0_realk
    
-!       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-!       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
-!       !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_cou)
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
+       !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_cou)
        do j=1,nocc_eos
           j_eos = PairFragment%idxo(j)
           do i=1,nocc_eos
@@ -9524,14 +9524,14 @@ contains
    
           end do
        end do
-!       !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
        call tensor_reorder(ccsd_doubles,[1,2,4,3])
    
-!       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-!       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
-!       !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_exc)
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
+       !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_exc)
        do j=1,nocc_eos
           j_eos = PairFragment%idxo(j)
           do i=1,nocc_eos
@@ -9551,7 +9551,7 @@ contains
    
           end do
        end do
-!       !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
    
        ! get total fourth--order energy contribution
        PairFragment%energies(FRAGMODEL_OCCpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
@@ -9588,9 +9588,9 @@ contains
        energy_res_cou = 0.0E0_realk
        energy_res_exc = 0.0E0_realk
    
-!       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-!       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
-!       !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_exc)
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
+       !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_exc)
        do b=1,nvirt_eos
           b_eos = PairFragment%idxu(b)
           do a=1,nvirt_eos
@@ -9610,14 +9610,14 @@ contains
        
           end do
        end do
-!       !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
        call tensor_reorder(ccsd_doubles,[2,1,3,4])
    
-!       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-!       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
-!       !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_cou)
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
+       !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_cou)
        do b=1,nvirt_eos
           b_eos = PairFragment%idxu(b)
           do a=1,nvirt_eos
@@ -9637,7 +9637,7 @@ contains
    
           end do
        end do
-!       !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
    
        ! get total fourth--order energy contribution
        PairFragment%energies(FRAGMODEL_VIRTpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
