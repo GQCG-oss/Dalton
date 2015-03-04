@@ -13,8 +13,7 @@
 !> NEVER think that e.g. A%elms = matrix will copy the matrix elements from
 !>       matrix to A%elms, it will only associate the pointer with the array
 !>       matrix. \n
-!> BUT type(Matrix) :: A,B; A = B SHOULD copy the matrix elements from matrix B to A 
-!>     (see mat_assign). \n
+!> Use mat_assign for A = B operations
 !> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init.
 !>
 MODULE matrix_operations
@@ -93,10 +92,6 @@ MODULE matrix_operations
 !> True if timings for matrix operations are requested
    logical,save :: INFO_TIME_MAT! = .false. !default no timings
    logical,save :: INFO_memory! = .false. !default no memory printout
-!> Overload: The '=' sign may be used to set two type(matrix) structures equal, i.e. A = B
-!!$   INTERFACE ASSIGNMENT(=)
-!!$      module procedure mat_assign
-!!$   END INTERFACE
 
    contains
 !*** is called from LSDALTON.f90
@@ -710,7 +705,6 @@ MODULE matrix_operations
          integer, intent(in)     :: i_row1, i_rown, j_col1, j_coln, lu 
          REAL(REALK), ALLOCATABLE :: afull(:,:)
          real(realk)              :: sparsity
-
          if (i_row1 < 1 .or. j_col1 < 1 .or. a%nrow < i_rown .or. a%ncol < j_coln) then
            CALL LSQUIT( 'subsection out of bounds in mat_print',-1)
          endif
@@ -719,7 +713,7 @@ MODULE matrix_operations
          case(mtype_dense)
              call mat_dense_print(a, i_row1, i_rown, j_col1, j_coln, lu)
          case(mtype_pdmm)
-             call mat_pdmm_print(a, i_row1, i_rown, j_col1, j_coln, lu)
+            call mat_pdmm_print(a, i_row1, i_rown, j_col1, j_coln, lu)
          case(mtype_scalapack)
 #ifdef VAR_SCALAPACK
             print*,'FALLBACK scalapack print'
@@ -1093,6 +1087,7 @@ MODULE matrix_operations
             dest%complex = src%complex
             dest%val => src%val; dest%col => src%col
             dest%row => src%row; dest%nnz = src%nnz
+            dest%PDMID = src%PDMID
 #ifdef VAR_SCALAPACK
             dest%localncol=src%localncol; dest%localnrow=src%localnrow
             dest%addr_on_grid => src%addr_on_grid
@@ -1608,8 +1603,10 @@ MODULE matrix_operations
              call mat_dense_min_elm(a,val,tmp)
           case(mtype_scalapack)
              call mat_scalapack_min_elm(a,val,tmp)
+          case(mtype_pdmm)
+             call mat_pdmm_min_elm(a,val,tmp)
          case default
-              call lsquit("mat_max_elm not implemented for this type of matrix",-1)
+              call lsquit("mat_min_elm not implemented for this type of matrix",-1)
          end select
 
 
@@ -2105,6 +2102,8 @@ end subroutine mat_insert_section
              call mat_unres_dense_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
               call mat_scalapack_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+         case(mtype_pdmm)
+              call mat_pdmm_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
               call lsquit("mat_create_block not implemented for this type of matrix",-1)
          end select
@@ -2186,6 +2185,8 @@ end subroutine mat_insert_section
              call mat_csr_retrieve_block_full(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
             call mat_scalapack_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+         case(mtype_pdmm)
+            call mat_pdmm_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_unres_dense)
              call mat_unres_dense_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
@@ -2553,6 +2554,8 @@ end subroutine set_lowertriangular_zero
            call mat_dense_extract_diagonal(diag,A)
       case(mtype_scalapack)
            call mat_scalapack_extract_diagonal(diag,A)
+      case(mtype_pdmm)
+           call mat_pdmm_extract_diagonal(diag,A)
       case default
             call lsquit("mat_extract_diagonal not implemented for this type of matrix",-1)
       end select

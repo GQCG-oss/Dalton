@@ -1,10 +1,9 @@
 !> @file
 !> Memory manager for four dimensional arrays
 module tensor_basic_module
+  use,intrinsic :: iso_c_binding, only:c_loc,c_f_pointer
 
   use precision
-  use ptr_assoc_module!, only: ass_D1to2,ass_D1to3, &
-!         &ass_D1to4, ass_D1to5, ass_D1to6, ass_D1to7
   use LSTIMING!,only:lstimer
   use memory_handling!, only: mem_alloc,mem_dealloc
 !#ifdef VAR_MPI
@@ -331,17 +330,17 @@ module tensor_basic_module
        type(tensor)::arr
        select case(arr%mode)
        case(2)
-          call ass_D1to2(arr%elm1,arr%elm2,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm2,arr%dims)
        case(3)
-          call ass_D1to3(arr%elm1,arr%elm3,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm3,arr%dims)
        case(4)
-          call ass_D1to4(arr%elm1,arr%elm4,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm4,arr%dims)
        case(5)
-          call ass_D1to5(arr%elm1,arr%elm5,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm5,arr%dims)
        case(6)
-          call ass_D1to6(arr%elm1,arr%elm6,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm6,arr%dims)
        case(7)
-          call ass_D1to7(arr%elm1,arr%elm7,arr%dims)
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm7,arr%dims)
        case default
           return
        end select

@@ -1971,7 +1971,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer :: alpha,gamma,beta,delta,info,mynum,numnodes,MynbasisAuxMPI,nb
   integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2,natomsAux
   integer :: ILOC,JLOC,ALOC,BLOC,M,N,K,nAtoms,nbasis2,nbasisAux
-  logical :: fc,ForcePrint,first_order_integrals,master,wakeslave,MessageRecieved
+  logical :: fc,ForcePrint,master,wakeslave,MessageRecieved
   logical :: CollaborateWithSlaves
   real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:)
   real(realk),pointer :: AlphaCD3(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
@@ -1982,8 +1982,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk),pointer :: toccTMP(:,:),TMPAlphaBeta_minus_sqrt(:,:),tocc2(:,:,:,:)
   real(realk),pointer :: tvirtTMP(:,:),tvirt(:,:,:,:),UoccT(:,:),UvirtEOST(:,:)
   real(realk),pointer :: tvirt2(:,:,:,:),tvirt3(:,:,:,:),Calpha4(:,:,:)
-  real(realk),pointer :: OccToVirt(:,:),OccToVirtAOS(:,:)
-  real(realk),pointer :: VirtToOcc(:,:),VirtToOccEOS(:,:)
+  real(realk),pointer :: OccToVirt(:,:),OccToVirtAOS(:,:),UoccallTDIAG(:,:)
+  real(realk),pointer :: VirtToOcc(:,:),VirtToOccEOS(:,:),UoccallT(:,:)
   real(realk) :: deltaEPS,goccAIBJ,goccBIAJ,Gtmp,Ttmp,Eocc,TMP,Etmp,twmpi2
   real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
@@ -2016,7 +2016,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif  
   IF(present(djik))THEN
      IF(present(blad))THEN
-        first_order=.TRUE.
+        first_order=.TRUE. !first order integrals are required
      ELSE
         call lsquit('RIMP2 prog error: djik is present but blad is not',-1)
      ENDIF
@@ -2065,6 +2065,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
+  ! For frozen core energy calculation, we never need core orbitals
+  ! (but we do if first order integrals are required)
+  if(DECinfo%frozencore .and. (.not. first_order)) nocctot = nocc
+  ! In general, for frozen core AND first order integrals, special care must be taken
+  ! No frozen core OR frozen core calculation for just energy uses the same
+  ! code from now on because the frozen core approximation is "built into" the fragment,
+  if(DECinfo%frozencore .and. first_order) then
+     fc = .true.
+  else
+     fc =.false.
+  end if
+  if(first_order) then
+     if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RIMP2 integrals (both energy and density) and RIMP2 amplitudes...'
+  else
+     if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RIMP2 integrals (only energy) and RIMP2 amplitudes...'
+  end if
+
   IF(DECinfo%AuxAtomicExtent)THEN
      call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
   ELSE
@@ -2123,8 +2140,20 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ! Note: Uocc and Uvirt have indices (local,diagonal)
   call mem_alloc(EVocc,nocc)
   call mem_alloc(EVvirt,nvirt)
-  call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
-       & EVocc, EVvirt)
+  if(fc) then
+     ! Special routine for MP2 density/gradient using frozen core approx.
+     ! Note: The occupied coefficient matrices CDIAGocc and Uocc and the eigenvalues EVocc
+     !       refer only to the valence space, while
+     !       LoccTALL, CDIAGoccTALL, and UoccALL refer to both core+valence!
+     ! Special note: CDIAGoccTALL have valence orbitals BEFORE core orbitals, see
+     !               get_MP2_integral_transformation_matrices_fc!
+     call get_MP2_integral_transformation_matrices_fc(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
+          & LoccTALL, CDIAGoccTALL, UoccALL, EVocc, EVvirt)
+     call array2_free(LoccTALL)
+  else  ! not frozen core or simple energy calculation
+     call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
+          & EVocc, EVvirt)
+  end if
 
   ! Make MO coefficients:  Cocc(nbasis,nocc)
   call mem_alloc(Cocc,nbasis,nocc)
@@ -2185,7 +2214,35 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
 
   IF(first_order)THEN
+     if(fc)THEN
+        call mem_alloc(UoccallTDIAG,nocc,nocctot)
+        !From Diagonal Occupied (with only valence) to Local Occupied (with core+valence)
+        !UoccallTDIAG(nocc,nocctot)=Cocc(nbasis,nocc)**T*CDIAGoccTALL%val(nbasis,nocctot)*UoccAll%val(nocctotLOC,nocctotDIAG)**T
+        !in 2 steps
+        !First step: From Diagonal Occupied (with only valence) to diagonal Occupied (with core+valence)
+        !UoccallTDIAG(nocc,nocctot)=Cocc(nbasis,nocc)**T*CDIAGoccTALL%val(nbasis,nocctot)
+        M = nocc              !rows of Output Matrix
+        N = nocctot           !columns of Output Matrix
+        K = nbasis            !summation dimension
+        call dgemm('T','N',M,N,K,1.0E0_realk,Cocc,K,CDIAGoccTALL%val,K,0.0E0_realk,UoccallTDIAG,M)
+        call mem_alloc(UoccallT,nocc,nocctot)
+        !Second step: 
+        !UoccallT(nocc,nocctot) = UoccallTDIAG(nocc,nocctot)*UoccAll%val(nocctotLOC,nocctotDIAG)**T
+        M = nocc              !rows of Output Matrix
+        N = nocctot           !columns of Output Matrix
+        K = nocctot           !summation dimension
+        call dgemm('T','T',M,N,K,1.0E0_realk,UoccallTDIAG,K,UoccAll%val,N,0.0E0_realk,UoccallT,M)
+        call mem_dealloc(UoccallTDIAG)
+        call array2_free(UoccALL)
+        call array2_free(CDIAGoccTALL)
+     else
+        call mem_alloc(UoccallT,nocc,nocctot)
+        call DCOPY(nocc*nocctot,UoccT,1,UoccallT,1)
+     endif
      call mem_alloc(OccToVirt,nocc,nvirt)
+     !From Diagonal Occupied to Local Virtual
+     !OccToVirt(nocc,nvirt) = (Cocc(nbasis,nocc)**T*Cvirt(nbasis,nvirt))*UvirtT(nvirt,nvirtAOS)
+     !in 2 steps
      !OccToVirt(nocc,nvirt) = Cocc(nbasis,nocc)**T*Cvirt(nbasis,nvirt)
      M = nocc              !rows of Output Matrix
      N = nvirt             !columns of Output Matrix
@@ -2200,10 +2257,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_dealloc(OccToVirt)
 
      call mem_alloc(VirtToOcc,nvirt,nocc)
+     !From Diagonal virtuald to Local Occupied
+     !OccToVirt(nocc,nvirt) = (Cvirt(nbasis,nvirt)**T*Cocc(nbasis,nocc))*UoccEOST(nocc,noccEOS)
+     !in 2 steps
+     !VirtToOcc(nvirt,nocc) = Cvirt(nbasis,nvirt)**T*Cocc(nbasis,nocc)
      M = nvirt             !rows of Output Matrix
      N = nocc              !columns of Output Matrix
      K = nbasis            !summation dimension
-     !VirtToOcc(nvirt,nocc) = Cvirt(nbasis,nvirt)**T*Cocc(nbasis,nocc)
      call dgemm('T','N',M,N,K,1.0E0_realk,Cvirt,K,Cocc,K,0.0E0_realk,VirtToOcc,M)
      call mem_alloc(VirtToOccEOS,nvirt,nocc)
      !VirtToOcc(nvirt,noccEOS) = VirtToOcc(nvirt,nocc)*UoccEOST(nocc,noccEOS)
@@ -2240,7 +2300,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      bat%size1=0
      bat%size2=0
      bat%size3=0
-     first_order_integrals = .FALSE.
 
      ! Sanity check
      if(.not. MyFragment%BasisInfoIsSet) then
@@ -2254,8 +2313,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
      call ls_mpibcast(RIMP2INAMP,infpar%master,infpar%lg_comm)
      ! Communicate fragment information to slaves
-     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order_integrals,.true.)
-     call ls_mpibcast(first_order,infpar%master,infpar%lg_comm)
+     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
      call time_start_phase( PHASE_WORK )
   endif StartUpSlaves
   CALL LSTIMER('DECRIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
@@ -2826,9 +2884,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   IF(first_order)THEN
      !=====================================================================================
-     !  first_order prop: Generate djik(nvirtAOS,noccEOS,noccEOS,noccAOS)
+     !  first_order prop: Generate djik(nvirtAOS,noccEOS,noccEOS,noccAOS=nocctot)
      !=====================================================================================
-     dimvirt = [nvirt,noccEOS,noccEOS,nvirt]   ! Output order
+     dimvirt = [nvirt,noccEOS,noccEOS,nocctot]   ! Output order
      IF(NBA.GT.0)THEN
         !(alphaAux;nvirt,JnoccEOS) = (alphaAux;nvirt,J)*U(J,JnoccEOS)
         M = nba*nvirt        !rows of Output Matrix
@@ -2848,19 +2906,19 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_dealloc(UvirtT)
         call mem_dealloc(Calpha2)
         
-        !(alphaAux;nvirt,noccAOS) = (alphaAux;nvirt,nocc)*U(nocc,noccAOS)
+        !(alphaAux;nvirt,noccAOS=nocctot) = (alphaAux;nvirt,nocc)*UoccallT(nocc,noccAOS=nocctot)
         M = nba*nocc         !rows of Output Matrix
-        N = nocc             !columns of Output Matrix
+        N = nocctot          !columns of Output Matrix
         K = nocc             !summation dimension
-        call mem_alloc(Calpha2,nba,nocc,nocc)
+        call mem_alloc(Calpha2,nba,nocc,nocctot)
         CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccallT,K,0.0E0_realk,Calpha2,M)
         CALL LSTIMER('DGEMM4 ',TS3,TE3,LUPRI,FORCEPRINT)
-        
-        !(alphaAux,noccEOS,noccAOS) = (alphaAux;nvirt,noccAOS)*VirtToOccEOS(nvirt,noccEOS)
-        call mem_alloc(Calpha4,nba,noccEOS,nocc)
+        call mem_dealloc(UoccallT)
+        !(alphaAux,noccEOS,noccAOS=nocctot) = (alphaAux;nvirt,noccAOS=nocctot)*VirtToOccEOS(nvirt,noccEOS)
+        call mem_alloc(Calpha4,nba,noccEOS,nocctot)
         CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-        call RIMP2_TransAlpha2(nocc,nvirt,noccEOS,nba,VirtToOccEOS,Calpha2,Calpha4)
+        call RIMP2_TransAlpha2(nocctot,nvirt,noccEOS,nba,VirtToOccEOS,Calpha2,Calpha4)
         CALL LSTIMER('RIMP2_TransAlpha2',TS3,TE3,LUPRI,FORCEPRINT)
         call mem_dealloc(Calpha2)
         call mem_dealloc(VirtToOccEOS)
@@ -2868,7 +2926,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !  djikEOS(nvirtAOS,noccEOS,noccEOS,noccAOS)
         call tensor_ainit(djik,dimvirt,4)
         CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-        call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,Calpha4,noccEOS,nocc,djik%elm1)
+        call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,Calpha4,noccEOS,nocctot,djik%elm1)
         CALL LSTIMER('RIMP2_calc_gvirt',TS3,TE3,LUPRI,FORCEPRINT)
         call mem_dealloc(Calpha3)
         call mem_dealloc(Calpha4)
@@ -2876,7 +2934,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_dealloc(UoccEOST)
         call mem_dealloc(UvirtT)
         call tensor_ainit(djik,dimvirt,4)
-        nSize = nvirt*noccEOS*noccEOS*nvirt
+        nSize = nvirt*noccEOS*noccEOS*nocctot
         call ls_dzero8(djik%elm1,nsize)
      ENDIF
      CALL LSTIMER('DECRIMP2: gvirt          ',TS2,TE2,LUPRI,FORCEPRINT)
@@ -2885,7 +2943,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call time_start_phase( PHASE_IDLE )
         call lsmpi_barrier(infpar%lg_comm)
         call time_start_phase( PHASE_COMM )
-        nSize = nvirt*noccEOS*noccEOS*nvirt
+        nSize = nvirt*noccEOS*noccEOS*nocctot
         call lsmpi_reduction(djik%elm1,nsize,infpar%master,infpar%lg_comm)
         call time_start_phase( PHASE_WORK )   
         IF(.NOT.Master )call tensor_free(djik)
@@ -4698,8 +4756,6 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   type(decfrag) :: MyFragment
   !> Batch sizes
   type(mp2_batch_construction) :: bat
-  !> Calculate intgrals for first order MP2 properties?
-  logical :: first_order_integrals
   !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see notation inside]
   type(tensor) :: goccEOS
   !> Amplitudes for occ EOS in the order (d,j,c,i) [see notation inside]
@@ -4712,13 +4768,13 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   type(tensor) :: djik  !V_aos*O_eos*O_eos*O_aos
   !> Virt EOS integrals (b l | a d) in the order (b,l,a,d)  
   type(tensor) :: blad  !V_eos*O_aos*V_eos*V_aos
+  !> Calculate intgrals for first order MP2 properties?
   logical :: first_order
 
   ! Receive fragment structure and other information from master rank
   ! *****************************************************************
   call time_start_phase( PHASE_COMM)
-  call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order_integrals,.true.)
-  call ls_mpibcast(first_order,infpar%master,infpar%lg_comm)
+  call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
   call time_start_phase( PHASE_WORK)
   IF(first_order)THEN
      call RIMP2_integrals_and_amplitudes(MyFragment,&
