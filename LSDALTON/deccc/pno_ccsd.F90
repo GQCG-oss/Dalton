@@ -2206,7 +2206,6 @@ module pno_ccsd_module
      logical :: master, I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE, this_is_query, this_is_not_query
      real(realk) :: tw,tc,tbeg,times(9),times_in_loops(8,3)
      integer(kind=8) :: my_s1,my_s2,my_s3,my_s4,my_s5
-     integer(kind=8) :: my_ws(5)
      real(realk), pointer :: my_w1(:),my_w2(:),my_w3(:),my_w4(:),my_w5(:)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -2267,6 +2266,7 @@ module pno_ccsd_module
         call mem_alloc( tpl, max_pnor*max_pnvr, max_nthr_int_loop )
         call mem_alloc( tmi, max_pnor*max_pnvr, max_nthr_int_loop )
      endif
+
 
 
      ! Set integral info
@@ -2337,6 +2337,7 @@ module pno_ccsd_module
            fa = a_batch%batch2orb(alphaB)%orbindex(1)                 ! First index in alpha batch
            xa = a_batch%batch2orb(alphaB)%orbindex(la)
 
+ 
            !short hand notation
            myload     = myload + la * lg
 
@@ -2685,6 +2686,7 @@ module pno_ccsd_module
            !$OMP END DO NOWAIT
            !$OMP END PARALLEL
 
+
            call time_start_phase(PHASE_WORK, ttot = times(2), twall = times(1) )
            times(7) = times(7) + times(2)
 
@@ -2711,7 +2713,6 @@ module pno_ccsd_module
                  goffs=0
                  tred=la*lg
               endif
-
 
 
               if(.not.I_PLUS_MINUS_DONE)then
@@ -2748,7 +2749,7 @@ module pno_ccsd_module
               !OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,tmi,tpl,&
               !OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
               !OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair,nthreads_level1_int_dir) &
-              !OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
+              !OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,&
               !OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,my_s1,my_s2,my_s3,my_s4,my_s5,&
               !OMP my_w4,my_w5,tid,EOS,edit,h3) REDUCTION(+:times,times_in_loops,tc,tw)&
               !OMP NUM_THREADS(nthreads_level1_int_dir(third_loop))
@@ -2809,13 +2810,6 @@ module pno_ccsd_module
                     query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*tred)*nvr)
                     query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*nor)*tred*2)
 
-                    var_inp = 0
-                    my_s1 = 0
-                    my_s2 = 0
-                    my_s3 = 0
-                    my_s4 = 0
-                    my_s5 = 0
-
                  else
 
                     !Get the transformation matrices
@@ -2873,26 +2867,24 @@ module pno_ccsd_module
 
                     call c_f_pointer(c_loc(xo(1,1)),h1,[(i8*nb)*no])
                     call c_f_pointer(c_loc(xv_pair(1,1,tid+1)),h3,[(i8*nb)*pnv])
+
                  endif
 
-                 my_ws=[my_s1,my_s2,my_s3,my_s4,my_s5]
                  if( PS )then
-                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns),nor,tlen,tred,fa,fg,la,lg,&
-                       &rpd,pnv,nb,goffs,aoffs,4,my_ws(1:3),.false.,tw,tc,rest_occ_om2=.true., act_no = no, &
+                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,my_s1,my_s2,my_s3,h3,h1,sio4(ns),nor,tlen,&
+                       &tred,fa,fg,la,lg,rpd,pnv,nb,goffs,aoffs,4,.false.,tw,tc,rest_occ_om2=.true., act_no = no, &
                        &query = this_is_query )  
                  else
-                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns),nor,tlen,tred,fa,fg,la,lg,&
-                       &rpd,pnv,nb,goffs,aoffs,4,my_ws(1:3),.false.,tw,tc, &
+                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,my_s1,my_s2,my_s3,h3,h1,sio4(ns),nor,&
+                       &tlen,tred,fa,fg,la,lg,rpd,pnv,nb,goffs,aoffs,4,.false.,tw,tc, &
                        &order=[1,3,2,4], act_no = no, sio4_ilej = .false., query = this_is_query )
                  endif
 
                  if( this_is_query )then
 
-                    var_inp(1:3) = my_ws(1:3)
-
-                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),var_inp(1))
-                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),var_inp(2))
-                    query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),var_inp(3))
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),my_s1)
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),my_s2)
+                    query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),my_s3)
 
                  else
 

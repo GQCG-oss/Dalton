@@ -531,8 +531,8 @@ module cc_tools_module
       integer,optional,intent(in) :: order(4)
       logical,optional,intent(in) :: rest_occ_om2
       real(realk),optional :: scal
-      integer(kind=8)  :: wszes3(3)
       integer :: goffs,aoffs,tlen,tred,nor,nvr
+      integer(kind=8) :: s0, s2, s3
 
       call time_start_phase(PHASE_WORK)
 
@@ -616,10 +616,11 @@ module cc_tools_module
       !COMBINE THE TWO SIGMAS OF W3 IN W2
       !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
-      wszes3 = [wszes(1),wszes(3),wszes(4)]
-      call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,wszes3,lo,twork,tcomm,order=order, &
-         &rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
+      s0 = wszes(1)
+      s2 = wszes(3)
+      s3 = wszes(4)
+      call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
+         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
@@ -627,21 +628,21 @@ module cc_tools_module
    !> \brief Combine sigma matrixes in symmetric and antisymmetric combinations 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
-         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej, query )
+   subroutine combine_and_transform_sigma(omega,w0,w2,w3,s0,s2,s3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
+         & la,lg,no,nv,nb,goffs,aoffs,s,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej, query )
       implicit none
       !> size of w0
-      integer(kind=8),intent(inout)   :: wszes(3)
+      integer(kind=8),intent(inout)   :: s0,s2,s3
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
       !real(realk),intent(inout) :: omega(nv*nv*no*no)
       type(tensor),intent(inout) :: omega
       !> w0 is just some workspace on input
-      real(realk),intent(inout) :: w0(wszes(1))
+      real(realk),intent(inout) :: w0(s0)
       !> w2 is just some workspace on input
-      real(realk),intent(inout),target :: w2(wszes(2))
+      real(realk),intent(inout),target :: w2(s2)
       !> w3 contains the symmetric and antisymmetric combinations 
-      real(realk),intent(inout) :: w3(wszes(3))
+      real(realk),intent(inout) :: w3(s3)
       !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
       !contribution after the loop, update them in the loops
       type(tensor),intent(inout) :: sio4
@@ -689,7 +690,6 @@ module cc_tools_module
       logical               :: rest_o2_occ, rest_sio4,qu
       real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
-
 
       rest_o2_occ   = .false.
       if(present(rest_occ_om2 ))rest_o2_occ   = rest_occ_om2
@@ -816,31 +816,31 @@ module cc_tools_module
 
          !w0:
          if(second_trafo_step)then
-            wszes(1) = max(wszes(1),(i8*nor)*full1*full2+(i8*nor)*full1T*full2T)
+            s0 = max(s0,(i8*nor)*full1*full2+(i8*nor)*full1T*full2T)
          else
-            wszes(1) = max(wszes(1),(i8*nor)*full1*full2)
+            s0 = max(s0,(i8*nor)*full1*full2)
          endif
 
          !w2:
-         wszes(2) = max(wszes(2),(i8*nor)*full1*full2)
-         wszes(2) = max(wszes(2),(i8*nv*nv)*nor)
+         s2 = max(s2,(i8*nor)*full1*full2)
+         s2 = max(s2,(i8*nv*nv)*nor)
          if(.not.rest_o2_occ)then
-            wszes(2) = max(wszes(2),(i8*nv*nv)*no*no)
+            s2 = max(s2,(i8*nv*nv)*no*no)
          endif
          if(second_trafo_step)then
-            wszes(2) = max(wszes(2),(i8*full1T)*full2T*nor)
-            wszes(2) = max(wszes(2),(i8*nv)*nv*nor)
+            s2 = max(s2,(i8*full1T)*full2T*nor)
+            s2 = max(s2,(i8*nv)*nv*nor)
          endif
          if( .not. rest_sio4 )then
-            wszes(2) = max(wszes(2),(i8*no2*no2)*nor)
+            s2 = max(s2,(i8*no2*no2)*nor)
          endif
 
          !w3:
-         wszes(3) = max(wszes(3),(i8*nor)*full1*full2)
-         wszes(3) = max(wszes(3),(i8*nv*nor*full1)*full2)
-         wszes(3) = max(wszes(3),(i8*no2)*nor*full1)
+         s3 = max(s3,(i8*nor)*full1*full2)
+         s3 = max(s3,(i8*nv*nor*full1)*full2)
+         s3 = max(s3,(i8*no2)*nor*full1)
          if(second_trafo_step)then
-            wszes(3) = max(wszes(3),(i8*nv*nor)*full1T)
+            s3 = max(s3,(i8*nv*nor)*full1T)
         endif
 
       else
@@ -1018,7 +1018,7 @@ module cc_tools_module
                w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                !$OMP END WORKSHARE
                call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             endif
@@ -1089,7 +1089,7 @@ module cc_tools_module
                   !$OMP END WORKSHARE
 #endif
                   call time_start_phase(PHASE_COMM, at=twork)
-                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                   call time_start_phase(PHASE_WORK, at=tcomm)
                endif
             else
@@ -1135,7 +1135,7 @@ module cc_tools_module
 #ifdef VAR_MPI
                if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
                call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                if( alloc_in_dummy )then
                   call lsmpi_win_flush(sio4%wi(1),local=.true.)
                else
@@ -1187,7 +1187,7 @@ module cc_tools_module
 #ifdef VAR_MPI
                   call time_start_phase(PHASE_COMM, at=twork)
                   if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
-                  call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                   if(alloc_in_dummy)then
                      call lsmpi_win_flush(sio4%wi(1),local=.true.)
                   else
