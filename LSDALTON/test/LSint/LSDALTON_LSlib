@@ -77,7 +77,7 @@ fi
 CRIT1=`$GREP "LSlib Test Successful" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
-ERROR[1]="II_test_LSlib not succesfull -"
+ERROR[1]="II_test_LSlib not successful -"
 
 # Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`

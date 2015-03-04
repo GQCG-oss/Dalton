@@ -800,6 +800,9 @@ contains
     call ls_mpi_buffer(MyFragment%EoccFOP,master)
     call ls_mpi_buffer(MyFragment%EvirtFOP,master)
     call ls_mpi_buffer(MyFragment%LagFOP,master)
+    call ls_mpi_buffer(MyFragment%Eocc_err,master)
+    call ls_mpi_buffer(MyFragment%Evir_err,master)
+    call ls_mpi_buffer(MyFragment%Elag_err,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
     call ls_mpi_buffer(MyFragment%slavetime_work,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%slavetime_comm,ndecmodels,master)
@@ -1739,8 +1742,9 @@ contains
   !> because the PDM memory allocation has to happen in the smaller groups now
   !> \author Kasper Kristensen, modified by Patrick Ettenhuber
   !> \date May 2012
-  subroutine dec_half_local_group
+  subroutine dec_half_local_group(print_)
     implicit none
+    logical, intent(in), optional :: print_
     integer(kind=ls_mpik) :: ngroups
     integer(kind=ls_mpik) :: groupdims(2)
 
@@ -1758,7 +1762,7 @@ contains
     ! Current values of infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm
     ! will be overwritten.
     ngroups=2
-    call divide_local_mpi_group(ngroups,groupdims)
+    call divide_local_mpi_group(ngroups,groupdims,print_=print_)
     call new_group_reset_persistent_array
 
   end subroutine dec_half_local_group
@@ -1954,13 +1958,13 @@ contains
     write(DECinfo%output,*) '#tasks : Number of integral tasks for fragment (nalpha*ngamma)'
     write(DECinfo%output,*) 'GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'Time(s): Time (in seconds) used by local master (NOT local slaves)'
-    write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice): '
-    write(DECinfo%output,*) '           (Sum of effective work times for ALL MPI processes in slot)'
-    write(DECinfo%output,*) '         / (slotsiz * [Local master time] )'
+    write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice)'
+    write(DECinfo%output,*) '      Load1 = (Sum of working and communication times for ALL MPI processes in slot)'
+    write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
+    write(DECinfo%output,*) '      Load2 = (Sum of working times for ALL MPI processes in slot)'
+    write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Note: Load print is currently only implemented for MP2 calculations'
-    write(DECinfo%output,*) '      and not for atomic fragment optimizations.'
-    write(DECinfo%output,*) '      The Load given below is set to -1 for cases where it is not implemented'
+    write(DECinfo%output,*) 'Note: The Load given below is set to -1 for cases where it is not implemented'
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -2269,6 +2273,7 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
+    call ls_mpi_buffer(DECitem%DECNP,Master)
     call ls_mpi_buffer(DECitem%frozencore,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)
@@ -2302,6 +2307,7 @@ contains
     call ls_mpi_buffer(DECitem%abc_tile_size,Master)
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
+    call ls_mpi_buffer(DECitem%acc_sync,Master)
     call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
@@ -2365,6 +2371,7 @@ contains
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
@@ -2393,6 +2400,8 @@ contains
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%OnlyVirtPart,Master)
     call ls_mpi_buffer(DECitem%all_init_radius,Master)
+    call ls_mpi_buffer(DECitem%occ_init_radius,Master)
+    call ls_mpi_buffer(DECitem%vir_init_radius,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
     call ls_mpi_buffer(DECitem%use_abs_overlap,Master)
@@ -2422,6 +2431,7 @@ contains
     call ls_mpi_buffer(DECitem%ncalc,nFOTs,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
+    call ls_mpi_buffer(DECitem%no_pairs,Master)
     call ls_mpi_buffer(DECitem%only_pair_frag_jobs,Master)
     call ls_mpi_buffer(DECitem%only_n_frag_jobs,Master)
     if(DECitem%only_n_frag_jobs>0)then

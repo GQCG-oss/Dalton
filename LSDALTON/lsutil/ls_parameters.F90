@@ -125,6 +125,9 @@ MODULE lsparameters
   integer,parameter :: SET_TENSOR_DEBUG_TRUE        = 58
   integer,parameter :: F12_INTEGRAL_CALCULATION     = 59
   integer,parameter :: CANONMP2FULL                 = 60
+  integer,parameter :: PDMMGRIDINIT                 = 61
+  integer,parameter :: PDMMGRIDEXIT                 = 62
+  integer,parameter :: PDMMSLAVE                    = 63
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

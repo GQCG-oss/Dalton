@@ -128,10 +128,18 @@ unset(LIST_OF_DEFINITIONS)
 add_library(
     lsutillib_common
     ${MANUAL_REORDERING_SOURCES}
+    ${LSUTIL_COMMON_C_SOURCES}
     ${LSUTIL_COMMON_SOURCES}
     )
 
 target_link_libraries(lsutillib_common matrixmlib)
+
+add_library(
+    lsutil_tensor_lib
+    ${LSUTIL_TENSOR_SOURCES}
+    )
+
+target_link_libraries(lsutil_tensor_lib lsutillib_common)
 
 add_library(
     matrixolib
@@ -139,7 +147,7 @@ add_library(
     ${LSUTIL_MATRIXO_C_SOURCES}
     )
 
-target_link_libraries(matrixolib lsutillib_common)
+target_link_libraries(matrixolib lsutil_tensor_lib)
 
 add_library(
     matrixulib
@@ -348,6 +356,7 @@ add_library(
     ${DEC_C_SOURCES}
     )
 
+target_link_libraries(declib lsutiltypelib_common)
 target_link_libraries(declib lsintlib)
 target_link_libraries(declib linearslib)
 
@@ -488,6 +497,7 @@ set(LIBS_TO_MERGE
     lsutillib_precision
     matrixmlib
     lsutillib_common
+    lsutil_tensor_lib
     matrixolib
     matrixulib
     pdpacklib

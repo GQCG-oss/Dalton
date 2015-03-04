@@ -1,0 +1,4641 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2015.0
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release Dalton2015.0 (2015), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Thu Feb 26 20:06:12 2015
+     Host name              : foeroyar                                
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/cc_rsp_sumrules
+   2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-3.18.7-200.fc21.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
+ Static linking           | OFF
+ Last Git revision        | 9b29f5d71df631438091e703515e67ee4d897cc1
+ Configuration time       | 2015-02-26 17:27:50.365303
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE FUNCTIONS                               
+**INTEGRAL                                        
+.DIPLEN                                           
+**WAVE FUNCTIONS                                  
+.CC                                               
+*ORBITAL                                          
+.NOSUPSYM                                         
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0d-12                                          
+*CC INPUT                                         
+.CCS                                              
+.THRENR                                           
+ 1.0d-10                                          
+.THRLEQ                                           
+ 1.0d-9                                           
+*CCEXCI                                           
+.NCCEXCI                                          
+0 8 8 0 8 0 0 0                                   
+.THREXC                                           
+ 1.0d-7                                           
+*CCLRSD                                           
+.DIPOLE                                           
+.SUMRULES                                         
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+aug-cc-pVQZ                                                                    
+Helium                                                                         
+test sum rules for CCS                                                         
+    1                                                                          
+        2.0   1                                                                
+He    0.0000000000000000  0.0000000000000000  0.0                              
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Helium                                                                  
+ 2: test sum rules for CCS                                                  
+    ------------------------------------------------------------------------
+
+
+
+@ WARNING - deprecated old .mol fixed format input has been detected:
+    1                                                                           
+@ WARNING - this input format may not be supported in future releases.
+
+
+
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   2.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   2 :
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/aug-cc-pVQZ"
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+@   The molecule is centered at center of mass and rotated
+@   so principal axes of inertia are along coordinate axes.
+
+ Symmetry class found: D(oo,h)        
+
+ Symmetry Independent Centres             
+ ----------------------------
+       2 :      0.00000000     0.00000000     0.00000000  Isotope  1
+
+ The following elements were found:   X  Y  Z  
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Full point group is: D(oo,h)        
+@    Represented as:      D2h
+
+@  * The irrep name for each symmetry:    1: Ag     2: B3u    3: B2u    4: B1g    5: B1u    6: B2g    7: B3g    8: Au 
+
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           He          4.002603
+
+                       Total mass:     4.002603 amu
+                       Natural abundance: 100.000 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    1
+  Total number of atoms:    1
+
+  Basis set used is "aug-cc-pVQZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  He          1    2.0000    49    46      [8s4p3d2f|5s4p3d2f]                                
+  ----------------------------------------------------------------------
+  total:      1    2.0000    49    46
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    3
+  He      :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     0    1    1    0    1    0    0    0
+
+  Symmetry  B3u ( 2)
+
+    1   He    x    1
+
+  Symmetry  B2u ( 3)
+
+    2   He    y    2
+
+  Symmetry  B1u ( 5)
+
+    3   He    z    3
+
+
+@ This is an atomic calculation.
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          11    8    8    3    8    3    3    2
+
+
+  Symmetry  Ag ( 1)
+
+    1     He       1s         1
+    2     He       1s         2
+    3     He       1s         3
+    4     He       1s         4
+    5     He       1s         5
+    6     He       3d0       20
+    7     He       3d2+      22
+    8     He       3d0       25
+    9     He       3d2+      27
+   10     He       3d0       30
+   11     He       3d2+      32
+
+
+  Symmetry  B3u( 2)
+
+   12     He       2px        6
+   13     He       2px        9
+   14     He       2px       12
+   15     He       2px       15
+   16     He       4f1+      37
+   17     He       4f3+      39
+   18     He       4f1+      44
+   19     He       4f3+      46
+
+
+  Symmetry  B2u( 3)
+
+   20     He       2py        7
+   21     He       2py       10
+   22     He       2py       13
+   23     He       2py       16
+   24     He       4f3-      33
+   25     He       4f1-      35
+   26     He       4f3-      40
+   27     He       4f1-      42
+
+
+  Symmetry  B1g( 4)
+
+   28     He       3d2-      18
+   29     He       3d2-      23
+   30     He       3d2-      28
+
+
+  Symmetry  B1u( 5)
+
+   31     He       2pz        8
+   32     He       2pz       11
+   33     He       2pz       14
+   34     He       2pz       17
+   35     He       4f0       36
+   36     He       4f2+      38
+   37     He       4f0       43
+   38     He       4f2+      45
+
+
+  Symmetry  B2g( 6)
+
+   39     He       3d1+      21
+   40     He       3d1+      26
+   41     He       3d1+      31
+
+
+  Symmetry  B3g( 7)
+
+   42     He       3d1-      19
+   43     He       3d1-      24
+   44     He       3d1-      29
+
+
+  Symmetry  Au ( 8)
+
+   45     He       4f2-      34
+   46     He       4f2-      41
+
+  Symmetries of electric field:  B3u(2)  B2u(3)  B1u(5)
+
+  Symmetries of magnetic field:  B3g(7)  B2g(6)  B1g(4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:       61179 ( 10.5% )
+ HERMIT - Megabytes written:                              0.701
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+ NCCEXCI for singlet:           0           8           8           0           8           0           0           0
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    1    0    0    0    0    0    0    0
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+           -0.918000
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Thu Feb 26 20:06:12 2015
+     Host name              : foeroyar                                
+
+ Title lines from ".mol" input file:
+     Helium                                                                  
+     test sum rules for CCS                                                  
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    (Integral direct) CC calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+@    Wave function type        >>> CC <<<
+@    Number of closed shell electrons           2
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 8 (point group: D2h)
+@    Reference state symmetry                   1 (irrep name : Ag )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1    2    3    4    5    6    7    8
+@                                          |  Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+                                       --- |  ---  ---  ---  ---  ---  ---  ---  ---
+@    Total number of orbitals           46 |   11    8    8    3    8    3    3    2
+@    Number of basis functions          46 |   11    8    8    3    8    3    3    2
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               1 |    1    0    0    0    0    0    0    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-12
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+ -Excitation energies calculated
+ -One-photon absorption strengths will be calculated
+ -Oscillator strengths calculated
+  
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with   2 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+@  1  -2.86147196752       3.52D-02  -2.86D+00     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      1.998611
+@      MULPOP He     -0.00; 
+ -----------------------------------------------------------------------------
+@  2  -2.86152062846       4.76D-03  -4.87D-05     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.000302
+@      MULPOP He     -0.00; 
+ -----------------------------------------------------------------------------
+@  3  -2.86152198677       2.88D-04  -1.36D-06     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.000167
+@      MULPOP He      0.00; 
+ -----------------------------------------------------------------------------
+@  4  -2.86152199558       1.92D-05  -8.81D-09     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.000124
+@      MULPOP He     -0.00; 
+ -----------------------------------------------------------------------------
+@  5  -2.86152199563       1.25D-06  -5.27D-11     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.000123
+@      MULPOP He     -0.00; 
+ -----------------------------------------------------------------------------
+@  6  -2.86152199563       1.18D-09  -1.61D-13     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.000123
+@      MULPOP He     -0.00; 
+ -----------------------------------------------------------------------------
+@  7  -2.86152199563       1.24D-12  -8.88D-16     1   0   0   0   0   0   0   0
+      Virial theorem: -V/T =      2.000123
+@      MULPOP He      0.00; 
+ -----------------------------------------------------------------------------
+@  8  -2.86152199563       7.69D-13  -1.78D-15     1   0   0   0   0   0   0   0
+
+@ *** DIIS converged in   8 iterations !
+@     Converged SCF energy, gradient:     -2.861521995632    7.69D-13
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the 20 lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :    2
+ Orbital occupations :    1    0    0    0    0    0    0    0
+
+ Sym       Hartree-Fock orbital energies
+
+1 Ag     -0.91793216     0.09874783     0.68540267     1.14896317     1.14896317
+          2.95572529     4.57731530     4.57731530    13.62151660    16.64363205
+         16.64363205
+
+2 B3u     0.34782489     1.47608453     3.00320893     3.00320893     5.13034466
+         12.53576248    12.53576248    18.09175580
+
+3 B2u     0.34782489     1.47608453     3.00320893     3.00320893     5.13034466
+         12.53576248    12.53576248    18.09175580
+
+4 B1g     1.14896317     4.57731530    16.64363205
+
+5 B1u     0.34782489     1.47608453     3.00320893     3.00320893     5.13034466
+         12.53576248    12.53576248    18.09175580
+
+6 B2g     1.14896317     4.57731530    16.64363205
+
+7 B3g     1.14896317     4.57731530    16.64363205
+
+8 Au      3.00320893    12.53576248
+
+    E(LUMO) :     0.09874783 au (symmetry 1)
+  - E(HOMO) :    -0.91793216 au (symmetry 1)
+  ------------------------------------------
+    gap     :     1.01667998 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.006       0.006
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  Ag  in D2h )
+@    Total charge of molecule:    0
+
+@    Final HF energy:              -2.861521995632                 
+@    Nuclear repulsion:             0.000000000000
+@    Electronic energy:            -2.861521995632
+
+@    Final gradient norm:           0.000000000001
+
+ 
+     Date and time (Linux)  : Thu Feb 26 20:06:12 2015
+     Host name              : foeroyar                                
+
+File label for MO orbitals:  26Feb15   FOCKDIIS
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (Ag )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 He  :1s     1.0003  -0.1575  -0.7221  -0.0000   0.0000   0.5814  -0.0000
+   2 He  :1s    -0.0006  -0.0535   0.2649   0.0000   0.0000   1.6902  -0.0000
+   3 He  :1s     0.0016   0.1425  -1.2468  -0.0000   0.0000  -3.2926   0.0000
+   4 He  :1s    -0.0036  -0.6765   2.6638   0.0000  -0.0000   1.5903   0.0000
+   5 He  :1s     0.0035   1.3845  -0.9460  -0.0000   0.0000  -0.4426   0.0000
+   6 He  :3d0    0.0000  -0.0000  -0.0000   0.0232   0.0000   0.0000  -0.0000
+   7 He  :3d2+  -0.0000   0.0000   0.0000   0.0000   0.0232  -0.0000  -0.1090
+   8 He  :3d0   -0.0000   0.0000   0.0000  -0.1386  -0.0000  -0.0000   0.0000
+   9 He  :3d2+   0.0000  -0.0000  -0.0000  -0.0000  -0.1386   0.0000   1.2349
+  10 He  :3d0    0.0000  -0.0000  -0.0000   1.0648  -0.0000   0.0000   0.0000
+  11 He  :3d2+  -0.0000   0.0000   0.0000   0.0000   1.0648  -0.0000  -0.5320
+
+    Orbital         8        9       10       11
+   1 He  :1s    -0.0000 -10.5743   0.0000   0.0000
+   2 He  :1s    -0.0000   5.7329   0.0000   0.0000
+   3 He  :1s     0.0000   2.9720  -0.0000  -0.0000
+   4 He  :1s     0.0000   3.3529  -0.0000  -0.0000
+   5 He  :1s     0.0000  -0.2067  -0.0000  -0.0000
+   6 He  :3d0   -0.1090  -0.0000   0.0000  -1.1999
+   7 He  :3d2+   0.0000   0.0000   1.1999  -0.0000
+   8 He  :3d0    1.2349   0.0000  -0.0000   0.6646
+   9 He  :3d2+  -0.0000  -0.0000  -0.6646   0.0000
+  10 He  :3d0   -0.5320  -0.0000   0.0000  -0.2117
+  11 He  :3d2+   0.0000   0.0000   0.2117  -0.0000
+
+ Molecular orbitals for symmetry species 2  (B3u)
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 He  :2px   -0.0061  -0.0471   0.0000   0.0000   0.1141   0.0000   0.0000
+   2 He  :2px    0.0628   0.1804   0.0000   0.0000  -1.5595   0.0000   0.0000
+   3 He  :2px   -0.1745  -1.4319   0.0000   0.0000   1.2345   0.0000   0.0000
+   4 He  :2px    1.0919   0.7776   0.0000   0.0000  -0.4001   0.0000   0.0000
+   5 He  :4f1+   0.0000   0.0000  -0.0767   0.0000   0.0000  -1.0791   0.0000
+   6 He  :4f3+   0.0000   0.0000   0.0000  -0.0767   0.0000   0.0000  -1.0791
+   7 He  :4f1+   0.0000   0.0000   1.0268   0.0000   0.0000   0.3408   0.0000
+   8 He  :4f3+   0.0000   0.0000   0.0000   1.0268   0.0000   0.0000   0.3408
+
+    Orbital         8
+   1 He  :2px   -1.4074
+   2 He  :2px    1.2283
+   3 He  :2px   -0.6031
+   4 He  :2px    0.1815
+
+ Molecular orbitals for symmetry species 3  (B2u)
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 He  :2py   -0.0061  -0.0471   0.0000   0.0000   0.1141   0.0000   0.0000
+   2 He  :2py    0.0628   0.1804   0.0000   0.0000  -1.5595   0.0000   0.0000
+   3 He  :2py   -0.1745  -1.4319   0.0000   0.0000   1.2345   0.0000   0.0000
+   4 He  :2py    1.0919   0.7776   0.0000   0.0000  -0.4001   0.0000   0.0000
+   5 He  :4f3-   0.0000   0.0000  -0.0767   0.0000   0.0000   1.0791   0.0000
+   6 He  :4f1-   0.0000   0.0000   0.0000  -0.0767   0.0000   0.0000  -1.0791
+   7 He  :4f3-   0.0000   0.0000   1.0268   0.0000   0.0000  -0.3408   0.0000
+   8 He  :4f1-   0.0000   0.0000   0.0000   1.0268   0.0000   0.0000   0.3408
+
+    Orbital         8
+   1 He  :2py   -1.4074
+   2 He  :2py    1.2283
+   3 He  :2py   -0.6031
+   4 He  :2py    0.1815
+
+ Molecular orbitals for symmetry species 4  (B1g)
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 He  :3d2-   0.0232  -0.1090   1.1999
+   2 He  :3d2-  -0.1386   1.2349  -0.6646
+   3 He  :3d2-   1.0648  -0.5320   0.2117
+
+ Molecular orbitals for symmetry species 5  (B1u)
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 He  :2pz   -0.0061  -0.0471   0.0000   0.0000   0.1141   0.0000   0.0000
+   2 He  :2pz    0.0628   0.1804   0.0000   0.0000  -1.5595   0.0000   0.0000
+   3 He  :2pz   -0.1745  -1.4319   0.0000   0.0000   1.2345   0.0000   0.0000
+   4 He  :2pz    1.0919   0.7776   0.0000   0.0000  -0.4001   0.0000   0.0000
+   5 He  :4f0    0.0000   0.0000   0.0000  -0.0767   0.0000  -1.0791   0.0000
+   6 He  :4f2+   0.0000   0.0000  -0.0767   0.0000   0.0000   0.0000  -1.0791
+   7 He  :4f0    0.0000   0.0000   0.0000   1.0268   0.0000   0.3408   0.0000
+   8 He  :4f2+   0.0000   0.0000   1.0268   0.0000   0.0000   0.0000   0.3408
+
+    Orbital         8
+   1 He  :2pz   -1.4074
+   2 He  :2pz    1.2283
+   3 He  :2pz   -0.6031
+   4 He  :2pz    0.1815
+
+ Molecular orbitals for symmetry species 6  (B2g)
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 He  :3d1+   0.0232  -0.1090   1.1999
+   2 He  :3d1+  -0.1386   1.2349  -0.6646
+   3 He  :3d1+   1.0648  -0.5320   0.2117
+
+ Molecular orbitals for symmetry species 7  (B3g)
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 He  :3d1-   0.0232  -0.1090   1.1999
+   2 He  :3d1-  -0.1386   1.2349  -0.6646
+   3 He  :3d1-   1.0648  -0.5320   0.2117
+
+ Molecular orbitals for symmetry species 8  (Au )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 He  :4f2-  -0.0767  -1.0791
+   2 He  :4f2-   1.0268   0.3408
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.01 seconds
+
+ 
+     Date and time (Linux)  : Thu Feb 26 20:06:12 2015
+     Host name              : foeroyar                                
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        10
+          Number of t2 amplitudes                 :       184
+          Total number of amplitudes in ccsd      :       194
+
+
+
+          CCS CALC. - NO WAVEFUNCTION OPTIMIZATION
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                         +-------------------------------+
+                         ! Coupled Cluster model is: CCS !
+                         +-------------------------------+
+
+  
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                            +--------------------------+
+                            !  CCS Excitation Energies !
+                            +--------------------------+
+
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        10
+ No Excitation Energies calculated in this symmetry class
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:        10
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ Converging for  8 roots.
+ Start vector guessed from diagonal
+ ... selected element no.  1
+ Start vector guessed from diagonal
+ ... selected element no.  2
+ Start vector guessed from diagonal
+ ... selected element no.  3
+ Start vector guessed from diagonal
+ ... selected element no.  4
+ Start vector guessed from diagonal
+ ... selected element no.  5
+ Start vector guessed from diagonal
+ ... selected element no.  7
+ Start vector guessed from diagonal
+ ... selected element no.  6
+ Start vector guessed from diagonal
+ ... selected element no.  8
+
+ degenerate eigenvector found:  3        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  3      3.37500564has been renormalized... scaling factor:  0.99825490    
+
+ degenerate eigenvector found:  4        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ degenerate eigenvector found:  6       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  6     12.56242140has been renormalized... scaling factor:  0.99980134    
+
+ degenerate eigenvector found:  7       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+
+ SYMMETRY CLASS NR.    2
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.9093447576       24.7445295787
+         2            1.9138414500       52.0782750142
+         3            3.3750056375       91.8385751127
+         4            3.3750056375       91.8385751127
+         5            5.3414450411      145.3481132489
+         6           12.5624213971      341.8408752436
+         7           12.5624213971      341.8408752436
+         8           17.9499883924      488.4440307087
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1            -1.952177238020950
+@@    2    2            -0.947680545583529
+@@    2    3             0.513483641865075
+@@    2    4             0.513483641865075
+@@    2    5             2.479923045434314
+@@    2    6             9.700899401454905
+@@    2    7             9.700899401454906
+@@    2    8            15.088466396720767
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            24.7445 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   1       1     |        1          |              |    0.998386  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9984
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            52.0783 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   2       1     |        2          |              |    0.998333  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9983
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  3
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   3       1     |        3          |              |    0.913647  |
+ | 2   1   |   4       1     |        4          |              |   -0.406459  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  4
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   3       1     |        3          |              |    0.406459  |
+ | 2   1   |   4       1     |        4          |              |    0.913647  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  5
+ -------------------------------------------------------------
+
+          Excitation Energy :                           145.3481 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   5       1     |        5          |              |    0.999887  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9999
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  6
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   6       1     |        6          |              |    0.228954  |
+ | 2   1   |   7       1     |        7          |              |    0.973417  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  7
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   6       1     |        6          |              |    0.973417  |
+ | 2   1   |   7       1     |        7          |              |   -0.228954  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  8
+ -------------------------------------------------------------
+
+          Excitation Energy :                           488.4440 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   8       1     |        8          |              |    0.999985  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ Converging for  8 roots.
+ Start vector guessed from diagonal
+ ... selected element no.  1
+ Start vector guessed from diagonal
+ ... selected element no.  2
+ Start vector guessed from diagonal
+ ... selected element no.  3
+ Start vector guessed from diagonal
+ ... selected element no.  4
+ Start vector guessed from diagonal
+ ... selected element no.  5
+ Start vector guessed from diagonal
+ ... selected element no.  6
+ Start vector guessed from diagonal
+ ... selected element no.  7
+ Start vector guessed from diagonal
+ ... selected element no.  8
+
+ degenerate eigenvector found:  3        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  3      3.37500564has been renormalized... scaling factor:  0.33642735    
+
+ degenerate eigenvector found:  4        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ degenerate eigenvector found:  6       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  6     12.56242140has been renormalized... scaling factor:  0.82105695    
+
+ degenerate eigenvector found:  7       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+
+ SYMMETRY CLASS NR.    3
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.9093447576       24.7445295787
+         2            1.9138414500       52.0782750142
+         3            3.3750056375       91.8385751127
+         4            3.3750056375       91.8385751127
+         5            5.3414450411      145.3481132489
+         6           12.5624213971      341.8408752436
+         7           12.5624213971      341.8408752436
+         8           17.9499883924      488.4440307087
+
+
+ Total excited state energies for states of symmetry/spin    3    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    3    1            -1.952177238020951
+@@    3    2            -0.947680545583531
+@@    3    3             0.513483641865074
+@@    3    4             0.513483641865075
+@@    3    5             2.479923045434318
+@@    3    6             9.700899401454922
+@@    3    7             9.700899401454924
+@@    3    8            15.088466396720763
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            24.7445 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   1       1     |        1          |              |    0.998386  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9984
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            52.0783 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   2       1     |        2          |              |    0.998333  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9983
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  3
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   3       1     |        3          |              |    0.980001  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9800
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  4
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   4       1     |        4          |              |    0.980001  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9800
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  5
+ -------------------------------------------------------------
+
+          Excitation Energy :                           145.3481 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   5       1     |        5          |              |    0.999887  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9999
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  6
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   6       1     |        6          |              |    0.822294  |
+ | 3   1   |   7       1     |        7          |              |   -0.569028  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  7
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   6       1     |        6          |              |    0.569028  |
+ | 3   1   |   7       1     |        7          |              |    0.822294  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  8
+ -------------------------------------------------------------
+
+          Excitation Energy :                           488.4440 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   8       1     |        8          |              |    0.999985  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     5
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ Converging for  8 roots.
+ Start vector guessed from diagonal
+ ... selected element no.  1
+ Start vector guessed from diagonal
+ ... selected element no.  2
+ Start vector guessed from diagonal
+ ... selected element no.  4
+ Start vector guessed from diagonal
+ ... selected element no.  3
+ Start vector guessed from diagonal
+ ... selected element no.  5
+ Start vector guessed from diagonal
+ ... selected element no.  6
+ Start vector guessed from diagonal
+ ... selected element no.  7
+ Start vector guessed from diagonal
+ ... selected element no.  8
+
+ degenerate eigenvector found:  3        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  3      3.37500564has been renormalized... scaling factor:  0.97123184    
+
+ degenerate eigenvector found:  4        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ degenerate eigenvector found:  6       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  6     12.56242140has been renormalized... scaling factor:  0.98170721    
+
+ degenerate eigenvector found:  7       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+
+ SYMMETRY CLASS NR.    5
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.9093447576       24.7445295787
+         2            1.9138414500       52.0782750142
+         3            3.3750056375       91.8385751127
+         4            3.3750056375       91.8385751127
+         5            5.3414450411      145.3481132489
+         6           12.5624213971      341.8408752436
+         7           12.5624213971      341.8408752436
+         8           17.9499883924      488.4440307087
+
+
+ Total excited state energies for states of symmetry/spin    5    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    5    1            -1.952177238020951
+@@    5    2            -0.947680545583533
+@@    5    3             0.513483641865073
+@@    5    4             0.513483641865073
+@@    5    5             2.479923045434322
+@@    5    6             9.700899401454917
+@@    5    7             9.700899401454924
+@@    5    8            15.088466396720763
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            24.7445 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   1       1     |        1          |              |    0.998386  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9984
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            52.0783 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   2       1     |        2          |              |    0.998333  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9983
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  3
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   4       1     |        4          |              |    0.999029  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9990
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  4
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   3       1     |        3          |              |    0.999029  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9990
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  5
+ -------------------------------------------------------------
+
+          Excitation Energy :                           145.3481 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   5       1     |        5          |              |    0.999887  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9999
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  6
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   6       1     |        6          |              |    0.991139  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9911
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  7
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   7       1     |        7          |              |    0.991139  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9911
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  8
+ -------------------------------------------------------------
+
+          Excitation Energy :                           488.4440 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   8       1     |        8          |              |    0.999985  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     5
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     6
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     6
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     7
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     7
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     8
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         2
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     8
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         2
+ No Excitation Energies calculated in this symmetry class
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                            +--------------------------+
+                            !  CCS Excitation Energies !
+                            +--------------------------+
+
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        10
+ No Excitation Energies calculated in this symmetry class
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:        10
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ Converging for  8 roots.
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  1 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  2 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  4 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  5 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  6 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  7 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  8 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+
+ degenerate eigenvector found:  3        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  3      3.37500564has been renormalized... scaling factor:  0.99999331    
+
+ degenerate eigenvector found:  4        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ degenerate eigenvector found:  6       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  6     12.56242140has been renormalized... scaling factor:  0.96892290    
+
+ degenerate eigenvector found:  7       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+
+ SYMMETRY CLASS NR.    2
+ MULTIPLICITY          1
+
+
+ CCS        left excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.9093447576       24.7445295787
+         2            1.9138414500       52.0782750142
+         3            3.3750056375       91.8385751127
+         4            3.3750056375       91.8385751127
+         5            5.3414450411      145.3481132489
+         6           12.5624213971      341.8408752436
+         7           12.5624213971      341.8408752436
+         8           17.9499883924      488.4440307087
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1            -1.952177238020950
+@@    2    2            -0.947680545583528
+@@    2    3             0.513483641865076
+@@    2    4             0.513483641865076
+@@    2    5             2.479923045434321
+@@    2    6             9.700899401454921
+@@    2    7             9.700899401454922
+@@    2    8            15.088466396720774
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            24.7445 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   1       1     |        1          |              |    0.998386  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9984
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            52.0783 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   2       1     |        2          |              |    0.998333  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9983
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  3
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   3       1     |        3          |              |   -0.330453  |
+ | 2   1   |   4       1     |        4          |              |    0.943802  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  4
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   3       1     |        3          |              |    0.943802  |
+ | 2   1   |   4       1     |        4          |              |    0.330453  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  5
+ -------------------------------------------------------------
+
+          Excitation Energy :                           145.3481 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   5       1     |        5          |              |    0.999887  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9999
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  6
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   6       1     |        6          |              |    0.973800  |
+ | 2   1   |   7       1     |        7          |              |   -0.227319  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  7
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   6       1     |        6          |              |    0.227319  |
+ | 2   1   |   7       1     |        7          |              |    0.973800  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  8
+ -------------------------------------------------------------
+
+          Excitation Energy :                           488.4440 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   1   |   8       1     |        8          |              |    0.999985  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Found a degeneracy between:
+ ---------------------------
+ State  Excitation Energy
+   3     3.37500564
+   4     3.37500564
+
+
+ transformation matrix computed from (LE|RE) overlap:
+
+               Column   1     Column   2
+       1      -0.68556109     0.72801511
+       2       0.72801511     0.68556109
+    ==== End of matrix output ====
+
+ deviation from orthogonality:        0.0000000000
+
+
+ Found a degeneracy between:
+ ---------------------------
+ State  Excitation Energy
+   6    12.56242140
+   7    12.56242140
+
+
+ transformation matrix computed from (LE|RE) overlap:
+
+               Column   1     Column   2
+       1       0.00167912     0.99999859
+       2       0.99999859    -0.00167912
+    ==== End of matrix output ====
+
+ deviation from orthogonality:        0.0000000000
+
+
+
++======================================================================+
+| contributions of excitation levels to right eigenvectors as computed |
+| from the (RE|RE) self overlap                                        |
++----------------------------------------------------------------------+
+| sym | multi | state |    E / eV  | % singles | % doubles | % triples |
++======================================================================+
+|    2|   1   |   1   |   24.74453 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   2   |   52.07828 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   3   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   4   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   5   |  145.34811 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   6   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   7   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   8   |  488.44403 | 100.0000  |   0.0000  |   0.0000  |
++======================================================================+
+
+
+
+
+
++======================================================================+
+| contributions of excitation levels to excited states as computed     |
+| from the (LE|RE) overlap                                             |
++----------------------------------------------------------------------+
+| sym | multi | state |    E / eV  | % singles | % doubles | % triples |
++======================================================================+
+|    2|   1   |   1   |   24.74453 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   2   |   52.07828 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   3   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   4   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   5   |  145.34811 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   6   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   7   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    2|   1   |   8   |  488.44403 | 100.0000  |   0.0000  |   0.0000  |
++======================================================================+
+
+
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ Converging for  8 roots.
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr.  9 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 10 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 11 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 12 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 13 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 14 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 15 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 16 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+
+ degenerate eigenvector found:  3        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  3      3.37500564has been renormalized... scaling factor:  0.99339572    
+
+ degenerate eigenvector found:  4        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ degenerate eigenvector found:  6       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  6     12.56242140has been renormalized... scaling factor:  0.77319906    
+
+ degenerate eigenvector found:  7       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+
+ SYMMETRY CLASS NR.    3
+ MULTIPLICITY          1
+
+
+ CCS        left excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.9093447576       24.7445295787
+         2            1.9138414500       52.0782750142
+         3            3.3750056375       91.8385751127
+         4            3.3750056375       91.8385751127
+         5            5.3414450411      145.3481132489
+         6           12.5624213971      341.8408752436
+         7           12.5624213971      341.8408752436
+         8           17.9499883924      488.4440307087
+
+
+ Total excited state energies for states of symmetry/spin    3    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    3    1            -1.952177238020950
+@@    3    2            -0.947680545583530
+@@    3    3             0.513483641865071
+@@    3    4             0.513483641865075
+@@    3    5             2.479923045434312
+@@    3    6             9.700899401454931
+@@    3    7             9.700899401454933
+@@    3    8            15.088466396720774
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            24.7445 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   1       1     |        1          |              |    0.998386  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9984
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            52.0783 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   2       1     |        2          |              |    0.998333  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9983
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  3
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   4       1     |        4          |              |    0.998898  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9989
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  4
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   3       1     |        3          |              |    0.998898  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9989
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  5
+ -------------------------------------------------------------
+
+          Excitation Energy :                           145.3481 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   5       1     |        5          |              |    0.999887  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9999
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  6
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   6       1     |        6          |              |    0.921801  |
+ | 3   1   |   7       1     |        7          |              |    0.387613  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  7
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   6       1     |        6          |              |    0.387613  |
+ | 3   1   |   7       1     |        7          |              |   -0.921801  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  8
+ -------------------------------------------------------------
+
+          Excitation Energy :                           488.4440 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   8       1     |        8          |              |    0.999985  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Found a degeneracy between:
+ ---------------------------
+ State  Excitation Energy
+  11     3.37500564
+  12     3.37500564
+
+
+ transformation matrix computed from (LE|RE) overlap:
+
+               Column   1     Column   2
+       1       0.15308872     0.98821245
+       2       0.98821245    -0.15308872
+    ==== End of matrix output ====
+
+ deviation from orthogonality:        0.0000000000
+
+
+ Found a degeneracy between:
+ ---------------------------
+ State  Excitation Energy
+  14    12.56242140
+  15    12.56242140
+
+
+ transformation matrix computed from (LE|RE) overlap:
+
+               Column   1     Column   2
+       1       0.53744970     0.84329581
+       2       0.84329581    -0.53744970
+    ==== End of matrix output ====
+
+ deviation from orthogonality:        0.0000000000
+
+
+
++======================================================================+
+| contributions of excitation levels to right eigenvectors as computed |
+| from the (RE|RE) self overlap                                        |
++----------------------------------------------------------------------+
+| sym | multi | state |    E / eV  | % singles | % doubles | % triples |
++======================================================================+
+|    3|   1   |   1   |   24.74453 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   2   |   52.07828 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   3   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   4   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   5   |  145.34811 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   6   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   7   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   8   |  488.44403 | 100.0000  |   0.0000  |   0.0000  |
++======================================================================+
+
+
+
+
+
++======================================================================+
+| contributions of excitation levels to excited states as computed     |
+| from the (LE|RE) overlap                                             |
++----------------------------------------------------------------------+
+| sym | multi | state |    E / eV  | % singles | % doubles | % triples |
++======================================================================+
+|    3|   1   |   1   |   24.74453 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   2   |   52.07828 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   3   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   4   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   5   |  145.34811 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   6   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   7   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    3|   1   |   8   |  488.44403 | 100.0000  |   0.0000  |   0.0000  |
++======================================================================+
+
+
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     5
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ Converging for  8 roots.
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 17 of symmetry  5 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 18 of symmetry  5 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 19 of symmetry  5 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 20 of symmetry  5 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 21 of symmetry  5 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 22 of symmetry  5 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 23 of symmetry  5 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+Try to use right eigenvector as start for a left eigenvector.
+ Vector nr. 24 of symmetry  5 found on file - RESTART SUCCESS
+ Start vector is a  CCS       RE vector
+
+ degenerate eigenvector found:  3        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  3      3.37500564has been renormalized... scaling factor:  0.97262644    
+
+ degenerate eigenvector found:  4        3.3750056375
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ degenerate eigenvector found:  6       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+ eigenvector for state  6     12.56242140has been renormalized... scaling factor:  0.97149820    
+
+ degenerate eigenvector found:  7       12.5624213971
+ eigenvector was orthogonalized against  1 degenerate vectors
+
+
+
+ SYMMETRY CLASS NR.    5
+ MULTIPLICITY          1
+
+
+ CCS        left excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.9093447576       24.7445295787
+         2            1.9138414500       52.0782750142
+         3            3.3750056375       91.8385751127
+         4            3.3750056375       91.8385751127
+         5            5.3414450411      145.3481132489
+         6           12.5624213971      341.8408752436
+         7           12.5624213971      341.8408752436
+         8           17.9499883924      488.4440307087
+
+
+ Total excited state energies for states of symmetry/spin    5    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    5    1            -1.952177238020950
+@@    5    2            -0.947680545583529
+@@    5    3             0.513483641865073
+@@    5    4             0.513483641865074
+@@    5    5             2.479923045434322
+@@    5    6             9.700899401454922
+@@    5    7             9.700899401454922
+@@    5    8            15.088466396720738
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            24.7445 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   1       1     |        1          |              |    0.998386  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9984
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            52.0783 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   2       1     |        2          |              |    0.998333  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9983
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  3
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   4       1     |        4          |              |    0.999779  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9998
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  4
+ -------------------------------------------------------------
+
+          Excitation Energy :                            91.8386 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   3       1     |        3          |              |    0.999779  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9998
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  5
+ -------------------------------------------------------------
+
+          Excitation Energy :                           145.3481 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   5       1     |        5          |              |    0.999887  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9999
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  6
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   6       1     |        6          |              |    0.991139  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9911
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  7
+ -------------------------------------------------------------
+
+          Excitation Energy :                           341.8409 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   7       1     |        7          |              |    0.991139  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9911
+
+          Printed all single excitations greater than 0.200000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  8
+ -------------------------------------------------------------
+
+          Excitation Energy :                           488.4440 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   1   |   8       1     |        8          |              |    0.999985  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+          Printed all single excitations greater than 0.200000
+
+
+ Found a degeneracy between:
+ ---------------------------
+ State  Excitation Energy
+  19     3.37500564
+  20     3.37500564
+
+
+ transformation matrix computed from (LE|RE) overlap:
+
+               Column   1     Column   2
+       1       0.99797163     0.06366030
+       2      -0.06366030     0.99797163
+    ==== End of matrix output ====
+
+ deviation from orthogonality:        0.0000000000
+
+
+ Found a degeneracy between:
+ ---------------------------
+ State  Excitation Energy
+  22    12.56242140
+  23    12.56242140
+
+
+ transformation matrix computed from (LE|RE) overlap:
+
+               Column   1     Column   2
+       1       1.00000000    -0.00000000
+       2      -0.00000000     1.00000000
+    ==== End of matrix output ====
+
+ deviation from orthogonality:        0.0000000000
+
+
+
++======================================================================+
+| contributions of excitation levels to right eigenvectors as computed |
+| from the (RE|RE) self overlap                                        |
++----------------------------------------------------------------------+
+| sym | multi | state |    E / eV  | % singles | % doubles | % triples |
++======================================================================+
+|    5|   1   |   1   |   24.74453 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   2   |   52.07828 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   3   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   4   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   5   |  145.34811 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   6   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   7   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   8   |  488.44403 | 100.0000  |   0.0000  |   0.0000  |
++======================================================================+
+
+
+
+
+
++======================================================================+
+| contributions of excitation levels to excited states as computed     |
+| from the (LE|RE) overlap                                             |
++----------------------------------------------------------------------+
+| sym | multi | state |    E / eV  | % singles | % doubles | % triples |
++======================================================================+
+|    5|   1   |   1   |   24.74453 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   2   |   52.07828 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   3   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   4   |   91.83858 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   5   |  145.34811 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   6   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   7   |  341.84088 | 100.0000  |   0.0000  |   0.0000  |
+|    5|   1   |   8   |  488.44403 | 100.0000  |   0.0000  |   0.0000  |
++======================================================================+
+
+
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     5
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         8
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     6
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     6
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     7
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     7
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         3
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     8
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         2
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     8
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         2
+ No Excitation Energies calculated in this symmetry class
+     
+
+   *******************************************************************
+   *                                                                 *
+   *<<<<<<<<   OUTPUT FROM PROPERTY AND SYMMETRY ANALYSIS   >>>>>>>>>*
+   *                                                                 *
+   *******************************************************************
+
+
+
+                         +-------------------------------+
+                         ! REQUESTED PROPERTY OPERATORS: !
+                         +-------------------------------+
+
+             Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
+             --------------------------------------------------
+                1     HAM0            1        1      T      0
+                2     XDIPLEN         2        1      F      0
+                3     YDIPLEN         3        1      F      0
+                4     ZDIPLEN         5        1      F      0
+             --------------------------------------------------
+
+
+
+
+                         +-------------------------------+
+                         ! REQUESTED EXPECTATION VALUES: !
+                         +-------------------------------+
+
+                       Index   Oper. Label  Symmetry
+                       -----------------------------
+                       -----------------------------
+
+
+
+
+                       +------------------------------------+
+                       ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                       +------------------------------------+
+
+                       Index   Oper. Label  Symmetry
+                       -----------------------------
+                       -----------------------------
+
+
+
+
+                        +----------------------------------+
+                        ! REQUESTED FIRST ORDER M-VECTORS: !
+                        +----------------------------------+
+
+               Index   State Symmetry  Frequency
+               --------------------------------------------------
+                  1             1    2     9.093448D-01
+                  2             2    2     1.913841D+00
+                  3             3    2     3.375006D+00
+                  4             4    2     3.375006D+00
+                  5             5    2     5.341445D+00
+                  6             6    2     1.256242D+01
+                  7             7    2     1.256242D+01
+                  8             8    2     1.794999D+01
+                  9             9    3     9.093448D-01
+                 10            10    3     1.913841D+00
+                 11            11    3     3.375006D+00
+                 12            12    3     3.375006D+00
+                 13            13    3     5.341445D+00
+                 14            14    3     1.256242D+01
+                 15            15    3     1.256242D+01
+                 16            16    3     1.794999D+01
+                 17            17    5     9.093448D-01
+                 18            18    5     1.913841D+00
+                 19            19    5     3.375006D+00
+                 20            20    5     3.375006D+00
+                 21            21    5     5.341445D+00
+                 22            22    5     1.256242D+01
+                 23            23    5     1.256242D+01
+                 24            24    5     1.794999D+01
+               --------------------------------------------------
+
+
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ 
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  M1  |   24   |  first-order ground - excited state multipliers      |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  FR  |   24   |  right eigenvectors (RE)                             |
+ +======================================================================+
+
+
+
+ RPA: call cceq_str
+ RPA: exit cceq_str
+ RPA: call cceq_str
+ RPA: exit cceq_str
+ RPA: call cceq_str
+ RPA: exit cceq_str
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<  OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE   >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<      CALCULATION OF SECOND ORDER RESIDUES      >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                  +---------------------------------------------+
+                  ! CC_SOPR: Calculation of CCS        Residues !
+                  +---------------------------------------------+
+
+
+
+ CCS   Right transition moments in atomic units:
+ -----------------------------------------------
+
+  1       0.909345  <XDIPLEN |f> =       0.98326331
+  2       1.913841  <XDIPLEN |f> =      -0.68729938
+  3       3.375006  <XDIPLEN |f> =       0.00000000
+  4       3.375006  <XDIPLEN |f> =      -0.00000000
+  5       5.341445  <XDIPLEN |f> =      -0.19147848
+  6      12.562421  <XDIPLEN |f> =       0.00000000
+  7      12.562421  <XDIPLEN |f> =      -0.00000000
+  8      17.949988  <XDIPLEN |f> =      -0.03928952
+  9       0.909345  <YDIPLEN |f> =       0.98326331
+ 10       1.913841  <YDIPLEN |f> =      -0.68729938
+ 11       3.375006  <YDIPLEN |f> =      -0.00000000
+ 12       3.375006  <YDIPLEN |f> =      -0.00000000
+ 13       5.341445  <YDIPLEN |f> =      -0.19147848
+ 14      12.562421  <YDIPLEN |f> =       0.00000000
+ 15      12.562421  <YDIPLEN |f> =       0.00000000
+ 16      17.949988  <YDIPLEN |f> =      -0.03928952
+ 17       0.909345  <ZDIPLEN |f> =       0.98326331
+ 18       1.913841  <ZDIPLEN |f> =      -0.68729938
+ 19       3.375006  <ZDIPLEN |f> =      -0.00000000
+ 20       3.375006  <ZDIPLEN |f> =      -0.00000000
+ 21       5.341445  <ZDIPLEN |f> =      -0.19147848
+ 22      12.562421  <ZDIPLEN |f> =       0.00000000
+ 23      12.562421  <ZDIPLEN |f> =      -0.00000000
+ 24      17.949988  <ZDIPLEN |f> =      -0.03928952
+
+
+ CCS   Left  transition moments in atomic units:
+ -----------------------------------------------
+
+  1       0.909345  <f|XDIPLEN > =       0.50417201
+  2       1.913841  <f|XDIPLEN > =      -0.36033592
+  3       3.375006  <f|XDIPLEN > =       0.00000000
+  4       3.375006  <f|XDIPLEN > =      -0.00000000
+  5       5.341445  <f|XDIPLEN > =      -0.10301377
+  6      12.562421  <f|XDIPLEN > =       0.00000000
+  7      12.562421  <f|XDIPLEN > =      -0.00000000
+  8      17.949988  <f|XDIPLEN > =      -0.02052879
+  9       0.909345  <f|YDIPLEN > =       0.50417201
+ 10       1.913841  <f|YDIPLEN > =      -0.36033592
+ 11       3.375006  <f|YDIPLEN > =      -0.00000000
+ 12       3.375006  <f|YDIPLEN > =      -0.00000000
+ 13       5.341445  <f|YDIPLEN > =      -0.10301377
+ 14      12.562421  <f|YDIPLEN > =       0.00000000
+ 15      12.562421  <f|YDIPLEN > =       0.00000000
+ 16      17.949988  <f|YDIPLEN > =      -0.02052879
+ 17       0.909345  <f|ZDIPLEN > =       0.50417201
+ 18       1.913841  <f|ZDIPLEN > =      -0.36033592
+ 19       3.375006  <f|ZDIPLEN > =      -0.00000000
+ 20       3.375006  <f|ZDIPLEN > =      -0.00000000
+ 21       5.341445  <f|ZDIPLEN > =      -0.10301377
+ 22      12.562421  <f|ZDIPLEN > =       0.00000000
+ 23      12.562421  <f|ZDIPLEN > =      -0.00000000
+ 24      17.949988  <f|ZDIPLEN > =      -0.02052879
+
+
+ CCS   linear response residue property in atomic units:
+ -------------------------------------------------------
+
+ RES{<<XDIPLEN ,XDIPLEN >>( 0.909345)} =     0.49573384 (   0.70408369)
+ RES{<<XDIPLEN ,XDIPLEN >>( 1.913841)} =     0.24765865 (   0.49765315)
+ RES{<<XDIPLEN ,XDIPLEN >>( 3.375006)} =     0.00000000 (   0.00000000)
+ RES{<<XDIPLEN ,XDIPLEN >>( 3.375006)} =     0.00000000 (   0.00000000)
+ RES{<<XDIPLEN ,XDIPLEN >>( 5.341445)} =     0.01972492 (   0.14044543)
+ RES{<<XDIPLEN ,XDIPLEN >>(12.562421)} =     0.00000000 (   0.00000000)
+ RES{<<XDIPLEN ,XDIPLEN >>(12.562421)} =     0.00000000 (   0.00000000)
+ RES{<<XDIPLEN ,XDIPLEN >>(17.949988)} =     0.00080657 (   0.02840011)
+ RES{<<YDIPLEN ,YDIPLEN >>( 0.909345)} =     0.49573384 (   0.70408369)
+ RES{<<YDIPLEN ,YDIPLEN >>( 1.913841)} =     0.24765865 (   0.49765315)
+ RES{<<YDIPLEN ,YDIPLEN >>( 3.375006)} =     0.00000000 (   0.00000000)
+ RES{<<YDIPLEN ,YDIPLEN >>( 3.375006)} =     0.00000000 (   0.00000000)
+ RES{<<YDIPLEN ,YDIPLEN >>( 5.341445)} =     0.01972492 (   0.14044543)
+ RES{<<YDIPLEN ,YDIPLEN >>(12.562421)} =     0.00000000 (   0.00000000)
+ RES{<<YDIPLEN ,YDIPLEN >>(12.562421)} =     0.00000000 (   0.00000000)
+ RES{<<YDIPLEN ,YDIPLEN >>(17.949988)} =     0.00080657 (   0.02840011)
+ RES{<<ZDIPLEN ,ZDIPLEN >>( 0.909345)} =     0.49573384 (   0.70408369)
+ RES{<<ZDIPLEN ,ZDIPLEN >>( 1.913841)} =     0.24765865 (   0.49765315)
+ RES{<<ZDIPLEN ,ZDIPLEN >>( 3.375006)} =     0.00000000 (   0.00000000)
+ RES{<<ZDIPLEN ,ZDIPLEN >>( 3.375006)} =     0.00000000 (   0.00000000)
+ RES{<<ZDIPLEN ,ZDIPLEN >>( 5.341445)} =     0.01972492 (   0.14044543)
+ RES{<<ZDIPLEN ,ZDIPLEN >>(12.562421)} =     0.00000000 (   0.00000000)
+ RES{<<ZDIPLEN ,ZDIPLEN >>(12.562421)} =     0.00000000 (   0.00000000)
+ RES{<<ZDIPLEN ,ZDIPLEN >>(17.949988)} =     0.00080657 (   0.02840011)
+
+
+ CCS   Transition strength matrix for state nr.  1 of symmetry 2
+ CCS   excitation energy: 0.90934476
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       1       0.49573384     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.49573384
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  1 of symmetry 2
+ CCS   excitation energy: 0.90934476
+
+
+               Column   1     Column   2     Column   3
+       1       0.30052864     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.30052864
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  2 of symmetry 2
+ CCS   excitation energy: 1.91384145
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       1       0.24765865     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.24765865
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  2 of symmetry 2
+ CCS   excitation energy: 1.91384145
+
+
+               Column   1     Column   2     Column   3
+       1       0.31598626     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.31598626
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  3 of symmetry 2
+ CCS   excitation energy: 3.37500564
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       1     3.634605D-36   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  3 of symmetry 2
+ CCS   excitation energy: 3.37500564
+
+
+               Column   1     Column   2     Column   3
+       1     8.177874D-36   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  4 of symmetry 2
+ CCS   excitation energy: 3.37500564
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       1     2.064260D-33   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  4 of symmetry 2
+ CCS   excitation energy: 3.37500564
+
+
+               Column   1     Column   2     Column   3
+       1     4.644593D-33   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  5 of symmetry 2
+ CCS   excitation energy: 5.34144504
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       1       0.01972492     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.01972492
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  5 of symmetry 2
+ CCS   excitation energy: 5.34144504
+
+
+               Column   1     Column   2     Column   3
+       1       0.07023971     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.07023971
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  6 of symmetry 2
+ CCS   excitation energy:12.56242140
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       1     4.926117D-33   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  6 of symmetry 2
+ CCS   excitation energy:12.56242140
+
+
+               Column   1     Column   2     Column   3
+       1     4.125597D-32   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  7 of symmetry 2
+ CCS   excitation energy:12.56242140
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       1     2.364764D-34   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  7 of symmetry 2
+ CCS   excitation energy:12.56242140
+
+
+               Column   1     Column   2     Column   3
+       1     1.980477D-33   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  8 of symmetry 2
+ CCS   excitation energy:17.94998839
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       1     8.065663D-04   0.000000D+00   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00080657
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  8 of symmetry 2
+ CCS   excitation energy:17.94998839
+
+
+               Column   1     Column   2     Column   3
+       1       0.00965190     0.00000000     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00965190
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  1 of symmetry 3
+ CCS   excitation energy: 0.90934476
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       2       0.00000000     0.49573384     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.49573384
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  1 of symmetry 3
+ CCS   excitation energy: 0.90934476
+
+
+               Column   1     Column   2     Column   3
+       2       0.00000000     0.30052864     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.30052864
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  2 of symmetry 3
+ CCS   excitation energy: 1.91384145
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       2       0.00000000     0.24765865     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.24765865
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  2 of symmetry 3
+ CCS   excitation energy: 1.91384145
+
+
+               Column   1     Column   2     Column   3
+       2       0.00000000     0.31598626     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.31598626
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  3 of symmetry 3
+ CCS   excitation energy: 3.37500564
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   3.602506D-33   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  3 of symmetry 3
+ CCS   excitation energy: 3.37500564
+
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   8.105653D-33   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  4 of symmetry 3
+ CCS   excitation energy: 3.37500564
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   8.955870D-34   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  4 of symmetry 3
+ CCS   excitation energy: 3.37500564
+
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   2.015074D-33   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  5 of symmetry 3
+ CCS   excitation energy: 5.34144504
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       2       0.00000000     0.01972492     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.01972492
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  5 of symmetry 3
+ CCS   excitation energy: 5.34144504
+
+
+               Column   1     Column   2     Column   3
+       2       0.00000000     0.07023971     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.07023971
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  6 of symmetry 3
+ CCS   excitation energy:12.56242140
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   6.953492D-33   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  6 of symmetry 3
+ CCS   excitation energy:12.56242140
+
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   5.823513D-32   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  7 of symmetry 3
+ CCS   excitation energy:12.56242140
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   2.595022D-33   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  7 of symmetry 3
+ CCS   excitation energy:12.56242140
+
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   2.173318D-32   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  8 of symmetry 3
+ CCS   excitation energy:17.94998839
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       2     0.000000D+00   8.065663D-04   0.000000D+00
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00080657
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  8 of symmetry 3
+ CCS   excitation energy:17.94998839
+
+
+               Column   1     Column   2     Column   3
+       2       0.00000000     0.00965190     0.00000000
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00965190
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  1 of symmetry 5
+ CCS   excitation energy: 0.90934476
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       3       0.00000000     0.00000000     0.49573384
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.49573384
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  1 of symmetry 5
+ CCS   excitation energy: 0.90934476
+
+
+               Column   1     Column   2     Column   3
+       3       0.00000000     0.00000000     0.30052864
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.30052864
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  2 of symmetry 5
+ CCS   excitation energy: 1.91384145
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       3       0.00000000     0.00000000     0.24765865
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.24765865
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  2 of symmetry 5
+ CCS   excitation energy: 1.91384145
+
+
+               Column   1     Column   2     Column   3
+       3       0.00000000     0.00000000     0.31598626
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.31598626
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  3 of symmetry 5
+ CCS   excitation energy: 3.37500564
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   9.197413D-33
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  3 of symmetry 5
+ CCS   excitation energy: 3.37500564
+
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   2.069421D-32
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  4 of symmetry 5
+ CCS   excitation energy: 3.37500564
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   1.204345D-33
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  4 of symmetry 5
+ CCS   excitation energy: 3.37500564
+
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   2.709780D-33
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  5 of symmetry 5
+ CCS   excitation energy: 5.34144504
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       3       0.00000000     0.00000000     0.01972492
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.01972492
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  5 of symmetry 5
+ CCS   excitation energy: 5.34144504
+
+
+               Column   1     Column   2     Column   3
+       3       0.00000000     0.00000000     0.07023971
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.07023971
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  6 of symmetry 5
+ CCS   excitation energy:12.56242140
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   1.558665D-33
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  6 of symmetry 5
+ CCS   excitation energy:12.56242140
+
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   1.305374D-32
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  7 of symmetry 5
+ CCS   excitation energy:12.56242140
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   2.520101D-34
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  7 of symmetry 5
+ CCS   excitation energy:12.56242140
+
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   2.110571D-33
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00000000
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+ CCS   Transition strength matrix for state nr.  8 of symmetry 5
+ CCS   excitation energy:17.94998839
+
+ Gauge: length
+
+               Column   1     Column   2     Column   3
+       3     0.000000D+00   0.000000D+00   8.065663D-04
+    ==== End of matrix output ====
+
+ Principal values of diagonalized transition strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00080657
+
+ Principal axis of diagonalized transition strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+
+
+ CCS    oscillator strength matrix for state nr.  8 of symmetry 5
+ CCS   excitation energy:17.94998839
+
+
+               Column   1     Column   2     Column   3
+       3       0.00000000     0.00000000     0.00965190
+    ==== End of matrix output ====
+
+ Principal values of diagonalized oscillator strength matrix:
+
+             a.u.               
+ 1       0.00000000
+ 2       0.00000000
+ 3       0.00965190
+
+ Principal axis of diagonalized oscillator strength matrix:
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     0.00000000     0.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
+    ==== End of matrix output ====
+ DSSUMLI=  -1.2022222409226288E-277
+
+
+                               CC Oscillator strength sum rules
+                               --------------------------------
+
+
+
+              S(K) Sum Rules : Dipole Length Approximation in a.u.
+      K     xx - component   yy - component   zz - component      total
+
+      -6     0.537947         0.537947         0.537947          1.61384    
+      -5     0.495652         0.495652         0.495652          1.48696    
+      -4     0.463152         0.463152         0.463152          1.38946    
+      -3     0.445208         0.445208         0.445208          1.33562    
+      -2     0.452198         0.452198         0.452198          1.35659    
+      -1     0.509283         0.509283         0.509283          1.52785    
+       0     0.696407         0.696407         0.696407          2.08922    
+       1      1.42646          1.42646          1.42646          4.27939    
+       2      6.51978          6.51978          6.51978          19.5593    
+
+
+
+              L(K) Sum Rules : Dipole Length Approximation in a.u.
+      K     xx - component   yy - component   zz - component      total
+
+      -6    -0.463312E-01    -0.463312E-01    -0.463312E-01    -0.138994    
+      -5    -0.379158E-01    -0.379158E-01    -0.379158E-01    -0.113747    
+      -4    -0.263340E-01    -0.263340E-01    -0.263340E-01    -0.790021E-01
+      -3    -0.794413E-02    -0.794413E-02    -0.794413E-02    -0.238324E-01
+      -2     0.256721E-01     0.256721E-01     0.256721E-01     0.770163E-01
+      -1     0.993509E-01     0.993509E-01     0.993509E-01     0.298053    
+       0     0.322108         0.322108         0.322108         0.966325    
+       1      1.49547          1.49547          1.49547          4.48642    
+       2      13.0654          13.0654          13.0654          39.1962    
+
+
+
+              I(K) Sum Rules : Dipole Length Approximation in eV
+      K     xx - component   yy - component   zz - component      total
+
+      -6      24.9659          24.9659          24.9659          24.9659    
+      -5      25.2074          25.2074          25.2074          25.2074    
+      -4      25.7074          25.7074          25.7074          25.7074    
+      -3      26.7301          26.7301          26.7301          26.7301    
+      -2      28.8009          28.8009          28.8009          28.8009    
+      -1      33.0729          33.0729          33.0729          33.0729    
+       0      43.2140          43.2140          43.2140          43.2140    
+       1      77.6346          77.6346          77.6346          77.6346    
+       2      201.865          201.865          201.865          201.865    
+
+
+ >>> Total time for     24 linear response residues:       0.00 seconds.
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+            Total SCF   energy:                    -2.8615219956                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CCS        Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1B3u |    1   |     0.9093448  |      24.74453  |    199578.104  | 100.00  |
+ | ^1B3u |    2   |     1.9138415  |      52.07828  |    420039.643  | 100.00  |
+ | ^1B3u |    3   |     3.3750056  |      91.83858  |    740728.111  | 100.00  |
+ | ^1B3u |    4   |     3.3750056  |      91.83858  |    740728.111  | 100.00  |
+ | ^1B3u |    5   |     5.3414450  |     145.34811  |   1172311.671  | 100.00  |
+ | ^1B3u |    6   |    12.5624214  |     341.84088  |   2757132.780  | 100.00  |
+ | ^1B3u |    7   |    12.5624214  |     341.84088  |   2757132.780  | 100.00  |
+ | ^1B3u |    8   |    17.9499884  |     488.44403  |   3939567.049  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1B2u |    1   |     0.9093448  |      24.74453  |    199578.104  | 100.00  |
+ | ^1B2u |    2   |     1.9138415  |      52.07828  |    420039.643  | 100.00  |
+ | ^1B2u |    3   |     3.3750056  |      91.83858  |    740728.111  | 100.00  |
+ | ^1B2u |    4   |     3.3750056  |      91.83858  |    740728.111  | 100.00  |
+ | ^1B2u |    5   |     5.3414450  |     145.34811  |   1172311.671  | 100.00  |
+ | ^1B2u |    6   |    12.5624214  |     341.84088  |   2757132.780  | 100.00  |
+ | ^1B2u |    7   |    12.5624214  |     341.84088  |   2757132.780  | 100.00  |
+ | ^1B2u |    8   |    17.9499884  |     488.44403  |   3939567.049  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1B1u |    1   |     0.9093448  |      24.74453  |    199578.104  | 100.00  |
+ | ^1B1u |    2   |     1.9138415  |      52.07828  |    420039.643  | 100.00  |
+ | ^1B1u |    3   |     3.3750056  |      91.83858  |    740728.111  | 100.00  |
+ | ^1B1u |    4   |     3.3750056  |      91.83858  |    740728.111  | 100.00  |
+ | ^1B1u |    5   |     5.3414450  |     145.34811  |   1172311.671  | 100.00  |
+ | ^1B1u |    6   |    12.5624214  |     341.84088  |   2757132.780  | 100.00  |
+ | ^1B1u |    7   |    12.5624214  |     341.84088  |   2757132.780  | 100.00  |
+ | ^1B1u |    8   |    17.9499884  |     488.44403  |   3939567.049  | 100.00  |
+ +=============================================================================+
+                                                                                
+                                                                                
+     Total energies in Hartree:                                                 
+             1 ^1B3u       -1.9521772380                                        
+             2 ^1B3u       -0.9476805456                                        
+             3 ^1B3u        0.5134836419                                        
+             4 ^1B3u        0.5134836419                                        
+             5 ^1B3u        2.4799230454                                        
+             6 ^1B3u        9.7008994015                                        
+             7 ^1B3u        9.7008994015                                        
+             8 ^1B3u       15.0884663967                                        
+             1 ^1B2u       -1.9521772380                                        
+             2 ^1B2u       -0.9476805456                                        
+             3 ^1B2u        0.5134836419                                        
+             4 ^1B2u        0.5134836419                                        
+             5 ^1B2u        2.4799230454                                        
+             6 ^1B2u        9.7008994015                                        
+             7 ^1B2u        9.7008994015                                        
+             8 ^1B2u       15.0884663967                                        
+             1 ^1B1u       -1.9521772380                                        
+             2 ^1B1u       -0.9476805456                                        
+             3 ^1B1u        0.5134836419                                        
+             4 ^1B1u        0.5134836419                                        
+             5 ^1B1u        2.4799230454                                        
+             6 ^1B1u        9.7008994015                                        
+             7 ^1B1u        9.7008994015                                        
+             8 ^1B1u       15.0884663967                                        
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CCS        Length   Gauge Oscillator Strength       |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
+ +=============================================================================+
+ | ^1B3u |    1   |        0.4957338      |      0.3005286       |    X        |
+ | ^1B3u |    2   |        0.2476587      |      0.3159863       |    X        |
+ | ^1B3u |    3   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B3u |    4   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B3u |    5   |        0.0197249      |      0.0702397       |    X        |
+ | ^1B3u |    6   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B3u |    7   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B3u |    8   |        0.0008066      |      0.0096519       |    X        |
+ +-----------------------------------------------------------------------------+
+ | ^1B2u |    1   |        0.4957338      |      0.3005286       |    Y        |
+ | ^1B2u |    2   |        0.2476587      |      0.3159863       |    Y        |
+ | ^1B2u |    3   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B2u |    4   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B2u |    5   |        0.0197249      |      0.0702397       |    Y        |
+ | ^1B2u |    6   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B2u |    7   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B2u |    8   |        0.0008066      |      0.0096519       |    Y        |
+ +-----------------------------------------------------------------------------+
+ | ^1B1u |    1   |        0.4957338      |      0.3005286       |    Z        |
+ | ^1B1u |    2   |        0.2476587      |      0.3159863       |    Z        |
+ | ^1B1u |    3   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B1u |    4   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B1u |    5   |        0.0197249      |      0.0702397       |    Z        |
+ | ^1B1u |    6   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B1u |    7   |        0.0000000      |      0.0000000       |    -        |
+ | ^1B1u |    8   |        0.0008066      |      0.0096519       |    Z        |
+ +=============================================================================+
+
+  1 a.u. =        27.21138 eV.  
+  1 a.u. =    219474.62934 cm-1.
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ >>>> CPU and wall time for CC :       0.309       0.360
+
+ 
+     Date and time (Linux)  : Thu Feb 26 20:06:12 2015
+     Host name              : foeroyar                                
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   0.34 seconds
+ >>>> Total wall time used in DALTON:   0.39 seconds
+
+ 
+     Date and time (Linux)  : Thu Feb 26 20:06:12 2015
+     Host name              : foeroyar                                

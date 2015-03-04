@@ -115,7 +115,7 @@ INTERFACE II_get_Fock_mat
 END INTERFACE II_get_Fock_mat
 
 INTERFACE II_get_rho2
-   MODULE PROCEDURE II_get_rho2_mat,II_get_rho2_full
+   MODULE PROCEDURE II_get_rho2_mat
 END INTERFACE II_get_rho2
 
 CONTAINS
@@ -5267,93 +5267,51 @@ Function II_get_rho2_mat(LUPRI,LUERR,SETTING,D1mat,D2mat,AO1,AO2,GCAO1,GCAO2,n1,
 IMPLICIT NONE
 INTEGER               :: LUPRI,LUERR,n1,n2,AO1,AO2
 Logical               :: GCAO1,GCAO2
-TYPE(matrix)          :: D1mat,D2mat
+TYPE(matrix),target   :: D1mat
+TYPE(matrix),target   :: D2mat
 real(realk)           :: II_get_rho2_mat
 TYPE(LSSETTING)       :: SETTING
 !
-real(realk),pointer :: D1(:,:,:),D2(:,:,:)
+logical               :: IntegralTransformGC
+TYPE(matrix),pointer  :: D1ao,D2ao
+TYPE(matrix)          :: F1ao(1)
 
-call mem_alloc(D1,n1,n1,1)
-call mem_alloc(D2,n2,n2,1)
-
-call mat_to_full(D1mat,1E0_realk,D1)
-call mat_to_full(D2mat,1E0_realk,D2)
-
-II_get_rho2_mat = II_get_rho2_full(LUPRI,LUERR,SETTING,D1,D2,AO1,AO2,GCAO1,GCAO2,n1,n2)
-
-call mem_dealloc(D1)
-call mem_dealloc(D2)
-
-END Function II_get_rho2_mat
-
-!> \brief Calculates the overlap integral <rho1 rho2>
-!> \author S. Reine
-!> \date 2014-11-19
-!> \param lupri Default print unit
-!> \param luerr Default error print unit
-!> \param setting Integral evalualtion settings
-!> \param D1 density matrix number 1
-!> \param D2 density matrix number 2
-!> \param AO1 spcifies orbitals on density number 1
-!> \param AO2 spcifies orbitals on density number 2
-!> \param GCAO1 spcifies if AO1 is a GC basis
-!> \param GCAO2 spcifies if AO2 is a GC basis
-!> \param n1 dimension of AO1
-!> \param n2 dimension of AO2
-!> \param ndmat the number of density matrix
-Function II_get_rho2_full(LUPRI,LUERR,SETTING,D1,D2,AO1,AO2,GCAO1,GCAO2,n1,n2)
-IMPLICIT NONE
-INTEGER               :: LUPRI,LUERR,n1,n2,AO1,AO2
-Logical               :: GCAO1,GCAO2
-real(realk),target    :: D2(n2,n2,1)
-real(realk)           :: D1(n1,n1,1),II_get_rho2_full
-TYPE(LSSETTING)       :: SETTING
-!
-real(realk),pointer :: F1(:,:,:)
-real(realk),pointer :: D2p(:,:,:)
-real(realk)         :: rho2
-Integer :: i,j
-Logical :: IntegralTransformGC, allocD2p
-
-allocD2p = .FALSE.
 IntegralTransformGC = setting%IntegralTransformGC
-D2p => D2
-IF (setting%IntegralTransformGC) THEN
-  IF (AO1.NE.AO2) THEN
-    IF (GCAO1) call LSQUIT('Error in II_get_rho2: GCAO1 and AO1.NE.AO2',lupri)
-    call mem_alloc(D2p,n2,n2,1)
-    call GCAO2AO_transform_fullD(D2,D2p,n2,1,setting,lupri)
-    setting%IntegralTransformGC = .FALSE.
-    allocD2p = .TRUE.
-  ELSE
-    IF (n1.NE.n2) CALL LSQUIT('Error in II_get_rho2: n1.NE.n2 and AO1.EQ.AO2',lupri)
-    !Do nothing - i.e. make GC transformations in II_get_coulomb_mat_mixed_full
-    setting%IntegralTransformGC = GCAO2
+D1ao => D1mat
+D2ao => D2mat
+IF (IntegralTransformGC) THEN
+   setting%IntegralTransformGC = .FALSE.
+   IF (GCAO1) THEN
+     allocate(D1ao)
+     call mat_init(D1ao,n1,n1)
+     call GCAO2AO_transform_matrixD2(D1mat,D1ao,setting,lupri)
+   ENDIF
+   IF (GCAO2) THEN
+     allocate(D2ao)
+     call mat_init(D2ao,n2,n2)
+     call GCAO2AO_transform_matrixD2(D2mat,D2ao,setting,lupri)
+   ENDIF
+ENDIF
+call mat_init(F1ao(1),n1,n1)
+
+CALL II_get_coulomb_mat_mixed(LUPRI,LUERR,SETTING,(/D2ao/),F1ao,1,AO1,AO1,AO2,AO2,overlapOperator)
+
+II_get_rho2_mat = mat_trAB(F1ao(1),D1ao)
+
+call mat_free(F1ao(1))
+IF (IntegralTransformGC) THEN
+  setting%IntegralTransformGC = IntegralTransformGC 
+  IF (GCAO1) THEN
+    call mat_free(D1ao)
+    deallocate(D1ao)
+  ENDIF
+  IF (GCAO2) THEN
+    call mat_free(D2ao)
+    deallocate(D2ao)
   ENDIF
 ENDIF
 
-call mem_alloc(F1,n1,n1,1)
-
-CALL II_get_coulomb_mat_mixed_full(LUPRI,LUERR,SETTING,n1,n1,n2,n2,D2p,F1,&
-     & AO1,AO1,AO2,AO2,overlapOperator)
-
-rho2 = 0E0_realk
-DO j=1,n1
-  DO i=1,n1
-   rho2 = rho2 + D1(i,j,1)*F1(i,j,1)
-  ENDDO
-ENDDO
-call mem_dealloc(F1)
-
-setting%IntegralTransformGC = IntegralTransformGC
-
-IF (allocD2p) THEN
-  call mem_dealloc(D2p)
-ENDIF
-
-II_get_rho2_full = rho2
-
-END Function II_get_rho2_full
+END Function II_get_rho2_mat
 
 !> \brief Calculates the coulomb matrix using the jengine method (default)
 !> \author S. Reine
@@ -5589,10 +5547,14 @@ logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,tsfull,tefull,hfweight
 integer             :: nbast,nbast2,AORold,AO3,nelectrons
 character(21)       :: L2file,L3file
-real(realk)         :: GGAXfactor,fac
+real(realk)         :: GGAXfactor,fac,fac_unrest
 real(realk)         :: constrain_factor, largeLambda,smallK,largeK,mixK
 logical             :: isADMMQ,separateX,DODISP
-logical             :: isADMMS, isADMMP,PRINT_EK3,saveDF,printExchangeMetric
+logical             :: isADMMS, isADMMP,PRINT_EK3,saveDF,printExchangeMetric,unrest
+ !
+unrest = matrix_type.EQ.mtype_unres_dense
+fac_unrest = 2E0_realk
+IF (unrest) fac_unrest = 1E0_realk
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
 isADMMQ = setting%scheme%ADMMQ
@@ -5651,7 +5613,7 @@ setting%scheme%ADMM_CONSTRAIN_FACTOR = constrain_factor
 call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
                   & nbast,AOadmm,AO3,setting%scheme%ADMM1,&
                   & .FALSE.,GC3,constrain_factor)
-     
+
 !Store original AO-index
 AORold  = AORdefault
 
@@ -5670,13 +5632,12 @@ call Transformed_F2_to_F3(TMPF,k2(1),setting,lupri,luerr,nbast2,nbast,&
 fac = 1E0_realk
 IF (isADMMP) fac = constrain_factor**(4.E0_realk)
 call mat_daxpy(fac,TMPF,F)
-IF(ADMMBASISFILE)Econt(3) = mat_dotproduct(TMPF,D)
+IF(ADMMBASISFILE)Econt(3) = mat_dotproduct(TMPF,D)*fac_unrest/2E0_realk
 
 !Prints the exchange-metric error between the regular and ADMM density
 !   int (rho(1,2)-fit(1,2))^2/r_12 dr_1 dr_2
 IF (printExchangeMetric) THEN
   smallK = fac*mat_trAB(k2(1),d2(1))
-  write(*,*) 'debug:smallK',smallK
   call mat_init(Ftmp(1),nbast,nbast)
   call mat_zero(Ftmp(1))
   call set_default_AOs(AO3,AODFdefault)
@@ -5685,14 +5646,12 @@ IF (printExchangeMetric) THEN
   setting%IntegralTransformGC =.FALSE.
   call set_default_AOs(AOadmm,AODFdefault)
   largeK = mat_trAB(Ftmp(1),D)
-  write(*,*) 'debug:largeK',largeK
   call mat_zero(Ftmp(1))
   call II_get_exchange_mat_mixed(lupri,luerr,setting,D2,1,Dsym,Ftmp,AO3,AOadmm,AO3,AOadmm,coulombOperator)
   IF (GC3) call AO2GCAO_transform_matrixF(Ftmp(1),setting,lupri)
   mixK   = sqrt(fac)*2.d0*mat_trAB(Ftmp(1),D)
-  write(*,*) 'debug:mixK',mixK/2.d0
-  write(lupri,'(X,A,F18.12)') 'Exchange-metric error:',-(largeK+smallK-mixK)
-  write(*,'(X,A,F18.12)') 'Exchange-metric error:',-(largeK+smallK-mixK)
+  write(lupri,'(X,A,F18.12)') 'Exchange-metric error:',-(largeK+smallK-mixK)*fac_unrest/2E0_realk
+  write(*,'(X,A,F18.12)') 'Exchange-metric error:',-(largeK+smallK-mixK)*fac_unrest/2E0_realk
   call mat_free(Ftmp(1))
 ENDIF
 
@@ -5725,7 +5684,7 @@ IF(ADMMBASISFILE)Econt(4) = EX2(1)
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,x2(1),setting,lupri,luerr,nbast2,nbast,&
                           & AOadmm,AO3,.FALSE.,GC3,constrain_factor)
- 
+
 call mat_daxpy(-fac,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
@@ -5739,6 +5698,7 @@ setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 IF (separateX) THEN
   CALL mat_init(F3(1),nbast,nbast)
   CALL mat_zero(F3(1))
+
   call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
   IF(ADMMBASISFILE)Econt(2) = EX3(1)
   
@@ -5767,21 +5727,21 @@ IF (PRINT_EK3) THEN
       write(*,*)     "E(X3)-E(x2)= ",EdXC
       write(lupri,*) "E(X3)-E(x2)= ",EdXC
    ENDIF
-
 !***  Simen: 2014-11-19, Added for the basis-set optimization
    !Factor 2 included here because the Coulomb factor used in the FTUVs are set to two for default AOs, and 
    !one for other.
    saveDF = setting%scheme%densfit
    setting%scheme%densfit = .FALSE.
+   setting%IntegralTransformGC = .FALSE.
    var = 2E0_realk * II_get_rho2(LUPRI,LUERR,SETTING,D2(1),D2(1),AOadmm,AOadmm,.FALSE.,.FALSE.,nbast2,nbast2)
+   setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
    var = var + II_get_rho2(LUPRI,LUERR,SETTING,D,D,AO3,AO3,GC3,GC3,nbast,nbast)
    var = var - 2E0_realk * II_get_rho2(LUPRI,LUERR,SETTING,D2(1),D,AOadmm,AO3,.FALSE.,GC3,nbast2,nbast)
-   write(*,*) "Fitting error = ", 2E0_realk * var
-   write(lupri,*) "Fitting error = ", 2E0_realk * var
+   write(*,*) "Fitting error = ", fac_unrest * var
+   write(lupri,*) "Fitting error = ", fac_unrest * var
    setting%scheme%densfit = saveDF
-
-
 ENDIF
+     
 
 
 if(dodisp) setting%scheme%dft%dodisp = dodisp
@@ -7140,8 +7100,11 @@ SUBROUTINE get_small_lambda(constrain_factor,D3,setting,lupri,luerr,n2,n3,&
    logical                    :: GCAO2,GCAO3
    !
    TYPE(MATRIX) :: R33
-   real(realk)  :: lambda,trace
+   real(realk)  :: lambda,trace,fac
    integer      :: nelectrons
+   logical      :: unrest
+
+   unrest = matrix_type.EQ.mtype_unres_dense
 
    CALL mat_init(R33,n3,n3)
 
@@ -7152,7 +7115,9 @@ SUBROUTINE get_small_lambda(constrain_factor,D3,setting,lupri,luerr,n2,n3,&
 
    ! The lagrangian multiplier
    ! lambda = 1 - sqrt[ 2/N Tr(D3 S32 T23) ] 
-   lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
+   fac = 2.0E0_realk
+   IF (unrest) fac = 1.0E0_realk
+   lambda = 1E0_realk - sqrt(fac*trace/nelectrons)
    constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
 
    CALL mat_free(R33)
@@ -7196,7 +7161,7 @@ ELSE
   call get_S23(S23,AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
   call get_S22inv(S22,S22inv,setting,lupri,luerr)
   CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
-  
+
   CALL mat_free(S22inv)
   CALL mat_free(S23)
   CALL mat_free(S22)
@@ -7371,15 +7336,21 @@ real(realk),intent(in)     :: E_x2        !GGA exchange energy in the small basi
 real(realk),intent(in)     :: chi !the small lambda
 type(lssetting),intent(in) :: setting
 !
-integer      :: NbEl
+integer     :: NbEl
+logical     :: unrest
+real(realk) :: fac
+!
+unrest = matrix_type.EQ.mtype_unres_dense
+fac = 1E0_realk
+IF (unrest) fac=2E0_realk
 !
 NbEl = setting%molecule(1)%p%nelectrons
 IF (setting%scheme%ADMMS) THEN
-   Lambda = 2E0_realk/NbEl * ( mat_trAB(k2,D2)-mat_trAB(x2,D2) - E_x2/3.E0_realk )
+   Lambda = 2E0_realk/NbEl * ( mat_trAB(k2,D2)/fac-mat_trAB(x2,D2)/fac - E_x2/3.E0_realk )
 ELSEIF (setting%scheme%ADMMP) THEN
-   Lambda = 2E0_realk/NbEl * chi**(4.E0_realk) * (mat_trAB(k2,D2) - E_x2)
+   Lambda = 2E0_realk/NbEl * chi**(4.E0_realk) * (mat_trAB(k2,D2)/fac - E_x2)
 ELSEIF (setting%scheme%ADMMQ) THEN
-   Lambda = 2E0_realk/NbEl*(mat_trAB(k2,D2)-mat_trAB(x2,D2))
+   Lambda = 2E0_realk/NbEl*(mat_trAB(k2,D2)-mat_trAB(x2,D2))/fac
 ELSE
    Lambda = 0E0_realk
 ENDIF

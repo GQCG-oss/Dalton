@@ -2,7 +2,7 @@ all: libdeccc.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../LSint -I../lsutil
+INCLUDES := $(INCLUDES) -I../LSint -I../lsutil -I../linears
 
 F90_OBJS = dec_settings.o \
         cc_tools.o \
@@ -33,6 +33,7 @@ F90_OBJS = dec_settings.o \
 	dec_atom.o \
 	mp2_gradient.o \
         ccsd_gradient.o \
+	ccsd_lhtr.o\
 	fragment_energy.o \
 	dec_driver.o \
 	dec_driver_slave.o \

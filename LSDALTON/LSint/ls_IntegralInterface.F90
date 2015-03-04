@@ -11,7 +11,7 @@ MODULE ls_Integral_Interface
        & mtype_scalapack, mat_to_full, mat_free, mat_retrieve_block,&
        & mat_init, mat_trans, mat_daxpy, mat_scal_dia, &
        & mat_setlowertriangular_zero, mat_assign, mat_print,&
-       & mat_write_to_disk
+       & mat_write_to_disk, mtype_pdmm
   use matrix_operations_scalapack, only: PDM_MATRIXSYNC,&
        & free_in_darray
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
@@ -354,7 +354,7 @@ CALL LSTIMER('START',TS,TE,6)
 !IF(Oper .EQ. 'Nucpot' .AND. SETTING%SCHEME%FMM)THEN
 !   CALL LSTIMER('START',TS,TE,LUPRI)
 !ENDIF
-IF(matrix_type.EQ.mtype_scalapack)THEN
+IF(matrix_type.EQ.mtype_scalapack.or.matrix_type.EQ.mtype_pdmm)THEN
    IF (setting%node.EQ.0) THEN
       !change into full format on master 
       call SetScalapackDmatToFull(setting,.TRUE.,.TRUE.)
@@ -990,6 +990,12 @@ integer(kind=ls_mpik)      :: Snode,SNumnodes,SComm
 IF(.NOT.setting%scheme%doMPI)THEN
  call deactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
 ENDIF
+IF(matrix_type.EQ.mtype_pdmm)THEN
+   IF (setting%node.EQ.infpar%master) THEN
+      !change into full format on master so that it can be bcast
+      call SetScalapackDmatToFull(setting,.TRUE.,.TRUE.)
+   ENDIF
+ENDIF
 #endif
 #ifdef VAR_SCALAPACK
 IF(matrix_type.EQ.mtype_scalapack)THEN
@@ -1128,7 +1134,7 @@ END SUBROUTINE ls_get_exchange_mat
 !!$#endif
 !!$
 !!$#ifdef VAR_SCALAPACK
-!!$   IF(matrix_type.EQ.mtype_scalapack)THEN
+!!$   IF(matrix_type.EQ.mtype_scalapack.or.matrix_type.EQ.mtype_pdmm)THEN
 !!$      IF (setting%node.EQ.infpar%master) THEN
 !!$         !change into full format on master 
 !!$         call SetScalapackDmatToFull(setting,.TRUE.,.TRUE.)
@@ -1835,6 +1841,14 @@ IF(setting%scheme%memdist.AND.matrix_type.EQ.mtype_scalapack)THEN
    !Tempory fix for gradients and stuff 
    CALL ls_jengine_memdist(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
 ELSE
+#ifdef VAR_MPI
+   IF(matrix_type.EQ.mtype_pdmm)THEN
+      IF (setting%node.EQ.infpar%master) THEN
+         !change into full format on master 
+         call SetScalapackDmatToFull(setting,.TRUE.,.TRUE.)
+      ENDIF
+   ENDIF
+#endif
 #ifdef VAR_SCALAPACK
    IF(matrix_type.EQ.mtype_scalapack)THEN
       IF (setting%node.EQ.infpar%master) THEN
@@ -4551,7 +4565,7 @@ CASE('LHS')
   call mem_alloc(setting%DfullLHS,dim1,dim2,ndmat)
   call dcopy(dim1*dim2*ndmat,Dmat,1,setting%DfullLHS,1)
 #else
-  IF(matrix_type .EQ. mtype_unres_dense)THEN
+  IF(matrix_type .EQ. mtype_unres_dense.OR.matrix_type .EQ. mtype_pdmm)THEN
      setting%LHSdAlloc=.TRUE.
      call mem_alloc(setting%DfullLHS,dim1,dim2,ndmat)
      call dcopy(dim1*dim2*ndmat,Dmat,1,setting%DfullLHS,1)
@@ -4576,7 +4590,7 @@ CASE('RHS')
   call mem_alloc(setting%DfullRHS,dim1,dim2,ndmat)
   call dcopy(dim1*dim2*ndmat,Dmat,1,setting%DfullRHS,1)
 #else
-  IF(matrix_type .EQ. mtype_unres_dense)THEN
+  IF(matrix_type .EQ. mtype_unres_dense.OR.matrix_type .EQ. mtype_pdmm)THEN
      setting%RHSdAlloc=.TRUE.
      call mem_alloc(setting%DfullRHS,dim1,dim2,ndmat)
      call dcopy(dim1*dim2*ndmat,Dmat,1,setting%DfullRHS,1)
