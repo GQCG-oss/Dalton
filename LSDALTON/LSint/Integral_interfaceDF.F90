@@ -1424,7 +1424,7 @@ contains
     Integer                    :: endRegA,endRegB,endRegC,endRegD
     Integer                    :: endAuxA,endAuxB,endAuxC,endAuxD
     Integer                    :: iAlpha,iRegA,iRegB,iRegC,iRegD,iAuxA
-    Integer                    :: nElec,nOcc,iOcc,i
+    Integer                    :: nElec,nOcc,iOcc,i,j
     !
     TYPE(AtomSparseMat)        :: alphaBeta
     TYPE(MoleculeInfo),pointer :: molecule
@@ -1445,6 +1445,11 @@ contains
     Real(realk),pointer        :: tmp(:,:,:)
     Logical                    :: compute_coeff
     Character(80)              :: C_filename
+
+    Integer                    :: INFO
+    Integer,pointer            :: PIV(:)
+    Real(realk)                :: chol_tol,sum
+    Real(realk),pointer        :: matA(:,:),Work(:)
 
     IF (ndmat.GT.1) THEN
        WRITE(*,*)     &
@@ -1525,15 +1530,32 @@ contains
        MOmatK=0E0_realk
 
        !Get the MO coeff by Cholesky Decomposition of the Density Matrix
-       nElec=molecule%nelectrons
-       if (mod(nElec,2).gt.0) then
-          call lsquit('PARI-K only implemented in the restricted case',-1)
-       else
-          nOcc=nElec/2
-       endif
+       !The rank of the density matrix should be equal to the nb of Occ. orbitals
+       !except for the iteration 0 where the density can be non valid
+       chol_tol=1.0E-12_realk
+       call mem_alloc(matA,nBastReg,nBastReg)
+       call mem_alloc(PIV,nBastReg)
+       call mem_alloc(work,2*nBastReg)
+       INFO=-1
+       nOcc=0
+       PIV(:)=0
+       matA(:,:) = Dfull(:,:,1)
+    
+       call dpstrf('L',nBastReg,matA,nBastReg,PIV,nOcc,chol_tol,Work,INFO)
+       
        call mem_alloc(MOcoeff,nBastReg,nOcc)
        MOcoeff=0E0_realk
-       call get_chol_coeff(Dfull(:,:,1),MOcoeff,molecule,lupri,luerr)
+       do j=1,nOcc
+          do i=j,nBastReg
+             MOcoeff(PIV(i),j)=MatA(i,j)
+          enddo
+       enddo
+       
+       call mem_dealloc(PIV)
+       call mem_dealloc(matA)
+       call mem_dealloc(work)
+       
+       !write(lupri,*) 'Rank of the Cholesky Decomposition:',nOcc
 
        !write(lupri,'(/A/)') 'Atomic Contributions to the MO'
        !call mem_alloc(MOcontrib,nAtoms,nOcc)
@@ -1590,12 +1612,12 @@ contains
        neighbours(:,:) = .false.
        call get_neighbours(neighbours,orbitalInfo,regCSfull,threshold,molecule,&
             atoms_A,lupri,luerr,setting)
-       write(lupri,'(/A/)') 'Matrix of atomic neighbours'
-       do iAtomA=1,nAtoms
-          write(lupri,*) neighbours(iAtomA,:)
-       enddo
+       !write(lupri,'(/A/)') 'Matrix of atomic neighbours'
+       !do iAtomA=1,nAtoms
+       !   write(lupri,*) neighbours(iAtomA,:)
+       !enddo
 
-       call lstimer('neighbour',te,ts,lupri)
+       !call lstimer('neighbour',te,ts,lupri)
                      
        ! Loop over A
        do iAtomA=1,nAtoms
@@ -1607,14 +1629,14 @@ contains
           matH_Q=0E0_realk
           call getHQcoeff(matH_Q,calpha_ab_mo,alpha_beta_mo,iAtomA,neighbours,&
                MOcoeff,orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
-               lupri,luerr)
+               nOcc,lupri,luerr)
                               
           ! --- Construction of matrix D_i^muQ for AtomQ=AtomA
           call mem_alloc(matD_Q,nAuxA,nOcc,nBastReg)
           matD_Q=0E0_realk
           call getDQcoeff(matD_Q,calpha_ab_mo,iAtomA,neighbours,MOcoeff,&
                orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
-               lupri,luerr)
+               nOcc,lupri,luerr)
           
           ! --- Addition of the AtomQ=AtomA contribution to the matrix L^munu 
           call dgemm('N','N',nBastReg,nBastReg,nAuxA*nOcc,1.0E0_realk,matH_Q,&
@@ -1624,12 +1646,14 @@ contains
           call mem_dealloc(matH_Q)
        Enddo !Loop A
        
+       ! --- If first iteration, store the PARI coeff on disk
        if (compute_coeff) then
           CALL io_add_filename(setting%io,C_filename,lupri)
           CALL io_write_mat3d_mo(calpha_ab_mo,nAtoms,nAtoms,C_filename,&
                setting%io,lupri,luerr) 
        endif
 
+       ! --- Deallocations
        do iAtomA=1,nAtoms
           do iAtomB=1,nAtoms
              if (associated(calpha_ab_mo(iAtomA,iAtomB)%elements)) then
@@ -1820,7 +1844,7 @@ subroutine get_neighbours(neighbours,orbitalInfo,regCSfull,threshold,molecule,&
   Integer(kind=short)                   :: maxgab
  
   nAtoms=orbitalInfo%nAtoms
-  write(lupri,*) 'threshold',threshold
+  !write(lupri,*) 'threshold',threshold
   do iAtomA=1,nAtoms
        call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
             nAuxA,startAuxA,endAuxA)

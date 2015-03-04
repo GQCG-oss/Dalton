@@ -313,9 +313,9 @@ CONTAINS
     Real(realk)                :: threshold = 1E-20_realk 
     Real(realk)                :: charge_diff_max,xdipole_diff_max
     Real(realk)                :: ydipole_diff_max,zdipole_diff_max
-    Real(realk)                :: ts,te
+    !Real(realk)                :: ts,te
 
-    call lstimer('START ',te,ts,lupri)
+    !call lstimer('START ',te,ts,lupri)
 
     threshold = SETTING%SCHEME%PARI_THRESHOLD*SETTING%SCHEME%THRESHOLD
 
@@ -610,7 +610,7 @@ CONTAINS
     call mem_dealloc(alpha_ab)
     call mem_dealloc(alphaBeta)
 
-    call lstimer('coeff_block',te,ts,lupri)
+    !call lstimer('coeff_block',te,ts,lupri)
   end subroutine getPariCoefficientsBlock
 
   SUBROUTINE freePariCoefficients(calpha_ab,nAtoms)
@@ -646,7 +646,7 @@ CONTAINS
   !> \param luerr Default print-unit for termination
   subroutine getHQcoeff(matH_Q,calpha_ab_mo,alpha_beta_mo,iAtomA,neighbours,MOcoeff,&
        orbitalInfo,setting,molecule,atoms,regCSfull,auxCSfull,&
-       lupri,luerr)
+       nOcc,lupri,luerr)
     implicit none
     real(realk),pointer                   :: matH_Q(:,:,:)
     Real(realk),pointer                   :: MOcoeff(:,:)
@@ -655,7 +655,7 @@ CONTAINS
     type(molecularorbitalinfo),intent(in) :: orbitalInfo
     TYPE(LSSETTING),intent(inout)         :: SETTING
     Integer,intent(in)                    :: LUPRI,LUERR
-    integer,intent(in)                    :: iAtomA
+    integer,intent(in)                    :: iAtomA,nOcc
     TYPE(LSTENSOR),pointer                :: regCSfull,auxCSfull
     TYPE(MoleculeInfo),pointer            :: molecule
     Type(moleculeinfo),pointer            :: atoms(:)
@@ -674,17 +674,17 @@ CONTAINS
     integer                    :: nRegC,startRegC,endRegC
     integer                    :: nAuxC,startAuxC,endAuxC
     integer                    :: iAtomCfrag
-    integer                    :: iAuxA,iRegB,iRegC,nAtoms,nOcc,nRegFrag,iReg
+    integer                    :: iAuxA,iRegB,iRegC,nAtoms,nRegFrag,iReg
     Real(realk),pointer        :: GQ_nusigma(:,:,:),GQ_sigmanu(:,:,:)
     Real(realk),pointer        :: matH_Q_trans(:,:,:)
     Real(realk),pointer        :: tmp(:,:,:),alpha_cd(:,:,:),tmp1(:,:,:),tmp2(:,:,:)
-    Real(realk)                :: ts,te
+    !Real(realk)                :: ts,te
     
-    call lstimer('START ',te,ts,lupri)
+    !call lstimer('START ',te,ts,lupri)
 
     nAtoms = orbitalInfo%nAtoms
     nBastReg = molecule%nBastReg
-    nOcc=molecule%nelectrons/2
+    !nOcc=molecule%nelectrons/2
 
     call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
          nAuxA,startAuxA,endAuxA) 
@@ -764,7 +764,7 @@ CONTAINS
     enddo
 
     call mem_dealloc(matH_Q_trans)
-    call lstimer('matH',te,ts,lupri)
+    !call lstimer('matH',te,ts,lupri)
   end subroutine getHQcoeff
 
 
@@ -922,7 +922,7 @@ CONTAINS
   !> \param luerr Default print-unit for termination
   subroutine getDQcoeff(matD_Q,calpha_ab_mo,iAtomA,neighbours,MOcoeff,&
                orbitalInfo,setting,molecule,atoms,regCSfull,auxCSfull,&
-               lupri,luerr)
+               nOcc,lupri,luerr)
     implicit none
     real(realk),pointer                   :: matD_Q(:,:,:)
     Real(realk),pointer                   :: MOcoeff(:,:)
@@ -930,7 +930,7 @@ CONTAINS
     type(molecularorbitalinfo),intent(in) :: orbitalInfo
     TYPE(LSSETTING),intent(inout)         :: SETTING
     Integer,intent(in)                    :: LUPRI,LUERR
-    integer,intent(in)                    :: iAtomA
+    integer,intent(in)                    :: iAtomA,nOcc
     TYPE(LSTENSOR),pointer                :: regCSfull,auxCSfull
     TYPE(MoleculeInfo),pointer            :: molecule
     Type(moleculeinfo),pointer            :: atoms(:)
@@ -943,12 +943,12 @@ CONTAINS
     integer                    :: nAuxB,startAuxB,endAuxB
     integer                    :: nRegC,startRegC,endRegC
     integer                    :: nAuxC,startAuxC,endAuxC
-    integer                    :: iAuxA,iRegA,iRegB,iRegC,nAtoms,nOcc,iOcc
+    integer                    :: iAuxA,iRegA,iRegB,iRegC,nAtoms,iOcc
     Real(realk),pointer        :: calpha_ab_block(:,:,:)
     Real(realk),pointer        :: tmp(:,:,:)
 
     nAtoms = orbitalInfo%nAtoms
-    nOcc=molecule%nelectrons/2
+    !nOcc=molecule%nelectrons/2
 
     call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
          nAuxA,startAuxA,endAuxA) 
@@ -1015,54 +1015,6 @@ CONTAINS
        endif !B in neighbour(A)
     enddo !Loop over B
   end subroutine getDQcoeff
-
-  !> \brief Returns the Cholesky decomposition of matrix D 
-  !> pivoted back in the initial basis 
-  !> \author E. Rebolini
-  !> \date 2015-02
-  !> \param Dfull Density matrix
-  !> \param MOcoeff Cholesky decomposition of Dfull
-  !> \param molecule contains information on the molecule
-  !> \param lupri Default print-unit for output
-  !> \param luerr Default print-unit for termination
-  subroutine get_chol_coeff(Dfull,MOcoeff,molecule,lupri,luerr)
-    implicit none
-    type(moleculeInfo),intent(in)  :: molecule
-    Real(realk),intent(in)         :: Dfull(molecule%nBastReg,molecule%nBastReg,1)
-    Real(realk),intent(inout)      :: MOcoeff(:,:)
-    Integer,intent(in)             :: LUPRI,LUERR
-
-    Integer                        :: nBastReg,nOcc,i,j
-    Integer                        :: RankA,INFO
-    Integer,pointer                :: PIV(:)
-    Real(realk)                    :: chol_tol,sum
-    Real(realk),pointer            :: matA(:,:),Work(:)
-
-    nBastReg=molecule%nBastReg
-    nOcc=molecule%nelectrons/2
-    !write(lupri,'(/A,i4,A/)') 'The molecule contains',nOcc,' occupied orbitals'
-    chol_tol=1.0E-12_realk
-    call mem_alloc(matA,nBastReg,nBastReg)
-    call mem_alloc(PIV,nBastReg)
-    call mem_alloc(work,2*nBastReg)
-    INFO=-1
-    RankA=0
-    PIV(:)=0
-    matA(:,:) = Dfull(:,:,1)
-    
-    call dpstrf('L',nBastReg,matA,nBastReg,PIV,RankA,chol_tol,Work,INFO)
-    
-    do j=1,nOcc
-       do i=j,nBastReg
-          MOcoeff(PIV(i),j)=MatA(i,j)
-       enddo
-    enddo
-    
-    call mem_dealloc(PIV)
-    call mem_dealloc(matA)
-    call mem_dealloc(work)
-  end subroutine get_chol_coeff
-
 
   !> \brief Constructs the density coefficients centered on one atom A for PARI-K
   !> \latexonly
@@ -1498,47 +1450,67 @@ SUBROUTINE pari_alphaab(alpha_ab,setting,molecule,atoms,iAtomA,iAtomB,&
 
 END SUBROUTINE pari_alphaab
 
-SUBROUTINE pari_alphacd(alpha_cd,setting,atoms,iAtomA,iAtomC,iAtomD,&
-     nAuxA,nRegC,nRegD,regCSfull,auxCSfull,lupri,luerr)
-  implicit none
-  TYPE(lssetting),intent(inout) :: setting
-  Integer,intent(in)            :: iAtomA,iAtomC,iAtomD,nAuxA,nRegC,nRegD,lupri,luerr
-  TYPE(moleculeinfo),pointer    :: atoms(:)
-  Real(realk),intent(in)        :: alpha_cd(nAuxA,nRegC,nRegD)
-  TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
-  
-  TYPE(LSTENSOR),pointer        :: auxCSa,regCScd
-  Real(realk)                   :: ts,te
-  
-  CALL LSTIMER('START ',te,ts,lupri)
-  !set threshold
-  SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
-  
-  IF (setting%scheme%CS_SCREEN) THEN
-     NULLIFY(auxCSa)
-     ALLOCATE(auxCSa)
-     NULLIFY(regCScd)
-     ALLOCATE(regCScd)
-     call ls_subScreenAtomic(regCScd,regCSfull,iAtomC,iAtomD,nRegC,nRegD,.FALSE.)
-     call ls_subScreenAtomic(auxCSa,auxCSfull,iAtomA,1,nAuxA,1,.FALSE.)
-  ENDIF
-  
-  call typedef_setMolecules(setting,atoms(iAtomA),1,atoms(iAtomC),3,atoms(iAtomD),4)
-  call initIntegralOutputDims(setting%Output,nAuxA,1,nRegC,nRegD,1)
-  IF (setting%scheme%CS_SCREEN) call ls_attach_gab_to_setting(setting,auxCSa,regCScd)
-  call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
-       RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
-  CALL retrieve_Output(lupri,setting,alpha_cd,.FALSE.)
-  IF (setting%scheme%CS_SCREEN) THEN
-     call ls_free_gab_from_setting(setting,lupri)
-     call lstensor_free(regCScd)
-     call lstensor_free(auxCSa)
-     DEALLOCATE(auxCSa)
-     DEALLOCATE(regCScd)
-  ENDIF
-  CALL LSTIMER('alphacd ',te,ts,lupri)
-END SUBROUTINE pari_alphacd
+!!$SUBROUTINE pari_alphacd(alpha_cd,setting,atoms,iAtomA,iAtomC,iAtomD,&
+!!$     nAuxA,nRegC,nRegD,regCSfull,auxCSfull,lupri,luerr)
+!!$  implicit none
+!!$  TYPE(lssetting),intent(inout) :: setting
+!!$  Integer,intent(in)            :: iAtomA,iAtomC,iAtomD,nAuxA,nRegC,nRegD,lupri,luerr
+!!$  TYPE(moleculeinfo),pointer    :: atoms(:)
+!!$  Real(realk),intent(in)        :: alpha_cd(nAuxA,nRegC,nRegD)
+!!$  TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
+!!$  
+!!$  TYPE(LSTENSOR),pointer        :: auxCSa,regCScd
+!!$  Real(realk)                   :: ts,te
+!!$  
+!!$  CALL LSTIMER('START ',te,ts,lupri)
+!!$  !set threshold
+!!$  SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+!!$  
+!!$  IF (setting%scheme%CS_SCREEN) THEN
+!!$     NULLIFY(auxCSa)
+!!$     ALLOCATE(auxCSa)
+!!$     NULLIFY(regCScd)
+!!$     ALLOCATE(regCScd)
+!!$     call ls_subScreenAtomic(regCScd,regCSfull,iAtomC,iAtomD,nRegC,nRegD,.FALSE.)
+!!$     call ls_subScreenAtomic(auxCSa,auxCSfull,iAtomA,1,nAuxA,1,.FALSE.)
+!!$  ENDIF
+!!$  
+!!$  call typedef_setMolecules(setting,atoms(iAtomA),1,atoms(iAtomC),3,atoms(iAtomD),4)
+!!$  call initIntegralOutputDims(setting%Output,nAuxA,1,nRegC,nRegD,1)
+!!$  IF (setting%scheme%CS_SCREEN) call ls_attach_gab_to_setting(setting,auxCSa,regCScd)
+!!$  call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
+!!$       RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+!!$  CALL retrieve_Output(lupri,setting,alpha_cd,.FALSE.)
+!!$  IF (setting%scheme%CS_SCREEN) THEN
+!!$     call ls_free_gab_from_setting(setting,lupri)
+!!$     call lstensor_free(regCScd)
+!!$     call lstensor_free(auxCSa)
+!!$     DEALLOCATE(auxCSa)
+!!$     DEALLOCATE(regCScd)
+!!$  ENDIF
+!!$  CALL LSTIMER('alphacd ',te,ts,lupri)
+!!$END SUBROUTINE pari_alphacd
 
+
+!> \brief Compute three-center integrals (alpha|cd)
+!> alpha in Aux(A), c in Reg(C) and d in Reg(neighbours(C))
+!> \author E. Rebolini
+!> \date 2015-03
+!> \param alpha_cd 3-center integrals of dim(AuxA,RegC,RegFrag)
+!> \param orbitalInfo Orbital information
+!> \param setting Contains information about the integral settings
+!> \param atoms Each molecule made of only one atom 
+!> \param iAtomA atom on which alpha is centered
+!> \param iAtomC atom on which c in centered
+!> \param neighbourFrag fragment composed of the atomic neighbours of C, on which d is centered
+!> \param neighbours matrix of neighbourhood relationship between atoms
+!> \param nAuxA number of Aux. basis functions centered on A
+!> \param nRegC number of Reg. basis functions centered on C
+!> \param nRegFrag number of Reg. basis functions centered on the neighbours of C
+!> \param regCSfull screening matrix for the Reg. basis  G_ab = log( sqrt( (ab|ab) ) )
+!> \param auxCSfull screening matrix for the Aux. basis
+!> \param lupri Default print-unit for output
+!> \param luerr Default print-unit for termination
 SUBROUTINE pari_alphacd_neighbour(alpha_cd,orbitalInfo,setting,atoms,iAtomA,iAtomC,&
      neighbourFrag,neighbours,nNeighbour,nAuxA,nRegC,nRegFrag,regCSfull,&
      auxCSfull,lupri,luerr)
@@ -1555,9 +1527,8 @@ SUBROUTINE pari_alphacd_neighbour(alpha_cd,orbitalInfo,setting,atoms,iAtomA,iAto
   TYPE(LSTENSOR),pointer        :: auxCSa,regCScd
   Integer                       :: dummyAtoms(1),atoms_cd(nNeighbour)
   Integer                       :: nAtoms,iAtom,i
-  Real(realk)                   :: ts,te
-  
-  
+  !Real(realk)                   :: ts,te
+    
   !set threshold
   SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
   nAtoms = orbitalInfo%nAtoms
@@ -1574,12 +1545,9 @@ SUBROUTINE pari_alphacd_neighbour(alpha_cd,orbitalInfo,setting,atoms,iAtomA,iAto
            i = i+1
         endif
      enddo
-     
      dummyAtoms(1) = iAtomC
-     
      call ls_subScreenFromList(regCScd,regCSfull,dummyAtoms,atoms_cd,&
           1,nNeighbour,nRegC,nRegFrag,.FALSE.)
-     
      call ls_subScreenAtomic(auxCSa,auxCSfull,iAtomA,1,nAuxA,1,.FALSE.)
   ENDIF
   
@@ -1591,10 +1559,10 @@ SUBROUTINE pari_alphacd_neighbour(alpha_cd,orbitalInfo,setting,atoms,iAtomA,iAto
      call ls_attach_gab_to_setting(setting,auxCSa,regCScd)
   endif
 
-  CALL LSTIMER('START ',te,ts,lupri)
+  !CALL LSTIMER('START ',te,ts,lupri)
   call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,CoulombOperator,&
        RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
-  CALL LSTIMER('alpha|cd',te,ts,lupri)
+  !CALL LSTIMER('alpha|cd',te,ts,lupri)
   CALL retrieve_Output(lupri,setting,alpha_cd,.FALSE.)
   
   IF (setting%scheme%CS_SCREEN) THEN
@@ -1697,6 +1665,26 @@ CALL pariFreePairFragment(AB,iAtomA,iAtomB)
 
 END SUBROUTINE pari_alphaBeta
 
+!> \brief Returns the two-center integrals (Q|R)
+!> \author E. Rebolini
+!> \date 2015-03
+!>
+!> check if the block has already been computed and either retuen directly 
+!> or compute it, store it and return it
+!>
+!> \param QR_mat matrix of 2-center integrals (Q|R) a specific pair of atoms
+!> \param alpha_beta_mo full matrix of 2-center integrals
+!> \param iAtomA atom on which Q is centered
+!> \param iAtomB atom on which R is centered
+!> \param nAuxA nb of Aux. basis functions centered on A
+!> \param nAuxB nb of Aux. basis functions centered on B
+!> \param setting Integral settings
+!> \param molecule
+!> \param atoms
+!> \param regCSfull
+!> \param auxCSfull
+!> \param lupri
+!> \param luerr
 subroutine getQR(QR_mat,alpha_beta_mo,iAtomA,iAtomB,nAuxA,nAuxB,&
      setting,molecule,atoms,regCSfull,auxCSfull,lupri,luerr)
   implicit none
@@ -1706,7 +1694,6 @@ subroutine getQR(QR_mat,alpha_beta_mo,iAtomA,iAtomB,nAuxA,nAuxB,&
   TYPE(lssetting),intent(inout) :: setting
   TYPE(moleculeinfo),pointer    :: atoms(:)
   TYPE(moleculeinfo),intent(in) :: molecule
-  Real(realk),pointer           :: alphaBeta(:,:) !nAuxA,nAuxB
   TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
 
   if (associated(alpha_beta_mo(iAtomA,iAtomB)%elements)) then
@@ -1715,22 +1702,37 @@ subroutine getQR(QR_mat,alpha_beta_mo,iAtomA,iAtomB,nAuxA,nAuxB,&
      QR_mat(:,1:nAuxB) = transpose(alpha_beta_mo(iAtomB,iAtomA)%elements(:,:))
   else
      call init_mat2d(alpha_beta_mo(iAtomA,iAtomB),nAuxA,nAuxB)
-     call pari_alphaBeta_block(alpha_beta_mo(iAtomA,iAtomB)%elements,setting,molecule,&
-          atoms,iAtomA,iAtomB,nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
+     call pari_alphaBeta_block(alpha_beta_mo(iAtomA,iAtomB)%elements,setting,&
+          molecule,atoms,iAtomA,iAtomB,nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
      QR_mat(:,1:nAuxB) = alpha_beta_mo(iAtomA,iAtomB)%elements
   endif
 
 end subroutine
 
-
+!> \brief Compute the two-center integrals (Q|R) for a given pair of atoms
+!> \author E. Rebolini
+!> \date 2015-03
+!>
+!> \param alphaBeta matrix of 2-center integrals (Q|R) a specific pair of atoms
+!> \param iAtomA atom on which Q is centered
+!> \param iAtomB atom on which R is centered
+!> \param nAuxA nb of Aux. basis functions centered on A
+!> \param nAuxB nb of Aux. basis functions centered on B
+!> \param setting Integral settings
+!> \param molecule
+!> \param atoms
+!> \param regCSfull
+!> \param auxCSfull
+!> \param lupri
+!> \param luerr
 SUBROUTINE pari_alphaBeta_block(alphaBeta,setting,molecule,&
      atoms,iAtomA,iAtomB,nAuxA,nAuxB,regCSfull,auxCSfull,lupri,luerr)
   implicit none
-  TYPE(lssetting),intent(inout) :: setting
-  Integer,intent(in)            :: iAtomA,iAtomB,nAuxA,nAuxB,lupri,luerr
-  TYPE(moleculeinfo),pointer    :: atoms(:)
-  TYPE(moleculeinfo),intent(in) :: molecule
   Real(realk),pointer           :: alphaBeta(:,:) !nAuxA,nAuxB
+  TYPE(lssetting),intent(inout) :: setting
+  TYPE(moleculeinfo),intent(in) :: molecule
+  TYPE(moleculeinfo),pointer    :: atoms(:)
+  Integer,intent(in)            :: iAtomA,iAtomB,nAuxA,nAuxB,lupri,luerr
   TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
 
   TYPE(moleculeinfo),pointer :: AB
@@ -1739,11 +1741,11 @@ SUBROUTINE pari_alphaBeta_block(alphaBeta,setting,molecule,&
   
   TYPE(LSTENSOR),pointer     :: auxCSa,auxCSb
   INTEGER                    :: atomsAB(2),dummyAtoms(1)
-  Real(realk)                :: ts,te
+  !Real(realk)                :: ts,te
 
   !set threshold
-  SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%PARI_THRESHOLD
-
+  SETTING%SCHEME%intTHRESHOLD = &
+       SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%PARI_THRESHOLD
 
   IF (setting%scheme%CS_SCREEN) THEN
      NULLIFY(auxCSa)
@@ -1758,10 +1760,10 @@ SUBROUTINE pari_alphaBeta_block(alphaBeta,setting,molecule,&
   call typedef_setMolecules(setting,atoms(iAtomA),1,atoms(iAtomB),3)
   call initIntegralOutputDims(setting%Output,nAuxA,1,nAuxB,1,1)
   IF (setting%scheme%CS_SCREEN) call ls_attach_gab_to_setting(setting,auxCSa,auxCSb)
-  CALL LSTIMER('START ',te,ts,lupri)
+  !CALL LSTIMER('START ',te,ts,lupri)
   call ls_getIntegrals(AODFdefault,AOEmpty,AODFdefault,AOEmpty,&
        CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
-  CALL LSTIMER('(al|be)',te,ts,lupri)
+  !CALL LSTIMER('(al|be)',te,ts,lupri)
   CALL retrieve_Output(lupri,setting,alphaBeta,.FALSE.)
   IF (setting%scheme%CS_SCREEN) THEN
      call ls_free_gab_from_setting(setting,lupri)
@@ -2014,6 +2016,23 @@ IF (iAtomA.NE.iAtomB) THEN
 ENDIF
 END SUBROUTINE pariFreePairFragment
 
+
+!> \brief Construct a molecular fragment with the neighbours of A
+!> \author E. Rebolini
+!> \date 2015-03
+!>
+!> \param neighbourFrag Information on the fragment
+!> \param iAtomA Atom whose neighbours B are considered where B>=A
+!> \param neighbours matrix of neighbourhood relationship
+!> \param nNeighbour nb. of neighbours for Atom A 
+!> \param basis Basis information
+!> \param molecule Information for the full molecule
+!> \param OrbitalInfo Orbital information for the full molecule
+!> \param nReg nb. of Reg. basis functions on the fragment
+!> \param atoms
+!> \param setting Integral settings
+!> \param lupri
+!> \param luerr
 subroutine setNeighbourFragment(neighbourFrag,neighbourFragTarget,&
      iAtomA,neighbours,nNeighbour,basis,molecule,&
      orbitalInfo,nReg,atoms,setting,lupri,luerr)
@@ -2062,6 +2081,13 @@ subroutine setNeighbourFragment(neighbourFrag,neighbourFragTarget,&
   endif
 end subroutine setNeighbourFragment
 
+
+!> \brief Free the molecular fragment of the neighbours of A
+!> \author E. Rebolini
+!> \date 2015-03
+!>
+!> \param neighbourFrag Information on the fragment
+!> \param nNeighbour nb. of neighbours for Atom A 
 subroutine freeNeighbourFragment(neighbourFrag,nNeighbour)
   implicit none
   TYPE(moleculeinfo),pointer    :: neighbourFrag
