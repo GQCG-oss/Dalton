@@ -551,7 +551,7 @@ contains
            call get_CCSDgradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
          end if
 #endif
-         if(DECinfo%ccmodel == MODEL_MP2)then
+         if(DECinfo%ccmodel == MODEL_MP2 .or. DECinfo%ccmodel == MODEL_RIMP2) then
            fullgrad%EHF = EHF
            ! Calculate MP2 density/gradient and save MP2 density matrices to file
            call get_mp2gradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
@@ -1185,7 +1185,7 @@ subroutine print_dec_info()
 !          call free_mp2grad(grad)
 !        endif
 #endif
-        if(DECinfo%ccmodel == MODEL_MP2)then
+        if(DECinfo%ccmodel == MODEL_MP2 .or. DECinfo%ccmodel == MODEL_RIMP2) then
           call update_full_mp2gradient(grad,fullgrad)
           call free_mp2grad(grad)
         end if

@@ -228,7 +228,7 @@ real(realk),pointer :: max_orbspreads(:)
   !check for symmetry minimum, make random rotation
   ! in case such a minimum is detected
   nrmG = sqrt(mat_sqnorm2(G))
-  if (nrmG.lt. 1.0E-8) then
+  if (nrmG.lt. 1.0E-8_realk) then
     write(CFG%lupri,'(a,ES10.2)') '  %LOC% False minimum detected. Gradient norm = ', nrmG 
     call mat_assign(X,G)
     call normalize(X) 

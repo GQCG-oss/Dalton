@@ -1249,8 +1249,16 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            config%SubSystemDensity = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
-        CASE('.PDMM');  config%opt%cfg_prefer_PDMM = .true.
+        CASE('.PDMM')
+           config%opt%cfg_prefer_PDMM = .true.
+           !Set tensor debug to TRUE
+           call tensor_set_debug_mode_true
+           !FIXME the PDMM module should not need this. 
+           !It is related to the tensor implementation that do
+           !not have barriers inside it. This means that one sided communication 
+           !can cause problems when nodes are reading info that have not yet been written.
 #ifdef VAR_MPI
+           call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
         CASE('.PDMMBLOCKSIZE');  
            print*,'PDMMBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE

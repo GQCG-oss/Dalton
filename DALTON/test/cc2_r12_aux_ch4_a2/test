@@ -17,13 +17,13 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-f.add(re = 'Total SCF energy',
+f.add(string = 'Total SCF energy',
       abs_tolerance = 1.0e-7)
 
-f.add(re = 'Total MP2-R12/B energy',
+f.add(string = 'Total MP2-R12/B energy',
       abs_tolerance = 1.0e-7)
 
-f.add(re = 'Total CC2-R12/B energy',
+f.add(string = 'Total CC2-R12/B energy',
       abs_tolerance = 1.0e-7)
 
 f.add(from_string = 'Total energies in Hartree',
