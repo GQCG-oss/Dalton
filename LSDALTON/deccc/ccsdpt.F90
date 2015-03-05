@@ -4,7 +4,6 @@
 !> \author: Janus Juul Eriksen
 !> \date: 2012-2014, Aarhus
 module ccsdpt_module
-  use,intrinsic :: iso_c_binding,only:c_f_pointer,c_loc
 
 #ifdef VAR_MPI
   use infpar_module
@@ -25,6 +24,7 @@ module ccsdpt_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use lspdm_tensor_operations_module
+  use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -167,6 +167,16 @@ contains
 
     call time_start_phase(PHASE_WORK)
 
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
+
     master = .true.
     nodtotal = 1
 #ifdef VAR_MPI
@@ -302,6 +312,9 @@ contains
        call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ovoo,vvvo)
 
     endif
+
+    call print_norm(vovo,"VOVO norm",print_on_rank=0)
+    call print_norm(ccsd_doubles,"t2 norm  ",print_on_rank=0)
 
     write(DECinfo%output,*) ''
     write(DECinfo%output,*) ''
@@ -573,6 +586,13 @@ contains
     call mem_dealloc(eivalocc)
     call mem_dealloc(eivalvirt)
 
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
+
     if (master) call LSTIMER('CCSDPT_DRIVER (TOTAL)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine ccsdpt_driver
@@ -722,7 +742,7 @@ contains
 #ifdef VAR_OPENACC
 
     if (DECinfo%acc_sync) then
-       async_id = int(1,kind=acc_handle_kind)
+       async_id = acc_async_sync
     else
        do m = 1,num_ids
           async_id(m) = int(m,kind=acc_handle_kind)
@@ -740,18 +760,6 @@ contains
     endif
 
 #endif
-
-    print *,'proc. = ',infpar%lg_mynum,'async_id = ',async_id
-
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -1448,13 +1456,6 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
-
     ! release async handles array
     call mem_dealloc(async_id)
 
@@ -1784,7 +1785,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    real(realk) :: tcpu,twall
+    real(realk) :: tcpu,twall,norm
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -1814,7 +1815,7 @@ contains
 #ifdef VAR_OPENACC
 
     if (DECinfo%acc_sync) then
-       async_id = int(1,kind=acc_handle_kind)
+       async_id = acc_async_sync
     else
        do m = 1,num_ids
           async_id(m) = int(m,kind=acc_handle_kind)
@@ -1833,24 +1834,23 @@ contains
 
 #endif
 
-    print *,'async_id = ',async_id
-
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
-
 #ifdef VAR_CUBLAS
 
     ! initialize the CUBLAS context
     stat = cublasCreate_v2(cublas_handle)
 
 #endif
+
+    norm = 0.0E0_realk
+    do i=1,nocc
+       norm=norm+eivalocc(i)*eivalocc(i)
+    enddo
+    print *,'eivalocc norm  = ',norm
+    norm = 0.0E0_realk
+    do i=1,nvirt
+       norm=norm+eivalvirt(i)*eivalvirt(i)
+    enddo
+    print *,'eivalvirt norm = ',norm
 
 !$acc wait
 
@@ -2261,13 +2261,6 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
-
     ! release async handles array
     call mem_dealloc(async_id)
 
@@ -2400,7 +2393,7 @@ contains
 #ifdef VAR_OPENACC
 
     if (DECinfo%acc_sync) then
-       async_id = int(1,kind=acc_handle_kind)
+       async_id = acc_async_sync
     else
        do m = 1,num_ids
           async_id(m) = int(m,kind=acc_handle_kind)
@@ -2418,16 +2411,6 @@ contains
     endif
 
 #endif
-
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -3031,13 +3014,6 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
-
     ! release async handles array
     call mem_dealloc(async_id)
 
@@ -3369,7 +3345,7 @@ contains
 #ifdef VAR_OPENACC
 
     if (DECinfo%acc_sync) then
-       async_id = int(1,kind=acc_handle_kind)
+       async_id = acc_async_sync
     else
        do m = 1,num_ids
           async_id(m) = int(m,kind=acc_handle_kind)
@@ -3387,16 +3363,6 @@ contains
     endif
 
 #endif
-
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -3807,13 +3773,6 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
-
     ! release async handles array
     call mem_dealloc(async_id)
 
@@ -3853,6 +3812,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4017,6 +3979,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4181,6 +4146,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4345,6 +4313,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4510,6 +4481,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4800,6 +4774,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5245,6 +5222,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5348,6 +5328,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5461,6 +5444,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5564,6 +5550,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5679,6 +5668,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5801,6 +5793,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5954,6 +5949,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6110,6 +6108,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6281,6 +6282,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6440,6 +6444,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6623,6 +6630,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6917,6 +6927,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -9704,8 +9717,8 @@ contains
     !   do E[4] energy part
     ! ***********************
 
-    eccsdpt_matrix_cou = 0.0_realk
-    eccsdpt_matrix_exc = 0.0_realk
+    eccsdpt_matrix_cou = 0.0E0_realk
+    eccsdpt_matrix_exc = 0.0E0_realk
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
     ccsdpt_e4 = 0.0E0_realk
@@ -9886,8 +9899,8 @@ contains
     !   do E[5] energy part
     ! ***********************
 
-    e5_matrix = 0.0_realk
-    ccsdpt_e5 = 0.0_realk
+    e5_matrix = 0.0E0_realk
+    ccsdpt_e5 = 0.0E0_realk
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
     !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
@@ -10456,7 +10469,7 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call c_f_pointer(c_loc(ovoo%elm1(1)),dummy2,[(i8*nocc*nvirt)*nocc*nocc])
+       call c_f_pointer(c_loc(ovoo%elm1(1)),dummy2,[(i8*nocc*nvirt)*nocc*nocc])      
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
@@ -10474,6 +10487,7 @@ contains
 #endif
 
     call print_norm(vvvo,"VVVO norm",print_on_rank=0)
+    call print_norm(ovoo,"OVOO norm",print_on_rank=0)
 
     ! free stuff
     ! **********
@@ -11541,8 +11555,10 @@ contains
          if (gpu) then
             write(DECinfo%output,'(a,l4)')     'Asynchronous OpenACC?  = ',acc_async
             write(DECinfo%output,'(a,i4)')     'Number of GPUs         = ',num_gpu
-            write(DECinfo%output,'(a,g11.4)')     'Total GPU memory (GB)  = ',total_gpu * gb
-            write(DECinfo%output,'(a,g11.4)')     'Free GPU memory (GB)   = ',free_gpu * gb
+            write(DECinfo%output,'(a,g11.4)')     'Total GPU memory (GB)  = ',total_gpu / gb
+            write(DECinfo%output,'(a,g11.4)')     'Free GPU memory (GB)   = ',free_gpu / gb
+            print *,'Total GPU memory (Bytes) = ',total_gpu
+            print *,'Free GPU memory  (Bytes) = ',free_gpu
          endif
          write(DECinfo%output,*)
          write(DECinfo%output,*)

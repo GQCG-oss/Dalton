@@ -2205,6 +2205,8 @@ module pno_ccsd_module
      character :: INTSPEC(5)
      logical :: master, I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE, this_is_query, this_is_not_query
      real(realk) :: tw,tc,tbeg,times(9),times_in_loops(8,3)
+     integer(kind=8) :: my_s1,my_s2,my_s3,my_s4,my_s5
+     integer(kind=8) :: my_ws(5)
      real(realk), pointer :: my_w1(:),my_w2(:),my_w3(:),my_w4(:),my_w5(:)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -2747,7 +2749,7 @@ module pno_ccsd_module
               !OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
               !OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair,nthreads_level1_int_dir) &
               !OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
-              !OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,&
+              !OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,my_s1,my_s2,my_s3,my_s4,my_s5,&
               !OMP my_w4,my_w5,tid,EOS,edit,h3) REDUCTION(+:times,times_in_loops,tc,tw)&
               !OMP NUM_THREADS(nthreads_level1_int_dir(third_loop))
               tid = 0
@@ -2759,8 +2761,15 @@ module pno_ccsd_module
                  my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,third_loop):info_omp1(end_array,tid+1,w2_tag,third_loop))
                  my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,third_loop):info_omp1(end_array,tid+1,w3_tag,third_loop))
 
+                 my_s1 = info_omp1(end_array,tid+1,w1_tag,third_loop)-info_omp1(beg_array,tid+1,w1_tag,third_loop)
+                 my_s2 = info_omp1(end_array,tid+1,w2_tag,third_loop)-info_omp1(beg_array,tid+1,w2_tag,third_loop)
+                 my_s3 = info_omp1(end_array,tid+1,w3_tag,third_loop)-info_omp1(beg_array,tid+1,w3_tag,third_loop)
+
                  my_w4 => null()
                  my_w5 => null()
+
+                 my_s4 = 0
+                 my_s5 = 0
               endif
 
               !OMP DO SCHEDULE(DYNAMIC)
@@ -2801,6 +2810,11 @@ module pno_ccsd_module
                     query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*nor)*tred*2)
 
                     var_inp = 0
+                    my_s1 = 0
+                    my_s2 = 0
+                    my_s3 = 0
+                    my_s4 = 0
+                    my_s5 = 0
 
                  else
 
@@ -2861,17 +2875,20 @@ module pno_ccsd_module
                     call c_f_pointer(c_loc(xv_pair(1,1,tid+1)),h3,[(i8*nb)*pnv])
                  endif
 
+                 my_ws=[my_s1,my_s2,my_s3,my_s4,my_s5]
                  if( PS )then
                     call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns),nor,tlen,tred,fa,fg,la,lg,&
-                       &rpd,pnv,nb,goffs,aoffs,4,var_inp(1:3),.false.,tw,tc, &
-                       &rest_occ_om2=.true., act_no = no, query = this_is_query )  
+                       &rpd,pnv,nb,goffs,aoffs,4,my_ws(1:3),.false.,tw,tc,rest_occ_om2=.true., act_no = no, &
+                       &query = this_is_query )  
                  else
                     call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns),nor,tlen,tred,fa,fg,la,lg,&
-                       &rpd,pnv,nb,goffs,aoffs,4,var_inp(1:3),.false.,tw,tc, &
+                       &rpd,pnv,nb,goffs,aoffs,4,my_ws(1:3),.false.,tw,tc, &
                        &order=[1,3,2,4], act_no = no, sio4_ilej = .false., query = this_is_query )
                  endif
 
                  if( this_is_query )then
+
+                    var_inp(1:3) = my_ws(1:3)
 
                     query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),var_inp(1))
                     query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),var_inp(2))
