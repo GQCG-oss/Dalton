@@ -702,11 +702,15 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      !the number of MPI nodes that can be used effectively is the number of atoms
      !However in the rest of the code they use that there should be a greater number of 
      !integral tasks than number of nodes. They use      
-     !ntasks .LE. infpar%lg_nodtot*DECinfo%MPIsplit  
+     !ntasks <= infpar%lg_nodtot*DECinfo%MPIsplit  
      !to determine if the MPI group should be reduced.  
      !so here we set ntasks to  
-     ntasks = MyFragment%natoms*DECinfo%MPIsplit  
-     !FIXME: This should in case of DECinfo%AuxAtomicExtent be nAtomsAux
+     if(DECinfo%MPIsplit/=0)then
+        ntasks = MyFragment%natoms*DECinfo%MPIsplit  
+     else
+        ntasks = MyFragment%natoms
+     endif
+     !FIXME: This should in case of DECinfo%AuxiliaryAtomExtent be nAtomsAux
      !to obtain:
      !MyFragment%natoms .LE. infpar%lg_nodtot
   else
