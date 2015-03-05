@@ -7,8 +7,8 @@ module tensor_interface_module
 !`DIL backend (requires Fortran-2008, MPI-3):
 #ifdef FORTRAN_2008
 #ifdef VAR_MPI
-!#define DIL_ACTIVE
-!#define DIL_DEBUG_ON
+#define DIL_ACTIVE
+#define DIL_DEBUG_ON
 #endif
 #endif
 

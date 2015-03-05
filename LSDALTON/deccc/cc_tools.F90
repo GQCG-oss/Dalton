@@ -5,8 +5,8 @@ module cc_tools_module
 !`DIL backend (depends on Fortran-2008, MPI-3):
 #ifdef FORTRAN_2008
 #ifdef VAR_MPI
-!#define DIL_ACTIVE
-!#define DIL_DEBUG_ON
+#define DIL_ACTIVE
+#define DIL_DEBUG_ON
 #endif
 #endif
 
@@ -733,7 +733,7 @@ module cc_tools_module
       case(1) !`DIL: Scheme 1 only
          !!SYMMETRIC COMBINATION:
          !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs)
+         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
          !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -771,7 +771,7 @@ module cc_tools_module
 
          !!ANTI-SYMMETRIC COMBINATION:
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs)
+         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
          !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
