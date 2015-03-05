@@ -1262,6 +1262,8 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.PDMMBLOCKSIZE');  
            print*,'PDMMBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE
+        CASE('.PDMMGROUPSIZE');
+           READ(LUCMD,*) infpar%PDMMGroupSize
         CASE('.SCALAPACKGROUPSIZE');
            READ(LUCMD,*) infpar%ScalapackGroupSize
         CASE('.SCALAPACKAUTOGROUPSIZE');
