@@ -58,7 +58,7 @@ module matrix_operations_pdmm
   Type(MatrixPDMp) :: pdmm_Marray(500)
   integer :: pdmm_MaxAllocatedMat
   integer :: BLOCK_SIZE_PDM
-  logical :: pdmm_mpi_set
+
 contains
   subroutine InitMatrixModulePDM()
     implicit none

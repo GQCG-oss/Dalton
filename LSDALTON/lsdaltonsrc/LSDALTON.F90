@@ -845,9 +845,8 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
 #endif
   use IchorSaveGabMod
 #ifdef VAR_SCALAPACK
-  use matrix_operations_scalapack
+use matrix_operations_scalapack
 #endif
-  use matrix_operations_pdmm
 implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
@@ -889,10 +888,6 @@ implicit none
      call LSMPI_COMM_FREE(scalapack_comm)
   ENDIF
 #endif
-  IF(pdmm_mpi_set)THEN
-     !free communicator 
-     call LSMPI_COMM_FREE(pdmm_comm)
-  ENDIF
 
   call lsmpi_finalize(lupri,.false.)
 #else
