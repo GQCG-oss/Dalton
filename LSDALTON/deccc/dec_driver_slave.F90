@@ -706,7 +706,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      !to determine if the MPI group should be reduced.  
      !so here we set ntasks to  
      ntasks = MyFragment%natoms*DECinfo%MPIsplit  
-     !FIXME: This should in case of DECinfo%AuxiliaryAtomExtent be nAtomsAux
+     !FIXME: This should in case of DECinfo%AuxAtomicExtent be nAtomsAux
      !to obtain:
      !MyFragment%natoms .LE. infpar%lg_nodtot
   else
