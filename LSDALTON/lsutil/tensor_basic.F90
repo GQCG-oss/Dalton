@@ -330,17 +330,41 @@ module tensor_basic_module
        type(tensor)::arr
        select case(arr%mode)
        case(2)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm2(1:arr%dims(1),1:arr%dims(2)) => arr%elm1
+#else
           call c_f_pointer(c_loc(arr%elm1(1)),arr%elm2,arr%dims)
+#endif
        case(3)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm3(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3)) => arr%elm1
+#else
           call c_f_pointer(c_loc(arr%elm1(1)),arr%elm3,arr%dims)
+#endif
        case(4)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm4(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3),1:arr%dims(4)) => arr%elm1
+#else
           call c_f_pointer(c_loc(arr%elm1(1)),arr%elm4,arr%dims)
+#endif
        case(5)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm5(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3),1:arr%dims(4),1:arr%dims(5)) => arr%elm1
+#else
           call c_f_pointer(c_loc(arr%elm1(1)),arr%elm5,arr%dims)
+#endif
        case(6)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm6(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3),1:arr%dims(4),1:arr%dims(5),1:arr%dims(6)) => arr%elm1
+#else
           call c_f_pointer(c_loc(arr%elm1(1)),arr%elm6,arr%dims)
+#endif
        case(7)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm7(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3),1:arr%dims(4),1:arr%dims(5),1:arr%dims(6),1:arr%dims(7)) => arr%elm1
+#else
           call c_f_pointer(c_loc(arr%elm1(1)),arr%elm7,arr%dims)
+#endif
        case default
           return
        end select

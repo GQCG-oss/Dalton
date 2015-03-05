@@ -1303,6 +1303,7 @@ call LS_MPI_BUFFER(dalton%DEBUGuncontAObatch,Master)
 call LS_MPI_BUFFER(dalton%DEBUGDECPACKED,Master)
 
 call LS_MPI_BUFFER(dalton%DO4CENTERERI,Master)
+call LS_MPI_BUFFER(dalton%DUMP4CENTERERI,Master)
 call LS_MPI_BUFFER(dalton%OVERLAP_DF_J,Master)
 call LS_MPI_BUFFER(dalton%PARI_J,Master)
 call LS_MPI_BUFFER(dalton%PARI_K,Master)
