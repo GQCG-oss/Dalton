@@ -593,7 +593,7 @@ module lspdm_tensor_operations_module
 
     do lt=1,t2%nlti
 #ifdef VAR_PTR_RESHAPE
-      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t(1:t2%ti(lt)%e)
+      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
@@ -953,9 +953,9 @@ module lspdm_tensor_operations_module
        endif
 
 #ifdef VAR_PTR_RESHAPE
-       gmo_ctile(1:gmo_ctdim(1),1:gmo_ctdim(2),1:gmo_ctdim(3),1:gmo_ctdim(4)) => gmo_tile_buf(1:gmo_ts,cbuf)
-       gmo_etile(1:gmo_etdim(1),1:gmo_etdim(2),1:gmo_etdim(3),1:gmo_etdim(4)) => gmo_tile_buf(1:gmo_ts,ebuf)
-       t2tile(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t(1:t2%ti(lt)%e)
+       gmo_ctile(1:gmo_ctdim(1),1:gmo_ctdim(2),1:gmo_ctdim(3),1:gmo_ctdim(4)) => gmo_tile_buf
+       gmo_etile(1:gmo_etdim(1),1:gmo_etdim(2),1:gmo_etdim(3),1:gmo_etdim(4)) => gmo_tile_buf
+       t2tile(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
        call c_f_pointer(c_loc(gmo_tile_buf(1,cbuf)),gmo_ctile,gmo_ctdim)
        call c_f_pointer(c_loc(gmo_tile_buf(1,ebuf)),gmo_etile,gmo_etdim)
@@ -1076,7 +1076,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_PTR_RESHAPE
         tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
-        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t(1:tensor_full%ti(lt)%e)
+        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
 #else
@@ -1193,7 +1193,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_PTR_RESHAPE
         tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
-        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t(1:tensor_full%ti(lt)%e)
+        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
 #else
@@ -1309,7 +1309,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_PTR_RESHAPE
         tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
-        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t(1:tensor_full%ti(lt)%e)
+        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
 #else
@@ -1421,8 +1421,8 @@ module lspdm_tensor_operations_module
 
            !Facilitate access
 #ifdef VAR_PTR_RESHAPE
-           ut(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => u%ti(lt)%t(1:u%ti(lt)%e)
-           tt(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => u%ti(lt)%t(1:u%ti(lt)%e)
+           ut(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => u%ti(lt)%t
+           tt(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => u%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
            call c_f_pointer( c_loc(u%ti(lt)%t(1)), ut, u%ti(lt)%d )
            call c_f_pointer( c_loc(ttile(1)),      tt, u%ti(lt)%d )
@@ -1567,7 +1567,7 @@ module lspdm_tensor_operations_module
     do lt=1,t2%nlti
 
 #ifdef VAR_PTR_RESHAPE
-      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t(1:t2%ti(lt)%e)
+      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
@@ -1640,7 +1640,7 @@ module lspdm_tensor_operations_module
     do lt=1,t2%nlti
 
 #ifdef VAR_PTR_RESHAPE
-      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t(1:t2%ti(lt)%e)
+      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
@@ -1768,13 +1768,13 @@ module lspdm_tensor_operations_module
            call time_start_phase(PHASE_WORK)
 
 #ifdef VAR_PTR_RESHAPE
-           t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t(1:t2%ti(lt)%e)
-           c(1:di,1:da,1:dj,1:db) => buf_c(1:di*da*dj*db)
+           t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
+           c(1:di,1:da,1:dj,1:db) => buf_c
            if( spec == CCSD_LAG_RHS )then
               if(gmo_ccidx/=gmo_ecidx)then
-                 e(1:di,1:db,1:dj,1:da) => buf_e(1:di*da*dj*db)
+                 e(1:di,1:db,1:dj,1:da) => buf_e
               else
-                 e(1:di,1:db,1:dj,1:da) => buf_c(1:di*da*dj*db)
+                 e(1:di,1:db,1:dj,1:da) => buf_c
               endif
            endif
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -1923,7 +1923,7 @@ module lspdm_tensor_operations_module
 
 
 #ifdef VAR_PTR_RESHAPE
-      om(1:prec%ti(lt)%d(1),1:prec%ti(lt)%d(2),1:prec%ti(lt)%d(3),1:prec%ti(lt)%d(3)) => prec%ti(lt)%t(1:prec%ti(lt)%e)
+      om(1:prec%ti(lt)%d(1),1:prec%ti(lt)%d(2),1:prec%ti(lt)%d(3),1:prec%ti(lt)%d(3)) => prec%ti(lt)%t
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(prec%ti(lt)%t(1)),om,prec%ti(lt)%d)
 #else
@@ -3127,7 +3127,7 @@ module lspdm_tensor_operations_module
      if(use_wrk_space)then
         w => wrk
 #ifdef VAR_PTR_RESHAPE
-        buffA(1:A%tsize,1:nbuffsA) => w(1:A%tsize*nbuffsA)
+        buffA(1:A%tsize,1:nbuffsA) => w
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
         call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,nbuffsA])
 #else
@@ -3137,7 +3137,7 @@ module lspdm_tensor_operations_module
            buffB => null()
         else
 #ifdef VAR_PTR_RESHAPE
-           buffB(1:tsizeB,1:nbuffsB) => w(nbuffsA*A%tsize+1:nbuffsA*A%tsize+tsizeB*nbuffsB)
+           buffB(1:tsizeB,1:nbuffsB) => w
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
            call c_f_pointer(c_loc(w(nbuffsA*A%tsize+1)),buffB,[tsizeB,nbuffsB])
 #else

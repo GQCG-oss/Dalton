@@ -25,3 +25,4 @@ check_fortran_source_compiles(
 if(PTR_RESHAPE_WORKS)
     add_definitions(-DVAR_PTR_RESHAPE)
 endif()
+

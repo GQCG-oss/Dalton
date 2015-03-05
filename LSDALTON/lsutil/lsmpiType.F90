@@ -463,7 +463,7 @@ contains
       DATATYPE = MPI_INTEGER8
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-      buffertmp(1:(i8*n1)*n2) => buffer(1:n1,1:n2)
+      buffertmp(1:(i8*n1)*n2) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buffertmp,[(i8*n1)*n2])
 #else
@@ -507,7 +507,7 @@ contains
       DATATYPE = MPI_INTEGER4
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-      buffertmp(1:(i8*n1)*n2) => buffer(1:n1,1:n2)
+      buffertmp(1:(i8*n1)*n2) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buffertmp,[(i8*n1)*n2])
 #else
@@ -600,7 +600,7 @@ contains
       DATATYPE = MPI_DOUBLE_PRECISION
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:(i8*n1)*n2) => buffer(1:n1,1:n2)
+      buf(1:(i8*n1)*n2) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
 #else
@@ -626,7 +626,7 @@ contains
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
 #ifdef VAR_PTR_RESHAPE
-      buf(1:(i8*n1)*n2*n3) => buffer(1:n1,1:n2,1:n3)
+      buf(1:(i8*n1)*n2*n3) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
 #else
@@ -646,7 +646,7 @@ contains
       real(realk),pointer :: buf(:)
 #ifdef VAR_MPI
 #ifdef VAR_PTR_RESHAPE
-      buf(1:(i8*n1)*n2*n3*n4) => buffer(1:n1,1:n2,1:n3,1:n4)
+      buf(1:(i8*n1)*n2*n3*n4) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
 #else
@@ -834,7 +834,7 @@ contains
       integer(kind=8) :: n
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -856,7 +856,7 @@ contains
       integer(kind=8) :: n
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -877,7 +877,7 @@ contains
       integer(kind=8) :: n
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -898,7 +898,7 @@ contains
       integer(kind=8) :: n
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -1417,7 +1417,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -1439,7 +1439,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
@@ -1461,7 +1461,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3,1:n4)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
@@ -1713,7 +1713,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -1735,7 +1735,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -1757,7 +1757,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -1779,7 +1779,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -2022,12 +2022,16 @@ contains
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: n1,n2
+#ifdef VAR_PTR_RESHAPE
+      integer(kind=4),contiguous,target :: buffer(n1,n2)
+#else
       integer(kind=4),target :: buffer(n1,n2)
+#endif
       integer(kind=4),pointer :: buf(:)
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -2045,9 +2049,9 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+      call c_f_pointer(c_loc(buffer(1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
@@ -2063,7 +2067,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -2081,7 +2085,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -2101,7 +2105,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
@@ -2119,7 +2123,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
@@ -2137,7 +2141,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
@@ -2155,7 +2159,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
@@ -2175,7 +2179,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3,1:n4)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
@@ -2193,7 +2197,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3,1:n4)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
@@ -2211,7 +2215,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3,1:n4)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
@@ -2229,7 +2233,7 @@ contains
       integer(kind=8)::n
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
-      buf(1:n) => buffer(1:n1,1:n2,1:n3,1:n4)
+      buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
@@ -3366,7 +3370,7 @@ contains
     integer(kind=4), pointer :: buf(:)
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -3387,7 +3391,7 @@ contains
     integer(kind=4), pointer :: buf(:)
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -3409,7 +3413,7 @@ contains
     integer(kind=8), pointer :: buf(:)
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -3430,7 +3434,7 @@ contains
     integer(kind=8), pointer :: buf(:)
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -3521,7 +3525,7 @@ contains
     real(realk),pointer :: buf(:)
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -3542,7 +3546,7 @@ contains
     real(realk),pointer :: buf(:)
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -3564,7 +3568,7 @@ contains
     real(realk),pointer :: buf(:)
     n=n1*n2*n3
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2,1:n3)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
@@ -3585,7 +3589,7 @@ contains
     real(realk),pointer :: buf(:)
     n=n1*n2*n3
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2,1:n3)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
@@ -3607,7 +3611,7 @@ contains
     real(realk),pointer :: buf(:)
     n=n1*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2,1:n3,1:n4)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
@@ -3628,7 +3632,7 @@ contains
     real(realk),pointer :: buf(:)
     n=n1*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2,1:n3,1:n4)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
@@ -4032,7 +4036,7 @@ contains
     integer(kind=8) :: n
     n=(i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
@@ -4054,7 +4058,7 @@ contains
     integer(kind=8) :: n
     n=(i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2,1:n3)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else

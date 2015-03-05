@@ -1250,7 +1250,7 @@
         integer(INTD):: flags
         integer(C_SIZE_T):: csize
         type(C_PTR):: caddr
-#ifdef FORTRAN_2008
+#ifdef VAR_PTR_RESHAPE
         real(realk), pointer, contiguous:: fptr(:)
 #else
         real(realk), pointer:: fptr(:)
