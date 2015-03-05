@@ -10457,7 +10457,7 @@ contains
 
 #ifdef VAR_PTR_RESHAPE
        dummy2(1:(i8*nocc*nvirt)*nocc*nocc) => ovoo%elm1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
        call c_f_pointer(c_loc(ovoo%elm1(1)),dummy2,[(i8*nocc*nvirt)*nocc*nocc])      
 #else
        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -10996,7 +10996,7 @@ contains
 
 #ifdef VAR_PTR_RESHAPE
        dummy2(1:(i8*nocc*nocc)*nocc*nvirt) => ooov%elm1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
        call c_f_pointer(c_loc(ooov%elm1(1)),dummy2,[(i8*nocc*nocc)*nocc*nvirt])
 #else
        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)

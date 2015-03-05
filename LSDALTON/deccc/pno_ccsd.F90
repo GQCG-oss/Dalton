@@ -284,7 +284,7 @@ module pno_ccsd_module
      ! D1 term
 #ifdef VAR_PTR_RESHAPE
      h1(1:(i8*nv)*no) => o1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(o1(1,1)),h1,[(i8*nv)*no])
 #else
      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -390,7 +390,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
         p3(1:rpd,1:rpd,1:no,1:nv) => w3
         p2(1:no,1:no,1:no,1:nv) => gooov
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer( c_loc(w3(1)),    p3, [rpd,rpd,no, nv] )
         call c_f_pointer( c_loc(gooov(1)), p2, [no, no, no, nv] )
 #else
@@ -646,7 +646,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
                  r1(1:rpd,1:nv) => w1
                  r2(1:no,1:nv)  => ovf
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w1(1)), r1, [rpd,nv] )
                  call c_f_pointer( c_loc(ovf(1)), r2,[ no,nv] )
 #else
@@ -670,7 +670,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p3(1:pnv,1:1,1:pnv,1:rpd)    => w3
               p2(1:pnv,1:rpd,1:pnv,1:rpd)  => t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w3(1)), p3, [pnv,1,pnv,rpd] )
               call c_f_pointer( c_loc(t(1)),  p2, [pnv,rpd,pnv,rpd] )
 #else
@@ -690,7 +690,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               r1(1:rpd,1:nv) => w1
               r2( 1:no,1:nv) => ovf
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)), r1, [rpd,nv] )
               call c_f_pointer( c_loc(ovf(1)), r2,[ no,nv] )
 #else
@@ -1486,7 +1486,7 @@ module pno_ccsd_module
            !symmetrized contribution in pno_o2 we can add up without taking care
 #ifdef VAR_PTR_RESHAPE
            w1(1:nv,1:rpd,1:nv,1:rpd) => tmp1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer(c_loc(tmp1(1)),w1,[nv,rpd,nv,rpd])
 #else
            call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1904,7 +1904,7 @@ module pno_ccsd_module
 
 #ifdef VAR_PTR_RESHAPE
            w1(1:nv,1:rpd,1:nv,1:rpd) => tmp1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer(c_loc(tmp1(1)),w1,[nv,rpd,nv,rpd])
 #else
            call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2668,7 +2668,7 @@ module pno_ccsd_module
                  if( PS )then
 #ifdef VAR_PTR_RESHAPE
                     r1(1:la,1:rpd) => my_w5
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                     call c_f_pointer(c_loc(my_w5(1)),r1,[la,rpd])
 #else
                     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2730,7 +2730,7 @@ module pno_ccsd_module
 
 #ifdef VAR_PTR_RESHAPE
                     r1(1:la,1:rpd) => my_w5
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                     call c_f_pointer(c_loc(my_w5(1)),r1,[la,rpd])
 #else
                     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2933,7 +2933,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
                     h1(1:nb*no)  => xo
                     h3(1:nb*pnv) => xv_pair
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                     call c_f_pointer(c_loc(xo(1,1)),h1,[(i8*nb)*no])
                     call c_f_pointer(c_loc(xv_pair(1,1,tid+1)),h3,[(i8*nb)*pnv])
 #else
@@ -3156,7 +3156,7 @@ module pno_ccsd_module
      !jilk = ijkl
 #ifdef VAR_PTR_RESHAPE
      sig(1:rpd,1:rpd,1:no,1:no) => sio4(ns)%elm1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(sio4(ns)%elm1(1)),sig,[rpd,rpd,no,no])
 #else
      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3200,7 +3200,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
         p1(1:rpd1,1:nv,1:rpd1,1:nv) => w1
         p2(1:no,  1:nv,1:no,  1:nv) => govov(1:no*nv*no*nv)
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer( c_loc(w1(1)),    p1, [rpd1,nv,rpd1,nv] )
         call c_f_pointer( c_loc(govov(1)), p2, [no,   nv,no, nv] )
 #else
@@ -3266,7 +3266,7 @@ module pno_ccsd_module
         p1(1:rpd,1:rpd,1:rpd1,1:rpd1) => w3
         p3(1:rpd1,1:nv,1:rpd1,1:nv)   => w1
         p4(1:no,1:nv,1:no,1:nv)       => govov
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer( c_loc(w3(1)),    p1, [rpd,rpd,rpd1,rpd1] )
         call c_f_pointer( c_loc(w1(1)),    p3, [rpd1,nv,rpd1,nv] )
         call c_f_pointer( c_loc(govov(1)), p4, [no,  nv,no,  nv] )
@@ -3376,7 +3376,7 @@ module pno_ccsd_module
 
 #ifdef VAR_PTR_RESHAPE
            p1(1:rpd,1:rpd,1:pno1,1:pno1) => w3
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer(c_loc(w3(1)),p1,[rpd,rpd,pno1,pno1])
 #else
            call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3594,7 +3594,7 @@ module pno_ccsd_module
         !avoid cache misses here
 #ifdef VAR_PTR_RESHAPE
         p2o(1:nv,1:nv,1:no,1:no) => goovv
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer( c_loc(goovv(1)), p2o, [nv,  nv, no, no] )
 #else
         call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3611,7 +3611,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
            p1(1:nv,1:rpd,1:nv,1:rpd1) => w1
            p3(1:nv,1:rpd,1:nv,1:rpd1) => w1(nv*rpd1*rpd*nv+1:)
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w1(1)),    p1, [nv,rpd,nv,rpd1] )
            call c_f_pointer( c_loc(w1(nv*rpd1*rpd*nv+1)), p3, [nv,rpd,nv,rpd1] )
 #else
@@ -3680,7 +3680,7 @@ module pno_ccsd_module
               else if(pair1==2)then
                  p4(1:nv,1:rpd,1:nv,1:rpd1) => w1(nv*rpd1*rpd*nv+1:)
               endif
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               if(pair1==1)then
                  call c_f_pointer( c_loc(w1(1)),    p4, [nv,rpd,nv,rpd1] )
               else if(pair1==2)then
@@ -3799,7 +3799,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
                  p2i(1:no,1:nv,1:no,1:nv) => govov
                  p1(1:rpd1,1:rpd2,1:nv,1:nv) => w1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no, nv]  )
                  call c_f_pointer( c_loc(w1(1)),    p1, [rpd1,rpd2,nv,nv] )
 #else
@@ -3848,7 +3848,7 @@ module pno_ccsd_module
                  ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
 #ifdef VAR_PTR_RESHAPE
                  p2i(1:pnv2,1:rpd2,1:pnv2,1:rpd2) => t22
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(t22(1)), p2i, [pnv2,rpd2,pnv2,rpd2] )
 #else
                  call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3860,7 +3860,7 @@ module pno_ccsd_module
                  else
 #ifdef VAR_PTR_RESHAPE
                     p3(1:rpd2,1:pnv2,1:nidx_h2,1:pnv2) => w3
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                     call c_f_pointer( c_loc(w3(1)),  p3, [rpd2,pnv2,nidx_h2,pnv2] )
 #else
                     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3884,7 +3884,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
                  p3(1:pnv1,1:rpd1,1:nidx_h2,1:pnv) => h2i
                  p4(1:rpd,1:pnv,1:pnv1,1:rpd1)     => w4
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(h2i(1)), p3, [pnv1,rpd1,nidx_h2,pnv] )
                  call c_f_pointer( c_loc(w4(1)), p4, [rpd,pnv,pnv1,rpd1] )
 #else
@@ -3929,7 +3929,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
                  p5(1:pnv1,1:1   ,1:pnv1, 1:rpd1) => w1
                  p6(1:pnv1,1:rpd1,1:pnv1, 1:rpd1) => t21
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w1(1)),  p5, [pnv1,1   ,pnv1, rpd1] )
                  call c_f_pointer( c_loc(t21(1)), p6, [pnv1,rpd1,pnv1, rpd1] )
 #else
@@ -3987,7 +3987,7 @@ module pno_ccsd_module
 
 #ifdef VAR_PTR_RESHAPE
            p1(1:rpd1,1:rpd,1:nv,1:nv) => w1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w1(1)), p1, [rpd1,rpd,nv,nv] )
 #else
            call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -4046,7 +4046,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p2i(1:no, 1:nv, 1:no, 1:nv) => govov
               p1(1:rpd1,1:rpd2,1:nv,1:nv) => w1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no, nv]  )
               call c_f_pointer( c_loc(w1(1)),    p1, [rpd1,rpd2,nv,nv] )
 #else
@@ -4084,7 +4084,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p3(1:rpd2,1:pnv2,1:nidx2,1:pnv2) => w3
               p2i(1:pnv2,1:rpd2,1:pnv2,1:rpd2) => t22
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w3(1)),  p3, [rpd2,pnv2,nidx2,pnv2] )
               call c_f_pointer( c_loc(t22(1)), p2i, [pnv2,rpd2,pnv2,rpd2] )
 #else
@@ -4122,7 +4122,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p3(1:pnv1,1:rpd1,1:nidx2,1:pnv) => h2
               p4(1:rpd,1:pnv,1:pnv1,1:rpd1)   => w4
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(h2(1)), p3, [pnv1,rpd1,nidx2,pnv] )
               call c_f_pointer( c_loc(w4(1)), p4, [rpd,pnv,pnv1,rpd1] )
 #else
@@ -4175,7 +4175,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
            p2o(1:pnv1,1:rpd1,1:pnv1,1:rpd1) => t21
            p1(1:pnv1,1:nidx1,1:pnv1,1:rpd1) => w1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,rpd1,pnv1, rpd1] )
            call c_f_pointer( c_loc(w1(1)),  p1, [pnv1,nidx1,pnv1,rpd1] )
 #else
@@ -4220,7 +4220,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
            p2o(1:pnv,1:nidx1,1:rpd,1:pnv) => h2
            p1(1:pnv,1:rpd, 1:pnv, 1:rpd ) => o
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(h2(1)), p2o, [pnv,nidx1,rpd,pnv ] )
            call c_f_pointer( c_loc(o(1)),  p1,  [pnv,rpd, pnv, rpd ] )
 #else
@@ -4301,7 +4301,7 @@ module pno_ccsd_module
               !could also be produced on-the-fly to reduce the memory requirements
 #ifdef VAR_PTR_RESHAPE
               p2o(1:nv,1:no,1:no,1:nv) => Lvoov
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(Lvoov(1)), p2o, [nv, no, no, nv] )
 #else
               call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -4311,7 +4311,7 @@ module pno_ccsd_module
               if( PS1 )then
 #ifdef VAR_PTR_RESHAPE
                  p1(1:nv,1:rpd,1:rpd1,1:nv) => w1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w1(1)), p1, [nv,rpd,rpd1,nv] )
 #else
                  call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -4329,7 +4329,7 @@ module pno_ccsd_module
               else
 #ifdef VAR_PTR_RESHAPE
                  p1(1:nv,1:rpd,1:nv,1:rpd1) => w1
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w1(1)), p1, [nv,rpd,nv,rpd1] )
 #else
                  call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -4407,7 +4407,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p1(1:nv,1:rpd1,1:rpd2,1:nv) => w1
               p2i(1:no,1:nv,1:no, 1:nv)   => govov
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),    p1, [nv,rpd1,rpd2,nv] )
               call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no,  nv] )
 #else
@@ -4475,7 +4475,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
                  p3(1:pnv2,1:nidx2,1:pnv2,1:rpd2) => w3
                  p2i(1:pnv2,1:rpd2,1:pnv2,1:rpd2) => t22
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w3(1)),  p3, [pnv2,nidx2,pnv2,rpd2] )
                  call c_f_pointer( c_loc(t22(1)), p2i, [pnv2,rpd2, pnv2,rpd2] )
 #else
@@ -4528,7 +4528,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p5(1:pnv1,1:1,1:pnv1,1:rpd1)    => w1
               p6(1:pnv1,1:rpd1,1:pnv1,1:rpd1) => t21
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),  p5, [pnv1,1,pnv1,rpd1] )
               call c_f_pointer( c_loc(t21(1)), p6, [pnv1,rpd1,pnv1,rpd1] )
 #else
@@ -4581,7 +4581,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
            p1(1:nv,1:rpd,1:rpd1,1:nv) => w1
            p2o(1:nv,1:no,1:no,1:nv)   => Lvoov
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w1(1)),    p1,  [nv,rpd,rpd1,nv] )
            call c_f_pointer( c_loc(Lvoov(1)), p2o, [nv, no, no, nv] )
 #else
@@ -4638,7 +4638,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p1(1:nv,1:rpd1,1:rpd2,1:nv) => w1
               p2i(1:no,1:nv,1:no,1:nv)    => govov
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),    p1, [nv,rpd1,rpd2,nv] )
               call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no,  nv] )
 #else
@@ -4706,7 +4706,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
                  p3(1:pnv2,1:nidx2,1:pnv2,1:rpd2) => w3
                  p2i(1:pnv2,1:rpd2,1:pnv2,1:rpd2) => t22
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w3(1)),  p3, [pnv2,nidx2,pnv2,rpd2] )
                  call c_f_pointer( c_loc(t22(1)), p2i, [pnv2,rpd2, pnv2,rpd2] )
 #else
@@ -4741,7 +4741,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p2i(1:pnv1,1:rpd1,1:pnv,1:nidx2) => h1
               p4(1:pnv,1:rpd,1:pnv1,1:rpd1)    => w4
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(h1(1)), p2i, [pnv1,rpd1,pnv,nidx2] )
               call c_f_pointer( c_loc(w4(1)), p4, [pnv,rpd,pnv1,rpd1] )
 #else
@@ -4794,7 +4794,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
            p1(1:pnv1,1:nidx1,1:pnv1,1:rpd1) => w1
            p2o(1:pnv1,1:rpd1,1:pnv1,1:rpd1) => t21
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w1(1)),  p1, [pnv1,nidx1,pnv1,rpd1] )
            call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,rpd1,pnv1,rpd1] )
 #else
@@ -4843,7 +4843,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
            p5(1:pnv,1:rpd,1:pnv,1:nidx1) => h2
            p1(1:pnv,1:rpd,1:pnv,1:rpd)   => o
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(h2(1)), p5, [pnv,rpd,pnv,nidx1] )
            call c_f_pointer( c_loc(o(1)),  p1, [pnv,rpd, pnv, rpd ] )
 #else
@@ -4927,7 +4927,7 @@ module pno_ccsd_module
 
 #ifdef VAR_PTR_RESHAPE
               r1(1:rpd1,1:rpd) => w4
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w4(1)),  r1, [ rpd1,rpd ] )
 #else
               call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -5083,7 +5083,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p1(1:pnv1,1:nidx1,1:pnv1,1:pno1) => w1
               p2o(1:pnv1,1:pno1,1:pnv1,1:pno1) => t21
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),  p1, [pnv1,nidx1,pnv1,pno1] )
               call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,pno1,pnv1,pno1] )
 #else
@@ -5117,7 +5117,7 @@ module pno_ccsd_module
 
 #ifdef VAR_PTR_RESHAPE
            r1(1:rpd1,1:rpd ) => w4
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w4(1)),  r1, [ rpd1,rpd ] )
 #else
            call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -5247,7 +5247,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
               p1(1:pnv1,1:nidx1,1:pnv1,1:pno1) => w1
               p2o(1:pnv1,1:pno1,1:pnv1,1:pno1) => t21
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),  p1, [pnv1,nidx1,pnv1,pno1] )
               call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,pno1,pnv1,pno1] )
 #else
@@ -5281,7 +5281,7 @@ module pno_ccsd_module
 #ifdef VAR_PTR_RESHAPE
            p2o(1:pnv,1:rpd,1:pnv,1:nidx1) => h1
            p1(1:pnv,1:rpd,1:pnv,1:rpd)    => o
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(h1(1)), p2o, [pnv,rpd,pnv,nidx1] )
            call c_f_pointer( c_loc(o(1)),  p1, [pnv,rpd, pnv, rpd] )
 #else

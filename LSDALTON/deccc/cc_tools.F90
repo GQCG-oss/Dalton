@@ -159,7 +159,11 @@ module cc_tools_module
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
 
          !Facilitate access
+#ifdef VAR_PTR_RESHAPE
+         tpm(1:tpl%ti(lt)%d(1),1:tpl%ti(lt)%d(2)) => tpl%ti(lt)%t
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer(c_loc(tpl%ti(lt)%t(1)),tpm,tpl%ti(lt)%d)
+#endif
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -226,13 +230,21 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
+#ifdef VAR_PTR_RESHAPE
+            tt1(1:tdim(1),1:tdim(2),1:tdim(3),1:tdim(4)) => buf1
+            if(mtile(2)==mtile(1))then
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf1
+            else
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf2
+            endif
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
             call c_f_pointer(c_loc(buf1(1)),tt1,tdim)
-
             if(mtile(2)==mtile(1))then
                call c_f_pointer( c_loc(buf1(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
                call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
+#endif
 
             !get offset for tile counting
             ot2(1)=(mtile(1)-1)*t2%tdim(1)
@@ -309,7 +321,11 @@ module cc_tools_module
          call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
 
          !Facilitate access
+#ifdef VAR_PTR_RESHAPE
+         tpm(1:tmi%ti(lt)%d(1),1:tmi%ti(lt)%d(2)) => tmi%ti(lt)%t
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer( c_loc(tmi%ti(lt)%t(1)), tpm, tmi%ti(lt)%d )
+#endif
 
          !build list of tiles to get for the current tmi tile
          !get offset for tile counting
@@ -376,12 +392,21 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
+#ifdef VAR_PTR_RESHAPE
+            tt1(1:tdim(1),1:tdim(2),1:tdim(3),1:tdim(4)) => buf1
+            if(mtile(2)==mtile(1))then
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf1
+            else
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf2
+            endif
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
             call c_f_pointer( c_loc(buf1(1)), tt1, tdim )
             if(mtile(2)==mtile(1))then
                call c_f_pointer( c_loc( buf1(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
                call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
+#endif
 
             !get offset for tile counting
             ot2(1)=(mtile(1)-1)*t2%tdim(1)
@@ -1144,8 +1169,13 @@ module cc_tools_module
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             else
+#ifdef VAR_PTR_RESHAPE
+               t1(1:no2,1:no2,1:nor)     => w2
+               h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
+#endif
                do j=no,1,-1
                   do i=j,1,-1
                      call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1197,8 +1227,13 @@ module cc_tools_module
 #endif
                else
 
+#ifdef VAR_PTR_RESHAPE
+                  t1(1:no2,1:no2,1:nor)     => w2
+                  h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                   call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                   call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
+#endif
                   do j=no,1,-1
                      do i=j,1,-1
                         call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1343,7 +1378,11 @@ module cc_tools_module
          quarry(2) = max(quarry(2),(i8*la*nb)*lg*nb)
          quarry(3) = max(quarry(3),(i8*nb*nb)*cagi)
       else
+#ifdef VAR_PTR_RESHAPE
+         trick(1:nb,1:nb,1:cagi) => w2
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer(c_loc(w2(1)),trick,[nb,nb,cagi])
+#endif
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          aleg=0
 

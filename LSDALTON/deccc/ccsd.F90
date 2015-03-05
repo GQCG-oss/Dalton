@@ -3632,7 +3632,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call tensor_convert(int3,w0%d,wrk=w1%d,iwrk=w1%n)
 #ifdef VAR_PTR_RESHAPE
               p2(1:la,1:no) => w0%d
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer(c_loc(w0%d(1)),p2,[la,no])
 #else
               call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
