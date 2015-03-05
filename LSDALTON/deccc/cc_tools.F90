@@ -834,10 +834,12 @@ module cc_tools_module
       !print *,case_sel,full1,full2,la,lg,tlen,tred
       !print *,"-------------------------------------------------------------------------------------"
 
-
       if( qu )then
 
          !ATTENTION: KEEP UP TO DATE
+         s0 = 0
+         s2 = 0
+         s3 = 0
 
          !w0:
          if(second_trafo_step)then
