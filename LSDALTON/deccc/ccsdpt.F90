@@ -313,6 +313,9 @@ contains
 
     endif
 
+    call print_norm(vovo,"VOVO norm",print_on_rank=0)
+    call print_norm(ccsd_doubles,"t2 norm  ",print_on_rank=0)
+
     write(DECinfo%output,*) ''
     write(DECinfo%output,*) ''
     write(DECinfo%output,*) '=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*='
@@ -1782,7 +1785,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    real(realk) :: tcpu,twall
+    real(realk) :: tcpu,twall,norm
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -1837,6 +1840,17 @@ contains
     stat = cublasCreate_v2(cublas_handle)
 
 #endif
+
+    norm = 0.0E0_realk
+    do i=1,nocc
+       norm=norm+eivalocc(i)*eivalocc(i)
+    enddo
+    print *,'eivalocc norm  = ',norm
+    norm = 0.0E0_realk
+    do i=1,nvirt
+       norm=norm+eivalvirt(i)*eivalvirt(i)
+    enddo
+    print *,'eivalvirt norm = ',norm
 
 !$acc wait
 
@@ -9703,8 +9717,8 @@ contains
     !   do E[4] energy part
     ! ***********************
 
-    eccsdpt_matrix_cou = 0.0_realk
-    eccsdpt_matrix_exc = 0.0_realk
+    eccsdpt_matrix_cou = 0.0E0_realk
+    eccsdpt_matrix_exc = 0.0E0_realk
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
     ccsdpt_e4 = 0.0E0_realk
@@ -9885,8 +9899,8 @@ contains
     !   do E[5] energy part
     ! ***********************
 
-    e5_matrix = 0.0_realk
-    ccsdpt_e5 = 0.0_realk
+    e5_matrix = 0.0E0_realk
+    ccsdpt_e5 = 0.0E0_realk
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
     !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
@@ -10473,6 +10487,7 @@ contains
 #endif
 
     call print_norm(vvvo,"VVVO norm",print_on_rank=0)
+    call print_norm(ovoo,"OVOO norm",print_on_rank=0)
 
     ! free stuff
     ! **********
