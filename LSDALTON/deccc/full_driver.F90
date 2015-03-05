@@ -938,11 +938,12 @@ contains
     real(realk) :: tcpuTOT,twallTOT,tcpu_start,twall_start, tcpu_end,twall_end
     real(realk),pointer :: AlphaCD(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
     real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:)
-    real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:),EpsOcc(:),EpsVirt(:)
+    real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:)
+    real(realk),pointer :: EpsOcc(:),EpsVirt(:)
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,COUNT2,comm,TAG1,TAG2
     integer :: J,CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
     integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux,restart_lun
-    integer :: noccJstart
+    integer :: noccJstart,offset
     logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
     logical :: RoundRobin2,RoundRobin3,useCalpha2,useCalpha3,FORCEPRINT
     integer(kind=ls_mpik)  :: request1,request2,request5,request6,request7,request8
@@ -970,7 +971,6 @@ contains
     TAG = 1411
     TAG1 = 1412
     TAG2 = 1413
-
     !sanity check
     if(.NOT.DECinfo%use_canonical) then
        call lsquit('Error: full_canonical_rimp2 require canonical Orbitals',-1)
@@ -978,10 +978,20 @@ contains
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
-    nocc   = MyMolecule%nocc
     nvirt  = MyMolecule%nunocc
     naux   = MyMolecule%nauxbasis
-    noccfull = nocc
+    !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
+    !with MyMolecule%nocc = Core + Valence 
+    !In case of Frozen core we only need Valence and will access
+    !Co(nbasis,ncore+nval) = MyMolecule%Co(nbasis,MyMolecule%ncore+1:MyMolecule%nocc)
+    noccfull = MyMolecule%nocc
+    IF(DECinfo%Frozencore)THEN
+       nocc   = MyMolecule%nval
+       offset = MyMolecule%ncore
+    ELSE
+       nocc   = MyMolecule%nocc
+       offset = 0
+    ENDIF
     nAtoms = MyMolecule%nAtoms
     LUPRI = DECinfo%output
 #ifdef VAR_MPI
@@ -1127,7 +1137,7 @@ contains
        !nauxMPI is naux divided out on the nodes so roughly nauxMPI=naux/numnodes
        call II_get_RI_AlphaCD_3centerInt2(lupri,lupri,&
             & AlphaCD,mylsitem%setting,naux,nbasis,&
-            & nvirt,nocc,MyMolecule%Cv,MyMolecule%Co,maxsize,mynum,numnodes)
+            & nvirt,nocc,MyMolecule%Cv,MyMolecule%Co(:,offset+1:offset+nocc),maxsize,mynum,numnodes)
        call mem_LeakTool_alloc(AlphaCD,LT_AlphaCD)
        AlphaCDAlloced = .TRUE.
     ENDIF
@@ -1400,14 +1410,20 @@ contains
 
     call mem_alloc(EpsOcc,nocc)
     call mem_leaktool_alloc(EpsOcc,LT_Eps)
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
+    !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset)
     do I=1,nocc
-       EpsOcc(I) = MyMolecule%ppfock(I,I)
+       EpsOcc(I) = MyMolecule%ppfock(I+offset,I+offset)
     enddo
+    !$OMP END PARALLEL DO
     call mem_alloc(EpsVirt,nvirt)
     call mem_leaktool_alloc(EpsVirt,LT_Eps)
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
+    !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
     do A=1,nvirt
        EpsVirt(A) = MyMolecule%qqfock(A,A)
     enddo
+    !$OMP END PARALLEL DO
 
     IF(DECinfo%DECrestart)THEN
      !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
@@ -1647,7 +1663,7 @@ subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,
            ! I>J AND A>B
            !==================================================================
            do A=B+1,nvirt
-              ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+              ! Difference in orbital energies: eps(I) + eps(J) - eps(A) -eps(B)
               eps = epsIJB - EpsVirt(A)
               gmoAIBJ = 0.0E0_realk
               DO ALPHA = 1,NBA
@@ -1822,7 +1838,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint,M,N,iB
   integer :: MinAObatch,gammaB,alphaB,nOccBatchesI,nOccBatchesJ,jB,nOccBatchDimI,nOccBatchDimJ
   integer :: nbatchesGammaRestart,nbatchesAlphaRestart,dimGamma,GammaStart,GammaEnd,dimAlpha
-  integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB 
+  integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB,offset
   integer :: nOccBatchesIrestart,noccIstart
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
   logical :: PermutationalSymmetryIJ
@@ -1866,9 +1882,19 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   ! **********
   nbasis = MyMolecule%nbasis
   nb = nbasis
-  nocc   = MyMolecule%nocc
+  !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
+  !with MyMolecule%nocc = Valence + Core 
+  !In case of Frozen core we only need Valence and will access
+  !Co(nbasis,nval) = MyMolecule%Co(nbasis,MyMolecule%ncore+1:MyMolecule%nocc)
+  noccfull = MyMolecule%nocc
+  IF(DECinfo%Frozencore)THEN
+     nocc   = MyMolecule%nval
+     offset = MyMolecule%ncore
+  ELSE
+     nocc   = MyMolecule%nocc
+     offset = 0
+  ENDIF
   nvirt  = MyMolecule%nunocc
-  noccfull = nocc
   nAtoms = MyMolecule%nAtoms
   LUPRI = DECinfo%output
 
@@ -2046,9 +2072,9 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   ELSE
      call mem_alloc(EpsOcc,nocc)
      !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-     !$OMP SHARED(nocc,MyMolecule,EpsOcc)
-     do I=1,nocc
-        EpsOcc(I) = MyMolecule%ppfock(I,I)
+     !$OMP SHARED(noccfull,MyMolecule,EpsOcc,offset)
+     do I=1+offset,noccfull
+        EpsOcc(I-offset) = MyMolecule%ppfock(I,I)
      enddo
      !$OMP END PARALLEL DO
      call mem_alloc(EpsVirt,nvirt)
@@ -2182,7 +2208,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
         !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
         !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax)
         do I=1,nOccBatchDimI
-           CoI(:,I) = Mymolecule%Co(:,I+(iB-1)*nOccBatchDimImax) 
+           CoI(:,I) = Mymolecule%Co(:,offset+I+(iB-1)*nOccBatchDimImax) 
         enddo
         !$OMP END PARALLEL DO
 
@@ -2207,7 +2233,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
            !$OMP PARALLEL DO DEFAULT(none) PRIVATE(J) &
            !$OMP SHARED(nOccBatchDimJ,MyMolecule,CoJ,jB,nOccBatchDimJmax)
            do J=1,nOccBatchDimJ
-              CoJ(:,J) = Mymolecule%Co(:,J+(jB-1)*nOccBatchDimJmax) 
+              CoJ(:,J) = Mymolecule%Co(:,offset+J+(jB-1)*nOccBatchDimJmax) 
            enddo
            !$OMP END PARALLEL DO
            IF(.NOT.FullRHS)THEN
@@ -2868,7 +2894,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB,idxx
   integer :: sqrtnumnodes,gB,idx(1),dimAOoffset,kk,nBlocksG,nBlocksA
   integer :: dimGammaMPI,dimAlphaMPI,ibatchG,ibatchA,dimAlpha2,dimGamma2
-  integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchDimJmax
+  integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchDimJmax,offset
   integer :: nOccbatchesIrestart,noccIstart,nbuf1,nbuf2,Ibuf(8)
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
   logical :: PermutationalSymmetryIJ,SetdimGamma
@@ -2913,9 +2939,19 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   ! **********
   nbasis = MyMolecule%nbasis
   nb = nbasis
-  nocc   = MyMolecule%nocc
   nvirt  = MyMolecule%nunocc
-  noccfull = nocc
+  !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
+  !with MyMolecule%nocc = Valence + Core 
+  !In case of Frozen core we only need Valence and will access
+  !Co(nbasis,nval) = MyMolecule%Co(nbasis,MyMolecule%ncore+1:MyMolecule%nocc)
+  noccfull = MyMolecule%nocc
+  IF(DECinfo%Frozencore)THEN
+     nocc   = MyMolecule%nval
+     offset = MyMolecule%ncore
+  ELSE
+     nocc   = MyMolecule%nocc
+     offset = 0
+  ENDIF
   nAtoms = MyMolecule%nAtoms
   LUPRI = DECinfo%output
 
@@ -3352,9 +3388,9 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 
   call mem_alloc(EpsOcc,nocc)
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-  !$OMP SHARED(nocc,MyMolecule,EpsOcc)
-  do I=1,nocc
-     EpsOcc(I) = MyMolecule%ppfock(I,I)
+  !$OMP SHARED(noccfull,MyMolecule,EpsOcc,offset)
+  do I=1+offset,noccfull
+     EpsOcc(I-offset) = MyMolecule%ppfock(I,I)
   enddo
   !$OMP END PARALLEL DO
   call mem_alloc(EpsVirt,nvirt)
@@ -3428,7 +3464,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
      !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax)
      do I=1,nOccBatchDimI
-        CoI(:,I) = Mymolecule%Co(:,I+(iB-1)*nOccBatchDimImax) 
+        CoI(:,I) = Mymolecule%Co(:,offset+I+(iB-1)*nOccBatchDimImax) 
      enddo
      !$OMP END PARALLEL DO
      call mem_alloc(tmp2,dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
@@ -3555,7 +3591,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
          JB = OccIndexJrank(J,JNODE)
          do kk = 1,nBlocksGamma(jnodeLoop)
             CgammaMPI(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J)=&
-                 &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),JB)
+                 &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),offset+JB)
          enddo
         enddo        
 
@@ -3592,7 +3628,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
           JB = OccIndexJrank(J,JNODE)
           do kk = 1,nBlocksGamma(jnodeLoop)
            CgammaMPI2(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J) = &
-                & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),JB)
+                & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),offset+JB)
           enddo
          enddo
          !share alpha batches
