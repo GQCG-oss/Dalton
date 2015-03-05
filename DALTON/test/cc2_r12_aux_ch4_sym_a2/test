@@ -17,7 +17,7 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-f.add(string = 'Total SCF energy',
+f.add(string = 'Total SCF   energy',
       abs_tolerance = 1.0e-7)
 
 f.add(string = 'Total MP2-R12/B energy',
