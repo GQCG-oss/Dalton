@@ -183,6 +183,7 @@ C*****************************************************************************
        real(8), intent(inout)         :: fmat_tmp(nbasis**2)
 #ifdef VAR_MPI
        integer (kind=mpi_offset_kind) :: offset_mat
+       integer (kind=mpi_address_kind):: address_mat
        integer                        :: status_read(mpi_status_size)
 #endif
 #include "twocom.h"
@@ -506,12 +507,13 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
 
 #ifdef VAR_MPI
 !       print *, 'shmem_id, offset accum',
-!    &            communication_info_mpi%my_shmem_node_id,offset_mat
+!    &            communication_info_mpi%my_shmem_node_id,address_mat
 !       accumulate fock matrix on node/numa master
+        address_mat = (i-1)*nbasis**2
         call mpixaccum(fmat_tmp,
      &                 nbasis**2,
      &                 0, ! node/numa master
-     &                 offset_mat,
+     &                 address_mat,
      &                 nbasis**2,
      &                 communication_info_mpi%my_shmem_node_id,
      &                 MPI_LOCK_SHARED,
