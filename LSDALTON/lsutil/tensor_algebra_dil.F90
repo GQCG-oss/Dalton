@@ -1250,7 +1250,7 @@
         integer(INTD):: flags
         integer(C_SIZE_T):: csize
         type(C_PTR):: caddr
-#ifdef FORTRAN_2008
+#ifdef VAR_PTR_RESHAPE
         real(realk), pointer, contiguous:: fptr(:)
 #else
         real(realk), pointer:: fptr(:)
@@ -1274,10 +1274,7 @@
          case(DIL_ALLOC_PINNED)
           val=0E0_realk; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
           !`Write (call C wrapper for cudaMallocHost)
-!PE2DIL: These bounds remappings are "newer" fortran standard and therefore
-!not implemented in all compilers we are tarteting, therefore I have introduced
-!the flags FORTRAN_2008. 
-#ifdef FORTRAN_2008
+#ifdef VAR_PTR_RESHAPE
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
 #endif
          case(DIL_ALLOC_MPI)
@@ -1290,7 +1287,7 @@
            &mpi_err
            ierr=2
           else
-#ifdef FORTRAN_2008
+#ifdef VAR_PTR_RESHAPE
            call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
 #endif
           endif

@@ -592,7 +592,13 @@ module lspdm_tensor_operations_module
     fEc   = 0.0E0_realk
 
     do lt=1,t2%nlti
+#ifdef VAR_PTR_RESHAPE
+      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       !get offset for global indices
       call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
       
@@ -693,8 +699,12 @@ module lspdm_tensor_operations_module
     integer :: order_c(gmo%mode), gmo_ctidx(gmo%mode), gmo_ctdim(gmo%mode), cbuf, gmo_ccidx
     real(realk), pointer :: gmo_ctile_buf(:,:),gmo_ctile(:,:,:,:)
     integer :: order_e(gmo%mode), gmo_etidx(gmo%mode), gmo_etdim(gmo%mode), ebuf, gmo_ecidx
-    real(realk), pointer :: gmo_etile_buf(:,:),gmo_etile(:,:,:,:)
+    real(realk), pointer :: gmo_etile(:,:,:,:)
+#ifdef VAR_PTR_RESHAPE
+    real(realk), contiguous, pointer :: gmo_tile_buf(:,:)
+#else
     real(realk), pointer :: gmo_tile_buf(:,:)
+#endif
     integer :: nt,nbuffs,nbuffs_c, nbuffs_e
     integer(kind=ls_mpik) :: mode
     integer(kind=long) :: tiledim
@@ -946,9 +956,17 @@ module lspdm_tensor_operations_module
           ebuf = cbuf
        endif
 
+#ifdef VAR_PTR_RESHAPE
+       gmo_ctile(1:gmo_ctdim(1),1:gmo_ctdim(2),1:gmo_ctdim(3),1:gmo_ctdim(4)) => gmo_tile_buf(1:,cbuf)
+       gmo_etile(1:gmo_etdim(1),1:gmo_etdim(2),1:gmo_etdim(3),1:gmo_etdim(4)) => gmo_tile_buf(1:,ebuf)
+       t2tile(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
        call c_f_pointer(c_loc(gmo_tile_buf(1,cbuf)),gmo_ctile,gmo_ctdim)
        call c_f_pointer(c_loc(gmo_tile_buf(1,ebuf)),gmo_etile,gmo_etdim)
        call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t2tile,t2%ti(lt)%d)
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
        da = t2%ti(lt)%d(1)
        db = t2%ti(lt)%d(2)
@@ -1060,7 +1078,14 @@ module lspdm_tensor_operations_module
 
         call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
 
+#ifdef VAR_PTR_RESHAPE
+        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
+        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
+#else
+        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
         !get offset for tile counting
         do j=1,tensor_full%mode
@@ -1170,7 +1195,14 @@ module lspdm_tensor_operations_module
 
         call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
 
+#ifdef VAR_PTR_RESHAPE
+        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
+        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
+#else
+        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
         !get offset for tile counting
         do j=1,tensor_full%mode
@@ -1279,7 +1311,14 @@ module lspdm_tensor_operations_module
 
         call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
 
+#ifdef VAR_PTR_RESHAPE
+        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
+        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
+#else
+        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
         !get offset for tile counting
         do j=1,tensor_full%mode
@@ -1385,8 +1424,15 @@ module lspdm_tensor_operations_module
            call time_start_phase( PHASE_WORK )
 
            !Facilitate access
+#ifdef VAR_PTR_RESHAPE
+           ut(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => u%ti(lt)%t
+           tt(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => u%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
            call c_f_pointer( c_loc(u%ti(lt)%t(1)), ut, u%ti(lt)%d )
            call c_f_pointer( c_loc(ttile(1)),      tt, u%ti(lt)%d )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
            !get offset for tile counting
            do j=1,u%mode
@@ -1523,7 +1569,15 @@ module lspdm_tensor_operations_module
     E2=0.0E0_realk
     Ec=0.0E0_realk
     do lt=1,t2%nlti
+
+#ifdef VAR_PTR_RESHAPE
+      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
       !get offset for global indices
       call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
       do j=1,t2%mode
@@ -1588,7 +1642,15 @@ module lspdm_tensor_operations_module
     E2=0.0E0_realk
     Ec=0.0E0_realk
     do lt=1,t2%nlti
+
+#ifdef VAR_PTR_RESHAPE
+      t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
       !get offset for global indices
       call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
       do j=1,t2%mode
@@ -1709,6 +1771,17 @@ module lspdm_tensor_operations_module
            endif
            call time_start_phase(PHASE_WORK)
 
+#ifdef VAR_PTR_RESHAPE
+           t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
+           c(1:di,1:da,1:dj,1:db) => buf_c
+           if( spec == CCSD_LAG_RHS )then
+              if(gmo_ccidx/=gmo_ecidx)then
+                 e(1:di,1:db,1:dj,1:da) => buf_e
+              else
+                 e(1:di,1:db,1:dj,1:da) => buf_c
+              endif
+           endif
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
            call c_f_pointer( c_loc(t2%ti(lt)%t(1)), t, t2%ti(lt)%d )
            call c_f_pointer( c_loc(buf_c(1)), c, [di,da,dj,db] )
            if( spec == CCSD_LAG_RHS )then
@@ -1718,6 +1791,9 @@ module lspdm_tensor_operations_module
                  call c_f_pointer( c_loc(buf_c(1)), e, [di,db,dj,da] )
               endif
            endif
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
            do j=1,t2%mode
               o(j)=(o(j)-1)*t2%tdim(j)
@@ -1850,7 +1926,13 @@ module lspdm_tensor_operations_module
       call time_start_phase(PHASE_WORK)
 
 
+#ifdef VAR_PTR_RESHAPE
+      om(1:prec%ti(lt)%d(1),1:prec%ti(lt)%d(2),1:prec%ti(lt)%d(3),1:prec%ti(lt)%d(4)) => prec%ti(lt)%t
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
       call c_f_pointer(c_loc(prec%ti(lt)%t(1)),om,prec%ti(lt)%d)
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       
       !get offset for global indices
       call get_midx(prec%ti(lt)%gt,dims,prec%ntpm,prec%mode)
@@ -3048,11 +3130,23 @@ module lspdm_tensor_operations_module
      
      if(use_wrk_space)then
         w => wrk
+#ifdef VAR_PTR_RESHAPE
+        buffA(1:A%tsize,1:nbuffsA) => w
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
         call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,nbuffsA])
+#else
+        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
         if(B_dense)then
            buffB => null()
         else
+#ifdef VAR_PTR_RESHAPE
+           buffB(1:tsizeB,1:nbuffsB) => w(nbuffsA*A%tsize+1:)
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
            call c_f_pointer(c_loc(w(nbuffsA*A%tsize+1)),buffB,[tsizeB,nbuffsB])
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
         endif
         wA => w(nbuffsA*A%tsize+nbuffsB*tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize)
         wB => w(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB)

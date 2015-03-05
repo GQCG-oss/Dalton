@@ -3630,7 +3630,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_convGBI )
            if( me == 0 )then
               call tensor_convert(int3,w0%d,wrk=w1%d,iwrk=w1%n)
+#ifdef VAR_PTR_RESHAPE
+              p2(1:la,1:no) => w0%d
+#elif COMPILER_UNDERSTANDS_FORTRAN_2003
               call c_f_pointer(c_loc(w0%d(1)),p2,[la,no])
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               !$OMP WORKSHARE
               Gbi_local%elm2(fa:fa+la-1,:) = Gbi_local%elm2(fa:fa+la-1,:) + p2(:,:)
               !$OMP END WORKSHARE
@@ -6133,11 +6139,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     Cv_a2%dims     = Cv%dims
     t1_a2%dims     = t1%dims
 
-    call c_f_pointer( c_loc(fockt1%elm1(1)),fockt1_a2%val,fockt1%dims )
-    call c_f_pointer( c_loc(Co%elm1(1)),    Co_a2%val,    Co%dims     )
-    call c_f_pointer( c_loc(Co2%elm1(1)),   Co2_a2%val,   Co2%dims    )
-    call c_f_pointer( c_loc(Cv%elm1(1)),    Cv_a2%val,    Cv%dims     )
-    call c_f_pointer( c_loc(t1%elm1(1)),    t1_a2%val,    t1%dims     )
+    fockt1_a2%val => fockt1%elm2
+    Co_a2%val     => Co%elm2
+    Co2_a2%val    => Co2%elm2
+    Cv_a2%val     => Cv%elm2
+    t1_a2%val     => t1%elm2
 
     call Get_AOt1Fock(mylsitem,t1_a2,fockt1_a2,nocc,nvirt,nbasis,Co_a2,Co2_a2,Cv_a2)
 
