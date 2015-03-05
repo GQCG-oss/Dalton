@@ -699,8 +699,12 @@ module lspdm_tensor_operations_module
     integer :: order_c(gmo%mode), gmo_ctidx(gmo%mode), gmo_ctdim(gmo%mode), cbuf, gmo_ccidx
     real(realk), pointer :: gmo_ctile_buf(:,:),gmo_ctile(:,:,:,:)
     integer :: order_e(gmo%mode), gmo_etidx(gmo%mode), gmo_etdim(gmo%mode), ebuf, gmo_ecidx
-    real(realk), pointer :: gmo_etile_buf(:,:),gmo_etile(:,:,:,:)
+    real(realk), pointer :: gmo_etile(:,:,:,:)
+#ifdef VAR_PTR_RESHAPE
+    real(realk), contiguous, pointer :: gmo_tile_buf(:,:)
+#else
     real(realk), pointer :: gmo_tile_buf(:,:)
+#endif
     integer :: nt,nbuffs,nbuffs_c, nbuffs_e
     integer(kind=ls_mpik) :: mode
     integer(kind=long) :: tiledim

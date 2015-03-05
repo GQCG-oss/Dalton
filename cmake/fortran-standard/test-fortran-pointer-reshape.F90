@@ -38,7 +38,7 @@ program test
    subroutine test_in_subroutine(finp,n1,n2)
       implicit none
       integer, intent(in) :: n1,n2
-      real, contiguous, target :: finp(n1,n2)
+      real, target :: finp(n1,n2)
       real, pointer :: f(:)
       f(1:n1*n2) => finp
    end subroutine test_in_subroutine

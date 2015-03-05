@@ -486,10 +486,10 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
-      integer(kind=8) :: n1,n2
-      n1 = n1
-      n2 = n2
-      call ls_mpibcast_longM_wrapper8(buffer,n1,n2,master,comm)
+      integer(kind=8) :: n1_8,n2_8
+      n1_8 = n1
+      n2_8 = n2
+      call ls_mpibcast_longM_wrapper8(buffer,n1_8,n2_8,master,comm)
 #endif
     end subroutine ls_mpibcast_longM
 
@@ -530,10 +530,10 @@ contains
       integer(kind=4)       :: buffer(:,:)
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
-      integer(kind=8) :: n1,n2
-      n1=n1
-      n2=n2
-      call ls_mpibcast_integerM_wrapper8(buffer,n1,n2,master,comm)
+      integer(kind=8) :: n1_8,n2_8
+      n1_8=n1
+      n2_8=n2
+      call ls_mpibcast_integerM_wrapper8(buffer,n1_8,n2_8,master,comm)
 #endif
     end subroutine ls_mpibcast_integerM
 
@@ -2022,11 +2022,7 @@ contains
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=4) :: n1,n2
-#ifdef VAR_PTR_RESHAPE
-      integer(kind=4),contiguous,target :: buffer(n1,n2)
-#else
       integer(kind=4),target :: buffer(n1,n2)
-#endif
       integer(kind=4),pointer :: buf(:)
       integer(kind=8)::n
       n = (i8*n1)*n2
@@ -4080,7 +4076,7 @@ contains
     integer(kind=8) :: n
     n=((i8*n1)*n2)*n3*n4
 #ifdef VAR_PTR_RESHAPE
-    buf(1:n) => buffer(1:n1,1:n2,1:n3,1:n4)
+    buf(1:n) => buffer
 #elif COMPILER_UNDERSTANDS_FORTRAN_2003
     call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else

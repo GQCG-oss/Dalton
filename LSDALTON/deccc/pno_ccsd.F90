@@ -56,11 +56,7 @@ module pno_ccsd_module
      integer, intent(in) :: no, nv, nb,iter,nspaces
      logical, intent(in) :: fj
      real(realk), intent(inout) :: t1(nv,no), t2(nv,no,nv,no)
-#ifdef VAR_PTR_RESHAPE
-     real(realk), intent(inout),contiguous,target :: o1(nv,no)
-#else
      real(realk), intent(inout),target :: o1(nv,no)
-#endif
      real(realk), intent(inout) :: o2(nv,no,nv,no), govov(no*nv*no*nv)
      real(realk), intent(in),target :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
      type(lsitem), intent(inout) :: mylsitem
@@ -2244,7 +2240,12 @@ module pno_ccsd_module
      integer :: ns
      integer, pointer :: idx(:)
      real(realk), pointer :: d(:,:),t(:),o(:),h1(:),h2(:),h3(:),r1(:,:)
-     real(realk), pointer :: xo_pair(:,:,:),xv_pair(:,:,:),yo_pair(:,:,:),yv_pair(:,:,:)
+#ifdef VAR_PTR_RESHAPE
+     real(realk), contiguous, pointer :: xv_pair(:,:,:)
+#else
+     real(realk), pointer :: xv_pair(:,:,:)
+#endif
+     real(realk), pointer :: xo_pair(:,:,:),yo_pair(:,:,:),yv_pair(:,:,:)
      real(realk), pointer :: tpl(:,:), tmi(:,:)
      integer :: max_pnor, max_pnvr
      integer :: pno_comb
