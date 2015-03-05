@@ -2004,8 +2004,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk) :: TS,TE,TS2,TE2,TS3,TE3
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
-  integer :: fileLu
-  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,file_exists
+  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases)
   integer(kind=long) :: nSize
@@ -2673,40 +2672,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt) 
      !Calculate and partial transform to local basis - transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-     file_exists = .FALSE.
-     IF(.TRUE.)THEN
-        INQUIRE(FILE='RIMP2tocc1.data',EXIST=file_exists)
-        IF(.NOT.file_exists)THEN
-           fileLu = -1  !initialization
-           call lsopen(fileLu,'RIMP2tocc1.data','NEW','UNFORMATTED')
-        ELSE
-           INQUIRE(FILE='RIMP2tocc2.data',EXIST=file_exists)
-           IF(.NOT.file_exists)THEN
-              fileLu = -1  !initialization
-              call lsopen(fileLu,'RIMP2tocc2.data','NEW','UNFORMATTED')
-           ELSE
-              INQUIRE(FILE='RIMP2tocc3.data',EXIST=file_exists)
-              IF(.NOT.file_exists)THEN
-                 fileLu = -1  !initialization
-                 call lsopen(fileLu,'RIMP2tocc3.data','NEW','UNFORMATTED')
-              ELSE
-                 call lsquit('TEST DONE 3 FILES PRODUCED',-1)
-              ENDIF
-           ENDIF
-        ENDIF
-        rewind fileLu
-        write(fileLu) nvirt,nocc,noccEOS,NBA
-        write(fileLu) Calpha
-        write(fileLu) EVocc
-        write(fileLu) EVvirt
-        write(fileLu) UoccEOST        
-        write(fileLu) UvirtT
-     ENDIF
-     call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)     
-     IF(.TRUE.)THEN
-        write(fileLu) tocc
-     ENDIF
-
+     call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
      CALL LSTIMER('RIMP2_calc_tocc',TS3,TE3,LUPRI,FORCEPRINT)
      !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
      M = noccEOS              !rows of Output Matrix
@@ -2728,21 +2694,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('DGEMM tocc3 ',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tocc2)
 
-     IF(.TRUE.)THEN
-        write(fileLu) tocc3
-     ENDIF
-
      !Final virtual transformation and reorder to dimocc
      call tensor_ainit(toccEOS,dimocc,4)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_calc_toccB(nvirt,noccEOS,tocc3,UvirtT,toccEOS%elm1)
      CALL LSTIMER('RIMP2_calc_tocc3',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tocc3)     
-
-     IF(.TRUE.)THEN
-        write(fileLu) toccEOS%elm1
-        call lsclose(fileLu,'KEEP')
-     ENDIF
   ELSE
      call tensor_ainit(toccEOS,dimocc,4)
      nsize = nvirt*noccEOS*nvirt*noccEOS
