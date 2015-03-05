@@ -249,15 +249,25 @@ MODULE matrix_operations
                    call lsquit('pdmm error in mat_select_type',-1)
                 ENDIF
                 print*,'TYPE PDMM HAVE BEEN SELECTED' 
-                print*,'infpar%inputblocksize',infpar%inputblocksize
                 !make possible subset 
-                pdmm_nodtot = infpar%nodtot
-                pdmm_mynum = infpar%mynum
-                pdmm_comm = MPI_COMM_LSDALTON
-                pdmm_member = .TRUE.
-                print*,'call PDMM_GRIDINIT',nbast,'infpar%inputblocksize',infpar%inputblocksize
+                call ls_mpibcast(infpar%PDMMGroupSize,infpar%master,MPI_COMM_LSDALTON)                
+                IF(infpar%PDMMGroupSize.NE.infpar%nodtot)THEN
+                   IF(pdmm_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(pdmm_comm)
+                      pdmm_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(pdmm_nodtot,&
+                        & pdmm_mynum,pdmm_comm,pdmm_member,&
+                        & infpar%PDMMGroupSize,lupri)
+                   pdmm_mpi_set = .TRUE.
+                ELSE
+                   pdmm_nodtot = infpar%nodtot
+                   pdmm_mynum = infpar%mynum
+                   pdmm_comm = MPI_COMM_LSDALTON
+                   pdmm_member = .TRUE.
+                ENDIF
                 CALL PDMM_GRIDINIT(nbast)
-                print*,'done PDMM_GRIDINIT',nbast
                 WRITE(lupri,'(A,I5)')'PDMM initiation Block Size = ',BLOCK_SIZE_PDM
              endif
           ELSE
@@ -283,10 +293,24 @@ MODULE matrix_operations
                    scalapack_member = .TRUE.
                 ENDIF
              elseif(matrix_type.EQ.mtype_pdmm)then
-                pdmm_nodtot = infpar%nodtot
-                pdmm_mynum = infpar%mynum
-                pdmm_comm = MPI_COMM_LSDALTON
-                pdmm_member = .TRUE.
+                call ls_mpibcast(infpar%PDMMGroupSize,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                IF(infpar%PDMMGroupSize.NE.infpar%nodtot)THEN
+                   IF(PDMM_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(pdmm_comm)
+                      PDMM_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(pdmm_nodtot,&
+                        & pdmm_mynum,pdmm_comm,pdmm_member,&
+                        & infpar%PDMMGroupSize,lupri)
+                   PDMM_mpi_set = .TRUE.
+                ELSE
+                   pdmm_nodtot = infpar%nodtot
+                   pdmm_mynum = infpar%mynum
+                   pdmm_comm = MPI_COMM_LSDALTON
+                   pdmm_member = .TRUE.
+                ENDIF
              endif
           ENDIF
 #endif

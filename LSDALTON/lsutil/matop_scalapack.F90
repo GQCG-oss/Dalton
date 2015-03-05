@@ -633,7 +633,7 @@ module matrix_operations_scalapack
      CALL PDM_DSCINIT(DESC_A,A)
      !    DESC_AF(CTXT_) = SLGrid%Masterictxt
      ! Master Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
-     IF(.TRUE.)THEN
+     IF(.FALSE.)THEN
         CALL PDGEMR2D(A%nrow,A%ncol,AFull,1,1,DESC_AF,&
              & A%p,1,1,DESC_A,SLGrid%ictxt)
      ELSE
@@ -3240,7 +3240,7 @@ module matrix_operations_scalapack
 !      DESC_AF(2)=-1
       CALL PDM_DSCINIT(DESC_A,A)
       ! Slave Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
-      IF(.TRUE.)THEN
+      IF(.FALSE.)THEN
          CALL PDGEMR2D(A%nrow,A%ncol,AF,1,1,DESC_AF,&
               &A%p,1,1,DESC_A,SLGrid%ictxt)
       ELSE
