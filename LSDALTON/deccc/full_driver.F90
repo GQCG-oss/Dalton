@@ -2206,7 +2206,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
         !construct CoI(nb,nOccBatchDimI)
         call mem_alloc(CoI,nb,nOccBatchDimI)       
         !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-        !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax)
+        !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax,offset)
         do I=1,nOccBatchDimI
            CoI(:,I) = Mymolecule%Co(:,offset+I+(iB-1)*nOccBatchDimImax) 
         enddo
@@ -2231,7 +2231,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
            call mem_alloc(CoJ,nb,nOccBatchDimJ)       
            !TODO: OMP Workshare/Loop
            !$OMP PARALLEL DO DEFAULT(none) PRIVATE(J) &
-           !$OMP SHARED(nOccBatchDimJ,MyMolecule,CoJ,jB,nOccBatchDimJmax)
+           !$OMP SHARED(nOccBatchDimJ,MyMolecule,CoJ,jB,nOccBatchDimJmax,offset)
            do J=1,nOccBatchDimJ
               CoJ(:,J) = Mymolecule%Co(:,offset+J+(jB-1)*nOccBatchDimJmax) 
            enddo
@@ -3462,7 +3462,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      call mem_alloc(CoI,nb,nOccBatchDimI)       
      !TODO: OMP Workshare/Loop
      !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-     !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax)
+     !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax,offset)
      do I=1,nOccBatchDimI
         CoI(:,I) = Mymolecule%Co(:,offset+I+(iB-1)*nOccBatchDimImax) 
      enddo
