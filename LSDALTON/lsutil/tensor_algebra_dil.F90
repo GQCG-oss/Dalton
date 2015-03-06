@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/03/03 (started 2014/09/01).
+!REVISION: 2015/03/05 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -63,7 +63,7 @@
 #ifdef FORTRAN_2008
 #ifdef VAR_MPI
 #define DIL_ACTIVE
-#define DIL_DEBUG_ON
+!#define DIL_DEBUG_ON
 #endif
 #endif
 
@@ -86,7 +86,7 @@
         integer(4), parameter, public:: INTL=8                          !long integer kind (size)
         integer(INTD), parameter, private:: BLAS_INT=INTD               !default integer size for BLAS/LAPACK
         integer(INTL), parameter, private:: MIN_BUF_MEM=256*1048576_INTL!min allowed local memory limit in bytes for buffer space
-        integer(INTD), parameter, private:: MAX_TILES_PER_PART=256      !max allowed number of tiles per tensor part
+        integer(INTD), parameter, private:: MAX_TILES_PER_PART=1024     !max allowed number of tiles per tensor part
         integer(INTD), parameter, private:: MIN_LOC_DIM_EXT=16          !minimal tiling length for local tensors
         integer(INTD), parameter, public:: MAX_TENSOR_RANK=16           !max allowed tensor rank
         integer(INTD), parameter, public:: IND_NUM_START=1              !number from which index range numeration starts
@@ -179,7 +179,7 @@
          real(realk), private:: beta               !scaling factor for the destination tensor (always implicit)
         end type dil_tens_contr_t
  !Subtensor part specification:
-        type, private:: subtens_t
+        type, public:: subtens_t
          integer(INTD), private:: rank                    !subtensor rank (number of dimensions)
          integer(INTD), private:: lbnd(1:MAX_TENSOR_RANK) !dimension lower bounds
          integer(INTD), private:: dims(1:MAX_TENSOR_RANK) !dimension extents
@@ -260,7 +260,7 @@
         private dil_get_arg_tile_vol
         public dil_get_min_buf_size
         public dil_set_tens_contr_spec
-        private dil_subtensor_set
+        public dil_subtensor_set
         private dil_subtensor_vol
         private dil_subtensor_copy
         private dil_subtensor_print
@@ -308,6 +308,10 @@
         private dil_tens_upload_complete
         private dil_tens_unpack_from_tiles
         private dil_tens_pack_into_tiles
+        public dil_tens_fetch_start
+        public dil_tens_fetch_finish_prep
+!        public dil_tens_upload_start
+!        public dil_tens_upload_finish_prep
         private dil_divide_space_int
         private dil_divide_space_int4
         private dil_divide_space_int8
@@ -2339,7 +2343,7 @@
          endif
 !Get tile dimensions:
          do i=1,n; sdims(i)=min(tens_full%dims(i)-signa(i)+1,tens_full%tdim(i)); enddo
-!Get tile number (`Keep consistent with get_cidx):
+!Get the global tile number (`Keep consistent with get_cidx):
          tile_num=1; m=1 !Assumes that Global Tile Numeration starts from 1
          do i=1,n
           tile_num=tile_num+((signa(i)-1_INTD)/tens_full%tdim(i))*m
@@ -2507,7 +2511,7 @@
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
         type(subtens_t), intent(in):: tens_part !in: tensor part specification
         type(arg_buf_t), intent(in):: bufi      !in: local buffer containing the tiles
-        type(arg_buf_t), intent(inout):: bufo   !in: local buffer that will contain the tensor slice
+        type(arg_buf_t), intent(inout):: bufo   !out: local buffer that will contain the tensor slice
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         integer(INTD):: i,k,n,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
@@ -2538,7 +2542,7 @@
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
         type(subtens_t), intent(in):: tens_part !in: tensor part specification
         type(arg_buf_t), intent(in):: bufi      !in: local buffer containing the tensor slice
-        type(arg_buf_t), intent(inout):: bufo   !in: local buffer that will contain the tiles
+        type(arg_buf_t), intent(inout):: bufo   !out: local buffer that will contain the tiles
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         integer(INTD):: i,k,n,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
@@ -2562,6 +2566,91 @@
         enddo
         return
         end subroutine dil_tens_pack_into_tiles
+!---------------------------------------------------------------------------
+        subroutine dil_tens_fetch_start(tens_arr,tens_part,bufi,ierr,locked) !SERIAL (MPI)
+!This subroutine starts fetching all tiles necessary for constructing a given tensor part.
+        implicit none
+        type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
+        type(subtens_t), intent(in):: tens_part !in: tensor part specification
+        real(realk), intent(inout):: bufi(1:*)  !out: local buffer where the tiles will be put in
+        integer(INTD), intent(inout):: ierr     !out: error code (0:success)
+        logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
+        integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
+        integer(INTL):: tile_vol,buf_end
+        integer:: tile_num,tile_win
+        type(rank_win_cont_t):: rwc
+        logical:: new_rw,win_lck
+
+        ierr=0; call dil_rank_window_clean(rwc)
+        if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+!        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Prefetching (",4(1x,i3,":",i3,","),")")')&
+!        &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,4)/) !debug
+        buf_end=0_INTL; k=DIL_FIRST_CALL
+        do while(k.ge.0) !k<0: iterations are over
+         call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
+         if(k.eq.0) then
+          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
+          new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+!          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
+          call tensor_get_tile(tens_arr,tile_num,bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
+!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i3))') signa(1:tens_arr%mode)
+          buf_end=buf_end+tile_vol
+         elseif(k.gt.0) then
+          ierr=-1; return
+         endif
+        enddo
+        return
+        end subroutine dil_tens_fetch_start
+!--------------------------------------------------------------------------------------
+        subroutine dil_tens_fetch_finish_prep(tens_arr,tens_part,bufi,bufo,ierr,locked) !PARALLEL (OMP)
+!This subroutine finishes tile fetching and unpacks the tiles into a dense tensor slice.
+        implicit none
+        type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
+        type(subtens_t), intent(in):: tens_part !in: tensor part specification
+        real(realk), intent(inout):: bufi(1:*)  !in: local buffer containing the tiles
+        real(realk), intent(inout):: bufo(1:*)  !out: local buffer that will contain the tensor slice
+        integer(INTD), intent(inout):: ierr     !out: error code (0:success)
+        logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
+        integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
+        integer(INTL):: tile_vol,buf_end
+        integer:: tile_num,tile_win
+        type(rank_win_cont_t):: rwc
+        logical:: new_rw,win_lck
+
+        ierr=0; call dil_rank_window_clean(rwc)
+        if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        buf_end=0_INTL; n=tens_arr%mode; k=DIL_FIRST_CALL
+        do while(k.ge.0) !k<0: iterations are over
+         call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
+         if(k.eq.0) then
+          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
+          new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+!          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+          if(new_rw) then
+           if(win_lck) then
+            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+           else
+            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+           endif
+          endif
+!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",4(1x,i3))',ADVANCE='NO') signa(1:n)
+          call dil_tensor_insert(n,bufo,tens_part%dims,bufi(buf_end+1_INTL:buf_end+tile_vol),tile_dims,&
+                                &signa(1:n)-tens_part%lbnd(1:n),i)
+          if(i.ne.0) then; ierr=-2; return; endif
+!          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
+          buf_end=buf_end+tile_vol
+         elseif(k.gt.0) then
+          ierr=-1; return
+         endif
+        enddo
+        return
+        end subroutine dil_tens_fetch_finish_prep
 !------------------------------------------------------------------------
         subroutine dil_divide_space_int4(ndim,dims,subvol,segs,ierr,algn) !SERIAL
 !This subroutine divides an ndim-dimensional block with extents dims(1:ndim)

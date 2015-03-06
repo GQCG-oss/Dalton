@@ -8,7 +8,7 @@ module tensor_interface_module
 #ifdef FORTRAN_2008
 #ifdef VAR_MPI
 #define DIL_ACTIVE
-#define DIL_DEBUG_ON
+!#define DIL_DEBUG_ON
 #endif
 #endif
 
@@ -32,8 +32,10 @@ module tensor_interface_module
   public DIL_ALLOC_MPI    !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
   public DIL_CONS_OUT     !output for DIL messages
   public DIL_DEBUG
-  public dil_set_alloc_type
+  public subtens_t
   public dil_tens_contr_t
+  public dil_subtensor_set
+  public dil_set_alloc_type
   public dil_clean_tens_contr
   public dil_set_tens_contr_args
   public dil_get_min_buf_size
@@ -45,7 +47,10 @@ module tensor_interface_module
   public process_wtime
   public dil_tensor_init
   public dil_tensor_norm1
-! public merge_sort_real8 !`DIL: remove
+  public dil_tens_fetch_start
+  public dil_tens_fetch_finish_prep
+  public dil_tens_upload_start
+  public dil_tens_upload_finish_prep
 #endif
 
   !This defines the public interface to the tensors

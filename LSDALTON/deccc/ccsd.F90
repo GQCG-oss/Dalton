@@ -795,8 +795,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef FORTRAN_2008
 #ifdef VAR_MPI
 #define DIL_ACTIVE
-#define DIL_DEBUG_ON
+!#define DIL_DEBUG_ON
 #endif
+#endif
+!`DIL: temporary:
+#ifdef DIL_ACTIVE
+#undef DIL_ACTIVE
 #endif
 
      !> CC model
