@@ -462,7 +462,13 @@ contains
       IERR=0
       DATATYPE = MPI_INTEGER8
       n=n1*n2
+#ifdef VAR_PTR_RESHAPE
+      buffertmp(1:(i8*n1)*n2) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buffertmp,[(i8*n1)*n2])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       k=SPLIT_MPI_MSG
       do i=1,n,k
          nMPI=k
@@ -480,10 +486,10 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
-      integer(kind=8) :: nbuf1,nbuf2
-      nbuf1 = n1
-      nbuf2 = n2
-      call ls_mpibcast_longM_wrapper8(buffer,nbuf1,nbuf2,master,comm)
+      integer(kind=8) :: n1_8,n2_8
+      n1_8 = n1
+      n2_8 = n2
+      call ls_mpibcast_longM_wrapper8(buffer,n1_8,n2_8,master,comm)
 #endif
     end subroutine ls_mpibcast_longM
 
@@ -500,7 +506,13 @@ contains
       IERR=0
       DATATYPE = MPI_INTEGER4
       n=n1*n2
+#ifdef VAR_PTR_RESHAPE
+      buffertmp(1:(i8*n1)*n2) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buffertmp,[(i8*n1)*n2])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       k=SPLIT_MPI_MSG
       do i=1,n,k
          nMPI=k
@@ -518,10 +530,10 @@ contains
       integer(kind=4)       :: buffer(:,:)
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
-      integer(kind=8) :: nbuf1,nbuf2
-      nbuf1=n1
-      nbuf2=n2
-      call ls_mpibcast_integerM_wrapper8(buffer,nbuf1,nbuf2,master,comm)
+      integer(kind=8) :: n1_8,n2_8
+      n1_8=n1
+      n2_8=n2
+      call ls_mpibcast_integerM_wrapper8(buffer,n1_8,n2_8,master,comm)
 #endif
     end subroutine ls_mpibcast_integerM
 
@@ -587,7 +599,13 @@ contains
       IERR=0
       DATATYPE = MPI_DOUBLE_PRECISION
       n=n1*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:(i8*n1)*n2) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       k=SPLIT_MPI_MSG
       do i=1,n,k
          nMPI=k
@@ -599,30 +617,42 @@ contains
 #endif
     end subroutine ls_mpibcast_realkM
 
-    subroutine ls_mpibcast_realkT(buffer,nbuf1,nbuf2,nbuf3,master,comm)
+    subroutine ls_mpibcast_realkT(buffer,n1,n2,n3,master,comm)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer :: nbuf1,nbuf2,nbuf3
-      real(realk),target :: buffer(nbuf1,nbuf2,nbuf3)
+      integer :: n1,n2,n3
+      real(realk),target :: buffer(n1,n2,n3)
       integer(kind=ls_mpik) :: comm   ! communicator
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
-      call ls_mpibcast_realkV_wrapper8(buf,((i8*nbuf1)*nbuf2)*nbuf3,master,comm)
+#ifdef VAR_PTR_RESHAPE
+      buf(1:(i8*n1)*n2*n3) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpibcast_realkV_wrapper8(buf,((i8*n1)*n2)*n3,master,comm)
       buf => null()
 #endif
     end subroutine ls_mpibcast_realkT
 
-    subroutine ls_mpibcast_realkQ(buffer,nbuf1,nbuf2,nbuf3,nbuf4,master,comm)
+    subroutine ls_mpibcast_realkQ(buffer,n1,n2,n3,n4,master,comm)
       implicit none
       integer(kind=ls_mpik) :: master
       integer(kind=ls_mpik) :: comm   ! communicator
-      integer :: nbuf1,nbuf2,nbuf3,nbuf4
-      real(realk),target :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
+      integer :: n1,n2,n3,n4
+      real(realk),target :: buffer(n1,n2,n3,n4)
       real(realk),pointer :: buf(:)
 #ifdef VAR_MPI
-      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
-      call ls_mpibcast_realkV_wrapper8(buf,(((i8*nbuf1)*nbuf2)*nbuf3)*nbuf4,master,comm)
+#ifdef VAR_PTR_RESHAPE
+      buf(1:(i8*n1)*n2*n3*n4) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpibcast_realkV_wrapper8(buf,(((i8*n1)*n2)*n3)*n4,master,comm)
       buf => null()
 #endif
     end subroutine ls_mpibcast_realkQ
@@ -793,63 +823,87 @@ contains
 #endif
     end subroutine ls_mpibcast_logical4V
 
-    subroutine ls_mpibcast_logical4M4(buffer,nbuf1,nbuf2,master,comm)
+    subroutine ls_mpibcast_logical4M4(buffer,n1,n2,master,comm)
       implicit none
-      integer(kind=4),intent(in) :: nbuf1,nbuf2
+      integer(kind=4),intent(in) :: n1,n2
       integer(kind=ls_mpik),intent(in) :: master
-      logical(kind=4),target,intent(inout) :: buffer(nbuf1,nbuf2)
+      logical(kind=4),target,intent(inout) :: buffer(n1,n2)
       integer(kind=ls_mpik),intent(in) :: comm   ! communicator
 #ifdef VAR_MPI
       logical(kind=4),pointer :: buf(:)
       integer(kind=8) :: n
-      n=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
+      n=n1*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       call ls_mpibcast_logical4V_wrapper8(buf,n,master,comm)
       nullify(buf)
 #endif
     end subroutine ls_mpibcast_logical4M4
 
-    subroutine ls_mpibcast_logical4M8(buffer,nbuf1,nbuf2,master,comm)
+    subroutine ls_mpibcast_logical4M8(buffer,n1,n2,master,comm)
       implicit none
-      integer(kind=8),intent(in) :: nbuf1,nbuf2
+      integer(kind=8),intent(in) :: n1,n2
       integer(kind=ls_mpik),intent(in) :: master
-      logical(kind=4),target,intent(inout) :: buffer(nbuf1,nbuf2)
+      logical(kind=4),target,intent(inout) :: buffer(n1,n2)
       integer(kind=ls_mpik),intent(in) :: comm   ! communicator
 #ifdef VAR_MPI
       logical(kind=4),pointer :: buf(:)
       integer(kind=8) :: n
-      n=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
+      n=n1*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       call ls_mpibcast_logical4V_wrapper8(buf,n,master,comm)
       nullify(buf)
 #endif
     end subroutine ls_mpibcast_logical4M8
-    subroutine ls_mpibcast_logical8M4(buffer,nbuf1,nbuf2,master,comm)
+    subroutine ls_mpibcast_logical8M4(buffer,n1,n2,master,comm)
       implicit none
-      integer(kind=4),intent(in) :: nbuf1,nbuf2
+      integer(kind=4),intent(in) :: n1,n2
       integer(kind=ls_mpik),intent(in) :: master
-      logical(kind=8),target,intent(inout) :: buffer(nbuf1,nbuf2)
+      logical(kind=8),target,intent(inout) :: buffer(n1,n2)
       integer(kind=ls_mpik),intent(in) :: comm   ! communicator
 #ifdef VAR_MPI
       logical(kind=8),pointer :: buf(:)
       integer(kind=8) :: n
-      n=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
+      n=n1*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       call ls_mpibcast_logical8V_wrapper8(buf,n,master,comm)
       nullify(buf)
 #endif
     end subroutine ls_mpibcast_logical8M4
-    subroutine ls_mpibcast_logical8M8(buffer,nbuf1,nbuf2,master,comm)
+    subroutine ls_mpibcast_logical8M8(buffer,n1,n2,master,comm)
       implicit none
-      integer(kind=8),intent(in) :: nbuf1,nbuf2
+      integer(kind=8),intent(in) :: n1,n2
       integer(kind=ls_mpik),intent(in) :: master
-      logical(kind=8),target,intent(inout) :: buffer(nbuf1,nbuf2)
+      logical(kind=8),target,intent(inout) :: buffer(n1,n2)
       integer(kind=ls_mpik),intent(in) :: comm   ! communicator
 #ifdef VAR_MPI
       logical(kind=8),pointer :: buf(:)
       integer(kind=8) :: n
-      n=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
+      n=n1*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
       call ls_mpibcast_logical8V_wrapper8(buf,n,master,comm)
       nullify(buf)
 #endif
@@ -1352,44 +1406,68 @@ contains
 #endif
     end subroutine ls_mpisendrecv_realkV
 
-    subroutine ls_mpisendrecv_realkM(buffer,nbuf1,nbuf2,comm,sender,receiver)
+    subroutine ls_mpisendrecv_realkM(buffer,n1,n2,comm,sender,receiver)
       implicit none
-      integer :: nbuf1,nbuf2
-      real(realk),target :: buffer(nbuf1,nbuf2)
+      integer :: n1,n2
+      real(realk),target :: buffer(n1,n2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
-      call ls_mpisendrecv_realkV_wrapper8(buf,(i8*nbuf1)*nbuf2,comm,sender,receiver)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpisendrecv_realkV_wrapper8(buf,n,comm,sender,receiver)
       nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_realkM
 
-    subroutine ls_mpisendrecv_realkT(buffer,nbuf1,nbuf2,nbuf3,comm,sender,receiver)
+    subroutine ls_mpisendrecv_realkT(buffer,n1,n2,n3,comm,sender,receiver)
       implicit none
-      integer :: nbuf1,nbuf2,nbuf3
-      real(realk),target :: buffer(nbuf1,nbuf2,nbuf3)
+      integer :: n1,n2,n3
+      real(realk),target :: buffer(n1,n2,n3)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
-      call ls_mpisendrecv_realkV_wrapper8(buf,((i8*nbuf1)*nbuf2)*nbuf3,comm,sender,receiver)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpisendrecv_realkV_wrapper8(buf,n,comm,sender,receiver)
       nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_realkT
 
-    subroutine ls_mpisendrecv_realkQ(buffer,nbuf1,nbuf2,nbuf3,nbuf4,comm,sender,receiver)
+    subroutine ls_mpisendrecv_realkQ(buffer,n1,n2,n3,n4,comm,sender,receiver)
       implicit none
-      integer :: nbuf1,nbuf2,nbuf3,nbuf4
-      real(realk),target :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
+      integer :: n1,n2,n3,n4
+      real(realk),target :: buffer(n1,n2,n3,n4)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
       real(realk),pointer :: buf(:)
-      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
-      call ls_mpisendrecv_realkV_wrapper8(buf,(((i8*nbuf1)*nbuf2)*nbuf3)*nbuf4,comm,sender,receiver)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3*n4
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpisendrecv_realkV_wrapper8(buf,n,comm,sender,receiver)
       nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_realkQ
@@ -1624,66 +1702,90 @@ contains
 #endif
     end subroutine ls_mpisendrecv_logical4V
 
-    subroutine ls_mpisendrecv_logical4M(buffer,nbuf1,nbuf2,comm,sender,receiver)
+    subroutine ls_mpisendrecv_logical4M(buffer,n1,n2,comm,sender,receiver)
       implicit none
-      integer(kind=4) :: nbuf1,nbuf2
-      logical(kind=4),target :: buffer(nbuf1,nbuf2)
+      integer(kind=4) :: n1,n2
+      logical(kind=4),target :: buffer(n1,n2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=8) :: n1,n2
       logical(kind=4),pointer :: buf(:)      
-      n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
-      call ls_mpisendrecv_logical4V_wrapper8(buf,n1*n2,comm,sender,receiver)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpisendrecv_logical4V_wrapper8(buf,n,comm,sender,receiver)
       nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_logical4M
 
-    subroutine ls_mpisendrecv_logical4M_wrapper8(buffer,nbuf1,nbuf2,comm,sender,receiver)
+    subroutine ls_mpisendrecv_logical4M_wrapper8(buffer,n1,n2,comm,sender,receiver)
       implicit none
-      integer(kind=8) :: nbuf1,nbuf2
-      logical(kind=4),target :: buffer(nbuf1,nbuf2)
+      integer(kind=8) :: n1,n2
+      logical(kind=4),target :: buffer(n1,n2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=8) :: n1,n2
       logical(kind=4),pointer :: buf(:)      
-      n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
-      call ls_mpisendrecv_logical4V_wrapper8(buf,n1*n2,comm,sender,receiver)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpisendrecv_logical4V_wrapper8(buf,n,comm,sender,receiver)
       nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_logical4M_wrapper8
 
-    subroutine ls_mpisendrecv_logical8M(buffer,nbuf1,nbuf2,comm,sender,receiver)
+    subroutine ls_mpisendrecv_logical8M(buffer,n1,n2,comm,sender,receiver)
       implicit none
-      integer(kind=4) :: nbuf1,nbuf2
-      logical(kind=8),target :: buffer(nbuf1,nbuf2)
+      integer(kind=4) :: n1,n2
+      logical(kind=8),target :: buffer(n1,n2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=8) :: n1,n2
       logical(kind=8),pointer :: buf(:)      
-      n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
-      call ls_mpisendrecv_logical8V_wrapper8(buf,n1*n2,comm,sender,receiver)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpisendrecv_logical8V_wrapper8(buf,n,comm,sender,receiver)
       nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_logical8M
 
-    subroutine ls_mpisendrecv_logical8M_wrapper8(buffer,nbuf1,nbuf2,comm,sender,receiver)
+    subroutine ls_mpisendrecv_logical8M_wrapper8(buffer,n1,n2,comm,sender,receiver)
       implicit none
-      integer(kind=8) :: nbuf1,nbuf2
-      logical(kind=8),target :: buffer(nbuf1,nbuf2)
+      integer(kind=8) :: n1,n2
+      logical(kind=8),target :: buffer(n1,n2)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=8) :: n1,n2
       logical(kind=8),pointer :: buf(:)      
-      n1 = nbuf1; n2 = nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
-      call ls_mpisendrecv_logical8V_wrapper8(buf,n1*n2,comm,sender,receiver)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpisendrecv_logical8V_wrapper8(buf,n,comm,sender,receiver)
       nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_logical8M_wrapper8
@@ -1916,152 +2018,224 @@ contains
       ENDIF
     end subroutine ls_mpi_buffer_integer4V
 
-    subroutine ls_mpi_buffer_integer4M_wrapper4(buffer,nbuf1,nbuf2,master)
+    subroutine ls_mpi_buffer_integer4M_wrapper4(buffer,n1,n2,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=4) :: nbuf1,nbuf2
-      integer(kind=4),target :: buffer(nbuf1,nbuf2)
+      integer(kind=4) :: n1,n2
+      integer(kind=4),target :: buffer(n1,n2)
       integer(kind=4),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
-      call ls_mpi_buffer_integer4V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer4V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4M_wrapper4
-    subroutine ls_mpi_buffer_integer4M_wrapper8(buffer,nbuf1,nbuf2,master)
+    subroutine ls_mpi_buffer_integer4M_wrapper8(buffer,n1,n2,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=8) :: nbuf1,nbuf2
-      integer(kind=4),target :: buffer(nbuf1*nbuf2)
+      integer(kind=8) :: n1,n2
+      integer(kind=4),target :: buffer(n1*n2)
       integer(kind=4),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer(1)),buf,[(i8*nbuf1)*nbuf2])
-      call ls_mpi_buffer_integer4V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer4V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4M_wrapper8
-    subroutine ls_mpi_buffer_integer8M_wrapper4(buffer,nbuf1,nbuf2,master)
+    subroutine ls_mpi_buffer_integer8M_wrapper4(buffer,n1,n2,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=4) :: nbuf1,nbuf2
-      integer(kind=8),target :: buffer(nbuf1,nbuf2)
+      integer(kind=4) :: n1,n2
+      integer(kind=8),target :: buffer(n1,n2)
       integer(kind=8),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
-      call ls_mpi_buffer_integer8V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer8V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8M_wrapper4
-    subroutine ls_mpi_buffer_integer8M_wrapper8(buffer,nbuf1,nbuf2,master)
+    subroutine ls_mpi_buffer_integer8M_wrapper8(buffer,n1,n2,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=8) :: nbuf1,nbuf2
-      integer(kind=8),target :: buffer(nbuf1,nbuf2)
+      integer(kind=8) :: n1,n2
+      integer(kind=8),target :: buffer(n1,n2)
       integer(kind=8),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2
-      call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*nbuf1)*nbuf2])
-      call ls_mpi_buffer_integer8V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer8V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8M_wrapper8
 
 
-    subroutine ls_mpi_buffer_integer4T_wrapper4(buffer,nbuf1,nbuf2,nbuf3,master)
+    subroutine ls_mpi_buffer_integer4T_wrapper4(buffer,n1,n2,n3,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=4) :: nbuf1,nbuf2,nbuf3
-      integer(kind=4),target :: buffer(nbuf1,nbuf2,nbuf3)
+      integer(kind=4) :: n1,n2,n3
+      integer(kind=4),target :: buffer(n1,n2,n3)
       integer(kind=4),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2*nbuf3
-      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
-      call ls_mpi_buffer_integer4V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer4V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4T_wrapper4
-    subroutine ls_mpi_buffer_integer4T_wrapper8(buffer,nbuf1,nbuf2,nbuf3,master)
+    subroutine ls_mpi_buffer_integer4T_wrapper8(buffer,n1,n2,n3,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=8) :: nbuf1,nbuf2,nbuf3
-      integer(kind=4),target :: buffer(nbuf1,nbuf2,nbuf3)
+      integer(kind=8) :: n1,n2,n3
+      integer(kind=4),target :: buffer(n1,n2,n3)
       integer(kind=4),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2*nbuf3
-      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
-      call ls_mpi_buffer_integer4V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer4V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4T_wrapper8
-    subroutine ls_mpi_buffer_integer8T_wrapper4(buffer,nbuf1,nbuf2,nbuf3,master)
+    subroutine ls_mpi_buffer_integer8T_wrapper4(buffer,n1,n2,n3,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=4) :: nbuf1,nbuf2,nbuf3
-      integer(kind=8),target :: buffer(nbuf1,nbuf2,nbuf3)
+      integer(kind=4) :: n1,n2,n3
+      integer(kind=8),target :: buffer(n1,n2,n3)
       integer(kind=8),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2*nbuf3
-      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
-      call ls_mpi_buffer_integer8V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer8V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8T_wrapper4
-    subroutine ls_mpi_buffer_integer8T_wrapper8(buffer,nbuf1,nbuf2,nbuf3,master)
+    subroutine ls_mpi_buffer_integer8T_wrapper8(buffer,n1,n2,n3,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=8) :: nbuf1,nbuf2,nbuf3
-      integer(kind=8),target :: buffer(nbuf1,nbuf2,nbuf3)
+      integer(kind=8) :: n1,n2,n3
+      integer(kind=8),target :: buffer(n1,n2,n3)
       integer(kind=8),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2*nbuf3
-      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3])
-      call ls_mpi_buffer_integer8V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer8V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8T_wrapper8
 
 
-    subroutine ls_mpi_buffer_integer4Q_wrapper4(buffer,nbuf1,nbuf2,nbuf3,nbuf4,master)
+    subroutine ls_mpi_buffer_integer4Q_wrapper4(buffer,n1,n2,n3,n4,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=4) :: nbuf1,nbuf2,nbuf3,nbuf4
-      integer(kind=4),target :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
+      integer(kind=4) :: n1,n2,n3,n4
+      integer(kind=4),target :: buffer(n1,n2,n3,n4)
       integer(kind=4),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2*nbuf3*nbuf4
-      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
-      call ls_mpi_buffer_integer4V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3*n4
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer4V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4Q_wrapper4
-    subroutine ls_mpi_buffer_integer4Q_wrapper8(buffer,nbuf1,nbuf2,nbuf3,nbuf4,master)
+    subroutine ls_mpi_buffer_integer4Q_wrapper8(buffer,n1,n2,n3,n4,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=8) :: nbuf1,nbuf2,nbuf3,nbuf4
-      integer(kind=4),target :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
+      integer(kind=8) :: n1,n2,n3,n4
+      integer(kind=4),target :: buffer(n1,n2,n3,n4)
       integer(kind=4),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2*nbuf3*nbuf4
-      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
-      call ls_mpi_buffer_integer4V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3*n4
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer4V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer4Q_wrapper8
-    subroutine ls_mpi_buffer_integer8Q_wrapper4(buffer,nbuf1,nbuf2,nbuf3,nbuf4,master)
+    subroutine ls_mpi_buffer_integer8Q_wrapper4(buffer,n1,n2,n3,n4,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=4) :: nbuf1,nbuf2,nbuf3,nbuf4
-      integer(kind=8),target :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
+      integer(kind=4) :: n1,n2,n3,n4
+      integer(kind=8),target :: buffer(n1,n2,n3,n4)
       integer(kind=8),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2*nbuf3*nbuf4
-      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
-      call ls_mpi_buffer_integer8V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3*n4
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer8V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8Q_wrapper4
-    subroutine ls_mpi_buffer_integer8Q_wrapper8(buffer,nbuf1,nbuf2,nbuf3,nbuf4,master)
+    subroutine ls_mpi_buffer_integer8Q_wrapper8(buffer,n1,n2,n3,n4,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=8) :: nbuf1,nbuf2,nbuf3,nbuf4
-      integer(kind=8),target :: buffer(nbuf1,nbuf2,nbuf3,nbuf4)
+      integer(kind=8) :: n1,n2,n3,n4
+      integer(kind=8),target :: buffer(n1,n2,n3,n4)
       integer(kind=8),pointer :: buf(:)
-      integer(kind=8) :: nbuf
-      nbuf=nbuf1*nbuf2*nbuf3*nbuf4
-      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*nbuf1)*nbuf2*nbuf3*nbuf4])
-      call ls_mpi_buffer_integer8V(buf,nbuf,master)
+      integer(kind=8)::n
+      n = (i8*n1)*n2*n3*n4
+#ifdef VAR_PTR_RESHAPE
+      buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+      call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
+#else
+      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+      call ls_mpi_buffer_integer8V(buf,n,master)
       nullify(buf)
     end subroutine ls_mpi_buffer_integer8Q_wrapper8
 
@@ -2122,63 +2296,63 @@ contains
       ENDIF
     end subroutine ls_mpi_buffer_realkV8
 
-    subroutine ls_mpi_buffer_realkM(buffer,nbuf1,nbuf2,master)
+    subroutine ls_mpi_buffer_realkM(buffer,n1,n2,master)
       implicit none
-      integer :: nbuf1,nbuf2
+      integer :: n1,n2
       integer(kind=ls_mpik) :: master
       real(realk) :: buffer(:,:)
       integer :: ierr,cnt,datatype,I,J,offset
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iDP + nbuf1*nbuf2.GT. nDP)call increaselsmpibufferDP((i8*nbuf1)*nbuf2)
-         DO J=1,nbuf2
-            offset = iDP+(J-1)*nbuf1
-            DO I=1,nbuf1
+         IF(iDP + n1*n2.GT. nDP)call increaselsmpibufferDP((i8*n1)*n2)
+         DO J=1,n2
+            offset = iDP+(J-1)*n1
+            DO I=1,n1
                lsmpibufferDP(offset+I) = buffer(I,J)
             ENDDO
          ENDDO
-         iDP = iDP + nbuf1*nbuf2
+         iDP = iDP + n1*n2
       ELSE
-         IF(iDP+nbuf1*nbuf2 .GT. nDP)call lsquit('ls_mpi_buffer_realkM: error using buffer',-1)
-         DO J=1,nbuf2
-            offset = iDP+(J-1)*nbuf1
-            DO I=1,nbuf1
+         IF(iDP+n1*n2 .GT. nDP)call lsquit('ls_mpi_buffer_realkM: error using buffer',-1)
+         DO J=1,n2
+            offset = iDP+(J-1)*n1
+            DO I=1,n1
                buffer(I,J) = lsmpibufferDP(offset+I)
             ENDDO
          ENDDO
-         iDP = iDP + nbuf1*nbuf2
+         iDP = iDP + n1*n2
       ENDIF
     end subroutine ls_mpi_buffer_realkM
 
-    subroutine ls_mpi_buffer_realkT(buffer,nbuf1,nbuf2,nbuf3,master)
+    subroutine ls_mpi_buffer_realkT(buffer,n1,n2,n3,master)
       implicit none
       integer(kind=ls_mpik) :: master
-      integer :: nbuf1,nbuf2,nbuf3
+      integer :: n1,n2,n3
       real(realk) :: buffer(:,:,:)
       integer :: ierr,cnt,datatype,I,J,K,offset
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iDP + nbuf1*nbuf2*nbuf3.GT. nDP)call increaselsmpibufferDP(((i8*nbuf1)*nbuf2)*nbuf3)
-         DO K=1,nbuf3
-            DO J=1,nbuf2
-               offset = iDP+(J-1)*nbuf1+(K-1)*nbuf1*nbuf2
-               DO I=1,nbuf1
+         IF(iDP + n1*n2*n3.GT. nDP)call increaselsmpibufferDP(((i8*n1)*n2)*n3)
+         DO K=1,n3
+            DO J=1,n2
+               offset = iDP+(J-1)*n1+(K-1)*n1*n2
+               DO I=1,n1
                   lsmpibufferDP(offset+I) = buffer(I,J,K)
                ENDDO
             ENDDO
          ENDDO
-         iDP = iDP + nbuf1*nbuf2*nbuf3
+         iDP = iDP + n1*n2*n3
       ELSE
-         IF(iDP+nbuf1*nbuf2*nbuf3 .GT. nDP)call lsquit('ls_mpi_buffer_realkT: error using buffer',-1)
-         DO K=1,nbuf3
-            DO J=1,nbuf2
-               offset = iDP+(J-1)*nbuf1+(K-1)*nbuf1*nbuf2
-               DO I=1,nbuf1
+         IF(iDP+n1*n2*n3 .GT. nDP)call lsquit('ls_mpi_buffer_realkT: error using buffer',-1)
+         DO K=1,n3
+            DO J=1,n2
+               offset = iDP+(J-1)*n1+(K-1)*n1*n2
+               DO I=1,n1
                   buffer(I,J,K) = lsmpibufferDP(offset+I)
                ENDDO
             ENDDO
          ENDDO
-         iDP = iDP + nbuf1*nbuf2*nbuf3
+         iDP = iDP + n1*n2*n3
       ENDIF
     end subroutine ls_mpi_buffer_realkT
 
@@ -2221,31 +2395,31 @@ contains
       ENDIF
     end subroutine ls_mpi_buffer_logicalV
 
-    subroutine ls_mpi_buffer_logicalM(buffer,nbuf1,nbuf2,master)
+    subroutine ls_mpi_buffer_logicalM(buffer,n1,n2,master)
       implicit none
-      integer :: nbuf1,nbuf2
+      integer :: n1,n2
       integer(kind=ls_mpik) :: master
       logical :: buffer(:,:)
       integer :: ierr,cnt,datatype,I,J,offset
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iLog + nbuf1*nbuf2.GT. nLog)call increaselsmpibufferLog((i8*nbuf1)*nbuf2)
-         DO J=1,nbuf2
-            offset = iLog+(J-1)*nbuf1
-            DO I=1,nbuf1
+         IF(iLog + n1*n2.GT. nLog)call increaselsmpibufferLog((i8*n1)*n2)
+         DO J=1,n2
+            offset = iLog+(J-1)*n1
+            DO I=1,n1
                lsmpibufferLog(offset+I) = buffer(I,J)
             ENDDO
          ENDDO
-         iLog = iLog + nbuf1*nbuf2
+         iLog = iLog + n1*n2
       ELSE
-         IF(iLog+nbuf1*nbuf2 .GT. nLog)call lsquit('ls_mpi_buffer_logicalM: error using buffer',-1)
-         DO J=1,nbuf2
-            offset = iLog+(J-1)*nbuf1
-            DO I=1,nbuf1
+         IF(iLog+n1*n2 .GT. nLog)call lsquit('ls_mpi_buffer_logicalM: error using buffer',-1)
+         DO J=1,n2
+            offset = iLog+(J-1)*n1
+            DO I=1,n1
                buffer(I,J) = lsmpibufferLog(offset+I)
             ENDDO
          ENDDO
-         iLog = iLog + nbuf1*nbuf2
+         iLog = iLog + n1*n2
       ENDIF
     end subroutine ls_mpi_buffer_logicalM
 
@@ -2354,34 +2528,34 @@ contains
       ENDIF
     end subroutine ls_mpi_buffer_shortintegerV
 
-    subroutine ls_mpi_buffer_shortintegerM(buffer,nbuf1,nbuf2,master)
+    subroutine ls_mpi_buffer_shortintegerM(buffer,n1,n2,master)
       implicit none
-      integer :: nbuf1,nbuf2
+      integer :: n1,n2
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer(:,:)
       integer :: I,J,offset
 
       IF(AddToBuffer)THEN
-         IF(iSho+nbuf1*nbuf2 .GT. nShort)call increaselsmpibufferSho(nbuf1*i8*nbuf2)
-         DO J=1,nbuf2
-            offset = iSho+(J-1)*nbuf1
-            DO I=1,nbuf1
+         IF(iSho+n1*n2 .GT. nShort)call increaselsmpibufferSho(n1*i8*n2)
+         DO J=1,n2
+            offset = iSho+(J-1)*n1
+            DO I=1,n1
                lsmpibufferSho(offset+I) = buffer(I,J)
             ENDDO
          ENDDO
-         iSho = iSho + nbuf1*nbuf2
+         iSho = iSho + n1*n2
       ELSE
-         IF(iSho+nbuf1*nbuf2 .GT. nShort) then
-           write(*,*) 'ls_mpi_buffer_shortintegerM',iSho,nbuf1,nbuf2,nShort
+         IF(iSho+n1*n2 .GT. nShort) then
+           write(*,*) 'ls_mpi_buffer_shortintegerM',iSho,n1,n2,nShort
            call lsquit('ls_mpi_buffer_shortintegerM: error using buffer',-1)
          ENDIF
-         DO J=1,nbuf2
-            offset = iSho+(J-1)*nbuf1
-            DO I=1,nbuf1
+         DO J=1,n2
+            offset = iSho+(J-1)*n1
+            DO I=1,n1
                buffer(I,J) = INT(lsmpibufferSho(offset+I),kind=short)
             ENDDO
          ENDDO
-         iSho = iSho + nbuf1*nbuf2
+         iSho = iSho + n1*n2
       ENDIF
     end subroutine ls_mpi_buffer_shortintegerM
 
@@ -3191,7 +3365,13 @@ contains
     integer(kind=8) :: n
     integer(kind=4), pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_integer4_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3206,7 +3386,13 @@ contains
     integer(kind=8) :: n
     integer(kind=4), pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_integer4_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3222,7 +3408,13 @@ contains
     integer(kind=4) :: n4
     integer(kind=8), pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_integer8_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3236,8 +3428,14 @@ contains
 #ifdef VAR_MPI
     integer(kind=8) :: n
     integer(kind=8), pointer :: buf(:)
-    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
     n=n1*n2
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_integer8_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3322,7 +3520,13 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3337,7 +3541,13 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2
-    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3353,7 +3563,13 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3
-    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3368,7 +3584,13 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3
-    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3384,7 +3606,13 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3*n4
-    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3399,7 +3627,13 @@ contains
     integer(kind=8) :: n
     real(realk),pointer :: buf(:)
     n=n1*n2*n3*n4
-    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
@@ -3797,7 +4031,13 @@ contains
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
     n=(i8*n1)*n2
-    call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif
@@ -3813,7 +4053,13 @@ contains
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
     n=(i8*n1)*n2*n3
-    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif
@@ -3829,7 +4075,13 @@ contains
     real(realk),pointer :: buf(:)
     integer(kind=8) :: n
     n=((i8*n1)*n2)*n3*n4
-    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
+#ifdef VAR_PTR_RESHAPE
+    buf(1:n) => buffer
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+    call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
+#else
+    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
     call lsmpi_local_reduction_realkVN8(buf,n,master)
     nullify(buf)
 #endif

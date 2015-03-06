@@ -288,6 +288,12 @@ CALL DFT_set_default_config(DALTON%DFT)
 ! DEC TEST PARAMETERS
 DALTON%run_dec_gradient_test=.false.
 DALTON%ForceRIMP2memReduced = .FALSE.
+
+dalton%LU_LUINTM=0
+dalton%LU_LUINTR=0
+dalton%LU_LUINDM=0
+dalton%LU_LUINDR=0
+
 END SUBROUTINE integral_set_default_config
 
 !!$!> \brief attach dmat to integral input structure

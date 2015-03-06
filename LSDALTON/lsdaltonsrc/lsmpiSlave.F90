@@ -219,10 +219,8 @@ subroutine lsmpi_slave(comm)
          ENDIF
 #endif
       case(PDMMGRIDINIT);
-         print*,'slave call PDMM_GRIDINIT_SLAVE'
          call PDMM_GRIDINIT_SLAVE
       case(PDMMGRIDEXIT);
-         print*,'slave call PDMM_GRIDEXIT_SLAVE'
          call PDMM_GRIDEXIT_SLAVE
       case(PDMA4SLV);
          call PDM_tensor_SLAVE(comm)
