@@ -107,7 +107,11 @@ contains
     A%PDMID = ID
     !minit  master calls only while slaves are asleep
     offsetpdmm = 0
+#ifdef VAR_MPI
     IF(infpar%nodtot.GT.1)offsetpdmm=1
+#else
+    call lsquit('PDMM requires MPI',-1)
+#endif
     call tensor_minit(pdmm_Marray(ID)%p,[nrow,ncol],mode,tdims=[BLOCK_SIZE_PDM,BLOCK_SIZE_PDM],atype="TDAR",fo=offsetpdmm)
 
   end subroutine mat_pdmm_init
