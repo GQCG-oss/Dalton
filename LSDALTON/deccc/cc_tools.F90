@@ -2,6 +2,14 @@
 module cc_tools_module
    use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
 
+!`DIL backend (depends on Fortran-2008, MPI-3):
+#ifdef FORTRAN_2008
+#ifdef VAR_MPI
+#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
+#endif
+#endif
+
    use precision
 #ifdef VAR_MPI
    use lsmpi_type
@@ -13,7 +21,7 @@ module cc_tools_module
    use dec_typedef_module
    use reorder_frontend_module
    use tensor_interface_module
-   
+
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
    end interface get_tpl_and_tmi
@@ -115,13 +123,15 @@ module cc_tools_module
    end subroutine get_tpl_and_tmi_tensors
 
    subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
+      use, intrinsic:: ISO_C_BINDING
       implicit none
-      type(tensor),intent(inout) :: t2, tpl, tmi
+      type(tensor),intent(inout) :: t2 !intent(in)
+      type(tensor),intent(inout) :: tpl, tmi !tpl[nor,nvr],tmi[nor,nvr]
 
       integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
       integer :: otmi(2),otpl(2),ot2(4)
-      real(realk), pointer :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
-      real(realk), pointer :: buf1(:),buf2(:)
+      real(realk), pointer, contiguous :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
+      real(realk), pointer, contiguous :: buf1(:),buf2(:)
       integer :: dcged,dilej,ccged,cilej,gcged,gilej
       real(realk) :: sol
       integer :: nor,no,nvr,nv,k,c,d
@@ -159,6 +169,7 @@ module cc_tools_module
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
 
          !Facilitate access
+!        call c_f_pointer(c_loc(tpl%ti(lt)%t),tpm,shape=tpl%ti(lt)%d(1:2)) !`DIL
 #ifdef VAR_PTR_RESHAPE
          tpm(1:tpl%ti(lt)%d(1),1:tpl%ti(lt)%d(2)) => tpl%ti(lt)%t
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
@@ -230,6 +241,7 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
+!           call c_f_pointer(c_loc(buf1),tt1,shape=tdim(1:4)) !`DIL
 #ifdef VAR_PTR_RESHAPE
             tt1(1:tdim(1),1:tdim(2),1:tdim(3),1:tdim(4)) => buf1
             if(mtile(2)==mtile(1))then
@@ -240,9 +252,11 @@ module cc_tools_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
             call c_f_pointer(c_loc(buf1(1)),tt1,tdim)
             if(mtile(2)==mtile(1))then
-               call c_f_pointer( c_loc(buf1(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!             call c_f_pointer(c_loc(buf1),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+              call c_f_pointer( c_loc(buf1(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-               call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!             call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+              call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
 #endif
 
@@ -292,7 +306,6 @@ module cc_tools_module
                                  ccged = mod(gcged-1,nvrs)+1
                                  cilej = mod(gilej-1,nors)+1
 
-
                                  tpm(cilej,ccged) = 0.5E0_realk*(tt1(a,b,i,j)+tt2(b,a,i,j))
 
                                  contributed  = .true.
@@ -321,6 +334,7 @@ module cc_tools_module
          call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
 
          !Facilitate access
+!        call c_f_pointer(c_loc(tmi%ti(lt)%t),tpm,shape=tmi%ti(lt)%d(1:2)) !`DIL
 #ifdef VAR_PTR_RESHAPE
          tpm(1:tmi%ti(lt)%d(1),1:tmi%ti(lt)%d(2)) => tmi%ti(lt)%t
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
@@ -392,6 +406,7 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
+!           call c_f_pointer(c_loc(buf1),tt1,shape=tdim(1:4)) !`DIL
 #ifdef VAR_PTR_RESHAPE
             tt1(1:tdim(1),1:tdim(2),1:tdim(3),1:tdim(4)) => buf1
             if(mtile(2)==mtile(1))then
@@ -402,9 +417,11 @@ module cc_tools_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
             call c_f_pointer( c_loc(buf1(1)), tt1, tdim )
             if(mtile(2)==mtile(1))then
-               call c_f_pointer( c_loc( buf1(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!             call c_f_pointer(c_loc(buf1),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+              call c_f_pointer( c_loc( buf1(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-               call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!             call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+              call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
 #endif
 
@@ -619,7 +636,6 @@ module cc_tools_module
          !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred)
 
-
          !!ANTI-SYMMETRIC COMBINATION
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
          call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
@@ -627,13 +643,10 @@ module cc_tools_module
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
          call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d] 
+         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
          call get_I_cged(w2,w0,tred,nv)
          !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred)
-      case(1)
-         !DMITRY's IMPLEMENTATION GOES HERE
-         stop 0
       case default
          call lsquit("ERROR(get_a22_and_prepb22_terms_ex): wrong scheme on input",-1)
       end select
@@ -649,6 +662,197 @@ module cc_tools_module
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
+
+#ifdef DIL_ACTIVE
+   !> \brief calculate a and b terms in a Kobayashi fashion
+   !> \author Patrick Ettenhuber, Dmitry I. Lyakh (`DIL)
+   !> \date December 2012
+   subroutine get_a22_and_prepb22_terms_exd(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
+         &xo,yo,xv,yv,om2,sio4,s,wszes,lo,dil_lock_out,twork,tcomm,order,rest_occ_om2,scal)
+      implicit none
+      !> workspace with exchange integrals
+      real(realk),intent(inout) :: w1(:)
+      !> empty workspace of correct sizes
+      real(realk),intent(inout) :: w0(:),w2(:),w3(:)
+      !> the t+ and t- combinations with a value of the amplitudes with the
+      !diagonal elements divided by two
+      type(tensor),intent(inout) :: tpl,tmi !tpl[nor,nvr],tmi[nor,nvr]
+      !> number of occupied, virutal and ao indices
+      integer, intent(in) :: no,nv,nb
+      !> first alpha and first gamma indices of the current loop
+      integer, intent(in) :: fa,fg
+      !> lengths of the alpha ang gamma batches in the currnet loop
+      integer, intent(in) :: la,lg
+      !> the doubles residual to update
+      !real(realk), intent(inout) :: om2(:)
+      type(tensor), intent(inout) :: om2
+      !> the lambda transformation matrices
+      real(realk), intent(in)    :: xo(:),yo(:),xv(:),yv(:)
+      !> the sio4 matrix to calculate the b2.2 contribution
+      type(tensor),intent(inout) ::sio4
+      !> scheme
+      integer,intent(in) :: s
+      logical,intent(in) :: lo,dil_lock_out
+      !timing information
+      real(realk) :: twork,tcomm
+      !> W0 SIZE
+      integer(kind=8),intent(in)  :: wszes(4)
+      integer,optional,intent(in) :: order(4)
+      logical,optional,intent(in) :: rest_occ_om2
+      real(realk),optional :: scal
+      integer(kind=8)  :: wszes3(3)
+      integer :: goffs,aoffs,tlen,tred,nor,nvr
+      integer(kind=8) :: s0, s2, s3
+!{`DIL:
+     integer:: nors,nvrs
+     character(256):: tcs
+     type(dil_tens_contr_t):: tch
+     integer(INTL):: dil_mem,l0
+     integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
+     integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
+     integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+     real(realk):: r0
+!}
+
+      call time_start_phase(PHASE_WORK)
+
+      nor=(no*(no+1))/2
+      nvr=(nv*(nv+1))/2
+
+      !Determine the offsets in the alpha and gamma indices, which arise from
+      !non uniform batch distributions, e.g. consider:
+      !Case 1:   gamma _____
+      !               |\    |
+      !               |_\___|
+      !  alpha        |  \  |
+      !               |___\_| here an offset in gamma for the second gamma batch is
+      !               needed, since the elements to be considered do not
+      !               begin with the first element in that batch
+      goffs=0
+      if(fa-fg>0)goffs=fa-fg
+      !Case 2:   gamma ______
+      !               |\ |   |
+      !               | \|   |
+      !  alpha        |  |\  |
+      !               |__|_\_| here an offset in alpha for the second alpha batch is
+      !               needed, since the elements to be considered do not
+      !               begin with the first element in that batch
+      aoffs=0
+      if(fg-fa>0)aoffs=fg-fa
+
+      !Determine the dimension of the triangular part in the current batch
+      !and the total number of elements (tred) in the triangular plus
+      !rectangular parts
+      tred=0
+      tlen=min(min(min(la,lg),fg+lg-fa),fa+la-fg)
+
+      !calculate amount of triangular elements in the current batch
+      if(fa+la-1>=fg)tred= tlen*(tlen+1)/2
+      !add the rectangular contribution if lg is larger than tlen 
+      if(fa>=fg.and.fg+lg-fa-tlen>0)tred=tred+(fg+lg-fa-tlen)*la
+      if(fa<fg)tred=tred+lg*aoffs
+      if(fa<fg.and.fa+la>fg) tred=tred+(lg-tlen)*(la-aoffs)
+      !if only rectangular
+      if(tlen<=0)then
+         tlen=0
+         aoffs=0
+         goffs=0
+         tred=la*lg
+      endif
+
+      select case(s)
+      case(1) !`DIL: Scheme 1 only
+         !!SYMMETRIC COMBINATION:
+         !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
+         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+         !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
+         call get_I_cged(w2,w0,tred,nv)
+         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
+!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred) !`DIL: replace
+         if(DIL_DEBUG) then !`DIL: Tensor contraction 6
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 6:")')&
+          &infpar%lg_mynum,infpar%mynum
+         endif
+         tcs='D(z,y)+=L(z,x)*R(y,x)'
+         call dil_clean_tens_contr(tch)
+         tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
+         call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,w3)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: DA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Destination arg set failed!',-1)
+         tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nvr,INTD)/)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,w2)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: LA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Left arg set failed!',-1)
+         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=tpl)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: RA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Right arg set failed!',-1)
+         call dil_set_tens_contr_spec(tch,tcs,errc,alpha=0.5E0_realk)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: CC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Contr spec set failed!',-1)
+         dil_mem=dil_get_min_buf_size(tch,errc)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: BS: ',infpar%lg_mynum,errc,dil_mem
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Buf size set failed!',-1)
+         call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: TC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Tens contr failed!',-1)
+
+         !!ANTI-SYMMETRIC COMBINATION:
+         !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
+         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
+         call get_I_cged(w2,w0,tred,nv)
+         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
+!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred) !`DIL replace
+         if(DIL_DEBUG) then !`DIL: Tensor contraction 7
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 7:")')&
+          &infpar%lg_mynum,infpar%mynum
+         endif
+         tcs='D(z,y)+=L(z,x)*R(y,x)'
+         call dil_clean_tens_contr(tch)
+         tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
+         call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,w3(tred*nor+1:))
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: DA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Destination arg set failed!',-1)
+         tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nvr,INTD)/)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,w2)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: LA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Left arg set failed!',-1)
+         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=tmi)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: RA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Right arg set failed!',-1)
+         call dil_set_tens_contr_spec(tch,tcs,errc,alpha=0.5E0_realk)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: CC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Contr spec set failed!',-1)
+         dil_mem=dil_get_min_buf_size(tch,errc)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: BS: ',infpar%lg_mynum,errc,dil_mem
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Buf size set failed!',-1)
+         call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: TC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Tens contr failed!',-1)
+      case default
+         call lsquit("ERROR(get_a22_and_prepb22_terms_exd): wrong scheme on input",-1)
+      end select
+
+      !COMBINE THE TWO SIGMAS OF W3 IN W2
+      !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
+      !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
+      s0 = wszes(1)
+      s2 = wszes(3)
+      s3 = wszes(4)
+      call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
+         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
+
+      call time_start_phase(PHASE_WORK, at=twork)
+   end subroutine get_a22_and_prepb22_terms_exd
+#endif
 
    !> \brief Combine sigma matrixes in symmetric and antisymmetric combinations 
    !> \author Patrick Ettenhuber
@@ -837,9 +1041,11 @@ module cc_tools_module
       if( qu )then
 
          !ATTENTION: KEEP UP TO DATE
-         s0 = 0
-         s2 = 0
-         s3 = 0
+         !should always be zeroed outside, else there are stack allocation
+         !problems
+         !s0 = 0
+         !s2 = 0
+         !s3 = 0
 
          !w0:
          if(second_trafo_step)then
