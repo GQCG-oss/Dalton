@@ -222,6 +222,7 @@ MODULE matrix_operations
                 !make possible subset 
                 print*,'call ls_mpibcast with infpar%ScalapackGroupSize',infpar%ScalapackGroupSize
                 call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,MPI_COMM_LSDALTON)                
+                call ls_mpibcast(infpar%ScalapackWorkaround,infpar%master,MPI_COMM_LSDALTON)                
                 print*,'master done bcast'
                 IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
                    IF(scalapack_mpi_set)THEN
@@ -274,6 +275,8 @@ MODULE matrix_operations
              !slave
              if(matrix_type.EQ.mtype_scalapack)then
                 call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                call ls_mpibcast(infpar%ScalapackWorkaround,infpar%master,&
                      & MPI_COMM_LSDALTON)
                 infpar%inputblocksize = infpar%ScalapackGroupSize
                 IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN

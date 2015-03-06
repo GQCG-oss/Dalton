@@ -54,6 +54,7 @@ subroutine lsmpi_init(OnMaster)
    call get_size_for_comm( MPI_COMM_LSDALTON, infpar%nodtot )
    !default number of nodes to be used with scalapack - can be changed
    infpar%ScalapackGroupSize = infpar%nodtot
+   infpar%ScalapackWorkaround = .FALSE.
    infpar%PDMMGroupSize = infpar%nodtot
 #ifdef VAR_SCALAPACK  
    scalapack_mpi_set = .FALSE.

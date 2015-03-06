@@ -36,6 +36,8 @@ type infpar_struct
 
   !> number of nodes used in scalapack
   integer(kind=ls_mpik) :: ScalapackGroupSize
+  !> Use scalapack workaround
+  logical :: ScalapackWorkAround
   !> number of nodes used in PDMM
   integer(kind=ls_mpik) :: pdmmGroupSize
 
