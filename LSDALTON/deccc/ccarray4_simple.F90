@@ -14,11 +14,11 @@ module array4_simple_operations
   use LSTIMING!,only:lstimer
   use reorder_frontend_module
 
-
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use array4_memory_manager
   use dec_tools_module
+  use crayio_tools_module
 
   !> Number of array
   integer(kind=long) :: ArrayNumber=0
