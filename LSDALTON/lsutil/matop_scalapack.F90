@@ -639,6 +639,7 @@ module matrix_operations_scalapack
      ELSE
         shift=infpar%nodtot/SLGrid%nprow
         J=0
+        localnrow = 0
         localncol = 0
         jloop : do
            preProc = 0
@@ -690,6 +691,7 @@ module matrix_operations_scalapack
 
         shift=infpar%nodtot/SLGrid%nprow
         J=0
+        localnrow = 0
         localncol = 0
         jloop2 : do
            preProc = 0
