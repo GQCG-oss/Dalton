@@ -91,7 +91,7 @@ contains
     integer, intent(in) :: nrow, ncol
     integer :: i,j,k,ID
     integer(kind=long) :: nsizeFULL,nsizeLOCAL
-    integer :: mode 
+    integer :: mode,offsetpdmm
     A%nrow = nrow
     A%ncol = ncol
     mode = 2
@@ -106,7 +106,10 @@ contains
     ENDDO MarrayList
     A%PDMID = ID
     !minit  master calls only while slaves are asleep
-    call tensor_minit(pdmm_Marray(ID)%p,[nrow,ncol],mode,tdims=[BLOCK_SIZE_PDM,BLOCK_SIZE_PDM],atype="TDAR")
+    offsetpdmm = 0
+    IF(infpar%nodtot.GT.1)offsetpdmm=1
+    call tensor_minit(pdmm_Marray(ID)%p,[nrow,ncol],mode,tdims=[BLOCK_SIZE_PDM,BLOCK_SIZE_PDM],atype="TDAR",fo=offsetpdmm)
+
   end subroutine mat_pdmm_init
 
   !> \brief See mat_free in mat-operations.f90
@@ -919,7 +922,7 @@ SUBROUTINE PDMM_GRIDINIT(NBAST)
   call ls_mpibcast(PDMMGRIDINIT,infpar%master,MPI_COMM_LSDALTON)   
   IF(infpar%inputblocksize.EQ.0)THEN
      IF(NBAST.GT.4096)THEN
-        infpar%inputblocksize = 4096
+        infpar%inputblocksize = 2048
      ELSE !debug 
         infpar%inputblocksize = NBAST/(infpar%nodtot)
      ENDIF

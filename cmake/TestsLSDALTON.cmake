@@ -54,6 +54,8 @@ endif()
     add_lsdalton_test(SCALAPACK/decmp2_geoopt_scalapack               "linsca;scalapack;dec")
 endif()
 
+add_lsdalton_runtest(SCALAPACK/linsca_energy_PDMM                     "linsca;pdmm")
+
 if(ENABLE_RSP)
 if(ENABLE_XCFUN)
     add_lsdalton_runtest(LSresponse/LSresponse_xcfun_lda_molgrad "linsca;xcfun;lsresponse")
