@@ -341,7 +341,6 @@ endif()
     add_lsdalton_test(plt/plt_ep                                     "linsca;plot")
 
 if(ENABLE_ICHOR)
-  add_lsdalton_runtest(IchorTestDir/IchorDecPackedTesting   "linsca;ichor")    
   add_lsdalton_runtest(IchorTestDir/IchorThermiteTesting1   "linsca;ichor;rapid")
   add_lsdalton_runtest(IchorTestDir/IchorThermiteTesting2   "linsca;ichor;rapid")
   add_lsdalton_runtest(IchorTestDir/IchorThermiteTesting3   "linsca;ichor;rapid")
@@ -359,7 +358,10 @@ if(ENABLE_ICHOR)
   add_lsdalton_test(IchorTestDir/IchorThermiteTesting10  "linsca;ichor")
   add_lsdalton_test(IchorTestDir/IchorThermiteTesting11  "linsca;ichor")
   add_lsdalton_test(IchorTestDir/IchorThermiteTesting12  "linsca;ichor")
+if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
+  add_lsdalton_runtest(IchorTestDir/IchorDecPackedTesting   "linsca;ichor")    
   add_lsdalton_runtest(IchorTestDir/IchorProfile         "linsca;ichor")
+endif()
 endif()
 
 
