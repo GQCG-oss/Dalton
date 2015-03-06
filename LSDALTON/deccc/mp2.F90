@@ -2772,7 +2772,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
      call RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
 #ifdef VAR_OPENACC
-     !$acc exit data delete(EVocc,EVvirt 
+     !$acc exit data delete(EVocc,EVvirt)
 #endif
      CALL LSTIMER('RIMP2_calc_tvirt',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(EVocc)
