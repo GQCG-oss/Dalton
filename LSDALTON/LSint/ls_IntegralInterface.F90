@@ -6943,8 +6943,8 @@ Dummyatomlist1(1) = 1
 Dummyatomlist2(1) = 1
 atoms1(1) = iatom1
 atoms2(1) = iatom2
-nullify(GABsub)
-allocate(GABsub)
+!nullify(GABsub)
+!allocate(GABsub)
 call LSTENSOR_nullify(GABsub)
 call build_sublstensor_from_full_lstensor(GABsub,GABfull,1,1,1,1,&
      & atoms1,atoms2,Dummyatomlist1,Dummyatomlist2,nbast1,nbast2,1,1,sameFrag)

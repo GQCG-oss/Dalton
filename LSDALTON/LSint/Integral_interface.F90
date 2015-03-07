@@ -2885,7 +2885,8 @@ integer :: AO1,AO2,AO3,AO4
 dummy=1
 call time_II_operations1()
 
-dofit = SETTING%SCHEME%DENSFIT .OR. SETTING%SCHEME%PARI_J .OR. SETTING%SCHEME%PARI_K
+dofit = SETTING%SCHEME%DENSFIT .OR. SETTING%SCHEME%PARI_J .OR. &
+     SETTING%SCHEME%PARI_K .OR. SETTING%SCHEME%MOPARI_K
 
 IF(SETTING%SCHEME%saveGABtoMem)THEN
  IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN &
@@ -5455,10 +5456,10 @@ ELSE
 ENDIF
 
 IF (SETTING%SCHEME%DF_K) THEN
-   CALL LSQUIT('Error in II_get_exchange_mat1. DF_K and only implemented for MAT ',-1)
+   CALL LSQUIT('Error in II_get_exchange_mat1. DF_K is only implemented for MAT ',-1)
 
-ELSE IF (SETTING%SCHEME%PARI_K) THEN
-   CALL LSQUIT('Error in II_get_exchange_mat1. PARI_K and only implemented for MAT',-1)
+ELSE IF (SETTING%SCHEME%PARI_K.OR.SETTING%SCHEME%MOPARI_K) THEN
+   CALL LSQUIT('Error in II_get_exchange_mat1. PARI_K is only implemented for MAT',-1)
 ELSE
    CALL II_get_exchange_mat_regular_full(LUPRI,LUERR,SETTING,nbast,Dmat,F,ndmat,AO1,AO3,AO2,AO4,Oper)
 ENDIF
@@ -5543,7 +5544,7 @@ TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33,Ftmp(1)
 TYPE(Matrix)        :: S22
 real(realk)         :: var
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
-real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
+real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,tsfull,tefull,hfweight
 integer             :: nbast,nbast2,AORold,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac,fac_unrest
@@ -5578,6 +5579,7 @@ ENDIF
 nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
 
+CALL lstimer('START',tsfull,tefull,lupri)
 CALL lstimer('START',ts,te,lupri)
 
 nbast2 = getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
@@ -5768,6 +5770,7 @@ call mat_free(TMPF)
 call mat_free(k2(1))
 call mat_free(x2(1))
 call mat_free(D2(1))
+CALL lstimer('ADMM',tsfull,tefull,lupri)
 END SUBROUTINE II_get_admm_exchange_mat
 
 !> \brief Calculates the ADMM exchange contribution to the molecular gradient
@@ -6625,19 +6628,21 @@ ELSE
 ENDIF
 
 IF (SETTING%SCHEME%DF_K) THEN
-   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)) &
-   & CALL LSQUIT('Error in II_get_exchange_mat1. DF_K and only implemented for regular AOs',-1)
+   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.&
+        (AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)) &
+        CALL LSQUIT('Error in II_get_exchange_mat1. DF_K is only implemented for regular AOs',-1)
 
    CALL II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
-ELSE IF (SETTING%SCHEME%PARI_K) THEN
-   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)) &
-   & CALL LSQUIT('Error in II_get_exchange_mat1. PARI_K and only implemented for regular AOs',-1)
+ELSE IF (SETTING%SCHEME%PARI_K.OR.SETTING%SCHEME%MOPARI_K) THEN
+   IF ((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.&
+        (AO3.NE.AORdefault).OR.(AO4.NE.AORdefault)) &
+        & CALL LSQUIT('Error in II_get_exchange_mat1. PARI_K is only implemented for regular AOs',-1)
    CALL II_get_pari_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
 ELSE
-   IF (((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.(AO3.NE.AORdefault).OR.(AO4.NE.AORdefault) &
-   & .OR.(Oper.NE.coulombOperator)).AND.setting%IntegralTransformGC) &
-   & CALL LSQUIT('Error in II_get_exchange_mat1. Mixed exchange does not work with GC basis',-1)
-
+   IF (((AO1.NE.AORdefault).OR.(AO2.NE.AORdefault).OR.&
+        (AO3.NE.AORdefault).OR.(AO4.NE.AORdefault) &
+        & .OR.(Oper.NE.coulombOperator)).AND.setting%IntegralTransformGC) &
+        & CALL LSQUIT('Error in II_get_exchange_mat1. Mixed exchange does not work with GC basis',-1)
    CALL II_get_exchange_mat_regular(LUPRI,LUERR,SETTING,Dmat,ndmat,F,AO1,AO3,AO2,AO4,Oper)
 ENDIF
 

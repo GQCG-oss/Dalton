@@ -5,7 +5,7 @@ rm -rf $SCRATCH_DIR
 
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
-git checkout Dalton2014
+git checkout Dalton2015
 export OMP_NUM_THREADS=2
 export MATH_ROOT=/lib64/ATLAS
 export DALTON_TMPDIR=$SCRATCH_DIR
@@ -30,6 +30,6 @@ if [[ -e  DALTON-Source.tar.gz ]]; then
  cd DALTON-Source
 ./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-mpich2-MPI-release" build
 cd build
-ctest --track ReleaseBranch2014MakeRelease -D Nightly -L linsca
+ctest --track ReleaseBranch2015MakeRelease -D Nightly -L linsca
 fi
 exit 0
