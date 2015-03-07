@@ -9676,8 +9676,8 @@ contains
   !> \brief: calculate E[4] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e4_full(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
-                           & eccsdpt_matrix_cou,eccsdpt_matrix_exc,ccsdpt_e4)
+  subroutine ccsdpt_energy_e4_full(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsdpt_doubles, &
+           & occ_orbitals,virt_orbitals,eccsdpt_matrix_cou,eccsdpt_matrix_exc,ccsdpt_e4)
 
     implicit none
 
@@ -9687,11 +9687,13 @@ contains
     integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+    type(decorbital), dimension(nvirt), intent(inout) :: virt_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
-    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
+    real(realk), dimension(nfrags,nfrags,2), intent(inout) :: eccsdpt_matrix_cou
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_exc
     !> integers
-    integer :: i,j,a,b,atomI,atomJ
+    integer :: i,j,a,b,atomI,atomJ,opart,vpart
     !> energy reals
     real(realk) :: energy_tmp, energy_res_cou, energy_res_exc
 
@@ -9704,76 +9706,161 @@ contains
     ! ***********************
 
     eccsdpt_matrix_cou = 0.0_realk
-    eccsdpt_matrix_exc = 0.0_realk
-    energy_res_cou = 0.0E0_realk
-    energy_res_exc = 0.0E0_realk
-    ccsdpt_e4 = 0.0E0_realk
+    opart=1
+    vpart=2
 
     ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
     ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
 
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_cou),&
-    !$OMP REDUCTION(+:eccsdpt_matrix_cou),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
+    if (.not.DECinfo%OnlyVirtPart) then
+       eccsdpt_matrix_exc = 0.0_realk
+       energy_res_cou = 0.0E0_realk
+       energy_res_exc = 0.0E0_realk
+       ccsdpt_e4 = 0.0E0_realk
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
+       !$OMP REDUCTION(+:energy_res_cou,eccsdpt_matrix_cou), &
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset,opart)
+       do j=1,nocc
+          atomJ = occ_orbitals(j+offset)%CentralAtom
+          do i=1,nocc
+             atomI = occ_orbitals(i+offset)%CentralAtom
 
-          do b=1,nvirt
-             do a=1,nvirt
+             do b=1,nvirt
+                do a=1,nvirt
 
-                energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
-                eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) + energy_tmp
-                energy_res_cou = energy_res_cou + energy_tmp
+                   energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                   eccsdpt_matrix_cou(AtomI,AtomJ,opart) = eccsdpt_matrix_cou(AtomI,AtomJ,opart) + energy_tmp
+                   energy_res_cou = energy_res_cou + energy_tmp
 
+                end do
              end do
+
           end do
-
        end do
-    end do
-    !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
 
-    ! reorder from (a,b,i,j) to (a,b,j,i)
-    call tensor_reorder(ccsd_doubles,[1,2,4,3])
+       ! reorder from (a,b,i,j) to (a,b,j,i)
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
 
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_exc),&
-    !$OMP REDUCTION(+:eccsdpt_matrix_exc),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
+       !$OMP REDUCTION(+:energy_res_exc,eccsdpt_matrix_exc), &
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
+       do j=1,nocc
+          atomJ = occ_orbitals(j+offset)%CentralAtom
+          do i=1,nocc
+             atomI = occ_orbitals(i+offset)%CentralAtom
 
-          do b=1,nvirt
-             do a=1,nvirt
+             do b=1,nvirt
+                do a=1,nvirt
 
-                energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
-                eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) + energy_tmp
-                energy_res_exc = energy_res_exc + energy_tmp
+                   energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                   eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) + energy_tmp
+                   energy_res_exc = energy_res_exc + energy_tmp
 
+                end do
              end do
+
           end do
-
        end do
-    end do
-    !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
 
-    ! get total fourth--order energy contribution
-    eccsdpt_matrix_cou = 4.0E0_realk * eccsdpt_matrix_cou - 2.0E0_realk * eccsdpt_matrix_exc
-    ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+       ! get total fourth--order energy contribution
+       eccsdpt_matrix_cou(:,:,opart) = 4.0E0_realk * eccsdpt_matrix_cou(:,:,opart) &
+         & - 2.0E0_realk * eccsdpt_matrix_exc
+       ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
 
-    ! for the e4 pair fragment energy matrix,
-    ! we put the pair energy Delta E_IJ into both entry (I,J) and (J,I)
+       ! for the e4 pair fragment energy matrix,
+       ! we put the pair energy Delta E_IJ into both entry (I,J) and (J,I)
 
-    do AtomJ=1,nfrags
-       do AtomI=AtomJ+1,nfrags
+       do AtomJ=1,nfrags
+          do AtomI=AtomJ+1,nfrags
 
-          eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
-                                              & + eccsdpt_matrix_cou(AtomJ,AtomI)
-          eccsdpt_matrix_cou(AtomJ,AtomI) =  eccsdpt_matrix_cou(AtomI,AtomJ)
-                                           
+             eccsdpt_matrix_cou(AtomI,AtomJ,opart) = eccsdpt_matrix_cou(AtomI,AtomJ,opart) &
+                & + eccsdpt_matrix_cou(AtomJ,AtomI,opart)
+             eccsdpt_matrix_cou(AtomJ,AtomI,opart) =  eccsdpt_matrix_cou(AtomI,AtomJ,opart)
 
+
+          end do
        end do
-    end do
+
+       ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
+
+    end if
+    if (.not.DECinfo%OnlyOccPart) then
+       eccsdpt_matrix_exc = 0.0_realk
+       energy_res_cou = 0.0E0_realk
+       energy_res_exc = 0.0E0_realk
+       ccsdpt_e4 = 0.0E0_realk
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
+       !$OMP REDUCTION(+:energy_res_cou,eccsdpt_matrix_cou), &
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,offset,vpart)
+       do b=1,nvirt
+          atomJ = virt_orbitals(b)%CentralAtom
+          do a=1,nvirt
+             atomI = virt_orbitals(a)%CentralAtom
+
+             do j=1,nocc
+                do i=1,nocc
+
+                   energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                   eccsdpt_matrix_cou(AtomI,AtomJ,vpart) = eccsdpt_matrix_cou(AtomI,AtomJ,vpart) + energy_tmp
+                   energy_res_cou = energy_res_cou + energy_tmp
+
+                end do
+             end do
+
+          end do
+       end do
+       !$OMP END PARALLEL DO
+
+       ! reorder from (a,b,i,j) to (a,b,j,i)
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
+
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
+       !$OMP REDUCTION(+:energy_res_exc,eccsdpt_matrix_exc), &
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,offset)
+       do b=1,nvirt
+          atomJ = virt_orbitals(b)%CentralAtom
+          do a=1,nvirt
+             atomI = virt_orbitals(a)%CentralAtom
+
+             do j=1,nocc
+                do i=1,nocc
+
+                   energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                   eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) + energy_tmp
+                   energy_res_exc = energy_res_exc + energy_tmp
+
+                end do
+             end do
+
+          end do
+       end do
+       !$OMP END PARALLEL DO
+
+       ! get total fourth--order energy contribution
+       eccsdpt_matrix_cou(:,:,vpart) = 4.0E0_realk * eccsdpt_matrix_cou(:,:,vpart) &
+          & - 2.0E0_realk * eccsdpt_matrix_exc
+       ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+
+       ! for the e4 pair fragment energy matrix,
+       ! we put the pair energy Delta E_IJ into both entry (I,J) and (J,I)
+
+       do AtomJ=1,nfrags
+          do AtomI=AtomJ+1,nfrags
+
+             eccsdpt_matrix_cou(AtomI,AtomJ,vpart) = eccsdpt_matrix_cou(AtomI,AtomJ,vpart) &
+                & + eccsdpt_matrix_cou(AtomJ,AtomI,vpart)
+             eccsdpt_matrix_cou(AtomJ,AtomI,vpart) =  eccsdpt_matrix_cou(AtomI,AtomJ,vpart)
+
+
+          end do
+       end do
+
+       ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
+    end if
 
 
 
@@ -9782,79 +9869,6 @@ contains
     ! ******************************************************************
 
   end subroutine ccsdpt_energy_e4_full
-
-! code not used
-!  !> \brief: print out E[4] fragment and pair interaction contribution to 
-!  !>         ccsd(t) energy correction for full molecule calculation
-!  !> \author: Janus Juul Eriksen
-!  !> \date: February 2013
-!  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
-!
-!    implicit none
-!
-!    !> number of atoms in molecule
-!    integer, intent(in) :: natoms
-!    !> matrices containing E[4] energies and interatomic distances
-!    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
-!    !> vector handling how the orbitals are assigned?
-!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-!    !> loop counters
-!    integer :: i,j
-!!    use the one in lsutil/fundamental.f90
-!!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
-!
-!    ! print out fragment energies
-!
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(1X,a)') '***************************************************************'
-!    write(DECinfo%output,'(1X,a)') '*                         E[4] energies                       *'
-!    write(DECinfo%output,'(1X,a)') '***************************************************************'
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (fourth--order E[4])'
-!    write(DECinfo%output,'(8X,a)') '------    --------------------'
-!    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-!    write(DECinfo%output,'(8X,a)') '------    --------------------'
-!    write(DECinfo%output,*)
-!
-!    do i=1,natoms
-!
-!       if (orbitals_assigned(i)) then
-!
-!          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, e4_matrix(i,i)
-!
-!       end if
-!
-!    end do
-!
-!    ! now print out pair interaction energies
-!
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (fourth--order E[4])     '
-!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-!    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-!    write(DECinfo%output,*)
-!
-!    do j=1,natoms
-!       do i=j+1,natoms
-!
-!          ! write increments only if pair interaction energy is nonzero
-!          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-!
-!             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
-!                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
-!
-!          end if
-!
-!       end do
-!    end do
-!
-!
-!  end subroutine print_e4_full
-
 
 
   !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule calculation
@@ -9875,9 +9889,9 @@ contains
     type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
-    real(realk), dimension(nfrags,nfrags), intent(inout) :: e5_matrix
+    real(realk), dimension(nfrags,nfrags,2), intent(inout) :: e5_matrix
     !> integers
-    integer :: i,a,AtomI,AtomA
+    integer :: i,a,AtomI,AtomA,opart,vpart
     !> tmp energy real
     real(realk) :: energy_tmp
 
@@ -9885,31 +9899,35 @@ contains
     !   do E[5] energy part
     ! ***********************
 
+    opart = 1
+    vpart = 2
     e5_matrix = 0.0_realk
     ccsdpt_e5 = 0.0_realk
-
+    energy_tmp = 0.0e0_realk
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
-    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
+    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals,opart),&
     !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_matrix)
     do i=1,nocc
-    AtomI = occ_orbitals(i+offset)%secondaryatom
+       AtomI = occ_orbitals(i+offset)%secondaryatom
        do a=1,nvirt
-       AtomA = unocc_orbitals(a)%secondaryatom
+          AtomA = unocc_orbitals(a)%secondaryatom
 
-           energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
-           e5_matrix(AtomA,AtomI) = e5_matrix(AtomA,AtomI) + energy_tmp
-           ! Important to update both (AtomI,AtomA) and (AtomA,AtomI) 
-           e5_matrix(AtomI,AtomA) = e5_matrix(AtomA,AtomI)
-           ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+          energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+          e5_matrix(AtomA,AtomI,opart) = e5_matrix(AtomA,AtomI,opart) + energy_tmp
+          ! Important to update both (AtomI,AtomA) and (AtomA,AtomI) 
+          e5_matrix(AtomI,AtomA,opart) = e5_matrix(AtomA,AtomI,opart)
+          ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
        end do
     end do
     !$OMP END PARALLEL DO
 
     ! get total fifth-order energy correction
-    e5_matrix = 2.0E0_realk * e5_matrix
+    e5_matrix(:,:,opart) = 2.0E0_realk * e5_matrix(:,:,opart)
     ccsdpt_e5 = 2.0E0_realk * ccsdpt_e5
 
+    ! virtual partioning is the same as occupied for [5]:
+    e5_matrix(:,:,vpart) = e5_matrix(:,:,opart)
 
 
     ! ******************************
@@ -9917,66 +9935,6 @@ contains
     ! ******************************
 
   end subroutine ccsdpt_energy_e5_full
-
-! code not used
-!  !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
-!  !> \author: Janus Juul Eriksen
-!  !> \date: February 2013
-!  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
-!
-!    implicit none
-!
-!    !> number of atoms in molecule
-!    integer, intent(in) :: natoms
-!    !> matrices containing E[4] energies and interatomic distances
-!    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
-!    !> vector handling how the orbitals are assigned?
-!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-!    !> loop counters
-!    integer :: i,a
-!
-!    ! print out fragment energies
-!
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(1X,a)') '***************************************************************'
-!    write(DECinfo%output,'(1X,a)') '*                         E[5] energies                       *'
-!    write(DECinfo%output,'(1X,a)') '***************************************************************'
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(8X,a)') '-- Pair fragment energies (fifth--order E[5])          '
-!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-!    write(DECinfo%output,'(9X,a)') 'P(virt)    Q(occ)      R(Ang)           E(PQ)          '
-!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-!    write(DECinfo%output,*)
-!
-!    ! the total singles energy must result from an unrestricted summation over all occ and virt indices
-!    ! as we are only interested in general orbital interactions and hence not the nature (occ/virt)
-!    ! of the individual orbitals
-!
-!    do i=1,natoms
-!       do a=1,natoms
-!
-!          ! write increments only if pair interaction energy is nonzero
-!          if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
-!
-!             if (i .eq. a) then
-!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-!                     &0.000, e5_matrix(a,i)
-!
-!             else
-!
-!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-!                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
-!
-!             end if
-!
-!          end if
-!
-!       end do
-!    end do
-!
-!  end subroutine print_e5_full
 
 
   !> \brief Get MO integrals for ijk-CCSD(T) (in canonical basis), see integral storing order below.
