@@ -32,6 +32,9 @@ module mp2_module
       use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
   use dec_workarounds_module
+#if defined(VAR_CUDA) || defined(VAR_OPENACC)
+  use gpu_interfaces
+#endif
 
   use dec_fragment_utils!,only: calculate_fragment_memory, &
 !       & dec_simple_dgemm_update,start_flop_counter,&
@@ -2014,6 +2017,27 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 131124879
 #endif  
+  type(c_ptr) :: cublas_handle
+  integer*4 :: stat
+#ifdef VAR_OPENACC
+  integer(kind=acc_handle_kind) :: handle
+#ifdef VAR_PGF90
+  integer*4, external :: acc_set_cuda_stream
+#endif
+#else
+  integer :: handle
+#endif
+
+#ifdef VAR_CUBLAS
+
+  ! initialize the CUBLAS context
+  stat = cublasCreate_v2(cublas_handle)
+  ! for now, restrict the async handle to acc_async_sync (synchronous)
+  handle = acc_async_sync
+  stat = acc_set_cuda_stream(handle,cublas_handle)
+
+#endif
+
   IF(present(djik))THEN
      IF(present(blad))THEN
         first_order=.TRUE. !first order integrals are required
@@ -2691,9 +2715,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
 #elif defined(VAR_CUBLAS)
-     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
-#else
-     call lsquit('OpenACC parallelization of RIMP2 requires CRAY or CUBLAS',-1)     
+!     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+     stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                           & 1.0E0_realk,c_loc(UoccEOST),int(K,kind=4),c_loc(tocc),int(K,kind=4),&
+                           & 0.0E0_realk,c_loc(tocc2),int(M,kind=4))
+!#else
+!     call lsquit('OpenACC parallelization of RIMP2 requires CRAY or CUBLAS',-1)     
 #endif
      !$acc end host_data
      !$acc end data
@@ -2718,7 +2745,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
 #elif defined(VAR_CUBLAS)
-     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+!     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                           & 1.0E0_realk,c_loc(tocc2),int(M,kind=4),c_loc(UvirtT),int(K,kind=4),&
+                           & 0.0E0_realk,c_loc(tocc3),int(M,kind=4))
 #endif
      !$acc end host_data
      !$acc end data
@@ -2791,7 +2821,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
 #elif defined(VAR_CUBLAS)
-     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+!     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                           & 1.0E0_realk,c_loc(tvirt),int(M,kind=4),c_loc(UvirtEOST),int(K,kind=4),&
+                           & 0.0E0_realk,c_loc(tvirt2),int(M,kind=4))
 #endif
      !$acc end host_data
      !$acc end data
@@ -2816,7 +2849,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
 #elif defined(VAR_CUBLAS)
-     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+!     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+     stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                           & 1.0E0_realk,c_loc(UoccT),int(K,kind=4),c_loc(tvirt2),int(M,kind=4),&
+                           & 0.0E0_realk,c_loc(tvirt3),int(M,kind=4))
 #endif
      !$acc end host_data
      !$acc end data
@@ -2878,7 +2914,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,nocc,0.0E0_realk,Calpha2,M)
 #elif defined(VAR_CUBLAS)
-     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+!     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                           & 1.0E0_realk,c_loc(Calpha),int(M,kind=4),c_loc(UoccEOST),int(nocc,kind=4),&
+                           & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
 #endif
      !$acc end host_data
      !$acc end data
@@ -2952,7 +2991,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,nocc,0.0E0_realk,Calpha2,M)
 #elif defined(VAR_CUBLAS)
-     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+!     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                           & 1.0E0_realk,c_loc(Calpha),int(M,kind=4),c_loc(UoccT),int(nocc,kind=4),&
+                           & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
 #endif
      !$acc end host_data
      !$acc end data
@@ -3198,6 +3240,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   write(*,'(A,g10.3,A)')"DECRIMP2 time WORK",time_w," seconds"
   write(*,'(A,g10.3,A)')"DECRIMP2 time COMM",time_c," seconds"
   write(*,'(A,g10.3,A)')"DECRIMP2 time IDLE",time_i," seconds"
+#endif
+
+#ifdef VAR_CUBLAS
+
+    ! Destroy the CUBLAS context
+    stat = cublasDestroy_v2(cublas_handle)
+
 #endif
 
 end subroutine RIMP2_integrals_and_amplitudes
