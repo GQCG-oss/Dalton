@@ -3008,7 +3008,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(Calpha3,nba,nvirtEOS,nocc)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
-     !$acc enter data create(Calpha3)
+     !$acc enter data create(Calpha3) copyin(UvirtEOST)
 #endif
      call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
 #ifdef VAR_OPENACC
