@@ -2897,7 +2897,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,Calpha2,Calpha3)
      CALL LSTIMER('RIMP2_TransAlpha1',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
-     !$acc exit data delete(Calpha2,Uvirt)
+     !$acc exit data delete(Calpha2,UvirtT)
 #endif
      call mem_dealloc(Calpha2)
      IF(.NOT.first_order)call mem_dealloc(UvirtT)
