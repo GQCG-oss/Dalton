@@ -599,16 +599,17 @@ module cc_debug_routines_module
               !  endif
               !endif
      
+              !FIXME: fock is defined in a wrong way !!!
               !if(iter == 1) t2(iter)%val = m2%val
-              if(.not.fragment_job)then
-                call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter)
-              else
-                call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
-              endif
+              !if(.not.fragment_job)then
+              !  call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
+              !  &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+              !  &fragment_job,pno_cv,pno_S,nspaces,fock%val,iter)
+              !else
+              !  call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
+              !  &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+              !  &fragment_job,pno_cv,pno_S,nspaces,fock%val,iter,f=fraginfo)
+              !endif
 
               !stop 0
          
