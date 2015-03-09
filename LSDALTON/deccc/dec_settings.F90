@@ -91,7 +91,6 @@ contains
     DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
-    DECinfo%CCDEBUG              = .false.
     DECinfo%manual_batchsizes    = .false.
     DECinfo%ccsdAbatch           = 0
     DECinfo%ccsdGbatch           = 0
@@ -720,7 +719,6 @@ contains
 #ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
-       case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
        case('.CCDRIVERDEBUG');            DECinfo%cc_driver_debug      = .true.
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
