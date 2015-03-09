@@ -594,7 +594,7 @@ module lspdm_tensor_operations_module
     do lt=1,t2%nlti
 #ifdef VAR_PTR_RESHAPE
       t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -960,7 +960,7 @@ module lspdm_tensor_operations_module
        gmo_ctile(1:gmo_ctdim(1),1:gmo_ctdim(2),1:gmo_ctdim(3),1:gmo_ctdim(4)) => gmo_tile_buf(1:,cbuf)
        gmo_etile(1:gmo_etdim(1),1:gmo_etdim(2),1:gmo_etdim(3),1:gmo_etdim(4)) => gmo_tile_buf(1:,ebuf)
        t2tile(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
        call c_f_pointer(c_loc(gmo_tile_buf(1,cbuf)),gmo_ctile,gmo_ctdim)
        call c_f_pointer(c_loc(gmo_tile_buf(1,ebuf)),gmo_etile,gmo_etdim)
        call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t2tile,t2%ti(lt)%d)
@@ -1078,14 +1078,14 @@ module lspdm_tensor_operations_module
 
         call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
 
-#ifdef VAR_PTR_RESHAPE
-        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
-        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+!#ifdef VAR_PTR_RESHAPE
+!        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
+!        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
+!#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
-#else
-        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
-#endif
+!#else
+!        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+!#endif
 
         !get offset for tile counting
         do j=1,tensor_full%mode
@@ -1195,14 +1195,14 @@ module lspdm_tensor_operations_module
 
         call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
 
-#ifdef VAR_PTR_RESHAPE
-        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
-        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+!#ifdef VAR_PTR_RESHAPE
+!        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
+!        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
+!#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
-#else
-        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
-#endif
+!#else
+!        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+!#endif
 
         !get offset for tile counting
         do j=1,tensor_full%mode
@@ -1314,7 +1314,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_PTR_RESHAPE
         tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
         &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
 #else
         call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1426,8 +1426,8 @@ module lspdm_tensor_operations_module
            !Facilitate access
 #ifdef VAR_PTR_RESHAPE
            ut(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => u%ti(lt)%t
-           tt(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => u%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+           tt(1:u%ti(lt)%d(1),1:u%ti(lt)%d(2),1:u%ti(lt)%d(3),1:u%ti(lt)%d(4)) => ttile
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(u%ti(lt)%t(1)), ut, u%ti(lt)%d )
            call c_f_pointer( c_loc(ttile(1)),      tt, u%ti(lt)%d )
 #else
@@ -1572,7 +1572,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_PTR_RESHAPE
       t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1645,7 +1645,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_PTR_RESHAPE
       t(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1781,7 +1781,7 @@ module lspdm_tensor_operations_module
                  e(1:di,1:db,1:dj,1:da) => buf_c
               endif
            endif
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(t2%ti(lt)%t(1)), t, t2%ti(lt)%d )
            call c_f_pointer( c_loc(buf_c(1)), c, [di,da,dj,db] )
            if( spec == CCSD_LAG_RHS )then
@@ -1928,7 +1928,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_PTR_RESHAPE
       om(1:prec%ti(lt)%d(1),1:prec%ti(lt)%d(2),1:prec%ti(lt)%d(3),1:prec%ti(lt)%d(4)) => prec%ti(lt)%t
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(prec%ti(lt)%t(1)),om,prec%ti(lt)%d)
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2653,16 +2653,16 @@ module lspdm_tensor_operations_module
 
     !give meaningful quit statement for useless input
     if(present(fromnode).and.arr%access_type==AT_MASTER_ACCESS)then
-      call lsquit("ERROR(tensor_sync_replicated): This combintion of input&
-      &elements does not give sense",DECinfo%output)
-      ! why would you want to collect the data on a node you cannot direcly
-      ! access, or if you can access the data in the calling subroutine on the
-      ! specified node, why is the init_tyep AT_MASTER_ACCESS?
+       call lsquit("ERROR(tensor_sync_replicated): This combintion of input&
+          &elements does not give sense",DECinfo%output)
+       ! why would you want to collect the data on a node you cannot direcly
+       ! access, or if you can access the data in the calling subroutine on the
+       ! specified node, why is the init_tyep AT_MASTER_ACCESS?
     endif
 
     ! get slaves
     if(infpar%lg_mynum==infpar%master.and.arr%access_type==AT_MASTER_ACCESS)then
-      call pdm_tensor_sync(infpar%lg_comm,JOB_SYNC_REPLICATED,arr)
+       call pdm_tensor_sync(infpar%lg_comm,JOB_SYNC_REPLICATED,arr)
     endif
 
 
@@ -3132,7 +3132,7 @@ module lspdm_tensor_operations_module
         w => wrk
 #ifdef VAR_PTR_RESHAPE
         buffA(1:A%tsize,1:nbuffsA) => w
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,nbuffsA])
 #else
         call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3142,7 +3142,7 @@ module lspdm_tensor_operations_module
         else
 #ifdef VAR_PTR_RESHAPE
            buffB(1:tsizeB,1:nbuffsB) => w(nbuffsA*A%tsize+1:)
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer(c_loc(w(nbuffsA*A%tsize+1)),buffB,[tsizeB,nbuffsB])
 #else
            call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)

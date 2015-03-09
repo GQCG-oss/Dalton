@@ -464,7 +464,7 @@ contains
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
       buffertmp(1:(i8*n1)*n2) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buffertmp,[(i8*n1)*n2])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -508,7 +508,7 @@ contains
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
       buffertmp(1:(i8*n1)*n2) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buffertmp,[(i8*n1)*n2])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -601,7 +601,7 @@ contains
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:(i8*n1)*n2) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[(i8*n1)*n2])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -627,7 +627,7 @@ contains
       real(realk),pointer :: buf(:)
 #ifdef VAR_PTR_RESHAPE
       buf(1:(i8*n1)*n2*n3) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[(i8*n1)*n2*n3])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -647,7 +647,7 @@ contains
 #ifdef VAR_MPI
 #ifdef VAR_PTR_RESHAPE
       buf(1:(i8*n1)*n2*n3*n4) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[(i8*n1)*n2*n3*n4])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -835,7 +835,7 @@ contains
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -857,7 +857,7 @@ contains
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -878,7 +878,7 @@ contains
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -899,7 +899,7 @@ contains
       n=n1*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1418,7 +1418,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1440,7 +1440,7 @@ contains
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1462,7 +1462,7 @@ contains
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1714,7 +1714,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1736,7 +1736,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1758,7 +1758,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -1780,7 +1780,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2028,7 +2028,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2046,7 +2046,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2064,7 +2064,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2082,7 +2082,7 @@ contains
       n = (i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2102,7 +2102,7 @@ contains
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2120,7 +2120,7 @@ contains
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2138,7 +2138,7 @@ contains
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2156,7 +2156,7 @@ contains
       n = (i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2176,7 +2176,7 @@ contains
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2194,7 +2194,7 @@ contains
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2212,7 +2212,7 @@ contains
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -2230,7 +2230,7 @@ contains
       n = (i8*n1)*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
       buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
       call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3367,7 +3367,7 @@ contains
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3388,7 +3388,7 @@ contains
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3410,7 +3410,7 @@ contains
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3431,7 +3431,7 @@ contains
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3522,7 +3522,7 @@ contains
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3543,7 +3543,7 @@ contains
     n=n1*n2
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3565,7 +3565,7 @@ contains
     n=n1*n2*n3
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3586,7 +3586,7 @@ contains
     n=n1*n2*n3
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3608,7 +3608,7 @@ contains
     n=n1*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -3629,7 +3629,7 @@ contains
     n=n1*n2*n3*n4
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -4033,7 +4033,7 @@ contains
     n=(i8*n1)*n2
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -4055,7 +4055,7 @@ contains
     n=(i8*n1)*n2*n3
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
@@ -4077,7 +4077,7 @@ contains
     n=((i8*n1)*n2)*n3*n4
 #ifdef VAR_PTR_RESHAPE
     buf(1:n) => buffer
-#elif COMPILER_UNDERSTANDS_FORTRAN_2003
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
     call c_f_pointer(c_loc(buffer(1,1,1,1)),buf,[n])
 #else
     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)

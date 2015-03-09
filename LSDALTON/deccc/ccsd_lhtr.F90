@@ -25,12 +25,12 @@ module ccsd_lhtr_module
    !of occupied orbitals no, the number of virtual orbitals nv and the number of
    !basis functions nb, MyLsItem is required to calculate the Fock matrix in
    !here
-   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,df,xo,yo,xv,yv,no,nv,nb,MyLsItem,gao_ex)
+   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,fo,xo,yo,xv,yv,no,nv,nb,MyLsItem,gao_ex)
      implicit none
 
      type(lsitem), intent(inout) :: MyLsItem
      real(realk),intent(inout) :: rho1(:,:),rho2(:,:,:,:)
-     real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:),df(:,:)
+     real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:),fo(:,:)
      real(realk),intent(in)    :: xo(:,:),yo(:,:),xv(:,:),yv(:,:)
      integer, intent(in)       :: no,nv,nb
      type(array4),intent(inout),optional:: gao_ex
@@ -182,38 +182,19 @@ module ccsd_lhtr_module
      call array4_dealloc(gao)
 
 
-     !allocate the density matrix
-     call mat_init(iFock,nb,nb)
-     call mat_init(Dens,nb,nb)
-
-     !calculate inactive fock matrix in ao basis
-     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens%elms,nb)
-     call mat_zero(iFock)
-     call dec_fock_transformation(iFock,Dens,MyLsItem,.false.)
-
-     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-          & Dens%elms,nb,nb,AORdefault,AORdefault)
-     ! Add one- and two-electron contributions to Fock matrix
-     call daxpy(b2,1.0E0_realk,Dens%elms,1,iFock%elms,1)
-     call daxpy(b2,1.0E0_realk,df,1,iFock%elms,1)
-     !Free the density matrix
-     call mat_free(Dens)
-
      call mem_alloc(w1,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
 
      !Transform inactive Fock matrix into the different mo subspaces
      ! -> Foo
-     call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock%elms,nb,0.0E0_realk,w1,no)
+     call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,fo,nb,0.0E0_realk,w1,no)
      call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,oof,no)
      ! -> Fov
      call dgemm('n','n',no,nv,nb,1.0E0_realk,w1,no,yv,nb,0.0E0_realk,ovf,no)
      ! -> Fvo
-     call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock%elms,nb,0.0E0_realk,w1,nv)
+     call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fo,nb,0.0E0_realk,w1,nv)
      call dgemm('n','n',nv,no,nb,1.0E0_realk,w1,nv,yo,nb,0.0E0_realk,vof,nv)
      ! -> Fvv
      call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,vvf,nv)
-
-     call mat_free(iFock)
 
      call mem_alloc(w3,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
      call mem_alloc(w4,max(max(ov3,o3v),o2v2))

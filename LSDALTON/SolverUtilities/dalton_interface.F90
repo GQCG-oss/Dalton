@@ -39,6 +39,7 @@ MODULE dal_interface
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
    use gridgenerationmodule
+   use crayio_tools_module
    use ls_util, only: ls_print_gradient
 #ifdef BUILD_GEN1INT_LSDALTON
    ! debug GEN1INT
@@ -140,6 +141,9 @@ CONTAINS
          call lsquit('.DEBUGCGTODIFF requires OpenRSP -DBUILD_CGTODIFF',lupri)
 #endif
       endif
+      IF(ls%input%dalton%DUMP4CENTERERI)THEN
+         call DUMP4CENTERERI(lupri,luerr,ls,nbast)
+      ENDIF
     end subroutine di_debug_general
 
   subroutine di_debug_general2(lupri,luerr,ls,nbast,S,D)
@@ -3655,6 +3659,105 @@ CONTAINS
       call screen_init()
       call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
     END SUBROUTINE di_decbatchpacked
+
+    SUBROUTINE DUMP4CENTERERI(lupri,luerr,ls,nbast)
+      implicit none
+      integer :: lupri,luerr,nbast
+      type(lsitem),intent(inout) :: ls
+      real(realk),pointer   :: integrals(:,:,:,:)
+      integer :: iA,funit
+      integer(kind=long) :: begin_add,nbast3
+      character :: intspec(5)
+      character(len=26) :: Filename
+      !
+      integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesXY
+      integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,j,MinAObatch,MaxAllowedDim,MaxActualDim,ib,id,ix,iy
+      logical :: doscreen,fullrhs
+      TYPE(DECscreenITEM)    :: DecScreen
+      integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
+      type(batchtoorb), pointer :: batch2orb(:)
+      real(realk) :: intThreshold
+
+      intspec = ['R','R','R','R','C']
+      call get_available_file_unit(funit)
+      filename = 'LSDALTONERI3DIMBLOCKS.data'
+      call openfile(funit,Filename)
+      IF(.TRUE.)THEN
+         call mem_alloc(integrals,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,ls%setting,integrals,&
+              & nbast,nbast,nbast,nbast,intspec)
+
+         nbast3 = nbast*nbast*nbast
+         begin_add = 1
+         do iA = 1,nbast
+            call writevector(funit,begin_add,nbast3,integrals(iA:iA,1:nbast,1:nbast,1:nbast))
+            begin_add = begin_add + nbast3
+         enddo
+         call mem_dealloc(integrals)
+      ELSE         
+         doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
+         nullify(orb2batch)
+         nullify(batchdim)
+         nullify(batch2orb)
+         nullify(batchsize)
+         nullify(batchindex)
+         
+         call determine_maxBatchOrbitalsize(lupri,ls%setting,MinAObatch,'R')
+         MaxAllowedDim = MinAObatch
+         call mem_alloc(orb2batch,nbast)
+         call build_batchesofAOS(lupri,ls%setting,MaxAllowedDim,&
+              & nbast,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch,'R')
+         call mem_alloc(batch2orb,nbatchesXY)
+         do idx=1,nbatchesXY
+            call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
+            batch2orb(idx)%orbindex = 0
+            batch2orb(idx)%norbindex = 0
+         end do
+         do iorb=1,nbast
+            idx = orb2batch(iorb)
+            batch2orb(idx)%norbindex = batch2orb(idx)%norbindex+1
+            j = batch2orb(idx)%norbindex
+            batch2orb(idx)%orbindex(j) = iorb
+         end do
+         intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
+         call II_precalc_DECScreenMat(DecScreen,lupri,luerr,ls%setting,nbatchesXY,nbatchesXY,INTSPEC,intThreshold)      
+         IF(doscreen)then
+            call II_getBatchOrbitalScreenK(DecScreen,ls%setting,&
+                 & nbast,nbatchesXY,nbatchesXY,batchsize,batchsize,batchindex,batchindex,&
+                 & batchdim,batchdim,INTSPEC,lupri,luerr)
+         endif
+         FullRHS = .FALSE.
+         
+         nbast3 = nbast*nbast*nbast
+         begin_add = 1
+
+         BatchX: do X = 1,nbatchesXY
+            dimX = batchdim(X)
+            
+            nullify(integrals)
+            allocate(integrals(dimX,nbast,nbast,nbast))
+            integrals = 0E0_realk
+            IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(X)%p
+            IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREEN%masterGabLHS!DECSCREEN%batchGabKRHS(Y)%p
+            
+            call II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,ls%SETTING,&
+                 & integrals,batchindex(X),0,batchsize(X),1,&
+                 & dimX,nbast,nbast,nbast,INTSPEC,fullRHS,intThreshold)
+            
+!            do iA = 1,dimX
+!               call writevector(funit,begin_add,nbast3,integrals(iA:iA,1:nbast,1:nbast,1:nbast))
+!               do iB=1,nbast
+!                  print*,'A=',iA,'B=',iB,'FULL CD'
+!                  call ls_output(integrals(iA,iB,1:nbast,1:nbast),1,nbast,1,nbast,nbast,nbast,1,6)
+!               enddo
+!               begin_add = begin_add + nbast3
+!            enddo
+            deallocate(integrals)
+            nullify(integrals)
+         ENDDO BatchX
+      endif
+      call closefile(funit,'KEEP')
+    end SUBROUTINE DUMP4CENTERERI
 
     SUBROUTINE di_debug_4center_eri_interest(lupri,lu_err,ls,nbast)
       IMPLICIT NONE
