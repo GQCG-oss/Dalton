@@ -18,7 +18,7 @@ source /com/intel/composer_xe_2013.1.117/mkl/bin/mklvars.sh intel64
 source /com/OpenMPI/1.4.5/intel/load.sh
 
 
-git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
 #git checkout Dalton2013_release
