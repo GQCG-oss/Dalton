@@ -43,10 +43,7 @@ contains
 
       real(8) :: eqmnp
       integer :: i
-      integer :: idim, kfree, lfree
-!
-      KFREE = 1
-      LFREE = LWORK
+      integer :: idim
 !
       CALL  GETDIM_RELMAT(IDIM,.FALSE.)
 !
@@ -58,8 +55,8 @@ contains
             allocate(fvvec(idim))
             allocate(fao(nnbasx))
 !           Determine electric field/potential vector
-            CALL GET_FVVEC(DCAO,DVAO,FVVEC,IDIM,WORK(KFREE),     &
-     &                     LFREE)
+            CALL GET_FVVEC(DCAO,DVAO,FVVEC,IDIM,WORK,     &
+     &                     lwork)
 !           Determine induced momemnts/charges
             ! rcpmat becomes complex -> complex fock operator
             CALL DGEMV('N',IDIM,IDIM,1.0d0,RCPMAT,IDIM,FVVEC,1,0.0d0,  &
@@ -75,7 +72,7 @@ contains
 !           Compute induced dipoles & charges contribution to
 !           Fock/Kohn-Sham matrix
             CALL GET_INDMQ_FOCK(DCAO,DVAO,MQVEC,IDIM,FAO, &
-     &                          WORK(KFREE),LFREE)
+     &                          WORK,lwork)
             deallocate(mqvec)
 !           Add energy contributions
             IF (DONPPOL) EQMNP = EQMNP+EESOLMNP+ENSOLMNP
@@ -83,8 +80,8 @@ contains
 !           Computer permanent charges in MM region contribution to
 !           Fock/Kohn-Sham matrix and add energy contributions
             IF (DOMMSUB) THEN
-               CALL GET_PERMQ_FOCK(DCAO,DVAO,FAO,WORK(KFREE),    &
-     &                             LFREE)
+               CALL GET_PERMQ_FOCK(DCAO,DVAO,FAO,WORK,    &
+     &                             lwork)
                EQMNP = EQMNP+EESOLQMM+ENSOLQMM
             END IF
          ELSE
@@ -118,14 +115,12 @@ contains
       integer :: idim, lwork
       real(8) :: DCAO(*), DVAO(*), FVVEC(IDIM), WORK(LWORK)
 !
-      integer :: i, kfree, lfree
-      KFREE = 1
-      LFREE = LWORK
+      integer :: i
 !
       CALL DZERO(FVVEC,IDIM)
 !     determine QM region contributions to FV vector
       CALL GET_QMNUCFV(FVVEC,IDIM)
-      CALL GET_QMELEFV(FVVEC,IDIM,DCAO,DVAO,WORK(KFREE),LFREE)
+      CALL GET_QMELEFV(FVVEC,IDIM,DCAO,DVAO,WORK,lwork)
 !
       CALL GET_QLAGRAN(FVVEC,IDIM)
 !     Print final FV vector
@@ -247,20 +242,18 @@ contains
       real(8) :: RSAVORG(3)
 
       integer :: i, j, ioff, istart
-      integer :: kfree, lfree
-      integer :: kintao, kpatom, nocomp
+      integer :: kpatom, nocomp
       real(8) :: relfld, rvpot
       real(8), external :: ddot
+      real(8), allocatable :: intao(:)
 !
-      KFREE = 1
-      LFREE = LWORK
 !     Save origin coordinates
       RSAVORG(1) = DIPORG(1)
       RSAVORG(2) = DIPORG(2)
       RSAVORG(3) = DIPORG(3)
 !     Electric field due to electrons in QM region
       IF (DONPPOL) THEN
-         CALL MEMGET('REAL',KINTAO,3*NNBASX,WORK,KFREE,LFREE)
+         allocate(intao(3*nnbasx))
 !        Set integrals evaluation flags
          KPATOM = 0
          NOCOMP = 3
@@ -274,36 +267,36 @@ contains
              DIPORG(1) = NPCORD(1,I)
              DIPORG(2) = NPCORD(2,I)
              DIPORG(3) = NPCORD(3,I)
-             CALL DZERO(WORK(KINTAO),3*NNBASX)
-             CALL GET1IN(WORK(KINTAO),'NEFIELD',NOCOMP,WORK(KFREE),     &
-     &                   LFREE,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,    &
+             intao = 0.0d0
+             CALL GET1IN(INTAO,'NEFIELD',NOCOMP,WORK,     &
+     &                   lwork,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,    &
      &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
              IF (NISHT.GT.0) THEN
-                RELFLD = DDOT(NNBASX,DCAO,1,WORK(KINTAO),1)
+                RELFLD = DDOT(NNBASX,DCAO,1,INTAO,1)
                 FVVEC(IOFF+1) = FVVEC(IOFF+1)+RELFLD
-                RELFLD = DDOT(NNBASX,DCAO,1,WORK(KINTAO+NNBASX),1)
+                RELFLD = DDOT(NNBASX,DCAO,1,INTAO(NNBASX + 1),1)
                 FVVEC(IOFF+2) = FVVEC(IOFF+2)+RELFLD
-                RELFLD = DDOT(NNBASX,DCAO,1,WORK(KINTAO+2*NNBASX),1)
+                RELFLD = DDOT(NNBASX,DCAO,1,INTAO(2*NNBASX + 1),1)
                 FVVEC(IOFF+3) = FVVEC(IOFF+3)+RELFLD
              END IF
              IF (NASHT.GT.0) THEN
-                RELFLD = DDOT(NNBASX,DVAO,1,WORK(KINTAO),1)
+                RELFLD = DDOT(NNBASX,DVAO,1,INTAO,1)
                 FVVEC(IOFF+1) = FVVEC(IOFF+1)+RELFLD
-                RELFLD = DDOT(NNBASX,DVAO,1,WORK(KINTAO+NNBASX),1)
+                RELFLD = DDOT(NNBASX,DVAO,1,INTAO(NNBASX + 1),1)
                 FVVEC(IOFF+2) = FVVEC(IOFF+2)+RELFLD
-                RELFLD = DDOT(NNBASX,DVAO,1,WORK(KINTAO+2*NNBASX),1)
+                RELFLD = DDOT(NNBASX,DVAO,1,INTAO(2*NNBASX + 1),1)
                 FVVEC(IOFF+3) = FVVEC(IOFF+3)+RELFLD
              END IF
          END DO
          RUNQM3 = .FALSE.
-         CALL MEMREL('GET_QMELEFV',WORK,1,1,KFREE,LFREE)
+         deallocate(intao)
       END IF
 !     Potential due to electrons in QM region
       IF (DONPCAP) THEN
          ISTART = 0
          IF (DONPPOL) ISTART = 3*TNPATM
 !        Fix me MM region shift
-         CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
+         allocate(intao(nnbasx))
 !        Set integrals evaluation flags
          KPATOM = 0
          NOCOMP = 1
@@ -317,21 +310,21 @@ contains
              DIPORG(1) = NPCORD(1,I)
              DIPORG(2) = NPCORD(2,I)
              DIPORG(3) = NPCORD(3,I)
-             CALL DZERO(WORK(KINTAO),NNBASX)
-             CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),     &
-     &                   LFREE,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,    &
+             intao = 0.0d0
+             CALL GET1IN(INTAO,'NPETES ',NOCOMP,WORK,     &
+     &                   lwork,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,    &
      &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
              IF (NISHT.GT.0) THEN
-                RVPOT = DDOT(NNBASX,DCAO,1,WORK(KINTAO),1)
+                RVPOT = DDOT(NNBASX,DCAO,1,INTAO,1)
                 FVVEC(IOFF) = FVVEC(IOFF)+RVPOT
              END IF
              IF (NASHT.GT.0) THEN
-                RVPOT = DDOT(NNBASX,DVAO,1,WORK(KINTAO),1)
+                RVPOT = DDOT(NNBASX,DVAO,1,INTAO,1)
                 FVVEC(IOFF) = FVVEC(IOFF)+RVPOT
              END IF
          END DO
          RUNQM3 = .FALSE.
-         CALL MEMREL('GET_QMELEFV',WORK,1,1,KFREE,LFREE)
+         deallocate(intao)
       END IF
 !     Restore origin coordinates
       DIPORG(1) = RSAVORG(1)
@@ -467,15 +460,13 @@ contains
       CHARACTER*8 LABINT(9*MXCENT)
       real(8) :: RSAVORG(3), RIJ(3)
 
-      integer :: kpatom, kfree, lfree
-      integer :: i, j, ioff, istart, kintao, nocomp
+      integer :: kpatom
+      integer :: i, j, ioff, istart, nocomp
       real(8) :: rad, rad3, rfact, rdval, fact, ripol, rqval, rdim
       real(8) :: enucfx, enucfy, enucfz
       real(8) :: elex, eley, elez
       real(8), external :: ddot
-!
-      KFREE = 1
-      LFREE = LWORK
+      real(8), allocatable :: intao(:)
 !
       CALL DZERO(FCAO,NNBASX)
 !
@@ -491,7 +482,7 @@ contains
 !     Induced dipole moment in NP region interaction with QM region
       IF (DONPPOL.AND.NOVDAMP) THEN
 !        Electronic interaction part
-         CALL MEMGET('REAL',KINTAO,3*NNBASX,WORK,KFREE,LFREE)
+         allocate(intao(3*nnbasx))
 !        Set integrals evaluation flags
          KPATOM = 0
          NOCOMP = 3
@@ -504,31 +495,31 @@ contains
              DIPORG(1) = NPCORD(1,I)
              DIPORG(2) = NPCORD(2,I)
              DIPORG(3) = NPCORD(3,I)
-             CALL DZERO(WORK(KINTAO),3*NNBASX)
-             CALL GET1IN(WORK(KINTAO),'NEFIELD',NOCOMP,WORK(KFREE),     &
-     &                   LFREE,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,    &
+             intao = 0.0d0
+             CALL GET1IN(INTAO,'NEFIELD',NOCOMP,WORK,     &
+     &                   lwork,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,    &
      &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-             CALL DSCAL(NNBASX,MQVEC(IOFF+1),WORK(KINTAO),1)
-             CALL DSCAL(NNBASX,MQVEC(IOFF+2),WORK(KINTAO+NNBASX),1)
-             CALL DSCAL(NNBASX,MQVEC(IOFF+3),WORK(KINTAO+2*NNBASX),1)
-             CALL DAXPY(NNBASX,-1.0d0,WORK(KINTAO),1,FCAO,1)
-             CALL DAXPY(NNBASX,-1.0d0,WORK(KINTAO+NNBASX),1,FCAO,1)
-             CALL DAXPY(NNBASX,-1.0d0,WORK(KINTAO+2*NNBASX),1,FCAO,1)
+             CALL DSCAL(NNBASX,MQVEC(IOFF+1),INTAO,1)
+             CALL DSCAL(NNBASX,MQVEC(IOFF+2),INTAO(NNBASX + 1),1)
+             CALL DSCAL(NNBASX,MQVEC(IOFF+3),INTAO(2*NNBASX + 1),1)
+             CALL DAXPY(NNBASX,-1.0d0,INTAO,1,FCAO,1)
+             CALL DAXPY(NNBASX,-1.0d0,INTAO(NNBASX + 1),1,FCAO,1)
+             CALL DAXPY(NNBASX,-1.0d0,INTAO(2*NNBASX + 1),1,FCAO,1)
              IF (NISHT.GT.0) THEN
-               ELEX = DDOT(NNBASX,DCAO,1,WORK(KINTAO),1)
-               ELEY = DDOT(NNBASX,DCAO,1,WORK(KINTAO+NNBASX),1)
-               ELEZ = DDOT(NNBASX,DCAO,1,WORK(KINTAO+2*NNBASX),1)
+               ELEX = DDOT(NNBASX,DCAO,1,INTAO,1)
+               ELEY = DDOT(NNBASX,DCAO,1,INTAO(NNBASX + 1),1)
+               ELEZ = DDOT(NNBASX,DCAO,1,INTAO(2*NNBASX + 1),1)
                EESOLMNP = EESOLMNP+ELEX+ELEY+ELEZ
              END IF
              IF (NASHT.GT.0) THEN
-               ELEX = DDOT(NNBASX,DVAO,1,WORK(KINTAO),1)
-               ELEY = DDOT(NNBASX,DVAO,1,WORK(KINTAO+NNBASX),1)
-               ELEZ = DDOT(NNBASX,DVAO,1,WORK(KINTAO+2*NNBASX),1)
+               ELEX = DDOT(NNBASX,DVAO,1,INTAO,1)
+               ELEY = DDOT(NNBASX,DVAO,1,INTAO(NNBASX + 1),1)
+               ELEZ = DDOT(NNBASX,DVAO,1,INTAO(2*NNBASX + 1),1)
                EESOLMNP = EESOLMNP+ELEX+ELEY+ELEZ
              END IF
          END DO
          RUNQM3 = .FALSE.
-         CALL MEMREL('GET_INDMQ_FOCK',WORK,1,1,KFREE,LFREE)
+         deallocate(intao)
          EESOLMNP = -0.5d0*EESOLMNP
 !        Nuclear interaction part
          DO I=1,TNPATM
@@ -559,7 +550,7 @@ contains
          IF (DONPPOL) ISTART = 3*TNPATM
 !        Fix me MM region shift
 !        Electronic interaction part
-         CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
+         allocate(intao(nnbasx))
 !        Set integrals evaluation flags
          KPATOM = 0
          NOCOMP = 1
@@ -573,24 +564,24 @@ contains
              DIPORG(1) = NPCORD(1,I)
              DIPORG(2) = NPCORD(2,I)
              DIPORG(3) = NPCORD(3,I)
-             CALL DZERO(WORK(KINTAO),NNBASX)
-             CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),     &
-     &                   LFREE,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,    &
+             intao = 0.0d0
+             CALL GET1IN(INTAO,'NPETES ',NOCOMP,WORK,     &
+     &                   lwork,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,    &
      &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
 
              WRITE(LUPRI,'(/,2X,A)') '*** jaimes AO matrix ***'
-             CALL OUTPAK(WORK(KINTAO),NBAST,1,LUPRI)
-             CALL DSCAL(NNBASX,MQVEC(IOFF),WORK(KINTAO),1)
-             CALL DAXPY(NNBASX,1.0d0,WORK(KINTAO),1,FCAO,1)
+             CALL OUTPAK(INTAO,NBAST,1,LUPRI)
+             CALL DSCAL(NNBASX,MQVEC(IOFF),INTAO,1)
+             CALL DAXPY(NNBASX,1.0d0,INTAO,1,FCAO,1)
              IF (NISHT.GT.0) THEN
-               EESOLQNP = EESOLQNP+DDOT(NNBASX,DCAO,1,WORK(KINTAO),1)
+               EESOLQNP = EESOLQNP+DDOT(NNBASX,DCAO,1,INTAO,1)
              END IF
              IF (NASHT.GT.0) THEN
-               EESOLQNP = EESOLQNP+DDOT(NNBASX,DVAO,1,WORK(KINTAO),1)
+               EESOLQNP = EESOLQNP+DDOT(NNBASX,DVAO,1,INTAO,1)
              END IF
          END DO
          RUNQM3 = .FALSE.
-         CALL MEMREL('GET_INDMQ_FOCK',WORK,1,1,KFREE,LFREE)
+         deallocate(intao)
 !
          EESOLQNP = 0.5d0*EESOLQNP
 !        Nuclear interaction part
@@ -616,16 +607,16 @@ contains
 !
 !     Induced dipole moment in NP region interaction (damped) with QM region
       IF (DONPPOL.AND.(.NOT.NOVDAMP)) THEN
-         CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
-         CALL COMP_DAMPVMAT(WORK(KINTAO), MQVEC)
+         allocate(intao(nnbasx))
+         CALL COMP_DAMPVMAT(INTAO, MQVEC)
          IF (NISHT.GT.0) THEN
-            EESOLQNP = EESOLQNP+DDOT(NNBASX,DCAO,1,WORK(KINTAO),1)
+            EESOLQNP = EESOLQNP+DDOT(NNBASX,DCAO,1,INTAO,1)
          END IF
          IF (NASHT.GT.0) THEN
-            EESOLQNP = EESOLQNP+DDOT(NNBASX,DVAO,1,WORK(KINTAO),1)
+            EESOLQNP = EESOLQNP+DDOT(NNBASX,DVAO,1,INTAO,1)
          END IF
-         CALL DAXPY(NNBASX,1.0d0,WORK(KINTAO),1,FCAO,1)
-         CALL MEMREL('GET_INDMQ_FOCK',WORK,1,1,KFREE,LFREE)
+         CALL DAXPY(NNBASX,1.0d0,INTAO,1,FCAO,1)
+         deallocate(intao)
          EESOLQNP = 0.5d0*EESOLQNP
 !        Nuclear interaction part: induced dipoles and induced charges
          RDIM = DSQRT(2.0d0)/SQRTPI
@@ -706,12 +697,11 @@ contains
       integer :: INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
       real(8) :: RSAVORG(3), RIJ(3), rad
-      integer :: i, j, kintao, kfree, kpatom
-      integer :: lfree, nocomp
+      integer :: i, j, kpatom
+      integer :: nocomp
       real(8), external :: ddot
+      real(8), allocatable :: intao(:)
 !
-      KFREE = 1
-      LFREE = LWORK
 !     Save origin coordinates
       RSAVORG(1) = DIPORG(1)
       RSAVORG(2) = DIPORG(2)
@@ -722,7 +712,7 @@ contains
 !     Induced charges in NP region interaction with QM region
 !     Fix me MM region shift
 !     Electronic interaction part
-      CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
+      allocate(intao(nnbasx))
 !     Set integrals evaluation flags
       KPATOM = 0
       NOCOMP = 1
@@ -735,21 +725,21 @@ contains
          DIPORG(1) = mm_cord(1,I)
          DIPORG(2) = mm_cord(2,I)
          DIPORG(3) = mm_cord(3,I)
-         CALL DZERO(WORK(KINTAO),NNBASX)
-         CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),         &
-     &               LFREE,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,        &
+         intao = 0.0d0
+         CALL GET1IN(INTAO,'NPETES ',NOCOMP,WORK,         &
+     &               lwork,LABINT,INTREP,INTADR,I,TOFILE,KPATOM,        &
      &               TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-          CALL DSCAL(NNBASX,MMFM0(MMFTYP(I)),WORK(KINTAO),1)
-          CALL DAXPY(NNBASX,1.0d0,WORK(KINTAO),1,FCAO,1)
+          CALL DSCAL(NNBASX,MMFM0(MMFTYP(I)),INTAO,1)
+          CALL DAXPY(NNBASX,1.0d0,INTAO,1,FCAO,1)
           IF (NISHT.GT.0) THEN
-              EESOLQMM = EESOLQMM+DDOT(NNBASX,DCAO,1,WORK(KINTAO),1)
+              EESOLQMM = EESOLQMM+DDOT(NNBASX,DCAO,1,INTAO,1)
           END IF
           IF (NASHT.GT.0) THEN
-              EESOLQMM = EESOLQMM+DDOT(NNBASX,DVAO,1,WORK(KINTAO),1)
+              EESOLQMM = EESOLQMM+DDOT(NNBASX,DVAO,1,INTAO,1)
           END IF
       END DO
       RUNQM3 = .FALSE.
-      CALL MEMREL('GET_PERMQ_FOCK',WORK,1,1,KFREE,LFREE)
+      deallocate(intao)
 !     Nuclear interaction part
       DO I=1,TMMATM
          DO J=1,NUCIND
