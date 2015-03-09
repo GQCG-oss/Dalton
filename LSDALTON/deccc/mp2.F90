@@ -2692,9 +2692,14 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
         PerformReduction = .FALSE.
         !Determine number of nodes to use to construct Calpha. (use same to determine the MPI split)
      ENDIF
+#ifdef VAR_MPI
      call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+#endif
   ELSE
+#ifdef VAR_MPI
      call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+#endif
+
      IF(PerformReduction)THEN
         !the master have enough space 
         call get_currently_available_memory(MemInGBCollected)
