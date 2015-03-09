@@ -2748,7 +2748,9 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
               UseSubGroupCommunicator = .FALSE.
            ENDIF
            call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
            call ls_mpibcast(RIMPSubGroupSize,infpar%master,infpar%lg_comm)
+#endif
            call time_start_phase( PHASE_WORK )
         ENDIF
      ELSE
@@ -2757,7 +2759,9 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
            IF(RIMPSubGroupSize.EQ.numnodes)UseSubGroupCommunicator = .FALSE.
         ELSE
            call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
            call ls_mpibcast(RIMPSubGroupSize,infpar%master,infpar%lg_comm)
+#endif
            IF(RIMPSubGroupSize.EQ.numnodes)UseSubGroupCommunicator = .FALSE.
            call time_start_phase( PHASE_WORK )        
         ENDIF
@@ -2765,14 +2769,18 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   ENDIF
   IF(UseSubGroupCommunicator)THEN     
      call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
      call init_mpi_subgroup(rimp2_nodtot,rimp2_mynum,rimp2_comm,rimp2_member,&
           & RIMPSubGroupSize,infpar%lg_comm,DECinfo%output)
+#endif
      call time_start_phase( PHASE_WORK)
      RIMPSubGroupCreated = .TRUE.
      Comm = rimp2_comm     
      WRITE(DECinfo%output,'(A,I6,A,I6)')'RIMP2 Calpha Scheme 2: Using ',rimp2_nodtot,' nodes out of ',numnodes
   ELSE
+#ifdef VAR_MPI
      Comm = infpar%lg_comm
+#endif
      rimp2_mynum = mynum
      rimp2_member = .TRUE.
      rimp2_nodtot = numnodes
@@ -3137,7 +3145,9 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      call mem_dealloc(nAuxMPI)
   ENDIF
   IF(RIMPSubGroupCreated)THEN
+#ifdef VAR_MPI
      call LSMPI_COMM_FREE(rimp2_comm)
+#endif
   ENDIF
 end subroutine Build_CalphaMO
 
