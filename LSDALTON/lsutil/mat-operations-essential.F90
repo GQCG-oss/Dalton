@@ -13,8 +13,7 @@
 !> NEVER think that e.g. A%elms = matrix will copy the matrix elements from
 !>       matrix to A%elms, it will only associate the pointer with the array
 !>       matrix. \n
-!> BUT type(Matrix) :: A,B; A = B SHOULD copy the matrix elements from matrix B to A 
-!>     (see mat_assign). \n
+!> Use mat_assign for A = B operations
 !> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init.
 !>
 MODULE matrix_operations
@@ -93,10 +92,6 @@ MODULE matrix_operations
 !> True if timings for matrix operations are requested
    logical,save :: INFO_TIME_MAT! = .false. !default no timings
    logical,save :: INFO_memory! = .false. !default no memory printout
-!> Overload: The '=' sign may be used to set two type(matrix) structures equal, i.e. A = B
-!!$   INTERFACE ASSIGNMENT(=)
-!!$      module procedure mat_assign
-!!$   END INTERFACE
 
    contains
 !*** is called from LSDALTON.f90
@@ -227,6 +222,7 @@ MODULE matrix_operations
                 !make possible subset 
                 print*,'call ls_mpibcast with infpar%ScalapackGroupSize',infpar%ScalapackGroupSize
                 call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,MPI_COMM_LSDALTON)                
+                call ls_mpibcast(infpar%ScalapackWorkaround,infpar%master,MPI_COMM_LSDALTON)                
                 print*,'master done bcast'
                 IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
                    IF(scalapack_mpi_set)THEN
@@ -254,21 +250,33 @@ MODULE matrix_operations
                    call lsquit('pdmm error in mat_select_type',-1)
                 ENDIF
                 print*,'TYPE PDMM HAVE BEEN SELECTED' 
-                print*,'infpar%inputblocksize',infpar%inputblocksize
                 !make possible subset 
-                pdmm_nodtot = infpar%nodtot
-                pdmm_mynum = infpar%mynum
-                pdmm_comm = MPI_COMM_LSDALTON
-                pdmm_member = .TRUE.
-                print*,'call PDMM_GRIDINIT',nbast,'infpar%inputblocksize',infpar%inputblocksize
+                call ls_mpibcast(infpar%PDMMGroupSize,infpar%master,MPI_COMM_LSDALTON)                
+                IF(infpar%PDMMGroupSize.NE.infpar%nodtot)THEN
+                   IF(pdmm_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(pdmm_comm)
+                      pdmm_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(pdmm_nodtot,&
+                        & pdmm_mynum,pdmm_comm,pdmm_member,&
+                        & infpar%PDMMGroupSize,lupri)
+                   pdmm_mpi_set = .TRUE.
+                ELSE
+                   pdmm_nodtot = infpar%nodtot
+                   pdmm_mynum = infpar%mynum
+                   pdmm_comm = MPI_COMM_LSDALTON
+                   pdmm_member = .TRUE.
+                ENDIF
                 CALL PDMM_GRIDINIT(nbast)
-                print*,'done PDMM_GRIDINIT',nbast
                 WRITE(lupri,'(A,I5)')'PDMM initiation Block Size = ',BLOCK_SIZE_PDM
              endif
           ELSE
              !slave
              if(matrix_type.EQ.mtype_scalapack)then
                 call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                call ls_mpibcast(infpar%ScalapackWorkaround,infpar%master,&
                      & MPI_COMM_LSDALTON)
                 infpar%inputblocksize = infpar%ScalapackGroupSize
                 IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
@@ -288,10 +296,24 @@ MODULE matrix_operations
                    scalapack_member = .TRUE.
                 ENDIF
              elseif(matrix_type.EQ.mtype_pdmm)then
-                pdmm_nodtot = infpar%nodtot
-                pdmm_mynum = infpar%mynum
-                pdmm_comm = MPI_COMM_LSDALTON
-                pdmm_member = .TRUE.
+                call ls_mpibcast(infpar%PDMMGroupSize,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                IF(infpar%PDMMGroupSize.NE.infpar%nodtot)THEN
+                   IF(PDMM_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(pdmm_comm)
+                      PDMM_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(pdmm_nodtot,&
+                        & pdmm_mynum,pdmm_comm,pdmm_member,&
+                        & infpar%PDMMGroupSize,lupri)
+                   PDMM_mpi_set = .TRUE.
+                ELSE
+                   pdmm_nodtot = infpar%nodtot
+                   pdmm_mynum = infpar%mynum
+                   pdmm_comm = MPI_COMM_LSDALTON
+                   pdmm_member = .TRUE.
+                ENDIF
              endif
           ENDIF
 #endif
@@ -710,7 +732,6 @@ MODULE matrix_operations
          integer, intent(in)     :: i_row1, i_rown, j_col1, j_coln, lu 
          REAL(REALK), ALLOCATABLE :: afull(:,:)
          real(realk)              :: sparsity
-
          if (i_row1 < 1 .or. j_col1 < 1 .or. a%nrow < i_rown .or. a%ncol < j_coln) then
            CALL LSQUIT( 'subsection out of bounds in mat_print',-1)
          endif
@@ -719,7 +740,7 @@ MODULE matrix_operations
          case(mtype_dense)
              call mat_dense_print(a, i_row1, i_rown, j_col1, j_coln, lu)
          case(mtype_pdmm)
-             call mat_pdmm_print(a, i_row1, i_rown, j_col1, j_coln, lu)
+            call mat_pdmm_print(a, i_row1, i_rown, j_col1, j_coln, lu)
          case(mtype_scalapack)
 #ifdef VAR_SCALAPACK
             print*,'FALLBACK scalapack print'
@@ -1093,6 +1114,7 @@ MODULE matrix_operations
             dest%complex = src%complex
             dest%val => src%val; dest%col => src%col
             dest%row => src%row; dest%nnz = src%nnz
+            dest%PDMID = src%PDMID
 #ifdef VAR_SCALAPACK
             dest%localncol=src%localncol; dest%localnrow=src%localnrow
             dest%addr_on_grid => src%addr_on_grid
@@ -1608,8 +1630,10 @@ MODULE matrix_operations
              call mat_dense_min_elm(a,val,tmp)
           case(mtype_scalapack)
              call mat_scalapack_min_elm(a,val,tmp)
+          case(mtype_pdmm)
+             call mat_pdmm_min_elm(a,val,tmp)
          case default
-              call lsquit("mat_max_elm not implemented for this type of matrix",-1)
+              call lsquit("mat_min_elm not implemented for this type of matrix",-1)
          end select
 
 
@@ -2105,6 +2129,8 @@ end subroutine mat_insert_section
              call mat_unres_dense_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
               call mat_scalapack_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+         case(mtype_pdmm)
+              call mat_pdmm_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
               call lsquit("mat_create_block not implemented for this type of matrix",-1)
          end select
@@ -2186,6 +2212,8 @@ end subroutine mat_insert_section
              call mat_csr_retrieve_block_full(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
             call mat_scalapack_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+         case(mtype_pdmm)
+            call mat_pdmm_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_unres_dense)
              call mat_unres_dense_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
@@ -2553,6 +2581,8 @@ end subroutine set_lowertriangular_zero
            call mat_dense_extract_diagonal(diag,A)
       case(mtype_scalapack)
            call mat_scalapack_extract_diagonal(diag,A)
+      case(mtype_pdmm)
+           call mat_pdmm_extract_diagonal(diag,A)
       case default
             call lsquit("mat_extract_diagonal not implemented for this type of matrix",-1)
       end select

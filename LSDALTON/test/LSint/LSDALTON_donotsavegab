@@ -107,7 +107,7 @@ TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="Memory leak -"
 
-CRIT1=`$GREP "di_screen_test SUCCESSFULL" $log | wc -l`
+CRIT1=`$GREP "di_screen_test SUCCESSFUL" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="screening not correct"

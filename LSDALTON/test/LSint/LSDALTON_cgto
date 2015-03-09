@@ -94,7 +94,7 @@ TEST[1]=`expr   $CRIT1 \+ $CRIT2`
 CTRL[1]=2
 ERROR[1]="Energy Contribution not correct"
 
-CRIT1=`$GREP "CGTO Energy Cont Succesfull" $log | wc -l`
+CRIT1=`$GREP "CGTO Energy Cont Successful" $log | wc -l`
 TEST[2]=`expr   $CRIT1 `
 CTRL[2]=1
 ERROR[2]="Energy Contribution not correct"

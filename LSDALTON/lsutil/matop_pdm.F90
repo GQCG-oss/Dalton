@@ -58,7 +58,7 @@ module matrix_operations_pdmm
   Type(MatrixPDMp) :: pdmm_Marray(500)
   integer :: pdmm_MaxAllocatedMat
   integer :: BLOCK_SIZE_PDM
-
+  logical :: pdmm_mpi_set
 contains
   subroutine InitMatrixModulePDM()
     implicit none
@@ -91,7 +91,7 @@ contains
     integer, intent(in) :: nrow, ncol
     integer :: i,j,k,ID
     integer(kind=long) :: nsizeFULL,nsizeLOCAL
-    integer :: mode 
+    integer :: mode,offsetpdmm
     A%nrow = nrow
     A%ncol = ncol
     mode = 2
@@ -104,22 +104,25 @@ contains
           Exit MarrayList
        ENDIF
     ENDDO MarrayList
-    print*,'ID',ID,'pdmm_MaxAllocatedMat',pdmm_MaxAllocatedMat
     A%PDMID = ID
     !minit  master calls only while slaves are asleep
-    print*,'MASTER INIT WITH',nrow,ncol,'mode =',mode
-    call tensor_minit(pdmm_Marray(ID)%p,[nrow,ncol],mode,tdims=[BLOCK_SIZE_PDM,BLOCK_SIZE_PDM],atype="TDAR")
+    offsetpdmm = 0
+#ifdef VAR_MPI
+    IF(infpar%nodtot.GT.1)offsetpdmm=1
+#else
+    call lsquit('PDMM requires MPI',-1)
+#endif
+    call tensor_minit(pdmm_Marray(ID)%p,[nrow,ncol],mode,tdims=[BLOCK_SIZE_PDM,BLOCK_SIZE_PDM],atype="TDAR",fo=offsetpdmm)
+
   end subroutine mat_pdmm_init
 
   !> \brief See mat_free in mat-operations.f90
   subroutine mat_pdmm_free(A)
     implicit none
     TYPE(Matrix) :: A
-    print*,'MASTER IN FREE'
     call tensor_free(pdmm_Marray(A%PDMID)%p)
     deallocate(pdmm_Marray(A%PDMID)%p)
     nullify(pdmm_Marray(A%PDMID)%p)
-    print*,'MASTER DONE IN FREE'
    end subroutine mat_pdmm_free
 
    !> \brief See mat_set_from_full in mat-operations.f90
@@ -130,13 +133,10 @@ contains
      real(realk), intent(in)    :: alpha
      
      !  convert from arg1 to arg2 
-     print*,'MASTER IN mat_pdmm_set_from_full convert'
      call tensor_convert(Afull,pdmm_Marray(A%PDMID)%p)
      if (ABS(ALPHA-1.0E0_realk).GT.1.0E-15_realk)THEN
-        print*,'MASTER IN mat_pdmm_set_from_full scal'
         call mat_pdmm_scal(alpha,A)
      ENDIF
-     print*,'MASTER DONE IN mat_pdmm_set_from_full'
    end subroutine mat_pdmm_set_from_full
 
 !> \brief See mat_to_full in mat-operations.f90
@@ -144,13 +144,11 @@ contains
      implicit none
      TYPE(Matrix),intent(in) :: a 
      real(realk), intent(in) :: alpha
-     real(realk)  :: afull(A%nrow,A%ncol)
-     print*,'MASTER IN mat_pdmm_to_full  convert'
+     real(realk)  :: afull(A%nrow,A%ncol)     
      call tensor_convert(pdmm_Marray(A%PDMID)%p,Afull)
      if (ABS(ALPHA-1.0E0_realk).GT.1.0E-15_realk)THEN
         call dscal(A%nrow*A%ncol,alpha,afull,1)
      endif
-     print*,'MASTER DONE IN mat_pdmm_to_full  convert'
    end subroutine mat_pdmm_to_full
 
    !> \brief See mat_print in mat-operations.f90
@@ -184,9 +182,7 @@ contains
 !    call mem_dealloc(Bfull)
     order(1) = 2
     order(2) = 1
-    print*,'TENSOR IN mat_pdmm_trans'
     call tensor_cp_data(pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p,order)
-    print*,'TENSOR DONE IN mat_pdmm_trans'
     
   end subroutine mat_pdmm_trans
 
@@ -275,20 +271,15 @@ contains
   subroutine mat_pdmm_assign(B,A) 
     implicit none
     TYPE(Matrix) :: A,B     
-    print*,'TENSOR IN mat_pdmm_assign'
     call tensor_cp_data(pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p) !copy from A to B
-    print*,'TENSOR DONE IN mat_pdmm_assign'
   end subroutine mat_pdmm_assign
   
   subroutine mat_pdmm_copy(alpha,A,B) 
     implicit none
     TYPE(Matrix) :: A,B
     real(realk) :: Alpha
-    print*,'MASTER IN mat_pdmm_copy assign'
     call mat_pdmm_assign(B,A)
-    print*,'MASTER IN mat_pdmm_copy scal'
     if (ABS(alpha-1.0E0_realk).GT.1.0E-15_realk)call mat_pdmm_scal(alpha,b)
-    print*,'MASTER DONE IN mat_pdmm_copy'
   end subroutine mat_pdmm_copy
 
   !> \brief See mat_tr in mat-operations.f90
@@ -337,58 +328,58 @@ contains
     REAL(REALK)  :: Alpha,Beta    
     !local
     !PDMM fallback
+    type(matrix) :: TMP
     integer :: M,N,K,m2cA(1),m2cB(1),nmodes2c,order(2)
-    real(realk),pointer :: Afull(:,:),Bfull(:,:),Cfull(:,:)
-    
-    print*,'mat_mul PDMM fallback'
-    call mem_alloc(Afull,A%nrow,A%ncol)
-    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
-    call mem_alloc(Bfull,B%nrow,B%ncol)
-    call mat_pdmm_to_full(B,1.0E0_realk,Bfull)
-    call mem_alloc(Cfull,C%nrow,C%ncol)
-    IF(ABS(beta).GT.1.0E-14_realk)THEN
-       call mat_pdmm_to_full(C,1.0E0_realk,Cfull)
-    ENDIF
-    m = C%nrow
-    n = C%ncol
-    if (ta == 'n' .or. ta == 'N') then
-       k = a%ncol
-    elseif(ta == 't' .or. ta == 'T') then
-       k = a%nrow
-    else
-       print*,'unknown format in mat_pdmm_mul'
-       CALL LSQUIT( 'unknown format in mat_pdmm_mul',-1)
-    endif
-    call DGEMM(ta,tb,m,n,k,alpha,&
-         &afull,a%nrow,bfull,b%nrow,beta,cfull,c%nrow)
-    call mat_pdmm_set_from_full(Cfull,1.0E0_realk,C)
-    call mem_dealloc(Cfull)
-    call mem_dealloc(Bfull)
-    call mem_dealloc(Afull)
+    real(realk),pointer :: Afull(:,:),Bfull(:,:),Cfull(:,:)    
+!!$    call mem_alloc(Afull,A%nrow,A%ncol)
+!!$    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
+!!$    call mem_alloc(Bfull,B%nrow,B%ncol)
+!!$    call mat_pdmm_to_full(B,1.0E0_realk,Bfull)
+!!$    call mem_alloc(Cfull,C%nrow,C%ncol)
+!!$    IF(ABS(beta).GT.1.0E-14_realk)THEN
+!!$       call mat_pdmm_to_full(C,1.0E0_realk,Cfull)
+!!$    ENDIF
+!!$    m = C%nrow
+!!$    n = C%ncol
+!!$    if (ta == 'n' .or. ta == 'N') then
+!!$       k = a%ncol
+!!$    elseif(ta == 't' .or. ta == 'T') then
+!!$       k = a%nrow
+!!$    else
+!!$       print*,'unknown format in mat_pdmm_mul'
+!!$       CALL LSQUIT( 'unknown format in mat_pdmm_mul',-1)
+!!$    endif
+!!$    call DGEMM(ta,tb,m,n,k,alpha,&
+!!$         &afull,a%nrow,bfull,b%nrow,beta,cfull,c%nrow)
+!!$    call mat_pdmm_set_from_full(Cfull,1.0E0_realk,C)
+!!$    call mem_dealloc(Cfull)
+!!$    call mem_dealloc(Bfull)
+!!$    call mem_dealloc(Afull)
 
-!!$    if (ta == 'n' .or. ta == 'N') then
-!!$       m2cA(1) = 2 !mode on A to contract 
-!!$    else
-!!$       m2cA(1) = 1 !mode on A to contract 
-!!$    endif
-!!$    if (tb == 'n' .or. tb == 'N') then
-!!$       m2cB(1) = 1 !mode on B to contract 
-!!$    else
-!!$       m2cB(1) = 2 !mode on B to contract 
-!!$    endif
-!!$    if (ta == 'n' .or. ta == 'N') then
-!!$       order(1) = 1 !C(n,m) = A(n,k)*B(k,m)
-!!$       order(2) = 2
-!!$    else
-!!$       order(2) = 2 !C(n,m) = (A(k,n))**T*B(k,m)
-!!$       order(1) = 1
-!!$    endif
-!!$    nmodes2c = 1   !number of modes to contract 
-!!$    print*,'TENSOR IN mat_mul'
-!!$    call tensor_contract(alpha,pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p,&
-!!$         & m2cA,m2cB,nmodes2c,beta,pdmm_Marray(C%PDMID)%p,order)
-!!$    print*,'TENSOR DONE IN mat_mul'
-    
+    if (ta == 'n' .or. ta == 'N') then
+       m2cA(1) = 2 !mode on A to contract 
+    else
+       m2cA(1) = 1 !mode on A to contract 
+    endif
+    if (tb == 'n' .or. tb == 'N') then
+       m2cB(1) = 1 !mode on B to contract 
+    else
+       m2cB(1) = 2 !mode on B to contract 
+    endif
+    order(1) = 1 !C(n,m) = A(n,k)*B(k,m)
+    order(2) = 2
+    nmodes2c = 1   !number of modes to contract 
+    IF(A%PDMID.EQ.B%PDMID)THEN
+       !Workaround for identical data for A and B
+       call mat_pdmm_init(TMP,B%nrow,B%ncol)
+       call mat_pdmm_assign(TMP,B) !TMP=B
+       call tensor_contract(alpha,pdmm_Marray(A%PDMID)%p,pdmm_Marray(TMP%PDMID)%p,&
+            & m2cA,m2cB,nmodes2c,beta,pdmm_Marray(C%PDMID)%p,order)
+       call mat_pdmm_free(TMP)
+    ELSE
+       call tensor_contract(alpha,pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p,&
+            & m2cA,m2cB,nmodes2c,beta,pdmm_Marray(C%PDMID)%p,order)
+    ENDIF
   end subroutine mat_pdmm_mul
 
   !> \brief See mat_max_elm in mat-operations.f90
@@ -399,7 +390,6 @@ contains
     integer    , intent(out)   :: pos(2)
     integer                  :: i,j
     real(realk) ,pointer :: Afull(:,:)
-    print*,'mat_max_elm PDMM fallback'
     call mem_alloc(Afull,A%nrow,A%ncol)
     call mat_pdmm_to_full(A,1.0E0_realk,Afull)
     val = afull(1,1); pos(1) = 1; pos(2) = 1 
@@ -415,7 +405,32 @@ contains
     call mem_dealloc(Afull)
   end subroutine mat_pdmm_max_elm
 
+  !> \brief See mat_min_elm in mat-operations.f90
+  subroutine mat_pdmm_min_elm(a, val, pos)
+    implicit none
+    type(matrix),intent(in)  :: a
+    real(realk), intent(inout) :: val
+    integer    , intent(out)   :: pos(2)
+    integer                  :: i,j
+    real(realk) ,pointer :: Afull(:,:)
+    call mem_alloc(Afull,A%nrow,A%ncol)
+    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
+    val = afull(1,1); pos(1) = 1; pos(2) = 1 
+    do j = 1, a%ncol 
+       do i = 1, a%nrow
+          if (afull(i,j) < val) then
+             val = afull(i,j)
+             pos(1) = i
+             pos(2) = j
+          endif
+       enddo
+    enddo
+    call mem_dealloc(Afull)
+  end subroutine mat_pdmm_min_elm
+
 !> \brief See mat_dmul in mat-operations.f90
+!> Make c = alpha*diag(a)b + beta*c, 
+!> where a is realk(:) b,c are type(matrix) and alpha,beta are parameters
   subroutine mat_pdmm_dmul(a,b,transb,alpha,beta,c) 
     implicit none
     real(realk), intent(in)  :: a(:)
@@ -423,17 +438,68 @@ contains
     character, intent(in)    :: transb
     REAL(realk), INTENT(IN)  :: alpha, beta
     TYPE(Matrix)             :: c  
-    call lsquit('mat_pdmm_dmul not implemented ',-1)
-  end subroutine mat_pdmm_dmul
-  
-  !> \brief Extract diagonal
-  subroutine mat_pdmm_extract_diagonal(diag,A)
-    implicit none
-    real(realk), intent(inout) :: diag(:)
-    type(Matrix), intent(in) :: A
-    call lsquit('mat_pdmm_extract_diagonal not implemented ',-1)
-  end subroutine mat_pdmm_extract_diagonal
+    INTEGER                  :: m,n,i
+    real(realk),pointer :: Bfull(:),Cfull(:)   
+    call mem_alloc(Bfull,B%nrow*B%ncol)
+    call mat_pdmm_to_full(B,1.0E0_realk,Bfull)
+    call mem_alloc(Cfull,C%nrow*C%ncol)
+    call mat_pdmm_to_full(C,1.0E0_realk,Cfull)
 
+    n = b%nrow
+    m = b%ncol
+    
+    if (ABS(beta).LT.1.0E-15_realk)then 
+       call ls_dzero(n*m,cfull)
+    elseif(ABS(beta-1.0E0_realk).GT.1.0E-15_realk) then
+       call dscal(n*m,beta,cfull,1)
+    endif
+        
+    if (transb == 'n' .or. transb == 'N') then       
+       do i=1,n
+          call daxpy(m,alpha*a(i),bfull(i),n,cfull(i),n)
+       enddo       
+    elseif (transb == 't' .or. transb == 'T') then       
+       do i=1,m
+          call daxpy(n,alpha*a(i),bfull(n*(i-1)+1),1,cfull(i),m)
+       enddo       
+    else
+       print*,'unknown format in mat_dense_dmul'
+       CALL LSQUIT( 'unknown format in mat_dense_dmul',-1)
+    endif
+    call mem_dealloc(Bfull)
+    call mat_pdmm_set_from_full(Cfull,1.0E0_realk,C)    
+    call mem_dealloc(Cfull)
+    
+  end subroutine mat_pdmm_dmul
+
+!> \brief See mat_dmul in mat-operations.f90
+!> Make c = alpha*diag(a)b + beta*c, 
+!> where a is realk(:) b,c are type(matrix) and alpha,beta are parameters
+  subroutine mat_pdmm_hmul(alpha,A,B,beta,C)
+    implicit none
+    real(realk) :: alpha,beta
+    type(matrix),intent(in) :: A,B
+    type(matrix),intent(inout) :: C
+    INTEGER                  :: i
+    real(realk),pointer :: Afull(:),Bfull(:),Cfull(:)    
+    call mem_alloc(Afull,A%nrow*A%ncol)
+    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
+    call mem_alloc(Bfull,B%nrow*B%ncol)
+    call mat_pdmm_to_full(B,1.0E0_realk,Bfull)
+    call mem_alloc(Cfull,C%nrow*C%ncol)
+    call mat_pdmm_to_full(C,1.0E0_realk,Cfull)
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i) SHARED(Afull,Bfull,Cfull,alpha,beta,A)
+    do i=1,A%nrow*A%ncol
+       Cfull(i)= alpha*Afull(i)*Bfull(i)+beta*Cfull(i)
+    enddo
+    !$OMP END PARALLEL DO
+    call mem_dealloc(Afull)
+    call mem_dealloc(Bfull)
+    call mat_pdmm_set_from_full(Cfull,1.0E0_realk,C)    
+    call mem_dealloc(Cfull)
+    
+  end subroutine mat_pdmm_hmul
+  
   !> \brief See mat_assign in mat-operations.f90
   !B = A
   subroutine mat_pdmm_add(alpha,A,beta,B,C) 
@@ -482,7 +548,6 @@ contains
     !local
     integer :: N
     real(realk),pointer :: Afull(:,:),Bfull(:,:)
-    print*,'mat_daxpy PDMM fallback'
     call mem_alloc(Afull,A%nrow,A%ncol)
     call mat_pdmm_to_full(A,1.0E0_realk,Afull)
     call mem_alloc(Bfull,B%nrow,B%ncol)
@@ -524,10 +589,7 @@ contains
     call mem_alloc(Afull,A%nrow,A%ncol)
     call mat_pdmm_to_full(A,1.0E0_realk,Afull)
     i = a%nrow*a%ncol
-    print*,'AFULL i=',i
-    call ls_output(Afull,1,A%nrow,1,A%ncol,A%nrow,A%ncol,1,6)
     mat_pdmm_sqnorm2 = ddot(i,afull,1,afull,1)
-    print*,'mat_pdmm_sqnorm2',mat_pdmm_sqnorm2
     call mem_dealloc(Afull)
   end function mat_pdmm_sqnorm2
 
@@ -555,7 +617,7 @@ contains
     call mem_alloc(tmp,S%nrow,S%ncol)
     call mat_pdmm_to_full(S,1.0E0_realk,tmp)
     ndim = s%nrow
-    call my_DSYGV(ndim,Cmofull,tmp,eival,"PDMM_GET_DENS_SOL  ")
+    call my_DSYGV(ndim,Cmofull,tmp,eival,"PDMM                ")
     call mem_dealloc(tmp)
     call mat_pdmm_set_from_full(CMOfull,1.0E0_realk,CMO)
     call mem_dealloc(CMOfull)
@@ -701,18 +763,18 @@ contains
     implicit none
     TYPE(Matrix) :: A
     REAL(REALK),intent(in)  :: alpha
-    print*,'MASTER IN mat_pdmm_scal'
+    real(realk),pointer :: AF(:,:)
+    call mem_alloc(AF,A%nrow,A%ncol)
+    call mat_pdmm_to_full(A,1D0,AF)
+    call mem_dealloc(AF)
     call tensor_scale(pdmm_Marray(A%PDMID)%p,alpha)
-    print*,'MASTER DONE IN mat_pdmm_scal'
   end subroutine mat_pdmm_scal
 
    !> \brief See mat_zero in mat-operations.f90
    subroutine mat_pdmm_zero(A)
      implicit none
      TYPE(Matrix) :: A
-     print*,'MASTER IN mat_pdmm_zero'
      call tensor_zero(pdmm_Marray(A%PDMID)%p)
-     print*,'MASTER DONE IN mat_pdmm_zero'
    end subroutine mat_pdmm_zero
 
    SUBROUTINE mat_pdmm_dposv(A,b,lupri)
@@ -764,7 +826,6 @@ contains
      integer,pointer        :: JPVT(:)
      real(realk)            :: RCOND, dummy(2), tmstart, tmend
      integer                :: IERR, i, j, fulldim, ndim
-     print*,'mat_chol FALLBACK pdmm'
      fulldim = a%nrow
      call mem_alloc(U_full,fulldim,fulldim) 
      call mem_alloc(work1,fulldim)
@@ -784,6 +845,71 @@ contains
      call mem_dealloc(JPVT)
    end SUBROUTINE mat_pdmm_chol
 
+   !> \brief See mat_retrieve_block in mat-operations.f90
+  subroutine mat_pdmm_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+    implicit none
+    integer, intent(in)         :: fullrow,fullcol,insertrow,insertcol
+    real(Realk), intent(inout)     :: fullmat(fullrow,fullcol)
+    type(Matrix), intent(in) :: A
+    integer                     :: i, j
+    real(realk),pointer :: Afull(:,:)
+    call mem_alloc(Afull,A%nrow,A%ncol)
+    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
+    do j = insertcol, insertcol+fullcol-1
+       do i = insertrow, insertrow+fullrow-1
+          fullmat(i-insertrow+1,j-insertcol+1) = Afull(i,j)
+       enddo
+    enddo
+    call mem_dealloc(Afull)
+  end subroutine mat_pdmm_retrieve_block
+
+  !> \brief Extract diagonal
+  subroutine mat_pdmm_extract_diagonal(diag,A)
+    implicit none
+    real(realk), intent(inout) :: diag(:)
+    type(Matrix), intent(in) :: A
+    integer :: n
+    real(realk),pointer :: Afull(:)
+    call mem_alloc(Afull,A%nrow*A%ncol)
+    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
+    n=A%nrow
+    call dcopy(n,Afull,n+1,diag,1)
+    call mem_dealloc(Afull)
+  end subroutine mat_pdmm_extract_diagonal
+
+  !> \brief See mat_dger in mat-operations.f90
+  SUBROUTINE mat_pdmm_dger(alpha,x,y,A)
+    implicit none
+    real(realk) :: alpha
+    type(matrix) :: A
+    real(realk) :: x(:),y(:)
+    real(realk),pointer :: Afull(:,:) 
+    call mem_alloc(Afull,A%nrow,A%ncol)
+    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
+    call DGER(A%nrow,A%ncol,alpha,x,1,y,1,Afull,A%nrow)
+    call mat_pdmm_set_from_full(Afull,1.0E0_realk,A)
+    call mem_dealloc(Afull)
+  end SUBROUTINE mat_pdmm_dger
+
+  !> \brief See mat_create_block in mat-operations.f90
+  subroutine mat_pdmm_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+    implicit none
+    integer, intent(in) :: fullrow,fullcol,insertrow,insertcol
+    real(Realk), intent(in) :: fullmat(fullrow,fullcol)
+    type(Matrix), intent(inout) :: A
+    real(realk),pointer :: Afull(:,:) 
+    integer :: i,j
+    call mem_alloc(Afull,A%nrow,A%ncol)
+    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
+    do j = insertcol, insertcol+fullcol-1
+       do i = insertrow, insertrow+fullrow-1
+          Afull(i,j) = fullmat(i-insertrow+1,j-insertcol+1)
+       enddo
+    enddo
+    call mat_pdmm_set_from_full(Afull,1.0E0_realk,A)
+    call mem_dealloc(Afull)
+  end subroutine mat_pdmm_create_block
+
 end module matrix_operations_pdmm
 
 SUBROUTINE PDMM_GRIDINIT(NBAST)
@@ -800,7 +926,7 @@ SUBROUTINE PDMM_GRIDINIT(NBAST)
   call ls_mpibcast(PDMMGRIDINIT,infpar%master,MPI_COMM_LSDALTON)   
   IF(infpar%inputblocksize.EQ.0)THEN
      IF(NBAST.GT.4096)THEN
-        infpar%inputblocksize = 4096
+        infpar%inputblocksize = 2048
      ELSE !debug 
         infpar%inputblocksize = NBAST/(infpar%nodtot)
      ENDIF

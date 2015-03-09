@@ -641,7 +641,7 @@ contains
          endif
        endif
 #endif
-       if(DECinfo%ccmodel == MODEL_MP2)then
+       if(DECinfo%ccmodel == MODEL_MP2.OR.DECinfo%ccmodel == MODEL_RIMP2)then
           if(pair) then
              ! Pair fragment
              call pair_calculate_mp2gradient_driver(Fragment1,Fragment2,MyFragment,&

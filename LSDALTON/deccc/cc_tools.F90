@@ -1,8 +1,8 @@
 !Simple tools common for cc routines
 module cc_tools_module
+   use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
 
    use precision
-   use ptr_assoc_module
 #ifdef VAR_MPI
    use lsmpi_type
 #endif
@@ -76,6 +76,9 @@ module cc_tools_module
       endif
 
    end subroutine mo_work_dist
+
+
+
    !> \brief Reorder t to use symmetry in both occupied and virtual indices,
    !> thereby restricting the first virtual to be less equal to the second and
    !> make symmetric and antisymmetric combinations of these 
@@ -156,7 +159,11 @@ module cc_tools_module
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
 
          !Facilitate access
-         call ass_D1to2( tpl%ti(lt)%t, tpm, tpl%ti(lt)%d )
+#ifdef VAR_PTR_RESHAPE
+         tpm(1:tpl%ti(lt)%d(1),1:tpl%ti(lt)%d(2)) => tpl%ti(lt)%t
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+         call c_f_pointer(c_loc(tpl%ti(lt)%t(1)),tpm,tpl%ti(lt)%d)
+#endif
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -223,12 +230,21 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call ass_D1to4( buf1, tt1, tdim )
+#ifdef VAR_PTR_RESHAPE
+            tt1(1:tdim(1),1:tdim(2),1:tdim(3),1:tdim(4)) => buf1
             if(mtile(2)==mtile(1))then
-               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf1
             else
-               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf2
             endif
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+            call c_f_pointer(c_loc(buf1(1)),tt1,tdim)
+            if(mtile(2)==mtile(1))then
+               call c_f_pointer( c_loc(buf1(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            else
+               call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            endif
+#endif
 
             !get offset for tile counting
             ot2(1)=(mtile(1)-1)*t2%tdim(1)
@@ -305,7 +321,11 @@ module cc_tools_module
          call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
 
          !Facilitate access
-         call ass_D1to2( tmi%ti(lt)%t, tpm, tmi%ti(lt)%d )
+#ifdef VAR_PTR_RESHAPE
+         tpm(1:tmi%ti(lt)%d(1),1:tmi%ti(lt)%d(2)) => tmi%ti(lt)%t
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+         call c_f_pointer( c_loc(tmi%ti(lt)%t(1)), tpm, tmi%ti(lt)%d )
+#endif
 
          !build list of tiles to get for the current tmi tile
          !get offset for tile counting
@@ -372,12 +392,21 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call ass_D1to4( buf1, tt1, tdim )
+#ifdef VAR_PTR_RESHAPE
+            tt1(1:tdim(1),1:tdim(2),1:tdim(3),1:tdim(4)) => buf1
             if(mtile(2)==mtile(1))then
-               call ass_D1to4( buf1, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf1
             else
-               call ass_D1to4( buf2, tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf2
             endif
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+            call c_f_pointer( c_loc(buf1(1)), tt1, tdim )
+            if(mtile(2)==mtile(1))then
+               call c_f_pointer( c_loc( buf1(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            else
+               call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            endif
+#endif
 
             !get offset for tile counting
             ot2(1)=(mtile(1)-1)*t2%tdim(1)
@@ -497,10 +526,12 @@ module cc_tools_module
    subroutine get_a22_and_prepb22_terms_ex(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
          &xo,yo,xv,yv,om2,sio4,s,wszes,lo,twork,tcomm,order,rest_occ_om2,scal)
       implicit none
+      !> W0 SIZE
+      integer(kind=8),intent(in)  :: wszes(4)
       !> workspace with exchange integrals
-      real(realk),intent(inout) :: w1(:)
+      real(realk),intent(inout) :: w1(wszes(2))
       !> empty workspace of correct sizes
-      real(realk),intent(inout) :: w0(:),w2(:),w3(:)
+      real(realk),intent(inout) :: w0(wszes(1)),w2(wszes(3)),w3(wszes(4))
       !> the t+ and t- combinations with a value of the amplitudes with the
       !diagonal elements divided by two
       real(realk),intent(inout) :: tpl(:),tmi(:)
@@ -522,13 +553,11 @@ module cc_tools_module
       logical,intent(in) :: lo
       !timing information
       real(realk) :: twork,tcomm
-      !> W0 SIZE
-      integer(kind=8),intent(in)  :: wszes(4)
       integer,optional,intent(in) :: order(4)
       logical,optional,intent(in) :: rest_occ_om2
       real(realk),optional :: scal
-      integer(kind=8)  :: wszes3(3)
       integer :: goffs,aoffs,tlen,tred,nor,nvr
+      integer(kind=8) :: s0, s2, s3
 
       call time_start_phase(PHASE_WORK)
 
@@ -580,7 +609,7 @@ module cc_tools_module
       case(4,3,2)
          !!SYMMETRIC COMBINATION
          !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs)
+         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
          !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -593,7 +622,7 @@ module cc_tools_module
 
          !!ANTI-SYMMETRIC COMBINATION
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs)
+         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
          !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -612,10 +641,11 @@ module cc_tools_module
       !COMBINE THE TWO SIGMAS OF W3 IN W2
       !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
-      wszes3 = [wszes(1),wszes(3),wszes(4)]
-      call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,wszes3,lo,twork,tcomm,order=order, &
-         &rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
+      s0 = wszes(1)
+      s2 = wszes(3)
+      s3 = wszes(4)
+      call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
+         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
@@ -623,19 +653,21 @@ module cc_tools_module
    !> \brief Combine sigma matrixes in symmetric and antisymmetric combinations 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
-         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej, query )
+   subroutine combine_and_transform_sigma(omega,w0,w2,w3,s0,s2,s3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
+         & la,lg,no,nv,nb,goffs,aoffs,s,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej, query )
       implicit none
+      !> size of w0
+      integer(kind=8),intent(inout)   :: s0,s2,s3
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
       !real(realk),intent(inout) :: omega(nv*nv*no*no)
       type(tensor),intent(inout) :: omega
       !> w0 is just some workspace on input
-      real(realk),intent(inout) :: w0(:)
+      real(realk),intent(inout) :: w0(s0)
       !> w2 is just some workspace on input
-      real(realk),intent(inout) :: w2(:)
+      real(realk),intent(inout),target :: w2(s2)
       !> w3 contains the symmetric and antisymmetric combinations 
-      real(realk),intent(inout) :: w3(:)
+      real(realk),intent(inout) :: w3(s3)
       !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
       !contribution after the loop, update them in the loops
       type(tensor),intent(inout) :: sio4
@@ -661,8 +693,6 @@ module cc_tools_module
       !> scheme
       integer,intent(in) :: s
       logical,intent(in) :: lock_outside
-      !> size of w0
-      integer(kind=8),intent(inout)   :: wszes(3)
       integer,optional,intent(in)  :: order(4),act_no
       !restricted i<=j in the omega2 and or sio4
       logical,optional, intent(in) :: rest_occ_om2, sio4_ilej, query
@@ -685,7 +715,6 @@ module cc_tools_module
       logical               :: rest_o2_occ, rest_sio4,qu
       real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
-
 
       rest_o2_occ   = .false.
       if(present(rest_occ_om2 ))rest_o2_occ   = rest_occ_om2
@@ -805,38 +834,42 @@ module cc_tools_module
       !print *,case_sel,full1,full2,la,lg,tlen,tred
       !print *,"-------------------------------------------------------------------------------------"
 
-
       if( qu )then
 
          !ATTENTION: KEEP UP TO DATE
+         !should always be zeroed outside, else there are stack allocation
+         !problems
+         !s0 = 0
+         !s2 = 0
+         !s3 = 0
 
          !w0:
          if(second_trafo_step)then
-            wszes(1) = max(wszes(1),(i8*nor)*full1*full2+(i8*nor)*full1T*full2T)
+            s0 = max(s0,(i8*nor)*full1*full2+(i8*nor)*full1T*full2T)
          else
-            wszes(1) = max(wszes(1),(i8*nor)*full1*full2)
+            s0 = max(s0,(i8*nor)*full1*full2)
          endif
 
          !w2:
-         wszes(2) = max(wszes(2),(i8*nor)*full1*full2)
-         wszes(2) = max(wszes(2),(i8*nv*nv)*nor)
+         s2 = max(s2,(i8*nor)*full1*full2)
+         s2 = max(s2,(i8*nv*nv)*nor)
          if(.not.rest_o2_occ)then
-            wszes(2) = max(wszes(2),(i8*nv*nv)*no*no)
+            s2 = max(s2,(i8*nv*nv)*no*no)
          endif
          if(second_trafo_step)then
-            wszes(2) = max(wszes(2),(i8*full1T)*full2T*nor)
-            wszes(2) = max(wszes(2),(i8*nv)*nv*nor)
+            s2 = max(s2,(i8*full1T)*full2T*nor)
+            s2 = max(s2,(i8*nv)*nv*nor)
          endif
          if( .not. rest_sio4 )then
-            wszes(2) = max(wszes(2),(i8*no2*no2)*nor)
+            s2 = max(s2,(i8*no2*no2)*nor)
          endif
 
          !w3:
-         wszes(3) = max(wszes(3),(i8*nor)*full1*full2)
-         wszes(3) = max(wszes(3),(i8*nv*nor*full1)*full2)
-         wszes(3) = max(wszes(3),(i8*no2)*nor*full1)
+         s3 = max(s3,(i8*nor)*full1*full2)
+         s3 = max(s3,(i8*nv*nor*full1)*full2)
+         s3 = max(s3,(i8*no2)*nor*full1)
          if(second_trafo_step)then
-            wszes(3) = max(wszes(3),(i8*nv*nor)*full1T)
+            s3 = max(s3,(i8*nv*nor)*full1T)
         endif
 
       else
@@ -1014,7 +1047,7 @@ module cc_tools_module
                w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                !$OMP END WORKSHARE
                call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             endif
@@ -1085,7 +1118,7 @@ module cc_tools_module
                   !$OMP END WORKSHARE
 #endif
                   call time_start_phase(PHASE_COMM, at=twork)
-                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                   call time_start_phase(PHASE_WORK, at=tcomm)
                endif
             else
@@ -1131,7 +1164,7 @@ module cc_tools_module
 #ifdef VAR_MPI
                if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
                call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                if( alloc_in_dummy )then
                   call lsmpi_win_flush(sio4%wi(1),local=.true.)
                else
@@ -1140,8 +1173,13 @@ module cc_tools_module
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             else
-               call ass_D1to3(w2,t1,[no2,no2,nor])
-               call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
+#ifdef VAR_PTR_RESHAPE
+               t1(1:no2,1:no2,1:nor)     => w2
+               h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+               call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
+               call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
+#endif
                do j=no,1,-1
                   do i=j,1,-1
                      call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1183,7 +1221,7 @@ module cc_tools_module
 #ifdef VAR_MPI
                   call time_start_phase(PHASE_COMM, at=twork)
                   if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
-                  call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                   if(alloc_in_dummy)then
                      call lsmpi_win_flush(sio4%wi(1),local=.true.)
                   else
@@ -1193,8 +1231,13 @@ module cc_tools_module
 #endif
                else
 
-                  call ass_D1to3(w2,t1,[no2,no2,nor])
-                  call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
+#ifdef VAR_PTR_RESHAPE
+                  t1(1:no2,1:no2,1:nor)     => w2
+                  h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+                  call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
+                  call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
+#endif
                   do j=no,1,-1
                      do i=j,1,-1
                         call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1279,12 +1322,14 @@ module cc_tools_module
    !> \brief Construct symmetric and antisymmentric combinations of an itegral matrix 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,qu,quarry)
+   subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,s0,s1,s2,qu,quarry)
       implicit none
+      integer(kind=8), intent(in) :: s0,s1,s2
       !> blank workspace
-      real(realk),intent(inout) :: w0(:),w2(:)
+      real(realk),intent(inout) :: w0(s0)
+      real(realk),intent(inout),target :: w2(s2)
       !> workspace containing the integrals
-      real(realk),intent(in) :: w1(:)
+      real(realk),intent(in) :: w1(s1)
       !> integer specifying the first element in alpha and gamma batch
       integer,intent(in) :: fa,fg
       !> integer specifying the length of alpha and gamma batches
@@ -1337,7 +1382,11 @@ module cc_tools_module
          quarry(2) = max(quarry(2),(i8*la*nb)*lg*nb)
          quarry(3) = max(quarry(3),(i8*nb*nb)*cagi)
       else
-         call ass_D1to3(w2,trick,[nb,nb,cagi])
+#ifdef VAR_PTR_RESHAPE
+         trick(1:nb,1:nb,1:cagi) => w2
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+         call c_f_pointer(c_loc(w2(1)),trick,[nb,nb,cagi])
+#endif
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          aleg=0
 
