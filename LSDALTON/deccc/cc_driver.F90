@@ -41,7 +41,6 @@ use ccsd_module!,only: getDoublesResidualMP2_simple, &
 use pno_ccsd_module
 use snoop_tools_module
 #ifdef MOD_UNRELEASED
-use cc_debug_routines_module
 use ccsdpt_module
 !endif mod_unreleased
 #endif
@@ -50,7 +49,7 @@ use rpa_module
 
 
 
-public :: ccsolver, ccsolver_par, fragment_ccsolver, ccsolver_justenergy,&
+public :: ccsolver, fragment_ccsolver, ccsolver_justenergy,&
    & mp2_solver, SOLVE_AMPLITUDES,SOLVE_AMPLITUDES_PNO, SOLVE_MULTIPLIERS,&
    & ccsolver_energy_multipliers
 private
@@ -287,87 +286,32 @@ contains
       fj = present(frag)
       call get_symm_tensor_segmenting_simple(no,nv,os,vs)
 
-#ifdef MOD_UNRELEASED
-      if(DECinfo%ccdebug)then
 
-         solver_job = SOLVE_AMPLITUDES
+      if(DECinfo%use_pnos)then
 
-         if(DECinfo%use_pnos)then
-            call ccsolver_debug(MODEL_MP2,Co,Cv,fock,nb,no,nv,myls,ccPr,fj,oof,vvf,e,t1a2,mp2a4,VOVOa4,lrt1,solver_job)
-            call array4_free(VOVOa4)
+         call ccsolver(MODEL_MP2,Co,Cv,fock,nb,no,nv,myls,ccPr,&
+            &e,vovo,lrt1,loc,SOLVE_AMPLITUDES,p4=mp2_amp,frag=frag)
+
+         if(fj)then
+            !GET THE MP2 CORRELATION DENSITY FOR THE CENTRAL ATOM
+            call calculate_MP2corrdens_frag(mp2_amp,frag) 
          endif
 
-         call ccsolver_debug(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,fj,oof,vvf,e,t1a2,t2a4,VOVOa4,lrt1,solver_job,&
-            &use_pnos=DECinfo%use_pnos,m2=mp2a4)
-
-         if(DECinfo%use_pnos) call array4_free(mp2a4)
-
-         !convert to output
-         call tensor_minit(vovo,[nv,no,nv,no],4,local=loc,tdims=[vs,os,vs,os],atype="TDAR")
-         call tensor_minit(t2f, [nv,no,nv,no],4,local=loc,tdims=[vs,os,vs,os],atype="TDAR")
-         call tensor_convert( VOVOa4%val,vovo )
-         call tensor_convert( t2a4%val,  t2f  )
-         if(solver_ccmodel == MODEL_CCSD .or. solver_ccmodel == MODEL_CC2)then
-            call tensor_minit(t1f, [nv,no],2,atype="LDAR")
-            call tensor_convert( t1a2%val,  t1f  )
-         endif
-         
-         if(DECinfo%CCSDmultipliers)then
-            solver_job = SOLVE_MULTIPLIERS
-            call array4_free(VOVOa4)
-
-            call ccsolver_debug(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,fj,oof,vvf,e, &
-               & t1a2,t2a4,VOVOa4,lrt1,SOLVE_MULTIPLIERS,m2=m2a4,m1=m1a2)
-
-            call tensor_minit(m2f, [nv,no,nv,no],4,local=loc,tdims=[vs,os,vs,os],atype="TDAR")
-            call tensor_convert( m2a4%val,  m2f  )
-            call array4_free(m2a4)
-
-            if(solver_ccmodel == MODEL_CCSD .or. solver_ccmodel == MODEL_CC2)then
-               call tensor_minit(m1f, [nv,no],2,atype="LDAR")
-               call tensor_convert( m1a2%val,  m1f  )
-               call array2_free(m1a2)
-            endif
-
-         endif
-
-         call array4_free(vovoa4)
-         call array4_free(t2a4)
-         if(solver_ccmodel == MODEL_CCSD .or. solver_ccmodel == MODEL_CC2)then
-            call array2_free(t1a2)
-         endif
-
+         solver_job = SOLVE_AMPLITUDES_PNO
       else
-#endif
-
-         if(DECinfo%use_pnos)then
-
-            call ccsolver_par(MODEL_MP2,Co,Cv,fock,nb,no,nv,myls,ccPr,&
-               &e,vovo,lrt1,loc,SOLVE_AMPLITUDES,p4=mp2_amp,frag=frag)
-
-            if(fj)then
-               !GET THE MP2 CORRELATION DENSITY FOR THE CENTRAL ATOM
-               call calculate_MP2corrdens_frag(mp2_amp,frag) 
-            endif
-
-            solver_job = SOLVE_AMPLITUDES_PNO
-         else
-            solver_job = SOLVE_AMPLITUDES
-         endif
-
-         call ccsolver_par(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,e,&
-            & vovo,lrt1,loc,solver_job, p2=t1f, p4=t2f, m4=mp2_amp, vovo_supplied=DECinfo%use_pnos, frag=frag )
-
-         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
-
-#ifdef MOD_UNRELEASED
-         if(DECinfo%CCSDmultipliers)then
-            call ccsolver_par(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,e,&
-               & vovo,lrt1,loc,SOLVE_MULTIPLIERS, p2=m1f, p4=m2f, m2=t1f, m4=t2f,vovo_supplied=.true., frag=frag )
-         endif
-
+         solver_job = SOLVE_AMPLITUDES
       endif
-#endif
+
+      call ccsolver(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,e,&
+         & vovo,lrt1,loc,solver_job, p2=t1f, p4=t2f, m4=mp2_amp, vovo_supplied=DECinfo%use_pnos, frag=frag )
+
+      if(DECinfo%use_pnos) call tensor_free( mp2_amp )
+
+      if(DECinfo%CCSDmultipliers)then
+         call ccsolver(solver_ccmodel,Co,Cv,fock,nb,no,nv,myls,ccPr,e,&
+            & vovo,lrt1,loc,SOLVE_MULTIPLIERS, p2=m1f, p4=m2f, m2=t1f, m4=t2f,vovo_supplied=.true., frag=frag )
+      endif
+
 
    end subroutine ccsolver_job
 
@@ -964,7 +908,7 @@ subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
    no    = frag%noccAOS
    Ncore = frag%ncore
 
-   call ccsolver_par(MODEL_MP2,frag%Co,frag%Cv,frag%fock,nb,&
+   call ccsolver(MODEL_MP2,frag%Co,frag%Cv,frag%fock,nb,&
       & no,nv, frag%mylsitem,DECinfo%PL,e,RHS,.false.,local,SOLVE_AMPLITUDES,frag=frag,&
       & vovo_supplied = rhs_input, p4=t2)
 
@@ -1055,7 +999,7 @@ subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
 
    end if
 
-   call ccsolver_par(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,&
+   call ccsolver(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,&
       & e,RHS,.false.,local,SOLVE_AMPLITUDES, vovo_supplied=rhs_input, p4=t2)
 
    if(present(mp2_energy)) mp2_energy = e
@@ -1732,7 +1676,7 @@ end subroutine mp2_solver_mol
 ! ccenergy    : output correlation energy
 ! p1,p2 ...   : parameter sets p with mode number containing the final parameters
 !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
-subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
+subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & mylsitem,ccPrintLevel,ccenergy,VOVO,longrange_singles,local,JOB, &
       & frag,vovo_supplied,p1,p2,p3,p4,m1,m2,m3,m4)
 
@@ -2797,7 +2741,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_finalize, &
       &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
 
-end subroutine ccsolver_par
+end subroutine ccsolver
 
 subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock,sync)
    implicit none

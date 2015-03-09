@@ -24,7 +24,6 @@ module full
   use dec_fragment_utils
   use CABS_operations
 #ifdef MOD_UNRELEASED
-  use cc_debug_routines_module
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
 #endif
@@ -4720,7 +4719,7 @@ end subroutine CalcAmat2
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%nocc
-       call ccsolver_par(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
+       call ccsolver(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,energy,&
             & VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
@@ -4728,7 +4727,7 @@ end subroutine CalcAmat2
 
     else
 
-       call ccsolver_par(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
+       call ccsolver(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
             & energy,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
 
