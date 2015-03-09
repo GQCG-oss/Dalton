@@ -3528,13 +3528,14 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvi
   !nvirt = 3508
   !nocc = 264
   !1. canonical_mp2B_memreq_test already done
-  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 144 nodes (3 GB on each)  
+  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 40 nodes (10.7 GB on each)  
 
   !2.Choose  nOccBatchDimImax as big as possible (nb*dimAlphaMPI*dimGammaMPI*nOccBatchDimImax) need to fit in mem!
   !          Same as (nb*nb*nb*nOccBatchDimImax/numnodes) 
-  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*GB))) 
-  !nOccBatchDimImax = 10 for this example 
-  !This means recalculation of integrals 26 times for this example 
+  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*8*GB))) 
+
+  !nOccBatchDimImax = 1 for this example 
+  !This means recalculation of integrals 264 times for this example 
   
   !We divide the numnodes into an array of nodes (inode,jnode)
   !for numnodes=4 
