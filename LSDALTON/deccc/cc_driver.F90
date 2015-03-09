@@ -2057,7 +2057,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_convert( Co_b1, Co_orig )
       call tensor_convert( Cv_b1, Cv_orig )
 
-      call get_t1_matrices(MyLsitem,m2,Co_orig,Cv_orig,xo,yo,xv,yv,fock,t1fock)
+      call get_t1_matrices(MyLsitem,m2,Co_orig,Cv_orig,xo,yo,xv,yv,fock,t1fock,.false.)
+
+      call tensor_free(Co_orig)
+      call tensor_free(Cv_orig)
 
       Co_b1 => xo%elm2
       Co_b2 => yo%elm2
@@ -2355,7 +2358,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          T1Related : if(use_singles) then
             select case( JOB )
             case( SOLVE_AMPLITUDES, SOLVE_AMPLITUDES_PNO)
-               call get_t1_matrices(MyLsitem,t1(iter_idx),Co,Cv,xo,yo,xv,yv,fock,t1fock)
+               call get_t1_matrices(MyLsitem,t1(iter_idx),Co,Cv,xo,yo,xv,yv,fock,t1fock,.true.)
             end select
          else
             t1fock%elm2=fock%elm2
@@ -2796,13 +2799,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 end subroutine ccsolver_par
 
-subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock)
+subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock,sync)
    implicit none
    type(lsitem),intent(inout) :: MyLsItem
    type(tensor), intent(inout) :: t1, Co, Cv
    type(tensor), intent(inout) :: xo,xv,yo,yv
    type(tensor), intent(in)    :: fock
    type(tensor), intent(inout) :: t1fock
+   logical, intent(in) :: sync
    integer :: ord2(2), nb,no,nv
    real(realk), pointer :: w1(:)
 
@@ -2811,7 +2815,7 @@ subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock)
    nb=Co%dims(1)
 
    ! synchronize singles data on slaves
-   call tensor_sync_replicated(t1)
+   if(sync)call tensor_sync_replicated(t1)
 
    ! get the T1 transformation matrices
    call tensor_cp_data(Cv,yv)
@@ -2914,7 +2918,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
 
          if(DECinfo%simple_multipler_residual)then
             call get_ccsd_multipliers_simple(omega1(use_i)%elm2,o2%elm4,m2%elm2&
-               &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
+               &,ml4%elm4,t1(use_i)%elm2,tl2%elm4,t1fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2&
                &,no,nv,nb,MyLsItem)
          else
             print *,"The multipliers integral direct scheme is not implemented yet! Quitting..."

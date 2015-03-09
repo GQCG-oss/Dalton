@@ -85,12 +85,13 @@ module cc_debug_routines_module
      !> (from previous calculations) must be stored in t1_final at input!
      logical,intent(in) :: longrange_singles
      real(realk),pointer :: Co2_d(:,:), Cv2_d(:,:),Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:)
-     real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:), Uocc(:,:), Uvirt(:,:)
+     real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:), Uocc(:,:), Uvirt(:,:), w1(:)
+     
 
      integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
      integer, dimension(4) :: ampl4_dims
      type(array2) :: fock,Co,Cv,Co2,Cv2
-     type(array2) :: ppfock,qqfock,pqfock,qpfock
+     type(array2) :: ppfock,qqfock,pqfock,qpfock, t1fock
      type(array4) :: gao,gmo,aibj,iajb
      type(array4), pointer :: t2(:),omega2(:)
      type(array2), pointer :: t1(:),omega1(:)
@@ -535,6 +536,12 @@ module cc_debug_routines_module
 
            iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
 
+
+           if(get_mult) then
+              t1fock = array2_init(ao2_dims)
+              t1fock%val = ifock%val
+              call array2_add_to(t1fock,1.0E0_realk,delta_fock)
+           endif
         end if T1Related
 
         if(DECinfo%PL>1) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
@@ -598,18 +605,19 @@ module cc_debug_routines_module
               !    &vovo=omega2(iter)%val,bo=yocc%val,bv=yvirt%val)
               !  endif
               !endif
+
      
-              !FIXME: fock is defined in a wrong way !!!
-              !if(iter == 1) t2(iter)%val = m2%val
-              !if(.not.fragment_job)then
-              !  call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-              !  &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-              !  &fragment_job,pno_cv,pno_S,nspaces,fock%val,iter)
-              !else
-              !  call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-              !  &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-              !  &fragment_job,pno_cv,pno_S,nspaces,fock%val,iter,f=fraginfo)
-              !endif
+              if(iter == 1) t2(iter)%val = m2%val
+              if(.not.fragment_job)then
+                call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
+                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &fragment_job,pno_cv,pno_S,nspaces,t1fock%val,iter)
+              else
+                call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
+                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &fragment_job,pno_cv,pno_S,nspaces,t1fock%val,iter,f=fraginfo)
+              endif
+
 
               !stop 0
          
@@ -832,9 +840,14 @@ module cc_debug_routines_module
         if(iter == DECinfo%ccMaxIter .or. two_norm_total < DECinfo%ccConvergenceThreshold) &
              break_iterations=.true.
 
-        if(DECinfo%use_singles .and. (.not. break_iterations)) then
-          call array4_free(iajb)
-        end if
+          if(DECinfo%use_singles) then
+             if(.not. break_iterations)then
+                call array4_free(iajb)
+             endif
+             if( get_mult )then
+                call array2_free(t1fock)
+             endif
+          end if
 
         if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 

@@ -2657,12 +2657,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Transform inactive Fock matrix into the different mo subspaces
      if (Ccmodel>MODEL_CC2) then
         ! -> Foo
-        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,fock,nb,0.0E0_realk,w1%d,no)
+        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,t1fock,nb,0.0E0_realk,w1%d,no)
         call dgemm('n','n',no,no,nb,1.0E0_realk,w1%d,no,yo,nb,0.0E0_realk,ppfock,no)
         ! -> Fov
         call dgemm('n','n',no,nv,nb,1.0E0_realk,w1%d,no,yv,nb,0.0E0_realk,pqfock,no)
         ! -> Fvo
-        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fock,nb,0.0E0_realk,w1%d,nv)
+        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,t1fock,nb,0.0E0_realk,w1%d,nv)
         call dgemm('n','n',nv,no,nb,1.0E0_realk,w1%d,nv,yo,nb,0.0E0_realk,qpfock,nv)
         ! -> Fvv
         call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1%d,nv,yv,nb,0.0E0_realk,qqfock,nv)
@@ -4380,12 +4380,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Transform inactive Fock matrix into the different mo subspaces
      if (Ccmodel>MODEL_CC2) then
         ! -> Foo
-        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo_f,nb,fock,nb,0.0E0_realk,w0%d,no)
+        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo_f,nb,t1fock,nb,0.0E0_realk,w0%d,no)
         call dgemm('n','n',no,no,nb,1.0E0_realk,w0%d,no,yo_f,nb,0.0E0_realk,ppfock,no)
         ! -> Fov
         call dgemm('n','n',no,nv,nb,1.0E0_realk,w0%d,no,yv_f,nb,0.0E0_realk,pqfock,no)
         ! -> Fvo
-        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv_f,nb,fock,nb,0.0E0_realk,w0%d,nv)
+        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv_f,nb,t1fock,nb,0.0E0_realk,w0%d,nv)
         call dgemm('n','n',nv,no,nb,1.0E0_realk,w0%d,nv,yo_f,nb,0.0E0_realk,qpfock,nv)
         ! -> Fvv
         call dgemm('n','n',nv,nv,nb,1.0E0_realk,w0%d,nv,yv_f,nb,0.0E0_realk,qqfock,nv)
@@ -7796,12 +7796,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !end if
     if (Ccmodel>MODEL_CC2) then
        ! -> Foo
-       call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,fock,nb,0.0E0_realk,tmp0,no)
+       call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,t1fock,nb,0.0E0_realk,tmp0,no)
        call dgemm('n','n',no,no,nb,1.0E0_realk,tmp0,no,lamho,nb,0.0E0_realk,Foo,no)
        ! -> Fov
        call dgemm('n','n',no,nv,nb,1.0E0_realk,tmp0,no,lamhv,nb,0.0E0_realk,Fov,no)
        ! -> Fvo
-       call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,fock,nb,0.0E0_realk,tmp0,nv)
+       call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,t1fock,nb,0.0E0_realk,tmp0,nv)
        call dgemm('n','n',nv,no,nb,1.0E0_realk,tmp0,nv,lamho,nb,0.0E0_realk,Fvo,nv)
        ! -> Fvv
        call dgemm('n','n',nv,nv,nb,1.0E0_realk,tmp0,nv,lamhv,nb,0.0E0_realk,Fvv,nv)
@@ -7821,7 +7821,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
  
 
-  end subroutine get_MO_Fock_matrices
+  end subroutine get_MO_fock_matrices
 
 
   !> Purpose: Calculate E2 term of the CCSD residual using G and H
