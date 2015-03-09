@@ -34,8 +34,6 @@ contains
 
       use qmcmm, only: getdim_relmat, read_relmat
 
-      implicit none
-
 #include "inforb.h"
 #include "infdim.h"
 #include "wrkrsp.h"
@@ -167,9 +165,6 @@ contains
 
       use qmcmm, only: getdim_relmat, read_relmat
 
-      implicit none
-
-#include "dummy.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "infdim.h"
