@@ -56,7 +56,6 @@ contains
              '.NONPCA', '.MMPOLA', '.xxxxxx', '.XXXXXX',                &
              '.DAMPED'/
 !
-      CALL QENTER('QMNPINP')
 !
       CALL SET_QMNPMM()
 !
@@ -171,7 +170,6 @@ contains
 !
   300 CONTINUE
 !
-      CALL QEXIT('QMNPINP')
    end subroutine
 
    subroutine set_qmnpmm()

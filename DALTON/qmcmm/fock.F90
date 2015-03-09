@@ -117,7 +117,7 @@ contains
 !
       integer :: i
 !
-      CALL DZERO(FVVEC,IDIM)
+      fvvec = 0.0d0
 !     determine QM region contributions to FV vector
       CALL GET_QMNUCFV(FVVEC,IDIM)
       CALL GET_QMELEFV(FVVEC,IDIM,DCAO,DVAO,WORK,lwork)

@@ -196,120 +196,119 @@ contains
       integer :: mjwop(2,maxwop,8)
       integer :: i, j, ioff
       logical   lcon, lorb, lref
-      integer :: kmqvec1
-      integer :: kmqvec2
-      integer :: kfvvec1
-      integer :: kfvvec2
-      integer :: kcref
-      integer :: ktres
-      integer :: kucmo
-      integer :: ktlma
-      integer :: ktlmb
-      integer :: ktrmo
-      integer :: krelmat
-      integer :: kutr
       integer :: idim, idimx
       integer :: isymt, isymv, isymst, jspin, nsim
-      integer :: lfree, kfree
       integer :: nzyvec, nzcvec
       integer :: ISYMDN, idum
       real(8) :: ovlap
 
-      CALL QENTER('QMNPMMQRO')
-!
-      KFREE = 1
-      LFREE = LWORK
+      real(8), allocatable :: cref(:)
+      real(8), allocatable :: tres(:)
+      real(8), allocatable :: ucmo(:)
+      real(8), allocatable :: tlma(:)
+      real(8), allocatable :: tlmb(:)
+      real(8), allocatable :: trmo(:)
+      real(8), allocatable :: utr(:)
+      real(8), allocatable :: mqvec1(:)
+      real(8), allocatable :: mqvec2(:)
+      real(8), allocatable :: fvvec1(:)
+      real(8), allocatable :: fvvec2(:)
+      real(8), allocatable :: relmat(:)
+
 !     Allocate arrays for response
-      CALL MEMGET('REAL',KCREF,NCREF,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTRES,N2ORBX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KUCMO,NORBT*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTLMA,N2ORBX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTLMB,N2ORBX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
+      allocate(cref(ncref))
+      allocate(tres(n2orbx))
+      allocate(ucmo(norbt*nbast))
+      allocate(tlma(n2orbx))
+      allocate(tlmb(n2orbx))
+      allocate(trmo(nnorbx))
+      allocate(utr(n2orbx))
 !     Initialize allocated arrays
-      CALL DZERO(WORK(KCREF),NCREF)
-      CALL DZERO(WORK(KTRES),N2ORBX)
-      CALL DZERO(WORK(KUCMO),NORBT*NBAST)
-      CALL DZERO(WORK(KTLMA),N2ORBX)
-      CALL DZERO(WORK(KTLMB),N2ORBX)
-      CALL DZERO(WORK(KTRMO),NNORBX)
-      CALL DZERO(WORK(KUTR),N2ORBX)
+      cref = 0.0d0
+      tres = 0.0d0
+      ucmo = 0.0d0
+      tlma = 0.0d0
+      tlmb = 0.0d0
+      trmo = 0.0d0
+      utr = 0.0d0
 !     Reset symmetry variables
       NSIM  = 1
       ISYMT = 1
 !     Get the reference state
-      CALL GETREF(WORK(KCREF),MZCONF(1))
+      CALL GETREF(CREF,MZCONF(1))
 !     Unpack the response vectors
       CALL GTZYMT(NSIM,VEC1,KZYV1,ISYMV1,ZYM1,MJWOP)
       CALL GTZYMT(NSIM,VEC2,KZYV2,ISYMV2,ZYM2,MJWOP)
 !     Unpack symmetry blocked CMO
-      CALL UPKCMO(CMO,WORK(KUCMO))
+      CALL UPKCMO(CMO,UCMO)
 !     Non-iterative method
       IF (.NOT.MQITER) THEN
         CALL GETDIM_RELMAT(IDIM,.FALSE.)
 !       Allocate FV and MQ vectors for all perturbed densities
-        CALL MEMGET('REAL',KMQVEC1,NSIM*IDIM,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KMQVEC2,NSIM*IDIM,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFVVEC1,NSIM*IDIM,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFVVEC2,NSIM*IDIM,WORK,KFREE,LFREE)
+        allocate(fvvec1(nsim*idim))
+        allocate(fvvec2(nsim*idim))
 
 !       compute fv vectors for second order pertubed densities
-        call get_fvvec(idim=idim,            &
-                       nsim=nsim,            &
-                       udv=udv,              &
-                       cmo=work(kucmo),      &
-                       work=work(kfree),     &
-                       lwork=lfree,          &
-                       fvvec1=work(kfvvec1), &
-                       fvvec2=work(kfvvec2), &
-                       isymt=isymt,          &
-                       isymv1=isymv1,        &
-                       isymv2=isymv2,        &
-                       zym1=zym1,            &
+        call get_fvvec(idim=idim,     &
+                       nsim=nsim,     &
+                       udv=udv,       &
+                       cmo=ucmo,      &
+                       work=work,     &
+                       lwork=lwork,   &
+                       fvvec1=fvvec1, &
+                       fvvec2=fvvec2, &
+                       isymt=isymt,   &
+                       isymv1=isymv1, &
+                       isymv2=isymv2, &
+                       zym1=zym1,     &
                        zym2=zym2)
 
 !       Allocate and compute Relay matrix
         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
-        CALL MEMGET('REAL',KRELMAT,IDIMX,WORK,KFREE,LFREE)
-        CALL READ_RELMAT(WORK(KRELMAT))
+        allocate(relmat(idimx))
+        CALL READ_RELMAT(RELMAT)
 !       Determine induced induced dipoles and charges
-        CALL DZERO(WORK(KMQVEC1),NSIM*IDIM)
-        CALL DZERO(WORK(KMQVEC2),NSIM*IDIM)
+        allocate(mqvec1(nsim*idim))
+        allocate(mqvec2(nsim*idim))
+        mqvec1 = 0.0d0
+        mqvec2 = 0.0d0
         DO I=1,NSIM
            IOFF = (I-1)*IDIM
-           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC1+IOFF),1,0.0d0,WORK(KMQVEC1+IOFF),1)
-           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC2+IOFF),1,0.0d0,WORK(KMQVEC2+IOFF),1)
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,RELMAT,IDIM,              &
+     &                FVVEC1(IOFF + 1),1,0.0d0,MQVEC1(IOFF + 1),1)
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,RELMAT,IDIM,              &
+     &                FVVEC2(IOFF + 1),1,0.0d0,MQVEC2(IOFF + 1),1)
           if (iprtlvl > 14) then
              write(lupri, '(/,2x,a,i0)') &
                  '*** Computed MQ vector start v1 1st-order density ', i
              do j = 1, idim
-                write(lupri, '(i8, f18.8)') j, WORK(KMQVEC1+IOFF-1+j)
+                write(lupri, '(i8, f18.8)') j, MQVEC1(IOFF+j)
              end do
              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
              write(lupri, '(/,2x,a,i0)') &
                  '*** Computed MQ vector start v2 1st-order density ', i
              do j = 1, idim
-                write(lupri, '(i8, f18.8)') j, WORK(KMQVEC2+IOFF-1+j)
+                write(lupri, '(i8, f18.8)') j, MQVEC2(IOFF+j)
              end do
              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
           end if
         END DO
+        deallocate(mqvec1)
+        deallocate(mqvec2)
+        deallocate(relmat)
 
         ! determine mm region contribution to qm region potential from
         ! second order density
-        call get_xyvec(work(kucmo),   &
-                       idim,          &
-                       nsim,          &
-                       work(ktres),   &
-                       work(kfree),   &
-                       lfree,         &
-                       work(kfvvec1), &
-                       work(kfvvec2), &
-                       isymt,         &
-                       isymv2,        &
+        call get_xyvec(ucmo,   &
+                       idim,   &
+                       nsim,   &
+                       tres,   &
+                       work,   &
+                       lwork,  &
+                       fvvec1, &
+                       fvvec2, &
+                       isymt,  &
+                       isymv2, &
                        zym2)
 
       ELSE
@@ -332,14 +331,19 @@ contains
       NZCVEC = NCREF
 !     Compute gradient
       CALL RSP1GR(NSIM,KZYVR,IDUM,JSPIN,IGRSYM,JSPIN,ISYMV,ETRS,        &
-     &            WORK(KCREF),NZYVEC,NZCVEC,OVLAP,ISYMDN,UDV,           &
-     &            WORK(KTRES),XINDX,MJWOP,WORK(KFREE),LFREE,            &
+     &            CREF,NZYVEC,NZCVEC,OVLAP,ISYMDN,UDV,           &
+     &            TRES,XINDX,MJWOP,WORK,lwork,            &
      &            LORB,LCON,LREF)
 !
-      CALL MEMREL('QMNPMM_QRO',WORK,1,1,KFREE,LFREE)
-!
-      CALL QEXIT('QMNPMMQRO')
-!
+
+      deallocate(cref)
+      deallocate(tres)
+      deallocate(ucmo)
+      deallocate(tlma)
+      deallocate(tlmb)
+      deallocate(trmo)
+      deallocate(utr)
+
       end subroutine
 
 

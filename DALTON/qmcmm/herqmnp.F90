@@ -57,7 +57,6 @@ contains
       CHARACTER UNITS*2, NPWORD*2, FFWORD*4, NPLBL(MXNPATM)*2
       CHARACTER MMWORD*2, MMLBL(MXMMATM)*2
 !
-      CALL QENTER('READ_POT_QMNPMM')
 !     Open POTENTIAL.INP file
       LUQMNP=-1
       CALL GPOPEN(LUQMNP,'POTENTIAL.INP','OLD',' ',                     &
@@ -251,7 +250,6 @@ contains
 !     Close POTENTIAL.INP file
       CALL GPCLOSE(LUQMNP,'KEEP')
 !
-      CALL QEXIT('READ_POT_QMNPMM')
 !
    end subroutine
       SUBROUTINE PRINT_NPREGION(ATMLBL)
@@ -501,11 +499,8 @@ contains
       real(8) :: work(lwork)
       integer, allocatable :: ipiv(:)
 
-      integer :: kfree, lfree
       integer :: idim, ierror
 !
-      KFREE = 1
-      LFREE = LWORK
 !     Initialize arrays
       CALL GETDIM_RELMAT(IDIM,.TRUE.)
       fmat = 0.0d0
@@ -542,7 +537,7 @@ contains
          IF (IERROR.NE.0) THEN
             CALL QUIT('LU factorization failed in COMP_RELMAT')
          END IF
-         CALL DGETRI(IDIM,FMAT,IDIM,IPIV,WORK(KFREE),LFREE,             &
+         CALL DGETRI(IDIM,FMAT,IDIM,IPIV,WORK,lwork,             &
                 IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('Inversion failed in COMP_RELMAT')
@@ -581,10 +576,8 @@ contains
 !
       real(8) :: FMAT(*), WORK(LWORK)
       integer, allocatable :: ipiv(:)
-      integer :: kfree, lfree, idim, ierror, lwork
+      integer :: idim, ierror, lwork
 !
-      KFREE = 1
-      LFREE = LWORK
 !     Initialize arrays
       CALL GETDIM_MMMAT(IDIM,.TRUE.)
       CALL DZERO(FMAT,IDIM)
@@ -608,7 +601,7 @@ contains
          IF (IERROR.NE.0) THEN
             CALL QUIT('LU factorization failed in COMP_MMRELMAT')
          END IF
-         CALL DGETRI(IDIM,FMAT,IDIM,IPIV,WORK(KFREE),LFREE,             &
+         CALL DGETRI(IDIM,FMAT,IDIM,IPIV,WORK,lwork,             &
                 IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('Inversion failed in COMP_MMRELMAT')
