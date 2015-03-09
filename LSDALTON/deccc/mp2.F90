@@ -2686,6 +2686,8 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   logical :: rimp2_member
   TAG = 1982
   RIMPSubGroupCreated = .FALSE.
+  PerformReduction = .TRUE.
+  rimp2_comm = 0
 
   call get_currently_available_memory(MemInGBCollected)
   IF(master)THEN
