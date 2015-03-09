@@ -1971,6 +1971,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer :: alpha,gamma,beta,delta,info,mynum,numnodes,MynbasisAuxMPI,nb
   integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2,natomsAux
   integer :: ILOC,JLOC,ALOC,BLOC,M,N,K,nAtoms,nbasis2,nbasisAux
+  integer :: MynbasisAuxMPI2
   logical :: fc,ForcePrint,master,wakeslave
   logical :: CollaborateWithSlaves
   real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:)
@@ -2678,7 +2679,8 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   integer(kind=ls_mpik) :: request5,request6,Comm
   integer(kind=ls_mpik) :: RIMPSubGroupSize,rimp2_nodtot,rimp2_mynum,rimp2_comm
   integer :: CurrentWait(2),nAwaitDealloc,iAwaitDealloc,MynAtomsMPI,node
-  integer :: myOriginalRank,OriginalRanknbasisAuxMPI,M,N,K,I
+  integer :: myOriginalRank,OriginalRanknbasisAuxMPI,M,N,K,I,offset,offset2
+  integer :: ndimMax,nbasisAuxMPI2(numnodes),MynbasisAuxMPI2
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,MessageRecieved
   logical :: PerformReduction,RIMPSubGroupCreated,UseSubGroupCommunicator
   logical :: rimp2_member
@@ -2863,15 +2865,53 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   ENDIF
 
   IF(CollaborateWithSlaves.AND.rimp2_member)then 
-     !We wish to build
-     !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
-     !where alpha runs over the Aux basis functions allocated for this rank
-     !and beta run over the full set of nbasisAux
-     IF(MynbasisAuxMPI.GT.0)THEN
-        call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux)
-        call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux,&
-             & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,rimp2_nodtot,natomsAux)
+     IF(PerformReduction)THEN
+        ndimMax = nbasisAux/numnodes
+        do I=1,numnodes
+           nbasisAuxMPI2(I) = ndimMax
+        enddo
+        J=2 !not add to master
+        do I=1,MOD(nbasisAux,numnodes)
+           nbasisAuxMPI2(J) = nbasisAuxMPI2(J) + 1
+           J=J+1
+        enddo
+        MynbasisAuxMPI2 = nbasisAuxMPI2(mynum+1)
+        call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI2,nbasisAux)
+        offset = mynum*ndimMax
+        offset2 = numnodes*ndimMax + mynum -1 +1
+        IF(MynbasisAuxMPI2.GT.ndimMax)THEN
+           !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax,&
+           !$OMP TMPAlphaBeta_minus_sqrt,AlphaBeta_minus_sqrt,offset,offset2)
+           do I=1,nbasisAux
+              do J=1,ndimMax
+                 TMPAlphaBeta_minus_sqrt(J,I) = AlphaBeta_minus_sqrt(offset+J,I)
+              enddo
+              TMPAlphaBeta_minus_sqrt(ndimMax+1,I) = AlphaBeta_minus_sqrt(offset2,I)
+           enddo
+           !$OMP END PARALLEL DO
+        ELSE
+           !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax,&
+           !$OMP TMPAlphaBeta_minus_sqrt,AlphaBeta_minus_sqrt,offset)
+           do I=1,nbasisAux
+              do J=1,ndimMax
+                 TMPAlphaBeta_minus_sqrt(J,I) = AlphaBeta_minus_sqrt(offset+J,I)
+              enddo
+           enddo
+           !$OMP END PARALLEL DO
+        ENDIF
         call mem_dealloc(AlphaBeta_minus_sqrt)
+        NBA = MynbasisAuxMPI2
+     ELSE
+        !We wish to build
+        !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
+        !where alpha runs over the Aux basis functions allocated for this rank
+        !and beta run over the full set of nbasisAux
+        IF(MynbasisAuxMPI.GT.0)THEN
+           call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux)
+           call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux,&
+                & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,rimp2_nodtot,natomsAux)
+           call mem_dealloc(AlphaBeta_minus_sqrt)
+        ENDIF
      ENDIF
   ENDIF
 
@@ -2921,10 +2961,10 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
         call time_start_phase( PHASE_WORK )
 #endif
         !Calpha = TMPAlphaBeta_minus_sqrt(MynbasisAuxMPI,nbasisAux)
-        M =  MynbasisAuxMPI   !rows of Output Matrix
+        M =  MynbasisAuxMPI2   !rows of Output Matrix
         N =  nvirt*nocc       !columns of Output Matrix
         K =  nbasisAux        !summation dimension
-        call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
+        call mem_alloc(Calpha,MynbasisAuxMPI2,nvirt,nocc)
         call dgemm('N','N',M,N,K,1.0E0_realk,TMPAlphaBeta_minus_sqrt,&
              & M,alphaCDFull,K,0.0E0_realk,Calpha,M)
         call mem_dealloc(alphaCDFull)

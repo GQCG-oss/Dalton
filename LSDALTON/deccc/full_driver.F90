@@ -1210,9 +1210,9 @@ contains
     !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
     !$OMP PRIVATE(B,A) SHARED(nvirt,Amat,Bmat,epsIJ,EpsVirt)
     do B=1,nvirt        
-       do A=1,nvirt
-          Bmat(A,B) = (2.0E0_realk*Amat(A,B) - Amat(B,A))/(epsIJ-EpsVirt(A)-EpsVirt(B))
-       enddo
+     do A=1,nvirt
+      Bmat(A,B) =(2.0E0_realk*Amat(A,B)-Amat(B,A))/(epsIJ-EpsVirt(A)-EpsVirt(B))
+     enddo
     enddo
     !$OMP END PARALLEL DO
   end subroutine CalcBmat
