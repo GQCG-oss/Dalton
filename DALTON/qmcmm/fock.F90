@@ -1,27 +1,12 @@
-!
-!...   Copyright (c) 2015 by the authors of Dalton (see below).
-!...   All Rights Reserved.
-!...
-!...   The source code in this file is part of
-!...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
-!...
-!...   This source code is provided under a written licence and may be
-!...   used, copied, transmitted, or stored only in accord with that
-!...   written licence.
-!...
-!...   In particular, no part of the source code or compiled modules may
-!...   be distributed outside the research group of the licence holder.
-!...   This means also that persons (e.g. post-docs) leaving the research
-!...   group of the licence holder may not take any part of Dalton,
-!...   including modified files, with him/her, unless that person has
-!...   obtained his/her own licence.
-!...
-!...   For further information, including how to get a licence, see:
-!...      http://daltonprogram.org
-!
-!
-!  /* Deck qmnpmm_fock */
+module qmcmm_fock
+
+   public qmnpmm_fock
+   public scf_qmnpmm_out
+
+   private
+
+contains
+
       SUBROUTINE QMNPMM_FOCK(DCAO,DVAO,RCPMAT,RMMMAT,FMAT,EQMNP,WORK,   &
      &                       LWORK)
 !
@@ -823,6 +808,4 @@
       RETURN
       end subroutine
 
-
-
-
+end module

@@ -762,7 +762,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/abacus/rma_windows.F90
     DALTON/cc/dyn_index.F90
     DALTON/qmcmm/herqmnp.F90
-    DALTON/qmcmm/sirqmnp.F90
+    DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
     )
