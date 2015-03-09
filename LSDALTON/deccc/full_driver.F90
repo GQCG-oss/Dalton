@@ -1037,12 +1037,11 @@ contains
        WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
     endif StartUpSlaves
 #endif
-    CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
-    
+    CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
     call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
          & wakeslaves,MynAuxMPI,MyMolecule%Co(:,offset+1:offset+nocc),&
          & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA)
-    CALL LSTIMER('RIMP2: Calpha ',TS2,TE2,LUPRI,FORCEPRINT)
+    CALL LSTIMER('RIMP2: CalphaMO ',TS2,TE2,LUPRI,FORCEPRINT)
 
     call mem_alloc(EpsOcc,nocc)
     call mem_leaktool_alloc(EpsOcc,LT_Eps)
@@ -2546,7 +2545,13 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 !  Character(80)        :: FilenameCS,FilenamePS
 
 #ifdef VAR_TIME    
-    FORCEPRINT = .TRUE.
+  FORCEPRINT = .TRUE.
+#else
+  IF(LSTIME_PRINT)THEN
+     ForcePrint = .TRUE.
+  ELSE
+     ForcePrint = .FALSE.
+  ENDIF
 #endif
 
   CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)

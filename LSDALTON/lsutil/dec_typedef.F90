@@ -316,8 +316,19 @@ module dec_typedef_module
 
      !> Atomic Extent - include all atomic orbitals of atoms included
      logical :: AtomicExtent
+    
+     !> RIMP2 settings
+     !> ************
      !> Auxiliary Atomic Extent - for now include ALL atomic orbitals in RI
      logical :: AuxAtomicExtent
+     !> Use Natural Auxiliary Functions (NAF)
+     logical :: NAF
+     !> Natural Auxiliary Functions Threshold
+     real(realk) :: NAFthreshold
+     !> Hardcode the Group size used in RIMP(build_CalphaMO)
+     integer :: RIMPSubGroupSize
+     !> Use Tensor Framework to Construct Calpha
+     logical :: RIMP2PDMTENSOR
 
      !> MPI settings
      !> ************
