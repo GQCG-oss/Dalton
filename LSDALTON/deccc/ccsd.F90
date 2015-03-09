@@ -707,7 +707,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
           call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2,&
              & iajb,nb,no,nv,iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,&
-             & delta_fock,fock%elm1,ppfock%elm1,pqfock%elm1,qpfock%elm1,qqfock%elm1,local)
+             & delta_fock,fock,ppfock, pqfock,qpfock,qqfock,local)
 
        else 
 
@@ -6367,12 +6367,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !           This algorithm is MO-based and read MO-integral in memory,
   !           (PDM if MPI). The MO-integral are assumed to be packed
   !           in batches using the routine get_t1_free_gmo.
-  ! TODO: remove delta fock
   !
   !> Author:  Pablo Baudin
   !> Date:    November 2013
   subroutine get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
-             & govov,nb,no,nv,iter,MOinfo,MyLsItem,lampo,lampv, &
+             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
              & lamho,lamhv,deltafock,fock,ppfock,pqfock,qpfock,qqfock,local)
 
     implicit none
@@ -6380,7 +6379,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> CC model
     integer,intent(in) :: ccmodel
     !> MO pack integrals; amplitudes and residuals:
-    integer, intent(in) :: nb, no, nv, iter
+    integer, intent(in) :: nbas, nocc, nvir, iter
     type(tensor), intent(inout) :: pgmo_diag, pgmo_up
     type(tensor), intent(inout) :: govov
     type(tensor), intent(inout) :: t1
@@ -6391,15 +6390,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> Long-range correction to Fock matrix
     type(tensor), intent(in) :: deltafock
     !> AO Fock matrix:
-    real(realk), intent(inout) :: fock(:)
+    type(tensor), intent(inout) :: fock
     !> occupied-occupied block of the t1-fock matrix
-    real(realk), intent(inout) :: ppfock(:)
+    type(tensor), intent(inout) :: ppfock
     !> virtual-virtual block of the t1-fock matrix
-    real(realk), intent(inout) :: qqfock(:)
+    type(tensor), intent(inout) :: qqfock
     !> occupied-virtual block of the t1-fock matrix
-    real(realk), intent(inout) :: pqfock(:)
+    type(tensor), intent(inout) :: pqfock
     !> virtual-occupied block of the t1-fock matrix
-    real(realk), intent(inout) :: qpfock(:)
+    type(tensor), intent(inout) :: qpfock
     !> transformation matrices from AO to t1-MO:
     real(realk), intent(in), pointer :: lampo(:,:), lampv(:,:)
     real(realk), intent(in), pointer :: lamho(:,:), lamhv(:,:)
@@ -6481,9 +6480,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
     ! shortcuts:
-    ntot = no + nv
-    O = no
-    V = nv
+    ntot = nocc + nvir
+    O = nocc
+    V = nvir
     N = ntot
     X = MOinfo%DimInd1(1)
     print_debug = (DECinfo%PL>3.or.DECinfo%cc_driver_debug.and.master)
@@ -6502,20 +6501,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp2, tmp_size)
 
-    call mem_alloc(xvir, int(i8*nv*ntot, kind=long))
-    call mem_alloc(yocc, int(i8*no*ntot, kind=long))
+    call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
+    call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
     call mem_alloc(gmo, int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
-    call mem_alloc(B2prep, int(i8*no*no*no*no, kind=long))
-    call mem_alloc(u2, nv,nv,no,no)
-    call mem_alloc(G_Pi, ntot*no)
-    call mem_alloc(H_aQ, nv*ntot)
+    call mem_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
+    call mem_alloc(u2, nvir,nvir,nocc,nocc)
+    call mem_alloc(G_Pi, ntot*nocc)
+    call mem_alloc(H_aQ, nvir*ntot)
 
-    tmp_size = int(i8*no*no*no*no, kind=long)
+    tmp_size = int(i8*nocc*nocc*nocc*nocc, kind=long)
     call mem_alloc(goooo, tmp_size)
-    tmp_size = int(i8*nv*no*no*no, kind=long)
+    tmp_size = int(i8*nvir*nocc*nocc*nocc, kind=long)
     call mem_alloc(govoo, tmp_size)
     call mem_alloc(gvooo, tmp_size)
-    tmp_size = int(i8*no*nv*no*nv, kind=long)
+    tmp_size = int(i8*nocc*nvir*nocc*nvir, kind=long)
     call mem_alloc(gvoov, tmp_size)
     call mem_alloc(gvvoo, tmp_size)
 
@@ -6535,16 +6534,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Calculate transformation matrix:
     !  xvir_ap = delta_ap - t_ai delta_ip
     xvir = 0.0E0_realk
-    call daxpy(nv*no, -1.0E0_realk, t1%elm1, 1, xvir, 1)
-    do a = 1, nv
-      xvir(nv*no + a + (a-1)*nv) = 1.0E0_realk
+    call daxpy(nvir*nocc, -1.0E0_realk, t1%elm1, 1, xvir, 1)
+    do a = 1, nvir
+      xvir(nvir*nocc + a + (a-1)*nvir) = 1.0E0_realk
     end do
 
     !  yocc_ip = delta_ip + t'_ai delta_ap
     yocc = 0.0E0_realk
-    call mat_transpose(nv,no,1.0E0_realk,t1%elm1,0.0E0_realk,yocc(1+no*no:))
-    do i = 1, no
-      yocc(i + (i-1)*no) = 1.0E0_realk
+    call mat_transpose(nvir,nocc,1.0E0_realk,t1%elm1,0.0E0_realk,yocc(1+nocc*nocc:))
+    do i = 1, nocc
+      yocc(i + (i-1)*nocc) = 1.0E0_realk
     end do
 
     ! Initialization
@@ -6564,8 +6563,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     ! Calculate  2*coulomb - exchange doubles amplitudes:
     ! ordered as u2[ab, ij] = 2*t2[ab, ij] - t2[ab, ji]
-    call daxpy(nv*nv*no*no,2.0E0_realk,t2%elm1,1,u2,1)
-    call array_reorder_3d(-1.0E0_realk,t2%elm1,nv*nv,no,no,[1,3,2],1.0E0_realk,u2)
+    call daxpy(nvir*nvir*nocc*nocc,2.0E0_realk,t2%elm1,1,u2,1)
+    call array_reorder_3d(-1.0E0_realk,t2%elm1,nvir*nvir,nocc,nocc,[1,3,2],1.0E0_realk,u2)
 
     call LSTIMER('MO-CCSD init calc.',tcpu1,twall1,DECinfo%output)
 
@@ -6585,7 +6584,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       ccmodel_copy = ccmodel
       call ls_mpibcast(MOCCSDDATA,infpar%master,infpar%lg_comm)
       call mpi_communicate_moccsd_data(ccmodel_copy,pgmo_diag,pgmo_up,t1,t2,omega2, &
-             & govov,nb,no,nv,iter,MOinfo,MyLsItem,local)
+             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
     end if StartUpSlaves
     call time_start_phase(PHASE_WORK)
 
@@ -6659,7 +6658,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       end if
 
       ! Get intermediate for the calculation of residual
-      call wrapper_get_intermediates(ccmodel,ntot,no,nv,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
+      call wrapper_get_intermediates(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
                          & xvir,yocc,t2%elm1,u2,goooo,B2prep,omega2%elm1,G_Pi,H_aQ, &
                          & gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
@@ -6677,14 +6676,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     if (ccmodel>MODEL_CC2) then
       ! get final B2 term and add it to residual:
-      call dgemm('n','n',nv*nv,no*no,no*no,0.5E0_realk,t2%elm1,nv*nv, &
-                & B2prep,no*no,0.5E0_realk,omega2%elm1,nv*nv)
+      call dgemm('n','n',nvir*nvir,nocc*nocc,nocc*nocc,0.5E0_realk,t2%elm1,nvir*nvir, &
+                & B2prep,nocc*nocc,0.5E0_realk,omega2%elm1,nvir*nvir)
        
       ! Calculate norm of A2 + B2 residual:
       if (print_debug.and.nnod==1) call print_norm(omega2,'debug: residual B2 norm:           ')
     end if
 
-    call mpi_reduction_after_main_loop(ccmodel,ntot,nv,no,iter,G_Pi,H_aQ,goooo, &
+    call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
                 & govoo,gvooo,gvoov,gvvoo)
 
     call mem_dealloc(tmp1)
@@ -6694,7 +6693,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call LSTIMER('MO-CCSD A2 B2 + comm',tcpu1,twall1,DECinfo%output)
 
       ! Get C2 and D2 terms
-      call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo,no,nv,omega2)
+      call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo,nocc,nvir,omega2)
     end if
 
     nullify(tmp1)
@@ -6702,7 +6701,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
-    no2v2 = int(nv*nv*no*no, kind=long)
+    no2v2 = int(nvir*nvir*nocc*nocc, kind=long)
     call lsmpi_local_reduction(omega2%elm1,no2v2,infpar%master)
     call time_start_phase(PHASE_WORK)
 #endif
@@ -6742,61 +6741,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !===========================================================================
     !                          GET MO-FOCK MATRICES
-    call mem_alloc(tmp1,int(nb*nb,kind=long))
-    call mem_alloc(tmp2,int(nb*nb,kind=long))
+    call get_MO_fock_matrices(ccmodel,nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
+                  & goooo,govoo,gvooo,gvoov,gvvoo,ppfock%elm1,pqfock%elm1, & 
+                  & qpfock%elm1,qqfock%elm1,fock%elm1,deltafock%elm1,MyLsItem)
 
-    !call get_MO_fock_matrices(ccmodel,nb,no,nv,lampo,lampv,lamho,lamhv,tmp0, &
-    !              & goooo,govoo,gvooo,gvoov,gvvoo,ppfock%elm1,pqfock%elm1, & 
-    !              & qpfock%elm1,qqfock%elm1,fock%elm1,deltafock%elm1,MyLsItem)
-    ! lamp => X
-    ! lamh => Y
-
-    !ONLY USE T1 PART OF THE DENSITY MATRIX AND THE FOCK 
-    call dgemm('n','n',nb,no,nv,1.0E0_realk,lamhv,nb,t1%elm1,nv,0.0E0_realk,tmp0,nb)
-    call dgemm('n','t',nb,nb,no,1.0E0_realk,tmp0,nb,lampo,nb,0.0E0_realk,tmp1,nb)
-    call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,tmp1,.false.,tmp2)
-    call daxpy(nb*nb,1.0E0_realk,fock,1,tmp2,1)
-
-    !Free the density matrix
-    call mem_dealloc(tmp1)
-
-
-    !Transform inactive Fock matrix into the different mo subspaces
-    if (Ccmodel>MODEL_CC2) then
-       ! -> Foo
-       call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,tmp2,nb,0.0E0_realk,tmp0,no)
-       call dgemm('n','n',no,no,nb,1.0E0_realk,tmp0,no,lamho,nb,0.0E0_realk,ppfock,no)
-       ! -> Fov
-       call dgemm('n','n',no,nv,nb,1.0E0_realk,tmp0,no,lamhv,nb,0.0E0_realk,pqfock,no)
-       ! -> Fvo
-       call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,tmp2,nb,0.0E0_realk,tmp0,nv)
-       call dgemm('n','n',nv,no,nb,1.0E0_realk,tmp0,nv,lamho,nb,0.0E0_realk,qpfock,nv)
-       ! -> Fvv
-       call dgemm('n','n',nv,nv,nb,1.0E0_realk,tmp0,nv,lamhv,nb,0.0E0_realk,qqfock,nv)
-    else
-       ! -> Foo
-       call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,fock,nb,0.0E0_realk,tmp0,no)
-       call dgemm('n','n',no,no,nb,1.0E0_realk,tmp0,no,lamho,nb,0.0E0_realk,ppfock,no)
-       ! -> Fov
-       call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,tmp2,nb,0.0E0_realk,tmp0,no)
-       call dgemm('n','n',no,nv,nb,1.0E0_realk,tmp0,no,lamhv,nb,0.0E0_realk,pqfock,no)
-       ! -> Fvo
-       call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,tmp2,nb,0.0E0_realk,tmp0,nv)
-       call dgemm('n','n',nv,no,nb,1.0E0_realk,tmp0,nv,lamho,nb,0.0E0_realk,qpfock,nv)
-       ! -> Fvv
-       call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,fock,nb,0.0E0_realk,tmp0,nv)
-       call dgemm('n','n',nv,nv,nb,1.0E0_realk,tmp0,nv,lamhv,nb,0.0E0_realk,qqfock,nv)
-    endif
-    call mem_dealloc(tmp2)
-
-
-    if(print_debug)then
-       call print_norm(ppfock,int(no*no,kind=8)," NORM(ppfock)   :")
-       call print_norm(pqfock,int(no*nv,kind=8)," NORM(pqfock)   :")
-       call print_norm(qpfock,int(no*nv,kind=8)," NORM(qpfock)   :")
-       call print_norm(qqfock,int(nv*nv,kind=8)," NORM(qqfock)   :")
-    endif
-
+    if (print_debug) then
+      call print_norm(ppfock,"MO-CCSD (ppfock):                ")
+      call print_norm(pqfock,"MO-CCSD (pqfock):                ")
+      call print_norm(qpfock,"MO-CCSD (qpfock):                ")
+      call print_norm(qqfock,"MO-CCSD (qqfock):                ")
+      call LSTIMER('MO-CCSD Fock mat',tcpu1,twall1,DECinfo%output)
+    end if
 
  
     !===========================================================================
@@ -6806,32 +6761,32 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     if(.not. DECinfo%CCDhack)then
       ! Get A1 term:
       ! Omega_ai = xvir_aP * G_Pi 
-      call dgemm('n','n',nv,no,ntot,1.0E0_realk,xvir,nv,G_Pi,ntot, &
-                & 0.0E0_realk,omega1%elm1,nv)
+      call dgemm('n','n',nvir,nocc,ntot,1.0E0_realk,xvir,nvir,G_Pi,ntot, &
+                & 0.0E0_realk,omega1%elm1,nvir)
       ! Calculate norm of A1:
       if (print_debug) call print_norm(omega1,'debug: residual A1 norm:         ')
        
       ! Calculate B1 term:
       ! Omega_ai += - H_aQ * yocc_iQ 
-      call dgemm('n','t',nv,no,ntot,-1.0E0_realk,H_aQ,nv,yocc,no, &
-                & 1.0E0_realk,omega1%elm1,nv)
+      call dgemm('n','t',nvir,nocc,ntot,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
+                & 1.0E0_realk,omega1%elm1,nvir)
       ! Calculate norm of A1 + B1:
       if (print_debug) call print_norm(omega1,'debug: residual B1 norm:         ')
        
       ! Calculate C1 term:
       ! Reorder u2[ac, ik] -> u2[ai, kc]
-      call array_reorder_4d(1.0E0_realk,u2,nv,nv,no,no,[1,3,4,2], & 
+      call array_reorder_4d(1.0E0_realk,u2,nvir,nvir,nocc,nocc,[1,3,4,2], & 
                 & 0.0E0_realk,tmp0)
        
       ! Omega_ai += u2[ai, kc] * F_kc 
-      call dgemv('n',nv*no,nv*no,1.0E0_realk,tmp0,nv*no,pqfock,1, &
+      call dgemv('n',nvir*nocc,nvir*nocc,1.0E0_realk,tmp0,nvir*nocc,pqfock%elm1,1, &
                 & 1.0E0_realk,omega1%elm1,1)
       ! Calculate norm of A1 + B1 + C1:
       if (print_debug) call print_norm(omega1,'debug: residual C1 norm:         ')
        
       ! Calculate D1 term:
       ! Omega_ai += F_ai
-      call daxpy(no*nv,1.0E0_realk,qpfock,1,omega1%elm1,1)
+      call daxpy(nocc*nvir,1.0E0_realk,qpfock%elm1,1,omega1%elm1,1)
        
       ! Calculate norm of full single residual:
       if (print_debug) then
@@ -6844,7 +6799,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !                   GET DOUBLES CCSD RESIDUAL AND FINALIZE
     !
     ! Get E2 term and introduce permutational symmetry
-    call get_E2_and_permute(ccmodel,ntot,no,nv,ppfock,qqfock,tmp0,&
+    call get_E2_and_permute(ccmodel,ntot,nocc,nvir,ppfock%elm1,qqfock%elm1,tmp0,&
          & t2%elm1,G_Pi,H_aQ,omega2%elm1)
 
     ! Calculate norm of full double residual:
@@ -8239,15 +8194,15 @@ subroutine moccsd_data_slave()
   !> Long-range correction to Fock matrix
   type(tensor) :: deltafock
   !> AO fock matrix
-  real(realk), pointer :: fock(:)
+  type(tensor) :: fock
   !> occupied-occupied block of the t1-fock matrix
-  real(realk), pointer :: ppfock(:)
+  type(tensor) :: ppfock
   !> virtual-virtual block of the t1-fock matrix
-  real(realk), pointer :: qqfock(:)
+  type(tensor) :: qqfock
   !> occupied-virtual block of the t1-fock matrix
-  real(realk), pointer :: pqfock(:)
+  type(tensor) :: pqfock
   !> virtual-occupied block of the t1-fock matrix
-  real(realk), pointer :: qpfock(:)
+  type(tensor) :: qpfock
   !> transformation matrices from AO to t1-MO:
   real(realk), pointer :: lampo(:,:), lampv(:,:)
   real(realk), pointer :: lamho(:,:), lamhv(:,:)
