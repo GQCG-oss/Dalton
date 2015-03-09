@@ -301,6 +301,7 @@ C
 C
       use qmcmm, only: getdim_relmat, comp_relmat, write_relmat, 
      &                 getdim_mmmat, comp_mmrelmat
+      use qmcmm_fock, only: qmnpmm_fock
 
 #if defined (HAS_PCMSOLVER)
       use pcm_scf

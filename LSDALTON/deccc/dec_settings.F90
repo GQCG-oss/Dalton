@@ -91,7 +91,6 @@ contains
     DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%CRASHCALC            = .false.
     DECinfo%cc_driver_debug      = .false.
-    DECinfo%CCDEBUG              = .false.
     DECinfo%manual_batchsizes    = .false.
     DECinfo%ccsdAbatch           = 0
     DECinfo%ccsdGbatch           = 0
@@ -221,7 +220,14 @@ contains
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
     DECinfo%AtomicExtent             = .false.
+
+    !  RIMP2 settings defauls
     DECinfo%AuxAtomicExtent          = .false.
+    DECinfo%NAF                      = .false.
+    DECinfo%NAFthreshold             = 1e-6_realk !modified according to FOT
+    DECinfo%RIMPSubGroupSize         = 0
+    DECinfo%RIMP2PDMTENSOR           = .false.
+
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
     DECinfo%CCthrSpecified           = .false.
@@ -693,12 +699,22 @@ contains
        case('.ATOMICEXTENT')
           !Include all atomic orbitals on atoms in the fragment 
           DECinfo%AtomicExtent  = .true.
+
+
+       !KEYWORDS FOR RIMP2 (.RIMP2) 
+       !**************************
        case('.AUXATOMICEXTENT')
           !Include all atomic orbitals on all atoms in the molecule (not just fragment) 
           !maybe need to have a procedure to optimize this set of atoms
           DECinfo%AuxAtomicExtent  = .true.
-
-
+       case('.NAF')
+          DECinfo%NAF                      = .true.
+       case('.NAFTHRESHOLD')
+          read(input,*) DECinfo%NAFthreshold
+       case('.RIMP2SUBGROUPSIZE')
+          read(input,*) DECinfo%RIMPSubGroupSize
+       case('.RIMP2PDMTENSOR')
+          DECinfo%RIMP2PDMTENSOR     = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -720,7 +736,6 @@ contains
 #ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
-       case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
        case('.CCDRIVERDEBUG');            DECinfo%cc_driver_debug      = .true.
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
@@ -1321,7 +1336,6 @@ contains
     write(lupri,*) 'solver_par ', DECitem%solver_par
     write(lupri,*) 'force_scheme ', DECitem%force_scheme
     write(lupri,*) 'dyn_load ', DECitem%dyn_load
-    write(lupri,*) 'CCDEBUG ', DECitem%CCDEBUG
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC

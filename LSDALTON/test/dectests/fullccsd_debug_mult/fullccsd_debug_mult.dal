@@ -11,7 +11,7 @@ TRILEVEL
 **INFO
 .DEBUG_MPI_MEM
 **CC
-.CCDEBUG
+!.CCDEBUG
 .CCSD
 .CCSDmultipliers
 .ccThr
