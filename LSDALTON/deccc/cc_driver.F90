@@ -413,7 +413,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! Fragment and total energies as listed in decfrag type def "energies"
    real(realk), pointer :: FragEnergies(:,:,:), FragEnergies_tmp(:,:), ccenergies(:)
    real(realk) :: ccenergy
-   integer :: nenergies, cc_sol, pT_4, pT_5, pT_full
+   integer :: nenergies, cc_sol_o, pT_4_o, pT_5_o, pT_full_o
+   integer :: cc_sol_v, pT_4_v, pT_5_v, pT_full_v
    real(realk), pointer :: Co(:,:), Cv(:,:), oof(:,:),  vvf(:,:), fock(:,:)
    !> local variables 
    character(len=30) :: CorrEnergyString
@@ -457,20 +458,25 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
 #ifdef MOD_UNRELEASED
 
-   ! nenergies is set to 4: a CC solver model plus pT corrections, 
-   ! (4th order, 5th order and both):
-   nenergies = 4
+   ! nenergies is set to 8: a CC solver model plus pT corrections, 
+   ! (4th order, 5th order and both), for both virt and occ partionings
+   nenergies = 8
    call mem_alloc(ccenergies,nenergies)
    ccenergies = 0.0E0_realk
-   cc_sol  = 1
-   pT_full = 2
-   pT_4    = 3
-   pT_5    = 4
+   cc_sol_o  = 1
+   cc_sol_v  = 2
+   pT_full_o = 3
+   pT_full_v = 4
+   pT_4_o    = 5
+   pT_4_v    = 6
+   pT_5_o    = 7
+   pT_5_v    = 8
    
    if (DECinfo%print_frags) then ! should we print fragment energies?
 
-      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
-         & VOVO,.false.,local,t1_final,t2_final,m1f=m1_final, m2f=m2_final)
+      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
+         & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
+         & m1f=m1_final, m2f=m2_final)
 
       if(DECinfo%CCSDmultipliers)then
          call tensor_free(m2_final)
@@ -614,25 +620,27 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       FragEnergies_tmp = 0.0E0_realk
    
       if (DECinfo%DECNP) then
-         call decnp_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
-         & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
+         call decnp_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
+            & VOVO_local,occ_orbitals,FragEnergies(:,:,cc_sol_o:cc_sol_v),FragEnergies_tmp)
       else
-         call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
-         & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
+         call solver_energy_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
+            & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o:cc_sol_v), &
+            & FragEnergies_tmp)
       end if
 
    
       if(ccmodel == MODEL_CCSDpT)then
          ! now we calculate fourth-order and fifth-order energies
          call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
-            & FragEnergies(:,:,pT_4),FragEnergies_tmp,ccenergies(pT_4))
+            & unocc_orbitals,FragEnergies(:,:,pT_4_o:pT_4_v),FragEnergies_tmp,ccenergies(pT_4_o))
    
          call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
-            & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5),ccenergies(pT_5))
+            & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o:pT_5_v),ccenergies(pT_5_o))
    
          ! calculate total (T) contributions:
-         ccenergies(pT_full) = ccenergies(pT_4)+ccenergies(pT_5)
-         FragEnergies(:,:,pT_full) = FragEnergies(:,:,pT_4) + FragEnergies(:,:,pT_5)
+         ccenergies(pT_full_o) = ccenergies(pT_4_o)+ccenergies(pT_5_o)
+         FragEnergies(:,:,pT_full_o:pT_full_v) = FragEnergies(:,:,pT_4_o:pT_4_v) &
+            & + FragEnergies(:,:,pT_5_o:pT_5_v)
 
       endif
    
@@ -661,8 +669,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
    else ! we do not print fragment energies
 
-      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergies(cc_sol),&
-         & VOVO,.false.,local,t1_final,t2_final,m1f=m1_final, m2f=m2_final)
+      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
+         & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
+         & m1f=m1_final, m2f=m2_final)
 
       if(DECinfo%CCSDmultipliers)then
          call tensor_free(m2_final)
@@ -724,19 +733,21 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          endif
 
          if(DECinfo%frozencore) then
-            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,&
-               & ccsdpt_t1,print_frags,abc,e4=ccenergies(pT_4))
+            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc, &
+               & MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1,print_frags, &
+               & abc,e4=ccenergies(pT_4_o))
          else
-            call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,e4=ccenergies(pT_4))
+            call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock, &
+               & MyMolecule%Co,MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1, &
+               & print_frags,abc,e4=ccenergies(pT_4_o))
          end if
 
 
          if (abc) call tensor_reorder(ccsdpt_t1,[2,1])
-         call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5))
+         call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5_o))
 
          ! sum up energies
-         ccenergies(pT_full) = ccenergies(pT_4) + ccenergies(pT_5)
+         ccenergies(pT_full_o) = ccenergies(pT_4_o) + ccenergies(pT_5_o)
 
          if(DECinfo%PL>1)then
             call time_start_phase(PHASE_WORK,dwwork = time_pT_work, dwcomm = time_pT_comm, dwidle = time_pT_idle, &
@@ -756,31 +767,31 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,*)
       if(ccmodel == MODEL_RPA)then
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA ', &
-            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol_o)
       elseif(ccmodel == MODEL_SOSEX)then
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'SOSEX ', &
-            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol_o)
       else if(ccmodel == MODEL_MP2)then
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'MP2 ', &
-            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol_o)
       else if(ccmodel == MODEL_CC2)then
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CC2 ', &
-            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol_o)
       else if(ccmodel == MODEL_CCSD)then
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD ', &
-            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol_o)
       else if(ccmodel == MODEL_CCSDpT)then
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD ', &
-            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol_o)
          write(DECinfo%output,'(1X,a,g20.10)') '(T) correlation energy  : ', &
-            & ccenergies(pT_full)
+            & ccenergies(pT_full_o)
          write(DECinfo%output,'(1X,a,g20.10)') '(T) 4th order energy    : ', &
-            & ccenergies(pT_4)
+            & ccenergies(pT_4_o)
          write(DECinfo%output,'(1X,a,g20.10)') '(T) 5th order energy    : ', &
-            & ccenergies(pT_5)
+            & ccenergies(pT_5_o)
          write(DECinfo%output,*)
          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) ', &
-            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)+ccenergies(pT_full)
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol_o)+ccenergies(pT_full_o)
       end if
       write(DECinfo%output,*)
 
@@ -815,7 +826,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
 
    ! now update ccenergy with ccsd(t) correction
-   ccenergy = ccenergies(cc_sol) + ccenergies(pT_full)
+   ccenergy = ccenergies(cc_sol_o) + ccenergies(pT_full_o)
 
 
    if(ccmodel == MODEL_CCSDpT)then

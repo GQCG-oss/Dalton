@@ -2247,8 +2247,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   CALL LSTIMER('START ',TS2,TE2,LUPRI)
   call Build_CalphaMO(MyFragment%mylsitem,master,nbasis,nbasisAux,LUPRI,&
-       & FORCEPRINT,CollaborateWithSlaves,MynbasisAuxMPI,CDIAGocc%val,nocc,CDIAGvirt%val,&
-       & nvirt,mynum,numnodes,nAtomsAux,Calpha,NBA)
+       & FORCEPRINT,CollaborateWithSlaves,MynbasisAuxMPI,CDIAGocc%val,nocc,&
+       & CDIAGvirt%val,nvirt,mynum,numnodes,nAtomsAux,Calpha,NBA)
   CALL LSTIMER('DECRIMP2: CalphaMO',TS2,TE2,LUPRI,FORCEPRINT)
   IF(.NOT.first_order)call array2_free(CDIAGvirt)
   IF(.NOT.first_order)call array2_free(CDIAGocc)
@@ -2656,26 +2656,62 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      & numnodes,nAtomsAux,Calpha,NBA)
   implicit none
   type(lsitem), intent(inout) :: mylsitem
-  integer,intent(inout) :: MynbasisAuxMPI,NBA,nocc,nvirt
+  integer,intent(inout) :: MynbasisAuxMPI,NBA
+  integer,intent(in) :: nAtomsAux,nocc,nvirt
+  integer,intent(in) :: nbasisAux,LUPRI,nbasis,mynum,numnodes
   logical,intent(in) :: master,FORCEPRINT,CollaborateWithSlaves
-  integer,intent(in) :: nbasisAux,LUPRI,nbasis,mynum,numnodes,nAtomsAux
   real(realk),intent(in) :: Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
   real(realk),pointer :: Calpha(:,:,:)
   !
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
   real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:)
   real(realk),pointer :: TMPAlphaBeta_minus_sqrt(:,:),AlphaCD3(:,:,:)
-  real(realk),pointer :: AlphaCD5(:,:,:),AlphaCD6(:,:,:)
-  real(realk) :: TS3,TE3,MemInGBCollected
+  real(realk),pointer :: AlphaCD5(:,:,:),AlphaCD6(:,:,:),AlphaCDFull(:,:,:)
+  real(realk) :: TS3,TE3,MemInGBCollected,SizeCalpha
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
-  integer(kind=long)     :: maxsize,nSize
+  integer(kind=long)     :: maxsize,nSize,n8
   integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
   integer(kind=ls_mpik)  :: request5,request6
   integer :: CurrentWait(2),nAwaitDealloc,iAwaitDealloc,MynAtomsMPI,node
-  integer :: myOriginalRank,OriginalRanknbasisAuxMPI
+  integer :: myOriginalRank,OriginalRanknbasisAuxMPI,M,N,K
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,MessageRecieved
+  logical :: PerformReduction
   TAG = 1982
 
+  IF(master)THEN
+     call get_currently_available_memory(MemInGBCollected)
+     !maxsize = max number of floating point elements
+     SizeCalpha = (nbasisAux+nbasisAux/numnodes)*nocc*nvirt*8E-9_realk
+     IF(SizeCalpha.LT.MemInGBCollected*0.75E0_realk.OR.numnodes.EQ.1)THEN
+        !Calpha can fit on all nodes Which means we can do a reduction.
+        PerformReduction = .TRUE.
+        WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full (alpha|cd) integral requires ',SizeCalpha,'GB'
+        WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                  ',MemInGBCollected,'GB'
+     ELSE
+        !Calpha cannot fit so we distribute this - which means more MPI communication.
+        PerformReduction = .FALSE.
+        !Determine number of nodes to use to construct Calpha. (use same to determine the MPI split)
+     ENDIF
+#ifdef VAR_MPI
+     call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+#endif
+  ELSE
+#ifdef VAR_MPI
+     call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+#endif
+
+     IF(PerformReduction)THEN
+        !the master have enough space 
+        call get_currently_available_memory(MemInGBCollected)
+        !maxsize = max number of floating point elements
+        SizeCalpha = nbasisAux*nocc*nvirt*8E-9_realk
+        IF(SizeCalpha.GT.MemInGBCollected*0.6E0_realk)THEN
+           print*,'WARNING: Master have space for (alpha|cd) but slave do not'
+           print*,'WARNING: Full (alpha|cd) integral requires ',SizeCalpha,'GB'
+           print*,'WARNING: Memory available                  ',MemInGBCollected,'GB'
+        ENDIF
+     ENDIF
+  ENDIF
   IF(CollaborateWithSlaves)then 
      !all nodes have info about all nodes 
      call mem_alloc(nbasisAuxMPI,numnodes)           !number of Aux basis func assigned to rank
@@ -2697,7 +2733,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   ELSE
      MynbasisAuxMPI = nbasisAux
   ENDIF
-
+  NBA = MynbasisAuxMPI
   IF(master)THEN
      !=====================================================================================
      ! Major Step 1: Master Obtains (alpha|beta) ERI in Auxiliary Basis 
@@ -2731,7 +2767,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      !=====================================================================================
      ! Warning the inverse is not unique so in order to make sure all slaves have the same
      ! inverse matrix we calculate it on the master a BCAST to slaves
-     
+
      !Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
      call mem_alloc(AlphaBeta_minus_sqrt,nbasisAux,nbasisAux)
      call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBeta_minus_sqrt, lupri)
@@ -2790,195 +2826,254 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      ENDIF
   ENDIF
 
+  IF(PerformReduction)THEN
+     IF(CollaborateWithSlaves)then 
+        call mem_alloc(alphaCDFull,nbasisAux,nvirt,nocc)
+        n8 = nbasisAux*nocc*nvirt
+        call ls_dzero8(alphaCDFull,n8)
+        call PlugInToalphaCDFull(mynum,nAtomsMPI,startAuxMPI,nocc,nvirt,nAuxMPI,&
+             & alphaCDFull,alphaCD3,nbasisAux,MynbasisAuxMPI,numnodes,nAtomsAux)
+        call mem_dealloc(alphaCD3)
 #ifdef VAR_MPI
-  if(CollaborateWithSlaves) then !START BY SENDING MY OWN PACKAGE alphaCD3
-     !A given rank always recieve a package from the same node 
-     !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
-     Receiver = MOD(1+mynum,numnodes)
-     !A given rank always send to the same node 
-     !rank 2 sends to rank 1, rank 1 sends to rank 0 ...
-     Sender = MOD(mynum-1+numnodes,numnodes)
-     COUNT = MynbasisAuxMPI*nocc*nvirt !size of alphaCD3
-     IF(MynbasisAuxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
-        call time_start_phase( PHASE_COMM )
-        call MPI_ISEND(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request,ierr)        
-!        call MPI_Request_free(request,ierr)
-        call time_start_phase(PHASE_WORK)   
+        call lsmpi_allreduce(alphaCDFull,nbasisAux,nvirt,nocc,infpar%lg_comm)
+#endif
+        !Calpha = TMPAlphaBeta_minus_sqrt(MynbasisAuxMPI,nbasisAux)
+        M =  MynbasisAuxMPI   !rows of Output Matrix
+        N =  nvirt*nocc       !columns of Output Matrix
+        K =  nbasisAux        !summation dimension
+        call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
+        call dgemm('N','N',M,N,K,1.0E0_realk,TMPAlphaBeta_minus_sqrt,&
+             & M,alphaCDFull,K,0.0E0_realk,Calpha,M)
+        call mem_dealloc(alphaCDFull)
+        call mem_dealloc(TMPAlphaBeta_minus_sqrt)
+     ELSE
+        !Serial version
+        M =  MynbasisAuxMPI   !rows of Output Matrix
+        N =  nvirt*nocc       !columns of Output Matrix
+        K =  nbasisAux        !summation dimension
+        call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
+        call dgemm('N','N',M,N,K,1.0E0_realk,AlphaBeta_minus_sqrt,&
+             & M,AlphaCD3,K,0.0E0_realk,Calpha,M)
+        call mem_dealloc(AlphaCD3)
+        call mem_dealloc(AlphaBeta_minus_sqrt)
      ENDIF
-  endif
+  ELSE
+     !More Elaborate MPI communication scheme due to lack of space. 
+!     UseSubGroupCommunicator = .FALSE.    
+!     IF(UseSubGroupCommunicator)THEN
+!        IF(DECinfo%RIMPSubGroupCommunicator)THEN
+!           RIMPSubGroupSize = DECinfo%RIMPSubGroup
+!        ELSE
+!           !choose it such that alphaCD fits - no more 
+!        ENDIF
+!        !requires generalization of this subroutine
+!        call init_mpi_subgroup(numnodes,&
+!             & rimp2_mynum,rimp2_comm,rimp2_member,&
+!             & RIMPSubGroupSize,DECinfo%output)
+!        RIMPSubGroupCreated = .TRUE.
+!        Comm = rimp2_comm     
+!     ELSE
+!        Comm = infpar%lg_comm
+!     ENDIF
+!        IF(RIMPSubGroupCreated)THEN
+!           call LSMPI_COMM_FREE(rimp2_comm)
+!        ENDIF  
+!     ELSE
+
+#ifdef VAR_MPI
+     if(CollaborateWithSlaves) then !START BY SENDING MY OWN PACKAGE alphaCD3
+        !A given rank always recieve a package from the same node 
+        !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
+        Receiver = MOD(1+mynum,numnodes)
+        !A given rank always send to the same node 
+        !rank 2 sends to rank 1, rank 1 sends to rank 0 ...
+        Sender = MOD(mynum-1+numnodes,numnodes)
+        COUNT = MynbasisAuxMPI*nocc*nvirt !size of alphaCD3
+        IF(MynbasisAuxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
+           call time_start_phase( PHASE_COMM )
+           call MPI_ISEND(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request,ierr)        
+           !        call MPI_Request_free(request,ierr)
+           call time_start_phase(PHASE_WORK)   
+        ENDIF
+     endif
 #endif
 
-  !=====================================================================================
-  ! Major Step 4: Obtain C_(alpha,ai) = (alpha|beta)^(-1) (beta|ai)
-  !               consider  c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
-  !               so that you only need 1 3dim quantity      
-  !=====================================================================================
+     !=====================================================================================
+     ! Major Step 4: Obtain C_(alpha,ai) = (alpha|beta)^(-1) (beta|ai)
+     !               consider  c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
+     !               so that you only need 1 3dim quantity      
+     !=====================================================================================
 
-  if(CollaborateWithSlaves) then         
+     if(CollaborateWithSlaves) then         
 #ifdef VAR_MPI
-     IF(MynbasisAuxMPI.GT.0)THEN 
-        !consider 
-        !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
-        !so that you only need 1 3dim quantity      
-        call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
-        !Use own AlphaCD3 to obtain part of Calpha
-        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-        call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natomsAux,&
-             & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
-        CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
-     ENDIF
+        IF(MynbasisAuxMPI.GT.0)THEN 
+           !consider 
+           !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
+           !so that you only need 1 3dim quantity      
+           call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
+           !Use own AlphaCD3 to obtain part of Calpha
+           CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+           call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natomsAux,&
+                & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
+           CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
+        ENDIF
 
-     !To complete construction of  c_(nbasisAuxMPI,nvirt,nocc) we need all
-     !alphaCD(nbasisAuxMPI,nvirt,nocc) contributions from all ranks
-     !so we do:
-     ! 1. MPI recieve a alphaCD from 'Receiver' 
-     !        the first package should already have arrived 
-     !        originating from the ISEND immidiately after
-     !        II_get_RI_AlphaCD_3centerInt2
-     ! 2. Obtain part of Calpha from this contribution
-     ! 3. MPI send the recieved alphaCD to 'Sender' 
-     ! 4. Repeat untill all contributions have been added
+        !To complete construction of  c_(nbasisAuxMPI,nvirt,nocc) we need all
+        !alphaCD(nbasisAuxMPI,nvirt,nocc) contributions from all ranks
+        !so we do:
+        ! 1. MPI recieve a alphaCD from 'Receiver' 
+        !        the first package should already have arrived 
+        !        originating from the ISEND immidiately after
+        !        II_get_RI_AlphaCD_3centerInt2
+        ! 2. Obtain part of Calpha from this contribution
+        ! 3. MPI send the recieved alphaCD to 'Sender' 
+        ! 4. Repeat untill all contributions have been added
 
-     useAlphaCD5 = .TRUE. 
-     useAlphaCD6 = .FALSE.
+        useAlphaCD5 = .TRUE. 
+        useAlphaCD6 = .FALSE.
 
-     CurrentWait(1) = 0
-     CurrentWait(2) = 0
-     nAwaitDealloc = 0
+        CurrentWait(1) = 0
+        CurrentWait(2) = 0
+        nAwaitDealloc = 0
 
-     DO node=1,numnodes-1 !should recieve numnodes-1 packages 
-        !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
-        !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
-        ! ...
-        !myOriginalRank therefore determine the size of NodenbasisAuxMPI
-        myOriginalRank = MOD(mynum+node,numnodes)         
-        OriginalRanknbasisAuxMPI = nbasisAuxMPI(myOriginalRank+1) !dim1 of recieved package
+        DO node=1,numnodes-1 !should recieve numnodes-1 packages 
+           !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
+           !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
+           ! ...
+           !myOriginalRank therefore determine the size of NodenbasisAuxMPI
+           myOriginalRank = MOD(mynum+node,numnodes)         
+           OriginalRanknbasisAuxMPI = nbasisAuxMPI(myOriginalRank+1) !dim1 of recieved package
 
-        IF(OriginalRanknbasisAuxMPI.GT.0)THEN
-           !Step 1 : MPI recieve a alphaCD from 'Receiver' 
-           IF(nAwaitDealloc.EQ.2)THEN
-              !all buffers are allocated and await to be deallocated once the memory
-              !have been recieved by the reciever.
-              IF(CurrentWait(1).EQ.5)THEN
+           IF(OriginalRanknbasisAuxMPI.GT.0)THEN
+              !Step 1 : MPI recieve a alphaCD from 'Receiver' 
+              IF(nAwaitDealloc.EQ.2)THEN
+                 !all buffers are allocated and await to be deallocated once the memory
+                 !have been recieved by the reciever.
+                 IF(CurrentWait(1).EQ.5)THEN
+                    call time_start_phase( PHASE_IDLE )
+                    call MPI_WAIT(request5,lsmpi_status,ierr)
+                    call time_start_phase(PHASE_WORK)   
+                    !                 call MPI_Request_free(request5,ierr)
+                    call mem_dealloc(AlphaCD5)
+                 ELSEIF(CurrentWait(1).EQ.6)THEN
+                    call time_start_phase( PHASE_IDLE )
+                    call MPI_WAIT(request6,lsmpi_status,ierr)
+                    call time_start_phase(PHASE_WORK)   
+                    !                 call MPI_Request_free(request6,ierr)
+                    call mem_dealloc(AlphaCD6)
+                 ENDIF
+                 nAwaitDealloc = 1
+                 CurrentWait(1) = CurrentWait(2)
+                 CurrentWait(2) = 0 
+              ENDIF
+              IF(useAlphaCD5)THEN
+                 call mem_alloc(AlphaCD5,OriginalRanknbasisAuxMPI,nvirt,nocc)
+              ELSEIF(useAlphaCD6)THEN
+                 call mem_alloc(AlphaCD6,OriginalRanknbasisAuxMPI,nvirt,nocc)
+              ENDIF
+              COUNT = OriginalRanknbasisAuxMPI*nocc*nvirt
+
+              MessageRecieved = .FALSE.
+              IF(useAlphaCD5)THEN
+                 call time_start_phase( PHASE_COMM )
+                 call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
+                 call time_start_phase(PHASE_WORK)   
+              ELSEIF(useAlphaCD6)THEN
+                 call time_start_phase( PHASE_COMM )
+                 call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
+                 call time_start_phase(PHASE_WORK)   
+              ENDIF
+              !           call MPI_Request_free(request,ierr) 
+              IF(MynbasisAuxMPI.GT.0)THEN
+                 !Step 2: Obtain part of Calpha from this contribution
+                 CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+                 IF(useAlphaCD5)THEN
+                    call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
+                         & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
+                         & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
+                 ELSEIF(useAlphaCD6)THEN
+                    call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
+                         & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD6,&
+                         & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
+                 ENDIF
+                 CALL LSTIMER('CalphaOther ',TS3,TE3,LUPRI,FORCEPRINT)
+              ENDIF
+              !Step 3: MPI send the recieved alphaCD to 'Sender' 
+              IF(node.NE.numnodes-1)THEN
+                 IF(useAlphaCD5)THEN
+                    call time_start_phase( PHASE_COMM )
+                    call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request5,ierr)
+                    call time_start_phase(PHASE_WORK)   
+                    useAlphaCD5 = .FALSE.; useAlphaCD6=.TRUE.
+                    nAwaitDealloc = nAwaitDealloc + 1
+                    CurrentWait(nAwaitDealloc) = 5
+                 ELSEIF(useAlphaCD6)THEN
+                    call time_start_phase( PHASE_COMM )
+                    call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request6,ierr)
+                    call time_start_phase(PHASE_WORK)   
+                    useAlphaCD6 = .FALSE.; useAlphaCD5=.TRUE.
+                    nAwaitDealloc = nAwaitDealloc + 1
+                    CurrentWait(nAwaitDealloc) = 6
+                 ENDIF
+              ELSE
+                 IF(useAlphaCD5)THEN
+                    call mem_dealloc(AlphaCD5)
+                 ELSEIF(useAlphaCD6)THEN
+                    call mem_dealloc(AlphaCD6)
+                 ENDIF
+              ENDIF
+           ENDIF
+        ENDDO
+        IF(MynbasisAuxMPI.GT.0)THEN
+           call mem_dealloc(TMPAlphaBeta_minus_sqrt)
+        ENDIF
+        NBA = MynbasisAuxMPI
+
+#endif
+     else
+        !serial version 
+        M =  nbasisAux       !rows of Output Matrix
+        N =  nvirt*nocc       !columns of Output Matrix
+        K =  nbasisAux        !summation dimension
+        call mem_alloc(Calpha,nBasisaux,nvirt,nocc)
+        call dgemm('N','N',M,N,K,1.0E0_realk,AlphaBeta_minus_sqrt,&
+             & M,AlphaCD3,K,0.0E0_realk,Calpha,M)
+        call mem_dealloc(AlphaBeta_minus_sqrt)
+        call mem_dealloc(alphaCD3)
+        NBA = nbasisAux
+     endif
+
+     if(CollaborateWithSlaves) then 
+#ifdef VAR_MPI
+        IF(MynbasisAuxMPI.GT.0)THEN 
+           !only send package if I have been assigned some basis functions
+           call time_start_phase( PHASE_IDLE )
+           !Verify that it has been recieved before deallocating
+           call MPI_WAIT(request,lsmpi_status,ierr)
+           call time_start_phase(PHASE_WORK)   
+           call mem_dealloc(alphaCD3)
+        ENDIF
+
+        IF(nAwaitDealloc.NE.0)THEN
+           do iAwaitDealloc=1,nAwaitDealloc
+              IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
                  call time_start_phase( PHASE_IDLE )
                  call MPI_WAIT(request5,lsmpi_status,ierr)
-                 call time_start_phase(PHASE_WORK)   
-!                 call MPI_Request_free(request5,ierr)
+                 call time_start_phase( PHASE_COMM )
+                 !                 call MPI_Request_free(request5,ierr)
                  call mem_dealloc(AlphaCD5)
-              ELSEIF(CurrentWait(1).EQ.6)THEN
+              ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
                  call time_start_phase( PHASE_IDLE )
                  call MPI_WAIT(request6,lsmpi_status,ierr)
-                 call time_start_phase(PHASE_WORK)   
-!                 call MPI_Request_free(request6,ierr)
+                 call time_start_phase( PHASE_COMM )
+                 !                 call MPI_Request_free(request6,ierr)
                  call mem_dealloc(AlphaCD6)
               ENDIF
-              nAwaitDealloc = 1
-              CurrentWait(1) = CurrentWait(2)
-              CurrentWait(2) = 0 
-           ENDIF
-           IF(useAlphaCD5)THEN
-              call mem_alloc(AlphaCD5,OriginalRanknbasisAuxMPI,nvirt,nocc)
-           ELSEIF(useAlphaCD6)THEN
-              call mem_alloc(AlphaCD6,OriginalRanknbasisAuxMPI,nvirt,nocc)
-           ENDIF
-           COUNT = OriginalRanknbasisAuxMPI*nocc*nvirt
-
-           MessageRecieved = .FALSE.
-           IF(useAlphaCD5)THEN
-              call time_start_phase( PHASE_COMM )
-              call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
-              call time_start_phase(PHASE_WORK)   
-           ELSEIF(useAlphaCD6)THEN
-              call time_start_phase( PHASE_COMM )
-              call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
-              call time_start_phase(PHASE_WORK)   
-           ENDIF
-!           call MPI_Request_free(request,ierr) 
-           IF(MynbasisAuxMPI.GT.0)THEN
-              !Step 2: Obtain part of Calpha from this contribution
-              CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-              IF(useAlphaCD5)THEN
-                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
-                      & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
-                      & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
-              ELSEIF(useAlphaCD6)THEN
-                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
-                      & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD6,&
-                      & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
-              ENDIF
-              CALL LSTIMER('CalphaOther ',TS3,TE3,LUPRI,FORCEPRINT)
-           ENDIF
-           !Step 3: MPI send the recieved alphaCD to 'Sender' 
-           IF(node.NE.numnodes-1)THEN
-              IF(useAlphaCD5)THEN
-                 call time_start_phase( PHASE_COMM )
-                 call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request5,ierr)
-                 call time_start_phase(PHASE_WORK)   
-                 useAlphaCD5 = .FALSE.; useAlphaCD6=.TRUE.
-                 nAwaitDealloc = nAwaitDealloc + 1
-                 CurrentWait(nAwaitDealloc) = 5
-              ELSEIF(useAlphaCD6)THEN
-                 call time_start_phase( PHASE_COMM )
-                 call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request6,ierr)
-                 call time_start_phase(PHASE_WORK)   
-                 useAlphaCD6 = .FALSE.; useAlphaCD5=.TRUE.
-                 nAwaitDealloc = nAwaitDealloc + 1
-                 CurrentWait(nAwaitDealloc) = 6
-              ENDIF
-           ELSE
-              IF(useAlphaCD5)THEN
-                 call mem_dealloc(AlphaCD5)
-              ELSEIF(useAlphaCD6)THEN
-                 call mem_dealloc(AlphaCD6)
-              ENDIF
-           ENDIF
+           enddo
         ENDIF
-     ENDDO
-     IF(MynbasisAuxMPI.GT.0)THEN
-        call mem_dealloc(TMPAlphaBeta_minus_sqrt)
-     ENDIF
-     NBA = MynbasisAuxMPI
-
 #endif
-  else
-     call mem_alloc(Calpha,nBasisaux,nvirt,nocc)
-     call RIMP2_buildCalpha(nocc,nvirt,nBasisaux,AlphaBeta_minus_sqrt,AlphaCD3,Calpha)
-     call mem_dealloc(AlphaBeta_minus_sqrt)
-     NBA = nbasisAux
-  endif
-
-  if(CollaborateWithSlaves) then 
-#ifdef VAR_MPI
-     IF(MynbasisAuxMPI.GT.0)THEN 
-        !only send package if I have been assigned some basis functions
-        call time_start_phase( PHASE_IDLE )
-        !Verify that it has been recieved before deallocating
-        call MPI_WAIT(request,lsmpi_status,ierr)
-        call time_start_phase(PHASE_WORK)   
-        call mem_dealloc(alphaCD3)
-     ENDIF
-
-     IF(nAwaitDealloc.NE.0)THEN
-        do iAwaitDealloc=1,nAwaitDealloc
-           IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
-              call time_start_phase( PHASE_IDLE )
-              call MPI_WAIT(request5,lsmpi_status,ierr)
-              call time_start_phase( PHASE_COMM )
-              !                 call MPI_Request_free(request5,ierr)
-              call mem_dealloc(AlphaCD5)
-           ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
-              call time_start_phase( PHASE_IDLE )
-              call MPI_WAIT(request6,lsmpi_status,ierr)
-              call time_start_phase( PHASE_COMM )
-              !                 call MPI_Request_free(request6,ierr)
-              call mem_dealloc(AlphaCD6)
-           ENDIF
-        enddo
-     ENDIF
-#endif
-  else
-     call mem_dealloc(alphaCD3)
-  endif
+     endif
+  ENDIF
   IF(CollaborateWithSlaves)then 
      call mem_dealloc(nbasisAuxMPI)
      call mem_dealloc(startAuxMPI)
@@ -2986,6 +3081,36 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      call mem_dealloc(nAuxMPI)
   ENDIF
 end subroutine Build_CalphaMO
+
+subroutine PlugInToalphaCDFull(mynum,nAtomsMPI,startAuxMPI,nocc,&
+     & nvirt,nAuxMPI,alphaCDFull,alphaCD3,nbasisAux,MynbasisAuxMPI,&
+     & numnodes,nAtomsAux)
+  implicit none
+  integer,intent(in) :: mynum,numnodes,nocc,nvirt,nAtomsAux,MynbasisAuxMPI
+  integer,intent(in) :: nAtomsMPI(numnodes),startAuxMPI(nAtomsAux,numnodes)
+  integer,intent(in) :: nAuxMPI(nAtomsAux,numnodes),nbasisAux
+  real(realk),intent(in) :: alphaCD3(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(inout) :: alphaCDFull(nbasisAux,nvirt*nocc)
+  !
+  integer :: iatomB,startB,IA,BETA,startB2,nAuxLoc
+  !$OMP PARALLEL DEFAULT(none) PRIVATE(iatomB,startB,IA,&
+  !$OMP BETA,startB2,nAuxLoc) SHARED(mynum,nAtomsMPI,startAuxMPI,&
+  !$OMP nocc,nvirt,nAuxMPI,alphaCDFull,alphaCD3)
+  startB2 = 0
+  DO iAtomB=1,nAtomsMPI(mynum+1)
+     StartB = startAuxMPI(iAtomB,mynum+1)
+     nAuxLoc = nAuxMPI(iAtomB,mynum+1)
+     !$OMP DO
+     do IA = 1,nocc*nvirt
+        do BETA = 1,nAuxLoc
+           alphaCDFull(startB + BETA,IA) = alphaCD3(startB2 + BETA,IA)
+        enddo
+     enddo
+     !$OMP END DO
+     startB2 = startB2 + nAuxMPI(iAtomB,mynum+1)
+  ENDDO
+  !$OMP END PARALLEL
+end subroutine PlugInToalphaCDFull
 
 !alphaCD(NBA,nvirt,nocc) is in the diagonal basis 
 subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
@@ -3249,30 +3374,6 @@ subroutine RIMP2_calc_gen4DimFO(NBA,Calpha3,n1,n2,Calpha4,n3,n4,djik)
   enddo
   !$OMP END PARALLEL DO
 end subroutine RIMP2_calc_gen4DimFO
-
-subroutine RIMP2_buildCalpha(nocc,nvirt,nBasisaux,AlphaBeta_inv,AlphaCD3,Calpha)
-  implicit none
-  integer,intent(in) :: nocc,nvirt,nBasisaux
-  real(realk),intent(in) :: AlphaBeta_inv(nBasisaux,nBasisaux),AlphaCD3(nBasisaux,nvirt*nocc)
-  real(realk),intent(inout) :: Calpha(nBasisaux,nvirt*nocc)       
-  !
-  integer :: IB,ALPHA,BETA
-  real(realk) :: TMP       
-  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(IB,ALPHA,BETA,TMP) &
-  !$OMP SHARED(nocc,nvirt,nBasisaux,AlphaBeta_inv,AlphaCD3,Calpha)
-  do IB = 1,nocc*nvirt
-     do ALPHA = 1,nBasisaux
-        Calpha(ALPHA,IB) = 0.0E0_realk
-     enddo
-     do BETA = 1,nBasisaux
-        TMP = AlphaCD3(BETA,IB)
-        do ALPHA = 1,nBasisaux
-           Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + AlphaBeta_inv(ALPHA,BETA)*TMP
-        enddo
-     enddo
-  enddo
-  !$OMP END PARALLEL DO
-end subroutine RIMP2_buildCalpha
 
 subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
      & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&

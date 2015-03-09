@@ -8,7 +8,7 @@ TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranDebugMPI
 SCRATCH_DIR=/tmp/tkjaer/DaltonGfortranDebugMPI
 rm -rf $TMP_DIR 
 rm -rf $SCRATCH_DIR
-git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
 #git checkout Dalton2013_release
