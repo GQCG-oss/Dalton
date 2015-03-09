@@ -2700,11 +2700,15 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
         !Determine number of nodes to use to construct Calpha. (use same to determine the MPI split)
      ENDIF
      call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
      call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+#endif
      call time_start_phase( PHASE_WORK )
   ELSE
      call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
      call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+#endif
      call time_start_phase( PHASE_WORK )
      IF(PerformReduction)THEN
         !the master have enough space 

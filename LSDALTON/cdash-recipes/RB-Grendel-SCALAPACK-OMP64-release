@@ -9,7 +9,7 @@ export PATH=/com/intel/Compiler/11.1/064/bin/intel64:/usr/local/torque/bin:/home
 source /com/OpenMPI/1.4.4/intel-ilp64/bin/openmpi.sh
 source /com/intel/Compiler/11.1/064/mkl/tools/environment/mklvarsem64t.sh
 
-git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
 git checkout Dalton2015

@@ -24,7 +24,6 @@ module full
   use dec_fragment_utils
   use CABS_operations
 #ifdef MOD_UNRELEASED
-  use cc_debug_routines_module
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
 #endif
@@ -3534,13 +3533,14 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvi
   !nvirt = 3508
   !nocc = 264
   !1. canonical_mp2B_memreq_test already done
-  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 144 nodes (3 GB on each)  
+  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 40 nodes (10.7 GB on each)  
 
   !2.Choose  nOccBatchDimImax as big as possible (nb*dimAlphaMPI*dimGammaMPI*nOccBatchDimImax) need to fit in mem!
   !          Same as (nb*nb*nb*nOccBatchDimImax/numnodes) 
-  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*GB))) 
-  !nOccBatchDimImax = 10 for this example 
-  !This means recalculation of integrals 26 times for this example 
+  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*8*GB))) 
+
+  !nOccBatchDimImax = 1 for this example 
+  !This means recalculation of integrals 264 times for this example 
   
   !We divide the numnodes into an array of nodes (inode,jnode)
   !for numnodes=4 
@@ -4725,7 +4725,7 @@ end subroutine CalcAmat2
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%nocc
-       call ccsolver_par(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
+       call ccsolver(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,energy,&
             & VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
@@ -4733,7 +4733,7 @@ end subroutine CalcAmat2
 
     else
 
-       call ccsolver_par(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
+       call ccsolver(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
             & energy,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
 

@@ -2653,16 +2653,16 @@ module lspdm_tensor_operations_module
 
     !give meaningful quit statement for useless input
     if(present(fromnode).and.arr%access_type==AT_MASTER_ACCESS)then
-      call lsquit("ERROR(tensor_sync_replicated): This combintion of input&
-      &elements does not give sense",DECinfo%output)
-      ! why would you want to collect the data on a node you cannot direcly
-      ! access, or if you can access the data in the calling subroutine on the
-      ! specified node, why is the init_tyep AT_MASTER_ACCESS?
+       call lsquit("ERROR(tensor_sync_replicated): This combintion of input&
+          &elements does not give sense",DECinfo%output)
+       ! why would you want to collect the data on a node you cannot direcly
+       ! access, or if you can access the data in the calling subroutine on the
+       ! specified node, why is the init_tyep AT_MASTER_ACCESS?
     endif
 
     ! get slaves
     if(infpar%lg_mynum==infpar%master.and.arr%access_type==AT_MASTER_ACCESS)then
-      call pdm_tensor_sync(infpar%lg_comm,JOB_SYNC_REPLICATED,arr)
+       call pdm_tensor_sync(infpar%lg_comm,JOB_SYNC_REPLICATED,arr)
     endif
 
 
