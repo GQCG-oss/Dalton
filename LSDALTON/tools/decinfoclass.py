@@ -18,6 +18,18 @@ class fragment_class:
       self.ecorrlag  = []
       self.ecorrtype = []
 
+   def print_frag_info(self,frag_out):
+      for t, e in zip(self.ecorrtype, self.ecorrocc):
+         frag_out.write("{:6s}   {:4d}   {:4d}   {:8.4f}     Eocc = {:10.6e}\n".format(
+            t, self.fragid, self.fragpid, self.dist, e))
+      for t, e in zip(self.ecorrtype, self.ecorrvirt):
+         frag_out.write("{:6s}   {:4d}   {:4d}   {:8.4f}     Evir = {:10.6e}\n".format(
+            t, self.fragid, self.fragpid, self.dist, e))
+      for t, e in zip(self.ecorrtype, self.ecorrlag):
+         frag_out.write("{:6s}   {:4d}   {:4d}   {:8.4f}     Elag = {:10.6e}\n".format(
+            t, self.fragid, self.fragpid, self.dist, e))
+
+
 class decinfo_class:
    """A class used for storing all DEC related info"""
    #JUST INIT THE EMPTY CLASS AND FILL IT VIA OUTPUT
@@ -295,8 +307,9 @@ class decinfo_class:
             self.esti[j].fragpid   = int(filelines[i+skip+j].split()[elfragpid])
             self.esti[j].dist      = float(filelines[i+skip+j].split()[2])
             self.esti[j].ecorrocc[0]  = float(filelines[i+skip+j].split()[elenpair])
+            self.esti[j].ecorrtype.append(self.ecorrtype[0])
 
-        # Get job size:
+        # Get job size (stored in dist, I know its ugly):
         if("DEC FRAGMENT JOB LIST" in filelines[i]):
            o = 5 # offset
            eljobsize = 1
@@ -362,4 +375,32 @@ class decinfo_class:
       #OUTSIDE SECOND LOOP    
         
      
+   #PRINT DEC INFO TO FILE
+   def print_dec_info(self,dec_out):
+      for t, e in zip(self.ecorrtype, self.ecorrocc):
+         dec_out.write("{:6s} occupied correlation energy   = {:10.6e} \n".format(t,e))
+      for t, e in zip(self.ecorrtype, self.ecorrvirt):
+         dec_out.write("{:6s} virtual correlation energy    = {:10.6e} \n".format(t,e))
+      for t, e in zip(self.ecorrtype, self.ecorrocc):
+         dec_out.write("{:6s} lagrangian correlation energy = {:10.6e} \n".format(t,e))
+
+      dec_out.write("\nFOT = {:6.2e} \n".format(self.fotfloat))
+
+      dec_out.write("\nPair estimates: \n")
+      dec_out.write("Model     Atom1  Atom2    dist        DEC energy\n")
+      for e in self.esti:
+         e.print_frag_info(dec_out)
+
+      dec_out.write("\nSingle fragment: \n")
+      dec_out.write("Model     Atom1  Atom2    dist        DEC energy\n")
+      for s in self.sfrags:
+         s.print_frag_info(dec_out)
+
+      dec_out.write("\nPair fragment: \n")
+      dec_out.write("Model     Atom1  Atom2    dist        DEC energy\n")
+      for p in self.pfrags:
+         p.print_frag_info(dec_out)
+
+      
+
 

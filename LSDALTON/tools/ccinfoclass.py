@@ -23,7 +23,7 @@ class ccinfo_class:
    ####################################
 
 
-   #READ DEC SPECIFIC INFO
+   #READ CC SPECIFIC INFO
    def get_cc_info(self,filelines,cctype):
       
       self.ecorrtype = cctype
@@ -37,10 +37,23 @@ class ccinfo_class:
             self.converged = True
          
          if "Singles amplitudes norm" in line:
-            self.t1norm = line.split()[-1]
+            self.t1norm = float(line.split()[-1])
 
          if "Doubles amplitudes norm" in line:
-            self.t2norm = line.split()[-1]
+            self.t2norm = float(line.split()[-1])
 
          if "Total amplitudes norm" in line:
-            self.ttotnorm = line.split()[-1]
+            self.ttotnorm = float(line.split()[-1])
+
+
+   #PRINT CC INFO TO FILE
+   def print_cc_info(self,cc_out):
+      cc_out.write(self.ecorrtye)
+      cc_out.write("Correlation energy     = {:10.6e} \n".format(self.ecorr))
+      cc_out.write("Total energy           = {:10.6e} \n".format(self.etot))
+      cc_out.write("CC equation converged  = "+str(self.converged)+"\n")
+      cc_out.write("Double amplitudes norm = {:10.6e} \n".format(self.t2norm))
+      cc_out.write("Single amplitudes norm = {:10.6e} \n".format(self.t1norm))
+      cc_out.write("Total amplitudes norm  = {:10.6e} \n".format(self.ttotnorm))
+      
+
