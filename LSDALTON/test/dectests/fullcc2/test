@@ -49,5 +49,11 @@ name = ('_').join([DAL,MOL])
 # Test LSDalton Output parser script
 # ==================================
 fullcc2 = lsoutput(name+'.out')
+
+ccinfo = open(name+'.cc','w')
+fullcc2.ccinfo.print_cc_info(ccinfo)
+ccinfo.close()
+
 sys.exit(test.return_code)
+
 

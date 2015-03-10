@@ -44,6 +44,15 @@ name = "_".join([DAL,MOL])
 # Test LSDalton Output parser script
 # ==================================
 fullccsdpt = lsoutput(name+'.out')
+
+ccinfo = open(name+'.cc','w') 
+fullccsdpt.ccinfo.print_cc_info(ccinfo)
+ccinfo.close()
+
+decinfo = open(name+'.dec','w') 
+fullccsdpt.decinfo.print_dec_info(decinfo)
+decinfo.close()
+
 sys.exit(test.return_code)
 
 

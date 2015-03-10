@@ -38,11 +38,9 @@ name = "_".join([DAL,MOL])
 # ==================================
 decmp2 = lsoutput(name+'.out')
 
-fig_pair = open_fig_container()
-plot_pair = plot_pair_energies(decmp2.decinfo,fig_pair,"oMP2",color='b')
-plot_pair = plot_pair_energies(decmp2.decinfo,fig_pair,"vMP2",color='g')
-
-save_plots(name+'.png')
+decinfo = open(name+'.dec','w')
+decmp2.decinfo.print_dec_info(decinfo)
+decinfo.close()
 
 sys.exit(test.return_code)
 
