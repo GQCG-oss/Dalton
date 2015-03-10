@@ -4,11 +4,13 @@
 
 module tensor_interface_module
 
-!`DIL backend (requires Fortran-2008, MPI-3):
-#ifdef FORTRAN_2008
+!`DIL backend (requires Fortran-2003/2008, MPI-3):
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
 !#define DIL_DEBUG_ON
+#endif
 #endif
 #endif
 

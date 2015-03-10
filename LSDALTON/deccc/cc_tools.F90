@@ -2,11 +2,13 @@
 module cc_tools_module
    use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
 
-!`DIL backend (depends on Fortran-2008, MPI-3):
-#ifdef FORTRAN_2008
+!`DIL backend (depends on Fortran-2003/2008, MPI-3):
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
 !#define DIL_DEBUG_ON
+#endif
 #endif
 #endif
 

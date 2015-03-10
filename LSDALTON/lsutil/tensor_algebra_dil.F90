@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/03/05 (started 2014/09/01).
+!REVISION: 2015/03/09 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -49,7 +49,7 @@
 !   may have different segment lengths. The tensor tiles are enumerated in Fortran style
 !   (1st dimenstion, 2nd dimension, and so on), flat (global) tile numeration starts from 1.
 !NOTES:
-! * The code assumes Fortran-2008, MPI-3 (defined FORTRAN_2008 and VAR_MPI)!
+! * The code assumes Fortran-2003/2008 & MPI-3 (defined COMPILER_UNDERSTANDS_FORTRAN_2003, VAR_PTR_RESHAPE, VAR_MPI)!
 ! * The number of OMP threads spawned on CPU or MIC must not exceed the MAX_THREADS parameter!
 ! * In order to activate the debugging mode, set macro DIL_DEBUG_ON.
 !PREPROCESSOR:
@@ -57,13 +57,15 @@
 ! * USE_OMP_MOD: "use omp_lib" module;
 ! * USE_BASIC_ALLOC: disable MPI_ALLOC_MEM() calls and stick to malloc();
 ! * DIL_DEBUG_ON: enable debugging information;
-! * USE_MIC: enable Intel MIC accelerators (not implemented).
+! * USE_MIC: enable Intel MIC accelerators (not yet implemented).
        module tensor_algebra_dil
         use lspdm_tensor_operations_module
-#ifdef FORTRAN_2008
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
 !#define DIL_DEBUG_ON
+#endif
 #endif
 #endif
 
@@ -4723,6 +4725,6 @@
         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
         return
         end subroutine dil_test
-!DIL_ACTIVE (assumes Fortran-2008, MPI-3):
+!DIL_ACTIVE (assumes Fortran-2003/2008, MPI-3):
 #endif
        end module tensor_algebra_dil

@@ -791,11 +791,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   subroutine get_ccsd_residual_integral_driven(ccmodel,deltafock,omega2,t1,t2,fock,govov,no,nv,&
         ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
-!`DIL backend (depends on Fortran-2008, MPI-3):
-#ifdef FORTRAN_2008
+!`DIL backend (depends on Fortran-2003/2008, MPI-3):
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
 !#define DIL_DEBUG_ON
+#endif
 #endif
 #endif
 !`DIL: temporary:
