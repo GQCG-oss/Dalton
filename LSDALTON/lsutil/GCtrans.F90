@@ -15,7 +15,7 @@ public :: init_AO2GCAO_GCAO2AO, free_AO2GCAO_GCAO2AO, &
      & GCAO2AO_transform_matrixD2, AO2GCAO_transform_matrixD, &
      & AO2GCAO_transform_fullF, GCAO2AO_transform_fullD, &
 !     & GCAO2AO_transform_fullF, AO2GCAO_transform_fullD, &
-     & write_GCtransformationmatrix
+     & write_GCtransformationmatrix, GCAO2AO_half_transform_matrixfull
 type(matrix),save :: GCAOtrans
 type(matrix),save :: GCAOtrans_inv
 logical :: GCbuild
@@ -111,6 +111,50 @@ call MAT_free(wrk)
 call MAT_free(CC)
 
 end subroutine AO2GCAO_half_transform_matrix
+
+!> \brief Half-transform AO matrix to GCAO matrix
+!> \author S. Reine
+!> \date Dec 6th 2012
+!> \param MAT Matrix to be transformed
+!> \param setting the setting structure
+!> \param lupri the logical unit number for output
+!> \param side index indicating if first or second AO should be transformed (1 or 2)
+subroutine GCAO2AO_half_transform_matrixFull(fullMat,n1,n2,setting,lupri,side)
+implicit none
+integer,intent(in) :: lupri,n1,n2
+real(realk)       :: fullMat(n1,n2)
+TYPE(LSSETTING)    :: setting
+Integer            :: side
+!
+integer :: nrow,ncol,ngcao
+real(realk),pointer :: wrk(:,:),CCfull(:,:)
+nrow = n1
+ncol = n2
+IF (side.EQ.1) THEN
+  ngcao = nrow
+ELSEIF (side.EQ.2) THEN
+  ngcao = ncol
+ELSE
+  CALL lsquit('Error in GCAO2AO_half_transform_matrixfull. Incorrect side.',lupri)
+ENDIF
+
+call mem_alloc(CCfull,ngcao,ngcao)
+call read_GCtransformationmatrixfull(CCfull,ngcao,setting,lupri)
+call mem_alloc(wrk,nrow,ncol)
+IF (side.EQ.1) THEN
+   !FAO(nao,ncol) = CCfull(ngcao,ngcao)*Ffull(ngcao,ncol)  nao = ngcao
+   call DGEMM('n','n',ngcao,ncol,ngcao,1E0_realk,&
+        &CCfull,ngcao,fullMAT,ngcao,0E0_realk,WRK,ngcao)
+ELSE
+   !FAO(nrow,nao) = Ffull(nrow,ngcao)*CCfull(ngcao,ngcao)
+   call DGEMM('n','t',nrow,ngcao,ngcao,1E0_realk,&
+        &fullMat,nrow,CCfull,ngcao,0E0_realk,WRK,nrow)
+ENDIF
+call mem_dealloc(CCfull)
+CALL DCOPY(n1*n2,wrk,1,fullMat,1)
+call mem_dealloc(wrk)
+
+end subroutine GCAO2AO_half_transform_matrixFull
 
 !> \brief Half-transform GCAO matrix to AO matrix
 !> \author S. Reine
@@ -572,7 +616,10 @@ IF(matrix_exsist)then
    call lsopen(GCAOtrans_lun,'GCAOtrans','OLD','UNFORMATTED')
    rewind GCAOtrans_lun
    READ(GCAOtrans_lun) nbast2
-   IF(nbast2.NE.nbast)call lsquit('dim mismatch read_GCtransformationmatrix',-1)
+   IF(nbast2.NE.nbast) THEN
+     write(lupri,'(A,2I5)') 'Error in read_GCtransformationmatrix - dim mismatch:',nbast,nbast2
+     call lsquit('dim mismatch read_GCtransformationmatrix',-1)
+   ENDIF
    READ(GCAOtrans_lun) CCfull
    call lsclose(GCAOtrans_lun,'KEEP')
 ELSE

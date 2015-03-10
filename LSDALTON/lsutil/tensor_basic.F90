@@ -1,10 +1,9 @@
 !> @file
 !> Memory manager for four dimensional arrays
 module tensor_basic_module
+  use,intrinsic :: iso_c_binding, only:c_loc,c_f_pointer
 
   use precision
-  use ptr_assoc_module!, only: ass_D1to2,ass_D1to3, &
-!         &ass_D1to4, ass_D1to5, ass_D1to6, ass_D1to7
   use LSTIMING!,only:lstimer
   use memory_handling!, only: mem_alloc,mem_dealloc
 !#ifdef VAR_MPI
@@ -331,17 +330,41 @@ module tensor_basic_module
        type(tensor)::arr
        select case(arr%mode)
        case(2)
-          call ass_D1to2(arr%elm1,arr%elm2,arr%dims)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm2(1:arr%dims(1),1:arr%dims(2)) => arr%elm1
+#else
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm2,arr%dims)
+#endif
        case(3)
-          call ass_D1to3(arr%elm1,arr%elm3,arr%dims)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm3(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3)) => arr%elm1
+#else
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm3,arr%dims)
+#endif
        case(4)
-          call ass_D1to4(arr%elm1,arr%elm4,arr%dims)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm4(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3),1:arr%dims(4)) => arr%elm1
+#else
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm4,arr%dims)
+#endif
        case(5)
-          call ass_D1to5(arr%elm1,arr%elm5,arr%dims)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm5(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3),1:arr%dims(4),1:arr%dims(5)) => arr%elm1
+#else
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm5,arr%dims)
+#endif
        case(6)
-          call ass_D1to6(arr%elm1,arr%elm6,arr%dims)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm6(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3),1:arr%dims(4),1:arr%dims(5),1:arr%dims(6)) => arr%elm1
+#else
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm6,arr%dims)
+#endif
        case(7)
-          call ass_D1to7(arr%elm1,arr%elm7,arr%dims)
+#ifdef VAR_PTR_RESHAPE
+          arr%elm7(1:arr%dims(1),1:arr%dims(2),1:arr%dims(3),1:arr%dims(4),1:arr%dims(5),1:arr%dims(6),1:arr%dims(7)) => arr%elm1
+#else
+          call c_f_pointer(c_loc(arr%elm1(1)),arr%elm7,arr%dims)
+#endif
        case default
           return
        end select

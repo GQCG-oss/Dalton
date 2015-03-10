@@ -33,7 +33,7 @@ call mat_add(1E0_realk,S1,-1E0_realk,S2,tmp)
 IF(ABS(mat_trab(tmp,tmp)).GT.1.0E-10_realk)THEN
    call lsquit('Error in build_AO with uncont param',-1)
 ELSE
-   WRITE(lupri,'(A)') 'II_test_uncontAObatch succesfull'
+   WRITE(lupri,'(A)') 'II_test_uncontAObatch successful'
 ENDIF
 call mat_free(S1)
 call mat_free(S2)

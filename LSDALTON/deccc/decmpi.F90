@@ -669,6 +669,9 @@ contains
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags)
+       if(DECinfo%use_abs_overlap)then
+          call mem_alloc(MyMolecule%ov_abs_overlap,MyMolecule%nocc,MyMolecule%nunocc)
+       endif
     end if
 
 
@@ -719,6 +722,9 @@ contains
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags,&
          & master,MPI_COMM_LSDALTON)
+    if(DECinfo%use_abs_overlap)then
+       call ls_mpibcast(MyMolecule%ov_abs_overlap,MyMolecule%nocc,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
+    endif
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -784,6 +790,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%PNOset,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
     CALL ls_mpi_buffer(MyFragment%pairfrag,master)
+    CALL ls_mpi_buffer(MyFragment%isopt,master)
 
     ! Reals that are not pointers
     ! ---------------------------
@@ -793,6 +800,9 @@ contains
     call ls_mpi_buffer(MyFragment%EoccFOP,master)
     call ls_mpi_buffer(MyFragment%EvirtFOP,master)
     call ls_mpi_buffer(MyFragment%LagFOP,master)
+    call ls_mpi_buffer(MyFragment%Eocc_err,master)
+    call ls_mpi_buffer(MyFragment%Evir_err,master)
+    call ls_mpi_buffer(MyFragment%Elag_err,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
     call ls_mpi_buffer(MyFragment%slavetime_work,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%slavetime_comm,ndecmodels,master)
@@ -1732,8 +1742,9 @@ contains
   !> because the PDM memory allocation has to happen in the smaller groups now
   !> \author Kasper Kristensen, modified by Patrick Ettenhuber
   !> \date May 2012
-  subroutine dec_half_local_group
+  subroutine dec_half_local_group(print_)
     implicit none
+    logical, intent(in), optional :: print_
     integer(kind=ls_mpik) :: ngroups
     integer(kind=ls_mpik) :: groupdims(2)
 
@@ -1751,7 +1762,7 @@ contains
     ! Current values of infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm
     ! will be overwritten.
     ngroups=2
-    call divide_local_mpi_group(ngroups,groupdims)
+    call divide_local_mpi_group(ngroups,groupdims,print_=print_)
     call new_group_reset_persistent_array
 
   end subroutine dec_half_local_group
@@ -1947,13 +1958,13 @@ contains
     write(DECinfo%output,*) '#tasks : Number of integral tasks for fragment (nalpha*ngamma)'
     write(DECinfo%output,*) 'GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'Time(s): Time (in seconds) used by local master (NOT local slaves)'
-    write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice): '
-    write(DECinfo%output,*) '           (Sum of effective work times for ALL MPI processes in slot)'
-    write(DECinfo%output,*) '         / (slotsiz * [Local master time] )'
+    write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice)'
+    write(DECinfo%output,*) '      Load1 = (Sum of working and communication times for ALL MPI processes in slot)'
+    write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
+    write(DECinfo%output,*) '      Load2 = (Sum of working times for ALL MPI processes in slot)'
+    write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Note: Load print is currently only implemented for MP2 calculations'
-    write(DECinfo%output,*) '      and not for atomic fragment optimizations.'
-    write(DECinfo%output,*) '      The Load given below is set to -1 for cases where it is not implemented'
+    write(DECinfo%output,*) 'Note: The Load given below is set to -1 for cases where it is not implemented'
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -2262,6 +2273,7 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
+    call ls_mpi_buffer(DECitem%DECNP,Master)
     call ls_mpi_buffer(DECitem%frozencore,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)
@@ -2295,7 +2307,7 @@ contains
     call ls_mpi_buffer(DECitem%abc_tile_size,Master)
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
-    call ls_mpi_buffer(DECitem%CCDEBUG,Master)
+    call ls_mpi_buffer(DECitem%acc_sync,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
@@ -2314,6 +2326,7 @@ contains
     call ls_mpi_buffer(DECitem%PNOtriangular,Master)
     call ls_mpi_buffer(DECitem%pno_S_on_the_fly,Master)
     call ls_mpi_buffer(DECitem%CCSDmultipliers,Master)
+    call ls_mpi_buffer(DECitem%simple_multipler_residual,Master)
     call ls_mpi_buffer(DECitem%CRASHCALC,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
     call ls_mpi_buffer(DECitem%cc_solver_tile_mem,Master)
@@ -2329,17 +2342,27 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
+    call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
+    !RIMP2 settings
     call ls_mpi_buffer(DECitem%AuxAtomicExtent,Master)
+    call ls_mpi_buffer(DECitem%NAF,Master)
+    call ls_mpi_buffer(DECitem%NAFthreshold,Master)
+    call ls_mpi_buffer(DECitem%RIMPSubGroupSize,Master)
+    call ls_mpi_buffer(DECitem%RIMP2PDMTENSOR,Master)
+
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
     call ls_mpi_buffer(DECitem%ccsdAbatch,Master)
     call ls_mpi_buffer(DECitem%ccsdGbatch,Master)
+    call ls_mpi_buffer(DECitem%manual_occbatchsizes,Master)
+    call ls_mpi_buffer(DECitem%batchOccI,Master)
+    call ls_mpi_buffer(DECitem%batchOccJ,Master)
     call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%hack,Master)
@@ -2353,6 +2376,7 @@ contains
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
@@ -2380,8 +2404,12 @@ contains
     call ls_mpi_buffer(DECitem%no_orb_based_fragopt,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%OnlyVirtPart,Master)
+    call ls_mpi_buffer(DECitem%all_init_radius,Master)
+    call ls_mpi_buffer(DECitem%occ_init_radius,Master)
+    call ls_mpi_buffer(DECitem%vir_init_radius,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
+    call ls_mpi_buffer(DECitem%use_abs_overlap,Master)
     call ls_mpi_buffer(DECitem%pairestimateignore,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
@@ -2395,6 +2423,7 @@ contains
     call ls_mpi_buffer(DECitem%FOTscaling,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%density,Master)
+    call ls_mpi_buffer(DECitem%unrelaxed,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner_in_b,Master)
@@ -2403,9 +2432,11 @@ contains
     call ls_mpi_buffer(DECitem%kappa_driver_debug,Master)
     call ls_mpi_buffer(DECitem%kappaTHR,Master)
     call ls_mpi_buffer(DECitem%SOS,Master)
+    call ls_mpi_buffer(DECitem%FracOfOrbSpace_red,Master)
     call ls_mpi_buffer(DECitem%ncalc,nFOTs,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
+    call ls_mpi_buffer(DECitem%no_pairs,Master)
     call ls_mpi_buffer(DECitem%only_pair_frag_jobs,Master)
     call ls_mpi_buffer(DECitem%only_n_frag_jobs,Master)
     if(DECitem%only_n_frag_jobs>0)then

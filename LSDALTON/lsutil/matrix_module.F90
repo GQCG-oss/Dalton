@@ -11,8 +11,7 @@
 !> NEVER think that e.g. A%elms = matrix will copy the matrix elements from 
 !>       matrix to A%elms, it will only associate the pointer with the array
 !>       matrix. \n
-!> BUT type(Matrix) :: A,B; A = B SHOULD copy the matrix elements from matrix B to A
-!>     see mat_assign. \n
+!> Use mat_assign for A = B operation
 !> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init
 !>
 MODULE Matrix_module  
@@ -75,6 +74,8 @@ MODULE Matrix_module
       integer, pointer :: addr_on_grid(:,:)
       real(REALK), pointer :: p(:,:)
 #endif
+      !> Parallel Distributed Memory Matrix Identification 
+      INTEGER :: PDMID
    END TYPE Matrix
 
    !> Pointer to a type(matrix). Necessary if we want arrays of derived types!

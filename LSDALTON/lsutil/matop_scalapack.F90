@@ -633,12 +633,13 @@ module matrix_operations_scalapack
      CALL PDM_DSCINIT(DESC_A,A)
      !    DESC_AF(CTXT_) = SLGrid%Masterictxt
      ! Master Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
-     IF(.TRUE.)THEN
+     IF(.NOT.infpar%ScalapackWorkAround)THEN
         CALL PDGEMR2D(A%nrow,A%ncol,AFull,1,1,DESC_AF,&
              & A%p,1,1,DESC_A,SLGrid%ictxt)
      ELSE
         shift=infpar%nodtot/SLGrid%nprow
         J=0
+        localnrow = 0
         localncol = 0
         jloop : do
            preProc = 0
@@ -690,6 +691,7 @@ module matrix_operations_scalapack
 
         shift=infpar%nodtot/SLGrid%nprow
         J=0
+        localnrow = 0
         localncol = 0
         jloop2 : do
            preProc = 0
@@ -932,24 +934,40 @@ module matrix_operations_scalapack
     real(Realk),target :: Afullblock(fullrow,fullcol)
     type(Matrix) :: A  !, intent(inout)
     INTEGER      :: DESC_A(9), DESC_AF(9)
-    INTEGER      :: LLD, INFO, TMP(4)
+    INTEGER      :: LLD, INFO, TMP(4),i,j
     integer, external :: NUMROC
+    real(realk), pointer :: ABigfull(:,:)
 #ifdef VAR_SCALAPACK
 
-    CALL PDM_SYNC(Job_retrieve_block,A)
-    CALL PDM_DSCINIT(DESC_A, A)
-    TMP(1) = fullrow
-    TMP(2) = fullcol
-    TMP(3) = insertrow
-    TMP(4) = insertcol
-    call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
-
-    LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
-    CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
-
-    CALL PDGEMR2D(fullrow,fullcol,A%p,insertrow,insertcol,DESC_A, &
-                 &Afullblock,1,1,DESC_AF,SLGrid%ictxt)
-
+    IF(.NOT.infpar%ScalapackWorkAround)THEN
+       CALL PDM_SYNC(Job_retrieve_block,A)
+       CALL PDM_DSCINIT(DESC_A, A)
+       TMP(1) = fullrow
+       TMP(2) = fullcol
+       TMP(3) = insertrow
+       TMP(4) = insertcol
+       call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
+       
+       LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
+       CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
+       
+       CALL PDGEMR2D(fullrow,fullcol,A%p,insertrow,insertcol,DESC_A, &
+            &Afullblock,1,1,DESC_AF,SLGrid%ictxt)
+    ELSE
+       !Work around for PDGEMR2D issue 
+       call mem_alloc(ABigfull,A%nrow,A%ncol)
+       call mat_scalapack_to_full(A,1.0E0_realk,aBigfull)
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,j) SHARED(ABigfull,&
+       !$OMP fullrow,fullcol,insertrow,insertcol,Afullblock)
+       do j = insertcol, insertcol+fullcol-1
+          do i = insertrow, insertrow+fullrow-1
+             Afullblock(i-insertrow+1,j-insertcol+1) = ABigfull(i,j)
+          enddo
+       enddo
+       !$OMP END PARALLEL DO
+       call mat_scalapack_set_from_full(aBigfull,1.0E0_realk,A)
+       call mem_dealloc(ABigfull)
+    ENDIF
 
 #endif
   end subroutine mat_scalapack_retrieve_block
@@ -960,28 +978,42 @@ module matrix_operations_scalapack
     real(Realk),target :: Afull(fullrow,fullcol)
     type(Matrix) :: A  !, intent(inout)
     INTEGER      :: DESC_A(9), DESC_AF(9)
-    INTEGER      :: LLD, INFO, TMP(4)
+    INTEGER      :: LLD, INFO, TMP(4),i,j
     integer, external :: NUMROC
+    real(realk), pointer :: ABigfull(:,:)
 #ifdef VAR_SCALAPACK
 
-    CALL PDM_SYNC(Job_create_block,A)
-    CALL PDM_DSCINIT(DESC_A, A)
-    TMP(1) = fullrow
-    TMP(2) = fullcol
-    TMP(3) = insertrow
-    TMP(4) = insertcol
-    call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
-
-    LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
-    CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
-
-    CALL PDGEMR2D(fullrow,fullcol,Afull,1,1,DESC_AF, &
+    IF(.NOT.infpar%ScalapackWorkAround)THEN
+       CALL PDM_SYNC(Job_create_block,A)
+       CALL PDM_DSCINIT(DESC_A, A)
+       TMP(1) = fullrow
+       TMP(2) = fullcol
+       TMP(3) = insertrow
+       TMP(4) = insertcol
+       call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
+       
+       LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
+       CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
+       
+       CALL PDGEMR2D(fullrow,fullcol,Afull,1,1,DESC_AF, &
                  &A%p,insertrow,insertcol,DESC_A,SLGrid%ictxt)
-
+    ELSE
+       !Work around for PDGEMR2D issue 
+       call mem_alloc(ABigfull,A%nrow,A%ncol)
+       call mat_scalapack_to_full(A,1.0E0_realk,aBigfull)
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,j) SHARED(ABigfull,&
+       !$OMP fullrow,fullcol,insertrow,insertcol,Afull)
+       do j = insertcol, insertcol+fullcol-1
+          do i = insertrow, insertrow+fullrow-1
+             ABigfull(i,j) = Afull(i-insertrow+1,j-insertcol+1)
+          enddo
+       enddo
+       !$OMP END PARALLEL DO
+       call mat_scalapack_set_from_full(aBigfull,1.0E0_realk,A)
+       call mem_dealloc(ABigfull)
+    ENDIF
 #endif
   end subroutine  
-
-
 
   subroutine scalapack_transform_aux(A,Afullblock,fulldim1,fulldim2,fullrow,fullcol,insertrow,insertcol,&
        & CommunicationNodes,localnrow2,localncol,Abuffer,nbuffer,bufferoffset,debug,bufferproc,nodes,funccall)
@@ -3240,7 +3272,7 @@ module matrix_operations_scalapack
 !      DESC_AF(2)=-1
       CALL PDM_DSCINIT(DESC_A,A)
       ! Slave Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
-      IF(.TRUE.)THEN
+      IF(.NOT.infpar%ScalapackWorkAround)THEN
          CALL PDGEMR2D(A%nrow,A%ncol,AF,1,1,DESC_AF,&
               &A%p,1,1,DESC_A,SLGrid%ictxt)
       ELSE
@@ -3543,8 +3575,6 @@ module matrix_operations_scalapack
 
       CALL PDGEMR2D(fullrow,fullcol,AF,1,1,DESC_AF, &
                    &A%p,insertrow,insertcol,DESC_A,SLGrid%ictxt)
-
-
 
    CASE(Job_print_global)
       call sleep(scalapack_mynum*5) !so first slave wait 5 sec, second slave wait for 10 sec

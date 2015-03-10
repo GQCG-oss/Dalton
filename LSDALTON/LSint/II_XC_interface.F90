@@ -16,7 +16,7 @@ module II_XC_interfaceModule
   use GCtransMod
   private
   public :: II_get_xc_Fock_mat, II_get_xc_Fock_mat_full,&
-!!$       & II_get_AbsoluteValue_overlap, II_get_AbsoluteValueOcc_overlap,&
+       & II_get_AbsoluteValue_overlap, II_get_AbsoluteValue_overlapSame,&
        & II_get_xc_geoderiv_molgrad, II_get_xc_linrsp,&
        & II_get_xc_quadrsp, II_get_xc_magderiv_kohnsham_mat,&
        & II_get_xc_magderiv_linrsp, II_get_xc_geoderiv_FxDgrad,&
@@ -234,115 +234,128 @@ IF (setting%scheme%intprint.GT.0.OR.PrintDFTmem) call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_Fock_mat)
 END SUBROUTINE II_get_xc_Fock_mat_full
 
-!!$SUBROUTINE II_get_AbsoluteValue_overlap(LUPRI,LUERR,SETTING,nbast,CMO,S)
-!!$IMPLICIT NONE
-!!$!> the logical unit number for the output file
-!!$INTEGER,intent(in)    :: LUPRI
-!!$!> the logical unit number for the error file
-!!$INTEGER,intent(in)    :: LUERR
-!!$!> info about molecule,basis and dft parameters
-!!$TYPE(LSSETTING)       :: SETTING
-!!$!> number of basisfunctions
-!!$INTEGER,intent(in)    :: nbast
-!!$!> The density matrix
-!!$TYPE(MATRIX),intent(in) :: CMO
-!!$!> The Absolute Valued overlap  matrix
-!!$TYPE(MATRIX),intent(inout) :: S
-!!$#ifdef MOD_UNRELEASED
-!!$!
-!!$REAL(REALK),pointer   :: Cmat(:,:),ABSVALOVERLAP(:,:)
-!!$REAL(REALK)           :: TS,TE
-!!$LOGICAL               :: UNRES,SameCmat
-!!$!call time_II_operations1
-!!$UNRES=.FALSE.
-!!$IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
-!!$call init_dftmemvar
-!!$CALL LSTIMER('START',TS,TE,LUPRI)
-!!$call mem_dft_alloc(Cmat,nbast,nbast)
-!!$call mem_dft_alloc(ABSVALOVERLAP,nbast,nbast)
-!!$CALL LS_DZERO(ABSVALOVERLAP,nbast*nbast)
-!!$
-!!$IF(UNRES)THEN
-!!$   call lsquit('not implemeted',-1)
-!!$ELSE !CLOSED_SHELL
-!!$   call mat_to_full(CMO,1E0_realk,Cmat)
-!!$ENDIF
-!!$
-!!$IF(setting%IntegralTransformGC)THEN
-!!$   call lsquit('IntegralTransformGC must be false in II_get_AbsoluteValue_overlap',-1)
-!!$ENDIF
-!!$
-!!$!chose ABSVAL grid
-!!$SETTING%scheme%DFT%igrid = Grid_ABSVAL
-!!$
-!!$!default for fine
-!!$SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
-!!$SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
-!!$SameCmat=.TRUE.
-!!$CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nbast,CMAT,CMAT,ABSVALOVERLAP,SameCmat)
-!!$
-!!$!revert to default grid
-!!$SETTING%scheme%DFT%igrid = Grid_Default
-!!$
-!!$call mem_dft_dealloc(Cmat)
-!!$CALL mat_set_from_full(ABSVALOVERLAP,1E0_realk,S,'ABSVAL')
-!!$call mem_dft_dealloc(ABSVALOVERLAP)
-!!$
-!!$CALL LSTIMER('II_get_AbsoluteValue_overlap',TS,TE,LUPRI)
-!!$call stats_dft_mem(lupri)
-!!$!call time_II_operations2(JOB_II_get_xc_Fock_mat)
-!!$#endif
-!!$END SUBROUTINE II_get_AbsoluteValue_overlap
-!!$
-!!$SUBROUTINE II_get_AbsoluteValueOcc_overlap(LUPRI,LUERR,SETTING,nbast,nocc,Cmat1,Cmat2,S)
-!!$IMPLICIT NONE
-!!$!> the logical unit number for the output file
-!!$INTEGER,intent(in)    :: LUPRI
-!!$!> the logical unit number for the error file
-!!$INTEGER,intent(in)    :: LUERR
-!!$!> info about molecule,basis and dft parameters
-!!$TYPE(LSSETTING)       :: SETTING
-!!$!> number of basisfunctions
-!!$INTEGER,intent(in)    :: nbast
-!!$!> number of occupied basisfunctions
-!!$INTEGER,intent(in)    :: nocc
-!!$!> The MO coef matrix for 1. 
-!!$real(realk),intent(in) :: Cmat1(nbast,nocc)
-!!$!> The MO coef matrix for 2.
-!!$real(realk),intent(in) :: Cmat2(nbast,nocc)
-!!$!> The Absolute Valued overlap  matrix
-!!$real(realk),intent(inout) :: S(nocc,nocc)
-!!$#ifdef MOD_UNRELEASED
-!!$!
-!!$REAL(REALK)           :: TS,TE
-!!$LOGICAL               :: UNRES,SameCmat
-!!$!call time_II_operations1
-!!$UNRES=.FALSE.
-!!$IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
-!!$call init_dftmemvar
-!!$CALL LSTIMER('START',TS,TE,LUPRI)
-!!$CALL LS_DZERO(S,nocc*nocc)
-!!$
-!!$IF(setting%IntegralTransformGC)THEN
-!!$   call lsquit('IntegralTransformGC must be false in II_get_AbsoluteValue_overlap',-1)
-!!$ENDIF
-!!$
-!!$!chose ABSVAL grid
-!!$SETTING%scheme%DFT%igrid = Grid_ABSVAL
-!!$
-!!$!default for fine
-!!$SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
-!!$SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
-!!$SameCmat = .FALSE. 
-!!$CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nocc,CMAT1,CMAT2,S,SameCmat)
-!!$
-!!$!revert to default grid
-!!$SETTING%scheme%DFT%igrid = Grid_Default
-!!$CALL LSTIMER('II_get_AbsoluteValueOcc     ',TS,TE,LUPRI)
-!!$call stats_dft_mem(lupri)
-!!$!call time_II_operations2(JOB_II_get_xc_Fock_mat)
-!!$#endif
-!!$END SUBROUTINE II_get_AbsoluteValueOcc_overlap
+SUBROUTINE II_get_AbsoluteValue_overlap(LUPRI,LUERR,SETTING,nbast,nmo1,nmo2,Cmat1,Cmat2,S)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in)    :: LUPRI
+!> the logical unit number for the error file
+INTEGER,intent(in)    :: LUERR
+!> info about molecule,basis and dft parameters
+TYPE(LSSETTING)       :: SETTING
+!> number of basisfunctions
+INTEGER,intent(in)    :: nbast
+!> number of occupied basisfunctions
+INTEGER,intent(in)    :: nmo1,nmo2
+!> The MO coef matrix for 1. 
+real(realk),intent(in) :: Cmat1(nbast,nmo1)
+!> The MO coef matrix for 2.
+real(realk),intent(in) :: Cmat2(nbast,nmo2)
+!> The Absolute Valued overlap  matrix
+real(realk),intent(inout) :: S(nmo1,nmo2)
+#ifdef MOD_UNRELEASED
+!
+REAL(REALK)           :: TS,TE
+REAL(REALK),pointer   :: CMAT1AO(:,:),CMAT2AO(:,:)
+LOGICAL               :: UNRES,SameCmat
+!call time_II_operations1
+UNRES=.FALSE.
+IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
+call init_dftmemvar
+CALL LSTIMER('START',TS,TE,LUPRI)
+CALL LS_DZERO(S,nmo1*nmo2)
+
+!chose ABSVAL grid
+SETTING%scheme%DFT%igrid = Grid_ABSVAL
+
+!default for fine
+SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
+SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
+SameCmat = .FALSE. 
+
+IF(setting%IntegralTransformGC)THEN
+!   call lsquit('IntegralTransformGC must be false in II_get_AbsoluteValue_overlap',-1)
+   call mem_dft_alloc(Cmat1AO,nbast,nmo1)
+!   Cmat1AO = Cmat1
+   CALL DCOPY(nbast*nMO1,Cmat1,1,Cmat1AO,1)
+   !Cmat1AO(nbast,nmo1) = CAO2GCAO(nbast,nbast)*Cmat1AO(nbast,nmo1)
+   call GCAO2AO_half_transform_matrixFull(Cmat1AO,nbast,nmo1,setting,lupri,1)
+   call mem_dft_alloc(Cmat2AO,nbast,nmo2)
+!   Cmat2AO = Cmat2
+   CALL DCOPY(nbast*nMO2,Cmat2,1,Cmat2AO,1)
+   !Cmat1AO(nbast,nmo1) = CAO2GCAO(nbast,nbast)*Cmat1AO(nbast,nmo1)
+   call GCAO2AO_half_transform_matrixFull(Cmat2AO,nbast,nmo2,setting,lupri,1)
+   CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nmo1,nmo2,CMAT1AO,CMAT2AO,S,SameCmat)
+   call mem_dft_dealloc(Cmat1AO)
+   call mem_dft_dealloc(Cmat2AO)
+ELSE
+   CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nmo1,nmo2,CMAT1,CMAT2,S,SameCmat)
+ENDIF
+
+
+!revert to default grid
+SETTING%scheme%DFT%igrid = Grid_Default
+CALL LSTIMER('II_get_AbsoluteValue        ',TS,TE,LUPRI)
+call stats_dft_mem(lupri)
+!call time_II_operations2(JOB_II_get_xc_Fock_mat)
+#endif
+END SUBROUTINE II_get_AbsoluteValue_overlap
+
+SUBROUTINE II_get_AbsoluteValue_overlapSame(LUPRI,LUERR,SETTING,nbast,nmo,Cmat,S)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in)    :: LUPRI
+!> the logical unit number for the error file
+INTEGER,intent(in)    :: LUERR
+!> info about molecule,basis and dft parameters
+TYPE(LSSETTING)       :: SETTING
+!> number of basisfunctions
+INTEGER,intent(in)    :: nbast
+!> number of occupied basisfunctions
+INTEGER,intent(in)    :: nmo
+!> The MO coef matrix for 1. 
+real(realk),intent(in) :: Cmat(nbast,nmo)
+!> The Absolute Valued overlap  matrix
+real(realk),intent(inout) :: S(nmo,nmo)
+#ifdef MOD_UNRELEASED
+!
+REAL(REALK)           :: TS,TE
+REAL(REALK),pointer   :: CMAT1AO(:,:)
+LOGICAL               :: UNRES,SameCmat
+!call time_II_operations1
+UNRES=.FALSE.
+IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
+call init_dftmemvar
+CALL LSTIMER('START',TS,TE,LUPRI)
+CALL LS_DZERO(S,nmo*nmo)
+
+!chose ABSVAL grid
+SETTING%scheme%DFT%igrid = Grid_ABSVAL
+
+!default for fine
+SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
+SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
+SameCmat = .TRUE. 
+
+IF(setting%IntegralTransformGC)THEN
+!   call lsquit('IntegralTransformGC must be false in II_get_AbsoluteValue_overlapsame',-1)
+   call mem_dft_alloc(Cmat1AO,nbast,nmo)
+!   Cmat1AO = Cmat
+   CALL DCOPY(nbast*nMO,Cmat,1,Cmat1AO,1)
+   !Cmat1AO(nbast,nmo1) = CAO2GCAO(nbast,nbast)*Cmat1AO(nbast,nmo1)
+   call GCAO2AO_half_transform_matrixFull(Cmat1AO,nbast,nmo,setting,lupri,1)
+   CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nmo,nmo,CMAT1AO,CMAT1AO,S,SameCmat)
+   call mem_dft_dealloc(Cmat1AO)
+ELSE
+   CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,nmo,nmo,CMAT,CMAT,S,SameCmat)
+ENDIF
+
+!revert to default grid
+SETTING%scheme%DFT%igrid = Grid_Default
+CALL LSTIMER('II_get_AbsoluteValueSame    ',TS,TE,LUPRI)
+call stats_dft_mem(lupri)
+!call time_II_operations2(JOB_II_get_xc_Fock_mat)
+#endif
+END SUBROUTINE II_get_AbsoluteValue_overlapSame
 
 !> \brief Calculates the xc contribution to the Kohn-Sham energy
 !> \author T. Kjaergaard
@@ -472,7 +485,7 @@ IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
 DFTDATA%ndmat = ndmat2
 call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
-DFTDATA%grad = 0E0_realk
+CALL LS_DZERO(DFTDATA%grad,3*natoms)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
@@ -508,7 +521,7 @@ IF(nOrbitals .NE. nbast)&
 call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 
 CALL II_dft_geoderiv_molgrad(setting,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
-GRAD = DFTDATA%grad
+CALL DCOPY(3*natoms,DFTDATA%grad,1,GRAD,1)
 CALL LSTIMER('II_get_xc_geoderiv_molgrad',TS,TE,LUPRI)
 call mem_dft_dealloc(DFTDATA%orb2atom)
 call mem_dft_dealloc(DmatAO)
@@ -937,7 +950,7 @@ DFTDATA%nbmat = nbmat
 DFTDATA%nfmat = 0
 call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
-DFTDATA%grad = 0E0_realk
+CALL LS_DZERO(DFTDATA%grad,3*natoms)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
@@ -964,7 +977,7 @@ call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
 call II_XC_TransformDmatToAOFull_single(B,nbmat,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
 
 CALL II_DFT_geoderiv_kohnsham_mat(setting,LUPRI,1,nbast,1,DmatAO,DFTDATA,UNRES)
-GRAD = DFTDATA%grad
+CALL DCOPY(3*natoms,DFTDATA%grad,1,GRAD,1)
 CALL LSTIMER('II_get_xc_geoderiv_FxDgrad',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DFTDATA%orb2atom)
@@ -1024,7 +1037,7 @@ IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
 DFTDATA%ndmat = ndmat2
 call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
-DFTDATA%grad = 0E0_realk
+CALL LS_DZERO(DFTDATA%grad,3*natoms)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
@@ -1051,7 +1064,7 @@ call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
 call II_XC_TransformDmatToAOFull_bc(A,B,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
 
 CALL II_DFT_geoderiv_linrspgrad(setting,LUPRI,1,nbast,1,DmatAO,DFTDATA,UNRES)
-GRAD = DFTDATA%grad
+CALL DCOPY(3*natoms,DFTDATA%grad,1,GRAD,1)
 CALL LSTIMER('II_get_xc_geoderiv_GxDgrad',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DFTDATA%orb2atom)

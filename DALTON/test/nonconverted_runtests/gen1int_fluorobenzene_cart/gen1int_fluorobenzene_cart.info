@@ -1,5 +1,0 @@
-   gen1int_fluorobenzene_cart
-   -------------
-   Molecule:         C6H5F
-   Test Purpose:     Check Gen1int module using fluorobenzene molecule,
-                     Cartesian basis sets, and without symmetry

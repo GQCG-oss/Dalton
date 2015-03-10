@@ -87,7 +87,7 @@ CTRL[1]=1
 ERROR[1]="HF energy not correct"
 
 # ENERGY test
-CRIT1=`$GREP "di_screen_test SUCCESSFULL" $log | wc -l`
+CRIT1=`$GREP "di_screen_test SUCCESSFUL" $log | wc -l`
 TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="screening not correct"

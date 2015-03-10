@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -43,7 +43,7 @@ C
 #include "gnrinf.h"
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
-      PARAMETER ( NTABLE = 29, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
+      PARAMETER ( NTABLE = 30, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL, LABFND, RTNLBL(2)
 C
@@ -54,7 +54,7 @@ C
      *            '.TSTJEP', '.SHG   ', '.POCKEL', '.OPTREF',
      *            '.FREQUE', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
      *            '.ASPIN ', '.BSPIN ', '.CSPIN ', '.SOSHIE',
-     *            '.SOSPIN'/
+     *            '.SOSPIN', '.QLOP '/
 C
 C READ quadratic response INPUT
 C
@@ -64,6 +64,7 @@ C
       HYPCAL = .TRUE.
       BCFREQ = .FALSE.
       COMFREQ= .FALSE.
+      QLOP = .FALSE.
       WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -76,7 +77,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,
      *                    14,15,16,17,18,19,20,21,22,23,24,
-     *                    25,26,27,28,29),I
+     *                    25,26,27,28,29,30),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -388,6 +389,9 @@ C
                GO TO 100
  29            CONTINUE
                   SSCOLL = .TRUE.
+               GO TO 100
+ 30            CONTINUE
+                  QLOP = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
