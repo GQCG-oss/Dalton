@@ -20,13 +20,13 @@ class fragment_class:
 
    def print_frag_info(self,frag_out):
       for t, e in zip(self.ecorrtype, self.ecorrocc):
-         frag_out.write("{:6s}   {:4d}   {:4d}   {:8.4f}     Eocc = {:10.6e}\n".format(
+         frag_out.write("{:7s}   {:4d}   {:4d}   {:8.4f}     Eocc = {:10.6e}\n".format(
             t, self.fragid, self.fragpid, self.dist, e))
       for t, e in zip(self.ecorrtype, self.ecorrvirt):
-         frag_out.write("{:6s}   {:4d}   {:4d}   {:8.4f}     Evir = {:10.6e}\n".format(
+         frag_out.write("{:7s}   {:4d}   {:4d}   {:8.4f}     Evir = {:10.6e}\n".format(
             t, self.fragid, self.fragpid, self.dist, e))
       for t, e in zip(self.ecorrtype, self.ecorrlag):
-         frag_out.write("{:6s}   {:4d}   {:4d}   {:8.4f}     Elag = {:10.6e}\n".format(
+         frag_out.write("{:7s}   {:4d}   {:4d}   {:8.4f}     Elag = {:10.6e}\n".format(
             t, self.fragid, self.fragpid, self.dist, e))
 
 
@@ -378,26 +378,26 @@ class decinfo_class:
    #PRINT DEC INFO TO FILE
    def print_dec_info(self,dec_out):
       for t, e in zip(self.ecorrtype, self.ecorrocc):
-         dec_out.write("{:6s} occupied correlation energy   = {:10.6e} \n".format(t,e))
+         dec_out.write("{:7s} occupied correlation energy   = {:10.6e} \n".format(t,e))
       for t, e in zip(self.ecorrtype, self.ecorrvirt):
-         dec_out.write("{:6s} virtual correlation energy    = {:10.6e} \n".format(t,e))
-      for t, e in zip(self.ecorrtype, self.ecorrocc):
-         dec_out.write("{:6s} lagrangian correlation energy = {:10.6e} \n".format(t,e))
+         dec_out.write("{:7s} virtual correlation energy    = {:10.6e} \n".format(t,e))
+      for t, e in zip(self.ecorrtype, self.ecorrlag):
+         dec_out.write("{:7s} lagrangian correlation energy = {:10.6e} \n".format(t,e))
 
       dec_out.write("\nFOT = {:6.2e} \n".format(self.fotfloat))
 
       dec_out.write("\nPair estimates: \n")
-      dec_out.write("Model     Atom1  Atom2    dist        DEC energy\n")
+      dec_out.write("Model      Atom1  Atom2    dist        DEC energy\n")
       for e in self.esti:
          e.print_frag_info(dec_out)
 
       dec_out.write("\nSingle fragment: \n")
-      dec_out.write("Model     Atom1  Atom2    dist        DEC energy\n")
+      dec_out.write("Model      Atom1  Atom2    dist        DEC energy\n")
       for s in self.sfrags:
          s.print_frag_info(dec_out)
 
       dec_out.write("\nPair fragment: \n")
-      dec_out.write("Model     Atom1  Atom2    dist        DEC energy\n")
+      dec_out.write("Model      Atom1  Atom2    dist        DEC energy\n")
       for p in self.pfrags:
          p.print_frag_info(dec_out)
 
