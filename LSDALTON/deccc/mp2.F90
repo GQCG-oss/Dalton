@@ -1942,21 +1942,26 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
 !> \author Thomas Kjaergaard
 !> \date Marts 2014
 subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
-     & goccEOS, toccEOS,gvirtEOS, tvirtEOS) 
+     & goccEOS, toccEOS,gvirtEOS, tvirtEOS, djik,blad)
+
   implicit none
-!FIXME : Memory Usage RIMP2MEM, 
-!FIXME : nAux distribution better - for better load balancing - split atoms
+  !FIXME : Memory Usage RIMP2MEM, 
+  !FIXME : nAux distribution better - for better load balancing - split atoms
 
   !> Atomic fragment (or pair fragment)
   type(decfrag), intent(inout) :: MyFragment
-  !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
+  !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) 
   type(tensor),intent(inout) :: goccEOS
-  !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
+  !> Amplitudes for occ EOS in the order (d,j,c,i) 
   type(tensor),intent(inout) :: toccEOS
-  !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
+  !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) 
   type(tensor),intent(inout) :: gvirtEOS
-  !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
+  !> Amplitudes for virt EOS in the order (b,l,a,k) 
   type(tensor),intent(inout) :: tvirtEOS
+  !> Occ EOS integrals (d j | i k) in the order (d,j,i,k)  
+  type(tensor),optional :: djik  !V_aos*O_eos*O_eos*O_aos
+  !> Virt EOS integrals (b l | a d) in the order (b,l,a,d)  
+  type(tensor),optional :: blad  !V_eos*O_aos*V_eos*V_aos
   !local variables
   type(mp2_batch_construction) :: bat
   type(array2) :: CDIAGocc, CDIAGvirt, Uocc, Uvirt
@@ -1966,17 +1971,19 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer :: alpha,gamma,beta,delta,info,mynum,numnodes,MynbasisAuxMPI,nb
   integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2,natomsAux
   integer :: ILOC,JLOC,ALOC,BLOC,M,N,K,nAtoms,nbasis2,nbasisAux
-  logical :: fc,ForcePrint,first_order_integrals,master,wakeslave,MessageRecieved
+  integer :: MynbasisAuxMPI2
+  logical :: fc,ForcePrint,master,wakeslave
   logical :: CollaborateWithSlaves
   real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:)
   real(realk),pointer :: AlphaCD3(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
-  real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:)
-  real(realk),pointer :: UoccEOS(:,:),Cocc(:,:),Cvirt(:,:),UvirtEOS(:,:)
+  real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:),CalphaVV(:,:,:)
+  real(realk),pointer :: UoccEOS(:,:),UvirtEOS(:,:)
   real(realk),pointer :: gao(:,:,:,:),gmo(:,:,:,:),gocc(:,:,:,:),gocc2(:,:,:,:)
   real(realk),pointer :: tocc(:,:,:,:),UoccEOST(:,:),UvirtT(:,:),tocc3(:,:,:,:)
   real(realk),pointer :: toccTMP(:,:),TMPAlphaBeta_minus_sqrt(:,:),tocc2(:,:,:,:)
   real(realk),pointer :: tvirtTMP(:,:),tvirt(:,:,:,:),UoccT(:,:),UvirtEOST(:,:)
-  real(realk),pointer :: tvirt2(:,:,:,:),tvirt3(:,:,:,:)
+  real(realk),pointer :: tvirt2(:,:,:,:),tvirt3(:,:,:,:),Calpha4(:,:,:)
+  real(realk),pointer :: UoccallT(:,:),CalphaOcc(:,:,:)
   real(realk) :: deltaEPS,goccAIBJ,goccBIAJ,Gtmp,Ttmp,Eocc,TMP,Etmp,twmpi2
   real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
@@ -1997,7 +2004,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk) :: TS,TE,TS2,TE2,TS3,TE3
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
-  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault
+  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases)
   integer(kind=long) :: nSize
@@ -2005,13 +2012,26 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
-  TAG = 131124879
+  TAG = 1319
 #endif  
+  IF(present(djik))THEN
+     IF(present(blad))THEN
+        first_order=.TRUE. !first order integrals are required
+     ELSE
+        call lsquit('RIMP2 prog error: djik is present but blad is not',-1)
+     ENDIF
+  ELSE
+     first_order=.FALSE.     
+  ENDIF
 
 #ifdef VAR_TIME
   ForcePrint = .TRUE.
 #else
-  ForcePrint = .FALSE.
+  IF(LSTIME_PRINT)THEN
+     ForcePrint = .TRUE.
+  ELSE
+     ForcePrint = .FALSE.
+  ENDIF
 #endif
 
   call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
@@ -2049,6 +2069,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
+  ! For frozen core energy calculation, we never need core orbitals
+  ! (but we do if first order integrals are required)
+  if(DECinfo%frozencore .and. (.not. first_order)) nocctot = nocc
+  ! In general, for frozen core AND first order integrals, special care must be taken
+  ! No frozen core OR frozen core calculation for just energy uses the same
+  ! code from now on because the frozen core approximation is "built into" the fragment,
+  if(DECinfo%frozencore .and. first_order) then
+     fc = .true.
+  else
+     fc =.false.
+  end if
+  if(first_order) then
+     if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RIMP2 integrals (both energy and density) and RIMP2 amplitudes...'
+  else
+     if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RIMP2 integrals (only energy) and RIMP2 amplitudes...'
+  end if
+
   IF(DECinfo%AuxAtomicExtent)THEN
      call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
   ELSE
@@ -2107,66 +2144,58 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ! Note: Uocc and Uvirt have indices (local,diagonal)
   call mem_alloc(EVocc,nocc)
   call mem_alloc(EVvirt,nvirt)
-  call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
-       & EVocc, EVvirt)
-
-  ! Make MO coefficients:  Cocc(nbasis,nocc)
-  call mem_alloc(Cocc,nbasis,nocc)
-  DO IDIAG=1,nocc
-     DO ALPHA=1,nbasis
-        Cocc(ALPHA,IDIAG) = CDIAGocc%val(ALPHA,IDIAG)
-     ENDDO
-  ENDDO
-  call array2_free(CDIAGocc)
-
-  ! Make MO coefficients:  Cvirt(nbasis,nvirt)
-  call mem_alloc(Cvirt,nbasis,nvirt)
-  DO IDIAG=1,nvirt
-     DO ALPHA=1,nbasis
-        Cvirt(ALPHA,IDIAG) = CDIAGvirt%val(ALPHA,IDIAG)
-     ENDDO
-  ENDDO
-  call array2_free(CDIAGvirt)
+  if(fc) then
+     ! Special routine for MP2 density/gradient using frozen core approx.
+     ! Note: The occupied coefficient matrices CDIAGocc and Uocc and the eigenvalues EVocc
+     !       refer only to the valence space, while
+     !       LoccTALL, CDIAGoccTALL, and UoccALL refer to both core+valence!
+     ! Special note: CDIAGoccTALL have valence orbitals BEFORE core orbitals, see
+     !               get_MP2_integral_transformation_matrices_fc!
+     call get_MP2_integral_transformation_matrices_fc(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
+          & LoccTALL, CDIAGoccTALL, UoccALL, EVocc, EVvirt)
+     call array2_free(LoccTALL)
+  else  ! not frozen core or simple energy calculation
+     call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
+          & EVocc, EVvirt)
+  end if
 
   ! Extract occupied EOS indices from rows of Uocc
   call array2_extract_EOS(Uocc,MyFragment,'O','R',tmparray2)
 
   !make UoccEOS(noccEOS,nocc)
   call mem_alloc(UoccEOST,nocc,noccEOS) 
-  !TODO: replace with efficient transposition
-  do iLOC=1,noccEOS
-     do IDIAG=1,nocc
-        UoccEOST(IDIAG,ILOC) = tmparray2%val(ILOC,IDIAG)
-     enddo
-  enddo
+  M = noccEOS   !row of Input Matrix
+  N = nocc      !columns of Input Matrix
+  call mat_transpose(M,N,1.0E0_realk,tmparray2%val,0.0E0_realk,UoccEOST)
   call array2_free(tmparray2)
 
   call mem_alloc(UvirtT,nvirt,nvirt) 
-  do ALOC=1,nvirt
-     do ADIAG=1,nvirt
-        UvirtT(ADIAG,ALOC) = Uvirt%val(ALOC,ADIAG)
-     enddo
-  enddo
+  M = nvirt      !row of Input Matrix
+  N = nvirt      !columns of Input Matrix
+  call mat_transpose(M,N,1.0E0_realk,Uvirt%val,0.0E0_realk,UvirtT)
 
   ! Extract virtual EOS indices from rows of Uvirt
   call array2_extract_EOS(Uvirt,MyFragment,'V','R',tmparray2)
+  call array2_free(Uvirt)
   call mem_alloc(UvirtEOST,nvirt,nvirtEOS)
-  do iLOC=1,nvirtEOS
-     do IDIAG=1,nvirt
-        UvirtEOST(IDIAG,ILOC) = tmparray2%val(ILOC,IDIAG)
-     enddo
-  enddo
+  M = nvirtEOS   !row of Input Matrix
+  N = nvirt      !columns of Input Matrix
+  call mat_transpose(M,N,1.0E0_realk,tmparray2%val,0.0E0_realk,UvirtEOST)
   call array2_free(tmparray2)
 
   call mem_alloc(UoccT,nocc,nocc) 
-  do ALOC=1,nocc
-     do ADIAG=1,nocc
-        UoccT(ADIAG,ALOC) = Uocc%val(ALOC,ADIAG)
-     enddo
-  enddo
+  M = nocc      !row of Input Matrix
+  N = nocc      !columns of Input Matrix
+  call mat_transpose(M,N,1.0E0_realk,Uocc%val,0.0E0_realk,UoccT)
   call array2_free(Uocc)
-  call array2_free(Uvirt)
 
+  if(fc) then
+     call mem_alloc(UoccallT,nocctot,nocctot) 
+     M = nocctot      !row of Input Matrix
+     N = nocctot      !columns of Input Matrix
+     call mat_transpose(M,N,1.0E0_realk,Uoccall%val,0.0E0_realk,UoccallT)
+     call array2_free(Uoccall)
+  endif
   CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
 
   ! *************************************************************
@@ -2193,7 +2222,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      bat%size1=0
      bat%size2=0
      bat%size3=0
-     first_order_integrals = .FALSE.
 
      ! Sanity check
      if(.not. MyFragment%BasisInfoIsSet) then
@@ -2202,15 +2230,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      end if
 
      call time_start_phase( PHASE_COMM )
-
      ! Wake up slaves to do the job: slaves awoken up with (RIMP2INAMP)
      ! and call MP2_RI_EnergyContribution_slave which calls
      ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
      call ls_mpibcast(RIMP2INAMP,infpar%master,infpar%lg_comm)
-
      ! Communicate fragment information to slaves
-     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order_integrals,.true.)
-
+     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
      call time_start_phase( PHASE_WORK )
   endif StartUpSlaves
   CALL LSTIMER('DECRIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
@@ -2225,339 +2250,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   CollaborateWithSlaves = .false.
 #endif
 
-  IF(CollaborateWithSlaves)then 
-     !all nodes have info about all nodes 
-     call mem_alloc(nbasisAuxMPI,numnodes)           !number of Aux basis func assigned to rank
-     call mem_alloc(nAtomsMPI,numnodes)              !atoms assign to rank
-     call mem_alloc(startAuxMPI,nAtomsAux,numnodes)  !startindex in full (nbasisAux)
-     call mem_alloc(AtomsMPI,nAtomsAux,numnodes)     !identity of atoms in full molecule
-     call mem_alloc(nAuxMPI,nAtomsAux,numnodes)      !nauxBasis functions for each of the nAtomsMPI
-
-     IF(DECinfo%AuxAtomicExtent)THEN   
-        call getRIbasisMPI(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,numnodes,&
-             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
-     ELSE
-        call getRIbasisMPI(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,numnodes,&
-             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
-     ENDIF
-     MynAtomsMPI = nAtomsMPI(mynum+1)
-     MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
-     call mem_dealloc(AtomsMPI) !not used in this subroutine 
-  ELSE
-     MynbasisAuxMPI = nbasisAux
-  ENDIF
-  CALL LSTIMER('DECRIMP2: MPI basis ',TS2,TE2,LUPRI,FORCEPRINT)
-
-  IF(master)THEN
-     !=====================================================================================
-     ! Major Step 1: Master Obtains (alpha|beta) ERI in Auxiliary Basis 
-     !=====================================================================================
-     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full 2 center ERI
-     !this should naturally be changed      
-     call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-     IF(DECinfo%AuxAtomicExtent)THEN
-        molecule1 => MyFragment%mylsitem%SETTING%MOLECULE(1)%p
-        molecule2 => MyFragment%mylsitem%SETTING%MOLECULE(2)%p
-        molecule3 => MyFragment%mylsitem%SETTING%MOLECULE(3)%p
-        molecule4 => MyFragment%mylsitem%SETTING%MOLECULE(4)%p
-        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
-        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
-        MyFragment%mylsitem%SETTING%MOLECULE(3)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
-        MyFragment%mylsitem%SETTING%MOLECULE(4)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
-     ENDIF
-     call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-          & AlphaBeta,MyFragment%mylsitem%setting,nbasisAux)
-     IF(DECinfo%AuxAtomicExtent)THEN
-        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => molecule1
-        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => molecule2
-        MyFragment%mylsitem%SETTING%MOLECULE(3)%p => molecule3
-        MyFragment%mylsitem%SETTING%MOLECULE(4)%p => molecule4
-     ENDIF
-
-     CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
-     !=====================================================================================
-     ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
-     !=====================================================================================
-     ! Warning the inverse is not unique so in order to make sure all slaves have the same
-     ! inverse matrix we calculate it on the master a BCAST to slaves
-     
-     !Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
-     call mem_alloc(AlphaBeta_minus_sqrt,nbasisAux,nbasisAux)
-     call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBeta_minus_sqrt, lupri)
-     call mem_dealloc(AlphaBeta)
-     CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
-  ELSE
-     call mem_alloc(AlphaBeta_minus_sqrt,nbasisAux,nbasisAux)
-  ENDIF
-#ifdef VAR_MPI
-  call time_start_phase( PHASE_IDLE )
-  call lsmpi_barrier(infpar%lg_comm)
-  call time_start_phase( PHASE_COMM )
-  call ls_mpibcast(AlphaBeta_minus_sqrt,nbasisAux,nbasisAux,infpar%master,infpar%lg_comm)
-  call time_start_phase(PHASE_WORK)   
-#endif
-
-  CALL LSTIMER('DECRIMP2: AlphaBeta ',TS2,TE2,LUPRI,FORCEPRINT)
-
-  IF(CollaborateWithSlaves)then 
-     !We wish to build
-     !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
-     !where alpha runs over the Aux basis functions allocated for this rank
-     !and beta run over the full set of nbasisAux
-     IF(MynbasisAuxMPI.GT.0)THEN
-        call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux)
-        call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux,&
-             & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,numnodes,natomsAux)
-        call mem_dealloc(AlphaBeta_minus_sqrt)
-     ENDIF
-  ENDIF
-  CALL LSTIMER('DECRIMP2: MPI AlphaBetaTmp ',TS2,TE2,LUPRI,FORCEPRINT)
-
-  !=====================================================================================
-  ! Major Step 3: Obtain 3 center RI integrals (alpha,a,i) 
-  !=====================================================================================
-  IF(MynbasisAuxMPI.GT.0)THEN
-     call get_currently_available_memory(MemInGBCollected)
-     !maxsize = max number of floating point elements
-     maxsize = NINT(MemInGBCollected*1.E9_realk)
-     !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
-     !It is very annoying but I allocated AlphaCD3 inside 
-     !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
-     !This Part of the Code is MPI/OpenMP parallel and AlphaCD3 
-     !will have the dimensions (MynbasisAuxMPI,nvirt,nocc) 
-     !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly 
-     !nbasisAuxMPI = nbasisAux/numnodes
-     IF(DECinfo%AuxAtomicExtent)THEN
-        molecule1 => MyFragment%mylsitem%SETTING%MOLECULE(1)%p
-        molecule2 => MyFragment%mylsitem%SETTING%MOLECULE(2)%p
-        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
-        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
-     ENDIF
-     call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
-          & AlphaCD3,MyFragment%mylsitem%setting,nbasisAux,nbasis,&
-          & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
-     IF(DECinfo%AuxAtomicExtent)THEN
-        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => molecule1
-        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => molecule2
-     ENDIF
-  ENDIF
-  CALL LSTIMER('DECRIMP2: AlphaCD ',TS2,TE2,LUPRI,FORCEPRINT)
-  call mem_dealloc(Cocc)
-  call mem_dealloc(Cvirt)
-
-#ifdef VAR_MPI
-  if(CollaborateWithSlaves) then !START BY SENDING MY OWN PACKAGE alphaCD3
-     !A given rank always recieve a package from the same node 
-     !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
-     Receiver = MOD(1+mynum,numnodes)
-     !A given rank always send to the same node 
-     !rank 2 sends to rank 1, rank 1 sends to rank 0 ...
-     Sender = MOD(mynum-1+numnodes,numnodes)
-     COUNT = MynbasisAuxMPI*nocc*nvirt !size of alphaCD3
-     IF(MynbasisAuxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
-        call time_start_phase( PHASE_COMM )
-        call MPI_ISEND(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request,ierr)        
-!        call MPI_Request_free(request,ierr)
-        call time_start_phase(PHASE_WORK)   
-     ENDIF
-  endif
-#endif
-
-  !=====================================================================================
-  ! Major Step 4: Obtain C_(alpha,ai) = (alpha|beta)^(-1) (beta|ai)
-  !               consider  c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
-  !               so that you only need 1 3dim quantity      
-  !=====================================================================================
-
-  if(CollaborateWithSlaves) then         
-#ifdef VAR_MPI
-     IF(MynbasisAuxMPI.GT.0)THEN 
-        !consider 
-        !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
-        !so that you only need 1 3dim quantity      
-        call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
-        !Use own AlphaCD3 to obtain part of Calpha
-        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-        call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natomsAux,&
-             & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
-        CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
-     ENDIF
-
-     !To complete construction of  c_(nbasisAuxMPI,nvirt,nocc) we need all
-     !alphaCD(nbasisAuxMPI,nvirt,nocc) contributions from all ranks
-     !so we do:
-     ! 1. MPI recieve a alphaCD from 'Receiver' 
-     !        the first package should already have arrived 
-     !        originating from the ISEND immidiately after
-     !        II_get_RI_AlphaCD_3centerInt2
-     ! 2. Obtain part of Calpha from this contribution
-     ! 3. MPI send the recieved alphaCD to 'Sender' 
-     ! 4. Repeat untill all contributions have been added
-
-     useAlphaCD5 = .TRUE. 
-     useAlphaCD6 = .FALSE.
-
-     CurrentWait(1) = 0
-     CurrentWait(2) = 0
-     nAwaitDealloc = 0
-
-     DO node=1,numnodes-1 !should recieve numnodes-1 packages 
-        !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
-        !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
-        ! ...
-        !myOriginalRank therefore determine the size of NodenbasisAuxMPI
-        myOriginalRank = MOD(mynum+node,numnodes)         
-        OriginalRanknbasisAuxMPI = nbasisAuxMPI(myOriginalRank+1) !dim1 of recieved package
-
-        IF(OriginalRanknbasisAuxMPI.GT.0)THEN
-           !Step 1 : MPI recieve a alphaCD from 'Receiver' 
-           IF(nAwaitDealloc.EQ.2)THEN
-              !all buffers are allocated and await to be deallocated once the memory
-              !have been recieved by the reciever.
-              IF(CurrentWait(1).EQ.5)THEN
-                 call time_start_phase( PHASE_IDLE )
-                 call MPI_WAIT(request5,lsmpi_status,ierr)
-                 call time_start_phase(PHASE_WORK)   
-!                 call MPI_Request_free(request5,ierr)
-                 call mem_dealloc(AlphaCD5)
-              ELSEIF(CurrentWait(1).EQ.6)THEN
-                 call time_start_phase( PHASE_IDLE )
-                 call MPI_WAIT(request6,lsmpi_status,ierr)
-                 call time_start_phase(PHASE_WORK)   
-!                 call MPI_Request_free(request6,ierr)
-                 call mem_dealloc(AlphaCD6)
-              ENDIF
-              nAwaitDealloc = 1
-              CurrentWait(1) = CurrentWait(2)
-              CurrentWait(2) = 0 
-           ENDIF
-           IF(useAlphaCD5)THEN
-              call mem_alloc(AlphaCD5,OriginalRanknbasisAuxMPI,nvirt,nocc)
-           ELSEIF(useAlphaCD6)THEN
-              call mem_alloc(AlphaCD6,OriginalRanknbasisAuxMPI,nvirt,nocc)
-           ENDIF
-           COUNT = OriginalRanknbasisAuxMPI*nocc*nvirt
-
-           MessageRecieved = .FALSE.
-           IF(useAlphaCD5)THEN
-              call time_start_phase( PHASE_COMM )
-              call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
-              call time_start_phase(PHASE_WORK)   
-           ELSEIF(useAlphaCD6)THEN
-              call time_start_phase( PHASE_COMM )
-              call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,lsmpi_status,ierr)
-              call time_start_phase(PHASE_WORK)   
-           ENDIF
-!           call MPI_Request_free(request,ierr) 
-           IF(MynbasisAuxMPI.GT.0)THEN
-              !Step 2: Obtain part of Calpha from this contribution
-              CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-              IF(useAlphaCD5)THEN
-                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
-                      & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
-                      & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
-              ELSEIF(useAlphaCD6)THEN
-                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
-                      & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD6,&
-                      & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
-              ENDIF
-              CALL LSTIMER('CalphaOther ',TS3,TE3,LUPRI,FORCEPRINT)
-           ENDIF
-           !Step 3: MPI send the recieved alphaCD to 'Sender' 
-           IF(node.NE.numnodes-1)THEN
-
-!CHANGE TO ISEND AND AD MPI_WAIT like the backup code ! Before alphaCD5 can be deallocated it must have been 
-!recieved.
-              IF(useAlphaCD5)THEN
-                 call time_start_phase( PHASE_COMM )
-                 call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request5,ierr)
-                 call time_start_phase(PHASE_WORK)   
-                 useAlphaCD5 = .FALSE.; useAlphaCD6=.TRUE.
-                 nAwaitDealloc = nAwaitDealloc + 1
-                 CurrentWait(nAwaitDealloc) = 5
-              ELSEIF(useAlphaCD6)THEN
-                 call time_start_phase( PHASE_COMM )
-                 call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request6,ierr)
-                 call time_start_phase(PHASE_WORK)   
-                 useAlphaCD6 = .FALSE.; useAlphaCD5=.TRUE.
-                 nAwaitDealloc = nAwaitDealloc + 1
-                 CurrentWait(nAwaitDealloc) = 6
-              ENDIF
-           ELSE
-              IF(useAlphaCD5)THEN
-                 call mem_dealloc(AlphaCD5)
-              ELSEIF(useAlphaCD6)THEN
-                 call mem_dealloc(AlphaCD6)
-              ENDIF
-           ENDIF
-        ENDIF
-     ENDDO
-     call mem_dealloc(nbasisAuxMPI)
-     call mem_dealloc(startAuxMPI)
-     call mem_dealloc(nAtomsMPI)
-     call mem_dealloc(nAuxMPI)
-     IF(MynbasisAuxMPI.GT.0)THEN
-        call mem_dealloc(TMPAlphaBeta_minus_sqrt)
-     ENDIF
-     NBA = MynbasisAuxMPI
-
-     !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt),UoccEOST(nocc,noccEOS)
-     !             : AlphaCD3(MynbasisAuxMPI,nvirt,nocc),Calpha(MynbasisAuxMPI,nvirt,nocc) 
-     !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + 2*MynbasisAuxMPI*nvirt*nocc
-
-#endif
-  else
-!     !  Make Choleksy-factorization (OpenMP hopefully)
-!     call DPOTRF('U',nbasisaux,AlphaBeta_minus_sqrt,nbasisaux,INFO)
-!     !  c_alpha = (alpha|beta)^-1 (beta|bj)
-     call mem_alloc(Calpha,nBasisaux,nvirt,nocc)
-!     !  Warning possible issue with 32 bit integers
-!     call DCOPY(nBasisaux*nvirt*nocc,AlphaCD3,1,Calpha,1)
-!     !  c_(alpha,aB) = (alpha|beta)^-1 (beta|aB)
-!     !  Solve the system A*X = B, overwriting B with X.
-!     !  Solve  A=(beta|alpha)  X=c_alpha   B = (beta|aB)     OpenMP hopefully
-!     CALL DPOTRS('U',nbasisAux,nvirt*nocc,AlphaBeta_minus_sqrt,nbasisaux,Calpha,nbasisaux,info)
-     call RIMP2_buildCalpha(nocc,nvirt,nBasisaux,AlphaBeta_minus_sqrt,AlphaCD3,Calpha)
-     call mem_dealloc(AlphaBeta_minus_sqrt)
-     NBA = nbasisAux
-  endif
-  CALL LSTIMER('DECRIMP2: Calpha ',TS2,TE2,LUPRI,FORCEPRINT)
-
-  if(CollaborateWithSlaves) then 
-#ifdef VAR_MPI
-     IF(MynbasisAuxMPI.GT.0)THEN 
-        !only send package if I have been assigned some basis functions
-        call time_start_phase( PHASE_IDLE )
-        !Verify that it has been recieved before deallocating
-        call MPI_WAIT(request,lsmpi_status,ierr)
-        call time_start_phase(PHASE_WORK)   
-        call mem_dealloc(alphaCD3)
-     ENDIF
-
-     IF(nAwaitDealloc.NE.0)THEN
-        do iAwaitDealloc=1,nAwaitDealloc
-           IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
-              call time_start_phase( PHASE_IDLE )
-              call MPI_WAIT(request5,lsmpi_status,ierr)
-              call time_start_phase( PHASE_COMM )
-              !                 call MPI_Request_free(request5,ierr)
-              call mem_dealloc(AlphaCD5)
-           ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
-              call time_start_phase( PHASE_IDLE )
-              call MPI_WAIT(request6,lsmpi_status,ierr)
-              call time_start_phase( PHASE_COMM )
-              !                 call MPI_Request_free(request6,ierr)
-              call mem_dealloc(AlphaCD6)
-           ENDIF
-        enddo
-     ENDIF
-     CALL LSTIMER('DECRIMP2: Calpha wait',TS2,TE2,LUPRI,FORCEPRINT)
-#endif
-  else
-     call mem_dealloc(alphaCD3)
-  endif
-
+  CALL LSTIMER('START ',TS2,TE2,LUPRI)
+  call Build_CalphaMO(MyFragment%mylsitem,master,nbasis,nbasisAux,LUPRI,&
+       & FORCEPRINT,CollaborateWithSlaves,MynbasisAuxMPI,CDIAGocc%val,nocc,&
+       & CDIAGvirt%val,nvirt,mynum,numnodes,nAtomsAux,Calpha,NBA)
+  CALL LSTIMER('DECRIMP2: CalphaMO',TS2,TE2,LUPRI,FORCEPRINT)
+  IF(.NOT.first_order)call array2_free(CDIAGvirt)
+  IF(.NOT.first_order)call array2_free(CDIAGocc)
   !At this point we have the Calpha in the diagonal basis 
 
   !=====================================================================================
@@ -2566,19 +2265,16 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   dimocc = [nvirt,noccEOS,nvirt,noccEOS]   ! Output order
   IF(NBA.GT.0)THEN
+     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt) 
      !Calculate and partial transform to local basis - transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
-     CALL LSTIMER('RIMP2_calc_tocc',TS3,TE3,LUPRI,FORCEPRINT)
      !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
      M = noccEOS              !rows of Output Matrix
      N = noccEOS*nvirt*nvirt  !columns of Output Matrix
      K = nocc                 !summation dimension
      call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
-     CALL LSTIMER('DGEMM tocc2 ',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tocc)
 
      !Transform first Virtual index (ILOC,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BLOC)
@@ -2586,17 +2282,14 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      N = nvirt                  !columns of Output Matrix
      K = nvirt                  !summation dimension
      call mem_alloc(tocc3,nvirt,nvirt,noccEOS,noccEOS)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call dgemm('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
-     CALL LSTIMER('DGEMM tocc3 ',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tocc2)
 
      !Final virtual transformation and reorder to dimocc
      call tensor_ainit(toccEOS,dimocc,4)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_calc_toccB(nvirt,noccEOS,tocc3,UvirtT,toccEOS%elm1)
-     CALL LSTIMER('RIMP2_calc_tocc3',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tocc3)     
+     CALL LSTIMER('RIMP2: toccEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
      call tensor_ainit(toccEOS,dimocc,4)
      nsize = nvirt*noccEOS*nvirt*noccEOS
@@ -2614,7 +2307,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call time_start_phase(PHASE_WORK)   
      IF(.NOT.Master )call tensor_free(toccEOS)
   ENDIF
-  CALL LSTIMER('DECRIMP2: tocc Reduction',TS2,TE2,LUPRI,FORCEPRINT)
 #endif
 
   !=====================================================================================
@@ -2622,11 +2314,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]   ! Output order
   IF(NBA.GT.0)THEN
+     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_alloc(tvirt,nocc,nocc,nvirtEOS,nvirt) !IDIAG,JDIAG,ALOC,BDIAG
      !Calculate and partial transform to local basis - transform occupied indices
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
-     CALL LSTIMER('RIMP2_calc_tvirt',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(EVocc)
      call mem_dealloc(EVvirt)
 
@@ -2635,9 +2326,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      N = nvirtEOS               !columns of Output Matrix
      K = nvirt                  !summation dimension
      call mem_alloc(tvirt2,nocc,nocc,nvirtEOS,nvirtEOS)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call dgemm('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
-     CALL LSTIMER('DGEMM tvirt2 ',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tvirt)
 
      !Transform first occupied index (IDIAG,JDIAG,ALOC,BLOC) => (ILOC,JDIAG,ALOC,BLOC)
@@ -2645,17 +2334,14 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      N = nocc*nvirtEOS*nvirtEOS  !columns of Output Matrix
      K = nocc                    !summation dimension
      call mem_alloc(tvirt3,nocc,nocc,nvirtEOS,nvirtEOS)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call dgemm('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
-     CALL LSTIMER('DGEMM tvirt3 ',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tvirt2)
 
      !transform last occ index to local basis and reorder 
      call tensor_ainit(tvirtEOS,dimvirt,4)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt3,UoccT,tvirtEOS%elm1)
-     CALL LSTIMER('RIMP2_calc_tvirt2',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tvirt3)
+     CALL LSTIMER('RIMP2: tvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
      call tensor_ainit(tvirtEOS,dimvirt,4)
      call mem_dealloc(EVocc)
@@ -2663,7 +2349,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      nSize = nvirtEOS*nocc*nvirtEOS*nocc
      call ls_dzero8(tvirtEOS%elm1,nSize)
   ENDIF
-  CALL LSTIMER('DECRIMP2: tvirt          ',TS2,TE2,LUPRI,FORCEPRINT)
 
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
@@ -2676,13 +2361,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(.NOT.Master )call tensor_free(tvirtEOS)
   ENDIF
 #endif
-  CALL LSTIMER('DECRIMP2: tvirt Reduction',TS2,TE2,LUPRI,FORCEPRINT)
 
   !=====================================================================================
   !  Major Step 7: Generate goccEOS(nvirt,noccEOS,nvirt,noccEOS)
   !=====================================================================================
 
   IF(NBA.GT.0)THEN
+     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      ! Transform Calpha(ALPHA,a,i) to local occupied index and local Virt
      ! Transform index delta to local occupied index 
      !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
@@ -2690,31 +2375,25 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      N = noccEOS          !columns of Output Matrix
      K = nocc             !summation dimension
      call mem_alloc(Calpha2,nba,nvirt,noccEOS)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,nocc,0.0E0_realk,Calpha2,M)
-     CALL LSTIMER('DGEMM2',TS3,TE3,LUPRI,FORCEPRINT)
-     call mem_dealloc(UoccEOST)
+     IF(.NOT.first_order)call mem_dealloc(UoccEOST)
 
      call mem_alloc(Calpha3,nba,nvirt,noccEOS)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,Calpha2,Calpha3)
-     CALL LSTIMER('RIMP2_TransAlpha1',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(Calpha2)
-     call mem_dealloc(UvirtT)
+     IF(.NOT.first_order)call mem_dealloc(UvirtT)
      
      call tensor_ainit(goccEOS,dimocc,4)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS%elm1)
-     CALL LSTIMER('RIMP2_calc_gocc',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(Calpha3)
+     CALL LSTIMER('RIMP2: goccEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
-     call mem_dealloc(UoccEOST)
-     call mem_dealloc(UvirtT)
+     IF(.NOT.first_order)call mem_dealloc(UoccEOST)
+     IF(.NOT.first_order)call mem_dealloc(UvirtT)
      call tensor_ainit(goccEOS,dimocc,4)
      nSize = nvirt*noccEOS*nvirt*noccEOS
      call ls_dzero8(goccEOS%elm1,nsize)
   ENDIF
-  CALL LSTIMER('DECRIMP2: gocc           ',TS2,TE2,LUPRI,FORCEPRINT)
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
      call time_start_phase( PHASE_IDLE )
@@ -2726,13 +2405,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(.NOT.Master )call tensor_free(goccEOS)
   ENDIF
 #endif
-  CALL LSTIMER('DECRIMP2: gocc Reduction ',TS2,TE2,LUPRI,FORCEPRINT)
 
   !=====================================================================================
   !  Major Step 8: Generate gvirtEOS(nvirtEOS,nocc,nvirtEOS,nocc)
   !=====================================================================================
 
   IF(NBA.GT.0)THEN
+     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      ! Transform index delta to local occupied index 
      !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
      M = nba*nvirt  !rows of Output Matrix
@@ -2740,32 +2419,25 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      K = nocc             !summation dimension
      call mem_alloc(Calpha2,nba,nvirt,nocc)
      !OpenMP hopefully
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,nocc,0.0E0_realk,Calpha2,M)
-     CALL LSTIMER('DGEMM4 ',TS3,TE3,LUPRI,FORCEPRINT)
-     call mem_dealloc(UoccT)
-     call mem_dealloc(Calpha)
-
+     IF(.NOT.first_order)call mem_dealloc(UoccT)
+     IF(.NOT.first_order)call mem_dealloc(Calpha)
      call mem_alloc(Calpha3,nba,nvirtEOS,nocc)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
-     CALL LSTIMER('RIMP2_TransAlpha2',TS3,TE3,LUPRI,FORCEPRINT)
-     call mem_dealloc(UvirtEOST)
+     IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
      call mem_dealloc(Calpha2)
 
      call tensor_ainit(gvirtEOS,dimvirt,4)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS%elm1)
-     CALL LSTIMER('RIMP2_calc_gvirt',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(Calpha3)
+     CALL LSTIMER('RIMP2: gvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
-     call mem_dealloc(UvirtEOST)
-     call mem_dealloc(UoccT)
+     IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
+     IF(.NOT.first_order)call mem_dealloc(UoccT)
      call tensor_ainit(gvirtEOS,dimvirt,4)
      nSize = nvirtEOS*nocc*nvirtEOS*nocc
      call ls_dzero8(gvirtEOS%elm1,nsize)
   ENDIF
-  CALL LSTIMER('DECRIMP2: gvirt          ',TS2,TE2,LUPRI,FORCEPRINT)
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
      call time_start_phase( PHASE_IDLE )
@@ -2777,7 +2449,155 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(.NOT.Master )call tensor_free(gvirtEOS)
   ENDIF
 #endif
-  CALL LSTIMER('DECRIMP2: gvirt Reduction',TS2,TE2,LUPRI,FORCEPRINT)
+
+  IF(first_order)THEN
+
+     !=====================================================================================
+     !  first_order prop: Generate djik(nvirtAOS,noccEOS,noccEOS,noccAOS=nocctot)
+     !=====================================================================================
+     dimvirt = [nvirt,noccEOS,noccEOS,nocctot]   ! Output order
+     IF(NBA.GT.0)THEN
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        !(alphaAux;nvirt,JnoccEOS) = (alphaAux;nvirt,J)*U(J,JnoccEOS)
+        M = nba*nvirt        !rows of Output Matrix
+        N = noccEOS          !columns of Output Matrix
+        K = nocc             !summation dimension
+        call mem_alloc(Calpha2,nba,nvirt,noccEOS)
+        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
+        
+        !(alphaAux,nvirtAOS,noccEOS) = (alphaAux;nvirt,noccEOS)*Uvirt(nvirt,nvirtAOS)
+        call mem_alloc(Calpha3,nba,nvirt,noccEOS)
+        call RIMP2_TransAlpha2(noccEOS,nvirt,nvirt,nba,UvirtT,Calpha2,Calpha3)
+        call mem_dealloc(Calpha2)
+        
+        CALL LSTIMER('START ',TS2,TE2,LUPRI)
+        IF(DECinfo%frozencore)THEN
+           call Build_CalphaMO(MyFragment%MyLsitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
+                & CollaborateWithSlaves,MynbasisAuxMPI,CDIAGocc%val,nocc,CDIAGoccTALL%val,nocctot,mynum,&
+                & numnodes,nAtomsAux,CalphaOcc,NBA)
+           call array2_free(CDIAGoccTALL)
+        ELSE
+           call Build_CalphaMO(MyFragment%MyLsitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
+                & CollaborateWithSlaves,MynbasisAuxMPI,CDIAGocc%val,nocc,CDIAGocc%val,nocc,mynum,&
+                & numnodes,nAtomsAux,CalphaOcc,NBA)
+           IF(nocctot.NE.nocc)call lsquit('FC Error RIMP2.',-1)
+        ENDIF
+        CALL LSTIMER('DECRIMP2: CalphaOO',TS2,TE2,LUPRI,FORCEPRINT)
+        call array2_free(CDIAGocc)
+
+        !(alphaAux;nocc,noccAOS=nocctot) = (alphaAux;nocc,nocc)*UoccallT(nocctot,nocctot)
+        M = nba*nocc         !rows of Output Matrix
+        N = nocctot          !columns of Output Matrix
+        K = nocctot          !summation dimension
+        call mem_alloc(Calpha2,nba,nocctot,nocctot)
+        IF(DECinfo%frozencore)THEN
+           call dgemm('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccallT,K,0.0E0_realk,Calpha2,M)
+           call mem_dealloc(UoccallT)
+        ELSE
+           call dgemm('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccT,K,0.0E0_realk,Calpha2,M)
+        ENDIF
+        call mem_dealloc(CalphaOcc)
+        !(alphaAux,noccEOS,noccAOS=nocctot) = (alphaAux;nocc,noccAOS=nocctot)*UoccEOST(nocc,noccEOS)
+        call mem_alloc(Calpha4,nba,noccEOS,nocctot)
+        call RIMP2_TransAlpha2(nocctot,nocc,noccEOS,nba,UoccEOST,Calpha2,Calpha4)
+        call mem_dealloc(UoccEOST)
+        call mem_dealloc(Calpha2)
+        
+        !  djikEOS(nvirtAOS,noccEOS,noccEOS,noccAOS)
+        call tensor_ainit(djik,dimvirt,4)
+        call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,Calpha4,noccEOS,nocctot,djik%elm1)
+        call mem_dealloc(Calpha3)
+        call mem_dealloc(Calpha4)
+        CALL LSTIMER('RIMP2: djik',TS3,TE3,LUPRI,FORCEPRINT)
+     ELSE
+        call array2_free(CDIAGocc)
+        call mem_dealloc(UoccEOST)
+        call tensor_ainit(djik,dimvirt,4)
+        nSize = nvirt*noccEOS*noccEOS*nocctot
+        call ls_dzero8(djik%elm1,nsize)
+     ENDIF
+#ifdef VAR_MPI
+     IF(CollaborateWithSlaves) then         
+        call time_start_phase( PHASE_IDLE )
+        call lsmpi_barrier(infpar%lg_comm)
+        call time_start_phase( PHASE_COMM )
+        nSize = nvirt*noccEOS*noccEOS*nocctot
+        call lsmpi_reduction(djik%elm1,nsize,infpar%master,infpar%lg_comm)
+        call time_start_phase( PHASE_WORK )   
+        IF(.NOT.Master )call tensor_free(djik)
+     ENDIF
+#endif
+
+     !=====================================================================================
+     !  first_order prop: Generate blad(nvirtEOS,noccAOS,nvirtEOS,nvirtAOS)
+     !=====================================================================================  
+
+     dimvirt = [nvirtEOS,nocc,nvirtEOS,nvirt]   ! Output order
+     IF(NBA.GT.0)THEN
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        CALL LSTIMER('START ',TS2,TE2,LUPRI)
+        call Build_CalphaMO(MyFragment%MyLsitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
+             & CollaborateWithSlaves,MynbasisAuxMPI,CDIAGvirt%val,nvirt,CDIAGvirt%val,nvirt,mynum,&
+             & numnodes,nAtomsAux,CalphaVV,NBA)
+        CALL LSTIMER('DECRIMP2: CalphaVV',TS2,TE2,LUPRI,FORCEPRINT)
+        call mem_dealloc(CDIAGvirt%val)
+
+        !(alphaAux;nvirt,noccAOS) = (alphaAux;nvirt,nocc)*U(nocc,noccAOS)
+        M = nba*nvirt        !rows of Output Matrix
+        N = nocc             !columns of Output Matrix
+        K = nocc             !summation dimension
+        call mem_alloc(Calpha2,nba,nvirt,nocc)
+        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+        call mem_dealloc(UoccT)
+        
+        !(alphaAux,nvirtEOS,noccAOS) = (alphaAux;nvirt,noccAOS)*Uvirt(nvirt,nvirtEOS)
+        call mem_alloc(Calpha3,nba,nvirtEOS,nocc)
+        call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
+        call mem_dealloc(Calpha2)
+   
+        !(alphaAux;nvirt,nvirtAOS) = (alphaAux;nvirt,nvirt)*UvirtT(nvirt,nvirt)
+        M = nba*nvirt        !rows of Output Matrix
+        N = nvirt            !columns of Output Matrix
+        K = nocc             !summation dimension
+        call mem_alloc(Calpha2,nba,nvirt,nvirt)
+        call dgemm('N','N',M,N,K,1.0E0_realk,CalphaVV,M,UvirtT,K,0.0E0_realk,Calpha2,M)
+        call mem_dealloc(CalphaVV)
+        call mem_dealloc(UvirtT)
+        call mem_dealloc(Calpha)
+        
+        !(alphaAux,nvirtEOS,nvirtAOS) = (alphaAux;nvirt,nvirtAOS)*UvirtEOST(nvirt,nvirtEOS)
+        call mem_alloc(Calpha4,nba,nvirtEOS,nvirt)
+        call RIMP2_TransAlpha2(nvirt,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha4)
+        call mem_dealloc(UvirtEOST)
+        call mem_dealloc(Calpha2)
+        
+        !generate blad(nvirtEOS,noccAOS,nvirtEOS,nvirtAOS)
+        call tensor_ainit(blad,dimvirt,4)
+        call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirtEOS,nocc,Calpha4,nvirtEOS,nvirt,blad%elm1)
+        call mem_dealloc(Calpha3)
+        call mem_dealloc(Calpha4)
+        CALL LSTIMER('RIMP2: blad',TS3,TE3,LUPRI,FORCEPRINT)
+     ELSE
+        call mem_dealloc(CDIAGvirt%val)
+        call mem_dealloc(UoccT)
+        call mem_dealloc(UvirtT)
+        call mem_dealloc(UvirtEOST)
+        call tensor_ainit(djik,dimvirt,4)
+        nSize = nvirtEOS*nocc*nvirtEOS*nvirt
+        call ls_dzero8(djik%elm1,nsize)
+     ENDIF
+#ifdef VAR_MPI
+     IF(CollaborateWithSlaves) then         
+        call time_start_phase( PHASE_IDLE )
+        call lsmpi_barrier(infpar%lg_comm)
+        call time_start_phase( PHASE_COMM )
+        nSize = nvirtEOS*nocc*nvirtEOS*nvirt
+        call lsmpi_reduction(blad%elm1,nsize,infpar%master,infpar%lg_comm)
+        call time_start_phase( PHASE_WORK )   
+        IF(.NOT.Master )call tensor_free(blad)
+     ENDIF
+#endif
+  ENDIF
 
   call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
   tmpidiff = twmpi2-twmpi1
@@ -2835,6 +2655,574 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 
 end subroutine RIMP2_integrals_and_amplitudes
+
+subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
+     & CollaborateWithSlaves,MynbasisAuxMPI,Cocc,nocc,Cvirt,nvirt,mynum,&
+     & numnodes,nAtomsAux,Calpha,NBA)
+  implicit none
+  type(lsitem), intent(inout) :: mylsitem
+  integer,intent(inout) :: MynbasisAuxMPI,NBA
+  integer,intent(in) :: nAtomsAux,nocc,nvirt
+  integer,intent(in) :: nbasisAux,LUPRI,nbasis,mynum,numnodes
+  logical,intent(in) :: master,FORCEPRINT,CollaborateWithSlaves
+  real(realk),intent(in) :: Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
+  real(realk),pointer :: Calpha(:,:,:)
+  !
+  integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
+  real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:)
+  real(realk),pointer :: TMPAlphaBeta_minus_sqrt(:,:),AlphaCD3(:,:,:)
+  real(realk),pointer :: AlphaCD5(:,:,:),AlphaCD6(:,:,:),AlphaCDFull(:,:,:)
+  real(realk) :: TS3,TE3,MemInGBCollected,SizeCalpha
+  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
+  integer(kind=long)    :: maxsize,nSize,n8
+  integer(kind=ls_mpik) :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
+  integer(kind=ls_mpik) :: request5,request6,Comm
+  integer(kind=ls_mpik) :: RIMPSubGroupSize,rimp2_nodtot,rimp2_mynum,rimp2_comm
+  integer :: CurrentWait(2),nAwaitDealloc,iAwaitDealloc,MynAtomsMPI,node
+  integer :: myOriginalRank,OriginalRanknbasisAuxMPI,M,N,K,I,offset,offset2
+  integer :: ndimMax,nbasisAuxMPI2(numnodes),MynbasisAuxMPI2,rimp2_nodtot2
+  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,MessageRecieved
+  logical :: PerformReduction,RIMPSubGroupCreated,UseSubGroupCommunicator
+  logical :: rimp2_member
+  TAG = 1982
+  RIMPSubGroupCreated = .FALSE.
+  PerformReduction = .TRUE.
+  rimp2_comm = 0
+
+  call get_currently_available_memory(MemInGBCollected)
+  IF(master)THEN
+     !maxsize = max number of floating point elements
+     SizeCalpha = (nbasisAux+nbasisAux/numnodes)*nocc*nvirt*8E-9_realk
+     IF(SizeCalpha.LT.MemInGBCollected*0.75E0_realk.OR.numnodes.EQ.1)THEN
+        !Calpha can fit on all nodes Which means we can do a reduction.
+        PerformReduction = .TRUE.
+        WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full (alpha|cd) integral requires ',SizeCalpha,'GB'
+        WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                  ',MemInGBCollected,'GB'
+     ELSE
+        !Calpha cannot fit so we distribute this - which means more MPI communication.
+        PerformReduction = .FALSE.
+        !Determine number of nodes to use to construct Calpha. (use same to determine the MPI split)
+     ENDIF
+     call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
+     call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+#endif
+     call time_start_phase( PHASE_WORK )
+  ELSE
+     call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
+     call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+#endif
+     call time_start_phase( PHASE_WORK )
+     IF(PerformReduction)THEN
+        !the master have enough space 
+        !maxsize = max number of floating point elements
+        SizeCalpha = nbasisAux*nocc*nvirt*8E-9_realk
+        IF(SizeCalpha.GT.MemInGBCollected*0.6E0_realk)THEN
+           print*,'WARNING: Master have space for (alpha|cd) but slave do not'
+           print*,'WARNING: Full (alpha|cd) integral requires ',SizeCalpha,'GB'
+           print*,'WARNING: Memory available                  ',MemInGBCollected,'GB'
+        ENDIF
+     ENDIF
+  ENDIF
+  !More Elaborate MPI communication scheme due to lack of space. 
+  UseSubGroupCommunicator = .TRUE.
+  IF(PerformReduction)UseSubGroupCommunicator = .FALSE.
+  IF(Numnodes.EQ.1)UseSubGroupCommunicator = .FALSE. 
+  IF(UseSubGroupCommunicator)THEN
+     RIMPSubGroupSize = numnodes
+     IF(master)THEN
+        IF(DECinfo%RIMPSubGroupSize.NE.0)THEN
+           !Cannot be greater than numnodes
+           RIMPSubGroupSize = MIN(numnodes,DECinfo%RIMPSubGroupSize)
+           !Cannot be smaller than 2 (it should never enter this part) 
+           !CollaborateWithSlaves cannot be set to false (which it should for 1)
+           RIMPSubGroupSize = MAX(2,RIMPSubGroupSize)
+           IF(RIMPSubGroupSize.EQ.numnodes)UseSubGroupCommunicator = .FALSE.
+        ELSE
+           !choose it such that alphaCD fits - no more           
+           do I=2,numnodes
+              SizeCalpha=(4*nbasisAux/I)*nocc*nvirt*8E-9_realk !4 on each node
+              IF(SizeCalpha.LT.MemInGBCollected*0.75E0_realk.OR.numnodes.EQ.1)THEN
+                 RIMPSubGroupSize = I
+                 EXIT
+              ENDIF
+           enddo
+           IF(RIMPSubGroupSize.EQ.numnodes)THEN
+              UseSubGroupCommunicator = .FALSE.
+           ENDIF
+           call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
+           call ls_mpibcast(RIMPSubGroupSize,infpar%master,infpar%lg_comm)
+#endif
+           call time_start_phase( PHASE_WORK )
+        ENDIF
+     ELSE
+        IF(DECinfo%RIMPSubGroupSize.NE.0)THEN
+           RIMPSubGroupSize = MIN(numnodes,DECinfo%RIMPSubGroupSize)
+           IF(RIMPSubGroupSize.EQ.numnodes)UseSubGroupCommunicator = .FALSE.
+        ELSE
+           call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
+           call ls_mpibcast(RIMPSubGroupSize,infpar%master,infpar%lg_comm)
+#endif
+           IF(RIMPSubGroupSize.EQ.numnodes)UseSubGroupCommunicator = .FALSE.
+           call time_start_phase( PHASE_WORK )        
+        ENDIF
+     ENDIF
+  ENDIF
+  IF(UseSubGroupCommunicator)THEN     
+     call time_start_phase( PHASE_COMM )
+#ifdef VAR_MPI
+     call init_mpi_subgroup(rimp2_nodtot,rimp2_mynum,rimp2_comm,rimp2_member,&
+          & RIMPSubGroupSize,infpar%lg_comm,DECinfo%output)
+#endif
+     call time_start_phase( PHASE_WORK)
+     RIMPSubGroupCreated = .TRUE.
+     Comm = rimp2_comm     
+     WRITE(DECinfo%output,'(A,I6,A,I6)')'RIMP2 Calpha Scheme 2: Using ',rimp2_nodtot,' nodes out of ',numnodes
+  ELSE
+#ifdef VAR_MPI
+     Comm = infpar%lg_comm
+#endif
+     rimp2_mynum = mynum
+     rimp2_member = .TRUE.
+     rimp2_nodtot = numnodes
+     IF(.NOT.PerformReduction)WRITE(DECinfo%output,'(A,I6,A,I6)')'RIMP2 Calpha Scheme 3: Using ',rimp2_nodtot,' nodes'
+  ENDIF
+ 
+  IF(CollaborateWithSlaves.AND.rimp2_member)then 
+     !all nodes have info about all nodes 
+     rimp2_nodtot2 = rimp2_nodtot
+     call mem_alloc(nbasisAuxMPI,rimp2_nodtot2)           !number of Aux basis func assigned to rank
+     call mem_alloc(nAtomsMPI,rimp2_nodtot2)              !atoms assign to rank
+     call mem_alloc(startAuxMPI,nAtomsAux,rimp2_nodtot2)  !startindex in full (nbasisAux)
+     call mem_alloc(AtomsMPI,nAtomsAux,rimp2_nodtot2)     !identity of atoms in full molecule
+     call mem_alloc(nAuxMPI,nAtomsAux,rimp2_nodtot2)      !nauxBasis functions for each of the nAtomsMPI
+
+     IF(DECinfo%AuxAtomicExtent)THEN   
+        call getRIbasisMPI(mylsitem%INPUT%AUXMOLECULE,nAtomsAux,rimp2_nodtot2,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ELSE
+        call getRIbasisMPI(mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,rimp2_nodtot2,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ENDIF
+     MynAtomsMPI = nAtomsMPI(mynum+1)
+     MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
+     call mem_dealloc(AtomsMPI) !not used in this subroutine 
+  ELSE
+     MynbasisAuxMPI = nbasisAux
+     IF(.NOT.rimp2_member)MynbasisAuxMPI = 0
+  ENDIF
+  NBA = MynbasisAuxMPI
+  IF(rimp2_member)THEN
+   IF(master)THEN
+     !=====================================================================================
+     ! Major Step 1: Master Obtains (alpha|beta) ERI in Auxiliary Basis 
+     !=====================================================================================
+     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full 2 center ERI
+     !this should naturally be changed      
+     call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
+     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => mylsitem%SETTING%MOLECULE(2)%p
+        molecule3 => mylsitem%SETTING%MOLECULE(3)%p
+        molecule4 => mylsitem%SETTING%MOLECULE(4)%p
+        mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
+        mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
+        mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
+        mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
+     ENDIF
+     call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+          & AlphaBeta,mylsitem%setting,nbasisAux)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        mylsitem%SETTING%MOLECULE(2)%p => molecule2
+        mylsitem%SETTING%MOLECULE(3)%p => molecule3
+        mylsitem%SETTING%MOLECULE(4)%p => molecule4
+     ENDIF
+
+     CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
+     !=====================================================================================
+     ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
+     !=====================================================================================
+     ! Warning the inverse is not unique so in order to make sure all slaves have the same
+     ! inverse matrix we calculate it on the master a BCAST to slaves
+
+     !Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
+     call mem_alloc(AlphaBeta_minus_sqrt,nbasisAux,nbasisAux)
+     call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBeta_minus_sqrt, lupri)
+     call mem_dealloc(AlphaBeta)
+     CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
+   ELSE
+     call mem_alloc(AlphaBeta_minus_sqrt,nbasisAux,nbasisAux)
+   ENDIF
+#ifdef VAR_MPI
+   call time_start_phase( PHASE_IDLE )
+   call lsmpi_barrier(Comm)
+   call time_start_phase( PHASE_COMM )
+   call ls_mpibcast(AlphaBeta_minus_sqrt,nbasisAux,nbasisAux,infpar%master,Comm)
+   call time_start_phase(PHASE_WORK)   
+#endif
+  ENDIF
+
+  IF(CollaborateWithSlaves.AND.rimp2_member)then 
+     IF(PerformReduction)THEN
+        ndimMax = nbasisAux/numnodes
+        do I=1,numnodes
+           nbasisAuxMPI2(I) = ndimMax
+        enddo
+        J=2 !not add to master
+        do I=1,MOD(nbasisAux,numnodes)
+           nbasisAuxMPI2(J) = nbasisAuxMPI2(J) + 1
+           J=J+1
+        enddo
+        MynbasisAuxMPI2 = nbasisAuxMPI2(mynum+1)
+        call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI2,nbasisAux)
+        offset = mynum*ndimMax
+        offset2 = numnodes*ndimMax + mynum -1 +1
+        IF(MynbasisAuxMPI2.GT.ndimMax)THEN
+           !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax,&
+           !$OMP TMPAlphaBeta_minus_sqrt,AlphaBeta_minus_sqrt,offset,offset2)
+           do I=1,nbasisAux
+              do J=1,ndimMax
+                 TMPAlphaBeta_minus_sqrt(J,I) = AlphaBeta_minus_sqrt(offset+J,I)
+              enddo
+              TMPAlphaBeta_minus_sqrt(ndimMax+1,I) = AlphaBeta_minus_sqrt(offset2,I)
+           enddo
+           !$OMP END PARALLEL DO
+        ELSE
+           !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax,&
+           !$OMP TMPAlphaBeta_minus_sqrt,AlphaBeta_minus_sqrt,offset)
+           do I=1,nbasisAux
+              do J=1,ndimMax
+                 TMPAlphaBeta_minus_sqrt(J,I) = AlphaBeta_minus_sqrt(offset+J,I)
+              enddo
+           enddo
+           !$OMP END PARALLEL DO
+        ENDIF
+        call mem_dealloc(AlphaBeta_minus_sqrt)
+        NBA = MynbasisAuxMPI2
+     ELSE
+        !We wish to build
+        !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
+        !where alpha runs over the Aux basis functions allocated for this rank
+        !and beta run over the full set of nbasisAux
+        IF(MynbasisAuxMPI.GT.0)THEN
+           call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux)
+           call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux,&
+                & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,rimp2_nodtot,natomsAux)
+           call mem_dealloc(AlphaBeta_minus_sqrt)
+        ENDIF
+     ENDIF
+  ENDIF
+
+  !=====================================================================================
+  ! Major Step 3: Obtain 3 center RI integrals (alpha,a,i) 
+  !=====================================================================================
+  IF(MynbasisAuxMPI.GT.0)THEN
+     call get_currently_available_memory(MemInGBCollected)
+     !maxsize = max number of floating point elements
+     maxsize = NINT(MemInGBCollected*1.E9_realk)
+     !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
+     !It is very annoying but I allocated AlphaCD3 inside 
+     !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
+     !This Part of the Code is MPI/OpenMP parallel and AlphaCD3 
+     !will have the dimensions (MynbasisAuxMPI,nvirt,nocc) 
+     !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly 
+     !nbasisAuxMPI = nbasisAux/rimp2_nodtot
+     IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => mylsitem%SETTING%MOLECULE(2)%p
+        mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
+        mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
+     ENDIF
+     call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
+          & AlphaCD3,mylsitem%setting,nbasisAux,nbasis,&
+          & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,rimp2_nodtot)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        mylsitem%SETTING%MOLECULE(2)%p => molecule2
+     ENDIF
+  ENDIF
+
+  IF(PerformReduction)THEN
+     WRITE(DECinfo%output,'(A)')'RIMP2 Calpha Scheme 1: Using Allreduce on (alpha|cd) integral'
+     IF(CollaborateWithSlaves)then 
+        call mem_alloc(alphaCDFull,nbasisAux,nvirt,nocc)
+        n8 = nbasisAux*nocc*nvirt
+        call ls_dzero8(alphaCDFull,n8)
+        call PlugInToalphaCDFull(mynum,nAtomsMPI,startAuxMPI,nocc,nvirt,nAuxMPI,&
+             & alphaCDFull,alphaCD3,nbasisAux,MynbasisAuxMPI,rimp2_nodtot,nAtomsAux)
+        call mem_dealloc(alphaCD3)
+#ifdef VAR_MPI
+        call time_start_phase( PHASE_IDLE )
+        call lsmpi_barrier(Comm)
+        call time_start_phase( PHASE_COMM )
+        call lsmpi_allreduce(alphaCDFull,nbasisAux,nvirt,nocc,Comm)
+        call time_start_phase( PHASE_WORK )
+#endif
+        !Calpha = TMPAlphaBeta_minus_sqrt(MynbasisAuxMPI,nbasisAux)
+        M =  MynbasisAuxMPI2   !rows of Output Matrix
+        N =  nvirt*nocc       !columns of Output Matrix
+        K =  nbasisAux        !summation dimension
+        call mem_alloc(Calpha,MynbasisAuxMPI2,nvirt,nocc)
+        call dgemm('N','N',M,N,K,1.0E0_realk,TMPAlphaBeta_minus_sqrt,&
+             & M,alphaCDFull,K,0.0E0_realk,Calpha,M)
+        call mem_dealloc(alphaCDFull)
+        call mem_dealloc(TMPAlphaBeta_minus_sqrt)
+     ELSE
+        !Serial version
+        M =  MynbasisAuxMPI   !rows of Output Matrix
+        N =  nvirt*nocc       !columns of Output Matrix
+        K =  nbasisAux        !summation dimension
+        call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
+        call dgemm('N','N',M,N,K,1.0E0_realk,AlphaBeta_minus_sqrt,&
+             & M,AlphaCD3,K,0.0E0_realk,Calpha,M)
+        call mem_dealloc(AlphaCD3)
+        call mem_dealloc(AlphaBeta_minus_sqrt)
+     ENDIF
+  ELSE
+#ifdef VAR_MPI
+     if(CollaborateWithSlaves.AND.rimp2_member) then 
+        !START BY SENDING MY OWN PACKAGE alphaCD3
+        !A given rank always recieve a package from the same node 
+        !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
+        Receiver = MOD(1+mynum,rimp2_nodtot)
+        !A given rank always send to the same node 
+        !rank 2 sends to rank 1, rank 1 sends to rank 0 ...
+        Sender = MOD(mynum-1+rimp2_nodtot,rimp2_nodtot)
+        COUNT = MynbasisAuxMPI*nocc*nvirt !size of alphaCD3
+        IF(MynbasisAuxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
+           call time_start_phase( PHASE_COMM )
+           call MPI_ISEND(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,Comm,request,ierr)        
+           !        call MPI_Request_free(request,ierr)
+           call time_start_phase(PHASE_WORK)   
+        ENDIF
+     endif
+#endif
+
+     !=====================================================================================
+     ! Major Step 4: Obtain C_(alpha,ai) = (alpha|beta)^(-1) (beta|ai)
+     !               consider  c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
+     !               so that you only need 1 3dim quantity      
+     !=====================================================================================
+
+     if(CollaborateWithSlaves.AND.rimp2_member) then         
+#ifdef VAR_MPI
+        IF(MynbasisAuxMPI.GT.0)THEN 
+           !consider 
+           !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
+           !so that you only need 1 3dim quantity      
+           call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
+           !Use own AlphaCD3 to obtain part of Calpha
+           CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+           call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,rimp2_nodtot,natomsAux,&
+                & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
+           CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
+        ENDIF
+
+        !To complete construction of  c_(nbasisAuxMPI,nvirt,nocc) we need all
+        !alphaCD(nbasisAuxMPI,nvirt,nocc) contributions from all ranks
+        !so we do:
+        ! 1. MPI recieve a alphaCD from 'Receiver' 
+        !        the first package should already have arrived 
+        !        originating from the ISEND immidiately after
+        !        II_get_RI_AlphaCD_3centerInt2
+        ! 2. Obtain part of Calpha from this contribution
+        ! 3. MPI send the recieved alphaCD to 'Sender' 
+        ! 4. Repeat untill all contributions have been added
+
+        useAlphaCD5 = .TRUE. 
+        useAlphaCD6 = .FALSE.
+
+        CurrentWait(1) = 0
+        CurrentWait(2) = 0
+        nAwaitDealloc = 0
+
+        DO node=1,rimp2_nodtot-1 !should recieve rimp2_nodtot-1 packages 
+           !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
+           !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
+           ! ...
+           !myOriginalRank therefore determine the size of NodenbasisAuxMPI
+           myOriginalRank = MOD(mynum+node,rimp2_nodtot)         
+           OriginalRanknbasisAuxMPI = nbasisAuxMPI(myOriginalRank+1) !dim1 of recieved package
+
+           IF(OriginalRanknbasisAuxMPI.GT.0)THEN
+              !Step 1 : MPI recieve a alphaCD from 'Receiver' 
+              IF(nAwaitDealloc.EQ.2)THEN
+                 !all buffers are allocated and await to be deallocated once the memory
+                 !have been recieved by the reciever.
+                 IF(CurrentWait(1).EQ.5)THEN
+                    call time_start_phase( PHASE_IDLE )
+                    call MPI_WAIT(request5,lsmpi_status,ierr)
+                    call time_start_phase(PHASE_WORK)   
+                    !                 call MPI_Request_free(request5,ierr)
+                    call mem_dealloc(AlphaCD5)
+                 ELSEIF(CurrentWait(1).EQ.6)THEN
+                    call time_start_phase( PHASE_IDLE )
+                    call MPI_WAIT(request6,lsmpi_status,ierr)
+                    call time_start_phase(PHASE_WORK)   
+                    !                 call MPI_Request_free(request6,ierr)
+                    call mem_dealloc(AlphaCD6)
+                 ENDIF
+                 nAwaitDealloc = 1
+                 CurrentWait(1) = CurrentWait(2)
+                 CurrentWait(2) = 0 
+              ENDIF
+              IF(useAlphaCD5)THEN
+                 call mem_alloc(AlphaCD5,OriginalRanknbasisAuxMPI,nvirt,nocc)
+              ELSEIF(useAlphaCD6)THEN
+                 call mem_alloc(AlphaCD6,OriginalRanknbasisAuxMPI,nvirt,nocc)
+              ENDIF
+              COUNT = OriginalRanknbasisAuxMPI*nocc*nvirt
+
+              MessageRecieved = .FALSE.
+              IF(useAlphaCD5)THEN
+                 call time_start_phase( PHASE_COMM )
+                 call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,Comm,lsmpi_status,ierr)
+                 call time_start_phase(PHASE_WORK)   
+              ELSEIF(useAlphaCD6)THEN
+                 call time_start_phase( PHASE_COMM )
+                 call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,Comm,lsmpi_status,ierr)
+                 call time_start_phase(PHASE_WORK)   
+              ENDIF
+              !           call MPI_Request_free(request,ierr) 
+              IF(MynbasisAuxMPI.GT.0)THEN
+                 !Step 2: Obtain part of Calpha from this contribution
+                 CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+                 IF(useAlphaCD5)THEN
+                    call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,rimp2_nodtot,natomsAux,&
+                         & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
+                         & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
+                 ELSEIF(useAlphaCD6)THEN
+                    call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,rimp2_nodtot,natomsAux,&
+                         & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD6,&
+                         & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
+                 ENDIF
+                 CALL LSTIMER('CalphaOther ',TS3,TE3,LUPRI,FORCEPRINT)
+              ENDIF
+              !Step 3: MPI send the recieved alphaCD to 'Sender' 
+              IF(node.NE.rimp2_nodtot-1)THEN
+                 IF(useAlphaCD5)THEN
+                    call time_start_phase( PHASE_COMM )
+                    call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,Comm,request5,ierr)
+                    call time_start_phase(PHASE_WORK)   
+                    useAlphaCD5 = .FALSE.; useAlphaCD6=.TRUE.
+                    nAwaitDealloc = nAwaitDealloc + 1
+                    CurrentWait(nAwaitDealloc) = 5
+                 ELSEIF(useAlphaCD6)THEN
+                    call time_start_phase( PHASE_COMM )
+                    call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,Comm,request6,ierr)
+                    call time_start_phase(PHASE_WORK)   
+                    useAlphaCD6 = .FALSE.; useAlphaCD5=.TRUE.
+                    nAwaitDealloc = nAwaitDealloc + 1
+                    CurrentWait(nAwaitDealloc) = 6
+                 ENDIF
+              ELSE
+                 IF(useAlphaCD5)THEN
+                    call mem_dealloc(AlphaCD5)
+                 ELSEIF(useAlphaCD6)THEN
+                    call mem_dealloc(AlphaCD6)
+                 ENDIF
+              ENDIF
+           ENDIF
+        ENDDO
+        IF(MynbasisAuxMPI.GT.0)THEN
+           call mem_dealloc(TMPAlphaBeta_minus_sqrt)
+        ENDIF
+        NBA = MynbasisAuxMPI
+
+#endif
+     else
+        IF(rimp2_member)THEN
+           !serial version 
+           M =  nbasisAux       !rows of Output Matrix
+           N =  nvirt*nocc       !columns of Output Matrix
+           K =  nbasisAux        !summation dimension
+           call mem_alloc(Calpha,nBasisaux,nvirt,nocc)
+           call dgemm('N','N',M,N,K,1.0E0_realk,AlphaBeta_minus_sqrt,&
+                & M,AlphaCD3,K,0.0E0_realk,Calpha,M)
+           call mem_dealloc(AlphaBeta_minus_sqrt)
+           call mem_dealloc(alphaCD3)
+           NBA = nbasisAux
+        endif
+     endif
+
+     if(CollaborateWithSlaves.AND.rimp2_member) then 
+#ifdef VAR_MPI
+        IF(MynbasisAuxMPI.GT.0)THEN 
+           !only send package if I have been assigned some basis functions
+           call time_start_phase( PHASE_IDLE )
+           !Verify that it has been recieved before deallocating
+           call MPI_WAIT(request,lsmpi_status,ierr)
+           call time_start_phase(PHASE_WORK)   
+           call mem_dealloc(alphaCD3)
+        ENDIF
+
+        IF(nAwaitDealloc.NE.0)THEN
+           do iAwaitDealloc=1,nAwaitDealloc
+              IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
+                 call time_start_phase( PHASE_IDLE )
+                 call MPI_WAIT(request5,lsmpi_status,ierr)
+                 call time_start_phase( PHASE_COMM )
+                 !                 call MPI_Request_free(request5,ierr)
+                 call mem_dealloc(AlphaCD5)
+              ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
+                 call time_start_phase( PHASE_IDLE )
+                 call MPI_WAIT(request6,lsmpi_status,ierr)
+                 call time_start_phase( PHASE_COMM )
+                 !                 call MPI_Request_free(request6,ierr)
+                 call mem_dealloc(AlphaCD6)
+              ENDIF
+           enddo
+        ENDIF
+#endif
+     endif
+  ENDIF
+  IF(CollaborateWithSlaves.AND.rimp2_member)then 
+     call mem_dealloc(nbasisAuxMPI)
+     call mem_dealloc(startAuxMPI)
+     call mem_dealloc(nAtomsMPI)
+     call mem_dealloc(nAuxMPI)
+  ENDIF
+  IF(RIMPSubGroupCreated)THEN
+#ifdef VAR_MPI
+     call LSMPI_COMM_FREE(rimp2_comm)
+#endif
+  ENDIF
+end subroutine Build_CalphaMO
+
+subroutine PlugInToalphaCDFull(mynum,nAtomsMPI,startAuxMPI,nocc,&
+     & nvirt,nAuxMPI,alphaCDFull,alphaCD3,nbasisAux,MynbasisAuxMPI,&
+     & numnodes,nAtomsAux)
+  implicit none
+  integer,intent(in) :: mynum,numnodes,nocc,nvirt,nAtomsAux,MynbasisAuxMPI
+  integer,intent(in) :: nAtomsMPI(numnodes),startAuxMPI(nAtomsAux,numnodes)
+  integer,intent(in) :: nAuxMPI(nAtomsAux,numnodes),nbasisAux
+  real(realk),intent(in) :: alphaCD3(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(inout) :: alphaCDFull(nbasisAux,nvirt*nocc)
+  !
+  integer :: iatomB,startB,IA,BETA,startB2,nAuxLoc
+  !$OMP PARALLEL DEFAULT(none) PRIVATE(iatomB,startB,IA,&
+  !$OMP BETA,startB2,nAuxLoc) SHARED(mynum,nAtomsMPI,startAuxMPI,&
+  !$OMP nocc,nvirt,nAuxMPI,alphaCDFull,alphaCD3)
+  startB2 = 0
+  DO iAtomB=1,nAtomsMPI(mynum+1)
+     StartB = startAuxMPI(iAtomB,mynum+1)
+     nAuxLoc = nAuxMPI(iAtomB,mynum+1)
+     !$OMP DO
+     do IA = 1,nocc*nvirt
+        do BETA = 1,nAuxLoc
+           alphaCDFull(startB + BETA,IA) = alphaCD3(startB2 + BETA,IA)
+        enddo
+     enddo
+     !$OMP END DO
+     startB2 = startB2 + nAuxMPI(iAtomB,mynum+1)
+  ENDDO
+  !$OMP END PARALLEL
+end subroutine PlugInToalphaCDFull
 
 !alphaCD(NBA,nvirt,nocc) is in the diagonal basis 
 subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
@@ -2991,24 +3379,24 @@ subroutine RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,AlphaCD4,AlphaCD5)
   !$OMP END PARALLEL DO
 end subroutine RIMP2_TransAlpha1
 
-subroutine RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,AlphaCD4,AlphaCD5)
+!AlphaCD5(NBA,n3,n2) = UvirtEOST(n1,n3)*AlphaCD4(NBA,n1,n2)
+subroutine RIMP2_TransAlpha2(n2,n1,n3,nba,UvirtEOST,AlphaCD4,AlphaCD5)
   implicit none
-  integer,intent(in) :: nvirt,nvirtEOS,nocc,nba
-  real(realk),intent(in) :: UvirtEOST(nvirt,nvirtEOS)
-  real(realk),intent(in) :: AlphaCD4(NBA,nvirt,nocc)
-  real(realk),intent(inout) :: AlphaCD5(NBA,nvirtEOS,nocc)
+  integer,intent(in) :: nba,n1,n2,n3
+  real(realk),intent(in) :: UvirtEOST(n1,n3)
+  real(realk),intent(in) :: AlphaCD4(NBA,n1,n2)
+  real(realk),intent(inout) :: AlphaCD5(NBA,n3,n2)
   !
   integer :: JLOC,BLOC,ALPHAAUX,BDIAG
   real(realk) :: TMP
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
   !$OMP PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP) &
-  !$OMP SHARED(nocc,nvirt,nvirtEOS,nba,&
-  !$OMP UvirtEOST,AlphaCD4,AlphaCD5)
-  do JLOC = 1,nocc
-     do BLOC = 1,nvirtEOS
+  !$OMP SHARED(n1,n2,n3,nba,UvirtEOST,AlphaCD4,AlphaCD5)
+  do JLOC = 1,n2
+     do BLOC = 1,n3
         do ALPHAAUX = 1,nba
            TMP = 0.0E0_realk
-           do BDIAG = 1,nvirt
+           do BDIAG = 1,n1
               TMP = TMP + UvirtEOST(BDIAG,BLOC)*AlphaCD4(ALPHAAUX,BDIAG,JLOC)
            enddo
            AlphaCD5(ALPHAAUX,BLOC,JLOC) = TMP
@@ -3072,29 +3460,32 @@ subroutine RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS)
   !$OMP END PARALLEL DO
 end subroutine RIMP2_calc_gvirt
 
-subroutine RIMP2_buildCalpha(nocc,nvirt,nBasisaux,AlphaBeta_inv,AlphaCD3,Calpha)
+subroutine RIMP2_calc_gen4DimFO(NBA,Calpha3,n1,n2,Calpha4,n3,n4,djik)
   implicit none
-  integer,intent(in) :: nocc,nvirt,nBasisaux
-  real(realk),intent(in) :: AlphaBeta_inv(nBasisaux,nBasisaux),AlphaCD3(nBasisaux,nvirt*nocc)
-  real(realk),intent(inout) :: Calpha(nBasisaux,nvirt*nocc)       
-  !
-  integer :: IB,ALPHA,BETA
-  real(realk) :: TMP       
-  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(IB,ALPHA,BETA,TMP) &
-  !$OMP SHARED(nocc,nvirt,nBasisaux,AlphaBeta_inv,AlphaCD3,Calpha)
-  do IB = 1,nocc*nvirt
-     do ALPHA = 1,nBasisaux
-        Calpha(ALPHA,IB) = 0.0E0_realk
-     enddo
-     do BETA = 1,nBasisaux
-        TMP = AlphaCD3(BETA,IB)
-        do ALPHA = 1,nBasisaux
-           Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + AlphaBeta_inv(ALPHA,BETA)*TMP
+  integer,intent(in) :: NBA,n1,n2,n3,n4
+  real(realk),intent(in) :: Calpha3(NBA,n1,n2),Calpha4(NBA,n3,n4)
+  real(realk),intent(inout) :: djik(n1,n2,n3,n4)
+  !local variables
+  integer :: A,B,C,D,ALPHAAUX
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
+  !$OMP PRIVATE(A,B,C,D,ALPHAAUX,TMP) &
+  !$OMP SHARED(n1,n2,n3,n4,NBA,Calpha3,Calpha4,djik)
+  do d=1,n4
+     do c=1,n3
+        do b=1,n2
+           do a=1,n1
+              TMP = 0.0E0_realk
+              do ALPHAAUX = 1,nba
+                 tmp = tmp + Calpha3(alphaAUX,A,B)*Calpha4(alphaAUX,C,D)
+              enddo
+              djik(A,B,C,D) = tmp
+           enddo
         enddo
      enddo
   enddo
   !$OMP END PARALLEL DO
-end subroutine RIMP2_buildCalpha
+end subroutine RIMP2_calc_gen4DimFO
 
 subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
      & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
@@ -4473,10 +4864,12 @@ end subroutine get_simple_parallel_mp2_residual_slave
 !> \March 2014
 subroutine RIMP2_integrals_and_amplitudes_slave()
   use precision
+  use infpar_module
   use dec_typedef_module
   use lstiming
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
+  use lsmpi_type, only: ls_mpibcast
   use decmpi_module, only: mpi_communicate_mp2_int_and_amp
   use mp2_module,only: RIMP2_integrals_and_amplitudes
   use tensor_type_def_module, only: tensor
@@ -4485,8 +4878,6 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   type(decfrag) :: MyFragment
   !> Batch sizes
   type(mp2_batch_construction) :: bat
-  !> Calculate intgrals for first order MP2 properties?
-  logical :: first_order_integrals
   !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see notation inside]
   type(tensor) :: goccEOS
   !> Amplitudes for occ EOS in the order (d,j,c,i) [see notation inside]
@@ -4495,16 +4886,27 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   type(tensor) :: gvirtEOS
   !> Amplitudes for virt EOS in the order (b,l,a,k) [see notation inside]
   type(tensor) :: tvirtEOS
+  !> Occ EOS integrals (d j | i k) in the order (d,j,i,k)  
+  type(tensor) :: djik  !V_aos*O_eos*O_eos*O_aos
+  !> Virt EOS integrals (b l | a d) in the order (b,l,a,d)  
+  type(tensor) :: blad  !V_eos*O_aos*V_eos*V_aos
+  !> Calculate intgrals for first order MP2 properties?
+  logical :: first_order
 
   ! Receive fragment structure and other information from master rank
   ! *****************************************************************
   call time_start_phase( PHASE_COMM)
-  call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order_integrals,.true.)
+  call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
   call time_start_phase( PHASE_WORK)
-  ! Calculate contribution to integrals/amplitudes for slave
-  ! ********************************************************
-  call RIMP2_integrals_and_amplitudes(MyFragment,&
-       & goccEOS,toccEOS,gvirtEOS,tvirtEOS)
+  IF(first_order)THEN
+     call RIMP2_integrals_and_amplitudes(MyFragment,&
+          & goccEOS,toccEOS,gvirtEOS,tvirtEOS,djik,blad)
+  ELSE
+     ! Calculate contribution to integrals/amplitudes for slave
+     ! ********************************************************
+     call RIMP2_integrals_and_amplitudes(MyFragment,&
+          & goccEOS,toccEOS,gvirtEOS,tvirtEOS)
+  ENDIF
 
 end subroutine RIMP2_integrals_and_amplitudes_slave
 

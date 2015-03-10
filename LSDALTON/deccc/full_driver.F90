@@ -24,7 +24,6 @@ module full
   use dec_fragment_utils
   use CABS_operations
 #ifdef MOD_UNRELEASED
-  use cc_debug_routines_module
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
 #endif
@@ -100,7 +99,7 @@ contains
              if(DECinfo%use_canonical ) then
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
-                call full_canonical_mp2(MyMolecule,MyLsitem,Ecorr)       
+                call full_canonical_mp2B(MyMolecule,MyLsitem,Ecorr)
              else
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
@@ -938,11 +937,12 @@ contains
     real(realk) :: tcpuTOT,twallTOT,tcpu_start,twall_start, tcpu_end,twall_end
     real(realk),pointer :: AlphaCD(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
     real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:)
-    real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:),EpsOcc(:),EpsVirt(:)
+    real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:)
+    real(realk),pointer :: EpsOcc(:),EpsVirt(:)
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,COUNT2,comm,TAG1,TAG2
     integer :: J,CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
     integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux,restart_lun
-    integer :: noccJstart
+    integer :: noccJstart,offset
     logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
     logical :: RoundRobin2,RoundRobin3,useCalpha2,useCalpha3,FORCEPRINT
     integer(kind=ls_mpik)  :: request1,request2,request5,request6,request7,request8
@@ -970,7 +970,6 @@ contains
     TAG = 1411
     TAG1 = 1412
     TAG2 = 1413
-
     !sanity check
     if(.NOT.DECinfo%use_canonical) then
        call lsquit('Error: full_canonical_rimp2 require canonical Orbitals',-1)
@@ -978,10 +977,20 @@ contains
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
-    nocc   = MyMolecule%nocc
     nvirt  = MyMolecule%nunocc
     naux   = MyMolecule%nauxbasis
-    noccfull = nocc
+    !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
+    !with MyMolecule%nocc = Core + Valence 
+    !In case of Frozen core we only need Valence and will access
+    !Co(nbasis,ncore+nval) = MyMolecule%Co(nbasis,MyMolecule%ncore+1:MyMolecule%nocc)
+    noccfull = MyMolecule%nocc
+    IF(DECinfo%Frozencore)THEN
+       nocc   = MyMolecule%nval
+       offset = MyMolecule%ncore
+    ELSE
+       nocc   = MyMolecule%nocc
+       offset = 0
+    ENDIF
     nAtoms = MyMolecule%nAtoms
     LUPRI = DECinfo%output
 #ifdef VAR_MPI
@@ -1027,387 +1036,28 @@ contains
        WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
     endif StartUpSlaves
 #endif
-    CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
-
-    IF(master)THEN
-       !=====================================================================================
-       ! Major Step 1: Master Obtains Overlap (alpha|beta) in Auxiliary Basis 
-       !=====================================================================================
-       !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full overlap
-       !this should naturally be changed      
-
-       call mem_alloc(AlphaBeta,nAux,nAux)    
-       CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-       call II_get_RI_AlphaBeta_2centerInt(lupri,lupri,AlphaBeta,Mylsitem%setting,nAux)
-       CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
-
-       !=====================================================================================
-       ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
-       !=====================================================================================
-       ! Warning the inverse is not unique so in order to make sure all slaves have the same
-       ! inverse matrix we calculate it on the master and BCAST to slaves
-
-       !Create the squareroot AlphaBeta = (alpha|beta)^-(1/2)
-       ! Given matrix S, computes S^{-1/2}.
-       
-       call mem_alloc(AlphaBeta_minus_sqrt,nAux,nAux)
-       call lowdin_diag_S_minus_sqrt(nAux, AlphaBeta,AlphaBeta_minus_sqrt, lupri)
-       call mem_dealloc(AlphaBeta)
-
-       CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
-    ELSE
-       call mem_alloc(AlphaBeta_minus_sqrt,nAux,nAux)
-    ENDIF
-#ifdef VAR_MPI
-    !The barrier is mostly here to detect the time spent waiting vs the 
-    !time spent in communication. 
-    CALL LS_GETTIM(CPU1,WALL1)
-    call lsmpi_barrier(comm)
-    CALL LS_GETTIM(CPU2,WALL2)
-    CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-    WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-    CALL LS_GETTIM(CPU1,WALL1)
-    call ls_mpibcast(AlphaBeta_minus_sqrt,naux,naux,infpar%master,comm)
-    CALL LS_GETTIM(CPU2,WALL2)
-    CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-    WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-#endif
-    CALL LSTIMER('RIMP2: AlphaBeta ',TS2,TE2,LUPRI,FORCEPRINT)
-
-    IF(wakeslaves)then 
-       !all nodes have info about all nodes 
-       call mem_alloc(nbasisauxMPI,numnodes)        !number of Aux basis func assigned to rank
-       call mem_alloc(nAtomsMPI,numnodes)           !atoms assign to rank
-       call mem_alloc(startAuxMPI,nAtoms,numnodes)  !startindex in full (naux)
-       call mem_alloc(nAuxMPI,nAtoms,numnodes)      !nauxBasis functions for each of the nAtomsMPI
-       call mem_alloc(AtomsMPI,nAtoms,numnodes)     !identity of atoms in full molecule
-       call getRIbasisMPI(Mylsitem%SETTING%MOLECULE(1)%p,nAtoms,numnodes,&
-            & nbasisauxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
-       MynauxMPI = nbasisauxmpi(mynum+1)
-       call mem_dealloc(AtomsMPI) !not used in this subroutine 
-#ifdef VAR_TIME    
-       IF(master)THEN
-          DO I=1,numnodes
-             WRITE(lupri,'(A,I5,A,I8)')'Aux Basis Functions assign to rank ',I,' :',nbasisauxMPI(I)
-          ENDDO
-       ENDIF
-#endif
-    ELSE
-       MynauxMPI = naux
-    ENDIF
-    CALL LSTIMER('RIMP2: MPI Basis ',TS2,TE2,LUPRI,FORCEPRINT)
-
-    IF(wakeslaves)then 
-       IF(MynauxMPI.GT.0)THEN
-          !We wish to build
-          !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
-          !where alpha runs over the Aux basis functions allocated for this rank
-          !and beta run over the full set of naux
-          call mem_alloc(TMPAlphaBeta_minus_sqrt,MynauxMPI,naux)
-          call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynauxMPI,naux,&
-               & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,numnodes,nAtoms)
-          call mem_dealloc(AlphaBeta_minus_sqrt)
-       ELSE
-          call mem_dealloc(AlphaBeta_minus_sqrt)          
-       ENDIF
-    ENDIF
-    CALL LSTIMER('RIMP2: MPI AlphaBetaTmp ',TS2,TE2,LUPRI,FORCEPRINT)
-
-    call get_currently_available_memory(MemInGBCollected)
-    !maxsize = mem in number of floating point elements
-    maxsize = NINT(MemInGBCollected*1.E9_realk) 
-
-    AlphaCDAlloced = .FALSE.
-    IF(MynauxMPI.GT.0)THEN
-       !call mem_alloc(AlphaCD,naux,nvirt,nocc)
-       !It is very annoying but I allocated AlphaCD inside 
-       !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
-       !This Part of the Code is MPI/OpenMP parallel and AlphaCD will have the dimensions
-       !(MynauxMPI,nvirt,nocc) 
-       !nauxMPI is naux divided out on the nodes so roughly nauxMPI=naux/numnodes
-       call II_get_RI_AlphaCD_3centerInt2(lupri,lupri,&
-            & AlphaCD,mylsitem%setting,naux,nbasis,&
-            & nvirt,nocc,MyMolecule%Cv,MyMolecule%Co,maxsize,mynum,numnodes)
-       call mem_LeakTool_alloc(AlphaCD,LT_AlphaCD)
-       AlphaCDAlloced = .TRUE.
-    ENDIF
-    CALL LSTIMER('RIMP2: AlphaCD ',TS2,TE2,LUPRI,FORCEPRINT)
-
-    IF(wakeslaves)THEN !START BY SENDING MY OWN PACKAGE alphaCD
-#ifdef VAR_MPI       
-       !A given rank always recieve a package from the same node 
-       !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
-       Receiver = MOD(1+mynum,numnodes)
-       !A given rank always send to the same node 
-       !rank 2 sends to rank 1, rank 1 sends to rank 0 ...
-       Sender = MOD(mynum-1+numnodes,numnodes)
-       COUNT = MynauxMPI*nocc*nvirt !size of alphaCD
-       IF(MynauxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
-          call Test_if_64bit_integer_required(MynauxMPI,nocc,nvirt)
-          CALL LS_GETTIM(CPU1,WALL1)
-          call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request,ierr)
-          CALL LS_GETTIM(CPU2,WALL2)
-          CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-          WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-!          call MPI_Request_free(request,ierr)
-       ENDIF
-       IF(MynauxMPI.GT.0)THEN 
-          !consider 
-          !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
-          !so that you only need 1 3dim quantity      
-          call mem_alloc(Calpha,MynauxMPI,nvirt,nocc)
-          call mem_leaktool_alloc(Calpha,LT_Calpha)
-          !Use own AlphaCD to obtain part of Calpha
-          CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-          call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,&
-               & natoms,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD,&
-               & Calpha,TMPAlphaBeta_minus_sqrt,naux)
-          CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
-       ENDIF
-       !To complete construction of  c_(nauxMPI,nvirt,nocc) we need all
-       !alphaCD(nauxMPI,nvirt,nocc) contributions from all ranks
-       !so we do:
-       ! 1. MPI recieve a alphaCD from 'Receiver' 
-       !        the first package should already have arrived 
-       !        originating from the ISEND immidiately after
-       !        II_get_RI_AlphaCD_3centerInt2
-       ! 2. Obtain part of Calpha from this contribution
-       ! 3. MPI send the recieved alphaCD to 'Sender' 
-       ! 4. Repeat untill all contributions have been added
-
-       useAlphaCD5 = .TRUE. 
-       useAlphaCD6 = .FALSE.
-
-       CurrentWait(1) = 0
-       CurrentWait(2) = 0
-       nAwaitDealloc = 0
-       RoundRobin5 = .FALSE.
-       RoundRobin6 = .FALSE.
-       DO node=1,numnodes-1 !should recieve numnodes-1 packages 
-          !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
-          !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
-          ! ...
-          !myOriginalRank therefore determine the size of NodenauxMPI
-          myOriginalRank = MOD(mynum+node,numnodes)
-          OriginalRanknauxMPI = nbasisauxMPI(myOriginalRank+1) !dim1 of recieved package
-          IF(OriginalRanknauxMPI.GT.0)THEN
-             call Test_if_64bit_integer_required(OriginalRanknauxMPI,nocc,nvirt)
-             !Step 1 : MPI recieve a alphaCD from 'Receiver' 
-             IF(nAwaitDealloc.EQ.2)THEN
-                !all buffers are allocated and await to be deallocated .OR.
-                !Memory Reduced version is used: 
-                !once the memory have been recieved by the reciever the 
-                !memory can be deallocated. 
-                IF(CurrentWait(1).EQ.5)THEN
-                   !I need to wait for AlphaCD5 to be received before I can deallocate
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_WAIT(request5,lsmpi_status,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-
-                   call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
-                   call mem_dealloc(AlphaCD5)
-                ELSEIF(CurrentWait(1).EQ.6)THEN
-                   !I need to wait for AlphaCD5 to be received before I can deallocate
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_WAIT(request6,lsmpi_status,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-                   call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
-                   call mem_dealloc(AlphaCD6)
-                ENDIF
-                IF(nAwaitDealloc.EQ.2)THEN
-                   nAwaitDealloc = 1
-                   CurrentWait(1) = CurrentWait(2)
-                   CurrentWait(2) = 0 
-                ELSE
-                   nAwaitDealloc = 0
-                   CurrentWait(2) = 0 
-                   CurrentWait(1) = 0
-                ENDIF
-             ENDIF
-             IF(useAlphaCD5)THEN
-                call mem_alloc(AlphaCD5,OriginalRanknauxMPI,nvirt,nocc)
-                call mem_leaktool_alloc(AlphaCD5,LT_AlphaCD5)
-             ELSEIF(useAlphaCD6)THEN
-                call mem_alloc(AlphaCD6,OriginalRanknauxMPI,nvirt,nocc)
-                call mem_leaktool_alloc(AlphaCD6,LT_AlphaCD6)
-             ENDIF
-             COUNT = OriginalRanknauxMPI*nocc*nvirt
-             MessageRecieved = .FALSE.
-             IF(useAlphaCD5)THEN
-                !First time (node=1) RECV from the ISEND at line 1068, which sends AlphaCD
-                !all other times RECV AlphaCD5
-                CALL LS_GETTIM(CPU1,WALL1)
-                call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,lsmpi_status,ierr)
-                CALL LS_GETTIM(CPU2,WALL2)
-                CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-                WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-
-                IF(node.NE.numnodes-1)THEN
-                   RoundRobin5 = .TRUE.
-                   !SEND AlphaCD5 to sender
-                   CALL LS_GETTIM(CPU1,WALL1)
-                   call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-                   WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-                ELSE
-                   !Last time (node=numnodes-1) Do not send because the sender is the 
-                   !original owner of the block. Since I do not send, I do not need to MPI_WAIT
-                   RoundRobin5 = .FALSE.
-                ENDIF
-             ELSEIF(useAlphaCD6)THEN
-                CALL LS_GETTIM(CPU1,WALL1)                
-                call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,lsmpi_status,ierr)
-                CALL LS_GETTIM(CPU2,WALL2)
-                CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-                WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-                IF(node.NE.numnodes-1)THEN
-                   RoundRobin6 = .TRUE.
-                   !SEND AlphaCD6 to sender
-                   CALL LS_GETTIM(CPU1,WALL1)                
-                   call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-                   WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-                ELSE
-                   !Last time (node=numnodes-1) Do not send because the sender is the 
-                   !original owner of the block. Since I do not send, I do not need to MPI_WAIT
-                   RoundRobin6 = .FALSE.
-                ENDIF
-             ENDIF
-             IF(AlphaCDAlloced)THEN
-                AlphaCD_Deallocate = .FALSE.
-                IF(MemoryReduced)THEN 
-                   !Wait for alphaCD have been received and deallocate it 
-                   !to avoid having 4 (nocc,nvirt,nAuxMPI) - reduce to 3.
-                   IF(MynauxMPI.GT.0)THEN
-                      CALL LS_GETTIM(CPU1,WALL1)
-                      call MPI_WAIT(request,lsmpi_status,ierr)
-                      CALL LS_GETTIM(CPU2,WALL2)
-                      CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                      WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-                   ENDIF
-                   AlphaCD_Deallocate = .TRUE.
-                ELSE
-                   IF(MynauxMPI.GT.0)THEN 
-                      call MPI_TEST(request,TransferCompleted,lsmpi_status,ierr)
-                      AlphaCD_Deallocate = TransferCompleted
-                   ENDIF
-                ENDIF
-                IF(AlphaCD_Deallocate)THEN
-                   call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
-                   call mem_dealloc(AlphaCD) !no longer need this
-                   AlphaCDAlloced = .FALSE.      
-                ENDIF
-             ENDIF
-             IF(MynauxMPI.GT.0)THEN
-                !Step 2: Obtain part of Calpha from this contribution
-                CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-                IF(useAlphaCD5)THEN
-                   call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
-                        & OriginalRanknauxMPI,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
-                        & AlphaCD5,Calpha,TMPAlphaBeta_minus_sqrt,naux)
-                ELSEIF(useAlphaCD6)THEN
-                   call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
-                        & OriginalRanknauxMPI,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
-                        & AlphaCD6,Calpha,TMPAlphaBeta_minus_sqrt,naux)
-                ENDIF
-                CALL LSTIMER('CalphaOther ',TS3,TE3,LUPRI,FORCEPRINT)
-             ENDIF
-             !Step 3: MPI send the recieved alphaCD to 'Sender' 
-             IF(node.NE.numnodes-1)THEN
-                IF(useAlphaCD5)THEN
-                   useAlphaCD5 = .FALSE.; useAlphaCD6=.TRUE.
-                   nAwaitDealloc = nAwaitDealloc + 1
-                   CurrentWait(nAwaitDealloc) = 5
-                ELSEIF(useAlphaCD6)THEN
-                   useAlphaCD6 = .FALSE.; useAlphaCD5=.TRUE.
-                   nAwaitDealloc = nAwaitDealloc + 1
-                   CurrentWait(nAwaitDealloc) = 6
-                ENDIF
-             ELSE
-                !I can deallocate directly I do not need to MPI_WAIT since I did not send
-                IF(useAlphaCD5)THEN
-                   call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
-                   call mem_dealloc(AlphaCD5)
-                ELSEIF(useAlphaCD6)THEN
-                   call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
-                   call mem_dealloc(AlphaCD6)
-                ENDIF
-             ENDIF
-          ENDIF
-       ENDDO
-       IF(MynauxMPI.GT.0)THEN
-          call mem_dealloc(TMPAlphaBeta_minus_sqrt)
-       ENDIF
-       NBA = MynauxMPI
-       IF(nAwaitDealloc.NE.0)THEN
-          do iAwaitDealloc=1,nAwaitDealloc
-             IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
-                IF(RoundRobin5)THEN
-                   CALL LS_GETTIM(CPU1,WALL1)                
-                   call MPI_WAIT(request5,lsmpi_status,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-                ENDIF
-                call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
-                call mem_dealloc(AlphaCD5)
-             ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
-                IF(RoundRobin6)THEN
-                   CALL LS_GETTIM(CPU1,WALL1)                
-                   call MPI_WAIT(request6,lsmpi_status,ierr)
-                   CALL LS_GETTIM(CPU2,WALL2)
-                   CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-                   WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-                ENDIF
-                call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
-                call mem_dealloc(AlphaCD6)
-             ENDIF
-          enddo
-       ENDIF
-       IF(AlphaCDAlloced)THEN
-          IF(MynauxMPI.GT.0)THEN
-             CALL LS_GETTIM(CPU1,WALL1)
-             call MPI_WAIT(request,lsmpi_status,ierr)
-             CALL LS_GETTIM(CPU2,WALL2)
-             CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-             WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-             call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
-             call mem_dealloc(AlphaCD) !no longer need this
-             AlphaCDAlloced = .FALSE.      
-          ENDIF
-       ENDIF
-#endif
-    ELSE
-       call mem_alloc(Calpha,naux,nvirt,nocc)
-       call mem_leaktool_alloc(Calpha,LT_Calpha)
-       !Calpha(naux,nvirt,nocc) = AlphaBeta_minus_sqrt(naux,naux)*AlphaCD(naux,nvirt,nocc)
-       call DGEMM('N','N',naux,nvirt*nocc,naux,1.0E0_realk,AlphaBeta_minus_sqrt,&
-            & naux,AlphaCD,naux,0.0E0_realk,Calpha,naux)
-       call mem_dealloc(AlphaBeta_minus_sqrt)
-       NBA = naux
-       call mem_leaktool_dealloc(alphaCD,LT_alphaCD)
-       call mem_dealloc(AlphaCD) !no longer need this
-       AlphaCDAlloced = .FALSE.      
-    ENDIF
-    CALL LSTIMER('RIMP2: Calpha ',TS2,TE2,LUPRI,FORCEPRINT)
-
+    CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
+    call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
+         & wakeslaves,MynAuxMPI,MyMolecule%Co(:,offset+1:offset+nocc),&
+         & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA)
+    CALL LSTIMER('RIMP2: CalphaMO ',TS2,TE2,LUPRI,FORCEPRINT)
 
     call mem_alloc(EpsOcc,nocc)
     call mem_leaktool_alloc(EpsOcc,LT_Eps)
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
+    !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset)
     do I=1,nocc
-       EpsOcc(I) = MyMolecule%ppfock(I,I)
+       EpsOcc(I) = MyMolecule%ppfock(I+offset,I+offset)
     enddo
+    !$OMP END PARALLEL DO
     call mem_alloc(EpsVirt,nvirt)
     call mem_leaktool_alloc(EpsVirt,LT_Eps)
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
+    !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
     do A=1,nvirt
        EpsVirt(A) = MyMolecule%qqfock(A,A)
     enddo
+    !$OMP END PARALLEL DO
 
     IF(DECinfo%DECrestart)THEN
      !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
@@ -1489,12 +1139,11 @@ contains
        enddo
        call mem_dealloc(Amat)
        call mem_dealloc(Bmat)
-       call mem_dealloc(nbasisauxMPI)
-       call mem_dealloc(startAuxMPI)
-       call mem_dealloc(nAtomsMPI)
-       call mem_dealloc(nAuxMPI)
+!       call mem_dealloc(nbasisauxMPI)
+!       call mem_dealloc(startAuxMPI)
+!       call mem_dealloc(nAtomsMPI)
+!       call mem_dealloc(nAuxMPI)
        IF(MynauxMPI.GT.0)THEN 
-          call mem_leaktool_dealloc(Calpha,LT_Calpha)
           call mem_dealloc(Calpha)              
        ENDIF
 #endif
@@ -1502,7 +1151,6 @@ contains
        !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
        call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
             & NBA,Calpha,rimp2_energy)
-       call mem_leaktool_dealloc(Calpha,LT_Calpha)
        call mem_dealloc(Calpha)              
     ENDIF
     CALL LSTIMER('RIMP2: EnergyCont ',TS2,TE2,LUPRI,FORCEPRINT)
@@ -1562,9 +1210,9 @@ contains
     !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
     !$OMP PRIVATE(B,A) SHARED(nvirt,Amat,Bmat,epsIJ,EpsVirt)
     do B=1,nvirt        
-       do A=1,nvirt
-          Bmat(A,B) = (2.0E0_realk*Amat(A,B) - Amat(B,A))/(epsIJ-EpsVirt(A)-EpsVirt(B))
-       enddo
+     do A=1,nvirt
+      Bmat(A,B) =(2.0E0_realk*Amat(A,B)-Amat(B,A))/(epsIJ-EpsVirt(A)-EpsVirt(B))
+     enddo
     enddo
     !$OMP END PARALLEL DO
   end subroutine CalcBmat
@@ -1647,7 +1295,7 @@ subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,Calpha,
            ! I>J AND A>B
            !==================================================================
            do A=B+1,nvirt
-              ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+              ! Difference in orbital energies: eps(I) + eps(J) - eps(A) -eps(B)
               eps = epsIJB - EpsVirt(A)
               gmoAIBJ = 0.0E0_realk
               DO ALPHA = 1,NBA
@@ -1822,7 +1470,7 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint,M,N,iB
   integer :: MinAObatch,gammaB,alphaB,nOccBatchesI,nOccBatchesJ,jB,nOccBatchDimI,nOccBatchDimJ
   integer :: nbatchesGammaRestart,nbatchesAlphaRestart,dimGamma,GammaStart,GammaEnd,dimAlpha
-  integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB 
+  integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB,offset
   integer :: nOccBatchesIrestart,noccIstart
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
   logical :: PermutationalSymmetryIJ
@@ -1866,9 +1514,19 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   ! **********
   nbasis = MyMolecule%nbasis
   nb = nbasis
-  nocc   = MyMolecule%nocc
+  !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
+  !with MyMolecule%nocc = Valence + Core 
+  !In case of Frozen core we only need Valence and will access
+  !Co(nbasis,nval) = MyMolecule%Co(nbasis,MyMolecule%ncore+1:MyMolecule%nocc)
+  noccfull = MyMolecule%nocc
+  IF(DECinfo%Frozencore)THEN
+     nocc   = MyMolecule%nval
+     offset = MyMolecule%ncore
+  ELSE
+     nocc   = MyMolecule%nocc
+     offset = 0
+  ENDIF
   nvirt  = MyMolecule%nunocc
-  noccfull = nocc
   nAtoms = MyMolecule%nAtoms
   LUPRI = DECinfo%output
 
@@ -2046,9 +1704,9 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   ELSE
      call mem_alloc(EpsOcc,nocc)
      !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-     !$OMP SHARED(nocc,MyMolecule,EpsOcc)
-     do I=1,nocc
-        EpsOcc(I) = MyMolecule%ppfock(I,I)
+     !$OMP SHARED(noccfull,MyMolecule,EpsOcc,offset)
+     do I=1+offset,noccfull
+        EpsOcc(I-offset) = MyMolecule%ppfock(I,I)
      enddo
      !$OMP END PARALLEL DO
      call mem_alloc(EpsVirt,nvirt)
@@ -2180,9 +1838,9 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
         !construct CoI(nb,nOccBatchDimI)
         call mem_alloc(CoI,nb,nOccBatchDimI)       
         !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-        !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax)
+        !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax,offset)
         do I=1,nOccBatchDimI
-           CoI(:,I) = Mymolecule%Co(:,I+(iB-1)*nOccBatchDimImax) 
+           CoI(:,I) = Mymolecule%Co(:,offset+I+(iB-1)*nOccBatchDimImax) 
         enddo
         !$OMP END PARALLEL DO
 
@@ -2205,9 +1863,9 @@ subroutine full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
            call mem_alloc(CoJ,nb,nOccBatchDimJ)       
            !TODO: OMP Workshare/Loop
            !$OMP PARALLEL DO DEFAULT(none) PRIVATE(J) &
-           !$OMP SHARED(nOccBatchDimJ,MyMolecule,CoJ,jB,nOccBatchDimJmax)
+           !$OMP SHARED(nOccBatchDimJ,MyMolecule,CoJ,jB,nOccBatchDimJmax,offset)
            do J=1,nOccBatchDimJ
-              CoJ(:,J) = Mymolecule%Co(:,J+(jB-1)*nOccBatchDimJmax) 
+              CoJ(:,J) = Mymolecule%Co(:,offset+J+(jB-1)*nOccBatchDimJmax) 
            enddo
            !$OMP END PARALLEL DO
            IF(.NOT.FullRHS)THEN
@@ -2868,10 +2526,10 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB,idxx
   integer :: sqrtnumnodes,gB,idx(1),dimAOoffset,kk,nBlocksG,nBlocksA
   integer :: dimGammaMPI,dimAlphaMPI,ibatchG,ibatchA,dimAlpha2,dimGamma2
-  integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchDimJmax
+  integer :: IMYNUMNBATCHES1,IMYNUMNBATCHES2,nOccBatchDimJmax,offset
   integer :: nOccbatchesIrestart,noccIstart,nbuf1,nbuf2,Ibuf(8)
   logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
-  logical :: PermutationalSymmetryIJ,SetdimGamma,dim1Includezero,dim2Includezero
+  logical :: PermutationalSymmetryIJ,SetdimGamma
   logical,pointer :: JobsCompleted(:,:)
   integer(kind=8) :: maxsize
   TYPE(DECscreenITEM)   :: DecScreen
@@ -2886,7 +2544,13 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 !  Character(80)        :: FilenameCS,FilenamePS
 
 #ifdef VAR_TIME    
-    FORCEPRINT = .TRUE.
+  FORCEPRINT = .TRUE.
+#else
+  IF(LSTIME_PRINT)THEN
+     ForcePrint = .TRUE.
+  ELSE
+     ForcePrint = .FALSE.
+  ENDIF
 #endif
 
   CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
@@ -2913,9 +2577,19 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   ! **********
   nbasis = MyMolecule%nbasis
   nb = nbasis
-  nocc   = MyMolecule%nocc
   nvirt  = MyMolecule%nunocc
-  noccfull = nocc
+  !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
+  !with MyMolecule%nocc = Valence + Core 
+  !In case of Frozen core we only need Valence and will access
+  !Co(nbasis,nval) = MyMolecule%Co(nbasis,MyMolecule%ncore+1:MyMolecule%nocc)
+  noccfull = MyMolecule%nocc
+  IF(DECinfo%Frozencore)THEN
+     nocc   = MyMolecule%nval
+     offset = MyMolecule%ncore
+  ELSE
+     nocc   = MyMolecule%nocc
+     offset = 0
+  ENDIF
   nAtoms = MyMolecule%nAtoms
   LUPRI = DECinfo%output
 
@@ -3214,9 +2888,9 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
               GammaStart = Gammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
               GammaEnd = Gammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
            ELSE
-              dimGamma = batchdimGamma(gammaB)                ! Dimension of gamma batch
-              GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-              GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+              dimGamma = batchdimGamma(gammaB)                     ! Dimension of gamma batch
+              GammaStart = batch2orbGamma(gammaB)%orbindex(1)      ! First index in gamma batch
+              GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma) ! Last index in gamma batch
            ENDIF
            dimAOoffsetG = dimAOoffsetG + dimGamma
            AOstartGamma(nBlocks,jnode) = GammaStart
@@ -3323,31 +2997,25 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      call lsquit('Error more nodes then occupied orbitals: FIXME',-1)
   ENDIF
 
-  dim1Includezero = .TRUE.
-  J = numnodes-1
-  call mem_alloc(nOccBatchDimJrank,J,dim1Includezero) !include zero nOccBatchDimJrank(0:numnodes-1)
+  call mem_alloc(nOccBatchDimJrank,ncolnodes)
   nOccBatchDimJrank = 0
   do J=1,nocc
-     idx = MINLOC(nOccBatchDimJrank(0:numnodes-1))     
-     nOccBatchDimJrank(idx(1)-1) = nOccBatchDimJrank(idx(1)-1) + 1
+     idx = MINLOC(nOccBatchDimJrank)
+     nOccBatchDimJrank(idx(1)) = nOccBatchDimJrank(idx(1)) + 1
   enddo
-  J = numnodes-1
   IF(MAXVAL(nOccBatchDimJrank).GT.nOccBatchDimJmax.OR.MAXVAL(nOccBatchDimJrank).LT.0)THEN
      print*,'nOccBatchDimJrank',nOccBatchDimJrank
      print*,'nOccBatchDimJmax',nOccBatchDimJmax
      print*,'MAXVAL(nOccBatchDimJrank)',MAXVAL(nOccBatchDimJrank)
      call lsquit('miscalc nOccBatchDimJrank full canon mp2b ',-1)
   ENDIF
-  dim1Includezero = .FALSE.
-  dim2Includezero = .TRUE.
   I = MAXVAL(nOccBatchDimJrank)
-  J = numnodes-1
-  call mem_alloc(OccIndexJrank,I,J,dim1Includezero,dim2Includezero)   
+  call mem_alloc(OccIndexJrank,I,ncolnodes)   
   nOccBatchDimJrank = 0
   do J=1,nocc
-     idx = MINLOC(nOccBatchDimJrank(0:numnodes-1))
-     nOccBatchDimJrank(idx(1)-1) = nOccBatchDimJrank(idx(1)-1) + 1
-     OccIndexJrank(nOccBatchDimJrank(idx(1)-1),idx(1)-1) = J
+     idx = MINLOC(nOccBatchDimJrank)
+     nOccBatchDimJrank(idx(1)) = nOccBatchDimJrank(idx(1)) + 1
+     OccIndexJrank(nOccBatchDimJrank(idx(1)),idx(1)) = J
   enddo
 
   nOccBatchesI = nOcc/nOccBatchDimImax
@@ -3358,9 +3026,9 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 
   call mem_alloc(EpsOcc,nocc)
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-  !$OMP SHARED(nocc,MyMolecule,EpsOcc)
-  do I=1,nocc
-     EpsOcc(I) = MyMolecule%ppfock(I,I)
+  !$OMP SHARED(noccfull,MyMolecule,EpsOcc,offset)
+  do I=1+offset,noccfull
+     EpsOcc(I-offset) = MyMolecule%ppfock(I,I)
   enddo
   !$OMP END PARALLEL DO
   call mem_alloc(EpsVirt,nvirt)
@@ -3432,9 +3100,9 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      call mem_alloc(CoI,nb,nOccBatchDimI)       
      !TODO: OMP Workshare/Loop
      !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-     !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax)
+     !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax,offset)
      do I=1,nOccBatchDimI
-        CoI(:,I) = Mymolecule%Co(:,I+(iB-1)*nOccBatchDimImax) 
+        CoI(:,I) = Mymolecule%Co(:,offset+I+(iB-1)*nOccBatchDimImax) 
      enddo
      !$OMP END PARALLEL DO
      call mem_alloc(tmp2,dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
@@ -3532,7 +3200,7 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      call dgemm('T','N',M,N,K,1.0E0_realk,MyMolecule%Cv,K,tmp3,K,0.0E0_realk,tmp4,M)
      call mem_dealloc(tmp3)
      
-     nOccBatchDimJ = nOccBatchDimJrank(mynum)
+     nOccBatchDimJ = nOccBatchDimJrank(JNODE)
       
      call mem_alloc(tmp5,nvirt*nOccBatchDimI,dimAlphaMPI*nOccBatchDimJ)
      tmp5 = 0.0E0_realk
@@ -3558,10 +3226,10 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         CALL LS_GETTIM(CPU3,WALL3)
         call mem_alloc(CgammaMPI,dimGammaMPI,nOccBatchDimJ)
         do J=1,nOccBatchDimJ
-         JB = OccIndexJrank(J,mynum)
+         JB = OccIndexJrank(J,JNODE)
          do kk = 1,nBlocksGamma(jnodeLoop)
             CgammaMPI(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J)=&
-                 &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),JB)
+                 &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),offset+JB)
          enddo
         enddo        
 
@@ -3595,10 +3263,10 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
          IF(dimAlpha2.NE.dimAlphaMPI)call lsquit('dimAlpha2.NE.dimAlphaMPI',-1)
          call mem_alloc(CgammaMPI2,dimGamma2,nOccBatchDimJ)         
          do J=1,nOccBatchDimJ
-          JB = OccIndexJrank(J,mynum)
+          JB = OccIndexJrank(J,JNODE)
           do kk = 1,nBlocksGamma(jnodeLoop)
            CgammaMPI2(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J) = &
-                & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),JB)
+                & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),offset+JB)
           enddo
          enddo
          !share alpha batches
@@ -3637,7 +3305,6 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
                 Mymolecule%Cv(AOstartAlpha(kk,inode):AOendAlpha(kk,inode),A) 
         enddo
      enddo
-
      !VOVO(nvirt,noccBJ,nvirt,noccBI) = CAV(dimAlpha,nvirt)*tmp7(dimAlpha*nOccBatchDimJ,nvirt*nOccBatchDimI)
      M = nvirt                              !rows of Output Matrix
      N = nOccBatchDimJ*nvirt*nOccBatchDimI  !columns of Output Matrix
@@ -3658,31 +3325,31 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
      !on node inode=1 
      nbuf1 = nvirt*nOccBatchDimJ  
      nbuf2 = nvirt*nOccBatchDimI  
-     do jnodeLoop = 1,ncolnodes !for all jnodes, all noccBJ contributions
-      IF(jnodeLoop.EQ.jnode)THEN 
-         !I share jnode and noccBJ with the rest (1:nrownodes,jnodeLoop)
-         receiver = (1+(jnodeLoop-1)*nrownodes)-1
-         IF(inode.EQ.1)THEN !I collect results
-            do inodeLoop = 2,nrownodes !all send their contribution to inode=1,jnode=jnodeLoop
-               sender = inodeLoop+(jnodeLoop-1)*nrownodes-1
-               call mem_alloc(VOVO2,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
+     !I share jnode and noccBJ with the rest (1:nrownodes,jnode)
+     receiver = (1+(jnode-1)*nrownodes)-1   !(1,jnode)
+     IF(inode.EQ.1)THEN !I collect results
+        IF(receiver.NE.mynum) call lsquit('MP2B error in sendredv VOVO')
+        do inodeLoop = 2,nrownodes !all send their contribution to inode=1,jnode=jnode
+           sender = inodeLoop+(jnode-1)*nrownodes-1 !(inode,jnode), inode=2,nrownode
 #ifdef VAR_MPI
-               call ls_mpisendrecv(VOVO2,nbuf1,nbuf2,comm,sender,receiver)               
+           call mem_alloc(VOVO2,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
+           call ls_mpisendrecv(VOVO2,nbuf1,nbuf2,comm,sender,receiver)               
+           !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nOccBatchDimI,nvirt,nOccBatchDimJ,VOVO,VOVO2)
+           do J=1,nOccBatchDimI*nvirt
+              do I=1,nOccBatchDimJ*nvirt
+                 VOVO(I,J) = VOVO(I,J) + VOVO2(I,J)
+              enddo
+           enddo
+           !$OMP END PARALLEL DO
+           call mem_dealloc(VOVO2)
 #endif
-               do J=1,nOccBatchDimI*nvirt
-                  do I=1,nOccBatchDimJ*nvirt
-                     VOVO(I,J) = VOVO(I,J) + VOVO2(I,J)
-                  enddo
-               enddo
-               call mem_dealloc(VOVO2)
-            enddo
-         ELSE
+        enddo
+     ELSE
 #ifdef VAR_MPI
-            call ls_mpisendrecv(VOVO,nbuf1,nbuf2,comm,mynum,receiver)
+        !I (inode,jnode) send to (1,jnode)
+        call ls_mpisendrecv(VOVO,nbuf1,nbuf2,comm,mynum,receiver)
 #endif
-         ENDIF
-      ENDIF
-     enddo
+     ENDIF
      CALL LS_GETTIM(CPU2,WALL2)
      CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
      WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
@@ -3693,17 +3360,16 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
         call mem_alloc(Bmat,nvirt,nvirt)
         tmp_mp2_energy = 0.0E0_realk
 
-        !VOVO(nvirt,nOccBatchDimJ,nvirt,nOccBatchDimI) (partial cont from Alpha Batch)
+        !VOVO(nvirt,nOccBatchDimJ,nvirt,nOccBatchDimI) 
         do I=1,nOccBatchDimI
            do J=1,nOccBatchDimJ
-              JB = OccIndexJrank(J,mynum)              
+              JB = OccIndexJrank(J,JNODE)
               epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(JB)
               CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
               call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
               tmp_mp2_energy2 = 0.0E0_realk
               call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
               tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
-              print*,'tmp_mp2_energy2(I=',I+(iB-1)*nOccBatchDimImax,',JB=',JB,',mynum=',mynum,') ',tmp_mp2_energy2
            enddo
         enddo
 !        call lsmpi_reduction(tmp_mp2_energy,infpar%master,comm)
@@ -3715,12 +3381,13 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 #ifdef VAR_MPI
               call ls_mpisendrecv(tmp_mp2_energy2,comm,sender,receiver)
 #endif
-              print*,'MASTER MP2 Energy(iB=',iB,',mynum=',sender,') = ',tmp_mp2_energy
               WRITE(DECinfo%output,*)'MP2 Energy(iB=',iB,',mynum=',sender,') = ',tmp_mp2_energy
               tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
            enddo
         ELSE
+#ifdef VAR_MPI
            call ls_mpisendrecv(tmp_mp2_energy,comm,mynum,receiver)
+#endif
         ENDIF
         call mem_dealloc(Amat)
         call mem_dealloc(Bmat)
@@ -3866,13 +3533,14 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvi
   !nvirt = 3508
   !nocc = 264
   !1. canonical_mp2B_memreq_test already done
-  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 144 nodes (3 GB on each)  
+  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 40 nodes (10.7 GB on each)  
 
   !2.Choose  nOccBatchDimImax as big as possible (nb*dimAlphaMPI*dimGammaMPI*nOccBatchDimImax) need to fit in mem!
   !          Same as (nb*nb*nb*nOccBatchDimImax/numnodes) 
-  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*GB))) 
-  !nOccBatchDimImax = 10 for this example 
-  !This means recalculation of integrals 26 times for this example 
+  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*8*GB))) 
+
+  !nOccBatchDimImax = 1 for this example 
+  !This means recalculation of integrals 264 times for this example 
   
   !We divide the numnodes into an array of nodes (inode,jnode)
   !for numnodes=4 
@@ -5057,17 +4725,17 @@ end subroutine CalcAmat2
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%nocc
-       call ccsolver_par(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
+       call ccsolver(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
-            & print_level, ppfock,MyMolecule%qqfock,energy,&
+            & print_level,energy,&
             & VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
        call mem_dealloc(ppfock)
 
     else
 
-       call ccsolver_par(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
+       call ccsolver(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
-            & MyMolecule%ppfock,MyMolecule%qqfock, energy,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
+            & energy,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
 
     end if
 
@@ -5276,7 +4944,7 @@ subroutine full_canonical_mp2_slave
   ! *******************
   ! Main master:  Send stuff to local masters and deallocate temp. buffers
   ! Local master: Deallocate buffer etc.
-  call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
+  call full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
   

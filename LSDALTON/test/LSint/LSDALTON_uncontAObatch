@@ -74,10 +74,10 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
-CRIT1=`$GREP "II_test_uncontAObatch succesfull" $log | wc -l`
+CRIT1=`$GREP "II_test_uncontAObatch successful" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
-ERROR[1]="II_test_uncontAObatch not succesfull -"
+ERROR[1]="II_test_uncontAObatch not successful -"
 
 CRIT1=`$GREP "Exchange energy, mat_dotproduct\(D,K\)\= * \-15\.53398446" $log | wc -l`
 TEST[2]=`expr  $CRIT1`

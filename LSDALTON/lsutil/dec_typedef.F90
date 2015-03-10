@@ -88,6 +88,8 @@ module dec_typedef_module
      ! *****************************************************************************************
 
 
+     ! SNOOP
+     ! =====
      !> Do a SNOOP calculation rather than DEC? (later SNOOP and DEC will be somewhat merged)
      logical :: SNOOP
      !> Skip CC calculation in SNOOP and just do HF
@@ -143,7 +145,6 @@ module dec_typedef_module
 
 
 
-
      !> Restart options
      !> ***************
      !> Use HF info generated in previous run (does not necessarily require DECrestart to be true)
@@ -162,6 +163,7 @@ module dec_typedef_module
      real(realk) :: IntegralThreshold
      !> Use Ichor Integral Code
      logical :: UseIchor
+
 
      !> Memory stuff
      !> ************
@@ -207,8 +209,6 @@ module dec_typedef_module
      !> forcing one or the other scheme in get_coubles residual integral_driven
      logical :: force_scheme
      logical :: dyn_load
-     !> Use the cc debug routines from the file cc_debug_routines.F90
-     logical :: CCDEBUG
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> if mpich is used CCSD has some special treats that can be used
@@ -273,7 +273,7 @@ module dec_typedef_module
      integer :: tensor_segmenting_scheme
 
      !> ccsd(T) settings
-     !> *****************************
+     !> ****************
      !> logical for abc scheme
      logical :: abc
      !> force a specific tile size for use with abc scheme
@@ -293,7 +293,7 @@ module dec_typedef_module
      logical :: F12fragopt
 
      !> F12 debug settings
-     !> ************
+     !> ******************
      !> Use F12 correction
      logical :: F12DEBUG
 
@@ -314,8 +314,19 @@ module dec_typedef_module
 
      !> Atomic Extent - include all atomic orbitals of atoms included
      logical :: AtomicExtent
+    
+     !> RIMP2 settings
+     !> ************
      !> Auxiliary Atomic Extent - for now include ALL atomic orbitals in RI
      logical :: AuxAtomicExtent
+     !> Use Natural Auxiliary Functions (NAF)
+     logical :: NAF
+     !> Natural Auxiliary Functions Threshold
+     real(realk) :: NAFthreshold
+     !> Hardcode the Group size used in RIMP(build_CalphaMO)
+     integer :: RIMPSubGroupSize
+     !> Use Tensor Framework to Construct Calpha
+     logical :: RIMP2PDMTENSOR
 
      !> MPI settings
      !> ************
@@ -334,7 +345,7 @@ module dec_typedef_module
      logical :: test_fully_distributed_integrals
 
      !> MP2 occupied batching
-     !> *****************
+     !> *********************
      !> Set batch sizes manually
      logical :: manual_occbatchsizes
      !> Sizes of I and J occupied batches defined manually
@@ -383,15 +394,6 @@ module dec_typedef_module
      real(realk) :: simple_orbital_threshold
      !> Purify fitted MO coefficients (projection + orthogonalization)
      logical :: PurifyMOs
-     !> Use fragment-adapted orbitals for fragment calculations
-     logical :: FragAdapt
-     !> avoid all pair calculations:
-     logical         :: no_pairs
-     !> Hack to only do fragment optimization
-     integer         :: only_n_frag_jobs
-     integer,pointer :: frag_job_nr(:)
-     !> Use hack to specify only pair fragment jobs
-     logical         :: only_pair_frag_jobs
      !> Use Mulliken population analysis to assign orbitals (default: Lowdin, only for Boughton-Pulay)
      logical :: mulliken
      !> Use Distance criteria to determine central atom
@@ -453,6 +455,16 @@ module dec_typedef_module
      integer :: CorrDensScheme
      ! --  
      logical :: use_abs_overlap
+     !> Use fragment-adapted orbitals for fragment calculations
+     logical :: FragAdapt
+     !> avoid all pair calculations:
+     logical         :: no_pairs
+     !> Hack to only do fragment optimization
+     integer         :: only_n_frag_jobs
+     integer,pointer :: frag_job_nr(:)
+     !> Use hack to specify only pair fragment jobs
+     logical         :: only_pair_frag_jobs
+
 
      !> Pair fragments
      !> **************
@@ -480,8 +492,6 @@ module dec_typedef_module
      integer :: nFRAGSred
      !> Factor to scale FOT by for reduced fragments
      integer :: FOTscaling
-
-
      ! --
 
 

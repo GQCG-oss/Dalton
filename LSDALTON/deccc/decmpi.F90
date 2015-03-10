@@ -1958,13 +1958,13 @@ contains
     write(DECinfo%output,*) '#tasks : Number of integral tasks for fragment (nalpha*ngamma)'
     write(DECinfo%output,*) 'GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'Time(s): Time (in seconds) used by local master (NOT local slaves)'
-    write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice): '
-    write(DECinfo%output,*) '           (Sum of effective work times for ALL MPI processes in slot)'
-    write(DECinfo%output,*) '         / (slotsiz * [Local master time] )'
+    write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice)'
+    write(DECinfo%output,*) '      Load1 = (Sum of working and communication times for ALL MPI processes in slot)'
+    write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
+    write(DECinfo%output,*) '      Load2 = (Sum of working times for ALL MPI processes in slot)'
+    write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Note: Load print is currently only implemented for MP2 calculations'
-    write(DECinfo%output,*) '      and not for atomic fragment optimizations.'
-    write(DECinfo%output,*) '      The Load given below is set to -1 for cases where it is not implemented'
+    write(DECinfo%output,*) 'Note: The Load given below is set to -1 for cases where it is not implemented'
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -2308,7 +2308,6 @@ contains
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
     call ls_mpi_buffer(DECitem%acc_sync,Master)
-    call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
@@ -2348,7 +2347,13 @@ contains
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
+    !RIMP2 settings
     call ls_mpi_buffer(DECitem%AuxAtomicExtent,Master)
+    call ls_mpi_buffer(DECitem%NAF,Master)
+    call ls_mpi_buffer(DECitem%NAFthreshold,Master)
+    call ls_mpi_buffer(DECitem%RIMPSubGroupSize,Master)
+    call ls_mpi_buffer(DECitem%RIMP2PDMTENSOR,Master)
+
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)

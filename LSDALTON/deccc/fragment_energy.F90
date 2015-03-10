@@ -323,10 +323,6 @@ contains
              ! **********
              call tensor_free(VOVO)
              call tensor_free(t2)
-           
-             ! Calculate energy contribution here
-             ! **********************************
-             call get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
           else
              ! calculate only MP2 energy integrals and MP2 amplitudes
              ! ******************************************************
@@ -354,8 +350,13 @@ contains
 
     case(MODEL_RIMP2) ! RIMP2 calculation
 
-       if(DECinfo%first_order)call lsquit('no first order RIMP2',-1)
-       call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
+       if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
+          ! calculate also RIMP2 density integrals
+          call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
+       else
+          ! calculate also RIMP2 density integrals
+          call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
+       endif
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX) ! higher order CC (-like)
 
@@ -500,19 +501,6 @@ contains
           call tensor_extract_decnp_indices(u,MyFragment,t2occ)
           call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc)
 
-          ! free stuff
-          ! **********
-          call tensor_free(VOVO)
-          call tensor_free(u)
-          call tensor_free(t2)
-          if(DECinfo%use_singles)then
-             call tensor_free(t1)
-          endif
-
-          ! Calculate energy contribution here
-          ! **********************************
-          call  get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
-
        else
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
@@ -521,16 +509,16 @@ contains
           call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc, &
              & tensor_virtEOS=VOVOvirt)
            
-          ! free stuff
-          ! **********
-          call tensor_free(VOVO)
-          call tensor_free(u)
-          call tensor_free(t2)
-          if(DECinfo%use_singles)then
-             call tensor_free(t1)
-          endif
-
        end if
+
+       ! free stuff
+       ! **********
+       call tensor_free(VOVO)
+       call tensor_free(u)
+       call tensor_free(t2)
+       if(DECinfo%use_singles)then
+          call tensor_free(t1)
+       endif
 
     case default
 
@@ -550,64 +538,68 @@ contains
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make new atomic/pair fragment energy subroutines and call it from
     !     here instead of calling get_atomic_fragment_energy and get_pair_fragment_energy.
-
+    !
     ! For frozen core and first order properties we need to remove core indices from VOVOvirt, 
     ! since they, "rather incoveniently", are required for the gradient but not for the energy
-    if (.not.DECinfo%DECNP) then
-       if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
-        
-          call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
-          if(pair) then
-             ! Pair fragment
-             call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
-                  & Fragment1, Fragment2, MyFragment)
-                
-             !For sosex contribution, as the residual
-             !is the same for sosex and drpa
-             !the energies can be calculated in one step
-             if(MyFragment%ccmodel == MODEL_RPA) then
-               call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
-                 & Fragment1, Fragment2, MyFragment,.true.)
-             endif
-          else
-             ! Atomic fragment
-             call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
-             !For sosex contribution, as the residual
-             !is the same for sosex and drpa
-             !the energies can be calculated in one step
-             if(MyFragment%ccmodel == MODEL_RPA) then
-               call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
-                  & t2virt,MyFragment,doSOS=.true.)
-             endif
-          end if
-          call tensor_free(VOVOvirtTMP)
-        
-       else ! use VOVOvirt as it is -- MOST COMMON CASE
-        
-          if(pair) then
-             ! Pair fragment
-             call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
-                  & Fragment1, Fragment2, MyFragment)
-             !For sosex contribution, as the residual
-             !is the same for sosex and drpa
-             !the energies can be calculated in one step
-             if(MyFragment%ccmodel == MODEL_RPA) then
-                call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
-                  & Fragment1, Fragment2, MyFragment,.true.)
-             endif
-          else
-             ! Atomic fragment
-             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
-             !For sosex contribution, as the residual
-             !is the same for sosex and drpa
-             !the energies can be calculated in one step
-             if(MyFragment%ccmodel == MODEL_RPA) then
-                call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
-                   & t2occ,t2virt,MyFragment,doSOS=.true.)
-             endif
-          end if
-        
+    if(DECinfo%frozencore .and. DECinfo%first_order .and. (.not. DECinfo%unrelaxed)) then
+     
+       call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
+       if(pair) then
+          ! Pair fragment
+          call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
+               & Fragment1, Fragment2, MyFragment)
+             
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+            call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
+              & Fragment1, Fragment2, MyFragment,.true.)
+          endif
+       else
+          ! Atomic fragment
+          call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+            call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
+               & t2virt,MyFragment,doSOS=.true.)
+          endif
        end if
+       call tensor_free(VOVOvirtTMP)
+     
+    else if (DECinfo%DECNP) then
+
+       ! Pair and fragment energy contributions are calculated together
+       ! **************************************************************
+       call  get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
+
+    else ! use VOVOvirt as it is -- MOST COMMON CASE
+     
+       if(pair) then
+          ! Pair fragment
+          call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
+               & Fragment1, Fragment2, MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+             call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
+               & Fragment1, Fragment2, MyFragment,.true.)
+          endif
+       else
+          ! Atomic fragment
+          call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
+                & t2occ,t2virt,MyFragment,doSOS=.true.)
+          endif
+       end if
+     
     end if
 
     !> Memory Stats
@@ -649,7 +641,7 @@ contains
          endif
        endif
 #endif
-       if(DECinfo%ccmodel == MODEL_MP2)then
+       if(DECinfo%ccmodel == MODEL_MP2.OR.DECinfo%ccmodel == MODEL_RIMP2)then
           if(pair) then
              ! Pair fragment
              call pair_calculate_mp2gradient_driver(Fragment1,Fragment2,MyFragment,&
@@ -666,7 +658,7 @@ contains
        end if
     end if
     !
-    if(MyFragment%ccmodel /= MODEL_MP2.AND.MyFragment%ccmodel.NE.MODEL_RIMP2)then
+    if(MyFragment%ccmodel /= MODEL_MP2.AND.MyFragment%ccmodel /= MODEL_RIMP2)then
        call dec_time_evaluate_efficiency_frag(MyFragment,times_ccsd,MODEL_CCSD,'CCSD part')
     endif
     if(MyFragment%ccmodel == MODEL_CCSDpT)then
@@ -5144,11 +5136,12 @@ contains
       !  last two steps of the binary search.
       integer :: nred_occ, nred_vir
       !> true if/when the fragment include the full molecule:
-      logical :: full_mol
+      logical :: full_mol, dored
       !> Timings for frag opt
       real(realk), pointer :: times_fragopt(:)  
       !> number of core orbitals
-      integer :: nc,idx,i,a
+      integer :: nc
+      integer :: idx,i,a,expit,redit
       real(realk) :: ELag_exp, Eocc_exp, Evir_exp
 
 
@@ -5160,14 +5153,14 @@ contains
       times_fragopt => null()
       call dec_fragment_time_init(times_fragopt)
 
+      expit=0
+      redit=0
       if( DECinfo%print_small_calc )then
-
          write(DECinfo%output,'(a)')    ' FOP'
          write(DECinfo%output,'(a)')    ' FOP ==============================================='
          write(DECinfo%output,'(a,i4)') ' FOP  Site fragment generator for fragment,',MyAtom
          write(DECinfo%output,'(a)')    ' FOP ==============================================='
          write(DECinfo%output,'(a)')    ' FOP'
-
       endif
 
 
@@ -5294,7 +5287,7 @@ contains
       if (.not.full_mol) then
          call fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
             & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
-            & OccOrbitals,VirOrbitals,mylsitem)
+            & OccOrbitals,VirOrbitals,expit,mylsitem)
       end if
 
 
@@ -5341,11 +5334,18 @@ contains
       call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
          & red_list_occ,red_list_vir,nred_occ,nred_vir)
 
+
+      ! For DECNP no pairs are calculated so we do reduction only if:
+      !    CC-model /= Exp-model .and. CC-model /= Red-model
+      dored = .true.
+      if (DECinfo%DECNP) dored = ( (DECinfo%ccmodel/=DECinfo%fragopt_exp_model) .and. &
+         & (DECinfo%ccmodel/=DECinfo%fragopt_red_model) )
+
       ! Perform reduction:
-      if (.not.DECinfo%DECNP) then
+      if (dored) then
          call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
                & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-               & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT)
+               & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT,redit)
       end if
 
       !==================================================================================!
@@ -5382,6 +5382,10 @@ contains
       ! Fragment has been optimized
       AtomicFragment%isopt = .true.
 
+      ! Final print:
+      write(DECinfo%output,'(/A,I4,A,I4,A,I4,A/)') ' FOP SUMMARY: Fragment,',MyAtom, &
+         & '  converged after ',expit,' expansion and ',redit,' reduction steps'
+
    end subroutine optimize_atomic_fragment_CLEAN
 
 
@@ -5395,7 +5399,7 @@ contains
    ! Date:    July 2014
    subroutine fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
             & occ_priority_list,vir_priority_list,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
-            & OccOrbitals,VirOrbitals,mylsitem)
+            & OccOrbitals,VirOrbitals,iter,mylsitem)
 
       implicit none
 
@@ -5420,10 +5424,11 @@ contains
       type(decorbital), dimension(nv), intent(in) :: VirOrbitals
       !> Logical vector telling which orbital is include in the fragment
       logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv)
+      !> Out: number of iteration used in the expansion
+      integer, intent(out) :: iter
       !> Integral information
       type(lsitem), intent(inout)       :: mylsitem
       
-      integer :: iter
       logical :: full_mol, expansion_converged
       real(realk) :: LagEnergy_old, OccEnergy_old, VirEnergy_old
       real(realk) :: LagEnergy_dif, OccEnergy_dif, VirEnergy_dif
@@ -5491,7 +5496,7 @@ contains
    !> \date November 2014
    subroutine fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,occ_priority_list, &
         & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-        & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+        & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter)
 
      implicit none
 
@@ -5521,6 +5526,8 @@ contains
      integer,intent(in) :: no_gap, nv_gap
      !> Fragment optimization threshold to use in reduction
      real(realk),intent(in) :: FOT
+      !> Out: number of iteration used in the reduction
+      integer, intent(out) :: iter
      real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
      type(decfrag) :: ReducedFragment
      integer :: i,noccAOSprev, nunoccAOSprev
@@ -5539,10 +5546,11 @@ contains
      OccEnergy_exp = AtomicFragment%EoccFOP
      VirEnergy_exp = AtomicFragment%EvirtFOP
 
+     iter=0
      ! Determine AtomicFragment according to main FOT
      call fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
           & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-          & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+          & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter)
 
      if(DECinfo%print_small_calc)then
         write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
@@ -5580,7 +5588,7 @@ contains
         ! Determine ReducedFragment according to the scaled FOT
         call fragment_reduction_procedure(ReducedFragment,no,nv,occ_priority_list, &
              & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-             & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased)
+             & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased,iter)
         
         ! Save information about ReducedFragment AOS in AtomicFragment structure
         AtomicFragment%REDfrags(i)%noccAOS   = ReducedFragment%noccAOS
@@ -5632,7 +5640,7 @@ contains
    ! Date:    July 2014
    subroutine fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+            & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,totit)
 
       implicit none
 
@@ -5662,6 +5670,8 @@ contains
       integer,intent(in) :: no_gap, nv_gap
       !> Fragment optimization threshold to use in reduction
       real(realk),intent(in) :: FOT
+      !> Total number of iteration used in the reduction
+      integer, intent(inout) :: totit
 
       !> energy error acceptance in reduction steps:
       real(realk) :: dE_occ, dE_vir
@@ -5902,7 +5912,7 @@ contains
          if (nv_min > nv_max) call lsquit('FOP ERROR: nv_min > nv_max', DECinfo%output)
 
       end do REDUCTION_LOOP
-
+      totit = totit + iter
 
       ! CHECK THAT REDUCTION CONVERGED:
       ! *******************************

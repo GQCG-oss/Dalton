@@ -128,6 +128,7 @@ unset(LIST_OF_DEFINITIONS)
 add_library(
     lsutillib_common
     ${MANUAL_REORDERING_SOURCES}
+    ${LSUTIL_COMMON_C_SOURCES}
     ${LSUTIL_COMMON_SOURCES}
     )
 
@@ -352,10 +353,10 @@ endif()
 add_library(
     declib
     ${DEC_SOURCES}
-    ${DEC_C_SOURCES}
     )
 
 target_link_libraries(declib lsutiltypelib_common)
+target_link_libraries(declib lsutillib_common)
 target_link_libraries(declib lsintlib)
 target_link_libraries(declib linearslib)
 

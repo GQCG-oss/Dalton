@@ -998,6 +998,7 @@ do i=1, ai%ND
    atomicSetting%scheme%df_k = .FALSE.
    atomicSetting%scheme%PARI_J = .FALSE.
    atomicSetting%scheme%PARI_K = .FALSE.
+   atomicSetting%scheme%MOPARI_K = .FALSE.
    atomicSetting%scheme%FMM = .FALSE.
    atomicSetting%scheme%MBIE_SCREEN = .FALSE.
    atomicSetting%scheme%CS_SCREEN = .FALSE.
