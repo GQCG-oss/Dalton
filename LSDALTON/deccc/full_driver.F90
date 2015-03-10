@@ -1042,7 +1042,6 @@ contains
     call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
          & wakeslaves,MynAuxMPI,MyMolecule%Co(:,offset+1:offset+nocc),&
          & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA)
-
     CALL LSTIMER('RIMP2: Calpha ',TS2,TE2,LUPRI,FORCEPRINT)
 
     call mem_alloc(EpsOcc,nocc)

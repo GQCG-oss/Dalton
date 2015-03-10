@@ -81,3 +81,33 @@ use memory_handling
 END SUBROUTINE free_MAT3D
 
 end module mat3d_mod
+
+module mat2d_mod
+use precision
+TYPE MAT2D
+real(realk), pointer :: elements(:,:)
+INTEGER              :: dim1,dim2
+END TYPE MAT2D
+
+contains
+subroutine init_mat2d(mat,m,n)
+  use memory_handling
+  implicit none
+  type(mat2d),intent(inout) :: mat
+  integer,intent(in)        :: m,n
+  mat%dim1=m
+  mat%dim2=n
+  call mem_alloc(mat%elements,m,n)
+  mat%elements=0E0_realk
+end subroutine
+
+subroutine free_mat2d(mat)
+  use memory_handling
+  implicit none
+  type(mat2d),intent(inout) :: mat
+  mat%dim1=0
+  mat%dim2=0
+  call mem_dealloc(mat%elements)
+end subroutine free_mat2d
+
+end module mat2d_mod
