@@ -1,5 +1,4 @@
 #/usr/bin/python
-from output_plot import *
 from decinfoclass import *
 from ccinfoclass import *
 
