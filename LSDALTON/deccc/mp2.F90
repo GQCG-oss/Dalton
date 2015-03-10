@@ -2695,8 +2695,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   IF(NBA.GT.0)THEN
      call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt) 
 #ifdef VAR_OPENACC
-     !$acc enter data create(tocc) 
-     !$acc enter data copyin(Calpha,UoccEOST,EVocc,EVvirt)
+!     !$acc enter data create(tocc) 
+     !$acc enter data create(tocc) copyin(Calpha,UoccEOST,EVocc,EVvirt)
 #endif
      !Calculate and partial transform to local basis - transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
@@ -2710,7 +2710,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
      !$acc enter data create(tocc2)
-     !$acc data present(tocc,tocc2,UoccEOST)
+!     !$acc data present(tocc,tocc2,UoccEOST)
      !$acc host_data use_device(tocc,UoccEOST,tocc2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
@@ -2723,7 +2723,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !     call lsquit('OpenACC parallelization of RIMP2 requires CRAY or CUBLAS',-1)     
 #endif
      !$acc end host_data
-     !$acc end data
+!     !$acc end data
      !$acc exit data delete(tocc)
 #else
      call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
@@ -2738,9 +2738,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(tocc3,nvirt,nvirt,noccEOS,noccEOS)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
-     !$acc enter data create(tocc3)
-     !$acc enter data copyin(UvirtT)
-     !$acc data present(tocc2,tocc3,UvirtT)
+!     !$acc enter data create(tocc3)
+     !$acc enter data create(tocc3) copyin(UvirtT)
+!     !$acc data present(tocc2,tocc3,UvirtT)
      !$acc host_data use_device(tocc2,UvirtT,tocc3)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
@@ -2751,7 +2751,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                            & 0.0E0_realk,c_loc(tocc3),int(M,kind=4))
 #endif
      !$acc end host_data
-     !$acc end data
+!     !$acc end data
      !$acc exit data delete(tocc2)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
@@ -2797,8 +2797,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !Calculate and partial transform to local basis - transform occupied indices
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
-     !$acc enter data create(tvirt) 
-     !$acc enter data copyin(UvirtEOST)
+!     !$acc enter data create(tvirt) 
+     !$acc enter data create(tvirt) copyin(UvirtEOST)
 #endif
      call RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
 #ifdef VAR_OPENACC
@@ -2816,7 +2816,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
      !$acc enter data create(tvirt2)
-     !$acc data present(tvirt,tvirt2,UvirtEOST)
+!     !$acc data present(tvirt,tvirt2,UvirtEOST)
      !$acc host_data use_device(tvirt,UvirtEOST,tvirt2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
@@ -2827,7 +2827,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                            & 0.0E0_realk,c_loc(tvirt2),int(M,kind=4))
 #endif
      !$acc end host_data
-     !$acc end data
+!     !$acc end data
      !$acc exit data delete(tvirt,UvirtEOST)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
@@ -2842,9 +2842,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(tvirt3,nocc,nocc,nvirtEOS,nvirtEOS)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
-     !$acc enter data create(tvirt3)
-     !$acc enter data copyin(UoccT)
-     !$acc data present(tvirt2,tvirt3,UoccT)
+!     !$acc enter data create(tvirt3)
+     !$acc enter data create(tvirt3) copyin(UoccT)
+!     !$acc data present(tvirt2,tvirt3,UoccT)
      !$acc host_data use_device(tvirt2,UoccT,tvirt3)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
@@ -2855,7 +2855,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                            & 0.0E0_realk,c_loc(tvirt3),int(M,kind=4))
 #endif
      !$acc end host_data
-     !$acc end data
+!     !$acc end data
      !$acc exit data delete(tvirt2)
 #else
      call dgemm('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
@@ -2909,7 +2909,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
      !$acc enter data create(Calpha2)
-     !$acc data present(Calpha,UoccEOST,Calpha2)
+!     !$acc data present(Calpha,UoccEOST,Calpha2)
      !$acc host_data use_device(Calpha,UoccEOST,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,nocc,0.0E0_realk,Calpha2,M)
@@ -2920,7 +2920,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                            & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
 #endif
      !$acc end host_data
-     !$acc end data
+!     !$acc end data
      !$acc exit data delete(UoccEOST)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,nocc,0.0E0_realk,Calpha2,M)
@@ -2986,7 +2986,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
      !$acc enter data create(Calpha2)
-     !$acc data present(Calpha,UoccT,Calpha2)
+!     !$acc data present(Calpha,UoccT,Calpha2)
      !$acc host_data use_device(Calpha,UoccT,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,nocc,0.0E0_realk,Calpha2,M)
@@ -2997,7 +2997,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                            & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
 #endif
      !$acc end host_data
-     !$acc end data
+!     !$acc end data
      !$acc exit data delete(UoccT,Calpha)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,nocc,0.0E0_realk,Calpha2,M)
