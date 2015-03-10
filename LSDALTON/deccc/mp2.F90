@@ -2680,7 +2680,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   integer(kind=ls_mpik) :: RIMPSubGroupSize,rimp2_nodtot,rimp2_mynum,rimp2_comm
   integer :: CurrentWait(2),nAwaitDealloc,iAwaitDealloc,MynAtomsMPI,node
   integer :: myOriginalRank,OriginalRanknbasisAuxMPI,M,N,K,I,offset,offset2
-  integer :: ndimMax,nbasisAuxMPI2(numnodes),MynbasisAuxMPI2
+  integer :: ndimMax,nbasisAuxMPI2(numnodes),MynbasisAuxMPI2,rimp2_nodtot2
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,MessageRecieved
   logical :: PerformReduction,RIMPSubGroupCreated,UseSubGroupCommunicator
   logical :: rimp2_member
@@ -2793,17 +2793,18 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
  
   IF(CollaborateWithSlaves.AND.rimp2_member)then 
      !all nodes have info about all nodes 
-     call mem_alloc(nbasisAuxMPI,rimp2_nodtot)           !number of Aux basis func assigned to rank
-     call mem_alloc(nAtomsMPI,rimp2_nodtot)              !atoms assign to rank
-     call mem_alloc(startAuxMPI,nAtomsAux,rimp2_nodtot)  !startindex in full (nbasisAux)
-     call mem_alloc(AtomsMPI,nAtomsAux,rimp2_nodtot)     !identity of atoms in full molecule
-     call mem_alloc(nAuxMPI,nAtomsAux,rimp2_nodtot)      !nauxBasis functions for each of the nAtomsMPI
+     rimp2_nodtot2 = rimp2_nodtot
+     call mem_alloc(nbasisAuxMPI,rimp2_nodtot2)           !number of Aux basis func assigned to rank
+     call mem_alloc(nAtomsMPI,rimp2_nodtot2)              !atoms assign to rank
+     call mem_alloc(startAuxMPI,nAtomsAux,rimp2_nodtot2)  !startindex in full (nbasisAux)
+     call mem_alloc(AtomsMPI,nAtomsAux,rimp2_nodtot2)     !identity of atoms in full molecule
+     call mem_alloc(nAuxMPI,nAtomsAux,rimp2_nodtot2)      !nauxBasis functions for each of the nAtomsMPI
 
      IF(DECinfo%AuxAtomicExtent)THEN   
-        call getRIbasisMPI(mylsitem%INPUT%AUXMOLECULE,nAtomsAux,rimp2_nodtot,&
+        call getRIbasisMPI(mylsitem%INPUT%AUXMOLECULE,nAtomsAux,rimp2_nodtot2,&
              & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
      ELSE
-        call getRIbasisMPI(mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,rimp2_nodtot,&
+        call getRIbasisMPI(mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,rimp2_nodtot2,&
              & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
      ENDIF
      MynAtomsMPI = nAtomsMPI(mynum+1)
