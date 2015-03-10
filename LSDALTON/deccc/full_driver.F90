@@ -24,7 +24,6 @@ module full
   use dec_fragment_utils
   use CABS_operations
 #ifdef MOD_UNRELEASED
-  use cc_debug_routines_module
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
 #endif
@@ -1037,13 +1036,11 @@ contains
        WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
     endif StartUpSlaves
 #endif
-    CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
-    
+    CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
     call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
          & wakeslaves,MynAuxMPI,MyMolecule%Co(:,offset+1:offset+nocc),&
          & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA)
-
-    CALL LSTIMER('RIMP2: Calpha ',TS2,TE2,LUPRI,FORCEPRINT)
+    CALL LSTIMER('RIMP2: CalphaMO ',TS2,TE2,LUPRI,FORCEPRINT)
 
     call mem_alloc(EpsOcc,nocc)
     call mem_leaktool_alloc(EpsOcc,LT_Eps)
@@ -1213,9 +1210,9 @@ contains
     !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
     !$OMP PRIVATE(B,A) SHARED(nvirt,Amat,Bmat,epsIJ,EpsVirt)
     do B=1,nvirt        
-       do A=1,nvirt
-          Bmat(A,B) = (2.0E0_realk*Amat(A,B) - Amat(B,A))/(epsIJ-EpsVirt(A)-EpsVirt(B))
-       enddo
+     do A=1,nvirt
+      Bmat(A,B) =(2.0E0_realk*Amat(A,B)-Amat(B,A))/(epsIJ-EpsVirt(A)-EpsVirt(B))
+     enddo
     enddo
     !$OMP END PARALLEL DO
   end subroutine CalcBmat
@@ -2547,7 +2544,13 @@ subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
 !  Character(80)        :: FilenameCS,FilenamePS
 
 #ifdef VAR_TIME    
-    FORCEPRINT = .TRUE.
+  FORCEPRINT = .TRUE.
+#else
+  IF(LSTIME_PRINT)THEN
+     ForcePrint = .TRUE.
+  ELSE
+     ForcePrint = .FALSE.
+  ENDIF
 #endif
 
   CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
@@ -3530,13 +3533,14 @@ subroutine get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvi
   !nvirt = 3508
   !nocc = 264
   !1. canonical_mp2B_memreq_test already done
-  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 144 nodes (3 GB on each)  
+  !   nbasis*nbasis*nbasis = 430 GB can be distributed among 40 nodes (10.7 GB on each)  
 
   !2.Choose  nOccBatchDimImax as big as possible (nb*dimAlphaMPI*dimGammaMPI*nOccBatchDimImax) need to fit in mem!
   !          Same as (nb*nb*nb*nOccBatchDimImax/numnodes) 
-  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*GB))) 
-  !nOccBatchDimImax = 10 for this example 
-  !This means recalculation of integrals 26 times for this example 
+  nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*8*GB))) 
+
+  !nOccBatchDimImax = 1 for this example 
+  !This means recalculation of integrals 264 times for this example 
   
   !We divide the numnodes into an array of nodes (inode,jnode)
   !for numnodes=4 
@@ -4721,7 +4725,7 @@ end subroutine CalcAmat2
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%nocc
-       call ccsolver_par(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
+       call ccsolver(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
             & print_level,energy,&
             & VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
@@ -4729,7 +4733,7 @@ end subroutine CalcAmat2
 
     else
 
-       call ccsolver_par(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
+       call ccsolver(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
             & energy,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
 

@@ -38045,206 +38045,108 @@ CIBM           PREFER SCALAR
       END
 
 
-*> \brief \b DSPTRF
+      SUBROUTINE DPSTRF( UPLO, N, A, LDA, PIV, RANK, TOL, WORK, INFO )
 *
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at 
-*            http://www.netlib.org/lapack/explore-html/ 
-*
-*> \htmlonly
-*> Download DSPTRF + dependencies 
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dsptrf.f"> 
-*> [TGZ]</a> 
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dsptrf.f"> 
-*> [ZIP]</a> 
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dsptrf.f"> 
-*> [TXT]</a>
-*> \endhtmlonly 
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE DSPTRF( UPLO, N, AP, IPIV, INFO )
-* 
-*       .. Scalar Arguments ..
-*       CHARACTER          UPLO
-*       INTEGER            INFO, N
-*       ..
-*       .. Array Arguments ..
-*       INTEGER            IPIV( * )
-*       DOUBLE PRECISION   AP( * )
-*       ..
-*  
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DSPTRF computes the factorization of a real symmetric matrix A stored
-*> in packed format using the Bunch-Kaufman diagonal pivoting method:
-*>
-*>    A = U*D*U**T  or  A = L*D*L**T
-*>
-*> where U (or L) is a product of permutation and unit upper (lower)
-*> triangular matrices, and D is symmetric and block diagonal with
-*> 1-by-1 and 2-by-2 diagonal blocks.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] UPLO
-*> \verbatim
-*>          UPLO is CHARACTER*1
-*>          = 'U':  Upper triangle of A is stored;
-*>          = 'L':  Lower triangle of A is stored.
-*> \endverbatim
-*>
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The order of the matrix A.  N >= 0.
-*> \endverbatim
-*>
-*> \param[in,out] AP
-*> \verbatim
-*>          AP is DOUBLE PRECISION array, dimension (N*(N+1)/2)
-*>          On entry, the upper or lower triangle of the symmetric matrix
-*>          A, packed columnwise in a linear array.  The j-th column of A
-*>          is stored in the array AP as follows:
-*>          if UPLO = 'U', AP(i + (j-1)*j/2) = A(i,j) for 1<=i<=j;
-*>          if UPLO = 'L', AP(i + (j-1)*(2n-j)/2) = A(i,j) for j<=i<=n.
-*>
-*>          On exit, the block diagonal matrix D and the multipliers used
-*>          to obtain the factor U or L, stored as a packed triangular
-*>          matrix overwriting A (see below for further details).
-*> \endverbatim
-*>
-*> \param[out] IPIV
-*> \verbatim
-*>          IPIV is INTEGER array, dimension (N)
-*>          Details of the interchanges and the block structure of D.
-*>          If IPIV(k) > 0, then rows and columns k and IPIV(k) were
-*>          interchanged and D(k,k) is a 1-by-1 diagonal block.
-*>          If UPLO = 'U' and IPIV(k) = IPIV(k-1) < 0, then rows and
-*>          columns k-1 and -IPIV(k) were interchanged and D(k-1:k,k-1:k)
-*>          is a 2-by-2 diagonal block.  If UPLO = 'L' and IPIV(k) =
-*>          IPIV(k+1) < 0, then rows and columns k+1 and -IPIV(k) were
-*>          interchanged and D(k:k+1,k:k+1) is a 2-by-2 diagonal block.
-*> \endverbatim
-*>
-*> \param[out] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          = 0: successful exit
-*>          < 0: if INFO = -i, the i-th argument had an illegal value
-*>          > 0: if INFO = i, D(i,i) is exactly zero.  The factorization
-*>               has been completed, but the block diagonal matrix D is
-*>               exactly singular, and division by zero will occur if it
-*>               is used to solve a system of equations.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee 
-*> \author Univ. of California Berkeley 
-*> \author Univ. of Colorado Denver 
-*> \author NAG Ltd. 
-*
-*> \date November 2011
-*
-*> \ingroup doubleOTHERcomputational
-*
-*> \par Further Details:
-*  =====================
-*>
-*> \verbatim
-*>
-*>  If UPLO = 'U', then A = U*D*U**T, where
-*>     U = P(n)*U(n)* ... *P(k)U(k)* ...,
-*>  i.e., U is a product of terms P(k)*U(k), where k decreases from n to
-*>  1 in steps of 1 or 2, and D is a block diagonal matrix with 1-by-1
-*>  and 2-by-2 diagonal blocks D(k).  P(k) is a permutation matrix as
-*>  defined by IPIV(k), and U(k) is a unit upper triangular matrix, such
-*>  that if the diagonal block D(k) is of order s (s = 1 or 2), then
-*>
-*>             (   I    v    0   )   k-s
-*>     U(k) =  (   0    I    0   )   s
-*>             (   0    0    I   )   n-k
-*>                k-s   s   n-k
-*>
-*>  If s = 1, D(k) overwrites A(k,k), and v overwrites A(1:k-1,k).
-*>  If s = 2, the upper triangle of D(k) overwrites A(k-1,k-1), A(k-1,k),
-*>  and A(k,k), and v overwrites A(1:k-2,k-1:k).
-*>
-*>  If UPLO = 'L', then A = L*D*L**T, where
-*>     L = P(1)*L(1)* ... *P(k)*L(k)* ...,
-*>  i.e., L is a product of terms P(k)*L(k), where k increases from 1 to
-*>  n in steps of 1 or 2, and D is a block diagonal matrix with 1-by-1
-*>  and 2-by-2 diagonal blocks D(k).  P(k) is a permutation matrix as
-*>  defined by IPIV(k), and L(k) is a unit lower triangular matrix, such
-*>  that if the diagonal block D(k) is of order s (s = 1 or 2), then
-*>
-*>             (   I    0     0   )  k-1
-*>     L(k) =  (   0    I     0   )  s
-*>             (   0    v     I   )  n-k-s+1
-*>                k-1   s  n-k-s+1
-*>
-*>  If s = 1, D(k) overwrites A(k,k), and v overwrites A(k+1:n,k).
-*>  If s = 2, the lower triangle of D(k) overwrites A(k,k), A(k+1,k),
-*>  and A(k+1,k+1), and v overwrites A(k+2:n,k:k+1).
-*> \endverbatim
-*
-*> \par Contributors:
-*  ==================
-*>
-*>  J. Lewis, Boeing Computer Services Company
-*>
-*  =====================================================================
-      SUBROUTINE DSPTRF( UPLO, N, AP, IPIV, INFO )
-*
-*  -- LAPACK computational routine (version 3.4.0) --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*     November 2011
+*  -- LAPACK routine (version 3.2.2) --
+*     Craig Lucas, University of Manchester / NAG Ltd.
+*     October, 2008  
 *
 *     .. Scalar Arguments ..
+      DOUBLE PRECISION   TOL
+      INTEGER            INFO, LDA, N, RANK
       CHARACTER          UPLO
-      INTEGER            INFO, N
 *     ..
 *     .. Array Arguments ..
-      INTEGER            IPIV( * )
-      DOUBLE PRECISION   AP( * )
+      DOUBLE PRECISION   A( LDA, * ), WORK( 2*N )
+      INTEGER            PIV( N )
 *     ..
+*
+*  Purpose
+*  =======
+*
+*  DPSTRF computes the Cholesky factorization with complete
+*  pivoting of a real symmetric positive semidefinite matrix A.
+*
+*  The factorization has the form
+*     P' * A * P = U' * U ,  if UPLO = 'U',
+*     P' * A * P = L  * L',  if UPLO = 'L',
+*  where U is an upper triangular matrix and L is lower triangular, and
+*  P is stored as vector PIV.
+*
+*  This algorithm does not attempt to check that A is positive
+*  semidefinite. This version of the algorithm calls level 3 BLAS.
+*
+*  Arguments
+*  =========
+*
+*  UPLO    (input) CHARACTER*1
+*          Specifies whether the upper or lower triangular part of the
+*          symmetric matrix A is stored.
+*          = 'U':  Upper triangular
+*          = 'L':  Lower triangular
+*
+*  N       (input) INTEGER
+*          The order of the matrix A.  N >= 0.
+*
+*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
+*          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*          n by n upper triangular part of A contains the upper
+*          triangular part of the matrix A, and the strictly lower
+*          triangular part of A is not referenced.  If UPLO = 'L', the
+*          leading n by n lower triangular part of A contains the lower
+*          triangular part of the matrix A, and the strictly upper
+*          triangular part of A is not referenced.
+*
+*          On exit, if INFO = 0, the factor U or L from the Cholesky
+*          factorization as above.
+*
+*  LDA     (input) INTEGER
+*          The leading dimension of the array A.  LDA >= max(1,N).
+*
+*  PIV     (output) INTEGER array, dimension (N)
+*          PIV is such that the nonzero entries are P( PIV(K), K ) = 1.
+*
+*  RANK    (output) INTEGER
+*          The rank of A given by the number of steps the algorithm
+*          completed.
+*
+*  TOL     (input) DOUBLE PRECISION
+*          User defined tolerance. If TOL < 0, then N*U*MAX( A(K,K) )
+*          will be used. The algorithm terminates at the (K-1)st step
+*          if the pivot <= TOL.
+*
+*  WORK    (workspace) DOUBLE PRECISION array, dimension (2*N)
+*          Work space.
+*
+*  INFO    (output) INTEGER
+*          < 0: If INFO = -K, the K-th argument had an illegal value,
+*          = 0: algorithm completed successfully, and
+*          > 0: the matrix A is either rank deficient with computed rank
+*               as returned in RANK, or is indefinite.  See Section 7 of
+*               LAPACK Working Note #161 for further information.
 *
 *  =====================================================================
 *
 *     .. Parameters ..
-      DOUBLE PRECISION   ZERO, ONE
-      PARAMETER          ( ZERO = 0.0D+0, ONE = 1.0D+0 )
-      DOUBLE PRECISION   EIGHT, SEVTEN
-      PARAMETER          ( EIGHT = 8.0D+0, SEVTEN = 17.0D+0 )
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
 *     ..
 *     .. Local Scalars ..
+      DOUBLE PRECISION   AJJ, DSTOP, DTEMP
+      INTEGER            I, ITEMP, J, JB, K, NB, PVT
       LOGICAL            UPPER
-      INTEGER            I, IMAX, J, JMAX, K, KC, KK, KNC, KP, KPC,
-     $                   KSTEP, KX, NPP
-      DOUBLE PRECISION   ABSAKK, ALPHA, COLMAX, D11, D12, D21, D22, R1,
-     $                   ROWMAX, T, WK, WKM1, WKP1
 *     ..
 *     .. External Functions ..
-      LOGICAL            LSAME
-      INTEGER            IDAMAX
-      EXTERNAL           LSAME, IDAMAX
+      DOUBLE PRECISION   DLAMCH
+      INTEGER            ILAENV
+      LOGICAL            LSAME, DISNAN
+      EXTERNAL           DLAMCH, ILAENV, LSAME, DISNAN
 *     ..
 *     .. External Subroutines ..
-      EXTERNAL           DSCAL, DSPR, DSWAP, XERBLA
+      EXTERNAL           DGEMV, DPSTF2, DSCAL, DSWAP, DSYRK, XERBLA
 *     ..
 *     .. Intrinsic Functions ..
-      INTRINSIC          ABS, MAX, SQRT
+      INTRINSIC          MAX, MIN, SQRT, MAXLOC
 *     ..
 *     .. Executable Statements ..
 *
@@ -38256,408 +38158,566 @@ CIBM           PREFER SCALAR
          INFO = -1
       ELSE IF( N.LT.0 ) THEN
          INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -4
       END IF
       IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DSPTRF', -INFO )
+         CALL XERBLA( 'DPSTRF', -INFO )
          RETURN
       END IF
 *
-*     Initialize ALPHA for use in choosing pivot block size.
+*     Quick return if possible
 *
-      ALPHA = ( ONE+SQRT( SEVTEN ) ) / EIGHT
+      IF( N.EQ.0 )
+     $   RETURN
 *
-      IF( UPPER ) THEN
+*     Get block size
 *
-*        Factorize A as U*D*U**T using the upper triangle of A
+      NB = ILAENV( 1, 'DPOTRF', UPLO, N, -1, -1, -1 )
+      IF( NB.LE.1 .OR. NB.GE.N ) THEN
 *
-*        K is the main loop index, decreasing from N to 1 in steps of
-*        1 or 2
+*        Use unblocked code
 *
-         K = N
-         KC = ( N-1 )*N / 2 + 1
-   10    CONTINUE
-         KNC = KC
-*
-*        If K < 1, exit from loop
-*
-         IF( K.LT.1 )
-     $      GO TO 110
-         KSTEP = 1
-*
-*        Determine rows and columns to be interchanged and whether
-*        a 1-by-1 or 2-by-2 pivot block will be used
-*
-         ABSAKK = ABS( AP( KC+K-1 ) )
-*
-*        IMAX is the row-index of the largest off-diagonal element in
-*        column K, and COLMAX is its absolute value
-*
-         IF( K.GT.1 ) THEN
-            IMAX = IDAMAX( K-1, AP( KC ), 1 )
-            COLMAX = ABS( AP( KC+IMAX-1 ) )
-         ELSE
-            COLMAX = ZERO
-         END IF
-*
-         IF( MAX( ABSAKK, COLMAX ).EQ.ZERO ) THEN
-*
-*           Column K is zero: set INFO and continue
-*
-            IF( INFO.EQ.0 )
-     $         INFO = K
-            KP = K
-         ELSE
-            IF( ABSAKK.GE.ALPHA*COLMAX ) THEN
-*
-*              no interchange, use 1-by-1 pivot block
-*
-               KP = K
-            ELSE
-*
-               ROWMAX = ZERO
-               JMAX = IMAX
-               KX = IMAX*( IMAX+1 ) / 2 + IMAX
-               DO 20 J = IMAX + 1, K
-                  IF( ABS( AP( KX ) ).GT.ROWMAX ) THEN
-                     ROWMAX = ABS( AP( KX ) )
-                     JMAX = J
-                  END IF
-                  KX = KX + J
-   20          CONTINUE
-               KPC = ( IMAX-1 )*IMAX / 2 + 1
-               IF( IMAX.GT.1 ) THEN
-                  JMAX = IDAMAX( IMAX-1, AP( KPC ), 1 )
-                  ROWMAX = MAX( ROWMAX, ABS( AP( KPC+JMAX-1 ) ) )
-               END IF
-*
-               IF( ABSAKK.GE.ALPHA*COLMAX*( COLMAX / ROWMAX ) ) THEN
-*
-*                 no interchange, use 1-by-1 pivot block
-*
-                  KP = K
-               ELSE IF( ABS( AP( KPC+IMAX-1 ) ).GE.ALPHA*ROWMAX ) THEN
-*
-*                 interchange rows and columns K and IMAX, use 1-by-1
-*                 pivot block
-*
-                  KP = IMAX
-               ELSE
-*
-*                 interchange rows and columns K-1 and IMAX, use 2-by-2
-*                 pivot block
-*
-                  KP = IMAX
-                  KSTEP = 2
-               END IF
-            END IF
-*
-            KK = K - KSTEP + 1
-            IF( KSTEP.EQ.2 )
-     $         KNC = KNC - K + 1
-            IF( KP.NE.KK ) THEN
-*
-*              Interchange rows and columns KK and KP in the leading
-*              submatrix A(1:k,1:k)
-*
-               CALL DSWAP( KP-1, AP( KNC ), 1, AP( KPC ), 1 )
-               KX = KPC + KP - 1
-               DO 30 J = KP + 1, KK - 1
-                  KX = KX + J - 1
-                  T = AP( KNC+J-1 )
-                  AP( KNC+J-1 ) = AP( KX )
-                  AP( KX ) = T
-   30          CONTINUE
-               T = AP( KNC+KK-1 )
-               AP( KNC+KK-1 ) = AP( KPC+KP-1 )
-               AP( KPC+KP-1 ) = T
-               IF( KSTEP.EQ.2 ) THEN
-                  T = AP( KC+K-2 )
-                  AP( KC+K-2 ) = AP( KC+KP-1 )
-                  AP( KC+KP-1 ) = T
-               END IF
-            END IF
-*
-*           Update the leading submatrix
-*
-            IF( KSTEP.EQ.1 ) THEN
-*
-*              1-by-1 pivot block D(k): column k now holds
-*
-*              W(k) = U(k)*D(k)
-*
-*              where U(k) is the k-th column of U
-*
-*              Perform a rank-1 update of A(1:k-1,1:k-1) as
-*
-*              A := A - U(k)*D(k)*U(k)**T = A - W(k)*1/D(k)*W(k)**T
-*
-               R1 = ONE / AP( KC+K-1 )
-               CALL DSPR( UPLO, K-1, -R1, AP( KC ), 1, AP )
-*
-*              Store U(k) in column k
-*
-               CALL DSCAL( K-1, R1, AP( KC ), 1 )
-            ELSE
-*
-*              2-by-2 pivot block D(k): columns k and k-1 now hold
-*
-*              ( W(k-1) W(k) ) = ( U(k-1) U(k) )*D(k)
-*
-*              where U(k) and U(k-1) are the k-th and (k-1)-th columns
-*              of U
-*
-*              Perform a rank-2 update of A(1:k-2,1:k-2) as
-*
-*              A := A - ( U(k-1) U(k) )*D(k)*( U(k-1) U(k) )**T
-*                 = A - ( W(k-1) W(k) )*inv(D(k))*( W(k-1) W(k) )**T
-*
-               IF( K.GT.2 ) THEN
-*
-                  D12 = AP( K-1+( K-1 )*K / 2 )
-                  D22 = AP( K-1+( K-2 )*( K-1 ) / 2 ) / D12
-                  D11 = AP( K+( K-1 )*K / 2 ) / D12
-                  T = ONE / ( D11*D22-ONE )
-                  D12 = T / D12
-*
-                  DO 50 J = K - 2, 1, -1
-                     WKM1 = D12*( D11*AP( J+( K-2 )*( K-1 ) / 2 )-
-     $                      AP( J+( K-1 )*K / 2 ) )
-                     WK = D12*( D22*AP( J+( K-1 )*K / 2 )-
-     $                    AP( J+( K-2 )*( K-1 ) / 2 ) )
-                     DO 40 I = J, 1, -1
-                        AP( I+( J-1 )*J / 2 ) = AP( I+( J-1 )*J / 2 ) -
-     $                     AP( I+( K-1 )*K / 2 )*WK -
-     $                     AP( I+( K-2 )*( K-1 ) / 2 )*WKM1
-   40                CONTINUE
-                     AP( J+( K-1 )*K / 2 ) = WK
-                     AP( J+( K-2 )*( K-1 ) / 2 ) = WKM1
-   50             CONTINUE
-*
-               END IF
-*
-            END IF
-         END IF
-*
-*        Store details of the interchanges in IPIV
-*
-         IF( KSTEP.EQ.1 ) THEN
-            IPIV( K ) = KP
-         ELSE
-            IPIV( K ) = -KP
-            IPIV( K-1 ) = -KP
-         END IF
-*
-*        Decrease K and return to the start of the main loop
-*
-         K = K - KSTEP
-         KC = KNC - K
-         GO TO 10
+         CALL DPSTF2( UPLO, N, A( 1, 1 ), LDA, PIV, RANK, TOL, WORK,
+     $                INFO )
+         GO TO 200
 *
       ELSE
 *
-*        Factorize A as L*D*L**T using the lower triangle of A
+*     Initialize PIV
 *
-*        K is the main loop index, increasing from 1 to N in steps of
-*        1 or 2
+         DO 100 I = 1, N
+            PIV( I ) = I
+  100    CONTINUE
 *
-         K = 1
-         KC = 1
-         NPP = N*( N+1 ) / 2
-   60    CONTINUE
-         KNC = KC
+*     Compute stopping value
 *
-*        If K > N, exit from loop
-*
-         IF( K.GT.N )
-     $      GO TO 110
-         KSTEP = 1
-*
-*        Determine rows and columns to be interchanged and whether
-*        a 1-by-1 or 2-by-2 pivot block will be used
-*
-         ABSAKK = ABS( AP( KC ) )
-*
-*        IMAX is the row-index of the largest off-diagonal element in
-*        column K, and COLMAX is its absolute value
-*
-         IF( K.LT.N ) THEN
-            IMAX = K + IDAMAX( N-K, AP( KC+1 ), 1 )
-            COLMAX = ABS( AP( KC+IMAX-K ) )
-         ELSE
-            COLMAX = ZERO
+         PVT = 1
+         AJJ = A( PVT, PVT )
+         DO I = 2, N
+            IF( A( I, I ).GT.AJJ ) THEN
+               PVT = I
+               AJJ = A( PVT, PVT )
+            END IF
+         END DO
+         IF( AJJ.EQ.ZERO.OR.DISNAN( AJJ ) ) THEN
+            RANK = 0
+            INFO = 1
+            GO TO 200
          END IF
 *
-         IF( MAX( ABSAKK, COLMAX ).EQ.ZERO ) THEN
+*     Compute stopping value if not supplied
 *
-*           Column K is zero: set INFO and continue
-*
-            IF( INFO.EQ.0 )
-     $         INFO = K
-            KP = K
+         IF( TOL.LT.ZERO ) THEN
+            DSTOP = N * DLAMCH( 'Epsilon' ) * AJJ
          ELSE
-            IF( ABSAKK.GE.ALPHA*COLMAX ) THEN
+            DSTOP = TOL
+         END IF
 *
-*              no interchange, use 1-by-1 pivot block
 *
-               KP = K
-            ELSE
+         IF( UPPER ) THEN
 *
-*              JMAX is the column-index of the largest off-diagonal
-*              element in row IMAX, and ROWMAX is its absolute value
+*           Compute the Cholesky factorization P' * A * P = U' * U
 *
-               ROWMAX = ZERO
-               KX = KC + IMAX - K
-               DO 70 J = K, IMAX - 1
-                  IF( ABS( AP( KX ) ).GT.ROWMAX ) THEN
-                     ROWMAX = ABS( AP( KX ) )
-                     JMAX = J
+            DO 140 K = 1, N, NB
+*
+*              Account for last block not being NB wide
+*
+               JB = MIN( NB, N-K+1 )
+*
+*              Set relevant part of first half of WORK to zero,
+*              holds dot products
+*
+               DO 110 I = K, N
+                  WORK( I ) = 0
+  110          CONTINUE
+*
+               DO 130 J = K, K + JB - 1
+*
+*              Find pivot, test for exit, else swap rows and columns
+*              Update dot products, compute possible pivots which are
+*              stored in the second half of WORK
+*
+                  DO 120 I = J, N
+*
+                     IF( J.GT.K ) THEN
+                        WORK( I ) = WORK( I ) + A( J-1, I )**2
+                     END IF
+                     WORK( N+I ) = A( I, I ) - WORK( I )
+*
+  120             CONTINUE
+*
+                  IF( J.GT.1 ) THEN
+                     ITEMP = MAXLOC( WORK( (N+J):(2*N) ), 1 )
+                     PVT = ITEMP + J - 1
+                     AJJ = WORK( N+PVT )
+                     IF( AJJ.LE.DSTOP.OR.DISNAN( AJJ ) ) THEN
+                        A( J, J ) = AJJ
+                        GO TO 190
+                     END IF
                   END IF
-                  KX = KX + N - J
-   70          CONTINUE
-               KPC = NPP - ( N-IMAX+1 )*( N-IMAX+2 ) / 2 + 1
-               IF( IMAX.LT.N ) THEN
-                  JMAX = IMAX + IDAMAX( N-IMAX, AP( KPC+1 ), 1 )
-                  ROWMAX = MAX( ROWMAX, ABS( AP( KPC+JMAX-IMAX ) ) )
+*
+                  IF( J.NE.PVT ) THEN
+*
+*                    Pivot OK, so can now swap pivot rows and columns
+*
+                     A( PVT, PVT ) = A( J, J )
+                     CALL DSWAP( J-1, A( 1, J ), 1, A( 1, PVT ), 1 )
+                     IF( PVT.LT.N )
+     $                  CALL DSWAP( N-PVT, A( J, PVT+1 ), LDA,
+     $                              A( PVT, PVT+1 ), LDA )
+                     CALL DSWAP( PVT-J-1, A( J, J+1 ), LDA,
+     $                           A( J+1, PVT ), 1 )
+*
+*                    Swap dot products and PIV
+*
+                     DTEMP = WORK( J )
+                     WORK( J ) = WORK( PVT )
+                     WORK( PVT ) = DTEMP
+                     ITEMP = PIV( PVT )
+                     PIV( PVT ) = PIV( J )
+                     PIV( J ) = ITEMP
+                  END IF
+*
+                  AJJ = SQRT( AJJ )
+                  A( J, J ) = AJJ
+*
+*                 Compute elements J+1:N of row J.
+*
+                  IF( J.LT.N ) THEN
+                     CALL DGEMV( 'Trans', J-K, N-J, -ONE, A( K, J+1 ),
+     $                           LDA, A( K, J ), 1, ONE, A( J, J+1 ),
+     $                           LDA )
+                     CALL DSCAL( N-J, ONE / AJJ, A( J, J+1 ), LDA )
+                  END IF
+*
+  130          CONTINUE
+*
+*              Update trailing matrix, J already incremented
+*
+               IF( K+JB.LE.N ) THEN
+                  CALL DSYRK( 'Upper', 'Trans', N-J+1, JB, -ONE,
+     $                        A( K, J ), LDA, ONE, A( J, J ), LDA )
                END IF
 *
-               IF( ABSAKK.GE.ALPHA*COLMAX*( COLMAX / ROWMAX ) ) THEN
+  140       CONTINUE
 *
-*                 no interchange, use 1-by-1 pivot block
-*
-                  KP = K
-               ELSE IF( ABS( AP( KPC ) ).GE.ALPHA*ROWMAX ) THEN
-*
-*                 interchange rows and columns K and IMAX, use 1-by-1
-*                 pivot block
-*
-                  KP = IMAX
-               ELSE
-*
-*                 interchange rows and columns K+1 and IMAX, use 2-by-2
-*                 pivot block
-*
-                  KP = IMAX
-                  KSTEP = 2
-               END IF
-            END IF
-*
-            KK = K + KSTEP - 1
-            IF( KSTEP.EQ.2 )
-     $         KNC = KNC + N - K + 1
-            IF( KP.NE.KK ) THEN
-*
-*              Interchange rows and columns KK and KP in the trailing
-*              submatrix A(k:n,k:n)
-*
-               IF( KP.LT.N )
-     $            CALL DSWAP( N-KP, AP( KNC+KP-KK+1 ), 1, AP( KPC+1 ),
-     $                        1 )
-               KX = KNC + KP - KK
-               DO 80 J = KK + 1, KP - 1
-                  KX = KX + N - J + 1
-                  T = AP( KNC+J-KK )
-                  AP( KNC+J-KK ) = AP( KX )
-                  AP( KX ) = T
-   80          CONTINUE
-               T = AP( KNC )
-               AP( KNC ) = AP( KPC )
-               AP( KPC ) = T
-               IF( KSTEP.EQ.2 ) THEN
-                  T = AP( KC+1 )
-                  AP( KC+1 ) = AP( KC+KP-K )
-                  AP( KC+KP-K ) = T
-               END IF
-            END IF
-*
-*           Update the trailing submatrix
-*
-            IF( KSTEP.EQ.1 ) THEN
-*
-*              1-by-1 pivot block D(k): column k now holds
-*
-*              W(k) = L(k)*D(k)
-*
-*              where L(k) is the k-th column of L
-*
-               IF( K.LT.N ) THEN
-*
-*                 Perform a rank-1 update of A(k+1:n,k+1:n) as
-*
-*                 A := A - L(k)*D(k)*L(k)**T = A - W(k)*(1/D(k))*W(k)**T
-*
-                  R1 = ONE / AP( KC )
-                  CALL DSPR( UPLO, N-K, -R1, AP( KC+1 ), 1,
-     $                       AP( KC+N-K+1 ) )
-*
-*                 Store L(k) in column K
-*
-                  CALL DSCAL( N-K, R1, AP( KC+1 ), 1 )
-               END IF
-            ELSE
-*
-*              2-by-2 pivot block D(k): columns K and K+1 now hold
-*
-*              ( W(k) W(k+1) ) = ( L(k) L(k+1) )*D(k)
-*
-*              where L(k) and L(k+1) are the k-th and (k+1)-th columns
-*              of L
-*
-               IF( K.LT.N-1 ) THEN
-*
-*                 Perform a rank-2 update of A(k+2:n,k+2:n) as
-*
-*                 A := A - ( L(k) L(k+1) )*D(k)*( L(k) L(k+1) )**T
-*                    = A - ( W(k) W(k+1) )*inv(D(k))*( W(k) W(k+1) )**T
-*
-*                 where L(k) and L(k+1) are the k-th and (k+1)-th
-*                 columns of L
-*
-                  D21 = AP( K+1+( K-1 )*( 2*N-K ) / 2 )
-                  D11 = AP( K+1+K*( 2*N-K-1 ) / 2 ) / D21
-                  D22 = AP( K+( K-1 )*( 2*N-K ) / 2 ) / D21
-                  T = ONE / ( D11*D22-ONE )
-                  D21 = T / D21
-*
-                  DO 100 J = K + 2, N
-                     WK = D21*( D11*AP( J+( K-1 )*( 2*N-K ) / 2 )-
-     $                    AP( J+K*( 2*N-K-1 ) / 2 ) )
-                     WKP1 = D21*( D22*AP( J+K*( 2*N-K-1 ) / 2 )-
-     $                      AP( J+( K-1 )*( 2*N-K ) / 2 ) )
-*
-                     DO 90 I = J, N
-                        AP( I+( J-1 )*( 2*N-J ) / 2 ) = AP( I+( J-1 )*
-     $                     ( 2*N-J ) / 2 ) - AP( I+( K-1 )*( 2*N-K ) /
-     $                     2 )*WK - AP( I+K*( 2*N-K-1 ) / 2 )*WKP1
-   90                CONTINUE
-*
-                     AP( J+( K-1 )*( 2*N-K ) / 2 ) = WK
-                     AP( J+K*( 2*N-K-1 ) / 2 ) = WKP1
-*
-  100             CONTINUE
-               END IF
-            END IF
-         END IF
-*
-*        Store details of the interchanges in IPIV
-*
-         IF( KSTEP.EQ.1 ) THEN
-            IPIV( K ) = KP
          ELSE
-            IPIV( K ) = -KP
-            IPIV( K+1 ) = -KP
+*
+*        Compute the Cholesky factorization P' * A * P = L * L'
+*
+            DO 180 K = 1, N, NB
+*
+*              Account for last block not being NB wide
+*
+               JB = MIN( NB, N-K+1 )
+*
+*              Set relevant part of first half of WORK to zero,
+*              holds dot products
+*
+               DO 150 I = K, N
+                  WORK( I ) = 0
+  150          CONTINUE
+*
+               DO 170 J = K, K + JB - 1
+*
+*              Find pivot, test for exit, else swap rows and columns
+*              Update dot products, compute possible pivots which are
+*              stored in the second half of WORK
+*
+                  DO 160 I = J, N
+*
+                     IF( J.GT.K ) THEN
+                        WORK( I ) = WORK( I ) + A( I, J-1 )**2
+                     END IF
+                     WORK( N+I ) = A( I, I ) - WORK( I )
+*
+  160             CONTINUE
+*
+                  IF( J.GT.1 ) THEN
+                     ITEMP = MAXLOC( WORK( (N+J):(2*N) ), 1 )
+                     PVT = ITEMP + J - 1
+                     AJJ = WORK( N+PVT )
+                     IF( AJJ.LE.DSTOP.OR.DISNAN( AJJ ) ) THEN
+                        A( J, J ) = AJJ
+                        GO TO 190
+                     END IF
+                  END IF
+*
+                  IF( J.NE.PVT ) THEN
+*
+*                    Pivot OK, so can now swap pivot rows and columns
+*
+                     A( PVT, PVT ) = A( J, J )
+                     CALL DSWAP( J-1, A( J, 1 ), LDA, A( PVT, 1 ), LDA )
+                     IF( PVT.LT.N )
+     $                  CALL DSWAP( N-PVT, A( PVT+1, J ), 1,
+     $                              A( PVT+1, PVT ), 1 )
+                     CALL DSWAP( PVT-J-1, A( J+1, J ), 1, A( PVT, J+1 ),
+     $                           LDA )
+*
+*                    Swap dot products and PIV
+*
+                     DTEMP = WORK( J )
+                     WORK( J ) = WORK( PVT )
+                     WORK( PVT ) = DTEMP
+                     ITEMP = PIV( PVT )
+                     PIV( PVT ) = PIV( J )
+                     PIV( J ) = ITEMP
+                  END IF
+*
+                  AJJ = SQRT( AJJ )
+                  A( J, J ) = AJJ
+*
+*                 Compute elements J+1:N of column J.
+*
+                  IF( J.LT.N ) THEN
+                     CALL DGEMV( 'No Trans', N-J, J-K, -ONE,
+     $                           A( J+1, K ), LDA, A( J, K ), LDA, ONE,
+     $                           A( J+1, J ), 1 )
+                     CALL DSCAL( N-J, ONE / AJJ, A( J+1, J ), 1 )
+                  END IF
+*
+  170          CONTINUE
+*
+*              Update trailing matrix, J already incremented
+*
+               IF( K+JB.LE.N ) THEN
+                  CALL DSYRK( 'Lower', 'No Trans', N-J+1, JB, -ONE,
+     $                        A( J, K ), LDA, ONE, A( J, J ), LDA )
+               END IF
+*
+  180       CONTINUE
+*
          END IF
+      END IF
 *
-*        Increase K and return to the start of the main loop
+*     Ran to completion, A has full rank
 *
-         K = K + KSTEP
-         KC = KNC + N - K + 2
-         GO TO 60
+      RANK = N
+*
+      GO TO 200
+  190 CONTINUE
+*
+*     Rank is the number of steps completed.  Set INFO = 1 to signal
+*     that the factorization cannot be used to solve a system.
+*
+      RANK = J - 1
+      INFO = 1
+*
+  200 CONTINUE
+      RETURN
+*
+*     End of DPSTRF
+*
+      END
+
+      SUBROUTINE DPSTF2( UPLO, N, A, LDA, PIV, RANK, TOL, WORK, INFO )
+*
+*  -- LAPACK PROTOTYPE routine (version 3.2.2) --
+*     Craig Lucas, University of Manchester / NAG Ltd.
+*     October, 2008
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION   TOL
+      INTEGER            INFO, LDA, N, RANK
+      CHARACTER          UPLO
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * ), WORK( 2*N )
+      INTEGER            PIV( N )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  DPSTF2 computes the Cholesky factorization with complete
+*  pivoting of a real symmetric positive semidefinite matrix A.
+*
+*  The factorization has the form
+*     P' * A * P = U' * U ,  if UPLO = 'U',
+*     P' * A * P = L  * L',  if UPLO = 'L',
+*  where U is an upper triangular matrix and L is lower triangular, and
+*  P is stored as vector PIV.
+*
+*  This algorithm does not attempt to check that A is positive
+*  semidefinite. This version of the algorithm calls level 2 BLAS.
+*
+*  Arguments
+*  =========
+*
+*  UPLO    (input) CHARACTER*1
+*          Specifies whether the upper or lower triangular part of the
+*          symmetric matrix A is stored.
+*          = 'U':  Upper triangular
+*          = 'L':  Lower triangular
+*
+*  N       (input) INTEGER
+*          The order of the matrix A.  N >= 0.
+*
+*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
+*          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*          n by n upper triangular part of A contains the upper
+*          triangular part of the matrix A, and the strictly lower
+*          triangular part of A is not referenced.  If UPLO = 'L', the
+*          leading n by n lower triangular part of A contains the lower
+*          triangular part of the matrix A, and the strictly upper
+*          triangular part of A is not referenced.
+*
+*          On exit, if INFO = 0, the factor U or L from the Cholesky
+*          factorization as above.
+*
+*  PIV     (output) INTEGER array, dimension (N)
+*          PIV is such that the nonzero entries are P( PIV(K), K ) = 1.
+*
+*  RANK    (output) INTEGER
+*          The rank of A given by the number of steps the algorithm
+*          completed.
+*
+*  TOL     (input) DOUBLE PRECISION
+*          User defined tolerance. If TOL < 0, then N*U*MAX( A( K,K ) )
+*          will be used. The algorithm terminates at the (K-1)st step
+*          if the pivot <= TOL.
+*
+*  LDA     (input) INTEGER
+*          The leading dimension of the array A.  LDA >= max(1,N).
+*
+*  WORK    (workspace) DOUBLE PRECISION array, dimension (2*N)
+*          Work space.
+*
+*  INFO    (output) INTEGER
+*          < 0: If INFO = -K, the K-th argument had an illegal value,
+*          = 0: algorithm completed successfully, and
+*          > 0: the matrix A is either rank deficient with computed rank
+*               as returned in RANK, or is indefinite.  See Section 7 of
+*               LAPACK Working Note #161 for further information.
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION   AJJ, DSTOP, DTEMP
+      INTEGER            I, ITEMP, J, PVT
+      LOGICAL            UPPER
+*     ..
+*     .. External Functions ..
+      DOUBLE PRECISION   DLAMCH
+      LOGICAL            LSAME, DISNAN
+      EXTERNAL           DLAMCH, LSAME, DISNAN
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMV, DSCAL, DSWAP, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, SQRT, MAXLOC
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPSTF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+*     Initialize PIV
+*
+      DO 100 I = 1, N
+         PIV( I ) = I
+  100 CONTINUE
+*
+*     Compute stopping value
+*
+      PVT = 1
+      AJJ = A( PVT, PVT )
+      DO I = 2, N
+         IF( A( I, I ).GT.AJJ ) THEN
+            PVT = I
+            AJJ = A( PVT, PVT )
+         END IF
+      END DO
+      IF( AJJ.EQ.ZERO.OR.DISNAN( AJJ ) ) THEN
+         RANK = 0
+         INFO = 1
+         GO TO 170
+      END IF
+*
+*     Compute stopping value if not supplied
+*
+      IF( TOL.LT.ZERO ) THEN
+         DSTOP = N * DLAMCH( 'Epsilon' ) * AJJ
+      ELSE
+         DSTOP = TOL
+      END IF
+*
+*     Set first half of WORK to zero, holds dot products
+*
+      DO 110 I = 1, N
+         WORK( I ) = 0
+  110 CONTINUE
+*
+      IF( UPPER ) THEN
+*
+*        Compute the Cholesky factorization P' * A * P = U' * U
+*
+         DO 130 J = 1, N
+*
+*        Find pivot, test for exit, else swap rows and columns
+*        Update dot products, compute possible pivots which are
+*        stored in the second half of WORK
+*
+            DO 120 I = J, N
+*
+               IF( J.GT.1 ) THEN
+                  WORK( I ) = WORK( I ) + A( J-1, I )**2
+               END IF
+               WORK( N+I ) = A( I, I ) - WORK( I )
+*
+  120       CONTINUE
+*
+            IF( J.GT.1 ) THEN
+               ITEMP = MAXLOC( WORK( (N+J):(2*N) ), 1 )
+               PVT = ITEMP + J - 1
+               AJJ = WORK( N+PVT )
+               IF( AJJ.LE.DSTOP.OR.DISNAN( AJJ ) ) THEN
+                  A( J, J ) = AJJ
+                  GO TO 160
+               END IF
+            END IF
+*
+            IF( J.NE.PVT ) THEN
+*
+*              Pivot OK, so can now swap pivot rows and columns
+*
+               A( PVT, PVT ) = A( J, J )
+               CALL DSWAP( J-1, A( 1, J ), 1, A( 1, PVT ), 1 )
+               IF( PVT.LT.N )
+     $            CALL DSWAP( N-PVT, A( J, PVT+1 ), LDA,
+     $                        A( PVT, PVT+1 ), LDA )
+               CALL DSWAP( PVT-J-1, A( J, J+1 ), LDA, A( J+1, PVT ), 1 )
+*
+*              Swap dot products and PIV
+*
+               DTEMP = WORK( J )
+               WORK( J ) = WORK( PVT )
+               WORK( PVT ) = DTEMP
+               ITEMP = PIV( PVT )
+               PIV( PVT ) = PIV( J )
+               PIV( J ) = ITEMP
+            END IF
+*
+            AJJ = SQRT( AJJ )
+            A( J, J ) = AJJ
+*
+*           Compute elements J+1:N of row J
+*
+            IF( J.LT.N ) THEN
+               CALL DGEMV( 'Trans', J-1, N-J, -ONE, A( 1, J+1 ), LDA,
+     $                     A( 1, J ), 1, ONE, A( J, J+1 ), LDA )
+               CALL DSCAL( N-J, ONE / AJJ, A( J, J+1 ), LDA )
+            END IF
+*
+  130    CONTINUE
+*
+      ELSE
+*
+*        Compute the Cholesky factorization P' * A * P = L * L'
+*
+         DO 150 J = 1, N
+*
+*        Find pivot, test for exit, else swap rows and columns
+*        Update dot products, compute possible pivots which are
+*        stored in the second half of WORK
+*
+            DO 140 I = J, N
+*
+               IF( J.GT.1 ) THEN
+                  WORK( I ) = WORK( I ) + A( I, J-1 )**2
+               END IF
+               WORK( N+I ) = A( I, I ) - WORK( I )
+*
+  140       CONTINUE
+*
+            IF( J.GT.1 ) THEN
+               ITEMP = MAXLOC( WORK( (N+J):(2*N) ), 1 )
+               PVT = ITEMP + J - 1
+               AJJ = WORK( N+PVT )
+               IF( AJJ.LE.DSTOP.OR.DISNAN( AJJ ) ) THEN
+                  A( J, J ) = AJJ
+                  GO TO 160
+               END IF
+            END IF
+*
+            IF( J.NE.PVT ) THEN
+*
+*              Pivot OK, so can now swap pivot rows and columns
+*
+               A( PVT, PVT ) = A( J, J )
+               CALL DSWAP( J-1, A( J, 1 ), LDA, A( PVT, 1 ), LDA )
+               IF( PVT.LT.N )
+     $            CALL DSWAP( N-PVT, A( PVT+1, J ), 1, A( PVT+1, PVT ),
+     $                        1 )
+               CALL DSWAP( PVT-J-1, A( J+1, J ), 1, A( PVT, J+1 ), LDA )
+*
+*              Swap dot products and PIV
+*
+               DTEMP = WORK( J )
+               WORK( J ) = WORK( PVT )
+               WORK( PVT ) = DTEMP
+               ITEMP = PIV( PVT )
+               PIV( PVT ) = PIV( J )
+               PIV( J ) = ITEMP
+            END IF
+*
+            AJJ = SQRT( AJJ )
+            A( J, J ) = AJJ
+*
+*           Compute elements J+1:N of column J
+*
+            IF( J.LT.N ) THEN
+               CALL DGEMV( 'No Trans', N-J, J-1, -ONE, A( J+1, 1 ), LDA,
+     $                     A( J, 1 ), LDA, ONE, A( J+1, J ), 1 )
+               CALL DSCAL( N-J, ONE / AJJ, A( J+1, J ), 1 )
+            END IF
+*
+  150    CONTINUE
 *
       END IF
 *
-  110 CONTINUE
+*     Ran to completion, A has full rank
+*
+      RANK = N
+*
+      GO TO 170
+  160 CONTINUE
+*
+*     Rank is number of steps completed.  Set INFO = 1 to signal
+*     that the factorization cannot be used to solve a system.
+*
+      RANK = J - 1
+      INFO = 1
+*
+  170 CONTINUE
       RETURN
 *
-*     End of DSPTRF
+*     End of DPSTF2
 *
       END
+
