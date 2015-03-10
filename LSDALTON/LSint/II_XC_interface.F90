@@ -485,7 +485,7 @@ IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
 DFTDATA%ndmat = ndmat2
 call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
-DFTDATA%grad = 0E0_realk
+CALL LS_DZERO(DFTDATA%grad,3*natoms)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
@@ -521,7 +521,7 @@ IF(nOrbitals .NE. nbast)&
 call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 
 CALL II_dft_geoderiv_molgrad(setting,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
-GRAD = DFTDATA%grad
+CALL DCOPY(3*natoms,DFTDATA%grad,1,GRAD,1)
 CALL LSTIMER('II_get_xc_geoderiv_molgrad',TS,TE,LUPRI)
 call mem_dft_dealloc(DFTDATA%orb2atom)
 call mem_dft_dealloc(DmatAO)
@@ -950,7 +950,7 @@ DFTDATA%nbmat = nbmat
 DFTDATA%nfmat = 0
 call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
-DFTDATA%grad = 0E0_realk
+CALL LS_DZERO(DFTDATA%grad,3*natoms)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
@@ -977,7 +977,7 @@ call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
 call II_XC_TransformDmatToAOFull_single(B,nbmat,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
 
 CALL II_DFT_geoderiv_kohnsham_mat(setting,LUPRI,1,nbast,1,DmatAO,DFTDATA,UNRES)
-GRAD = DFTDATA%grad
+CALL DCOPY(3*natoms,DFTDATA%grad,1,GRAD,1)
 CALL LSTIMER('II_get_xc_geoderiv_FxDgrad',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DFTDATA%orb2atom)
@@ -1037,7 +1037,7 @@ IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
 DFTDATA%ndmat = ndmat2
 call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
-DFTDATA%grad = 0E0_realk
+CALL LS_DZERO(DFTDATA%grad,3*natoms)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 DFTDATA%nbast = nbast
@@ -1064,7 +1064,7 @@ call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
 call II_XC_TransformDmatToAOFull_bc(A,B,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
 
 CALL II_DFT_geoderiv_linrspgrad(setting,LUPRI,1,nbast,1,DmatAO,DFTDATA,UNRES)
-GRAD = DFTDATA%grad
+CALL DCOPY(3*natoms,DFTDATA%grad,1,GRAD,1)
 CALL LSTIMER('II_get_xc_geoderiv_GxDgrad',TS,TE,LUPRI)
 
 call mem_dft_dealloc(DFTDATA%orb2atom)
