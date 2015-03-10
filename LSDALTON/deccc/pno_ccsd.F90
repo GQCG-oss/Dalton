@@ -50,16 +50,16 @@ module pno_ccsd_module
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
   subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,govov,no,nv,nb,xo,xv,yo,yv,&
-        &mylsitem,fj,pno_cv,pno_S,nspaces,oof,vvf,ifo,iter,f)
+        &mylsitem,fj,pno_cv,pno_S,nspaces,fock,iter,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb,iter,nspaces
      logical, intent(in) :: fj
      real(realk), intent(inout) :: t1(nv,no), t2(nv,no,nv,no)
-     real(realk), intent(inout),target :: o1(nv,no), o2(nv,no,nv,no), govov(no*nv*no*nv)
-     real(realk), intent(in),target :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
+     real(realk), intent(inout),target :: o1(nv,no)
+     real(realk), intent(inout) :: o2(nv,no,nv,no), govov(no*nv*no*nv)
+     real(realk), intent(in),target :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),fock(nb,nb)
      type(lsitem), intent(inout) :: mylsitem
-     real(realk), intent(inout) :: oof(no,no),vvf(nv,nv)
      type(decfrag),intent(in),optional :: f
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
@@ -92,6 +92,7 @@ module pno_ccsd_module
      type(pno_query_info) :: query
 
      !Integral stuff
+     real(realk), pointer :: oof(:,:),vvf(:,:)
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
      integer :: iorb,nthreads
@@ -161,20 +162,26 @@ module pno_ccsd_module
      gooov = 0.0E0_realk
      !$OMP END WORKSHARE
 
-     call time_start_phase(PHASE_WORK, twall = tamps, ttot = tinit, labelttot =&
-        & 'PNO: init and zeroing                :' )
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, twall = tamps, ttot = tinit, labelttot =&
+           & 'PNO: init and zeroing                :' )
+     endif
 
      !Get all the pno amplitudes with index restrictions i<=j
      call get_pno_amplitudes(t2,pno_cv,pno_t2,nspaces,no,nv)
 
-     call time_start_phase(PHASE_WORK, twall = tome, ttot = tamps, labelttot = &
-        & 'PNO: extract and transform amplitudes:' )
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, twall = tome, ttot = tamps, labelttot = &
+           & 'PNO: extract and transform amplitudes:' )
+     endif
 
      !initialize the pno_residual and the sio4 according to the allocated pno_cv
      call init_pno_residual_and_sio4(pno_cv,pno_o2,sio4,nspaces,no)
 
-     call time_start_phase(PHASE_WORK, twall = tbatchc, ttot = tome, labelttot = &
-        & 'PNO: initialize residual and sio4    :' )
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, twall = tbatchc, ttot = tome, labelttot = &
+           & 'PNO: initialize residual and sio4    :' )
+     endif
 
      !call II_get_AbsoluteValueOcc_overlap(DECinfo%output,DECinfo%output,setting,nb,no,out)
 
@@ -203,16 +210,20 @@ module pno_ccsd_module
 
      call free_query_info(query)
 
-     call time_start_phase(PHASE_WORK, twall = tint_dir, ttot = tbatchc, labelttot = &
-        & 'PNO: build batches                   :' )
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, twall = tint_dir, ttot = tbatchc, labelttot = &
+           & 'PNO: build batches                   :' )
+     endif
 
      ! Do the batched interal loop
      call pno_residual_integral_direct_loop(mylsitem,w1,s1,w2,s2,w3,s3,w4,s4,w5,s5,no,nv,nb,&
         &maxocc,maxvirt,nspaces,a_batch,g_batch,sio4,pno_cv,pno_t2,pno_o2,xo,xv,yo,yv,gooov,&
         &goovv,govov,Lvoov,Gai)
 
-     call time_start_phase(PHASE_WORK, twall = tfock, ttot = tint_dir, labelttot = &
-        & 'PNO: integral direct loop            :' )
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, twall = tfock, ttot = tint_dir, labelttot = &
+           & 'PNO: integral direct loop            :' )
+     endif
 
      ! Free gamma stuff
      call free_batch_info(g_batch)
@@ -235,38 +246,27 @@ module pno_ccsd_module
      !GET FOCK MATRICES!
      !!!!!!!!!!!!!!!!!!!
      !allocate the density matrix
-     call mem_alloc( iFock, nb, nb )
-     call mem_alloc( Dens,  nb, nb )
-     !calculate inactive fock matrix in ao basis
-     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens,nb)
-     iFock = 0.0E0_realk
-     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
-        & Dens,.false.,iFock)
-     !use dens as temporay array 
-     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-        & Dens,nb,nb,AORdefault,AORdefault)
-     ! Add one- and two-electron contributions to Fock matrix
-     call daxpy(nb**2,1.0E0_realk,Dens,1,iFock,1)
-     call daxpy(nb**2,1.0E0_realk,ifo,1,iFock,1)
-     !Free the density matrix
-     call mem_dealloc( Dens )
+     call mem_alloc( oof, no, no )
+     call mem_alloc( vvf, nv, nv )
+
      !Transform inactive Fock matrix into the different mo subspaces
      ! -> Foo
-     call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock,nb,0.0E0_realk,w1,no)
+     call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,fock,nb,0.0E0_realk,w1,no)
      call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,oof,no)
      ! -> Fov
      call dgemm('n','n',no,nv,nb,1.0E0_realk,w1,no,yv,nb,0.0E0_realk,ovf,no)
      ! -> Fvo
-     call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock,nb,0.0E0_realk,w1,nv)
+     call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fock,nb,0.0E0_realk,w1,nv)
      call dgemm('n','n',nv,no,nb,1.0E0_realk,w1,nv,yo,nb,0.0E0_realk,vof,nv)
      ! -> Fvv
      call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,vvf,nv)
 
-     call mem_dealloc( iFock )
-     call mem_dealloc( w1    )
+     call mem_dealloc( w1 )
 
-     call time_start_phase(PHASE_WORK, twall = treord, ttot = tfock, labelttot = &
-        & 'PNO: fock matrix construction        :' )
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, twall = treord, ttot = tfock, labelttot = &
+           & 'PNO: fock matrix construction        :' )
+     endif
 
      Lvoov = p20 * Lvoov
      call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
@@ -274,14 +274,23 @@ module pno_ccsd_module
      call array_reorder_4d( p10, goovv, no, no ,nv, nv, [3,4,1,2], nul, goovv_vvoo)
      call mem_dealloc( goovv )
 
-     call time_start_phase(PHASE_WORK, twall = trest, ttot = treord, labelttot = &
-        & 'PNO: sorting integrals for MO part   :' )
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, twall = trest, ttot = treord, labelttot = &
+           & 'PNO: sorting integrals for MO part   :' )
+     endif
 
      call mem_alloc(Gkj, no, no)
      Gkj = oof
 
      ! D1 term
+#ifdef VAR_PTR_RESHAPE
+     h1(1:(i8*nv)*no) => o1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(o1(1,1)),h1,[(i8*nv)*no])
+#else
+     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
      h1 = vof
      h1 => null()
      ! A1 term
@@ -379,8 +388,15 @@ module pno_ccsd_module
         !!!  B1 Term !!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !get gooov(kilc) as klic and transform c to pno basis
+#ifdef VAR_PTR_RESHAPE
+        p3(1:rpd,1:rpd,1:no,1:nv) => w3
+        p2(1:no,1:no,1:no,1:nv) => gooov
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer( c_loc(w3(1)),    p3, [rpd,rpd,no, nv] )
         call c_f_pointer( c_loc(gooov(1)), p2, [no, no, no, nv] )
+#else
+        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
         if( PS )then
 
@@ -628,8 +644,15 @@ module pno_ccsd_module
                  endif
 
                  !get fock matrix in the current space and transform virtual idx
+#ifdef VAR_PTR_RESHAPE
+                 r1(1:rpd,1:nv) => w1
+                 r2(1:no,1:nv)  => ovf
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w1(1)), r1, [rpd,nv] )
                  call c_f_pointer( c_loc(ovf(1)), r2,[ no,nv] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
                  r1(1,:) = r2(k,:)
 
                  call dgemm('t','t',pnv,rpd,nv,p10,d,nv,w1,rpd,nul,w2,pnv)
@@ -645,8 +668,15 @@ module pno_ccsd_module
            else
 
               !extract amplitudes as u aick with i = nc2
+#ifdef VAR_PTR_RESHAPE
+              p3(1:pnv,1:1,1:pnv,1:rpd)    => w3
+              p2(1:pnv,1:rpd,1:pnv,1:rpd)  => t
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w3(1)), p3, [pnv,1,pnv,rpd] )
               call c_f_pointer( c_loc(t(1)),  p2, [pnv,rpd,pnv,rpd] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               do b=1,pnv
                  do jc=1,pno
                     do a=1,pnv
@@ -658,8 +688,15 @@ module pno_ccsd_module
               p3 => null()
 
               !get fock matrix in the current space and transform virtual idx
+#ifdef VAR_PTR_RESHAPE
+              r1(1:rpd,1:nv) => w1
+              r2( 1:no,1:nv) => ovf
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)), r1, [rpd,nv] )
               call c_f_pointer( c_loc(ovf(1)), r2,[ no,nv] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               do b=1,nv
                  do jc=1,pno
                     r1(jc,b) = r2(idx(jc),b)
@@ -706,14 +743,16 @@ module pno_ccsd_module
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
 
-     write (*,'(" PNO: TIME MO part:")')
-     write (*,'(" PNO: common contribs      :",g10.3,"s")')mo_time(3)
-     write (*,'(" PNO: overlapping contribs :",g10.3,"s")')mo_time(4)
-     write (*,'(" PNO: B1                   :",g10.3,"s")')mo_time(5)
-     write (*,'(" PNO: C1                   :",g10.3,"s")')mo_time(6)
+     if(DECinfo%PL>2)then
+        write (*,'(" PNO: TIME MO part:")')
+        write (*,'(" PNO: common contribs      :",g10.3,"s")')mo_time(3)
+        write (*,'(" PNO: overlapping contribs :",g10.3,"s")')mo_time(4)
+        write (*,'(" PNO: B1                   :",g10.3,"s")')mo_time(5)
+        write (*,'(" PNO: C1                   :",g10.3,"s")')mo_time(6)
 
-     call time_start_phase(PHASE_WORK, twall = tfin, ttot = trest, labelttot = &
-        & 'PNO: MO part                         :' )
+        call time_start_phase(PHASE_WORK, twall = tfin, ttot = trest, labelttot = &
+           & 'PNO: MO part                         :' )
+     endif
 
      !this subroutine assumes that symmetrization has already occured and only a
      !backtransformation to the original space is carried out
@@ -748,13 +787,17 @@ module pno_ccsd_module
      call mem_dealloc( s_idx )
      call mem_dealloc( vof )
      call mem_dealloc( ovf )
+     call mem_dealloc( oof )
+     call mem_dealloc( vvf )
      call mem_dealloc( Gkj )
 
 #ifdef VAR_OMP
      call omp_set_nested(nested)
 #endif
-     call time_start_phase(PHASE_WORK, ttot = tfin, labelttot = &
-        & 'PNO: finalization                    :' )
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, ttot = tfin, labelttot = &
+           & 'PNO: finalization                    :' )
+     endif
 #endif
   end subroutine get_ccsd_residual_pno_style
 
@@ -838,9 +881,11 @@ module pno_ccsd_module
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
 
-     call time_start_phase(PHASE_WORK, ttot = time_overlap_spaces, labelttot = " PNO:&
-        & getting overlap spaces:")
-     write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
+     if(DECinfo%PL>2)then
+        call time_start_phase(PHASE_WORK, ttot = time_overlap_spaces, labelttot = " PNO:&
+           & getting overlap spaces:")
+        write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
+     endif
 
 
      if(DECinfo%pno_S_on_the_fly.or.just_check)then
@@ -1448,7 +1493,13 @@ module pno_ccsd_module
 
            !sort the contribution back and add up, again, because we assume a
            !symmetrized contribution in pno_o2 we can add up without taking care
+#ifdef VAR_PTR_RESHAPE
+           w1(1:nv,1:rpd,1:nv,1:rpd) => tmp1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer(c_loc(tmp1(1)),w1,[nv,rpd,nv,rpd])
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
            if(pno/=2.or.pno_cv(ns)%is_FA_space)then
               do j = 1, pno
@@ -1860,7 +1911,13 @@ module pno_ccsd_module
 
            call tensor_init(pno_t2(nn), [pnv,rpd,pnv,rpd],4)
 
+#ifdef VAR_PTR_RESHAPE
+           w1(1:nv,1:rpd,1:nv,1:rpd) => tmp1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer(c_loc(tmp1(1)),w1,[nv,rpd,nv,rpd])
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
            if( PS )then
               i           = cv(nn)%iaos(1)
@@ -1932,7 +1989,9 @@ module pno_ccsd_module
      call dgemm('n','t',nv,nv,nv,1.0E0_realk,tildetvv,nv,tvv,nv,0.0E0_realk,PD,nv)
      call dgemm('t','n',nv,nv,nv,1.0E0_realk,tildetvv,nv,tvv,nv,1.0E0_realk,PD,nv)
 
-     call print_norm(PD,i8*nv*nv,"PD:")
+     if(DECinfo%PL>3)then
+        call print_norm(PD,i8*nv*nv,"PD matrix norm:")
+     endif
   end subroutine calculate_pair_density_matrix
 
   !\brief 
@@ -2110,11 +2169,12 @@ module pno_ccsd_module
               max_w_per_thr(narray,loop) = max(max_w_per_thr(narray,loop),query%size_array(edit+narray))
            enddo
         end do
-        !print *,max_w_per_thr(:,loop)
+        !print *,"query says",max(query%size_array(:)),"max is",max_w_per_thr(:,loop)
      enddo
 
 
 #ifdef VAR_OMP
+
      nthreads_level1_int_dir(first_loop)  = omp_get_max_threads()
      nthreads_level1_int_dir(second_loop) = omp_get_max_threads()
      nthreads_level1_int_dir(third_loop)  = omp_get_max_threads()
@@ -2141,6 +2201,7 @@ module pno_ccsd_module
      max_nthr_int_loop = max(nthreads_level1_int_dir(first_loop),&
         & nthreads_level1_int_dir(second_loop),&
         & nthreads_level1_int_dir(third_loop))
+
 
      if(DECinfo%PL>3)then
         print *,max_nthr_int_loop,"<-max,nthreads->",nthreads_level1_int_dir
@@ -2192,7 +2253,12 @@ module pno_ccsd_module
      integer :: ns
      integer, pointer :: idx(:)
      real(realk), pointer :: d(:,:),t(:),o(:),h1(:),h2(:),h3(:),r1(:,:)
-     real(realk), pointer :: xo_pair(:,:,:),xv_pair(:,:,:),yo_pair(:,:,:),yv_pair(:,:,:)
+#ifdef VAR_PTR_RESHAPE
+     real(realk), contiguous, pointer :: xv_pair(:,:,:)
+#else
+     real(realk), pointer :: xv_pair(:,:,:)
+#endif
+     real(realk), pointer :: xo_pair(:,:,:),yo_pair(:,:,:),yv_pair(:,:,:)
      real(realk), pointer :: tpl(:,:), tmi(:,:)
      integer :: max_pnor, max_pnvr
      integer :: pno_comb
@@ -2207,6 +2273,7 @@ module pno_ccsd_module
      real(realk) :: tw,tc,tbeg,times(9),times_in_loops(8,3)
      integer(kind=8) :: my_s1,my_s2,my_s3,my_s4,my_s5
      real(realk), pointer :: my_w1(:),my_w2(:),my_w3(:),my_w4(:),my_w5(:)
+     real(realk), target  :: dummy(1)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
      real(realk), parameter :: m10 = -1.0E0_realk
@@ -2613,7 +2680,13 @@ module pno_ccsd_module
                  !Get G_{\alpha i}
 
                  if( PS )then
+#ifdef VAR_PTR_RESHAPE
+                    r1(1:la,1:rpd) => my_w5
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                     call c_f_pointer(c_loc(my_w5(1)),r1,[la,rpd])
+#else
+                    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
                     do pair = 1,2
                        call dgemm('t','n',rpd,lg*la*nb,nb,p10,xo_pair(1,pair,tid+1),nb,w3,nb,nul,my_w2,rpd)
                        call dgemm('n','n',rpd*lg*la,pnv,nb,p10,my_w2,rpd*lg*la,yv_pair(1,1,tid+1),nb,nul,my_w1,rpd*lg*la)
@@ -2669,7 +2742,13 @@ module pno_ccsd_module
 
                     call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
 
+#ifdef VAR_PTR_RESHAPE
+                    r1(1:la,1:rpd) => my_w5
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                     call c_f_pointer(c_loc(my_w5(1)),r1,[la,rpd])
+#else
+                    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
                     !$OMP CRITICAL
                     do ic = 1, rpd
                        Gai(fa:xa,idx(ic)) = Gai(fa:xa,idx(ic)) + r1(:,ic)
@@ -2758,19 +2837,21 @@ module pno_ccsd_module
               tid = omp_get_thread_num()
 #endif
               if(this_is_not_query)then
+
                  my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,third_loop):info_omp1(end_array,tid+1,w1_tag,third_loop))
                  my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,third_loop):info_omp1(end_array,tid+1,w2_tag,third_loop))
                  my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,third_loop):info_omp1(end_array,tid+1,w3_tag,third_loop))
 
-                 my_s1 = info_omp1(end_array,tid+1,w1_tag,third_loop)-info_omp1(beg_array,tid+1,w1_tag,third_loop)
-                 my_s2 = info_omp1(end_array,tid+1,w2_tag,third_loop)-info_omp1(beg_array,tid+1,w2_tag,third_loop)
-                 my_s3 = info_omp1(end_array,tid+1,w3_tag,third_loop)-info_omp1(beg_array,tid+1,w3_tag,third_loop)
+                 my_s1 = info_omp1(end_array,tid+1,w1_tag,third_loop)-info_omp1(beg_array,tid+1,w1_tag,third_loop)+1
+                 my_s2 = info_omp1(end_array,tid+1,w2_tag,third_loop)-info_omp1(beg_array,tid+1,w2_tag,third_loop)+1
+                 my_s3 = info_omp1(end_array,tid+1,w3_tag,third_loop)-info_omp1(beg_array,tid+1,w3_tag,third_loop)+1
 
                  my_w4 => null()
                  my_w5 => null()
 
                  my_s4 = 0
                  my_s5 = 0
+
               endif
 
               !OMP DO SCHEDULE(DYNAMIC)
@@ -2810,6 +2891,15 @@ module pno_ccsd_module
                     query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*tred)*nvr)
                     query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*nor)*tred*2)
 
+                    my_w1 => dummy
+                    my_w2 => dummy
+                    my_w3 => dummy
+
+                    my_s1 = 1
+                    my_s2 = 1
+                    my_s3 = 1
+                    my_s4 = 0
+                    my_s5 = 0
                  else
 
                     !Get the transformation matrices
@@ -2865,8 +2955,15 @@ module pno_ccsd_module
                     call time_start_phase(PHASE_WORK, twall = times(2), at = times_in_loops(3,3) )
 
 
+#ifdef VAR_PTR_RESHAPE
+                    h1(1:nb*no)  => xo
+                    h3(1:nb*pnv) => xv_pair
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                     call c_f_pointer(c_loc(xo(1,1)),h1,[(i8*nb)*no])
                     call c_f_pointer(c_loc(xv_pair(1,1,tid+1)),h3,[(i8*nb)*pnv])
+#else
+                    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
                  endif
 
@@ -2885,6 +2982,10 @@ module pno_ccsd_module
                     query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),my_s1)
                     query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),my_s2)
                     query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),my_s3)
+
+                    my_w1 => null()
+                    my_w2 => null()
+                    my_w3 => null()
 
                  else
 
@@ -3082,7 +3183,13 @@ module pno_ccsd_module
      paircontrib(1:2,2) = [2,1]
 
      !jilk = ijkl
+#ifdef VAR_PTR_RESHAPE
+     sig(1:rpd,1:rpd,1:no,1:no) => sio4(ns)%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(sio4(ns)%elm1(1)),sig,[rpd,rpd,no,no])
+#else
+     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
      !!!!!!!!!!!!!!!!!!!!!!!!!
      !!!  E2 Term part 1!!!!!! -- continued in the following loop and after the loop
@@ -3119,8 +3226,15 @@ module pno_ccsd_module
         !!!  E2 Term part1!!!!!!! - quadratic contribution
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !Get the integral contribution, sort it first like the integrals then transform it, govov
+#ifdef VAR_PTR_RESHAPE
+        p1(1:rpd1,1:nv,1:rpd1,1:nv) => w1
+        p2(1:no,  1:nv,1:no,  1:nv) => govov(1:no*nv*no*nv)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer( c_loc(w1(1)),    p1, [rpd1,nv,rpd1,nv] )
         call c_f_pointer( c_loc(govov(1)), p2, [no,   nv,no, nv] )
+#else
+        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
         if( PS1 )then
 
@@ -3176,11 +3290,18 @@ module pno_ccsd_module
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
         !prepare 4 occupied integral goooo for B2 term
-        !call c_f_pointer( c_loc(w3(1:rpd**2*rpd1**2)), p1, [rpd,rpd,rpd1,rpd1] )
-        call c_f_pointer( c_loc(w3(1)), p1, [rpd,rpd,rpd1,rpd1] )
-        !Get the integral contribution, sort it first like the integrals then transform it, govov
+        ! and Get the integral contribution, sort it first like the integrals then transform it, govov
+#ifdef VAR_PTR_RESHAPE
+        p1(1:rpd,1:rpd,1:rpd1,1:rpd1) => w3
+        p3(1:rpd1,1:nv,1:rpd1,1:nv)   => w1
+        p4(1:no,1:nv,1:no,1:nv)       => govov
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+        call c_f_pointer( c_loc(w3(1)),    p1, [rpd,rpd,rpd1,rpd1] )
         call c_f_pointer( c_loc(w1(1)),    p3, [rpd1,nv,rpd1,nv] )
         call c_f_pointer( c_loc(govov(1)), p4, [no,  nv,no,  nv] )
+#else
+        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
         !print *," CONRTIB LOOP", ns, ns2
         !print *,""
@@ -3282,7 +3403,13 @@ module pno_ccsd_module
 
            !!call dgemm( 'n', 'n', rpd**2, pnv1**2, rpd1**2, p10, w3, rpd**2, w1, rpd1**2, nul, w2, rpd**2 )
 
+#ifdef VAR_PTR_RESHAPE
+           p1(1:rpd,1:rpd,1:pno1,1:pno1) => w3
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer(c_loc(w3(1)),p1,[rpd,rpd,pno1,pno1])
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
            do l=1,pno1
               do k=1,pno1
                  p1(:,:,l,k) = sig(:,:,idx1(l),idx1(k))
@@ -3494,7 +3621,13 @@ module pno_ccsd_module
         !might easily move the following part outside the loop and add stuff
         !up during the loops -> please note that we use the reordered goovv, to
         !avoid cache misses here
+#ifdef VAR_PTR_RESHAPE
+        p2o(1:nv,1:nv,1:no,1:no) => goovv
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer( c_loc(goovv(1)), p2o, [nv,  nv, no, no] )
+#else
+        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
         if( PS )then
 
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3503,9 +3636,16 @@ module pno_ccsd_module
 
            !associate pointers such as to write k last in this case, does not
            !change anything for the pno1==2 case but helps a lot otherwise
-           call c_f_pointer( c_loc(w1(1)),    p1, [nv,rpd,nv,rpd1] )
            !store also the part for Pij
+#ifdef VAR_PTR_RESHAPE
+           p1(1:nv,1:rpd,1:nv,1:rpd1) => w1
+           p3(1:nv,1:rpd,1:nv,1:rpd1) => w1(nv*rpd1*rpd*nv+1:)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+           call c_f_pointer( c_loc(w1(1)),    p1, [nv,rpd,nv,rpd1] )
            call c_f_pointer( c_loc(w1(nv*rpd1*rpd*nv+1)), p3, [nv,rpd,nv,rpd1] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
            !FIND OUT WHICH CONTRIBUTION TO ADD AND SKIP THE OTHER, FROM THE
            !BEGINNING bpc and epc are set such that no looping occurs, both are
@@ -3563,11 +3703,21 @@ module pno_ccsd_module
               i = idx(paircontrib(1,pair1))
               j = idx(paircontrib(2,pair1))
 
+#ifdef VAR_PTR_RESHAPE
+              if(pair1==1)then
+                 p4(1:nv,1:rpd,1:nv,1:rpd1) => w1
+              else if(pair1==2)then
+                 p4(1:nv,1:rpd,1:nv,1:rpd1) => w1(nv*rpd1*rpd*nv+1:)
+              endif
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               if(pair1==1)then
                  call c_f_pointer( c_loc(w1(1)),    p4, [nv,rpd,nv,rpd1] )
               else if(pair1==2)then
                  call c_f_pointer( c_loc(w1(nv*rpd1*rpd*nv+1)), p4, [nv,rpd,nv,rpd1] )
               endif
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
               if( PS1 ) then
 
@@ -3675,8 +3825,15 @@ module pno_ccsd_module
 
                  !Get the integrals kdlc -> ckld and transform c and d to their
                  !corresponding spaces, (iajb -> bija) 
+#ifdef VAR_PTR_RESHAPE
+                 p2i(1:no,1:nv,1:no,1:nv) => govov
+                 p1(1:rpd1,1:rpd2,1:nv,1:nv) => w1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no, nv]  )
                  call c_f_pointer( c_loc(w1(1)),    p1, [rpd1,rpd2,nv,nv] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
                  if( PS1 ) then
 
                     if( PS2 )then
@@ -3718,13 +3875,25 @@ module pno_ccsd_module
 
                  !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
                  ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
+#ifdef VAR_PTR_RESHAPE
+                 p2i(1:pnv2,1:rpd2,1:pnv2,1:rpd2) => t22
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(t22(1)), p2i, [pnv2,rpd2,pnv2,rpd2] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
                  if( PS2 )then
                     if(l>j) call array_reorder_2d(p10,t22,pnv2,pnv2,[1,2],nul,w3)
                     if(j>l) call array_reorder_2d(p10,t22,pnv2,pnv2,[2,1],nul,w3)
                     nidx_h2 = 1
                  else
+#ifdef VAR_PTR_RESHAPE
+                    p3(1:rpd2,1:pnv2,1:nidx_h2,1:pnv2) => w3
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                     call c_f_pointer( c_loc(w3(1)),  p3, [rpd2,pnv2,nidx_h2,pnv2] )
+#else
+                    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
                     do b=1,pnv2
                        do jc=1,nidx2
                           do a=1,pnv2
@@ -3741,8 +3910,15 @@ module pno_ccsd_module
 
                  call dgemm('n','n', pnv1*rpd1, nidx_h2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1i, rpd2*pnv2, nul, h2i, pnv1*rpd1)
 
+#ifdef VAR_PTR_RESHAPE
+                 p3(1:pnv1,1:rpd1,1:nidx_h2,1:pnv) => h2i
+                 p4(1:rpd,1:pnv,1:pnv1,1:rpd1)     => w4
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(h2i(1)), p3, [pnv1,rpd1,nidx_h2,pnv] )
                  call c_f_pointer( c_loc(w4(1)), p4, [rpd,pnv,pnv1,rpd1] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
 
                  !FIXME: introduce the tensor_reorder_3/2d
@@ -3779,8 +3955,15 @@ module pno_ccsd_module
 
               else
 
+#ifdef VAR_PTR_RESHAPE
+                 p5(1:pnv1,1:1   ,1:pnv1, 1:rpd1) => w1
+                 p6(1:pnv1,1:rpd1,1:pnv1, 1:rpd1) => t21
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w1(1)),  p5, [pnv1,1   ,pnv1, rpd1] )
                  call c_f_pointer( c_loc(t21(1)), p6, [pnv1,rpd1,pnv1, rpd1] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
                  !call print_tensor_unfolding_with_labels(t21,&
                  !   &[pnv1,pno1],'bi',2,[pnv1,pno1],'ck',2,'t - pair')
@@ -3831,7 +4014,13 @@ module pno_ccsd_module
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
+#ifdef VAR_PTR_RESHAPE
+           p1(1:rpd1,1:rpd,1:nv,1:nv) => w1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w1(1)), p1, [rpd1,rpd,nv,nv] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
            if( PS1 )then
 #ifdef VAR_LSDEBUG
               if(diff12 /= 1.or.nidx1/=1) then
@@ -3883,8 +4072,15 @@ module pno_ccsd_module
 
               !Get the integrals kdlc -> ckld and transform c and d to their
               !corresponding spaces, (iajb -> bija) 
+#ifdef VAR_PTR_RESHAPE
+              p2i(1:no, 1:nv, 1:no, 1:nv) => govov
+              p1(1:rpd1,1:rpd2,1:nv,1:nv) => w1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no, nv]  )
               call c_f_pointer( c_loc(w1(1)),    p1, [rpd1,rpd2,nv,nv] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               if( PS1 ) then
                  if( PS2 )then
                     p1(1,1,:,:) = p2i(oidx1(nidx1+diff11+1,3),:,oidx2(nidx2+diff21+1,3),:)
@@ -3914,8 +4110,15 @@ module pno_ccsd_module
 
               !get the amplitudes in the correct order eldj -> ldje transform to a and contract to
               ! -0.5 w1(ckld) w2(ldja) += w4(ckja)
+#ifdef VAR_PTR_RESHAPE
+              p3(1:rpd2,1:pnv2,1:nidx2,1:pnv2) => w3
+              p2i(1:pnv2,1:rpd2,1:pnv2,1:rpd2) => t22
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w3(1)),  p3, [rpd2,pnv2,nidx2,pnv2] )
               call c_f_pointer( c_loc(t22(1)), p2i, [pnv2,rpd2,pnv2,rpd2] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               if( PS2 )then
 #ifdef VAR_LSDEBUG
                  if(nidx2/=1)call lsquit("ERRROROROROOROROROR",-1)
@@ -3945,8 +4148,15 @@ module pno_ccsd_module
 
               call dgemm('n','n', pnv1*rpd1, nidx2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1, rpd2*pnv2, nul, h2, pnv1*rpd1)
 
+#ifdef VAR_PTR_RESHAPE
+              p3(1:pnv1,1:rpd1,1:nidx2,1:pnv) => h2
+              p4(1:rpd,1:pnv,1:pnv1,1:rpd1)   => w4
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(h2(1)), p3, [pnv1,rpd1,nidx2,pnv] )
               call c_f_pointer( c_loc(w4(1)), p4, [rpd,pnv,pnv1,rpd1] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               if( PS1 )then
                  if( PS2 )then
                     do c=1,pnv1
@@ -3991,8 +4201,16 @@ module pno_ccsd_module
            !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
            !bick ja,ck^T = bija, do the permutation and addition of the contribution
 
+#ifdef VAR_PTR_RESHAPE
+           p2o(1:pnv1,1:rpd1,1:pnv1,1:rpd1) => t21
+           p1(1:pnv1,1:nidx1,1:pnv1,1:rpd1) => w1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,rpd1,pnv1, rpd1] )
            call c_f_pointer( c_loc(w1(1)),  p1, [pnv1,nidx1,pnv1,rpd1] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
            if( PS1 )then
 
               k = oidx1(nidx1+diff11+1,3)
@@ -4028,8 +4246,15 @@ module pno_ccsd_module
            !call print_tensor_unfolding_with_labels(h2,&
            !   &[pnv,nidx1],'bi',2,[rpd,pnv],'ja',2,'res - rect')
 
+#ifdef VAR_PTR_RESHAPE
+           p2o(1:pnv,1:nidx1,1:rpd,1:pnv) => h2
+           p1(1:pnv,1:rpd, 1:pnv, 1:rpd ) => o
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(h2(1)), p2o, [pnv,nidx1,rpd,pnv ] )
            call c_f_pointer( c_loc(o(1)),  p1,  [pnv,rpd, pnv, rpd ] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
            do a=1,pnv
               do j=1,pno
@@ -4103,11 +4328,23 @@ module pno_ccsd_module
 
               !Similar procedure as for the C2 term, just with the L integrals (which
               !could also be produced on-the-fly to reduce the memory requirements
+#ifdef VAR_PTR_RESHAPE
+              p2o(1:nv,1:no,1:no,1:nv) => Lvoov
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(Lvoov(1)), p2o, [nv, no, no, nv] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               ! extract and transform c to \bar(c} of (jk)  and a to \bar{a} of (ij) and reorder
               ! to the in which it will be used later we got w4:\bar{c}k\bar{a}i
               if( PS1 )then
+#ifdef VAR_PTR_RESHAPE
+                 p1(1:nv,1:rpd,1:rpd1,1:nv) => w1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w1(1)), p1, [nv,rpd,rpd1,nv] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
                  if(ns==ns1)then
                     k = idx1(paircontrib(1,pair1))
@@ -4119,7 +4356,13 @@ module pno_ccsd_module
                  call dgemm('n','n', pnv, pnv1, nv, p10, w2, pnv, d1, nv, nul, w4, pnv)
 
               else
+#ifdef VAR_PTR_RESHAPE
+                 p1(1:nv,1:rpd,1:nv,1:rpd1) => w1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w1(1)), p1, [nv,rpd,nv,rpd1] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
                  do kc=1,pno1
                     p1(:,1,:,kc) = p2o(:,i, idx1(kc),:)
                     call dgemm('t','n', pnv, nv,   nv, p10,  d,  nv, p1(1,1,1,kc), nv, nul, w2, pnv)
@@ -4190,8 +4433,15 @@ module pno_ccsd_module
 
               !Get the L integrals lfkc -> cklf and transform c and d to their
               !corresponding spaces, (iajb -> bjia) 
+#ifdef VAR_PTR_RESHAPE
+              p1(1:nv,1:rpd1,1:rpd2,1:nv) => w1
+              p2i(1:no,1:nv,1:no, 1:nv)   => govov
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),    p1, [nv,rpd1,rpd2,nv] )
               call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no,  nv] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               if( PS1 )then
                  if( PS2 )then
                     do a=1,nv
@@ -4250,8 +4500,17 @@ module pno_ccsd_module
                  endif
                  nidx_h2 = 1
               else
+
+#ifdef VAR_PTR_RESHAPE
+                 p3(1:pnv2,1:nidx2,1:pnv2,1:rpd2) => w3
+                 p2i(1:pnv2,1:rpd2,1:pnv2,1:rpd2) => t22
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w3(1)),  p3, [pnv2,nidx2,pnv2,rpd2] )
                  call c_f_pointer( c_loc(t22(1)), p2i, [pnv2,rpd2, pnv2,rpd2] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
                  do jc=1,pno2
                     do b=1,pnv2
                        do ic=1,nidx2
@@ -4295,8 +4554,15 @@ module pno_ccsd_module
 
            else
 
+#ifdef VAR_PTR_RESHAPE
+              p5(1:pnv1,1:1,1:pnv1,1:rpd1)    => w1
+              p6(1:pnv1,1:rpd1,1:pnv1,1:rpd1) => t21
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),  p5, [pnv1,1,pnv1,rpd1] )
               call c_f_pointer( c_loc(t21(1)), p6, [pnv1,rpd1,pnv1,rpd1] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
               do kc=1,pno1
                  p5(:,1,:,kc) = p20 * p6(:,oidx1(1,2),:,kc) - p6(:,kc,:,oidx1(1,2))
@@ -4341,8 +4607,16 @@ module pno_ccsd_module
 
            !Similar procedure as for the C2 term, just with the L integrals (which
            !could also be produced on-the-fly to reduce the memory requirements
+#ifdef VAR_PTR_RESHAPE
+           p1(1:nv,1:rpd,1:rpd1,1:nv) => w1
+           p2o(1:nv,1:no,1:no,1:nv)   => Lvoov
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w1(1)),    p1,  [nv,rpd,rpd1,nv] )
            call c_f_pointer( c_loc(Lvoov(1)), p2o, [nv, no, no, nv] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
            if( PS1 )then
               do ic=1,pno
                  p1(:,ic,1,:) = p2o(:,idx(ic), oidx1(nidx1+diff11+1,3),:)
@@ -4390,8 +4664,15 @@ module pno_ccsd_module
 
               !Get the L integrals lfkc -> cklf and transform c and d to their
               !corresponding spaces, (iajb -> bjia) 
+#ifdef VAR_PTR_RESHAPE
+              p1(1:nv,1:rpd1,1:rpd2,1:nv) => w1
+              p2i(1:no,1:nv,1:no,1:nv)    => govov
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),    p1, [nv,rpd1,rpd2,nv] )
               call c_f_pointer( c_loc(govov(1)), p2i, [no, nv, no,  nv] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               if( PS1 )then
                  if( PS2 )then
                     do a=1,nv
@@ -4451,8 +4732,15 @@ module pno_ccsd_module
                     call array_reorder_2d(m10,t22,pnv2,pnv2,[2,1],p10,w3)
                  endif
               else
+#ifdef VAR_PTR_RESHAPE
+                 p3(1:pnv2,1:nidx2,1:pnv2,1:rpd2) => w3
+                 p2i(1:pnv2,1:rpd2,1:pnv2,1:rpd2) => t22
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                  call c_f_pointer( c_loc(w3(1)),  p3, [pnv2,nidx2,pnv2,rpd2] )
                  call c_f_pointer( c_loc(t22(1)), p2i, [pnv2,rpd2, pnv2,rpd2] )
+#else
+                 call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
                  do j=1,pno2
                     do b=1,pnv2
                        do i=1,nidx2
@@ -4479,8 +4767,15 @@ module pno_ccsd_module
               !call print_tensor_unfolding_with_labels(h2,&
               !   &[pnv,rpd1],'ck',2,[pnv,nidx2],'ai',2,'res -- inner -- rect')
 
+#ifdef VAR_PTR_RESHAPE
+              p2i(1:pnv1,1:rpd1,1:pnv,1:nidx2) => h1
+              p4(1:pnv,1:rpd,1:pnv1,1:rpd1)    => w4
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(h1(1)), p2i, [pnv1,rpd1,pnv,nidx2] )
               call c_f_pointer( c_loc(w4(1)), p4, [pnv,rpd,pnv1,rpd1] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               if( PS1 )then
                  if( PS2 )then
                     do b=1,pnv
@@ -4525,8 +4820,15 @@ module pno_ccsd_module
            enddo OneIdxSpaceLoop32
 
            !exctract amplitudes as u bjck and contract with w4 ckai
+#ifdef VAR_PTR_RESHAPE
+           p1(1:pnv1,1:nidx1,1:pnv1,1:rpd1) => w1
+           p2o(1:pnv1,1:rpd1,1:pnv1,1:rpd1) => t21
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w1(1)),  p1, [pnv1,nidx1,pnv1,rpd1] )
            call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,rpd1,pnv1,rpd1] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
            if( PS1 )then
 
@@ -4567,8 +4869,15 @@ module pno_ccsd_module
            !   &[pnv,rpd],'ai',2,[pnv,nidx1],'ck',2,'res rect')
 
            !add D2 contribution to o
+#ifdef VAR_PTR_RESHAPE
+           p5(1:pnv,1:rpd,1:pnv,1:nidx1) => h2
+           p1(1:pnv,1:rpd,1:pnv,1:rpd)   => o
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(h2(1)), p5, [pnv,rpd,pnv,nidx1] )
            call c_f_pointer( c_loc(o(1)),  p1, [pnv,rpd, pnv, rpd ] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
 
            !call print_tensor_unfolding_with_labels(o,&
            !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA rect before add')
@@ -4645,7 +4954,13 @@ module pno_ccsd_module
               i = idx(paircontrib(1,pair1))
               j = idx(paircontrib(2,pair1))
 
+#ifdef VAR_PTR_RESHAPE
+              r1(1:rpd1,1:rpd) => w4
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w4(1)),  r1, [ rpd1,rpd ] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               if( PS1 )then
                  if(ns==ns1)then
                     k = idx1(paircontrib(2,pair1))
@@ -4794,8 +5109,15 @@ module pno_ccsd_module
 
 
               !extract amplitudes like in C2 as aibk
+#ifdef VAR_PTR_RESHAPE
+              p1(1:pnv1,1:nidx1,1:pnv1,1:pno1) => w1
+              p2o(1:pnv1,1:rpd1,1:pnv1,1:rpd1) => t21
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),  p1, [pnv1,nidx1,pnv1,pno1] )
-              call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,pno1,pnv1,pno1] )
+              call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,rpd1,pnv1,rpd1] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               if( PS1 )then
                  if(i<k)call array_reorder_2d(p10,t21,pnv1,pnv1,[1,2],nul,p1)
                  if(i>k)call array_reorder_2d(p10,t21,pnv1,pnv1,[2,1],nul,p1)
@@ -4822,7 +5144,14 @@ module pno_ccsd_module
 
         else
 
+#ifdef VAR_PTR_RESHAPE
+           r1(1:rpd1,1:rpd ) => w4
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(w4(1)),  r1, [ rpd1,rpd ] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
            if( PS1 )then
               do jc=1,pno
                  r1(1,jc) = oof(oidx1(nidx1+diff11+1,3), idx(jc))
@@ -4944,8 +5273,15 @@ module pno_ccsd_module
               if(i<k)call array_reorder_2d(p10,t21,pnv1,pnv1,[1,2],nul,w1)
               if(i>k)call array_reorder_2d(p10,t21,pnv1,pnv1,[2,1],nul,w1)
            else
+#ifdef VAR_PTR_RESHAPE
+              p1(1:pnv1,1:nidx1,1:pnv1,1:pno1) => w1
+              p2o(1:pnv1,1:pno1,1:pnv1,1:pno1) => t21
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
               call c_f_pointer( c_loc(w1(1)),  p1, [pnv1,nidx1,pnv1,pno1] )
               call c_f_pointer( c_loc(t21(1)), p2o, [pnv1,pno1,pnv1,pno1] )
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               do j=1,pno1
                  do i=1,nidx1
                     p1(:,i,:,j) = p2o(:,oidx1(i,2),:,j)
@@ -4971,8 +5307,15 @@ module pno_ccsd_module
            !transform b index to the correct space
            call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,rpd*pnv*nidx1,pnv1,h1,h2,ptr=h1)
 
+#ifdef VAR_PTR_RESHAPE
+           p2o(1:pnv,1:rpd,1:pnv,1:nidx1) => h1
+           p1(1:pnv,1:rpd,1:pnv,1:rpd)    => o
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
            call c_f_pointer( c_loc(h1(1)), p2o, [pnv,rpd,pnv,nidx1] )
            call c_f_pointer( c_loc(o(1)),  p1, [pnv,rpd, pnv, rpd] )
+#else
+           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
            do i=1,nidx1
               do a=1,pnv
                  do j=1,pno

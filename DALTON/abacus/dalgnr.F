@@ -1307,7 +1307,7 @@ C
       use pcmmod_cfg
       use pcm_write
 #endif
-      use qmcmm, only: qmnpinp
+      use qmcmm_input, only: qmnpinp
 
 #include "implicit.h"
 #include "dummy.h"

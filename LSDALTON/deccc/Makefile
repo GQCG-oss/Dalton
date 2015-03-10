@@ -42,7 +42,6 @@ F90_OBJS = dec_settings.o \
 	snoop_main.o\
 	snoop_tools.o\
 	dec_main.o
-C_OBJS = crayio.o
 
 
 

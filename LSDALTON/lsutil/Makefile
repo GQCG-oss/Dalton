@@ -54,6 +54,7 @@ reorder_frontend.F90: ./autogen/generate_man_reord.py
 C_OBJS = matop_csr_aux.o \
 	myPAPI_set_inherit.o
 F90_OBJS = \
+	crayio_util.o\
 	dftType.o\
 	gridgeneration_memory.o\
 	dft_operations.o\
@@ -159,6 +160,7 @@ F90_OBJS = \
 	tensor_algebra_dil.o\
 	tensor_interface.o\
 	papi.o
+C_OBJS = crayio.o
 
 
 

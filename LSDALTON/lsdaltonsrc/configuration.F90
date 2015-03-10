@@ -1262,8 +1262,12 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.PDMMBLOCKSIZE');  
            print*,'PDMMBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE
+        CASE('.PDMMGROUPSIZE');
+           READ(LUCMD,*) infpar%PDMMGroupSize
         CASE('.SCALAPACKGROUPSIZE');
            READ(LUCMD,*) infpar%ScalapackGroupSize
+        CASE('.SCALAPACKWORKAROUND');
+           infpar%ScalapackWORKAROUND=.TRUE.
         CASE('.SCALAPACKAUTOGROUPSIZE');
            infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
@@ -1375,6 +1379,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.NOGCINTEGRALTRANSFORM'); INTEGRAL%NOGCINTEGRALTRANSFORM=.TRUE.
         CASE ('.NOBQBQ'); INTEGRAL%NOBQBQ=.TRUE.
         CASE ('.FRAGMENT'); READ(LUCMD,*) INTEGRAL%numAtomsPerFragment; INTEGRAL%FRAGMENT = .TRUE.
+        CASE ('.DUMP4CENTERERI');  INTEGRAL%DUMP4CENTERERI = .TRUE.
         CASE ('.2CENTERERI'); INTEGRAL%DO2CENTERERI = .TRUE.
         CASE ('.3CENTEROVL'); INTEGRAL%DO3CENTEROVL = .TRUE.
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
@@ -1570,6 +1575,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.PARI-J'); INTEGRAL%PARI_J=.TRUE.
         CASE ('.EASY-PARI'); INTEGRAL%SIMPLE_PARI=.TRUE.
         CASE ('.PARI-K');  INTEGRAL%PARI_K=.TRUE.
+        CASE ('.MOPARI-K'); INTEGRAL%MOPARI_K=.TRUE.
         CASE ('.DF-K');    INTEGRAL%DF_K=.TRUE.
         CASE ('.NR-PARI'); INTEGRAL%NON_ROBUST_PARI=.TRUE.
         CASE ('.PARI-UNCONSTRAINED');
@@ -3692,7 +3698,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       ENDIF
    endif
 
-   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K))then
+   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K.OR.config%integral%mopari_K))then
       WRITE(config%LUPRI,'(/A)') 'The Pari keywords do not currently work with response'
       WRITE(config%LUPRI,'(/A)') 'Please remove the Pari keywords'
       CALL lsQUIT('The Pari keywords do not currently work with response',config%lupri)

@@ -3,9 +3,6 @@
 # LSDALTON_FREE_FORTRAN_SOURCES  
 # at the end of the file
 
-set(DEC_C_SOURCES
-    LSDALTON/deccc/crayio.c
-    )
 set(DFTFUNC_SOURCES
     LSDALTON/dft/fun-example.c
     LSDALTON/dft/fun-b97-1.c
@@ -86,7 +83,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
     LSDALTON/deccc/cc_driver.F90
-    LSDALTON/deccc/cc_debug_routines.F90
     LSDALTON/deccc/cc_integrals.F90
     LSDALTON/deccc/ccarray2_simple.F90
     LSDALTON/deccc/ccarray4_simple.F90
@@ -741,8 +737,10 @@ set(LSUTIL_MATRIXM_SOURCES
     )
 set(LSUTIL_COMMON_C_SOURCES
     LSDALTON/lsutil/myPAPI_set_inherit.c
+    LSDALTON/lsutil/crayio.c
     )
 set(LSUTIL_COMMON_SOURCES
+    LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
     LSDALTON/lsutil/tensor_type_def.F90
     LSDALTON/lsutil/response_prop_type.F90
