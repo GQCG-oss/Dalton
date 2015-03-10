@@ -2284,6 +2284,7 @@ module pno_ccsd_module
      real(realk) :: tw,tc,tbeg,times(9),times_in_loops(8,3)
      integer(kind=8) :: my_s1,my_s2,my_s3,my_s4,my_s5
      real(realk), pointer :: my_w1(:),my_w2(:),my_w3(:),my_w4(:),my_w5(:)
+     real(realk), target  :: dummy(1)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
      real(realk), parameter :: m10 = -1.0E0_realk
@@ -2901,6 +2902,15 @@ module pno_ccsd_module
                     query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*tred)*nvr)
                     query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*nor)*tred*2)
 
+                    my_w1 => dummy
+                    my_w2 => dummy
+                    my_w3 => dummy
+
+                    my_s1 = 1
+                    my_s2 = 1
+                    my_s3 = 1
+                    my_s4 = 0
+                    my_s5 = 0
                  else
 
                     !Get the transformation matrices
@@ -2983,6 +2993,10 @@ module pno_ccsd_module
                     query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),my_s1)
                     query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),my_s2)
                     query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),my_s3)
+
+                    my_w1 => null()
+                    my_w2 => null()
+                    my_w3 => null()
 
                  else
 
