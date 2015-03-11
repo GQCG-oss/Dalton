@@ -1,4 +1,3 @@
-from output_plot import *
 #/usr/bin/python
 
 # CLASS DEFINITIONS FOR DEC SPECIFIC INFO 
@@ -56,8 +55,8 @@ class decinfo_class:
    #DEFINE DEC ANALYSIS OPERATIONS HERE
    ####################################
 
-   plot_pair_energies = plot_pair_energies
-   plot_SF_energy_errors = plot_SF_energy_errors
+   #plot_pair_energies = plot_pair_energies
+   #plot_SF_energy_errors = plot_SF_energy_errors
 
    #READ DEC SPECIFIC INFO
    def get_dec_info(self,filelines,fragtype,fromfrag):
