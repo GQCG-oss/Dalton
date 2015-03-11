@@ -941,7 +941,7 @@ contains
     real(realk),pointer :: EpsOcc(:),EpsVirt(:)
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,COUNT2,comm,TAG1,TAG2
     integer :: J,CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
-    integer :: myOriginalRank,node,natoms,MynauxMPI,A,lupri,MinAtomicnAux,restart_lun
+    integer :: myOriginalRank,node,natoms,A,lupri,MinAtomicnAux,restart_lun
     integer :: noccJstart,offset
     logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
     logical :: RoundRobin2,RoundRobin3,useCalpha2,useCalpha3,FORCEPRINT
@@ -1038,7 +1038,7 @@ contains
 #endif
     CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
     call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-         & wakeslaves,MynAuxMPI,MyMolecule%Co(:,offset+1:offset+nocc),&
+         & wakeslaves,MyMolecule%Co(:,offset+1:offset+nocc),&
          & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA)
     CALL LSTIMER('RIMP2: CalphaMO ',TS2,TE2,LUPRI,FORCEPRINT)
 
@@ -1101,7 +1101,7 @@ contains
        do J=noccJstart,nocc
           do I=1,nocc
              epsIJ = EpsOcc(I) + EpsOcc(J)
-             IF(MynauxMPI.GT.0)THEN 
+             IF(NBA.GT.0)THEN 
                 !A(nvirt,nvirt)
                 CALL CalcAmat(nocc,nvirt,NBA,Calpha,Amat,I,J)
                 CALL CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
@@ -1143,7 +1143,7 @@ contains
 !       call mem_dealloc(startAuxMPI)
 !       call mem_dealloc(nAtomsMPI)
 !       call mem_dealloc(nAuxMPI)
-       IF(MynauxMPI.GT.0)THEN 
+       IF(NBA.GT.0)THEN 
           call mem_dealloc(Calpha)              
        ENDIF
 #endif
