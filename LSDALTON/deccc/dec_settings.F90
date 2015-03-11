@@ -227,6 +227,7 @@ contains
     DECinfo%NAFthreshold             = 1e-6_realk !modified according to FOT
     DECinfo%RIMPSubGroupSize         = 0
     DECinfo%RIMP2PDMTENSOR           = .false.
+    DECinfo%RIMP2ForcePDMCalpha      = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -715,6 +716,8 @@ contains
           read(input,*) DECinfo%RIMPSubGroupSize
        case('.RIMP2PDMTENSOR')
           DECinfo%RIMP2PDMTENSOR     = .true.
+       case('.RIMP2FORCEPDMCALPHA')
+          DECinfo%RIMP2ForcePDMCalpha = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************

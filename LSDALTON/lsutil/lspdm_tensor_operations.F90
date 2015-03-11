@@ -1988,9 +1988,10 @@ module lspdm_tensor_operations_module
     !> result
     real(realk) :: res
     real(realk),pointer :: buffer(:)
-    integer :: lt,rem_els
+    integer :: lt,rem_els,mode
     real(realk), external :: ddot
     integer(kind=ls_mpik) :: dest_mpi
+    logical :: distribution_ok
 
 #ifdef VAR_MPI
     !check if the init-types are the same
@@ -2013,19 +2014,25 @@ module lspdm_tensor_operations_module
       call time_start_phase( PHASE_WORK )
     endif
     
-    !zeroing the result
-    res=0.0E0_realk
+    distribution_ok = (arr1%mode==arr2%mode)
+    do mode=1,arr1%mode
+       if( arr1%tdim(mode) /= arr2%tdim(mode) )then
+          distribution_ok = .false.
+       endif
+    enddo
+
     
     !check for the same distribution of the arrays
-    if(arr1%tdim(1)==arr2%tdim(1).and.arr1%tdim(2)==arr2%tdim(2).and.&
-      &arr1%tdim(3)==arr2%tdim(3).and.arr1%tdim(4)==arr2%tdim(4))then
-  
+    if( distribution_ok )then
+        
+      !zeroing the result
+      res    = 0.0E0_realk
+
       !allocate buffer for the tiles
+      !TODO: introduce prefetching make preftching dependent on wrk and iwrk on input
       call mem_alloc(buffer,arr1%tsize)
       buffer=0.0E0_realk
 
-      !TODO: introduce prefetching of tiles
- 
       !loop over local tiles of array2  and get the corresponding tiles of
       !array1
       do lt=1,arr2%nlti
@@ -2034,10 +2041,14 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_WORK )
         res = res + ddot(arr2%ti(lt)%e,arr2%ti(lt)%t,1,buffer,1)
       enddo
+
       call mem_dealloc(buffer)
+
     else
+
       call lsquit("ERROR(tensor_ddot_par):NOT YET IMPLEMENTED, if the arrays have&
       & different distributions",DECinfo%output)
+
     endif
 
     !get result on the specified node/s
