@@ -2017,24 +2017,53 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 131124879
 #endif  
+  ! cublas stuff
   type(c_ptr) :: cublas_handle
   integer*4 :: stat
+  !> async handles
+  integer :: num_ids
 #ifdef VAR_OPENACC
-  integer(kind=acc_handle_kind) :: handle
+  integer(kind=acc_handle_kind), pointer, dimension(:) :: async_id
+  integer(kind=acc_device_kind) :: acc_device_type
 #ifdef VAR_PGF90
   integer*4, external :: acc_set_cuda_stream
 #endif
 #else
-  integer :: handle
+  integer, pointer, dimension(:) :: async_id
+#endif
+
+  ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
+  ! handle 1: first part of Step 5
+  ! handle 2: second part of Step 5
+  num_ids = 2
+  call mem_alloc(async_id,num_ids)
+
+#ifdef VAR_OPENACC
+
+  if (DECinfo%acc_sync) then
+     async_id = acc_async_sync
+  else
+     do m = 1,num_ids
+        async_id(m) = int(m,kind=acc_handle_kind)
+     enddo
+  endif
+
+#else
+
+  if (DECinfo%acc_sync) then
+     async_id = 0
+  else
+     do m = 1,num_ids
+        async_id(m) = -m
+     enddo
+  endif
+
 #endif
 
 #ifdef VAR_CUBLAS
 
   ! initialize the CUBLAS context
   stat = cublasCreate_v2(cublas_handle)
-  ! for now, restrict the async handle to acc_async_sync (synchronous)
-  handle = acc_async_sync
-  stat = acc_set_cuda_stream(handle,cublas_handle)
 
 #endif
 
@@ -2695,12 +2724,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   IF(NBA.GT.0)THEN
      call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt) 
 #ifdef VAR_OPENACC
-!     !$acc enter data create(tocc) 
-     !$acc enter data create(tocc) copyin(Calpha,UoccEOST,EVocc,EVvirt)
+     !$acc enter data create(tocc) copyin(Calpha,UoccEOST,EVocc,EVvirt) async(async_id(1))
 #endif
      !Calculate and partial transform to local basis - transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-     call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
+     call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,async_id(1))
      CALL LSTIMER('RIMP2_calc_tocc',TS3,TE3,LUPRI,FORCEPRINT)
      !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
      M = noccEOS              !rows of Output Matrix
@@ -2709,22 +2737,20 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
-     !$acc enter data create(tocc2)
-!     !$acc data present(tocc,tocc2,UoccEOST)
+     !$acc enter data create(tocc2) async(async_id(2))
+     !$acc wait(async_id(2)) async(async_id(1))
      !$acc host_data use_device(tocc,UoccEOST,tocc2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-     call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
+!     call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
+     call dgemm_acc_openacc_async(async_id(1),'T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
 #elif defined(VAR_CUBLAS)
-!     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+     stat = acc_set_cuda_stream(async_id(1),cublas_handle)
      stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
                            & 1.0E0_realk,c_loc(UoccEOST),int(K,kind=4),c_loc(tocc),int(K,kind=4),&
                            & 0.0E0_realk,c_loc(tocc2),int(M,kind=4))
-!#else
-!     call lsquit('OpenACC parallelization of RIMP2 requires CRAY or CUBLAS',-1)     
 #endif
      !$acc end host_data
-!     !$acc end data
-     !$acc exit data delete(tocc)
+     !$acc exit data delete(tocc) async(async_id(1))
 #else
      call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
 #endif
@@ -2738,21 +2764,24 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(tocc3,nvirt,nvirt,noccEOS,noccEOS)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
-!     !$acc enter data create(tocc3)
-     !$acc enter data create(tocc3) copyin(UvirtT)
-!     !$acc data present(tocc2,tocc3,UvirtT)
+     !$acc enter data create(tocc3) copyin(UvirtT) async(async_id(2))
+     !$acc wait(async_id(1)) async(async_id(2))
      !$acc host_data use_device(tocc2,UvirtT,tocc3)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-     call dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
+!     call dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
+     call dgemm_acc_openacc_async(async_id(2),'N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
 #elif defined(VAR_CUBLAS)
-!     call lsquit('CUBLAS parallelization of RIMP2 not implemented',-1)
+     stat = acc_set_cuda_stream(async_id(2),cublas_handle)
      stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
                            & 1.0E0_realk,c_loc(tocc2),int(M,kind=4),c_loc(UvirtT),int(K,kind=4),&
                            & 0.0E0_realk,c_loc(tocc3),int(M,kind=4))
 #endif
      !$acc end host_data
-!     !$acc end data
-     !$acc exit data delete(tocc2)
+     !$acc exit data delete(tocc2) async(async_id(2))
+     !$acc wait
+#ifdef VAR_CUBLAS
+     stat = acc_set_cuda_stream(acc_async_sync,cublas_handle)
+#endif
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
 #endif
@@ -3244,20 +3273,28 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
 #ifdef VAR_CUBLAS
 
-    ! Destroy the CUBLAS context
-    stat = cublasDestroy_v2(cublas_handle)
+  ! Destroy the CUBLAS context
+  stat = cublasDestroy_v2(cublas_handle)
 
 #endif
+
+  ! release async handles array
+  call mem_dealloc(async_id)
 
 end subroutine RIMP2_integrals_and_amplitudes
 
 !alphaCD(NBA,nvirt,nocc) is in the diagonal basis 
-subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
+subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,async_idx)
   implicit none
   integer,intent(in) :: nvirt,nocc,noccEOS,NBA
   real(realk),intent(in) :: Calpha(NBA,nvirt,nocc)
   real(realk),intent(in) :: EVocc(nocc),EVvirt(nvirt),UoccEOST(nocc,noccEOS)
   real(realk),intent(inout) :: tocc(nocc,noccEOS,nvirt,nvirt)
+#ifdef VAR_OPENACC
+  integer(kind=acc_handle_kind), intent(in) :: async_idx
+#else
+  integer, intent(in) :: async_idx
+#endif
   !
   integer :: BDIAG,ADIAG,IDIAG,JDIAG,ALPHAAUX,ILOC,JLOC
   real(realk) :: gmocont,deltaEPS,TMP
@@ -3267,7 +3304,7 @@ subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,Uocc
   !$ACC PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
   !$ACC         ALPHAAUX,ILOC,JLOC,gmocont,deltaEPS,toccTMP,TMP) &
   !$ACC COPYIN(nvirt,nocc,noccEOS,NBA) &
-  !$ACC present(tocc,Calpha,UoccEOST,EVocc,EVvirt)
+  !$ACC present(tocc,Calpha,UoccEOST,EVocc,EVvirt) async(async_idx)
 #else
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
   !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
@@ -3292,12 +3329,12 @@ subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,Uocc
               toccTMP(JDIAG)=gmocont/deltaEPS                
            enddo
 #ifdef VAR_OPENACC
-    !$ACC loop seq
+           !$ACC loop seq
 #endif 
            do jLOC=1,noccEOS
               TMP = 0.0E0_realk
 #ifdef VAR_OPENACC
-    !$ACC loop seq
+              !$ACC loop seq
 #endif 
               do JDIAG=1,nocc
                  TMP = TMP + toccTMP(JDIAG)*UoccEOST(jDIAG,jLOC)
@@ -3352,12 +3389,12 @@ subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,U
               tvirtTMP(ADIAG)=gmocont/deltaEPS                
            enddo
 #ifdef VAR_OPENACC
-    !$ACC loop seq
+           !$ACC loop seq
 #endif 
            do ALOC=1,nvirtEOS
               TMP = 0.0E0_realk
 #ifdef VAR_OPENACC
-    !$ACC loop seq
+              !$ACC loop seq
 #endif 
               do ADIAG=1,nvirt
                  TMP = TMP + tvirtTMP(ADIAG)*UvirtEOST(ADIAG,ALOC)
@@ -3399,12 +3436,12 @@ subroutine RIMP2_calc_toccB(nvirt,noccEOS,tocc,UvirtT,toccEOS)
      do jLOC=1,noccEOS
         do aLOC=1,nvirt
 #ifdef VAR_OPENACC
-    !dir$ noblocking
+           !dir$ noblocking
 #endif
            do iLOC=1,noccEOS
               TMP = 0.0E0_realk
 #ifdef VAR_OPENACC
-    !$ACC loop seq
+              !$ACC loop seq
 #endif 
               do ADIAG=1,nvirt
                  TMP = TMP + tocc(ILOC,JLOC,ADIAG,BLOC)*UvirtT(ADIAG,aLOC)
@@ -3445,12 +3482,12 @@ subroutine RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt,UoccT,tvirtEOS)
      do bLOC=1,nvirtEOS
         do iLOC=1,nocc
 #ifdef VAR_OPENACC
-    !dir$ noblocking
+           !dir$ noblocking
 #endif
            do aLOC=1,nvirtEOS
               TMP = 0.0E0_realk
 #ifdef VAR_OPENACC
-    !$ACC loop seq
+              !$ACC loop seq
 #endif
               do JDIAG=1,nocc
                  TMP = TMP + tvirt(ILOC,JDIAG,ALOC,BLOC)*UoccT(JDIAG,JLOC)
@@ -3641,7 +3678,7 @@ subroutine RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS)
            do aLOC=1,nvirtEOS
               TMP = 0.0E0_realk
 #ifdef VAR_OPENACC
-    !$ACC loop seq
+              !$ACC loop seq
 #endif 
               do ALPHAAUX = 1,nba
                  tmp = tmp + Calpha3(alphaAUX,ALOC,ILOC)*Calpha3(alphaAUX,BLOC,JLOC) 
