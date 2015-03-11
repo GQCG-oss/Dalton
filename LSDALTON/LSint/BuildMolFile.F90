@@ -22,7 +22,7 @@ TYPE(MOLECULEINFO),intent(in) :: MOLECULE
 TYPE(BASISINFO),intent(in)    :: BASIS
 !
 integer :: LUMOL,R,A,IATOMTYPE,natomsOfAtomtype,I,type,natomtypes,icharge
-logical :: moleculefile_exsist,AUXBASIS
+logical :: moleculefile_exsist,AUXBASIS,ADMMBASIS
 real(realk) :: CHARGE
 character(len=5) :: natomsstring
 character(len=6) :: chargestring
@@ -79,6 +79,11 @@ IF(BASIS%BINFO(AuxBasParam)%natomtypes.EQ. 0)THEN
 ELSE
    AUXBASIS = .TRUE.
 ENDIF
+IF(BASIS%BINFO(ADMBasParam)%natomtypes.EQ. 0)THEN
+   ADMMBASIS = .FALSE.
+ELSE
+   ADMMBASIS = .TRUE.
+ENDIF
 
 DO IATOMTYPE=1,BASIS%BINFO(REGBASPARAM)%natomtypes
    natomsOfAtomtype=0
@@ -118,12 +123,25 @@ DO IATOMTYPE=1,BASIS%BINFO(REGBASPARAM)%natomtypes
    ENDIF
 
    IF(AUXBASIS)THEN
-      WRITE(lumol,'(A,A6,A,A5,4A)')'Charge=',chargestring,' Atoms=',natomsString,&
+      IF (ADMMBASIS) THEN
+          WRITE(lumol,'(A,A6,A,A5,6A)')'Charge=',chargestring,' Atoms=',natomsString,&
            & ' Basis=',TRIM(BASIS%BINFO(REGBASPARAM)%ATOMTYPE(type)%NAME),&
-           & ' Aux=',TRIM(BASIS%BINFO(AUXBASPARAM)%ATOMTYPE(type)%NAME)
+           & ' Aux=',TRIM(BASIS%BINFO(AUXBASPARAM)%ATOMTYPE(type)%NAME),&
+           & ' ADMM=',TRIM(BASIS%BINFO(ADMBASPARAM)%ATOMTYPE(type)%NAME)
+      ELSE
+        WRITE(lumol,'(A,A6,A,A5,4A)')'Charge=',chargestring,' Atoms=',natomsString,&
+             & ' Basis=',TRIM(BASIS%BINFO(REGBASPARAM)%ATOMTYPE(type)%NAME),&
+             & ' Aux=',TRIM(BASIS%BINFO(AUXBASPARAM)%ATOMTYPE(type)%NAME)
+      ENDIF
    ELSE
-      WRITE(lumol,'(A,A6,A,A5,2A)')'Charge=',Chargestring,' Atoms=',natomsString,&
-           & ' Basis=',TRIM(BASIS%BINFO(REGBASPARAM)%ATOMTYPE(type)%NAME)
+      IF (ADMMBASIS) THEN
+        WRITE(lumol,'(A,A6,A,A5,4A)')'Charge=',Chargestring,' Atoms=',natomsString,&
+           & ' Basis=',TRIM(BASIS%BINFO(REGBASPARAM)%ATOMTYPE(type)%NAME),&
+           & ' ADMM=',TRIM(BASIS%BINFO(ADMBASPARAM)%ATOMTYPE(type)%NAME)
+      ELSE
+        WRITE(lumol,'(A,A6,A,A5,2A)')'Charge=',Chargestring,' Atoms=',natomsString,&
+             & ' Basis=',TRIM(BASIS%BINFO(REGBASPARAM)%ATOMTYPE(type)%NAME)
+      ENDIF
    ENDIF
    DO I=1,MOLECULE%natoms   
       CHARGE = MOLECULE%ATOM(I)%CHARGE
