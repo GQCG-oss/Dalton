@@ -1991,6 +1991,7 @@ module lspdm_tensor_operations_module
     integer :: lt,rem_els
     real(realk), external :: ddot
     integer(kind=ls_mpik) :: dest_mpi
+    logical :: distribution_ok
 
 #ifdef VAR_MPI
     !check if the init-types are the same
@@ -2013,13 +2014,20 @@ module lspdm_tensor_operations_module
       call time_start_phase( PHASE_WORK )
     endif
     
+    distribution_ok = (arr1%mode==arr2%mode)
+    do mode=1,arr1%mode
+       if(arr1%tdim(mode) /= arr2%tdim(mode) )then
+          distribution_ok = .false.
+       endif
+    enddo
+
     !zeroing the result
     res=0.0E0_realk
+
     
     !check for the same distribution of the arrays
-    if(arr1%tdim(1)==arr2%tdim(1).and.arr1%tdim(2)==arr2%tdim(2).and.&
-      &arr1%tdim(3)==arr2%tdim(3).and.arr1%tdim(4)==arr2%tdim(4))then
-  
+    if( distribution_ok )then
+
       !allocate buffer for the tiles
       call mem_alloc(buffer,arr1%tsize)
       buffer=0.0E0_realk
@@ -2034,10 +2042,14 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_WORK )
         res = res + ddot(arr2%ti(lt)%e,arr2%ti(lt)%t,1,buffer,1)
       enddo
+
       call mem_dealloc(buffer)
+
     else
+
       call lsquit("ERROR(tensor_ddot_par):NOT YET IMPLEMENTED, if the arrays have&
       & different distributions",DECinfo%output)
+
     endif
 
     !get result on the specified node/s
