@@ -128,6 +128,8 @@ subroutine lsmpi_slave(comm)
       select case(job)
       case(MATRIXTY);
          call lsmpi_set_matrix_type_slave
+      case(MATRIXTY2);
+         call lsmpi_set_matrix_tmp_type_slave
       case(LSGETINT);
          call lsmpi_getIntegrals_Slave(comm)
       case(LSJENGIN);

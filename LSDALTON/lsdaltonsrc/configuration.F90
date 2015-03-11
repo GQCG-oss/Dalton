@@ -568,6 +568,9 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
+            CASE('.DENSELEVEL2');
+               !Use Dense Matrix type in level 2 of Trilevel
+               config%opt%DENSELEVEL2=.TRUE.
             CASE('.MWPURIFYATOMSTART');               
                !Perform McWeeny purification on the non idempotent Atoms Density
                config%opt%MWPURIFYATOMSTART=.TRUE.

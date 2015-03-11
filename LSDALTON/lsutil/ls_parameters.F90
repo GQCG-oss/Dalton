@@ -128,6 +128,7 @@ MODULE lsparameters
   integer,parameter :: PDMMGRIDINIT                 = 61
   integer,parameter :: PDMMGRIDEXIT                 = 62
   integer,parameter :: PDMMSLAVE                    = 63
+  integer,parameter :: MATRIXTY2                    = 64
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
