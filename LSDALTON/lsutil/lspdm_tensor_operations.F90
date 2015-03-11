@@ -1988,7 +1988,7 @@ module lspdm_tensor_operations_module
     !> result
     real(realk) :: res
     real(realk),pointer :: buffer(:)
-    integer :: lt,rem_els
+    integer :: lt,rem_els,mode
     real(realk), external :: ddot
     integer(kind=ls_mpik) :: dest_mpi
     logical :: distribution_ok
@@ -2016,24 +2016,23 @@ module lspdm_tensor_operations_module
     
     distribution_ok = (arr1%mode==arr2%mode)
     do mode=1,arr1%mode
-       if(arr1%tdim(mode) /= arr2%tdim(mode) )then
+       if( arr1%tdim(mode) /= arr2%tdim(mode) )then
           distribution_ok = .false.
        endif
     enddo
 
-    !zeroing the result
-    res=0.0E0_realk
-
     
     !check for the same distribution of the arrays
     if( distribution_ok )then
+        
+      !zeroing the result
+      res    = 0.0E0_realk
 
       !allocate buffer for the tiles
+      !TODO: introduce prefetching make preftching dependent on wrk and iwrk on input
       call mem_alloc(buffer,arr1%tsize)
       buffer=0.0E0_realk
 
-      !TODO: introduce prefetching of tiles
- 
       !loop over local tiles of array2  and get the corresponding tiles of
       !array1
       do lt=1,arr2%nlti
