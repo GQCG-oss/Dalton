@@ -11,11 +11,9 @@ TRILEVEL
 **INFO
 .DEBUG_MPI_MEM
 **CC
-!.CCDEBUG
-.CCSD
-.CCSDmultipliers
+.CC2
 .ccThr
 1e-9
-.Memory
-1.0
+.MEMORY
+2.0
 *END OF INPUT

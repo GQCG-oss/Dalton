@@ -2544,10 +2544,10 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&
   !
   Integer                    :: nAtoms,nBastAux,nBast,N,K,M,ialpha,v,a
   Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
-  Real(realk)                :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp
+  Real(realk)                :: TSTART,TEND,tmp
   logical :: MasterWakeSlaves
 
-  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)  
+  call LSTIMER('START ',TSTART,TEND,LUPRI)  
   call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
   IF(nbasis.NE.nBast)THEN
      print*,'nbasis',nbasis
@@ -2591,7 +2591,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   Integer                    :: nAtoms,nAtomsAux,nBastAux,nBast,N,K,M,ialpha,v,a
   Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
   Integer                    :: ALPHA,BETA,I
-  Real(realk) :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp,TMP1
+  Real(realk) :: TSTART,TEND,tmp,TMP1
   real(realk),pointer :: AlphaCD(:,:,:),AlphaCD2(:,:,:)
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
   TYPE(MoleculeInfo),pointer      :: ATOMS(:)
@@ -2618,7 +2618,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   molecule4 => SETTING%MOLECULE(4)%p
 !  print*,'nsize',nsize
 !  print*,'maxsize',maxsize
-  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)
+  call LSTIMER('START ',TSTART,TEND,LUPRI)
   IF((numnodes.EQ.1.AND.maxsize.GT.nsize).AND.&
        & (.NOT.setting%scheme%ForceRIMP2memReduced))THEN     
      !serial version
@@ -2876,9 +2876,9 @@ SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAu
   TYPE(LSSETTING),intent(inout)     :: SETTING
   !
   Integer                    :: nAtoms,nBastAux,nBast
-  Real(realk) :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp
+  Real(realk) :: TSTART,TEND,tmp
   logical :: MasterWakeSlaves,doMPI
-  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)
+  call LSTIMER('START ',TSTART,TEND,LUPRI)
   call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
   IF(nbasisAux.NE.nBastAux)THEN
      print*,'nbasisAux',nbasisAux

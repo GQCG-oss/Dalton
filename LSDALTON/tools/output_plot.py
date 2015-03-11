@@ -1,4 +1,13 @@
 import numpy as np
+
+# When testing the output_parser, matplotlib fails to
+# connect to an X sever for its GTK display.
+# We thus use the non-interactive backend Agg 
+# which means you have to save your figures in order 
+# to visualize them. save_plots('myfig')
+import matplotlib as mpl
+mpl.use('Agg')
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 
@@ -204,3 +213,7 @@ def plot_SF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy er
 
 def show_plots():
    plt.show()
+
+def save_plots(name):
+       plt.savefig(name)
+

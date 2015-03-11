@@ -232,7 +232,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(scalapack_nodtot,&
                         & scalapack_mynum,scalapack_comm,scalapack_member,&
-                        & infpar%ScalapackGroupSize,lupri)
+                        & infpar%ScalapackGroupSize,MPI_COMM_LSDALTON,lupri)
                    scalapack_mpi_set = .TRUE.
                 ELSE
                    scalapack_nodtot = infpar%nodtot
@@ -260,7 +260,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(pdmm_nodtot,&
                         & pdmm_mynum,pdmm_comm,pdmm_member,&
-                        & infpar%PDMMGroupSize,lupri)
+                        & infpar%PDMMGroupSize,MPI_COMM_LSDALTON,lupri)
                    pdmm_mpi_set = .TRUE.
                 ELSE
                    pdmm_nodtot = infpar%nodtot
@@ -287,7 +287,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(scalapack_nodtot,&
                         & scalapack_mynum,scalapack_comm,scalapack_member,&
-                        & infpar%ScalapackGroupSize,lupri)
+                        & infpar%ScalapackGroupSize,MPI_COMM_LSDALTON,lupri)
                    scalapack_mpi_set = .TRUE.
                 ELSE
                    scalapack_nodtot = infpar%nodtot
@@ -306,7 +306,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(pdmm_nodtot,&
                         & pdmm_mynum,pdmm_comm,pdmm_member,&
-                        & infpar%PDMMGroupSize,lupri)
+                        & infpar%PDMMGroupSize,MPI_COMM_LSDALTON,lupri)
                    PDMM_mpi_set = .TRUE.
                 ELSE
                    pdmm_nodtot = infpar%nodtot
