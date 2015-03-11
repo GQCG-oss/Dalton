@@ -327,7 +327,8 @@ module dec_typedef_module
      integer :: RIMPSubGroupSize
      !> Use Tensor Framework to Construct Calpha
      logical :: RIMP2PDMTENSOR
-
+     !> Force the use of the code that distribute the Calpha
+     logical :: RIMP2ForcePDMCalpha
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
