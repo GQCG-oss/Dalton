@@ -1,0 +1,1526 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2015.0
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2014.0 (2015), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Host name              : foeroyar                                
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/nonconverted_runtests/perohf_prop
+   2) /home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | magnus
+ Host                     | foeroyar
+ System                   | Linux-3.18.6-200.fc21.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ BLAS                     | /lib64/libblas.so
+ LAPACK                   | /lib64/liblapack.so
+ Static linking           | OFF
+ Last Git revision        | 46c9aaba256772eebe3009de63bb35fbe126d126
+ Configuration time       | 2015-02-23 11:42:33.949754
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON                                          
+.RUN PROPERTIES                                   
+.DIRECT                                           
+.PEQM                                             
+*PEQM                                             
+.VERBOSE                                          
+**WAVE FUNCTIONS                                  
+.HF                                               
+*SCF INPUT                                        
+.DOUBLY OCCUPIED                                  
+7                                                 
+.SINGLY OCCUPIED                                  
+1                                                 
+**PROPERTIES                                      
+.ALPHA                                            
+*ABALNR                                           
+.FREQUENCY                                        
+2                                                 
+0.0 0.04                                          
+**END OF                                          
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+STO-3G                                                                         
+Formaldehyde                                                                   
+------------------------                                                       
+AtomTypes=3 NoSymmetry Angstrom                                                
+Charge=6.0 Atoms=1                                                             
+C           -1.588367    -.770650     .029109                                  
+Charge=8.0 Atoms=1                                                             
+O           -1.657083     .436069    -.009750                                  
+Charge=1.0 Atoms=2                                                             
+H           -.620668   -1.294822      .054251                                  
+H           -2.508043   -1.382001     .040282                                  
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Static molecular property section will be executed (ABACUS module)
+    Environment is modeled using polarizable embedding scheme (PE library)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Formaldehyde                                                            
+ 2: ------------------------                                                
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/magnus/Projects/dalton_devel/dalton/build_dalton2015/basis/STO-3G"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C          12.000000
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    30.010565 amu
+                       Natural abundance:  98.633 %
+
+ Center-of-mass coordinates (a.u.):   -3.067740   -0.312997    0.018175
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    3
+  Total number of atoms:    4
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  C           1    6.0000    15     5      [6s3p|2s1p]                                        
+  O           1    8.0000    15     5      [6s3p|2s1p]                                        
+  H           2    1.0000     3     1      [3s|1s]                                            
+  ----------------------------------------------------------------------
+  total:      4   16.0000    36    12
+  ----------------------------------------------------------------------
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   12
+  C       :     1  x  -3.0015786160    2  y  -1.4563174382    3  z   0.0550080378
+  O       :     4  x  -3.1314330364    5  y   0.8240509816    6  z  -0.0184248297
+  H       :     7  x  -1.1728925345    8  y  -2.4468589606    9  z   0.1025195320
+  H       :    10  x  -4.7395143797   11  y  -2.6116033945   12  z   0.0761219478
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           O           H           H     
+            ------      ------      ------      ------
+ C     :    0.000000
+ O     :    1.209298    0.000000
+ H     :    1.100831    2.018474    0.000000
+ H     :    1.104391    2.007988    1.889439    0.000000
+
+
+  Max    interatomic separation is    2.0185 Angstrom (    3.8144 Bohr)
+  between atoms    3 and    2, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.1008 Angstrom (    2.0803 Bohr)
+
+  Min YX interatomic separation is    1.2093 Angstrom (    2.2852 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  O          C            1.209298
+  bond distance:  H          C            1.100831
+  bond distance:  H          C            1.104391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     O          C          H            121.724
+  bond angle:     O          C          H            120.357
+  bond angle:     H          C          H            117.919
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       1.798871         -0.056827    0.997867   -0.032124
+   IB      13.009178          0.998345    0.057081    0.007042
+   IC      14.808049         -0.008861    0.031671    0.999459
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         280942.3015          38847.8806          34128.6681 MHz
+            9.371226            1.295826            1.138410 cm-1
+
+
+@  Nuclear repulsion energy :   31.249215315972 Hartree
+
+  Reading potential input file for polarizable embedding calculation
+
+    .------------------------------------------------.
+    | Information from polarizable embedding library |
+    `------------------------------------------------´
+
+      Number of classical sites:      6
+
+      Multipole moments upto 2nd order.
+
+      Dipole-dipole polarizabilities.
+
+      Iterative solver for induced moments will be used
+      with convergence threshold: 1.0E-08
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):     -3.067740315293     -0.312997395263      0.018174673399
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:   12
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -20.684762     -11.351957      -1.632119      -1.046130      -0.813248
+           -0.702067      -0.605910      -0.491826      -0.321033      -0.161573
+           -0.131670      -0.108806
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Host name              : foeroyar                                
+
+ Title lines from ".mol" input file:
+     Formaldehyde                                                            
+     ------------------------                                                
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, high spin open shell Hartree-Fock calculation.
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+@    QM part is embedded in an environment :
+
+@         Model: PE
+
+     Wave function specification
+     ============================
+
+     Wave function environment is modeled using the
+     polarizable embedding model (PE library).
+
+@    Wave function type        >>> PE-HF <<<
+@    Number of closed shell electrons          14
+@    Number of electrons in active shells       1
+@    Total charge of the molecule               1
+
+@    Spin multiplicity and 2 M_S                2         1
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+
+     Orbital specifications
+     ======================
+@    Abelian symmetry species          All |    1
+@                                          |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               7 |    7
+@    Open shell SCF orbitals             1 |    1
+@    Secondary orbitals                  4 |    4
+@    Total number of orbitals           12 |   12
+@    Number of basis functions          12 |   12
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations             39
+     ------------------------------------------
+@    Total number of variables               40
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy     Embedding energy      Error norm     Delta(E)
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  1.89D-02  1.80D-02
+      Induced dipole moments converged in  8 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.22717718     0.55858080     0.00611581
+
+@  1  -111.859491256     -2.141707944075E-02    1.53324D+00   -1.12D+02
+      Virial theorem: -V/T =      2.018564
+@      MULPOP C       1.20; O      -0.23; H       0.01; H       0.02; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  1.89D-02  1.90D-02
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.40866429     0.49052536     0.00698485
+
+@  2  -112.008183245     -4.386305153745E-03    1.01694D+00   -1.49D-01
+      Virial theorem: -V/T =      2.024706
+@      MULPOP C      -0.24; O       0.65; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  1.89D-02  1.90D-02
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.31608466     0.54104038     0.00649404
+
+@  3  -112.082503325     -1.624755850158E-02    1.58477D-01   -7.43D-02
+      Virial theorem: -V/T =      2.020032
+@      MULPOP C       0.27; O       0.13; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  1.88D-02  1.90D-02
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.33155211     0.53427826     0.00639155
+
+@  4  -112.091352347     -1.409537547492E-02    8.19491D-02   -8.85D-03
+      Virial theorem: -V/T =      2.020114
+@      MULPOP C       0.21; O       0.19; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    F  1.88D-02  1.90D-02
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32378637     0.53862342     0.00629556
+
+@  5  -112.092629753     -1.509652076938E-02    2.22522D-02   -1.28D-03
+      Virial theorem: -V/T =      2.019393
+@      MULPOP C       0.25; O       0.15; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    6    F  1.88D-02  1.80D-02
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32314572     0.53876259     0.00629988
+
+@  6  -112.092707794     -1.516675807441E-02    6.15954D-03   -7.80D-05
+      Virial theorem: -V/T =      2.019353
+@      MULPOP C       0.25; O       0.15; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    7    F  1.88D-02  1.90D-02
+      Induced dipole moments converged in  5 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32315268     0.53868162     0.00630278
+
+@  7  -112.092713087     -1.515804661137E-02    6.55126D-04   -5.29D-06
+      Virial theorem: -V/T =      2.019348
+@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  1.88D-02  1.90D-02
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32315807     0.53866070     0.00630377
+
+@  8  -112.092713159     -1.515617846253E-02    9.67534D-05   -7.14D-08
+      Virial theorem: -V/T =      2.019350
+@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    9    F  1.87D-02  1.90D-02
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32314892     0.53865878     0.00630382
+
+@  9  -112.092713164     -1.515677329677E-02    4.27034D-05   -5.09D-09
+      Virial theorem: -V/T =      2.019350
+@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   10    F  1.88D-02  1.90D-02
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32314093     0.53865834     0.00630381
+
+@ 10  -112.092713166     -1.515747105195E-02    1.56702D-05   -2.03D-09
+      Virial theorem: -V/T =      2.019351
+@      MULPOP C       0.25; O       0.16; H       0.32; H       0.27; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10   11    F  1.88D-02  1.80D-02
+      Induced dipole moments converged in  3 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.32313865     0.53865822     0.00630372
+
+@ 11  -112.092713166     -1.515760714881E-02    6.91262D-06   -2.47D-10
+
+@ *** DIIS converged in  11 iterations !
+@     Converged SCF energy, gradient:   -112.092713165877    6.91D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+   (incl. contribution from polarizable embedding potential)
+
+ Orbital energy analysis for an open-shell system.
+ Orbital energies are not well-defined for open-shell systems
+   here is used block diagonalization of the FD=FC+FV Fock matrix.
+ NOTE that Koopmans' theorem is not fulfilled for this case.
+
+ Number of electrons :   14
+ Orbital occupations :    7
+
+ Sym       Hartree-Fock orbital energies
+
+1 A     -20.92156874   -11.59705230    -1.81577908    -1.18995600    -0.99581058
+         -0.99369614    -0.92817840    -0.55638691    -0.14986656     0.27085101
+          0.36168772     0.44616978
+
+    E(LUMO) :    -0.14986656 au (symmetry 1)
+  - E(HOMO) :    -0.92817840 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.77831185 au
+
+and E(SOMO) :    -0.55638691 au (symmetry 1)
+
+ NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
+
+ Largest off-diagonal Fock matrix element is  4.83D-02
+
+    .--------------------------------------------------.
+    | Final results from polarizable embedding library |
+    `--------------------------------------------------´
+
+        Polarizable embedding energy contributions:
+       ---------------------------------------------
+
+       Electrostatic contributions:
+            Monopoles                 -0.004099754788
+            Dipoles                   -0.000603745241
+            Quadrupoles                0.002062426446
+
+       Polarization contributions:
+            Electronic                 0.107234942520
+            Nuclear                   -0.115487119969
+            Multipole                 -0.004264356121
+
+       Total PE energy:            -0.015157607153
+
+               Polarizable embedding information:
+              ------------------------------------
+
+                       Induced dipole moments
+       site          X              Y              Z
+          1     0.01015078     0.20477385    -0.01183205
+          2     0.05684583     0.06753877    -0.01669237
+          3     0.01151276     0.05669982     0.04021631
+          4     0.17140857     0.04844549    -0.01443040
+          5     0.02820599     0.16195323    -0.00352959
+          6     0.04501472    -0.00075294     0.01257182
+
+                      Total induced dipole moment
+                     X              Y              Z
+                0.32313865     0.53865822     0.00630372
+
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.280       0.280
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           2
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    1
+
+@    Final HF energy:            -112.092713165877                 
+@    Nuclear repulsion:            31.249215315972
+@    Electronic energy:          -143.326770874700
+@    Embedding energy:             -0.015157607149
+
+@    Final gradient norm:           0.000006912618
+
+ 
+     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Host name              : foeroyar                                
+
+File label for MO orbitals:  23Feb15   FOCKDIIS
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 C   :1s    -0.0005  -0.9928  -0.1158   0.1970   0.0190   0.0119  -0.0002
+   2 C   :1s     0.0072  -0.0322   0.2414  -0.6348  -0.0844  -0.0635   0.0005
+   3 C   :2px   -0.0004   0.0002  -0.0104   0.0092  -0.5567   0.3330   0.0018
+   4 C   :2py    0.0062  -0.0017   0.1532   0.1502   0.2379   0.4045  -0.0142
+   5 C   :2pz   -0.0002   0.0001  -0.0047  -0.0057  -0.0124  -0.0112  -0.4180
+   6 O   :1s    -0.9944  -0.0002  -0.2214  -0.1117   0.0379   0.0644  -0.0001
+   7 O   :1s    -0.0254   0.0061   0.7842   0.5090  -0.2056  -0.3426   0.0006
+   8 O   :2px   -0.0003   0.0001   0.0168  -0.0002  -0.1514   0.1170   0.0084
+   9 O   :2py    0.0057  -0.0018  -0.2064   0.2947  -0.3614  -0.5524  -0.0253
+  10 O   :2pz   -0.0002   0.0001   0.0069  -0.0096   0.0115   0.0162  -0.8236
+  11 H   :1s    -0.0002   0.0061   0.0218  -0.1838  -0.3439   0.0311  -0.0006
+  12 H   :1s    -0.0003   0.0062   0.0236  -0.2106   0.1622  -0.3218   0.0018
+
+    Orbital         8        9       10       11       12
+   1 C   :1s    -0.0004   0.0000   0.2033   0.0326   0.0868
+   2 C   :1s     0.0041   0.0005  -1.2986  -0.2146  -0.5805
+   3 C   :2px    0.1378  -0.0086   0.1375  -1.0874   0.1467
+   4 C   :2py   -0.0064   0.0299   0.3423  -0.1005  -1.2005
+   5 C   :2pz    0.0008   0.9333  -0.0089  -0.0064   0.0396
+   6 O   :1s    -0.0042   0.0000  -0.0320  -0.0122  -0.1119
+   7 O   :1s     0.0198  -0.0002   0.2052   0.0880   0.8597
+   8 O   :2px   -0.9752   0.0054  -0.0219   0.2587   0.0341
+   9 O   :2py   -0.0396  -0.0188  -0.2689  -0.0847  -0.8890
+  10 O   :2pz   -0.0088  -0.6063   0.0080   0.0050   0.0284
+  11 H   :1s     0.1996  -0.0008   0.7763   0.9860  -0.2634
+  12 H   :1s    -0.2074  -0.0007   0.9976  -0.7742  -0.1219
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.28 seconds
+ >>>> Total wall time used in SIRIUS :      0.28 seconds
+
+ 
+     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Host name              : foeroyar                                
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+        *****************************************************************
+        ******** Output from **PROPE input processing for ABACUS ********
+        *****************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+ Default print level:        0
+
+      Direct calculation - no two-electron integrals written or read.
+      Dynamic electric dipole polarizability
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
+      Linear response properties
+      Environment is modeled using the polarizable embedding scheme (PE library).
+
+
+ Changes of defaults for *ABALNR:
+ --------------------------------
+
+ Number of frequencies          :   2
+ Frequencies                    :  0.000000  0.040000
+ Print level                    :   0
+ Lin Resp convergence threshold :  5.00D-05
+ Max. Lin Resp iterations       :  60
+
+ Center of mass dipole origin  :   -3.067740   -0.312997    0.018175
+
+ Center of mass gauge origin   :   -3.067740   -0.312997    0.018175
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Mon Feb 23 13:29:08 2015
+     Host name              : foeroyar                                
+
+
+     ***********************************************************************
+     ****************** Solving Linear Response Equations ******************
+     ***********************************************************************
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.18911033    -0.14588882     0.00323671
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.12095254     0.00786981    -0.00183027
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.12235012    -0.07138406    -0.00012573
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.03707383     0.00184864     0.00061140
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.14993067     0.08000239    -0.00320910
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.04896857     0.02868294    -0.00017596
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.08986882    -0.01388250    -0.00232061
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.01860387    -0.01435900    -0.00089030
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.03891016     0.00645133    -0.00140626
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01848929     0.02030421    -0.00620999
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.04678953     0.04492004    -0.00849472
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.03387740    -0.02007584    -0.00852453
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.03726035    -0.05732993    -0.00930295
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.03768876     0.00811325    -0.00598362
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.00216610     0.03234013    -0.00456359
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.03751320    -0.01391724    -0.00285539
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.22224345     0.13556821    -0.00038179
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.03241231    -0.04041369    -0.00052343
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.07610916     0.00664826    -0.00350072
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.00088873    -0.00768721     0.00058585
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.02564899     0.05469722    -0.00562657
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.07716030    -0.01330339     0.00014309
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.00232335    -0.01654865     0.00261862
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.07974210     0.02692412    -0.00006703
+
+      Induced dipole moments converged in  6 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.04345143    -0.00170499    -0.00440135
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.02053189    -0.02933675     0.00751360
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01558097     0.01022964    -0.00194605
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.04484801    -0.02429164     0.01135456
+
+      Induced dipole moments converged in  6 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.00996516    -0.00627250     0.01219359
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.03419659     0.02792484     0.00803542
+
+      Induced dipole moments converged in  6 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.04466557     0.01286184    -0.00781193
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.03630481    -0.03927032     0.01472753
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.03383282     0.00678881    -0.01844654
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.04324086    -0.02335279     0.03228439
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.01958701    -0.01239753     0.09845154
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.08240635    -0.02796939    -0.00679933
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.17715370    -0.09439936    -0.00628143
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.05235509    -0.01355169     0.00459192
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.08973046     0.05132066    -0.00345304
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.00385093    -0.01198207     0.00666324
+
+      Induced dipole moments converged in  6 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.01306042    -0.00193513    -0.00073028
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.00247302    -0.01663619     0.01126157
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.03277739    -0.01631851     0.01865650
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.07160530     0.07534977     0.00756840
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.06953100     0.00856857    -0.00635846
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.02370140    -0.02904443    -0.00637814
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.06881065    -0.01524380    -0.00430744
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.00303555     0.02049326     0.00481364
+
+      Induced dipole moments converged in  7 iterations.
+      Induced dipole moments converged in  7 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.00561898     0.01574719     0.01016893
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.02533851    -0.02793779    -0.00367998
+
+      Induced dipole moments converged in  6 iterations.
+      Induced dipole moments converged in  6 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.00100194    -0.00011724     0.00717783
+
+       Input density no.:   2
+
+                        Total induced dipole moment
+                       X              Y              Z
+                  0.04119689     0.00799215    -0.00115026
+
+ >>>  Time used in LNRABA     is   0.64 seconds
+
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon Feb 23 13:29:09 2015
+     Host name              : foeroyar                                
+
+
+                             Molecular geometry (au)
+                             -----------------------
+
+ C         -3.0015786160           -1.4563174382            0.0550080378
+ O         -3.1314330364            0.8240509816           -0.0184248297
+ H         -1.1728925345           -2.4468589606            0.1025195320
+ H         -4.7395143797           -2.6116033945            0.0761219478
+
+
+
+
+
+                        Molecular wave function and energy
+                        ----------------------------------
+
+     Spatial symmetry   1 ( A   )
+     Spin multiplicity  2
+     2 * M_S            1
+     State number       1
+     Total charge       1
+
+     Total energy       -112.0927131659 au (Hartrees)
+                         -3050.19788509 eV
+                           -294299.3730 kJ/mol
+                            -70339.2383 kcal/mol
+
+
+                   Scalar Breit-Pauli relativistic corrections
+                   -------------------------------------------
+
+     Darwin correction:                          0.1685880320 au
+     Mass-velocity correction:                  -0.2162438260 au
+
+     Total relativistic correction:             -0.0476557939 au (0.0425%)
+     Non-relativistic + relativistic energy:  -112.1403689598 au
+
+
+
+      (Note that these corrections are NOT included in the results below.)
+
+
+                                  Dipole moment
+                                  -------------
+
+                 au               Debye          C m (/(10**-30)
+              1.291732           3.283255          10.951760
+
+
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x      0.11513470         0.29264319         0.97615262
+      y     -1.28598372        -3.26864438       -10.90302405
+      z      0.03951663         0.10044124         0.33503591
+
+
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
+
+
+
+
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    ++++++++++++++++++ Frequency dependent polarizabilities ++++++++++++++++++
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+          Polarizability tensor for frequency     0.000000 au
+          ----------------------------------------------------
+                            Ex             Ey             Ez
+
+                Ex    6.428383     -0.1580567      3.8443217E-02
+                Ey  -0.1580755       9.495671     -0.2177933    
+                Ez   3.8445198E-02 -0.2177902       2.570059    
+
+Isotropic polarizability:   6.164705    
+
+          Polarizability tensor for frequency     0.040000 au
+          ----------------------------------------------------
+                            Ex             Ey             Ez
+
+                Ex    6.453573     -0.1585372      3.8604053E-02
+                Ey  -0.1585544       9.530984     -0.2186089    
+                Ez   3.8606334E-02 -0.2186049       2.578818    
+
+Isotropic polarizability:   6.187792    
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           O           H           H     
+            ------      ------      ------      ------
+ C     :    0.000000
+ O     :    1.209298    0.000000
+ H     :    1.100831    2.018474    0.000000
+ H     :    1.104391    2.007988    1.889439    0.000000
+
+
+  Max    interatomic separation is    2.0185 Angstrom (    3.8144 Bohr)
+  between atoms    3 and    2, "H     " and "O     ".
+
+  Min HX interatomic separation is    1.1008 Angstrom (    2.0803 Bohr)
+
+  Min YX interatomic separation is    1.2093 Angstrom (    2.2852 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  O          C            1.209298
+  bond distance:  H          C            1.100831
+  bond distance:  H          C            1.104391
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     O          C          H            121.724
+  bond angle:     O          C          H            120.357
+  bond angle:     H          C          H            117.919
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.65 seconds
+ >>>> Total wall time used in ABACUS:   0.65 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   0.95 seconds
+ >>>> Total wall time used in DALTON:   0.95 seconds
+
+ 
+     Date and time (Linux)  : Mon Feb 23 13:29:09 2015
+     Host name              : foeroyar                                

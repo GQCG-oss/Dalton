@@ -2888,16 +2888,10 @@ contains
   !> orbitals are assigned - or if nonzero occupied AND nonzero virtual orbitals are assigned.
   !> If this is not the case, the system under consideration is presumably a debug molecule
   !> and we quit here, rather than encountering uninitialized pointers later on...
-  !> We also check whether it is necessary to repeat the atomic fragment calcs
-  !> after the fragment optimization and set DECinfo%RepeatAF accordingly.
   !> \author Kasper Kristensen 
   !> \date December 2011
   subroutine dec_orbital_sanity_check(natoms,nocc,nunocc,OccOrbitals,&
        & UnoccOrbitals,MyMolecule)
-
-    ! NOTE!!! 
-    ! DECinfo%RepeatAF is also intent(inout) here, although it is part of a global structure.
-    ! I know this is not pretty but this solution will have to do for now...
 
     implicit none
     !> Number of atoms
@@ -2978,21 +2972,6 @@ contains
        end if
     end do
 
-
-
-
-    ! Repeat atomic fragment calcs after fragment optimization???
-    ! -----------------------------------------------------------
-    ! Cases where it is necessary to repeat atomic fragment calcs:
-    ! - first order properties are requested
-    ! - only one fragment 
-    ! - fragment opt where reduction step is done for a different model than the target CC model.
-    if(DECinfo%first_order .or. nfrags==1 .or. DECinfo%InclFullMolecule &
-         & .or. (DECinfo%ccmodel/=DECinfo%fragopt_red_model ) .or. DECinfo%F12 ) then
-       DECinfo%RepeatAF=.true.
-    else
-       DECinfo%RepeatAF=.false.
-    end if
 
   end subroutine dec_orbital_sanity_check
 

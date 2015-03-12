@@ -78,7 +78,7 @@ module tensor_interface_module
   public tensor_two_dim_1batch, tensor_two_dim_2batch
 
   ! Special operations with tensors
-  public tensor_extract_eos_indices
+  public tensor_extract_eos_indices, tensor_extract_decnp_indices
   public get_fragment_cc_energy_parallel, get_cc_energy_parallel
   public lspdm_get_combined_SingleDouble_amplitudes, get_info_for_mpi_get_and_reorder_t1 
   public get_rpa_energy_parallel, get_sosex_cont_parallel, get_starting_guess
@@ -1177,6 +1177,117 @@ contains
   end subroutine tensor_extract_eos_indices_occ
 
 
+  !> Purpose: Extract energy indices for DECNP calculation, based on Patrick routine
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    Feb. 2015
+  subroutine tensor_extract_decnp_indices(tensor_full,myfragment,Arr)
+
+     implicit none
+
+     !> Original array
+     type(tensor),intent(in) :: tensor_full
+     !> Atomic fragment
+     type(decfrag), target, intent(inout) :: MyFragment
+     !> Array where EOS indices where are extracted
+     type(tensor),intent(inout) :: Arr
+
+     !> Number of EOS indices
+     integer :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, pointer :: EOS_idx(:)
+     integer :: nocc,nvirt,i,a,b,j,ix,jx
+     integer, dimension(4) :: new_dims
+
+     nEOS = myfragment%noccEOS
+     EOS_idx => myFragment%idxo(1:nEOS)
+
+     ! Initialize stuff
+     ! ****************
+     nocc     = tensor_full%dims(2)     ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)     ! Total number of virtual orbitals
+     new_dims = [nvirt,nEOS,nvirt,nocc] ! nEOS=Number of occupied EOS orbitals
+
+     ! Sanity checks
+     ! *************
+     if( tensor_full%mode /= 4)then
+        call lsquit("ERROR(tensor_extract_decnp_indices): wrong mode of tensor_full",-1)
+     endif
+
+     ! 1. Positive number of orbitals
+     if( (nocc<1) .or. (nvirt<1) ) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        call lsquit('tensor_extract_decnp_indices: &
+           & Negative or zero number of orbitals!',DECinfo%output)
+     end if
+
+     ! 2. Array structure is (virt,occ,virt,occ)
+     if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
+        write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
+        write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
+        write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
+        write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
+        call lsquit('tensor_extract_decnp_indices: &
+           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+     end if
+
+     ! 3. EOS dimension must be smaller than (or equal to) total number of occ orbitals
+     if(nEOS > nocc) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nEOS = ', nEOS
+        call lsquit('tensor_extract_decnp_indices: &
+           & Number of EOS orbitals must be smaller than (or equal to) total number of &
+           & occupied orbitals!',DECinfo%output)
+     end if
+
+     ! 4. EOS indices must not exceed total number of occupied orbitals
+     do i=1,nEOS
+        if(EOS_idx(i) > nocc) then
+           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
+           write(DECinfo%output,*) 'nocc = ', nocc
+           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+           call lsquit('tensor_extract_decnp_indices: &
+              & EOS index value larger than nocc!',DECinfo%output)
+        end if
+     end do
+
+
+     ! Extract occupied EOS indices and store in Arr
+     ! *********************************************
+
+     ! Initiate Arr with new dimensions (nvirt,nocc,nvirt,nocc_EOS)
+     call tensor_init(Arr,new_dims,4)
+
+     select case( tensor_full%itype )
+     case( TT_DENSE, TT_REPLICATED )
+
+        ! Set Arr equal to the EOS indices of the original Arr array (tensor_full)
+        do j=1,nocc
+           do b=1,nvirt
+              do i=1,nEOS
+                 ix=EOS_idx(i)
+                 do a=1,nvirt
+                    Arr%elm4(a,i,b,j) = tensor_full%elm4(a,ix,b,j)
+                 end do
+              end do
+           end do
+        end do
+
+     case( TT_TILED_DIST )
+
+        call tensor_zero(Arr)
+
+        call lspdm_extract_decnp_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
+
+     case default
+        call lsquit("ERROR(tensor_extract_eos_indices_occ): NO PDM version implemented yet",-1)
+     end select
+
+
+  end subroutine tensor_extract_decnp_indices
+
+
   subroutine get_starting_guess(iajb,t2, oof, vvf, local, spec, prec)
      implicit none
      type(tensor), intent(inout) :: iajb, t2, oof, vvf
@@ -1930,7 +2041,7 @@ contains
   subroutine tensor_convert_fort2tensor_wrapper1(fortarr,arr,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
-    real(realk), intent(inout) :: fortarr(arr%nelms)
+    real(realk), intent(in) :: fortarr(arr%nelms)
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
@@ -1938,7 +2049,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper1
   subroutine tensor_convert_fort2tensor_wrapper2(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(inout) :: fortarr(:,:)
+    real(realk), intent(in) :: fortarr(:,:)
     type(tensor), intent(inout) :: arr
     real(realk),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
@@ -1947,7 +2058,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper2
   subroutine tensor_convert_fort2tensor_wrapper3(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(inout) :: fortarr(:,:,:)
+    real(realk), intent(in) :: fortarr(:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
@@ -1956,7 +2067,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper3
   subroutine tensor_convert_fort2tensor_wrapper4(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(inout) :: fortarr(:,:,:,:)
+    real(realk), intent(in) :: fortarr(:,:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
@@ -1971,7 +2082,7 @@ contains
   subroutine tensor_convert_fort2arr(fortarr,arr,nelms,order,wrk,iwrk)
     implicit none
     !> the fortran array with the data
-    real(realk), intent(inout) :: fortarr(*)
+    real(realk), intent(in) :: fortarr(*)
     !> the array which should contain the data after the operation
     type(tensor), intent(inout) :: arr
     !> number of elements to copy from the fortan array to the array

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-!  /* Deck qmnpmm_nlo */
       SUBROUTINE QMNPMM_LNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,   &
      &                      DVTR,EVECS,WORK,LWORK)
 !
@@ -47,20 +46,25 @@
 !
 
       use qmcmm, only: getdim_relmat, read_relmat
+      use qmcmm_response, only: get_xyvec, get_fvvec
 
-#include "implicit.h"
+      implicit none
+
 #include "inforb.h"
 #include "infdim.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
 #include "priunit.h"
 #include "qmnpmm.h"
-!
-      DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(NASHDI,NASHDI)
-      DIMENSION UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
-      DIMENSION WORK(LWORK), DV(*), CREF(*)
-!
-      PARAMETER (DM1 = -1.0D0, D1 = 1.0D0, D0 = 0.0D0)
+
+      integer, intent(in) :: nosim
+      integer, intent(in) :: lwork
+
+      real(8) :: BOVECS(*), CMO(*), XINDX(*), UDV(NASHDI,NASHDI)
+      real(8) :: UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
+      real(8) :: WORK(LWORK), DV(*), CREF(*)
+      integer :: i, j, idim, idimx, kfree, lfree, ioff
+      integer :: kbov, kcmo, kfvvec, kmqvec, krelmat, krxy, krxyt
 !
       KFREE = 1
       LFREE = LWORK
@@ -83,12 +87,21 @@
         CALL DZERO(WORK(KBOV),NOSIM*N2ORBX)
         IF (NOSIM.GT.0) THEN
            CALL RSPZYM(NOSIM,BOVECS,WORK(KBOV))
-           CALL DSCAL(NOSIM*N2ORBX,DM1,WORK(KBOV),1)
+           CALL DSCAL(NOSIM*N2ORBX,-1.0d0,WORK(KBOV),1)
         END IF
+
 !       Determine electric field/potential vector for perturbed
 !       density matrices
-        CALL GET_FVVEC_LR(UDV,UDVTR,WORK(KCMO),WORK(KBOV),WORK(KFVVEC), &
-     &                    IDIM,NOSIM,WORK(KFREE),LFREE)
+        call get_fvvec(idim=idim,           &
+                       nsim=nosim,          &
+                       udv=udv,             &
+                       cmo=work(kcmo),      &
+                       work=work(kfree),    &
+                       lwork=lfree,         &
+                       fvvec1=work(kfvvec), &
+                       udvtr=udvtr,         &
+                       bovecs=work(kbov))
+
 !       Allocate and compute Relay matrix
         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
         CALL MEMGET('REAL',KRELMAT,IDIMX,WORK,KFREE,LFREE)
@@ -97,8 +110,8 @@
         CALL DZERO(WORK(KMQVEC),NOSIM*IDIM)
         DO I=1,NOSIM
            IOFF = (I-1)*IDIM
-           CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC+IOFF),1,D0,WORK(KMQVEC+IOFF),1)
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
+     &                WORK(KFVVEC+IOFF),1,0.0d0,WORK(KMQVEC+IOFF),1)
           if (iprtlvl > 14) then
              write(lupri, '(/,2x,a,i0)') &
                  '*** Computed MQ vector start 1st-order density ', i
@@ -115,14 +128,25 @@
            CALL MEMGET('REAL',KRXYT,NOSIM*N2ORBX,WORK,KFREE,LFREE)
            CALL DZERO(WORK(KRXYT),NOSIM*N2ORBX)
         END IF
-!       Compute XY contributions from induced dipoles and charges
-        IF (TRPLET) THEN
-           CALL GET_XYVEC_LR(WORK(KMQVEC),WORK(KCMO),IDIM,NOSIM,        &
-     &                       WORK(KRXYT),WORK(KFREE),LFREE)
-        ELSE
-           CALL GET_XYVEC_LR(WORK(KMQVEC),WORK(KCMO),IDIM,NOSIM,        &
-     &                       WORK(KRXY),WORK(KFREE),LFREE)
-        END IF
+
+         ! compute xy contributions from induced dipoles and charges
+         if (trplet) then
+            call get_xyvec(work(kcmo),    &
+                           idim,          &
+                           nosim,         &
+                           work(krxyt),   &
+                           work(kfree),   &
+                           lfree,         &
+                           work(kmqvec))
+         else
+            call get_xyvec(work(kcmo),    &
+                           idim,          &
+                           nosim,         &
+                           work(krxy),    &
+                           work(kfree),   &
+                           lfree,         &
+                           work(kmqvec))
+         end if
       ELSE
 !        Fix me
       END IF
@@ -136,17 +160,17 @@
 !
       CALL MEMREL('QMNPMM_LNO',WORK,1,1,KFREE,LFREE)
 !
-      RETURN
       end subroutine
-!  /* Deck qmnpmmqro */
       SUBROUTINE QMNPMMQRO(VEC1,VEC2,ETRS,XINDX,ZYM1,ZYM2,              &
      &                     UDV,WORK,LWORK,KZYVR,KZYV1,KZYV2,            &
      &                     IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,              &
      &                     ISPIN0,ISPIN1,ISPIN2)
 
       use qmcmm, only: getdim_relmat, read_relmat
+      use qmcmm_response, only: get_fvvec, get_xyvec
 
-#include "implicit.h"
+      implicit none
+
 #include "dummy.h"
 #include "maxorb.h"
 #include "inforb.h"
@@ -167,16 +191,37 @@
 #include "nuclei.h"
 #include "infpar.h"
 #include "qmnpmm.h"
-!
-      DIMENSION ETRS(KZYVR),XINDX(*)
-      DIMENSION UDV(NASHDI,NASHDI)
-      DIMENSION ZYM1(*),ZYM2(*),WORK(LWORK),CMO(*)
-      DIMENSION VEC1(KZYV1),VEC2(KZYV2)
-      DIMENSION MJWOP(2,MAXWOP,8)
-      LOGICAL   LCON, LORB, LREF
-!
-      PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
-!
+
+      integer :: kzyvr
+      integer :: kzyv1
+      integer :: kzyv2
+      integer :: lwork,igrsym,isymv1,isymv2,ispin0,ispin1,ispin2
+      real(8) :: etrs(kzyvr),xindx(*)
+      real(8) :: udv(nashdi,nashdi)
+      real(8) :: zym1(*),zym2(*),work(lwork),cmo(*)
+      real(8) :: vec1(kzyv1),vec2(kzyv2)
+      integer :: mjwop(2,maxwop,8)
+      integer :: i, j, ioff
+      logical   lcon, lorb, lref
+      integer :: kmqvec1
+      integer :: kmqvec2
+      integer :: kfvvec1
+      integer :: kfvvec2
+      integer :: kcref
+      integer :: ktres
+      integer :: kucmo
+      integer :: ktlma
+      integer :: ktlmb
+      integer :: ktrmo
+      integer :: krelmat
+      integer :: kutr
+      integer :: idim, idimx
+      integer :: isymt, isymv, isymst, jspin, nsim
+      integer :: lfree, kfree
+      integer :: nzyvec, nzcvec
+      integer :: ISYMDN, idum
+      real(8) :: ovlap
+
       CALL QENTER('QMNPMMQRO')
 !
       KFREE = 1
@@ -215,10 +260,22 @@
         CALL MEMGET('REAL',KMQVEC2,NSIM*IDIM,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFVVEC1,NSIM*IDIM,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFVVEC2,NSIM*IDIM,WORK,KFREE,LFREE)
-!       Compute FV vectors for second order pertubed densities
-        CALL GET_FVVEC_QR(WORK(KFVVEC1),WORK(KFVVEC2),IDIM,NSIM,        &
-     &                    UDV,WORK(KUCMO),ISYMT,ISYMV1,ISYMV2,          &
-     &                    ZYM1,ZYM2,WORK(KFREE),LFREE)
+
+!       compute fv vectors for second order pertubed densities
+        call get_fvvec(idim=idim,            &
+                       nsim=nsim,            &
+                       udv=udv,              &
+                       cmo=work(kucmo),      &
+                       work=work(kfree),     &
+                       lwork=lfree,          &
+                       fvvec1=work(kfvvec1), &
+                       fvvec2=work(kfvvec2), &
+                       isymt=isymt,          &
+                       isymv1=isymv1,        &
+                       isymv2=isymv2,        &
+                       zym1=zym1,            &
+                       zym2=zym2)
+
 !       Allocate and compute Relay matrix
         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
         CALL MEMGET('REAL',KRELMAT,IDIMX,WORK,KFREE,LFREE)
@@ -228,33 +285,46 @@
         CALL DZERO(WORK(KMQVEC2),NSIM*IDIM)
         DO I=1,NSIM
            IOFF = (I-1)*IDIM
-           CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC1+IOFF),1,D0,WORK(KMQVEC1+IOFF),1)
-           IF (IPRTLVL.GE.15) THEN
-              WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed MQ1 vector ',  &
-     &              I,' perturbed first order density ***'
-              CALL OUTPUT(WORK(KMQVEC1+IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-           END IF
-           CALL DGEMV('N',IDIM,IDIM,D1,WORK(KRELMAT),IDIM,              &
-     &                WORK(KFVVEC2+IOFF),1,D0,WORK(KMQVEC2+IOFF),1)
-           IF (IPRTLVL.GE.15) THEN
-              WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed MQ2 vector ',  &
-     &              I,' perturbed first order density ***'
-              CALL OUTPUT(WORK(KMQVEC2+IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-           END IF
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
+     &                WORK(KFVVEC1+IOFF),1,0.0d0,WORK(KMQVEC1+IOFF),1)
+           CALL DGEMV('N',IDIM,IDIM,1.0d0,WORK(KRELMAT),IDIM,              &
+     &                WORK(KFVVEC2+IOFF),1,0.0d0,WORK(KMQVEC2+IOFF),1)
+          if (iprtlvl > 14) then
+             write(lupri, '(/,2x,a,i0)') &
+                 '*** Computed MQ vector start v1 1st-order density ', i
+             do j = 1, idim
+                write(lupri, '(i8, f18.8)') j, WORK(KMQVEC1+IOFF-1+j)
+             end do
+             write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
+             write(lupri, '(/,2x,a,i0)') &
+                 '*** Computed MQ vector start v2 1st-order density ', i
+             do j = 1, idim
+                write(lupri, '(i8, f18.8)') j, WORK(KMQVEC2+IOFF-1+j)
+             end do
+             write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
+          end if
         END DO
-!       Determine MM region contribution to QM region potential from
-!       second order density
-        CALL GET_XYVEC_QR(WORK(KFVVEC1),WORK(KFVVEC2),WORK(KUCMO),      &
-     &                    IDIM,NSIM,WORK(KTRES),ISYMT,ISYMV2,ZYM2,      &
-     &                    WORK(KFREE),LFREE)
+
+        ! determine mm region contribution to qm region potential from
+        ! second order density
+        call get_xyvec(work(kucmo),   &
+                       idim,          &
+                       nsim,          &
+                       work(ktres),   &
+                       work(kfree),   &
+                       lfree,         &
+                       work(kfvvec1), &
+                       work(kfvvec2), &
+                       isymt,         &
+                       isymv2,        &
+                       zym2)
 
       ELSE
 !       FIX ME: ITERATIVE METHOD
       END IF
 !     Set up paramterers for quadratic response gradient formation
       ISYMDN = 1
-      OVLAP  = D1
+      OVLAP  = 1.0d0
       JSPIN  = 0
       ISYMV  = IREFSY
       ISYMST = MULD2H(IGRSYM,IREFSY)
@@ -277,814 +347,4 @@
 !
       CALL QEXIT('QMNPMMQRO')
 !
-      RETURN
       end subroutine
-
-!  /* Deck get_fvvec_lr */
-      SUBROUTINE GET_FVVEC_LR(UDV,UDVTR,CMO,BOVECS,FVVEC,IDIM,NOSIM,    &
-     &                        WORK,LWORK)
-!
-! Purpose:
-!     Computes electric field/potential vector generated by first
-!     order perturbed density matrix.
-!
-! Input:
-!   WORK   - Temporary memory array
-!   LWORK  - Size of temporary memory array.
-! Output:
-!   FVVEC  - Electric field/potential vector at NP/MM centers.
-!   IDIM   - Size of electric field/potential vector
-!   NOSIM  - Number of perturbed density matrices-
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "qmnpmm.h"
-#include "inforb.h"
-#include "infdim.h"
-#include "mxcent.h"
-#include "iratdef.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "qm3.h"
-#include "infrsp.h"
-!
-      DIMENSION UDV(NASHDI,NASHDI), UDVTR(N2ASHX), CMO(NORBT*NBAST)
-      DIMENSION BOVECS(NOSIM*N2ORBX), FVVEC(*), WORK(LWORK)
-!
-      LOGICAL TOFILE,TRIMAT,EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      CHARACTER*8 LABINT(9*MXCENT)
-      DIMENSION RSAVORG(3)
-!
-      KFREE = 1
-      LFREE = LWORK
-!
-      CALL DZERO(FVVEC,IDIM*NOSIM)
-!     Save origin coordinates
-      RSAVORG(1) = DIPORG(1)
-      RSAVORG(2) = DIPORG(2)
-      RSAVORG(3) = DIPORG(3)
-!     Compute electric field if needed
-      IF (DONPPOL) THEN
-!       Allocate integrals buffer
-        CALL MEMGET('REAL',KINTAO,3*NNBASX,WORK,KFREE,LFREE)
-!       Allocate temp. matrices used for integrals tranformations
-        CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUTRX,N2ORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KURXAC,N2ASHX,WORK,KFREE,LFREE)
-!       Set up integrals calculation parameters
-        KPATOM = 0
-        NOCOMP = 3
-        TOFILE = .FALSE.
-        TRIMAT = .TRUE.
-        EXP1VL = .FALSE.
-        RUNQM3 = .TRUE.
-!       Loop over perturbed first order densities
-        DO I=1,NOSIM
-           IOFF = (I-1)*IDIM
-           ISIMOFF = (I-1)*N2ORBX+1
-!          Loop over NP centers
-           DO J=1,TNPATM
-             JOFF = IOFF+(J-1)*3
-             DIPORG(1) = NPCORD(1,J)
-             DIPORG(2) = NPCORD(2,J)
-             DIPORG(3) = NPCORD(3,J)
-             CALL DZERO(WORK(KINTAO),3*NNBASX)
-             CALL GET1IN(WORK(KINTAO),'NEFIELD',NOCOMP,WORK(KFREE),     &
-     &                   LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,    &
-     &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!            Compute X component of electric field
-!            zero temp. arrays
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-             CALL DZERO(WORK(KUTRX),N2ORBX)
-             CALL DZERO(WORK(KURXAC),N2ASHX)
-!            transfor integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST,  &
-     &                 NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-             CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
-!
-             IF (NASHT.GT.0) CALL GETACQ(WORK(KUTRX),WORK(KURXAC))
-             IF (TRPLET) THEN
-                 FVVEC(JOFF+1) = SLVTLM(UDVTR,WORK(KURXAC),WORK(KUTRX), &
-     &                                  TAC)
-             ELSE
-                 FVVEC(JOFF+1) = SLVQLM(UDV,WORK(KURXAC),WORK(KUTRX),   &
-     &                                  TAC)
-             ENDIF
-!            Compute Y component of electric field
-!            zero temp. arrays
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-             CALL DZERO(WORK(KUTRX),N2ORBX)
-             CALL DZERO(WORK(KURXAC),N2ASHX)
-!            transfor integrals
-             CALL UTHU(WORK(KINTAO+NNBASX),WORK(KTRMO),CMO,WORK(KFREE), &
-     &                 NBAST,NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-             CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
-!
-             IF (NASHT.GT.0) CALL GETACQ(WORK(KUTRX),WORK(KURXAC))
-             IF (TRPLET) THEN
-                 FVVEC(JOFF+2) = SLVTLM(UDVTR,WORK(KURXAC),WORK(KUTRX), &
-     &                                  TAC)
-             ELSE
-                 FVVEC(JOFF+2) = SLVQLM(UDV,WORK(KURXAC),WORK(KUTRX),   &
-     &                                  TAC)
-             ENDIF
-!            Compute Z component of electric field
-!            zero temp. arrays
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-             CALL DZERO(WORK(KUTRX),N2ORBX)
-             CALL DZERO(WORK(KURXAC),N2ASHX)
-!            transfor integrals
-             CALL UTHU(WORK(KINTAO+2*NNBASX),WORK(KTRMO),CMO,           &
-     &                 WORK(KFREE),NBAST,NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-             CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
-!
-             IF (NASHT.GT.0) CALL GETACQ(WORK(KUTRX),WORK(KURXAC))
-             IF (TRPLET) THEN
-                 FVVEC(JOFF+3) = SLVTLM(UDVTR,WORK(KURXAC),WORK(KUTRX), &
-     &                                  TAC)
-             ELSE
-                 FVVEC(JOFF+3) = SLVQLM(UDV,WORK(KURXAC),WORK(KUTRX),   &
-     &                                  TAC)
-             ENDIF
-           END DO
-        END DO
-        RUNQM3 = .FALSE.
-        CALL MEMREL('GET_FVVEC_LR',WORK,1,1,KFREE,LFREE)
-      END IF
-      IF (DONPCAP) THEN
-        ISTART = 0
-        IF (DONPPOL) ISTART = 3*TNPATM
-!       Fix me MM region shift
-!       Allocate integrals buffer
-        CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
-!       Allocate temp. matrices used for integrals tranformations
-        CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUTRX,N2ORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KURXAC,N2ASHX,WORK,KFREE,LFREE)
-!       Set up integrals calculation parameters
-        KPATOM = 0
-        NOCOMP = 1
-        TOFILE = .FALSE.
-        TRIMAT = .TRUE.
-        EXP1VL = .FALSE.
-        RUNQM3 = .TRUE.
-!       Loop over perturbed first order densities
-        DO I=1,NOSIM
-           IOFF = (I-1)*IDIM
-           ISIMOFF = (I-1)*N2ORBX+1
-!          Loop over NP centers
-           DO J=1,TNPATM
-             JOFF = IOFF+ISTART+J
-             DIPORG(1) = NPCORD(1,J)
-             DIPORG(2) = NPCORD(2,J)
-             DIPORG(3) = NPCORD(3,J)
-             CALL DZERO(WORK(KINTAO),NNBASX)
-             CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),     &
-     &                   LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,    &
-     &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!            Zero temporary arrays
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-             CALL DZERO(WORK(KUTRX),N2ORBX)
-             CALL DZERO(WORK(KURXAC),N2ASHX)
-!            Transform integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),NBAST,  &
-     &                 NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-             CALL ONEXH1(BOVECS(ISIMOFF),WORK(KUTR),WORK(KUTRX))
-!
-             IF (NASHT.GT.0) CALL GETACQ(WORK(KUTRX),WORK(KURXAC))
-             IF (TRPLET) THEN
-                 FVVEC(JOFF) = SLVTLM(UDVTR,WORK(KURXAC),WORK(KUTRX),   &
-     &                                TAC)
-             ELSE
-                 FVVEC(JOFF) = SLVQLM(UDV,WORK(KURXAC),WORK(KUTRX),     &
-     &                                TAC)
-             ENDIF
-            END DO
-!           Set Lagrangian for charge equilibration
-            DO IBLK=1,TNPBLK
-              FVVEC(IOFF+IDIM) = FVVEC(IOFF+IDIM)+NPCHRG(IBLK)
-            END DO
-        END DO
-        RUNQM3 = .FALSE.
-        CALL MEMREL('GET_FVVEC_LR',WORK,1,1,KFREE,LFREE)
-      END IF
-!     Restore origin coordinates
-      DIPORG(1) = RSAVORG(1)
-      DIPORG(2) = RSAVORG(2)
-      DIPORG(3) = RSAVORG(3)
-!     Print final FV vector
-      DO I=1,NOSIM
-         if (iprtlvl > 14 .and. .not. mqiter) then
-            IOFF = (I-1)*IDIM+1
-            write(lupri, '(/,2x,a,i0)') &
-                '*** Computed FV vector start 1st-order density ', i
-            do j = 1, idim
-               write(lupri, '(i8, f18.8)') j, fvvec(IOFF + j - 1)
-            end do
-            write(lupri, '(/,2x,a)') '*** Computed FV vector end ***'
-         end if
-      END DO
-!
-      RETURN
-      end subroutine
-
-!  /* Deck get_fvvec_qr */
-      SUBROUTINE GET_FVVEC_QR(FVVEC1,FVVEC2,IDIM,NSIM,UDV,UCMO,         &
-     &                        ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WORK,LWORK)
-!
-! Purpose:
-!     Computes electric field/potential vector generated by second
-!     order perturbed density matrix.
-!
-! Input:
-!   WORK   - Temporary memory array
-!   LWORK  - Size of temporary memory array.
-! Output:
-!   FVVEC1 - Electric field/potential vector at NP/MM centers.
-!   FVVEC2 - Electric field/potential vector at NP/MM centers.
-!   IDIM   - Size of electric field/potential vector
-!   NSIM   - Number of perturbed density matrices.
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "qmnpmm.h"
-#include "inforb.h"
-#include "infdim.h"
-#include "mxcent.h"
-#include "iratdef.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "qm3.h"
-#include "infrsp.h"
-!
-      DIMENSION FVVEC1(*), FVVEC2(*), WORK(LWORK)
-      DIMENSION UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*)
-!
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-!
-      LOGICAL TOFILE,TRIMAT,EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      CHARACTER*8 LABINT(9*MXCENT)
-      DIMENSION RSAVORG(3)
-!
-      KFREE = 1
-      LFREE = LWORK
-!
-      CALL DZERO(FVVEC1,IDIM*NSIM)
-      CALL DZERO(FVVEC2,IDIM*NSIM)
-!     Save origin coordinates
-      RSAVORG(1) = DIPORG(1)
-      RSAVORG(2) = DIPORG(2)
-      RSAVORG(3) = DIPORG(3)
-!     Compute electric field if needed
-      IF (DONPPOL) THEN
-!       Allocate integrals buffer
-        CALL MEMGET('REAL',KINTAO,3*NNBASX,WORK,KFREE,LFREE)
-!       Allocate temp. matrices used for integrals tranformations
-        CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTLMA,N2ORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTLMB,N2ORBX,WORK,KFREE,LFREE)
-!       Set up integrals calculation parameters
-        KPATOM = 0
-        NOCOMP = 3
-        TOFILE = .FALSE.
-        TRIMAT = .TRUE.
-        EXP1VL = .FALSE.
-        RUNQM3 = .TRUE.
-!       Loop over perturbed first order densities
-        DO I=1,NSIM
-           IOFF = (I-1)*IDIM
-!          Loop over NP centers
-           DO J=1,TNPATM
-             JOFF = IOFF+(J-1)*3
-             DIPORG(1) = NPCORD(1,J)
-             DIPORG(2) = NPCORD(2,J)
-             DIPORG(3) = NPCORD(3,J)
-             CALL DZERO(WORK(KINTAO),3*NNBASX)
-             CALL GET1IN(WORK(KINTAO),'NEFIELD',NOCOMP,WORK(KFREE),     &
-     &                   LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,    &
-     &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!            Compute X component of electric field
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-!            Transform integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),UCMO,WORK(KFREE),NBAST, &
-     &                 NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-!            Determine electric field component size
-             F1VAL = D0
-             F2VAL = D0
-             IF (ISYMT.EQ.ISYMV1) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,D1,F1VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC1(JOFF+1) = F1VAL
-             END IF
-             IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL DZERO(WORK(KTLMB),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,D1,F2VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC2(JOFF+1) = F2VAL
-             ENDIF
-!            Compute Y component of electric field
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-!            Transform integrals
-             CALL UTHU(WORK(KINTAO+NNBASX),WORK(KTRMO),UCMO,WORK(KFREE),&
-     &                 NBAST,NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-!            Determine electric field component size
-             F1VAL = D0
-             F2VAL = D0
-             IF (ISYMT.EQ.ISYMV1) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,D1,F1VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC1(JOFF+2) = F1VAL
-             END IF
-             IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL DZERO(WORK(KTLMB),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,D1,F2VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC2(JOFF+2) = F2VAL
-             ENDIF
-!            Compute Z component of electric field
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-!            Transform integrals
-             CALL UTHU(WORK(KINTAO+2*NNBASX),WORK(KTRMO),UCMO,          &
-     &                 WORK(KFREE),NBAST,NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-!            Determine electric field component size
-             F1VAL = D0
-             F2VAL = D0
-             IF (ISYMT.EQ.ISYMV1) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,D1,F1VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC1(JOFF+3) = F1VAL
-             END IF
-             IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL DZERO(WORK(KTLMB),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,D1,F2VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC2(JOFF+3) = F2VAL
-             ENDIF
-           END DO
-        END DO
-        RUNQM3 = .FALSE.
-        CALL MEMREL('GET_FVVEC_QR',WORK,1,1,KFREE,LFREE)
-      END IF
-      IF (DONPCAP) THEN
-        ISTART = 0
-        IF (DONPPOL) ISTART = 3*TNPATM
-!       Fix me MM region shift
-!       Allocate integrals buffer
-        CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
-!       Allocate temp. matrices used for integrals tranformations
-        CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTLMA,N2ORBX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTLMB,N2ORBX,WORK,KFREE,LFREE)
-!       Set up integrals calculation parameters
-        KPATOM = 0
-        NOCOMP = 1
-        TOFILE = .FALSE.
-        TRIMAT = .TRUE.
-        EXP1VL = .FALSE.
-        RUNQM3 = .TRUE.
-!       Loop over perturbed first order densities
-        DO I=1,NSIM
-           IOFF = (I-1)*IDIM
-!          Loop over NP centers
-           DO J=1,TNPATM
-             JOFF = IOFF+ISTART+J
-             DIPORG(1) = NPCORD(1,J)
-             DIPORG(2) = NPCORD(2,J)
-             DIPORG(3) = NPCORD(3,J)
-             CALL DZERO(WORK(KINTAO),NNBASX)
-             CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),     &
-     &                   LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,    &
-     &                   TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!            Zero temporary arrays
-             CALL DZERO(WORK(KTRMO),NNORBX)
-             CALL DZERO(WORK(KUTR),N2ORBX)
-!            Transform integrals
-             CALL UTHU(WORK(KINTAO),WORK(KTRMO),UCMO,WORK(KFREE),NBAST, &
-     &                 NORBT)
-             CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-!            Determine electric field component size
-             F1VAL = D0
-             F2VAL = D0
-             IF (ISYMT.EQ.ISYMV1) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL MELONE(WORK(KTLMA),1,UDV,D1,F1VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC1(JOFF) = F1VAL
-             END IF
-             IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-                CALL DZERO(WORK(KTLMA),N2ORBX)
-                CALL DZERO(WORK(KTLMB),N2ORBX)
-                CALL OITH1(ISYMV1,ZYM1,WORK(KUTR),WORK(KTLMA),ISYMT)
-                CALL OITH1(ISYMV2,ZYM2,WORK(KTLMA),WORK(KTLMB),ISYMV2)
-                CALL MELONE(WORK(KTLMB),1,UDV,D1,F2VAL,200,             &
-     &                      'QMNPQRO')
-                FVVEC2(JOFF) = F2VAL
-             ENDIF
-           END DO
-!          Set Lagrangian for charge equilibration
-           DO IBLK=1,TNPBLK
-              FVVEC1(IOFF+IDIM) = FVVEC1(IOFF+IDIM)+NPCHRG(IBLK)
-              FVVEC2(IOFF+IDIM) = FVVEC2(IOFF+IDIM)+NPCHRG(IBLK)
-           END DO
-        END DO
-        RUNQM3 = .FALSE.
-        CALL MEMREL('GET_FVVEC_QR',WORK,1,1,KFREE,LFREE)
-      END IF
-!     Restore origin coordinates
-      DIPORG(1) = RSAVORG(1)
-      DIPORG(2) = RSAVORG(2)
-      DIPORG(3) = RSAVORG(3)
-!     Print final FV vector
-      DO I=1,NSIM
-         IF ((IPRTLVL.GE.15).AND.(.NOT.MQITER)) THEN
-            WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed FV1 vector for ',&
-     &            I, ' pertubed second order density matrix ***'
-            IOFF = (I-1)*IDIM+1
-            CALL OUTPUT(FVVEC1(IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-            WRITE(LUPRI,'(/,2X,A,I2,A)') '*** Computed FV2 vector for ',&
-     &            I, ' pertubed second order density matrix ***'
-            CALL OUTPUT(FVVEC2(IOFF),1,IDIM,1,1,IDIM,1,1,LUPRI)
-         END IF
-      END DO
-!
-      RETURN
-      end subroutine
-
-!  /* Deck get_xyvec_lr */
-      SUBROUTINE GET_XYVEC_LR(FMQVEC,CMO,IDIM,NOSIM,FXYVEC,WORK,LWORK)
-!
-! Purpose:
-!     Computes contribution to XY vector from induced dipoles moments
-!     and charges.
-!
-! Input:
-!   FMQVEC - Induced dipole moments and charges
-!   CMO    - Molecular orbitals
-!   WORK   - Temporary memory array
-!   LWORK  - Size of temporary memory array
-! Output:
-!   FXYVEC - Contribution to XY vector from induced dipole moments and
-!            charges
-!   IDIM   - Size of electric field/potential vector
-!   NOSIM  - Number of perturbed density matrices
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "qmnpmm.h"
-#include "inforb.h"
-#include "infdim.h"
-#include "mxcent.h"
-#include "iratdef.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "qm3.h"
-#include "infrsp.h"
-!
-      DIMENSION FMQVEC(NOSIM*IDIM), CMO(NORBT*NBAST)
-      DIMENSION FXYVEC(NOSIM*N2ORBX), WORK(LWORK)
-!
-      LOGICAL TOFILE,TRIMAT,EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      CHARACTER*8 LABINT(9*MXCENT)
-      DIMENSION RSAVORG(3)
-!
-      KFREE = 1
-      LFREE = LWORK
-!     Save origin coordinates
-      RSAVORG(1) = DIPORG(1)
-      RSAVORG(2) = DIPORG(2)
-      RSAVORG(3) = DIPORG(3)
-!     Induced dipole moment in NP region interaction with QM region
-      IF (DONPPOL.AND.NOVDAMP) THEN
-!        Electronic interaction part
-         CALL MEMGET('REAL',KINTAO,3*NNBASX,WORK,KFREE,LFREE)
-!        Allocate temp. matrices used for integrals tranformations
-         CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-!        Set integrals evaluation flags
-         KPATOM = 0
-         NOCOMP = 3
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         RUNQM3 = .TRUE.
-!        Compute contributions
-         DO I=1,NOSIM
-            IOFF = (I-1)*IDIM
-            ISIMOFF = (I-1)*N2ORBX+1
-            DO J=1,TNPATM
-               JOFF = IOFF+(J-1)*3
-               DIPORG(1) = NPCORD(1,J)
-               DIPORG(2) = NPCORD(2,J)
-               DIPORG(3) = NPCORD(3,J)
-               CALL DZERO(WORK(KINTAO),3*NNBASX)
-               CALL GET1IN(WORK(KINTAO),'NEFIELD',NOCOMP,WORK(KFREE),   &
-     &                     LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,  &
-     &                     TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!              X-component
-               CALL DZERO(WORK(KTRMO),NNORBX)
-               CALL DZERO(WORK(KUTR),N2ORBX)
-               CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),      &
-     &                   NBAST,NORBT)
-               CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-               FACT = -FMQVEC(JOFF+1)
-               CALL DAXPY(N2ORBX,FACT,WORK(KUTR),1,FXYVEC(ISIMOFF),1)
-!              Y-component
-               CALL DZERO(WORK(KTRMO),NNORBX)
-               CALL DZERO(WORK(KUTR),N2ORBX)
-               CALL UTHU(WORK(KINTAO+NNBASX),WORK(KTRMO),CMO,           &
-     &                   WORK(KFREE),NBAST,NORBT)
-               CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-               FACT = -FMQVEC(JOFF+2)
-               CALL DAXPY(N2ORBX,FACT,WORK(KUTR),1,FXYVEC(ISIMOFF),1)
-!              Z-component
-               CALL DZERO(WORK(KTRMO),NNORBX)
-               CALL DZERO(WORK(KUTR),N2ORBX)
-               CALL UTHU(WORK(KINTAO+2*NNBASX),WORK(KTRMO),CMO,         &
-     &                   WORK(KFREE),NBAST,NORBT)
-               CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-               FACT = -FMQVEC(JOFF+3)
-               CALL DAXPY(N2ORBX,FACT,WORK(KUTR),1,FXYVEC(ISIMOFF),1)
-            END DO
-         END DO
-         RUNQM3 = .FALSE.
-         CALL MEMREL('GET_XYVEC_LR',WORK,1,1,KFREE,LFREE)
-      END IF
-!     Induced dipole moment in NP region interaction with QM region
-      IF (DONPCAP.AND.NOVDAMP) THEN
-         ISTART = 0
-         IF (DONPPOL) ISTART = 3*TNPATM
-!        Fix me MM region shift
-!        Electronic interaction part
-         CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
-!        Allocate temp. matrices used for integrals tranformations
-         CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-!        Set integrals evaluation flags
-         KPATOM = 0
-         NOCOMP = 1
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         RUNQM3 = .TRUE.
-!        Compute contributions
-         DO I=1,NOSIM
-            IOFF = (I-1)*IDIM
-            ISIMOFF = (I-1)*N2ORBX+1
-            DO J=1,TNPATM
-               JOFF = IOFF+ISTART+J
-               DIPORG(1) = NPCORD(1,J)
-               DIPORG(2) = NPCORD(2,J)
-               DIPORG(3) = NPCORD(3,J)
-               CALL DZERO(WORK(KINTAO),NNBASX)
-               CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),   &
-     &                     LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,  &
-     &                     TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!              Zero temporary arrays
-               CALL DZERO(WORK(KTRMO),NNORBX)
-               CALL DZERO(WORK(KUTR),N2ORBX)
-!              Transfor integrals
-               CALL UTHU(WORK(KINTAO),WORK(KTRMO),CMO,WORK(KFREE),      &
-     &                   NBAST,NORBT)
-               CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-               FACT = FMQVEC(JOFF)
-               CALL DAXPY(N2ORBX,FACT,WORK(KUTR),1,FXYVEC(ISIMOFF),1)
-           END DO
-         END DO
-         RUNQM3 = .FALSE.
-         CALL MEMREL('GET_XYVEC_LR',WORK,1,1,KFREE,LFREE)
-      END IF
-!     Restore origin coordinates
-      DIPORG(1) = RSAVORG(1)
-      DIPORG(2) = RSAVORG(2)
-      DIPORG(3) = RSAVORG(3)
-!
-      RETURN
-      end subroutine
-
-!  /* Deck get_xyvec_qr */
-      SUBROUTINE GET_XYVEC_QR(FMQVEC1,FMQVEC2,UCMO,IDIM,NSIM,FVEC,      &
-     &                        ISYMT,ISYMV2,ZYM2,WORK,LWORK)
-!
-! Purpose:
-!     Computes contribution to XY vector from induced dipoles moments
-!     and charges.
-!
-! Input:
-!   FMQVEC - Induced dipole moments and charges
-!   CMO    - Molecular orbitals
-!   WORK   - Temporary memory array
-!   LWORK  - Size of temporary memory array
-! Output:
-!   FXYVEC - Contribution to XY vector from induced dipole moments and
-!            charges
-!   IDIM   - Size of electric field/potential vector
-!   NOSIM  - Number of perturbed density matrices
-!
-! Last updated: 22/03/2013 by Z. Rinkevicius.
-!
-#include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "qmnpmm.h"
-#include "inforb.h"
-#include "infdim.h"
-#include "mxcent.h"
-#include "iratdef.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "qm3.h"
-#include "infrsp.h"
-!
-      DIMENSION FMQVEC1(NSIM*IDIM), FMQVEC2(NSIM*IDIM)
-      DIMENSION UCMO(NORBT*NBAST), ZYM2(*)
-      DIMENSION FVEC(NSIM*N2ORBX), WORK(LWORK)
-!
-      LOGICAL TOFILE,TRIMAT,EXP1VL
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      CHARACTER*8 LABINT(9*MXCENT)
-      DIMENSION RSAVORG(3)
-!
-      KFREE = 1
-      LFREE = LWORK
-!     Save origin coordinates
-      RSAVORG(1) = DIPORG(1)
-      RSAVORG(2) = DIPORG(2)
-      RSAVORG(3) = DIPORG(3)
-!     Induced dipole moment in NP region interaction with QM region
-      IF (DONPPOL.AND.NOVDAMP) THEN
-!        Electronic interaction part
-         CALL MEMGET('REAL',KINTAO,3*NNBASX,WORK,KFREE,LFREE)
-!        Allocate temp. matrices used for integrals tranformations
-         CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KTLMA,N2ORBX,WORK,KFREE,LFREE)
-!        Set integrals evaluation flags
-         KPATOM = 0
-         NOCOMP = 3
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         RUNQM3 = .TRUE.
-!        Compute contributions
-         DO I=1,NSIM
-            IOFF = (I-1)*IDIM
-            ISIMOFF = (I-1)*N2ORBX+1
-            DO J=1,TNPATM
-              JOFF = IOFF+(J-1)*3
-              DIPORG(1) = NPCORD(1,J)
-              DIPORG(2) = NPCORD(2,J)
-              DIPORG(3) = NPCORD(3,J)
-              CALL DZERO(WORK(KINTAO),3*NNBASX)
-              CALL GET1IN(WORK(KINTAO),'NEFIELD',NOCOMP,WORK(KFREE),    &
-     &                    LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,   &
-     &                    TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!             X-component
-              CALL DZERO(WORK(KTRMO),NNORBX)
-              CALL DZERO(WORK(KUTR),N2ORBX)
-!             Transform integrals
-              CALL UTHU(WORK(KINTAO),WORK(KTRMO),UCMO,WORK(KFREE),NBAST,&
-     &                  NORBT)
-              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-!             Determine MM region contribution
-              F1VAL = -FMQVEC1(JOFF+1)
-              F2VAL = -0.50D0*FMQVEC2(JOFF+1)
-              CALL DZERO(WORK(KTLMA),N2ORBX)
-              CALL OITH1(ISYMV2,ZYM2,WORK(KUTR),WORK(KTLMA),ISYMT)
-              CALL DAXPY(N2ORBX,F1VAL,WORK(KTLMA),1,FVEC,1)
-              CALL DAXPY(N2ORBX,F2VAL,WORK(KTLMA),1,FVEC,1)
-!             Y-component
-              CALL DZERO(WORK(KTRMO),NNORBX)
-              CALL DZERO(WORK(KUTR),N2ORBX)
-!             Transform integrals
-              CALL UTHU(WORK(KINTAO+NNBASX),WORK(KTRMO),UCMO,           &
-     &                  WORK(KFREE),NBAST,NORBT)
-              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-!             Determine MM region contribution
-              F1VAL = -FMQVEC1(JOFF+2)
-              F2VAL = -0.50D0*FMQVEC2(JOFF+2)
-              CALL DZERO(WORK(KTLMA),N2ORBX)
-              CALL OITH1(ISYMV2,ZYM2,WORK(KUTR),WORK(KTLMA),ISYMT)
-              CALL DAXPY(N2ORBX,F1VAL,WORK(KTLMA),1,FVEC,1)
-              CALL DAXPY(N2ORBX,F2VAL,WORK(KTLMA),1,FVEC,1)
-!             Z-component
-              CALL DZERO(WORK(KTRMO),NNORBX)
-              CALL DZERO(WORK(KUTR),N2ORBX)
-!             Transform integrals
-              CALL UTHU(WORK(KINTAO+2*NNBASX),WORK(KTRMO),UCMO,         &
-     &                  WORK(KFREE),NBAST,NORBT)
-              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-!             Determine MM region contribution
-              F1VAL = -FMQVEC1(JOFF+3)
-              F2VAL = -0.50D0*FMQVEC2(JOFF+3)
-              CALL DZERO(WORK(KTLMA),N2ORBX)
-              CALL OITH1(ISYMV2,ZYM2,WORK(KUTR),WORK(KTLMA),ISYMT)
-              CALL DAXPY(N2ORBX,F1VAL,WORK(KTLMA),1,FVEC,1)
-              CALL DAXPY(N2ORBX,F2VAL,WORK(KTLMA),1,FVEC,1)
-            END DO
-         END DO
-         RUNQM3 = .FALSE.
-         CALL MEMREL('GET_XYVEC_QR',WORK,1,1,KFREE,LFREE)
-      END IF
-!     Induced dipole moment in NP region interaction with QM region
-      IF (DONPCAP.AND.NOVDAMP) THEN
-         ISTART = 0
-         IF (DONPPOL) ISTART = 3*TNPATM
-!        Fix me MM region shift
-!        Electronic interaction part
-         CALL MEMGET('REAL',KINTAO,NNBASX,WORK,KFREE,LFREE)
-!        Allocate temp. matrices used for integrals tranformations
-         CALL MEMGET('REAL',KTRMO,NNORBX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUTR,N2ORBX,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KTLMA,N2ORBX,WORK,KFREE,LFREE)
-!        Set integrals evaluation flags
-         KPATOM = 0
-         NOCOMP = 1
-         TOFILE = .FALSE.
-         TRIMAT = .TRUE.
-         EXP1VL = .FALSE.
-         RUNQM3 = .TRUE.
-!        Compute contributions
-         DO I=1,NSIM
-            IOFF = (I-1)*IDIM
-            DO J=1,TNPATM
-               JOFF = IOFF+ISTART+J
-               DIPORG(1) = NPCORD(1,J)
-               DIPORG(2) = NPCORD(2,J)
-               DIPORG(3) = NPCORD(3,J)
-               CALL DZERO(WORK(KINTAO),NNBASX)
-               CALL GET1IN(WORK(KINTAO),'NPETES ',NOCOMP,WORK(KFREE),   &
-     &                     LFREE,LABINT,INTREP,INTADR,J,TOFILE,KPATOM,  &
-     &                     TRIMAT,DUMMY,EXP1VL,DUMMY,0)
-!             Zero integral buffers
-              CALL DZERO(WORK(KTRMO),NNORBX)
-              CALL DZERO(WORK(KUTR),N2ORBX)
-!             Transform integrals
-              CALL UTHU(WORK(KINTAO),WORK(KTRMO),UCMO,WORK(KFREE),NBAST,&
-     &                  NORBT)
-              CALL DSPTSI(NORBT,WORK(KTRMO),WORK(KUTR))
-!             Determine MM region contribution
-              F1VAL = FMQVEC1(JOFF)
-              F2VAL = 0.50D0*FMQVEC2(JOFF)
-              CALL DZERO(WORK(KTLMA),N2ORBX)
-              CALL OITH1(ISYMV2,ZYM2,WORK(KUTR),WORK(KTLMA),ISYMT)
-              CALL DAXPY(N2ORBX,F1VAL,WORK(KTLMA),1,FVEC,1)
-              CALL DAXPY(N2ORBX,F2VAL,WORK(KTLMA),1,FVEC,1)
-           END DO
-         END DO
-         RUNQM3 = .FALSE.
-         CALL MEMREL('GET_XYVEC_QR',WORK,1,1,KFREE,LFREE)
-      END IF
-!     Restore origin coordinates
-      DIPORG(1) = RSAVORG(1)
-      DIPORG(2) = RSAVORG(2)
-      DIPORG(3) = RSAVORG(3)
-!
-      RETURN
-      end subroutine
-

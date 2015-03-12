@@ -37,11 +37,11 @@ to parallize the matrix operations like matrix multiplication.
 \item[\Key{SCALAPACKBLOCKSIZE}] 
 \verb| | \newline
 \verb|<ScalapackBlockSize>|\newline
-The blocksize used in SCALAPACK matrices
+The blocksize used in SCALAPACK matrices (not required)
 \item[\Key{SCALAPACKNODES}] 
 \verb| | \newline
 \verb|<ScalapackNodes>|\newline
-The number of MPI processes you wish to use for the SCALAPACK format. This must be a subset of the total MPI processes used. 
+The number of MPI processes you wish to use for the SCALAPACK format. This must be a subset of the total number of MPI processes used. 
 It may be benficial to chose a subset of the total MPI processes because the matrix operations scale differently with MPI nodes than the 
 Integral evaluation. 
 \item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library and the use of the --csr keyword during installation!

@@ -1356,11 +1356,6 @@ contains
     if(DECinfo%frozencore) call mat_free(Phioo)
 
 
-    ! Save MP2 density matrices to file
-    ! *********************************
-    call save_mp2density_matrices_to_file(DMP2,rho)
-
-
     GradientCalc: if(DECinfo%gradient) then ! only for gradient, simple MP2 density
 
        ! Get MP2 reorthonormalization matrix
@@ -2780,15 +2775,15 @@ end if UNRELAXED2
   !> respectively. See routine get_full_mp2density for details.
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine save_mp2density_matrices_to_file(DMP2,Dcorr)
+  subroutine save_mp2density_matrices_to_file(DMP2,DMP2_scaled)
 
 
     implicit none
 
     !> Total MP2 density matrix (including HF contribution) -- NOT changed at output
     type(matrix),intent(inout) :: DMP2
-    !> MP2 correlation component to density matrix (without HF contribution) -- NOT changed at output
-    type(matrix),intent(inout) :: Dcorr
+    !> DMP2 scaled to give correct number of electrons
+    type(matrix),intent(inout) :: DMP2_scaled
     character(len=80) :: FileName
     integer :: wunit
     logical :: file_exist,OnMaster
@@ -2805,7 +2800,7 @@ end if UNRELAXED2
     ! Tr( S MP2.dens.restart) = 0.5 * Nelectrons
     ! However, at the end we scale back by a factor 2, such that the matrices are unchanged at output
     call mat_scal(0.5E0_realk,DMP2)
-    call mat_scal(0.5E0_realk,Dcorr)
+    call mat_scal(0.5E0_realk,DMP2_scaled)
 
 
     ! MP2 density
@@ -2828,12 +2823,12 @@ end if UNRELAXED2
 
 
 
-    ! MP2 correlation density
-    ! -----------------------
-    FileName='MP2corr.dens'
+    ! MP2 density scaled
+    ! ------------------
+    FileName='MP2_scaled.dens'
     inquire(file=FileName,exist=file_exist)
     if(file_exist) then
-       write(DECinfo%output,'(a)') 'warning :: overwriting MP2 correlation density file ',FileName
+       write(DECinfo%output,'(a)') 'warning :: overwriting scaled MP2 density file ',FileName
        wunit=-1
        call lsopen(wunit,FileName,'OLD','UNFORMATTED')
        call lsclose(wunit,'DELETE')
@@ -2843,13 +2838,13 @@ end if UNRELAXED2
     wunit=-1
     call lsopen(wunit,FileName,'NEW','UNFORMATTED')
     OnMaster = .TRUE.
-    call mat_write_to_disk(wunit,Dcorr,OnMaster)
+    call mat_write_to_disk(wunit,DMP2_scaled,OnMaster)
     call lsclose(wunit,'KEEP')
 
 
     ! Scale MP2 densities back such that they are unchanged at output
     call mat_scal(2.0E0_realk,DMP2)
-    call mat_scal(2.0E0_realk,Dcorr)
+    call mat_scal(2.0E0_realk,DMP2_scaled)
 
 
 
@@ -2887,8 +2882,8 @@ end if UNRELAXED2
     !> Phioo matrix required for frozen core (not changed here but intent(inout) for practical reasons)
     type(matrix),intent(inout), optional :: Phioo
     integer :: nvirt,nocc,nbasis,nelectrons,i,ncore,nval
-    type(matrix) :: Cocc,Cvirt,S,RHS,kappabarUO,kappabarVC
-    real(realk) :: nel_HF, nel_MP2
+    type(matrix) :: Cocc,Cvirt,S,RHS,kappabarUO,kappabarVC,DMP2_scaled
+    real(realk) :: nel_HF, nel_MP2,scale
     logical :: full_equation
     real(realk), dimension(3) :: HFdipole, MP2dipole
     real(realk) :: tcpu,twall, tcpu1,tcpu2, twall1,twall2
@@ -2993,6 +2988,11 @@ end if UNRELAXED2
     ! Number of electrons calculated for MP2 state
     Nel_MP2= mat_dotproduct(DMP2,S)
 
+    scale = real(nelectrons)/Nel_MP2
+    call mat_init(DMP2_scaled,nbasis,nbasis)
+    call mat_copy(1.0_realk,DMP2, DMP2_scaled)
+    call mat_scal(scale,DMP2_scaled)
+
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '*****************************************************************'
@@ -3016,6 +3016,9 @@ end if UNRELAXED2
     if(DECinfo%frozencore) then
        call mat_free(kappabarVC)
     end if
+
+    call save_mp2density_matrices_to_file(DMP2,DMP2_scaled)
+    call mat_free(DMP2_scaled)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     call LSTIMER('FULL MP2DENS',tcpu,twall,DECinfo%output)
@@ -3375,10 +3378,10 @@ end if UNRELAXED2
        call lsquit('dec_solve_kappabar_equation: Not implemented for full equation AND frozen core!',-1)
     end if
 
-    if(DECinfo%ccModel /= MODEL_MP2) then
+    if(DECinfo%ccModel /= MODEL_MP2 .and. DECinfo%ccModel /= MODEL_RIMP2) then
        print *, 'CC model: ', DECinfo%ccModel
        call lsquit('dec_solve_kappabar_equation:&
-            & kappabar multiplier equation is only implemented for MP2',-1)
+            & kappabar multiplier equation is only implemented for RIMP2 and MP2',-1)
     end if
 
     write(DECinfo%output,*)

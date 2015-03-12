@@ -671,6 +671,8 @@ C
 #include "mxcent.h"
 #include "esrhfc.h"
 #include "abslrs.h"
+! JMHO: pcmlog.h included to check if CUBIC and PCM -> quit
+#include "pcmlog.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7
 C
@@ -759,6 +761,10 @@ C
       go to 200
 
  5    call cubic(word)
+! JMHO: quit if CUBIC and PCM (until bug is found)
+      if (pcm) then
+        call quit('PCM and cubic response not available')
+      end if
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
       if (dodft) then
          if (.not. fun_is_ready_for_cr()) then

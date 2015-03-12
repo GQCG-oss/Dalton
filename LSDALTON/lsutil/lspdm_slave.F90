@@ -270,6 +270,27 @@ subroutine pdm_tensor_slave(comm)
       call mem_dealloc(intarr1)
       call tensor_free(AUX)
 
+   CASE(JOB_TENSOR_EXTRACT_ODECNP)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(INT1,infpar%master)
+      call mem_alloc(intarr1,INT1)
+      call ls_mpi_buffer(intarr1,INT1,infpar%master)
+      call ls_mpi_buffer(INT2,infpar%master)
+      call mem_alloc(intarr2,INT2)
+      call ls_mpi_buffer(intarr2,INT2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      
+      call tensor_init(AUX,intarr2,INT2)
+
+      call mem_dealloc(intarr2)
+
+      call tensor_zero(AUX)
+
+      call lspdm_extract_decnp_indices_occ(AUX,A,INT1,intarr1)
+
+      call mem_dealloc(intarr1)
+      call tensor_free(AUX)
+
    CASE(JOB_GET_COMBINEDT1T2_1)
 
       call lspdm_get_combined_SingleDouble_amplitudes(A,B,C)

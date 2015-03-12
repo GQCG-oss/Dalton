@@ -3751,9 +3751,9 @@ Implicit Real(realk) (A-H,O-Z)
      &        CNVRGD(3) .AND. CNVRGD(4)
          ls_minend = CNVRGD(1) .AND. CNVRGD(2) .AND. &
      &        CNVRGD(3) .AND. CNVRGD(4)
-!!$         if(DECinfo%dodec) then ! only check gradient itself for DEC (not step size)
-!!$            ls_minend = CNVRGD(1) .AND. CNVRGD(2)
-!!$         end if
+         if(DECinfo%dodec) then ! only check gradient itself for DEC (not step size)
+            ls_minend = CNVRGD(1) .AND. CNVRGD(2)
+         end if
       END IF
 !
 !     Output from the testing is written.

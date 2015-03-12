@@ -785,6 +785,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/herqmnp.F90
     DALTON/qmcmm/sirqmnp.F90
     DALTON/qmcmm/rspqmnp.F90
+    DALTON/qmcmm/response.F90
     )
 if(ENABLE_PCMSOLVER)
    set(DAL_PCM_SOURCES
