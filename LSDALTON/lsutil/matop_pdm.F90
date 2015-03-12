@@ -182,7 +182,9 @@ contains
 !    call mem_dealloc(Bfull)
     order(1) = 2
     order(2) = 1
+    print *,"tensor cp data"
     call tensor_cp_data(pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p,order)
+    print *,"tensor cp data"
     
   end subroutine mat_pdmm_trans
 
@@ -278,8 +280,11 @@ contains
     implicit none
     TYPE(Matrix) :: A,B
     real(realk) :: Alpha
+    print *,"DOING ACTUAL COPY"
     call mat_pdmm_assign(B,A)
+    print *,"DOING ACTUAL COPY DONE SCALE"
     if (ABS(alpha-1.0E0_realk).GT.1.0E-15_realk)call mat_pdmm_scal(alpha,b)
+    print *,"DOING ACTUAL COPY DONE SCALE DONE"
   end subroutine mat_pdmm_copy
 
   !> \brief See mat_tr in mat-operations.f90
@@ -506,8 +511,11 @@ contains
     implicit none
     TYPE(Matrix) :: A,B,C
     real(realk) :: Alpha,Beta    
+    print *,"IN ADD COPY"
     call mat_pdmm_copy(alpha,a,c)
+    print *,"IN ADD DAXPY"
     call mat_pdmm_daxpy(beta,b,c)
+    print *,"IN ADD DONE"
   end subroutine mat_pdmm_add
 
   !> \brief See mat_add_identity in mat-operations.f90

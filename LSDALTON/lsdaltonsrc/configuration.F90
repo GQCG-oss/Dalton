@@ -9,7 +9,8 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
-use tensor_interface_module, only: tensor_set_dil_backend_true, tensor_set_debug_mode_true
+use tensor_interface_module, only: tensor_set_dil_backend_true, &
+   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -1254,14 +1255,11 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
         CASE('.PDMM')
            config%opt%cfg_prefer_PDMM = .true.
-           !Set tensor debug to TRUE
-           call tensor_set_debug_mode_true
-           !FIXME the PDMM module should not need this. 
-           !It is related to the tensor implementation that do
-           !not have barriers inside it. This means that one sided communication 
-           !can cause problems when nodes are reading info that have not yet been written.
+           !Set tensor synchronization to always, TODO: see if this can be optimized
+           call tensor_set_always_sync_true(.true.)
+           !Set the background buffer on, this will use additional memory
+           call lspdm_init_global_buffer(.true.)
 #ifdef VAR_MPI
-           call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
         CASE('.PDMMBLOCKSIZE');  
            print*,'PDMMBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE
@@ -1323,15 +1321,9 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            end if
            select case(word)
            case('.DIL_BACKEND')
-              call tensor_set_dil_backend_true
-#ifdef VAR_MPI
-              call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,infpar%master,MPI_COMM_LSDALTON)
-#endif
+              call tensor_set_dil_backend_true(.true.)
            case('.DEBUG')
-              call tensor_set_debug_mode_true
-#ifdef VAR_MPI
-              call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
-#endif
+              call tensor_set_debug_mode_true(.true.)
            case default
               print *,"UNRECOGNIZED KEYWORD: ",word
               call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)

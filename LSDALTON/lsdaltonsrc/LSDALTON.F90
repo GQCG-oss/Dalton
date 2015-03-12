@@ -49,14 +49,13 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use configuration, only: config_shutdown, config_free
   use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
-  use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem
+  use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem,finalize_lsdalton_driver_and_free
   use initial_guess, only: get_initial_dens
   use scfloop_module, only: scfloop, scf_afterplay
   use lstiming, only: lstimer, init_timers, print_timers
   use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
   use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2,read_fock_matrix_from_file
-  use daltoninfo, only: ls_free 
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
   use extra_output, only: print_orbital_info2
@@ -146,10 +145,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   write (LUERR,*)"THIS IS A DEBUG BUILD"
 #endif
 
-  ! Init LSdalton calculation and get lsitem and config structures
+  ! Init LSdalton calculation and get lsitem and config structures, and perform
+  ! basic tests
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
-   
-  call Test_if_64bit_integer_required(nbast,nbast)
 
 #ifdef HAS_PCMSOLVER
         !
@@ -305,10 +303,13 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
         !default - non PBC
         CALL mat_init(S,nbast,nbast)
+        print *,"DO SHIT 1 "
 
         CALL II_get_overlap(lupri,luerr,ls%setting,S)
+        print *,"WHY WHY WHY"
         CALL LSTIMER('*S    ',TIMSTR,TIMEND,lupri)
 
+        print *,"DO SHIT 2 "
         CALL Print_Memory_info(lupri,'after II_get_overlap')
 
         IF (config%integral%debugLSlib) THEN 
@@ -321,9 +322,13 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mem_dealloc(GGem) 
         ENDIF
 
+        print *,"DO SHIT 3 "
         CALL mat_init(D(1),nbast,nbast)
+        print *,"DO SHIT 4 "
         CALL mat_init(F(1),nbast,nbast)
+        print *,"DO SHIT 5 "
         CALL mat_init(H1,nbast,nbast)
+        print *,"DO SHIT 6 "
 
         ! write(lupri,*) 'QQQ New  S:',mat_trab(S,S)
         CALL II_get_h1(lupri,luerr,ls%setting,H1)
@@ -334,18 +339,21 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         lsint_fock_data%H1 => H1
         lsint_fock_data%lupri = lupri
         lsint_fock_data%luerr = luerr
+        print *,"DO SHIT 7 "
 
         call get_initial_dens(H1,S,D,ls,config)
         config%decomp%S => S !This is necessary because with high optimization level
         !this pointer is sometimes deassociated
         CALL Print_Memory_info(lupri,'after get_initial_dens')
 
+        print *,"DO SHIT 8 "
         !debug integral routines
         call di_debug_general(lupri,luerr,ls,nbast,S,D(1),config%integral%debugProp)
 
         IF(config%integral%debugIchorLinkFull)THEN
            call II_ichor_LinK_test(lupri,luerr,ls%setting,D)
         ENDIF
+        print *,"DO SHIT 9 "
 
         if (mem_monitor) then
            write(lupri,*)
@@ -365,6 +373,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 !             & config%decomp%cfg_check_converged_solution .or. &
 !             & config%decomp%cfg_rsp_nexcit > 0) 
 
+        print *,"DO SHIT 10 "
         if (do_decomp) then
            call decomp_init(nbast,config%decomp)
            call decomposition(config%decomp)
@@ -379,6 +388,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mat_init(config%av%Dprev,nbast,nbast)
         endif
 
+        print *,"DO SHIT 11 "
         inquire (file="soeosave.out", exist=soeosaveexist)
         if (config%soeoinp%cfg_restart .and. soeosaveexist) then
           call soeo_restart (config%soeoinp%cfg_unres, config%lupri, S, F(1), D(1))
@@ -412,6 +422,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call save_fock_matrix_to_file(F(1))
            call save_overlap_matrix_to_file(S)
         ENDIF
+        print *,"DO SHIT 12 "
 
         if (config%opt%cfg_incremental) call ks_free_incremental_fock()
 
@@ -770,10 +781,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   end if
 #endif
 
-  call ls_free(ls)
-  
-  meminfo_slaves = config%mpi_mem_monitor
-  CALL Print_Memory_info(lupri,'End of LSDALTON_DRIVER')
+  ! Free all higher structures used in LSALTON_DRIVER, and which could not be
+  ! initialized before the config was read
+  call finalize_lsdalton_driver_and_free(lupri,luerr,ls,config,meminfo_slaves)
 
 END SUBROUTINE LSDALTON_DRIVER
 

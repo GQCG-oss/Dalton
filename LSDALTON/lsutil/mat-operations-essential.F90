@@ -835,6 +835,7 @@ MODULE matrix_operations
          case(mtype_scalapack)
              call mat_scalapack_trans(a,b)
          case(mtype_pdmm)
+             print *,"IS THIS RIGHT"
              call mat_pdmm_trans(a,b)
          case(mtype_unres_dense)
              call mat_unres_dense_trans(a,b)

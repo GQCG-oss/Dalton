@@ -789,12 +789,19 @@ contains
         !WRITE(LUPRI,*) 'Trying to symmetrice matrix where nrow /= ncol'
         STOP 'Trying to symmetrice matrix where nrow /= ncol'
       endif
+      print *,"init 1"
       call mat_init(Ax,A%nrow,A%ncol)
+      print *,"init 2"
       call mat_init(AT,A%nrow,A%ncol)
+      print *,"assign"
       call mat_assign(Ax,A)
+      print *,"trans"
       call mat_trans(A,AT)
+      print *,"add "
       call mat_add(0.5E0_realk,Ax,0.5E0_realk,AT,A)
+      print *,"free 1"
       call mat_free(Ax)
+      print *,"free 2"
       call mat_free(AT)
     end subroutine util_get_symm_part
 

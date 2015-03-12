@@ -76,7 +76,7 @@ module lspdm_tensor_operations_module
   !with some additional information. Here the storage fort tiled distributed and
   !replicated arrays is allocated, if 500  is not enough, please change here
   !> amount of arrays which are storable in the persistent array
-  integer, parameter :: n_arrays = 50000
+  integer, parameter :: n_arrays = 500
   !> persistent array type-def
   type persistent_array
     !> collection of arrays
@@ -95,6 +95,13 @@ module lspdm_tensor_operations_module
     !new array
     logical,pointer :: free_addr_on_node(:) => null()
   endtype persistent_array
+
+  ! Global communication buffer in this module
+  type global_module_buffer
+     real(realk), pointer :: buf(:)
+     integer(kind=8)      :: n    = 0
+     logical              :: init = .false.
+  end type global_module_buffer
 
   save
   
@@ -138,6 +145,9 @@ module lspdm_tensor_operations_module
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
 
+  !define the buffer
+  type(global_module_buffer) :: gm_buf
+
   !> timing and measuring variables
   real(realk) :: time_pdm_acc          = 0.0E0_realk
   integer(kind=long) :: bytes_transferred_acc = 0
@@ -166,7 +176,7 @@ module lspdm_tensor_operations_module
   !procedure(lsmpi_acc_realkV_dummy),pointer :: acc_rk8 
   contains
 
-  !>  \brief intitialize storage room for the tiled distributed arrays
+  !> \brief intitialize storage room for the tiled distributed arrays
   !> \author Patrick Ettenhuber
   !> \date May 2013
   subroutine init_persistent_array()
@@ -185,6 +195,10 @@ module lspdm_tensor_operations_module
      !if( lspdm_use_comm_proc ) call lsquit("ERROR(init_persistent_array)&
      !& lspdm_use_comm_proc cannot be true at startup",-1)
      lspdm_use_comm_proc = .false.
+
+     !set defaults for comm buffer
+     gm_buf%n    = 0
+     gm_buf%init = .false.
   end subroutine init_persistent_array
   !>  \brief free storage room for the tiled distributed arrays
   !> \author Patrick Ettenhuber
@@ -217,6 +231,82 @@ module lspdm_tensor_operations_module
     p_arr%new_offset = 0
   end subroutine new_group_reset_persistent_array
   
+
+  ! initalizing the global buffer array
+  subroutine lspdm_init_global_buffer(call_slaves_from_slaveroutine)
+     implicit none
+     logical, intent(in) :: call_slaves_from_slaveroutine
+     integer(kind=ls_mpik) :: me
+     integer :: i, checked
+
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+
+     if( me == 0 .and. call_slaves_from_slaveroutine )then
+        call ls_mpibcast(JOB_LSPDM_INIT_GLOBAL_BUFFER,me,infpar%lg_comm)
+     endif
+
+#endif
+
+     if( gm_buf%init )then
+        call lsquit("ERROR(lspdm_init_global_buffer): global buffer already initialized",-1)
+     endif
+
+     print *,"initializing buffer",me
+     
+     !Find the buffer size based on the allocated arrays
+     checked = 0
+     LoopAllAllocd: do i=1,n_arrays
+
+        if(.not.p_arr%free_addr_on_node(i))then
+           if(p_arr%a(i)%itype==TT_TILED_DIST.or.p_arr%a(i)%itype==TT_TILED_REPL)then
+
+              gm_buf%n = max(gm_buf%n,i8*2*p_arr%a(i)%tsize)
+
+              !counter for fast exit
+              checked = checked + 1
+           endif
+        endif
+
+        if(checked>=p_arr%arrays_in_use) exit LooPAllAllocd
+
+     enddo LoopAllAllocd
+
+     call mem_alloc(gm_buf%buf,gm_buf%n)
+
+     gm_buf%init = .true.
+
+     print *,"initializing buffer - done",me,gm_buf%n
+  end subroutine lspdm_init_global_buffer
+
+  ! freeing the global buffer array
+  subroutine lspdm_free_global_buffer(call_slaves_from_slaveroutine)
+     implicit none
+     logical, intent(in) :: call_slaves_from_slaveroutine
+     integer(kind=ls_mpik) :: me
+
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+
+     if( me == 0 .and. call_slaves_from_slaveroutine )then
+        call ls_mpibcast(JOB_LSPDM_FREE_GLOBAL_BUFFER,me,infpar%lg_comm)
+     endif
+
+#endif
+     
+     if( .not. gm_buf%init )then
+        call lsquit("ERROR(lspdm_free_global_buffer): global buffer not initialized",-1)
+     endif
+
+     if(associated(gm_buf%buf))then
+        call mem_dealloc(gm_buf%buf)
+     endif
+
+     gm_buf%n    = 0
+     gm_buf%init = .false.
+  end subroutine lspdm_free_global_buffer
 
 
   subroutine lspdm_start_up_comm_procs
@@ -674,7 +764,7 @@ module lspdm_tensor_operations_module
 
     fEc = 0.50E0_realk*(Eocc + Evirt)
 
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #else
     fEc = 0.0E0_realk
 #endif
@@ -1028,7 +1118,7 @@ module lspdm_tensor_operations_module
 
     call mem_dealloc(gmo_tile_buf)
 
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #else
     Ec = 0.0E0_realk
 #endif
@@ -1146,7 +1236,7 @@ module lspdm_tensor_operations_module
      endif
      call time_start_phase( PHASE_WORK )
 
-     if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #endif
 
   end subroutine lspdm_extract_eos_indices_virt
@@ -1263,7 +1353,7 @@ module lspdm_tensor_operations_module
      endif
      call time_start_phase( PHASE_WORK )
 
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #endif
 
   end subroutine lspdm_extract_eos_indices_occ
@@ -1368,7 +1458,7 @@ module lspdm_tensor_operations_module
      endif
      call time_start_phase( PHASE_WORK )
 
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #endif
 
   end subroutine lspdm_extract_decnp_indices_occ
@@ -1613,7 +1703,7 @@ module lspdm_tensor_operations_module
     call lsmpi_local_reduction(E2,infpar%master)
 
     Ec = E2
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #else
     Ec = 0.0E0_realk
 #endif
@@ -1685,7 +1775,7 @@ module lspdm_tensor_operations_module
     call lsmpi_local_reduction(E2,infpar%master)
 
     Ec = E2
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #else
     Ec = 0.0E0_realk
 #endif
@@ -2061,7 +2151,7 @@ module lspdm_tensor_operations_module
     endif
     call time_start_phase( PHASE_WORK )
 
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #else
     res = 0.0E0_realk
 #endif
@@ -2285,7 +2375,7 @@ module lspdm_tensor_operations_module
     call lsmpi_barrier(infpar%lg_comm)
     call time_start_phase( PHASE_WORK )
 
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #endif
  end subroutine tensor_add_par
 
@@ -2317,12 +2407,15 @@ module lspdm_tensor_operations_module
     endif
 
     !get the slaves
+    print *,"get slave"
     if(from%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_CP_ARR,from,to_ar)
       call time_start_phase(PHASE_COMM)
       call ls_mpibcast(order,from%mode,infpar%master,infpar%lg_comm)
       call time_start_phase(PHASE_WORK)
     endif
+    print *,"done"
+    call lsmpi_barrier(infpar%lg_comm)
 
     ! now set to two and that ought to be enough, but should work with any
     ! number >0
@@ -2460,7 +2553,7 @@ module lspdm_tensor_operations_module
 
     !crucial barrier, because direct memory access is used
     call lsmpi_barrier(infpar%lg_comm)
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #endif
   end subroutine tensor_cp_tiled
 
@@ -2484,7 +2577,7 @@ module lspdm_tensor_operations_module
       a%ti(lt)%t=0.0E0_realk
     enddo
 
-    if(tensor_debug_mode) call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #endif
   end subroutine tensor_zero_tiled_dist
 
@@ -2862,6 +2955,19 @@ module lspdm_tensor_operations_module
       p_arr%a(addr)%tsize  = p_arr%a(addr)%tsize  * min(p_arr%a(addr)%tdim(i),p_arr%a(addr)%dims(i))
     enddo
 
+    !Adapt background buffer
+    if( gm_buf%init .and. (2 * p_arr%a(addr)%tsize > gm_buf%n))then
+       if((16.0E0_realk*p_arr%a(addr)%tsize)/(1024.0**2) > 500.0E0_realk)then
+          print *,"WARNING(tensor_init_tiled): background buffer more then&
+          & 500MB. Smaller tiles or switching off the background buffer prevent&
+          & this warning"
+       endif
+       print *,"increasing buff size"
+       call mem_dealloc(gm_buf%buf)
+       gm_buf%n = i8*2*p_arr%a(addr)%tsize
+       call mem_alloc(gm_buf%buf,gm_buf%n)
+       print *,"done increasing buff size"
+    endif
 
     !In the initialization the addess has to be set, since pdm_tensor_sync
     !depends on the  adresses, but setting them correctly is done later
@@ -3435,7 +3541,7 @@ module lspdm_tensor_operations_module
 
      !critical barrier if synchronization is not achieved by other measures
      call time_start_phase( PHASE_IDLE )
-     if(sync.or.tensor_debug_mode)call lsmpi_barrier(infpar%lg_comm)
+     if( sync .or. tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
      !stop 0
 #else
@@ -4015,16 +4121,12 @@ module lspdm_tensor_operations_module
 #endif
 
 
-    !CHECK IF INTERNAL MEMORY ALLOCATION IS NEEDED
-    internal_alloc = .true.
+    !CHECK WHICH BUFFERING METHOD TO USE
+    internal_alloc = .not. gm_buf%init
     if(present(wrk).and.present(iwrk))then
-      if(iwrk>arr%tsize)then
-        internal_alloc=.false.
-#ifdef VAR_LSDEBUG
-      else
-        print *,'WARNING(tensor_gather):allocating internally, given buffer not large enough'
-#endif
-      endif
+       if( iwrk > arr%tsize )then
+          internal_alloc = .false.
+       endif
     endif
 
     me   = infpar%lg_mynum
@@ -4094,8 +4196,14 @@ module lspdm_tensor_operations_module
         tmps = arr%tsize
         call mem_alloc(tmp,tmps)
       else
-        tmps =  iwrk
-        tmp  => wrk(1:tmps)
+         if( iwrk > gm_buf%n )then
+            tmps =  iwrk
+            tmp  => wrk(1:tmps)
+         else
+            print *,"IN GATHER TRRYING TO USE BUF"
+            tmps =  gm_buf%n
+            tmp  => gm_buf%buf(1:tmps)
+         endif
       endif
 
       maxintmp = tmps / arr%tsize
@@ -5577,7 +5685,7 @@ module lspdm_tensor_operations_module
       call dscal(int(arr%ti(i)%e),sc,arr%ti(i)%t,1)
     enddo
 
-    if(tensor_debug_mode)call lsmpi_barrier(infpar%lg_comm)
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 
 #endif
   end subroutine tensor_scale_td
