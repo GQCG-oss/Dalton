@@ -253,8 +253,6 @@ module lspdm_tensor_operations_module
         call lsquit("ERROR(lspdm_init_global_buffer): global buffer already initialized",-1)
      endif
 
-     print *,"initializing buffer",me
-     
      !Find the buffer size based on the allocated arrays
      checked = 0
      LoopAllAllocd: do i=1,n_arrays
@@ -277,8 +275,29 @@ module lspdm_tensor_operations_module
 
      gm_buf%init = .true.
 
-     print *,"initializing buffer - done",me,gm_buf%n
   end subroutine lspdm_init_global_buffer
+
+  subroutine lspdm_reinit_global_buffer(nelms)
+     implicit none
+     integer(kind=8), intent(in) :: nelms
+
+     if(nelms > gm_buf%n)then
+
+        if((8.0E0_realk*nelms)/(1024.0**2) > 500.0E0_realk)then
+           print *,"WARNING(lspdm_reinit_global_buffer): background buffer more then&
+              & 500MB. Smaller tiles or switching off the background buffer prevent&
+              & this warning"
+        endif
+
+        call mem_dealloc(gm_buf%buf)
+
+        gm_buf%n = nelms
+
+        call mem_alloc(gm_buf%buf,gm_buf%n)
+
+     endif
+
+  end subroutine lspdm_reinit_global_buffer
 
   ! freeing the global buffer array
   subroutine lspdm_free_global_buffer(call_slaves_from_slaveroutine)
@@ -2963,18 +2982,7 @@ module lspdm_tensor_operations_module
     enddo
 
     !Adapt background buffer
-    if( gm_buf%init .and. (2 * p_arr%a(addr)%tsize > gm_buf%n))then
-       if((16.0E0_realk*p_arr%a(addr)%tsize)/(1024.0**2) > 500.0E0_realk)then
-          print *,"WARNING(tensor_init_tiled): background buffer more then&
-          & 500MB. Smaller tiles or switching off the background buffer prevent&
-          & this warning"
-       endif
-       print *,"increasing buff size"
-       call mem_dealloc(gm_buf%buf)
-       gm_buf%n = i8*2*p_arr%a(addr)%tsize
-       call mem_alloc(gm_buf%buf,gm_buf%n)
-       print *,"done increasing buff size"
-    endif
+    if( gm_buf%init) call lspdm_reinit_global_buffer(2*i8*p_arr%a(addr)%tsize)
 
     !In the initialization the addess has to be set, since pdm_tensor_sync
     !depends on the  adresses, but setting them correctly is done later
