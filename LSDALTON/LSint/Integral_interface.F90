@@ -158,19 +158,15 @@ ELSE
      sameMolecule = .FALSE.
   ENDIF
 ENDIF
-print *,"DID SOMETHING NOW USING S"
 CALL retrieve_Output(lupri,setting,S,setting%IntegralTransformGC)
 !it is very important that the Overlap matrix is symmetric due to 
-print *,"DID SOMETHING NOW USING S -done more"
 !decomposition 
 IF(sameMolecule)THEN
    call util_get_symm_part(S)
 ENDIF
-print *,"DID SOMETHING NOW USING S -done more -done more"
 IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Overlap-matrix dot product:',mat_dotproduct(S,S)
 CALL LSTIMER('OVERLAP',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_overlap)
-print *,"DID SOMETHING NOW USING S -done more -done more - done"
 END SUBROUTINE II_get_overlap
 
 !> \brief Calculates overlap integral matrix between 2 different AO basis's

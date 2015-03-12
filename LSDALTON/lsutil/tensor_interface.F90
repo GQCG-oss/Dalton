@@ -267,8 +267,6 @@ contains
      integer :: ti,i,nel,o(x%mode)
      call time_start_phase( PHASE_WORK )
 
-     print *,"duuude in here",b,x%itype,y%itype,TT_DENSE,TT_TILED_DIST
-
      pre2 = 1.0E0_realk
      if(present(a))pre2 = a
 
@@ -318,7 +316,6 @@ contains
 
         case(TT_TILED_DIST)
 
-           print *,"ADDDADDADDDADD"
            call mem_alloc(buffer,y%tsize)
            !TODO:IMPLEMENT MULTIPLE BUFFERING
            do ti=1,y%ntiles
@@ -2376,7 +2373,6 @@ contains
 
        case(TT_TILED_DIST)
 
-          print *,"cp from tiled to tiled!"
           call tensor_cp_tiled(from_arr,to_arr,o)
 
        case default

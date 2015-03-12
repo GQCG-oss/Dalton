@@ -2407,15 +2407,12 @@ module lspdm_tensor_operations_module
     endif
 
     !get the slaves
-    print *,"get slave"
     if(from%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_CP_ARR,from,to_ar)
       call time_start_phase(PHASE_COMM)
       call ls_mpibcast(order,from%mode,infpar%master,infpar%lg_comm)
       call time_start_phase(PHASE_WORK)
     endif
-    print *,"done"
-    call lsmpi_barrier(infpar%lg_comm)
 
     ! now set to two and that ought to be enough, but should work with any
     ! number >0
@@ -4084,228 +4081,231 @@ module lspdm_tensor_operations_module
 
   ! fort = pre1 * arr + pre2 *fort
   subroutine tensor_gather(pre1,arr,pre2,fort,nelms,oo,wrk,iwrk)
-    implicit none
-    real(realk),intent(in)             :: pre1,pre2
-    type(tensor),intent(in)             :: arr
-    real(realk),intent(inout)          :: fort(*)
-    integer(kind=long), intent(in)     :: nelms
-    integer(kind=ls_mpik)              :: nod
-    integer, intent(in), optional             :: oo(arr%mode)
-    real(realk),intent(inout),target,optional :: wrk(*)
-    integer(kind=8),intent(in),optional,target:: iwrk
-    integer(kind=ls_mpik) :: src,me,nnod
-    integer               :: i,ltidx,o(arr%mode)
-    integer               :: nelintile,fullfortdim(arr%mode)
-    real(realk), pointer  :: tmp(:)
-    integer               :: tmps, elms_sent,last_flush_i,j,bidx
-    logical               :: internal_alloc,lock_outside,so,consecutive,ff,ls,lock_was_not_set
-    integer               :: maxintmp,b,e,minstart
+     implicit none
+     real(realk),intent(in)             :: pre1,pre2
+     type(tensor),intent(in)            :: arr
+     real(realk),intent(inout)          :: fort(*)
+     integer(kind=long), intent(in)     :: nelms
+     integer(kind=ls_mpik)              :: nod
+     integer, intent(in), optional             :: oo(arr%mode)
+     real(realk),intent(inout),target,optional :: wrk(*)
+     integer(kind=8),intent(in),optional,target:: iwrk
+     integer(kind=ls_mpik) :: src,me,nnod
+     integer               :: i,ltidx,o(arr%mode)
+     integer               :: nelintile,fullfortdim(arr%mode)
+     real(realk), pointer  :: tmp(:)
+     integer               :: tmps, elms_sent,last_flush_i,j,bidx, itest
+     logical               :: internal_alloc,lock_outside,so,consecutive,ff,ls,lock_was_not_set
+     integer               :: maxintmp,b,e,minstart
 #ifdef VAR_MPI
-    integer(kind=ls_mpik),pointer :: req(:)
-  
-    do i=1,arr%mode
-      o(i)=i
-    enddo
-    if(present(oo))o=oo
- 
-    so = .true.
-    do i=1,arr%mode
-      if(o(i)/=i)so = .false.
-    enddo
+     integer(kind=ls_mpik),pointer :: req(:)
+
+     do i=1,arr%mode
+        o(i)=i
+     enddo
+     if(present(oo))o=oo
+
+     so = .true.
+     do i=1,arr%mode
+        if(o(i)/=i)so = .false.
+     enddo
 
 #ifdef VAR_LSDEBUG
-    if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
-      call lsquit('ERROR(tensor_gather):both or neither wrk and iwrk have to &
-                  &be given',-1)
-    endif
+     if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
+        call lsquit('ERROR(tensor_gather):both or neither wrk and iwrk have to &
+           &be given',-1)
+     endif
 #endif
 
 
-    !CHECK WHICH BUFFERING METHOD TO USE
-    internal_alloc = .not. gm_buf%init
-    if(present(wrk).and.present(iwrk))then
-       if( iwrk > arr%tsize )then
-          internal_alloc = .false.
-       endif
-    endif
+     !CHECK WHICH BUFFERING METHOD TO USE
+     internal_alloc = .not. gm_buf%init
+     itest          = 0
+     if(present(wrk).and.present(iwrk))then
+        if( iwrk > arr%tsize )then
+           internal_alloc = .false.
+        endif
+        itest = iwrk
+     endif
 
-    me   = infpar%lg_mynum
-    nnod = infpar%lg_nodtot
+     if(.not. internal_alloc)then
+        if( itest > gm_buf%n )then
+           tmps =  itest
+           tmp  => wrk(1:tmps)
+        else
+           tmps =  gm_buf%n
+           tmp  => gm_buf%buf(1:tmps)
+        endif
+     endif
+
+     me   = infpar%lg_mynum
+     nnod = infpar%lg_nodtot
 
 #ifdef VAR_LSDEBUG
-    if(nelms/=arr%nelms)call lsquit('ERROR(tensor_gather):array&
+     if(nelms/=arr%nelms)call lsquit('ERROR(tensor_gather):array&
         &dimensions are not the same',DECinfo%output)
 #endif
 
-    do i = 1, arr%mode
-      fullfortdim(i) = arr%dims(o(i))
-    enddo
+     do i = 1, arr%mode
+        fullfortdim(i) = arr%dims(o(i))
+     enddo
 
-    consecutive = .true.
-    ff = .false.
-    do i = 1, arr%mode
-      fullfortdim(i) = arr%dims(o(i))
-      if( arr%dims(i) /= arr%tdim(i) .and. .not. ff) ff = .true.
-      if( arr%dims(i) /= arr%tdim(i) .and. arr%tdim(i) /= 1 .and. ff) consecutive = .false.
-    enddo
-  
-    elms_sent    = 0
-    last_flush_i = 0
+     consecutive = .true.
+     ff = .false.
+     do i = 1, arr%mode
+        fullfortdim(i) = arr%dims(o(i))
+        if( arr%dims(i) /= arr%tdim(i) .and. .not. ff) ff = .true.
+        if( arr%dims(i) /= arr%tdim(i) .and. arr%tdim(i) /= 1 .and. ff) consecutive = .false.
+     enddo
 
-    lock_was_not_set = .not.arr%lock_set(1)
-    if( alloc_in_dummy .and. lock_was_not_set)call tensor_lock_wins(arr,'s', all_nodes = .true. )
+     elms_sent    = 0
+     last_flush_i = 0
+
+     lock_was_not_set = .not.arr%lock_set(1)
+     if( alloc_in_dummy .and. lock_was_not_set)call tensor_lock_wins(arr,'s', all_nodes = .true. )
 
 
-    if(so.and.pre1==1.0E0_realk.and.pre2==0.0E0_realk.and.consecutive)then
+     if(so.and.pre1==1.0E0_realk.and.pre2==0.0E0_realk.and.consecutive)then
 
-      b=1
-      do i=1,arr%ntiles
+        b=1
+        do i=1,arr%ntiles
 
-        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
-        e = b + nelintile - 1
+           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+           e = b + nelintile - 1
 
-        if( alloc_in_dummy ) then
-           ls = arr%lock_set(1)
-        else
-           ls = arr%lock_set(i)
-        endif
+           if( alloc_in_dummy ) then
+              ls = arr%lock_set(1)
+           else
+              ls = arr%lock_set(i)
+           endif
 
-        call tensor_get_tile(arr,i,fort(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
-        b = e + 1
-        elms_sent = elms_sent + nelintile
+           call tensor_get_tile(arr,i,fort(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
+           b = e + 1
+           elms_sent = elms_sent + nelintile
 
-        !if(elms_sent > MAX_SIZE_ONE_SIDED)then
+           !if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-        !   do j=last_flush_i+1,i
-        !      call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
-        !   enddo
+           !   do j=last_flush_i+1,i
+           !      call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
+           !   enddo
 
-        !   last_flush_i = i
-        !   elms_sent    = 0
+           !   last_flush_i = i
+           !   elms_sent    = 0
 
-        !endif
+           !endif
 
-      enddo
+        enddo
 
-    else
+     else
 
-      if(internal_alloc)then
+        if(internal_alloc)then
 #ifdef VAR_LSDEBUG
-        print *,'WARNING(tensor_gather):Allocating internally'
+           print *,'WARNING(tensor_gather):Allocating internally'
 #endif
-        tmps = arr%tsize
-        call mem_alloc(tmp,tmps)
-      else
-         if( iwrk > gm_buf%n )then
-            tmps =  iwrk
-            tmp  => wrk(1:tmps)
-         else
-            print *,"IN GATHER TRRYING TO USE BUF"
-            tmps =  gm_buf%n
-            tmp  => gm_buf%buf(1:tmps)
-         endif
-      endif
-
-      maxintmp = tmps / arr%tsize
-
-      call mem_alloc(req,maxintmp)
-
-      do i=1,arr%ntiles
-
-        !set the buffer index
-        bidx = mod(i-1,maxintmp)+1
-
-        if(i>maxintmp.and..not. alloc_in_dummy)then
-          b = 1 + (bidx - 1) * arr%tsize
-          !b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
-          e = b + arr%tsize -1
-
-          if(arr%lock_set(i-maxintmp))call tensor_unlock_win(arr,i-maxintmp)
-          call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
-
-
+           tmps = arr%tsize
+           call mem_alloc(tmp,tmps)
         endif
 
-        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        maxintmp = tmps / arr%tsize
 
-        !ADDRESSING IN TMP BUFFER ALWAYS WITH FULL TILE SIZES
-        b = 1 + (bidx - 1) * arr%tsize
-        !b = 1 + mod(i - 1, maxintmp) * arr%tsize
-        e = b + arr%tsize - 1
+        call mem_alloc(req,maxintmp)
 
-        if( alloc_in_dummy ) then
+        do i=1,arr%ntiles
 
-           if(i>maxintmp)then
-              call get_tile_dim(nelintile,i-maxintmp,arr%dims,arr%tdim,arr%mode)
+           !set the buffer index
+           bidx = mod(i-1,maxintmp)+1
+
+           if(i>maxintmp.and..not. alloc_in_dummy)then
+              b = 1 + (bidx - 1) * arr%tsize
+              !b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
+              e = b + arr%tsize -1
+
+              if(arr%lock_set(i-maxintmp))call tensor_unlock_win(arr,i-maxintmp)
+              call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+
+
+           endif
+
+           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+
+           !ADDRESSING IN TMP BUFFER ALWAYS WITH FULL TILE SIZES
+           b = 1 + (bidx - 1) * arr%tsize
+           !b = 1 + mod(i - 1, maxintmp) * arr%tsize
+           e = b + arr%tsize - 1
+
+           if( alloc_in_dummy ) then
+
+              if(i>maxintmp)then
+                 call get_tile_dim(nelintile,i-maxintmp,arr%dims,arr%tdim,arr%mode)
+                 call lsmpi_wait(req(bidx))
+                 nel_one_sided = nel_one_sided - nelintile
+                 call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+              endif
+
+              call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+
+              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                 call tensor_flush_win(arr, local = .true.)
+                 nel_one_sided = 0
+              endif
+
+              call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=.true.,req = req(bidx))
+              nel_one_sided = nel_one_sided + nelintile
+           else
+              ls = arr%lock_set(i)
+              call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+           endif
+
+
+           elms_sent = elms_sent + nelintile
+
+           !if(elms_sent > MAX_SIZE_ONE_SIDED)then
+
+           !   do j=last_flush_i+1,i
+           !      call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
+           !   enddo
+
+           !   last_flush_i = i
+           !   elms_sent    = 0
+
+           !endif
+        enddo
+
+        if(arr%ntiles - maxintmp >= 0)then
+           minstart = arr%ntiles - maxintmp + 1
+        else
+           minstart = 1
+        endif
+
+        do i=minstart, arr%ntiles
+
+           bidx = mod(i-1,maxintmp)+1
+
+           b = 1 + (bidx - 1) * arr%tsize
+           e = b + arr%tsize -1
+
+           if( alloc_in_dummy )then
+              call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
               call lsmpi_wait(req(bidx))
               nel_one_sided = nel_one_sided - nelintile
-              call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+           else
+              if(arr%lock_set(i))call tensor_unlock_win(arr,i)
            endif
 
-           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+           call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
 
-           if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-              call tensor_flush_win(arr, local = .true.)
-              nel_one_sided = 0
-           endif
+        enddo
 
-           call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=.true.,req = req(bidx))
-           nel_one_sided = nel_one_sided + nelintile
+        if(internal_alloc)then
+           call mem_dealloc(tmp)
         else
-           ls = arr%lock_set(i)
-           call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+           tmp  => null()
         endif
-
-
-        elms_sent = elms_sent + nelintile
-
-        !if(elms_sent > MAX_SIZE_ONE_SIDED)then
-
-        !   do j=last_flush_i+1,i
-        !      call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
-        !   enddo
-
-        !   last_flush_i = i
-        !   elms_sent    = 0
-
-        !endif
-      enddo
-     
-      if(arr%ntiles - maxintmp >= 0)then
-        minstart = arr%ntiles - maxintmp + 1
-      else
-        minstart = 1
-      endif
-     
-      do i=minstart, arr%ntiles
-
-        bidx = mod(i-1,maxintmp)+1
-
-        b = 1 + (bidx - 1) * arr%tsize
-        e = b + arr%tsize -1
-
-        if( alloc_in_dummy )then
-           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
-           call lsmpi_wait(req(bidx))
-           nel_one_sided = nel_one_sided - nelintile
-        else
-           if(arr%lock_set(i))call tensor_unlock_win(arr,i)
-        endif
-
-        call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
-
-      enddo
-
-      if(internal_alloc)then
-        call mem_dealloc(tmp)
-      else
-        tmp  => null()
-      endif
-      call mem_dealloc(req)
-    endif
-    if( alloc_in_dummy .and. lock_was_not_set )call tensor_unlock_wins(arr, all_nodes = .true. )
+        call mem_dealloc(req)
+     endif
+     if( alloc_in_dummy .and. lock_was_not_set )call tensor_unlock_wins(arr, all_nodes = .true. )
 #else
-    call lsquit('ERROR(tensor_gather):this routine is MPI only',-1)
+     call lsquit('ERROR(tensor_gather):this routine is MPI only',-1)
 #endif
   end subroutine tensor_gather
 
