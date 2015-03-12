@@ -1,5 +1,4 @@
 #/usr/bin/python
-from output_plot import *
 from decinfoclass import *
 from ccinfoclass import *
 
@@ -150,15 +149,16 @@ class lsoutput:
                lineparser2 = ""
                k=j+1
                found = False
+               self.decinfo.enable_fragread = False
                while("*" not in lineparser2):
                  lineparser2=self.lines[k].strip().upper()
-                 if(".RPA" in lineparser2):
+                 if(".RPA" == lineparser2):
                    self.calctype[1] = "RPA"
                    found = True
-                 elif(".MP2" in lineparser2):
+                 elif(".MP2" == lineparser2):
                    self.calctype[1] = "MP2"
                    found = True
-                 elif(".RIMP2" in lineparser2):
+                 elif(".RIMP2" == lineparser2):
                    self.calctype[1] = "RIMP2"
                    found = True
                  elif(".CCSD(T)" == lineparser2):
@@ -173,7 +173,7 @@ class lsoutput:
                  elif(".CC2" == lineparser2):
                    self.calctype[1] = "CC2"
                    found = True
-                 elif(".PRINTFRAGS"):
+                 elif(".PRINTFRAGS" == lineparser2):
                    self.decinfo.enable_fragread = True
                  k+=1
                if(not found):
@@ -230,12 +230,12 @@ class lsoutput:
       
       #Read DEC fragments from DEC calculation
       if("DEC"==self.calctype[0]):
-        print "DEC model = ",self.calctype[1],"\n"
+        #print "DEC model = ",self.calctype[1],"\n"
         self.decinfo.get_dec_info(self.lines,self.calctype[1],True)
 
       #Read CC information
       if("CC"==self.calctype[0]):
-        print "CC model = ",self.calctype[1],"\n"
+        #print "CC model = ",self.calctype[1],"\n"
         self.ccinfo.get_cc_info(self.lines,self.calctype[1])
 
         #Read fragment info if availale

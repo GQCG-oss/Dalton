@@ -998,6 +998,7 @@ do i=1, ai%ND
    atomicSetting%scheme%df_k = .FALSE.
    atomicSetting%scheme%PARI_J = .FALSE.
    atomicSetting%scheme%PARI_K = .FALSE.
+   atomicSetting%scheme%MOPARI_K = .FALSE.
    atomicSetting%scheme%FMM = .FALSE.
    atomicSetting%scheme%MBIE_SCREEN = .FALSE.
    atomicSetting%scheme%CS_SCREEN = .FALSE.
@@ -1259,18 +1260,24 @@ end subroutine trilevel_ATOMS_density
 !> \param list
 !> \param vlist
 !> \param len
-subroutine trilevel_density_valence2full(D,Dval,list,vlist,len)
+subroutine trilevel_density_valence2full(D,Dval,list,vlist,len,DENSELEVEL2)
 implicit none
 Type(Matrix) :: D,Dval
 real(realk),pointer  :: tD(:,:), tDval(:,:)
 integer :: i,j,k,len
 integer :: l1,l2,lvi,lvj,vk
 integer, pointer :: vlist(:,:), list(:,:)
+logical :: DENSELEVEL2
 
  call mem_alloc(tD,D%ncol,D%nrow)
  call mem_alloc(tDval,Dval%ncol,Dval%nrow)
+ call set_matop_timer_optlevel(2)
 
- call mat_to_full(Dval,1E0_realk,tDval)
+ IF(DENSELEVEL2)THEN
+  call mat_to_full(Dval,1E0_realk,tDval,matype=mtype_dense) !Level 2 Mat 
+ ELSE
+  call mat_to_full(Dval,1E0_realk,tDval)                   !Level 2 Mat 
+ ENDIF
  tD = 0E0_realk
 
  do j=1,len
@@ -1295,7 +1302,7 @@ integer, pointer :: vlist(:,:), list(:,:)
   enddo
  enddo
  call set_matop_timer_optlevel(3)
- call mat_set_from_full(tD,1E0_realk,D,'Dmat')
+ call mat_set_from_full(tD,1E0_realk,D,'Dmat')  !Level 3 Mat
 
  call mem_dealloc(tD)
  call mem_dealloc(tDval)
@@ -1309,17 +1316,23 @@ end subroutine trilevel_density_valence2full
 !> \param list
 !> \param vlist
 !> \param len
-subroutine trilevel_cmo_valence2full(CMO,vCMO,list,vlist,len)
+subroutine trilevel_cmo_valence2full(CMO,vCMO,list,vlist,len,DENSELEVEL2)
 implicit none
 Type(Matrix) :: CMO,vCMO
 real(realk),pointer :: tCmo(:,:), tvCMO(:,:)
 integer :: i,j,k,lv,vk,len
 integer, pointer :: vlist(:,:), list(:,:)
+logical :: DENSELEVEL2
 
  call mem_alloc(tCMO,CMO%ncol,CMO%nrow)
  call mem_alloc(tvCMO,vCMO%ncol,vCMO%nrow)
 
- call mat_to_full(vCMO,1E0_realk,tvCMO)
+ call set_matop_timer_optlevel(2)
+ IF(DENSELEVEL2)THEN
+  call mat_to_full(vCMO,1E0_realk,tvCMO,matype=mtype_dense) !Level 2 Mat 
+ ELSE
+  call mat_to_full(vCMO,1E0_realk,tvCMO)                   !Level 2 Mat 
+ ENDIF
  tCMO = 0E0_realk
 
  do i=1,len
@@ -1354,7 +1367,8 @@ integer, pointer :: vlist(:,:), list(:,:)
       k = k + 1
  enddo
 
- call mat_set_from_full(tCMO,1E0_realk,CMO)
+ call set_matop_timer_optlevel(3)
+ call mat_set_from_full(tCMO,1E0_realk,CMO) !Level 3 Mat 
 
  call mem_dealloc(tCMO)
  call mem_dealloc(tvCMO)
@@ -1644,7 +1658,7 @@ real(realk)         :: maxelm_save, maxstep_save,thr_save,trace
 real(realk),pointer :: eival(:) 
 integer      :: nbast, len, nocc, Nelectrons
 integer, pointer :: vlist(:,:), list(:,:)
-integer :: lun, idum, ldum,iAO,sz,ndmat
+integer :: lun, idum, ldum,iAO,sz,ndmat,matrix_sav
 integer(8) :: fperm, vperm
 logical :: restart_from_dens, no_rhdiis, dalink, vdens_exists,admm_exchange
 logical :: OnMaster,DiagFmat,McWeeny,purify_failed,CS00,integraltransformGC
@@ -1714,7 +1728,13 @@ type(LowAccuracyStartType)  :: LAStype
 
   nbast = ls%input%basis%BINFO(VALBASPARAM)%nbast !nbast for valence basis
   call set_matop_timer_optlevel(2)
-  call mat_init(Dval(1),nbast,nbast)
+
+  IF(config%opt%DENSELEVEL2)THEN
+     matrix_sav  = matrix_type
+     call mat_select_tmp_type(mtype_dense,config%lupri,nbast)
+  ENDIF
+
+  call mat_init(Dval(1),nbast,nbast) !Level 2 Mat
 
   !select starting from atoms or from file
   INQUIRE(file='vdens.restart',EXIST=vdens_exists) 
@@ -1913,13 +1933,6 @@ type(LowAccuracyStartType)  :: LAStype
   !cfg_dd_local = .false.
   !cfg_convergence_threshold = thr_save
 
-  ! move dens.restart file to vdens.restart
-#ifdef SYS_AIX
-  call rename('dens.restart\0','vdens.restart\0')
-#else
-  call rename('dens.restart','vdens.restart')
-#endif
-
   ! get Valence Cmo
   call mem_alloc(eival,nbast)
   call mat_diag_f(F(1),S,eival,Cmo)
@@ -1974,12 +1987,39 @@ type(LowAccuracyStartType)  :: LAStype
   !set setting basis to the full basis
   call set_default_AOs(AORegular,AOdfAux)
 
-  call mat_init(config%decomp%lcv_CMO,nbast,nbast)
+  !This is a tricky part of the code where we go from CMO and Dval(1) in the 
+  !Valence basis and transform to full level 3 basis. So we have both 
+  !Level 2 and Level 3 matrices in Memory. TK
+
+  IF(config%opt%DENSELEVEL2)THEN
+     !This restores the proper value
+     call mat_select_tmp_type(matrix_sav,config%lupri,nbast)
+  ENDIF
+  call set_matop_timer_optlevel(3)
+
+  call mat_init(config%decomp%lcv_CMO,nbast,nbast) !Level 3 Mat
   config%decomp%decompMatInit_lcv_CMO = .TRUE.
 
-  ! convert valence CMO to full cmo
-  call trilevel_cmo_valence2full(config%decomp%lcv_Cmo,Cmo,list,vlist,len)
+  ! convert valence CMO to full cmo  Level 2 Mat (Cmo) => Level 3 Mat (lcv_Cmo)
+  call trilevel_cmo_valence2full(config%decomp%lcv_Cmo,Cmo,list,vlist,len,&
+       & config%opt%DENSELEVEL2)
   config%decomp%lcv_basis = .true.
+  call set_matop_timer_optlevel(2)
+
+  IF(config%opt%DENSELEVEL2)THEN
+     call mat_free(Cmo,matype=mtype_dense)  !Level 2 Mat 
+  ELSE
+     call mat_free(Cmo)                    !Level 2 Mat 
+  ENDIF
+  ! convert valence Dval to full D   Level 2 Mat (Dval) => Level 3 Mat (D)
+  call trilevel_density_valence2full(D(1),Dval(1),list,vlist,len,config%opt%DENSELEVEL2)
+  call set_matop_timer_optlevel(2)
+  IF(config%opt%DENSELEVEL2)THEN
+     CALL mat_free(Dval(1),matype=mtype_dense) !Level 2 Mat 
+  ELSE
+     call mat_free(Dval(1))                   !Level 2 Mat 
+  ENDIF
+  call set_matop_timer_optlevel(3)
 
   !save lcv_CMO basis
   lun = -1
@@ -1988,11 +2028,6 @@ type(LowAccuracyStartType)  :: LAStype
   call mat_write_info_to_disk(lun,config%decomp%cfg_lcv)
   call lsclose(lun,'KEEP')
 
-  call mat_free(Cmo)
-  ! convert valence Dval to full D
-  call trilevel_density_valence2full(D(1),Dval(1),list,vlist,len)
-  call set_matop_timer_optlevel(2)
-  CALL mat_free(Dval(1))
   call mem_dealloc(list)
   call mem_dealloc(vlist)
   call set_matop_timer_optlevel(3)

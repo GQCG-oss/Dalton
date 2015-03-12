@@ -109,6 +109,7 @@ module tensor_type_def_module
   !> execution time variables
   logical :: lspdm_use_comm_proc
   logical :: tensor_debug_mode           = .false.
+  logical :: tensor_always_sync          = .false.
   logical :: tensor_contract_dil_backend = .false.
 
 

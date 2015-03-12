@@ -116,6 +116,7 @@ C
       use pcmmod_cfg
       use pcm_linear_response
 #endif 
+      use qmcmm_response, only: qmcmm_lr
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -398,10 +399,10 @@ C
       END IF
       IF (QMNPMM) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
-     *   ' CONTRIBUTIONS FROM QMNPMM_LNO TO LINEAR TRANSFORMATION'
-         CALL QMNPMM_LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
-     &                   UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &                   EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+     *   ' CONTRIBUTIONS FROM QMCMM_LR TO LINEAR TRANSFORMATION'
+         CALL qmcmm_lr(NOSIM,BOVECS,WRK(KCREF),CMO,
+     &                 UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &                 EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
       ENDIF
 C
       IF ((NCSIM.GT.0).AND.(IPRRSP.GT.101)) THEN

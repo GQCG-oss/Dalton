@@ -335,7 +335,11 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
 	 ! dens.restart) and a molecule whos density is converged already at starting guess 
 	 if (iteration==1) then
             denslun = -1
-            call lsopen(denslun,'dens.restart','UNKNOWN','UNFORMATTED')
+            IF(config%opt%optlevel.EQ.2)THEN
+               call lsopen(denslun,'vdens.restart','UNKNOWN','UNFORMATTED')
+            ELSE
+               call lsopen(denslun,'dens.restart','UNKNOWN','UNFORMATTED')
+            ENDIF
             rewind denslun
             call mat_write_to_disk(denslun,D(1),OnMaster)
             call mat_write_info_to_disk(denslun,config%decomp%cfg_gcbasis)

@@ -92,8 +92,9 @@ module tensor_interface_module
   public get_symm_tensor_segmenting_simple
   public tensor_get_ntpm, get_tile_dim
   public tensor_set_debug_mode_true, tensor_set_dil_backend_true, tensor_set_dil_backend
+  public tensor_set_always_sync_true
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
-  public assoc_ptr_to_buf
+  public assoc_ptr_to_buf, lspdm_init_global_buffer, lspdm_free_global_buffer
 
   private
 
@@ -153,13 +154,48 @@ module tensor_interface_module
 
 contains
 
-  subroutine tensor_set_debug_mode_true()
+  subroutine tensor_set_debug_mode_true(call_slaves)
      implicit none
-     tensor_debug_mode = .true.
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0 .and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,me,infpar%lg_comm)
+     endif
+#endif
+
+     tensor_debug_mode  = .true.
+     tensor_always_sync = .true.
   end subroutine tensor_set_debug_mode_true
 
-  subroutine tensor_set_dil_backend_true()
+  subroutine tensor_set_always_sync_true(call_slaves)
      implicit none
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0 .and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_ALWAYS_SYNC_TRUE,me,infpar%lg_comm)
+     endif
+#endif
+
+     tensor_always_sync = .true.
+  end subroutine tensor_set_always_sync_true
+
+  subroutine tensor_set_dil_backend_true(call_slaves)
+     implicit none
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0.and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,me,infpar%lg_comm)
+     endif
+#endif
      tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
   end subroutine tensor_set_dil_backend_true
 
@@ -167,7 +203,6 @@ contains
    implicit none
    logical, intent(in):: lv
    tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
-   return
   end subroutine tensor_set_dil_backend
 
   subroutine tensor_allocate_dense(T)
@@ -282,7 +317,7 @@ contains
         case(TT_TILED_DIST)
 
            call mem_alloc(buffer,y%tsize)
-           !TODO:IMPLEMENT MULTIPLE BUFFERING
+           !TODO:IMPLEMENT MULTIPLE BUFFERING AND MOVE TO lspdm_tensor_operations!!!!!!
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
 
