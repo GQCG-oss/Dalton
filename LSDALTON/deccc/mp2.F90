@@ -3278,7 +3278,7 @@ subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,U
   !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
   !$ACC         ALPHAAUX,ALOC,BLOC,gmocont,deltaEPS,tvirtTMP,TMP) &
-  !$ACC COPYIN(nvirt,nocc,nvirtEOS,NBA,EVocc,EVvirt) &
+  !$ACC COPYIN(nvirt,nocc,nvirtEOS,NBA) &
   !$ACC present(tvirt,Calpha,UvirtEOST)
 #else
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
