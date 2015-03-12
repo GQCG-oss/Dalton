@@ -49,11 +49,11 @@ class ccinfo_class:
    #PRINT CC INFO TO FILE
    def print_cc_info(self,cc_out):
       cc_out.write(self.ecorrtye)
-      cc_out.write("Correlation energy     = {:10.6e} \n".format(self.ecorr))
-      cc_out.write("Total energy           = {:10.6e} \n".format(self.etot))
+      cc_out.write("Correlation energy     = {0:10.6e} \n".format(self.ecorr))
+      cc_out.write("Total energy           = {0:10.6e} \n".format(self.etot))
       cc_out.write("CC equation converged  = "+str(self.converged)+"\n")
-      cc_out.write("Double amplitudes norm = {:10.6e} \n".format(self.t2norm))
-      cc_out.write("Single amplitudes norm = {:10.6e} \n".format(self.t1norm))
-      cc_out.write("Total amplitudes norm  = {:10.6e} \n".format(self.ttotnorm))
+      cc_out.write("Double amplitudes norm = {0:10.6e} \n".format(self.t2norm))
+      cc_out.write("Single amplitudes norm = {0:10.6e} \n".format(self.t1norm))
+      cc_out.write("Total amplitudes norm  = {0:10.6e} \n".format(self.ttotnorm))
       
 

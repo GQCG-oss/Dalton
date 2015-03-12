@@ -19,13 +19,13 @@ class fragment_class:
 
    def print_frag_info(self,frag_out):
       for t, e in zip(self.ecorrtype, self.ecorrocc):
-         frag_out.write("{:7s}   {:4d}   {:4d}   {:8.4f}     Eocc = {:10.6e}\n".format(
+         frag_out.write("{0:7s}   {1:4d}   {2:4d}   {3:8.4f}     Eocc = {4:10.6e}\n".format(
             t, self.fragid, self.fragpid, self.dist, e))
       for t, e in zip(self.ecorrtype, self.ecorrvirt):
-         frag_out.write("{:7s}   {:4d}   {:4d}   {:8.4f}     Evir = {:10.6e}\n".format(
+         frag_out.write("{0:7s}   {1:4d}   {2:4d}   {3:8.4f}     Evir = {4:10.6e}\n".format(
             t, self.fragid, self.fragpid, self.dist, e))
       for t, e in zip(self.ecorrtype, self.ecorrlag):
-         frag_out.write("{:7s}   {:4d}   {:4d}   {:8.4f}     Elag = {:10.6e}\n".format(
+         frag_out.write("{0:7s}   {1:4d}   {2:4d}   {3:8.4f}     Elag = {4:10.6e}\n".format(
             t, self.fragid, self.fragpid, self.dist, e))
 
 
@@ -377,13 +377,13 @@ class decinfo_class:
    #PRINT DEC INFO TO FILE
    def print_dec_info(self,dec_out):
       for t, e in zip(self.ecorrtype, self.ecorrocc):
-         dec_out.write("{:7s} occupied correlation energy   = {:10.6e} \n".format(t,e))
+         dec_out.write("{0:7s} occupied correlation energy   = {1:10.6e} \n".format(t,e))
       for t, e in zip(self.ecorrtype, self.ecorrvirt):
-         dec_out.write("{:7s} virtual correlation energy    = {:10.6e} \n".format(t,e))
+         dec_out.write("{0:7s} virtual correlation energy    = {1:10.6e} \n".format(t,e))
       for t, e in zip(self.ecorrtype, self.ecorrlag):
-         dec_out.write("{:7s} lagrangian correlation energy = {:10.6e} \n".format(t,e))
+         dec_out.write("{0:7s} lagrangian correlation energy = {1:10.6e} \n".format(t,e))
 
-      dec_out.write("\nFOT = {:6.2e} \n".format(self.fotfloat))
+      dec_out.write("\nFOT = {0:6.2e} \n".format(self.fotfloat))
 
       dec_out.write("\nPair estimates: \n")
       dec_out.write("Model      Atom1  Atom2    dist        DEC energy\n")
