@@ -2897,7 +2897,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,Calpha2,Calpha3)
      CALL LSTIMER('RIMP2_TransAlpha1',TS3,TE3,LUPRI,FORCEPRINT)
 #ifdef VAR_OPENACC
-     !$acc exit data delete(Calpha2,Uvirt)
+     !$acc exit data delete(Calpha2,UvirtT)
 #endif
      call mem_dealloc(Calpha2)
      IF(.NOT.first_order)call mem_dealloc(UvirtT)
@@ -3214,7 +3214,7 @@ subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,Uocc
   real(realk) :: gmocont,deltaEPS,TMP
   real(realk) :: toccTMP(nocc)
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(3) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
   !$ACC         ALPHAAUX,ILOC,JLOC,gmocont,deltaEPS,toccTMP,TMP) &
   !$ACC COPYIN(nvirt,nocc,noccEOS,NBA) &
@@ -3275,7 +3275,7 @@ subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,U
   integer :: BDIAG,ADIAG,IDIAG,JDIAG,ALPHAAUX,ALOC,BLOC
   real(realk) :: gmocont,deltaEPS,TMP,tvirtTMP(nvirt)
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(3) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
   !$ACC         ALPHAAUX,ALOC,BLOC,gmocont,deltaEPS,tvirtTMP,TMP) &
   !$ACC COPYIN(nvirt,nocc,nvirtEOS,NBA,EVocc,EVvirt) &
@@ -3335,7 +3335,7 @@ subroutine RIMP2_calc_toccB(nvirt,noccEOS,tocc,UvirtT,toccEOS)
   integer :: BLOC,JLOC,ILOC,ALOC,ADIAG
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(4) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ADIAG,TMP) &
   !$ACC COPYIN(nvirt,noccEOS) &
   !$acc present(tocc,UvirtT) &
@@ -3381,7 +3381,7 @@ subroutine RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt,UoccT,tvirtEOS)
   integer :: BLOC,JLOC,ILOC,ALOC,JDIAG
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(4) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,JDIAG,TMP) &
   !$ACC COPYIN(nocc,nvirtEOS) &
   !$acc present(tvirt,UoccT) &
@@ -3427,7 +3427,7 @@ subroutine RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,AlphaCD4,AlphaCD5)
   integer :: BLOC,JLOC,BDIAG,ALPHAAUX
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(3) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP) &
   !$ACC COPYIN(nvirt,noccEOS,NBA) &
   !$acc present(AlphaCD4,AlphaCD5,UvirtT) 
@@ -3468,7 +3468,7 @@ subroutine RIMP2_TransAlpha2(n2,n1,n3,nba,UvirtEOST,AlphaCD4,AlphaCD5)
   integer :: JLOC,BLOC,ALPHAAUX,BDIAG
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(3) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP) &
   !$ACC COPYIN(n1,n2,n3,NBA) &
   !$acc present(AlphaCD4,AlphaCD5,UvirtEOST) 
@@ -3533,7 +3533,7 @@ subroutine RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS)
   integer :: BLOC,JLOC,ILOC,ALOC,ALPHAAUX
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(4) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
   !$ACC COPYIN(nvirt,noccEOS,NBA) &
   !$acc present(Calpha3) &
@@ -3576,7 +3576,7 @@ subroutine RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS)
   integer :: BLOC,JLOC,ILOC,ALOC,ALPHAAUX
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(4) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
   !$ACC COPYIN(nvirtEOS,nocc,NBA) &
   !$acc present(Calpha3) &
