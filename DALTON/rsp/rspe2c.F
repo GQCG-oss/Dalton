@@ -6707,9 +6707,9 @@ C Take out the diagonal elements
 C  /* Deck TRCHAR */
       SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,IDX,LUPRI,WRK,LWRK)
 C
-#ifdef BUILD_QFITLIB
-      use qfit
-#endif
+!#ifdef BUILD_QFITLIB
+!      use qfit
+!#endif
 #ifdef BUILD_PELIB
       use pe_variables, only: pe_savden, pe_fd
       use pe_trdens_tools, only: save_tr_density, tr_density_coupling
@@ -6722,9 +6722,11 @@ C
       DIMENSION WOP(*),CMO(*),WRK(*), UDV(*)
       PARAMETER (D0 = 0.0D0)
       LOGICAL LOCDEB, ANTSYM
-      real*8, dimension(:), allocatable :: dens
+      real*8, dimension(:), allocatable :: dens, fold_dens
       DIMENSION TRDIP(3)
+      INTEGER :: pe_ifc_docube
 C
+#include "gnrinf.h"
 #include "mxcent.h"
 #include "codata.h"
 #include "maxorb.h"
@@ -6823,13 +6825,43 @@ C     Memory allocation
           CALL HEADER("Excited state couplings",-1)
           call tr_density_coupling( dens, lupri )
       endif
+      if (PEQM) then
+         if (pe_ifc_docube() == 1) then
+            allocate(fold_dens(nnbasx))
+            call dgefsp(nbast, dens, fold_dens)
+            call pe_ifc_cube( fold_dens, idx )
+            deallocate(fold_dens)
+!            call pe_ifc_cube( wrk(kdens:kdens+nnbasx), idx )
+         end if
+      end if
 #endif
+
 #ifdef BUILD_QFITLIB
-      call qfit_set_transition_dipole( TRDIP )
-      call qfit_fit( dens )
-      deallocate( dens )
-      CALL QFITRES
+      if (QFIT) then
+          call qfit_trchar( TRDIP, dens)
+      end if
 #endif
+      deallocate( dens )
       RETURN
       END
+
+C  /* Deck QFIT_TRCHAR */
+      SUBROUTINE QFIT_TRCHAR(trdipole, density)
+C
+#ifdef BUILD_QFITLIB
+      use qfit
+#endif
+
+#include "inforb.h"
+
+      real*8, dimension(n2basx) :: density
+      real*8, DIMENSION(3) :: trdipole
+
+      call qfit_set_transition_dipole( trdipole )
+      call qfit_fit( density )
+      call qfitres
+      
+      return
+      end
+
 ! -- end of rspe2c.F --

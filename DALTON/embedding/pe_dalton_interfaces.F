@@ -186,6 +186,45 @@
 
 !-----------------------------------------------------------------------------
 
+      function pe_ifc_docube()
+        use pe_variables, only: pe_cube
+        implicit none
+        integer :: pe_ifc_docube
+        call qenter('pe_ifc_docube')
+        if (pe_cube) then
+            pe_ifc_docube = 1
+        else
+            pe_ifc_docube = 0
+        end if
+        call qexit('pe_ifc_docube')
+      end function pe_ifc_docube
+
+!-----------------------------------------------------------------------------
+
+      subroutine pe_ifc_cube(denmats, idx_state)
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: pe_cube
+        implicit none
+#include "inforb.h"
+        real*8, dimension(nnbasx), intent(in) :: denmats
+        integer, intent(in) :: idx_state
+        call qenter('pe_ifc_cube')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(7)
+#endif
+        if (pe_cube) then
+          call pe_master(runtype='cube',
+     &                   triang=.true.,
+     &                   ndim=nbast,
+     &                   nmats=1,
+     &                   denmats=denmats,
+     &                   idx = idx_state )
+        end if
+        call qexit('pe_ifc_cube')
+      end subroutine pe_ifc_cube
+
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_mepcalc_noqm()
         use polarizable_embedding, only: pe_master
         implicit none
@@ -250,6 +289,8 @@
             call pe_slave('molecular_gradient')
         else if (runtype == 6) then
             call pe_slave('mep')
+        else if (runtype == 7) then
+            call pe_slave('cube')
         end if
         call qexit('pe_ifc_slave')
       end subroutine pe_ifc_slave

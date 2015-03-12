@@ -413,6 +413,7 @@ if(ENABLE_PELIB)
     if(ENABLE_QFITLIB)
     add_dalton_runtest(pdehf_couplings_top           "dalton;peqm;qfit;runtest;short")
     add_dalton_runtest(pdehf_embedded_couplings_top  "dalton;peqm;qfit;runtest;short")
+    add_dalton_runtest(pehf_trcube                   "dalton;peqm;qfit;runtest;short")
     endif()
 endif()
 
