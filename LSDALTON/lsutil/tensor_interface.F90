@@ -9,7 +9,7 @@ module tensor_interface_module
 #ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
-!#define DIL_DEBUG_ON
+#define DIL_DEBUG_ON
 #endif
 #endif
 #endif
@@ -53,6 +53,7 @@ module tensor_interface_module
   public dil_tens_fetch_finish_prep
   public dil_tens_upload_start
   public dil_tens_upload_finish_prep
+  public dil_will_malloc_succeed
 #endif
 
   !This defines the public interface to the tensors
