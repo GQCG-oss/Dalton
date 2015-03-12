@@ -317,7 +317,7 @@ contains
         case(TT_TILED_DIST)
 
            call mem_alloc(buffer,y%tsize)
-           !TODO:IMPLEMENT MULTIPLE BUFFERING
+           !TODO:IMPLEMENT MULTIPLE BUFFERING AND MOVE TO lspdm_tensor_operations!!!!!!
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
 

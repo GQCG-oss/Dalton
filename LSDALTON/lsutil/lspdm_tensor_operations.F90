@@ -2171,9 +2171,9 @@ module lspdm_tensor_operations_module
     real(realk),intent(in) :: a,b
     !> order y to adapt to dims of b
     integer, intent(in) :: order(x%mode)
-    real(realk),pointer :: buffer(:,:)
+    real(realk),pointer :: buffer(:)
     real(realk) :: prex, prey
-    integer :: i,lt,nbuffs,ibuf,cmidy,buffer_lt
+    integer :: i,lt,nbuffs,ibuf,ibuf_idx,cmidy,buffer_lt
     integer :: xmidx(x%mode), ymidx(y%mode), ytdim(y%mode), ynels
     integer(kind=ls_mpik),pointer :: req(:)
 #ifdef VAR_MPI
@@ -2210,10 +2210,15 @@ module lspdm_tensor_operations_module
 
     ! now set to two and that ought to be enough, but should work with any
     ! number >0
-    nbuffs = 2
-      
-    !allocate buffer for the tiles
-    call mem_alloc(buffer,x%tsize,nbuffs)
+    if( gm_buf%init )then
+       nbuffs = gm_buf%n / x%tsize
+       !allocate buffer for the tiles
+       buffer => gm_buf%buf
+    else
+       nbuffs = 2
+       !allocate buffer for the tiles
+       call mem_alloc(buffer,x%tsize*nbuffs)
+    endif
 
     if( alloc_in_dummy )then
        call mem_alloc(req,nbuffs)
@@ -2239,7 +2244,8 @@ module lspdm_tensor_operations_module
 
        if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
 
-       ibuf = mod(lt-1,nbuffs)+1
+       ibuf = mod(lt-1,nbuffs)
+       ibuf_idx = ibuf*x%tsize + 1
 
        cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
@@ -2251,12 +2257,12 @@ module lspdm_tensor_operations_module
              nel_one_sided = 0
           endif
 
-          call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+          call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
 
           nel_one_sided = nel_one_sided + ynels
        else
           call tensor_lock_win(y,cmidy,'s')
-          call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+          call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
        endif
        call time_start_phase( PHASE_WORK )
 
@@ -2284,7 +2290,8 @@ module lspdm_tensor_operations_module
 
           if(ynels /= x%ti(buffer_lt)%e)call lsquit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
 
-          ibuf = mod(buffer_lt-1,nbuffs)+1
+          ibuf = mod(buffer_lt-1,nbuffs)
+          ibuf_idx = ibuf*x%tsize + 1
 
           cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
@@ -2296,14 +2303,14 @@ module lspdm_tensor_operations_module
                 nel_one_sided = 0
              endif
 
-             call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
+             call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
 
              nel_one_sided = nel_one_sided + ynels
 
           else
 
              call tensor_lock_win(y,cmidy,'s')
-             call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+             call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
 
           endif
 
@@ -2325,13 +2332,14 @@ module lspdm_tensor_operations_module
 
        if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
 
-       ibuf = mod(lt-1,nbuffs)+1
+       ibuf = mod(lt-1,nbuffs)
+       ibuf_idx = ibuf*x%tsize + 1
 
        cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
        call time_start_phase( PHASE_COMM )
        if(alloc_in_dummy )then
-          call lsmpi_wait(req(ibuf))
+          call lsmpi_wait(req(ibuf+1))
           nel_one_sided = nel_one_sided - ynels
        else
           call tensor_unlock_win(y,cmidy)
@@ -2350,14 +2358,14 @@ module lspdm_tensor_operations_module
 
           endif
 
-          call daxpy(x%ti(lt)%e,prey,buffer(:,ibuf),1,x%ti(lt)%t,1)
+          call daxpy(x%ti(lt)%e,prey,buffer(ibuf_idx:),1,x%ti(lt)%t,1)
 
        case(2)
-          call array_reorder_2d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),order,prex,x%ti(lt)%t)
+          call array_reorder_2d(prey,buffer(ibuf_idx:),ytdim(1),ytdim(2),order,prex,x%ti(lt)%t)
        case(3)
-          call array_reorder_3d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),ytdim(3),order,prex,x%ti(lt)%t)
+          call array_reorder_3d(prey,buffer(ibuf_idx:),ytdim(1),ytdim(2),ytdim(3),order,prex,x%ti(lt)%t)
        case(4)
-          call array_reorder_4d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,x%ti(lt)%t)
+          call array_reorder_4d(prey,buffer(ibuf_idx:),ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,x%ti(lt)%t)
        case default
           call lsquit("ERROR(tensor_add_par): mode>4 not yet implemented",-1)
        end select
@@ -2368,7 +2376,9 @@ module lspdm_tensor_operations_module
        call tensor_unlock_wins(y,all_nodes=.true.)
     endif
 
-    call mem_dealloc(buffer)
+    if(.not.gm_buf%init)then
+       call mem_dealloc(buffer)
+    endif
 
     !crucial barrier, because direct memory access is used
     call time_start_phase( PHASE_IDLE )
