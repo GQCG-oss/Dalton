@@ -58,12 +58,16 @@ module matrix_operations_pdmm
   Type(MatrixPDMp) :: pdmm_Marray(500)
   integer :: pdmm_MaxAllocatedMat
   integer :: BLOCK_SIZE_PDM
+!  integer(kind=8) :: iwrkTensor
+!  real(realk),pointer :: wrkTensor(:)
   logical :: pdmm_mpi_set
 contains
   subroutine InitMatrixModulePDM()
     implicit none
     pdmm_MaxAllocatedMat = 0
     call MARRAY_NULLIFY
+!    iwrkTensor = 4*BLOCK_SIZE_PDM*BLOCK_SIZE_PDM
+!    call mem_alloc(wrkTensor,iwrkTensor)
   end subroutine InitMatrixModulePDM
 
   subroutine FreeMatrixModulePDM()
@@ -74,6 +78,9 @@ contains
           call lsquit('Memory Leak in PDM',-1)
        ENDIF
     ENDDO MarrayList
+!    IF(iwrkTensor.EQ.-1)CALL LSQUIT('iwrkTensor error in PDMM',-1)
+!    call mem_dealloc(wrkTensor)
+!    iwrkTensor = -1 
   end subroutine FreeMatrixModulePDM
 
   SUBROUTINE MARRAY_NULLIFY
@@ -133,7 +140,8 @@ contains
      real(realk), intent(in)    :: alpha
      
      !  convert from arg1 to arg2 
-     call tensor_convert(Afull,pdmm_Marray(A%PDMID)%p)
+     call tensor_convert(Afull,pdmm_Marray(A%PDMID)%p)!,&
+!          & wrk=wrkTensor,iwrk=iwrkTensor)
      if (ABS(ALPHA-1.0E0_realk).GT.1.0E-15_realk)THEN
         call mat_pdmm_scal(alpha,A)
      ENDIF
@@ -145,7 +153,7 @@ contains
      TYPE(Matrix),intent(in) :: a 
      real(realk), intent(in) :: alpha
      real(realk)  :: afull(A%nrow,A%ncol)     
-     call tensor_convert(pdmm_Marray(A%PDMID)%p,Afull)
+     call tensor_convert(pdmm_Marray(A%PDMID)%p,Afull)!,wrk=wrkTensor,iwrk=iwrkTensor)
      if (ABS(ALPHA-1.0E0_realk).GT.1.0E-15_realk)THEN
         call dscal(A%nrow*A%ncol,alpha,afull,1)
      endif
@@ -170,16 +178,6 @@ contains
     implicit none
     TYPE(Matrix) :: A,B !B=A^T
     integer :: order(2)
-!    real(realk) :: alpha
-!    real(realk),pointer :: Afull(:,:),Bfull(:,:)
-!    alpha=1.0E0_realk
-!    call mem_alloc(Afull,A%nrow,A%ncol)
-!    call mat_pdmm_to_full(A,alpha,Afull)
-!    call mem_alloc(Bfull,B%nrow,B%ncol)
-!    call mat_transpose(a%nrow,a%ncol,1.0E0_realk,afull,0.0E0_realk,bfull)
-!    call mem_dealloc(Afull)
-!    call mat_pdmm_set_from_full(Bfull,alpha,B)
-!    call mem_dealloc(Bfull)
     order(1) = 2
     order(2) = 1
     print *,"tensor cp data"
@@ -273,7 +271,8 @@ contains
   subroutine mat_pdmm_assign(B,A) 
     implicit none
     TYPE(Matrix) :: A,B     
-    call tensor_cp_data(pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p) !copy from A to B
+    call tensor_cp_data(pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p)!,&
+    !         & wrk=wrkTensor,iwrk=iwrkTensor) !copy from A to B
   end subroutine mat_pdmm_assign
   
   subroutine mat_pdmm_copy(alpha,A,B) 
@@ -379,11 +378,13 @@ contains
        call mat_pdmm_init(TMP,B%nrow,B%ncol)
        call mat_pdmm_assign(TMP,B) !TMP=B
        call tensor_contract(alpha,pdmm_Marray(A%PDMID)%p,pdmm_Marray(TMP%PDMID)%p,&
-            & m2cA,m2cB,nmodes2c,beta,pdmm_Marray(C%PDMID)%p,order)
+            & m2cA,m2cB,nmodes2c,beta,pdmm_Marray(C%PDMID)%p,order)!,&
+!            & wrk=wrkTensor,iwrk=iwrkTensor)
        call mat_pdmm_free(TMP)
     ELSE
        call tensor_contract(alpha,pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p,&
-            & m2cA,m2cB,nmodes2c,beta,pdmm_Marray(C%PDMID)%p,order)
+            & m2cA,m2cB,nmodes2c,beta,pdmm_Marray(C%PDMID)%p,order)!,&
+!            & wrk=wrkTensor,iwrk=iwrkTensor)
     ENDIF
   end subroutine mat_pdmm_mul
 
@@ -505,7 +506,7 @@ contains
     
   end subroutine mat_pdmm_hmul
   
-  !> \brief See mat_assign in mat-operations.f90
+  !> \brief See mat_add in mat-operations.f90
   !B = A
   subroutine mat_pdmm_add(alpha,A,beta,B,C) 
     implicit none
@@ -548,23 +549,13 @@ contains
 
   end subroutine mat_pdmm_identity
 
+  !B = alpha*A + B
   !> \brief See mat_daxpy in mat-operations.f90
   subroutine mat_pdmm_daxpy(alpha,A,B)
     implicit none
     TYPE(Matrix) :: A,B
     REAL(REALK)  :: Alpha
-    !local
-    integer :: N
-    real(realk),pointer :: Afull(:,:),Bfull(:,:)
-    call mem_alloc(Afull,A%nrow,A%ncol)
-    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
-    call mem_alloc(Bfull,B%nrow,B%ncol)
-    call mat_pdmm_to_full(B,1.0E0_realk,Bfull)
-    N=A%nrow*A%ncol
-    call DAXPY(N,alpha,Afull,1,Bfull,1)
-    call mat_pdmm_set_from_full(Bfull,1.0E0_realk,B)
-    call mem_dealloc(Bfull)
-    call mem_dealloc(Afull)
+    call tensor_add(pdmm_Marray(B%PDMID)%p,alpha,pdmm_Marray(A%PDMID)%p)
   end subroutine mat_pdmm_daxpy
 
   !> \brief See mat_dotproduct in mat-operations.f90
@@ -572,18 +563,7 @@ contains
      implicit none
      TYPE(Matrix), intent(IN) :: a,b
      REAL(realk) :: mat_pdmm_dotproduct
-     real(realk), external :: ddot
-     real(realk),pointer :: Afull(:,:),Bfull(:,:)
-     integer     :: i
-
-     call mem_alloc(Afull,A%nrow,A%ncol)
-     call mat_pdmm_to_full(A,1.0E0_realk,Afull)
-     call mem_alloc(Bfull,B%nrow,B%ncol)
-     call mat_pdmm_to_full(B,1.0E0_realk,Bfull)
-     i = a%nrow*a%ncol
-     mat_pdmm_dotproduct = ddot(i,afull,1,bfull,1)
-     call mem_dealloc(Bfull)
-     call mem_dealloc(Afull)
+     mat_pdmm_dotproduct = tensor_ddot(pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p)
   end function mat_pdmm_dotproduct
 
   !> \brief See mat_sqnorm2 in mat-operations.f90
@@ -591,14 +571,7 @@ contains
     implicit none
     TYPE(Matrix), intent(IN) :: a
     REAL(realk) :: mat_pdmm_sqnorm2
-    integer     :: i
-    real(realk), external :: ddot
-    real(realk),pointer :: Afull(:,:)
-    call mem_alloc(Afull,A%nrow,A%ncol)
-    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
-    i = a%nrow*a%ncol
-    mat_pdmm_sqnorm2 = ddot(i,afull,1,afull,1)
-    call mem_dealloc(Afull)
+    call print_norm(pdmm_Marray(A%PDMID)%p,mat_pdmm_sqnorm2,.TRUE.)
   end function mat_pdmm_sqnorm2
 
   !> \brief See mat_outdia_sqnorm2 in mat-operations.f90

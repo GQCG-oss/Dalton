@@ -1274,7 +1274,7 @@ logical :: DENSELEVEL2
  call set_matop_timer_optlevel(2)
 
  IF(DENSELEVEL2)THEN
-  call mat_to_full(Dval,1E0_realk,tDval,mtype=mtype_dense) !Level 2 Mat 
+  call mat_to_full(Dval,1E0_realk,tDval,matype=mtype_dense) !Level 2 Mat 
  ELSE
   call mat_to_full(Dval,1E0_realk,tDval)                   !Level 2 Mat 
  ENDIF
@@ -1329,7 +1329,7 @@ logical :: DENSELEVEL2
 
  call set_matop_timer_optlevel(2)
  IF(DENSELEVEL2)THEN
-  call mat_to_full(vCMO,1E0_realk,tvCMO,mtype=mtype_dense) !Level 2 Mat 
+  call mat_to_full(vCMO,1E0_realk,tvCMO,matype=mtype_dense) !Level 2 Mat 
  ELSE
   call mat_to_full(vCMO,1E0_realk,tvCMO)                   !Level 2 Mat 
  ENDIF
@@ -2007,7 +2007,7 @@ type(LowAccuracyStartType)  :: LAStype
   call set_matop_timer_optlevel(2)
 
   IF(config%opt%DENSELEVEL2)THEN
-     call mat_free(Cmo,mtype=mtype_dense)  !Level 2 Mat 
+     call mat_free(Cmo,matype=mtype_dense)  !Level 2 Mat 
   ELSE
      call mat_free(Cmo)                    !Level 2 Mat 
   ENDIF
@@ -2015,7 +2015,7 @@ type(LowAccuracyStartType)  :: LAStype
   call trilevel_density_valence2full(D(1),Dval(1),list,vlist,len,config%opt%DENSELEVEL2)
   call set_matop_timer_optlevel(2)
   IF(config%opt%DENSELEVEL2)THEN
-     CALL mat_free(Dval(1),mtype=mtype_dense) !Level 2 Mat 
+     CALL mat_free(Dval(1),matype=mtype_dense) !Level 2 Mat 
   ELSE
      call mat_free(Dval(1))                   !Level 2 Mat 
   ENDIF

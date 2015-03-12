@@ -509,10 +509,10 @@ MODULE matrix_operations
 !> \author L. Thogersen
 !> \date 2003
 !> \param a type(matrix) that should be freed
-      SUBROUTINE mat_free(a,mtype)
+      SUBROUTINE mat_free(a,matype)
          implicit none
          TYPE(Matrix), TARGET :: a 
-         integer,intent(in),optional :: mtype
+         integer,intent(in),optional :: matype
          integer   :: matrix_type_case
 
          !to be free'ed, the matrix must be in the same location where it was init'ed.
@@ -531,8 +531,8 @@ MODULE matrix_operations
             !write(mat_lu,*) 'Free: matrices allocated:', no_of_matrices
          endif
          if (info_memory) write(mat_lu,*) 'Before mat_free: mem_allocated_global =', mem_allocated_global
-         IF(present(mtype))THEN
-            matrix_type_case = mtype
+         IF(present(matype))THEN
+            matrix_type_case = matype
          ELSE
             matrix_type_case = matrix_type
          ENDIF
@@ -673,14 +673,14 @@ MODULE matrix_operations
 !> you have to hardcode an interface to make them work with unrestriced
 !> matrices (see e.g. di_get_fock in dalton_interface.f90)
 !>
-     SUBROUTINE mat_to_full(a, alpha, afull,mat_label,mtype)
+     SUBROUTINE mat_to_full(a, alpha, afull,mat_label,matype)
 
          implicit none
          TYPE(Matrix), intent(in):: a
          real(realk), intent(in) :: alpha
          real(realk), intent(inout):: afull(*)  !output
          character(*), INTENT(IN), OPTIONAL :: mat_label
-         integer,intent(in),optional :: mtype
+         integer,intent(in),optional :: matype
          integer                 :: matrix_type_case
          real(realk)             :: sparsity
          call time_mat_operations1
@@ -691,8 +691,8 @@ MODULE matrix_operations
          !  call lsquit('too small full array in mat_to_full',-1)
          !endif
          if (info_memory) write(mat_lu,*) 'Before mat_to_full: mem_allocated_global =', mem_allocated_global
-         IF(present(mtype))THEN
-            matrix_type_case = mtype
+         IF(present(matype))THEN
+            matrix_type_case = matype
          ELSE
             matrix_type_case = matrix_type
          ENDIF
