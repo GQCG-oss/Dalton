@@ -548,7 +548,13 @@ MODULE matrix_operations
          case(mtype_pdmm)
              call mat_pdmm_free(a)
          case default
-              call lsquit("mat_free not implemented for this type of matrix",-1)
+            print*,'matrix_type:',matrix_type_case
+            print*,'mtype_dense',mtype_dense
+            print*,'mtype_unres_dense',mtype_unres_dense
+            print*,'mtype_csr',mtype_csr
+            print*,'mtype_scalapack',mtype_scalapack
+            print*,'mtype_pdmm',mtype_pdmm
+            call lsquit("mat_free not implemented for this type of matrix",-1)
          end select
 
       !free auxaliary data

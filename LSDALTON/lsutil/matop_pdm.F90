@@ -472,9 +472,8 @@ contains
     
   end subroutine mat_pdmm_dmul
 
-!> \brief See mat_dmul in mat-operations.f90
-!> Make c = alpha*diag(a)b + beta*c, 
-!> where a is realk(:) b,c are type(matrix) and alpha,beta are parameters
+!> \brief See mat_hmul in mat-operations.f90
+!> Make Cij = alpha*Aij*Bij+beta*Cij (Hadamard product)
   subroutine mat_pdmm_hmul(alpha,A,B,beta,C)
     implicit none
     real(realk) :: alpha,beta
