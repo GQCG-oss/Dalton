@@ -238,6 +238,7 @@ module lspdm_tensor_operations_module
      logical, intent(in) :: call_slaves_from_slaveroutine
      integer(kind=ls_mpik) :: me
      integer :: i, checked
+     integer(kind=8) :: nelms
 
      me = 0
 #ifdef VAR_MPI
@@ -254,13 +255,15 @@ module lspdm_tensor_operations_module
      endif
 
      !Find the buffer size based on the allocated arrays
-     checked = 0
+     checked  = 0
+     nelms    = 0
+     gm_buf%n = 0
      LoopAllAllocd: do i=1,n_arrays
 
         if(.not.p_arr%free_addr_on_node(i))then
            if(p_arr%a(i)%itype==TT_TILED_DIST.or.p_arr%a(i)%itype==TT_TILED_REPL)then
 
-              gm_buf%n = max(gm_buf%n,i8*2*p_arr%a(i)%tsize)
+              nelms = max(nelms,i8*2*p_arr%a(i)%tsize)
 
               !counter for fast exit
               checked = checked + 1
@@ -271,7 +274,7 @@ module lspdm_tensor_operations_module
 
      enddo LoopAllAllocd
 
-     call mem_alloc(gm_buf%buf,gm_buf%n)
+     call lspdm_reinit_global_buffer(nelms)
 
      gm_buf%init = .true.
 
@@ -289,7 +292,7 @@ module lspdm_tensor_operations_module
               & this warning"
         endif
 
-        call mem_dealloc(gm_buf%buf)
+        if( associated(gm_buf%buf) ) call mem_dealloc(gm_buf%buf)
 
         gm_buf%n = nelms
 
@@ -3035,7 +3038,7 @@ module lspdm_tensor_operations_module
     call mem_dealloc(lg_buf)
     !if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
   end subroutine tensor_init_tiled
-  
+
   subroutine lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk,force_sync)
      implicit none
      real(realk), intent(in)    :: pre1,pre2
@@ -3049,7 +3052,8 @@ module lspdm_tensor_operations_module
      integer(kind=long), intent(in),     optional :: iwrk
      logical, intent(in),        optional :: force_sync
      !internal variables
-     logical :: test_all_master_access,test_all_all_access,master, use_wrk_space,contraction_mode,sync
+     integer :: use_wrk_space
+     logical :: test_all_master_access,test_all_all_access,master,contraction_mode,sync
      real(realk), pointer :: buffA(:,:),buffB(:,:),wA(:),wB(:),wC(:),tA(:),tB(:),tC(:)
      integer :: ibufA, ibufB, nbuffsA,nbuffsB, nbuffs, buffer_cm, ntens_to_get_from, tsizeB
      integer :: gc, gm(C%mode), ro(C%mode), locC
@@ -3065,6 +3069,10 @@ module lspdm_tensor_operations_module
      integer, pointer :: buf_posA(:), buf_posB(:)
      logical, pointer :: buf_logA(:), buf_logB(:), nfA(:), nfB(:)
      real(realk), pointer :: w(:)
+     integer(kind=8) :: itest
+     integer, parameter :: USE_INPUT_WORK      = 334
+     integer, parameter :: USE_GLOBAL_BUFFER   = 335
+     integer, parameter :: USE_INTERNAL_ALLOC  = 336
 
      call time_start_phase( PHASE_WORK )
 
@@ -3190,108 +3198,105 @@ module lspdm_tensor_operations_module
 
 
      !TODO: Optimize number of buffers for A and B
+     nbuffsA = 2
+     if( B_dense )then
+        nbuffsB = 0
+     else
+        nbuffsB = 2
+     endif
+     !Desired buffer size
+     itest = i8*A%tsize*nbuffsA+i8*tsizeB*nbuffsB+i8*A%tsize+i8*tsizeB+i8*C%tsize
 
-     if(test_all_all_access)then
-        if(present(mem))then
-           !use provided memory information to allcate space
-
-           nbuffsA = (int(mem*1024.0E0**3)/(8*ntens_to_get_from)-(A%tsize + tsizeB + C%tsize))/A%tsize
-           if(nbuffsA==0)then
-              print *,"WARNING(tensor_contract_par): the specified memory is not enough A"
-              nbuffsA = 1
-           endif
-
-           if(.not.B_dense)then
-              nbuffsB = (int(mem*1024.0E0**3)/(8*ntens_to_get_from)-(A%tsize + tsizeB + C%tsize))/tsizeB
-              if(nbuffsB==0)then
-                 print *,"WARNING(tensor_contract_par): the specified memory is not enough B"
-                 nbuffsB = 1
-              endif
-           endif
-
-           use_wrk_space = .false.
-
-        else if(present(wrk).and.present(iwrk))then
-           !just assoctiate pointers to work space provided
-           nbuffsA = ((iwrk-(A%tsize + tsizeB + C%tsize))/ntens_to_get_from)/A%tsize
-           if(B_dense)then
-              nbuffsB = 0
+     !Find possible buffer size
+     if(test_all_all_access.and.present(mem))then
+        !use provided memory information to allcate space
+        itest = max(int(mem*1024.0E0**3)/8,itest)
+        if( gm_buf%init )then
+           use_wrk_space = USE_GLOBAL_BUFFER
+        else
+           use_wrk_space = USE_INTERNAL_ALLOC
+        endif
+     else if(test_all_all_access.and.present(wrk).and.present(iwrk))then
+        if( gm_buf%init )then
+           if( gm_buf%n > iwrk .or. itest > iwrk )then
+              use_wrk_space = USE_GLOBAL_BUFFER
+              itest = max(gm_buf%n,itest)
            else
-              nbuffsB = ((iwrk-(A%tsize + tsizeB + C%tsize))/ntens_to_get_from)/tsizeB
-           endif
-
-           if(nbuffsA==0.or.(nbuffsB==0.and..not.B_dense))then
-              print *,"WARNING(tensor_contract_par): the specified work space is too small, switching to allocations"
-              use_wrk_space = .false.
-              nbuffsA = 2
-              if(.not.B_dense) nbuffsB = 2
-           else
-              use_wrk_space = .true.
+              use_wrk_space = USE_INPUT_WORK
+              itest = iwrk
            endif
         else
-           !assume we can hold at least 5 tiles in local mem
-           nbuffsA = 2
-           if(B_dense)then
-              nbuffsB = 0
-           else
-              nbuffsB = 2
-           endif
-           use_wrk_space = .false.
+           use_wrk_space = USE_INPUT_WORK
+           itest = iwrk
         endif
      else
-        !assume we can hold at least 5 tiles in local mem
-        nbuffsA = 2
-        if(B_dense)then
-           nbuffsB = 0
+        if( gm_buf%init )then
+           use_wrk_space = USE_GLOBAL_BUFFER
+           itest = max(gm_buf%n,itest)
         else
-           nbuffsB = 2
+           use_wrk_space = USE_INTERNAL_ALLOC
         endif
-        use_wrk_space = .false.
+     endif
+
+     !calculate number of buffers from possible buffer size
+     nbuffsA = ((itest-(A%tsize + tsizeB + C%tsize))/ntens_to_get_from)/A%tsize
+     if(B_dense)then
+        nbuffsB = 0
+     else
+        nbuffsB = ((itest-(A%tsize + tsizeB + C%tsize))/ntens_to_get_from)/tsizeB
+     endif
+
+     if((nbuffsA==0.or.(nbuffsB==0.and..not.B_dense)).and.use_wrk_space == USE_INPUT_WORK)then
+        print *,"WARNING(tensor_contract_par): the specified work space is too small, switching to allocations"
+        use_wrk_space = USE_INTERNAL_ALLOC
+        nbuffsA = 1
+        if(.not.B_dense) nbuffsB = 1
      endif
 
      if(B_dense)then
         nbuffs  = max(2,nbuffsA)
-        nbuffsA = nbuffs
         nbuffsB = 0
      else
         nbuffs  = max(2,min(nbuffsA, nbuffsB))
-        nbuffsA = nbuffs
         nbuffsB = nbuffs
      endif
-
+     nbuffsA = nbuffs
      
-     if(use_wrk_space)then
+     select case(use_wrk_space)
+     case( USE_INPUT_WORK )
         w => wrk
+     case( USE_GLOBAL_BUFFER )
+        call lspdm_reinit_global_buffer(itest)
+        w => gm_buf%buf
+     case( USE_INTERNAL_ALLOC )
+        call mem_alloc(w,itest)
+     case default 
+        call lsquit("ERROR(tensor_contract_par): unknown buffering scheme",-1)
+     end select
+
+
 #ifdef VAR_PTR_RESHAPE
-        buffA(1:A%tsize,1:nbuffsA) => w
+     buffA(1:A%tsize,1:nbuffsA) => w
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
-        call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,nbuffsA])
+     call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,nbuffsA])
+#else
+     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+     if(B_dense)then
+        buffB => null()
+     else
+#ifdef VAR_PTR_RESHAPE
+        buffB(1:tsizeB,1:nbuffsB) => w(nbuffsA*A%tsize+1:)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+        call c_f_pointer(c_loc(w(nbuffsA*A%tsize+1)),buffB,[tsizeB,nbuffsB])
 #else
         call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
-        if(B_dense)then
-           buffB => null()
-        else
-#ifdef VAR_PTR_RESHAPE
-           buffB(1:tsizeB,1:nbuffsB) => w(nbuffsA*A%tsize+1:)
-#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
-           call c_f_pointer(c_loc(w(nbuffsA*A%tsize+1)),buffB,[tsizeB,nbuffsB])
-#else
-           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
-#endif
-        endif
-        wA => w(nbuffsA*A%tsize+nbuffsB*tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize)
-        wB => w(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB)
-        wC => w(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize)
-     else
-        call mem_alloc(buffA,A%tsize,nbuffs)
-        if(.not.B_dense)then
-           call mem_alloc(buffB,tsizeB,nbuffs)
-        endif
-        call mem_alloc(wA,A%tsize)
-        call mem_alloc(wB,tsizeB )
-        call mem_alloc(wC,C%tsize)
      endif
+
+     wA => w(nbuffsA*A%tsize+nbuffsB*tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize)
+     wB => w(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB)
+     wC => w(nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+1:nbuffsA*A%tsize+nbuffsB*tsizeB+A%tsize+tsizeB+C%tsize)
 
      if( alloc_in_dummy )then
 
@@ -3525,21 +3530,14 @@ module lspdm_tensor_operations_module
         call mem_dealloc(nfB)
      endif
 
-     if(use_wrk_space)then
-        buffA => null()
-        buffB => null()
-        wA    => null()
-        wB    => null()
-        wC    => null()
-     else
-        call mem_dealloc(buffA)
-        if(.not.B_dense)then
-           call mem_dealloc(buffB)
-        endif
-        call mem_dealloc(wA)
-        call mem_dealloc(wB)
-        call mem_dealloc(wC)
+     if(use_wrk_space==USE_INTERNAL_ALLOC)then
+        call mem_dealloc(w)
      endif
+     buffA => null()
+     buffB => null()
+     wA    => null()
+     wB    => null()
+     wC    => null()
 
 
      if( alloc_in_dummy )then
@@ -3918,6 +3916,7 @@ module lspdm_tensor_operations_module
      logical               :: internal_alloc,lock_outside,ls
      integer               :: maxintmp,b,e,minstart,bidx
      integer(kind=ls_mpik),pointer   :: req(:)
+     integer(kind=8) :: itest
      logical :: lock_was_not_set
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -3958,14 +3957,29 @@ module lspdm_tensor_operations_module
      endif
 #endif
 
-     internal_alloc = .true.
+     !CHECK WHICH BUFFERING METHOD TO USE
+     internal_alloc = .not. gm_buf%init
+     itest          = 0
      if(present(wrk).and.present(iwrk))then
-        if(iwrk>arr%tsize)then
-           internal_alloc=.false.
+        if( iwrk > arr%tsize )then
+           internal_alloc = .false.
+        endif
+        itest = iwrk
+     endif
+
+     if(internal_alloc)then
 #ifdef VAR_LSDEBUG
-        else
-           print *,"WARNING(tensor_scatter):allocating internally, given buffer not large enough"
+        print *,'WARNING(tensor_scatter):Allocating internally'
 #endif
+        tmps = arr%tsize
+        call mem_alloc(tmp,tmps)
+     else
+        if( itest > gm_buf%n )then
+           tmps =  itest
+           tmp  => wrk(1:tmps)
+        else
+           tmps =  gm_buf%n
+           tmp  => gm_buf%buf(1:tmps)
         endif
      endif
 
@@ -3980,14 +3994,6 @@ module lspdm_tensor_operations_module
      do i = 1, arr%mode
         fullfortdim(i) = arr%dims(o(i))
      enddo
-
-     if(internal_alloc)then
-        tmps = arr%tsize*2
-        call mem_alloc(tmp,tmps)
-     else
-        tmps =  iwrk
-        tmp  => wrk(1:tmps)
-     endif
 
      maxintmp = tmps / arr%tsize
 
