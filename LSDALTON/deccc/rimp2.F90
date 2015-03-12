@@ -46,7 +46,6 @@ module rimp2_module
 !       & array4_close_file, array4_write_file_type1, mat_transpose, &
  !     & array4_read_file_type2
 
-
 contains
 !> \brief Calculate EOS integrals and EOS amplitudes for RI-MP2 calculation -
 !> both for occupied and virtual partitioning schemes.
@@ -93,7 +92,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk),pointer :: toccTMP(:,:),TMPAlphaBeta_minus_sqrt(:,:),tocc2(:,:,:,:)
   real(realk),pointer :: tvirtTMP(:,:),tvirt(:,:,:,:),UoccT(:,:),UvirtEOST(:,:)
   real(realk),pointer :: tvirt2(:,:,:,:),tvirt3(:,:,:,:),Calpha4(:,:,:)
-  real(realk),pointer :: UoccallT(:,:),CalphaOcc(:,:,:)
+  real(realk),pointer :: UoccallT(:,:),CalphaOcc(:,:,:),tocc2TMP(:,:,:,:)
   real(realk) :: deltaEPS,goccAIBJ,goccBIAJ,Gtmp,Ttmp,Eocc,TMP,Etmp,twmpi2
   real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
@@ -114,7 +113,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk) :: TS,TE,TS2,TE2,TS3,TE3
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate,memstep2
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
-  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order
+  integer :: MaxVirtSize,nTiles,offsetV
+  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,PerformTiling
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases)
   integer(kind=long) :: nSize
@@ -395,17 +395,59 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   dimocc = [nvirt,noccEOS,nvirt,noccEOS]   ! Output order
   IF(NBA.GT.0)THEN
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-     call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt) 
-     !Calculate and partial transform to local basis - transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
-     call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
-     !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
-     M = noccEOS              !rows of Output Matrix
-     N = noccEOS*nvirt*nvirt  !columns of Output Matrix
-     K = nocc                 !summation dimension
-     call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
-     call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
-     call mem_dealloc(tocc)
-
+     !Perform tiling if the tocc(nocc,noccEOS,nvirt,nvirt) cannot fit on the device
+     !Janus will set this variable correctly. For now I set it true if it is a debug
+     !run and false for release run. In this way all the code is tested
+#ifdef VAR_LSDEBUG
+     PerformTiling = .TRUE.
+#else
+     PerformTiling = .FALSE.
+#endif
+     MaxVirtSize = nvirt/2           !should be determined by Janus is some way
+     nTiles =  nvirt/MaxVirtSize 
+     IF(nTiles.EQ.0)PerformTiling = .FALSE.
+     IF(PerformTiling)THEN
+        call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
+        call mem_alloc(tocc,nocc,noccEOS,nvirt,MaxVirtSize)
+        call mem_alloc(tocc2TMP,noccEOS,noccEOS,nvirt,MaxVirtSize)
+        DO I=1,nTiles
+           offsetV = (I-1)*MaxVirtSize
+           call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,&
+                & MaxVirtSize,offsetV)
+           !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
+           M = noccEOS              !rows of Output Matrix
+           N = noccEOS*nvirt*MaxVirtSize  !columns of Output Matrix
+           K = nocc                 !summation dimension
+           call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+           call PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
+        ENDDO
+        IF(MOD(nvirt,MaxVirtSize).NE.0)THEN !Remainder
+           offsetV = nTiles*MaxVirtSize
+           MaxVirtSize = MOD(nvirt,MaxVirtSize)
+           call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,&
+                & MaxVirtSize,offsetV)
+           !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
+           M = noccEOS                    !rows of Output Matrix
+           N = noccEOS*nvirt*MaxVirtSize  !columns of Output Matrix
+           K = nocc                       !summation dimension
+           call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+           call PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
+        ENDIF
+        call mem_dealloc(tocc)
+        call mem_dealloc(tocc2TMP)
+     ELSE
+        offsetV=0
+        call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt) 
+        !Calculate and partial transform to local basis - transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
+        call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,nvirt,offsetV)
+        !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
+        M = noccEOS              !rows of Output Matrix
+        N = noccEOS*nvirt*nvirt  !columns of Output Matrix
+        K = nocc                 !summation dimension
+        call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
+        call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
+        call mem_dealloc(tocc)
+     ENDIF
      !Transform first Virtual index (ILOC,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BLOC)
      M = noccEOS*noccEOS*nvirt  !rows of Output Matrix
      N = nvirt                  !columns of Output Matrix
@@ -785,6 +827,35 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
 end subroutine RIMP2_integrals_and_amplitudes
 
+subroutine PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
+  implicit none
+  integer,intent(in) :: noccEOS,nvirt,MaxVirtSize,offsetV
+  real(realk),intent(inout) :: tocc2(noccEOS*noccEOS*nvirt,nvirt)
+  real(realk),intent(in) :: tocc2TMP(noccEOS*noccEOS*nvirt,MaxVirtSize)
+  !local variables
+  integer :: I,B
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP COLLAPSE(2) DEFAULT(none) &
+  !$ACC PRIVATE(I,B) &
+  !$ACC COPYIN(nvirt,noccEOS,MaxVirtSize,offsetV) &
+  !$ACC present(tocc2,tocc2TMP)
+#else
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
+  !$OMP PRIVATE(I,B) &
+  !$OMP SHARED(nvirt,noccEOS,MaxVirtSize,offsetV,tocc2,tocc2TMP)
+#endif
+  DO B=1,MaxVirtSize
+     DO I=1,noccEOS*noccEOS*nvirt
+        tocc2(I,B+offsetV) = tocc2TMP(I,B)
+     ENDDO
+  ENDDO
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+#else
+  !$OMP END PARALLEL DO
+#endif
+end subroutine PlugInTotocc2
+
 subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      & CollaborateWithSlaves,Cocc,nocc,Cvirt,nvirt,mynum,&
      & numnodes,nAtomsAux,Calpha,NBA)
@@ -1161,12 +1232,12 @@ subroutine PlugInToalphaCDFull(mynum,nAtomsMPI,startAuxMPI,nocc,&
 end subroutine PlugInToalphaCDFull
 
 !alphaCD(NBA,nvirt,nocc) is in the diagonal basis 
-subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
+subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,nvirt2,offset2)
   implicit none
-  integer,intent(in) :: nvirt,nocc,noccEOS,NBA
+  integer,intent(in) :: nvirt,nocc,noccEOS,NBA,nvirt2,offset2
   real(realk),intent(in) :: Calpha(NBA,nvirt,nocc)
   real(realk),intent(in) :: EVocc(nocc),EVvirt(nvirt),UoccEOST(nocc,noccEOS)
-  real(realk),intent(inout) :: tocc(nocc,noccEOS,nvirt,nvirt)
+  real(realk),intent(inout) :: tocc(nocc,noccEOS,nvirt,nvirt2)
   !
   integer :: BDIAG,ADIAG,IDIAG,JDIAG,ALPHAAUX,ILOC,JLOC
   real(realk) :: gmocont,deltaEPS,TMP
@@ -1174,16 +1245,16 @@ subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,Uocc
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
   !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
   !$OMP         ALPHAAUX,ILOC,JLOC,gmocont,deltaEPS,toccTMP,TMP) &
-  !$OMP SHARED(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
-  do BDIAG=1,nvirt
+  !$OMP SHARED(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,nvirt2,offset2)
+  do BDIAG=1,nvirt2
      do ADIAG=1,nvirt
         do IDIAG=1,nocc
            do JDIAG=1,nocc
               gmocont = 0.0E0_realk  
               do ALPHAAUX=1,nba  
-                 gmocont = gmocont + Calpha(ALPHAAUX,ADIAG,IDIAG)*Calpha(ALPHAAUX,BDIAG,JDIAG)
+                 gmocont = gmocont + Calpha(ALPHAAUX,ADIAG,IDIAG)*Calpha(ALPHAAUX,offset2+BDIAG,JDIAG)
               enddo
-              deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
+              deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(offset2+BDIAG)-EVvirt(ADIAG)
               toccTMP(JDIAG)=gmocont/deltaEPS                
            enddo
            do jLOC=1,noccEOS
