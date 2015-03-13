@@ -796,14 +796,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
-#define DIL_DEBUG_ON
+!#define DIL_DEBUG_ON
 #endif
 #endif
 #endif
 !`DIL: temporary:
-!#ifdef DIL_ACTIVE
-!#undef DIL_ACTIVE
-!#endif
+#undef DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
