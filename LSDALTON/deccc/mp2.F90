@@ -2789,9 +2789,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call tensor_ainit(toccEOS,dimocc,4)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
-!$acc enter data create(toccEOS) async(async_id(2))
+!$acc enter data create(toccEOS%elm1) async(async_id(2))
      call RIMP2_calc_toccB(nvirt,noccEOS,tocc3,UvirtT,toccEOS%elm1,async_id(2))
-!$acc exit data copyout(toccEOS) delete(tocc3,UvirtT) async(async_id(2))
+!$acc exit data copyout(toccEOS%elm1) delete(tocc3,UvirtT) async(async_id(2))
 
      CALL LSTIMER('RIMP2_calc_tocc3',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tocc3)     
@@ -2896,9 +2896,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call tensor_ainit(tvirtEOS,dimvirt,4)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
-!$acc enter data create(tvirtEOS)
+!$acc enter data create(tvirtEOS%elm1)
      call RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt3,UoccT,tvirtEOS%elm1)
-!$acc exit data delete(tvirt3) copyout(tvirtEOS)
+!$acc exit data delete(tvirt3) copyout(tvirtEOS%elm1)
 
      CALL LSTIMER('RIMP2_calc_tvirt2',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(tvirt3)
@@ -2974,8 +2974,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call tensor_ainit(goccEOS,dimocc,4)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
+!$acc enter data create(goccEOS%elm1) 
      call RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS%elm1)
-!$acc exit data delete(Calpha3)
+!$acc exit data delete(Calpha3) copyout(goccEOS%elm1)
 
      CALL LSTIMER('RIMP2_calc_gocc',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(Calpha3)
@@ -3051,8 +3052,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call tensor_ainit(gvirtEOS,dimvirt,4)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
+!$acc enter data create(gvirtEOS%elm1)
      call RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS%elm1)
-!$acc exit data delete(Calpha3)
+!$acc exit data delete(Calpha3) copyout(gvirtEOS%elm1)
 
      CALL LSTIMER('RIMP2_calc_gvirt',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_dealloc(Calpha3)
@@ -3626,8 +3628,7 @@ subroutine RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS)
   !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
   !$ACC COPYIN(nvirt,noccEOS,NBA) &
-  !$acc present(Calpha3) &
-  !$ACC COPYOUT(goccEOS)
+  !$acc present(Calpha3,goccEOS)
   !dir$ noblocking
 #else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
@@ -3669,8 +3670,7 @@ subroutine RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS)
   !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
   !$ACC COPYIN(nvirtEOS,nocc,NBA) &
-  !$acc present(Calpha3) &
-  !$ACC COPYOUT(gvirtEOS)
+  !$acc present(Calpha3,gvirtEOS)
 #else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
   !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
