@@ -3517,7 +3517,7 @@ subroutine RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,AlphaCD4,AlphaCD5)
   integer :: BLOC,JLOC,BDIAG,ALPHAAUX
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(3) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP) &
   !$ACC COPYIN(nvirt,noccEOS,NBA) &
   !$acc present(AlphaCD4,AlphaCD5,UvirtT) 
@@ -3558,7 +3558,7 @@ subroutine RIMP2_TransAlpha2(n2,n1,n3,nba,UvirtEOST,AlphaCD4,AlphaCD5)
   integer :: JLOC,BLOC,ALPHAAUX,BDIAG
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(3) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP) &
   !$ACC COPYIN(n1,n2,n3,NBA) &
   !$acc present(AlphaCD4,AlphaCD5,UvirtEOST) 
@@ -3623,7 +3623,7 @@ subroutine RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS)
   integer :: BLOC,JLOC,ILOC,ALOC,ALPHAAUX
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(4) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
   !$ACC COPYIN(nvirt,noccEOS,NBA) &
   !$acc present(Calpha3) &
@@ -3666,7 +3666,7 @@ subroutine RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS)
   integer :: BLOC,JLOC,ILOC,ALOC,ALPHAAUX
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(4) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
   !$ACC COPYIN(nvirtEOS,nocc,NBA) &
   !$acc present(Calpha3) &
