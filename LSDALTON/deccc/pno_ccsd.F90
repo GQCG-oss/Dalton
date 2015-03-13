@@ -50,7 +50,7 @@ module pno_ccsd_module
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
   subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,govov,no,nv,nb,xo,xv,yo,yv,&
-        &mylsitem,fj,pno_cv,pno_S,nspaces,oof,vvf,ifo,iter,f)
+        &mylsitem,fj,pno_cv,pno_S,nspaces,fock,iter,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb,iter,nspaces
@@ -58,9 +58,8 @@ module pno_ccsd_module
      real(realk), intent(inout) :: t1(nv,no), t2(nv,no,nv,no)
      real(realk), intent(inout),target :: o1(nv,no)
      real(realk), intent(inout) :: o2(nv,no,nv,no), govov(no*nv*no*nv)
-     real(realk), intent(in),target :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
+     real(realk), intent(in),target :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),fock(nb,nb)
      type(lsitem), intent(inout) :: mylsitem
-     real(realk), intent(inout) :: oof(no,no),vvf(nv,nv)
      type(decfrag),intent(in),optional :: f
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
@@ -93,6 +92,7 @@ module pno_ccsd_module
      type(pno_query_info) :: query
 
      !Integral stuff
+     real(realk), pointer :: oof(:,:),vvf(:,:)
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
      integer :: iorb,nthreads
@@ -246,35 +246,22 @@ module pno_ccsd_module
      !GET FOCK MATRICES!
      !!!!!!!!!!!!!!!!!!!
      !allocate the density matrix
-     call mem_alloc( iFock, nb, nb )
-     call mem_alloc( Dens,  nb, nb )
-     !calculate inactive fock matrix in ao basis
-     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens,nb)
-     iFock = 0.0E0_realk
-     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
-        & Dens,.false.,iFock)
-     !use dens as temporay array 
-     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-        & Dens,nb,nb,AORdefault,AORdefault)
-     ! Add one- and two-electron contributions to Fock matrix
-     call daxpy(nb**2,1.0E0_realk,Dens,1,iFock,1)
-     call daxpy(nb**2,1.0E0_realk,ifo,1,iFock,1)
-     !Free the density matrix
-     call mem_dealloc( Dens )
+     call mem_alloc( oof, no, no )
+     call mem_alloc( vvf, nv, nv )
+
      !Transform inactive Fock matrix into the different mo subspaces
      ! -> Foo
-     call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock,nb,0.0E0_realk,w1,no)
+     call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,fock,nb,0.0E0_realk,w1,no)
      call dgemm('n','n',no,no,nb,1.0E0_realk,w1,no,yo,nb,0.0E0_realk,oof,no)
      ! -> Fov
      call dgemm('n','n',no,nv,nb,1.0E0_realk,w1,no,yv,nb,0.0E0_realk,ovf,no)
      ! -> Fvo
-     call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,iFock,nb,0.0E0_realk,w1,nv)
+     call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fock,nb,0.0E0_realk,w1,nv)
      call dgemm('n','n',nv,no,nb,1.0E0_realk,w1,nv,yo,nb,0.0E0_realk,vof,nv)
      ! -> Fvv
      call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,vvf,nv)
 
-     call mem_dealloc( iFock )
-     call mem_dealloc( w1    )
+     call mem_dealloc( w1 )
 
      if(DECinfo%PL>2)then
         call time_start_phase(PHASE_WORK, twall = treord, ttot = tfock, labelttot = &
@@ -800,6 +787,8 @@ module pno_ccsd_module
      call mem_dealloc( s_idx )
      call mem_dealloc( vof )
      call mem_dealloc( ovf )
+     call mem_dealloc( oof )
+     call mem_dealloc( vvf )
      call mem_dealloc( Gkj )
 
 #ifdef VAR_OMP

@@ -58,6 +58,7 @@ C
 #if defined (HAS_PCMSOLVER)
       use pcmmod_cfg
 #endif
+      use qmcmm_fock, only: scf_qmnpmm_out
 #include "implicit.h"
 C
 #include "litinfo.h"

@@ -27,1554 +27,1853 @@ MODULE IntegralInterfaceModuleDF
        & II_get_RI_alphaCD_3CenterInt2,getRIbasisMPI,getMaxAtomicnAux
   private
 
-SAVE
-logical :: SavealphaBeta
-type(matrix) :: AlphaBetaSave
+  SAVE
+  logical :: SavealphaBeta
+  type(matrix) :: AlphaBetaSave
 contains
-subroutine init_IIDF_matrix()
-SavealphaBeta = .FALSE.
-end subroutine init_IIDF_matrix
+  subroutine init_IIDF_matrix()
+    SavealphaBeta = .FALSE.
+  end subroutine init_IIDF_matrix
 
-subroutine free_IIDF_matrix()
-IF(SavealphaBeta)THEN
-   call mat_free(AlphaBetaSave)
-ENDIF
-end subroutine free_IIDF_matrix
+  subroutine free_IIDF_matrix()
+    IF(SavealphaBeta)THEN
+       call mat_free(AlphaBetaSave)
+    ENDIF
+  end subroutine free_IIDF_matrix
 
-!> \brief Calculates the coulomb matrix using density fitting
-!> \author S. Reine
-!> \date 2010
-!> \param lupri Default print unit
-!> \param luerr Default error print unit
-!> \param setting Integral evalualtion settings
-!> \param D the density matrix
-!> \param F the coulomb matrix
-SUBROUTINE II_get_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
-IMPLICIT NONE
-INTEGER               :: LUPRI,LUERR,ndmat
-TYPE(MATRIX),target   :: D(ndmat),F(ndmat)
-TYPE(LSSETTING)       :: SETTING
-!
-integer               :: usemat
-TYPE(MATRIX),target   :: galpha,calpha
-Integer             :: nbasis,naux,info
-Real(realk)         :: TSTART,TEND
-Character(80)       :: Filename
-type(matrixp)       :: Jmat(1),Dmat(1)
-type(matrixp)       :: Intmat(1)
+  !> \brief Calculates the coulomb matrix using density fitting
+  !> \author S. Reine
+  !> \date 2010
+  !> \param lupri Default print unit
+  !> \param luerr Default error print unit
+  !> \param setting Integral evalualtion settings
+  !> \param D the density matrix
+  !> \param F the coulomb matrix
+  SUBROUTINE II_get_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
+    IMPLICIT NONE
+    INTEGER               :: LUPRI,LUERR,ndmat
+    TYPE(MATRIX),target   :: D(ndmat),F(ndmat)
+    TYPE(LSSETTING)       :: SETTING
+    !
+    integer               :: usemat
+    TYPE(MATRIX),target   :: galpha,calpha
+    Integer             :: nbasis,naux,info
+    Real(realk)         :: TSTART,TEND
+    Character(80)       :: Filename
+    type(matrixp)       :: Jmat(1),Dmat(1)
+    type(matrixp)       :: Intmat(1)
 
-IF (SETTING%SCHEME%PARI_J) THEN
-   IF (SETTING%SCHEME%SIMPLE_PARI) THEN
-      IF(ndmat.NE. 1) THEN
-           WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-           WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-           CALL LSQUIT('For the time being the pari code is &
-           &not implemted for more than 1 density matrix - spam Simen Reine and Patrick Merlot',lupri)
-      ENDIF
-      CALL II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D(1),F(1))
-   ELSE 
-      CALL II_get_pari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
-      ! CALL II_get_NRpari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F)
-   ENDIF
-ELSE IF (SETTING%SCHEME%OVERLAP_DF_J) THEN
-   IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
-     IF(matrix_type .EQ. mtype_unres_dense)&
-          &CALL LSQUIT('Density fitting not implemented for unrestricted - spam Simen Reine',lupri)
-   ENDIF
-   IF(ndmat.NE. 1) THEN
-        WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-        WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-        CALL LSQUIT('For the time being II_get_overlap_df_coulomb_mat is &
-         &not implemted for more than 1 density matrix - spam Simen Reine and Patrik',lupri)
-   ENDIF
-  CALL II_get_overlap_df_coulomb_mat(LUPRI,LUERR,SETTING,D(1),F(1))
-ELSE
-  CALL II_get_regular_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
-ENDIF
+    IF (SETTING%SCHEME%PARI_J) THEN
+       IF (SETTING%SCHEME%SIMPLE_PARI) THEN
+          IF(ndmat.NE. 1) THEN
+             WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+             WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+             CALL LSQUIT('For the time being the pari code is &
+                  &not implemted for more than 1 density matrix - spam Simen Reine and Patrick Merlot',lupri)
+          ENDIF
+          CALL II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D(1),F(1))
+       ELSE 
+          CALL II_get_pari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
+          ! CALL II_get_NRpari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F)
+       ENDIF
+    ELSE IF (SETTING%SCHEME%OVERLAP_DF_J) THEN
+       IF (SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J) THEN
+          IF(matrix_type .EQ. mtype_unres_dense)&
+               &CALL LSQUIT('Density fitting not implemented for unrestricted - spam Simen Reine',lupri)
+       ENDIF
+       IF(ndmat.NE. 1) THEN
+          WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+          WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+          CALL LSQUIT('For the time being II_get_overlap_df_coulomb_mat is &
+               &not implemted for more than 1 density matrix - spam Simen Reine and Patrik',lupri)
+       ENDIF
+       CALL II_get_overlap_df_coulomb_mat(LUPRI,LUERR,SETTING,D(1),F(1))
+    ELSE
+       CALL II_get_regular_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
+    ENDIF
 
-END SUBROUTINE II_get_df_coulomb_mat
+  END SUBROUTINE II_get_df_coulomb_mat
 
-!> \brief Calculates the density-fitted electron-electron repulsion contribution to the molecular gradient
-!> \author S. Reine
-!> \date 2010-03-01
-!> \param eeGrad The electron-electron-repulsion gradient
-!> \param DmatLHS The left-hand-side (or first electron) density matrix
-!> \param DmatRHS The reft-hand-side (or second electron) density matrix
-!> \param ndlhs The number of LHS density matrices
-!> \param ndrhs The number of RHS density matrices
-!> \param setting Integral evalualtion settings
-!> \param lupri Default print unit
-!> \param luerr Unit for error printing
-SUBROUTINE II_get_df_J_gradient(eeGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
-IMPLICIT NONE
-TYPE(LSSETTING),intent(INOUT) :: SETTING
-Real(realk),intent(INOUT)     :: eeGrad(3,setting%molecule(1)%p%nAtoms)
-Integer,intent(IN)            :: lupri,luerr,ndlhs,ndrhs
-Type(matrixp),intent(IN)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
-!
-!
-integer                   :: nAtoms,iDmat,nlhs,nrhs
-type(matrixp)             :: eeGradMat(1)
-type(matrix),target       :: eeGradTarget
-Type(matrixp),pointer     :: DLHS(:),DRHS(:)
-logical                   :: same, save_screen
-TYPE(matrix),target       :: calpha(ndrhs)
-Character(80)             :: Filename
-Real(realk)               :: eeGradtmp(3,setting%molecule(1)%p%nAtoms)
+  !> \brief Calculates the density-fitted electron-electron repulsion contribution to the molecular gradient
+  !> \author S. Reine
+  !> \date 2010-03-01
+  !> \param eeGrad The electron-electron-repulsion gradient
+  !> \param DmatLHS The left-hand-side (or first electron) density matrix
+  !> \param DmatRHS The reft-hand-side (or second electron) density matrix
+  !> \param ndlhs The number of LHS density matrices
+  !> \param ndrhs The number of RHS density matrices
+  !> \param setting Integral evalualtion settings
+  !> \param lupri Default print unit
+  !> \param luerr Unit for error printing
+  SUBROUTINE II_get_df_J_gradient(eeGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
+    IMPLICIT NONE
+    TYPE(LSSETTING),intent(INOUT) :: SETTING
+    Real(realk),intent(INOUT)     :: eeGrad(3,setting%molecule(1)%p%nAtoms)
+    Integer,intent(IN)            :: lupri,luerr,ndlhs,ndrhs
+    Type(matrixp),intent(IN)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
+    !
+    !
+    integer                   :: nAtoms,iDmat,nlhs,nrhs
+    type(matrixp)             :: eeGradMat(1)
+    type(matrix),target       :: eeGradTarget
+    Type(matrixp),pointer     :: DLHS(:),DRHS(:)
+    logical                   :: same, save_screen
+    TYPE(matrix),target       :: calpha(ndrhs)
+    Character(80)             :: Filename
+    Real(realk)               :: eeGradtmp(3,setting%molecule(1)%p%nAtoms)
 
-integer :: nbast,naux
-logical :: ReCalcGab,saveNOSEGMENT
+    integer :: nbast,naux
+    logical :: ReCalcGab,saveNOSEGMENT
 
-!set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+    !set threshold 
+    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
 
-nbast = DmatLHS(1)%p%nrow
-naux  = setting%molecule(1)%p%nbastAUX
-same = ls_same_mats(DmatLHS,DmatRHS,ndlhs,ndrhs)
-IF (.NOT.same) CALL lsQUIT('Error in II_get_df_J_gradient. Only working for same lhs and rhs dmat',-1)
-!IF ((ndlhs.GT. 1).OR.(ndrhs.GT. 1)) CALL lsQUIT('Error in II_get_df_J_gradient. Only working for ndmat = 1!',-1)
-DO idmat=1,ndlhs
-  write(Filename,'(A8,I3)') 'LSCALPHA',idmat
-  IF (.not.io_file_exist(Filename,SETTING%IO)) call lsquit('Error in II_get_df_J_gradient. CALPHA does not exsit!',-1)
-  CALL mat_init(calpha(idmat),naux,1)
-  call io_read_mat(calpha(idmat),Filename,Setting%IO,lupri,luerr)
-ENDDO
-
-
-nlhs = ndlhs
-nrhs = ndrhs
-call mem_alloc(DLHS,nlhs)
-call mem_alloc(DRHS,nrhs)
-
-eeGrad = 0E0_realk
-
-!****************** Calculate (rho^e|tilde rho) ***********
-DO idmat = 1,nlhs
-   DLHS(idmat)%p => DmatLHS(idmat)%p
-ENDDO
-DO idmat = 1,nrhs
-  DRHS(idmat)%p => calpha(idmat)
-ENDDO
-
-CALL ls_attachDmatToSetting(DLHS,nlhs,setting,'LHS',1,2,.TRUE.,lupri)
-CALL ls_attachDmatToSetting(DRHS,nrhs,setting,'RHS',3,4,.TRUE.,lupri)
-
-nAtoms = setting%molecule(1)%p%nAtoms
-
-eeGradtmp = 0E0_realk
-call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
-IF(SETTING%SCHEME%FMM) THEN
-   ! recalculate the moments
-   ! turning off the screening (meaning the screening on the final values in the printmm routines !!)
-   ! the reason for turning screening off it that the overlap index in the moments and derivative moments 
-   ! has to match (problem if moment is written but not the derivative moment or the other way around)
-   ! this should be fixed, the easiest (?) way could be to calculate both moments and derivative moments at the
-   ! same time (as done in the FCK3 code)
-   SAVE_SCREEN = SETTING%SCHEME%MM_NOSCREEN
-   SETTING%SCHEME%MM_NOSCREEN = .TRUE.
-   SETTING%SCHEME%CREATED_MMFILES=.false.
-   SETTING%SCHEME%DO_MMGRD = .TRUE.
-   !we turn off family type basis sets because it does not work
-   !for FMM-GRADIENTS - when calculating both 1 and 2 electron 
-   !contributions together
-   saveNOSEGMENT = SETTING%SCHEME%NOSEGMENT
-   SETTING%SCHEME%NOSEGMENT = .TRUE.
-   !recalc primscreening matrix
-   ReCalcGab = SETTING%SCHEME%ReCalcGab
-   SETTING%SCHEME%recalcGab = .TRUE.
-   CALL ls_multipolemoment(LUPRI,LUERR,SETTING,nbast,naux,  &
-   & DLHS(1)%p%nrow,DLHS(1)%p%ncol,naux,1,&
-   & AORdefault,AORdefault,AODFdefault,AOempty,RegularSpec,ContractedInttype,.TRUE.)
-   ! now derivative moments
-   CALL ls_multipolemoment(LUPRI,LUERR,SETTING,nbast,naux,  &
-   & DLHS(1)%p%nrow,DLHS(1)%p%ncol,naux,1,&
-   & AORdefault,AORdefault,AODFdefault,AOempty,GradientSpec,ContractedInttype,.TRUE.)
-   SETTING%SCHEME%MM_NOSCREEN = SAVE_SCREEN
-END IF
-CALL ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,&
-     &          CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,eeGRADtmp,.FALSE.)
-IF(SETTING%SCHEME%FMM)THEN
-   call ls_jengineClassicalGRAD(eeGRADtmp,AORdefault,AORdefault,AODFdefault,AOempty,&
-        & CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR,nAtoms)
-ENDIF
-CALL ls_freeDmatFromSetting(setting)
-eeGrad = eeGrad + eeGradtmp
-IF(SETTING%SCHEME%FMM) SETTING%SCHEME%DO_MMGRD = .FALSE.
-!**************** End calculate (rho^e|tilde rho) *********
-
-!****************** Calculate (tilde rho^e|rho) ***********
-DO idmat = 1,nlhs
-   DLHS(idmat)%p => calpha(idmat)
-ENDDO
-DO idmat = 1,nrhs
-  DRHS(idmat)%p => DmatRHS(idmat)%p
-ENDDO
-
-CALL ls_attachDmatToSetting(DLHS,nlhs,setting,'LHS',1,2,.TRUE.,lupri)
-CALL ls_attachDmatToSetting(DRHS,nrhs,setting,'RHS',3,4,.TRUE.,lupri)
-
-nAtoms = setting%molecule(1)%p%nAtoms
-
-eeGradtmp = 0E0_realk
-call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
-CALL ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,&
-     &          CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,eeGRADtmp,.FALSE.)
-IF(SETTING%SCHEME%FMM)THEN
-   call ls_jengineClassicalGRAD(eeGRADtmp,AODFdefault,AOempty,AORdefault,AORdefault,&
-     & CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR,nAtoms)
-ENDIF
-CALL ls_freeDmatFromSetting(setting)
-eeGrad = eeGrad + 0.5E0_realk*eeGradtmp
-!**************** End calculate (tilde rho^e|rho) *********
-
-!**************** Calculate (tilde rho^e|tilde rho) ***********
-DO idmat = 1,nlhs
-DLHS(idmat)%p => calpha(idmat)
-ENDDO
-DO idmat = 1,nrhs
-  DRHS(idmat)%p => calpha(idmat)
-ENDDO
-
-CALL ls_attachDmatToSetting(DLHS,nlhs,setting,'LHS',1,2,.TRUE.,lupri)
-CALL ls_attachDmatToSetting(DRHS,nrhs,setting,'RHS',3,4,.TRUE.,lupri)
-
-nAtoms = setting%molecule(1)%p%nAtoms
-
-eeGRADtmp = 0E0_realk
-call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
-CALL ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,&
-     &          CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,eeGRADtmp,.FALSE.)
-IF(SETTING%SCHEME%FMM)THEN
-   call ls_jengineClassicalGRAD(eeGRADtmp,AODFdefault,AOempty,AODFdefault,AOempty,&
-     & CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR,nAtoms)
-ENDIF
-eeGrad = eeGrad - 0.5E0_realk*eeGradtmp
-CALL ls_freeDmatFromSetting(setting)
-!************** End calculate (tilde rho^e|tilde rho) *********
-
-call mem_dealloc(DLHS)
-call mem_dealloc(DRHS)
-
-DO idmat=1,ndrhs
-  CALL mat_free(calpha(idmat))
-ENDDO
-IF(SETTING%SCHEME%FMM)THEN
-   SETTING%SCHEME%NOSEGMENT = saveNOSEGMENT
-   SETTING%SCHEME%ReCalcGab = ReCalcGab 
-ENDIF
-
-END SUBROUTINE II_get_df_J_gradient
-
-!> \brief This subroutine calculates the NON-ROBUST Pari-Atomic density-fitted (PARI) Coulomb matrix
-!> \author P. Merlot, S. Reine
-!> \date 2010-02-03
-!> \param lupri Default print-unit for output
-!> \param luerr Default print-unit for termination
-!> \param setting Contains information about the integral settings
-!> \param D Density-matrix
-!> \param F Coulomb contribution to the Fock- or KS-matrix
-SUBROUTINE II_get_NRpari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F)
-implicit none
-TYPE(MATRIX),target,intent(in)    :: D
-TYPE(MATRIX),target,intent(inout) :: F
-TYPE(LSSETTING),intent(inout)     :: SETTING
-INTEGER,intent(in)                :: LUPRI,LUERR
-!
-TYPE(MATRIX),target   :: cbeta,galpha,galphaFit
-Integer               :: nAtoms,temp1,temp2
-Integer               :: iAtom,jAtom,nOrbReg,nOrbAux,nBastAux,nBastReg
-TYPE(MOLECULARORBITALINFO) :: orbitalInfo
-INTEGER,pointer       :: numAtomicOrbitalsReg(:)
-INTEGER,pointer       :: numAtomicOrbitalsAux(:)
-INTEGER,pointer       :: startAtomicOrbitalsReg(:)
-INTEGER,pointer       :: startAtomicOrbitalsAux(:)
-type(matrixp)         :: intmat(1)
-Integer               :: usemat
-Integer               :: ndmat = 1
-Integer               :: iAtomA,iAtomB,iAtomC,iAtomD,nRegA,nRegB,nRegC,nRegD,nAuxA,nAuxB,nAuxC,nAuxD
-Integer               :: iAlpha,iBeta,iGamma,iRegA,iRegB,iRegC,iRegD
-Integer               :: startRegA,startRegB,startRegC,startRegD,startAuxA,startAuxB,startAuxC,startAuxD
-Integer               :: endRegA,endRegB,endRegC,endRegD,endAuxA,endAuxB,endAuxC,endAuxD
-Integer               :: nAux
-Integer               :: info
-Real(realk),pointer   :: cbetafull(:,:,:)
-Real(realk),pointer   :: extracted_alpha_ab(:,:,:)
-Real(realk),pointer   :: extracted_alpha_beta(:,:)
-Real(realk),pointer   :: galphafull(:,:,:),galphaFitfull(:,:,:)
-Real(realk),pointer   :: Dfull(:,:,:)
-Real(realk),pointer   :: Jfull(:,:,:,:,:)
-TYPE(matrixp)         :: Jmat(1),Dmat(1)
-TYPE(BLOCKINFO)       :: pairAtomic,auxAtomic
-TYPE(FragmentInfo)    :: atomicFragments
-Real(realk)           :: dfac,factor,TSTART,TEND,tefull,tsfull
-Integer               :: iAO,iRegAfull,iRegBfull
-TYPE(MAT3D),pointer   :: extracted_calpha_ab(:)
-logical               :: saveRecalcGab
-TYPE(LSTENSOR),pointer:: regCSfull,auxCSfull
-
-saveRecalcGab = setting%scheme%recalcgab
-setting%scheme%recalcgab = .TRUE.
-!set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-!Then get the full screening matrices
-CALL II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
-!
-CALL LSTIMER('START ',TSTART,TEND,LUPRI)
-CALL LSTIMER('START ',tsfull,tefull,lupri)
-!
-CALL getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBastReg,nBastAux)
-
-IF(SETTING%SCHEME%FMM) CALL LSQUIT('FMM not yet implemented for PARI!',lupri)
-
-! Alloc full density-matrix and Coulomb-matrix
-call mem_alloc(Dfull,D%nrow,D%ncol,1)
-call mat_to_full(D,1E0_realk,Dfull(:,:,1))
-call mat_zero(F)              
-Jmat(1)%p => F 
-call mem_alloc(Jfull,nBastReg,nBastReg,1,1,ndmat)
-call ls_dzero(Jfull,nBastReg*nBastReg*ndmat)
-
-! --- Build an array with the list of atoms with their respective nb. of orbitals/auxiliary functions
-! --- Build another array to know where each atom start in the complete matrices
-CALL setMolecularOrbitalInfo(SETTING%MOLECULE(1)%p,orbitalInfo)
-
-numAtomicOrbitalsReg   => orbitalInfo%numAtomicOrbitalsReg
-startAtomicOrbitalsReg => orbitalInfo%startAtomicOrbitalsReg
-numAtomicOrbitalsAux   => orbitalInfo%numAtomicOrbitalsAux
-startAtomicOrbitalsAux => orbitalInfo%startAtomicOrbitalsAux
- 
-!WRITE(*,*) "nAtoms= ",nAtoms
-!WRITE(*,*) "nBastReg= ",nBastReg
-!WRITE(*,*) "nBastAux= ",nBastAux
-!WRITE(*,*) "numAtomicOrbtialsReg= ",numAtomicOrbitalsReg
-!WRITE(*,*) "startAtomicOrbitalsReg= ",startAtomicOrbitalsReg
-!WRITE(*,*) "numAtomicOrbtialsAux= ",numAtomicOrbitalsAux
-!WRITE(*,*) "startAtomicOrbitalsAux= ",startAtomicOrbitalsAux
-
-! --- Calculate the pair-atomic fitting coefficients
-allocate(extracted_calpha_ab(nAtoms))
-CALL getPariCoefficients(LUPRI,LUERR,SETTING,extracted_calpha_ab,orbitalInfo,regCSfull,auxCSfull)
-
-!re-set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-
-
-CALL LSTIMER('coeffs',TSTART,TEND,LUPRI)
-
-
-! --- compute Cbeta 
-call mem_alloc(cbetafull,nBastAux,1,ndmat)
-cbetafull = 0.0E0_realk
-DO iAtomA=1,nAtoms
-  call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
-  DO iAtomB=1,nAtoms
-    call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
-    DO iRegB=1,nRegB
-      iRegBfull = iRegB+startRegB-1
-      DO iRegA=1,nRegA
-        iRegAfull = iRegA+startRegA-1
-        dfac = 2E0_realk*Dfull(iRegAfull,iRegBfull,ndmat)
-        IF (iAtomA.NE.iAtomB) dfac = dfac + 2E0_realk * Dfull(iRegBfull,iRegAfull,ndmat)
-        DO iAlpha=1,nAuxA
-          cbetafull(iAlpha+startAuxA-1,1,ndmat) = cbetafull(iAlpha+startAuxA-1,1,ndmat) &
-     &       + dfac * extracted_calpha_ab(iAtomA)%elements(iAlpha,iRegA,iRegBfull)
-        ENDDO
-      ENDDO
+    nbast = DmatLHS(1)%p%nrow
+    naux  = setting%molecule(1)%p%nbastAUX
+    same = ls_same_mats(DmatLHS,DmatRHS,ndlhs,ndrhs)
+    IF (.NOT.same) CALL lsQUIT('Error in II_get_df_J_gradient. Only working for same lhs and rhs dmat',-1)
+    !IF ((ndlhs.GT. 1).OR.(ndrhs.GT. 1)) CALL lsQUIT('Error in II_get_df_J_gradient. Only working for ndmat = 1!',-1)
+    DO idmat=1,ndlhs
+       write(Filename,'(A8,I3)') 'LSCALPHA',idmat
+       IF (.not.io_file_exist(Filename,SETTING%IO)) call lsquit('Error in II_get_df_J_gradient. CALPHA does not exsit!',-1)
+       CALL mat_init(calpha(idmat),naux,1)
+       call io_read_mat(calpha(idmat),Filename,Setting%IO,lupri,luerr)
     ENDDO
-  ENDDO
-ENDDO
 
-CALL LSTIMER('c-beta',TSTART,TEND,LUPRI)
-! ----------------------------------------------------------------------------------
-! --- COMPUTING THE 3 CONTRIBUTIONS TO THE COULOMB PART (Jab)
 
-! --- add first contribution to Jab
-call mat_init(cbeta,nBastAux,1)
-call mat_set_from_full(cbetafull(:,:,1),1E0_realk,cbeta)
-Dmat(1)%p => cbeta
-CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
-!Jmat,ndmat,
-call initIntegralOutputDims(setting%Output,F%nrow,F%ncol,1,1,1)
-call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,&
-     &          SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,F,.FALSE.)
-IF(SETTING%SCHEME%FMM)THEN
-   call ls_jengineClassicalMat(F,AORdefault,AORdefault,AODFdefault,AOempty,&
-        & CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-ENDIF
+    nlhs = ndlhs
+    nrhs = ndrhs
+    call mem_alloc(DLHS,nlhs)
+    call mem_alloc(DRHS,nrhs)
 
-CALL ls_freeDmatFromSetting(setting)
+    eeGrad = 0E0_realk
 
-call mat_to_full(F,1E0_realk,Jfull(:,:,1,1,1))
-CALL LSTIMER('J-1   ',TSTART,TEND,LUPRI)
-
-! --- compute gAlpha
-call mem_alloc(galphafull,nBastAux,1,ndmat)
-call ls_DZERO(galphafull,nBastAux*ndmat)
-call mat_init(galpha,nBastAux,1)
-call mat_zero(galpha)
-Jmat(1)%p => galpha  
-Dmat(1)%p => D  
-CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
-!Jmat,ndmat,
-call initIntegralOutputDims(setting%Output,galpha%nrow,galpha%ncol,1,1,1)
-call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,CoulombOperator,RegularSpec,ContractedInttype,&
-     &          SETTING,LUPRI,LUERR)
-CALL retrieve_Output(lupri,setting,galpha,.FALSE.)
-IF(SETTING%SCHEME%FMM)THEN
-   call ls_jengineClassicalMat(galpha,AODFdefault,AOempty,AORdefault,AORdefault&
-        & ,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-ENDIF
-
-CALL ls_freeDmatFromSetting(setting)
-call mat_to_full(galpha,1E0_realk,galphafull(:,:,1))       
-call mat_free(galpha)
-CALL LSTIMER('galph1',TSTART,TEND,LUPRI)
-
-DO iAtomA=1,nAtoms
-  call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
-  DO iAtomB=1,nAtoms
-    call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
-    DO iRegB=1,nRegB
-      iRegBfull = iRegB+startRegB-1
-      DO iRegA=1,nRegA
-        iRegAfull = iRegA+startRegA-1
-        DO iAlpha=1,nAuxA
-          Jfull(iRegAfull,iRegBfull,1,1,1) &
-     &      =  Jfull(iRegAfull,iRegBfull,1,1,1) &
-     &        + extracted_calpha_ab(iAtomA)%elements(iAlpha,iRegA,iRegBfull)&
-     &          * galphafull(iAlpha+startAuxA-1,1,1)
-        ENDDO
-      ENDDO
+    !****************** Calculate (rho^e|tilde rho) ***********
+    DO idmat = 1,nlhs
+       DLHS(idmat)%p => DmatLHS(idmat)%p
     ENDDO
-    IF (iAtomA.NE.iAtomB) THEN
-      DO iRegA=1,nRegA
-        iRegAfull = iRegA+startRegA-1
-        DO iRegB=1,nRegB
-          iRegBfull = iRegB+startRegB-1
-          DO iBeta=1,nAuxB
-            Jfull(iRegAfull,iRegBfull,1,1,1) &
-     &        =  Jfull(iRegAfull,iRegBfull,1,1,1) &
-     &         + extracted_calpha_ab(iAtomB)%elements(iBeta,iRegB,iRegAfull)&
-     &           * galphafull(iBeta+startAuxB-1,1,1)
+    DO idmat = 1,nrhs
+       DRHS(idmat)%p => calpha(idmat)
+    ENDDO
+
+    CALL ls_attachDmatToSetting(DLHS,nlhs,setting,'LHS',1,2,.TRUE.,lupri)
+    CALL ls_attachDmatToSetting(DRHS,nrhs,setting,'RHS',3,4,.TRUE.,lupri)
+
+    nAtoms = setting%molecule(1)%p%nAtoms
+
+    eeGradtmp = 0E0_realk
+    call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
+    IF(SETTING%SCHEME%FMM) THEN
+       ! recalculate the moments
+       ! turning off the screening (meaning the screening on the final values in the printmm routines !!)
+       ! the reason for turning screening off it that the overlap index in the moments and derivative moments 
+       ! has to match (problem if moment is written but not the derivative moment or the other way around)
+       ! this should be fixed, the easiest (?) way could be to calculate both moments and derivative moments at the
+       ! same time (as done in the FCK3 code)
+       SAVE_SCREEN = SETTING%SCHEME%MM_NOSCREEN
+       SETTING%SCHEME%MM_NOSCREEN = .TRUE.
+       SETTING%SCHEME%CREATED_MMFILES=.false.
+       SETTING%SCHEME%DO_MMGRD = .TRUE.
+       !we turn off family type basis sets because it does not work
+       !for FMM-GRADIENTS - when calculating both 1 and 2 electron 
+       !contributions together
+       saveNOSEGMENT = SETTING%SCHEME%NOSEGMENT
+       SETTING%SCHEME%NOSEGMENT = .TRUE.
+       !recalc primscreening matrix
+       ReCalcGab = SETTING%SCHEME%ReCalcGab
+       SETTING%SCHEME%recalcGab = .TRUE.
+       CALL ls_multipolemoment(LUPRI,LUERR,SETTING,nbast,naux,  &
+            & DLHS(1)%p%nrow,DLHS(1)%p%ncol,naux,1,&
+            & AORdefault,AORdefault,AODFdefault,AOempty,RegularSpec,ContractedInttype,.TRUE.)
+       ! now derivative moments
+       CALL ls_multipolemoment(LUPRI,LUERR,SETTING,nbast,naux,  &
+            & DLHS(1)%p%nrow,DLHS(1)%p%ncol,naux,1,&
+            & AORdefault,AORdefault,AODFdefault,AOempty,GradientSpec,ContractedInttype,.TRUE.)
+       SETTING%SCHEME%MM_NOSCREEN = SAVE_SCREEN
+    END IF
+    CALL ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,&
+         &          CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+    CALL retrieve_Output(lupri,setting,eeGRADtmp,.FALSE.)
+    IF(SETTING%SCHEME%FMM)THEN
+       call ls_jengineClassicalGRAD(eeGRADtmp,AORdefault,AORdefault,AODFdefault,AOempty,&
+            & CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR,nAtoms)
+    ENDIF
+    CALL ls_freeDmatFromSetting(setting)
+    eeGrad = eeGrad + eeGradtmp
+    IF(SETTING%SCHEME%FMM) SETTING%SCHEME%DO_MMGRD = .FALSE.
+    !**************** End calculate (rho^e|tilde rho) *********
+
+    !****************** Calculate (tilde rho^e|rho) ***********
+    DO idmat = 1,nlhs
+       DLHS(idmat)%p => calpha(idmat)
+    ENDDO
+    DO idmat = 1,nrhs
+       DRHS(idmat)%p => DmatRHS(idmat)%p
+    ENDDO
+
+    CALL ls_attachDmatToSetting(DLHS,nlhs,setting,'LHS',1,2,.TRUE.,lupri)
+    CALL ls_attachDmatToSetting(DRHS,nrhs,setting,'RHS',3,4,.TRUE.,lupri)
+
+    nAtoms = setting%molecule(1)%p%nAtoms
+
+    eeGradtmp = 0E0_realk
+    call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
+    CALL ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,&
+         &          CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+    CALL retrieve_Output(lupri,setting,eeGRADtmp,.FALSE.)
+    IF(SETTING%SCHEME%FMM)THEN
+       call ls_jengineClassicalGRAD(eeGRADtmp,AODFdefault,AOempty,AORdefault,AORdefault,&
+            & CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR,nAtoms)
+    ENDIF
+    CALL ls_freeDmatFromSetting(setting)
+    eeGrad = eeGrad + 0.5E0_realk*eeGradtmp
+    !**************** End calculate (tilde rho^e|rho) *********
+
+    !**************** Calculate (tilde rho^e|tilde rho) ***********
+    DO idmat = 1,nlhs
+       DLHS(idmat)%p => calpha(idmat)
+    ENDDO
+    DO idmat = 1,nrhs
+       DRHS(idmat)%p => calpha(idmat)
+    ENDDO
+
+    CALL ls_attachDmatToSetting(DLHS,nlhs,setting,'LHS',1,2,.TRUE.,lupri)
+    CALL ls_attachDmatToSetting(DRHS,nrhs,setting,'RHS',3,4,.TRUE.,lupri)
+
+    nAtoms = setting%molecule(1)%p%nAtoms
+
+    eeGRADtmp = 0E0_realk
+    call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
+    CALL ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,&
+         &          CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+    CALL retrieve_Output(lupri,setting,eeGRADtmp,.FALSE.)
+    IF(SETTING%SCHEME%FMM)THEN
+       call ls_jengineClassicalGRAD(eeGRADtmp,AODFdefault,AOempty,AODFdefault,AOempty,&
+            & CoulombOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR,nAtoms)
+    ENDIF
+    eeGrad = eeGrad - 0.5E0_realk*eeGradtmp
+    CALL ls_freeDmatFromSetting(setting)
+    !************** End calculate (tilde rho^e|tilde rho) *********
+
+    call mem_dealloc(DLHS)
+    call mem_dealloc(DRHS)
+
+    DO idmat=1,ndrhs
+       CALL mat_free(calpha(idmat))
+    ENDDO
+    IF(SETTING%SCHEME%FMM)THEN
+       SETTING%SCHEME%NOSEGMENT = saveNOSEGMENT
+       SETTING%SCHEME%ReCalcGab = ReCalcGab 
+    ENDIF
+
+  END SUBROUTINE II_get_df_J_gradient
+
+  !> \brief This subroutine calculates the NON-ROBUST Pari-Atomic density-fitted (PARI) Coulomb matrix
+  !> \author P. Merlot, S. Reine
+  !> \date 2010-02-03
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
+  !> \param setting Contains information about the integral settings
+  !> \param D Density-matrix
+  !> \param F Coulomb contribution to the Fock- or KS-matrix
+  SUBROUTINE II_get_NRpari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F)
+    implicit none
+    TYPE(MATRIX),target,intent(in)    :: D
+    TYPE(MATRIX),target,intent(inout) :: F
+    TYPE(LSSETTING),intent(inout)     :: SETTING
+    INTEGER,intent(in)                :: LUPRI,LUERR
+    !
+    TYPE(MATRIX),target   :: cbeta,galpha,galphaFit
+    Integer               :: nAtoms,temp1,temp2
+    Integer               :: iAtom,jAtom,nOrbReg,nOrbAux,nBastAux,nBastReg
+    TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+    INTEGER,pointer       :: numAtomicOrbitalsReg(:)
+    INTEGER,pointer       :: numAtomicOrbitalsAux(:)
+    INTEGER,pointer       :: startAtomicOrbitalsReg(:)
+    INTEGER,pointer       :: startAtomicOrbitalsAux(:)
+    type(matrixp)         :: intmat(1)
+    Integer               :: usemat
+    Integer               :: ndmat = 1
+    Integer               :: iAtomA,iAtomB,iAtomC,iAtomD,nRegA,nRegB,nRegC,nRegD,nAuxA,nAuxB,nAuxC,nAuxD
+    Integer               :: iAlpha,iBeta,iGamma,iRegA,iRegB,iRegC,iRegD
+    Integer               :: startRegA,startRegB,startRegC,startRegD,startAuxA,startAuxB,startAuxC,startAuxD
+    Integer               :: endRegA,endRegB,endRegC,endRegD,endAuxA,endAuxB,endAuxC,endAuxD
+    Integer               :: nAux
+    Integer               :: info
+    Real(realk),pointer   :: cbetafull(:,:,:)
+    Real(realk),pointer   :: extracted_alpha_ab(:,:,:)
+    Real(realk),pointer   :: extracted_alpha_beta(:,:)
+    Real(realk),pointer   :: galphafull(:,:,:),galphaFitfull(:,:,:)
+    Real(realk),pointer   :: Dfull(:,:,:)
+    Real(realk),pointer   :: Jfull(:,:,:,:,:)
+    TYPE(matrixp)         :: Jmat(1),Dmat(1)
+    TYPE(BLOCKINFO)       :: pairAtomic,auxAtomic
+    TYPE(FragmentInfo)    :: atomicFragments
+    Real(realk)           :: dfac,factor,TSTART,TEND,tefull,tsfull
+    Integer               :: iAO,iRegAfull,iRegBfull
+    TYPE(MAT3D),pointer   :: extracted_calpha_ab(:)
+    logical               :: saveRecalcGab
+    TYPE(LSTENSOR),pointer:: regCSfull,auxCSfull
+
+    saveRecalcGab = setting%scheme%recalcgab
+    setting%scheme%recalcgab = .TRUE.
+    !set threshold 
+    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+    !Then get the full screening matrices
+    CALL II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
+    !
+    CALL LSTIMER('START ',TSTART,TEND,LUPRI)
+    CALL LSTIMER('START ',tsfull,tefull,lupri)
+    !
+    CALL getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBastReg,nBastAux)
+
+    IF(SETTING%SCHEME%FMM) CALL LSQUIT('FMM not yet implemented for PARI!',lupri)
+
+    ! Alloc full density-matrix and Coulomb-matrix
+    call mem_alloc(Dfull,D%nrow,D%ncol,1)
+    call mat_to_full(D,1E0_realk,Dfull(:,:,1))
+    call mat_zero(F)              
+    Jmat(1)%p => F 
+    call mem_alloc(Jfull,nBastReg,nBastReg,1,1,ndmat)
+    call ls_dzero(Jfull,nBastReg*nBastReg*ndmat)
+
+    ! --- Build an array with the list of atoms with their respective nb. of orbitals/auxiliary functions
+    ! --- Build another array to know where each atom start in the complete matrices
+    CALL setMolecularOrbitalInfo(SETTING%MOLECULE(1)%p,orbitalInfo)
+
+    numAtomicOrbitalsReg   => orbitalInfo%numAtomicOrbitalsReg
+    startAtomicOrbitalsReg => orbitalInfo%startAtomicOrbitalsReg
+    numAtomicOrbitalsAux   => orbitalInfo%numAtomicOrbitalsAux
+    startAtomicOrbitalsAux => orbitalInfo%startAtomicOrbitalsAux
+
+    !WRITE(*,*) "nAtoms= ",nAtoms
+    !WRITE(*,*) "nBastReg= ",nBastReg
+    !WRITE(*,*) "nBastAux= ",nBastAux
+    !WRITE(*,*) "numAtomicOrbtialsReg= ",numAtomicOrbitalsReg
+    !WRITE(*,*) "startAtomicOrbitalsReg= ",startAtomicOrbitalsReg
+    !WRITE(*,*) "numAtomicOrbtialsAux= ",numAtomicOrbitalsAux
+    !WRITE(*,*) "startAtomicOrbitalsAux= ",startAtomicOrbitalsAux
+
+    ! --- Calculate the pair-atomic fitting coefficients
+    allocate(extracted_calpha_ab(nAtoms))
+    CALL getPariCoefficients(LUPRI,LUERR,SETTING,extracted_calpha_ab,orbitalInfo,regCSfull,auxCSfull)
+
+    !re-set threshold 
+    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+
+
+    CALL LSTIMER('coeffs',TSTART,TEND,LUPRI)
+
+
+    ! --- compute Cbeta 
+    call mem_alloc(cbetafull,nBastAux,1,ndmat)
+    cbetafull = 0.0E0_realk
+    DO iAtomA=1,nAtoms
+       call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
+       DO iAtomB=1,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
+          DO iRegB=1,nRegB
+             iRegBfull = iRegB+startRegB-1
+             DO iRegA=1,nRegA
+                iRegAfull = iRegA+startRegA-1
+                dfac = 2E0_realk*Dfull(iRegAfull,iRegBfull,ndmat)
+                IF (iAtomA.NE.iAtomB) dfac = dfac + 2E0_realk * Dfull(iRegBfull,iRegAfull,ndmat)
+                DO iAlpha=1,nAuxA
+                   cbetafull(iAlpha+startAuxA-1,1,ndmat) = cbetafull(iAlpha+startAuxA-1,1,ndmat) &
+                        &       + dfac * extracted_calpha_ab(iAtomA)%elements(iAlpha,iRegA,iRegBfull)
+                ENDDO
+             ENDDO
           ENDDO
-        ENDDO
+       ENDDO
+    ENDDO
+
+    CALL LSTIMER('c-beta',TSTART,TEND,LUPRI)
+    ! ----------------------------------------------------------------------------------
+    ! --- COMPUTING THE 3 CONTRIBUTIONS TO THE COULOMB PART (Jab)
+
+    ! --- add first contribution to Jab
+    call mat_init(cbeta,nBastAux,1)
+    call mat_set_from_full(cbetafull(:,:,1),1E0_realk,cbeta)
+    Dmat(1)%p => cbeta
+    CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
+    !Jmat,ndmat,
+    call initIntegralOutputDims(setting%Output,F%nrow,F%ncol,1,1,1)
+    call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,&
+         &          SETTING,LUPRI,LUERR)
+    CALL retrieve_Output(lupri,setting,F,.FALSE.)
+    IF(SETTING%SCHEME%FMM)THEN
+       call ls_jengineClassicalMat(F,AORdefault,AORdefault,AODFdefault,AOempty,&
+            & CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+    ENDIF
+
+    CALL ls_freeDmatFromSetting(setting)
+
+    call mat_to_full(F,1E0_realk,Jfull(:,:,1,1,1))
+    CALL LSTIMER('J-1   ',TSTART,TEND,LUPRI)
+
+    ! --- compute gAlpha
+    call mem_alloc(galphafull,nBastAux,1,ndmat)
+    call ls_DZERO(galphafull,nBastAux*ndmat)
+    call mat_init(galpha,nBastAux,1)
+    call mat_zero(galpha)
+    Jmat(1)%p => galpha  
+    Dmat(1)%p => D  
+    CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
+    !Jmat,ndmat,
+    call initIntegralOutputDims(setting%Output,galpha%nrow,galpha%ncol,1,1,1)
+    call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,CoulombOperator,RegularSpec,ContractedInttype,&
+         &          SETTING,LUPRI,LUERR)
+    CALL retrieve_Output(lupri,setting,galpha,.FALSE.)
+    IF(SETTING%SCHEME%FMM)THEN
+       call ls_jengineClassicalMat(galpha,AODFdefault,AOempty,AORdefault,AORdefault&
+            & ,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+    ENDIF
+
+    CALL ls_freeDmatFromSetting(setting)
+    call mat_to_full(galpha,1E0_realk,galphafull(:,:,1))       
+    call mat_free(galpha)
+    CALL LSTIMER('galph1',TSTART,TEND,LUPRI)
+
+    DO iAtomA=1,nAtoms
+       call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
+       DO iAtomB=1,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
+          DO iRegB=1,nRegB
+             iRegBfull = iRegB+startRegB-1
+             DO iRegA=1,nRegA
+                iRegAfull = iRegA+startRegA-1
+                DO iAlpha=1,nAuxA
+                   Jfull(iRegAfull,iRegBfull,1,1,1) &
+                        &      =  Jfull(iRegAfull,iRegBfull,1,1,1) &
+                        &        + extracted_calpha_ab(iAtomA)%elements(iAlpha,iRegA,iRegBfull)&
+                        &          * galphafull(iAlpha+startAuxA-1,1,1)
+                ENDDO
+             ENDDO
+          ENDDO
+          IF (iAtomA.NE.iAtomB) THEN
+             DO iRegA=1,nRegA
+                iRegAfull = iRegA+startRegA-1
+                DO iRegB=1,nRegB
+                   iRegBfull = iRegB+startRegB-1
+                   DO iBeta=1,nAuxB
+                      Jfull(iRegAfull,iRegBfull,1,1,1) &
+                           &        =  Jfull(iRegAfull,iRegBfull,1,1,1) &
+                           &         + extracted_calpha_ab(iAtomB)%elements(iBeta,iRegB,iRegAfull)&
+                           &           * galphafull(iBeta+startAuxB-1,1,1)
+                   ENDDO
+                ENDDO
+             ENDDO
+          ENDIF
+       ENDDO
+    ENDDO
+    CALL LSTIMER('Jfull',TSTART,TEND,LUPRI)
+
+    CALL mat_set_from_full(Jfull(:,:,1,1,1),0.5E0_realk,F)    
+
+    call mem_dealloc(galphafull)
+    ! call mem_dealloc(galphaFitfull)
+    call mem_dealloc(cbetafull)
+    call mat_free(cbeta)
+
+    call mem_dealloc(Dfull)
+    CALL mem_dealloc(Jfull)
+    call freePariCoefficients(extracted_calpha_ab,orbitalInfo%nAtoms)
+    deallocate(extracted_calpha_ab)
+    CALL freeMolecularOrbitalInfo(orbitalInfo)
+    !CALL freeFragmentInfo(atomicFragments)
+    IF(setting%IntegralTransformGC)THEN
+       call AO2GCAO_transform_matrixF(F,setting,lupri)
+    ENDIF
+    CALL LSTIMER('PARI-J',tsfull,tefull,lupri)
+    setting%scheme%recalcgab = saveRecalcGab
+
+    !WRITE(*,*) "End of II_get_pari_df_coulomb_mat "
+    !WRITE(*,*)
+    !WRITE(*,*)
+
+
+  CONTAINS
+    SUBROUTINE checkConsistency(MOLECULE,nAtoms,nBastAux,nBastReg)
+      implicit none
+      TYPE(MOLECULE_PT),intent(in) :: MOLECULE(4)
+      Integer,intent(in)           :: nAtoms,nBastAux,nBastReg
+      !
+      integer :: iAO
+      ! Consistency checking
+      DO iAO=2,4
+         IF (nAtoms.NE.MOLECULE(iAO)%p%nAtoms) THEN
+            CALL LSQUIT('Error in PARI! Different number of atoms for different AOs',-1)
+         ENDIF
+         IF (nBastAux.NE.MOLECULE(iAO)%p%nBastAux) THEN
+            CALL LSQUIT('Error in PARI! Different number of basis funcitons for different AOs',-1)
+         ENDIF
+         IF ((nBastReg.NE.MOLECULE(iAO)%p%nBastReg).OR.(nBastReg.NE.MOLECULE(iAO)%p%nBastVAL)) THEN
+            CALL LSQUIT('Error in PARI! Different number of auxiliary basis functions for different AOs',-1)
+         ENDIF
       ENDDO
+    END SUBROUTINE checkConsistency
+  END SUBROUTINE II_get_NRpari_df_coulomb_mat
+
+
+!> \brief Find the precalculated screening matrices for Reg and Aux basis
+!> 
+  SUBROUTINE II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
+    implicit none
+    TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
+    TYPE(LSSETTING),intent(inout) :: SETTING
+    INTEGER,intent(in)            :: LUPRI,LUERR
+    !
+    Logical       :: dofit
+
+    IF (setting%scheme%CS_SCREEN) THEN
+       call II_getScreenMat(regCSfull,AORdefault,AORdefault,&
+            AORdefault,AORdefault,Setting,lupri,luerr)
+       
+       ! For density fiiting, get the screening matrix for the auxiliary basis
+       dofit = setting%scheme%densfit.OR.setting%scheme%pari_j.OR. &
+            setting%scheme%pari_k.OR.setting%scheme%mopari_k
+       
+       IF (dofit) THEN
+          call II_getScreenMat(auxCSfull,AODFdefault,AOempty,&
+               AODFdefault,AOempty,Setting,lupri,luerr)
+       ELSE
+          NULLIFY(auxCSfull)
+       ENDIF
+    ELSE
+       NULLIFY(regCSfull)
+       NULLIFY(auxCSfull)
     ENDIF
-  ENDDO
-ENDDO
-CALL LSTIMER('Jfull',TSTART,TEND,LUPRI)
 
-CALL mat_set_from_full(Jfull(:,:,1,1,1),0.5E0_realk,F)    
+  END SUBROUTINE II_getScreenMatFull
 
-call mem_dealloc(galphafull)
-! call mem_dealloc(galphaFitfull)
-call mem_dealloc(cbetafull)
-call mat_free(cbeta)
-
-call mem_dealloc(Dfull)
-CALL mem_dealloc(Jfull)
-call freePariCoefficients(extracted_calpha_ab,orbitalInfo%nAtoms)
-deallocate(extracted_calpha_ab)
-CALL freeMolecularOrbitalInfo(orbitalInfo)
-!CALL freeFragmentInfo(atomicFragments)
-IF(setting%IntegralTransformGC)THEN
-   call AO2GCAO_transform_matrixF(F,setting,lupri)
-ENDIF
-CALL LSTIMER('PARI-J',tsfull,tefull,lupri)
-setting%scheme%recalcgab = saveRecalcGab
-
-!WRITE(*,*) "End of II_get_pari_df_coulomb_mat "
-!WRITE(*,*)
-!WRITE(*,*)
-
-
-CONTAINS
-  SUBROUTINE checkConsistency(MOLECULE,nAtoms,nBastAux,nBastReg)
-  implicit none
-  TYPE(MOLECULE_PT),intent(in) :: MOLECULE(4)
-  Integer,intent(in)           :: nAtoms,nBastAux,nBastReg
+  !> \brief Find the precalculated screening matrix
+  !> (up to 10 orders of magnitude smaller than the current intTHRESHOLD)
   !
-  integer :: iAO
-  ! Consistency checking
-  DO iAO=2,4
-    IF (nAtoms.NE.MOLECULE(iAO)%p%nAtoms) THEN
-       CALL LSQUIT('Error in PARI! Different number of atoms for different AOs',-1)
-    ENDIF
-    IF (nBastAux.NE.MOLECULE(iAO)%p%nBastAux) THEN
-       CALL LSQUIT('Error in PARI! Different number of basis funcitons for different AOs',-1)
-    ENDIF
-    IF ((nBastReg.NE.MOLECULE(iAO)%p%nBastReg).OR.(nBastReg.NE.MOLECULE(iAO)%p%nBastVAL)) THEN
-       CALL LSQUIT('Error in PARI! Different number of auxiliary basis functions for different AOs',-1)
-    ENDIF
-  ENDDO
-  END SUBROUTINE checkConsistency
-END SUBROUTINE II_get_NRpari_df_coulomb_mat
+  !> \param CSfull Precalculated screening matrix
+  !> \param AO1 Character string usually 'Regular' or 'Empty' or 'DF-Aux' for center 1
+  !> \param AO2 Character string usually 'Regular' or 'Empty' or 'DF-Aux' for center 2
+  !> \param AO3 Character string usually 'Regular' or 'Empty' or 'DF-Aux' for center 3
+  !> \param AO4 Character string usually 'Regular' or 'Empty' or 'DF-Aux' for center 4
+  !> \param SETTING Integral evalualtion settings
+  !> \param LUPRI the logical unit number for the output file
+  !> \param LUERR the logical unit number for the error file
+  subroutine II_getScreenMat(CSfull,AO1,AO2,AO3,AO4,Setting,lupri,luerr)
+    implicit none
+    TYPE(LSTENSOR),pointer        :: CSfull
+    TYPE(LSSETTING),intent(inout) :: SETTING
+    INTEGER,intent(in)            :: LUPRI,LUERR,AO1,AO2,AO3,AO4
 
-SUBROUTINE II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
-implicit none
-TYPE(LSTENSOR),pointer        :: regCSfull,auxCSfull
-TYPE(LSSETTING),intent(inout) :: SETTING
-INTEGER,intent(in)            :: LUPRI,LUERR
-!
-type(moleculeinfo),pointer :: molecule
-Character(80) :: Filename
-Character(53) :: identifier
-Logical       :: FoundInMem,dofit
-Integer       :: molID,THR,THR2
-Integer       :: i
+    type(moleculeinfo),pointer :: molecule
+    Character(80) :: Filename
+    Character(53) :: identifier
+    Logical       :: FoundInMem
+    Integer       :: molID,THR,THR2
+    Integer       :: i
 
-IF (setting%scheme%CS_SCREEN) THEN
-  THR = ABS(NINT(LOG10(SETTING%SCHEME%intTHRESHOLD)))
-  molecule => SETTING%MOLECULE(1)%p
-  molID = SETTING%molID(1)
-  !Find the precalculated screening matrices (up to 10 orders of magnitude smaller 
-  !than the current intTHRESHOLD
-  DO I=0,10
-    THR2 = THR + I
-    CALL io_get_CSidentifier(identifier,THR2,molecule,molecule,Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
-    CALL io_get_filename(Filename,identifier,AORdefault,AORdefault,AORdefault,AORdefault,molID,molID,&
-        &              CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
-    call determine_lst_in_screenlist(Filename,FoundInMem,SETTING%IO)
-    IF (FoundInMem) THEN
-      call screen_associate(regCSfull,Filename,FoundInMem)
-      EXIT
-    ENDIF
-  ENDDO
-  IF (.NOT.FoundInMem) THEN
-    CALL io_get_CSidentifier(identifier,THR,molecule,molecule,Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
-    CALL io_get_filename(Filename,identifier,AORdefault,AORdefault,AORdefault,AORdefault,molID,molID,&
-      &                  CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
-    write(lupri,'(1X,1A)') 'Error in II_getScreenMatFull no regular screening matrix found'
-    write(lupri,'(1X,2A)') 'Identifier =',identifier
-    write(lupri,'(1X,2A)') 'Filename ='  ,Filename
-    CALL LSQUIT('Error in II_getScreenMatFull no regular screening matrix found',-1)
-  ENDIF
-  
-  dofit = setting%scheme%densfit.OR.setting%scheme%pari_j .OR. setting%scheme%pari_k
-  IF (dofit) THEN
+    THR = ABS(NINT(LOG10(SETTING%SCHEME%intTHRESHOLD)))
+       molecule => SETTING%MOLECULE(1)%p
+       molID = SETTING%molID(1)
+
     DO I=0,10
-      THR2 = THR + I
-      CALL io_get_CSidentifier(identifier,THR2,molecule,molecule,Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
-      CALL io_get_filename(Filename,identifier,AODFdefault,AOempty,AODFdefault,AOempty,molID,molID,&
-            &              CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
-      call determine_lst_in_screenlist(Filename,FoundInMem,SETTING%IO)
-      IF (FoundInMem) THEN
-        call screen_associate(auxCSfull,Filename,FoundInMem)
-        EXIT
-      ENDIF
+       THR2 = THR + I
+       CALL io_get_CSidentifier(identifier,THR2,molecule,molecule,&
+            Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
+       CALL io_get_filename(Filename,identifier,AO1,AO2,&
+            AO3,AO4,molID,molID,&
+            CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
+       call determine_lst_in_screenlist(Filename,FoundInMem,SETTING%IO)
+       IF (FoundInMem) THEN
+          call screen_associate(CSfull,Filename,FoundInMem)
+          EXIT
+       ENDIF
     ENDDO
     IF (.NOT.FoundInMem) THEN
-      CALL io_get_CSidentifier(identifier,THR,molecule,molecule,Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
-      CALL io_get_filename(Filename,identifier,AODFdefault,AOempty,AODFdefault,AOempty,molID,molID,&
-            &              CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
-      write(lupri,'(1X,1A)') 'Error in II_getScreenMatFull no auxiliary screening matrix found'
-      write(lupri,'(1X,2A)') 'Identifier =',identifier
-      write(lupri,'(1X,2A)') 'Filename ='  ,Filename
-      CALL LSQUIT('Error in II_getScreenMatFull no auxiliary screening matrix found',-1)
+       CALL io_get_CSidentifier(identifier,THR,molecule,molecule,&
+            Setting%Scheme%CS_SCREEN,Setting%Scheme%PS_SCREEN)
+       CALL io_get_filename(Filename,identifier,AO1,AO2,&
+            AO3,AO4,molID,molID,&
+            CoulombOperator,ContractedInttype,.FALSE.,LUPRI,LUERR)
+       write(lupri,'(1X,1A)') &
+            'Error in II_getScreenMatFull no screening matrix found'
+       write(lupri,'(1X,2A)') 'Identifier =',identifier
+       write(lupri,'(1X,2A)') 'Filename ='  ,Filename
+       CALL LSQUIT('Error in II_getScreenMatFull no screening matrix found',-1)
     ENDIF
-  ELSE
-    NULLIFY(auxCSfull)
-  ENDIF
-ELSE
-  NULLIFY(regCSfull)
-  NULLIFY(auxCSfull)
-ENDIF
 
-END SUBROUTINE II_getScreenMatFull
+  end subroutine II_getScreenMat
 
-!> \brief This subroutine calculates the pari-atomic density-fitted (PARI) Coulomb matrix
-!> \author P. Merlot, S. Reine
-!> \date 2010-02-03
-!> \param lupri Default print-unit for output
-!> \param luerr Default print-unit for termination
-!> \param setting Contains information about the integral settings
-!> \param D Density-matrix
-!> \param F Coulomb contribution to the Fock- or KS-matrix
-SUBROUTINE II_get_pari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
-implicit none
-TYPE(MATRIX),target,intent(in)    :: D(ndmat)
-TYPE(MATRIX),target,intent(inout) :: F(ndmat)
-TYPE(LSSETTING),intent(inout)     :: SETTING
-INTEGER,intent(in)                :: LUPRI,LUERR,ndmat
-!
-TYPE(MATRIX),target        :: galpha,galphaFit
-Integer                    :: nAtoms,temp1,temp2
-Integer                    :: iAtom,jAtom,nOrbReg,nOrbAux,nBastAux,nBastReg
-TYPE(MOLECULARORBITALINFO) :: orbitalInfo
-INTEGER,pointer            :: numAtomicOrbitalsReg(:)
-INTEGER,pointer            :: numAtomicOrbitalsAux(:)
-INTEGER,pointer            :: startAtomicOrbitalsReg(:)
-INTEGER,pointer            :: startAtomicOrbitalsAux(:)
-type(matrixp)              :: intmat(1)
-Integer                    :: usemat
-Integer                    :: iAtomA,iAtomB,iAtomC,iAtomD,nRegA,nRegB,nRegC,nRegD,nAuxA,nAuxB,nAuxC,nAuxD
-Integer                    :: iAlpha,iBeta,iGamma,iRegA,iRegB,iRegC,iRegD
-Integer                    :: startRegA,startRegB,startRegC,startRegD,startAuxA,startAuxB,startAuxC,startAuxD
-Integer                    :: endRegA,endRegB,endRegC,endRegD,endAuxA,endAuxB,endAuxC,endAuxD
-Integer                    :: nAux
-Integer                    :: info
-Real(realk),pointer        :: cbetafull(:,:,:)
-Real(realk),pointer        :: extracted_alpha_ab(:,:,:)
-Real(realk),pointer        :: extracted_alpha_beta(:,:)
-Real(realk),pointer        :: galphafull(:,:,:),galphaFitfull(:,:,:)
-Real(realk),pointer        :: Dfull(:,:,:),DfullAO(:,:,:)
-Real(realk),pointer        :: Jfull(:,:,:)
-TYPE(matrixp)              :: Jmat(1),Dmat(1)
-TYPE(BLOCKINFO)            :: pairAtomic,auxAtomic
-TYPE(FragmentInfo)         :: atomicFragments
-Real(realk)                :: dfac,factor,TSTART,TEND,tefull,tsfull
-Integer                    :: iAO,iRegAfull,iRegBfull
-TYPE(MAT3D),pointer        :: extracted_calpha_ab(:)
-Integer                    :: ireg,iaux
-CHARACTER(LEN=3)           :: nline
-logical                    :: saveRecalcGab
-integer                    :: idmat,nmat,nrow,ncol
-TYPE(LSTENSOR),pointer     :: regCSfull,auxCSfull
+  !> \brief This subroutine calculates the pari-atomic density-fitted (PARI) Coulomb matrix
+  !> \author P. Merlot, S. Reine
+  !> \date 2010-02-03
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
+  !> \param setting Contains information about the integral settings
+  !> \param D Density-matrix
+  !> \param F Coulomb contribution to the Fock- or KS-matrix
+  SUBROUTINE II_get_pari_df_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
+    implicit none
+    TYPE(MATRIX),target,intent(in)    :: D(ndmat)
+    TYPE(MATRIX),target,intent(inout) :: F(ndmat)
+    TYPE(LSSETTING),intent(inout)     :: SETTING
+    INTEGER,intent(in)                :: LUPRI,LUERR,ndmat
+    !
+    TYPE(MATRIX),target        :: galpha,galphaFit
+    Integer                    :: nAtoms,temp1,temp2
+    Integer                    :: iAtom,jAtom,nOrbReg,nOrbAux,nBastAux,nBastReg
+    TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+    INTEGER,pointer            :: numAtomicOrbitalsReg(:)
+    INTEGER,pointer            :: numAtomicOrbitalsAux(:)
+    INTEGER,pointer            :: startAtomicOrbitalsReg(:)
+    INTEGER,pointer            :: startAtomicOrbitalsAux(:)
+    type(matrixp)              :: intmat(1)
+    Integer                    :: usemat
+    Integer                    :: iAtomA,iAtomB,iAtomC,iAtomD,nRegA,nRegB,nRegC,nRegD,nAuxA,nAuxB,nAuxC,nAuxD
+    Integer                    :: iAlpha,iBeta,iGamma,iRegA,iRegB,iRegC,iRegD
+    Integer                    :: startRegA,startRegB,startRegC,startRegD,startAuxA,startAuxB,startAuxC,startAuxD
+    Integer                    :: endRegA,endRegB,endRegC,endRegD,endAuxA,endAuxB,endAuxC,endAuxD
+    Integer                    :: nAux
+    Integer                    :: info
+    Real(realk),pointer        :: cbetafull(:,:,:)
+    Real(realk),pointer        :: extracted_alpha_ab(:,:,:)
+    Real(realk),pointer        :: extracted_alpha_beta(:,:)
+    Real(realk),pointer        :: galphafull(:,:,:),galphaFitfull(:,:,:)
+    Real(realk),pointer        :: Dfull(:,:,:),DfullAO(:,:,:)
+    Real(realk),pointer        :: Jfull(:,:,:)
+    TYPE(matrixp)              :: Jmat(1),Dmat(1)
+    TYPE(BLOCKINFO)            :: pairAtomic,auxAtomic
+    TYPE(FragmentInfo)         :: atomicFragments
+    Real(realk)                :: dfac,factor,TSTART,TEND,tefull,tsfull
+    Integer                    :: iAO,iRegAfull,iRegBfull
+    TYPE(MAT3D),pointer        :: extracted_calpha_ab(:)
+    Integer                    :: ireg,iaux
+    CHARACTER(LEN=3)           :: nline
+    logical                    :: saveRecalcGab
+    integer                    :: idmat,nmat,nrow,ncol
+    TYPE(LSTENSOR),pointer     :: regCSfull,auxCSfull
 
-IF (ndmat.GT.1) THEN
-   WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-   WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-   CALL LSQUIT('Error in II_get_pari_df_coulomb_mat: ndmat>1 not tested',-1)
-ENDIF
-nrow = D(1)%nrow
-ncol = D(1)%ncol
-IF ((F(1)%nrow.NE.nrow).OR.(F(1)%ncol.NE.ncol)) CALL LSQUIT('Error in II_get_pari_df_coulomb_mat F/D',-1)
+    IF (ndmat.GT.1) THEN
+       WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+       WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+       CALL LSQUIT('Error in II_get_pari_df_coulomb_mat: ndmat>1 not tested',-1)
+    ENDIF
+    nrow = D(1)%nrow
+    ncol = D(1)%ncol
+    IF ((F(1)%nrow.NE.nrow).OR.(F(1)%ncol.NE.ncol)) CALL LSQUIT('Error in II_get_pari_df_coulomb_mat F/D',-1)
 
-IF (matrix_type .EQ. mtype_unres_dense)THEN
-  IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN 
-     WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-     WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-     CALL LSQUIT('Error in II_get_pari_df_coulomb_mat. NR and unrestricted',-1)
-  ENDIF
-  IF(setting%IntegralTransformGC) THEN
-    WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-    WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-    CALL LSQUIT('Error in II_get_pari_df_coulomb_mat. GC and unrestricted',-1)
-  ENDIF
-  IF (SETTING%SCHEME%FMM) THEN
-    WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-    WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-    call lsquit('Not allowed combination in II_get_pari_df_coulomb_mat. FMM and unrestricted',-1)
-  ENDIF
-  nmat = 2*ndmat
-  call mem_alloc(Dfull,nrow,ncol,nmat)
-  DO Idmat=1,ndmat
-    CALL DCOPY(nrow*ncol,D(idmat)%elms,1,Dfull(:,:,2*idmat-1),1)
-    CALL DCOPY(nrow*ncol,D(idmat)%elmsb,1,Dfull(:,:,2*idmat),1)
-  ENDDO
-ELSE
-  nmat = ndmat
-  ! Alloc full density-matrix and Coulomb-matrix
-  call mem_alloc(Dfull,nrow,ncol,ndmat)
-  DO idmat=1,ndmat
-    call mat_to_full(D(idmat),1E0_realk,Dfull(:,:,idmat))
-  ENDDO
-ENDIF
+    IF (matrix_type .EQ. mtype_unres_dense)THEN
+       IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN 
+          WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+          WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+          CALL LSQUIT('Error in II_get_pari_df_coulomb_mat. NR and unrestricted',-1)
+       ENDIF
+       IF(setting%IntegralTransformGC) THEN
+          WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+          WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+          CALL LSQUIT('Error in II_get_pari_df_coulomb_mat. GC and unrestricted',-1)
+       ENDIF
+       IF (SETTING%SCHEME%FMM) THEN
+          WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
+          WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
+          call lsquit('Not allowed combination in II_get_pari_df_coulomb_mat. FMM and unrestricted',-1)
+       ENDIF
+       nmat = 2*ndmat
+       call mem_alloc(Dfull,nrow,ncol,nmat)
+       DO Idmat=1,ndmat
+          CALL DCOPY(nrow*ncol,D(idmat)%elms,1,Dfull(:,:,2*idmat-1),1)
+          CALL DCOPY(nrow*ncol,D(idmat)%elmsb,1,Dfull(:,:,2*idmat),1)
+       ENDDO
+    ELSE
+       nmat = ndmat
+       ! Alloc full density-matrix and Coulomb-matrix
+       call mem_alloc(Dfull,nrow,ncol,ndmat)
+       DO idmat=1,ndmat
+          call mat_to_full(D(idmat),1E0_realk,Dfull(:,:,idmat))
+       ENDDO
+    ENDIF
 
-IF(setting%IntegralTransformGC)THEN
-   call mem_alloc(DfullAO,nrow,ncol,nmat)
-   call GCAO2AO_transform_fullD(Dfull,DfullAO,nrow,nmat,setting,lupri)
-   call mem_dealloc(Dfull)
-ELSE
-   DfullAO => Dfull
-ENDIF
-
-call mem_alloc(Jfull,nrow,ncol,nmat)
-call ls_dzero(Jfull,nrow*ncol*nmat)
-
-CALL LSTIMER('START ',TSTART,TEND,LUPRI)
-CALL LSTIMER('START ',tsfull,tefull,lupri)
-!
-CALL getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBastReg,nBastAux)
-
-IF(SETTING%SCHEME%FMM) CALL LSQUIT('FMM not yet implemented for PARI!',lupri)
-
-! --- Build an array with the list of atoms with their respective nb. of orbitals/auxiliary functions
-! --- Build another array to know where each atom start in the complete matrices
-CALL setMolecularOrbitalInfo(SETTING%MOLECULE(1)%p,orbitalInfo)
-
-numAtomicOrbitalsReg   => orbitalInfo%numAtomicOrbitalsReg
-startAtomicOrbitalsReg => orbitalInfo%startAtomicOrbitalsReg
-numAtomicOrbitalsAux   => orbitalInfo%numAtomicOrbitalsAux
-startAtomicOrbitalsAux => orbitalInfo%startAtomicOrbitalsAux
- 
-!set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-!Then get the full screening matrices
-CALL II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
-
-! --- Calculate the pair-atomic fitting coefficients
-allocate(extracted_calpha_ab(nAtoms))
-CALL getPariCoefficients(LUPRI,LUERR,SETTING,extracted_calpha_ab,orbitalInfo,regCSfull,auxCSfull)
-
-!reset threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-
-CALL LSTIMER('coeffs',TSTART,TEND,LUPRI)
-  
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-
-DO idmat=1,nmat
-  
-  ! --- compute Cbeta 
-  call mem_alloc(cbetafull,nBastAux,1,1)
-  cbetafull = 0.0E0_realk
-  DO iAtomA=1,nAtoms
-    call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
-    DO iAtomB=1,nAtoms
-      call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
-      DO iRegB=1,nRegB
-        iRegBfull = iRegB+startRegB-1
-        DO iRegA=1,nRegA
-          iRegAfull = iRegA+startRegA-1
-          dfac = 2E0_realk*DfullAO(iRegAfull,iRegBfull,idmat)
-          IF (iAtomA.NE.iAtomB) dfac = dfac + 2E0_realk * DfullAO(iRegBfull,iRegAfull,idmat)
-          DO iAlpha=1,nAuxA
-            cbetafull(iAlpha+startAuxA-1,1,1) = cbetafull(iAlpha+startAuxA-1,1,1) &
-       &       + dfac * extracted_calpha_ab(iAtomA)%elements(iAlpha,iRegA,iRegBfull)
-          ENDDO
-        ENDDO
-      ENDDO
-    ENDDO
-  ENDDO
-  
-  
-  CALL LSTIMER('c-beta',TSTART,TEND,LUPRI)
-  ! ----------------------------------------------------------------------------------
-  ! --- COMPUTING THE 3 CONTRIBUTIONS TO THE COULOMB PART (Jab)
-  
-  CALL ls_attachDmatToSetting(cbetafull,nBastAux,1,1,setting,'RHS',3,4,lupri)
-  CALL ls_attach_gab_to_setting(setting,regCSfull,auxCSfull)
-  call initIntegralOutputDims(setting%Output,nBastReg,nBastReg,1,1,1)
-  call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,&
-       &          SETTING,LUPRI,LUERR)
-  CALL retrieve_Output(lupri,setting,Jfull(:,:,idmat),.FALSE.)
-  IF(SETTING%SCHEME%FMM)THEN
-     IF (ndmat.GT.1) CALL LSQUIT('not testet',-1)
-     CALL LSQUIT('not testet',-1)
-     !call ls_jengineClassicalFull
-  ENDIF
-
-  CALL ls_freeDmatFromSetting(setting)
-  CALL ls_free_gab_from_setting(setting,lupri)
-  
-  CALL LSTIMER('J-1   ',TSTART,TEND,LUPRI)
-  
-  ! --- compute gAlpha
-  call mem_alloc(galphafull,nBastAux,1,1)
-  call ls_DZERO(galphafull,nBastAux)
-  CALL ls_attachDmatToSetting(DfullAO(:,:,idmat:idmat),nBastReg,nBastReg,1,setting,'RHS',3,4,lupri)
-  CALL ls_attach_gab_to_setting(setting,auxCSfull,regCSfull)
-  call initIntegralOutputDims(setting%Output,nBastAux,1,1,1,1)
-  call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,CoulombOperator,RegularSpec,ContractedInttype,&
-       &          SETTING,LUPRI,LUERR)
-  CALL retrieve_Output(lupri,setting,galphafull,.FALSE.)
-  IF(SETTING%SCHEME%FMM)THEN
-     IF (ndmat.GT.1) CALL LSQUIT('not testet',-1)
-     CALL LSQUIT('not testet',-1)
-     !call ls_jengineClassicalFull
-  ENDIF
-
-  CALL ls_freeDmatFromSetting(setting)
-  CALL ls_free_gab_from_setting(setting,lupri)
-  CALL LSTIMER('galph3',TSTART,TEND,LUPRI)
-  
-  ! --- compute gAlphaFit
-  call mem_alloc(galphaFitfull,nBastAux,1,1)
-  call ls_DZERO(galphaFitfull,nBastAux)
-  CALL ls_attachDmatToSetting(cbetafull,nBastAux,1,1,setting,'RHS',3,4,lupri)
-  CALL ls_attach_gab_to_setting(setting,auxCSfull,auxCSfull)
-  !Jmat,ndmat,
-  call initIntegralOutputDims(setting%Output,nBastAux,1,1,1,1)
-  call ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,&
-       &          SETTING,LUPRI,LUERR)
-  CALL retrieve_Output(lupri,setting,galphaFitFull,.FALSE.)
-  IF(SETTING%SCHEME%FMM)THEN
-     IF (ndmat.GT.1) CALL LSQUIT('not testet',-1)
-     CALL LSQUIT('not testet',-1)
-     !call ls_jengineClassicalFull
-  ENDIF
-  CALL ls_freeDmatFromSetting(setting)
-  CALL ls_free_gab_from_setting(setting,lupri)
-  
-  CALL LSTIMER('galph2',TSTART,TEND,LUPRI)
-  
-  ! --- contract gAlpha and gAlphaFit, then add the second/third contributions to Jab
-  ! --- TO BE OPTIMIZED using the sparcity of C_alpha_ab_full
-  IF (.NOT.(SETTING%SCHEME%NON_ROBUST_PARI)) THEN
-     DO iAlpha=1,nBastAux
-        galphafull(iAlpha,1,1)=galphafull(iAlpha,1,1)-galphaFitfull(iAlpha,1,1)
-     ENDDO
-  ENDIF
-  !
-  DO iAtomA=1,nAtoms
-    call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
-    DO iAtomB=1,nAtoms
-      call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
-      DO iRegB=1,nRegB
-        iRegBfull = iRegB+startRegB-1
-        DO iRegA=1,nRegA
-          iRegAfull = iRegA+startRegA-1
-          DO iAlpha=1,nAuxA
-            Jfull(iRegAfull,iRegBfull,idmat) &
-       &      =  Jfull(iRegAfull,iRegBfull,idmat) &
-       &        + extracted_calpha_ab(iAtomA)%elements(iAlpha,iRegA,iRegBfull)&
-       &          * galphafull(iAlpha+startAuxA-1,1,1)
-          ENDDO
-        ENDDO
-      ENDDO
-      IF (iAtomA.NE.iAtomB) THEN
-        DO iRegA=1,nRegA
-          iRegAfull = iRegA+startRegA-1
-          DO iRegB=1,nRegB
-            iRegBfull = iRegB+startRegB-1
-            DO iBeta=1,nAuxB
-              Jfull(iRegAfull,iRegBfull,idmat) &
-       &        =  Jfull(iRegAfull,iRegBfull,idmat) &
-       &         + extracted_calpha_ab(iAtomB)%elements(iBeta,iRegB,iRegAfull)&
-       &           * galphafull(iBeta+startAuxB-1,1,1)
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDIF
-    ENDDO
-  ENDDO
-
-  call mem_dealloc(galphafull)
-  call mem_dealloc(galphaFitfull)
-  call mem_dealloc(cbetafull)
-
-ENDDO
-  
-CALL LSTIMER('Jfull',TSTART,TEND,LUPRI)
-
-
-IF (matrix_type .EQ. mtype_unres_dense)THEN
-  DO Idmat=1,ndmat
-    CALL DCOPY(nrow*ncol,Jfull(:,:,2*idmat-1),1,F(idmat)%elms, 1)
-    CALL DCOPY(nrow*ncol,Jfull(:,:,2*idmat  ),1,F(idmat)%elmsb,1)
-  ENDDO
-ELSE
-  factor = 1E0_realk
-  IF (SETTING%SCHEME%NON_ROBUST_PARI) factor = 0.5_realk
-  DO Idmat=1,ndmat
-    call mat_set_from_full(Jfull(:,:,idmat),factor,F(idmat))
     IF(setting%IntegralTransformGC)THEN
-       call AO2GCAO_transform_matrixF(F(idmat),setting,lupri)
+       call mem_alloc(DfullAO,nrow,ncol,nmat)
+       call GCAO2AO_transform_fullD(Dfull,DfullAO,nrow,nmat,setting,lupri)
+       call mem_dealloc(Dfull)
+    ELSE
+       DfullAO => Dfull
     ENDIF
-  ENDDO
-ENDIF
 
-call mem_dealloc(DfullAO)
-CALL mem_dealloc(Jfull)
-call freePariCoefficients(extracted_calpha_ab,orbitalInfo%nAtoms)
-deallocate(extracted_calpha_ab)
-CALL freeMolecularOrbitalInfo(orbitalInfo)
+    call mem_alloc(Jfull,nrow,ncol,nmat)
+    call ls_dzero(Jfull,nrow*ncol*nmat)
 
-CALL LSTIMER('PARI-J',tsfull,tefull,lupri)
+    CALL LSTIMER('START ',TSTART,TEND,LUPRI)
+    CALL LSTIMER('START ',tsfull,tefull,lupri)
+    !
+    CALL getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBastReg,nBastAux)
 
-CONTAINS
-  SUBROUTINE checkConsistency(MOLECULE,nAtoms,nBastAux,nBastReg)
-  implicit none
-  TYPE(MOLECULE_PT),intent(in) :: MOLECULE(4)
-  Integer,intent(in)           :: nAtoms,nBastAux,nBastReg
-  !
-  integer :: iAO
-  ! Consistency checking
-  DO iAO=2,4
-    IF (nAtoms.NE.MOLECULE(iAO)%p%nAtoms) THEN
-       CALL LSQUIT('Error in PARI! Different number of atoms for different AOs',-1)
+    IF(SETTING%SCHEME%FMM) CALL LSQUIT('FMM not yet implemented for PARI!',lupri)
+
+    ! --- Build an array with the list of atoms with their respective nb. of orbitals/auxiliary functions
+    ! --- Build another array to know where each atom start in the complete matrices
+    CALL setMolecularOrbitalInfo(SETTING%MOLECULE(1)%p,orbitalInfo)
+
+    numAtomicOrbitalsReg   => orbitalInfo%numAtomicOrbitalsReg
+    startAtomicOrbitalsReg => orbitalInfo%startAtomicOrbitalsReg
+    numAtomicOrbitalsAux   => orbitalInfo%numAtomicOrbitalsAux
+    startAtomicOrbitalsAux => orbitalInfo%startAtomicOrbitalsAux
+
+    !set threshold 
+    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+    !Then get the full screening matrices
+    CALL II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
+
+    ! --- Calculate the pair-atomic fitting coefficients
+    allocate(extracted_calpha_ab(nAtoms))
+    CALL getPariCoefficients(LUPRI,LUERR,SETTING,extracted_calpha_ab,orbitalInfo,regCSfull,auxCSfull)
+
+    !reset threshold 
+    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+
+    CALL LSTIMER('coeffs',TSTART,TEND,LUPRI)
+
+    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+
+    DO idmat=1,nmat
+
+       ! --- compute Cbeta 
+       call mem_alloc(cbetafull,nBastAux,1,1)
+       cbetafull = 0.0E0_realk
+       DO iAtomA=1,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
+          DO iAtomB=1,nAtoms
+             call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
+             DO iRegB=1,nRegB
+                iRegBfull = iRegB+startRegB-1
+                DO iRegA=1,nRegA
+                   iRegAfull = iRegA+startRegA-1
+                   dfac = 2E0_realk*DfullAO(iRegAfull,iRegBfull,idmat)
+                   IF (iAtomA.NE.iAtomB) dfac = dfac + 2E0_realk * DfullAO(iRegBfull,iRegAfull,idmat)
+                   DO iAlpha=1,nAuxA
+                      cbetafull(iAlpha+startAuxA-1,1,1) = cbetafull(iAlpha+startAuxA-1,1,1) &
+                           &       + dfac * extracted_calpha_ab(iAtomA)%elements(iAlpha,iRegA,iRegBfull)
+                   ENDDO
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDDO
+
+
+       CALL LSTIMER('c-beta',TSTART,TEND,LUPRI)
+       ! ----------------------------------------------------------------------------------
+       ! --- COMPUTING THE 3 CONTRIBUTIONS TO THE COULOMB PART (Jab)
+
+       CALL ls_attachDmatToSetting(cbetafull,nBastAux,1,1,setting,'RHS',3,4,lupri)
+       CALL ls_attach_gab_to_setting(setting,regCSfull,auxCSfull)
+       call initIntegralOutputDims(setting%Output,nBastReg,nBastReg,1,1,1)
+       call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,&
+            &          SETTING,LUPRI,LUERR)
+       CALL retrieve_Output(lupri,setting,Jfull(:,:,idmat),.FALSE.)
+       IF(SETTING%SCHEME%FMM)THEN
+          IF (ndmat.GT.1) CALL LSQUIT('not testet',-1)
+          CALL LSQUIT('not testet',-1)
+          !call ls_jengineClassicalFull
+       ENDIF
+
+       CALL ls_freeDmatFromSetting(setting)
+       CALL ls_free_gab_from_setting(setting,lupri)
+
+       CALL LSTIMER('J-1   ',TSTART,TEND,LUPRI)
+
+       ! --- compute gAlpha
+       call mem_alloc(galphafull,nBastAux,1,1)
+       call ls_DZERO(galphafull,nBastAux)
+       CALL ls_attachDmatToSetting(DfullAO(:,:,idmat:idmat),nBastReg,nBastReg,1,setting,'RHS',3,4,lupri)
+       CALL ls_attach_gab_to_setting(setting,auxCSfull,regCSfull)
+       call initIntegralOutputDims(setting%Output,nBastAux,1,1,1,1)
+       call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,CoulombOperator,RegularSpec,ContractedInttype,&
+            &          SETTING,LUPRI,LUERR)
+       CALL retrieve_Output(lupri,setting,galphafull,.FALSE.)
+       IF(SETTING%SCHEME%FMM)THEN
+          IF (ndmat.GT.1) CALL LSQUIT('not testet',-1)
+          CALL LSQUIT('not testet',-1)
+          !call ls_jengineClassicalFull
+       ENDIF
+
+       CALL ls_freeDmatFromSetting(setting)
+       CALL ls_free_gab_from_setting(setting,lupri)
+       CALL LSTIMER('galph3',TSTART,TEND,LUPRI)
+
+       ! --- compute gAlphaFit
+       call mem_alloc(galphaFitfull,nBastAux,1,1)
+       call ls_DZERO(galphaFitfull,nBastAux)
+       CALL ls_attachDmatToSetting(cbetafull,nBastAux,1,1,setting,'RHS',3,4,lupri)
+       CALL ls_attach_gab_to_setting(setting,auxCSfull,auxCSfull)
+       !Jmat,ndmat,
+       call initIntegralOutputDims(setting%Output,nBastAux,1,1,1,1)
+       call ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,&
+            &          SETTING,LUPRI,LUERR)
+       CALL retrieve_Output(lupri,setting,galphaFitFull,.FALSE.)
+       IF(SETTING%SCHEME%FMM)THEN
+          IF (ndmat.GT.1) CALL LSQUIT('not testet',-1)
+          CALL LSQUIT('not testet',-1)
+          !call ls_jengineClassicalFull
+       ENDIF
+       CALL ls_freeDmatFromSetting(setting)
+       CALL ls_free_gab_from_setting(setting,lupri)
+
+       CALL LSTIMER('galph2',TSTART,TEND,LUPRI)
+
+       ! --- contract gAlpha and gAlphaFit, then add the second/third contributions to Jab
+       ! --- TO BE OPTIMIZED using the sparcity of C_alpha_ab_full
+       IF (.NOT.(SETTING%SCHEME%NON_ROBUST_PARI)) THEN
+          DO iAlpha=1,nBastAux
+             galphafull(iAlpha,1,1)=galphafull(iAlpha,1,1)-galphaFitfull(iAlpha,1,1)
+          ENDDO
+       ENDIF
+       !
+       DO iAtomA=1,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
+          DO iAtomB=1,nAtoms
+             call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
+             DO iRegB=1,nRegB
+                iRegBfull = iRegB+startRegB-1
+                DO iRegA=1,nRegA
+                   iRegAfull = iRegA+startRegA-1
+                   DO iAlpha=1,nAuxA
+                      Jfull(iRegAfull,iRegBfull,idmat) &
+                           &      =  Jfull(iRegAfull,iRegBfull,idmat) &
+                           &        + extracted_calpha_ab(iAtomA)%elements(iAlpha,iRegA,iRegBfull)&
+                           &          * galphafull(iAlpha+startAuxA-1,1,1)
+                   ENDDO
+                ENDDO
+             ENDDO
+             IF (iAtomA.NE.iAtomB) THEN
+                DO iRegA=1,nRegA
+                   iRegAfull = iRegA+startRegA-1
+                   DO iRegB=1,nRegB
+                      iRegBfull = iRegB+startRegB-1
+                      DO iBeta=1,nAuxB
+                         Jfull(iRegAfull,iRegBfull,idmat) &
+                              &        =  Jfull(iRegAfull,iRegBfull,idmat) &
+                              &         + extracted_calpha_ab(iAtomB)%elements(iBeta,iRegB,iRegAfull)&
+                              &           * galphafull(iBeta+startAuxB-1,1,1)
+                      ENDDO
+                   ENDDO
+                ENDDO
+             ENDIF
+          ENDDO
+       ENDDO
+
+       call mem_dealloc(galphafull)
+       call mem_dealloc(galphaFitfull)
+       call mem_dealloc(cbetafull)
+
+    ENDDO
+
+    CALL LSTIMER('Jfull',TSTART,TEND,LUPRI)
+
+
+    IF (matrix_type .EQ. mtype_unres_dense)THEN
+       DO Idmat=1,ndmat
+          CALL DCOPY(nrow*ncol,Jfull(:,:,2*idmat-1),1,F(idmat)%elms, 1)
+          CALL DCOPY(nrow*ncol,Jfull(:,:,2*idmat  ),1,F(idmat)%elmsb,1)
+       ENDDO
+    ELSE
+       factor = 1E0_realk
+       IF (SETTING%SCHEME%NON_ROBUST_PARI) factor = 0.5_realk
+       DO Idmat=1,ndmat
+          call mat_set_from_full(Jfull(:,:,idmat),factor,F(idmat))
+          IF(setting%IntegralTransformGC)THEN
+             call AO2GCAO_transform_matrixF(F(idmat),setting,lupri)
+          ENDIF
+       ENDDO
     ENDIF
-    IF (nBastAux.NE.MOLECULE(iAO)%p%nBastAux) THEN
-       CALL LSQUIT('Error in PARI! Different number of basis funcitons for different AOs',-1)
+
+    call mem_dealloc(DfullAO)
+    CALL mem_dealloc(Jfull)
+    call freePariCoefficients(extracted_calpha_ab,orbitalInfo%nAtoms)
+    deallocate(extracted_calpha_ab)
+    CALL freeMolecularOrbitalInfo(orbitalInfo)
+
+    CALL LSTIMER('PARI-J',tsfull,tefull,lupri)
+
+  CONTAINS
+    SUBROUTINE checkConsistency(MOLECULE,nAtoms,nBastAux,nBastReg)
+      implicit none
+      TYPE(MOLECULE_PT),intent(in) :: MOLECULE(4)
+      Integer,intent(in)           :: nAtoms,nBastAux,nBastReg
+      !
+      integer :: iAO
+      ! Consistency checking
+      DO iAO=2,4
+         IF (nAtoms.NE.MOLECULE(iAO)%p%nAtoms) THEN
+            CALL LSQUIT('Error in PARI! Different number of atoms for different AOs',-1)
+         ENDIF
+         IF (nBastAux.NE.MOLECULE(iAO)%p%nBastAux) THEN
+            CALL LSQUIT('Error in PARI! Different number of basis funcitons for different AOs',-1)
+         ENDIF
+         IF ((nBastReg.NE.MOLECULE(iAO)%p%nBastReg).OR.(nBastReg.NE.MOLECULE(iAO)%p%nBastVAL)) THEN
+            CALL LSQUIT('Error in PARI! Different number of auxiliary basis functions for different AOs',-1)
+         ENDIF
+      ENDDO
+    END SUBROUTINE checkConsistency
+  END SUBROUTINE II_get_pari_df_coulomb_mat
+
+
+
+  !> \brief This subroutine calculates the pair-atomic density-fitted (PARI) Coulomb matrix
+  !> \author P. Merlot, S. Reine
+  !> \date 2011-04-19
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
+  !> \param setting Contains information about the integral settings
+  !> \param D Density-matrix
+  !> \param F Coulomb contribution to the Fock- or KS-matrix
+  SUBROUTINE II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D,F)
+    implicit none
+    TYPE(MATRIX),target,intent(in)    :: D
+    TYPE(MATRIX),target,intent(inout) :: F
+    TYPE(LSSETTING),intent(inout)     :: SETTING
+    INTEGER,intent(in)                :: LUPRI,LUERR
+    !                                    
+    Integer               :: nAtoms,nBastAux,nBastReg
+    Real(realk),pointer   :: ab_beta_full(:,:,:)
+    Real(realk),pointer   :: ab_beta_AB(:,:,:)
+
+    Real(realk),pointer   :: alpha_beta_full(:,:,:,:,:)   ! in retrieve_output_2dim, not implemented with just 2 dimensions !!!
+    Real(realk),pointer   :: alpha_beta_AB(:,:) 
+    Real(realk),pointer   :: Calpha_ab_full(:,:,:)
+    !  Real(realk),pointer   :: Calpha_ab_AB(:,:,:)
+    Real(realk),pointer   :: Calpha_full(:)
+    Real(realk),pointer   :: galpha_full(:)
+    Real(realk),pointer   :: galphaFit_full(:)
+    Real(realk),pointer   :: Dfull(:,:,:),DfullAO(:,:,:)
+    Real(realk),pointer   :: Jfull(:,:,:,:,:)
+    Integer               :: ndmat = 1
+    TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+    Integer               :: nRegA,nRegB,nAuxA,nAuxB,nAuxAB
+    Integer               :: iAtomA,iAtomB,iAuxA,iAuxB,iReg,iRegA,iRegB,iRegC,iRegD
+    Integer               :: iAux,iAlpha,iBeta
+    Integer               :: startRegA,startRegB,startAuxA,startAuxB
+    Integer               :: endRegA,  endRegB,  endAuxA,  endAuxB
+    Integer               :: info
+    Real(realk)           :: tmp
+    CHARACTER(LEN=3) :: nline
+    logical               :: saveRecalcGab
+    !   TYPE(MATRIX)          :: F_copy  ! copy of the Fock matrix
+    !   TYPE(MATRIX)          :: S   !overlap matrix
+    !   TYPE(MATRIX)          :: Cmo ! eigenvector of the Fock matrix
+    !   Real(realk), pointer  :: eival(:)  ! eigenvalues of the fock matrix
+    !
+    !set threshold 
+    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+    saveRecalcGab = setting%scheme%recalcgab
+    setting%scheme%recalcgab = .TRUE.
+    !
+    ! Read Molecule infos
+    call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBastReg,nBastAux)
+    ! Alloc full density-matrix Dfull and Coulomb-matrix Jfull
+    call mem_alloc(Dfull,D%nrow,D%ncol,1)
+    call mat_to_full(D,1E0_realk,Dfull(:,:,1))
+
+    IF(setting%IntegralTransformGC)THEN
+       call mem_alloc(DfullAO,D%nrow,D%ncol,1)
+       call GCAO2AO_transform_fullD(Dfull,DfullAO,D%nrow,1,setting,lupri)
+       call mem_dealloc(Dfull)
+    ELSE
+       DfullAO => Dfull
     ENDIF
-    IF ((nBastReg.NE.MOLECULE(iAO)%p%nBastReg).OR.(nBastReg.NE.MOLECULE(iAO)%p%nBastVAL)) THEN
-       CALL LSQUIT('Error in PARI! Different number of auxiliary basis functions for different AOs',-1)
-    ENDIF
-  ENDDO
-  END SUBROUTINE checkConsistency
-END SUBROUTINE II_get_pari_df_coulomb_mat
 
+    call mat_zero(F)
+    call mem_alloc(Jfull,nBastReg,nBastReg,1,1,ndmat)
+    call ls_dzero(Jfull,nBastReg*nBastReg*ndmat)
 
+    ! Calculate (ab|beta) full
+    call mem_alloc(ab_beta_full,nBastAux,nBastReg,nBastReg)
+    ab_beta_full = 0E0_realk ! call ls_dzero(ab_beta_full,nBastAux*nBastReg*nBastReg)
+    call initIntegralOutputDims(setting%Output,nBastAux,1,nBastReg,nBastReg,1)
+    call ls_getIntegrals(AODFdefault,AOempty,AORdefault,AORdefault,CoulombOperator,RegularSpec,&
+         &               ContractedInttype,SETTING,LUPRI,LUERR)
+    call retrieve_Output(lupri,setting,ab_beta_full,.FALSE.)
 
-!> \brief This subroutine calculates the pair-atomic density-fitted (PARI) Coulomb matrix
-!> \author P. Merlot, S. Reine
-!> \date 2011-04-19
-!> \param lupri Default print-unit for output
-!> \param luerr Default print-unit for termination
-!> \param setting Contains information about the integral settings
-!> \param D Density-matrix
-!> \param F Coulomb contribution to the Fock- or KS-matrix
-SUBROUTINE II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D,F)
-  implicit none
-  TYPE(MATRIX),target,intent(in)    :: D
-  TYPE(MATRIX),target,intent(inout) :: F
-  TYPE(LSSETTING),intent(inout)     :: SETTING
-  INTEGER,intent(in)                :: LUPRI,LUERR
-  !                                    
-  Integer               :: nAtoms,nBastAux,nBastReg
-  Real(realk),pointer   :: ab_beta_full(:,:,:)
-  Real(realk),pointer   :: ab_beta_AB(:,:,:)
+    ! Calculate (alpha|beta) full
+    call mem_alloc(alpha_beta_full,nBastAux,1,nBastAux,1,1)
+    alpha_beta_full = 0E0_realk ! call ls_dzero(alpha_beta_full,nBastAux*nBastReg*nBastReg)
+    call initIntegralOutputDims(setting%Output,nBastAux,1,nBastAux,1,1)
+    call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,RegularSpec,&
+         &               ContractedInttype,SETTING,LUPRI,LUERR)
+    call retrieve_Output(lupri,setting,alpha_beta_full,.FALSE.)
 
-  Real(realk),pointer   :: alpha_beta_full(:,:,:,:,:)   ! in retrieve_output_2dim, not implemented with just 2 dimensions !!!
-  Real(realk),pointer   :: alpha_beta_AB(:,:) 
-  Real(realk),pointer   :: Calpha_ab_full(:,:,:)
-!  Real(realk),pointer   :: Calpha_ab_AB(:,:,:)
-  Real(realk),pointer   :: Calpha_full(:)
-  Real(realk),pointer   :: galpha_full(:)
-  Real(realk),pointer   :: galphaFit_full(:)
-  Real(realk),pointer   :: Dfull(:,:,:),DfullAO(:,:,:)
-  Real(realk),pointer   :: Jfull(:,:,:,:,:)
-  Integer               :: ndmat = 1
-  TYPE(MOLECULARORBITALINFO) :: orbitalInfo
-  Integer               :: nRegA,nRegB,nAuxA,nAuxB,nAuxAB
-  Integer               :: iAtomA,iAtomB,iAuxA,iAuxB,iReg,iRegA,iRegB,iRegC,iRegD
-  Integer               :: iAux,iAlpha,iBeta
-  Integer               :: startRegA,startRegB,startAuxA,startAuxB
-  Integer               :: endRegA,  endRegB,  endAuxA,  endAuxB
-  Integer               :: info
-  Real(realk)           :: tmp
-  CHARACTER(LEN=3) :: nline
-  logical               :: saveRecalcGab
-!   TYPE(MATRIX)          :: F_copy  ! copy of the Fock matrix
-!   TYPE(MATRIX)          :: S   !overlap matrix
-!   TYPE(MATRIX)          :: Cmo ! eigenvector of the Fock matrix
-!   Real(realk), pointer  :: eival(:)  ! eigenvalues of the fock matrix
-  !
-  !set threshold 
-  SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-  saveRecalcGab = setting%scheme%recalcgab
-  setting%scheme%recalcgab = .TRUE.
-  !
-  ! Read Molecule infos
-  call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBastReg,nBastAux)
-  ! Alloc full density-matrix Dfull and Coulomb-matrix Jfull
-  call mem_alloc(Dfull,D%nrow,D%ncol,1)
-  call mat_to_full(D,1E0_realk,Dfull(:,:,1))
-
-  IF(setting%IntegralTransformGC)THEN
-     call mem_alloc(DfullAO,D%nrow,D%ncol,1)
-     call GCAO2AO_transform_fullD(Dfull,DfullAO,D%nrow,1,setting,lupri)
-     call mem_dealloc(Dfull)
-  ELSE
-     DfullAO => Dfull
-  ENDIF
-
-  call mat_zero(F)
-  call mem_alloc(Jfull,nBastReg,nBastReg,1,1,ndmat)
-  call ls_dzero(Jfull,nBastReg*nBastReg*ndmat)
-
-  ! Calculate (ab|beta) full
-  call mem_alloc(ab_beta_full,nBastAux,nBastReg,nBastReg)
-  ab_beta_full = 0E0_realk ! call ls_dzero(ab_beta_full,nBastAux*nBastReg*nBastReg)
-  call initIntegralOutputDims(setting%Output,nBastAux,1,nBastReg,nBastReg,1)
-  call ls_getIntegrals(AODFdefault,AOempty,AORdefault,AORdefault,CoulombOperator,RegularSpec,&
-       &               ContractedInttype,SETTING,LUPRI,LUERR)
-  call retrieve_Output(lupri,setting,ab_beta_full,.FALSE.)
-
-  ! Calculate (alpha|beta) full
-  call mem_alloc(alpha_beta_full,nBastAux,1,nBastAux,1,1)
-  alpha_beta_full = 0E0_realk ! call ls_dzero(alpha_beta_full,nBastAux*nBastReg*nBastReg)
-  call initIntegralOutputDims(setting%Output,nBastAux,1,nBastAux,1,1)
-  call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,RegularSpec,&
-       &               ContractedInttype,SETTING,LUPRI,LUERR)
-  call retrieve_Output(lupri,setting,alpha_beta_full,.FALSE.)
-
-  ! Alloc memory for Calpha_ab_full
-  call mem_alloc(Calpha_ab_full,nBastAux,nBastReg,nBastReg)
+    ! Alloc memory for Calpha_ab_full
+    call mem_alloc(Calpha_ab_full,nBastAux,nBastReg,nBastReg)
 
 #if 0
-  DO iRegB=1,nBastReg
-    DO iRegA=1,nBastReg
-      DO iAux=1,nBastAux
-        Calpha_ab_full(iAux,iRegA,iRegB) = ab_beta_full(iAux,iRegA,iRegB) 
-      ENDDO
+    DO iRegB=1,nBastReg
+       DO iRegA=1,nBastReg
+          DO iAux=1,nBastAux
+             Calpha_ab_full(iAux,iRegA,iRegB) = ab_beta_full(iAux,iRegA,iRegB) 
+          ENDDO
+       ENDDO
     ENDDO
-  ENDDO
-! Calpha_ab_full = ab_beta_full
-  call mem_alloc(alpha_beta_AB,nBastAux,nBastAux)
-  DO iAuxB=1,nBastAux
-    DO iAuxA=1,nBastAux
-      alpha_beta_AB(iAuxA,iAuxB) = alpha_beta_full(iAuxA,1,iAuxB,1,1)
+    ! Calpha_ab_full = ab_beta_full
+    call mem_alloc(alpha_beta_AB,nBastAux,nBastAux)
+    DO iAuxB=1,nBastAux
+       DO iAuxA=1,nBastAux
+          alpha_beta_AB(iAuxA,iAuxB) = alpha_beta_full(iAuxA,1,iAuxB,1,1)
+       ENDDO
     ENDDO
-  ENDDO
-! alpha_beta_AB = alpha_beta_full(:,1,:,1,1)
-  ! --- solve the linear system: (alpha|beta) Calpha_ab_AB = (ab|beta) e.g. A X = B
-  call Test_if_64bit_integer_required(nBastAux,nBastReg,nBastReg)
-  call DPOSV('U',nBastAux,nBastReg*nBastReg,alpha_beta_AB,nBastAux,Calpha_ab_full,nBastAux,info)
-  If (info.NE. 0) THEN
-     WRITE(LUPRI,'(1X,A,I5)') 'DPOSV error in II_get_pari_df_coulomb_mat_simple. Info =',info
-     call LSQUIT('DPOSV error in II_get_pari_df_coulomb_mat_simple',lupri)
-  ENDIF
-  call mem_dealloc(alpha_beta_AB)
+    ! alpha_beta_AB = alpha_beta_full(:,1,:,1,1)
+    ! --- solve the linear system: (alpha|beta) Calpha_ab_AB = (ab|beta) e.g. A X = B
+    call Test_if_64bit_integer_required(nBastAux,nBastReg,nBastReg)
+    call DPOSV('U',nBastAux,nBastReg*nBastReg,alpha_beta_AB,nBastAux,Calpha_ab_full,nBastAux,info)
+    If (info.NE. 0) THEN
+       WRITE(LUPRI,'(1X,A,I5)') 'DPOSV error in II_get_pari_df_coulomb_mat_simple. Info =',info
+       call LSQUIT('DPOSV error in II_get_pari_df_coulomb_mat_simple',lupri)
+    ENDIF
+    call mem_dealloc(alpha_beta_AB)
 #else
-  Calpha_ab_full = 0E0_realk
-  ! Calculate Calpha_ab_AB for each {A,B} atom pairs and insert them into Calpha_ab_full
-  call setMolecularOrbitalInfo(SETTING%MOLECULE(1)%p,orbitalInfo)
-  DO iAtomA=1,nAtoms
-     call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
-     DO iAtomB=1,nAtoms
-        call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
-        nAuxAB = nAuxA+nAuxB
-        IF (iAtomA.EQ.iAtomB) nAuxAB = nAuxA
-        
-        ! --- extract (alpha|beta) for alpha,beta in {AUB}
-        call mem_alloc(alpha_beta_AB,nAuxAB,nAuxAB)
-        alpha_beta_AB = 0E0_realk
-!         alpha_beta_AB(1:nAuxA,1:nAuxA) &
-!              & = alpha_beta_full(startAuxA:endAuxA,1,startAuxA:endAuxA,1,1)
-!         IF (iAtomA.NE.iAtomB) THEN
-!           alpha_beta_AB(1:nAuxA,nAuxA+1:nAuxAB) &
-!                & = alpha_beta_full(startAuxA:endAuxA,1,startAuxB:endAuxB,1,1)
-!           alpha_beta_AB(nAuxA+1:nAuxAB,1:nAuxA) &
-!                & = alpha_beta_full(startAuxB:endAuxB,1,startAuxA:endAuxA,1,1)
-!           alpha_beta_AB(nAuxA+1:nAuxAB,nAuxA+1:nAuxAB) &
-!                & = alpha_beta_full(startAuxB:endAuxB,1,startAuxB:endAuxB,1,1)
-!         ENDIF
+    Calpha_ab_full = 0E0_realk
+    ! Calculate Calpha_ab_AB for each {A,B} atom pairs and insert them into Calpha_ab_full
+    call setMolecularOrbitalInfo(SETTING%MOLECULE(1)%p,orbitalInfo)
+    DO iAtomA=1,nAtoms
+       call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
+       DO iAtomB=1,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,nAuxB,startAuxB,endAuxB)
+          nAuxAB = nAuxA+nAuxB
+          IF (iAtomA.EQ.iAtomB) nAuxAB = nAuxA
 
-        DO iAux=1,nAuxA
-           DO iAuxA=1,nAuxA
-              alpha_beta_AB(iAuxA,iAux) &
-                   & = alpha_beta_full(iAuxA+startAuxA-1,1,iAux+startAuxA-1,1,1)
-           ENDDO
-        ENDDO
+          ! --- extract (alpha|beta) for alpha,beta in {AUB}
+          call mem_alloc(alpha_beta_AB,nAuxAB,nAuxAB)
+          alpha_beta_AB = 0E0_realk
+          !         alpha_beta_AB(1:nAuxA,1:nAuxA) &
+          !              & = alpha_beta_full(startAuxA:endAuxA,1,startAuxA:endAuxA,1,1)
+          !         IF (iAtomA.NE.iAtomB) THEN
+          !           alpha_beta_AB(1:nAuxA,nAuxA+1:nAuxAB) &
+          !                & = alpha_beta_full(startAuxA:endAuxA,1,startAuxB:endAuxB,1,1)
+          !           alpha_beta_AB(nAuxA+1:nAuxAB,1:nAuxA) &
+          !                & = alpha_beta_full(startAuxB:endAuxB,1,startAuxA:endAuxA,1,1)
+          !           alpha_beta_AB(nAuxA+1:nAuxAB,nAuxA+1:nAuxAB) &
+          !                & = alpha_beta_full(startAuxB:endAuxB,1,startAuxB:endAuxB,1,1)
+          !         ENDIF
 
-        IF (iAtomA.NE.iAtomB) THEN
-           DO iAuxB=1,nAuxB
-              DO iAuxA=1,nAuxA
-                 alpha_beta_AB(iAuxA,nAuxA+iAuxB) &
-                      & = alpha_beta_full(iAuxA+startAuxA-1,1,iAuxB+startAuxB-1,1,1)
-              ENDDO
-           ENDDO
-           DO iAuxA=1,nAuxA
-              DO iAuxB=1,nAuxB
-                 alpha_beta_AB(nAuxA+iAuxB,iAuxA) &
-                      & = alpha_beta_full(iAuxB+startAuxB-1,1,iAuxA+startAuxA-1,1,1)
-              ENDDO
-           ENDDO
-           DO iAux=1,nAuxB
-              DO iAuxB=1,nAuxB
-                 alpha_beta_AB(nAuxA+iAuxB,nAuxA+iAux) &
-                      & = alpha_beta_full(iAuxB+startAuxB-1,1,iAux+startAuxB-1,1,1)
-              ENDDO
-           ENDDO
-        ENDIF
+          DO iAux=1,nAuxA
+             DO iAuxA=1,nAuxA
+                alpha_beta_AB(iAuxA,iAux) &
+                     & = alpha_beta_full(iAuxA+startAuxA-1,1,iAux+startAuxA-1,1,1)
+             ENDDO
+          ENDDO
 
-        ! --- extract (ab|beta) for a in A, b in B and beta in {AUB}
-        call mem_alloc(ab_beta_AB,nAuxAB,nRegA,nRegB)
-        ab_beta_AB = 0E0_realk
-!         ab_beta_AB(1:nAuxA,1:nRegA,1:nRegB) &
-!              & = ab_beta_full(startAuxA:endAuxA,startRegA:endRegA,startRegB:endRegB)
-!         IF (iAtomA.NE.iAtomB) THEN
-!            ab_beta_AB(nAuxA+1:nAuxAB,1:nRegA,1:nRegB) &
-!                 & = ab_beta_full(startAuxB:endAuxB,startRegA:endRegA,startRegB:endRegB)
-!         ENDIF
+          IF (iAtomA.NE.iAtomB) THEN
+             DO iAuxB=1,nAuxB
+                DO iAuxA=1,nAuxA
+                   alpha_beta_AB(iAuxA,nAuxA+iAuxB) &
+                        & = alpha_beta_full(iAuxA+startAuxA-1,1,iAuxB+startAuxB-1,1,1)
+                ENDDO
+             ENDDO
+             DO iAuxA=1,nAuxA
+                DO iAuxB=1,nAuxB
+                   alpha_beta_AB(nAuxA+iAuxB,iAuxA) &
+                        & = alpha_beta_full(iAuxB+startAuxB-1,1,iAuxA+startAuxA-1,1,1)
+                ENDDO
+             ENDDO
+             DO iAux=1,nAuxB
+                DO iAuxB=1,nAuxB
+                   alpha_beta_AB(nAuxA+iAuxB,nAuxA+iAux) &
+                        & = alpha_beta_full(iAuxB+startAuxB-1,1,iAux+startAuxB-1,1,1)
+                ENDDO
+             ENDDO
+          ENDIF
 
-        DO iRegB=1,nRegB
-           DO iRegA=1,nRegA
-              DO iAuxA=1,nAuxA
-                 ab_beta_AB(iAuxA,iRegA,iRegB) &
-                      & = ab_beta_full(startAuxA-1+iAuxA,startRegA-1+iRegA,startRegB-1+iRegB)
-              ENDDO
-              IF (iAtomA.NE.iAtomB) THEN
-                 DO iAuxB=1,nAuxB
-                    ab_beta_AB(nauxA+iAuxB,iRegA,iRegB) &
-                         & = ab_beta_full(startAuxB-1+iAuxB,startRegA-1+iRegA,startRegB-1+iRegB)
-                 ENDDO
-              ENDIF
-           ENDDO
-        ENDDO
+          ! --- extract (ab|beta) for a in A, b in B and beta in {AUB}
+          call mem_alloc(ab_beta_AB,nAuxAB,nRegA,nRegB)
+          ab_beta_AB = 0E0_realk
+          !         ab_beta_AB(1:nAuxA,1:nRegA,1:nRegB) &
+          !              & = ab_beta_full(startAuxA:endAuxA,startRegA:endRegA,startRegB:endRegB)
+          !         IF (iAtomA.NE.iAtomB) THEN
+          !            ab_beta_AB(nAuxA+1:nAuxAB,1:nRegA,1:nRegB) &
+          !                 & = ab_beta_full(startAuxB:endAuxB,startRegA:endRegA,startRegB:endRegB)
+          !         ENDIF
 
-
-        ! --- alloc memory for Calpha_ab_AB
-!        call mem_alloc(Calpha_ab_AB,nAuxAB,nRegA,nRegB)
-!        Calpha_ab_AB = 0E0_realk
-        
-        ! --- check if (alpha|beta) is a NxN symmetric matrix with N=nAuxAB
-        DO iAuxA=1,nAuxAB
-           DO iAuxB=iauxA,nAuxAB
-              If (ABS(alpha_beta_AB(iAuxA,iAuxB) - alpha_beta_AB(iAuxB,iAuxA)) .GT. 1.0E-10) THEN
-                 WRITE(LUPRI,'(1X,A,I5)') 'Non symmetric matrix in II_get_pari_df_coulomb_mat_simple. Info =',info
-                 call LSQUIT('Non symmetric matrix in II_get_pari_df_coulomb_mat_simple',lupri)
-              ENDIF
-           ENDDO
-        ENDDO
+          DO iRegB=1,nRegB
+             DO iRegA=1,nRegA
+                DO iAuxA=1,nAuxA
+                   ab_beta_AB(iAuxA,iRegA,iRegB) &
+                        & = ab_beta_full(startAuxA-1+iAuxA,startRegA-1+iRegA,startRegB-1+iRegB)
+                ENDDO
+                IF (iAtomA.NE.iAtomB) THEN
+                   DO iAuxB=1,nAuxB
+                      ab_beta_AB(nauxA+iAuxB,iRegA,iRegB) &
+                           & = ab_beta_full(startAuxB-1+iAuxB,startRegA-1+iRegA,startRegB-1+iRegB)
+                   ENDDO
+                ENDIF
+             ENDDO
+          ENDDO
 
 
+          ! --- alloc memory for Calpha_ab_AB
+          !        call mem_alloc(Calpha_ab_AB,nAuxAB,nRegA,nRegB)
+          !        Calpha_ab_AB = 0E0_realk
+
+          ! --- check if (alpha|beta) is a NxN symmetric matrix with N=nAuxAB
+          DO iAuxA=1,nAuxAB
+             DO iAuxB=iauxA,nAuxAB
+                If (ABS(alpha_beta_AB(iAuxA,iAuxB) - alpha_beta_AB(iAuxB,iAuxA)) .GT. 1.0E-10) THEN
+                   WRITE(LUPRI,'(1X,A,I5)') 'Non symmetric matrix in II_get_pari_df_coulomb_mat_simple. Info =',info
+                   call LSQUIT('Non symmetric matrix in II_get_pari_df_coulomb_mat_simple',lupri)
+                ENDIF
+             ENDDO
+          ENDDO
 
 
 
-        !write(*,*) '(alpha|beta) on AB'
-        iaux = 0
-        DO iauxa=1,nauxab
-           DO iauxb=1,nauxab
-              iaux=iaux+1
-              nline='no'
-              if(iaux .eq. nauxab) THEN
-                 iaux=0
-                 nline='yes'
-              ENDIF
-              !write(*,'(E12.4)',advance=nline)  alpha_beta_AB(iauxa,iauxb)
-           ENDDO
-        ENDDO
 
 
-        !write(*,'(A,I2,A,I2,A,I2,A,I2,A,I2)') 'iA=',iAtomA,', iB=',iAtomB,', nRegAB=',nrega*nregB,', nRegA/nRegB=',nRegA,'/',nRegB
+          !write(*,*) '(alpha|beta) on AB'
+          iaux = 0
+          DO iauxa=1,nauxab
+             DO iauxb=1,nauxab
+                iaux=iaux+1
+                nline='no'
+                if(iaux .eq. nauxab) THEN
+                   iaux=0
+                   nline='yes'
+                ENDIF
+                !write(*,'(E12.4)',advance=nline)  alpha_beta_AB(iauxa,iauxb)
+             ENDDO
+          ENDDO
 
 
-        ireg = 0
-        DO iauxa=1,nauxab
-           !write(*,'(A,I2)') '(ab|beta) on AB with beta=',iauxa
-           DO irega=1,nrega
-              DO iregb=1,nregb
-                 ireg=ireg+1
-                 nline='no'
-                 if(ireg .eq. nregb) THEN
-                    ireg=0
-                    nline='yes'
-                 ENDIF
-                 !write(*,'(E12.4)',advance=nline)  ab_beta_AB(iauxa,irega,iregb)
-              ENDDO
-           ENDDO
-        ENDDO
-        
-        !write(*,'(A,I2,A,I2)') 'DPOSV: nAuxAB=',nAuxAB,' nRegAB=',nrega*nregB
-
-        ! --- solve the linear system: (alpha|beta) Calpha_ab_AB = (ab|beta) e.g. A X = B
-        call Test_if_64bit_integer_required(nAuxAB,nRegA*nRegB)
-        call DPOSV('U',nAuxAB,nRegA*nRegB,alpha_beta_AB,nAuxAB,ab_beta_AB,nAuxAB,info)
-        If (info.NE. 0) THEN
-           WRITE(LUPRI,'(1X,A,I5)') 'DPOSV error in II_get_pari_df_coulomb_mat_simple. Info =',info
-           call LSQUIT('DPOSV error in II_get_pari_df_coulomb_mat_simple',lupri)
-        ENDIF
+          !write(*,'(A,I2,A,I2,A,I2,A,I2,A,I2)') 'iA=',iAtomA,', iB=',iAtomB,', nRegAB=',nrega*nregB,', nRegA/nRegB=',nRegA,'/',nRegB
 
 
-        ireg = 0                                                                              
-        DO iauxa=1,nauxab
-           !write(*,'(A20,I3)') 'Calpha_ab_AB iaux=',iauxa
-           DO irega=1,nrega                                                                
-              DO iregb=1,nregb                                                                
-                 ireg=ireg+1                                                                     
-                 nline='no'                                                                      
-                 if(ireg .eq. nregb) THEN                                                     
-                    ireg=0                                                                       
-                    nline='yes'                                                                  
-                 ENDIF
-                 !write(*,'(E12.4)',advance=nline)  ab_beta_AB(iauxa,irega,iregb)
-              ENDDO
-           ENDDO
-        ENDDO
+          ireg = 0
+          DO iauxa=1,nauxab
+             !write(*,'(A,I2)') '(ab|beta) on AB with beta=',iauxa
+             DO irega=1,nrega
+                DO iregb=1,nregb
+                   ireg=ireg+1
+                   nline='no'
+                   if(ireg .eq. nregb) THEN
+                      ireg=0
+                      nline='yes'
+                   ENDIF
+                   !write(*,'(E12.4)',advance=nline)  ab_beta_AB(iauxa,irega,iregb)
+                ENDDO
+             ENDDO
+          ENDDO
 
-        ! --- map Calpha_ab_AB (stored into ab_beta_AB) into Calpha_ab_full
-!         Calpha_ab_full(startAuxA:endAuxA,startRegA:endRegA,startRegB:endRegB) &
-!              & = ab_beta_AB(1:nAuxA,1:nRegA,1:nRegB)
-!         IF (iAtomA.NE.iAtomB) THEN
-!            Calpha_ab_full(startAuxB:endAuxB,startRegA:endRegA,startRegB:endRegB) &
-!                 & = ab_beta_AB(nAuxA+1:nAuxAB,1:nRegA,1:nRegB)
-!         ENDIF
+          !write(*,'(A,I2,A,I2)') 'DPOSV: nAuxAB=',nAuxAB,' nRegAB=',nrega*nregB
 
-        Do iRegB=1,nRegB
-           Do iRegA=1,nRegA
-              DO iAuxA=1,nAuxA
-                 Calpha_ab_full(startAuxA-1+iAuxA,startRegA-1+iRegA,startRegB-1+iRegB) &
-                      & = ab_beta_AB(iAuxA,iRegA,iRegB)
-              ENDDO
-              IF (iAtomA.NE.iAtomB) THEN
-                 DO iAuxB=1,nAuxB
-                    Calpha_ab_full(startAuxB-1+iAuxB,startRegA-1+iRegA,startRegB-1+iRegB) &
-                         & = ab_beta_AB(nAuxA+iAuxB,iRegA,iRegB)
-              ENDDO
-              ENDIF
-           ENDDO
-        ENDDO
+          ! --- solve the linear system: (alpha|beta) Calpha_ab_AB = (ab|beta) e.g. A X = B
+          call Test_if_64bit_integer_required(nAuxAB,nRegA*nRegB)
+          call DPOSV('U',nAuxAB,nRegA*nRegB,alpha_beta_AB,nAuxAB,ab_beta_AB,nAuxAB,info)
+          If (info.NE. 0) THEN
+             WRITE(LUPRI,'(1X,A,I5)') 'DPOSV error in II_get_pari_df_coulomb_mat_simple. Info =',info
+             call LSQUIT('DPOSV error in II_get_pari_df_coulomb_mat_simple',lupri)
+          ENDIF
 
 
-        ireg = 0
-        DO iauxa=1,nBastAux
-           !write(*,'(A20,I3)') 'Calpha_ab_full iaux=',iauxa
-           DO irega=1,nbastreg
-              DO iregb=1,nbastreg
-                 ireg=ireg+1
-                 nline='no'
-                 if(ireg .eq. nregb) THEN
-                    ireg=0
-                    nline='yes'
-                 ENDIF
-                 !write(*,'(E12.4)',advance=nline)  Calpha_ab_full(iauxa,irega,iregb)
-              ENDDO
-           ENDDO
-        ENDDO
+          ireg = 0                                                                              
+          DO iauxa=1,nauxab
+             !write(*,'(A20,I3)') 'Calpha_ab_AB iaux=',iauxa
+             DO irega=1,nrega                                                                
+                DO iregb=1,nregb                                                                
+                   ireg=ireg+1                                                                     
+                   nline='no'                                                                      
+                   if(ireg .eq. nregb) THEN                                                     
+                      ireg=0                                                                       
+                      nline='yes'                                                                  
+                   ENDIF
+                   !write(*,'(E12.4)',advance=nline)  ab_beta_AB(iauxa,irega,iregb)
+                ENDDO
+             ENDDO
+          ENDDO
+
+          ! --- map Calpha_ab_AB (stored into ab_beta_AB) into Calpha_ab_full
+          !         Calpha_ab_full(startAuxA:endAuxA,startRegA:endRegA,startRegB:endRegB) &
+          !              & = ab_beta_AB(1:nAuxA,1:nRegA,1:nRegB)
+          !         IF (iAtomA.NE.iAtomB) THEN
+          !            Calpha_ab_full(startAuxB:endAuxB,startRegA:endRegA,startRegB:endRegB) &
+          !                 & = ab_beta_AB(nAuxA+1:nAuxAB,1:nRegA,1:nRegB)
+          !         ENDIF
+
+          Do iRegB=1,nRegB
+             Do iRegA=1,nRegA
+                DO iAuxA=1,nAuxA
+                   Calpha_ab_full(startAuxA-1+iAuxA,startRegA-1+iRegA,startRegB-1+iRegB) &
+                        & = ab_beta_AB(iAuxA,iRegA,iRegB)
+                ENDDO
+                IF (iAtomA.NE.iAtomB) THEN
+                   DO iAuxB=1,nAuxB
+                      Calpha_ab_full(startAuxB-1+iAuxB,startRegA-1+iRegA,startRegB-1+iRegB) &
+                           & = ab_beta_AB(nAuxA+iAuxB,iRegA,iRegB)
+                   ENDDO
+                ENDIF
+             ENDDO
+          ENDDO
 
 
-        ! --- dealloc memory
-        call mem_dealloc(alpha_beta_AB) 
-        call mem_dealloc(ab_beta_AB)    
-     ENDDO ! iAtomB
-  ENDDO ! iAtomA
-  call freeMolecularOrbitalInfo(orbitalInfo)
+          ireg = 0
+          DO iauxa=1,nBastAux
+             !write(*,'(A20,I3)') 'Calpha_ab_full iaux=',iauxa
+             DO irega=1,nbastreg
+                DO iregb=1,nbastreg
+                   ireg=ireg+1
+                   nline='no'
+                   if(ireg .eq. nregb) THEN
+                      ireg=0
+                      nline='yes'
+                   ENDIF
+                   !write(*,'(E12.4)',advance=nline)  Calpha_ab_full(iauxa,irega,iregb)
+                ENDDO
+             ENDDO
+          ENDDO
+
+
+          ! --- dealloc memory
+          call mem_dealloc(alpha_beta_AB) 
+          call mem_dealloc(ab_beta_AB)    
+       ENDDO ! iAtomB
+    ENDDO ! iAtomA
+    call freeMolecularOrbitalInfo(orbitalInfo)
 
 #endif
 
-  
-  ! Calculate Calpha_full
-  call mem_alloc(Calpha_full,nBastAux)
-  Calpha_full = 0E0_realk
-  DO iAux=1,nBastAux
-     tmp = 0E0_realk
-     DO iRegD=1,nBastReg
-        DO iRegC=1,nBastReg
-           tmp = tmp + Calpha_ab_full(iAux,iRegC,iRegD) * 2E0_realk * DfullAO(iRegC,iRegD,ndmat)
-!          Calpha_full(iAux) = Calpha_full(iAux) + Calpha_ab_full(iAux,iRegC,iRegD) * DfullAO(iRegC,iRegD,ndmat)
-        ENDDO
-     ENDDO
-     Calpha_full(iAux) = tmp
-  ENDDO
+
+    ! Calculate Calpha_full
+    call mem_alloc(Calpha_full,nBastAux)
+    Calpha_full = 0E0_realk
+    DO iAux=1,nBastAux
+       tmp = 0E0_realk
+       DO iRegD=1,nBastReg
+          DO iRegC=1,nBastReg
+             tmp = tmp + Calpha_ab_full(iAux,iRegC,iRegD) * 2E0_realk * DfullAO(iRegC,iRegD,ndmat)
+             !          Calpha_full(iAux) = Calpha_full(iAux) + Calpha_ab_full(iAux,iRegC,iRegD) * DfullAO(iRegC,iRegD,ndmat)
+          ENDDO
+       ENDDO
+       Calpha_full(iAux) = tmp
+    ENDDO
 
 
-  !write(*,*) 'CbetaFull:'
-  DO iauxa=1,nbastaux
-     !write(*,'(E12.4)')  Calpha_full(iauxa)
-  ENDDO
-  ! Calculate first contribution to Jab
-  DO iRegB=1,nBastReg
-     DO iRegA=1,nBastReg
-        tmp = 0E0_realk
-        DO iAux=1,nBastAux
-           tmp = tmp + Calpha_full(iAux) * ab_beta_full(iAux,iRegA,iRegB)
-        ENDDO
-        Jfull(iRegA,iRegB,1,1,ndmat) = tmp
-     ENDDO
-  ENDDO
+    !write(*,*) 'CbetaFull:'
+    DO iauxa=1,nbastaux
+       !write(*,'(E12.4)')  Calpha_full(iauxa)
+    ENDDO
+    ! Calculate first contribution to Jab
+    DO iRegB=1,nBastReg
+       DO iRegA=1,nBastReg
+          tmp = 0E0_realk
+          DO iAux=1,nBastAux
+             tmp = tmp + Calpha_full(iAux) * ab_beta_full(iAux,iRegA,iRegB)
+          ENDDO
+          Jfull(iRegA,iRegB,1,1,ndmat) = tmp
+       ENDDO
+    ENDDO
 
 
-  !write(*,*) 'Jfull before correction terms'
-  ireg = 0
-  DO irega=1,nbastreg
-     DO iregb=1,nbastreg
-        ireg=ireg+1
-        nline='no'
-        if(ireg .eq. nbastreg) THEN
-           ireg=0
-           nline='yes'
-        ENDIF
-        !write(*,'(E12.4)',advance=nline)  Jfull(irega,iregb,1,1,1)
-     ENDDO
-  ENDDO
+    !write(*,*) 'Jfull before correction terms'
+    ireg = 0
+    DO irega=1,nbastreg
+       DO iregb=1,nbastreg
+          ireg=ireg+1
+          nline='no'
+          if(ireg .eq. nbastreg) THEN
+             ireg=0
+             nline='yes'
+          ENDIF
+          !write(*,'(E12.4)',advance=nline)  Jfull(irega,iregb,1,1,1)
+       ENDDO
+    ENDDO
 
-  ! Calculate galpha (part of 2nd contribution to Jab)
-  call mem_alloc(galpha_full,nBastAux)
-  DO iAux=1,nBastAux
-     tmp = 0E0_realk
-     DO iRegD=1,nBastReg
-        DO iRegC=1,nBastReg
-!            tmp = tmp + ab_beta_full(iAux,iRegC,iRegD) * 2E0_realk * Dfull(iRegC,iRegD,ndmat)
-           tmp = tmp + ab_beta_full(iAux,iRegC,iRegD) * 2E0_realk * DfullAO(iRegC,iRegD,ndmat)
-        ENDDO
-     ENDDO
-     galpha_full(iAux) = tmp
-  ENDDO
+    ! Calculate galpha (part of 2nd contribution to Jab)
+    call mem_alloc(galpha_full,nBastAux)
+    DO iAux=1,nBastAux
+       tmp = 0E0_realk
+       DO iRegD=1,nBastReg
+          DO iRegC=1,nBastReg
+             !            tmp = tmp + ab_beta_full(iAux,iRegC,iRegD) * 2E0_realk * Dfull(iRegC,iRegD,ndmat)
+             tmp = tmp + ab_beta_full(iAux,iRegC,iRegD) * 2E0_realk * DfullAO(iRegC,iRegD,ndmat)
+          ENDDO
+       ENDDO
+       galpha_full(iAux) = tmp
+    ENDDO
 
-  ! Calculate galphaFit (part of 3rd contribution to Jab)
-  call mem_alloc(galphaFit_full,nBastAux)
-  DO iAlpha=1,nBastAux
-     tmp = 0E0_realk
-     DO iBeta=1,nBastAux
-        tmp = tmp + alpha_beta_full(iAlpha,1,iBeta,1,1) * Calpha_full(iBeta)
-     ENDDO
-     galphaFit_full(iAlpha) = tmp
-  ENDDO
+    ! Calculate galphaFit (part of 3rd contribution to Jab)
+    call mem_alloc(galphaFit_full,nBastAux)
+    DO iAlpha=1,nBastAux
+       tmp = 0E0_realk
+       DO iBeta=1,nBastAux
+          tmp = tmp + alpha_beta_full(iAlpha,1,iBeta,1,1) * Calpha_full(iBeta)
+       ENDDO
+       galphaFit_full(iAlpha) = tmp
+    ENDDO
 
-  ! Add up all contribution of Jab
-  IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN
-     DO iRegB=1,nBastReg
-        DO iRegA=1,nBastReg
-           tmp = 0E0_realk
-           DO iAlpha=1,nBastAux
-              tmp = tmp + Calpha_ab_full(iAlpha,iRegA,iRegB) * galpha_full(iAlpha) ! NON-ROBUST version, still variational
-           ENDDO
-           Jfull(iRegA,iRegB,1,1,ndmat) = Jfull(iRegA,iRegB,1,1,ndmat) + tmp
-        ENDDO
-     ENDDO
-  ELSE
-     DO iRegB=1,nBastReg
-        DO iRegA=1,nBastReg
-           tmp = 0E0_realk
-           DO iAlpha=1,nBastAux
-              tmp = tmp + Calpha_ab_full(iAlpha,iRegA,iRegB) * (galpha_full(iAlpha) - galphaFit_full(iAlpha)) ! ROBUST version
-           ENDDO
-           Jfull(iRegA,iRegB,1,1,ndmat) = Jfull(iRegA,iRegB,1,1,ndmat) + tmp
-        ENDDO
-     ENDDO
-  ENDIF
+    ! Add up all contribution of Jab
+    IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN
+       DO iRegB=1,nBastReg
+          DO iRegA=1,nBastReg
+             tmp = 0E0_realk
+             DO iAlpha=1,nBastAux
+                tmp = tmp + Calpha_ab_full(iAlpha,iRegA,iRegB) * galpha_full(iAlpha) ! NON-ROBUST version, still variational
+             ENDDO
+             Jfull(iRegA,iRegB,1,1,ndmat) = Jfull(iRegA,iRegB,1,1,ndmat) + tmp
+          ENDDO
+       ENDDO
+    ELSE
+       DO iRegB=1,nBastReg
+          DO iRegA=1,nBastReg
+             tmp = 0E0_realk
+             DO iAlpha=1,nBastAux
+                tmp = tmp + Calpha_ab_full(iAlpha,iRegA,iRegB) * (galpha_full(iAlpha) - galphaFit_full(iAlpha)) ! ROBUST version
+             ENDDO
+             Jfull(iRegA,iRegB,1,1,ndmat) = Jfull(iRegA,iRegB,1,1,ndmat) + tmp
+          ENDDO
+       ENDDO
+    ENDIF
 
-  call mem_dealloc(galphaFit_full)
-  call mem_dealloc(galpha_full)
-  
-  ! store results into F matrix
-  IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN
-     call mat_set_from_full(Jfull(:,:,1,1,1),0.5_realk,F) !NON-ROBUST PARI
-  ELSE
-     call mat_set_from_full(Jfull(:,:,1,1,1),1E0_realk,F) ! ROBUST PARI
-  ENDIF
+    call mem_dealloc(galphaFit_full)
+    call mem_dealloc(galpha_full)
 
-!   ! get eigenvalues of the Fock matrix
-!   call mat_init(Cmo,nBastReg,nBastReg)
-!   call mat_zero(Cmo)
-!   call mem_alloc(eival,nBastReg)
-!   call mat_init(F_copy,F%nrow,F%ncol)
-!   call mat_zero(F_copy)
-!   call mat_copy(1.0_realk,F_copy,F)
-!   ! Overlap matrix                                                                                       
-!   call mat_init(S,nBastReg,nBastReg)
-!   call mat_zero(S)
-!   call II_get_overlap(LUPRI,LUERR,SETTING,S)
-!   call mat_diag_f (F_copy, S, eival, Cmo)   
-!   ! check for negative eigenvalues
-!   DO iRegA=1,nBastReg
-!      IF (eival(iRegA) <= 0) THEN
-!         write (*,*) '     negative eigenvalue(',iRegA,' : ',eival(iRegA)
-!      ENDIF
-!   ENDDO
-!    call mat_free(Cmo)
-!    call mat_free(F_copy)
-!    call mat_free(S)
-!    call mem_dealloc(eival)
+    ! store results into F matrix
+    IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN
+       call mat_set_from_full(Jfull(:,:,1,1,1),0.5_realk,F) !NON-ROBUST PARI
+    ELSE
+       call mat_set_from_full(Jfull(:,:,1,1,1),1E0_realk,F) ! ROBUST PARI
+    ENDIF
 
-
-   
-  IF(setting%IntegralTransformGC)THEN
-     call AO2GCAO_transform_matrixF(F,setting,lupri)
-  ENDIF
-  ! Free Memory
-  call mem_dealloc(ab_beta_full)
-!  call mem_dealloc(ab_beta_AB)
-
-  call mem_dealloc(alpha_beta_full)
-!  call mem_dealloc(alpha_beta_AB)
-
-  call mem_dealloc(Calpha_ab_full)
-!  call mem_dealloc(Calpha_ab_AB)
-  call mem_dealloc(Calpha_full)
+    !   ! get eigenvalues of the Fock matrix
+    !   call mat_init(Cmo,nBastReg,nBastReg)
+    !   call mat_zero(Cmo)
+    !   call mem_alloc(eival,nBastReg)
+    !   call mat_init(F_copy,F%nrow,F%ncol)
+    !   call mat_zero(F_copy)
+    !   call mat_copy(1.0_realk,F_copy,F)
+    !   ! Overlap matrix                                                                                       
+    !   call mat_init(S,nBastReg,nBastReg)
+    !   call mat_zero(S)
+    !   call II_get_overlap(LUPRI,LUERR,SETTING,S)
+    !   call mat_diag_f (F_copy, S, eival, Cmo)   
+    !   ! check for negative eigenvalues
+    !   DO iRegA=1,nBastReg
+    !      IF (eival(iRegA) <= 0) THEN
+    !         write (*,*) '     negative eigenvalue(',iRegA,' : ',eival(iRegA)
+    !      ENDIF
+    !   ENDDO
+    !    call mat_free(Cmo)
+    !    call mat_free(F_copy)
+    !    call mat_free(S)
+    !    call mem_dealloc(eival)
 
 
-!  call mem_dealloc(galpha_full)
-!  call mem_dealloc(galphaFit_full)
 
-!  call mem_dealloc(Dfull)
-  call mem_dealloc(DfullAO)
-  call mem_dealloc(Jfull)
-  !call freeMolecularOrbitalInfo(orbitalInfo)
-  setting%scheme%recalcgab = saveRecalcGab
-END SUBROUTINE II_get_pari_df_coulomb_mat_simple
+    IF(setting%IntegralTransformGC)THEN
+       call AO2GCAO_transform_matrixF(F,setting,lupri)
+    ENDIF
+    ! Free Memory
+    call mem_dealloc(ab_beta_full)
+    !  call mem_dealloc(ab_beta_AB)
 
-!> \brief This subroutine calculates the pair-atomic density-fitted (PARI) Exchange matrix
-!> \author P. Merlot, S. Reine
-!> \date 2010-03-29
-!> \param lupri Default print-unit for output
-!> \param luerr Default print-unit for termination
-!> \param setting Contains information about the integral settings
-!> \param D Density-matrix
-!> \param F Exchange contribution to the Fock- or KS-matrix
-SUBROUTINE II_get_pari_df_exchange_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
-IMPLICIT NONE
-TYPE(MATRIX),target,intent(in)    :: D(ndmat)
-TYPE(MATRIX),target,intent(inout) :: F(ndmat)
-TYPE(LSSETTING),intent(inout)     :: SETTING
-Integer,intent(in)                :: LUPRI,LUERR,ndmat
-!
-Real(realk)                :: TSTART,TEND
-Integer                    :: nAtoms,nBastAux,nBastReg
-Real(realk),pointer        :: Dfull(:,:,:),DfullAO(:,:,:)
-Real(realk),pointer        :: Kfull_3cContrib(:,:,:,:,:)
-Real(realk),pointer        :: Kfull_2cContrib(:,:,:,:,:)
-Real(realk),pointer        :: Kfull(:,:,:,:,:)
-TYPE(matrixp)              :: Kmat(1),Dmat(1)
-TYPE(MOLECULARORBITALINFO) :: orbitalInfo
-Real(realk),pointer        :: alpha_beta(:,:,:,:,:)
-type(matrixp)              :: intmat(1)
-Integer                    :: usemat
-Integer                    :: iAtomA,iAtomB,iAtomC,iAtomD
-TYPE(MAT3D),pointer        :: calpha_ab(:)
-Real(realk),pointer        :: dalpha_ad(:,:,:)
+    call mem_dealloc(alpha_beta_full)
+    !  call mem_dealloc(alpha_beta_AB)
 
-TYPE(MATRIX)               :: matrixK
-Integer                    :: nRegA,nRegB,nRegC,nRegD,nAuxA,nAuxB,nAuxC,nAuxD
-Integer                    :: startRegA,startRegB,startRegC,startRegD,startAuxA,startAuxB,startAuxC,startAuxD
-Integer                    :: endRegA,endRegB,endRegC,endRegD,endAuxA,endAuxB,endAuxC,endAuxD
-Integer                    :: iAlpha,iRegA,iRegB,iRegC,iRegD
-!
-TYPE(AtomSparseMat)        :: alphaBeta
-TYPE(MoleculeInfo),pointer      :: molecule
-Real(realk) :: ts,te,tsfull,tefull
-logical               :: saveRecalcGab
-integer :: idmat,nmat,nrow,ncol
-TYPE(LSTENSOR),pointer :: regCSfull,auxCSfull
+    call mem_dealloc(Calpha_ab_full)
+    !  call mem_dealloc(Calpha_ab_AB)
+    call mem_dealloc(Calpha_full)
 
-IF (ndmat.GT.1) THEN
-   WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-   WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-   CALL LSQUIT('Error in II_get_pari_df_exchange_mat: ndmat>1 not tested',-1)
-ENDIF
-nrow = D(1)%nrow
-ncol = D(1)%ncol
-IF ((F(1)%nrow.NE.nrow).OR.(F(1)%ncol.NE.ncol)) CALL LSQUIT('Error in II_get_pari_df_exchange_mat F/D',-1)
 
-IF (matrix_type .EQ. mtype_unres_dense)THEN
-  IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN 
-   WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-   WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-   CALL LSQUIT('Error in II_get_pari_df_exchange_mat. NR and unrestricted',-1)
-  ENDIF
-  IF(setting%IntegralTransformGC) THEN
-     WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-     WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-     CALL LSQUIT('Error in II_get_pari_df_exchange_mat. GC and unrestricted',-1)
-  ENDIF
-  IF (SETTING%SCHEME%FMM) THEN
-     WRITE(*,*)     "The PARI approximation isn't implemented for unrestricted cases yet."
-     WRITE(LUPRI,*) "The PARI approximation isn't implemented for unrestricted cases yet."
-     call lsquit('Not allowed combination in II_get_pari_df_exchange_mat. FMM and unrestricted',-1)
-  ENDIF
-  nmat = 2*ndmat
-  call mem_alloc(Dfull,nrow,ncol,nmat)
-  DO Idmat=1,ndmat
-    CALL DCOPY(nrow*ncol,D(idmat)%elms,1,Dfull(:,:,2*idmat-1),1)
-    CALL DCOPY(nrow*ncol,D(idmat)%elmsb,1,Dfull(:,:,2*idmat),1)
-  ENDDO
-ELSE
-  nmat = ndmat
-  ! Alloc full density-matrix and Coulomb-matrix
-  call mem_alloc(Dfull,nrow,ncol,ndmat)
-  DO idmat=1,ndmat
-    call mat_to_full(D(idmat),1E0_realk,Dfull(:,:,idmat))
-  ENDDO
-ENDIF
+    !  call mem_dealloc(galpha_full)
+    !  call mem_dealloc(galphaFit_full)
 
-!set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
-!Then get the full screening matrices
-CALL II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
-!
-molecule => SETTING%MOLECULE(1)%p
-!
-call getMolecularDimensions(molecule,nAtoms,nBastReg,nBastAux)
+    !  call mem_dealloc(Dfull)
+    call mem_dealloc(DfullAO)
+    call mem_dealloc(Jfull)
+    !call freeMolecularOrbitalInfo(orbitalInfo)
+    setting%scheme%recalcgab = saveRecalcGab
+  END SUBROUTINE II_get_pari_df_coulomb_mat_simple
 
-!call init_AtomSparseMat(alphaBeta,molecule,molecule,AODFdefault,AODFdefault,ContractedInttype,lupri)
-CALL LSTIMER('START ',te,ts,lupri)
-CALL LSTIMER('START ',tefull,tsfull,lupri)
+  !> \brief Calculates the pair-atomic density-fitted (PARI) Exchange matrix
+  !> \author P. Merlot, S. Reine
+  !> \date 2010-03-29
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
+  !> \param setting Contains information about the integral settings
+  !> \param D Density-matrix
+  !> \param F Exchange contribution to the Fock- or KS-matrix
+  SUBROUTINE II_get_pari_df_exchange_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
+    IMPLICIT NONE
+    TYPE(MATRIX),target,intent(in)    :: D(ndmat)
+    TYPE(MATRIX),target,intent(inout) :: F(ndmat)
+    TYPE(LSSETTING),intent(inout)     :: SETTING
+    Integer,intent(in)                :: LUPRI,LUERR,ndmat
+    !
+    Real(realk)                :: TSTART,TEND
+    Integer                    :: nAtoms,nBastAux,nBastReg
+    Real(realk),pointer        :: Dfull(:,:,:),DfullAO(:,:,:)
+    Real(realk),pointer        :: Kfull_3cContrib(:,:,:,:,:)
+    Real(realk),pointer        :: Kfull_2cContrib(:,:,:,:,:)
+    Real(realk),pointer        :: Kfull(:,:,:,:,:)
+    TYPE(matrixp)              :: Kmat(1),Dmat(1)
+    TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+    Real(realk),pointer        :: alpha_beta(:,:,:,:,:)
+    type(matrixp)              :: intmat(1)
+    Integer                    :: usemat
+    Integer                    :: iAtomA,iAtomB,iAtomC,iAtomD,iAtom
+    TYPE(MAT3D),pointer        :: calpha_ab(:)
+    Real(realk),pointer        :: dalpha_ad(:,:,:)
 
-IF(SETTING%SCHEME%FMM) call LSQUIT('FMM not yet implemented for PARI-K!',lupri)
+    TYPE(MATRIX)               :: matrixK
+    Integer                    :: nRegA,nRegB,nRegC,nRegD,nAuxA,nAuxB,nAuxC,nAuxD
+    Integer                    :: startRegA,startRegB,startRegC,startRegD
+    Integer                    :: startAuxA,startAuxB,startAuxC,startAuxD
+    Integer                    :: endRegA,endRegB,endRegC,endRegD
+    Integer                    :: endAuxA,endAuxB,endAuxC,endAuxD
+    Integer                    :: iAlpha,iRegA,iRegB,iRegC,iRegD,iAuxA
+    Integer                    :: nElec,nOcc,iOcc,i,j
+    !
+    TYPE(AtomSparseMat)        :: alphaBeta
+    TYPE(MoleculeInfo),pointer :: molecule
+    Real(realk)                :: ts,te,tsfull,tefull
+    logical                    :: saveRecalcGab
+    integer                    :: idmat,nmat,nrow,ncol
+    TYPE(LSTENSOR),pointer     :: regCSfull,auxCSfull
+    !
+    Real(realk)                :: threshold,norm,dasum
+    Logical,pointer            :: neighbours(:,:),MOcontrib(:,:)
+    Real(realk)                :: minEigv,maxEigv,conditionNum
+    Type(moleculeinfo),pointer :: atoms_A(:)
+    Type(mat3d),pointer        :: calpha_ab_mo(:,:)
+    Type(mat2d),pointer        :: alpha_beta_mo(:,:)
+    Real(realk),pointer        :: MOcoeff(:,:),calpha_ab_block(:,:,:)
+    Real(realk),pointer        :: MOmatK(:,:)
+    Real(realk),pointer        :: matH_Q(:,:,:),matD_Q(:,:,:)
+    Real(realk),pointer        :: tmp(:,:,:)
+    Logical                    :: compute_coeff
+    Character(80)              :: C_filename
 
-call mem_alloc(Kfull_3cContrib,nBastReg,nBastReg,1,1,nmat)
-call mem_alloc(Kfull_2cContrib,nBastReg,nBastReg,1,1,nmat)
-call ls_DZERO(Kfull_3cContrib,nBastReg*nBastReg*nmat)
-call ls_DZERO(Kfull_2cContrib,nBastReg*nBastReg*nmat)
+    Integer                    :: INFO
+    Integer,pointer            :: PIV(:)
+    Real(realk)                :: chol_tol,sum
+    Real(realk),pointer        :: matA(:,:),Work(:)
 
-! --- Build an array with the list of atoms with their respective nb. of orbitals/auxiliary functions
-! --- Build another array to know where each atom start in the complete matrices
-call setMolecularOrbitalInfo(molecule,orbitalInfo)
+    IF (ndmat.GT.1) THEN
+       WRITE(*,*)     &
+            "The PARI approximation isn't implemented for unrestricted cases yet."
+       WRITE(LUPRI,*) &
+            "The PARI approximation isn't implemented for unrestricted cases yet."
+       CALL LSQUIT('Error in II_get_pari_df_exchange_mat: ndmat>1 not tested',-1)
+    ENDIF
 
-! --- Get screening integrals G_ab and G_alpha
-!> \todo (Patrick) Get screening integrals G_ab and G_alpha
+    nrow = D(1)%nrow
+    ncol = D(1)%ncol
+
+    IF ((F(1)%nrow.NE.nrow).OR.(F(1)%ncol.NE.ncol)) &
+         CALL LSQUIT('Error in II_get_pari_df_exchange_mat F/D',-1)
+
+    IF (matrix_type .EQ. mtype_unres_dense)THEN
+       IF (SETTING%SCHEME%NON_ROBUST_PARI) THEN 
+          WRITE(*,*)     &
+               "The PARI approximation isn't implemented for unrestricted cases yet."
+          WRITE(LUPRI,*) &
+               "The PARI approximation isn't implemented for unrestricted cases yet."
+          CALL LSQUIT('Error in II_get_pari_df_exchange_mat. NR and unrestricted',-1)
+       ENDIF
+       IF(setting%IntegralTransformGC) THEN
+          WRITE(*,*)     &
+               "The PARI approximation isn't implemented for unrestricted cases yet."
+          WRITE(LUPRI,*) &
+               "The PARI approximation isn't implemented for unrestricted cases yet."
+          CALL LSQUIT('Error in II_get_pari_df_exchange_mat. GC and unrestricted',-1)
+       ENDIF
+       IF (SETTING%SCHEME%FMM) THEN
+          WRITE(*,*)     &
+               "The PARI approximation isn't implemented for unrestricted cases yet."
+          WRITE(LUPRI,*) &
+               "The PARI approximation isn't implemented for unrestricted cases yet."
+          call lsquit('Not allowed combination in II_get_pari_df_exchange_mat.'//&
+               'FMM and unrestricted',-1)
+       ENDIF
+       nmat = 2*ndmat
+       call mem_alloc(Dfull,nrow,ncol,nmat)
+       DO Idmat=1,ndmat
+          CALL DCOPY(nrow*ncol,D(idmat)%elms,1,Dfull(:,:,2*idmat-1),1)
+          CALL DCOPY(nrow*ncol,D(idmat)%elmsb,1,Dfull(:,:,2*idmat),1)
+       ENDDO
+    ELSE
+       nmat = ndmat
+       ! Alloc full density-matrix and Coulomb-matrix
+       call mem_alloc(Dfull,nrow,ncol,ndmat)
+       DO idmat=1,ndmat
+          call mat_to_full(D(idmat),1E0_realk,Dfull(:,:,idmat))
+       ENDDO
+    ENDIF
+
+    !set threshold 
+    SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+    threshold=SETTING%SCHEME%intTHRESHOLD
+
+    !Then get the full precalculated screening matrices G_ab and G_alpha
+    !G_ab = integer part of log( max( sqrt (ab|ab) ))
+    !where a and b runs on batches of atomic orbitals
+    CALL II_getScreenMatFull(regCSfull,auxCSfull,Setting,lupri,luerr)
+    !
+    molecule => SETTING%MOLECULE(1)%p
+    !
+    call getMolecularDimensions(molecule,nAtoms,nBastReg,nBastAux)
+
+    CALL LSTIMER('START ',te,ts,lupri)
+    CALL LSTIMER('START ',tefull,tsfull,lupri)
+
+    ! --- Build an array with the list of atoms with their respective 
+    ! --- nb. of orbitals/auxiliary functions
+    ! --- Build another array to know where each atom start in the complete matrices
+    call setMolecularOrbitalInfo(molecule,orbitalInfo)
+    
+    !--- MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
+    if (setting%scheme%MOPARI_K) then
+       call mem_alloc(MOmatK,nBastReg,nBastReg)
+       MOmatK=0E0_realk
+
+       !Get the MO coeff by Cholesky Decomposition of the Density Matrix
+       !The rank of the density matrix should be equal to the nb of Occ. orbitals
+       !except for the iteration 0 where the density can be non valid
+       chol_tol=1.0E-12_realk
+       call mem_alloc(matA,nBastReg,nBastReg)
+       call mem_alloc(PIV,nBastReg)
+       call mem_alloc(work,2*nBastReg)
+       INFO=-1
+       nOcc=0
+       PIV(:)=0
+       matA(:,:) = Dfull(:,:,1)
+    
+       call dpstrf('L',nBastReg,matA,nBastReg,PIV,nOcc,chol_tol,Work,INFO)
+       
+       call mem_alloc(MOcoeff,nBastReg,nOcc)
+       MOcoeff=0E0_realk
+       do j=1,nOcc
+          do i=j,nBastReg
+             MOcoeff(PIV(i),j)=MatA(i,j)
+          enddo
+       enddo
+       
+       call mem_dealloc(PIV)
+       call mem_dealloc(matA)
+       call mem_dealloc(work)
+       
+       !write(lupri,*) 'Rank of the Cholesky Decomposition:',nOcc
+
+       !write(lupri,'(/A/)') 'Atomic Contributions to the MO'
+       !call mem_alloc(MOcontrib,nAtoms,nOcc)
+       !MOcontrib=.false.
+       !do iOcc=1,nOcc
+       !   do iAtomA=1,nAtoms
+       !      call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+       !        nAuxA,startAuxA,endAuxA) 
+       !      norm= dasum(nRegA,MOcoeff(startRegA:endRegA,iOcc),1)
+       !      if (CEILING(LOG10(norm)).gt.-4) then
+       !         MOContrib(iAtomA,iOcc)=.true.
+       !      endif
+       !   enddo
+       !   write(lupri,*) MOcontrib(:,iOcc)
+       !enddo
+       !call mem_dealloc(MOcontrib)
+
+       ! --- each molecule made of only one atom 
+       allocate(atoms_A(nAtoms))  
  
-! --- Set up domains of atoms
-!> \todo (Patrick) Set up domains of atoms
+       ! --- Initialize matrix of PARI coefficients
+       allocate(calpha_ab_mo(nAtoms,nAtoms))
+       do iAtomA=1,nAtoms
+          do iAtomB=1,nAtoms
+             nullify(calpha_ab_mo(iAtomA,iAtomB)%elements)
+          enddo
+       enddo
 
-! --- Build the full huge matrices (alpha | beta)
-usemat = 0 
-call mem_alloc(alpha_beta,nBastAux,1,nBastAux,1,1)
-call ls_DZERO(alpha_beta,nBastAux*nBastAux)
-call ls_attach_gab_to_setting(setting,auxCSfull,auxCSfull)
-call initIntegralOutputDims(setting%output,nBastaux,1,nBastaux,1,1)
-call ls_getIntegrals(AODFdefault,AOempty,&
-     &AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-call retrieve_Output(lupri,setting,alpha_beta,.FALSE.)
-call ls_free_gab_from_setting(setting,lupri)
+       ! --- Check if Pari-coeff have been computed and stored in previous 
+       ! --- SCF iteration
+       compute_coeff = .false.
+       C_filename = 'CALPHA_AB'
+       if (io_file_exist(C_filename,setting%IO)) then
+          call io_read_mat3d_mo(calpha_ab_mo,nAtoms,nAtoms,C_filename,&
+               setting%io,lupri,luerr)
+       else 
+          compute_coeff = .true.
+       endif
 
-! --- Memory allocation (all Density coefficients stored in an INefficient way)
+       ! --- Initialize matrix of 2-center integrals
+       allocate(alpha_beta_mo(nAtoms,nAtoms))
+       do iAtomA=1,nAtoms
+          do iAtomB=1,nAtoms
+             nullify(alpha_beta_mo(iAtomA,iAtomB)%elements)
+          enddo
+       enddo
 
-CALL LSTIMER('(al|be)',te,ts,lupri)
+       call pari_set_atomic_fragments(molecule,atoms_A,nAtoms,lupri)
 
-! --- Calculate the pair-atomic fitting coefficients 
-allocate(calpha_ab(nAtoms))
-call getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,regCSfull,auxCSfull)
+       ! --- Set up domains of atoms
+       ! --- For B>=A neighbour(iAtomA,iAtomB= .true. if
+       ! --- max(G_ab) > threshold with a in Reg(A) and b in Reg(B)
+       call mem_alloc(neighbours,nAtoms,nAtoms)
+       neighbours(:,:) = .false.
+       call get_neighbours(neighbours,orbitalInfo,regCSfull,threshold,molecule,&
+            atoms_A,lupri,luerr,setting)
+       !write(lupri,'(/A/)') 'Matrix of atomic neighbours'
+       !do iAtomA=1,nAtoms
+       !   write(lupri,*) neighbours(iAtomA,:)
+       !enddo
 
-CALL LSTIMER('Coeffs ',te,ts,lupri)
+       !call lstimer('neighbour',te,ts,lupri)
+                     
+       ! Loop over A
+       do iAtomA=1,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+               nAuxA,startAuxA,endAuxA) 
 
-!re-set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+          ! --- Construction of matrix H_i^nuQ for AtomQ=AtomA
+          call mem_alloc(matH_Q,nBastReg,nAuxA,nOcc)
+          matH_Q=0E0_realk
+          call getHQcoeff(matH_Q,calpha_ab_mo,alpha_beta_mo,iAtomA,neighbours,&
+               MOcoeff,orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
+               nOcc,lupri,luerr)
+                              
+          ! --- Construction of matrix D_i^muQ for AtomQ=AtomA
+          call mem_alloc(matD_Q,nAuxA,nOcc,nBastReg)
+          matD_Q=0E0_realk
+          call getDQcoeff(matD_Q,calpha_ab_mo,iAtomA,neighbours,MOcoeff,&
+               orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
+               nOcc,lupri,luerr)
+          
+          ! --- Addition of the AtomQ=AtomA contribution to the matrix L^munu 
+          call dgemm('N','N',nBastReg,nBastReg,nAuxA*nOcc,1.0E0_realk,matH_Q,&
+               nBastReg,matD_Q,nAuxA*nOcc,1.0E0_realk,MOmatK,nBastReg)
+                    
+          call mem_dealloc(matD_Q)
+          call mem_dealloc(matH_Q)
+       Enddo !Loop A
+       
+       ! --- If first iteration, store the PARI coeff on disk
+       if (compute_coeff) then
+          CALL io_add_filename(setting%io,C_filename,lupri)
+          CALL io_write_mat3d_mo(calpha_ab_mo,nAtoms,nAtoms,C_filename,&
+               setting%io,lupri,luerr) 
+       endif
 
-DO idmat=1,nmat
-  ! 
-  ! Insert call to screening_matrices over the full molecule for both AORdefault,AORdefault and AODFdefault
-  ! interactions
-  !
-  ! --- Loop over atoms A
-  DO iAtomA=1,nAtoms
-     call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,nAuxA,startAuxA,endAuxA)
-  
-    ! --- Construct density coefficients (dalpha_ad), alpha,a in A and d in Mol.
-    call mem_alloc(dalpha_ad,nAuxA,nRegA,nBastReg)
-  
-    !> \todo (Patrick) limit the B atoms of the calpha_ab coefficients to the vicinity of A
-    call getDensityCoefficients(iAtomA,orbitalInfo,calpha_ab,Dfull(:,:,idmat:idmat),dalpha_ad)
-  
-    call lstimer('den-cof',te,ts,lupri)
-  ! Three-center contributions
-    Kfull => Kfull_3cContrib(:,:,:,:,idmat:idmat)
-    DfullAO => Dfull(:,:,idmat:idmat)
-    call pariK_ThreeCenter(Kfull,DfullAO,setting,calpha_ab,dalpha_ad,&
-       &                   iAtomA,orbitalInfo,nBastReg,nAtoms,regCSfull,auxCSfull,lupri,luerr)
-    call lstimer('3-CENT ',te,ts,lupri)
-  
-  ! Two-center contribution
-    Kfull => Kfull_2cContrib(:,:,:,:,idmat:idmat)
-    call pariK_TwoCenter(Kfull,DfullAO,calpha_ab,dalpha_ad,alpha_beta,&
-       &                 iAtomA,orbitalInfo,nBastReg,nAtoms,lupri)
-    call lstimer('2-CENT ',te,ts,lupri)
-  
-    call mem_dealloc(dalpha_ad)
-  ENDDO ! --- end loop A
-  
-  ! --- SYMMETRIZE or ANTI-SYMMETRIZE K, and MULTIPLY BY (1/2)
-  ! --- add the contributions of the K matrix (K_ac = K_ac + K_ca = K_ca )
-  Kfull_3cContrib(:,:,1,1,idmat) = Kfull_3cContrib(:,:,1,1,idmat) + Kfull_2cContrib(:,:,1,1,idmat)
-  call symmetrizeKfull_3cContrib(Kfull_3cContrib(:,:,1,1,idmat),nBastReg)
-ENDDO
-  
-call freePariCoefficients(calpha_ab,orbitalInfo%nAtoms)
-deallocate(calpha_ab)
+       ! --- Deallocations
+       do iAtomA=1,nAtoms
+          do iAtomB=1,nAtoms
+             if (associated(calpha_ab_mo(iAtomA,iAtomB)%elements)) then
+                call free_MAT3D(calpha_ab_mo(iAtomA,iAtomB))
+             endif
+          enddo
+       enddo
+       do iAtomA=1,nAtoms
+          do iAtomB=1,nAtoms
+             if (associated(alpha_beta_mo(iAtomA,iAtomB)%elements)) then
+                call free_mat2d(alpha_beta_mo(iAtomA,iAtomB))
+             endif
+          enddo
+       enddo
+       call mem_dealloc(MOcoeff)
+       call mem_dealloc(neighbours)
+       call pari_free_atomic_fragments(atoms_A,nAtoms)
+       deallocate(atoms_A) 
+       deallocate(calpha_ab_mo)
+       deallocate(alpha_beta_mo)
+      
+       ! --- Construct K_munu from L_munu
+       do iRegA=1,nBastReg
+          do iRegB=iRegA,nBastReg
+             MOMatK(iRegA,iRegB) =  MOMatK(iRegA,iRegB) +  MOMatK(iRegB,iRegA)
+             MOMatK(iRegB,iRegA) =  MOMatK(iRegA,iRegB)
+          enddo
+       enddo
 
-CALL freeMolecularOrbitalInfo(orbitalInfo)
+       ! --- Add the exchange contribution (K) to the Fock matrix (F)
+       call mat_set_from_full(MOMatK(:,:),&
+            -Setting%Scheme%exchangeFactor,F(1),'exchange')
+       
+       ! --- Deallocation, resetting molecule to default
+       call mem_dealloc(MOmatK)
+       call typedef_setMolecules(setting,molecule,1,2,3,4)
+       
+    else !PARI_K
 
-! --- ADD THE EXCHANGE CONTRIBUTION (K) TO THE FOCK MATRIX (F)
+       call mem_alloc(Kfull_3cContrib,nBastReg,nBastReg,1,1,nmat)
+       call mem_alloc(Kfull_2cContrib,nBastReg,nBastReg,1,1,nmat)
+       call ls_DZERO(Kfull_3cContrib,nBastReg*nBastReg*nmat)
+       call ls_DZERO(Kfull_2cContrib,nBastReg*nBastReg*nmat)
 
-IF(matrix_type .EQ. mtype_unres_dense)THEN
-   DO idmat=1,ndmat
-     call DAXPY(F(1)%nrow*F(1)%ncol,-Setting%Scheme%exchangeFactor,Kfull_3cContrib(:,:,1,1,2*idmat-1),1,F(idmat)%elms,1)
-     call DAXPY(F(1)%nrow*F(1)%ncol,-Setting%Scheme%exchangeFactor,Kfull_3cContrib(:,:,1,1,2*idmat  ),1,F(idmat)%elmsb,1)
-   ENDDO
-ELSE !CLOSED_SHELL
-   DO idmat=1,ndmat
-     call mat_set_from_full(Kfull_3cContrib(:,:,1,1,idmat),-Setting%Scheme%exchangeFactor,F(idmat),'exchange')
-   ENDDO
-ENDIF
+       ! --- Build the full huge matrices (alpha | beta)
+       usemat = 0 
+       call mem_alloc(alpha_beta,nBastAux,1,nBastAux,1,1)
+       call ls_DZERO(alpha_beta,nBastAux*nBastAux)
+       call ls_attach_gab_to_setting(setting,auxCSfull,auxCSfull)
+       call initIntegralOutputDims(setting%output,nBastaux,1,nBastaux,1,1)
+       call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
+            CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+       call retrieve_Output(lupri,setting,alpha_beta,.FALSE.)
+       call ls_free_gab_from_setting(setting,lupri)
 
-! --- Free temporary allocd memory
-!call ls_freeDfull(setting)
-call mem_dealloc(Kfull_3cContrib)
-call mem_dealloc(Kfull_2cContrib)
-call mem_dealloc(Dfull)
-call mem_dealloc(alpha_beta)
+       ! --- Memory allocation (all Density coefficients stored in an INefficient way)
 
-!call free_AtomSparseMat(alphaBeta)
-CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
+       CALL LSTIMER('(al|be)',te,ts,lupri)
 
-END SUBROUTINE II_get_pari_df_exchange_mat
+       ! --- Calculate the pair-atomic fitting coefficients 
+       allocate(calpha_ab(nAtoms))
+       call getPariCoefficients(LUPRI,LUERR,SETTING,calpha_ab,orbitalInfo,&
+            regCSfull,auxCSfull)
+
+       CALL LSTIMER('Coeffs ',te,ts,lupri)
+
+       !re-set threshold 
+       SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+
+       DO idmat=1,nmat
+          ! 
+          ! Insert call to screening_matrices over the full molecule for both 
+          ! AORdefault,AORdefault and AODFdefault
+          ! interactions
+          !
+          ! --- Loop over atoms A
+          DO iAtomA=1,nAtoms
+             call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+                  nAuxA,startAuxA,endAuxA)
+
+             ! --- Construct density coefficients (dalpha_ad), alpha,a in A and d in Mol.
+             call mem_alloc(dalpha_ad,nAuxA,nRegA,nBastReg)
+
+             !> \todo (Patrick) limit the B atoms of the calpha_ab coefficients to 
+             ! the vicinity of A
+             call getDensityCoefficients(iAtomA,orbitalInfo,calpha_ab,&
+                  Dfull(:,:,idmat:idmat),dalpha_ad)
+
+             call lstimer('den-cof',te,ts,lupri)
+             ! Three-center contributions
+             Kfull => Kfull_3cContrib(:,:,:,:,idmat:idmat)
+             DfullAO => Dfull(:,:,idmat:idmat)
+             call pariK_ThreeCenter(Kfull,DfullAO,setting,calpha_ab,dalpha_ad,&
+                  iAtomA,orbitalInfo,nBastReg,nAtoms,regCSfull,auxCSfull,lupri,luerr)
+             call lstimer('3-CENT ',te,ts,lupri)
+
+             ! Two-center contribution
+             Kfull => Kfull_2cContrib(:,:,:,:,idmat:idmat)
+             call pariK_TwoCenter(Kfull,DfullAO,calpha_ab,dalpha_ad,alpha_beta,&
+                  &                 iAtomA,orbitalInfo,nBastReg,nAtoms,lupri)
+             call lstimer('2-CENT ',te,ts,lupri)
+
+             call mem_dealloc(dalpha_ad)
+          ENDDO ! --- end loop A
+
+
+          ! --- SYMMETRIZE or ANTI-SYMMETRIZE K, and MULTIPLY BY (1/2)
+          ! --- add the contributions of the K matrix (K_ac = K_ac + K_ca = K_ca )
+          Kfull_3cContrib(:,:,1,1,idmat) = Kfull_3cContrib(:,:,1,1,idmat) &
+               + Kfull_2cContrib(:,:,1,1,idmat)
+          
+          call symmetrizeKfull_3cContrib(Kfull_3cContrib(:,:,1,1,idmat),nBastReg)
+          !write(lupri,'(/A/)') 'Final MOmatK'
+          !do iRegA=1,nBastReg
+          !   write(lupri,*) Kfull_3cContrib(iRegA,:,1,1,idmat)
+          !enddo
+       ENDDO
+
+       call freePariCoefficients(calpha_ab,orbitalInfo%nAtoms)
+       deallocate(calpha_ab)
+       call mem_dealloc(alpha_beta)
+       
+       ! --- ADD THE EXCHANGE CONTRIBUTION (K) TO THE FOCK MATRIX (F)
+       
+       IF(matrix_type .EQ. mtype_unres_dense)THEN
+          DO idmat=1,ndmat
+             call DAXPY(F(1)%nrow*F(1)%ncol,-Setting%Scheme%exchangeFactor,&
+                  Kfull_3cContrib(:,:,1,1,2*idmat-1),1,F(idmat)%elms,1)
+             call DAXPY(F(1)%nrow*F(1)%ncol,-Setting%Scheme%exchangeFactor,&
+                  Kfull_3cContrib(:,:,1,1,2*idmat  ),1,F(idmat)%elmsb,1)
+          ENDDO
+       ELSE !CLOSED_SHELL
+          DO idmat=1,ndmat
+             call mat_set_from_full(Kfull_3cContrib(:,:,1,1,idmat),&
+                  -Setting%Scheme%exchangeFactor,F(idmat),'exchange')
+          ENDDO
+       ENDIF
+       
+       ! --- Free temporary allocd memory
+       !call ls_freeDfull(setting)
+       call mem_dealloc(Kfull_3cContrib)
+       call mem_dealloc(Kfull_2cContrib)
+    endif
+    
+    CALL freeMolecularOrbitalInfo(orbitalInfo)
+    call mem_dealloc(Dfull)
+
+    !call free_AtomSparseMat(alphaBeta)
+    CALL LSTIMER('PARI-K',tefull,tsfull,lupri)
+    !call lsquit('End of PARI-k',-1)
+  END SUBROUTINE II_get_pari_df_exchange_mat
+
+  !> \brief Set up domains of atoms such that max(G_ab) > threshold
+  !> \brief with a in Reg(A) and b in Reg(B)
+  !> \author E. Rebolini
+  !> \date 2015-02
+  !> \param neighbours (iAtomA,1:M) contains the indices of the M neighbours B 
+  !> \param orbitalInfo Orbital information
+  !> \param regCSfull Screening matrix G_ab = log( sqrt( (ab|ab) ) )
+  !> \param threshold Minimum value for G_ab
+  !> \param molecule Description of the molecule
+  !> \param atoms Each molecule made of only one atom 
+  !> \param lupri Default print-unit for output
+  !> \param luerr Default print-unit for termination
+  !> \param setting Contains information about the integral settings
+subroutine get_neighbours(neighbours,orbitalInfo,regCSfull,threshold,molecule,&
+     atoms,lupri,luerr,setting)
+  implicit none
+  Logical,pointer                       :: neighbours(:,:)
+  Type(molecularorbitalinfo),intent(in) :: orbitalInfo
+  Type(lstensor),pointer                :: regCSfull
+  Real(realk)                           :: threshold
+  Type(moleculeinfo),pointer            :: molecule
+  Type(moleculeinfo),pointer            :: atoms(:)
+  Integer,intent(in)                    :: lupri,luerr
+  Type(lssetting),intent(inout)         :: setting
+    
+  Integer                               :: nAtoms
+  Integer                               :: iAtomA,nRegA,startRegA,endRegA
+  Integer                               :: nAuxA,startAuxA,endAuxA
+  Integer                               :: iAtomB,nRegB,startRegB,endRegB
+  Integer                               :: nAuxB,startAuxB,endAuxB
+  TYPE(moleculeinfo),pointer            :: AB
+  TYPE(moleculeinfo),target             :: ABtarget
+  Integer                               :: nAux
+  TYPE(LSTENSOR),pointer                :: auxCSab,regCSab
+  INTEGER                               :: atomsAB(2),dummyAtoms(1)
+  Integer(kind=short)                   :: maxgab
+ 
+  nAtoms=orbitalInfo%nAtoms
+  !write(lupri,*) 'threshold',threshold
+  do iAtomA=1,nAtoms
+       call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
+            nAuxA,startAuxA,endAuxA)
+       !Case A=B
+       neighbours(iAtomA,iAtomA)=.true.
+       !Case A<>B
+       do iAtomB=iAtomA+1,nAtoms
+          call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
+               nAuxB,startAuxB,endAuxB)          
+          nAux=nAuxA+nAuxB
+          CALL pariSetPairFragment(AB,ABtarget,setting%basis(1)%p,molecule,atoms,&
+               molecule%nAtoms,iAtomA,iAtomB,nAuxA,nAuxB,nAux,lupri)
+          
+          NULLIFY(regCSab)
+          ALLOCATE(regCSab)
+          call ls_subScreenAtomic(regCSab,regCSfull,iAtomA,iAtomB,&
+               nRegA,nRegB,.FALSE.)
+          maxgab=regCSab%maxgabelm
+          !write(lupri,*) iAtomA,iAtomB,maxgab
+          if (2*maxgab.GE.(CEILING(LOG10(threshold)))) then
+             neighbours(iAtomA,iAtomB)=.true.
+          endif
+          call lstensor_free(regCSab)
+          DEALLOCATE(regCSab)
+          CALL pariFreePairFragment(AB,iAtomA,iAtomB)
+       enddo      
+    enddo
+    
+end subroutine
 
 subroutine symmetrizeKfull_3cContrib(Kfull_3cContrib,nBastReg)
   implicit none
@@ -2245,10 +2544,10 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&
   !
   Integer                    :: nAtoms,nBastAux,nBast,N,K,M,ialpha,v,a
   Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
-  Real(realk)                :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp
+  Real(realk)                :: TSTART,TEND,tmp
   logical :: MasterWakeSlaves
 
-  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)  
+  call LSTIMER('START ',TSTART,TEND,LUPRI)  
   call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
   IF(nbasis.NE.nBast)THEN
      print*,'nbasis',nbasis
@@ -2292,7 +2591,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   Integer                    :: nAtoms,nAtomsAux,nBastAux,nBast,N,K,M,ialpha,v,a
   Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
   Integer                    :: ALPHA,BETA,I
-  Real(realk) :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp,TMP1
+  Real(realk) :: TSTART,TEND,tmp,TMP1
   real(realk),pointer :: AlphaCD(:,:,:),AlphaCD2(:,:,:)
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
   TYPE(MoleculeInfo),pointer      :: ATOMS(:)
@@ -2319,7 +2618,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   molecule4 => SETTING%MOLECULE(4)%p
 !  print*,'nsize',nsize
 !  print*,'maxsize',maxsize
-  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)
+  call LSTIMER('START ',TSTART,TEND,LUPRI)
   IF((numnodes.EQ.1.AND.maxsize.GT.nsize).AND.&
        & (.NOT.setting%scheme%ForceRIMP2memReduced))THEN     
      !serial version
@@ -2577,9 +2876,9 @@ SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAu
   TYPE(LSSETTING),intent(inout)     :: SETTING
   !
   Integer                    :: nAtoms,nBastAux,nBast
-  Real(realk) :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp
+  Real(realk) :: TSTART,TEND,tmp
   logical :: MasterWakeSlaves,doMPI
-  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)
+  call LSTIMER('START ',TSTART,TEND,LUPRI)
   call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
   IF(nbasisAux.NE.nBastAux)THEN
      print*,'nbasisAux',nbasisAux
