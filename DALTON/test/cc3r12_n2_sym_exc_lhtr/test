@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+#   cc3r12_n2_sym_exc_lhtr
+#   -------------
+#   Molecule:         N2
+#   Wave Function:    CC3(R12) / cc-pVDZ
+#   Test Purpose:     - CC3(R12) excitation energies exploiting symmetry
+#                     - test .R12ORB
+#                     - non-direct mode
+#                     - using left-hand transformation
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Total SCF   energy',
+      abs_tolerance = 1.0e-7)
+
+f.add(string = 'Total MP2-R12/B energy',
+      abs_tolerance = 1.0e-7)
+
+f.add(string = 'Total CC3(R12)/B energy',
+      abs_tolerance = 1.0e-7)
+
+f.add(from_string = 'Total energies in Hartree',
+      num_lines = 18,
+      abs_tolerance = 5.0e-7)
+
+test.run(['cc3r12_n2_sym_exc_lhtr.dal'], ['cc3r12_n2_sym_exc_lhtr.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)
