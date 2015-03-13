@@ -60,7 +60,7 @@ module tensor_interface_module
   public tensor_convert, print_norm, tensor_add, tensor_contract
   public tensor_transform_basis, tensor_ddot
   public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale
-  public tensor_allocate_dense, tensor_deallocate_dense
+  public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, init_persistent_array, free_persistent_array, new_group_reset_persistent_array
@@ -504,6 +504,51 @@ contains
 
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_add_arr2fullfort
+
+  !> \brief Hadamard product Cij = alpha*Aij*Bij+beta*Cij
+  !> \author Thomas Kjaergaard
+  !> \date 2015
+  subroutine tensor_hmul(alpha,A,B,beta,C)
+     implicit none
+     !> array input, this is the result array with overwritten data
+     type(tensor),intent(inout) :: C
+     type(tensor),intent(in) :: A,B
+     !> scaling factor for array C
+     real(realk),intent(in) :: beta
+     !> scaling factor for array A and B
+     real(realk),intent(in) :: alpha
+     call time_start_phase( PHASE_WORK )
+     if(A%mode/=B%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
+     if(A%mode/=C%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
+
+     select case(C%itype)
+        
+     case(TT_TILED_DIST)
+        
+        select case(A%itype)
+
+        case(TT_TILED_DIST)
+           
+           select case(B%itype)
+
+           case(TT_TILED_DIST)
+
+              call tensor_hmul_par(alpha,A,B,beta,C)
+           case default
+              print *,A%itype,B%itype,C%itype
+              call lsquit("ERROR(tensor_hmul_normal):not yet implemented B%itype",DECinfo%output)
+           end select
+        case default
+           print *,A%itype,B%itype,C%itype
+           call lsquit("ERROR(tensor_hmul_normal):not yet implemented A%itype",DECinfo%output)
+        end select
+     case default
+        print *,A%itype,B%itype,C%itype
+        call lsquit("ERROR(tensor_hmul_normal):not yet implemented C%itype",DECinfo%output)
+     end select 
+    
+     call time_start_phase( PHASE_WORK )
+   end subroutine tensor_hmul
 
 
   !> \brief simple general tensor conraction of the type C = pre1 * A * B + pre2 * C

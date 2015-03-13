@@ -479,23 +479,27 @@ contains
     real(realk) :: alpha,beta
     type(matrix),intent(in) :: A,B
     type(matrix),intent(inout) :: C
-    INTEGER                  :: i
-    real(realk),pointer :: Afull(:),Bfull(:),Cfull(:)    
-    call mem_alloc(Afull,A%nrow*A%ncol)
-    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
-    call mem_alloc(Bfull,B%nrow*B%ncol)
-    call mat_pdmm_to_full(B,1.0E0_realk,Bfull)
-    call mem_alloc(Cfull,C%nrow*C%ncol)
-    call mat_pdmm_to_full(C,1.0E0_realk,Cfull)
-    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i) SHARED(Afull,Bfull,Cfull,alpha,beta,A)
-    do i=1,A%nrow*A%ncol
-       Cfull(i)= alpha*Afull(i)*Bfull(i)+beta*Cfull(i)
-    enddo
-    !$OMP END PARALLEL DO
-    call mem_dealloc(Afull)
-    call mem_dealloc(Bfull)
-    call mat_pdmm_set_from_full(Cfull,1.0E0_realk,C)    
-    call mem_dealloc(Cfull)
+
+    call tensor_hmul(alpha,pdmm_Marray(A%PDMID)%p,pdmm_Marray(B%PDMID)%p,&
+         & beta,pdmm_Marray(C%PDMID)%p)
+    
+!    INTEGER                  :: i
+!    real(realk),pointer :: Afull(:),Bfull(:),Cfull(:)    
+!    call mem_alloc(Afull,A%nrow*A%ncol)
+!    call mat_pdmm_to_full(A,1.0E0_realk,Afull)
+!    call mem_alloc(Bfull,B%nrow*B%ncol)
+!    call mat_pdmm_to_full(B,1.0E0_realk,Bfull)
+!    call mem_alloc(Cfull,C%nrow*C%ncol)
+!    call mat_pdmm_to_full(C,1.0E0_realk,Cfull)
+!    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i) SHARED(Afull,Bfull,Cfull,alpha,beta,A)
+!    do i=1,A%nrow*A%ncol
+!       Cfull(i)= alpha*Afull(i)*Bfull(i)+beta*Cfull(i)
+!    enddo
+!    !$OMP END PARALLEL DO
+!    call mem_dealloc(Afull)
+!    call mem_dealloc(Bfull)
+!    call mat_pdmm_set_from_full(Cfull,1.0E0_realk,C)    
+!    call mem_dealloc(Cfull)
     
   end subroutine mat_pdmm_hmul
   

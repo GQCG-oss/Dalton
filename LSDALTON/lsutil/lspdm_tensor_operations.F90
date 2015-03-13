@@ -141,6 +141,7 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 33
   integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 34
   integer,parameter :: JOB_GET_MP2_ST_GUESS       = 35
+  integer,parameter :: JOB_HMUL_PAR               = 36
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -2411,6 +2412,77 @@ module lspdm_tensor_operations_module
 #endif
  end subroutine tensor_add_par
 
+ !> \brief Hadamard product Cij = alpha*Aij*Bij+beta*Cij for TT_TILED_DIST arrays
+ !> \author Thomas Kjærgaard and Patrick Ettenhuber
+ !> \date 2015
+ subroutine tensor_hmul_par(alpha,A,B,beta,C)
+   implicit none
+   !> array input, this is the result array with overwritten data
+   type(tensor),intent(inout) :: C
+   type(tensor),intent(in) :: A,B
+   !> scaling factor for array C
+   real(realk),intent(in) :: beta
+   !> scaling factor for array A and B
+   real(realk),intent(in) :: alpha
+   integer :: i,lt
+#ifdef VAR_MPI
+   call time_start_phase( PHASE_WORK )
+
+   !check if the access_types are the same
+   if(A%access_type/=C%access_type)then
+      call lsquit("ERROR(tensor_hmul_par):different init types&
+           & impossible",DECinfo%output)
+   endif
+   if(B%access_type/=C%access_type)then
+      call lsquit("ERROR(tensor_hmul_par):different init types&
+           & impossible",DECinfo%output)
+   endif
+   
+   !IF AT_MASTER_ACCESS all processes should know b on call-time, else b is
+   !broadcasted here
+   if(C%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+      call pdm_tensor_sync(infpar%lg_comm,JOB_HMUL_PAR,A,B,C)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(alpha,infpar%master)
+      call ls_mpi_buffer(beta,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
+   endif
+
+   IF(A%offset.NE.C%offset)THEN
+      call lsquit('Offset not same in tensor_hmul_par',-1)
+   ENDIF
+   IF(B%offset.NE.C%offset)THEN
+      call lsquit('Offset not same in tensor_hmul_par',-1)
+   ENDIF
+
+   !lsoop over local tiles of array C
+   do lt=1,C%nlti
+      call HMULSUB(C%ti(lt)%e,alpha,A%ti(lt)%t,B%ti(lt)%t,beta,C%ti(lt)%t)
+   enddo
+   
+!   if( tensor_always_sync )then
+      call time_start_phase( PHASE_IDLE )
+      call lsmpi_barrier(infpar%lg_comm)
+      call time_start_phase( PHASE_WORK )
+!   endif
+#endif
+ end subroutine tensor_hmul_par
+  
+ subroutine HMULSUB(N,alpha,A,B,beta,C)
+   implicit none
+   integer(kind=8),intent(in) :: N 
+   real(realk),intent(in) :: alpha,beta
+   real(realk),intent(in) :: A(N),B(N)
+   real(realk),intent(inout) :: C(N)
+   integer(kind=8) :: i        
+   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i) SHARED(N,C,alpha,A,B,beta)
+   do i = 1,N
+      C(i) = alpha*A(i)*B(i) + beta*C(i)
+   enddo
+   !$OMP END PARALLEL DO
+ end subroutine HMULSUB
 
   !> \brief array copying routine for TT_TILED_DIST arrays
   !> \author Patrick Ettenhuber
