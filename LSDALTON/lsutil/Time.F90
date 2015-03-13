@@ -1166,13 +1166,13 @@ subroutine print_timers(lupri)
          &nmat_scal_dia(I),CPUTIME_mat_scal_dia(I),WALLTIME_mat_scal_dia(I)
       IF(nmat_inv(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)')  ID,'mat_inv          ',&
          &nmat_inv(I),CPUTIME_mat_inv(I),WALLTIME_mat_inv(I)
-      IF(nmat_dmul(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dmul         ',&
+      IF(nmat_dmul(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dmul          ',&
          &nmat_dmul(I),CPUTIME_mat_dmul(I),WALLTIME_mat_dmul(I)
-      IF(nmat_hmul(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_hmul         ',&
+      IF(nmat_hmul(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_hmul          ',&
          &nmat_hmul(I),CPUTIME_mat_hmul(I),WALLTIME_mat_hmul(I)
-      IF(nmat_hdiv(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_hdiv         ',&
+      IF(nmat_hdiv(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_hdiv          ',&
          &nmat_hdiv(I),CPUTIME_mat_hdiv(I),WALLTIME_mat_hdiv(I)
-      IF(nmat_dger(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dger         ',&
+      IF(nmat_dger(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dger          ',&
          &nmat_dger(I),CPUTIME_mat_dger(I),WALLTIME_mat_dger(I)
       IF(nmat_dsyev(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dsyev          ',&
          &nmat_dsyev(I),CPUTIME_mat_dsyev(I),WALLTIME_mat_dsyev(I)
