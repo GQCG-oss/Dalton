@@ -891,6 +891,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   !===========================================================
   !   Determine Scheme to Use (AllReduce, Bcast Method)
   !===========================================================
+  CALL LSTIMER('START ',TS3,TE3,LUPRI)
 
   IF(master)THEN
      IF(DECinfo%RIMP2ForcePDMCalpha)THEN
@@ -938,7 +939,9 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
         ENDIF
      ENDIF
   ENDIF
- 
+
+  CALL LSTIMER('Calpha1',TS3,TE3,LUPRI)
+
   !===========================================================
   !   Determine Sizes1: used to calc 3 center integrals
   !===========================================================
@@ -971,6 +974,8 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      rimp2_nodtot = numnodes
   ENDIF
 
+  CALL LSTIMER('Calpha2',TS3,TE3,LUPRI)
+  
   !=====================================================================================
   ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
   !=====================================================================================
@@ -1016,6 +1021,8 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   call time_start_phase(PHASE_WORK)   
 #endif
 
+  CALL LSTIMER('Calpha3',TS3,TE3,LUPRI)
+
   !==================================================================
   !   Determine MynbasisAuxMPI2:  Calpha(MynbasisAuxMPI2,nvirt,nocc)
   !==================================================================
@@ -1060,6 +1067,8 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      NBA = nbasisAux
   ENDIF
 
+  CALL LSTIMER('Calpha4',TS3,TE3,LUPRI)
+
   !=====================================================================================
   ! Obtain 3 center RI integrals (alpha,a,i) 
   !=====================================================================================
@@ -1089,6 +1098,8 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
         mylsitem%SETTING%MOLECULE(2)%p => molecule2
      ENDIF
   ENDIF
+
+  CALL LSTIMER('Calpha5',TS3,TE3,LUPRI)
 
   !=====================================================================================
   ! MPI scheme:  PerformReduction  or   a Bcast Routine
@@ -1187,6 +1198,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      ENDDO
      call mem_dealloc(TMPAlphaBeta_minus_sqrt)
   ENDIF
+  CALL LSTIMER('Calpha6',TS3,TE3,LUPRI)
   IF(CollaborateWithSlaves)then 
      call mem_dealloc(nbasisAuxMPI)
      call mem_dealloc(startAuxMPI)
