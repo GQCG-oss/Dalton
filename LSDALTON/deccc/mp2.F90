@@ -3305,10 +3305,10 @@ subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,Uocc
   real(realk) :: gmocont,deltaEPS,TMP
   real(realk) :: toccTMP(nocc)
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(3) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(3)&
   !$ACC PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
   !$ACC         ALPHAAUX,ILOC,JLOC,gmocont,deltaEPS,toccTMP,TMP) &
-  !$ACC COPYIN(nvirt,nocc,noccEOS,NBA) &
+  !$ACC firstprivate(nvirt,nocc,noccEOS,NBA) &
   !$ACC present(tocc,Calpha,UoccEOST,EVocc,EVvirt) async(async_idx)
 #else
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
@@ -3366,11 +3366,11 @@ subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,U
   integer :: BDIAG,ADIAG,IDIAG,JDIAG,ALPHAAUX,ALOC,BLOC
   real(realk) :: gmocont,deltaEPS,TMP,tvirtTMP(nvirt)
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(3) DEFAULT(none) &
-  !$ACC PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
-  !$ACC         ALPHAAUX,ALOC,BLOC,gmocont,deltaEPS,tvirtTMP,TMP) &
-  !$ACC COPYIN(nvirt,nocc,nvirtEOS,NBA) &
-  !$ACC present(tvirt,Calpha,UvirtEOST,EVocc,EVvirt)
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
+  !$ACC& PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
+  !$ACC&         ALPHAAUX,ALOC,BLOC,gmocont,deltaEPS,tvirtTMP,TMP)&
+  !$acc& firstprivate(nvirt,nocc,nvirtEOS,NBA)&
+  !$ACC& present(tvirt,Calpha,UvirtEOST,EVocc,EVvirt)
 #else
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
   !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,ALPHAAUX,ALOC,BLOC,gmocont,deltaEPS,TMP,tvirtTMP) &
@@ -3427,9 +3427,9 @@ subroutine RIMP2_calc_toccB(nvirt,noccEOS,tocc,UvirtT,toccEOS,async_idx)
   integer :: BLOC,JLOC,ILOC,ALOC,ADIAG
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(4) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ADIAG,TMP) &
-  !$ACC COPYIN(nvirt,noccEOS) &
+  !$ACC firstprivate(nvirt,noccEOS) &
   !$acc present(tocc,UvirtT,toccEOS) async(async_idx)
   !dir$ noblocking
 #else
@@ -3472,9 +3472,9 @@ subroutine RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt,UoccT,tvirtEOS)
   integer :: BLOC,JLOC,ILOC,ALOC,JDIAG
   real(realk) :: TMP
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(4) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,JDIAG,TMP) &
-  !$ACC COPYIN(nocc,nvirtEOS) &
+  !$ACC firstprivate(nocc,nvirtEOS) &
   !$acc present(tvirt,UoccT,tvirtEOS)
   !dir$ noblocking
 #else
