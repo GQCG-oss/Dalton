@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/03/12 (started 2014/09/01).
+!REVISION: 2015/03/13 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -51,11 +51,11 @@
 !NOTES:
 ! * The code assumes Fortran-2003/2008 & MPI-3 (defined COMPILER_UNDERSTANDS_FORTRAN_2003, VAR_PTR_RESHAPE, VAR_MPI)!
 ! * The number of OMP threads spawned on CPU or MIC must not exceed the MAX_THREADS parameter!
-! * In order to activate the debugging mode, set macro DIL_DEBUG_ON.
+! * In order to activate the debugging mode, set macro DIL_DEBUG_ON below.
 !PREPROCESSOR:
 ! * VAR_OMP: use OpenMP;
 ! * USE_OMP_MOD: use omp_lib module;
-! * USE_BASIC_ALLOC: disable MPI_ALLOC_MEM() calls and stick to malloc();
+! * USE_BASIC_ALLOC: disable MPI_ALLOC_MEM() calls and stick to basic allocate()/malloc();
 ! * DIL_DEBUG_ON: enable debugging information;
 ! * USE_MIC: enable Intel MIC accelerators (not yet implemented).
        module tensor_algebra_dil
@@ -327,6 +327,7 @@
         public dil_tensor_init
         public dil_debug_to_file_start
         public dil_debug_to_file_finish
+        public dil_mm_pipe_efficient
         public dil_will_malloc_succeed
         public dil_test
 
@@ -4508,6 +4509,32 @@
         endif
         return
         end subroutine dil_debug_to_file_finish
+!--------------------------------------------------------------------------------------------------
+        logical function dil_mm_pipe_efficient(ll,lr,lc,comp_bandwidth,data_bandwidth,data_latency) !SERIAL
+!This function decides whether a given matrix multiplication can be efficiently pipelined:
+!D(1:ll,1:lr)+=L(1:lc,1:ll)*R(1:lc,1:lr)
+!No argument validity checks!
+        implicit none
+        integer(INTL), intent(in):: ll,lr,lc !in: matrix dimensions
+        real(8), intent(in):: comp_bandwidth !in: computational throughput (Flops/s)
+        real(8), intent(in):: data_bandwidth !in: data transfer bandwidth (Words/s)
+        real(8), intent(in):: data_latency   !in: data transfer latency (s)
+        real(8), parameter:: much_more=5d0   !defines what "much more" exactly means
+        real(8):: l,r,c,v
+
+        l=real(ll,8); r=real(lr,8); c=real(lc,8)
+        if(l*r*c.gt.(2d0*data_latency*comp_bandwidth)*much_more) then
+         v=comp_bandwidth/data_bandwidth
+         if(c.ge.v.and.l*r/(l+r).ge.v) then
+          dil_mm_pipe_efficient=.true.
+         else
+          dil_mm_pipe_efficient=.false.
+         endif
+        else
+         dil_mm_pipe_efficient=.false.
+        endif
+        return
+        end function dil_mm_pipe_efficient
 !----------------------------------------------------------------------------------
         logical function dil_will_malloc_succeed(mem_bytes,page_size,hugepage_size) !SERIAL
 !This function checks whether a given malloc request has a chance for success.
