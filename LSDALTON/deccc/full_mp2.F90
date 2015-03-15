@@ -1067,6 +1067,7 @@ contains
     !local variables
     real(realk) :: MemoryAvailable,GB,AG,maxsize
     integer :: iB,jB,iiB,jjB,nb,dimGamma,dimAlpha,AB,iGB,nTasks,K,tmprow,tmpcol,I,J
+    integer :: nOccBatchDimImax2
     real(realk) :: nbasisR,noccR,nvirtR,numnodesR
     logical :: Success
     integer(kind=ls_mpik) :: nodtot 
@@ -1082,7 +1083,7 @@ contains
     call get_currently_available_memory(MemoryAvailable)
     ! Note: We multiply by 85 % to be on the safe side!
     MemoryAvailable = 0.85E0_realk*MemoryAvailable
-    GB = 1.000E-9_realk 
+    GB = 8.000E-9_realk 
 
     !assume you have 
     !numnodes = 144
@@ -1094,7 +1095,20 @@ contains
 
     !2.Choose  nOccBatchDimImax as big as possible (nb*dimAlphaMPI*dimGammaMPI*nOccBatchDimImax) need to fit in mem!
     !          Same as (nb*nb*nb*nOccBatchDimImax/numnodes) 
-    nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*8*GB))) 
+    nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*GB))) 
+    nOccBatchDimImax2 = nOccBatchDimImax
+    do I=nOccBatchDimImax2,1,-1
+       call memestimateCANONMP2B(MinAObatch,MinAObatch,nbasis,nbasis,&
+            & nbasis,nvirt,I,nOcc,maxsize)
+       IF(maxsize.LT.MemoryAvailable)THEN
+          nOccBatchDimImax = I
+          EXIT
+       ENDIF
+       IF(I.EQ.1)THEN
+          print*,'Not enough Memory in MP2(canonical_mp2B) '
+          call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatches not enough',-1)
+       ENDIF
+    enddo
 
     !nOccBatchDimImax = 1 for this example 
     !This means recalculation of integrals 264 times for this example 
@@ -1191,54 +1205,54 @@ contains
     !construct CoI(nb,nOccBatchDimI)
     maxsize = nb*nOccBI
     !call mem_alloc(tmp2,dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
-    maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI
+    maxsize = MAX(maxsize,nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI)
     !BatchGamma: do gammaB = 1,nbatchesGamma
     ! BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
     !  call mem_alloc(tmp1,dimAlpha*dimGamma,nb*nb)
-    maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+dimAlpha*dimGamma*nb*nb
+    maxsize = MAX(maxsize,nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+dimAlpha*dimGamma*nb*nb)
     !  call mem_alloc(tmp1b,dimAlpha,dimGamma,nb,nOccBatchDimI)
-    maxsize = nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+dimAlpha*dimGamma*nb*nb+&
-         & dimAlpha*dimGamma*nb*nOccBatchDimI
+    maxsize = MAX(maxsize,nb*nOccBI+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+dimAlpha*dimGamma*nb*nb+&
+         & dimAlpha*dimGamma*nb*nOccBatchDimI)
     !  call mem_dealloc(tmp1)
     !  call mem_dealloc(tmp1b)
     ! enddo BatchAlpha
     !enddo BatchGamma
     !call mem_dealloc(CoI)
     !call mem_alloc(tmp3,nb*nOccBatchDimI,dimAlphaMPI*dimGammaMPI)
-    maxsize = dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI !tmp2+tmp3
+    maxsize = MAX(maxsize,dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI) !tmp2+tmp3
     !call mem_dealloc(tmp2)
     !call mem_alloc(tmp4,nvirt*nOccBatchDimI,dimAlphaMPI*dimGammaMPI)
-    maxsize = nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI !tmp3+tmp4
+    maxsize = MAX(maxsize,nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI) !tmp3+tmp4
     !call mem_dealloc(tmp3)
     !call mem_alloc(tmp5,nvirt*nOccBatchDimI,dimAlphaMPI*nOccBatchDimJ)
-    maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ !tmp5+tmp4
+    maxsize = MAX(maxsize,nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ) !tmp5+tmp4
     !OPTION1
     !call mem_alloc(CgammaMPI,dimGammaMPI,nOccBatchDimJ)
-    maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp4
-         & dimGammaMPI*nOccBatchDimJ
+    maxsize = MAX(maxsize,nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp4
+         & dimGammaMPI*nOccBatchDimJ)
     !call mem_dealloc(CgammaMPI)
     !OPTION1
     !call mem_alloc(tmp6,nvirt*nOccBatchDimI,dimAlpha2*dimGamma2)              
     !call mem_alloc(CgammaMPI2,dimGamma2,nOccBatchDimJ)
-    maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp4
-         & nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI + dimGammaMPI*nOccBatchDimJ !tmp6
+    maxsize = MAX(maxsize,nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI+nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ+& !tmp5+tmp4
+         & nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI + dimGammaMPI*nOccBatchDimJ) !tmp6
     !call mem_dealloc(CgammaMPI2)
     !call mem_dealloc(tmp6)
     !call mem_dealloc(tmp4)
     !call mem_alloc(tmp7,dimAlphaMPI*nOccBatchDimJ,nvirt*nOccBatchDimI)
-    maxsize = nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ & 
-         & + dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI
+    maxsize = MAX(maxsize,nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ & 
+         & + dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI)
     !call mem_dealloc(tmp5)
     !call mem_alloc(VOVO,nvirt*nOccBatchDimJ,nvirt*nOccBatchDimI)
-    maxsize = dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI !tmp7+VOVOV
+    maxsize = MAX(maxsize,dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI) !tmp7+VOVOV
     !call mem_alloc(CAV,dimAlphaMPI,nvirt)     
-    maxsize = dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI+& !tmp7+VOVOV
-         & dimAlphaMPI*nvirt
+    maxsize = MAX(maxsize,dimAlphaMPI*nOccBatchDimJ*nvirt*nOccBatchDimI+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI+& !tmp7+VOVOV
+         & dimAlphaMPI*nvirt)
     !VOVO(nvirt,noccBJ,nvirt,noccBI) = CAV(dimAlpha,nvirt)*tmp7(dimAlpha*nOccBatchDimJ,nvirt*nOccBatchDimI)
     !call mem_dealloc(CAV)
     !call mem_dealloc(tmp7)
-    maxsize = nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI*2 !2 VOVO 
-    GB = 1.000E-9_realk 
+    maxsize = MAX(maxsize,nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI*2) !2 VOVO 
+    GB = 8.000E-9_realk 
     maxsize = maxsize*GB
   end subroutine memestimateCANONMP2B
 
