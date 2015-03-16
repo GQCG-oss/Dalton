@@ -309,10 +309,10 @@ contains
     type(joblist) :: singlejob
     type(decfrag) :: PairFragment
     type(decfrag) :: MyFragment
-    integer :: job,atomA,atomB,i,slavejob,ntasks
+    integer :: job,atomA,atomB,i,slavejob,ntasks,no,nv,mymodel
     real(realk) :: flops_slaves
     type(mp2grad) :: grad
-    logical :: morejobs, divide, split,only_update
+    logical :: morejobs, continuedivide, split,only_update
     real(realk) :: fragenergy(ndecenergies),tottime
     real(realk) :: t1cpu, t2cpu, t1wall, t2wall
     real(realk) :: tot_work_time, tot_comm_time, tot_idle_time
@@ -321,6 +321,7 @@ contains
     real(realk) :: flops
     real(realk), pointer :: slave_times(:)
     integer(kind=ls_mpik) :: master
+    logical :: dividegroup
     master = 0
     fragenergy=0.0_realk
     only_update=.true.
@@ -343,7 +344,7 @@ contains
 
     ! Local master asks main master for fragment jobs
     slavejob=QUITMOREJOBS
-    divide=.true.
+    continuedivide=.true.
 
     ! Send empty job in first round
     job=0
@@ -425,6 +426,9 @@ contains
                      & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
                 call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
+                no = AtomicFragments(atomA)%noccAOS
+                nv = AtomicFragments(atomA)%nunoccAOS
+                mymodel = AtomicFragments(atomA)%ccmodel
   
              else
                 ! Set ntasks to be zero to initialize it to something, although it is not used for
@@ -446,29 +450,27 @@ contains
                      & MyMolecule,mylsitem,.true.,PairFragment)
              end if
              call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
+             no = PairFragment%noccAOS
+             nv = PairFragment%nunoccAOS
+             mymodel = PairFragment%ccmodel
 
           end if
 
-          ! Divide local group into two smaller groups if:
-          ! number of tasks < (#nodes in local group)*(magic factor)
-          !
-          ! The magic factor (DECinfo%MPIsplit) should in general be larger than 1, 
-          ! and it can be changed by .MPIsplit keyword.
-          !
-          ! Thus, we obtain optimal MPI performance for the individual fragment
-          ! calculations if the number of tasks is significantly larger
-          ! than the number of nodes in the local group.
-          ! Also check that the local group is larger than just 1 node.
-          !
-
+          ! Divide local group?
+          ! (see details in divideMPIgroup function)
           split=.false.
-          divide=.true.
+          continuedivide=.true.
           ! Special case: Never divide for fragment optimization
           call time_start_phase(PHASE_COMM)
-          if(jobs%dofragopt(job)) divide=.false.
+          if(jobs%dofragopt(job)) continuedivide=.false.
 
-          DoDivide: do while(divide)
-             if( (ntasks .LE. infpar%lg_nodtot*DECinfo%MPIsplit) .and. (infpar%lg_nodtot>1)  ) then
+         
+
+          DoDivide: do while(continuedivide)
+             ! Divide group?
+             dividegroup = divideMPIgroup(ntasks,no,nv,mymodel)
+
+             if( dividegroup ) then
 
                 if(DECinfo%print_small_calc) print '(a,4i8)', 'DIVIDE! Job, tasks, mynode, #nodes: ', &
                      & job,ntasks,infpar%mynum,infpar%lg_nodtot
@@ -480,7 +482,7 @@ contains
                 call dec_half_local_group
                 split=.true.
              else
-                divide=.false.
+                continuedivide=.false.
              end if
           end do DoDivide
 
@@ -652,6 +654,58 @@ contains
 
   end subroutine fragments_slave
 
+  !> \brief Set logical defining whether MPI group should be divided or not
+  !> \author Kasper Kristensen
+  !> \date March 2015
+  function divideMPIgroup(ntasks,no,nv,ccmodel) result(dividegroup)
+    implicit none
+    !> Number of tasks (not used for RI-MP2)
+    integer,intent(in) :: ntasks
+    !> Number of occupied/virtual AOS orbitals (only used for RI-MP2)
+    integer,intent(in) :: no,nv
+    !> CC model 
+    integer,intent(in) :: ccmodel
+    logical :: dividegroup
+    real(realk) :: rifactor
+
+    ! Divide local group into two smaller groups if:
+    ! number of tasks < (#nodes in local group)*(magic factor)
+    !
+    ! The magic factor (DECinfo%MPIsplit) should in general be larger than 1, 
+    ! and it can be changed by .MPIsplit keyword.
+    ! 
+    ! Special case for RI MP2, divide if:
+    ! #nodes > nocc*nvirt/DECinfo%RIMPIsplit
+    !
+    ! Thus, we obtain optimal MPI performance for the individual fragment
+    ! calculations if the number of tasks is significantly larger
+    ! than the number of nodes in the local group.
+    ! Also check that the local group is larger than just 1 node.
+    !
+
+    dividegroup = .false.
+    WHichModel: if(ccmodel==MODEL_RIMP2) then 
+
+       ! RIMP2
+       rifactor = real(no)*real(nv)/real(DECinfo%RIMPIsplit)
+       if(real(infpar%lg_nodtot) > rifactor ) then
+          dividegroup=.true.
+       end if
+
+    else
+
+       ! Not RIMP2
+       if( (ntasks .LE. infpar%lg_nodtot*DECinfo%MPIsplit) ) then
+          dividegroup=.true.
+       end if
+
+    end if WHichModel
+
+
+    ! Never split if there is already just one node in the group.
+    if(infpar%lg_nodtot==1) dividegroup=.false.
+
+  end function divideMPIgroup
 
 !> \brief Get number of tasks in integral loop (nalpha*ngamma)
 !> \author Kasper Kristensen
