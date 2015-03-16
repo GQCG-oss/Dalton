@@ -50,11 +50,18 @@ add_library(
     )
 
 add_library(
+    cuda_gpu_interfaces
+    ${CUDA_GPU_INTERFACE_SOURCES}
+    )
+
+target_link_libraries(cuda_gpu_interfaces lsutillib_precision)
+
+add_library(
     matrixmlib
     ${LSUTIL_MATRIXM_SOURCES}
     )
 
-target_link_libraries(matrixmlib lsutillib_precision)
+target_link_libraries(matrixmlib cuda_gpu_interfaces)
 
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
@@ -495,6 +502,7 @@ endif()
 
 set(LIBS_TO_MERGE
     lsutillib_precision
+    cuda_gpu_interfaces
     matrixmlib
     lsutillib_common
     lsutil_tensor_lib
