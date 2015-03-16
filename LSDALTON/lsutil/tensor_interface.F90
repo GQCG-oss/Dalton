@@ -4,6 +4,15 @@
 
 module tensor_interface_module
 
+!`DIL backend (requires Fortran-2003/2008, MPI-3):
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_PTR_RESHAPE
+#ifdef VAR_MPI
+#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
+#endif
+#endif
+#endif
 
   ! Outside DEC directory
   use memory_handling
@@ -14,9 +23,8 @@ module tensor_interface_module
   use lspdm_tensor_operations_module
   use matrix_module
   use dec_workarounds_module
-  use tensor_algebra_dil
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
-!Tensor algebra (`DIL backend):
+#ifdef DIL_ACTIVE
+  use tensor_algebra_dil  !`DIL: Tensor Algebra
   public INTD,INTL        !integer sizes for DIL tensor algebra (default, long)
   public MAX_TENSOR_RANK  !max allowed tensor rank for DIL tensor algebra
   public DIL_TC_EACH      !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
@@ -26,8 +34,10 @@ module tensor_interface_module
   public DIL_ALLOC_MPI    !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
   public DIL_CONS_OUT     !output for DIL messages
   public DIL_DEBUG
-  public dil_set_alloc_type
+  public subtens_t
   public dil_tens_contr_t
+  public dil_subtensor_set
+  public dil_set_alloc_type
   public dil_clean_tens_contr
   public dil_set_tens_contr_args
   public dil_get_min_buf_size
@@ -39,7 +49,11 @@ module tensor_interface_module
   public process_wtime
   public dil_tensor_init
   public dil_tensor_norm1
-! public merge_sort_real8 !`DIL: remove
+  public dil_tens_fetch_start
+  public dil_tens_fetch_finish_prep
+  public dil_tens_upload_start
+  public dil_tens_upload_finish_prep
+  public dil_will_malloc_succeed
 #endif
 
   !This defines the public interface to the tensors
@@ -160,13 +174,13 @@ contains
 
   subroutine tensor_set_dil_backend_true()
      implicit none
-     tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
+     tensor_contract_dil_backend = alloc_in_dummy !`DIL: works only with MPI-3
   end subroutine tensor_set_dil_backend_true
 
   subroutine tensor_set_dil_backend(lv)
    implicit none
    logical, intent(in):: lv
-   tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
+   tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !`DIL: works only with MPI-3
    return
   end subroutine tensor_set_dil_backend
 
@@ -489,7 +503,7 @@ contains
      integer:: i,j,k
      logical:: contraction_mode
      integer:: rorder(C%mode)
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef DIL_ACTIVE
      !internal variables (DIL)
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -498,6 +512,8 @@ contains
      integer(INTD):: tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+#else
+     integer(4):: i0,i1,i2,tcm(128)
 #endif
      character(26), parameter:: elett='abcdefghijklmnopqrstuvwxyz'
 
@@ -618,51 +634,51 @@ contains
         call lsquit("ERROR(tensor_contract_simple): A%itype not implemented",-1)
       end select
 
-     else !DIL backend (MPI-3 only)
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+     else !`DIL backend (Fortran-2008 & MPI-3)
+#ifdef DIL_ACTIVE
         !Get the symbolic tensor contraction pattern:
         tcs(1:2)='D('; tcl=2; i1=C%mode
         do i0=1,i1; tcs(tcl+1:tcl+2)=elett(i0:i0)//','; tcl=tcl+2; enddo
-           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-           tcs(tcl+1:tcl+4)='+=L('; tcl=tcl+4; i2=0
-           do i0=1,A%mode
-              i2=i2+1; i3=abs(tcm(i2))
-              if(tcm(i2).gt.0) then !uncontracted index
-                 tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
-                 elseif(tcm(i2).lt.0) then !contracted index
-                 tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
-              else
-                 call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
-              endif
-           enddo
-           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-           tcs(tcl+1:tcl+3)='*R('; tcl=tcl+3
-           do i0=1,B%mode
-              i2=i2+1; i3=abs(tcm(i2))
-              if(tcm(i2).gt.0) then !uncontracted index
-                 tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
-                 elseif(tcm(i2).lt.0) then !contracted index
-                 tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
-              else
-                 call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
-              endif
-           enddo
-           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-           if(DIL_DEBUG) write(*,*) '#DEBUG(DIL): symbolic: '//tcs(1:tcl)
-           !Set tensor arguments:
-           call dil_clean_tens_contr(tch)
+        if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+        tcs(tcl+1:tcl+4)='+=L('; tcl=tcl+4; i2=0
+        do i0=1,A%mode
+           i2=i2+1; i3=abs(tcm(i2))
+           if(tcm(i2).gt.0) then !uncontracted index
+             tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
+           elseif(tcm(i2).lt.0) then !contracted index
+             tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
+           else
+             call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
+           endif
+        enddo
+        if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+        tcs(tcl+1:tcl+3)='*R('; tcl=tcl+3
+        do i0=1,B%mode
+           i2=i2+1; i3=abs(tcm(i2))
+           if(tcm(i2).gt.0) then !uncontracted index
+             tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
+           elseif(tcm(i2).lt.0) then !contracted index
+             tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
+           else
+             call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
+           endif
+        enddo
+        if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+        if(DIL_DEBUG) write(*,*) '#DEBUG(DIL): symbolic: '//tcs(1:tcl)
+        !Set tensor arguments:
+        call dil_clean_tens_contr(tch)
 
-           !Set the formal tensor contraction specification:
+        !Set the formal tensor contraction specification:
 
-           !Perform the tensor contraction:
+        !Perform the tensor contraction:
 
 #else
-           call lsquit("ERROR(tensor_contract_simple): DIL backend requires Fortran 2003/2008",-1)
+        call lsquit('ERROR(tensor_contract_simple): DIL backend requires Fortran-2008 and MPI-3 at least!',-1)
 #endif
-        endif
+     endif
 
-        call time_start_phase( PHASE_WORK )
-     end subroutine tensor_contract
+     call time_start_phase( PHASE_WORK )
+  end subroutine tensor_contract
 
   subroutine tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
      implicit none

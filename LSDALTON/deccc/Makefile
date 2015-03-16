@@ -19,6 +19,7 @@ F90_OBJS = dec_settings.o \
 	ccarray3_simple.o \
 	fullmolecule.o \
 	mp2.o \
+	rimp2.o \
 	ccsdpt.o \
 	ccorbital.o \
 	cc_integrals.o \
@@ -38,11 +39,12 @@ F90_OBJS = dec_settings.o \
 	dec_driver.o \
 	dec_driver_slave.o \
 	full_driver.o \
+	full_mp2.o \
+	full_rimp2.o \
 	full_driver_f12contractions.o\
 	snoop_main.o\
 	snoop_tools.o\
 	dec_main.o
-C_OBJS = crayio.o
 
 
 

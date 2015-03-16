@@ -13,7 +13,6 @@
 #----------------------------------------------------------
 
 import sys
-import os
 import numpy as np
 
 atoms=['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar',

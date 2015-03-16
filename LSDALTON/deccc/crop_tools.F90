@@ -397,7 +397,6 @@ module crop_tools_module
             write(DECinfo%output,'(a,i4)')     'Num. occ. orb.   = ',nocc
             write(DECinfo%output,'(a,i4)')     'Num. unocc. orb. = ',nvirt
             write(DECinfo%output,'(a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
-            write(DECinfo%output,'(a,l4)')     'Debug routine    = ',DECinfo%CCDEBUG
             write(DECinfo%output,'(a,l4)')     'Debug mode       = ',DECinfo%cc_driver_debug
             write(DECinfo%output,'(a,i4)')     'Print level      = ',ccPrintLevel
             write(DECinfo%output,'(a,l4)')     'Use CROP         = ',DECinfo%use_crop

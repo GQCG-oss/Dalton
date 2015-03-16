@@ -64,25 +64,25 @@ real(realk),pointer :: max_orbspreads(:)
   lower2= .true.
   stepsize=0d0
   do i=1,CFG%max_macroit
-    iter_number = i
-    CFG%old_mu = CFG%mu
-    old_oVal = oVal
-    nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
-    max_FM=sqrt(sqrt(maxval(CFG%PFM_input%omega)))
-    max_orbspreads(i) =  max_FM
-   write(ls%lupri,'(A,I3,A,f6.2,A,ES8.1,A,ES8.1,A,I3,A,f5.2,A,f5.2)') &
-     &'  %LOC% ',i,' sigma_4 =',max_FM,&
-     &   '  mu = ',CFG%mu,'  grd =', nrmG, '  it =',CFG%it, '  trust-region = ', CFG%stepsize&
-     & ,' step= ',stepsize
-    
+     iter_number = i
+     CFG%old_mu = CFG%mu
+     old_oVal = oVal
+     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
+     max_FM=sqrt(sqrt(maxval(CFG%PFM_input%omega)))
+     max_orbspreads(i) =  max_FM
+     write(ls%lupri,'(A,I3,A,f6.2,A,ES8.1,A,ES8.1,A,I3,A,f5.2,A,f5.2)') &
+        &'  %LOC% ',i,' sigma_4 =',max_FM,&
+        &   '  mu = ',CFG%mu,'  grd =', nrmG, '  it =',CFG%it, '  trust-region = ', CFG%stepsize&
+        & ,' step= ',stepsize
 
-    if (i>10) then
-      if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.02 .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.02  .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.02  .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.02  .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.02  .and. &
-      &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.02) then
+     if(CFG%quit_after_10it)then
+        if (i>10) then
+           if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.02 .and. &
+              &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.02  .and. &
+              &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.02  .and. &
+              &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.02  .and. &
+              &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.02  .and. &
+              &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.02) then
            write(ls%lupri,'(a)') '  %LOC%  '
            write(ls%lupri,'(a)') '  %LOC%   ********* Orbital localization converged ************'
            write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
@@ -93,9 +93,10 @@ real(realk),pointer :: max_orbspreads(:)
            write(ls%lupri,'(a)') '  %LOC%   *****************************************************'
            write(ls%lupri,'(a)') '  %LOC% '
            exit
+           endif
         endif
-    endif
-    if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
+     endif
+     if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
         write(ls%lupri,'(a)') '  %LOC% '
         write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
         write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
@@ -106,7 +107,7 @@ real(realk),pointer :: max_orbspreads(:)
         write(ls%lupri,'(a)') '  %LOC%  *****************************************************'
         write(ls%lupri,'(a)') '  %LOC% '
         exit
-    end if
+     end if
    
    call davidson_solver(CFG,G,X)
 
@@ -265,39 +266,41 @@ real(realk),pointer :: max_orbspreads(:)
          &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region = ',CFG%stepsize,' step =', stepsize
   
 
-  if (i>10) then
-        if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.01 .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.01  .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.01  .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.01  .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.01  .and. &
-         &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.01) then
-            write(ls%lupri,'(a)') '  %LOC% '
-            write(ls%lupri,'(a)') '  %LOC%   ********* Orbital localization converged ************'
-            write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
-            write(ls%lupri,'(a)') '  %LOC%   * There are insignificant changes in the  locality  *'
-            write(ls%lupri,'(a)') '  %LOC%   * of the least local orbital, and procedure is      *'
-            write(ls%lupri,'(a)') '  %LOC%   * exited irresptective of gradient norm.            *'
-            write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
-            write(ls%lupri,'(a)') '  %LOC%   *****************************************************'
-            write(ls%lupri,'(a)') '  %LOC% '
-            exit
-     endif
-  endif
-  if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
-        write(ls%lupri,'(a)') '  %LOC% '
-        write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
-        write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
-        write(ls%lupri,'(a)') '  %LOC%  * The gradient norm for the orbital localization    *'
-        write(ls%lupri,'(a)') '  %LOC%  * function is below the threshold, and we exit      *'
-        write(ls%lupri,'(a)') '  %LOC%  * the localization procedure.                       *'
-        write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
-        write(ls%lupri,'(a)') '  %LOC%  *****************************************************'
-        write(ls%lupri,'(a)') '  %LOC% '
-        exit
+    if(CFG%quit_after_10it)then
+       if (i>10) then
+          if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.01 .and. &
+             &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.01  .and. &
+             &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.01  .and. &
+             &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.01  .and. &
+             &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.01  .and. &
+             &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.01) then
+          write(ls%lupri,'(a)') '  %LOC% '
+          write(ls%lupri,'(a)') '  %LOC%   ********* Orbital localization converged ************'
+          write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
+          write(ls%lupri,'(a)') '  %LOC%   * There are insignificant changes in the  locality  *'
+          write(ls%lupri,'(a)') '  %LOC%   * of the least local orbital, and procedure is      *'
+          write(ls%lupri,'(a)') '  %LOC%   * exited irresptective of gradient norm.            *'
+          write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
+          write(ls%lupri,'(a)') '  %LOC%   *****************************************************'
+          write(ls%lupri,'(a)') '  %LOC% '
+          exit
+          endif
+       endif
+    endif
+    if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
+       write(ls%lupri,'(a)') '  %LOC% '
+       write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
+       write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
+       write(ls%lupri,'(a)') '  %LOC%  * The gradient norm for the orbital localization    *'
+       write(ls%lupri,'(a)') '  %LOC%  * function is below the threshold, and we exit      *'
+       write(ls%lupri,'(a)') '  %LOC%  * the localization procedure.                       *'
+       write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
+       write(ls%lupri,'(a)') '  %LOC%  *****************************************************'
+       write(ls%lupri,'(a)') '  %LOC% '
+       exit
     end if
-
-   call davidson_solver(CFG,G,X)
+   
+    call davidson_solver(CFG,G,X)
 
    ! global and local thresholds defined in CFG settings
    if (dabs(CFG%mu)> 1.0_realk) CFG%conv_thresh=CFG%global_conv_thresh

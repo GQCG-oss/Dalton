@@ -2,6 +2,16 @@
 module cc_tools_module
    use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
 
+!`DIL backend (depends on Fortran-2003/2008, MPI-3):
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_PTR_RESHAPE
+#ifdef VAR_MPI
+#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
+#endif
+#endif
+#endif
+
    use precision
 #ifdef VAR_MPI
    use lsmpi_type
@@ -13,7 +23,7 @@ module cc_tools_module
    use dec_typedef_module
    use reorder_frontend_module
    use tensor_interface_module
-   
+
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
    end interface get_tpl_and_tmi
@@ -76,6 +86,9 @@ module cc_tools_module
       endif
 
    end subroutine mo_work_dist
+
+
+
    !> \brief Reorder t to use symmetry in both occupied and virtual indices,
    !> thereby restricting the first virtual to be less equal to the second and
    !> make symmetric and antisymmetric combinations of these 
@@ -112,13 +125,15 @@ module cc_tools_module
    end subroutine get_tpl_and_tmi_tensors
 
    subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
+      use, intrinsic:: ISO_C_BINDING
       implicit none
-      type(tensor),intent(inout) :: t2, tpl, tmi
+      type(tensor),intent(inout) :: t2 !intent(in)
+      type(tensor),intent(inout) :: tpl, tmi !tpl[nor,nvr],tmi[nor,nvr]
 
       integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
       integer :: otmi(2),otpl(2),ot2(4)
-      real(realk), pointer :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
-      real(realk), pointer :: buf1(:),buf2(:)
+      real(realk), pointer, contiguous :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
+      real(realk), pointer, contiguous :: buf1(:),buf2(:)
       integer :: dcged,dilej,ccged,cilej,gcged,gilej
       real(realk) :: sol
       integer :: nor,no,nvr,nv,k,c,d
@@ -156,7 +171,12 @@ module cc_tools_module
          call get_midx(gtnr,otpl,tpl%ntpm,tpl%mode)
 
          !Facilitate access
+!        call c_f_pointer(c_loc(tpl%ti(lt)%t),tpm,shape=tpl%ti(lt)%d(1:2)) !`DIL
+#ifdef VAR_PTR_RESHAPE
+         tpm(1:tpl%ti(lt)%d(1),1:tpl%ti(lt)%d(2)) => tpl%ti(lt)%t
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer(c_loc(tpl%ti(lt)%t(1)),tpm,tpl%ti(lt)%d)
+#endif
 
          !build list of tiles to get for the current tpl tile
          !get offset for tile counting
@@ -223,13 +243,24 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
-            call c_f_pointer(c_loc(buf1(1)),tt1,tdim)
-
+!           call c_f_pointer(c_loc(buf1),tt1,shape=tdim(1:4)) !`DIL
+#ifdef VAR_PTR_RESHAPE
+            tt1(1:tdim(1),1:tdim(2),1:tdim(3),1:tdim(4)) => buf1
             if(mtile(2)==mtile(1))then
-               call c_f_pointer( c_loc(buf1(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf1
             else
-               call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf2
             endif
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+            call c_f_pointer(c_loc(buf1(1)),tt1,tdim)
+            if(mtile(2)==mtile(1))then
+!             call c_f_pointer(c_loc(buf1),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+              call c_f_pointer( c_loc(buf1(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            else
+!             call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+              call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+            endif
+#endif
 
             !get offset for tile counting
             ot2(1)=(mtile(1)-1)*t2%tdim(1)
@@ -277,7 +308,6 @@ module cc_tools_module
                                  ccged = mod(gcged-1,nvrs)+1
                                  cilej = mod(gilej-1,nors)+1
 
-
                                  tpm(cilej,ccged) = 0.5E0_realk*(tt1(a,b,i,j)+tt2(b,a,i,j))
 
                                  contributed  = .true.
@@ -306,7 +336,12 @@ module cc_tools_module
          call get_midx(gtnr,otmi,tmi%ntpm,tmi%mode)
 
          !Facilitate access
+!        call c_f_pointer(c_loc(tmi%ti(lt)%t),tpm,shape=tmi%ti(lt)%d(1:2)) !`DIL
+#ifdef VAR_PTR_RESHAPE
+         tpm(1:tmi%ti(lt)%d(1),1:tmi%ti(lt)%d(2)) => tmi%ti(lt)%t
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer( c_loc(tmi%ti(lt)%t(1)), tpm, tmi%ti(lt)%d )
+#endif
 
          !build list of tiles to get for the current tmi tile
          !get offset for tile counting
@@ -373,12 +408,24 @@ module cc_tools_module
 
             if(mtile(2)/=mtile(1)) call tensor_get_tile(t2,[mtile(2),mtile(1),mtile(3),mtile(4)],buf2,nelms)
 
+!           call c_f_pointer(c_loc(buf1),tt1,shape=tdim(1:4)) !`DIL
+#ifdef VAR_PTR_RESHAPE
+            tt1(1:tdim(1),1:tdim(2),1:tdim(3),1:tdim(4)) => buf1
+            if(mtile(2)==mtile(1))then
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf1
+            else
+               tt2(1:tdim(2),1:tdim(1),1:tdim(3),1:tdim(4)) => buf2
+            endif
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
             call c_f_pointer( c_loc(buf1(1)), tt1, tdim )
             if(mtile(2)==mtile(1))then
-               call c_f_pointer( c_loc( buf1(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!             call c_f_pointer(c_loc(buf1),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+              call c_f_pointer( c_loc( buf1(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             else
-               call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
+!             call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
+              call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
+#endif
 
             !get offset for tile counting
             ot2(1)=(mtile(1)-1)*t2%tdim(1)
@@ -528,8 +575,8 @@ module cc_tools_module
       integer,optional,intent(in) :: order(4)
       logical,optional,intent(in) :: rest_occ_om2
       real(realk),optional :: scal
-      integer(kind=8)  :: wszes3(3)
       integer :: goffs,aoffs,tlen,tred,nor,nvr
+      integer(kind=8) :: s0, s2, s3
 
       call time_start_phase(PHASE_WORK)
 
@@ -591,7 +638,6 @@ module cc_tools_module
          !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred)
 
-
          !!ANTI-SYMMETRIC COMBINATION
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
          call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
@@ -599,13 +645,10 @@ module cc_tools_module
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
          call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d] 
+         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
          call get_I_cged(w2,w0,tred,nv)
          !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred)
-      case(1)
-         !DMITRY's IMPLEMENTATION GOES HERE
-         stop 0
       case default
          call lsquit("ERROR(get_a22_and_prepb22_terms_ex): wrong scheme on input",-1)
       end select
@@ -613,32 +656,224 @@ module cc_tools_module
       !COMBINE THE TWO SIGMAS OF W3 IN W2
       !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
-      wszes3 = [wszes(1),wszes(3),wszes(4)]
-      call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,wszes3,lo,twork,tcomm,order=order, &
-         &rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
+      s0 = wszes(1)
+      s2 = wszes(3)
+      s3 = wszes(4)
+      call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
+         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
 
+#ifdef DIL_ACTIVE
+   !> \brief calculate a and b terms in a Kobayashi fashion
+   !> \author Patrick Ettenhuber, Dmitry I. Lyakh (`DIL)
+   !> \date December 2012
+   subroutine get_a22_and_prepb22_terms_exd(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
+         &xo,yo,xv,yv,om2,sio4,s,wszes,lo,dil_lock_out,twork,tcomm,order,rest_occ_om2,scal)
+      implicit none
+      !> workspace with exchange integrals
+      real(realk),intent(inout) :: w1(:)
+      !> empty workspace of correct sizes
+      real(realk),intent(inout) :: w0(:),w2(:),w3(:)
+      !> the t+ and t- combinations with a value of the amplitudes with the
+      !diagonal elements divided by two
+      type(tensor),intent(inout) :: tpl,tmi !tpl[nor,nvr],tmi[nor,nvr]
+      !> number of occupied, virutal and ao indices
+      integer, intent(in) :: no,nv,nb
+      !> first alpha and first gamma indices of the current loop
+      integer, intent(in) :: fa,fg
+      !> lengths of the alpha ang gamma batches in the currnet loop
+      integer, intent(in) :: la,lg
+      !> the doubles residual to update
+      !real(realk), intent(inout) :: om2(:)
+      type(tensor), intent(inout) :: om2
+      !> the lambda transformation matrices
+      real(realk), intent(in)    :: xo(:),yo(:),xv(:),yv(:)
+      !> the sio4 matrix to calculate the b2.2 contribution
+      type(tensor),intent(inout) ::sio4
+      !> scheme
+      integer,intent(in) :: s
+      logical,intent(in) :: lo,dil_lock_out
+      !timing information
+      real(realk) :: twork,tcomm
+      !> W0 SIZE
+      integer(kind=8),intent(in)  :: wszes(4)
+      integer,optional,intent(in) :: order(4)
+      logical,optional,intent(in) :: rest_occ_om2
+      real(realk),optional :: scal
+      integer(kind=8)  :: wszes3(3)
+      integer :: goffs,aoffs,tlen,tred,nor,nvr
+      integer(kind=8) :: s0, s2, s3
+!{`DIL:
+     integer:: nors,nvrs
+     character(256):: tcs
+     type(dil_tens_contr_t):: tch
+     integer(INTL):: dil_mem,l0
+     integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
+     integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
+     integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+     real(realk):: r0
+!}
+
+      call time_start_phase(PHASE_WORK)
+
+      nor=(no*(no+1))/2
+      nvr=(nv*(nv+1))/2
+
+      !Determine the offsets in the alpha and gamma indices, which arise from
+      !non uniform batch distributions, e.g. consider:
+      !Case 1:   gamma _____
+      !               |\    |
+      !               |_\___|
+      !  alpha        |  \  |
+      !               |___\_| here an offset in gamma for the second gamma batch is
+      !               needed, since the elements to be considered do not
+      !               begin with the first element in that batch
+      goffs=0
+      if(fa-fg>0)goffs=fa-fg
+      !Case 2:   gamma ______
+      !               |\ |   |
+      !               | \|   |
+      !  alpha        |  |\  |
+      !               |__|_\_| here an offset in alpha for the second alpha batch is
+      !               needed, since the elements to be considered do not
+      !               begin with the first element in that batch
+      aoffs=0
+      if(fg-fa>0)aoffs=fg-fa
+
+      !Determine the dimension of the triangular part in the current batch
+      !and the total number of elements (tred) in the triangular plus
+      !rectangular parts
+      tred=0
+      tlen=min(min(min(la,lg),fg+lg-fa),fa+la-fg)
+
+      !calculate amount of triangular elements in the current batch
+      if(fa+la-1>=fg)tred= tlen*(tlen+1)/2
+      !add the rectangular contribution if lg is larger than tlen 
+      if(fa>=fg.and.fg+lg-fa-tlen>0)tred=tred+(fg+lg-fa-tlen)*la
+      if(fa<fg)tred=tred+lg*aoffs
+      if(fa<fg.and.fa+la>fg) tred=tred+(lg-tlen)*(la-aoffs)
+      !if only rectangular
+      if(tlen<=0)then
+         tlen=0
+         aoffs=0
+         goffs=0
+         tred=la*lg
+      endif
+
+      select case(s)
+      case(1) !`DIL: Scheme 1 only
+         !!SYMMETRIC COMBINATION:
+         !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
+         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+         !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
+         call get_I_cged(w2,w0,tred,nv)
+         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
+!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred) !`DIL: replace
+         if(DIL_DEBUG) then !`DIL: Tensor contraction 6
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 6:")')&
+          &infpar%lg_mynum,infpar%mynum
+         endif
+         tcs='D(z,y)+=L(z,x)*R(y,x)'
+         call dil_clean_tens_contr(tch)
+         tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
+         call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,w3)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: DA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Destination arg set failed!',-1)
+         tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nvr,INTD)/)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,w2)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: LA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Left arg set failed!',-1)
+         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=tpl)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: RA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Right arg set failed!',-1)
+         call dil_set_tens_contr_spec(tch,tcs,errc,alpha=0.5E0_realk)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: CC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Contr spec set failed!',-1)
+         dil_mem=dil_get_min_buf_size(tch,errc)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: BS: ',infpar%lg_mynum,errc,dil_mem
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Buf size set failed!',-1)
+         call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: TC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Tens contr failed!',-1)
+
+         !!ANTI-SYMMETRIC COMBINATION:
+         !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
+         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
+         call get_I_cged(w2,w0,tred,nv)
+         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
+!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred) !`DIL replace
+         if(DIL_DEBUG) then !`DIL: Tensor contraction 7
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 7:")')&
+          &infpar%lg_mynum,infpar%mynum
+         endif
+         tcs='D(z,y)+=L(z,x)*R(y,x)'
+         call dil_clean_tens_contr(tch)
+         tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
+         call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,w3(tred*nor+1:))
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: DA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Destination arg set failed!',-1)
+         tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nvr,INTD)/)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,w2)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: LA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Left arg set failed!',-1)
+         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=tmi)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: RA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Right arg set failed!',-1)
+         call dil_set_tens_contr_spec(tch,tcs,errc,alpha=0.5E0_realk)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: CC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Contr spec set failed!',-1)
+         dil_mem=dil_get_min_buf_size(tch,errc)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: BS: ',infpar%lg_mynum,errc,dil_mem
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Buf size set failed!',-1)
+         call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: TC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Tens contr failed!',-1)
+      case default
+         call lsquit("ERROR(get_a22_and_prepb22_terms_exd): wrong scheme on input",-1)
+      end select
+
+      !COMBINE THE TWO SIGMAS OF W3 IN W2
+      !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
+      !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
+      s0 = wszes(1)
+      s2 = wszes(3)
+      s3 = wszes(4)
+      call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
+         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
+
+      call time_start_phase(PHASE_WORK, at=twork)
+   end subroutine get_a22_and_prepb22_terms_exd
+#endif
+
    !> \brief Combine sigma matrixes in symmetric and antisymmetric combinations 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
-         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej, query )
+   subroutine combine_and_transform_sigma(omega,w0,w2,w3,s0,s2,s3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
+         & la,lg,no,nv,nb,goffs,aoffs,s,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej, query )
       implicit none
       !> size of w0
-      integer(kind=8),intent(inout)   :: wszes(3)
+      integer(kind=8),intent(inout)   :: s0,s2,s3
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
       !real(realk),intent(inout) :: omega(nv*nv*no*no)
       type(tensor),intent(inout) :: omega
       !> w0 is just some workspace on input
-      real(realk),intent(inout) :: w0(wszes(1))
+      real(realk),intent(inout) :: w0(s0)
       !> w2 is just some workspace on input
-      real(realk),intent(inout),target :: w2(wszes(2))
+      real(realk),intent(inout),target :: w2(s2)
       !> w3 contains the symmetric and antisymmetric combinations 
-      real(realk),intent(inout) :: w3(wszes(3))
+      real(realk),intent(inout) :: w3(s3)
       !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
       !contribution after the loop, update them in the loops
       type(tensor),intent(inout) :: sio4
@@ -686,7 +921,6 @@ module cc_tools_module
       logical               :: rest_o2_occ, rest_sio4,qu
       real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
-
 
       rest_o2_occ   = .false.
       if(present(rest_occ_om2 ))rest_o2_occ   = rest_occ_om2
@@ -806,38 +1040,42 @@ module cc_tools_module
       !print *,case_sel,full1,full2,la,lg,tlen,tred
       !print *,"-------------------------------------------------------------------------------------"
 
-
       if( qu )then
 
          !ATTENTION: KEEP UP TO DATE
+         !should always be zeroed outside, else there are stack allocation
+         !problems
+         !s0 = 0
+         !s2 = 0
+         !s3 = 0
 
          !w0:
          if(second_trafo_step)then
-            wszes(1) = max(wszes(1),(i8*nor)*full1*full2+(i8*nor)*full1T*full2T)
+            s0 = max(s0,(i8*nor)*full1*full2+(i8*nor)*full1T*full2T)
          else
-            wszes(1) = max(wszes(1),(i8*nor)*full1*full2)
+            s0 = max(s0,(i8*nor)*full1*full2)
          endif
 
          !w2:
-         wszes(2) = max(wszes(2),(i8*nor)*full1*full2)
-         wszes(2) = max(wszes(2),(i8*nv*nv)*nor)
+         s2 = max(s2,(i8*nor)*full1*full2)
+         s2 = max(s2,(i8*nv*nv)*nor)
          if(.not.rest_o2_occ)then
-            wszes(2) = max(wszes(2),(i8*nv*nv)*no*no)
+            s2 = max(s2,(i8*nv*nv)*no*no)
          endif
          if(second_trafo_step)then
-            wszes(2) = max(wszes(2),(i8*full1T)*full2T*nor)
-            wszes(2) = max(wszes(2),(i8*nv)*nv*nor)
+            s2 = max(s2,(i8*full1T)*full2T*nor)
+            s2 = max(s2,(i8*nv)*nv*nor)
          endif
          if( .not. rest_sio4 )then
-            wszes(2) = max(wszes(2),(i8*no2*no2)*nor)
+            s2 = max(s2,(i8*no2*no2)*nor)
          endif
 
          !w3:
-         wszes(3) = max(wszes(3),(i8*nor)*full1*full2)
-         wszes(3) = max(wszes(3),(i8*nv*nor*full1)*full2)
-         wszes(3) = max(wszes(3),(i8*no2)*nor*full1)
+         s3 = max(s3,(i8*nor)*full1*full2)
+         s3 = max(s3,(i8*nv*nor*full1)*full2)
+         s3 = max(s3,(i8*no2)*nor*full1)
          if(second_trafo_step)then
-            wszes(3) = max(wszes(3),(i8*nv*nor)*full1T)
+            s3 = max(s3,(i8*nv*nor)*full1T)
         endif
 
       else
@@ -1015,7 +1253,7 @@ module cc_tools_module
                w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                !$OMP END WORKSHARE
                call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             endif
@@ -1086,7 +1324,7 @@ module cc_tools_module
                   !$OMP END WORKSHARE
 #endif
                   call time_start_phase(PHASE_COMM, at=twork)
-                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                   call time_start_phase(PHASE_WORK, at=tcomm)
                endif
             else
@@ -1132,7 +1370,7 @@ module cc_tools_module
 #ifdef VAR_MPI
                if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
                call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                if( alloc_in_dummy )then
                   call lsmpi_win_flush(sio4%wi(1),local=.true.)
                else
@@ -1141,8 +1379,13 @@ module cc_tools_module
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             else
+#ifdef VAR_PTR_RESHAPE
+               t1(1:no2,1:no2,1:nor)     => w2
+               h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
+#endif
                do j=no,1,-1
                   do i=j,1,-1
                      call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1184,7 +1427,7 @@ module cc_tools_module
 #ifdef VAR_MPI
                   call time_start_phase(PHASE_COMM, at=twork)
                   if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
-                  call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                   if(alloc_in_dummy)then
                      call lsmpi_win_flush(sio4%wi(1),local=.true.)
                   else
@@ -1194,8 +1437,13 @@ module cc_tools_module
 #endif
                else
 
+#ifdef VAR_PTR_RESHAPE
+                  t1(1:no2,1:no2,1:nor)     => w2
+                  h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                   call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                   call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
+#endif
                   do j=no,1,-1
                      do i=j,1,-1
                         call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
@@ -1340,7 +1588,11 @@ module cc_tools_module
          quarry(2) = max(quarry(2),(i8*la*nb)*lg*nb)
          quarry(3) = max(quarry(3),(i8*nb*nb)*cagi)
       else
+#ifdef VAR_PTR_RESHAPE
+         trick(1:nb,1:nb,1:cagi) => w2
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer(c_loc(w2(1)),trick,[nb,nb,cagi])
+#endif
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          aleg=0
 
@@ -1898,5 +2150,553 @@ module cc_tools_module
       ! WRKWXYZ(ao, w x y)^T ZZ(ao,z)^T   -> WXYZ (wxyz)
       call dgemm('t','n',w*x*y,z,ao,1.0E0_realk,WRKWXYZ,ao,ZZ,ao,0.0E0_realk,WXYZ,w*x*y)
    end subroutine successive_4ao_mo_trafo
+
+
+   !> \brief: calculate atomic and pair fragment contributions to solver (CCSD, MP2 ...)
+   !> correlation energy for full molecule calculation.
+   !> \author: Janus Juul Eriksen
+   !> \date: February 2013
+   subroutine solver_energy_full(no,nv,nfrags,offset,t2,t1,integral,occ_orbitals, &
+         & virt_orbitals,FragEnergies,tmp_fragener)
+
+      implicit none
+
+      !> solver doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
+      type(tensor), intent(inout) :: t2, integral
+      !> solver singles amplitudes
+      type(tensor), intent(inout) :: t1
+      !> dimensions
+      integer, intent(in) :: no, nv, nfrags, offset
+      !> occupied orbital information
+      type(decorbital), dimension(no+offset), intent(inout) :: occ_orbitals
+      !> virtual orbital information
+      type(decorbital), dimension(nv), intent(inout) :: virt_orbitals
+      !> Fragment energies array:
+      real(realk), dimension(nfrags,nfrags,2), intent(inout) :: FragEnergies
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: tmp_fragener
+      !> integers
+      integer :: i,j,a,b,atomI,atomJ,vpart,opart
+      !> energy reals
+      real(realk) :: energy_tmp_1, energy_tmp_2
+
+
+      FragEnergies=0.0e0_realk
+      opart=1
+      vpart=2
+
+      ! Get occupied partitioning energy:
+      if (.not.DECinfo%OnlyVirtPart) then
+         tmp_fragener=0.0e0_realk
+         energy_tmp_1=0.0e0_realk
+         energy_tmp_2=0.0e0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:FragEnergies),&
+         !$OMP SHARED(t2,t1,integral,no,nv,occ_orbitals,offset,DECinfo,opart)
+         do j=1,no
+            atomJ = occ_orbitals(j+offset)%CentralAtom
+            do i=1,no
+               atomI = occ_orbitals(i+offset)%CentralAtom
+
+               do b=1,nv
+                  do a=1,nv
+
+                     energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                     if(DECinfo%use_singles)then
+                        energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                     else
+                        energy_tmp_2 = 0.0E0_realk
+                     endif
+                     FragEnergies(AtomI,AtomJ,opart) = FragEnergies(AtomI,AtomJ,opart) &
+                        & + energy_tmp_1 + energy_tmp_2
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(integral,[1,2,4,3])
+
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:tmp_fragener),&
+         !$OMP SHARED(t2,t1,integral,no,nv,occ_orbitals,offset,DECinfo)
+         do j=1,no
+            atomJ = occ_orbitals(j+offset)%CentralAtom
+            do i=1,no
+               atomI = occ_orbitals(i+offset)%CentralAtom
+
+               do b=1,nv
+                  do a=1,nv
+
+                     energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                     if(DECinfo%use_singles)then
+                        energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                     else
+                        energy_tmp_2 = 0.0E0_realk
+                     endif
+                     tmp_fragener(AtomI,AtomJ) = tmp_fragener(AtomI,AtomJ) &
+                        & + energy_tmp_1 + energy_tmp_2
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         FragEnergies(:,:,opart) = 2.0E0_realk * FragEnergies(:,:,opart) - tmp_fragener
+
+         do AtomI=1,nfrags
+            do AtomJ=AtomI+1,nfrags
+
+               FragEnergies(AtomI,AtomJ,opart) = FragEnergies(AtomI,AtomJ,opart) &
+                  & + FragEnergies(AtomJ,AtomI,opart)
+               FragEnergies(AtomJ,AtomI,opart) = FragEnergies(AtomI,AtomJ,opart)
+            end do
+         end do
+
+         ! reorder from (a,b,j,i) to (a,b,i,j)
+         call tensor_reorder(integral,[1,2,4,3])
+
+      end if
+      if (.not.DECinfo%OnlyOccPart) then
+         tmp_fragener=0.0e0_realk
+         energy_tmp_1=0.0e0_realk
+         energy_tmp_2=0.0e0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:FragEnergies),&
+         !$OMP SHARED(t2,t1,integral,no,nv,virt_orbitals,offset,DECinfo,vpart)
+         do b=1,nv
+            atomJ = virt_orbitals(b+offset)%CentralAtom
+            do a=1,nv
+               atomI = virt_orbitals(a+offset)%CentralAtom
+
+               do j=1,no
+                  do i=1,no
+
+                     energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                     if(DECinfo%use_singles)then
+                        energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                     else
+                        energy_tmp_2 = 0.0E0_realk
+                     endif
+                     FragEnergies(AtomI,AtomJ,vpart) = FragEnergies(AtomI,AtomJ,vpart) &
+                        & + energy_tmp_1 + energy_tmp_2
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(integral,[1,2,4,3])
+
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:tmp_fragener),&
+         !$OMP SHARED(t2,t1,integral,no,nv,virt_orbitals,offset,DECinfo)
+         do b=1,nv
+            atomJ = virt_orbitals(b+offset)%CentralAtom
+            do a=1,nv
+               atomI = virt_orbitals(a+offset)%CentralAtom
+
+               do j=1,no
+                  do i=1,no
+
+                     energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                     if(DECinfo%use_singles)then
+                        energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                     else
+                        energy_tmp_2 = 0.0E0_realk
+                     endif
+                     tmp_fragener(AtomI,AtomJ) = tmp_fragener(AtomI,AtomJ) &
+                        & + energy_tmp_1 + energy_tmp_2
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         FragEnergies(:,:,vpart) = 2.0E0_realk * FragEnergies(:,:,vpart) - tmp_fragener
+
+         do AtomI=1,nfrags
+            do AtomJ=AtomI+1,nfrags
+
+               FragEnergies(AtomI,AtomJ,vpart) = FragEnergies(AtomI,AtomJ,vpart) &
+                  & + FragEnergies(AtomJ,AtomI,vpart)
+               FragEnergies(AtomJ,AtomI,vpart) = FragEnergies(AtomI,AtomJ,vpart)
+            end do
+         end do
+
+         ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
+         call tensor_reorder(integral,[1,2,4,3])
+
+      end if
+
+   end subroutine solver_energy_full
+
+
+   !> Purpose: calculate atomic fragment contributions to CCSD-like
+   !           correlation energy for full molecule calculation.
+   !           works for MP2, RPA, CC2, CCD, CCSD...
+   !
+   !> Author:  Pablo Baudin (Based on Janus's routine)
+   !> Date:    Feb. 2015
+   subroutine decnp_energy_full_occ(nocc,nvirt,nfrags,offset,t2,t1,integral,occ_orbitals,&
+         & FragEnergies,tmp_fragener)
+
+      implicit none
+
+      !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
+      type(tensor), intent(inout) :: t2, integral
+      !> ccsd singles amplitudes
+      type(tensor), intent(inout) :: t1
+      !> dimensions
+      integer, intent(in) :: nocc, nvirt, nfrags, offset
+      !> occupied orbital information
+      type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+      !> etot
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: FragEnergies, tmp_fragener
+      !> integers
+      integer :: i,j,a,b,atomI
+      !> energy reals
+      real(realk) :: energy_tmp_1, energy_tmp_2
+
+      ! *************************************************************
+      ! ************** do energy for full molecule ******************
+      ! *************************************************************
+
+      ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
+      ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
+
+      !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
+      !$OMP REDUCTION(+:FragEnergies),&
+      !$OMP SHARED(t2,t1,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
+      do j=1,nocc
+         do i=1,nocc
+            atomI = occ_orbitals(i+offset)%CentralAtom
+
+            do b=1,nvirt
+               do a=1,nvirt
+
+                  energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                  if(DECinfo%use_singles)then
+                     energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                  else
+                     energy_tmp_2 = 0.0E0_realk
+                  endif
+                  FragEnergies(AtomI,AtomI) = FragEnergies(AtomI,AtomI) &
+                     & + energy_tmp_1 + energy_tmp_2
+
+               end do
+            end do
+
+         end do
+      end do
+      !$OMP END PARALLEL DO
+
+      ! reorder from (a,b,i,j) to (a,b,j,i)
+      call tensor_reorder(integral,[1,2,4,3])
+
+      !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
+      !$OMP REDUCTION(+:tmp_fragener),&
+      !$OMP SHARED(t2,t1,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
+      do j=1,nocc
+         do i=1,nocc
+            atomI = occ_orbitals(i+offset)%CentralAtom
+
+            do b=1,nvirt
+               do a=1,nvirt
+
+                  energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                  if(DECinfo%use_singles)then
+                     energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                  else
+                     energy_tmp_2 = 0.0E0_realk
+                  endif
+                  tmp_fragener(AtomI,AtomI) = tmp_fragener(AtomI,AtomI) &
+                     & + energy_tmp_1 + energy_tmp_2
+
+               end do
+            end do
+
+         end do
+      end do
+      !$OMP END PARALLEL DO
+
+      ! get total fourth--order energy contribution
+      FragEnergies = 2.0E0_realk * FragEnergies - tmp_fragener
+
+   end subroutine decnp_energy_full_occ
+
+
+   !> \brief: calculate E[4] contribution to ccsd(t) energy correction for full molecule.
+   !> \author: Janus Juul Eriksen
+   !> \date: February 2013
+   subroutine ccsdpt_energy_e4_full(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsdpt_doubles, &
+         & occ_orbitals,virt_orbitals,eccsdpt_matrix_cou,eccsdpt_matrix_exc,ccsdpt_e4)
+
+      implicit none
+
+      !> ccsd and ccsd(t) doubles amplitudes
+      type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+      !> dimensions
+      integer, intent(in) :: nocc, nvirt, nfrags, offset
+      !> occupied orbital information
+      type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+      type(decorbital), dimension(nvirt), intent(inout) :: virt_orbitals
+      !> etot
+      real(realk), intent(inout) :: ccsdpt_e4
+      real(realk), dimension(nfrags,nfrags,2), intent(inout) :: eccsdpt_matrix_cou
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_exc
+      !> integers
+      integer :: i,j,a,b,atomI,atomJ,opart,vpart
+      !> energy reals
+      real(realk) :: energy_tmp, energy_res_cou, energy_res_exc
+
+      ! *************************************************************
+      ! ************** do energy for full molecule ******************
+      ! *************************************************************
+
+      ! ***********************
+      !   do E[4] energy part
+      ! ***********************
+
+      eccsdpt_matrix_cou = 0.0_realk
+      opart=1
+      vpart=2
+
+      ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
+      ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
+
+      if (.not.DECinfo%OnlyVirtPart) then
+         eccsdpt_matrix_exc = 0.0_realk
+         energy_res_cou = 0.0E0_realk
+         energy_res_exc = 0.0E0_realk
+         ccsdpt_e4 = 0.0E0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
+         !$OMP REDUCTION(+:energy_res_cou,eccsdpt_matrix_cou), &
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset,opart)
+         do j=1,nocc
+            atomJ = occ_orbitals(j+offset)%CentralAtom
+            do i=1,nocc
+               atomI = occ_orbitals(i+offset)%CentralAtom
+
+               do b=1,nvirt
+                  do a=1,nvirt
+
+                     energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                     eccsdpt_matrix_cou(AtomI,AtomJ,opart) = eccsdpt_matrix_cou(AtomI,AtomJ,opart) + energy_tmp
+                     energy_res_cou = energy_res_cou + energy_tmp
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(ccsd_doubles,[1,2,4,3])
+
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
+         !$OMP REDUCTION(+:energy_res_exc,eccsdpt_matrix_exc), &
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
+         do j=1,nocc
+            atomJ = occ_orbitals(j+offset)%CentralAtom
+            do i=1,nocc
+               atomI = occ_orbitals(i+offset)%CentralAtom
+
+               do b=1,nvirt
+                  do a=1,nvirt
+
+                     energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                     eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) + energy_tmp
+                     energy_res_exc = energy_res_exc + energy_tmp
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ! get total fourth--order energy contribution
+         eccsdpt_matrix_cou(:,:,opart) = 4.0E0_realk * eccsdpt_matrix_cou(:,:,opart) &
+            & - 2.0E0_realk * eccsdpt_matrix_exc
+         ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+
+         ! for the e4 pair fragment energy matrix,
+         ! we put the pair energy Delta E_IJ into both entry (I,J) and (J,I)
+
+         do AtomJ=1,nfrags
+            do AtomI=AtomJ+1,nfrags
+
+               eccsdpt_matrix_cou(AtomI,AtomJ,opart) = eccsdpt_matrix_cou(AtomI,AtomJ,opart) &
+                  & + eccsdpt_matrix_cou(AtomJ,AtomI,opart)
+               eccsdpt_matrix_cou(AtomJ,AtomI,opart) =  eccsdpt_matrix_cou(AtomI,AtomJ,opart)
+
+
+            end do
+         end do
+
+         ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
+         call tensor_reorder(ccsd_doubles,[1,2,4,3])
+
+      end if
+      if (.not.DECinfo%OnlyOccPart) then
+         eccsdpt_matrix_exc = 0.0_realk
+         energy_res_cou = 0.0E0_realk
+         energy_res_exc = 0.0E0_realk
+         ccsdpt_e4 = 0.0E0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
+         !$OMP REDUCTION(+:energy_res_cou,eccsdpt_matrix_cou), &
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,offset,vpart)
+         do b=1,nvirt
+            atomJ = virt_orbitals(b)%CentralAtom
+            do a=1,nvirt
+               atomI = virt_orbitals(a)%CentralAtom
+
+               do j=1,nocc
+                  do i=1,nocc
+
+                     energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                     eccsdpt_matrix_cou(AtomI,AtomJ,vpart) = eccsdpt_matrix_cou(AtomI,AtomJ,vpart) + energy_tmp
+                     energy_res_cou = energy_res_cou + energy_tmp
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(ccsd_doubles,[1,2,4,3])
+
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
+         !$OMP REDUCTION(+:energy_res_exc,eccsdpt_matrix_exc), &
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,offset)
+         do b=1,nvirt
+            atomJ = virt_orbitals(b)%CentralAtom
+            do a=1,nvirt
+               atomI = virt_orbitals(a)%CentralAtom
+
+               do j=1,nocc
+                  do i=1,nocc
+
+                     energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                     eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) + energy_tmp
+                     energy_res_exc = energy_res_exc + energy_tmp
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ! get total fourth--order energy contribution
+         eccsdpt_matrix_cou(:,:,vpart) = 4.0E0_realk * eccsdpt_matrix_cou(:,:,vpart) &
+            & - 2.0E0_realk * eccsdpt_matrix_exc
+         ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+
+         ! for the e4 pair fragment energy matrix,
+         ! we put the pair energy Delta E_IJ into both entry (I,J) and (J,I)
+
+         do AtomJ=1,nfrags
+            do AtomI=AtomJ+1,nfrags
+
+               eccsdpt_matrix_cou(AtomI,AtomJ,vpart) = eccsdpt_matrix_cou(AtomI,AtomJ,vpart) &
+                  & + eccsdpt_matrix_cou(AtomJ,AtomI,vpart)
+               eccsdpt_matrix_cou(AtomJ,AtomI,vpart) =  eccsdpt_matrix_cou(AtomI,AtomJ,vpart)
+
+
+            end do
+         end do
+
+         ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
+         call tensor_reorder(ccsd_doubles,[1,2,4,3])
+      end if
+
+
+
+      ! ******************************************************************
+      ! ************** done w/ energy for full molecule ******************
+      ! ******************************************************************
+
+   end subroutine ccsdpt_energy_e4_full
+
+
+   !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule.
+   !> \author: Janus Juul Eriksen
+   !> \date: February 2013
+   subroutine ccsdpt_energy_e5_full(nocc,nvirt,nfrags,offset,ccsd_singles,ccsdpt_singles,&
+         & occ_orbitals,unocc_orbitals,e5_matrix,ccsdpt_e5)
+
+      implicit none
+
+      !> ccsd and ccsd(t) singles amplitudes
+      type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
+      !> dimensions
+      integer, intent(in) :: nocc, nvirt, nfrags, offset
+      !> occupied orbital information
+      type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
+      !> virtual orbital information
+      type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
+      !> etot
+      real(realk), intent(inout) :: ccsdpt_e5
+      real(realk), dimension(nfrags,nfrags,2), intent(inout) :: e5_matrix
+      !> integers
+      integer :: i,a,AtomI,AtomA,opart,vpart
+      !> tmp energy real
+      real(realk) :: energy_tmp
+
+      ! ***********************
+      !   do E[5] energy part
+      ! ***********************
+
+      opart = 1
+      vpart = 2
+      e5_matrix = 0.0_realk
+      ccsdpt_e5 = 0.0_realk
+      energy_tmp = 0.0e0_realk
+      !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
+      !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals,opart),&
+      !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_matrix)
+      do i=1,nocc
+         AtomI = occ_orbitals(i+offset)%secondaryatom
+         do a=1,nvirt
+            AtomA = unocc_orbitals(a)%secondaryatom
+
+            energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+            e5_matrix(AtomA,AtomI,opart) = e5_matrix(AtomA,AtomI,opart) + energy_tmp
+            ! Important to update both (AtomI,AtomA) and (AtomA,AtomI) 
+            e5_matrix(AtomI,AtomA,opart) = e5_matrix(AtomA,AtomI,opart)
+            ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+
+         end do
+      end do
+      !$OMP END PARALLEL DO
+
+      ! get total fifth-order energy correction
+      e5_matrix(:,:,opart) = 2.0E0_realk * e5_matrix(:,:,opart)
+      ccsdpt_e5 = 2.0E0_realk * ccsdpt_e5
+
+      ! virtual partioning is the same as occupied for [5]:
+      e5_matrix(:,:,vpart) = e5_matrix(:,:,opart)
+
+
+      ! ******************************
+      !   done with E[5] energy part
+      ! ******************************
+
+   end subroutine ccsdpt_energy_e5_full
+
 
    end module cc_tools_module

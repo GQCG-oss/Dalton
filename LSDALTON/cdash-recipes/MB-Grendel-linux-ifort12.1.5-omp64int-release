@@ -19,7 +19,7 @@ source /com/open64/5.0-0/load.sh
 export PATH=/usr/local/torque/bin:/usr/lib64/qt-3.3/bin:/com/pgi/linux86-64/12.4/bin:/home/com/intel/composer_xe_2011_sp1.8.273/bin/intel64:/home/tkjaer/bin:/com/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/com/intel/composer_xe_2011_sp1.8.273/mpirt/bin/intel64:/home/tkjaer/bin:$PATH
 export LD_LIBRARY_PATH=/home/com/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/ipp/../compiler/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/ipp/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/mkl/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/tbb/lib/intel64//cc4.1.0_libc2.4_kernel2.6.16.21:/home/com/intel/composer_xe_2011_sp1.8.273/debugger/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/mpirt/lib/intel64:$LS_LIBRARY_PATH
 
-git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
 #git checkout Dalton2013_release
