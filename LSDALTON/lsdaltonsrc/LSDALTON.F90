@@ -49,14 +49,13 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use configuration, only: config_shutdown, config_free
   use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
-  use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem
+  use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem,finalize_lsdalton_driver_and_free
   use initial_guess, only: get_initial_dens
   use scfloop_module, only: scfloop, scf_afterplay
   use lstiming, only: lstimer, init_timers, print_timers
   use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
   use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2,read_fock_matrix_from_file
-  use daltoninfo, only: ls_free 
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
   use extra_output, only: print_orbital_info2
@@ -146,10 +145,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   write (LUERR,*)"THIS IS A DEBUG BUILD"
 #endif
 
-  ! Init LSdalton calculation and get lsitem and config structures
+  ! Init LSdalton calculation and get lsitem and config structures, and perform
+  ! basic tests
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
-   
-  call Test_if_64bit_integer_required(nbast,nbast)
 
 #ifdef HAS_PCMSOLVER
         !
@@ -770,10 +768,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   end if
 #endif
 
-  call ls_free(ls)
-  
-  meminfo_slaves = config%mpi_mem_monitor
-  CALL Print_Memory_info(lupri,'End of LSDALTON_DRIVER')
+  ! Free all higher structures used in LSALTON_DRIVER, and which could not be
+  ! initialized before the config was read
+  call finalize_lsdalton_driver_and_free(lupri,luerr,ls,config,meminfo_slaves)
 
 END SUBROUTINE LSDALTON_DRIVER
 
@@ -845,8 +842,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
 #endif
   use IchorSaveGabMod
 #ifdef VAR_SCALAPACK
-use matrix_operations_scalapack
+  use matrix_operations_scalapack
 #endif
+  use matrix_operations_pdmm
 implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
@@ -888,6 +886,10 @@ implicit none
      call LSMPI_COMM_FREE(scalapack_comm)
   ENDIF
 #endif
+  IF(pdmm_mpi_set)THEN
+     !free communicator 
+     call LSMPI_COMM_FREE(pdmm_comm)
+  ENDIF
 
   call lsmpi_finalize(lupri,.false.)
 #else

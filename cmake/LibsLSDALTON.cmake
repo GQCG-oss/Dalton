@@ -360,10 +360,10 @@ endif()
 add_library(
     declib
     ${DEC_SOURCES}
-    ${DEC_C_SOURCES}
     )
 
 target_link_libraries(declib lsutiltypelib_common)
+target_link_libraries(declib lsutillib_common)
 target_link_libraries(declib lsintlib)
 target_link_libraries(declib linearslib)
 

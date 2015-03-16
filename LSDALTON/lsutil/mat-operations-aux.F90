@@ -1278,6 +1278,7 @@ subroutine mat_read_from_disk2(iunit,A)
          REAL(realk), INTENT(IN)  :: alpha, beta
          TYPE(Matrix), intent(inout):: c
          integer :: ak, bk, ci, cj
+         call time_mat_operations1
          select case(matrix_type)
          case(mtype_dense)
             call mat_dense_dmul(a,b,transb,alpha,beta,c)
@@ -1288,6 +1289,7 @@ subroutine mat_read_from_disk2(iunit,A)
          case default
               call lsquit("mat_dmul not implemented for this type of matrix",-1)
          end select
+         call time_mat_operations2(JOB_mat_dmul)
     end subroutine mat_dmul
 
     !> \brief Make Cij = alpha*Aij*Bij+beta*Cij (Hadamard product), where alpha is a realk and A,B,C are type(matrix)
@@ -1304,6 +1306,7 @@ subroutine mat_read_from_disk2(iunit,A)
     type(matrix),intent(in) :: A,B
     type(matrix),intent(inout) :: C
     integer :: i
+    call time_mat_operations1
  
     select case(matrix_type)
     case (mtype_dense)
@@ -1317,8 +1320,9 @@ subroutine mat_read_from_disk2(iunit,A)
     case (mtype_pdmm)
       call mat_pdmm_hmul(alpha,A,B,beta,C)
     case default
-      call lsquit("mat_hmul not implemented for this type of matrix",-1)
+       call lsquit("mat_hmul not implemented for this type of matrix",-1)
     end select
+    call time_mat_operations2(JOB_mat_hmul)
     end subroutine mat_hmul
 
     !> \brief Make Aij = Aij/(Bij -mu)
@@ -1336,6 +1340,7 @@ subroutine mat_read_from_disk2(iunit,A)
 
     real(realk) :: denom
     integer :: i
+    call time_mat_operations1
    
     if ((A%nrow.ne.B%nrow).or.(A%ncol.ne.B%ncol)) &
     &  call lsquit('Incompatible matrix dimensions in mat_hdiv',-1)
@@ -1353,6 +1358,7 @@ subroutine mat_read_from_disk2(iunit,A)
     case default
       call lsquit('mat_hdiv not implemented for this type of matrix',-1)
     end select
+    call time_mat_operations2(JOB_mat_hdiv)
     end subroutine mat_hdiv
 
 
@@ -1368,6 +1374,7 @@ subroutine mat_read_from_disk2(iunit,A)
     real(realk) :: alpha
     type(matrix) :: A
     real(realk) :: x(A%nrow),y(A%ncol)
+    call time_mat_operations1
 
     select case(matrix_type)
     case(mtype_dense)
@@ -1379,6 +1386,7 @@ subroutine mat_read_from_disk2(iunit,A)
     case default
        call lsquit("mat_dger not implemented for this type of matrix",-1)
    end select
+   call time_mat_operations2(JOB_mat_dger)
  end subroutine mat_dger
 
 

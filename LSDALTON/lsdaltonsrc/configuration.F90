@@ -9,7 +9,8 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
-use tensor_interface_module, only: tensor_set_dil_backend_true, tensor_set_debug_mode_true
+use tensor_interface_module, only: tensor_set_dil_backend_true, &
+   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -568,6 +569,9 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
+            CASE('.DENSELEVEL2');
+               !Use Dense Matrix type in level 2 of Trilevel
+               config%opt%DENSELEVEL2=.TRUE.
             CASE('.MWPURIFYATOMSTART');               
                !Perform McWeeny purification on the non idempotent Atoms Density
                config%opt%MWPURIFYATOMSTART=.TRUE.
@@ -1250,20 +1254,27 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
         CASE('.PDMM')
-           config%opt%cfg_prefer_PDMM = .true.
-           !Set tensor debug to TRUE
-           call tensor_set_debug_mode_true
-           !FIXME the PDMM module should not need this. 
-           !It is related to the tensor implementation that do
-           !not have barriers inside it. This means that one sided communication 
-           !can cause problems when nodes are reading info that have not yet been written.
 #ifdef VAR_MPI
-           call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
+           config%opt%cfg_prefer_PDMM = .true.
+           !Set tensor synchronization to always, TODO: see if this can be optimized
+           call tensor_set_always_sync_true(.true.)
+           !Set the background buffer on, this will use additional memory
+           call lspdm_init_global_buffer(.true.)
+#endif
         CASE('.PDMMBLOCKSIZE');  
+#ifdef VAR_MPI
            print*,'PDMMBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE
+#endif
+        CASE('.PDMMGROUPSIZE');
+#ifdef VAR_MPI
+           READ(LUCMD,*) infpar%PDMMGroupSize
+#endif
+#ifdef VAR_MPI
         CASE('.SCALAPACKGROUPSIZE');
            READ(LUCMD,*) infpar%ScalapackGroupSize
+        CASE('.SCALAPACKWORKAROUND');
+           infpar%ScalapackWORKAROUND=.TRUE.
         CASE('.SCALAPACKAUTOGROUPSIZE');
            infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
@@ -1316,15 +1327,9 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            end if
            select case(word)
            case('.DIL_BACKEND')
-              call tensor_set_dil_backend_true
-#ifdef VAR_MPI
-              call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,infpar%master,MPI_COMM_LSDALTON)
-#endif
+              call tensor_set_dil_backend_true(.true.)
            case('.DEBUG')
-              call tensor_set_debug_mode_true
-#ifdef VAR_MPI
-              call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
-#endif
+              call tensor_set_debug_mode_true(.true.)
            case default
               print *,"UNRECOGNIZED KEYWORD: ",word
               call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
@@ -1375,6 +1380,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.NOGCINTEGRALTRANSFORM'); INTEGRAL%NOGCINTEGRALTRANSFORM=.TRUE.
         CASE ('.NOBQBQ'); INTEGRAL%NOBQBQ=.TRUE.
         CASE ('.FRAGMENT'); READ(LUCMD,*) INTEGRAL%numAtomsPerFragment; INTEGRAL%FRAGMENT = .TRUE.
+        CASE ('.DUMP4CENTERERI');  INTEGRAL%DUMP4CENTERERI = .TRUE.
         CASE ('.2CENTERERI'); INTEGRAL%DO2CENTERERI = .TRUE.
         CASE ('.3CENTEROVL'); INTEGRAL%DO3CENTEROVL = .TRUE.
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
@@ -1570,6 +1576,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.PARI-J'); INTEGRAL%PARI_J=.TRUE.
         CASE ('.EASY-PARI'); INTEGRAL%SIMPLE_PARI=.TRUE.
         CASE ('.PARI-K');  INTEGRAL%PARI_K=.TRUE.
+        CASE ('.MOPARI-K'); INTEGRAL%MOPARI_K=.TRUE.
         CASE ('.DF-K');    INTEGRAL%DF_K=.TRUE.
         CASE ('.NR-PARI'); INTEGRAL%NON_ROBUST_PARI=.TRUE.
         CASE ('.PARI-UNCONSTRAINED');
@@ -3692,7 +3699,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       ENDIF
    endif
 
-   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K))then
+   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K.OR.config%integral%mopari_K))then
       WRITE(config%LUPRI,'(/A)') 'The Pari keywords do not currently work with response'
       WRITE(config%LUPRI,'(/A)') 'Please remove the Pari keywords'
       CALL lsQUIT('The Pari keywords do not currently work with response',config%lupri)

@@ -3,9 +3,6 @@
 # LSDALTON_FREE_FORTRAN_SOURCES  
 # at the end of the file
 
-set(DEC_C_SOURCES
-    LSDALTON/deccc/crayio.c
-    )
 set(CUDA_GPU_INTERFACE_SOURCES
     LSDALTON/cuda/gpu_interfaces.F90
     )
@@ -79,6 +76,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccarray3_simple.F90
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
+    LSDALTON/deccc/rimp2.F90
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
@@ -89,7 +87,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
     LSDALTON/deccc/cc_driver.F90
-    LSDALTON/deccc/cc_debug_routines.F90
     LSDALTON/deccc/cc_integrals.F90
     LSDALTON/deccc/ccarray2_simple.F90
     LSDALTON/deccc/ccarray4_simple.F90
@@ -107,6 +104,8 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsd_gradient.F90
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
+    LSDALTON/deccc/full_rimp2.F90
+    LSDALTON/deccc/full_mp2.F90
     LSDALTON/deccc/snoop_main.F90
     LSDALTON/deccc/snoop_tools.F90
     LSDALTON/deccc/decmpi.F90
@@ -744,8 +743,10 @@ set(LSUTIL_MATRIXM_SOURCES
     )
 set(LSUTIL_COMMON_C_SOURCES
     LSDALTON/lsutil/myPAPI_set_inherit.c
+    LSDALTON/lsutil/crayio.c
     )
 set(LSUTIL_COMMON_SOURCES
+    LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
     LSDALTON/lsutil/tensor_type_def.F90
     LSDALTON/lsutil/response_prop_type.F90

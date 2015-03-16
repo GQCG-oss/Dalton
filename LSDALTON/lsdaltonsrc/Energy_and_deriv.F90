@@ -222,21 +222,30 @@ contains
     Type(lsitem) :: ls
     Type(ConfigItem), intent(inout) :: Config ! General information
     Real(realk) :: Gradient(3,NAtoms)
-    real(realk) :: h, Eerr  ! For DEC: Estimated intrinsic energy error
+    real(realk) :: Eerr  ! For DEC: Estimated intrinsic energy error
+    real(realk) :: step  ! For numerical gradient
     Gradient = 0E0_realk
     Eerr     = 0E0_realk
     ! Calculate gradient
-
-    ! Check whether it is a dec calculation
-    If (DECinfo%doDEC) then
-       ! Gradient from DEC (currently only MP2)
-       Call get_mp2gradient_and_energy_from_inputs(ls,F,D,S,C,Natoms,gradient,E,Eerr)
-    elseif(config%doESGopt)then
-       call GET_EXCITED_STATE_GRADIENT(ls,config,F,D,S,Gradient,Natoms)
-    else
-       ! HF or DFT gradient
-       Call II_get_molecular_gradient(Gradient,lupri,F,D,ls%setting,ls%input%do_dft,.TRUE.)
-    Endif
+#ifdef MOD_UNRELEASED
+    IF (.NOT.config%response%tasks%doNumGrad) THEN !Analytical gradient
+#endif
+      ! Check whether it is a dec calculation
+      If (DECinfo%doDEC) then
+         ! Gradient from DEC (currently only MP2)
+         Call get_mp2gradient_and_energy_from_inputs(ls,F,D,S,C,Natoms,gradient,E,Eerr)
+      elseif(config%doESGopt)then
+         call GET_EXCITED_STATE_GRADIENT(ls,config,F,D,S,Gradient,Natoms)
+      else
+         ! HF or DFT gradient
+         Call II_get_molecular_gradient(Gradient,lupri,F,D,ls%setting,ls%input%do_dft,.TRUE.)
+      Endif
+#ifdef MOD_UNRELEASED
+    ELSE !Numerical gradient
+      step = 1E-5_realk
+      call get_num_grad(step,lupri,ls%luerr,ls,S,F,D,C,config,Gradient)
+    ENDIF
+#endif
     !
   End subroutine Get_Gradient
 
@@ -287,6 +296,10 @@ do i=1,ls%INPUT%MOLECULE%nAtoms
     enddo
 enddo
 CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,numerical_gradient,nAtoms,'NUM_GRAD')
+
+CALL mat_free(H1)
+CALL mat_free(Dmat(1))
+CALL mat_free(Fmat(1))
 end subroutine get_num_grad
 
 End module Energy_and_deriv

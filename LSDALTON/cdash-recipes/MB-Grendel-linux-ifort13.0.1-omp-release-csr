@@ -7,7 +7,7 @@ export PATH=/home/com/intel/composer_xe_2013.1.117/bin/intel64:/home/com/intel/c
 
 export LD_LIBRARY_PATH=/home/com/intel/composer_xe_2013.1.117/compiler/lib/intel64:/opt/intel/mic/coi/host-linux-release/lib:/opt/intel/mic/myo/lib:/home/com/intel/composer_xe_2013.1.117/mpirt/lib/intel64:/home/com/intel/composer_xe_2013.1.117/ipp/../compiler/lib/intel64:/home/com/intel/composer_xe_2013.1.117/ipp/lib/intel64:/home/com/intel/composer_xe_2013.1.117/compiler/lib/intel64:/home/com/intel/composer_xe_2013.1.117/mkl/lib/intel64:/home/com/intel/composer_xe_2013.1.117/tbb/lib/intel64:/com/OpenMPI/1.4.1/intel/lib:/com/OpenMPI/1.4.1/intel/lib
 #:/com/g/4.4.3/lib64:/com/gfortran/4.4.3/lib
-git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
 #git checkout Dalton2013_release

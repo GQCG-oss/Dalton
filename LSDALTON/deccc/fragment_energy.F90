@@ -25,6 +25,7 @@ module fragment_energy_module
   use orbital_operations
   use mp2_module !,only: max_batch_dimension,get_vovo_integrals, &
 !       & mp2_integrals_and_amplitudes
+  use rimp2_module
   use atomic_fragment_operations!  ,only: atomic_fragment_init_basis_part, &
   !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
   !       & update_full_t1_from_atomic_frag,which_pairs, &
@@ -5140,7 +5141,8 @@ contains
       !> Timings for frag opt
       real(realk), pointer :: times_fragopt(:)  
       !> number of core orbitals
-      integer :: nc,idx,i,a
+      integer :: nc
+      integer :: idx,i,a,expit,redit
       real(realk) :: ELag_exp, Eocc_exp, Evir_exp
 
 
@@ -5152,14 +5154,14 @@ contains
       times_fragopt => null()
       call dec_fragment_time_init(times_fragopt)
 
+      expit=0
+      redit=0
       if( DECinfo%print_small_calc )then
-
          write(DECinfo%output,'(a)')    ' FOP'
          write(DECinfo%output,'(a)')    ' FOP ==============================================='
          write(DECinfo%output,'(a,i4)') ' FOP  Site fragment generator for fragment,',MyAtom
          write(DECinfo%output,'(a)')    ' FOP ==============================================='
          write(DECinfo%output,'(a)')    ' FOP'
-
       endif
 
 
@@ -5286,7 +5288,7 @@ contains
       if (.not.full_mol) then
          call fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
             & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
-            & OccOrbitals,VirOrbitals,mylsitem)
+            & OccOrbitals,VirOrbitals,expit,mylsitem)
       end if
 
 
@@ -5344,7 +5346,7 @@ contains
       if (dored) then
          call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
                & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-               & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT)
+               & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT,redit)
       end if
 
       !==================================================================================!
@@ -5381,6 +5383,10 @@ contains
       ! Fragment has been optimized
       AtomicFragment%isopt = .true.
 
+      ! Final print:
+      write(DECinfo%output,'(/A,I4,A,I4,A,I4,A/)') ' FOP SUMMARY: Fragment,',MyAtom, &
+         & '  converged after ',expit,' expansion and ',redit,' reduction steps'
+
    end subroutine optimize_atomic_fragment_CLEAN
 
 
@@ -5388,13 +5394,13 @@ contains
    !          the fragment AOS is increased using the nexp most important orbitals from
    !          occupied and virtual priority lists.
    !          The expansion is converged when the difference in energie(s) between two
-   !          is smaller than the FOT.
+   !          step is smaller than the FOT.
    !
    ! Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
    ! Date:    July 2014
    subroutine fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
             & occ_priority_list,vir_priority_list,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
-            & OccOrbitals,VirOrbitals,mylsitem)
+            & OccOrbitals,VirOrbitals,iter,mylsitem)
 
       implicit none
 
@@ -5419,10 +5425,11 @@ contains
       type(decorbital), dimension(nv), intent(in) :: VirOrbitals
       !> Logical vector telling which orbital is include in the fragment
       logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv)
+      !> Out: number of iteration used in the expansion
+      integer, intent(out) :: iter
       !> Integral information
       type(lsitem), intent(inout)       :: mylsitem
       
-      integer :: iter
       logical :: full_mol, expansion_converged
       real(realk) :: LagEnergy_old, OccEnergy_old, VirEnergy_old
       real(realk) :: LagEnergy_dif, OccEnergy_dif, VirEnergy_dif
@@ -5490,7 +5497,7 @@ contains
    !> \date November 2014
    subroutine fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,occ_priority_list, &
         & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-        & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+        & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter)
 
      implicit none
 
@@ -5520,6 +5527,8 @@ contains
      integer,intent(in) :: no_gap, nv_gap
      !> Fragment optimization threshold to use in reduction
      real(realk),intent(in) :: FOT
+      !> Out: number of iteration used in the reduction
+      integer, intent(out) :: iter
      real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
      type(decfrag) :: ReducedFragment
      integer :: i,noccAOSprev, nunoccAOSprev
@@ -5538,10 +5547,11 @@ contains
      OccEnergy_exp = AtomicFragment%EoccFOP
      VirEnergy_exp = AtomicFragment%EvirtFOP
 
+     iter=0
      ! Determine AtomicFragment according to main FOT
      call fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
           & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-          & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+          & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter)
 
      if(DECinfo%print_small_calc)then
         write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
@@ -5579,7 +5589,7 @@ contains
         ! Determine ReducedFragment according to the scaled FOT
         call fragment_reduction_procedure(ReducedFragment,no,nv,occ_priority_list, &
              & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-             & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased)
+             & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased,iter)
         
         ! Save information about ReducedFragment AOS in AtomicFragment structure
         AtomicFragment%REDfrags(i)%noccAOS   = ReducedFragment%noccAOS
@@ -5631,7 +5641,7 @@ contains
    ! Date:    July 2014
    subroutine fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,no_gap,nv_gap,FOT)
+            & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,totit)
 
       implicit none
 
@@ -5661,6 +5671,8 @@ contains
       integer,intent(in) :: no_gap, nv_gap
       !> Fragment optimization threshold to use in reduction
       real(realk),intent(in) :: FOT
+      !> Total number of iteration used in the reduction
+      integer, intent(inout) :: totit
 
       !> energy error acceptance in reduction steps:
       real(realk) :: dE_occ, dE_vir
@@ -5901,7 +5913,7 @@ contains
          if (nv_min > nv_max) call lsquit('FOP ERROR: nv_min > nv_max', DECinfo%output)
 
       end do REDUCTION_LOOP
-
+      totit = totit + iter
 
       ! CHECK THAT REDUCTION CONVERGED:
       ! *******************************
