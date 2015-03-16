@@ -426,6 +426,7 @@ contains
 
     ! FLOP ACCOUNTING
     fragment%flops_slaves=0.0E0_realk
+    fragment%gpu_flops_slaves=0.0E0_realk
     fragment%ntasks=0
 
     ! TIME FOR LOCAL MPI SLAVES
@@ -5437,6 +5438,7 @@ contains
     joblist12%nbasis(1:joblist1%njobs) = joblist1%nbasis
     joblist12%ntasks(1:joblist1%njobs) = joblist1%ntasks
     joblist12%flops(1:joblist1%njobs) = joblist1%flops
+    joblist12%gpu_flops(1:joblist1%njobs) = joblist1%gpu_flops
     joblist12%LMtime(1:joblist1%njobs) = joblist1%LMtime
     joblist12%workt(1:joblist1%njobs) = joblist1%workt
     joblist12%commt(1:joblist1%njobs) = joblist1%commt
@@ -5456,6 +5458,7 @@ contains
     joblist12%nbasis(startidx:njobs) = joblist2%nbasis
     joblist12%ntasks(startidx:njobs) = joblist2%ntasks
     joblist12%flops(startidx:njobs) = joblist2%flops
+    joblist12%gpu_flops(startidx:njobs) = joblist2%gpu_flops
     joblist12%LMtime(startidx:njobs) = joblist2%LMtime
     joblist12%workt(startidx:njobs) = joblist2%workt
     joblist12%commt(startidx:njobs) = joblist2%commt
@@ -5983,6 +5986,7 @@ contains
     jobs%nbasis(1:nold) = oldjobs%nbasis(1:nold)
     jobs%ntasks(1:nold) = oldjobs%ntasks(1:nold)
     jobs%flops(1:nold) = oldjobs%flops(1:nold)
+    jobs%gpu_flops(1:nold) = oldjobs%gpu_flops(1:nold)
     jobs%LMtime(1:nold) = oldjobs%LMtime(1:nold)
     jobs%workt(1:nold) = oldjobs%workt(1:nold)
     jobs%commt(1:nold) = oldjobs%commt(1:nold)
@@ -6167,6 +6171,7 @@ contains
     jobscopy%nbasis    = jobs%nbasis
     jobscopy%ntasks    = jobs%ntasks
     jobscopy%flops     = jobs%flops
+    jobscopy%gpu_flops = jobs%gpu_flops
     jobscopy%LMtime    = jobs%LMtime
     jobscopy%workt     = jobs%workt
     jobscopy%commt     = jobs%commt
