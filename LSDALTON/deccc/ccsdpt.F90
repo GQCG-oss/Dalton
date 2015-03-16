@@ -313,9 +313,6 @@ contains
 
     endif
 
-    call print_norm(vovo,"VOVO norm",print_on_rank=0)
-    call print_norm(ccsd_doubles,"t2 norm  ",print_on_rank=0)
-
     write(DECinfo%output,*) ''
     write(DECinfo%output,*) ''
     write(DECinfo%output,*) '=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*='
@@ -1840,17 +1837,6 @@ contains
     stat = cublasCreate_v2(cublas_handle)
 
 #endif
-
-    norm = 0.0E0_realk
-    do i=1,nocc
-       norm=norm+eivalocc(i)*eivalocc(i)
-    enddo
-    print *,'eivalocc norm  = ',norm
-    norm = 0.0E0_realk
-    do i=1,nvirt
-       norm=norm+eivalvirt(i)*eivalvirt(i)
-    enddo
-    print *,'eivalvirt norm = ',norm
 
 !$acc wait
 
@@ -10485,9 +10471,6 @@ contains
     call mem_dealloc(distribution)
 
 #endif
-
-    call print_norm(vvvo,"VVVO norm",print_on_rank=0)
-    call print_norm(ovoo,"OVOO norm",print_on_rank=0)
 
     ! free stuff
     ! **********
