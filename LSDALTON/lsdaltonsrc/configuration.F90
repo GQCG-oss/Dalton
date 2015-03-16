@@ -1254,17 +1254,23 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
         CASE('.PDMM')
+#ifdef VAR_MPI
            config%opt%cfg_prefer_PDMM = .true.
            !Set tensor synchronization to always, TODO: see if this can be optimized
            call tensor_set_always_sync_true(.true.)
            !Set the background buffer on, this will use additional memory
            call lspdm_init_global_buffer(.true.)
-#ifdef VAR_MPI
+#endif
         CASE('.PDMMBLOCKSIZE');  
+#ifdef VAR_MPI
            print*,'PDMMBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE
+#endif
         CASE('.PDMMGROUPSIZE');
+#ifdef VAR_MPI
            READ(LUCMD,*) infpar%PDMMGroupSize
+#endif
+#ifdef VAR_MPI
         CASE('.SCALAPACKGROUPSIZE');
            READ(LUCMD,*) infpar%ScalapackGroupSize
         CASE('.SCALAPACKWORKAROUND');

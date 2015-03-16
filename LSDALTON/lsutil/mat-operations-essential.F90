@@ -548,7 +548,7 @@ MODULE matrix_operations
          case(mtype_pdmm)
              call mat_pdmm_free(a)
          case default
-              call lsquit("mat_free not implemented for this type of matrix",-1)
+            call lsquit("mat_free not implemented for this type of matrix",-1)
          end select
 
       !free auxaliary data

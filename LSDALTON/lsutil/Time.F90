@@ -81,9 +81,10 @@ Integer,parameter :: PHASE_INIT                          = 67
 Integer,parameter :: PHASE_WORK                          = 68
 Integer,parameter :: PHASE_COMM                          = 69
 Integer,parameter :: PHASE_IDLE                          = 70
-
-
-
+Integer,parameter :: JOB_mat_dmul                        = 71
+Integer,parameter :: JOB_mat_hmul                        = 72
+Integer,parameter :: JOB_mat_hdiv                        = 73
+Integer,parameter :: JOB_mat_dger                        = 74
 !parameters that are not job specifiers
 
 !> nphases should coincinde with the number of phase jobs in !PHASE PARAMETERS
@@ -125,6 +126,11 @@ Integer :: nmat_identity(3)
 Integer :: nmat_setlowertriangular_zero(3)
 Integer :: nmat_write_to_disk(3) 
 Integer :: nmat_read_from_disk(3)
+Integer :: nmat_dmul(3)
+Integer :: nmat_hmul(3)
+Integer :: nmat_hdiv(3)
+Integer :: nmat_dger(3)
+
 !counters for integral interface routines. 
 Integer :: nII_get_overlap(3)
 Integer :: nII_get_magderivOverlap(3)
@@ -179,6 +185,7 @@ real(realk) :: CPUTIME_mat_scal(3),CPUTIME_mat_zero(3),CPUTIME_mat_write_to_disk
 real(realk) :: CPUTIME_mat_read_from_disk(3),CPUTIME_mat_density_from_orbs(3)
 real(realk) :: CPUTIME_mat_scal_dia(3),CPUTIME_mat_scal_dia_vec(3)
 real(realk) :: CPUTIME_mat_chol(3),CPUTIME_mat_inv(3),CPUTIME_mat_dsyev(3)
+real(realk) :: CPUTIME_mat_dmul(3),CPUTIME_mat_hmul(3),CPUTIME_mat_hdiv(3),CPUTIME_mat_dger(3)
 real(realk) :: CPUTIME_mat_setlowertriangular_zero(3),CPUTIME_mat_dsyevx(3),CPUTIME_mat_identity(3)
 real(realk) :: WALLTIME_TOTAL_mat(3),WALLTIME_mat_set_from_full(3),WALLTIME_mat_to_full(3)
 real(realk) :: WALLTIME_mat_trans(3),WALLTIME_mat_assign(3),WALLTIME_mat_copy(3),WALLTIME_mat_tr(3)
@@ -189,6 +196,7 @@ real(realk) :: WALLTIME_mat_scal(3),WALLTIME_mat_zero(3),WALLTIME_mat_write_to_d
 real(realk) :: WALLTIME_mat_read_from_disk(3),WALLTIME_mat_density_from_orbs(3)
 real(realk) :: WALLTIME_mat_scal_dia(3),WALLTIME_mat_scal_dia_vec(3)
 real(realk) :: WALLTIME_mat_chol(3),WALLTIME_mat_inv(3),WALLTIME_mat_dsyev(3)
+real(realk) :: WALLTIME_mat_dmul(3),WALLTIME_mat_hmul(3),WALLTIME_mat_hdiv(3),WALLTIME_mat_dger(3)
 real(realk) :: WALLTIME_mat_setlowertriangular_zero(3),WALLTIME_mat_dsyevx(3),WALLTIME_mat_identity(3)
 !Timers for Integral interface routines
 real(realk) :: CPUTIME_II_get_overlap(3),CPUTIME_II_get_magderivOverlap(3)
@@ -290,7 +298,10 @@ subroutine init_timers()
    CPUTIME_mat_setlowertriangular_zero(1:3) = 0.0E0_realk
    CPUTIME_mat_write_to_disk(1:3) = 0.0E0_realk
    CPUTIME_mat_read_from_disk(1:3) = 0.0E0_realk
-
+   CPUTIME_mat_dmul(1:3) = 0.0E0_realk
+   CPUTIME_mat_hmul(1:3) = 0.0E0_realk
+   CPUTIME_mat_hdiv(1:3) = 0.0E0_realk
+   CPUTIME_mat_dger(1:3) = 0.0E0_realk
    CPUTIME_II_get_overlap(1:3) = 0.0E0_realk  
    CPUTIME_II_get_magderivOverlap(1:3) = 0.0E0_realk  
    CPUTIME_II_get_maggradOverlap(1:3) = 0.0E0_realk  
@@ -361,6 +372,10 @@ subroutine init_timers()
    WALLTIME_mat_setlowertriangular_zero(1:3) = 0.0E0_realk
    WALLTIME_mat_write_to_disk(1:3) = 0.0E0_realk
    WALLTIME_mat_read_from_disk(1:3) = 0.0E0_realk
+   WALLTIME_mat_dmul(1:3) = 0.0E0_realk
+   WALLTIME_mat_hmul(1:3) = 0.0E0_realk
+   WALLTIME_mat_hdiv(1:3) = 0.0E0_realk
+   WALLTIME_mat_dger(1:3) = 0.0E0_realk
 
    WALLTIME_II_get_overlap(1:3) = 0.0E0_realk  
    WALLTIME_II_get_magderivOverlap(1:3) = 0.0E0_realk  
@@ -430,6 +445,10 @@ subroutine init_timers()
    nmat_setlowertriangular_zero = 0
    nmat_write_to_disk = 0
    nmat_read_from_disk = 0
+   nmat_dmul = 0
+   nmat_hmul = 0
+   nmat_hdiv = 0
+   nmat_dger = 0
    !
    nII_get_overlap(1:3) = 0  
    nII_get_magderivOverlap(1:3) = 0  
@@ -874,6 +893,22 @@ subroutine add_time_to_job(job,deltacpu,deltawall)
       nmat_inv(matoptlevel) = nmat_inv(matoptlevel)+1 
       CPUTIME_mat_inv(matoptlevel) = CPUTIME_mat_inv(matoptlevel) + deltacpu
       WALLTIME_mat_inv(matoptlevel) = WALLTIME_mat_inv(matoptlevel) + deltawall
+   CASE(JOB_mat_dmul)
+      nmat_dmul(matoptlevel) = nmat_dmul(matoptlevel)+1 
+      CPUTIME_mat_dmul(matoptlevel) = CPUTIME_mat_dmul(matoptlevel) + deltacpu
+      WALLTIME_mat_dmul(matoptlevel) = WALLTIME_mat_dmul(matoptlevel) + deltawall
+   CASE(JOB_mat_hmul)
+      nmat_hmul(matoptlevel) = nmat_hmul(matoptlevel)+1 
+      CPUTIME_mat_hmul(matoptlevel) = CPUTIME_mat_hmul(matoptlevel) + deltacpu
+      WALLTIME_mat_hmul(matoptlevel) = WALLTIME_mat_hmul(matoptlevel) + deltawall
+   CASE(JOB_mat_hdiv)
+      nmat_hdiv(matoptlevel) = nmat_hdiv(matoptlevel)+1 
+      CPUTIME_mat_hdiv(matoptlevel) = CPUTIME_mat_hdiv(matoptlevel) + deltacpu
+      WALLTIME_mat_hdiv(matoptlevel) = WALLTIME_mat_hdiv(matoptlevel) + deltawall
+   CASE(JOB_mat_dger)
+      nmat_dger(matoptlevel) = nmat_dger(matoptlevel)+1 
+      CPUTIME_mat_dger(matoptlevel) = CPUTIME_mat_dger(matoptlevel) + deltacpu
+      WALLTIME_mat_dger(matoptlevel) = WALLTIME_mat_dger(matoptlevel) + deltawall
    CASE(JOB_mat_dsyev)
       nmat_dsyev(matoptlevel) = nmat_dsyev(matoptlevel)+1 
       CPUTIME_mat_dsyev(matoptlevel) = CPUTIME_mat_dsyev(matoptlevel) + deltacpu
@@ -1129,8 +1164,16 @@ subroutine print_timers(lupri)
          &nmat_scal_dia_vec(I),CPUTIME_mat_scal_dia_vec(I),WALLTIME_mat_scal_dia_vec(I)
       IF(nmat_scal_dia(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_scal_dia          ',&
          &nmat_scal_dia(I),CPUTIME_mat_scal_dia(I),WALLTIME_mat_scal_dia(I)
-      IF(nmat_inv(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_inv          ',&
+      IF(nmat_inv(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)')  ID,'mat_inv          ',&
          &nmat_inv(I),CPUTIME_mat_inv(I),WALLTIME_mat_inv(I)
+      IF(nmat_dmul(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dmul          ',&
+         &nmat_dmul(I),CPUTIME_mat_dmul(I),WALLTIME_mat_dmul(I)
+      IF(nmat_hmul(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_hmul          ',&
+         &nmat_hmul(I),CPUTIME_mat_hmul(I),WALLTIME_mat_hmul(I)
+      IF(nmat_hdiv(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_hdiv          ',&
+         &nmat_hdiv(I),CPUTIME_mat_hdiv(I),WALLTIME_mat_hdiv(I)
+      IF(nmat_dger(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dger          ',&
+         &nmat_dger(I),CPUTIME_mat_dger(I),WALLTIME_mat_dger(I)
       IF(nmat_dsyev(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dsyev          ',&
          &nmat_dsyev(I),CPUTIME_mat_dsyev(I),WALLTIME_mat_dsyev(I)
       IF(nmat_dsyevx(I).GT.0)write(lupri,'(3X,A3,A18,I8,2F18.4)') ID,'mat_dsyevx          ',&

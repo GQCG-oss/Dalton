@@ -34,13 +34,24 @@ test.run([DAL+'.dal'], [MOL+'.mol'], {'out': f})
 
 name = "_".join([DAL,MOL])
 
+#---------------------------------------------
 # Test LSDalton Output parser script
-# ==================================
 decmp2 = lsoutput(name+'.out')
 
 decinfo = open(name+'.dec','w')
 decmp2.decinfo.print_dec_info(decinfo)
 decinfo.close()
+
+
+f2 = Filter()
+f2.add(from_string = 'MP2     occupied correlation energy',
+       num_lines = 35,
+       abs_tolerance = 1.0e-3)
+
+test.skip_run = True
+
+test.run([DAL+'.dal'], [MOL+'.mol'], {'dec': f2})
+#---------------------------------------------
 
 sys.exit(test.return_code)
 
