@@ -2213,7 +2213,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
           & EVocc, EVvirt)
   end if
-!$acc enter data copyin(EVocc,EVvirt) async(1)
+!$acc enter data copyin(EVocc,EVvirt) async(async_id(1))
 
   ! Make MO coefficients:  Cocc(nbasis,nocc)
   call mem_alloc(Cocc,nbasis,nocc)
@@ -2244,7 +2244,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         UoccEOST(IDIAG,ILOC) = tmparray2%val(ILOC,IDIAG)
      enddo
   enddo
-!$acc enter data copyin(UoccEOST) async(1)
+!$acc enter data copyin(UoccEOST) async(async_id(1))
   call array2_free(tmparray2)
 
   call mem_alloc(UvirtT,nvirt,nvirt) 
@@ -2253,7 +2253,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         UvirtT(ADIAG,ALOC) = Uvirt%val(ALOC,ADIAG)
      enddo
   enddo
-!$acc enter data copyin(UvirtT) async(2)
+!$acc enter data copyin(UvirtT) async(async_id(2))
 
   ! Extract virtual EOS indices from rows of Uvirt
   call array2_extract_EOS(Uvirt,MyFragment,'V','R',tmparray2)
@@ -2736,13 +2736,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !Calculate and partial transform to local basis - transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
 
      call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt) 
-!!$acc enter data create(tocc) copyin(Calpha,UoccEOST,EVocc,EVvirt)
 !$acc enter data create(tocc) copyin(Calpha)
 
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
-! here: wait for UoccEOST, EVocc, and EVvirt
-!$acc wait(1)
+! here: wait for UoccEOST, EVocc, and EVvirt on async handle 1
+!$acc wait(async_id(1))
      call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST)
 
      CALL LSTIMER('RIMP2_calc_tocc',TS3,TE3,LUPRI,FORCEPRINT)
@@ -2777,7 +2776,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('DGEMM tocc2 ',TS3,TE3,LUPRI,FORCEPRINT)
 
      call mem_alloc(tocc3,nvirt,nvirt,noccEOS,noccEOS)
-!!$acc enter data create(tocc3) copyin(UvirtT)
 !$acc enter data create(tocc3)
 
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
@@ -2788,7 +2786,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      K = nvirt                  !summation dimension
 
 #ifdef VAR_OPENACC
-!$acc wait(2)
+! here: wait for UvirtT on async handle 2
+!$acc wait(async_id(2))
 !$acc host_data use_device(tocc2,UvirtT,tocc3)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
