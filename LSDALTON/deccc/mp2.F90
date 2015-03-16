@@ -2036,9 +2036,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   type(c_ptr) :: tocc_dev, tocc2_dev, tocc3_dev
 
   ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
-  ! handle 1: first part of Step 5
-  ! handle 2: second part of Step 5
-  num_ids = 2
+  ! handle 1: UoccEOST, EVocc, and EVvirt
+  ! handle 2: UvirtT
+  ! handle 3: UvirtEOST
+  ! handle 4: UoccT
+  num_ids = 4
   call mem_alloc(async_id,num_ids)
 
 #ifdef VAR_OPENACC
@@ -2263,6 +2265,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         UvirtEOST(IDIAG,ILOC) = tmparray2%val(ILOC,IDIAG)
      enddo
   enddo
+!$acc enter data copyin(UvirtEOST) async(async_id(3))
   call array2_free(tmparray2)
 
   call mem_alloc(UoccT,nocc,nocc) 
@@ -2271,6 +2274,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         UoccT(ADIAG,ALOC) = Uocc%val(ALOC,ADIAG)
      enddo
   enddo
+!$acc enter data copyin(UoccT) async(async_id(4))
   call array2_free(Uocc)
   call array2_free(Uvirt)
 
@@ -2846,27 +2850,35 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]   ! Output order
   IF(NBA.GT.0)THEN
-     call mem_alloc(tvirt,nocc,nocc,nvirtEOS,nvirt) !IDIAG,JDIAG,ALOC,BDIAG
+
      !Calculate and partial transform to local basis - transform occupied indices
+
+     call mem_alloc(tvirt,nocc,nocc,nvirtEOS,nvirt) !IDIAG,JDIAG,ALOC,BDIAG
+!$acc enter data create(tvirt)
+
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
-!$acc enter data create(tvirt) copyin(UvirtEOST)
+! here: wait for UvirtEOST on async handle 3
+!$acc wait(async_id(3))
      call RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
 !$acc exit data delete(EVocc,EVvirt)
 
      CALL LSTIMER('RIMP2_calc_tvirt',TS3,TE3,LUPRI,FORCEPRINT)
+
      call mem_dealloc(EVocc)
      call mem_dealloc(EVvirt)
+
+     call mem_alloc(tvirt2,nocc,nocc,nvirtEOS,nvirtEOS)
+!$acc enter data create(tvirt2)
+
+     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
      !Transform first Virtual index (IDIAG,JDIAG,ALOC,BDIAG) => (IDIAG,JDIAG,ALOC,BLOC)
      M = nocc*nocc*nvirtEOS     !rows of Output Matrix
      N = nvirtEOS               !columns of Output Matrix
      K = nvirt                  !summation dimension
-     call mem_alloc(tvirt2,nocc,nocc,nvirtEOS,nvirtEOS)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
 #ifdef VAR_OPENACC
-!$acc enter data create(tvirt2)
 !$acc host_data use_device(tvirt,UvirtEOST,tvirt2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
@@ -2882,17 +2894,22 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 
      CALL LSTIMER('DGEMM tvirt2 ',TS3,TE3,LUPRI,FORCEPRINT)
+
      call mem_dealloc(tvirt)
+
+     call mem_alloc(tvirt3,nocc,nocc,nvirtEOS,nvirtEOS)
+!$acc enter data create(tvirt3)
+
+     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
      !Transform first occupied index (IDIAG,JDIAG,ALOC,BLOC) => (ILOC,JDIAG,ALOC,BLOC)
      M = nocc                    !rows of Output Matrix
      N = nocc*nvirtEOS*nvirtEOS  !columns of Output Matrix
      K = nocc                    !summation dimension
-     call mem_alloc(tvirt3,nocc,nocc,nvirtEOS,nvirtEOS)
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
 #ifdef VAR_OPENACC
-!$acc enter data create(tvirt3) copyin(UoccT)
+! here: wait for UoccT on async handle 4
+!$acc wait(async_id(4))
 !$acc host_data use_device(tvirt2,UoccT,tvirt3)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
@@ -2908,13 +2925,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 
      CALL LSTIMER('DGEMM tvirt3 ',TS3,TE3,LUPRI,FORCEPRINT)
+
      call mem_dealloc(tvirt2)
 
      !transform last occ index to local basis and reorder 
      call tensor_ainit(tvirtEOS,dimvirt,4)
+!$acc enter data create(tvirtEOS%elm1)
+
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
 
-!$acc enter data create(tvirtEOS%elm1)
      call RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt3,UoccT,tvirtEOS%elm1)
 !$acc exit data delete(tvirt3) copyout(tvirtEOS%elm1)
 
