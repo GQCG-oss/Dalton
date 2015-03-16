@@ -323,6 +323,8 @@ subroutine pdm_tensor_slave(comm)
       call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
       call ls_mpibcast(LOG1,infpar%master,infpar%lg_comm)
       call lspdm_get_starting_guess(A,B,C,D,INT1,LOG1)
+   CASE(JOB_tensor_rand)
+      call tensor_rand_tiled_dist(A)
 
    CASE DEFAULT
         call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)
