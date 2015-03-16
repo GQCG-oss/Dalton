@@ -4595,7 +4595,7 @@
          subroutine fill_buddy_info(jl,errc)
          integer(INTD), intent(out):: jl
          integer(INTD), intent(out):: errc
-         integer(INTD):: j0,jl,jb,je,js
+         integer(INTD):: j0,jb,je,js
          errc=0; jl=-1
          do j0=1,n
           jb=words(1,j0); je=words(2,j0); js=je-jb+1_INTD
