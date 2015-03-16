@@ -123,6 +123,15 @@ subroutine pdm_tensor_slave(comm)
       call tensor_add_par(REAL1,A,REAL2,B,intarr1)
 
       call mem_dealloc(intarr1)
+
+   CASE(JOB_HMUL_PAR)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(REAL1,infpar%master)
+      call ls_mpi_buffer(REAL2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
+      call tensor_hmul_par(REAL1,A,B,REAL2,C)
    CASE(JOB_CP_ARR)
       INT1 = A%mode
       call mem_alloc(intarr1,INT1)

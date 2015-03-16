@@ -3,6 +3,9 @@
 # LSDALTON_FREE_FORTRAN_SOURCES  
 # at the end of the file
 
+set(CUDA_GPU_INTERFACE_SOURCES
+    LSDALTON/cuda/gpu_interfaces.F90
+    )
 set(DFTFUNC_SOURCES
     LSDALTON/dft/fun-example.c
     LSDALTON/dft/fun-b97-1.c
@@ -870,6 +873,7 @@ if(ENABLE_QMATRIX)
 endif()
 # collect all free fortran sources
 set(LSDALTON_FREE_FORTRAN_SOURCES
+    ${CUDA_GPU_INTERFACE_SOURCES}
     ${DFTFUNC_F_SOURCES}
     ${LSDALTONMAIN_FORTRAN_SOURCES}
     ${DDYNAM_SOURCES}

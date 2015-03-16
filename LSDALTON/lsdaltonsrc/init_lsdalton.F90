@@ -15,14 +15,15 @@ module init_lsdalton_mod
   use files, only: lsopen,lsclose
   use linsca_debug, only: sparsetest
   use lstiming, only: lstimer
-  use daltoninfo, only: ls_init
+  use daltoninfo, only: ls_init,ls_free
   use IIDFTD, only: II_DFT_DISP
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
   use memory_handling, only: Print_Memory_info
+  use tensor_interface_module, only:lspdm_free_global_buffer
   private
   public :: open_lsdalton_files,init_lsdalton_and_get_lsitem, &
-       & get_lsitem_from_input
+       & get_lsitem_from_input,finalize_lsdalton_driver_and_free
 contains
 
 !> \brief Initilize lsitem and config structures from LSDALTON.INP and MOLECULE.INP
@@ -30,83 +31,113 @@ contains
 !> \date December 2011
 SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
 
-  implicit none
-  !> Logical unit number for LSDALTON.OUT
-  integer,intent(in) :: lupri
-  !> Logical unit number for LSDALTON.ERR
-  integer,intent(in) :: luerr
-  !> Number of basis functions
-  integer,intent(inout) :: nbast
-  !> lsitem structure initialized according to information in LSDALTON.INP and MOLECULE.INP
-  TYPE(lsitem),target,intent(inout) :: ls
-  !> configuration structure initialized according to information in LSDALTON.INP and MOLECULE.INP
-  type(configItem),intent(inout)    :: config
-  !> Monitor memory - mostly for debugging, set to false by default
-  logical, intent(inout) :: mem_monitor
-  logical             :: doDFT
-  REAL(REALK) :: TIMSTR,TIMEND
-  real(realk) :: DUMMY(1,1)
+   implicit none
+   !> Logical unit number for LSDALTON.OUT
+   integer,intent(in) :: lupri
+   !> Logical unit number for LSDALTON.ERR
+   integer,intent(in) :: luerr
+   !> Number of basis functions
+   integer,intent(inout) :: nbast
+   !> lsitem structure initialized according to information in LSDALTON.INP and MOLECULE.INP
+   TYPE(lsitem),target,intent(inout) :: ls
+   !> configuration structure initialized according to information in LSDALTON.INP and MOLECULE.INP
+   type(configItem),intent(inout)    :: config
+   !> Monitor memory - mostly for debugging, set to false by default
+   logical, intent(inout) :: mem_monitor
+   logical             :: doDFT
+   REAL(REALK) :: TIMSTR,TIMEND
+   real(realk) :: DUMMY(1,1)
 
-  ! Initializations 
+   ! Initializations 
 #ifdef VAR_LSDEBUGINT
-  mem_monitor = .true.  !Mostly for memory debugging
+   mem_monitor = .true.  !Mostly for memory debugging
 #else
-  mem_monitor = .false. !Mostly for memory debugging
+   mem_monitor = .false. !Mostly for memory debugging
 #endif
-  CALL PRINT_INTRO(LUPRI)
-  call lsmpi_print(lupri)
+   CALL PRINT_INTRO(LUPRI)
+   call lsmpi_print(lupri)
 #ifdef BINARY_INFO_AVAILABLE
-  call print_binary_info(lupri)
+   call print_binary_info(lupri)
 #endif
 
-  ! Timing of individual steps
-  CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
+   ! Timing of individual steps
+   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
 
-  call mat_no_of_matmuls(no_of_matmuls)
+   call mat_no_of_matmuls(no_of_matmuls)
 
-  ! Set default configurations for config structure
-  call config_set_default_config(config)
+   ! Set default configurations for config structure
+   call config_set_default_config(config)
 
-  ! Read input and change default configurations, if requested
-  call config_read_input(config,lupri,luerr)
-  CALL Print_Memory_info(lupri,'at (almost) the Beginning of LSDALTON')
-  ls%input%dalton = config%integral
+   ! Read input and change default configurations, if requested
+   call config_read_input(config,lupri,luerr)
+   CALL Print_Memory_info(lupri,'at (almost) the Beginning of LSDALTON')
+   ls%input%dalton = config%integral
 
-  doDFT = config%opt%calctype.EQ.config%opt%dftcalc
+   doDFT = config%opt%calctype.EQ.config%opt%dftcalc
 
-  ! Initialize lsitem structure
-  call ls_init(ls,lupri,luerr,nbast,config%integral,doDFT,config%doDEC,.true.)
-  call set_final_config_and_print(lupri,config,ls,nbast)
-  
-  ! eventually empirical dispersion correction in case of dft
-  CALL II_DFT_DISP(LS%SETTING,DUMMY,1,1,0,LUPRI)
+   ! Initialize lsitem structure
+   call ls_init(ls,lupri,luerr,nbast,config%integral,doDFT,config%doDEC,.true.)
+   call set_final_config_and_print(lupri,config,ls,nbast)
 
-  call mat_pass_info(LUPRI,config%opt%info_matop,mem_monitor)
+   ! eventually empirical dispersion correction in case of dft
+   CALL II_DFT_DISP(LS%SETTING,DUMMY,1,1,0,LUPRI)
 
-  CALL LSTIMER('*INPUT',TIMSTR,TIMEND,lupri)
+   call mat_pass_info(LUPRI,config%opt%info_matop,mem_monitor)
+
+   CALL LSTIMER('*INPUT',TIMSTR,TIMEND,lupri)
 
 #if defined(VAR_INT64)
-  if (bit_size(nbast)==64) then
-     write(lupri,*) 'Using 64-bit integers!'
-  endif
+   if (bit_size(nbast)==64) then
+      write(lupri,*) 'Using 64-bit integers!'
+   endif
 #endif
 
- !Initialize grand canonical electronic configuration data table
- call EcData_init 
+   !Initialize grand canonical electronic configuration data table
+   call EcData_init 
 
- ! Grand-canonical (GC) basis?
- if (config%decomp%cfg_gcbasis) then
-    CALL Print_Memory_info(lupri,'before the GCBASIS calc')
-    call trilevel_basis(config%opt,ls)
-    CALL Print_Memory_info(lupri,'after the GCBASIS calc')
-    CALL LSTIMER('*ATOM ',TIMSTR,TIMEND,lupri)
- endif
-  
-  if (config%sparsetest) then
-    call sparsetest(ls%setting, lupri)
-  endif
+   ! Grand-canonical (GC) basis?
+   if (config%decomp%cfg_gcbasis) then
+      CALL Print_Memory_info(lupri,'before the GCBASIS calc')
+      call trilevel_basis(config%opt,ls)
+      CALL Print_Memory_info(lupri,'after the GCBASIS calc')
+      CALL LSTIMER('*ATOM ',TIMSTR,TIMEND,lupri)
+   endif
+
+   if (config%sparsetest) then
+      call sparsetest(ls%setting, lupri)
+   endif
+
+   call Test_if_64bit_integer_required(nbast,nbast)
 
 end SUBROUTINE init_lsdalton_and_get_lsitem
+!> \author Patrick Ettenhuber
+!> \brief free all the structures that could only be initialized after the
+!configuration was read. The other structures are initialized and freed outside
+!of LSALTON_DRIVER
+!> \date December 2015
+SUBROUTINE finalize_lsdalton_driver_and_free(lupri,luerr,ls,config,meminfo_slaves)
+
+   implicit none
+   !> Logical unit number for LSDALTON.OUT
+   integer,intent(in) :: lupri
+   !> Logical unit number for LSDALTON.ERR
+   integer,intent(in) :: luerr
+   !> lsitem structure initialized according to information in LSDALTON.INP and MOLECULE.INP
+   TYPE(lsitem),target,intent(inout) :: ls
+   !> configuration structure initialized according to information in LSDALTON.INP and MOLECULE.INP
+   type(configItem),intent(inout)    :: config
+   logical, intent(inout) :: meminfo_slaves
+   call ls_free(ls)
+
+   if(config%opt%cfg_prefer_PDMM)then
+      ! Free the background buffer used with PDMM
+      call lspdm_free_global_buffer(.true.)
+   endif
+
+   meminfo_slaves = config%mpi_mem_monitor
+   call Print_Memory_info(lupri,'End of LSDALTON_DRIVER')
+
+end SUBROUTINE finalize_lsdalton_driver_and_free
 
 
 !> \brief Initilize lsitem from input using init_lsdalton_and_get_lsitem.

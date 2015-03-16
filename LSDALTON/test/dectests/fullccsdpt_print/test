@@ -41,9 +41,34 @@ test.run([DAL+'.dal'], [MOL+'.mol'], {'out': f})
 
 name = "_".join([DAL,MOL])
 
+#---------------------------------------------
 # Test LSDalton Output parser script
-# ==================================
 fullccsdpt = lsoutput(name+'.out')
+
+ccinfo = open(name+'.cc','w') 
+fullccsdpt.ccinfo.print_cc_info(ccinfo)
+ccinfo.close()
+
+decinfo = open(name+'.dec','w') 
+fullccsdpt.decinfo.print_dec_info(decinfo)
+decinfo.close()
+
+f2 = Filter()
+f2.add(from_string = 'Correlation energy',
+       num_lines = 6,
+       abs_tolerance = 1.0e-6)
+
+f3 = Filter()
+f3.add(from_string = 'CCSD    occupied correlation energy',
+       num_lines = 29,
+       abs_tolerance = 1.0e-6)
+
+test.skip_run = True
+
+test.run([DAL+'.dal'], [MOL+'.mol'], {'cc': f2})
+test.run([DAL+'.dal'], [MOL+'.mol'], {'dec': f3})
+#---------------------------------------------
+
 sys.exit(test.return_code)
 
 
