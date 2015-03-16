@@ -329,6 +329,9 @@ module dec_typedef_module
      logical :: RIMP2PDMTENSOR
      !> Force the use of the code that distribute the Calpha
      logical :: RIMP2ForcePDMCalpha
+     !> MPI group is split if #nodes > O*V/RIMPIsplit
+     integer :: RIMPIsplit
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
