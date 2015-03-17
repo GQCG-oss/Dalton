@@ -836,16 +836,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
 #endif
 
-#ifdef VAR_CUBLAS
-
-  ! Destroy the CUBLAS context
-  stat = cublasDestroy_v2(cublas_handle)
-
-#endif
-
-  ! release async handles array
-  call mem_dealloc(async_id)
-
   IF(first_order)THEN
 
      !=====================================================================================
@@ -994,6 +984,16 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ENDIF
 #endif
   ENDIF
+
+#ifdef VAR_CUBLAS
+
+  ! Destroy the CUBLAS context
+  stat = cublasDestroy_v2(cublas_handle)
+
+#endif
+
+  ! release async handles array
+  call mem_dealloc(async_id)
 
   call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
   tmpidiff = twmpi2-twmpi1
