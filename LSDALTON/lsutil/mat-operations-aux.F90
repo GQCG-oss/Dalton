@@ -1374,17 +1374,24 @@ subroutine mat_read_from_disk2(iunit,A)
     real(realk) :: alpha
     type(matrix) :: A
     real(realk) :: x(A%nrow),y(A%ncol)
+    real(realk),pointer :: Afull(:,:)
     call time_mat_operations1
 
     select case(matrix_type)
     case(mtype_dense)
        call dger(A%nrow,A%ncol,alpha,x,1,y,1,A%elms,A%nrow)       
-    case(mtype_scalapack)
-       call mat_scalapack_dger(alpha,x,y,A)
+!    case(mtype_scalapack)
+!       call mat_scalapack_dger(alpha,x,y,A)
     case(mtype_pdmm)
        call mat_pdmm_dger(alpha,x,y,A)
     case default
-       call lsquit("mat_dger not implemented for this type of matrix",-1)
+       !FALLBACK 
+       call mem_alloc(Afull,A%nrow,A%ncol)
+       call mat_to_full(A,1.0E0_realk,Afull)
+       call DGER(A%nrow,A%ncol,alpha,x,1,y,1,Afull,A%nrow)
+       call mat_set_from_full(Afull,1.0E0_realk,A)
+       call mem_dealloc(Afull)
+!       call lsquit("mat_dger not implemented for this type of matrix",-1)
    end select
    call time_mat_operations2(JOB_mat_dger)
  end subroutine mat_dger
