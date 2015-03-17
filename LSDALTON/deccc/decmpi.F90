@@ -2355,6 +2355,7 @@ contains
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
+    call ls_mpi_buffer(DECitem%MPMP2,Master)
     !RIMP2 settings
     call ls_mpi_buffer(DECitem%AuxAtomicExtent,Master)
     call ls_mpi_buffer(DECitem%NAF,Master)

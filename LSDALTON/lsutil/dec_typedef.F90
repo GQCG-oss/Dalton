@@ -314,6 +314,9 @@ module dec_typedef_module
 
      !> Atomic Extent - include all atomic orbitals of atoms included
      logical :: AtomicExtent
+
+     !> Massively parallel MP2 (Full Molecular canonical MP2)
+     logical :: MPMP2
     
      !> RIMP2 settings
      !> ************

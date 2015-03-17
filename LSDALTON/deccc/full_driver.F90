@@ -100,7 +100,11 @@ contains
              if(DECinfo%use_canonical ) then
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
-                call full_canonical_mp2B(MyMolecule,MyLsitem,Ecorr)
+                IF(DECinfo%MPMP2)THEN
+                   call full_canonical_mpmp2(MyMolecule,MyLsitem,Ecorr)
+                ELSE
+                   call full_canonical_mpmp2(MyMolecule,MyLsitem,Ecorr)
+                ENDIF
              else
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
