@@ -7,7 +7,7 @@ use matrix_module
 use matrix_operations
 use matrix_operations_aux
 use memory_handling
-
+!use lstiming!, only: lstimer
 contains
 
    subroutine lowdin_schulz(S, S_sqrt, S_minus_sqrt,lupri)
@@ -335,17 +335,18 @@ contains
 
    end subroutine lowdin_diag
 
-   ! Given matrix S, computes S^{-1/2}.
+   ! Given matrix S, computes S^{-1/2}. OVERWRITE S
    subroutine lowdin_diag_S_minus_sqrt(n, S, S_minus_sqrt, lupri)
      implicit none
      integer, intent(in)          :: n
-     real(realk), intent(in)      :: S(n,n)
+     real(realk), intent(inout)   :: S(n,n)
      real(realk), intent(inout)   :: S_minus_sqrt(n,n)
-     real(realk),pointer          :: T1(:,:), T2(:,:)
-     real(realk),pointer          ::  eigen_minus_sqrt(:)
+     real(realk),pointer          :: T(:,:)
+     real(realk)                  :: eigen_minus_sqrt(n)
      integer                      :: i, infdiag, lupri
      character*70                 :: msg
-     integer                      :: lwork
+     integer                      :: lwork,j
+!     real(realk) :: TS,TE
      real(realk), pointer :: work(:)
 #ifdef VAR_LSESSL
      integer :: liwork
@@ -353,39 +354,33 @@ contains
      liwork = -1
 #endif
      infdiag=0
-
-     call mem_alloc(T1,n,n)
-     call mem_alloc(T2,n,n)
-     call mem_alloc(eigen_minus_sqrt,n)
-
-     T1 = S
-!FIXME REPLACE WITH dsyevr
+!     call LSTIMER('START ',TS,TE,lupri,.TRUE.)
 
      ! we inquire the size of lwork (NOT max(n*n,5*n)
      lwork = -1
      call mem_alloc(work,5)
 #ifdef VAR_LSESSL
      call mem_alloc(iwork,5)
-     call dsyevd('V','U',n,T1,n,eigen_minus_sqrt,work,lwork,iwork,liwork,infdiag)
+     call dsyevd('V','U',n,S,n,eigen_minus_sqrt,work,lwork,iwork,liwork,infdiag)
      liwork = iwork(1)
      call mem_dealloc(iwork)
      call mem_alloc(iwork,liwork)
 #else
-     call dsyev('V','U',n,T1,n,eigen_minus_sqrt,work,lwork,infdiag)
+     call dsyev('V','U',n,S,n,eigen_minus_sqrt,work,lwork,infdiag)
 #endif
      lwork = NINT(work(1))
      call mem_dealloc(work)
-!=============================================================     
-
+!=============================================================
      call mem_alloc(work,lwork)
      !diagonalization
 #ifdef VAR_LSESSL
-     call dsyevd('V','U',n,T1,n,eigen_minus_sqrt,work,lwork,iwork,liwork,infdiag)
+     call dsyevd('V','U',n,S,n,eigen_minus_sqrt,work,lwork,iwork,liwork,infdiag)
      call mem_dealloc(iwork)
 #else
-     call dsyev('V','U',n,T1,n,eigen_minus_sqrt,work,lwork,infdiag)
+     call dsyev('V','U',n,S,n,eigen_minus_sqrt,work,lwork,infdiag)
 #endif
      call mem_dealloc(work)
+!     call LSTIMER('LS: DSYEV ',TS,TE,lupri,.TRUE.)
 
      if(infdiag.ne. 0) then
         write(lupri,*) 'lowdin_diag: dsyev failed, info=',infdiag
@@ -393,29 +388,30 @@ contains
      end if
 
      !compute squareroot S^(-1/2) = V*E^(-1/2)*V'
+     call mem_alloc(T,n,n)
 
+     !$OMP PARALLEL DO PRIVATE(i,j) SHARED(eigen_minus_sqrt,S,T)
      do i=1,n
-        if (eigen_minus_sqrt(i).le. 0E0_realk) then
-           write(msg,'(A,1X,I4,A,1X,E14.6)') &
-                &'Matrix not positive definite! Eigenvalue(',i,') =',&
-                &eigen_minus_sqrt(i)
-           call lsquit(msg,lupri)
-        endif
+!        if (eigen_minus_sqrt(i).le. 0E0_realk) then
+!           write(msg,'(A,1X,I4,A,1X,E14.6)') &
+!                &'Matrix not positive definite! Eigenvalue(',i,') =',&
+!                &eigen_minus_sqrt(i)
+!           call lsquit(msg,lupri)
+!        endif
         eigen_minus_sqrt(i) = 1.0E0_realk/sqrt(eigen_minus_sqrt(i))
+        !T = V*E^-1/2
+        do j=1,n
+           T(j,i) = S(j,i)*eigen_minus_sqrt(i)
+        enddo
      enddo
-
-     !T = V*E^-1/2
-     do i=1,n
-        t2(:,i) = t1(:,i)*eigen_minus_sqrt(i)
-     enddo
+     !$OMP END PARALLEL DO 
+!     call LSTIMER('LS: E^(-1/2) ',TS,TE,lupri,.TRUE.)
 
      ! S^-1/2 = T*V'
-     call dgemm('n','t', n,n,n, 1.0E0_realk, t2,n, t1,n, 0.0E0_realk,S_minus_sqrt,n)
-
+     call dgemm('n','t',n,n,n,1.0E0_realk,T,n,S,n,0.0E0_realk,S_minus_sqrt,n)
      !deallocate
-     call mem_dealloc(eigen_minus_sqrt)
-     call mem_dealloc(t1)
-     call mem_dealloc(t2)
+     call mem_dealloc(T)
+!     call LSTIMER('LS: DGEMM ',TS,TE,lupri,.TRUE.)
 
    end subroutine lowdin_diag_S_minus_sqrt
 

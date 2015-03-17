@@ -32,6 +32,9 @@ module mp2_module
       use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
   use dec_workarounds_module
+#if defined(VAR_CUDA) || defined(VAR_OPENACC)
+  use gpu_interfaces
+#endif
 
   use dec_fragment_utils!,only: calculate_fragment_memory, &
 !       & dec_simple_dgemm_update,start_flop_counter,&

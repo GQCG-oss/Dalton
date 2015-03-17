@@ -100,6 +100,7 @@ contains
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
+    DECinfo%RIMPIsplit           = 8000
 #ifdef VAR_MPI
     DECinfo%dyn_load             = LSMPIASYNCP
 #endif
@@ -605,6 +606,7 @@ contains
           DECinfo%manual_occbatchsizes=.true.
           read(input,*) DECinfo%batchOccI, DECinfo%batchOccJ
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
+       case('.RIMPISPLIT'); read(input,*) DECinfo%RIMPIsplit
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
 #ifndef VAR_MPI
@@ -1234,6 +1236,11 @@ contains
             &MPI processes with only one process",-1)
     endif
 
+    ! Meaningful RI split
+    if(DECinfo%RIMPIsplit<1) then
+       call lsquit('RIMPISPLIT must be larger than zero!',-1)
+    end if
+    
 
     ! Set FOTs for geometry opt.
     call set_geoopt_FOTs(DECinfo%FOT)
@@ -1360,6 +1367,7 @@ contains
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
 #endif
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
+    write(lupri,*) 'rimpisplit ', DECitem%rimpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes
     write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,DECitem%ccsdGbatch

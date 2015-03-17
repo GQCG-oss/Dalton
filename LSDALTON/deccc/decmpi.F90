@@ -2357,6 +2357,7 @@ contains
     call ls_mpi_buffer(DECinfo%RIMP2ForcePDMCalpha,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
+    call ls_mpi_buffer(DECitem%rimpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
     call ls_mpi_buffer(DECitem%ccsdAbatch,Master)
