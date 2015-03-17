@@ -965,9 +965,10 @@ C
 #ifdef MOD_CGTO_DIFF_ERI
       use eri_basis_loops
 #endif
-#ifdef MOD_XCINT
-      use xcint_integrator, only: xc_integrate_worker
+#ifdef ENABLE_XCINT
+      use xcint_fortran_interface
 #endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -976,6 +977,7 @@ C infpar.h: MASTER,MYNUM
 #include "infpar.h"
 C iprtyp.h: define parallel calculation types
 #include "iprtyp.h"
+#include "mpif.h"
 
       real(8), allocatable  :: work(:)
       integer(4), parameter :: TEN_4 = 10
@@ -1142,10 +1144,11 @@ C added by Bin Gao, May 12, 2012
             CALL unopt_geodiff_loop_worker(LUPRI,IPRINT)
 #endif
 
-#ifdef MOD_XCINT
-         ! XCint: XC integration, added by R. Bast
+#ifdef ENABLE_XCINT
          else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
-            call xc_integrate_worker()
+            ! XCint: XC integration, added by R. Bast
+            call xcint_set_mpi_comm(MPI_COMM_WORLD)
+            call xcint_integrate_worker()
 #endif
 
          ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
