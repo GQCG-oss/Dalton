@@ -103,7 +103,7 @@ contains
                 IF(DECinfo%MPMP2)THEN
                    call full_canonical_mpmp2(MyMolecule,MyLsitem,Ecorr)
                 ELSE
-                   call full_canonical_mpmp2(MyMolecule,MyLsitem,Ecorr)
+                   call full_canonical_mp2(MyMolecule,MyLsitem,Ecorr)
                 ENDIF
              else
                 !Call routine which calculates individual fragment 
