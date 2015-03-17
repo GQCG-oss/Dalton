@@ -2068,11 +2068,11 @@ module cc_tools_module
          energy_tmp_2=0.0e0_realk
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
          !$OMP REDUCTION(+:FragEnergies),&
-         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,offset,DECinfo,vpart)
+         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,DECinfo,vpart)
          do b=1,nv
-            atomJ = virt_orbitals(b+offset)%CentralAtom
+            atomJ = virt_orbitals(b)%CentralAtom
             do a=1,nv
-               atomI = virt_orbitals(a+offset)%CentralAtom
+               atomI = virt_orbitals(a)%CentralAtom
 
                do j=1,no
                   do i=1,no
@@ -2099,11 +2099,11 @@ module cc_tools_module
 
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
          !$OMP REDUCTION(+:tmp_fragener),&
-         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,offset,DECinfo)
+         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,DECinfo)
          do b=1,nv
-            atomJ = virt_orbitals(b+offset)%CentralAtom
+            atomJ = virt_orbitals(b)%CentralAtom
             do a=1,nv
-               atomI = virt_orbitals(a+offset)%CentralAtom
+               atomI = virt_orbitals(a)%CentralAtom
 
                do j=1,no
                   do i=1,no
@@ -2362,7 +2362,7 @@ module cc_tools_module
          ccsdpt_e4 = 0.0E0_realk
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
          !$OMP REDUCTION(+:energy_res_cou,eccsdpt_matrix_cou), &
-         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,offset,vpart)
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,vpart)
          do b=1,nvirt
             atomJ = virt_orbitals(b)%CentralAtom
             do a=1,nvirt
@@ -2387,7 +2387,7 @@ module cc_tools_module
 
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
          !$OMP REDUCTION(+:energy_res_exc,eccsdpt_matrix_exc), &
-         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,offset)
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals)
          do b=1,nvirt
             atomJ = virt_orbitals(b)%CentralAtom
             do a=1,nvirt
