@@ -715,8 +715,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(Calpha2)
 
 #ifdef VAR_OPENACC
-! here: wait for UoccEOST on async handle 1
-!$acc wait(async_id(1))
 !$acc host_data use_device(Calpha,UoccEOST,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
@@ -726,7 +724,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                            & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
 #endif
 !$acc end host_data
-!$acc exit data delete(UoccEOST)
+!$acc exit data delete(UoccEOST) if(.not. first_order)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
 #endif
@@ -736,10 +734,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
 
      call mem_alloc(Calpha3,nba,nvirt,noccEOS)
-! here: wait for UvirtT on async handle 2 
 !$acc enter data create(Calpha3)
      call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,Calpha2,Calpha3)
-!$acc exit data delete(Calpha2,UvirtT)
+!$acc exit data delete(Calpha2,UvirtT) if(.not. first_order)
+!$acc exit data delete(Calpha2) if(first_order)
      call mem_dealloc(Calpha2)
      IF(.NOT.first_order)call mem_dealloc(UvirtT)
      
@@ -783,8 +781,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(Calpha2)
 
 #ifdef VAR_OPENACC
-! here: wait for UoccT on async handle 4
-!$acc wait(async_id(4))
 !$acc host_data use_device(Calpha,UoccT,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
@@ -794,7 +790,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                            & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
 #endif
 !$acc end host_data
-!$acc exit data delete(UoccT,Calpha)
+!$acc exit data delete(UoccT,Calpha) if(.not. first_order)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
 #endif
@@ -803,8 +799,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(.NOT.first_order)call mem_dealloc(Calpha)
      call mem_alloc(Calpha3,nba,nvirtEOS,nocc)
 
-! here: wait for UvirtEOST on async handle 3
-!$acc wait(async_id(3))
 !$acc enter data create(Calpha3)
      call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
 !$acc exit data delete(Calpha2,UvirtEOST)
@@ -849,11 +843,26 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = noccEOS          !columns of Output Matrix
         K = nocc             !summation dimension
         call mem_alloc(Calpha2,nba,nvirt,noccEOS)
+!$acc enter data create(Calpha2)
+#ifdef VAR_OPENACC
+!$acc host_data use_device(Calpha,UoccEOST,Calpha2)
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+        call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
+#elif defined(VAR_CUBLAS)
+        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                              & 1.0E0_realk,c_loc(Calpha),int(M,kind=4),c_loc(UoccEOST),int(K,kind=4),&
+                              & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
+#endif
+!$acc end host_data
+#else
         call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
+#endif
         
         !(alphaAux,nvirtAOS,noccEOS) = (alphaAux;nvirt,noccEOS)*Uvirt(nvirt,nvirtAOS)
         call mem_alloc(Calpha3,nba,nvirt,noccEOS)
+!$acc enter data create(Calpha3)
         call RIMP2_TransAlpha2(noccEOS,nvirt,nvirt,nba,UvirtT,Calpha2,Calpha3)
+!$acc exit data delete(Calpha2)
         call mem_dealloc(Calpha2)
         
         CALL LSTIMER('START ',TS2,TE2,LUPRI)
@@ -886,6 +895,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !(alphaAux,noccEOS,noccAOS=nocctot) = (alphaAux;nocc,noccAOS=nocctot)*UoccEOST(nocc,noccEOS)
         call mem_alloc(Calpha4,nba,noccEOS,nocctot)
         call RIMP2_TransAlpha2(nocctot,nocc,noccEOS,nba,UoccEOST,Calpha2,Calpha4)
+!$acc exit data delete(UoccEOST,Calpha2)
         call mem_dealloc(UoccEOST)
         call mem_dealloc(Calpha2)
         
@@ -1734,7 +1744,7 @@ subroutine RIMP2_TransAlpha2(n2,n1,n3,nba,UvirtEOST,AlphaCD4,AlphaCD5)
 #ifdef VAR_OPENACC
   !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP) &
-  !$ACC COPYIN(n1,n2,n3,NBA) &
+  !$acc firstprivate(n1,n2,n3,NBA) &
   !$acc present(AlphaCD4,AlphaCD5,UvirtEOST) 
 #else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
