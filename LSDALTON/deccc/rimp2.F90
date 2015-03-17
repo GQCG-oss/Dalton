@@ -46,6 +46,13 @@ module rimp2_module
 !       & array4_close_file, array4_write_file_type1, mat_transpose, &
  !     & array4_read_file_type2
   use iso_c_binding
+#ifdef VAR_OPENACC
+  use openacc
+#endif
+#if defined(VAR_CUDA) || defined(VAR_OPENACC)
+  use gpu_interfaces
+#endif
+
 contains
 !> \brief Calculate EOS integrals and EOS amplitudes for RI-MP2 calculation -
 !> both for occupied and virtual partitioning schemes.
@@ -501,8 +508,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
         offsetV=0
         call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt)
+!$acc enter data create(tocc) copyin(Calpha)
 
-!$acc enter data create(tocc) copyin(Calpha)         
 ! here: wait for UoccEOST, EVocc, and EVvirt on async handle 1
 !$acc wait(async_id(1))
         call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,nvirt,offsetV)
@@ -556,7 +563,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call tensor_ainit(toccEOS,dimocc,4)
 !$acc enter data create(toccEOS%elm1)
      call RIMP2_calc_toccB(nvirt,noccEOS,tocc3,UvirtT,toccEOS%elm1)
-!$acc exit data copyout(toccEOS%elm1) delete(tocc3,UvirtT)
+!$acc exit data copyout(toccEOS%elm1) delete(tocc3)
      call mem_dealloc(tocc3)     
      CALL LSTIMER('RIMP2: toccEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
@@ -610,7 +617,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                            & 0.0E0_realk,c_loc(tvirt2),int(M,kind=4))
 #endif
 !$acc end host_data
-!$acc exit data delete(tvirt,UvirtEOST)
+!$acc exit data delete(tvirt)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
 #endif
@@ -680,9 +687,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      N = noccEOS          !columns of Output Matrix
      K = nocc             !summation dimension
      call mem_alloc(Calpha2,nba,nvirt,noccEOS)
+!$acc enter data create(Calpha2)
 
 #ifdef VAR_OPENACC
-!$acc enter data create(Calpha2)
+! here: wait for UoccEOST on async handle 1
+!$acc wait(async_id(1))
 !$acc host_data use_device(Calpha,UoccEOST,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
@@ -699,8 +708,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
      IF(.NOT.first_order)call mem_dealloc(UoccEOST)
 
+
+
      call mem_alloc(Calpha3,nba,nvirt,noccEOS)
-!$acc enter data create(Calpha3) copyin(UvirtT)
+! here: wait for UvirtT on async handle 2 
+!$acc enter data create(Calpha3)
      call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,Calpha2,Calpha3)
 !$acc exit data delete(Calpha2,UvirtT)
      call mem_dealloc(Calpha2)
@@ -743,9 +755,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      N = nocc             !columns of Output Matrix
      K = nocc             !summation dimension
      call mem_alloc(Calpha2,nba,nvirt,nocc)
+!$acc enter data create(Calpha2)
 
 #ifdef VAR_OPENACC
-!$acc enter data create(Calpha2)
+! here: wait for UoccT on async handle 4
+!$acc wait(async_id(4))
 !$acc host_data use_device(Calpha,UoccT,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
@@ -763,7 +777,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(.NOT.first_order)call mem_dealloc(UoccT)
      IF(.NOT.first_order)call mem_dealloc(Calpha)
      call mem_alloc(Calpha3,nba,nvirtEOS,nocc)
-!$acc enter data create(Calpha3) copyin(UvirtEOST)
+
+! here: wait for UvirtEOST on async handle 3
+!$acc wait(async_id(3))
+!$acc enter data create(Calpha3)
      call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
 !$acc exit data delete(Calpha2,UvirtEOST)
      IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
