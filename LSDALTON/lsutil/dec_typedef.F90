@@ -314,6 +314,9 @@ module dec_typedef_module
 
      !> Atomic Extent - include all atomic orbitals of atoms included
      logical :: AtomicExtent
+
+     !> Massively parallel MP2 (Full Molecular canonical MP2)
+     logical :: MPMP2
     
      !> RIMP2 settings
      !> ************
@@ -1025,6 +1028,8 @@ module dec_typedef_module
      ! ***************
      ! MPI: Sum of flop counts for local slaves (NOT local master, only local slaves!)
      real(realk) :: flops_slaves
+     ! MPI: Sum of GPU flop counts for local slaves (NOT local master, only local slaves!)
+     real(realk) :: gpu_flops_slaves
      ! Number of integral tasks
      integer :: ntasks
 
@@ -1272,6 +1277,8 @@ module dec_typedef_module
      integer,pointer :: ntasks(:)
      !> FLOP count for all local nodes (local master + local slaves)
      real(realk),pointer :: flops(:)
+     !> GPU FLOP count for all local nodes (local master + local slaves)
+     real(realk),pointer :: gpu_flops(:)
      !> Time used for local master
      real(realk),pointer :: LMtime(:)
      !> Measure of load distribution:

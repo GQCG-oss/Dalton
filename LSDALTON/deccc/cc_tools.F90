@@ -1972,9 +1972,14 @@ module cc_tools_module
       integer :: i,j,a,b,atomI,atomJ,vpart,opart
       !> energy reals
       real(realk) :: energy_tmp_1, energy_tmp_2
+      real(realk), pointer :: t1p(:,:), t2p(:,:,:,:), inp(:,:,:,:)
 
+      ! Pointer to avoid OMP problems:
+      inp => integral%elm4(:,:,:,:)
+      t2p => t2%elm4(:,:,:,:)
+      t1p => t1%elm2(:,:)
 
-      FragEnergies=0.0e0_realk
+      !FragEnergies=0.0e0_realk
       opart=1
       vpart=2
 
@@ -1985,7 +1990,7 @@ module cc_tools_module
          energy_tmp_2=0.0e0_realk
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
          !$OMP REDUCTION(+:FragEnergies),&
-         !$OMP SHARED(t2,t1,integral,no,nv,occ_orbitals,offset,DECinfo,opart)
+         !$OMP SHARED(t2p,t1p,inp,no,nv,occ_orbitals,offset,DECinfo,opart)
          do j=1,no
             atomJ = occ_orbitals(j+offset)%CentralAtom
             do i=1,no
@@ -1994,9 +1999,9 @@ module cc_tools_module
                do b=1,nv
                   do a=1,nv
 
-                     energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                     energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
                      if(DECinfo%use_singles)then
-                        energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                        energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
                      else
                         energy_tmp_2 = 0.0E0_realk
                      endif
@@ -2012,10 +2017,11 @@ module cc_tools_module
 
          ! reorder from (a,b,i,j) to (a,b,j,i)
          call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
 
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
          !$OMP REDUCTION(+:tmp_fragener),&
-         !$OMP SHARED(t2,t1,integral,no,nv,occ_orbitals,offset,DECinfo)
+         !$OMP SHARED(t2p,t1p,inp,no,nv,occ_orbitals,offset,DECinfo)
          do j=1,no
             atomJ = occ_orbitals(j+offset)%CentralAtom
             do i=1,no
@@ -2024,9 +2030,9 @@ module cc_tools_module
                do b=1,nv
                   do a=1,nv
 
-                     energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                     energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
                      if(DECinfo%use_singles)then
-                        energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                        energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
                      else
                         energy_tmp_2 = 0.0E0_realk
                      endif
@@ -2053,6 +2059,7 @@ module cc_tools_module
 
          ! reorder from (a,b,j,i) to (a,b,i,j)
          call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
 
       end if
       if (.not.DECinfo%OnlyOccPart) then
@@ -2061,7 +2068,7 @@ module cc_tools_module
          energy_tmp_2=0.0e0_realk
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
          !$OMP REDUCTION(+:FragEnergies),&
-         !$OMP SHARED(t2,t1,integral,no,nv,virt_orbitals,offset,DECinfo,vpart)
+         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,offset,DECinfo,vpart)
          do b=1,nv
             atomJ = virt_orbitals(b+offset)%CentralAtom
             do a=1,nv
@@ -2070,9 +2077,9 @@ module cc_tools_module
                do j=1,no
                   do i=1,no
 
-                     energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                     energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
                      if(DECinfo%use_singles)then
-                        energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                        energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
                      else
                         energy_tmp_2 = 0.0E0_realk
                      endif
@@ -2088,10 +2095,11 @@ module cc_tools_module
 
          ! reorder from (a,b,i,j) to (a,b,j,i)
          call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
 
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
          !$OMP REDUCTION(+:tmp_fragener),&
-         !$OMP SHARED(t2,t1,integral,no,nv,virt_orbitals,offset,DECinfo)
+         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,offset,DECinfo)
          do b=1,nv
             atomJ = virt_orbitals(b+offset)%CentralAtom
             do a=1,nv
@@ -2100,9 +2108,9 @@ module cc_tools_module
                do j=1,no
                   do i=1,no
 
-                     energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
+                     energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
                      if(DECinfo%use_singles)then
-                        energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
+                        energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
                      else
                         energy_tmp_2 = 0.0E0_realk
                      endif
@@ -2131,6 +2139,10 @@ module cc_tools_module
          call tensor_reorder(integral,[1,2,4,3])
 
       end if
+
+      inp => null()
+      t2p => null()
+      t1p => null()
 
    end subroutine solver_energy_full
 

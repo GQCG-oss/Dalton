@@ -33,14 +33,17 @@ module fullmp2
   !  use fragment_energy_module,only : Full_DECMP2_calculation
 
   public :: full_canonical_mp2, &
-       & full_canonical_mp2B, canonical_mp2B_memreq_test
+       & full_canonical_mpmp2, canonical_mpmp2_memreq_test
   private
 
 contains
   !> \brief Calculate canonical MP2 energy for full molecular system
+  !> This is a MP2 version that distribute the integrals
+  !> across the nodes. The code does less integral recalculation but 
+  !> requires more nodes/more memory
   !> \author Thomas Kjaergaard
   !> \date October 2014
-  subroutine full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
+  subroutine full_canonical_mpmp2(MyMolecule,MyLsitem,mp2_energy)
     implicit none
     !> Full molecule info
     type(fullmolecule), intent(inout) :: MyMolecule
@@ -128,7 +131,7 @@ contains
 
     !sanity check
     if(.NOT.DECinfo%use_canonical) then
-       call lsquit('Error: full_canonical_mp2B require canonical Orbitals',-1)
+       call lsquit('Error: full_canonical_mpmp2 require canonical Orbitals',-1)
     endif
     ! Init stuff
     ! **********
@@ -235,7 +238,7 @@ contains
     ! ***************************************************************************************
     ! Get optimal values of: MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax
     ! ***************************************************************************************
-    call get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvirt,&
+    call get_optimal_batch_sizes_for_canonical_mpmp2(MinAObatch,nbasis,nocc,nvirt,&
          & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
          & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
 
@@ -564,7 +567,7 @@ contains
        print*,'nOccBatchDimJrank',nOccBatchDimJrank
        print*,'nOccBatchDimJmax',nOccBatchDimJmax
        print*,'MAXVAL(nOccBatchDimJrank)',MAXVAL(nOccBatchDimJrank)
-       call lsquit('miscalc nOccBatchDimJrank full canon mp2b ',-1)
+       call lsquit('miscalc nOccBatchDimJrank full canon mpmp2 ',-1)
     ENDIF
     I = MAXVAL(nOccBatchDimJrank)
     call mem_alloc(OccIndexJrank,I,ncolnodes)   
@@ -601,13 +604,13 @@ contains
     ! ***************************************************************************************
     IF(DECinfo%DECrestart)THEN
        !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
-       INQUIRE(FILE='FULLMP2B.restart',EXIST=file_exists)
+       INQUIRE(FILE='FULLMPMP2.restart',EXIST=file_exists)
        IF(file_exists)THEN
           IF(master)THEN
-             WRITE(DECinfo%output,*)'Restart of Full molecular MP2(MP2B) calculation:'
+             WRITE(DECinfo%output,*)'Restart of Full molecular MP2(MPMP2) calculation:'
           ENDIF
           restart_lun = -1  !initialization
-          call lsopen(restart_lun,'FULLMP2B.restart','OLD','FORMATTED')
+          call lsopen(restart_lun,'FULLMPMP2.restart','OLD','FORMATTED')
           rewind restart_lun
           read(restart_lun,'(I9)') nOccbatchesIrestart
           read(restart_lun,'(I9)') noccIstart
@@ -885,7 +888,7 @@ contains
        !I share jnode and noccBJ with the rest (1:nrownodes,jnode)
        receiver = (1+(jnode-1)*nrownodes)-1   !(1,jnode)
        IF(inode.EQ.1)THEN !I collect results
-          IF(receiver.NE.mynum) call lsquit('MP2B error in sendredv VOVO')
+          IF(receiver.NE.mynum) call lsquit('MPMP2 error in sendredv VOVO')
           do inodeLoop = 2,nrownodes !all send their contribution to inode=1,jnode=jnode
              sender = inodeLoop+(jnode-1)*nrownodes-1 !(inode,jnode), inode=2,nrownode
 #ifdef VAR_MPI
@@ -958,7 +961,7 @@ contains
           mp2_energy = mp2_energy + tmp_mp2_energy        
           !Write Restart File
           restart_lun = -1  !initialization
-          call lsopen(restart_lun,'FULLMP2B.restart','UNKNOWN','FORMATTED')
+          call lsopen(restart_lun,'FULLMPMP2.restart','UNKNOWN','FORMATTED')
           rewind restart_lun
           write(restart_lun,'(I9)') nOccbatchesI
           write(restart_lun,'(I9)') iB
@@ -1038,7 +1041,7 @@ contains
        write(*,'(1X,a,f20.10)') 'MP2 CORRELATION ENERGY = ', mp2_energy
        write(lupri,*)  ''
     ENDIF
-    CALL LSTIMER('FULL CANONICAL MP2 ',TS,TE,DECINFO%OUTPUT,FORCEPRINT)
+    CALL LSTIMER('FULL CANONICAL MPMP2',TS,TE,DECINFO%OUTPUT,FORCEPRINT)
     CALL ls_TIMTXT('>>>  WALL Time used in MP2 AO integral evaluation ',WALL_AOINT,lupri)
     CALL ls_TIMTXT('>>>  CPU Time used in MP2 AO integral evaluation  ',CPU_AOINT,lupri)
     CALL ls_TIMTXT('>>>  WALL Time used in MP2 AO to MO transformation',WALL_AOTOMO,lupri)
@@ -1053,9 +1056,9 @@ contains
     CALL ls_TIMTXT('>>>  CPU Time used in MPI Wait',CPU_MPIWAIT,lupri)
 #endif    
     write(lupri,*) ' '
-  end subroutine full_canonical_mp2B
+  end subroutine full_canonical_mpmp2
 
-  subroutine get_optimal_batch_sizes_for_canonical_mp2B(MinAObatch,nbasis,nocc,nvirt,&
+  subroutine get_optimal_batch_sizes_for_canonical_mpmp2(MinAObatch,nbasis,nocc,nvirt,&
        & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
        & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
     implicit none
@@ -1076,9 +1079,9 @@ contains
     nvirtR = nvirt
     numnodesR = numnodes   
 
-    !The full_canonical_mp2B requires that (nb,nb,nb) can be distributed across all nodes 
+    !The full_canonical_mpmp2 requires that (nb,nb,nb) can be distributed across all nodes 
     nodtot = INT(numnodes)
-    call canonical_mp2B_memreq_test(nbasis,nodtot,Success)
+    call canonical_mpmp2_memreq_test(nbasis,nodtot,Success)
 
     call get_currently_available_memory(MemoryAvailable)
     ! Note: We multiply by 85 % to be on the safe side!
@@ -1090,7 +1093,7 @@ contains
     !nbasis = 3772
     !nvirt = 3508
     !nocc = 264
-    !1. canonical_mp2B_memreq_test already done
+    !1. canonical_mpmp2_memreq_test already done
     !   nbasis*nbasis*nbasis = 430 GB can be distributed among 40 nodes (10.7 GB on each)  
 
     !2.Choose  nOccBatchDimImax as big as possible (nb*dimAlphaMPI*dimGammaMPI*nOccBatchDimImax) need to fit in mem!
@@ -1098,15 +1101,18 @@ contains
     nOccBatchDimImax = MIN(nocc,FLOOR((MemoryAvailable*numnodes)/(nbasisR*nbasisR*nbasisR*GB))) 
     nOccBatchDimImax2 = nOccBatchDimImax
     do I=nOccBatchDimImax2,1,-1
-       call memestimateCANONMP2B(MinAObatch,MinAObatch,nbasis,nbasis,&
+       call memestimateCANONMPMP2(MinAObatch,MinAObatch,nbasis,nbasis,&
             & nbasis,nvirt,I,nOcc,maxsize)
        IF(maxsize.LT.MemoryAvailable)THEN
           nOccBatchDimImax = I
           EXIT
        ENDIF
        IF(I.EQ.1)THEN
-          print*,'Not enough Memory in MP2(canonical_mp2B) '
-          call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatches not enough',-1)
+          print*,'Not enough Memory in MP2(canonical_mpmp2) '
+          print*,'(nbasis,nocc,nvirt,MinAObatch,numnodes):',nbasis,nocc,nvirt,MinAObatch,numnodes
+          print*,'With nOccBatchDimImax=1 the code will require'
+          print*,'maxsize = ',maxsize,' Which is less than MemoryAvailable=',MemoryAvailable
+          call lsquit('get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatches not enough',-1)
        ENDIF
     enddo
 
@@ -1136,15 +1142,7 @@ contains
              MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes) 
              MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes) 
              nOccBatchDimJmax = CEILING(1.0E0_realk*nocc/ncolnodes) 
-             !           print*,'CANONMP2B MinAObatch',MinAObatch
-             !           print*,'CANONMP2B MinAObatch',MinAObatch
-             !           print*,'CANONMP2B MaxAllowedDimAlphaMPI',MaxAllowedDimAlphaMPI
-             !           print*,'CANONMP2B MaxAllowedDimGammaMPI',MaxAllowedDimGammaMPI
-             !           print*,'CANONMP2B nbasis',nbasis
-             !           print*,'CANONMP2B nvirt',nvirt
-             !           print*,'CANONMP2B nOccBatchDimImax',nOccBatchDimImax
-             !           print*,'CANONMP2B nOccBatchDimJmax',nOccBatchDimJmax
-             call memestimateCANONMP2B(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
+             call memestimateCANONMPMP2(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
                   & nbasis,nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
              !           print*,'TRY tmprow,tmpcol',tmprow,tmpcol,'maxsize',maxsize,'MemoryAvailable',MemoryAvailable
              IF(maxsize.LT.MemoryAvailable)THEN
@@ -1159,38 +1157,65 @@ contains
     MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes) !19/2 = 10
     nOccBatchDimJmax = CEILING(1.0E0_realk*nocc/ncolnodes) 
     !  print*,'MinAObatch',MinAObatch
-    call memestimateCANONMP2B(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
+    call memestimateCANONMPMP2(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
          & nbasis,nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
     IF(maxsize.GT.MemoryAvailable)THEN
-       call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatches',-1)        
+       print*,'get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatches'
+       print*,'(nbasis,nocc,nvirt,MinAObatch,numnodes):',nbasis,nocc,nvirt,MinAObatch,numnodes
+       print*,'It was decided to use'
+       print*,'nOccBatchDimImax=',nOccBatchDimImax
+       print*,'MaxAllowedDimAlphaMPI=',MaxAllowedDimAlphaMPI
+       print*,'MaxAllowedDimGammaMPI=',MaxAllowedDimGammaMPI       
+       print*,'but even with  MaxAllowedDimGamma = MinAObatch = ',MinAObatch  
+       print*,'and with MaxAllowedDimAlpha = MinAObatch = ',MinAObatch  
+       print*,'the maxsize = ',maxsize,' is less than MemoryAvailable=',MemoryAvailable
+       call lsquit('get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatches',-1)        
     ENDIF
 
     !assume 
     MaxAllowedDimGamma = MinAObatch  
     !find MaxAllowedDimAlpha as big as possible
     DO I=MaxAllowedDimAlphaMPI,MinAObatch,-1  
-       call memestimateCANONMP2B(I,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nbasis,&
+       call memestimateCANONMPMP2(I,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nbasis,&
             & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
        MaxAllowedDimAlpha = I
        IF(maxsize.LT.MemoryAvailable)EXIT
        IF(I.EQ.MinAObatch)THEN
-          call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatchAlpha',-1)        
+          print*,'get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatchAlpha'
+          print*,'(nbasis,nocc,nvirt,MinAObatch,numnodes):',nbasis,nocc,nvirt,MinAObatch,numnodes
+          print*,'It was decided to use'
+          print*,'nOccBatchDimImax=',nOccBatchDimImax
+          print*,'MaxAllowedDimAlphaMPI=',MaxAllowedDimAlphaMPI
+          print*,'MaxAllowedDimGammaMPI=',MaxAllowedDimGammaMPI       
+          print*,'but even with  MaxAllowedDimGamma = MinAObatch = ',MinAObatch  
+          print*,'and with MaxAllowedDimAlpha = MinAObatch = ',MinAObatch  
+          print*,'the maxsize = ',maxsize,' is less than MemoryAvailable=',MemoryAvailable
+          call lsquit('get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatchAlpha',-1)        
        ENDIF
     ENDDO
 
     DO I=MaxAllowedDimGammaMPI,MinAObatch,-1
-       call memestimateCANONMP2B(MaxAllowedDimAlpha,I,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nbasis,&
+       call memestimateCANONMPMP2(MaxAllowedDimAlpha,I,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nbasis,&
             & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
        MaxAllowedDimGamma = I
        IF(maxsize.LT.MemoryAvailable)EXIT
        IF(I.EQ.MinAObatch)THEN
-          call lsquit('get_optimal_batch_sizes_for_canonical_mp2B Error MinAoBatchGamma',-1)        
+          print*,'get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatchGamma'
+          print*,'(nbasis,nocc,nvirt,MinAObatch,numnodes):',nbasis,nocc,nvirt,MinAObatch,numnodes
+          print*,'It was decided to use'
+          print*,'nOccBatchDimImax=',nOccBatchDimImax
+          print*,'MaxAllowedDimAlphaMPI=',MaxAllowedDimAlphaMPI
+          print*,'MaxAllowedDimGammaMPI=',MaxAllowedDimGammaMPI       
+          print*,'MaxAllowedDimAlpha   =',MaxAllowedDimAlpha
+          print*,'and with MaxAllowedDimGamma = MinAObatch = ',MinAObatch  
+          print*,'the maxsize = ',maxsize,' is less than MemoryAvailable=',MemoryAvailable
+          call lsquit('get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatchGamma',-1)        
        ENDIF
     ENDDO
 
-  end subroutine get_optimal_batch_sizes_for_canonical_mp2B
+  end subroutine get_optimal_batch_sizes_for_canonical_mpmp2
 
-  subroutine memestimateCANONMP2B(MaxAllowedDimAlpha,MaxAllowedDimGamma,dimAlphaMPI,dimGammaMPI,nb,&
+  subroutine memestimateCANONMPMP2(MaxAllowedDimAlpha,MaxAllowedDimGamma,dimAlphaMPI,dimGammaMPI,nb,&
        & nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize)
     implicit none
     integer,intent(in) :: MaxAllowedDimAlpha,MaxAllowedDimGamma,dimAlphaMPI,dimGammaMPI,nb
@@ -1254,10 +1279,10 @@ contains
     maxsize = MAX(maxsize,nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI*2) !2 VOVO 
     GB = 8.000E-9_realk 
     maxsize = maxsize*GB
-  end subroutine memestimateCANONMP2B
+  end subroutine memestimateCANONMPMP2
 
-  !The full_canonical_mp2B requires that (nb,nb,nb) can be distributed across all nodes 
-  subroutine canonical_mp2B_memreq_test(nbasis,numnodes,Success)
+  !The full_canonical_mpmp2 requires that (nb,nb,nb) can be distributed across all nodes 
+  subroutine canonical_mpmp2_memreq_test(nbasis,numnodes,Success)
     implicit none
     integer(kind=ls_mpik),intent(in) :: numnodes
     integer,intent(in) :: nbasis
@@ -1273,12 +1298,12 @@ contains
     nbasisR = nbasis
     numnodesR = numnodes
     IF(nbasisR*nbasisR*nbasisR*GB/numnodesR.GT.MemoryAvailable)THEN
-       print*,'canonical_mp2B_memreq_test  size(nb*nb*nb/numnodes) =',nbasisR*nbasisR*(nbasisR*GB)/numnodesR,' GB'
-       print*,'canonical_mp2B_memreq_test  MemoryAvailable         =',MemoryAvailable,' GB'
-       call lsquit('canonical_mp2B_memreq_test failure',-1)
+       print*,'canonical_mpmp2_memreq_test  size(nb*nb*nb/numnodes) =',nbasisR*nbasisR*(nbasisR*GB)/numnodesR,' GB'
+       print*,'canonical_mpmp2_memreq_test  MemoryAvailable         =',MemoryAvailable,' GB'
+       call lsquit('canonical_mpmp2_memreq_test failure',-1)
     ENDIF
     Success = .TRUE.
-  end subroutine canonical_mp2B_memreq_test
+  end subroutine canonical_mpmp2_memreq_test
 
   !> \brief Memory check for full_canonical_mp2 subroutine
   !> \author Thomas Kjaergaard
@@ -2496,7 +2521,7 @@ end module fullmp2
 
 #ifdef VAR_MPI
 subroutine full_canonical_mp2_slave
-  use fullmp2,only: full_canonical_mp2,full_canonical_mp2B
+  use fullmp2,only: full_canonical_mp2,full_canonical_mpmp2
   use infpar_module !infpar
   use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
        & LSMPIBROADCAST,MPI_COMM_LSDALTON 
@@ -2507,7 +2532,7 @@ subroutine full_canonical_mp2_slave
   use decmpi_module, only: mpi_bcast_fullmolecule
   use DALTONINFO, only: ls_free
 !  use typedef
-!  use dec_typedef_module
+  use dec_typedef_module!,only DECinfo
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
 !  use dec_fragment_utils
@@ -2539,7 +2564,11 @@ subroutine full_canonical_mp2_slave
   ! *******************
   ! Main master:  Send stuff to local masters and deallocate temp. buffers
   ! Local master: Deallocate buffer etc.
-  call full_canonical_mp2B(MyMolecule,MyLsitem,mp2_energy)
+  IF(DECinfo%MPMP2)THEN
+     call full_canonical_mpmp2(MyMolecule,MyLsitem,mp2_energy)
+  ELSE
+     call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
+  ENDIF
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
   

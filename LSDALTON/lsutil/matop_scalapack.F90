@@ -2051,18 +2051,19 @@ module matrix_operations_scalapack
      REAL(REALK)  :: AB(2)
      EXTERNAL NUMROC
 #ifdef VAR_SCALAPACK
-     CALL PDM_SYNC(Job_dger,A) 
-     AB(1)=alpha
-     AB(2)=0.0E0_realk
-     call PDM_DSCINIT(DESC_A,A)
-     CALL DGEBS2D(SLGrid%ictxt,'A','I',2,1,AB,2)
-     LLD=MAX(1,NUMROC(A%nrow,A%nrow,0,0,1))
-     CALL DESCINIT(DESC_X,A%nrow,1,A%nrow,1,0,0,SLGrid%ictxt,LLD,ierr)
-     LLD=MAX(1,NUMROC(A%ncol,A%ncol,0,0,1))
-     CALL DESCINIT(DESC_Y,A%ncol,1,A%ncol,1,0,0,SLGrid%ictxt,LLD,ierr)
-     CALL IGEBS2D(SLGrid%ictxt,'A','I',9,1,DESC_X,9)
-     CALL IGEBS2D(SLGrid%ictxt,'A','I',9,1,DESC_Y,9)
-     call pdger(A%nrow,A%ncol,AB(1),x,1,1,DESC_X,1,y,1,1,DESC_Y,1,A%p,1,1,DESC_A,ierr)
+call lsquit('TKTKTKTKTKTKTKTKTKTK',-1)
+!     CALL PDM_SYNC(Job_dger,A) 
+!     AB(1)=alpha
+!     AB(2)=0.0E0_realk
+!     call PDM_DSCINIT(DESC_A,A)
+!     CALL DGEBS2D(SLGrid%ictxt,'A','I',2,1,AB,2)
+!     LLD=MAX(1,NUMROC(A%nrow,A%nrow,0,0,1))
+!     CALL DESCINIT(DESC_X,A%nrow,1,A%nrow,1,0,0,SLGrid%ictxt,LLD,ierr)
+!     LLD=MAX(1,NUMROC(A%ncol,A%ncol,0,0,1))
+!     CALL DESCINIT(DESC_Y,A%ncol,1,A%ncol,1,0,0,SLGrid%ictxt,LLD,ierr)
+!     CALL IGEBS2D(SLGrid%ictxt,'A','I',9,1,DESC_X,9)
+!     CALL IGEBS2D(SLGrid%ictxt,'A','I',9,1,DESC_Y,9)
+!     call pdger(A%nrow,A%ncol,AB(1),x,1,1,DESC_X,1,y,1,1,DESC_Y,1,A%p,1,1,DESC_A,ierr)
 #endif     
    end subroutine mat_scalapack_dger
    
@@ -3348,18 +3349,20 @@ module matrix_operations_scalapack
       CALL PDGEMM(T(1),T(2),m,n,k,AB(1),A%p,1,1,DESC_A,&
            &B%p,1,1,DESC_B,AB(2),C%p,1,1,DESC_C)
    CASE(Job_dger)
-      call PDM_DSCINIT(DESC_A,A)
-      CALL DGEBR2D(SLGrid%ictxt,'A','I',2,1,AB,2,&
-           &SLGrid%myrow,SLGrid%mycol)
-      CALL IGEBR2D(SLGrid%ictxt,'A','I',9,1,DESC_B,9,&
-           &SLGrid%myrow,SLGrid%mycol)
-      CALL IGEBR2D(SLGrid%ictxt,'A','I',9,1,DESC_C,9,&
-           &SLGrid%myrow,SLGrid%mycol)
-      !allocate(diag(A%nrow))
-      !allocate(diag2(A%ncol))
-      call pdger(A%nrow,A%ncol,AB(1),diag,1,1,DESC_B&
-            ,1,diag2,1,1,DESC_C,1,A%p,1,1,DESC_A,ierr)
-      !deallocate(diag,diag2)
+call lsquit('TKTKTKTKTKTKTKTKTKTK',-1)
+! This is wrong diag is not allocated!!!!!
+!      call PDM_DSCINIT(DESC_A,A)
+!      CALL DGEBR2D(SLGrid%ictxt,'A','I',2,1,AB,2,&
+!           &SLGrid%myrow,SLGrid%mycol)
+!      CALL IGEBR2D(SLGrid%ictxt,'A','I',9,1,DESC_B,9,&
+!           &SLGrid%myrow,SLGrid%mycol)
+!      CALL IGEBR2D(SLGrid%ictxt,'A','I',9,1,DESC_C,9,&
+!           &SLGrid%myrow,SLGrid%mycol)
+!      !allocate(diag(A%nrow))
+!      !allocate(diag2(A%ncol))
+!      call pdger(A%nrow,A%ncol,AB(1),diag,1,1,DESC_B&
+!            ,1,diag2,1,1,DESC_C,1,A%p,1,1,DESC_A,ierr)
+!      !deallocate(diag,diag2)
    CASE(Job_hmul)
       CALL DGEBR2D(SLGrid%ictxt,'A','I',2,1,AB,2,&
            &SLGrid%myrow,SLGrid%mycol)
