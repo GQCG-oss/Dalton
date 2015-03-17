@@ -473,10 +473,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(nTiles.EQ.0)PerformTiling = .FALSE.
      IF(PerformTiling)THEN
         call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
-!$acc enter data create(tocc2) if(PerformTiling)
         call mem_alloc(tocc,nocc,noccEOS,nvirt,MaxVirtSize)
         call mem_alloc(tocc2TMP,noccEOS,noccEOS,nvirt,MaxVirtSize)
-!$acc enter data create(tocc,tocc2TMP) copyin(Calpha) if(PerformTiling)
+!$acc enter data create(tocc,tocc2,tocc2TMP) copyin(Calpha) if(PerformTiling)
 ! here: wait for UoccEOST, EVocc, and EVvirt on async handle 1
 !$acc wait(async_id(1))
         DO I=1,nTiles
