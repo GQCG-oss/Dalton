@@ -1979,7 +1979,7 @@ module cc_tools_module
       t2p => t2%elm4(:,:,:,:)
       t1p => t1%elm2(:,:)
 
-      FragEnergies=0.0e0_realk
+      !FragEnergies=0.0e0_realk
       opart=1
       vpart=2
 
