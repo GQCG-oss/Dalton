@@ -654,10 +654,20 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       else
 
 #ifdef VAR_MPI
-!         call ccsdpt_fill_random_numbers_ijk_par(t2_final,VOVO,t1_final,nvirt,nocc)
+         call tensor_minit(t2_final,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,nocc,1],atype='TDAR')
+         call tensor_minit(VOVO,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,1,1],atype='TDAR')
+         call tensor_init(t1_final,[nvirt,nocc],2)
 #else
-         call ccsdpt_fill_random_numbers_ijk_ser(t2_final,VOVO,t1_final,nvirt,nocc)
+         call tensor_init(t2_final,[nvirt,nvirt,nocc,nocc],4)
+         call tensor_init(VOVO,[nvirt,nvirt,nocc,nocc],4)
+         call tensor_init(t1_final,[nvirt,nocc],2)
 #endif
+         call tensor_random(t2_final)
+         call tensor_random(vovo)
+         call tensor_random(t1_final)
+         call tensor_scale(t2_final,1.0E-2_realk)
+         call tensor_scale(vovo,1.0E-2_realk)
+         call tensor_scale(t1_final,1.0E-2_realk)
 
       endif
  
