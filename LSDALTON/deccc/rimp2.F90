@@ -153,7 +153,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ! handle 2: UvirtT
   ! handle 3: UvirtEOST
   ! handle 4: UoccT
-  num_ids = 4
+  ! handle 5: UoccallT
+  num_ids = 5
   call mem_alloc(async_id,num_ids)
 
 #ifdef VAR_OPENACC
@@ -394,6 +395,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mat_transpose(M,N,1.0E0_realk,Uoccall%val,0.0E0_realk,UoccallT)
      call array2_free(Uoccall)
   endif
+!$acc enter data copyin(UoccallT) async(async_id(5)) if(fc)
   CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
 
   ! *************************************************************
@@ -961,15 +963,43 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = nocctot          !columns of Output Matrix
         K = nocctot          !summation dimension
         call mem_alloc(Calpha2,nba,nocctot,nocctot)
+!$acc enter data create(Calpha2) copyin(CalphaOcc)
         IF(DECinfo%frozencore)THEN
+! here: wait for UoccallT on async handle 5 IF frozen_core = .true.
+!$acc wait(async_id(5))
+#ifdef VAR_OPENACC
+!$acc host_data use_device(CalphaOcc,UoccallT,Calpha2)
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+           call dgemm_acc('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccallT,K,0.0E0_realk,Calpha2,M)
+#elif defined(VAR_CUBLAS)
+           stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                                 & 1.0E0_realk,c_loc(CalphaOcc),int(M,kind=4),c_loc(UoccallT),int(K,kind=4),&
+                                 & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
+#endif
+!$acc end host_data
+#else
            call dgemm('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccallT,K,0.0E0_realk,Calpha2,M)
-           call mem_dealloc(UoccallT)
+#endif
         ELSE
+#ifdef VAR_OPENACC
+!$acc host_data use_device(CalphaOcc,UoccT,Calpha2)
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+           call dgemm_acc('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccT,K,0.0E0_realk,Calpha2,M)
+#elif defined(VAR_CUBLAS)
+           stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                                 & 1.0E0_realk,c_loc(CalphaOcc),int(M,kind=4),c_loc(UoccT),int(K,kind=4),&
+                                 & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
+#endif
+!$acc end host_data
+#else
            call dgemm('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccT,K,0.0E0_realk,Calpha2,M)
+#endif
         ENDIF
+!$acc exit data delete(CalphaOcc)
         call mem_dealloc(CalphaOcc)
         !(alphaAux,noccEOS,noccAOS=nocctot) = (alphaAux;nocc,noccAOS=nocctot)*UoccEOST(nocc,noccEOS)
         call mem_alloc(Calpha4,nba,noccEOS,nocctot)
+!$acc enter data create(Calpha4)
         call RIMP2_TransAlpha2(nocctot,nocc,noccEOS,nba,UoccEOST,Calpha2,Calpha4)
 !$acc exit data delete(UoccEOST,Calpha2)
         call mem_dealloc(UoccEOST)
@@ -977,7 +1007,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         
         !  djikEOS(nvirtAOS,noccEOS,noccEOS,noccAOS)
         call tensor_ainit(djik,dimvirt,4)
+!$acc enter data create(djik%elm1)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,Calpha4,noccEOS,nocctot,djik%elm1)
+!$acc exit data copyout(djik%elm1) delete(Calpha3,Calpha4)
         call mem_dealloc(Calpha3)
         call mem_dealloc(Calpha4)
         CALL LSTIMER('RIMP2: djik',TS3,TE3,LUPRI,FORCEPRINT)
@@ -1914,7 +1946,7 @@ subroutine RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS)
 #ifdef VAR_OPENACC
   !$ACC PARALLEL LOOP COLLAPSE(4) &
   !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
-  !$ACC COPYIN(nvirtEOS,nocc,NBA) &
+  !$acc firstprivate(nvirtEOS,nocc,NBA) &
   !$acc present(Calpha3,gvirtEOS)
 #else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
@@ -1952,14 +1984,24 @@ subroutine RIMP2_calc_gen4DimFO(NBA,Calpha3,n1,n2,Calpha4,n3,n4,djik)
   !local variables
   integer :: A,B,C,D,ALPHAAUX
   real(realk) :: TMP
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
+  !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
+  !$ACC firstprivate(nvirtEOS,nocc,NBA) &
+  !$acc present(Calpha3,Calpha4,djik)
+#else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
   !$OMP PRIVATE(A,B,C,D,ALPHAAUX,TMP) &
   !$OMP SHARED(n1,n2,n3,n4,NBA,Calpha3,Calpha4,djik)
+#endif
   do d=1,n4
      do c=1,n3
         do b=1,n2
            do a=1,n1
               TMP = 0.0E0_realk
+#ifdef VAR_OPENACC
+              !$ACC loop seq
+#endif
               do ALPHAAUX = 1,nba
                  tmp = tmp + Calpha3(alphaAUX,A,B)*Calpha4(alphaAUX,C,D)
               enddo
@@ -1968,7 +2010,11 @@ subroutine RIMP2_calc_gen4DimFO(NBA,Calpha3,n1,n2,Calpha4,n3,n4,djik)
         enddo
      enddo
   enddo
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+#else
   !$OMP END PARALLEL DO
+#endif
 end subroutine RIMP2_calc_gen4DimFO
 
 subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
