@@ -284,6 +284,8 @@ module dec_typedef_module
      integer :: abc_nbuffs
      !> do we want to do gpu computations synchronous?
      logical :: acc_sync
+     !> (T) hack variable - presently used for omitting CCSD
+     logical :: pt_hack
 
      !> F12 settings
      !> ************

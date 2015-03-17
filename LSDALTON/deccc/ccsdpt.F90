@@ -44,7 +44,8 @@ module ccsdpt_module
   
 #ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
-       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot
+       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot,&
+       & ccsdpt_fill_random_numbers_ijk_ser
   private
 #endif
 
@@ -436,10 +437,10 @@ contains
                           & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
    
        else
-   
+
           call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
                           & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
-   
+
        endif
 
     endif
@@ -11251,8 +11252,6 @@ contains
             write(DECinfo%output,'(a,i4)')     'Number of GPUs         = ',num_gpu
             write(DECinfo%output,'(a,g11.4)')     'Total GPU memory (GB)  = ',total_gpu / gb
             write(DECinfo%output,'(a,g11.4)')     'Free GPU memory (GB)   = ',free_gpu / gb
-            print *,'Total GPU memory (Bytes) = ',total_gpu
-            print *,'Free GPU memory  (Bytes) = ',free_gpu
          endif
          write(DECinfo%output,*)
          write(DECinfo%output,*)
@@ -11385,6 +11384,64 @@ contains
       enddo
 
   end subroutine abc_tile_size_routine
+
+  subroutine ccsdpt_fill_random_numbers_ijk_ser(ccsd_doubles,vvoo,ccsd_singles,nv,no)
+
+      implicit none
+
+      type(tensor), intent(inout) :: ccsd_doubles,vvoo,ccsd_singles
+      integer, intent(in) :: nv,no
+      real(realk), pointer :: buffer1(:,:),buffer2(:,:,:),buffer3(:)
+      integer, dimension(4) :: dims1
+      integer, dimension(2) :: dims2
+      integer :: i,j
+
+      dims1 = [nv,nv,no,no]
+
+      dims2 = [nv,no]
+
+      call tensor_init(vvoo,dims1,4)
+      call tensor_init(ccsd_doubles,dims1,4)
+      call tensor_init(ccsd_singles,dims2,2)
+
+      call mem_alloc(buffer1,nv,nv)
+
+      call random_seed()
+
+      do i = 1,no
+         do j = 1,no
+
+            call random_number(buffer1)
+            vvoo%elm4(:,:,j,i) = 1.0E-2_realk*buffer1
+
+         enddo
+      enddo
+
+      call mem_dealloc(buffer1)
+
+      call mem_alloc(buffer2,nv,nv,no)
+
+      call random_seed()
+
+      do i = 1,no
+
+         call random_number(buffer2)
+         ccsd_doubles%elm4(:,:,:,i) = 1.0E-2_realk*buffer2
+
+      enddo
+
+      call mem_dealloc(buffer2)
+
+      call mem_alloc(buffer3,nv*no)
+
+      call random_seed()
+      call random_number(buffer3)
+
+      ccsd_singles%elm1(:) = 1.0E-2_realk*buffer3
+
+      call mem_dealloc(buffer3)
+
+  end subroutine ccsdpt_fill_random_numbers_ijk_ser
 
 !endif mod_unreleased
 #endif

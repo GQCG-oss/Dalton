@@ -613,41 +613,53 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
    else ! we do not print fragment energies
 
-      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
-         & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
-         & m1f=m1_final, m2f=m2_final)
+      if (.not. DECinfo%pt_hack .and. .not. DECinfo%abc) then
 
-      if(DECinfo%CCSDmultipliers)then
-         call tensor_free(m2_final)
-         if(DECinfo%use_singles)then
-            call tensor_free(m1_final)
+         call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
+            & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
+            & m1f=m1_final, m2f=m2_final)
+   
+         if(DECinfo%CCSDmultipliers)then
+            call tensor_free(m2_final)
+            if(DECinfo%use_singles)then
+               call tensor_free(m1_final)
+            endif
          endif
-      endif
-
-      if(DECinfo%PL>1)then
-         call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
-            &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
-            &labeldwwork = 'MASTER WORK CC solver: ',&
-            &labeldwcomm = 'MASTER COMM CC solver: ',&
-            &labeldwidle = 'MASTER IDLE CC solver: ')
-      endif
-
-      ! If there are two subsystems, calculate dispersion, charge transfer and subsystem energy contributions 
-      if(mylsitem%input%molecule%nSubSystems==2) then
-         !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
-         !one node is used  FIXME
-         if(VOVO%itype==TT_DENSE .and. t2_final%itype==TT_DENSE) then
-            call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
-         else
-            call tensor_init( VOVO_local, VOVO%dims,    4 )
-            call tensor_init( t2f_local, t2_final%dims, 4 )
-            call tensor_cp_data( VOVO,     VOVO_local )
-            call tensor_cp_data( t2_final, t2f_local  )
-            call SNOOP_partition_energy(VOVO_local,t1_final,t2f_local,mylsitem,MyMolecule)
-            call tensor_free(VOVO_local)
-            call tensor_free(t2f_local)
+   
+         if(DECinfo%PL>1)then
+            call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
+               &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
+               &labeldwwork = 'MASTER WORK CC solver: ',&
+               &labeldwcomm = 'MASTER COMM CC solver: ',&
+               &labeldwidle = 'MASTER IDLE CC solver: ')
+         endif
+   
+         ! If there are two subsystems, calculate dispersion, charge transfer and subsystem energy contributions 
+         if(mylsitem%input%molecule%nSubSystems==2) then
+            !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
+            !one node is used  FIXME
+            if(VOVO%itype==TT_DENSE .and. t2_final%itype==TT_DENSE) then
+               call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
+            else
+               call tensor_init( VOVO_local, VOVO%dims,    4 )
+               call tensor_init( t2f_local, t2_final%dims, 4 )
+               call tensor_cp_data( VOVO,     VOVO_local )
+               call tensor_cp_data( t2_final, t2f_local  )
+               call SNOOP_partition_energy(VOVO_local,t1_final,t2f_local,mylsitem,MyMolecule)
+               call tensor_free(VOVO_local)
+               call tensor_free(t2f_local)
+            end if
          end if
-      end if
+
+      else
+
+#ifdef VAR_MPI
+!         call ccsdpt_fill_random_numbers_ijk_par(t2_final,VOVO,t1_final,nvirt,nocc)
+#else
+         call ccsdpt_fill_random_numbers_ijk_ser(t2_final,VOVO,t1_final,nvirt,nocc)
+#endif
+
+      endif
  
       if(ccmodel == MODEL_CCSDpT)then
 #ifdef VAR_MPI
@@ -661,6 +673,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
          print_frags = DECinfo%print_frags
          abc = DECinfo%abc
+
+         if (abc .and. DECinfo%pt_hack) call lsquit('.PT_ABC .and. .PT_HACK keywords are incompatible',DECinfo%output)
 
          if (abc) then
 #ifdef VAR_MPI
