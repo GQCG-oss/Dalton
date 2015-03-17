@@ -856,7 +856,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
 !$acc enter data create(Calpha3)
      call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
-!$acc exit data delete(Calpha2,UvirtEOST)
+!$acc exit data delete(Calpha2,UvirtEOST) if(.not. first_order)
+!$acc exit data delete(Calpha2) if(first_order)
 #ifdef VAR_OPENACC
      gpuflops = NBA*nvirtEOS*nocc*nvirt
      call AddFLOP_FLOPonGPUaccouting(gpuflops)
@@ -1052,12 +1053,28 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = nocc             !columns of Output Matrix
         K = nocc             !summation dimension
         call mem_alloc(Calpha2,nba,nvirt,nocc)
+!$acc enter data create(Calpha2)
+#ifdef VAR_OPENACC
+!$acc host_data use_device(Calpha,UoccT,Calpha2)
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+        call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+#elif defined(VAR_CUBLAS)
+        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                              & 1.0E0_realk,c_loc(Calpha),int(M,kind=4),c_loc(UoccT),int(K,kind=4),&
+                              & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
+#endif
+!$acc end host_data
+#else
         call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+#endif
+!$acc exit data delete(UoccT) 
         call mem_dealloc(UoccT)
         
         !(alphaAux,nvirtEOS,noccAOS) = (alphaAux;nvirt,noccAOS)*Uvirt(nvirt,nvirtEOS)
         call mem_alloc(Calpha3,nba,nvirtEOS,nocc)
+!$acc enter data create(Calpha3)
         call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
+!$acc exit data delete(Calpha2)
         call mem_dealloc(Calpha2)
    
         !(alphaAux;nvirt,nvirtAOS) = (alphaAux;nvirt,nvirt)*UvirtT(nvirt,nvirt)
@@ -1065,20 +1082,38 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = nvirt            !columns of Output Matrix
         K = nocc             !summation dimension
         call mem_alloc(Calpha2,nba,nvirt,nvirt)
+!$acc enter data create(Calpha2) copyin(CalphaVV) 
+#ifdef VAR_OPENACC
+!$acc host_data use_device(CalphaVV,UvirtT,Calpha2)
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+        call dgemm_acc('N','N',M,N,K,1.0E0_realk,CalphaVV,M,UvirtT,K,0.0E0_realk,Calpha2,M)
+#elif defined(VAR_CUBLAS)
+        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                              & 1.0E0_realk,c_loc(CalphaVV),int(M,kind=4),c_loc(UvirtT),int(K,kind=4),&
+                              & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
+#endif
+!$acc end host_data
+#else
         call dgemm('N','N',M,N,K,1.0E0_realk,CalphaVV,M,UvirtT,K,0.0E0_realk,Calpha2,M)
+#endif
+!$acc exit data delete(CalphaVV,CalphaVV,Calpha)
         call mem_dealloc(CalphaVV)
         call mem_dealloc(UvirtT)
         call mem_dealloc(Calpha)
         
         !(alphaAux,nvirtEOS,nvirtAOS) = (alphaAux;nvirt,nvirtAOS)*UvirtEOST(nvirt,nvirtEOS)
         call mem_alloc(Calpha4,nba,nvirtEOS,nvirt)
+!$acc enter data create(Calpha4)
         call RIMP2_TransAlpha2(nvirt,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha4)
+!$acc exit data delete(UvirtEOST,Calpha2)
         call mem_dealloc(UvirtEOST)
         call mem_dealloc(Calpha2)
         
         !generate blad(nvirtEOS,noccAOS,nvirtEOS,nvirtAOS)
         call tensor_ainit(blad,dimvirt,4)
+!$acc enter data create(blad%elm1)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirtEOS,nocc,Calpha4,nvirtEOS,nvirt,blad%elm1)
+!$acc exit data copyout(blad%elm1) delete(Calpha3,Calpha4)
         call mem_dealloc(Calpha3)
         call mem_dealloc(Calpha4)
         CALL LSTIMER('RIMP2: blad',TS3,TE3,LUPRI,FORCEPRINT)
