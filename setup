@@ -187,7 +187,7 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using timings [default: %(default)s]')
-    
+
     group = parser.add_argument_group('external libraries')
     group.add_argument('--interest',
             action='store_true',

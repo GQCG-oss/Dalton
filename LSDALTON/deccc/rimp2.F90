@@ -96,7 +96,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk) :: deltaEPS,goccAIBJ,goccBIAJ,Gtmp,Ttmp,Eocc,TMP,Etmp,twmpi2
   real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
-  real(realk) :: Evirt,Evirt2,dummy(2),MemInGBCollected
+  real(realk) :: Evirt,Evirt2,dummy(2),MemInGBCollected,gpuflops
   integer(kind=long) :: maxsize
   Integer :: iAtomA,nBastLocA,startRegA,endRegA,nAuxA,startAuxA,endAuxA,lupri
   integer :: MynAtomsMPI,startA2,StartA,B,I,startB2,iAtomB,StartB,node,myOriginalRank
@@ -459,11 +459,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !Perform tiling if the tocc(nocc,noccEOS,nvirt,nvirt) cannot fit on the device
      !Janus will set this variable correctly. For now I set it true if it is a debug
      !run and false for release run. In this way all the code is tested
-#ifdef VAR_LSDEBUG
-     PerformTiling = .TRUE.
-#else
      PerformTiling = .FALSE.
-#endif
      MaxVirtSize = nvirt/2           !should be determined by Janus is some way
      nTiles =  nvirt/MaxVirtSize 
      IF(nTiles.EQ.0)PerformTiling = .FALSE.
@@ -506,6 +502,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 ! here: wait for UoccEOST, EVocc, and EVvirt on async handle 1
 !$acc wait(async_id(1))
         call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,nvirt,offsetV)
+#ifdef VAR_OPENACC
+        gpuflops = NBA*nocc*nocc*nvirt*nvirt + nocc*nocc*nvirt*nvirt*noccEOS
+        call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#endif
         !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
         M = noccEOS              !rows of Output Matrix
         N = noccEOS*nvirt*nvirt  !columns of Output Matrix
@@ -523,6 +523,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 !$acc end host_data
 !$acc exit data delete(tocc)
+        call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
 #else
         call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
 #endif
@@ -547,6 +548,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 !$acc end host_data
 !$acc exit data delete(tocc2)
+     call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
 #endif
@@ -557,6 +559,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(toccEOS%elm1)
      call RIMP2_calc_toccB(nvirt,noccEOS,tocc3,UvirtT,toccEOS%elm1)
 !$acc exit data copyout(toccEOS%elm1) delete(tocc3,UvirtT)
+#ifdef VAR_OPENACC
+     gpuflops = noccEOS*noccEOS*nvirt*nvirt*nvirt
+     call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#endif
      call mem_dealloc(tocc3)     
      CALL LSTIMER('RIMP2: toccEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
@@ -591,6 +597,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc wait(async_id(3))
      call RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
 !$acc exit data delete(EVocc,EVvirt)
+#ifdef VAR_OPENACC
+     gpuflops = NBA*nocc*nocc*nvirt*nvirt + nocc*nocc*nvirt*nvirt*nvirtEOS
+     call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#endif
      call mem_dealloc(EVocc)
      call mem_dealloc(EVvirt)
 
@@ -611,6 +621,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 !$acc end host_data
 !$acc exit data delete(tvirt,UvirtEOST)
+     call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
 #endif
@@ -635,6 +646,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 !$acc end host_data
 !$acc exit data delete(tvirt2)
+     call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
 #else
      call dgemm('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
 #endif
@@ -645,6 +657,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(tvirtEOS%elm1)
      call RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt3,UoccT,tvirtEOS%elm1)
 !$acc exit data delete(tvirt3) copyout(tvirtEOS%elm1)
+#ifdef VAR_OPENACC
+     gpuflops = nvirtEOS*nocc*nvirtEOS*nocc*nvirt
+     call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#endif
      call mem_dealloc(tvirt3)
      CALL LSTIMER('RIMP2: tvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
@@ -693,6 +709,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 !$acc end host_data
 !$acc exit data delete(UoccEOST)
+     call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
 #endif
@@ -703,6 +720,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(Calpha3) copyin(UvirtT)
      call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,Calpha2,Calpha3)
 !$acc exit data delete(Calpha2,UvirtT)
+#ifdef VAR_OPENACC
+     gpuflops = NBA*nvirt*nvirt*noccEOS
+     call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#endif
      call mem_dealloc(Calpha2)
      IF(.NOT.first_order)call mem_dealloc(UvirtT)
      
@@ -710,6 +731,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(goccEOS%elm1) 
      call RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS%elm1)
 !$acc exit data delete(Calpha3) copyout(goccEOS%elm1)
+#ifdef VAR_OPENACC
+     gpuflops = NBA*nvirt*nvirt*noccEOS*noccEOS
+     call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#endif
      call mem_dealloc(Calpha3)
      CALL LSTIMER('RIMP2: goccEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
@@ -756,6 +781,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 !$acc end host_data
 !$acc exit data delete(UoccT,Calpha)
+     call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
 #endif
@@ -766,6 +792,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(Calpha3) copyin(UvirtEOST)
      call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)
 !$acc exit data delete(Calpha2,UvirtEOST)
+#ifdef VAR_OPENACC
+     gpuflops = NBA*nvirtEOS*nocc*nvirt
+     call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#endif
      IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
      call mem_dealloc(Calpha2)
 
@@ -773,6 +803,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(gvirtEOS%elm1)
      call RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS%elm1)
 !$acc exit data delete(Calpha3) copyout(gvirtEOS%elm1)
+#ifdef VAR_OPENACC
+     gpuflops = NBA*nvirtEOS*nvirtEOS*nocc*nocc
+     call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#endif
      call mem_dealloc(Calpha3)
      CALL LSTIMER('RIMP2: gvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
@@ -963,20 +997,34 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ! effective time for slaves
      MyFragment%slavetime_work(MODEL_RIMP2) = tmpidiff
      ! FLOP count for integral loop for slaves
-     call end_flop_counter(flops)
+     call end_flop_counter(flops,gpuflops)
   end if
 
 #ifdef VAR_MPI
   ! If slaves were not invoked
   ! then we of course skip the reduction.
   MPIcollect: if(wakeslave) then
+
+     call time_start_phase( PHASE_IDLE )
+     call lsmpi_barrier(infpar%lg_comm)
+     call time_start_phase( PHASE_COMM )
      ! FLOP counting
      if(master) then
         flops=0.0E0_realk  ! we want to count only flops from slaves (these were set above)
+        gpuflops = 0.0E0_realk ! we want to count only gpu flops from slaves (these were set above)
         ! Total time for all slaves (not local master itself)
         MyFragment%slavetime_work(MODEL_RIMP2)=0.0E0_realk
      end if
+
+     call lsmpi_reduction(flops,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(gpuflops,infpar%master,infpar%lg_comm)
      if(master)MyFragment%flops_slaves=flops !save flops for local slaves (not local master)
+     if(master)MyFragment%gpu_flops_slaves=gpuflops !save flops for local slaves (not local master)
+
+     ! Total time for all slaves (not local master itself)
+     if(master) MyFragment%slavetime_work(MODEL_RIMP2)=0.0E0_realk
+     call lsmpi_reduction(MyFragment%slavetime_work(MODEL_RIMP2),infpar%master,infpar%lg_comm)
+     call time_start_phase( PHASE_WORK )
      if(.not. master) then ! SLAVE: Done with arrays and fragment
         call atomic_fragment_free(MyFragment)
      end if

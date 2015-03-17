@@ -310,7 +310,7 @@ contains
     type(decfrag) :: PairFragment
     type(decfrag) :: MyFragment
     integer :: job,atomA,atomB,i,slavejob,ntasks,no,nv,mymodel
-    real(realk) :: flops_slaves
+    real(realk) :: flops_slaves,gpu_flops_slaves
     type(mp2grad) :: grad
     logical :: morejobs, continuedivide, split,only_update
     real(realk) :: fragenergy(ndecenergies),tottime
@@ -318,7 +318,7 @@ contains
     real(realk) :: tot_work_time, tot_comm_time, tot_idle_time
     real(realk) :: test_work_time, test_comm_time, test_idle_time, test_master, testtime
     real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc, mwork, midle, mcomm
-    real(realk) :: flops
+    real(realk) :: flops,gpu_flops
     real(realk), pointer :: slave_times(:)
     integer(kind=ls_mpik) :: master
     logical :: dividegroup
@@ -521,6 +521,7 @@ contains
 
 
              flops_slaves = MyFragment%flops_slaves
+             gpu_flops_slaves = MyFragment%gpu_flops_slaves
              !   tottime = MyFragment%slavetime_work(MyFragment%ccmodel) + &
              !      & MyFragment%slavetime_comm(MyFragment%ccmodel) + &
              !      & MyFragment%slavetime_idle(MyFragment%ccmodel) 
@@ -541,6 +542,7 @@ contains
                    & AtomicFragments(atomA),grad=grad)
 
                 flops_slaves = AtomicFragments(atomA)%flops_slaves
+                gpu_flops_slaves = AtomicFragments(atomA)%gpu_flops_slaves
                 !tottime = AtomicFragments(atomA)%slavetime_work(AtomicFragments(atomA)%ccmodel) + &
                 !   & AtomicFragments(atomA)%slavetime_comm(AtomicFragments(atomA)%ccmodel) + &
                 !   & AtomicFragments(atomA)%slavetime_idle(AtomicFragments(atomA)%ccmodel) 
@@ -573,6 +575,7 @@ contains
                 end if
 
                 flops_slaves = PairFragment%flops_slaves
+                gpu_flops_slaves = PairFragment%gpu_flops_slaves
                 !tottime = PairFragment%slavetime_work(PairFragment%ccmodel) + &
                 !   & PairFragment%slavetime_comm(PairFragment%ccmodel) + &
                 !   & PairFragment%slavetime_idle(PairFragment%ccmodel) 
@@ -630,8 +633,9 @@ contains
           endif
 
           !FLOPS
-          call end_flop_counter(flops) ! flops for local master
+          call end_flop_counter(flops,gpu_flops) ! flops for local master
           singlejob%flops(1)     = flops + flops_slaves  ! FLOPS for local master + local slaves
+          singlejob%gpu_flops(1)     = gpu_flops + gpu_flops_slaves  ! GPU FLOPS for local master + local slaves
           singlejob%jobsdone(1)  = .true.
           singlejob%esti(1)      = jobs%esti(job)
           singlejob%dofragopt(1) = jobs%dofragopt(job)
