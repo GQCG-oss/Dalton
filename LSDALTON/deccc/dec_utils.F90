@@ -26,10 +26,8 @@ module dec_fragment_utils
   use infpar_module
   use lsmpi_op
 #endif
-
-#ifdef VAR_PAPI
   use papi_module
-#endif
+  
 
   ! F12 DEPENDENCIES 
   ! *****************************************
@@ -1599,6 +1597,7 @@ end function max_batch_dimension
 #ifdef VAR_PAPI
     call PAPIf_start(eventset, retval)
 #endif
+    call init_FLOPonGPUaccouting()
 
   end subroutine start_flop_counter
 
@@ -1606,11 +1605,13 @@ end function max_batch_dimension
   !> \brief Stop and read PAPI FLOP counter.
   !> If LSDALTON is not linked to PAPI, we just return 0.
   !> \author Kasper Kristensen
-  subroutine end_flop_counter(flops)
+  subroutine end_flop_counter(flops,FLOPonGPU)
 
     implicit none
     !> Flops (simplest to save as real)
     real(realk),intent(inout) :: flops
+    !> Flop executed on the GPU
+    real(realk),intent(inout) :: FLOPonGPU
     !> "FLOPS" used by PAPI must be hardcoded 64 bit integer
     integer(kind=8) :: flops_int
     integer :: retval
@@ -1621,6 +1622,7 @@ end function max_batch_dimension
     call PAPIf_stop(eventset,flops_int,retval)
 #endif
     flops = real(flops_int)
+    call extract_FLOPonGPUaccouting(FLOPonGPU)
 
   end subroutine end_flop_counter
 
@@ -3499,6 +3501,7 @@ end function max_batch_dimension
     write(funit) jobs%workt
     write(funit) jobs%commt
     write(funit) jobs%idlet
+    write(funit) jobs%gpu_flops
 
   end subroutine write_fragment_joblist_to_file
 
@@ -3550,6 +3553,7 @@ end function max_batch_dimension
     read(funit) jobs%workt
     read(funit) jobs%commt
     read(funit) jobs%idlet
+    read(funit) jobs%gpu_flops
 
     write(DECinfo%output,*)
     write(DECinfo%output,*) 'JOB LIST RESTART'
@@ -3602,6 +3606,7 @@ end function max_batch_dimension
        call mem_alloc(jobs%commt,njobs)
        call mem_alloc(jobs%workt,njobs)
        call mem_alloc(jobs%idlet,njobs)
+       call mem_alloc(jobs%gpu_flops,njobs)
        jobs%nslaves = 0
        jobs%nocc    = 0
        jobs%nunocc  = 0
@@ -3612,6 +3617,7 @@ end function max_batch_dimension
        jobs%commt   = 0.0E0_realk
        jobs%workt   = 0.0E0_realk
        jobs%idlet   = 0.0E0_realk
+       jobs%gpu_flops= 0.0E0_realk
     end if
 
   end subroutine init_joblist
@@ -3688,6 +3694,11 @@ end function max_batch_dimension
        nullify(jobs%flops)
     end if
 
+    if(associated(jobs%gpu_flops)) then
+       call mem_dealloc(jobs%gpu_flops)
+       nullify(jobs%gpu_flops)
+    end if
+
     if(associated(jobs%LMtime)) then
        call mem_dealloc(jobs%LMtime)
        nullify(jobs%LMtime)
@@ -3753,6 +3764,7 @@ end function max_batch_dimension
     jobs%workt(position)     = singlejob%workt(1)
     jobs%commt(position)     = singlejob%commt(1)
     jobs%idlet(position)     = singlejob%idlet(1)
+    jobs%gpu_flops(position) = singlejob%gpu_flops(1)
 
   end subroutine put_job_into_joblist
 

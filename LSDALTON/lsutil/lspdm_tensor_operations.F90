@@ -141,7 +141,8 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 33
   integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 34
   integer,parameter :: JOB_GET_MP2_ST_GUESS       = 35
-  integer,parameter :: JOB_HMUL_PAR               = 36
+  integer,parameter :: JOB_tensor_rand            = 36
+  integer,parameter :: JOB_HMUL_PAR               = 37
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -2681,6 +2682,29 @@ module lspdm_tensor_operations_module
     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #endif
   end subroutine tensor_zero_tiled_dist
+  !> \brief randomizing routine for tiled distributed arrays
+  !> \author Patrick Ettenhuber
+  !> \date beginning 2015
+  subroutine tensor_rand_tiled_dist(a)
+    implicit none
+    !> array to zero
+    type(tensor),intent(inout) :: a
+    integer :: lt
+#ifdef VAR_MPI
+    !get the slaves here
+    if(a%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+      call pdm_tensor_sync(infpar%lg_comm,JOB_tensor_rand,a)
+    endif
+
+    call random_seed()
+    !loop over local tiles and zero them individually
+    do lt=1,a%nlti
+      call random_number(a%ti(lt)%t)
+    enddo
+
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+#endif
+  end subroutine tensor_rand_tiled_dist
 
 
   !> \author Patrick Ettenhuber

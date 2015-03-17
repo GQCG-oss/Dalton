@@ -59,7 +59,7 @@ module tensor_interface_module
   ! User-level subroutines for tensor operations
   public tensor_convert, print_norm, tensor_add, tensor_contract
   public tensor_transform_basis, tensor_ddot
-  public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale
+  public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
 
   ! PDM interface to the tensor structure
@@ -2459,6 +2459,37 @@ contains
      end select
 
   end subroutine tensor_zero
+
+  subroutine tensor_random(zeroed)
+     implicit none
+     type(tensor) :: zeroed
+     integer :: i
+
+     select case(zeroed%itype)
+     case(TT_DENSE)
+        call random_seed()
+        call random_number(zeroed%elm1)
+     case(TT_REPLICATED)
+        call random_seed()
+        call random_number(zeroed%elm1)
+        call tensor_sync_replicated(zeroed)
+     case(TT_TILED)
+        if (zeroed%atype=='RTAR') then
+           call tensor_rand_tiled_dist(zeroed)
+        else
+           call random_seed()
+           do i=1,zeroed%ntiles
+              call random_number(zeroed%ti(i)%t)
+              
+           enddo
+        end if
+     case(TT_TILED_DIST,TT_TILED_REPL)
+        call tensor_rand_tiled_dist(zeroed)
+     case default
+        call lsquit("ERROR(tensor_rand):not yet implemented",-1)
+     end select
+
+  end subroutine tensor_random
 
   subroutine tensor_print_tile_norm(arr,globtinr,nrm,returnsquared)
     implicit none
