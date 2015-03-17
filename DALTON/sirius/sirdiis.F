@@ -301,6 +301,11 @@ C
 C
       use qmcmm, only: getdim_relmat, comp_relmat, write_relmat, 
      &                 getdim_mmmat, comp_mmrelmat
+#ifdef ENABLE_XCINT
+      use iso_c_binding
+      use interface_xc, only: interface_xc_init, xcint_wakeup_workers
+      use xcint_fortran_interface
+#endif
       use qmcmm_fock, only: qmnpmm_fock
 
 #if defined (HAS_PCMSOLVER)
@@ -315,6 +320,15 @@ C
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
 
+#ifdef ENABLE_XCINT
+      real(c_double)              :: xc_energy(1)
+      real(c_double), allocatable :: dmat_ao(:)
+      real(c_double), allocatable :: xc_mat(:)
+      real(c_double), allocatable :: buffer1(:)
+      real(c_double), allocatable :: buffer2(:)
+      real(c_double), allocatable :: xc_mat_tri(:)
+      logical                     :: file_exists
+#endif
 #if defined (HAS_PCMSOLVER)
       real(8), allocatable :: density_ao(:), density_ao_symm(:)
       real(8), allocatable :: fock_pcm_ao(:), fock_pcm_ao_symm(:)
@@ -868,41 +882,63 @@ C
                CALL DSCAL(N2BASX,-D1,DCAO(1+N2BASX),1)
                CALL DAXPY(N2BASX,-D1,DCAO(1+N2BASX),1,DCAO,1)
             END IF
+#ifdef ENABLE_XCINT
+             inquire(file='num_grid', exist=file_exists)
+             if (.not. file_exists) then
+                ! ulgy hack to get the grid, we don't care about the integrated result
+                allocate(buffer1(nbast*nbast))
+                allocate(buffer2(nbast*nbast))
+                dummy_energy = 0.0d0
+                CALL DFT_ADD_KS(ONLYFC,dummy_energy,DCAO,NDMAT,
+     &          buffer1, buffer2,
+     &          WRK(KFREE),LFREE,IPR_DIIS)
+                deallocate(buffer1)
+                deallocate(buffer2)
+!               call quit('ERROR: num_grid file not found')
+             end if
 
-#ifdef USE_XCINT
+             call interface_xc_init() ! returns early if aleady initialized
+
              allocate(dmat_ao(nbast*nbast))
-             allocate(fmat_ao(nbast*nbast))
-             allocate(fmat_ao_tri(nnbast))
+             allocate(xc_mat(nbast*nbast))
+             allocate(xc_mat_tri(nnbast))
+
              dmat_ao     = 0.0d0
-             fmat_ao     = 0.0d0
-             fmat_ao_tri = 0.0d0
+             xc_mat     = 0.0d0
+             xc_mat_tri = 0.0d0
              xc_energy   = 0.0d0
+             xc_num_electrons = 0.0d0
              call daxpy(nbast*nbast, 0.5d0, dcao, 1,
      &                  dmat_ao, 1)
-             call interface_ao_write()
-             call xc_integrate(
-     &                         xc_mat_dim=nbast,
-     &                         xc_nr_dmat=1,
-     &                         xc_dmat=dmat_ao,
-     &                         xc_nr_geo_pert=0,
-     &                         xc_nr_fld_pert=0,
-     &                         xc_energy=xc_energy,
-     &                         xc_fmat=fmat_ao
-     &                        )
-             emy = emy + xc_energy
 
-             call dgetsp(nbast, fmat_ao, fmat_ao_tri)
-             call daxpy(nnbast, 1.0d0, fmat_ao_tri, 1,
+             call xcint_wakeup_workers()
+             call xcint_integrate(XCINT_MODE_RKS,
+     &                            0,        
+     &                            (/0/),    
+     &                            (/0/),    
+     &                            1,        
+     &                            (/0/),    
+     &                            (/1/),    
+     &                            dmat_ao,  
+     &                            0,  
+     &                            xc_energy,
+     &                            1,
+     &                            xc_mat,  
+     &                            xc_num_electrons)
+             emy = emy + xc_energy(1)
+
+             call dgetsp(nbast, xc_mat, xc_mat_tri)
+             call daxpy(nnbast, 1.0d0, xc_mat_tri, 1,
      &                  faosav(1, indevc, 1), 1)
 
              deallocate(dmat_ao)
-             deallocate(fmat_ao)
-             deallocate(fmat_ao_tri)
+             deallocate(xc_mat)
+             deallocate(xc_mat_tri)
 #else
-            CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+             CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
-#endif /* USE_XCINT */
+#endif /* ENABLE_XCINT */
          END IF
 
 CAMT If calculated add the empirical dispersion energy correction
