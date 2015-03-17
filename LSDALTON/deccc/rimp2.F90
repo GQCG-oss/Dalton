@@ -466,18 +466,19 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !Perform tiling if the tocc(nocc,noccEOS,nvirt,nvirt) cannot fit on the device
      !Janus will set this variable correctly. For now I set it true if it is a debug
      !run and false for release run. In this way all the code is tested
-#ifdef VAR_LSDEBUG
-     PerformTiling = .TRUE.
-#else
      PerformTiling = .FALSE.
-#endif
+     if (DECinfo%RIMP2_tiling) PerformTiling = .TRUE.
      MaxVirtSize = nvirt/2           !should be determined by Janus is some way
      nTiles =  nvirt/MaxVirtSize 
      IF(nTiles.EQ.0)PerformTiling = .FALSE.
      IF(PerformTiling)THEN
         call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
+!$acc enter data create(tocc2) if(PerformTiling)
         call mem_alloc(tocc,nocc,noccEOS,nvirt,MaxVirtSize)
         call mem_alloc(tocc2TMP,noccEOS,noccEOS,nvirt,MaxVirtSize)
+!$acc enter data create(tocc,tocc2TMP) copyin(Calpha) if(PerformTiling)
+! here: wait for UoccEOST, EVocc, and EVvirt on async handle 1
+!$acc wait(async_id(1))
         DO I=1,nTiles
            offsetV = (I-1)*MaxVirtSize
            call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,&
@@ -486,7 +487,19 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            M = noccEOS              !rows of Output Matrix
            N = noccEOS*nvirt*MaxVirtSize  !columns of Output Matrix
            K = nocc                 !summation dimension
+#ifdef VAR_OPENACC
+!$acc host_data use_device(tocc,UoccEOST,tocc2TMP)
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+           call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+#elif defined(VAR_CUBLAS)
+           stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                & 1.0E0_realk,c_loc(UoccEOST),int(K,kind=4),c_loc(tocc),int(K,kind=4),&
+                & 0.0E0_realk,c_loc(tocc2TMP),int(M,kind=4))
+#endif
+!$acc end host_data
+#else
            call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+#endif
            call PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
         ENDDO
         IF(MOD(nvirt,MaxVirtSize).NE.0)THEN !Remainder
@@ -498,9 +511,22 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            M = noccEOS                    !rows of Output Matrix
            N = noccEOS*nvirt*MaxVirtSize  !columns of Output Matrix
            K = nocc                       !summation dimension
+#ifdef VAR_OPENACC
+!$acc host_data use_device(tocc,UoccEOST,tocc2TMP)
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+           call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+#elif defined(VAR_CUBLAS)
+           stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+                & 1.0E0_realk,c_loc(UoccEOST),int(K,kind=4),c_loc(tocc),int(K,kind=4),&
+                & 0.0E0_realk,c_loc(tocc2TMP),int(M,kind=4))
+#endif
+!$acc end host_data
+#else
            call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+#endif
            call PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
         ENDIF
+!$acc exit data delete(tocc,tocc2TMP) if(PerformTiling)
         call mem_dealloc(tocc)
         call mem_dealloc(tocc2TMP)
      ELSE
@@ -508,7 +534,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
         offsetV=0
         call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt)
-!$acc enter data create(tocc) copyin(Calpha)
+!$acc enter data create(tocc) copyin(Calpha) if(.not. PerformTiling)
 
 ! here: wait for UoccEOST, EVocc, and EVvirt on async handle 1
 !$acc wait(async_id(1))
@@ -518,7 +544,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = noccEOS*nvirt*nvirt  !columns of Output Matrix
         K = nocc                 !summation dimension
         call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
-!$acc enter data create(tocc2)
+!$acc enter data create(tocc2) if(.not. PerformTiling)
 #ifdef VAR_OPENACC
 !$acc host_data use_device(tocc,UoccEOST,tocc2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
@@ -529,7 +555,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
              & 0.0E0_realk,c_loc(tocc2),int(M,kind=4))
 #endif
 !$acc end host_data
-!$acc exit data delete(tocc)
+!$acc exit data delete(tocc) if(.not. PerformTiling)
 #else
         call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
 #endif
@@ -1035,9 +1061,9 @@ subroutine PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
   !local variables
   integer :: I,B
 #ifdef VAR_OPENACC
-  !$ACC PARALLEL LOOP COLLAPSE(2) DEFAULT(none) &
+  !$ACC PARALLEL LOOP COLLAPSE(2) &
   !$ACC PRIVATE(I,B) &
-  !$ACC COPYIN(nvirt,noccEOS,MaxVirtSize,offsetV) &
+  !$acc firstprivate(nvirt,noccEOS,MaxVirtSize,offsetV) &
   !$ACC present(tocc2,tocc2TMP)
 #else
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &

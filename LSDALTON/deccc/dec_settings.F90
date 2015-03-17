@@ -229,6 +229,7 @@ contains
     DECinfo%RIMPSubGroupSize         = 0
     DECinfo%RIMP2PDMTENSOR           = .false.
     DECinfo%RIMP2ForcePDMCalpha      = .false.
+    DECinfo%RIMP2_tiling             = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -717,9 +718,11 @@ contains
        case('.RIMP2SUBGROUPSIZE')
           read(input,*) DECinfo%RIMPSubGroupSize
        case('.RIMP2PDMTENSOR')
-          DECinfo%RIMP2PDMTENSOR     = .true.
+          DECinfo%RIMP2PDMTENSOR      = .true.
        case('.RIMP2FORCEPDMCALPHA')
           DECinfo%RIMP2ForcePDMCalpha = .true.
+       case('.RIMP2_TILING')
+          DECinfo%RIMP2_tiling        = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
