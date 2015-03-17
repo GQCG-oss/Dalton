@@ -141,7 +141,7 @@ class lsoutput:
                if(not found):
                  #SET THE DEFAULTS
                  self.calctype.append("FOT=4")
-                 self.decinfo.fotfloat = float(self.lines[k+1].strip().replace("d","e").replace("D","e"))
+                 self.decinfo.fotfloat  = 1.0e-4
 
              #SET CC SPECIFIC CALCULTION INFO FROM INPUT FILE 
              if("**CC" in lineparser):

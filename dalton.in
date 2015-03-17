@@ -198,6 +198,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
+      -pot ) POT_FILE=$2; shift;;
       -rsh ) SCP=rcp; SSH=rsh;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
@@ -507,6 +508,12 @@ if [ $optdens -eq 1 ] ; then
    [ -f $WRKDIR/$molfil.dens.restart ] && cp -f $WRKDIR/$molfil.dens.restart dens.restart
    [ -f $WRKDIR/$molfil.fock.restart ] && cp -f $WRKDIR/$molfil.fock.restart fock.restart
    [ -f $WRKDIR/$molfil.lcm_orbitals.u ] && cp -f $WRKDIR/$molfil.lcm_orbitals.u lcm_orbitals.u
+fi
+
+# put pot file listed under -pot to scratch directory
+if [ "$POT_FILE" != "" ]; then
+   echo copying $POT_FILE to scratch directory
+   cp $WRKDIR/$POT_FILE POTENTIAL.INP
 fi
 
 if [ "$optf" != "0" ] ; then
