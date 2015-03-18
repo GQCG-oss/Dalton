@@ -28,6 +28,10 @@ CONTAINS
      EcoeffN(i,ii,5,1) = ETIJ(i,ii,2,2,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,11,1) = ETIJ(i,ii,3,2,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,21,1) = ETIJ(i,ii,4,2,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,0,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,2) = ETIJ(i,ii,0,1,2,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,3,2) = ETIJ(i,ii,0,1,2,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,2,2) = ETIJ(i,ii,1,1,2,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,0,0,0,3)
@@ -36,6 +40,10 @@ CONTAINS
      EcoeffN(i,ii,12,2) = ETIJ(i,ii,2,1,2,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,11,2) = ETIJ(i,ii,3,1,2,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,22,2) = ETIJ(i,ii,3,1,2,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,0,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,3) = ETIJ(i,ii,0,1,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,4,3) = ETIJ(i,ii,0,1,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,2,3) = ETIJ(i,ii,1,1,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,1,0,3)
@@ -44,6 +52,10 @@ CONTAINS
      EcoeffN(i,ii,13,3) = ETIJ(i,ii,2,1,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,11,3) = ETIJ(i,ii,3,1,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,23,3) = ETIJ(i,ii,3,1,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,1,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,4) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,0,2,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,3,4) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,1,2,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,8,4) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,2,2,0,2)*ETIJ(i,ii,0,0,0,3)
@@ -53,6 +65,10 @@ CONTAINS
      EcoeffN(i,ii,5,4) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,0,2,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,12,4) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,1,2,0,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,24,4) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,2,2,0,2)*ETIJ(i,ii,0,0,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,5) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,4,5) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,3,5) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,1,0,3)
@@ -65,6 +81,10 @@ CONTAINS
      EcoeffN(i,ii,13,5) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,12,5) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,25,5) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,1,1,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,6) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,2,0,3)
      EcoeffN(i,ii,4,6) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,2,0,3)
      EcoeffN(i,ii,10,6) = ETIJ(i,ii,0,0,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,2,0,3)
@@ -74,6 +94,10 @@ CONTAINS
      EcoeffN(i,ii,5,6) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,2,0,3)
      EcoeffN(i,ii,13,6) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,2,0,3)
      EcoeffN(i,ii,26,6) = ETIJ(i,ii,2,0,2,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,2,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,7) = ETIJ(i,ii,0,2,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,3,7) = ETIJ(i,ii,0,2,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,2,7) = ETIJ(i,ii,1,2,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,0,0,0,3)
@@ -82,6 +106,10 @@ CONTAINS
      EcoeffN(i,ii,12,7) = ETIJ(i,ii,2,2,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,11,7) = ETIJ(i,ii,3,2,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,22,7) = ETIJ(i,ii,3,2,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,0,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,8) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,0,1,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,3,8) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,1,1,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,8,8) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,2,1,1,2)*ETIJ(i,ii,0,0,0,3)
@@ -91,6 +119,10 @@ CONTAINS
      EcoeffN(i,ii,5,8) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,0,1,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,12,8) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,1,1,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,24,8) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,2,1,1,2)*ETIJ(i,ii,0,0,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,9) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,4,9) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,3,9) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,1,0,3)
@@ -103,6 +135,10 @@ CONTAINS
      EcoeffN(i,ii,13,9) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,12,9) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,25,9) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,1,1,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,10) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,2,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,3,10) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,1,2,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,8,10) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,2,2,1,2)*ETIJ(i,ii,0,0,0,3)
@@ -111,6 +147,10 @@ CONTAINS
      EcoeffN(i,ii,6,10) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,2,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,14,10) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,2,2,1,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,27,10) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,3,2,1,2)*ETIJ(i,ii,0,0,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,11) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,1,1,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,4,11) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,1,1,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,3,11) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,1,1,1,2)*ETIJ(i,ii,0,1,0,3)
@@ -123,6 +163,10 @@ CONTAINS
      EcoeffN(i,ii,15,11) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,1,1,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,14,11) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,2,1,1,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,28,11) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,2,1,1,2)*ETIJ(i,ii,1,1,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,12) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,0,2,0,3)
      EcoeffN(i,ii,4,12) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,1,2,0,3)
      EcoeffN(i,ii,10,12) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,2,2,0,3)
@@ -135,6 +179,10 @@ CONTAINS
      EcoeffN(i,ii,6,12) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,2,0,3)
      EcoeffN(i,ii,15,12) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,1,2,0,3)
      EcoeffN(i,ii,29,12) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,2,2,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,13) = ETIJ(i,ii,0,2,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,4,13) = ETIJ(i,ii,0,2,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,2,13) = ETIJ(i,ii,1,2,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,0,1,3)
@@ -143,6 +191,10 @@ CONTAINS
      EcoeffN(i,ii,13,13) = ETIJ(i,ii,2,2,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,11,13) = ETIJ(i,ii,3,2,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,23,13) = ETIJ(i,ii,3,2,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,0,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,14) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,4,14) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,3,14) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,0,1,3)
@@ -155,6 +207,10 @@ CONTAINS
      EcoeffN(i,ii,13,14) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,12,14) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,25,14) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,1,0,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,15) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,1,1,3)
      EcoeffN(i,ii,4,15) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,1,1,3)
      EcoeffN(i,ii,10,15) = ETIJ(i,ii,0,1,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,1,1,3)
@@ -164,6 +220,10 @@ CONTAINS
      EcoeffN(i,ii,5,15) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,1,1,3)
      EcoeffN(i,ii,13,15) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,1,1,3)
      EcoeffN(i,ii,26,15) = ETIJ(i,ii,2,1,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,1,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,16) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,2,0,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,4,16) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,2,0,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,3,16) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,1,2,0,2)*ETIJ(i,ii,0,0,1,3)
@@ -176,6 +236,10 @@ CONTAINS
      EcoeffN(i,ii,15,16) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,2,0,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,14,16) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,2,2,0,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,28,16) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,2,2,0,2)*ETIJ(i,ii,1,0,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,17) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,0,1,1,3)
      EcoeffN(i,ii,4,17) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,1,1,1,3)
      EcoeffN(i,ii,10,17) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,2,1,1,3)
@@ -188,6 +252,10 @@ CONTAINS
      EcoeffN(i,ii,6,17) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,1,1,3)
      EcoeffN(i,ii,15,17) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,1,1,1,3)
      EcoeffN(i,ii,29,17) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,2,1,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,18) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,2,1,3)
      EcoeffN(i,ii,4,18) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,2,1,3)
      EcoeffN(i,ii,10,18) = ETIJ(i,ii,0,0,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,2,1,3)
@@ -196,6 +264,10 @@ CONTAINS
      EcoeffN(i,ii,7,18) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,2,1,3)
      EcoeffN(i,ii,16,18) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,2,1,3)
      EcoeffN(i,ii,30,18) = ETIJ(i,ii,1,0,1,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,3,2,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,19) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,0,0,2,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,3,19) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,1,0,2,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,8,19) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,2,0,2,2)*ETIJ(i,ii,0,0,0,3)
@@ -213,6 +285,10 @@ CONTAINS
      EcoeffN(i,ii,6,20) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,1,2,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,14,20) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,2,1,2,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,27,20) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,3,1,2,2)*ETIJ(i,ii,0,0,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,21) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,0,2,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,4,21) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,0,2,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,3,21) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,1,0,2,2)*ETIJ(i,ii,0,1,0,3)
@@ -225,6 +301,10 @@ CONTAINS
      EcoeffN(i,ii,15,21) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,0,2,2)*ETIJ(i,ii,1,1,0,3)
      EcoeffN(i,ii,14,21) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,2,0,2,2)*ETIJ(i,ii,0,1,0,3)
      EcoeffN(i,ii,28,21) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,2,0,2,2)*ETIJ(i,ii,1,1,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,22) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,2,2,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,3,22) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,1,2,2,2)*ETIJ(i,ii,0,0,0,3)
      EcoeffN(i,ii,8,22) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,2,2,2,2)*ETIJ(i,ii,0,0,0,3)
@@ -247,6 +327,10 @@ CONTAINS
      EcoeffN(i,ii,8,24) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,2,0,2,2)*ETIJ(i,ii,0,2,0,3)
      EcoeffN(i,ii,18,24) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,2,0,2,2)*ETIJ(i,ii,1,2,0,3)
      EcoeffN(i,ii,33,24) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,2,0,2,2)*ETIJ(i,ii,2,2,0,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,25) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,4,25) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,3,25) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,0,1,3)
@@ -271,18 +355,30 @@ CONTAINS
      EcoeffN(i,ii,15,26) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,1,1,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,14,26) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,2,1,1,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,28,26) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,2,1,1,2)*ETIJ(i,ii,1,0,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,27) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,0,1,1,3)
      EcoeffN(i,ii,4,27) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,1,1,1,3)
      EcoeffN(i,ii,10,27) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,2,1,1,3)
      EcoeffN(i,ii,3,27) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,1,1,3)
      EcoeffN(i,ii,9,27) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,1,1,1,3)
      EcoeffN(i,ii,19,27) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,2,1,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,2,27) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,0,1,1,3)
      EcoeffN(i,ii,7,27) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,1,1,1,3)
      EcoeffN(i,ii,16,27) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,0,0,1,2)*ETIJ(i,ii,2,1,1,3)
      EcoeffN(i,ii,6,27) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,0,1,1,3)
      EcoeffN(i,ii,15,27) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,1,1,1,3)
      EcoeffN(i,ii,29,27) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,2,1,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,28) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,2,1,2)*ETIJ(i,ii,0,0,1,3)
      EcoeffN(i,ii,4,28) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,2,1,2)*ETIJ(i,ii,1,0,1,3)
      EcoeffN(i,ii,3,28) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,1,2,1,2)*ETIJ(i,ii,0,0,1,3)
@@ -308,6 +404,10 @@ CONTAINS
      EcoeffN(i,ii,9,30) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,1,2,1,3)
      EcoeffN(i,ii,19,30) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,2,2,1,3)
      EcoeffN(i,ii,34,30) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,1,0,1,2)*ETIJ(i,ii,3,2,1,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,31) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,0,2,3)
      EcoeffN(i,ii,4,31) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,0,2,3)
      EcoeffN(i,ii,10,31) = ETIJ(i,ii,0,2,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,0,2,3)
@@ -317,6 +417,10 @@ CONTAINS
      EcoeffN(i,ii,5,31) = ETIJ(i,ii,2,2,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,0,2,3)
      EcoeffN(i,ii,13,31) = ETIJ(i,ii,2,2,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,0,2,3)
      EcoeffN(i,ii,26,31) = ETIJ(i,ii,2,2,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,0,2,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,32) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,0,0,2,3)
      EcoeffN(i,ii,4,32) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,1,0,2,3)
      EcoeffN(i,ii,10,32) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,1,0,2)*ETIJ(i,ii,2,0,2,3)
@@ -329,6 +433,10 @@ CONTAINS
      EcoeffN(i,ii,6,32) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,0,0,2,3)
      EcoeffN(i,ii,15,32) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,1,0,2,3)
      EcoeffN(i,ii,29,32) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,2,0,2,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,33) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,1,2,3)
      EcoeffN(i,ii,4,33) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,1,2,3)
      EcoeffN(i,ii,10,33) = ETIJ(i,ii,0,1,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,1,2,3)
@@ -337,6 +445,10 @@ CONTAINS
      EcoeffN(i,ii,7,33) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,1,2,3)
      EcoeffN(i,ii,16,33) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,1,2,3)
      EcoeffN(i,ii,30,33) = ETIJ(i,ii,1,1,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,3,1,2,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,34) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,2,0,2)*ETIJ(i,ii,0,0,2,3)
      EcoeffN(i,ii,4,34) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,2,0,2)*ETIJ(i,ii,1,0,2,3)
      EcoeffN(i,ii,10,34) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,2,0,2)*ETIJ(i,ii,2,0,2,3)
@@ -354,6 +466,10 @@ CONTAINS
      EcoeffN(i,ii,9,35) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,1,1,2,3)
      EcoeffN(i,ii,19,35) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,2,1,2,3)
      EcoeffN(i,ii,34,35) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,1,1,0,2)*ETIJ(i,ii,3,1,2,3)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
      EcoeffN(i,ii,1,36) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,0,2,2,3)
      EcoeffN(i,ii,4,36) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,1,2,2,3)
      EcoeffN(i,ii,10,36) = ETIJ(i,ii,0,0,0,1)*ETIJ(i,ii,0,0,0,2)*ETIJ(i,ii,2,2,2,3)
