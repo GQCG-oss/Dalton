@@ -185,6 +185,8 @@ F90_OBJS = \
         IchorEri_CoulombIntegral_McM_Ecoeff_specR.o \
         IchorEri_CoulombIntegral_McM_Ecoeff_specL.o \
         IchorEri_CoulombIntegral_McM_Ecoeff_specL2.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_specL3.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_specL4.o \
         IchorEri_CoulombIntegral_McM_WTUV_general.o \
         IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
         IchorEri_CoulombIntegral_CPU_OBS_Gen.o \
