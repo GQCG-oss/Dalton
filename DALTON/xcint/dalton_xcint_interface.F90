@@ -1,11 +1,8 @@
 #ifdef ENABLE_XCINT
 module dalton_xcint_interface
-   use, intrinsic :: iso_c_binding
 
-!  use matrix_defop, matrix => openrsp_matrix
-!  use interface_molecule, only: get_num_atoms
+   use, intrinsic :: iso_c_binding
    use xcint_fortran_interface
-!  use openrsp_cfg
 
    implicit none
 
