@@ -852,8 +852,8 @@ module matrix_operations_scalapack
                          IF(I.GT.A%nrow)EXIT iloop2               
                          localnrow(Iproc) = localnrow(Iproc)+1 
                          AFULL(I+(J-1)*A%nrow) = localA(Iproc)%p(localnrow(Iproc),localncol(Iproc))
-                         write(6,'(A,I2,A,I2,A,I2,A,I2,A,I2,A,F16.8)')'Ap(',localnrow(Iproc),',',localncol(Iproc),',',iproc,') = AFULL(',&
-                              & I,',',J,')=',AFULL(I+(J-1)*A%nrow) 
+!                         write(6,'(A,I2,A,I2,A,I2,A,I2,A,I2,A,F16.8)')'Ap(',localnrow(Iproc),',',localncol(Iproc),',',iproc,') = AFULL(',&
+!                              & I,',',J,')=',AFULL(I+(J-1)*A%nrow) 
                       enddo
                       Iproc=Iproc+shift
                    enddo
