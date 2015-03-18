@@ -286,10 +286,6 @@ C  /* Deck DIIS_CTL */
      *                    CVEC,TNLM,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
 
-!#define USE_XCINT
-#ifdef USE_XCINT
-      use xcint_integrator
-#endif
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
@@ -303,7 +299,7 @@ C
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
       use iso_c_binding
-      use interface_xc, only: interface_xc_init, xcint_wakeup_workers
+      use dalton_xcint_interface, only: use_xcint_integrator
       use xcint_fortran_interface
 #endif
       use qmcmm_fock, only: qmnpmm_fock
@@ -882,63 +878,68 @@ C
                CALL DSCAL(N2BASX,-D1,DCAO(1+N2BASX),1)
                CALL DAXPY(N2BASX,-D1,DCAO(1+N2BASX),1,DCAO,1)
             END IF
+
 #ifdef ENABLE_XCINT
-             inquire(file='num_grid', exist=file_exists)
-             if (.not. file_exists) then
-                ! ulgy hack to get the grid, we don't care about the integrated result
-                allocate(buffer1(nbast*nbast))
-                allocate(buffer2(nbast*nbast))
-                dummy_energy = 0.0d0
-                CALL DFT_ADD_KS(ONLYFC,dummy_energy,DCAO,NDMAT,
-     &          buffer1, buffer2,
-     &          WRK(KFREE),LFREE,IPR_DIIS)
-                deallocate(buffer1)
-                deallocate(buffer2)
-!               call quit('ERROR: num_grid file not found')
-             end if
-
-             call interface_xc_init() ! returns early if aleady initialized
-
-             allocate(dmat_ao(nbast*nbast))
-             allocate(xc_mat(nbast*nbast))
-             allocate(xc_mat_tri(nnbast))
-
-             dmat_ao     = 0.0d0
-             xc_mat     = 0.0d0
-             xc_mat_tri = 0.0d0
-             xc_energy   = 0.0d0
-             xc_num_electrons = 0.0d0
-             call daxpy(nbast*nbast, 0.5d0, dcao, 1,
-     &                  dmat_ao, 1)
-
-             call xcint_wakeup_workers()
-             call xcint_integrate(XCINT_MODE_RKS,
-     &                            0,        
-     &                            (/0/),    
-     &                            (/0/),    
-     &                            1,        
-     &                            (/0/),    
-     &                            (/1/),    
-     &                            dmat_ao,  
-     &                            0,  
-     &                            xc_energy,
-     &                            1,
-     &                            xc_mat,  
-     &                            xc_num_electrons)
-             emy = emy + xc_energy(1)
-
-             call dgetsp(nbast, xc_mat, xc_mat_tri)
-             call daxpy(nnbast, 1.0d0, xc_mat_tri, 1,
-     &                  faosav(1, indevc, 1), 1)
-
-             deallocate(dmat_ao)
-             deallocate(xc_mat)
-             deallocate(xc_mat_tri)
-#else
-             CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
-     &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
-     &                  WRK(KFREE),LFREE,IPR_DIIS)
+            if (use_xcint_integrator()) then
+               inquire(file='num_grid', exist=file_exists)
+               if (.not. file_exists) then
+                  ! ulgy hack to get the grid, we don't care about the integrated result
+                  allocate(buffer1(nbast*nbast))
+                  allocate(buffer2(nbast*nbast))
+                  dummy_energy = 0.0d0
+                  CALL DFT_ADD_KS(ONLYFC,dummy_energy,DCAO,NDMAT,
+     &            buffer1, buffer2,
+     &            WRK(KFREE),LFREE,IPR_DIIS)
+                  deallocate(buffer1)
+                  deallocate(buffer2)
+!                 call quit('ERROR: num_grid file not found')
+               end if
+               
+!              call dalton_xcint_interface_init() ! returns early if aleady initialized
+               
+               allocate(dmat_ao(nbast*nbast))
+               allocate(xc_mat(nbast*nbast))
+               allocate(xc_mat_tri(nnbast))
+               
+               dmat_ao     = 0.0d0
+               xc_mat     = 0.0d0
+               xc_mat_tri = 0.0d0
+               xc_energy   = 0.0d0
+               xc_num_electrons = 0.0d0
+               call daxpy(nbast*nbast, 0.5d0, dcao, 1,
+     &                    dmat_ao, 1)
+               
+               call xcint_wakeup_workers()
+               call xcint_integrate(XCINT_MODE_RKS,
+     &                              0,        
+     &                              (/0/),    
+     &                              (/0/),    
+     &                              1,        
+     &                              (/0/),    
+     &                              (/1/),    
+     &                              dmat_ao,  
+     &                              0,  
+     &                              xc_energy,
+     &                              1,
+     &                              xc_mat,  
+     &                              xc_num_electrons)
+               emy = emy + xc_energy(1)
+               
+               call dgetsp(nbast, xc_mat, xc_mat_tri)
+               call daxpy(nnbast, 1.0d0, xc_mat_tri, 1,
+     &                    faosav(1, indevc, 1), 1)
+               
+               deallocate(dmat_ao)
+               deallocate(xc_mat)
+               deallocate(xc_mat_tri)
+            else
 #endif /* ENABLE_XCINT */
+               CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+     &                    FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
+     &                    WRK(KFREE),LFREE,IPR_DIIS)
+#ifdef ENABLE_XCINT
+            end if
+#endif
          END IF
 
 CAMT If calculated add the empirical dispersion energy correction
