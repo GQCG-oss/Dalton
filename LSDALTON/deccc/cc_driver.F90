@@ -568,8 +568,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             & VOVO_local,occ_orbitals,FragEnergies(:,:,cc_sol_o:cc_sol_v),FragEnergies_tmp)
       else
          call solver_energy_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
-            & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o:cc_sol_v), &
-            & FragEnergies_tmp)
+            & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o), &
+            & FragEnergies(:,:,cc_sol_v),FragEnergies_tmp)
       end if
 
    
