@@ -709,6 +709,9 @@ contains
     ! Never split if there is already just one node in the group.
     if(infpar%lg_nodtot==1) dividegroup=.false.
 
+    ! Never split if MPIsplit is set to zero (even for RIMP2)
+    if(DECinfo%MPIsplit==0) dividegroup=.false.
+
   end function divideMPIgroup
 
 !> \brief Get number of tasks in integral loop (nalpha*ngamma)
@@ -756,45 +759,29 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      if (ntasks>0) return
   end if
 
-  if(MyFragment%ccmodel==MODEL_RIMP2) then ! RIMP2
-     !the number of MPI nodes that can be used effectively is the number of atoms
-     !However in the rest of the code they use that there should be a greater number of 
-     !integral tasks than number of nodes. They use      
-     !ntasks .LE. infpar%lg_nodtot*DECinfo%MPIsplit  
-     !to determine if the MPI group should be reduced.  
-     !so here we set ntasks to  
-     if(DECinfo%MPIsplit/=0)then
-        ntasks = MyFragment%natoms*DECinfo%MPIsplit
-     else
-        ntasks = MyFragment%natoms
-     endif
-     !FIXME: This should in case of DECinfo%AuxAtomicExtent be nAtomsAux
-     !to obtain:
-     !MyFragment%natoms .LE. infpar%lg_nodtot
-  else
-     ! Get number of gamma batches
-     call mem_alloc(orb2batchGamma,MyFragment%nbasis)
-     call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
-          & MyFragment%nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
-          & batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
-     call mem_dealloc(orb2batchGamma)
-     call mem_dealloc(batchdimGamma)
-     call mem_dealloc(batchsizeGamma)
-     call mem_dealloc(batchindexGamma)
-     
-     ! Get number of alpha batches
-     call mem_alloc(orb2batchAlpha,MyFragment%nbasis)
-     call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
-          & MyFragment%nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
-          & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-     call mem_dealloc(orb2batchAlpha)
-     call mem_dealloc(batchdimAlpha)
-     call mem_dealloc(batchsizeAlpha)
-     call mem_dealloc(batchindexAlpha)
-     
-     ! Number of tasks = nalpha*ngamma
-     ntasks = nbatchesGamma*nbatchesAlpha
-  endif
+  ! Get number of gamma batches
+  call mem_alloc(orb2batchGamma,MyFragment%nbasis)
+  call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
+     & MyFragment%nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
+     & batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
+  call mem_dealloc(orb2batchGamma)
+  call mem_dealloc(batchdimGamma)
+  call mem_dealloc(batchsizeGamma)
+  call mem_dealloc(batchindexGamma)
+
+  ! Get number of alpha batches
+  call mem_alloc(orb2batchAlpha,MyFragment%nbasis)
+  call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
+     & MyFragment%nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
+     & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+  call mem_dealloc(orb2batchAlpha)
+  call mem_dealloc(batchdimAlpha)
+  call mem_dealloc(batchsizeAlpha)
+  call mem_dealloc(batchindexAlpha)
+
+  ! Number of tasks = nalpha*ngamma
+  ntasks = nbatchesGamma*nbatchesAlpha
+
 end subroutine get_number_of_integral_tasks_for_mpi
 
 
