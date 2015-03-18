@@ -294,6 +294,8 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specR.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL3.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL4.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEriTools.F90

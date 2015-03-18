@@ -1951,7 +1951,7 @@ module cc_tools_module
    !> \author: Janus Juul Eriksen
    !> \date: February 2013
    subroutine solver_energy_full(no,nv,nfrags,offset,t2,t1,integral,occ_orbitals, &
-         & virt_orbitals,FragEnergies,tmp_fragener)
+         & virt_orbitals,FragOccEner,FragVirtEner,tmp_fragener)
 
       implicit none
 
@@ -1966,10 +1966,11 @@ module cc_tools_module
       !> virtual orbital information
       type(decorbital), dimension(nv), intent(inout) :: virt_orbitals
       !> Fragment energies array:
-      real(realk), dimension(nfrags,nfrags,2), intent(inout) :: FragEnergies
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: FragOccEner
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: FragVirtEner
       real(realk), dimension(nfrags,nfrags), intent(inout) :: tmp_fragener
       !> integers
-      integer :: i,j,a,b,atomI,atomJ,vpart,opart
+      integer :: i,j,a,b,atomI,atomJ
       !> energy reals
       real(realk) :: energy_tmp_1, energy_tmp_2
       real(realk), pointer :: t1p(:,:), t2p(:,:,:,:), inp(:,:,:,:)
@@ -1979,18 +1980,14 @@ module cc_tools_module
       t2p => t2%elm4(:,:,:,:)
       t1p => t1%elm2(:,:)
 
-      !FragEnergies=0.0e0_realk
-      opart=1
-      vpart=2
-
       ! Get occupied partitioning energy:
       if (.not.DECinfo%OnlyVirtPart) then
          tmp_fragener=0.0e0_realk
          energy_tmp_1=0.0e0_realk
          energy_tmp_2=0.0e0_realk
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-         !$OMP REDUCTION(+:FragEnergies),&
-         !$OMP SHARED(t2p,t1p,inp,no,nv,occ_orbitals,offset,DECinfo,opart)
+         !$OMP REDUCTION(+:FragOccEner),&
+         !$OMP SHARED(t2p,t1p,inp,no,nv,occ_orbitals,offset,DECinfo)
          do j=1,no
             atomJ = occ_orbitals(j+offset)%CentralAtom
             do i=1,no
@@ -2005,7 +2002,7 @@ module cc_tools_module
                      else
                         energy_tmp_2 = 0.0E0_realk
                      endif
-                     FragEnergies(AtomI,AtomJ,opart) = FragEnergies(AtomI,AtomJ,opart) &
+                     FragOccEner(AtomI,AtomJ) = FragOccEner(AtomI,AtomJ) &
                         & + energy_tmp_1 + energy_tmp_2
 
                   end do
@@ -2046,14 +2043,12 @@ module cc_tools_module
          end do
          !$OMP END PARALLEL DO
 
-         FragEnergies(:,:,opart) = 2.0E0_realk * FragEnergies(:,:,opart) - tmp_fragener
+         FragOccEner(:,:) = 2.0E0_realk * FragOccEner(:,:) - tmp_fragener
 
          do AtomI=1,nfrags
             do AtomJ=AtomI+1,nfrags
-
-               FragEnergies(AtomI,AtomJ,opart) = FragEnergies(AtomI,AtomJ,opart) &
-                  & + FragEnergies(AtomJ,AtomI,opart)
-               FragEnergies(AtomJ,AtomI,opart) = FragEnergies(AtomI,AtomJ,opart)
+               FragOccEner(AtomI,AtomJ) = FragOccEner(AtomI,AtomJ) + FragOccEner(AtomJ,AtomI)
+               FragOccEner(AtomJ,AtomI) = FragOccEner(AtomI,AtomJ)
             end do
          end do
 
@@ -2067,12 +2062,12 @@ module cc_tools_module
          energy_tmp_1=0.0e0_realk
          energy_tmp_2=0.0e0_realk
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-         !$OMP REDUCTION(+:FragEnergies),&
-         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,offset,DECinfo,vpart)
+         !$OMP REDUCTION(+:FragVirtEner),&
+         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,DECinfo)
          do b=1,nv
-            atomJ = virt_orbitals(b+offset)%CentralAtom
+            atomJ = virt_orbitals(b)%CentralAtom
             do a=1,nv
-               atomI = virt_orbitals(a+offset)%CentralAtom
+               atomI = virt_orbitals(a)%CentralAtom
 
                do j=1,no
                   do i=1,no
@@ -2083,7 +2078,7 @@ module cc_tools_module
                      else
                         energy_tmp_2 = 0.0E0_realk
                      endif
-                     FragEnergies(AtomI,AtomJ,vpart) = FragEnergies(AtomI,AtomJ,vpart) &
+                     FragVirtEner(AtomI,AtomJ) = FragVirtEner(AtomI,AtomJ) &
                         & + energy_tmp_1 + energy_tmp_2
 
                   end do
@@ -2099,11 +2094,11 @@ module cc_tools_module
 
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
          !$OMP REDUCTION(+:tmp_fragener),&
-         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,offset,DECinfo)
+         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,DECinfo)
          do b=1,nv
-            atomJ = virt_orbitals(b+offset)%CentralAtom
+            atomJ = virt_orbitals(b)%CentralAtom
             do a=1,nv
-               atomI = virt_orbitals(a+offset)%CentralAtom
+               atomI = virt_orbitals(a)%CentralAtom
 
                do j=1,no
                   do i=1,no
@@ -2124,14 +2119,12 @@ module cc_tools_module
          end do
          !$OMP END PARALLEL DO
 
-         FragEnergies(:,:,vpart) = 2.0E0_realk * FragEnergies(:,:,vpart) - tmp_fragener
+         FragVirtEner(:,:) = 2.0E0_realk * FragVirtEner(:,:) - tmp_fragener
 
          do AtomI=1,nfrags
             do AtomJ=AtomI+1,nfrags
-
-               FragEnergies(AtomI,AtomJ,vpart) = FragEnergies(AtomI,AtomJ,vpart) &
-                  & + FragEnergies(AtomJ,AtomI,vpart)
-               FragEnergies(AtomJ,AtomI,vpart) = FragEnergies(AtomI,AtomJ,vpart)
+               FragVirtEner(AtomI,AtomJ) = FragVirtEner(AtomI,AtomJ) + FragVirtEner(AtomJ,AtomI)
+               FragVirtEner(AtomJ,AtomI) = FragVirtEner(AtomI,AtomJ)
             end do
          end do
 
@@ -2362,7 +2355,7 @@ module cc_tools_module
          ccsdpt_e4 = 0.0E0_realk
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
          !$OMP REDUCTION(+:energy_res_cou,eccsdpt_matrix_cou), &
-         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,offset,vpart)
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,vpart)
          do b=1,nvirt
             atomJ = virt_orbitals(b)%CentralAtom
             do a=1,nvirt
@@ -2387,7 +2380,7 @@ module cc_tools_module
 
          !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
          !$OMP REDUCTION(+:energy_res_exc,eccsdpt_matrix_exc), &
-         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals,offset)
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals)
          do b=1,nvirt
             atomJ = virt_orbitals(b)%CentralAtom
             do a=1,nvirt
