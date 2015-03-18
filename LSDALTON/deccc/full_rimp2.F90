@@ -122,7 +122,8 @@ contains
     real(realk),pointer :: AlphaCD(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
     real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:)
     real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:)
-    real(realk),pointer :: EpsOcc(:),EpsVirt(:)
+    real(realk),pointer :: EpsOcc(:),EpsVirt(:),ABdecomp(:,:)
+    logical :: ABdecompCreate
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,COUNT2,comm,TAG1,TAG2
     integer :: J,CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
     integer :: myOriginalRank,node,natoms,A,lupri,MinAtomicnAux,restart_lun
@@ -221,9 +222,13 @@ contains
     endif StartUpSlaves
 #endif
     CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
+    call mem_alloc(ABdecomp,nAux,nAux)
+    ABdecompCreate = .TRUE.
     call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
          & wakeslaves,MyMolecule%Co(:,offset+1:offset+nocc),&
-         & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA)
+         & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA,&
+         & ABdecomp,ABdecompCreate)
+    call mem_dealloc(ABdecomp)
     CALL LSTIMER('RIMP2: CalphaMO ',TS2,TE2,LUPRI,FORCEPRINT)
 
     call mem_alloc(EpsOcc,nocc)

@@ -221,6 +221,7 @@ contains
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
     DECinfo%AtomicExtent             = .false.
+    DECinfo%MPMP2                    = .false.
 
     !  RIMP2 settings defauls
     DECinfo%AuxAtomicExtent          = .false.
@@ -463,7 +464,6 @@ contains
           DECinfo%use_singles=.false.
           DECinfo%solver_par=.true.
 
-
        ! CC SOLVER INFO
        ! ==============
        case('.CCSDNOSAFE')
@@ -702,6 +702,17 @@ contains
        case('.ATOMICEXTENT')
           !Include all atomic orbitals on atoms in the fragment 
           DECinfo%AtomicExtent  = .true.
+
+       !KEYWORDS FOR CANONICAL FULL MOLECULAR MP2
+       !**************************
+
+       case('.MPMP2') 
+          ! By default a memory conserving integral direct MP2 code is used
+          ! when **CC .MP2 is combined with .CANONICAL
+          ! This keyword activates a MP2 version that distribute the integrals
+          ! across the nodes. The code does less integral recalculation but 
+          ! requires more nodes/more memory
+          DECinfo%MPMP2=.true.
 
 
        !KEYWORDS FOR RIMP2 (.RIMP2) 
