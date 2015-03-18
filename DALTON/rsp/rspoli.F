@@ -77,6 +77,7 @@ C  /* Deck rspoli */
 #ifdef ENABLE_XCINT_RESPONSE
       use iso_c_binding
       use xcint_fortran_interface
+      use dalton_xcint_interface, only: use_xcint_integrator
 #endif
 #ifdef ENABLE_EFS
       use efs_interface
@@ -1126,12 +1127,15 @@ C          Special case of alpha density only (old code)
      &              lfree,iprrsp)
              END DO
            ENDIF
-C          Proceed normal way otherwise
+
+
+           ! Proceed normal way otherwise
            IF ((NASHT.GT.0) .AND. (NISHT.GT.0)) THEN
              call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
            ELSE
 #ifdef ENABLE_XCINT_RESPONSE
+             if (use_xcint_integrator()) then
 
              if (nosim > 1) then
                 call quit('NOSIM > 1 not implemented with ENABLE_XCINT')
@@ -1185,10 +1189,14 @@ C          Proceed normal way otherwise
              deallocate(dmat_ao)
              deallocate(xc_mat)
              deallocate(fmat_mo)
-#else
+
+             else
+#endif /* ENABLE_XCINT_RESPONSE */
              call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
-#endif /* ENABLE_XCINT_RESPONSE */
+#ifdef ENABLE_XCINT_RESPONSE
+             endif
+#endif
            ENDIF
 #ifdef DEBUG_RSPOLI
            write(lupri,*) 'DODFT: after call dft_lin_resp*'

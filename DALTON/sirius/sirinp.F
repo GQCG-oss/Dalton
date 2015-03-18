@@ -2662,13 +2662,11 @@ C
             call set_functional(titlin, hfxfac, this_mu, this_beta)
             call dftsetcam(this_mu, this_beta)
          else
-#else
+#endif
             call dftsetfunc(functional_line, inperr)
 #ifdef MOD_XCFUN
             call xcfun_select(functional_line)
 #endif
-#endif /* ENABLE_XCINT */
-
 #ifdef ENABLE_XCINT
          end if
 #endif
