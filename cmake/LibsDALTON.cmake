@@ -70,6 +70,7 @@ if(ENABLE_XCINT)
         ${PROJECT_BINARY_DIR}/external/lib/libxcint.a
         ${PROJECT_BINARY_DIR}/external/xcint-build/external/lib/libxcfun.a
         ${PROJECT_BINARY_DIR}/external/xcint-build/external/lib/libtruegrid.a
+        stdc++
         )
 endif()
 

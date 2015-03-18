@@ -303,7 +303,7 @@ C
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
       use iso_c_binding
-      use interface_xc, only: interface_xc_init, xcint_wakeup_workers
+      use dalton_xcint_interface, only: interface_xc_init
       use xcint_fortran_interface
 #endif
       use qmcmm_fock, only: qmnpmm_fock

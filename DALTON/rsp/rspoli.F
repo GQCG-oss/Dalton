@@ -76,7 +76,6 @@ C  /* Deck rspoli */
 
 #ifdef ENABLE_XCINT_RESPONSE
       use iso_c_binding
-      use interface_xc, only: xcint_wakeup_workers
       use xcint_fortran_interface
 #endif
 #ifdef ENABLE_EFS
