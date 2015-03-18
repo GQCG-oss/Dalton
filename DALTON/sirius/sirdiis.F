@@ -303,7 +303,7 @@ C
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
       use iso_c_binding
-      use dalton_xcint_interface, only: interface_xc_init
+      use dalton_xcint_interface, only: dalton_xcint_interface_init
       use xcint_fortran_interface
 #endif
       use qmcmm_fock, only: qmnpmm_fock
@@ -897,7 +897,7 @@ C
 !               call quit('ERROR: num_grid file not found')
              end if
 
-             call interface_xc_init() ! returns early if aleady initialized
+             call dalton_xcint_interface_init() ! returns early if aleady initialized
 
              allocate(dmat_ao(nbast*nbast))
              allocate(xc_mat(nbast*nbast))

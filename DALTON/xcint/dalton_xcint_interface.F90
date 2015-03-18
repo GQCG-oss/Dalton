@@ -6,8 +6,8 @@ module dalton_xcint_interface
 
    implicit none
 
-   public interface_xc_init
-   public interface_xc_finalize
+   public dalton_xcint_interface_init
+   public dalton_xcint_interface_finalize
    public is_ks_calculation
    public openrsp_set_functional
 
@@ -29,14 +29,14 @@ contains
 
    subroutine check_if_initialized()
       if (.not. is_initialized) then
-         print *, 'ERROR: you try to access interface_xc'
+         print *, 'ERROR: you try to access dalton_xcint_interface'
          print *, '       but this interface is not initialized'
          stop 1
       end if
    end subroutine
 
 
-   subroutine interface_xc_finalize()
+   subroutine dalton_xcint_interface_finalize()
       is_initialized = .false.
       this_is_ks_calculation = .false.
    end subroutine
@@ -91,7 +91,7 @@ contains
    end function
 
 
-   subroutine interface_xc_init()
+   subroutine dalton_xcint_interface_init()
 
    ! local
       real(c_double), allocatable :: primitive_exp(:)
