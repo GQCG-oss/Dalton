@@ -2228,7 +2228,7 @@ C
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
-      character functional_line*80
+      character(80) :: functional_line
       logical functional_line_read
 C
 C Used from common:
