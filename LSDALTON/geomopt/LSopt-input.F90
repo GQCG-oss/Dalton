@@ -432,8 +432,7 @@ Do
                  Case('.BOFILL')
                     optinfo%Bofill = .TRUE.
                  Case('.NOAUX ')
-                    Call lsquit('.NOAUX not implemented in LSDALTON',lupri)
-!                    optinfo%NoAux = .TRUE.
+                    optinfo%NoAux = .TRUE.
                  Case('.BFGSR1')
                     Call lsquit('.BFGSR1 not implemented in LSDALTON',lupri)
 !                    optinfo%BFGSR1 = .TRUE.

@@ -20,6 +20,7 @@ module full_molecule
   use matrix_operations!, only: mat_set_from_full,mat_free,mat_init,mat_to_full
   use dec_typedef_module
   use IntegralInterfaceMod
+  use II_XC_interfaceModule
 
   ! CABS
   use CABS_operations
@@ -135,6 +136,9 @@ contains
 
     ! Copy Fock, density, MO, and overlap matrices to molecule structure
     call molecule_copy_FSC_matrices(molecule,F,S,C)
+
+    ! Get absolute overlap matrix for space selection
+    call molecule_init_abs_overlap(molecule,mylsitem)
 
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
@@ -580,15 +584,35 @@ contains
        call mat_init(s,nbasis,nbasis)
        call mat_zero(s)
        call II_get_overlap(DECinfo%output,DECinfo%output,mylsitem%setting,s)
-       call mem_alloc(molecule%overlap,nbasis,nbasis)
        molecule%overlap=0.0E0_realk
        call mat_to_full(s,1.0E0_realk,molecule%overlap)
        call mat_free(s)
 
     end if
 
+    !get occ-virt numerical overlap
+    call molecule_init_abs_overlap(molecule,mylsitem)
 
   end subroutine molecule_get_overlap
+
+  !> \author Patrick Ettenhuber
+  !> \date Feb 2015
+  !> \calclate the numerical overlap between all occ and virt orbitals for prioritorizing
+  subroutine molecule_init_abs_overlap(molecule,mylsitem)
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(inout) :: molecule
+    !> LSitem
+    type(lsitem), intent(inout) :: mylsitem
+
+    if(DECinfo%use_abs_overlap)then
+       call mem_alloc(molecule%ov_abs_overlap,molecule%nocc,molecule%nunocc)
+       molecule%ov_abs_overlap=0.0E0_realk
+       call II_get_AbsoluteValue_overlap(DECinfo%output,6,Mylsitem%SETTING,molecule%nbasis,&
+          &molecule%nocc,molecule%nunocc,molecule%Co,molecule%Cv,molecule%ov_abs_overlap)
+    endif
+
+ end subroutine molecule_init_abs_overlap
 
   !> \brief Read or construct (if it does not already exist) the carmom matrices
   !> \author Thomas Kjaergaard
@@ -854,6 +878,9 @@ contains
        call mem_dealloc(molecule%PairFOTlevel)
     end if
 
+    if(associated(molecule%ov_abs_overlap)) then
+       call mem_dealloc(molecule%ov_abs_overlap)
+    end if
   end subroutine molecule_finalize
 
   !> \brief Get number of atomic orbitals on atoms, first and last index in AO basis for full molecular matrices

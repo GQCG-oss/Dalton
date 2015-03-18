@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -241,6 +241,8 @@ C  /* Deck e3init */
      *                  ETRS,XINDX,UDV,PV,WRK,LWRK,KZYVA,KZYVB,KZYVC,
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
+
+      use qmcmm_response, only: qmcmm_qr
 C
 C
 C
@@ -449,11 +451,11 @@ C
 C
       IF (QMNPMM) THEN
          IF (TDHF) THEN
-            CALL QMNPMMQRO(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
+            CALL qmcmm_qr(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
      *                        WRK(KZYMC),UDV,WRK(KFREE),LFREE, KZYVA,
      *                        KZYVB,KZYVC, ISYMA,ISYMB,ISYMC,CMO,MJWOP,
      *                        ISPINA,ISPINB,ISPINC)
-               CALL QMNPMMQRO(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
+               CALL qmcmm_qr(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
      *                        WRK(KZYMB), UDV,WRK(KFREE),LFREE,KZYVA,
      *                        KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
      *                        ISPINA,ISPINC,ISPINB) 

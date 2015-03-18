@@ -27,7 +27,7 @@ module dec_typedef_module
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
   !> how many real models in total are there, disregard MODEL_NONE
-  integer,parameter :: ndecmodels   = 6
+  integer,parameter :: ndecmodels   = 7
   !> Number of different fragment energies
   integer,parameter :: MODEL_NONE   = 0
   integer,parameter :: MODEL_MP2    = 1
@@ -36,6 +36,7 @@ module dec_typedef_module
   integer,parameter :: MODEL_CCSDpT = 4
   integer,parameter :: MODEL_RPA    = 5
   integer,parameter :: MODEL_RIMP2  = 6
+  integer,parameter :: MODEL_SOSEX  = 7
 
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
@@ -87,6 +88,8 @@ module dec_typedef_module
      ! *****************************************************************************************
 
 
+     ! SNOOP
+     ! =====
      !> Do a SNOOP calculation rather than DEC? (later SNOOP and DEC will be somewhat merged)
      logical :: SNOOP
      !> Skip CC calculation in SNOOP and just do HF
@@ -137,7 +140,8 @@ module dec_typedef_module
      logical :: gcbasis
      !> DEC-CC orbital-based (DECCO)
      logical :: DECCO
-
+     !> DEC-CC orbital-based (DECNP)
+     logical :: DECNP
 
 
 
@@ -159,6 +163,7 @@ module dec_typedef_module
      real(realk) :: IntegralThreshold
      !> Use Ichor Integral Code
      logical :: UseIchor
+
 
      !> Memory stuff
      !> ************
@@ -204,8 +209,6 @@ module dec_typedef_module
      !> forcing one or the other scheme in get_coubles residual integral_driven
      logical :: force_scheme
      logical :: dyn_load
-     !> Use the cc debug routines from the file cc_debug_routines.F90
-     logical :: CCDEBUG
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> if mpich is used CCSD has some special treats that can be used
@@ -214,6 +217,8 @@ module dec_typedef_module
      logical :: CCSDpreventcanonical
      !> chose left-transformations to be carried out
      logical :: CCSDmultipliers
+     !> use debug multiplier residual
+     logical :: simple_multipler_residual
      !> use pnos in dec
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
@@ -268,7 +273,7 @@ module dec_typedef_module
      integer :: tensor_segmenting_scheme
 
      !> ccsd(T) settings
-     !> *****************************
+     !> ****************
      !> logical for abc scheme
      logical :: abc
      !> force a specific tile size for use with abc scheme
@@ -277,14 +282,18 @@ module dec_typedef_module
      integer :: ijk_nbuffs
      !> number of mpi buffers in ccsdpt abc loop to prefetch tiles
      integer :: abc_nbuffs
+     !> do we want to do gpu computations synchronous?
+     logical :: acc_sync
 
      !> F12 settings
      !> ************
      !> Use F12 correction
      logical :: F12
+     !> Do F12 also for fragment optimization
+     logical :: F12fragopt
 
      !> F12 debug settings
-     !> ************
+     !> ******************
      !> Use F12 correction
      logical :: F12DEBUG
 
@@ -305,8 +314,26 @@ module dec_typedef_module
 
      !> Atomic Extent - include all atomic orbitals of atoms included
      logical :: AtomicExtent
+
+     !> Massively parallel MP2 (Full Molecular canonical MP2)
+     logical :: MPMP2
+    
+     !> RIMP2 settings
+     !> ************
      !> Auxiliary Atomic Extent - for now include ALL atomic orbitals in RI
      logical :: AuxAtomicExtent
+     !> Use Natural Auxiliary Functions (NAF)
+     logical :: NAF
+     !> Natural Auxiliary Functions Threshold
+     real(realk) :: NAFthreshold
+     !> Hardcode the Group size used in RIMP(build_CalphaMO)
+     integer :: RIMPSubGroupSize
+     !> Use Tensor Framework to Construct Calpha
+     logical :: RIMP2PDMTENSOR
+     !> Force the use of the code that distribute the Calpha
+     logical :: RIMP2ForcePDMCalpha
+     !> MPI group is split if #nodes > O*V/RIMPIsplit
+     integer :: RIMPIsplit
 
      !> MPI settings
      !> ************
@@ -325,7 +352,7 @@ module dec_typedef_module
      logical :: test_fully_distributed_integrals
 
      !> MP2 occupied batching
-     !> *****************
+     !> *********************
      !> Set batch sizes manually
      logical :: manual_occbatchsizes
      !> Sizes of I and J occupied batches defined manually
@@ -350,6 +377,8 @@ module dec_typedef_module
      logical :: force_Occ_SubSystemLocality
      !> Debug print level
      integer :: PL
+     !> reduce the output if a big calculation is done
+     logical :: print_small_calc
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
      !> set fraction of extended orbital space to reduce to in the binary search
@@ -372,13 +401,6 @@ module dec_typedef_module
      real(realk) :: simple_orbital_threshold
      !> Purify fitted MO coefficients (projection + orthogonalization)
      logical :: PurifyMOs
-     !> Use fragment-adapted orbitals for fragment calculations
-     logical :: FragAdapt
-     !> Hack to only do fragment optimization
-     integer         :: only_n_frag_jobs
-     integer,pointer :: frag_job_nr(:)
-     !> Use hack to specify only pair fragment jobs
-     logical         :: only_pair_frag_jobs
      !> Use Mulliken population analysis to assign orbitals (default: Lowdin, only for Boughton-Pulay)
      logical :: mulliken
      !> Use Distance criteria to determine central atom
@@ -425,6 +447,8 @@ module dec_typedef_module
      logical :: OnlyVirtPart
      !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
      real(realk) :: all_init_radius
+     real(realk) :: vir_init_radius
+     real(realk) :: occ_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
@@ -437,6 +461,17 @@ module dec_typedef_module
      !> Note that scheme 2 is only meaningful for occupied partitioning scheme.
      integer :: CorrDensScheme
      ! --  
+     logical :: use_abs_overlap
+     !> Use fragment-adapted orbitals for fragment calculations
+     logical :: FragAdapt
+     !> avoid all pair calculations:
+     logical         :: no_pairs
+     !> Hack to only do fragment optimization
+     integer         :: only_n_frag_jobs
+     integer,pointer :: frag_job_nr(:)
+     !> Use hack to specify only pair fragment jobs
+     logical         :: only_pair_frag_jobs
+
 
      !> Pair fragments
      !> **************
@@ -464,8 +499,6 @@ module dec_typedef_module
      integer :: nFRAGSred
      !> Factor to scale FOT by for reduced fragments
      integer :: FOTscaling
-
-
      ! --
 
 
@@ -475,6 +508,8 @@ module dec_typedef_module
      logical :: first_order
      !> density matrix (and not gradient)
      logical :: density    
+     !> Unrelaxed density matrix
+     logical :: unrelaxed
      !> Calculate MP2 gradient  (density is then also calculated as a subset of the calculation)
      logical :: gradient
      !> Use preconditioner for kappa multiplier equation
@@ -665,6 +700,8 @@ module dec_typedef_module
      !> Overlap matrix (AO basis)
      real(realk), pointer :: overlap(:,:) => null()
 
+     !> Abs overlap information
+     real(realk), pointer :: ov_abs_overlap(:,:) => null()
      !> Occ-occ block of Fock matrix in MO basis
      real(realk), pointer :: ppfock(:,:) => null()
      !> Virt-virt block of Fock matrix in MO basis
@@ -742,6 +779,9 @@ module dec_typedef_module
      !> Total number of unoccupied orbitals (AOS)
      integer,pointer :: nunoccAOS
 
+     !> Has fragment been optimized
+     logical :: isopt
+
      !> Pair fragment?
      logical :: pairfrag
 
@@ -788,6 +828,10 @@ module dec_typedef_module
      !> Lagrangian energy 
      !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
      real(realk) :: LagFOP
+     !> energy error estimates
+     real(realk) :: Eocc_err
+     real(realk) :: Evir_err
+     real(realk) :: Elag_err
 
      !> Contributions to the fragment Lagrangian energy from each individual
      !  occupied or virtual orbital.
@@ -804,7 +848,7 @@ module dec_typedef_module
      !> ********************************************************
      !> Distance between atomic fragments used to generate pair
      real(realk) :: pairdist
-
+     
      !> Information about fragment size always set, this is the maximum distance
      !between any two atoms in the fragment
      real(realk) :: RmaxAE,RmaxAOS,RaveAE,RaveAOS,RsdvAE,RsdvAOS
@@ -982,6 +1026,8 @@ module dec_typedef_module
      ! ***************
      ! MPI: Sum of flop counts for local slaves (NOT local master, only local slaves!)
      real(realk) :: flops_slaves
+     ! MPI: Sum of GPU flop counts for local slaves (NOT local master, only local slaves!)
+     real(realk) :: gpu_flops_slaves
      ! Number of integral tasks
      integer :: ntasks
 
@@ -1229,6 +1275,8 @@ module dec_typedef_module
      integer,pointer :: ntasks(:)
      !> FLOP count for all local nodes (local master + local slaves)
      real(realk),pointer :: flops(:)
+     !> GPU FLOP count for all local nodes (local master + local slaves)
+     real(realk),pointer :: gpu_flops(:)
      !> Time used for local master
      real(realk),pointer :: LMtime(:)
      !> Measure of load distribution:

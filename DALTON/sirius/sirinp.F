@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -766,7 +766,10 @@ C     .. ignore .CINO if no CI calculation
          DOFCI  = .FALSE.
          DOCISD = .FALSE.
       END IF
-      IF (.NOT.DOMC .AND. .NOT.DOCI) MCTYPE = 0
+      IF (.NOT.DOMC .AND. .NOT.DOCI) THEN
+         MCTYPE = 0
+         IF (HSROHF) MCTYPE = -1
+      END IF
 C     ... ignore any *CONFIGURATION input
 C         if neither DOMC nor DOCI /hjaaj aug 2005
 C
@@ -910,7 +913,7 @@ C
             THRPWF = 0.1D0
          END IF
       END IF
-      IF (MCTYPE .EQ. 0 .AND. (DOMC .OR. DOCI)) THEN
+      IF (MCTYPE .LE. 0 .AND. (DOMC .OR. DOCI)) THEN
          WRITE (LUPRI,'(/A)')
      &      'INPUT ERROR: MCSCF or CI requested,'//
      &      ' but neither CAS nor RAS space defined.'
@@ -963,7 +966,7 @@ C     910723-hjaaj: define wave function for Hartree-Fock,
 C     even if DOSCF false and DOMP2 false; JWOP information
 C     may be needed for RESPONSE
 C
-      IF (MCTYPE .EQ. 0) THEN
+      IF (MCTYPE .LE. 0) THEN
          CALL ICOPY(8,NFRRHF,1,NFRO,1)
          CALL ICOPY(8,NRHF,1,NISH,1)
          CALL IZERO(NASH,8)
@@ -1445,12 +1448,12 @@ C
       END IF
 C
 C       
-C     If INIOCC .ge. 2 and RHF/MP2 highest level (i.e. MCTYPE .eq. 0),
+C     If INIOCC .ge. 2 and RHF/MP2 highest level (i.e. MCTYPE .LE. 0),
 C     we need to retransfer SCF occupation to MCSCF parameters as
 C     NRHF(*),IOPRHF may have changed since previous RHF setting above.
 C     (INIOCC .ge. 2: NRHF(*) from LUIT1, LUSIFC, H1OCC, or HUCDRV)
 C
-      IF (INIOCC .GE. 2 .AND. MCTYPE.EQ.0) THEN
+      IF (INIOCC .GE. 2 .AND. MCTYPE.LE.0) THEN
          CALL ICOPY(8,NRHF,1,NISH,1)
          CALL IZERO(NASH,8)
          IF (IOPRHF .NE. 0) THEN
@@ -5676,7 +5679,7 @@ C ***** Optimization information *****
 C       FLAG(27) : use determinants
 C
       IF (MCTYPE .GT. 0 .OR. (FLAG(21) .AND. .NOT. AUTOCC)) THEN
-         IF (DOMC .OR. MCTYPE .EQ. 0) THEN
+         IF (DOMC .OR. MCTYPE .LE. 0) THEN
             NWOPT_print = NWOPT
          ELSE ! no MCSCF, only CI
             NWOPT_print = 0

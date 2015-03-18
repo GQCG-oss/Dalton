@@ -7,6 +7,31 @@
 !> that it belongs somewhere else than here.
 !> 
 
+
+   !> \brief LSDALTON wrapper to DGEMM C := alpha*op( A )*op( B ) + beta*C
+   !> \author T. Kjaergaard
+   !> \date 2015
+   subroutine LSDGEMM(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
+     implicit none
+     character   :: TRANSA
+     character   :: TRANSB
+     Integer     :: M    !number of rows of the output matrix C
+     Integer     :: N    !number of columns of the output matrix C
+     Integer     :: K    !size of summation index 
+     real(8)     :: Alpha 
+     real(8)     :: A(:,:)
+     Integer     :: LDA  !first dimension of matrix A
+     real(8)     :: B(:,:)
+     Integer     :: LDB  !first dimension of matrix B
+     real(8)     :: Beta 
+     real(8)     :: C(:,:)
+     Integer     :: LDC  !first dimension of matrix C
+     !possible replace this with some GPU accelerated version
+     !or debug version to ensure no out of bounds errors. 
+     call DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
+
+   end subroutine LSDGEMM
+
    !> \brief Interface to RGG for diagonalization of real general matrix, A*x = mu*S*X. Return eigenvalues and eigenvectors.
    !> \author S. Host
    !> \date 2005
@@ -289,9 +314,19 @@
 
      if(unres) then
         ndim=sz/2
-        gap_a=eival(nocca+1)-eival(nocca)
-        gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
-        HOMO_LUMO_gap=MIN(gap_a,gap_b)
+        IF (nocca.GE.1) gap_a=eival(nocca+1)-eival(nocca)
+        IF (noccb.GE.1) gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
+        IF (nocca.EQ.0) THEN
+          IF (noccb.EQ.0) THEN
+            CALL LSQUIT('Error in HOMO_LUMO_gap, both nocca and noccb are zero',-1)
+          ELSE
+            HOMO_LUMO_gap = gap_b
+          ENDIF
+        ELSE IF (noccb.EQ.0) THEN
+          HOMO_LUMO_gap = gap_a
+        ELSE
+          HOMO_LUMO_gap=MIN(gap_a,gap_b)
+        ENDIF
      else
         ndim=size(eival)
         HOMO_LUMO_gap=eival(nocc+1)-eival(nocc)
@@ -318,9 +353,16 @@
 
      if(unres) then
         ndim=sz/2
-        gap_a=eival(nocca+1)-eival(nocca)
-        gap_b=eival(noccb+1 + ndim)-eival(noccb + ndim)
-        HOMO_energy=MAX(eival(nocca),eival(noccb + ndim))
+        IF (nocca.EQ.0) THEN
+          IF (noccb.EQ.0) THEN
+            CALL LSQUIT('Error in HOMO_energy, both nocca and noccb are zero',-1)
+          ENDIF
+          HOMO_energy = eival(noccb + ndim)
+        ELSE IF (noccb.EQ.0) THEN
+          HOMO_energy = eival(nocca)
+        ELSE
+          HOMO_energy=MAX(eival(nocca),eival(noccb + ndim))
+        ENDIF
      else
         ndim=size(eival)
         HOMO_energy=eival(nocc)

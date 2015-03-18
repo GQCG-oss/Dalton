@@ -15,7 +15,7 @@ module tensor_interface_module
   use matrix_module
   use dec_workarounds_module
   use tensor_algebra_dil
-
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
 !Tensor algebra (`DIL backend):
   public INTD,INTL        !integer sizes for DIL tensor algebra (default, long)
   public MAX_TENSOR_RANK  !max allowed tensor rank for DIL tensor algebra
@@ -40,6 +40,7 @@ module tensor_interface_module
   public dil_tensor_init
   public dil_tensor_norm1
 ! public merge_sort_real8 !`DIL: remove
+#endif
 
   !This defines the public interface to the tensors
   !The tensor type itself
@@ -58,8 +59,8 @@ module tensor_interface_module
   ! User-level subroutines for tensor operations
   public tensor_convert, print_norm, tensor_add, tensor_contract
   public tensor_transform_basis, tensor_ddot
-  public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale
-  public tensor_allocate_dense, tensor_deallocate_dense
+  public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
+  public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, init_persistent_array, free_persistent_array, new_group_reset_persistent_array
@@ -77,7 +78,7 @@ module tensor_interface_module
   public tensor_two_dim_1batch, tensor_two_dim_2batch
 
   ! Special operations with tensors
-  public tensor_extract_eos_indices
+  public tensor_extract_eos_indices, tensor_extract_decnp_indices
   public get_fragment_cc_energy_parallel, get_cc_energy_parallel
   public lspdm_get_combined_SingleDouble_amplitudes, get_info_for_mpi_get_and_reorder_t1 
   public get_rpa_energy_parallel, get_sosex_cont_parallel, get_starting_guess
@@ -91,8 +92,9 @@ module tensor_interface_module
   public get_symm_tensor_segmenting_simple
   public tensor_get_ntpm, get_tile_dim
   public tensor_set_debug_mode_true, tensor_set_dil_backend_true, tensor_set_dil_backend
+  public tensor_set_always_sync_true
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
-  public assoc_ptr_to_buf
+  public assoc_ptr_to_buf, lspdm_init_global_buffer, lspdm_free_global_buffer
 
   private
 
@@ -152,13 +154,48 @@ module tensor_interface_module
 
 contains
 
-  subroutine tensor_set_debug_mode_true()
+  subroutine tensor_set_debug_mode_true(call_slaves)
      implicit none
-     tensor_debug_mode = .true.
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0 .and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,me,infpar%lg_comm)
+     endif
+#endif
+
+     tensor_debug_mode  = .true.
+     tensor_always_sync = .true.
   end subroutine tensor_set_debug_mode_true
 
-  subroutine tensor_set_dil_backend_true()
+  subroutine tensor_set_always_sync_true(call_slaves)
      implicit none
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0 .and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_ALWAYS_SYNC_TRUE,me,infpar%lg_comm)
+     endif
+#endif
+
+     tensor_always_sync = .true.
+  end subroutine tensor_set_always_sync_true
+
+  subroutine tensor_set_dil_backend_true(call_slaves)
+     implicit none
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0.and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,me,infpar%lg_comm)
+     endif
+#endif
      tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
   end subroutine tensor_set_dil_backend_true
 
@@ -166,7 +203,6 @@ contains
    implicit none
    logical, intent(in):: lv
    tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
-   return
   end subroutine tensor_set_dil_backend
 
   subroutine tensor_allocate_dense(T)
@@ -281,7 +317,7 @@ contains
         case(TT_TILED_DIST)
 
            call mem_alloc(buffer,y%tsize)
-           !TODO:IMPLEMENT MULTIPLE BUFFERING
+           !TODO:IMPLEMENT MULTIPLE BUFFERING AND MOVE TO lspdm_tensor_operations!!!!!!
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
 
@@ -469,6 +505,51 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_add_arr2fullfort
 
+  !> \brief Hadamard product Cij = alpha*Aij*Bij+beta*Cij
+  !> \author Thomas Kjaergaard
+  !> \date 2015
+  subroutine tensor_hmul(alpha,A,B,beta,C)
+     implicit none
+     !> array input, this is the result array with overwritten data
+     type(tensor),intent(inout) :: C
+     type(tensor),intent(in) :: A,B
+     !> scaling factor for array C
+     real(realk),intent(in) :: beta
+     !> scaling factor for array A and B
+     real(realk),intent(in) :: alpha
+     call time_start_phase( PHASE_WORK )
+     if(A%mode/=B%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
+     if(A%mode/=C%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
+
+     select case(C%itype)
+        
+     case(TT_TILED_DIST)
+        
+        select case(A%itype)
+
+        case(TT_TILED_DIST)
+           
+           select case(B%itype)
+
+           case(TT_TILED_DIST)
+
+              call tensor_hmul_par(alpha,A,B,beta,C)
+           case default
+              print *,A%itype,B%itype,C%itype
+              call lsquit("ERROR(tensor_hmul_normal):not yet implemented B%itype",DECinfo%output)
+           end select
+        case default
+           print *,A%itype,B%itype,C%itype
+           call lsquit("ERROR(tensor_hmul_normal):not yet implemented A%itype",DECinfo%output)
+        end select
+     case default
+        print *,A%itype,B%itype,C%itype
+        call lsquit("ERROR(tensor_hmul_normal):not yet implemented C%itype",DECinfo%output)
+     end select 
+    
+     call time_start_phase( PHASE_WORK )
+   end subroutine tensor_hmul
+
 
   !> \brief simple general tensor conraction of the type C = pre1 * A * B + pre2 * C
   !> \author Patrick Ettenhuber, Dmitry I. Lyakh (MPI-3 DIL backend)
@@ -488,6 +569,7 @@ contains
      integer:: i,j,k
      logical:: contraction_mode
      integer:: rorder(C%mode)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
      !internal variables (DIL)
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -496,6 +578,7 @@ contains
      integer(INTD):: tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+#endif
      character(26), parameter:: elett='abcdefghijklmnopqrstuvwxyz'
 
      call time_start_phase( PHASE_WORK )
@@ -616,46 +699,50 @@ contains
       end select
 
      else !DIL backend (MPI-3 only)
- !Get the symbolic tensor contraction pattern:
-      tcs(1:2)='D('; tcl=2; i1=C%mode
-      do i0=1,i1; tcs(tcl+1:tcl+2)=elett(i0:i0)//','; tcl=tcl+2; enddo
-      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-      tcs(tcl+1:tcl+4)='+=L('; tcl=tcl+4; i2=0
-      do i0=1,A%mode
-       i2=i2+1; i3=iabs(tcm(i2))
-       if(tcm(i2).gt.0) then !uncontracted index
-        tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
-       elseif(tcm(i2).lt.0) then !contracted index
-        tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
-       else
-        call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
-       endif
-      enddo
-      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-      tcs(tcl+1:tcl+3)='*R('; tcl=tcl+3
-      do i0=1,B%mode
-       i2=i2+1; i3=iabs(tcm(i2))
-       if(tcm(i2).gt.0) then !uncontracted index
-        tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
-       elseif(tcm(i2).lt.0) then !contracted index
-        tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
-       else
-        call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
-       endif
-      enddo
-      if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
-      if(DIL_DEBUG) write(*,*) '#DEBUG(DIL): symbolic: '//tcs(1:tcl)
- !Set tensor arguments:
-      call dil_clean_tens_contr(tch)
-      
- !Set the formal tensor contraction specification:
-      
- !Perform the tensor contraction:
-      
-     endif
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+        !Get the symbolic tensor contraction pattern:
+        tcs(1:2)='D('; tcl=2; i1=C%mode
+        do i0=1,i1; tcs(tcl+1:tcl+2)=elett(i0:i0)//','; tcl=tcl+2; enddo
+           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+           tcs(tcl+1:tcl+4)='+=L('; tcl=tcl+4; i2=0
+           do i0=1,A%mode
+              i2=i2+1; i3=abs(tcm(i2))
+              if(tcm(i2).gt.0) then !uncontracted index
+                 tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
+                 elseif(tcm(i2).lt.0) then !contracted index
+                 tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
+              else
+                 call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
+              endif
+           enddo
+           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+           tcs(tcl+1:tcl+3)='*R('; tcl=tcl+3
+           do i0=1,B%mode
+              i2=i2+1; i3=abs(tcm(i2))
+              if(tcm(i2).gt.0) then !uncontracted index
+                 tcs(tcl+1:tcl+2)=elett(i3:i3)//','; tcl=tcl+2
+                 elseif(tcm(i2).lt.0) then !contracted index
+                 tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
+              else
+                 call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
+              endif
+           enddo
+           if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
+           if(DIL_DEBUG) write(*,*) '#DEBUG(DIL): symbolic: '//tcs(1:tcl)
+           !Set tensor arguments:
+           call dil_clean_tens_contr(tch)
 
-     call time_start_phase( PHASE_WORK )
-  end subroutine tensor_contract
+           !Set the formal tensor contraction specification:
+
+           !Perform the tensor contraction:
+
+#else
+           call lsquit("ERROR(tensor_contract_simple): DIL backend requires Fortran 2003/2008",-1)
+#endif
+        endif
+
+        call time_start_phase( PHASE_WORK )
+     end subroutine tensor_contract
 
   subroutine tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
      implicit none
@@ -1168,6 +1255,117 @@ contains
 
 
   end subroutine tensor_extract_eos_indices_occ
+
+
+  !> Purpose: Extract energy indices for DECNP calculation, based on Patrick routine
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    Feb. 2015
+  subroutine tensor_extract_decnp_indices(tensor_full,myfragment,Arr)
+
+     implicit none
+
+     !> Original array
+     type(tensor),intent(in) :: tensor_full
+     !> Atomic fragment
+     type(decfrag), target, intent(inout) :: MyFragment
+     !> Array where EOS indices where are extracted
+     type(tensor),intent(inout) :: Arr
+
+     !> Number of EOS indices
+     integer :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, pointer :: EOS_idx(:)
+     integer :: nocc,nvirt,i,a,b,j,ix,jx
+     integer, dimension(4) :: new_dims
+
+     nEOS = myfragment%noccEOS
+     EOS_idx => myFragment%idxo(1:nEOS)
+
+     ! Initialize stuff
+     ! ****************
+     nocc     = tensor_full%dims(2)     ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)     ! Total number of virtual orbitals
+     new_dims = [nvirt,nEOS,nvirt,nocc] ! nEOS=Number of occupied EOS orbitals
+
+     ! Sanity checks
+     ! *************
+     if( tensor_full%mode /= 4)then
+        call lsquit("ERROR(tensor_extract_decnp_indices): wrong mode of tensor_full",-1)
+     endif
+
+     ! 1. Positive number of orbitals
+     if( (nocc<1) .or. (nvirt<1) ) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        call lsquit('tensor_extract_decnp_indices: &
+           & Negative or zero number of orbitals!',DECinfo%output)
+     end if
+
+     ! 2. Array structure is (virt,occ,virt,occ)
+     if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
+        write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
+        write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
+        write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
+        write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
+        call lsquit('tensor_extract_decnp_indices: &
+           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+     end if
+
+     ! 3. EOS dimension must be smaller than (or equal to) total number of occ orbitals
+     if(nEOS > nocc) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nEOS = ', nEOS
+        call lsquit('tensor_extract_decnp_indices: &
+           & Number of EOS orbitals must be smaller than (or equal to) total number of &
+           & occupied orbitals!',DECinfo%output)
+     end if
+
+     ! 4. EOS indices must not exceed total number of occupied orbitals
+     do i=1,nEOS
+        if(EOS_idx(i) > nocc) then
+           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
+           write(DECinfo%output,*) 'nocc = ', nocc
+           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+           call lsquit('tensor_extract_decnp_indices: &
+              & EOS index value larger than nocc!',DECinfo%output)
+        end if
+     end do
+
+
+     ! Extract occupied EOS indices and store in Arr
+     ! *********************************************
+
+     ! Initiate Arr with new dimensions (nvirt,nocc,nvirt,nocc_EOS)
+     call tensor_init(Arr,new_dims,4)
+
+     select case( tensor_full%itype )
+     case( TT_DENSE, TT_REPLICATED )
+
+        ! Set Arr equal to the EOS indices of the original Arr array (tensor_full)
+        do j=1,nocc
+           do b=1,nvirt
+              do i=1,nEOS
+                 ix=EOS_idx(i)
+                 do a=1,nvirt
+                    Arr%elm4(a,i,b,j) = tensor_full%elm4(a,ix,b,j)
+                 end do
+              end do
+           end do
+        end do
+
+     case( TT_TILED_DIST )
+
+        call tensor_zero(Arr)
+
+        call lspdm_extract_decnp_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
+
+     case default
+        call lsquit("ERROR(tensor_extract_eos_indices_occ): NO PDM version implemented yet",-1)
+     end select
+
+
+  end subroutine tensor_extract_decnp_indices
 
 
   subroutine get_starting_guess(iajb,t2, oof, vvf, local, spec, prec)
@@ -1923,7 +2121,7 @@ contains
   subroutine tensor_convert_fort2tensor_wrapper1(fortarr,arr,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
-    real(realk), intent(inout) :: fortarr(arr%nelms)
+    real(realk), intent(in) :: fortarr(arr%nelms)
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
@@ -1931,7 +2129,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper1
   subroutine tensor_convert_fort2tensor_wrapper2(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(inout) :: fortarr(:,:)
+    real(realk), intent(in) :: fortarr(:,:)
     type(tensor), intent(inout) :: arr
     real(realk),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
@@ -1940,7 +2138,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper2
   subroutine tensor_convert_fort2tensor_wrapper3(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(inout) :: fortarr(:,:,:)
+    real(realk), intent(in) :: fortarr(:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
@@ -1949,7 +2147,7 @@ contains
   end subroutine tensor_convert_fort2tensor_wrapper3
   subroutine tensor_convert_fort2tensor_wrapper4(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(realk), intent(inout) :: fortarr(:,:,:,:)
+    real(realk), intent(in) :: fortarr(:,:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
     real(realk),intent(inout),target,optional :: wrk(*)
@@ -1964,7 +2162,7 @@ contains
   subroutine tensor_convert_fort2arr(fortarr,arr,nelms,order,wrk,iwrk)
     implicit none
     !> the fortran array with the data
-    real(realk), intent(inout) :: fortarr(*)
+    real(realk), intent(in) :: fortarr(*)
     !> the array which should contain the data after the operation
     type(tensor), intent(inout) :: arr
     !> number of elements to copy from the fortan array to the array
@@ -2261,6 +2459,37 @@ contains
      end select
 
   end subroutine tensor_zero
+
+  subroutine tensor_random(zeroed)
+     implicit none
+     type(tensor) :: zeroed
+     integer :: i
+
+     select case(zeroed%itype)
+     case(TT_DENSE)
+        call random_seed()
+        call random_number(zeroed%elm1)
+     case(TT_REPLICATED)
+        call random_seed()
+        call random_number(zeroed%elm1)
+        call tensor_sync_replicated(zeroed)
+     case(TT_TILED)
+        if (zeroed%atype=='RTAR') then
+           call tensor_rand_tiled_dist(zeroed)
+        else
+           call random_seed()
+           do i=1,zeroed%ntiles
+              call random_number(zeroed%ti(i)%t)
+              
+           enddo
+        end if
+     case(TT_TILED_DIST,TT_TILED_REPL)
+        call tensor_rand_tiled_dist(zeroed)
+     case default
+        call lsquit("ERROR(tensor_rand):not yet implemented",-1)
+     end select
+
+  end subroutine tensor_random
 
   subroutine tensor_print_tile_norm(arr,globtinr,nrm,returnsquared)
     implicit none

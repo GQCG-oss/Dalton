@@ -103,6 +103,8 @@ logical :: all_orb_locality
 character*(10) :: plt_orbital
 ! set to true if orbital plt file should be made
 logical   :: make_orb_plot
+! quit after 10 iterations withoug significant changes in the localization measure
+logical :: quit_after_10it
 ! which orbital indices reference the least/most local occ/virt
 integer :: mostl_occ
 integer :: mostl_virt
@@ -230,6 +232,7 @@ CFG%global_conv_thresh = 0.01_realk
 ! Local convergence threshold for micro
 CFG%local_conv_thresh = 0.005_realk
 CFG%lines_fit =.true.
+CFG%quit_after_10it = .true.
 
 
 

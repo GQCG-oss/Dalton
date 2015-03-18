@@ -3,10 +3,9 @@
 !> \author Patrick Ettenhuber, Marcin Ziolkowski, and Kasper Kristensen
 module ccsd_module
   
-  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr,c_loc
 
   use precision
-  use ptr_assoc_module!,only:ass_D4to1,ass_D2to1,ass_D1to3
   use lstiming!, only: lstimer
   use typedeftype!, only: lsitem,lssetting
   use matrix_module!, only:matrix
@@ -62,8 +61,7 @@ module ccsd_module
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
-         & get_max_batch_sizes, ccsd_energy_full_occ,print_fragment_energies_full, &
-         & mo_work_dist, check_job, get_mo_ccsd_residual, &
+         & get_max_batch_sizes,mo_work_dist, check_job, get_mo_ccsd_residual, &
          & wrapper_get_ccsd_batch_sizes, yet_another_ccsd_residual,&
          & RN_RESIDUAL_INT_DRIVEN, RN_YET_ANOTHER_RES
     private
@@ -73,7 +71,9 @@ module ccsd_module
     end interface Get_AOt1Fock
 
     interface get_fock_matrix_for_dec
-       module procedure get_fock_matrix_for_dec_oa,get_fock_matrix_for_dec_arraywrapper
+       module procedure get_fock_matrix_for_dec_oa,&
+          &get_fock_matrix_for_dec_arraywrapper,&
+          &get_fock_matrix_for_dec_basic
     end interface get_fock_matrix_for_dec
 
     interface precondition_singles
@@ -614,98 +614,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 
-  !subroutine get_ccsd_residual_integral_driven_oldtensor_wrapper(deltafock,omega2,t2,fock,govov,nocc,nvirt,&
-  !     & ppfock,qqfock,pqfock,qpfock,xocc,xvirt,yocc,yvirt,nbas,MyLsItem, omega1,iter)
-  !     implicit none
-  !     type(array2),intent(in) :: deltafock
-  !     type(array4), intent(inout) :: omega2,t2
-  !     type(array2), intent(inout) :: ppfock, qqfock,pqfock,qpfock,omega1,fock
-  !     type(array2), intent(inout) :: xocc,xvirt,yocc,yvirt
-  !     type(lsitem), intent(inout) :: MyLsItem
-  !     integer,intent(in) :: nbas
-  !     integer,intent(in) :: nocc
-  !     integer,intent(in) :: nvirt
-  !     integer,intent(in) :: iter
-  !     real(realk),target,intent(inout) :: govov(nvirt*nocc*nvirt*nocc)
-  !     real(realk),pointer :: t2_p(:),xo_p(:),xv_p(:),yo_p(:),yv_p(:)
-  !     type(tensor) :: t2a,ga,o2
-
-  !    ! get t2 and omega2 into the correct order
-  !    call array4_reorder(t2,[1,3,2,4])
-  !    call ass_D4to1(t2%val,t2_p,t2%dims)
-  !    t2a=tensor_init(t2%dims,4)
-  !    call memory_deallocate_tensor_dense(t2a)
-  !    call ass_D4to1(t2%val,t2a%elm1,t2%dims)
-  !    call assoc_ptr_arr(t2a)
-
-  !    call array4_reorder(omega2,[1,3,2,4])
-  !    o2=tensor_init(omega2%dims,4)
-  !    call memory_deallocate_tensor_dense(o2)
-  !    call ass_D4to1(omega2%val,o2%elm1,omega2%dims)
-  !    call assoc_ptr_arr(o2)
-  !
-  !    ga=tensor_init([nocc,nvirt,nocc,nvirt],4)
-  !    call memory_deallocate_tensor_dense(ga)
-  !    ga%elm1 => govov
-  !    call assoc_ptr_arr(ga)
-
-  !    call ass_D2to1(xocc%val,xo_p,xocc%dims)
-  !    call ass_D2to1(xvirt%val,xv_p,xvirt%dims)
-  !    call ass_D2to1(yocc%val,yo_p,yocc%dims)
-  !    call ass_D2to1(yvirt%val,yv_p,yvirt%dims)
-  !    !call get_ccsd_residual_integral_driven(deltafock%val,omega2%val,t2_p,fock%val,govov,nocc,nvirt,&
-  !    ! & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
-  !    ! & omega1%val,iter)
-  !    call get_ccsd_residual_integral_driven(deltafock%val,o2,t2a,fock%val,ga,nocc,nvirt,&
-  !     & ppfock%val,qqfock%val,pqfock%val,qpfock%val,xo_p,xv_p,yo_p,yv_p,nbas,MyLsItem,&
-  !     & omega1%val,iter,.true.)
-
-  !    nullify(t2a%elm1)
-  !    nullify(t2a%elm4)
-  !    call tensor_free(t2a)
-  !    nullify(o2%elm1)
-  !    nullify(o2%elm4)
-  !    call tensor_free(o2)
-  !    nullify(ga%elm1)
-  !    nullify(ga%elm4)
-  !    call tensor_free(ga)
-
-  !    !reorder ampitudes and residuals for use within the solver
-  !    call array4_reorder(t2,[1,3,2,4])
-  !    call array4_reorder(omega2,[1,3,2,4])
-  !    nullify(xo_p)
-  !    nullify(yo_p)
-  !    nullify(xv_p)
-  !    nullify(yv_p)
-  !end subroutine get_ccsd_residual_integral_driven_oldtensor_wrapper
-  subroutine ccsd_residual_wrapper(ccmodel,delta_fock,omega2,t2,&
-             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
-             & xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
+  subroutine ccsd_residual_wrapper(ccmodel,omega2,t2,&
+             & fock,t1fock,iajb,no,nv,xo,xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
              & MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,rest,frag)
     implicit none
     !> CC model
-    integer,intent(in)    :: ccmodel
-    type(tensor)              :: delta_fock
-    type(tensor)              :: omega2
-    type(tensor)              :: t2
-    type(tensor)              :: fock
-    type(tensor)              :: iajb
+    integer,intent(in)       :: ccmodel
+    type(tensor)             :: omega2
+    type(tensor)             :: t2
+    type(tensor)             :: fock
+    type(tensor)             :: t1fock
+    type(tensor)             :: iajb
     integer,intent(in)       :: no,nv
-    type(tensor)              :: ppfock
-    type(tensor)              :: qqfock
-    type(tensor)              :: pqfock
-    type(tensor)              :: qpfock
-    type(tensor)              :: xo
-    type(tensor)              :: xv
-    type(tensor)              :: yo
-    type(tensor)              :: yv
+    type(tensor)             :: xo
+    type(tensor)             :: xv
+    type(tensor)             :: yo
+    type(tensor)             :: yv
     integer,intent(in)       :: nb
     integer,intent(in)       :: nspaces
     type(lsitem)             :: MyLsItem
-    type(tensor)              :: omega1
-    type(tensor)              :: t1
-    type(tensor)              :: pgmo_diag
-    type(tensor)              :: pgmo_up
+    type(tensor)             :: omega1
+    type(tensor)             :: t1
+    type(tensor)             :: pgmo_diag
+    type(tensor)             :: pgmo_up
     type(MObatchInfo)        :: MOinfo
     logical,intent(in)       :: mo_ccsd
     type(PNOSpaceInfo)       :: pno_cv(:), pno_S(:)
@@ -715,12 +646,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     logical,intent(inout)    :: rest
     type(decfrag),intent(in),optional :: frag
     !internal variables
+    type(tensor)              :: ppfock
+    type(tensor)              :: qqfock
+    type(tensor)              :: pqfock
+    type(tensor)              :: qpfock
     logical :: parent
     integer :: lg_me,lg_nnod
     type(tensor) :: tloc,oloc,gloc
     integer   :: tdi(4), odi(4)
     integer   :: ttd(4), otd(4)
     character(4) :: ats, aos
+
+    !FIXME: MOVE THESE ALLOCATIONS ALL THE WAY DOWN IN THE INDIVIDUAL ROUTINES
+    call tensor_minit(ppfock, [no,no], 2, local=local, atype='LDAR' )
+    call tensor_minit(pqfock, [no,nv], 2, local=local, atype='LDAR' )
+    call tensor_minit(qpfock, [nv,no], 2, local=local, atype='LDAR' )
+    call tensor_minit(qqfock, [nv,nv], 2, local=local, atype='LDAR' )
 
 #ifdef MOD_UNRELEASED
     if(use_pnos)then
@@ -746,13 +687,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        IF(present(frag))THEN
           call get_ccsd_residual_pno_style(t1%elm1,tloc%elm1,omega1%elm1,&
                &oloc%elm1,gloc%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
-               &present(frag),pno_cv,pno_S,nspaces,ppfock%elm1,&
-               &qqfock%elm1,delta_fock%elm1,iter,f=frag)
+               &present(frag),pno_cv,pno_S,nspaces,t1fock%elm1,iter,f=frag)
        ELSE
           call get_ccsd_residual_pno_style(t1%elm1,tloc%elm1,omega1%elm1,&
                &oloc%elm1,gloc%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
-               &present(frag),pno_cv,pno_S,nspaces,ppfock%elm1,&
-               &qqfock%elm1,delta_fock%elm1,iter)
+               &present(frag),pno_cv,pno_S,nspaces,t1fock%elm1,iter)
        ENDIF
        !TODO: remove these sortings
        call tensor_minit( t2, tdi, 4, local = local, atype = ats, tdims=ttd )
@@ -771,21 +710,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
           call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2,&
              & iajb,nb,no,nv,iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,&
-             & delta_fock,fock,ppfock, pqfock,qpfock,qqfock,local)
+             & fock,t1fock,ppfock, pqfock,qpfock,qqfock,local)
 
        else 
 
           if (DECinfo%force_scheme.and. DECinfo%en_mem == 0) then
 
-             call yet_another_ccsd_residual(ccmodel,delta_fock%elm1,omega2,t2,&
-                & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,&
+             call yet_another_ccsd_residual(ccmodel,omega2,t2,&
+                & fock%elm1,t1fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,&
                 & xo%elm1,xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,&
                 & rest=rest)
 
           else
 
-             call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
-                & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,&
+             call get_ccsd_residual_integral_driven(ccmodel,omega2,t2,&
+                & fock%elm1,t1fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,&
                 & xo%elm1,xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,&
                 & rest=rest)
 
@@ -794,10 +733,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        end if
     endif
 #else
-    call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
-       & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
+    call get_ccsd_residual_integral_driven(ccmodel,omega2,t2,&
+       & fock%elm1,t1fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
        & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
 #endif
+
+
+    !PART OF THE FIXME
+    call tensor_free(ppfock)
+    call tensor_free(pqfock)
+    call tensor_free(qpfock)
+    call tensor_free(qqfock)
 
  end subroutine ccsd_residual_wrapper
 
@@ -851,12 +797,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !
   !rest = tells the routine wheter the calculation has been restarted from
   !amplitude files
-  subroutine get_ccsd_residual_integral_driven(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
+  subroutine get_ccsd_residual_integral_driven(ccmodel,omega2,t2,fock,t1fock,govov,no,nv,&
         ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
 !`DIL:
-!#define DIL_DEBUG_ON
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_MPI
+#ifdef VAR_OMP
 !#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
+#endif
+#endif
+#endif
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -868,8 +820,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer,intent(in) :: nv
 
      ! derived types needed for the calculation
-     !> Long-range correction to Fock matrix
-     real(realk),intent(in)    :: deltafock(nb*nb)
      !> the zeroed doubles residual vector on input, on output this contains the
      !full doubles residual
      !real(realk),intent(inout) :: omega2(nv*nv*no*no)
@@ -886,7 +836,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !> on output this contains the virtual-occupied block of the t1-fock matrix
      real(realk),intent(inout) :: qpfock(nv*no)
      !> the ao-fock-matrix
-     real(realk),intent(inout) :: fock(nb*nb)
+     real(realk),intent(inout) :: fock(nb*nb),t1fock(nb*nb)
      !> zeroed on input, on output this contains the singles residual
      real(realk),intent(inout) :: omega1(no*nv)
      !> on input this contains the transformation matrices for t1-transformed
@@ -1014,6 +964,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
+#ifdef DIL_ACTIVE
 !{`DIL:
      logical:: DIL_LOCK_OUTSIDE !controls Patrick's outside locks in Scheme 1
      character(256):: tcs
@@ -1024,6 +975,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
 !}
+#endif
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
      call DetectHeapMemoryInit()
@@ -1088,7 +1040,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ***********
      call get_currently_available_memory(MemFree)
 
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
       call dil_debug_to_file_start()
@@ -1220,12 +1172,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifndef VAR_MPI
         if(scheme==3.or.scheme==2.or.scheme==1) call lsquit("ERROR(ccsd_residual_integral_driven): wrong choice of scheme",-1)
 #endif
+#ifdef DIL_ACTIVE
         if(scheme==1) then
          if(.not.alloc_in_dummy) call lsquit("ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3",-1)
          DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
         else
          DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
         endif
+#endif
      endif
 
 #ifdef VAR_MPI
@@ -1260,7 +1214,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      hstatus = 80
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
       write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",'//&
@@ -1271,8 +1225,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      govov%access_type  = AT_ALL_ACCESS
      omega2%access_type = AT_ALL_ACCESS
-
+#ifdef DIL_ACTIVE
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
+#else
+     if(alloc_in_dummy.and.(scheme==2.or.scheme==1)) then
+#endif
       call tensor_lock_wins(omega2,'s',all_nodes = .true.)
      endif
 #endif
@@ -1447,7 +1404,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
+#ifdef DIL_ACTIVE
         if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then
+#else
+        if(alloc_in_dummy.and.scheme/=1) then
+#endif
          call tensor_lock_wins(u2,'s',all_nodes = .true.)
         endif
 
@@ -1503,11 +1464,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_MPI
         if(alloc_in_dummy)then
+#ifdef DIL_ACTIVE
            if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
+#else
+           if(scheme==3.or.scheme==2.or.scheme==1) then
+#endif
               call tensor_lock_wins(gvvooa,'s',all_nodes = .true.)
               call tensor_lock_wins(gvoova,'s',all_nodes = .true.)
            endif
+#ifdef DIL_ACTIVE
            if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
+#else
+           if(scheme==2.or.scheme==1) then
+#endif
               call tensor_lock_wins(sio4,  's',all_nodes = .true.)
            endif
         endif
@@ -1724,7 +1693,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         scheme=1 !``DIL: remove
 #endif
         if(scheme==1) then !`DIL: Tensor contraction 1
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
          call time_start_phase(PHASE_COMM, at = time_intloop_work )
          if(gammaB/=1)then
           if(alloc_in_dummy) then
@@ -1879,7 +1848,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
            !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
            if( alloc_in_dummy )then
+#ifdef DIL_ACTIVE
               if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) call lsmpi_win_flush(omega2%wi(1),local=.true.)
+#else
+              if(scheme==2.or.scheme==1) call lsmpi_win_flush(omega2%wi(1),local=.true.)
+#endif
            else
               if(lock_outside.and.scheme==2) call tensor_unlock_wins(omega2,.true.)
            endif
@@ -1926,7 +1899,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
               elseif(scheme==1) then !`DIL: Tensor contraction 2
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
                if(DIL_DEBUG) then
                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 2:")')&
                 &infpar%lg_mynum,infpar%mynum
@@ -1997,7 +1970,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
               else if(scheme==1)then !`DIL: Tensor contraction 3
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
                if(DIL_DEBUG) then
                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 3:")')&
                 &infpar%lg_mynum,infpar%mynum
@@ -2055,7 +2028,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
            if( Ccmodel>MODEL_CC2 )then
               if( alloc_in_dummy )then
+#ifdef DIL_ACTIVE
                  if(scheme==2.or.scheme==3.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
+#else
+                 if(scheme==2.or.scheme==3.or.scheme==1)then
+#endif
                     call lsmpi_win_flush(gvvooa%wi(1),local=.true.)
                     call lsmpi_win_flush(gvoova%wi(1),local=.true.)
                  endif
@@ -2122,7 +2099,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  endif
 #endif
               case(1) !`DIL: Tensor contraction 4
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
                ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
                call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d) !`DIL: w0,w3 in use
                ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
@@ -2187,7 +2164,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call time_start_phase(PHASE_WORK, at = time_intloop_comm )
 #endif
            elseif(scheme==1)then !`DIL: Tensor contraction 5
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
             if(DIL_DEBUG) then
              write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 5:")')&
              &infpar%lg_mynum,infpar%mynum
@@ -2268,17 +2245,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! free arrays only needed in the batched loops
 #ifdef VAR_MPI
      call time_start_phase(PHASE_COMM, at = time_intloop_work )
+#ifdef DIL_ACTIVE
      if(lock_outside.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
+#else
+     if(lock_outside.and.(scheme==2.or.scheme==1))then
+#endif
         call tensor_unlock_wins(omega2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
      endif
 
      if(alloc_in_dummy)then
+#ifdef DIL_ACTIVE
         if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
+#else
+        if(scheme==3.or.scheme==2.or.scheme==1)then
+#endif
            !SWITCH ONE SIDED EPOCH FROM ACCUMULATES TO GETS
            call tensor_unlock_wins(gvvooa, all_nodes = .true.)
            call tensor_unlock_wins(gvoova, all_nodes = .true.)
         endif
+#ifdef DIL_ACTIVE
         if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
+#else
+        if(scheme==2.or.scheme==1)then
+#endif
            call tensor_unlock_wins(sio4, all_nodes = .true.)
         endif
      endif
@@ -2345,7 +2334,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
 
+#ifdef DIL_ACTIVE
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
+#else
+     if(alloc_in_dummy.and.(scheme==2.or.scheme==1))then
+#endif
         call tensor_lock_wins(omega2,'s',all_nodes=.true.)
      endif
 
@@ -2563,10 +2556,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         else if(scheme==1)then
            call tensor_free(gvoova)
            call tensor_free(gvvooa)
+#ifdef DIL_ACTIVE
            if(DIL_LOCK_OUTSIDE)then
+#endif
               call tensor_unlock_wins(omega2,all_nodes=.true.)
               call tensor_unlock_wins(u2,all_nodes=.true.)
+#ifdef DIL_ACTIVE
            endif
+#endif
 #endif
         endif
 
@@ -2651,44 +2648,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_WORK, twall = time_get_ao_fock)
 
-     call mem_alloc(w0,i8*nb*nb, simple=.true.)
-     call mem_alloc(w2,i8*nb*nb, simple=.true.)
-
-     !calculate inactive fock matrix in ao basis
-     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,w0%d,nb)
-
-     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,w2%d)
-
-     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-        & w0%d,nb,nb,AORdefault,AORdefault)
-
-     ! Add one- and two-electron contributions to Fock matrix
-     call daxpy(nb2,1.0E0_realk,w0%d,1,w2%d,1)
-     !Free the density matrix
-
-     call mem_dealloc(w0)
-
-     ! KK: Add long-range Fock correction
-     call daxpy(nb2,1.0E0_realk,deltafock,1,w2%d,1)
 
      call time_start_phase(PHASE_WORK, ttot = time_get_ao_fock, twall = time_get_mo_fock)
-
-     if(print_debug)then
-        call print_norm(deltafock,int((i8*nb)*nb,kind=8), " NORM(deltafock):")
-        call print_norm(w2%d,int((i8*nb)*nb,kind=8)," NORM(iFock)    :")
-     endif
 
 
 
      !Transform inactive Fock matrix into the different mo subspaces
      if (Ccmodel>MODEL_CC2) then
         ! -> Foo
-        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,w2%d,nb,0.0E0_realk,w1%d,no)
+        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,t1fock,nb,0.0E0_realk,w1%d,no)
         call dgemm('n','n',no,no,nb,1.0E0_realk,w1%d,no,yo,nb,0.0E0_realk,ppfock,no)
         ! -> Fov
         call dgemm('n','n',no,nv,nb,1.0E0_realk,w1%d,no,yv,nb,0.0E0_realk,pqfock,no)
         ! -> Fvo
-        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,w2%d,nb,0.0E0_realk,w1%d,nv)
+        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,t1fock,nb,0.0E0_realk,w1%d,nv)
         call dgemm('n','n',nv,no,nb,1.0E0_realk,w1%d,nv,yo,nb,0.0E0_realk,qpfock,nv)
         ! -> Fvv
         call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1%d,nv,yv,nb,0.0E0_realk,qqfock,nv)
@@ -2697,10 +2670,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,fock,nb,0.0E0_realk,w1%d,no)
         call dgemm('n','n',no,no,nb,1.0E0_realk,w1%d,no,yo,nb,0.0E0_realk,ppfock,no)
         ! -> Fov
-        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,w2%d,nb,0.0E0_realk,w1%d,no)
+        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,t1fock,nb,0.0E0_realk,w1%d,no)
         call dgemm('n','n',no,nv,nb,1.0E0_realk,w1%d,no,yv,nb,0.0E0_realk,pqfock,no)
         ! -> Fvo
-        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,w2%d,nb,0.0E0_realk,w1%d,nv)
+        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,t1fock,nb,0.0E0_realk,w1%d,nv)
         call dgemm('n','n',nv,no,nb,1.0E0_realk,w1%d,nv,yo,nb,0.0E0_realk,qpfock,nv)
         ! -> Fvv
         call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fock,nb,0.0E0_realk,w1%d,nv)
@@ -2716,8 +2689,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(qqfock,int((i8*nv)*nv,kind=8)," NORM(qqfock)   :")
      endif
 
-     !Free the AO fock matrix
-     call mem_dealloc(w2)
 
      call time_start_phase(PHASE_WORK, ttot = time_get_mo_fock, twall = time_Esing)
 
@@ -2819,8 +2790,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
 
+#ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) call dil_debug_to_file_finish() !`DIL
+#endif
 #endif
 
      if(print_debug)then
@@ -2834,7 +2807,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
   end subroutine get_ccsd_residual_integral_driven
 
-  subroutine yet_another_ccsd_residual(ccmodel,deltafock,omega2,t2,fock,govov,no,nv,&
+  subroutine yet_another_ccsd_residual(ccmodel,omega2,t2,fock,t1fock,govov,no,nv,&
         ppfock,qqfock,pqfock,qpfock,xo_f,xv_f,yo_f,yv_f,nb,MyLsItem, omega1,iter,local,rest)
      implicit none
 
@@ -2848,8 +2821,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer,intent(in) :: nv
 
      ! derived types needed for the calculation
-     !> Long-range correction to Fock matrix
-     real(realk),intent(in)    :: deltafock(nb*nb)
      !> the zeroed doubles residual vector on input, on output this contains the
      !full doubles residual
      !real(realk),intent(inout) :: omega2(nv*nv*no*no)
@@ -2866,7 +2837,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !> on output this contains the virtual-occupied block of the t1-fock matrix
      real(realk),intent(inout) :: qpfock(nv*no)
      !> the ao-fock-matrix
-     real(realk),intent(inout) :: fock(nb*nb)
+     real(realk),intent(inout) :: fock(nb*nb),t1fock(nb*nb)
      !> zeroed on input, on output this contains the singles residual
      real(realk),intent(inout) :: omega1(no*nv)
      !> on input this contains the transformation matrices for t1-transformed
@@ -3617,7 +3588,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_convGBI )
            if( me == 0 )then
               call tensor_convert(int3,w0%d,wrk=w1%d,iwrk=w1%n)
-              call ass_D1to2(w0%d,p2,[la,no])
+#ifdef VAR_PTR_RESHAPE
+              p2(1:la,1:no) => w0%d
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+              call c_f_pointer(c_loc(w0%d(1)),p2,[la,no])
+#else
+              call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
               !$OMP WORKSHARE
               Gbi_local%elm2(fa:fa+la-1,:) = Gbi_local%elm2(fa:fa+la-1,:) + p2(:,:)
               !$OMP END WORKSHARE
@@ -4396,47 +4373,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
-     call tensor_minit(iFock,[nb,nb],2,atype="REAR",local=local)
-     call tensor_zero(iFock)
 
-     call mem_alloc(w0, max(max(i8*nb*nb,i8*nb*no),i8*nb*nv), simple=.true.)
-
-     !calculate inactive fock matrix in ao basis
-     call dgemm('n','t',nb,nb,no,1.0E0_realk,yo_f,nb,xo_f,nb,0.0E0_realk,w0%d,nb)
-
-     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w0%d,.false.,iFock%elm1)
-     if(DECinfo%DFTreference)then
-        call lsquit("ERROR(yet_another_ccsd_residual): DFT ref not implemented",-1)
-        !call II_get_xc_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,Dens%elms,.false.,iFock%elms)
-     endif
-
-     !use dens as temporay array 
-     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,w0%d,nb,nb,AORdefault,AORdefault)
-     ! Add one- and two-electron contributions to Fock matrix
-     call daxpy(nb2,1.0E0_realk,w0%d,1,iFock%elm1,1)
-     !Free the density matrix
-
-     ! KK: Add long-range Fock correction
-     call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elm1,1)
-
-     call tensor_sync_replicated(iFock)
-
-     if(print_debug)then
-        call print_norm(deltafock,int((i8*nb)*nb,kind=8), " NORM(deltafock):")
-        call print_norm(iFock, " NORM(iFock) :",print_on_rank=0)
-     endif
-
-
+     call mem_alloc(w0, max(max(i8*no*nv,i8*nb*no),i8*nb*nv), simple=.true.)
 
      !Transform inactive Fock matrix into the different mo subspaces
      if (Ccmodel>MODEL_CC2) then
         ! -> Foo
-        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo_f,nb,iFock%elm1,nb,0.0E0_realk,w0%d,no)
+        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo_f,nb,t1fock,nb,0.0E0_realk,w0%d,no)
         call dgemm('n','n',no,no,nb,1.0E0_realk,w0%d,no,yo_f,nb,0.0E0_realk,ppfock,no)
         ! -> Fov
         call dgemm('n','n',no,nv,nb,1.0E0_realk,w0%d,no,yv_f,nb,0.0E0_realk,pqfock,no)
         ! -> Fvo
-        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv_f,nb,iFock%elm1,nb,0.0E0_realk,w0%d,nv)
+        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv_f,nb,t1fock,nb,0.0E0_realk,w0%d,nv)
         call dgemm('n','n',nv,no,nb,1.0E0_realk,w0%d,nv,yo_f,nb,0.0E0_realk,qpfock,nv)
         ! -> Fvv
         call dgemm('n','n',nv,nv,nb,1.0E0_realk,w0%d,nv,yv_f,nb,0.0E0_realk,qqfock,nv)
@@ -4445,13 +4393,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call dgemm('t','n',no,nb,nb,1.0E0_realk,xo_f,nb,fock,nb,0.0E0_realk,w0%d,no)
         call dgemm('n','n',no,no,nb,1.0E0_realk,w0%d,no,yo_f,nb,0.0E0_realk,ppfock,no)
         ! -> Fov
-        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo_f,nb,iFock%elm1,nb,0.0E0_realk,w0%d,no)
+        call dgemm('t','n',no,nb,nb,1.0E0_realk,xo_f,nb,t1fock,nb,0.0E0_realk,w0%d,no)
         call dgemm('n','n',no,nv,nb,1.0E0_realk,w0%d,no,yv_f,nb,0.0E0_realk,pqfock,no)
         ! -> Fvo
-        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv_f,nb,iFock%elm1,nb,0.0E0_realk,w0%d,nv)
+        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv_f,nb,fock,nb,0.0E0_realk,w0%d,nv)
         call dgemm('n','n',nv,no,nb,1.0E0_realk,w0%d,nv,yo_f,nb,0.0E0_realk,qpfock,nv)
         ! -> Fvv
-        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv_f,nb,fock,nb,0.0E0_realk,w0%d,nv)
+        call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv_f,nb,t1fock,nb,0.0E0_realk,w0%d,nv)
         call dgemm('n','n',nv,nv,nb,1.0E0_realk,w0%d,nv,yv_f,nb,0.0E0_realk,qqfock,nv)
      endif
 
@@ -4463,10 +4411,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(qpfock,int((i8*no)*nv,kind=8)," NORM(qpfock)   :")
         call print_norm(qqfock,int((i8*nv)*nv,kind=8)," NORM(qqfock)   :")
      endif
-
-     !Free the AO fock matrix
-     call tensor_free(iFock)
-
 
 
      !CCD can be achieved by not using singles residual updates here
@@ -6107,11 +6051,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     Cv_a2%dims     = Cv%dims
     t1_a2%dims     = t1%dims
 
-    call ass_D1to2( fockt1%elm1,fockt1_a2%val,fockt1%dims )
-    call ass_D1to2( Co%elm1,    Co_a2%val,    Co%dims     )
-    call ass_D1to2( Co2%elm1,   Co2_a2%val,   Co2%dims    )
-    call ass_D1to2( Cv%elm1,    Cv_a2%val,    Cv%dims     )
-    call ass_D1to2( t1%elm1,    t1_a2%val,    t1%dims     )
+    fockt1_a2%val => fockt1%elm2
+    Co_a2%val     => Co%elm2
+    Co2_a2%val    => Co2%elm2
+    Cv_a2%val     => Cv%elm2
+    t1_a2%val     => t1%elm2
 
     call Get_AOt1Fock(mylsitem,t1_a2,fockt1_a2,nocc,nvirt,nbasis,Co_a2,Co2_a2,Cv_a2)
 
@@ -6200,6 +6144,32 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !call print_norm(fockt1)
   end subroutine Get_AOt1Fock_oa
 
+
+  subroutine get_fock_matrix_for_dec_basic(nbasis,dens,mylsitem,fock,add_one_electron)
+    implicit none
+    !> Number of basis functions
+    integer,intent(in) :: nbasis
+    !> Density matrix for fragment (or full molecule), in any case it equals Cocc Cocc^T
+    real(realk),intent(in) :: dens(nbasis,nbasis)
+    !> Ls item information for fragment (or full molecule)
+    type(lsitem), intent(inout) :: mylsitem
+    !> Fock matrix in array2 form
+    real(realk), intent(inout) :: fock(nbasis,nbasis)
+    !> Add one electron matrix to Fock matrix
+    logical,intent(in) :: add_one_electron
+    integer :: nocc,i,idx1,idx2
+    real(realk) :: buffer(nbasis,nbasis)
+
+    call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+       &nbasis,dens,.false.,fock)
+    if(add_one_electron) then
+       ! Get one-electron contribution to Fock matrix
+       call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+          & buffer,nbasis,nbasis,AORdefault,AORdefault)
+       call daxpy(nbasis*nbasis,1.0E0_realk,buffer,1,fock,1)
+    end if
+
+  end subroutine get_fock_matrix_for_dec_basic
 
   subroutine get_fock_matrix_for_dec_arraywrapper(nbasis,dens,mylsitem,fock_array,add_one_electron)
     implicit none
@@ -6300,123 +6270,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine get_fock_matrix_for_dec_oa
 
 
-  !> \brief: calculate atomic and pair fragment contributions to CCSD
-  !> correlation energy for full molecule calculation.
-  !> Currently, only for occupied partitioning scheme.
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine ccsd_energy_full_occ(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
-                           & eccsdpt_matrix_cou,eccsdpt_matrix_exc)
-
-    implicit none
-
-    !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
-    type(tensor), intent(inout) :: ccsd_doubles, integral
-    !> ccsd singles amplitudes
-    type(tensor), intent(inout) :: ccsd_singles
-    !> dimensions
-    integer, intent(in) :: nocc, nvirt, nfrags, offset
-    !> occupied orbital information
-    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
-    !> etot
-    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
-    !> integers
-    integer :: i,j,a,b,atomI,atomJ
-    !> energy reals
-    real(realk) :: energy_tmp_1, energy_tmp_2
-
-    ! *************************************************************
-    ! ************** do energy for full molecule ******************
-    ! *************************************************************
-
-    ! ***********************
-    !   do CCSD energy part
-    ! ***********************
-
-    ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
-    ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:eccsdpt_matrix_cou),&
-    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
-
-          do b=1,nvirt
-             do a=1,nvirt
-
-                energy_tmp_1 = ccsd_doubles%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
-                if(DECinfo%use_singles)then
-                   energy_tmp_2 = ccsd_singles%elm2(a,i) * ccsd_singles%elm2(b,j) * integral%elm4(a,b,i,j)
-                else
-                   energy_tmp_2 = 0.0E0_realk
-                endif
-                eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
-                                        & + energy_tmp_1 + energy_tmp_2
-
-             end do
-          end do
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! reorder from (a,b,i,j) to (a,b,j,i)
-    call tensor_reorder(integral,[1,2,4,3])
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:eccsdpt_matrix_exc),&
-    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
-
-          do b=1,nvirt
-             do a=1,nvirt
-
-                energy_tmp_1 = ccsd_doubles%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
-                if(DECinfo%use_singles)then
-                   energy_tmp_2 = ccsd_singles%elm2(a,i) * ccsd_singles%elm2(b,j) * integral%elm4(a,b,i,j)
-                else
-                   energy_tmp_2 = 0.0E0_realk
-                endif
-                eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) &
-                                        & + energy_tmp_1 + energy_tmp_2
-
-             end do
-          end do
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! get total fourth--order energy contribution
-    eccsdpt_matrix_cou = 2.0E0_realk * eccsdpt_matrix_cou - eccsdpt_matrix_exc
-
-    ! for the pair fragment energy matrix,
-    ! we only consider pairs IJ where J>I; thus, move contributions and set J<I contribs to zero.
-    ! (must be consistent with printout in print_pair_fragment_energies)
-
-    do AtomI=1,nfrags
-       do AtomJ=AtomI+1,nfrags
-
-          eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
-                                              & + eccsdpt_matrix_cou(AtomJ,AtomI)
-          eccsdpt_matrix_cou(AtomJ,AtomI) = 0.0_realk
-       end do
-    end do
-
-
-    ! ******************************************************************
-    ! ************** done w/ energy for full molecule ******************
-    ! ******************************************************************
-
-  end subroutine ccsd_energy_full_occ
-
-
 #ifdef MOD_UNRELEASED
   !============================================================================!
   !                   MO-based CCSD residual subroutines                       !
@@ -6432,7 +6285,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Date:    November 2013
   subroutine get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-             & lamho,lamhv,deltafock,fock,ppfock,pqfock,qpfock,qqfock,local)
+             & lamho,lamhv,fock,t1fock,ppfock,pqfock,qpfock,qqfock,local)
 
     implicit none
 
@@ -6447,10 +6300,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     type(tensor), intent(inout) :: t2
     type(tensor), intent(inout) :: omega2
 
-    !> Long-range correction to Fock matrix
-    type(tensor), intent(in) :: deltafock
     !> AO Fock matrix:
-    type(tensor), intent(inout) :: fock
+    type(tensor), intent(inout) :: fock,t1fock
     !> occupied-occupied block of the t1-fock matrix
     type(tensor), intent(inout) :: ppfock
     !> virtual-virtual block of the t1-fock matrix
@@ -6803,7 +6654,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !                          GET MO-FOCK MATRICES
     call get_MO_fock_matrices(ccmodel,nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
                   & goooo,govoo,gvooo,gvoov,gvvoo,ppfock%elm1,pqfock%elm1, & 
-                  & qpfock%elm1,qqfock%elm1,fock%elm1,deltafock%elm1,MyLsItem)
+                  & qpfock%elm1,qqfock%elm1,fock%elm1,t1fock%elm1,MyLsItem)
 
     if (print_debug) then
       call print_norm(ppfock,"MO-CCSD (ppfock):                ")
@@ -7608,29 +7459,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !
   !> Author:  Pablo Baudin
   !> Date:    Movember 2013
-  subroutine get_MO_fock_matrices(ccmodel,nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
-             & goooo,govoo,gvooo,gvoov,gvvoo,Foo,Fov,Fvo,Fvv,fock,deltafock,MyLsItem)
+  subroutine get_MO_fock_matrices(ccmodel,nb,no,nv,lampo,lampv,lamho,lamhv,tmp0, &
+             & goooo,govoo,gvooo,gvoov,gvvoo,Foo,Fov,Fvo,Fvv,fock,t1fock,MyLsItem)
  
     implicit none
 
     !> CC model:
     integer, intent(in) :: ccmodel
-    integer, intent(in) :: nbas, nocc, nvir
+    integer, intent(in) :: nb, no, nv
     !> Transformation matrices:
-    real(realk), intent(in) :: lampo(nbas,nocc), lampv(nbas,nvir)
-    real(realk), intent(in) :: lamho(nbas,nocc), lamhv(nbas,nvir)
+    real(realk), intent(in) :: lampo(nb,no), lampv(nb,nv)
+    real(realk), intent(in) :: lamho(nb,no), lamhv(nb,nv)
     !> Working array:
     real(realk) :: tmp0(:)
     !> T1-transformed MO integrals:
     real(realk), intent(in) :: goooo(:), govoo(:), gvooo(:)
     real(realk), intent(in) :: gvoov(:), gvvoo(:)
     !> AO fock matrix:
-    real(realk), intent(in) :: fock(nbas*nbas)
+    real(realk), intent(in) :: fock(nb*nb),t1fock(nb*nb)
     !> T1-transformed MO inactive Fock matrices:
-    real(realk), intent(inout) :: Foo(nocc*nocc), Fov(nocc*nvir)
-    real(realk), intent(inout) :: Fvo(nvir*nocc), Fvv(nvir*nvir)
-    !> Long-range correction to Fock matrix
-    real(realk), intent(in) :: deltafock(nbas,nbas)
+    real(realk), intent(inout) :: Foo(no*no), Fov(no*nv)
+    real(realk), intent(inout) :: Fvo(nv*no), Fvv(nv*nv)
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
   
@@ -7639,103 +7488,128 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: pos1, i
     real(realk), external :: ddot
 
-    ! allocate and get 1-electron AO fock matrix:
-    call mat_init(iFock,nbas,nbas)
-    call mat_zero(iFock)
-    call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
-         & iFock%elms,nbas,nbas,AORdefault,AORdefault)
+    !! allocate and get 1-electron AO fock matrix:
+    !call mat_init(iFock,nb,nb)
+    !call mat_zero(iFock)
+    !call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+    !     & iFock%elms,nb,nb,AORdefault,AORdefault)
+    !    ! KK: Add long-range Fock correction
+    !    call daxpy(nb*nb,1.0E0_realk,deltafock,1,iFock%elms,1)
 
-    ! KK: Add long-range Fock correction
-    call daxpy(nbas*nbas,1.0E0_realk,deltafock,1,iFock%elms,1)
 
 
-    !Transform 1-electron inactive Fock matrix into the different MO subspaces
-    ! -> Fop
-    call dgemm('t','n',nocc,nbas,nbas,1.0E0_realk,lampo,nbas,iFock%elms,nbas, &
-              & 0.0E0_realk,tmp0,nocc)
+    !!Transform 1-electron inactive Fock matrix into the different MO subspaces
+    !! -> Fop
+    !call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,iFock%elms,nb, &
+    !          & 0.0E0_realk,tmp0,no)
 
-    if (ccmodel>MODEL_CC2) then
-      ! -> Foo
-      call dgemm('n','n',nocc,nocc,nbas,1.0E0_realk,tmp0,nocc,lamho,nbas, &
-                & 0.0E0_realk,Foo,nocc)
-    end if
+    !if (ccmodel>MODEL_CC2) then
+    !  ! -> Foo
+    !  call dgemm('n','n',no,no,nb,1.0E0_realk,tmp0,no,lamho,nb, &
+    !            & 0.0E0_realk,Foo,no)
+    !end if
 
-    ! -> Fov
-    call dgemm('n','n',nocc,nvir,nbas,1.0E0_realk,tmp0,nocc,lamhv,nbas, &
-              & 0.0E0_realk,Fov,nocc)
-    ! -> Fvp
-    call dgemm('t','n',nvir,nbas,nbas,1.0E0_realk,lampv,nbas,iFock%elms,nbas, &
-              & 0.0E0_realk,tmp0,nvir)
-    ! -> Fvo
-    call dgemm('n','n',nvir,nocc,nbas,1.0E0_realk,tmp0,nvir,lamho,nbas, &
-              & 0.0E0_realk,Fvo,nvir)
+    !! -> Fov
+    !call dgemm('n','n',no,nv,nb,1.0E0_realk,tmp0,no,lamhv,nb, &
+    !          & 0.0E0_realk,Fov,no)
+    !! -> Fvp
+    !call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,iFock%elms,nb, &
+    !          & 0.0E0_realk,tmp0,nv)
+    !! -> Fvo
+    !call dgemm('n','n',nv,no,nb,1.0E0_realk,tmp0,nv,lamho,nb, &
+    !          & 0.0E0_realk,Fvo,nv)
 
-    if (ccmodel>MODEL_CC2) then
-      ! -> Fvv
-      call dgemm('n','n',nvir,nvir,nbas,1.0E0_realk,tmp0,nvir,lamhv,nbas, &
-                & 0.0E0_realk,Fvv,nvir)
-    end if
+    !if (ccmodel>MODEL_CC2) then
+    !  ! -> Fvv
+    !  call dgemm('n','n',nv,nv,nb,1.0E0_realk,tmp0,nv,lamhv,nb, &
+    !            & 0.0E0_realk,Fvv,nv)
+    !end if
 
-    ! Free the 1-electron AO fock matrix
-    call mat_free(iFock)
+    !! Free the 1-electron AO fock matrix
+    !call mat_free(iFock)
 
-    !===================================================================
-    ! Get two-electron contribution to MO Fock matrix:
+    !!===================================================================
+    !! Get two-electron contribution to MO Fock matrix:
 
-    if (ccmodel>MODEL_CC2) then
-      ! Foo:
-      call array_reorder_3d(1.0E0_realk,goooo,nocc,nocc*nocc,nocc,[1,3,2], &
-                & 0.0E0_realk,tmp0)
-      do i=1, nocc
-        pos1 = 1 + (i-1)*nocc*nocc*(nocc+1)
-        call daxpy(nocc*nocc,2.0E0_realk,goooo(pos1),1,Foo,1)
-        call daxpy(nocc*nocc,-1.0E0_realk,tmp0(pos1),1,Foo,1)
-      end do
-    end if
+    !if (ccmodel>MODEL_CC2) then
+    !  ! Foo:
+    !  call array_reorder_3d(1.0E0_realk,goooo,no,no*no,no,[1,3,2], &
+    !            & 0.0E0_realk,tmp0)
+    !  do i=1, no
+    !    pos1 = 1 + (i-1)*no*no*(no+1)
+    !    call daxpy(no*no,2.0E0_realk,goooo(pos1),1,Foo,1)
+    !    call daxpy(no*no,-1.0E0_realk,tmp0(pos1),1,Foo,1)
+    !  end do
+    !end if
 
-    ! Fov:
-    call array_reorder_4d(1.0E0_realk,govoo,nocc,nvir,nocc,nocc,[3,2,4,1], &
-              & 0.0E0_realk,tmp0)
-    do i=1, nocc
-      pos1 = 1 + (i-1)*nocc*nvir*(nocc+1)
-      call daxpy(nocc*nvir,2.0E0_realk,govoo(pos1),1,Fov,1)
-      call daxpy(nocc*nvir,-1.0E0_realk,tmp0(pos1),1,Fov,1)
-    end do
+    !! Fov:
+    !call array_reorder_4d(1.0E0_realk,govoo,no,nv,no,no,[3,2,4,1], &
+    !          & 0.0E0_realk,tmp0)
+    !do i=1, no
+    !  pos1 = 1 + (i-1)*no*nv*(no+1)
+    !  call daxpy(no*nv,2.0E0_realk,govoo(pos1),1,Fov,1)
+    !  call daxpy(no*nv,-1.0E0_realk,tmp0(pos1),1,Fov,1)
+    !end do
 
-    ! Fvo:
-    call array_reorder_3d(1.0E0_realk,gvooo,nvir,nocc*nocc,nocc,[1,3,2], &
-              & 0.0E0_realk,tmp0)
-    do i=1, nocc
-      pos1 = 1 + (i-1)*nvir*nocc*(nocc+1)
-      call daxpy(nvir*nocc,2.0E0_realk,gvooo(pos1),1,Fvo,1)
-      call daxpy(nvir*nocc,-1.0E0_realk,tmp0(pos1),1,Fvo,1)
-    end do
+    !! Fvo:
+    !call array_reorder_3d(1.0E0_realk,gvooo,nv,no*no,no,[1,3,2], &
+    !          & 0.0E0_realk,tmp0)
+    !do i=1, no
+    !  pos1 = 1 + (i-1)*nv*no*(no+1)
+    !  call daxpy(nv*no,2.0E0_realk,gvooo(pos1),1,Fvo,1)
+    !  call daxpy(nv*no,-1.0E0_realk,tmp0(pos1),1,Fvo,1)
+    !end do
 
-    if (ccmodel>MODEL_CC2) then
-      ! Get Fvv:
-      call array_reorder_3d(1.0E0_realk,gvoov,nvir,nocc*nocc,nvir,[1,3,2], &
-                & 0.0E0_realk,tmp0)
-      do i=1, nocc
-        pos1 = 1 + (i-1)*nvir*nvir*(nocc+1)
-        call daxpy(nvir*nvir,2.0E0_realk,gvvoo(pos1),1,Fvv,1)
-        call daxpy(nvir*nvir,-1.0E0_realk,tmp0(pos1),1,Fvv,1)
-      end do
-    else if (ccmodel==MODEL_CC2) then
-      ! get Block diag. MO-Fock matrices for CC2 model:
-      ! -> Foo
-      call dgemm('t','n',nocc,nbas,nbas,1.0E0_realk,lampo,nbas,fock,nbas, &
-                & 0.0E0_realk,tmp0,nocc)
-      call dgemm('n','n',nocc,nocc,nbas,1.0E0_realk,tmp0,nocc,lamho,nbas, &
-                & 0.0E0_realk,Foo,nocc)
-      ! -> Fvv
-      call dgemm('t','n',nvir,nbas,nbas,1.0E0_realk,lampv,nbas,fock,nbas, &
-                & 0.0E0_realk,tmp0,nvir)
-      call dgemm('n','n',nvir,nvir,nbas,1.0E0_realk,tmp0,nvir,lamhv,nbas, &
-                & 0.0E0_realk,Fvv,nvir)
-    end if
+    !if (ccmodel>MODEL_CC2) then
+    !  ! Get Fvv:
+    !  call array_reorder_3d(1.0E0_realk,gvoov,nv,no*no,nv,[1,3,2], &
+    !            & 0.0E0_realk,tmp0)
+    !  do i=1, no
+    !    pos1 = 1 + (i-1)*nv*nv*(no+1)
+    !    call daxpy(nv*nv,2.0E0_realk,gvvoo(pos1),1,Fvv,1)
+    !    call daxpy(nv*nv,-1.0E0_realk,tmp0(pos1),1,Fvv,1)
+    !  end do
+    !else if (ccmodel==MODEL_CC2) then
+    !  ! get Block diag. MO-Fock matrices for CC2 model:
+    !  ! -> Foo
+    !  call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,fock,nb, &
+    !            & 0.0E0_realk,tmp0,no)
+    !  call dgemm('n','n',no,no,nb,1.0E0_realk,tmp0,no,lamho,nb, &
+    !            & 0.0E0_realk,Foo,no)
+    !  ! -> Fvv
+    !  call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,fock,nb, &
+    !            & 0.0E0_realk,tmp0,nv)
+    !  call dgemm('n','n',nv,nv,nb,1.0E0_realk,tmp0,nv,lamhv,nb, &
+    !            & 0.0E0_realk,Fvv,nv)
+    !end if
+    if (Ccmodel>MODEL_CC2) then
+       ! -> Foo
+       call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,t1fock,nb,0.0E0_realk,tmp0,no)
+       call dgemm('n','n',no,no,nb,1.0E0_realk,tmp0,no,lamho,nb,0.0E0_realk,Foo,no)
+       ! -> Fov
+       call dgemm('n','n',no,nv,nb,1.0E0_realk,tmp0,no,lamhv,nb,0.0E0_realk,Fov,no)
+       ! -> Fvo
+       call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,t1fock,nb,0.0E0_realk,tmp0,nv)
+       call dgemm('n','n',nv,no,nb,1.0E0_realk,tmp0,nv,lamho,nb,0.0E0_realk,Fvo,nv)
+       ! -> Fvv
+       call dgemm('n','n',nv,nv,nb,1.0E0_realk,tmp0,nv,lamhv,nb,0.0E0_realk,Fvv,nv)
+    else
+       ! -> Foo
+       call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,fock,nb,0.0E0_realk,tmp0,no)
+       call dgemm('n','n',no,no,nb,1.0E0_realk,tmp0,no,lamho,nb,0.0E0_realk,Foo,no)
+       ! -> Fov
+       call dgemm('t','n',no,nb,nb,1.0E0_realk,lampo,nb,t1fock,nb,0.0E0_realk,tmp0,no)
+       call dgemm('n','n',no,nv,nb,1.0E0_realk,tmp0,no,lamhv,nb,0.0E0_realk,Fov,no)
+       ! -> Fvo
+       call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,t1fock,nb,0.0E0_realk,tmp0,nv)
+       call dgemm('n','n',nv,no,nb,1.0E0_realk,tmp0,nv,lamho,nb,0.0E0_realk,Fvo,nv)
+       ! -> Fvv
+       call dgemm('t','n',nv,nb,nb,1.0E0_realk,lampv,nb,fock,nb,0.0E0_realk,tmp0,nv)
+       call dgemm('n','n',nv,nv,nb,1.0E0_realk,tmp0,nv,lamhv,nb,0.0E0_realk,Fvv,nv)
+    endif
  
 
-  end subroutine get_MO_Fock_matrices
+  end subroutine get_MO_fock_matrices
 
 
   !> Purpose: Calculate E2 term of the CCSD residual using G and H
@@ -8032,14 +7906,14 @@ subroutine ccsd_data_preparation()
   !type(mp2_batch_construction) :: bat
   type(array2) :: deltafock,ppfock,qqfock,pqfock,qpfock,omega1,fock
   type(array2) :: xocc,xvirt,yocc,yvirt
-  type(tensor)  :: om2,t2,govov
+  type(tensor)  :: om2,t2,govov,dummy
   type(lsitem) :: MyLsItem
   logical :: local
   integer :: nbas,nocc,nvirt,scheme,ccmodel,res_nr
   integer(kind=long) :: nelms
   integer      :: iter,k,n4,i
   real(realk),pointer  :: xodata(:),xvdata(:),yodata(:),yvdata(:),&
-                         & df(:),f(:),ppf(:),qqf(:),pqf(:),qpf(:),om1(:),t2data(:),&
+                         & df(:),f(:),t1f(:),ppf(:),qqf(:),pqf(:),qpf(:),om1(:),t2data(:),&
                          & t2d(:,:,:,:),xod(:,:),xvd(:,:),yod(:,:),yvd(:,:)
   type(c_ptr)           :: xoc,xvc,yoc,yvc,&
                          & dfc,fc,ppfc,qqfc,pqfc,qpfc,om1c,t2c,&
@@ -8095,8 +7969,8 @@ subroutine ccsd_data_preparation()
   ! Quantities, that need to be defined but not set
   ! ********************************************************
   nelms=nbas*nbas
-  call mem_alloc( df, nelms )
-  call mem_alloc(  f, nelms )
+  call mem_alloc(  f,  nelms )
+  call mem_alloc( t1f, nelms )
 
   nelms=nocc*nocc
   call mem_alloc( ppf, nelms )
@@ -8113,10 +7987,10 @@ subroutine ccsd_data_preparation()
   ! ********************************************************
   select case (res_nr)
   case( RN_RESIDUAL_INT_DRIVEN )
-     call get_ccsd_residual_integral_driven(ccmodel,df,om2,t2,f,govov,nocc,nvirt,&
+     call get_ccsd_residual_integral_driven(ccmodel,om2,t2,f,t1f,govov,nocc,nvirt,&
         ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
   case( RN_YET_ANOTHER_RES )
-     call yet_another_ccsd_residual(ccmodel,df,om2,t2,f,govov,nocc,nvirt,&
+     call yet_another_ccsd_residual(ccmodel,om2,t2,f,t1f,govov,nocc,nvirt,&
         ppf,qqf,pqf,qpf,xodata,xvdata,yodata,yvdata,nbas,MyLsItem,om1,iter,local)
   end select
 
@@ -8133,7 +8007,7 @@ subroutine ccsd_data_preparation()
   endif
 
   call mem_dealloc(      f )
-  call mem_dealloc(     df )
+  call mem_dealloc(    t1f )
   call mem_dealloc(    ppf )
   call mem_dealloc(    pqf )
   call mem_dealloc(    qpf )
@@ -8240,7 +8114,7 @@ subroutine moccsd_data_slave()
   !> Long-range correction to Fock matrix
   type(tensor) :: deltafock
   !> AO fock matrix
-  type(tensor) :: fock
+  type(tensor) :: fock,t1fock
   !> occupied-occupied block of the t1-fock matrix
   type(tensor) :: ppfock
   !> virtual-virtual block of the t1-fock matrix
@@ -8289,7 +8163,7 @@ subroutine moccsd_data_slave()
   ! the slave call the routine to get MO-CCSD residual:
   call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
          & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-         & lamho,lamhv,deltafock,fock,ppfock,pqfock,qpfock,qqfock,local)
+         & lamho,lamhv,fock,t1fock,ppfock,pqfock,qpfock,qqfock,local)
 
   ! deallocate slave stuff:
   call ls_free(MyLsItem)

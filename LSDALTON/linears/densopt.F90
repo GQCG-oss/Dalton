@@ -136,7 +136,11 @@ CONTAINS
 !      
       IF(config%decomp%cfg_DumpDensRestart)THEN
          dens_lun = -1
-         call lsopen(dens_lun,'dens.restart','UNKNOWN','UNFORMATTED')
+         IF(config%opt%optlevel.EQ.2)THEN
+            call lsopen(dens_lun,'vdens.restart','UNKNOWN','UNFORMATTED')
+         ELSE
+            call lsopen(dens_lun,'dens.restart','UNKNOWN','UNFORMATTED')
+         ENDIF
          rewind dens_lun
          call mat_write_to_disk(dens_lun,D,OnMaster)
          call mat_write_info_to_disk(dens_lun,config%decomp%cfg_gcbasis)

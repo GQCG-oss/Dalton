@@ -63,6 +63,8 @@ type OptItem
       logical     :: cfg_prefer_CSR
       !> Use SCALAPACK Matrices:
       logical     :: cfg_prefer_SCALAPACK
+      !> Use PDMM Matrices:
+      logical     :: cfg_prefer_PDMM
       !> Should we crash the calculation - for debugging purposes
       logical     :: crashcalc
       !> Should incremental scheme be used for integrals?
@@ -112,6 +114,8 @@ type OptItem
       logical     :: add_atoms_start
       !Perform McWeeny purification on the non idempotent Atoms Density
       logical     :: MWPURIFYATOMSTART
+      !Dense Matrix Type in Level 2 of Trilevel (requires .START = TRILEVEL)
+      logical     :: DENSELEVEL2
 end type OptItem
 
 contains
@@ -174,6 +178,8 @@ implicit none
    opt%opt_quit                  = .true.
    opt%add_atoms_start           = .true.
    opt%MWPURIFYATOMSTART         = .false.
+   opt%DENSELEVEL2               = .false.
+
 end subroutine opt_set_default_config
 
 end module opttype

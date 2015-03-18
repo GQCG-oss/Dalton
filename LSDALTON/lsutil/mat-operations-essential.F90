@@ -13,8 +13,7 @@
 !> NEVER think that e.g. A%elms = matrix will copy the matrix elements from
 !>       matrix to A%elms, it will only associate the pointer with the array
 !>       matrix. \n
-!> BUT type(Matrix) :: A,B; A = B SHOULD copy the matrix elements from matrix B to A 
-!>     (see mat_assign). \n
+!> Use mat_assign for A = B operations
 !> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init.
 !>
 MODULE matrix_operations
@@ -23,6 +22,7 @@ MODULE matrix_operations
    use matrix_module
    use matrix_operations_dense
    use matrix_operations_scalapack
+   use matrix_operations_pdmm
    use LSTIMING
 #ifdef VAR_MPI
    use lsmpi_type, only: MATRIXTY
@@ -33,9 +33,9 @@ MODULE matrix_operations
    private
    public ::  matrixfiletype2, matrixfiletype, &
         & mtype_symm_dense, mtype_dense, mtype_unres_dense, mtype_csr,&
-        & mtype_scalapack, matrix_type, &
+        & mtype_scalapack, mtype_pdmm, matrix_type, &
         & SET_MATRIX_DEFAULT, mat_select_type, mat_finalize, mat_pass_info,&
-        & mat_timings, mat_no_of_matmuls,&
+        & mat_timings, mat_no_of_matmuls, mat_select_tmp_type, &
         & mat_init, mat_free, allocated_memory,&
         & stat_deallocated_memory,mat_set_from_full,mat_to_full,mat_print,&
         & mat_trans,mat_chol,mat_dpotrf,mat_dpotrs,mat_dpotri,mat_inv,&
@@ -61,6 +61,8 @@ MODULE matrix_operations
    integer, parameter ::  mtype_csr = 7
 !> Matrices are MPI memory distributed using scalapack
    integer, parameter ::  mtype_scalapack = 8
+!> Matrices are MPI memory distributed using TK scheme
+   integer, parameter ::  mtype_pdmm = 9
 !*****************
 !Possible matrix types - 
 !(Exploiting symmetry when operating sparse matrices is probably a vaste of effort - 
@@ -90,10 +92,6 @@ MODULE matrix_operations
 !> True if timings for matrix operations are requested
    logical,save :: INFO_TIME_MAT! = .false. !default no timings
    logical,save :: INFO_memory! = .false. !default no memory printout
-!> Overload: The '=' sign may be used to set two type(matrix) structures equal, i.e. A = B
-!!$   INTERFACE ASSIGNMENT(=)
-!!$      module procedure mat_assign
-!!$   END INTERFACE
 
    contains
 !*** is called from LSDALTON.f90
@@ -125,7 +123,6 @@ MODULE matrix_operations
        INTEGER, INTENT(IN) :: a,lupri
        INTEGER, OPTIONAL :: nbast
        integer :: nrow,ncol,tmpcol,tmprow,nproc,K,I,nblocks
-       integer,parameter :: blocklist(4)=(/1024,512,256,128/)
        WRITE(lupri,'(A)') ' '
        if(matrix_type.EQ.mtype_unres_dense.AND.a.EQ.mtype_scalapack)then
           WRITE(6,*)'mat_select_type: FALLBACK WARNING'
@@ -145,6 +142,8 @@ MODULE matrix_operations
                WRITE(lupri,'(A)') 'Matrix type: mtype_csr'
             case(mtype_scalapack)
                WRITE(lupri,'(A)') 'Matrix type: mtype_scalapack'
+            case(mtype_pdmm)
+               WRITE(lupri,'(A)') 'Matrix type: mtype_pdmm'
             case default
                call lsquit("Unknown type of matrix",-1)
             end select
@@ -158,43 +157,16 @@ MODULE matrix_operations
                    call lsquit('scalapack error in mat_select_type',-1)
                 ENDIF
                 print*,'TYPE SCALAPACK HAVE BEEN SELECTED' 
-                IF(infpar%ScalapackGroupSize.EQ.-1)THEN
+                
+                print*,'infpar%ScalapackGroupSize',infpar%ScalapackGroupSize
+                print*,'infpar%inputblocksize',infpar%inputblocksize
+                IF(infpar%ScalapackGroupSize.EQ.-1)THEN !auto 
                    print*,'Automatic determination of how many scalapack groupsize' 
                    IF(infpar%inputblocksize.EQ.0)THEN
                       !blocksize not specified. 
                       !determine block size. 
                       !The optimal is a blocksize big enough to reduce communication and optimize lapack
-                      do I =1,size(blocklist)
-                         infpar%inputblocksize = blocklist(I)
-                         IF(infpar%inputblocksize.GT.nbast)CYCLE
-                         nblocks = (nbast/infpar%inputblocksize)*(nbast/infpar%inputblocksize)
-                         IF(MOD(nbast,infpar%inputblocksize).NE.0)THEN
-                            nblocks = nblocks + 2*nbast/infpar%inputblocksize + 1
-                         ENDIF
-                         WRITE(lupri,'(A,I5,A,I6,A)')'A BlockSize of ',infpar%inputblocksize,' gives ',nblocks,' blocks'
-                         WRITE(lupri,'(A,F9.1,A)') 'Resulting in ',(nblocks*1.0E0_realk)/infpar%nodtot,' blocks per node'
-                         IF(nblocks .GE. 2*infpar%nodtot)THEN
-                            !more than 2 blocks per node, we can use all nodes efficiently
-                            exit
-                         ELSE
-                            !too few blocks not all nodes have 2 blocks
-                            !We use a smaller block size, to reduce load imbalance
-                         ENDIF
-                         IF(I.EQ.size(blocklist).AND.(nblocks .GE. 2*infpar%nodtot))THEN
-                            WRITE(lupri,'(A)')'The Minimum BlockSize = 128 Chosen.'
-                            WRITE(lupri,'(A)')'This means that not all processes can take part in'
-                            WRITE(lupri,'(A)')'the matrix operation parallelization. '
-                            WRITE(lupri,'(A)')'You can manually set the BlockSize using the .SCALAPACKBLOCKSIZE keyword'
-                            WRITE(lupri,'(A)')'Under the **GENERAL section. A smaller BlockSize will include more nodes'
-                            WRITE(lupri,'(A)')'and improve load imbalance,'
-                            WRITE(lupri,'(A)')'but will reduce the efficiency of the underlying Lapack Lib.'
-                         ENDIF
-                      enddo
-                      IF(infpar%inputblocksize.GT.nbast)THEN
-                         WRITE(lupri,'(A)')'Warning: Due to the small size of matrices Scalapack is not recommended!'
-                         WRITE(lupri,'(A)')'We set the blocksize equal to the number of basis functions'
-                         infpar%inputblocksize = nbast
-                      ENDIF
+                      call DetermineBlockSize(infpar%inputblocksize,infpar%nodtot,nbast,lupri)
                       WRITE(lupri,'(A,I5)')'Automatic determined Scalapack BlockSize = ',infpar%inputblocksize
                    ELSE
                       WRITE(lupri,'(A,I5)')'Scalapack BlockSize From Input = ',infpar%inputblocksize
@@ -204,29 +176,36 @@ MODULE matrix_operations
                       nblocks = nblocks + 2*(nbast/infpar%inputblocksize) + 1
                    ENDIF
                    WRITE(lupri,'(A,I5)')'Number of Scalapack Blocks = ',nblocks
-                   IF(nblocks .GE. 2*infpar%nodtot)THEN
-                      !2 or more blocks per node, we can use all nodes
-                      infpar%ScalapackGroupSize = infpar%nodtot
-                   ELSE
-                      !not all nodes have 2 blocks. We cannot use all nodes efficiently
-                      !We decide on a groupsize so that all nodes have 2 blocks
-                      IF(nblocks/2.GT.0)THEN
-                         infpar%ScalapackGroupSize = nblocks/2
+                   if(matrix_type.EQ.mtype_scalapack)then
+                      IF(nblocks .GE. 2*infpar%nodtot)THEN
+                         !2 or more blocks per node, we can use all nodes
+                         infpar%ScalapackGroupSize = infpar%nodtot
                       ELSE
-                         infpar%ScalapackGroupSize = nblocks
+                         !not all nodes have 2 blocks. We cannot use all nodes efficiently
+                         !We decide on a groupsize so that all nodes have 2 blocks
+                         IF(nblocks/2.GT.0)THEN
+                            infpar%ScalapackGroupSize = nblocks/2
+                         ELSE
+                            infpar%ScalapackGroupSize = nblocks
+                         ENDIF
                       ENDIF
-                   ENDIF
-                   WRITE(lupri,'(A,I5)')'Automatic determined Scalapack GroupSize = ',infpar%ScalapackGroupSize
-                ELSE
+                      WRITE(lupri,'(A,I5)')'Automatic determined Scalapack GroupSize = ',infpar%ScalapackGroupSize
+                      nproc = infpar%ScalapackGroupSize
+                   else
+                      nproc = infpar%nodtot
+                   endif
+                ELSE !infpar%ScalapackGroupSize.NE.-1 
                    WRITE(lupri,'(A,I5)')'Scalapack GroupSize From Input = ',infpar%ScalapackGroupSize
+                   print*,'Scalapack GroupSize From Input = ',infpar%ScalapackGroupSize
+                   print*,'infpar%inputblocksize',infpar%inputblocksize
+                   nproc = infpar%ScalapackGroupSize
                 ENDIF
-                nproc = infpar%ScalapackGroupSize
                 nrow = nproc
                 ncol = 1
                 K=1
                 do 
                    K=K+1
-                   IF(nproc.LE.K)EXIT
+                   IF(nproc+1.LE.K*K)EXIT
                    tmprow = nproc/K
                    tmpcol = K
                    IF(tmprow*tmpcol.EQ.nproc)THEN
@@ -236,10 +215,15 @@ MODULE matrix_operations
                       ENDIF
                    ENDIF
                 enddo
-                print*,'nrow=',nrow,'ncol=',ncol,'nodtot=',infpar%ScalapackGroupSize
+                if(matrix_type.EQ.mtype_scalapack)then
+                   print*,'nrow=',nrow,'ncol=',ncol,'nodtot=',infpar%ScalapackGroupSize
+                endif
                 print*,'call PDM_GRIDINIT(',nrow,',',ncol,')'                
                 !make possible subset 
-                call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,MPI_COMM_LSDALTON)
+                print*,'call ls_mpibcast with infpar%ScalapackGroupSize',infpar%ScalapackGroupSize
+                call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,MPI_COMM_LSDALTON)                
+                call ls_mpibcast(infpar%ScalapackWorkaround,infpar%master,MPI_COMM_LSDALTON)                
+                print*,'master done bcast'
                 IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
                    IF(scalapack_mpi_set)THEN
                       !free communicator 
@@ -247,8 +231,8 @@ MODULE matrix_operations
                       scalapack_mpi_set = .FALSE.
                    ENDIF
                    call init_mpi_subgroup(scalapack_nodtot,&
-                   & scalapack_mynum,scalapack_comm,scalapack_member,&
-                   & infpar%ScalapackGroupSize,lupri)
+                        & scalapack_mynum,scalapack_comm,scalapack_member,&
+                        & infpar%ScalapackGroupSize,MPI_COMM_LSDALTON,lupri)
                    scalapack_mpi_set = .TRUE.
                 ELSE
                    scalapack_nodtot = infpar%nodtot
@@ -261,12 +245,40 @@ MODULE matrix_operations
                 WRITE(lupri,'(A,I5)')'Scalapack Grid initiation Block Size = ',BLOCK_SIZE
                 WRITE(lupri,'(A,I5)')'Scalapack Grid initiation nprow      = ',nrow
                 WRITE(lupri,'(A,I5)')'Scalapack Grid initiation npcol      = ',ncol
+             elseif(matrix_type.EQ.mtype_pdmm)then
+                IF(.NOT.present(nbast))then
+                   call lsquit('pdmm error in mat_select_type',-1)
+                ENDIF
+                print*,'TYPE PDMM HAVE BEEN SELECTED' 
+                !make possible subset 
+                call ls_mpibcast(infpar%PDMMGroupSize,infpar%master,MPI_COMM_LSDALTON)                
+                IF(infpar%PDMMGroupSize.NE.infpar%nodtot)THEN
+                   IF(pdmm_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(pdmm_comm)
+                      pdmm_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(pdmm_nodtot,&
+                        & pdmm_mynum,pdmm_comm,pdmm_member,&
+                        & infpar%PDMMGroupSize,MPI_COMM_LSDALTON,lupri)
+                   pdmm_mpi_set = .TRUE.
+                ELSE
+                   pdmm_nodtot = infpar%nodtot
+                   pdmm_mynum = infpar%mynum
+                   pdmm_comm = MPI_COMM_LSDALTON
+                   pdmm_member = .TRUE.
+                ENDIF
+                CALL PDMM_GRIDINIT(nbast)
+                WRITE(lupri,'(A,I5)')'PDMM initiation Block Size = ',BLOCK_SIZE_PDM
              endif
           ELSE
              !slave
              if(matrix_type.EQ.mtype_scalapack)then
                 call ls_mpibcast(infpar%ScalapackGroupSize,infpar%master,&
                      & MPI_COMM_LSDALTON)
+                call ls_mpibcast(infpar%ScalapackWorkaround,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                infpar%inputblocksize = infpar%ScalapackGroupSize
                 IF(infpar%ScalapackGroupSize.NE.infpar%nodtot)THEN
                    IF(scalapack_mpi_set)THEN
                       !free communicator 
@@ -275,7 +287,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(scalapack_nodtot,&
                         & scalapack_mynum,scalapack_comm,scalapack_member,&
-                        & infpar%ScalapackGroupSize,lupri)
+                        & infpar%ScalapackGroupSize,MPI_COMM_LSDALTON,lupri)
                    scalapack_mpi_set = .TRUE.
                 ELSE
                    scalapack_nodtot = infpar%nodtot
@@ -283,11 +295,103 @@ MODULE matrix_operations
                    scalapack_comm = MPI_COMM_LSDALTON
                    scalapack_member = .TRUE.
                 ENDIF
+             elseif(matrix_type.EQ.mtype_pdmm)then
+                call ls_mpibcast(infpar%PDMMGroupSize,infpar%master,&
+                     & MPI_COMM_LSDALTON)
+                IF(infpar%PDMMGroupSize.NE.infpar%nodtot)THEN
+                   IF(PDMM_mpi_set)THEN
+                      !free communicator 
+                      call LSMPI_COMM_FREE(pdmm_comm)
+                      PDMM_mpi_set = .FALSE.
+                   ENDIF
+                   call init_mpi_subgroup(pdmm_nodtot,&
+                        & pdmm_mynum,pdmm_comm,pdmm_member,&
+                        & infpar%PDMMGroupSize,MPI_COMM_LSDALTON,lupri)
+                   PDMM_mpi_set = .TRUE.
+                ELSE
+                   pdmm_nodtot = infpar%nodtot
+                   pdmm_mynum = infpar%mynum
+                   pdmm_comm = MPI_COMM_LSDALTON
+                   pdmm_member = .TRUE.
+                ENDIF
              endif
           ENDIF
 #endif
        endif
      END SUBROUTINE mat_select_type
+
+
+!> \brief Sets the global variable matrix_type that determines the matrix type
+!> It does not init SCALAPACK or PDMM module
+!> \author T. Kjaergaard
+!> \date 2015
+!> \param a Indicates the matrix type (see module documentation) 
+     SUBROUTINE mat_select_tmp_type(a,lupri,nbast)
+#ifdef VAR_MPI
+       use infpar_module
+       use lsmpi_type
+#endif
+       implicit none
+       INTEGER, INTENT(IN) :: a,lupri
+       INTEGER, OPTIONAL :: nbast
+       integer :: nrow,ncol,tmpcol,tmprow,nproc,K,I,nblocks
+       WRITE(lupri,'(A)') ' '
+       if(matrix_type.EQ.mtype_unres_dense.AND.a.EQ.mtype_scalapack)then
+          WRITE(6,*)'mat_select_type: FALLBACK WARNING'
+          WRITE(6,*)'SCALAPACK type matrices is not implemented for unrestricted calculations'
+          WRITE(6,*)'We therefore use the dense unrestricted type - which do not use memory distribution'
+       else
+          matrix_type = a
+#ifdef VAR_MPI
+          IF (infpar%mynum.EQ.infpar%master) THEN
+             call ls_mpibcast(MATRIXTY2,infpar%master,MPI_COMM_LSDALTON)
+             call lsmpi_set_matrix_type_master(a)
+          ENDIF
+#endif
+       endif
+     END SUBROUTINE mat_select_tmp_type
+
+     subroutine DetermineBlockSize(blocksize,nodtot,nbast,lupri)
+       implicit none
+       integer,intent(inout) :: blocksize
+       integer(kind=ls_mpik),intent(in) :: nodtot
+       integer,intent(in) :: nbast,lupri
+       integer,parameter :: blocklist(4)=(/1024,512,256,128/)
+       !
+       integer :: I,nblocks
+                        
+       do I =1,size(blocklist)
+          blocksize = blocklist(I)
+          IF(blocksize.GT.nbast)CYCLE
+          nblocks = (nbast/blocksize)*(nbast/blocksize)
+          IF(MOD(nbast,blocksize).NE.0)THEN
+             nblocks = nblocks + 2*nbast/blocksize + 1
+          ENDIF
+          WRITE(lupri,'(A,I5,A,I6,A)')'A BlockSize of ',blocksize,' gives ',nblocks,' blocks'
+!          WRITE(lupri,'(A,F9.1,A)') 'Resulting in ',(nblocks*1.0E0_realk)/infpar%nodtot,' blocks per node'
+          IF(nblocks .GE. 2*nodtot)THEN
+             !more than 2 blocks per node, we can use all nodes efficiently
+             exit
+          ELSE
+             !too few blocks not all nodes have 2 blocks
+             !We use a smaller block size, to reduce load imbalance
+          ENDIF
+          IF(I.EQ.size(blocklist).AND.(nblocks .GE. 2*nodtot))THEN
+             WRITE(lupri,'(A)')'The Minimum BlockSize = 128 Chosen.'
+             WRITE(lupri,'(A)')'This means that not all processes can take part in'
+             WRITE(lupri,'(A)')'the matrix operation parallelization. '
+             WRITE(lupri,'(A)')'You can manually set the BlockSize using the .SCALAPACKBLOCKSIZE keyword'
+             WRITE(lupri,'(A)')'Under the **GENERAL section. A smaller BlockSize will include more nodes'
+             WRITE(lupri,'(A)')'and improve load imbalance,'
+             WRITE(lupri,'(A)')'but will reduce the efficiency of the underlying Lapack Lib.'
+          ENDIF
+       enddo
+       IF(blocksize.GT.nbast)THEN
+          WRITE(lupri,'(A)')'Warning: Due to the small size of matrices Scalapack is not recommended!'
+          WRITE(lupri,'(A)')'We set the blocksize equal to the number of basis functions'
+          blocksize = nbast
+       ENDIF
+     end subroutine DetermineBlockSize
 
      SUBROUTINE mat_finalize()
 #ifdef VAR_MPI
@@ -298,6 +402,9 @@ MODULE matrix_operations
 #ifdef VAR_MPI
        if(matrix_type.EQ.mtype_scalapack)then
           CALL PDM_GRIDEXIT
+       endif
+       if(matrix_type.EQ.mtype_pdmm)then
+          CALL PDMM_GRIDEXIT
        endif
 #endif
      END SUBROUTINE mat_finalize
@@ -343,7 +450,6 @@ MODULE matrix_operations
          TYPE(Matrix), TARGET :: a 
          INTEGER, INTENT(IN)  :: nrow, ncol
          LOGICAL, INTENT(IN), OPTIONAL :: complex
-
          ! Always start by nullifying matrix components
          call mat_nullify(a)
 
@@ -389,6 +495,8 @@ MODULE matrix_operations
              call mat_csr_init(a,nrow,ncol)            
          case(mtype_scalapack)
              call mat_scalapack_init(a,nrow,ncol)            
+         case(mtype_pdmm)
+             call mat_pdmm_init(a,nrow,ncol)            
          case default
               call lsquit("mat_init not implemented for this type of matrix",-1)
          end select
@@ -401,9 +509,12 @@ MODULE matrix_operations
 !> \author L. Thogersen
 !> \date 2003
 !> \param a type(matrix) that should be freed
-      SUBROUTINE mat_free(a)
+      SUBROUTINE mat_free(a,matype)
          implicit none
          TYPE(Matrix), TARGET :: a 
+         integer,intent(in),optional :: matype
+         integer   :: matrix_type_case
+
          !to be free'ed, the matrix must be in the same location where it was init'ed.
          !If not, it is probably a duplicate (like 'a' in (/a,b,c/)), in which case
          !we may end up double-free'ing, so err
@@ -420,7 +531,12 @@ MODULE matrix_operations
             !write(mat_lu,*) 'Free: matrices allocated:', no_of_matrices
          endif
          if (info_memory) write(mat_lu,*) 'Before mat_free: mem_allocated_global =', mem_allocated_global
-         select case(matrix_type)
+         IF(present(matype))THEN
+            matrix_type_case = matype
+         ELSE
+            matrix_type_case = matrix_type
+         ENDIF
+         select case(matrix_type_case)
          case(mtype_dense)
              call mat_dense_free(a)
          case(mtype_unres_dense)
@@ -429,8 +545,10 @@ MODULE matrix_operations
              call mat_csr_free(a)
          case(mtype_scalapack)
              call mat_scalapack_free(a)
+         case(mtype_pdmm)
+             call mat_pdmm_free(a)
          case default
-              call lsquit("mat_free not implemented for this type of matrix",-1)
+            call lsquit("mat_free not implemented for this type of matrix",-1)
          end select
 
       !free auxaliary data
@@ -521,6 +639,8 @@ MODULE matrix_operations
              call mat_csr_set_from_full(afull,alpha,a)
          case(mtype_scalapack)
             call mat_scalapack_set_from_full(afull,alpha,a)
+         case(mtype_pdmm)
+            call mat_pdmm_set_from_full(afull,alpha,a)
          case(mtype_unres_dense)
             if(PRESENT(unres3))then
                if(unres3)then
@@ -553,13 +673,15 @@ MODULE matrix_operations
 !> you have to hardcode an interface to make them work with unrestriced
 !> matrices (see e.g. di_get_fock in dalton_interface.f90)
 !>
-     SUBROUTINE mat_to_full(a, alpha, afull,mat_label)
+     SUBROUTINE mat_to_full(a, alpha, afull,mat_label,matype)
 
          implicit none
          TYPE(Matrix), intent(in):: a
          real(realk), intent(in) :: alpha
          real(realk), intent(inout):: afull(*)  !output
          character(*), INTENT(IN), OPTIONAL :: mat_label
+         integer,intent(in),optional :: matype
+         integer                 :: matrix_type_case
          real(realk)             :: sparsity
          call time_mat_operations1
 
@@ -569,13 +691,20 @@ MODULE matrix_operations
          !  call lsquit('too small full array in mat_to_full',-1)
          !endif
          if (info_memory) write(mat_lu,*) 'Before mat_to_full: mem_allocated_global =', mem_allocated_global
-         select case(matrix_type)
+         IF(present(matype))THEN
+            matrix_type_case = matype
+         ELSE
+            matrix_type_case = matrix_type
+         ENDIF
+         select case(matrix_type_case)
          case(mtype_dense)
              call mat_dense_to_full(a, alpha, afull)
          case(mtype_csr)
              call mat_csr_to_full(a, alpha, afull)
          case(mtype_scalapack)
             call mat_scalapack_to_full(a, alpha, afull)
+         case(mtype_pdmm)
+            call mat_pdmm_to_full(a, alpha, afull)
          case(mtype_unres_dense)
              call mat_unres_dense_to_full(a, alpha, afull)
          case default
@@ -648,7 +777,6 @@ MODULE matrix_operations
          integer, intent(in)     :: i_row1, i_rown, j_col1, j_coln, lu 
          REAL(REALK), ALLOCATABLE :: afull(:,:)
          real(realk)              :: sparsity
-
          if (i_row1 < 1 .or. j_col1 < 1 .or. a%nrow < i_rown .or. a%ncol < j_coln) then
            CALL LSQUIT( 'subsection out of bounds in mat_print',-1)
          endif
@@ -656,6 +784,8 @@ MODULE matrix_operations
          select case(matrix_type)
          case(mtype_dense)
              call mat_dense_print(a, i_row1, i_rown, j_col1, j_coln, lu)
+         case(mtype_pdmm)
+            call mat_pdmm_print(a, i_row1, i_rown, j_col1, j_coln, lu)
          case(mtype_scalapack)
 #ifdef VAR_SCALAPACK
             print*,'FALLBACK scalapack print'
@@ -704,6 +834,8 @@ MODULE matrix_operations
              call mat_csr_trans(a,b)
          case(mtype_scalapack)
              call mat_scalapack_trans(a,b)
+         case(mtype_pdmm)
+             call mat_pdmm_trans(a,b)
          case(mtype_unres_dense)
              call mat_unres_dense_trans(a,b)
          case default
@@ -800,6 +932,8 @@ MODULE matrix_operations
            call mem_dealloc(U_full) 
            call mem_dealloc(work1)
            call mem_dealloc(IPVT)
+        case(mtype_pdmm)
+           call mat_pdmm_chol(a, b) 
         case default
            call lsquit('error mat_chol not implemented',-1)
 !!$           call mem_alloc(U_full,fulldim,fulldim) 
@@ -839,6 +973,8 @@ MODULE matrix_operations
            IF(INFO.NE.0)CALL LSQUIT('DPOTRF ERROR',-1)
         case(mtype_scalapack)
            call mat_scalapack_dpotrf(a)
+        case(mtype_pdmm)
+           call mat_pdmm_dpotrf(a)
         case(mtype_unres_dense)
            INFO = 0
            CALL DPOTRF('U',A%nrow,A%elms,A%nrow,INFO)
@@ -870,6 +1006,8 @@ MODULE matrix_operations
            CALL DPOTRS('U',A%nrow,B%ncol,A%elms,A%nrow,B%elms,B%nrow,INFO)
         case(mtype_scalapack)
            call mat_scalapack_dpotrs(a,b)
+        case(mtype_pdmm)
+           call mat_pdmm_dpotrs(a,b)
         case(mtype_unres_dense)
            CALL DPOTRS('U',A%nrow,B%ncol,A%elms,A%nrow,B%elms,B%nrow,INFO)
            CALL DPOTRS('U',A%nrow,B%ncol,A%elmsb,A%nrow,B%elmsb,B%nrow,INFO)
@@ -899,6 +1037,8 @@ MODULE matrix_operations
            !note that depending how you use this you will need to copy the  
 !        case(mtype_scalapack)
            !           call mat_scalapack_chol(a,b)
+        case(mtype_pdmm)
+           call mat_pdmm_dpotri(a)
         case(mtype_unres_dense)
            CALL DPOTRI('U',A%nrow,A%elms,A%nrow,INFO)           
            IF(INFO.NE.0)CALL LSQUIT('DPOTRI ERROR',-1)
@@ -942,6 +1082,8 @@ MODULE matrix_operations
          select case(matrix_type)
          case(mtype_dense)
              call mat_dense_inv(a,a_inv)
+         case(mtype_pdmm)
+             call mat_pdmm_inv(a,a_inv)
          case(mtype_scalapack)
 !             call mat_scalapack_inv(a,b)
             call mem_alloc(A_inv_full,fulldim,fulldim) 
@@ -1017,6 +1159,7 @@ MODULE matrix_operations
             dest%complex = src%complex
             dest%val => src%val; dest%col => src%col
             dest%row => src%row; dest%nnz = src%nnz
+            dest%PDMID = src%PDMID
 #ifdef VAR_SCALAPACK
             dest%localncol=src%localncol; dest%localnrow=src%localnrow
             dest%addr_on_grid => src%addr_on_grid
@@ -1046,6 +1189,8 @@ MODULE matrix_operations
              call mat_csr_assign(a,b)
           case(mtype_scalapack)
              call mat_scalapack_assign(a,b)
+          case(mtype_pdmm)
+             call mat_pdmm_assign(a,b)
          case(mtype_unres_dense)
              call mat_unres_dense_assign(a,b)
          case default
@@ -1074,6 +1219,8 @@ MODULE matrix_operations
              call mat_dense_mpicopy(a,slave, master)
          case(mtype_scalapack)
             call lsquit('mat_mpicopy scalapack error',-1)
+         case(mtype_pdmm)
+            call lsquit('mat_mpicopy pdmm error',-1)
           case(mtype_csr)
              call mat_mpicopy_fallback(a,slave, master)
          case(mtype_unres_dense)
@@ -1131,6 +1278,8 @@ MODULE matrix_operations
              call mat_csr_copy(alpha,a,b)
          case(mtype_scalapack)
              call mat_scalapack_copy(alpha,a,b)
+         case(mtype_pdmm)
+             call mat_pdmm_copy(alpha,a,b)
          case(mtype_unres_dense)
              call mat_unres_dense_copy(alpha,a,b)
          case default
@@ -1199,6 +1348,8 @@ MODULE matrix_operations
              mat_TrAB = mat_csr_TrAB(a,b)
          case(mtype_scalapack)
              mat_TrAB = mat_scalapack_TrAB(a,b)
+         case(mtype_pdmm)
+             mat_TrAB = mat_pdmm_TrAB(a,b)
          case(mtype_unres_dense)
              mat_TrAB = mat_unres_dense_TrAB(a,b)
          case default
@@ -1258,13 +1409,15 @@ MODULE matrix_operations
          case(mtype_dense)
             call mat_dense_mul(a,b,transa, transb,alpha,beta,c)
          case(mtype_unres_dense)
-             call mat_unres_dense_mul(a,b,transa, transb,alpha,beta,c)
+            call mat_unres_dense_mul(a,b,transa, transb,alpha,beta,c)
          case(mtype_csr)
-             call mat_csr_mul(a,b,transa, transb,alpha,beta,c)
+            call mat_csr_mul(a,b,transa, transb,alpha,beta,c)
          case(mtype_scalapack)
-             call mat_scalapack_mul(a,b,transa, transb,alpha,beta,c)
+            call mat_scalapack_mul(a,b,transa, transb,alpha,beta,c)
+         case(mtype_pdmm)
+            call mat_pdmm_mul(a, b, transa, transb, alpha, beta, c)
          case default
-              call lsquit("mat_mul not implemented for this type of matrix",-1)
+            call lsquit("mat_mul not implemented for this type of matrix",-1)
          end select
          !if (INFO_TIME_MAT) CALL LSTIMER('MATMUL ',mat_TSTR,mat_TEN,mat_lu)
          if (info_memory) write(mat_lu,*) 'After mat_mul: mem_allocated_global =', mem_allocated_global
@@ -1301,6 +1454,8 @@ MODULE matrix_operations
              call mat_csr_add(alpha,a,beta,b,c)
          case(mtype_scalapack)
              call mat_scalapack_add(alpha,a,beta,b,c)
+         case(mtype_pdmm)
+             call mat_pdmm_add(alpha,a,beta,b,c)
          case(mtype_unres_dense)
              call mat_unres_dense_add(alpha,a,beta,b,c)
          case default
@@ -1337,6 +1492,8 @@ MODULE matrix_operations
              call mat_csr_daxpy(alpha,x,y)
          case(mtype_scalapack)
              call mat_scalapack_daxpy(alpha,x,y)
+         case(mtype_pdmm)
+             call mat_pdmm_daxpy(alpha,x,y)
          case(mtype_unres_dense)
              call mat_unres_dense_daxpy(alpha,x,y)
          case default
@@ -1394,6 +1551,8 @@ MODULE matrix_operations
             mat_dotproduct = mat_csr_dotproduct(a,b)
          case(mtype_scalapack)
             mat_dotproduct = mat_scalapack_dotproduct(a,b)
+         case(mtype_pdmm)
+            mat_dotproduct = mat_pdmm_dotproduct(a,b)
          case(mtype_unres_dense)
              mat_dotproduct = mat_unres_dense_dotproduct(a,b)
          case default
@@ -1424,6 +1583,8 @@ MODULE matrix_operations
             mat_sqnorm2 = mat_csr_sqnorm2(a)
          case(mtype_scalapack)
             mat_sqnorm2 = mat_scalapack_sqnorm2(a)
+         case(mtype_pdmm)
+            mat_sqnorm2 = mat_pdmm_sqnorm2(a)
          case(mtype_unres_dense)
              mat_sqnorm2 = mat_unres_dense_sqnorm2(a)
          case default
@@ -1484,6 +1645,8 @@ MODULE matrix_operations
              call mat_csr_max_elm(a,val)
           case(mtype_scalapack)
              call mat_scalapack_max_elm(a,val,tmp)
+          case(mtype_pdmm)
+             call mat_pdmm_max_elm(a,val,tmp)
          case(mtype_unres_dense)
              if (present(pos)) call lsquit('mat_max_elm(): position parameter not implemented!',-1)
              call mat_unres_dense_max_elm(a,val)
@@ -1512,8 +1675,10 @@ MODULE matrix_operations
              call mat_dense_min_elm(a,val,tmp)
           case(mtype_scalapack)
              call mat_scalapack_min_elm(a,val,tmp)
+          case(mtype_pdmm)
+             call mat_pdmm_min_elm(a,val,tmp)
          case default
-              call lsquit("mat_max_elm not implemented for this type of matrix",-1)
+              call lsquit("mat_min_elm not implemented for this type of matrix",-1)
          end select
 
 
@@ -1603,6 +1768,10 @@ MODULE matrix_operations
             call time_mat_operations1
             call mat_dense_diag_f(F,S,eival,Cmo)
             call time_mat_operations2(JOB_mat_diag_f)
+         case(mtype_pdmm)
+            call time_mat_operations1
+            call mat_pdmm_diag_f(F,S,eival,Cmo)
+            call time_mat_operations2(JOB_mat_diag_f)
          case(mtype_scalapack)
             call mat_init(A,F%nrow,F%ncol)
             call mat_init(B,S%nrow,S%ncol)
@@ -1658,6 +1827,10 @@ MODULE matrix_operations
             call time_mat_operations2(JOB_mat_dsyev)
             call mat_assign(S,B)
             call mat_free(B)
+         case(mtype_pdmm)
+            call time_mat_operations1
+            call mat_pdmm_dsyev(S,eival,ndim)
+            call time_mat_operations2(JOB_mat_dsyev)
          case(mtype_csr)
             call mem_alloc(S_full,ndim,ndim)
             call mat_csr_to_full(S,1.0E0_realk,S_full)
@@ -1733,6 +1906,10 @@ MODULE matrix_operations
     case(mtype_scalapack)
        call time_mat_operations1           
        CALL mat_scalapack_dsyevx(S,eival,ieig)
+       call time_mat_operations2(JOB_mat_dsyevx)
+    case(mtype_pdmm)
+       call time_mat_operations1           
+       CALL mat_pdmm_dsyevx(S,eival,ieig)
        call time_mat_operations2(JOB_mat_dsyevx)
     case(mtype_unres_dense)
        call lsquit('mat_dsyevx mtype_unres_dense not implemented',-1)
@@ -1898,7 +2075,11 @@ end subroutine mat_insert_section
              call time_mat_operations2(JOB_mat_identity)
          case(mtype_scalapack)
              call time_mat_operations1
-            call mat_scalapack_add_identity(1E0_realk,0E0_realk,TMP,I)
+             call mat_scalapack_add_identity(1E0_realk,0E0_realk,TMP,I)
+             call time_mat_operations2(JOB_mat_identity)
+         case(mtype_pdmm)
+             call time_mat_operations1
+             call mat_pdmm_identity(I)
              call time_mat_operations2(JOB_mat_identity)
          case(mtype_unres_dense)
              call time_mat_operations1
@@ -1948,6 +2129,8 @@ end subroutine mat_insert_section
             call mat_csr_add_identity(alpha, beta, B, C)
          case(mtype_scalapack)
             call mat_scalapack_add_identity(alpha, beta, B, C)
+         case(mtype_pdmm)
+            call mat_pdmm_add_identity(alpha, beta, B, C)
          case(mtype_unres_dense)
             call mat_init(I, b%nrow, b%ncol)
             call mat_unres_dense_identity(I)
@@ -1991,6 +2174,8 @@ end subroutine mat_insert_section
              call mat_unres_dense_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
               call mat_scalapack_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+         case(mtype_pdmm)
+              call mat_pdmm_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
               call lsquit("mat_create_block not implemented for this type of matrix",-1)
          end select
@@ -2072,6 +2257,8 @@ end subroutine mat_insert_section
              call mat_csr_retrieve_block_full(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
             call mat_scalapack_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+         case(mtype_pdmm)
+            call mat_pdmm_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_unres_dense)
              call mat_unres_dense_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
@@ -2103,6 +2290,8 @@ end subroutine mat_insert_section
              call mat_csr_scal(alpha, A)
          case(mtype_scalapack)
              call mat_scalapack_scal(alpha, A)
+         case(mtype_pdmm)
+             call mat_pdmm_scal(alpha, A)
          case(mtype_unres_dense)
              call mat_unres_dense_scal(alpha,A)
          case default
@@ -2207,6 +2396,8 @@ end subroutine mat_insert_section
              call mat_dense_zero(A)
          case(mtype_scalapack)
              call mat_scalapack_zero(A)
+         case(mtype_pdmm)
+             call mat_pdmm_zero(A)
          case(mtype_unres_dense)
              call mat_unres_dense_zero(A)
          case(mtype_csr)
@@ -2435,6 +2626,8 @@ end subroutine set_lowertriangular_zero
            call mat_dense_extract_diagonal(diag,A)
       case(mtype_scalapack)
            call mat_scalapack_extract_diagonal(diag,A)
+      case(mtype_pdmm)
+           call mat_pdmm_extract_diagonal(diag,A)
       case default
             call lsquit("mat_extract_diagonal not implemented for this type of matrix",-1)
       end select
@@ -2471,4 +2664,19 @@ END MODULE Matrix_Operations
         call mat_select_type(a,6)
 
       end subroutine lsmpi_set_matrix_type_slave
+
+      !> \brief obtains the matrix_type from master MPI nodes
+      !> \author T. Kjaergaard
+      !> \date 2011
+      !> \param the matrix type
+      subroutine lsmpi_set_matrix_tmp_type_slave()
+        use matrix_operations
+        use infpar_module
+        use lsmpi_type
+        implicit none
+        integer :: a
+        call ls_mpibcast(a,infpar%master,MPI_COMM_LSDALTON)
+        call mat_select_tmp_type(a,6)
+
+      end subroutine lsmpi_set_matrix_tmp_type_slave
 #endif

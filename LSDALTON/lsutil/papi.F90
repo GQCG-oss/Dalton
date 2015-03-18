@@ -1,5 +1,5 @@
 !> Module for FLOP counting using PAPI library.
-!
+!> extended to include GPU info
 !> FYI
 !> ***
 !Compilation on grendel, currently only installed on node s57n41
@@ -12,14 +12,15 @@
 !cc -c myPAPI_set_inherit.c
 !ftn -fpp1 papitest_inherit.f90 myPAPI_set_inherit.o -o papitest_inherit.x
 module papi_module
-#ifdef VAR_PAPI
 use precision
 !> EPAPI vent set which is initiated at the very beginning of LSDALTON.
 integer,save :: eventset
+!> module variable to count the FLOPs done on the GPU
+real(realk),save :: FLOPonGPU
 
 contains
 
-
+#ifdef VAR_PAPI
 
   !> \brief Init papi FLOP counting.
   ! Note: This is done ONCE and then one can count FLOPS for many different processes.
@@ -98,16 +99,35 @@ contains
 
 
   end subroutine papi_example
-
-
-#else
-
-contains
-
-!Added to avoid "has no symbols" linking warning
-subroutine papi_module_void()
-end subroutine papi_module_void
-
 #endif
+
+  subroutine AddFLOP_FLOPonGPUaccouting(inputFLOPonGPU)
+    implicit none
+    real(realk),intent(in) :: inputFLOPonGPU
+    FLOPonGPU = FLOPonGPU + inputFLOPonGPU
+  end subroutine AddFLOP_FLOPonGPUaccouting
+
+  subroutine addDGEMM_FLOPonGPUaccouting(M,N,K,beta)
+    implicit none
+    integer,intent(in) :: M,N,K
+    real(realk),intent(in) :: beta
+    IF(ABS(beta).GT.1.0E-10_realk)THEN
+       FLOPonGPU = FLOPonGPU + 2*M*N*K
+    ELSE
+       FLOPonGPU = FLOPonGPU + M*N*(2*K-1)
+    ENDIF
+  end subroutine AddDGEMM_FLOPonGPUaccouting
+  
+  subroutine init_FLOPonGPUaccouting()
+    implicit none
+    FLOPonGPU = 0.0E0_realk
+    
+  end subroutine Init_FLOPonGPUaccouting
+
+  subroutine extract_FLOPonGPUaccouting(outFLOPonGPU)
+    implicit none
+    real(realk),intent(inout) :: outFLOPonGPU
+    outFLOPonGPU = FLOPonGPU
+  end subroutine Extract_FLOPonGPUaccouting
 
 end module papi_module
