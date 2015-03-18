@@ -2211,11 +2211,14 @@ C  /* Deck sir_geninp */
       SUBROUTINE SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
 C
 C 1-Oct 1987 Hans Agren
-#ifdef MOD_XCINT
-      use xcint_integrator
-      use eri_contractions
-#endif
 C
+#ifdef BUILD_OPENRSP
+      use eri_contractions, only: set_eri_contractions_xfac
+#endif
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: set_functional
+#endif
+
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2223,9 +2226,6 @@ C
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
-#ifdef MOD_XCINT
-      real(8) :: hfx_out, mu_out, beta_out
-#endif
 C
 C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
@@ -2501,23 +2501,22 @@ C        ... no P-supermatrix for DFT
             GO TO 1101
          END IF
          WDFTMP = 0.0D0
+
+#ifdef ENABLE_XCINT
+         this_mu   = 0.0d0
+         this_beta = 0.0d0
+         call set_functional(titlin, hfxfac, this_mu, this_beta)
+         call dftsetcam(this_mu, this_beta)
+#ifdef BUILD_OPENRSP
+         call set_eri_contractions_xfac(hfxfac)
+#endif /* BUILD_OPENRSP */
+#endif /* ENABLE_XCINT */
+
          CALL DFTsetFunc(TITLIN,INPERR)
 #ifdef MOD_XCFUN
          CALL xcfun_select(TITLIN)
 #endif
-#ifdef MOD_XCINT
-         call parse_functional(titlin, hfx_out, mu_out, beta_out)
-         open(42,
-     &        file   = 'xc_functional',
-     &        status = 'unknown',
-     &        form   = 'formatted',
-     &        access = 'sequential')
-         rewind(42)
-         write(42, *) titlin
-         close(42, status = 'keep')
 
-         call set_eri_contractions_xfac(hfx_out)
-#endif
          IF (WDFTMP.NE.0.0D0) THEN
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.

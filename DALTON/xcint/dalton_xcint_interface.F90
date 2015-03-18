@@ -8,27 +8,24 @@ module dalton_xcint_interface
 
    public dalton_xcint_interface_init
    public dalton_xcint_interface_finalize
-   public is_ks_calculation
-   public openrsp_set_functional
+   public set_functional
+   public use_xcint_integrator
+   public select_xcint_integrator
+   public unselect_xcint_integrator
 
    private
 
-   ! if false the interface will refuse to be accessed
-   logical :: is_initialized = .false.
-
-   ! true if this is a KS calculation
-   logical :: this_is_ks_calculation = .false.
-
-   ! FIXME
-   real(8) :: openrsp_cfg_radint = 1.0d-12
-   integer :: openrsp_cfg_angmin = 86
-   integer :: openrsp_cfg_angint = 302
-   logical :: openrsp_cfg_use_xcint_grid = .false.
+   logical :: use_xcint = .false.
+   real(8) :: xcint_radint = 1.0d-12
+   integer :: xcint_angmin = 86
+   integer :: xcint_angint = 302
+   logical :: xcint_use_own_grid = .false.
+   logical :: interface_is_initialized = .false.
 
 contains
 
    subroutine check_if_initialized()
-      if (.not. is_initialized) then
+      if (.not. interface_is_initialized) then
          print *, 'ERROR: you try to access dalton_xcint_interface'
          print *, '       but this interface is not initialized'
          stop 1
@@ -37,15 +34,23 @@ contains
 
 
    subroutine dalton_xcint_interface_finalize()
-      is_initialized = .false.
-      this_is_ks_calculation = .false.
+      interface_is_initialized = .false.
    end subroutine
 
 
-   logical function is_ks_calculation()
-      call check_if_initialized()
-      is_ks_calculation = this_is_ks_calculation
+   logical function use_xcint_integrator()
+      use_xcint_integrator = use_xcint
    end function
+
+
+   subroutine select_xcint_integrator()
+      use_xcint = .true.
+   end subroutine
+
+
+   subroutine unselect_xcint_integrator()
+      use_xcint = .false.
+   end subroutine
 
 
    integer(c_int) function fortran_stdout_function(string) bind(c)
@@ -125,7 +130,7 @@ contains
 #include "mpif.h"
 #endif
 
-      if (is_initialized) return
+      if (interface_is_initialized) return
 
       num_shells  = kmax
       num_centers = nucind
@@ -201,11 +206,11 @@ contains
                            primitive_exp,        &
                            contraction_coef)
 
-      if (openrsp_cfg_use_xcint_grid) then
+      if (xcint_use_own_grid) then
          ! this generates XCint's internal grid
-         ierr = xcint_generate_grid(openrsp_cfg_radint,   &
-                                    openrsp_cfg_angmin,   &
-                                    openrsp_cfg_angint,   &
+         ierr = xcint_generate_grid(xcint_radint,         &
+                                    xcint_angmin,         &
+                                    xcint_angint,         &
                                     num_centers,          &
                                     center_xyz,           &
                                     center_element,       &
@@ -215,7 +220,7 @@ contains
                                     shell_num_primitives, &
                                     primitive_exp)
          if (ierr /= 0) then
-            print *, 'OpenRSP ERROR: problem in xcint_generate_grid'
+            print *, 'ERROR: problem in xcint_generate_grid'
             stop 1
          end if
       end if
@@ -228,22 +233,22 @@ contains
       deallocate(shell_center)
       deallocate(center_element)
 
-      is_initialized = .true.
+      interface_is_initialized = .true.
 
    end subroutine
 
 
-   subroutine openrsp_set_functional(line, hfx, mu, beta)
+   subroutine set_functional(line, hfx, mu, beta)
 
-   ! input
+      ! input
       character(*), intent(in) :: line
 
-   ! output
+      ! output
       real(c_double), intent(out) :: hfx
       real(c_double), intent(out) :: mu
       real(c_double), intent(out) :: beta
 
-   ! local
+      ! local
       integer        :: ierr
       type(c_funptr) :: stdout_function
 
@@ -255,11 +260,9 @@ contains
 
       ierr = xcint_set_functional(line//C_NULL_CHAR, hfx, mu, beta)
       if (ierr /= 0) then
-         print *, 'OpenRSP ERROR: problem in xcint_set_functional'
+         print *, 'ERROR: problem in xcint_set_functional'
          stop 1
       end if
-
-      this_is_ks_calculation = .true.
 
    end subroutine
 
@@ -267,8 +270,8 @@ end module
 
 
 logical function is_dalton_ks_calculation()
-   use dalton_xcint_interface, only: is_ks_calculation
-   is_dalton_ks_calculation = is_ks_calculation()
+   use dalton_xcint_interface, only: use_xcint_integrator
+   is_dalton_ks_calculation = use_xcint_integrator()
 end function
 
 
