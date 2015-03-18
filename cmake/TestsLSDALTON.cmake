@@ -66,7 +66,7 @@ endif()
 endif()
 
 if(ENABLE_OPENRSP)
-    add_lsdalton_test(LSint/LSDALTON_gen1int                  "linsca;openrsp")
+    add_lsdalton_test(LSint/LSDALTON_gen1int                  "linsca")
 endif()
 
 if(ENABLE_CSR)
