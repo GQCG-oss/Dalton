@@ -895,8 +895,6 @@ C
 !                 call quit('ERROR: num_grid file not found')
                end if
                
-!              call dalton_xcint_interface_init() ! returns early if aleady initialized
-               
                allocate(dmat_ao(nbast*nbast))
                allocate(xc_mat(nbast*nbast))
                allocate(xc_mat_tri(nnbast))
