@@ -415,8 +415,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    pT_4_v    = 6
    pT_5_o    = 7
    pT_5_v    = 8
+
+   print_frags = DECinfo%print_frags
+   abc = DECinfo%abc
    
-   if (DECinfo%print_frags) then ! should we print fragment energies?
+   if (print_frags) then ! should we print fragment energies?
 
       call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
          & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
@@ -450,10 +453,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call tensor_cp_data( t2_final, t2f_local   )
 
       if(ccmodel == MODEL_CCSDpT)then
-
-
-         print_frags = DECinfo%print_frags
-         abc = DECinfo%abc
  
          if (abc) then
 
@@ -654,13 +653,25 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       else
 
 #ifdef VAR_MPI
-         call tensor_minit(t2_final,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,nocc,1],atype='TDAR')
-         call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,1,1],atype='TDAR')
-         call tensor_init(t1_final,[nvirt,nocc],2)
+         if (abc) then
+            call tensor_minit(t2_final,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,1],atype='TDAR')
+            call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,1,1],atype='TDAR')
+            call tensor_init(t1_final,[nocc,nvirt],2)
+         else
+            call tensor_minit(t2_final,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,nocc,1],atype='TDAR')
+            call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,1,1],atype='TDAR')
+            call tensor_init(t1_final,[nvirt,nocc],2)
+         endif
 #else
-         call tensor_init(t2_final,[nvirt,nvirt,nocc,nocc],4)
-         call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
-         call tensor_init(t1_final,[nvirt,nocc],2)
+         if (abc) then
+            call tensor_init(t2_final,[nocc,nocc,nvirt,nvirt],4)
+            call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+            call tensor_init(t1_final,[nocc,nvirt],2)
+         else
+            call tensor_init(t2_final,[nvirt,nvirt,nocc,nocc],4)
+            call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
+            call tensor_init(t1_final,[nvirt,nocc],2)
+         endif
 #endif
 
          call tensor_random(t2_final)
@@ -677,18 +688,17 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          call tensor_cp_data(VOVO,VOVO_local)
 #endif
 
-         print_frags = DECinfo%print_frags
-         abc = DECinfo%abc
-
-         if (abc .and. DECinfo%pt_hack) call lsquit('.PT_ABC .and. .PT_HACK keywords are incompatible',DECinfo%output)
-
          if (abc) then
 #ifdef VAR_MPI
-            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            if (.not. DECinfo%pt_hack) then
+               call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+               call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            endif
 #else
-            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            if (.not. DECinfo%pt_hack) then
+               call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+               call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            endif
 #endif
             call tensor_init(ccsdpt_t1,[nocc,nvirt],2)
          else
@@ -728,7 +738,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          end if
 #endif
 
-         if (abc) call tensor_reorder(ccsdpt_t1,[2,1])
+         if (abc .and. (.not. DECinfo%pt_hack)) call tensor_reorder(ccsdpt_t1,[2,1])
          call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5_o))
 
          ! sum up energies
