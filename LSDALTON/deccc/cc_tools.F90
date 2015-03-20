@@ -7,7 +7,7 @@ module cc_tools_module
 #ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
-!#define DIL_DEBUG_ON
+#define DIL_DEBUG_ON
 #endif
 #endif
 #endif
@@ -660,7 +660,7 @@ module cc_tools_module
       s2 = wszes(3)
       s3 = wszes(4)
       call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
+         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
@@ -691,7 +691,7 @@ module cc_tools_module
       !> the lambda transformation matrices
       real(realk), intent(in)    :: xo(:),yo(:),xv(:),yv(:)
       !> the sio4 matrix to calculate the b2.2 contribution
-      type(tensor),intent(inout) ::sio4
+      type(tensor),intent(inout) :: sio4
       !> scheme
       integer,intent(in) :: s
       logical,intent(in) :: lo,dil_lock_out
@@ -702,7 +702,6 @@ module cc_tools_module
       integer,optional,intent(in) :: order(4)
       logical,optional,intent(in) :: rest_occ_om2
       real(realk),optional :: scal
-      integer(kind=8)  :: wszes3(3)
       integer :: goffs,aoffs,tlen,tred,nor,nvr
       integer(kind=8) :: s0, s2, s3
 !{`DIL:
@@ -776,8 +775,13 @@ module cc_tools_module
          !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
 !        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred) !`DIL: replace
          if(DIL_DEBUG) then !`DIL: Tensor contraction 6
-          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 6:")')&
-          &infpar%lg_mynum,infpar%mynum
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 6:",3(1x,i7))')&
+          &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
+         endif
+         call dil_array_init(w3,tred*nor)
+         if(DIL_DEBUG) then
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Initial Low w3 norm = ",D22.14)') dil_array_norm1(w3,tred*nor)
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Initial Low w2 norm = ",D22.14)') dil_array_norm1(w2,tred*nvr)
          endif
          tcs='D(z,y)+=L(z,x)*R(y,x)'
          call dil_clean_tens_contr(tch)
@@ -814,8 +818,13 @@ module cc_tools_module
          !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
 !        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred) !`DIL replace
          if(DIL_DEBUG) then !`DIL: Tensor contraction 7
-          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 7:")')&
-          &infpar%lg_mynum,infpar%mynum
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 7:",3(1x,i7))')&
+          &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
+         endif
+         call dil_array_init(w3(tred*nor+1:),tred*nor)
+         if(DIL_DEBUG) then
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Initial High w3 norm = ",D22.14)') dil_array_norm1(w3(tred*nor+1:),tred*nor)
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Initial High w2 norm = ",D22.14)') dil_array_norm1(w2,tred*nvr)
          endif
          tcs='D(z,y)+=L(z,x)*R(y,x)'
          call dil_clean_tens_contr(tch)
@@ -850,7 +859,7 @@ module cc_tools_module
       s2 = wszes(3)
       s3 = wszes(4)
       call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
+         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej=(s/=2.and.s/=1))
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_exd
@@ -859,8 +868,8 @@ module cc_tools_module
    !> \brief Combine sigma matrixes in symmetric and antisymmetric combinations 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine combine_and_transform_sigma(omega,w0,w2,w3,s0,s2,s3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
-         & la,lg,no,nv,nb,goffs,aoffs,s,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej, query )
+   subroutine combine_and_transform_sigma(omega,w0,w2,w3,s0,s2,s3,xvirt,xocc,sio4,nor,tlen,tred,fa,fg,la,lg,&
+         &no,nv,nb,goffs,aoffs,s,lock_outside,twork,tcomm,order,rest_occ_om2,scal,act_no,sio4_ilej,query)
       implicit none
       !> size of w0
       integer(kind=8),intent(inout)   :: s0,s2,s3
@@ -874,7 +883,7 @@ module cc_tools_module
       real(realk),intent(inout),target :: w2(s2)
       !> w3 contains the symmetric and antisymmetric combinations 
       real(realk),intent(inout) :: w3(s3)
-      !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
+      !> sio4 are the reduced o4 integrals which are used to calculate the B2.2
       !contribution after the loop, update them in the loops
       type(tensor),intent(inout) :: sio4
       !> Lambda p virutal part
@@ -922,10 +931,10 @@ module cc_tools_module
       real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
 
-      rest_o2_occ   = .false.
-      if(present(rest_occ_om2 ))rest_o2_occ   = rest_occ_om2
+      rest_o2_occ = .false.
+      if(present(rest_occ_om2 ))rest_o2_occ = rest_occ_om2
       no2 = no
-      if(present(act_no))no2=act_no
+      if(present(act_no))no2 = act_no
       rest_sio4 = .true.
       if(present(sio4_ilej))rest_sio4 = sio4_ilej
       qu = .false.
@@ -934,6 +943,14 @@ module cc_tools_module
       o2v2 = int((i8*no)*no*nv*nv,kind=long)
 #ifdef VAR_MPI
       mode = MPI_MODE_NOCHECK
+#endif
+
+!``DIL: compute the w3 norm: remove:
+#ifdef DIL_DEBUG_ON
+      if(DIL_DEBUG) then
+       write(DIL_CONS_OUT,'("#DEBUG(DIL): low w3 1-norm in sigma  = ",D22.14)') dil_array_norm1(w3,tred*nor)
+       write(DIL_CONS_OUT,'("#DEBUG(DIL): high w3 1-norm in sigma = ",D22.14)') dil_array_norm1(w3(tred*nor+1:),tred*nor)
+      endif
 #endif
 
       scaleitby=1.0E0_realk
@@ -1246,7 +1263,7 @@ module cc_tools_module
                   !OMP END WORKSHARE
 #endif
                endif
-            else if(s==2)then
+            else if(s==2.or.s==1)then
 #ifdef VAR_MPI
                if( .not.alloc_in_dummy.and.lock_outside )call tensor_lock_wins(omega,'s',mode)
                !$OMP WORKSHARE
@@ -1285,7 +1302,7 @@ module cc_tools_module
                &w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
 
 #ifdef  VAR_MPI
-            if( lock_outside .and. s==2 )then
+            if( lock_outside .and. (s==2.or.s==1) )then
                call time_start_phase(PHASE_COMM, at=twork)
                if( alloc_in_dummy )then
                   call lsmpi_win_flush(omega%wi(1),local=.true.)
@@ -1315,7 +1332,7 @@ module cc_tools_module
                      !OMP END WORKSHARE
 #endif
                   endif
-               else if(s==2)then
+               else if(s==2.or.s==1)then
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
                   call assign_in_subblocks(w2,'=',w2,o2v2,scal2=scaleitby)
 #else
@@ -1347,7 +1364,7 @@ module cc_tools_module
          ! get the order sigma[ gamma i j alpha ]
          call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
 #ifdef VAR_MPI
-         if(lock_outside.and.s==2)then
+         if(lock_outside.and.(s==2.or.s==1))then
             call time_start_phase(PHASE_COMM, at=twork)
             if( alloc_in_dummy )then
                call lsmpi_win_flush(omega%wi(1),local=.true.)
@@ -1365,7 +1382,7 @@ module cc_tools_module
          else
             call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 
-            if(s==2)then
+            if(s==2.or.s==1)then
                call squareup_block_triangular_squarematrix(w2,no,no,do_block_transpose = .true.)
 #ifdef VAR_MPI
                if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
@@ -1422,7 +1439,7 @@ module cc_tools_module
                call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4%elm1,no2)
             else
                call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
-               if(s==2)then
+               if(s==2.or.s==1)then
                   call squareup_block_triangular_squarematrix(w2,no,no,do_block_transpose = .true.)
 #ifdef VAR_MPI
                   call time_start_phase(PHASE_COMM, at=twork)
@@ -1818,7 +1835,7 @@ module cc_tools_module
          endif
 
 
-      else if(s==2.and.traf)then
+      else if((s==2.or.s==1).and.traf)then
 
 #ifdef VAR_MPI
          o = [1,2,3,4]
