@@ -1270,10 +1270,12 @@ contains
 
     implicit none
 
-    integer            :: nocc,nvirt,nbasis,ierr
-    real(realk)        :: vovo(:,:,:,:),ccsd_t2(:,:,:,:)
-    type(lsitem)       :: mylsitem
-    logical            :: print_frags,abc
+    integer                     :: nocc,nvirt,nbasis,ierr
+    real(realk)                 :: vovo(:,:,:,:)
+    type(tensor), intent(inout) :: ccsd_t2
+    type(lsitem)                :: mylsitem
+    logical                     :: print_frags,abc
+    integer                     :: t2_addr(infpar%lg_nodtot)
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1283,6 +1285,8 @@ contains
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(print_frags,infpar%master)
     call ls_mpi_buffer(abc,infpar%master)
+    if (infpar%lg_mynum .eq. infpar%master) t2_addr = ccsd_t2%addr_p_arr
+    call ls_mpi_buffer(t2_addr,infpar%lg_nodtot,infpar%master)
     call mpicopy_lsitem(mylsitem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
@@ -1292,15 +1296,22 @@ contains
        if (abc) then
 
           call ls_mpibcast(vovo,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
-          call ls_mpibcast(ccsd_t2,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+!          call ls_mpibcast(ccsd_t2,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
        else
 
           call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-          call ls_mpibcast(ccsd_t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
        endif
     endif
+
+    if (infpar%lg_mynum .ne. infpar%master) then
+
+       ccsd_t2 = get_tensor_from_parr(t2_addr(infpar%lg_mynum+1))
+
+    endif
+
+    ccsd_t2%access_type = AT_ALL_ACCESS
 
   end subroutine mpi_communicate_ccsdpt_calcdata
 

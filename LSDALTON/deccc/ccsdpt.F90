@@ -97,6 +97,7 @@ contains
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
     !> MOs and unitary transformation matrices
     type(array2) :: C_can_occ, C_can_virt, Uocc, Uvirt
+    type(tensor) :: Uo,Uv
     !> dimensions
     integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
@@ -189,23 +190,77 @@ contains
 
       Uocc       = array2_init(occdims)
       Uvirt      = array2_init(virtdims)
-      call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
-                         & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
+
+      if (.not. DECinfo%pt_hack) then
+
+         call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
+                            & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
+
+      else
+
+         call random_seed()
+         call random_number(C_can_occ%val)
+         C_can_occ%val = 1.0E-1_realk*C_can_occ%val
+         call random_seed()
+         call random_number(C_can_virt%val)
+         C_can_virt%val = 1.0E-1_realk*C_can_virt%val
+         call random_seed()
+         call random_number(eivalocc)
+         eivalocc = -1.0E0_realk*eivalocc
+         call random_seed()
+         call random_number(eivalvirt)
+         eivalvirt = 1.0E0_realk*eivalvirt
+
+      endif
+
+!#ifdef VAR_MPI
+!      call tensor_minit(Uo,[nocc,nocc],2,local=.false.,atype="TDPD")
+!      call tensor_minit(Uv,[nvirt,nvirt],2,local=.false.,atype="TDPD")
+!      call tensor_convert(Uocc%val,Uo)
+!      call tensor_convert(Uvirt%val,Uv)
+!#endif
 
       ! ************************************************************
       ! transform vovo and ccsd doubles amplitudes to diagonal basis
       ! ************************************************************
+
+#ifdef VAR_MPI
+
       if (abc) then
 
          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
-         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+!         call tensor_transform_basis([Uo,Uv],2,[ccsd_doubles],[[2,2,1,1]],[[1,1,1,1]],4,1)
 
       else
 
-         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
-         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+         if (.not. DECinfo%pt_hack) then
+
+            call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+!            call tensor_transform_basis([Uo,Uv],2,[ccsd_doubles],[[2,2,1,1]],[[1,1,1,1]],4,1)
+
+         endif
 
       endif
+
+#else
+
+      if (abc) then
+
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+!         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+
+      else
+
+         if (.not. DECinfo%pt_hack) then
+   
+            call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+            call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+   
+         endif
+
+      endif
+
+#endif
 
     end if
 
@@ -219,7 +274,7 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles%elm4,&
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles,&
                                           & mylsitem,print_frags,abc)
 
     end if waking_the_slaves
@@ -338,13 +393,13 @@ contains
        ! the parallel version of the ijk-loop
        if (print_frags) then
    
-          call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
+          call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles,&
                           & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
                           & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
    
        else
-   
-          call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
+
+          call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles,&
                           & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
                           & ccsdpt_singles%elm1,e4=e4)
    
@@ -424,6 +479,8 @@ contains
 
     end if reducing_to_master
 
+    ccsd_doubles%access_type = AT_MASTER_ACCESS
+
     ! release stuff located on slaves
     releasing_the_slaves: if ((nodtotal .gt. 1) .and. .not. master) then
 
@@ -491,10 +548,31 @@ contains
 
     if (print_frags) then
 
+#ifdef VAR_MPI
+
        if (abc) then
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+!          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+
+       else
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+!          call tensor_transform_basis([Uo,Uv],2,[ccsd_doubles],[[2,2,1,1]],[[2,2,2,2]],4,1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+
+       endif
+
+!       call tensor_free(Uo)
+!       call tensor_free(Uv)
+
+#else
+
+       if (abc) then
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
+!          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
 
        else
@@ -505,6 +583,8 @@ contains
 
        endif
 
+#endif
+
     else
 
        if (abc) then
@@ -513,7 +593,7 @@ contains
 
        else
 
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vo=ccsdpt_singles%elm1)
+          if (.not. DECinfo%pt_hack) call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vo=ccsdpt_singles%elm1)
 
        endif
 
@@ -554,9 +634,9 @@ contains
     !> 2-el integrals
     real(realk), dimension(nocc,nvirt,nocc,nocc) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
-    type(tensor), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    type(tensor), intent(inout) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     !> ccsd doubles amplitudes
-    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
+    type(tensor), intent(inout) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
     real(realk), pointer, dimension(:,:,:) :: ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k
     !> triples amplitudes and 3d work array
@@ -572,16 +652,18 @@ contains
     integer, intent(in) :: nbuffs
     !> job distribution
     real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
-    real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
+    real(realk), pointer, dimension(:) :: ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k ! ov^2 tiles from ccsd_doubles
+    real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch vvvo tiles
+    real(realk), pointer, dimension(:,:) :: ccsd_pdm_buff      ! buffers to prefetch ccsd_doubles tiles
     integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
     !> loop integers
     integer :: i,j,k,idx,ij_type,tuple_type
     !> ij loop and k loop buffer handling
-    integer :: ibuf, jbuf, kbuf
-    integer,pointer :: tiles_in_buf(:)
-    integer(kind=ls_mpik), pointer :: req(:)
-    logical,pointer :: needed(:)
+    integer :: ibuf_vvvo, ibuf_ccsd, jbuf_vvvo, jbuf_ccsd, kbuf_vvvo, kbuf_ccsd
+    integer, pointer, dimension(:) :: tiles_in_buf_vvvo, tiles_in_buf_ccsd
+    integer(kind=ls_mpik), pointer, dimension(:) :: req_vvvo, req_ccsd
+    logical, pointer, dimension(:) :: needed_vvvo, needed_ccsd
     integer :: num_ids,m
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind), pointer, dimension(:) :: async_id
@@ -591,6 +673,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
+    integer(kind=ls_mpik) :: mode
     ! timings
     real(realk) :: tcpu,twall,time_pt_ijk,time_pt_ijk_min,time_pt_ijk_max
     real(realk) :: time_trip,time_efull,time_driv,time_preload
@@ -618,13 +701,20 @@ contains
 
     if (present(e4)) full_no_frags = .true.
 
+    mode   = MPI_MODE_NOCHECK
+
     call time_start_phase(PHASE_WORK)
 
-    call mem_alloc( vvvo_pdm_buff, nvirt**3, nbuffs )
-    call mem_alloc( needed,       nbuffs )
-    call mem_alloc( tiles_in_buf, nbuffs )
-    call mem_alloc( req,          nbuffs )
-    if(alloc_in_dummy)call tensor_lock_wins(vvvo,'s',all_nodes=.true.)
+    call mem_alloc(vvvo_pdm_buff,nvirt**3,nbuffs)
+    call mem_alloc(ccsd_pdm_buff,nocc*nvirt**2,nbuffs)
+    call mem_alloc(needed_vvvo,nbuffs)
+    call mem_alloc(needed_ccsd,nbuffs)
+    call mem_alloc(tiles_in_buf_vvvo,nbuffs)
+    call mem_alloc(tiles_in_buf_ccsd,nbuffs)
+    call mem_alloc(req_vvvo,nbuffs)
+    call mem_alloc(req_ccsd,nbuffs)
+    if (alloc_in_dummy) call tensor_lock_wins(vvvo,'s',all_nodes=.true.)
+    if (alloc_in_dummy) call tensor_lock_wins(ccsd_doubles,'s',all_nodes=.true.)
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -664,12 +754,14 @@ contains
     ! the composite index ij is incremented in the collapsed loop, and we may calculate i and j from ij.
 
     ! init ij and i_old/j_old
-    ij           = 0
-    i_old        = 0
-    j_old        = 0
-    ij_type      = 0
-    needed       = .false.
-    tiles_in_buf = -1
+    ij                = 0
+    i_old             = 0
+    j_old             = 0
+    ij_type           = 0
+    needed_vvvo       = .false.
+    needed_ccsd       = .false.
+    tiles_in_buf_vvvo = -1
+    tiles_in_buf_ccsd = -1
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles
@@ -748,40 +840,55 @@ contains
                end if
 
                !FIND i in buffer
-               call assoc_ptr_to_buf(i,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_i,vvvo_pdm_buff,ibuf,req)
+               call assoc_ptr_to_buf(i,vvvo,nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
+                                     & vvvo_pdm_i,vvvo_pdm_buff,ibuf_vvvo,req_vvvo)
+               call assoc_ptr_to_buf(i,ccsd_doubles,nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+                                     & ccsd_pdm_i,ccsd_pdm_buff,ibuf_ccsd,req_ccsd)
 
                !FIND j in buffer
-               call assoc_ptr_to_buf(j,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_j,vvvo_pdm_buff,jbuf,req)
+               call assoc_ptr_to_buf(j,vvvo,nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
+                                     & vvvo_pdm_j,vvvo_pdm_buff,jbuf_vvvo,req_vvvo)
+               call assoc_ptr_to_buf(j,ccsd_doubles,nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+                                     & ccsd_pdm_j,ccsd_pdm_buff,jbuf_ccsd,req_ccsd)
 
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
 
                case(1) ! i .gt. j
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
-
-#ifdef VAR_OPENACC
-                  call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
-#else
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
-#endif
-
                   ! get the j'th v^3 tile only
                   call time_start_phase(PHASE_COMM)
 
                   if( alloc_in_dummy )then
 
-                     call lsmpi_wait(req(jbuf))
+                     call lsmpi_wait(req_vvvo(jbuf_vvvo))
+                     call lsmpi_wait(req_ccsd(jbuf_ccsd))
 
                   else
 
                      if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
+                     if(ccsd_doubles%lock_set(j)) call tensor_unlock_win(ccsd_doubles,j)
 
                   endif
 
+!                  call tensor_lock_win(ccsd_doubles,j,'s',assert=mode)
+!
+!                  call tensor_get_tile(ccsd_doubles,j,ccsd_pdm_j,nocc*nvirt**2,&
+!                                      & lock_set=.true.,flush_it=.true.)
+!
+!                  call tensor_unlock_win(ccsd_doubles,j)
+
                   call time_start_phase(PHASE_WORK)
+
+#ifdef VAR_OPENACC
+                  call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
+#else
+                  call array_reorder_3d(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+#endif
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
@@ -802,31 +909,39 @@ contains
 ! if we can use ccsd_doubles(:,:,:,j), ccsd_doubles_portions_j, vvvo_pdm_j, and ccsdpt_doubles_2(:,:,:,j),
 ! then there is no need for this (although we need ccsd_doubles(:,:,:,j)
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
-
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
-
                      ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
 
                      if( alloc_in_dummy )then
 
-                        call lsmpi_wait(req(ibuf))
+                        call lsmpi_wait(req_vvvo(ibuf_vvvo))
+                        call lsmpi_wait(req_ccsd(ibuf_ccsd))
 
                      else
 
                         if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+                        if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
 
                      endif
 
+!                     call tensor_lock_win(ccsd_doubles,i,'s',assert=mode)
+!   
+!                     call tensor_get_tile(ccsd_doubles,i,ccsd_pdm_i,nocc*nvirt**2,&
+!                                         & lock_set=.true.,flush_it=.true.)
+!   
+!                     call tensor_unlock_win(ccsd_doubles,i)
 
                      call time_start_phase(PHASE_WORK)
+
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_i,&
 !$acc& ovoo(:,:,i,j)) async(async_id(2))
@@ -839,30 +954,39 @@ contains
 
                   else ! i .gt. j
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
-
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
-
                      ! get the i'th v^3 tile only
                      call time_start_phase(PHASE_COMM)
 
                      if( alloc_in_dummy )then
 
-                        call lsmpi_wait(req(ibuf))
+                        call lsmpi_wait(req_vvvo(ibuf_vvvo))
+                        call lsmpi_wait(req_ccsd(ibuf_ccsd))
 
                      else
 
                         if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+                        if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
 
                      endif
 
+!                     call tensor_lock_win(ccsd_doubles,i,'s',assert=mode)
+!   
+!                     call tensor_get_tile(ccsd_doubles,i,ccsd_pdm_i,nocc*nvirt**2,&
+!                                         & lock_set=.true.,flush_it=.true.)
+!   
+!                     call tensor_unlock_win(ccsd_doubles,i)
+
                      call time_start_phase(PHASE_WORK)
+
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
@@ -885,31 +1009,39 @@ contains
 ! if we can use ccsd_doubles(:,:,:,j), ccsd_doubles_portions_j, vvvo_pdm_j, and ccsdpt_doubles_2(:,:,:,j),
 ! then these should be used here instead of the ones for 'i'
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
-
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
-
                      ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
 
                      if( alloc_in_dummy )then
 
-                        call lsmpi_wait(req(ibuf))
+                        call lsmpi_wait(req_vvvo(ibuf_vvvo))
+                        call lsmpi_wait(req_ccsd(ibuf_ccsd))
 
                      else
 
                         if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+                        if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
 
                      endif
 
+!                     call tensor_lock_win(ccsd_doubles,i,'s',assert=mode)
+!
+!                     call tensor_get_tile(ccsd_doubles,i,ccsd_pdm_i,nocc*nvirt**2,&
+!                                         & lock_set=.true.,flush_it=.true.)
+!
+!                     call tensor_unlock_win(ccsd_doubles,i)
 
                      call time_start_phase(PHASE_WORK)
+
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_i,&
 !$acc& ovoo(:,:,i,j)) async(async_id(2))
@@ -922,45 +1054,70 @@ contains
 
                   else ! i .gt. j
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
-
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
-#endif
-
                      ! get the i'th and j'th v^3 tiles
                      call time_start_phase(PHASE_COMM)
 
                      if( alloc_in_dummy )then
 
-                        call lsmpi_wait(req(ibuf))
+                        call lsmpi_wait(req_vvvo(ibuf_vvvo))
+                        call lsmpi_wait(req_ccsd(ibuf_ccsd))
 
                      else
 
                         if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+                        if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
 
                      endif
 
+!                     call tensor_lock_win(ccsd_doubles,i,'s',assert=mode)
+!
+!                     call tensor_get_tile(ccsd_doubles,i,ccsd_pdm_i,nocc*nvirt**2,&
+!                                         & lock_set=.true.,flush_it=.true.)
+!
+!                     call tensor_unlock_win(ccsd_doubles,i)
+
+                     call time_start_phase(PHASE_WORK)
+
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+#endif
+
+                     call time_start_phase(PHASE_COMM)
 
                      if( alloc_in_dummy )then
 
-                        call lsmpi_wait(req(jbuf))
+                        call lsmpi_wait(req_vvvo(jbuf_vvvo))
+                        call lsmpi_wait(req_ccsd(jbuf_ccsd))
 
                      else
 
                         if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
+                        if(ccsd_doubles%lock_set(j)) call tensor_unlock_win(ccsd_doubles,j)
 
                      endif
 
+!                     call tensor_lock_win(ccsd_doubles,j,'s',assert=mode)
+!
+!                     call tensor_get_tile(ccsd_doubles,j,ccsd_pdm_j,nocc*nvirt**2,&
+!                                         & lock_set=.true.,flush_it=.true.)
+!
+!                     call tensor_unlock_win(ccsd_doubles,j)
+
                      call time_start_phase(PHASE_WORK)
+
+#ifdef VAR_OPENACC
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
+#else
+                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+#endif
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
@@ -979,9 +1136,10 @@ contains
 
                end select TypeOf_ij_combi
 
-               needed(ibuf) = .true.
-               needed(jbuf) = .true.
-
+               needed_vvvo(ibuf_vvvo) = .true.
+               needed_ccsd(ibuf_ccsd) = .true.
+               needed_vvvo(jbuf_vvvo) = .true.
+               needed_ccsd(jbuf_ccsd) = .true.
 
         krun_par: do k=1,j
 
@@ -989,7 +1147,10 @@ contains
                      tuple_type = -1
 
                      !FIND k in buffer
-                     call assoc_ptr_to_buf(k,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_k,vvvo_pdm_buff,kbuf,req)
+                     call assoc_ptr_to_buf(k,vvvo,nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
+                                           & vvvo_pdm_k,vvvo_pdm_buff,kbuf_vvvo,req_vvvo)
+                     call assoc_ptr_to_buf(k,ccsd_doubles,nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+                                           & ccsd_pdm_k,ccsd_pdm_buff,kbuf_ccsd,req_ccsd)
 
                      if ((i .eq. j) .and. (j .eq. k)) then
 
@@ -1002,30 +1163,39 @@ contains
                         ! i == j > k
                         tuple_type = 1
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
-
-#ifdef VAR_OPENACC
-                        call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
-#else
-                        call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
-#endif
-
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
 
                         if( alloc_in_dummy )then
 
-                           call lsmpi_wait(req(kbuf))
+                           call lsmpi_wait(req_vvvo(kbuf_vvvo))
+                           call lsmpi_wait(req_ccsd(kbuf_ccsd))
 
                         else
 
                            if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
+                           if(ccsd_doubles%lock_set(k)) call tensor_unlock_win(ccsd_doubles,k)
 
                         endif
 
+!                        call tensor_lock_win(ccsd_doubles,k,'s',assert=mode)
+!   
+!                        call tensor_get_tile(ccsd_doubles,k,ccsd_pdm_k,nocc*nvirt**2,&
+!                                            & lock_set=.true.,flush_it=.true.)
+!   
+!                        call tensor_unlock_win(ccsd_doubles,k)
+
                         call time_start_phase(PHASE_WORK)
+
+#ifdef VAR_OPENACC
+                        call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
+#else
+                        call array_reorder_3d(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
+#endif
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_k,&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
@@ -1053,30 +1223,39 @@ contains
                         ! i > j > k
                         tuple_type = 3
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
-
-#ifdef VAR_OPENACC
-                        call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
-#else
-                        call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
-#endif
-
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
 
                         if( alloc_in_dummy )then
 
-                           call lsmpi_wait(req(kbuf))
+                           call lsmpi_wait(req_vvvo(kbuf_vvvo))
+                           call lsmpi_wait(req_ccsd(kbuf_ccsd))
 
                         else
 
                            if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
+                           if(ccsd_doubles%lock_set(k)) call tensor_unlock_win(ccsd_doubles,k)
 
                         endif
 
+!                        call tensor_lock_win(ccsd_doubles,k,'s',assert=mode)
+!
+!                        call tensor_get_tile(ccsd_doubles,k,ccsd_pdm_k,nocc*nvirt**2,&
+!                                            & lock_set=.true.,flush_it=.true.)
+!
+!                        call tensor_unlock_win(ccsd_doubles,k)
+
                         call time_start_phase(PHASE_WORK)
+
+#ifdef VAR_OPENACC
+                        call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
+#else
+                        call array_reorder_3d(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
+                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
+#endif
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_k,&
 !$acc& ovoo(:,:,i,k),ovoo(:,:,k,i),ovoo(:,:,j,k),ovoo(:,:,k,j)) async(async_id(2))
@@ -1090,10 +1269,14 @@ contains
 
                      end if
 
-                     needed(kbuf) = .true.
+                     needed_vvvo(kbuf_vvvo) = .true.
+                     needed_ccsd(kbuf_ccsd) = .true.
 
                      call time_start_phase(PHASE_WORK, twall = time_preload )
-                     call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,i,j,k,ij_count,nbuffs,needed,tiles_in_buf,vvvo_pdm_buff,req)
+                     call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,i,j,k,ij_count,nbuffs,&
+                                                 & needed_vvvo,tiles_in_buf_vvvo,vvvo_pdm_buff,req_vvvo)
+                     call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nocc,i,j,k,ij_count,nbuffs,&
+                                                 & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd)
                      call time_start_phase(PHASE_WORK, ttot = time_preload )
                      time_preload_tot = time_preload_tot + time_preload
 
@@ -1105,7 +1288,7 @@ contains
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
                         call time_start_phase(PHASE_WORK, twall = time_trip )
-                        call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,k),&
+                        call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_k,&
                                                 & ccsd_doubles_portions_i,ccsd_doubles_portions_k,&
                                                 & vvvo_pdm_i,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
@@ -1173,7 +1356,7 @@ contains
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
                         call time_start_phase(PHASE_WORK, twall = time_trip )
-                        call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
+                        call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_j,&
                                                 & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                 & vvvo_pdm_i,vvvo_pdm_j,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
@@ -1235,8 +1418,8 @@ contains
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
                         call time_start_phase(PHASE_WORK, twall = time_trip )
-                        call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
-                                                & ccsd_doubles(:,:,:,k),ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
+                        call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
+                                                & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                 & ccsd_doubles_portions_k,vvvo_pdm_i,&
                                                 & vvvo_pdm_j,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
@@ -1308,12 +1491,15 @@ contains
 
                      end select TypeOfTuple_par_ijk
 
-                     needed(kbuf) = .false.
+                     needed_vvvo(kbuf_vvvo) = .false.
+                     needed_ccsd(kbuf_ccsd) = .false.
 
                   end do krun_par
 
-                  needed(ibuf) = .false.
-                  needed(jbuf) = .false.
+                  needed_vvvo(ibuf_vvvo) = .false.
+                  needed_ccsd(ibuf_ccsd) = .false.
+                  needed_vvvo(jbuf_vvvo) = .false.
+                  needed_ccsd(jbuf_ccsd) = .false.
 
                if (j .eq. i) then
 
@@ -1389,6 +1575,7 @@ contains
 !$acc wait
 
     if (alloc_in_dummy) call tensor_unlock_wins(vvvo,all_nodes=.true.)
+    if (alloc_in_dummy) call tensor_unlock_wins(ccsd_doubles,all_nodes=.true.)
 
 #ifdef VAR_CUBLAS
 
@@ -1407,9 +1594,13 @@ contains
 
     ! release pdm work arrays and job list
     call mem_dealloc(vvvo_pdm_buff)
-    call mem_dealloc(needed)
-    call mem_dealloc(req)
-    call mem_dealloc(tiles_in_buf)
+    call mem_dealloc(ccsd_pdm_buff)
+    call mem_dealloc(needed_vvvo)
+    call mem_dealloc(needed_ccsd)
+    call mem_dealloc(req_vvvo)
+    call mem_dealloc(req_ccsd)
+    call mem_dealloc(tiles_in_buf_vvvo)
+    call mem_dealloc(tiles_in_buf_ccsd)
     call mem_dealloc(jobs)
 
     ! release triples ampl structures
@@ -11380,25 +11571,25 @@ end module ccsdpt_module
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_t2%elm4,mylsitem,print_frags,abc)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_t2,mylsitem,print_frags,abc)
 
     !FIXME: split MPI messages!!!!!!!!!!
     ! init and receive vovo and ccsd_doubles array structures
     if (abc) then
 
        call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
-       call tensor_init(ccsd_t2, [nocc,nocc,nvirt,nvirt],4)
+!       call tensor_init(ccsd_t2, [nocc,nocc,nvirt,nvirt],4)
 
        call ls_mpibcast(vovo%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(ccsd_t2%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+!       call ls_mpibcast(ccsd_t2%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
     else
 
        call tensor_init(vovo, [nvirt,nvirt,nocc,nocc],4)
-       call tensor_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
+!       call tensor_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
 
        call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+!       call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
     endif
 
@@ -11452,7 +11643,7 @@ end module ccsdpt_module
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
     call tensor_free(vovo)
-    call tensor_free(ccsd_t2)
+!    call tensor_free(ccsd_t2)
 
     if (print_frags) then
 
