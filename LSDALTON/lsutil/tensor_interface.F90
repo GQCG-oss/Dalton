@@ -59,8 +59,8 @@ module tensor_interface_module
   ! User-level subroutines for tensor operations
   public tensor_convert, print_norm, tensor_add, tensor_contract
   public tensor_transform_basis, tensor_ddot
-  public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale
-  public tensor_allocate_dense, tensor_deallocate_dense
+  public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
+  public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, init_persistent_array, free_persistent_array, new_group_reset_persistent_array
@@ -92,8 +92,9 @@ module tensor_interface_module
   public get_symm_tensor_segmenting_simple
   public tensor_get_ntpm, get_tile_dim
   public tensor_set_debug_mode_true, tensor_set_dil_backend_true, tensor_set_dil_backend
+  public tensor_set_always_sync_true
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
-  public assoc_ptr_to_buf
+  public assoc_ptr_to_buf, lspdm_init_global_buffer, lspdm_free_global_buffer
 
   private
 
@@ -153,13 +154,48 @@ module tensor_interface_module
 
 contains
 
-  subroutine tensor_set_debug_mode_true()
+  subroutine tensor_set_debug_mode_true(call_slaves)
      implicit none
-     tensor_debug_mode = .true.
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0 .and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,me,infpar%lg_comm)
+     endif
+#endif
+
+     tensor_debug_mode  = .true.
+     tensor_always_sync = .true.
   end subroutine tensor_set_debug_mode_true
 
-  subroutine tensor_set_dil_backend_true()
+  subroutine tensor_set_always_sync_true(call_slaves)
      implicit none
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0 .and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_ALWAYS_SYNC_TRUE,me,infpar%lg_comm)
+     endif
+#endif
+
+     tensor_always_sync = .true.
+  end subroutine tensor_set_always_sync_true
+
+  subroutine tensor_set_dil_backend_true(call_slaves)
+     implicit none
+     logical, intent(in) :: call_slaves
+     integer(kind=ls_mpik) :: me
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0.and. call_slaves )then
+        call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,me,infpar%lg_comm)
+     endif
+#endif
      tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
   end subroutine tensor_set_dil_backend_true
 
@@ -167,7 +203,6 @@ contains
    implicit none
    logical, intent(in):: lv
    tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
-   return
   end subroutine tensor_set_dil_backend
 
   subroutine tensor_allocate_dense(T)
@@ -282,7 +317,7 @@ contains
         case(TT_TILED_DIST)
 
            call mem_alloc(buffer,y%tsize)
-           !TODO:IMPLEMENT MULTIPLE BUFFERING
+           !TODO:IMPLEMENT MULTIPLE BUFFERING AND MOVE TO lspdm_tensor_operations!!!!!!
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
 
@@ -469,6 +504,51 @@ contains
 
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_add_arr2fullfort
+
+  !> \brief Hadamard product Cij = alpha*Aij*Bij+beta*Cij
+  !> \author Thomas Kjaergaard
+  !> \date 2015
+  subroutine tensor_hmul(alpha,A,B,beta,C)
+     implicit none
+     !> array input, this is the result array with overwritten data
+     type(tensor),intent(inout) :: C
+     type(tensor),intent(in) :: A,B
+     !> scaling factor for array C
+     real(realk),intent(in) :: beta
+     !> scaling factor for array A and B
+     real(realk),intent(in) :: alpha
+     call time_start_phase( PHASE_WORK )
+     if(A%mode/=B%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
+     if(A%mode/=C%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
+
+     select case(C%itype)
+        
+     case(TT_TILED_DIST)
+        
+        select case(A%itype)
+
+        case(TT_TILED_DIST)
+           
+           select case(B%itype)
+
+           case(TT_TILED_DIST)
+
+              call tensor_hmul_par(alpha,A,B,beta,C)
+           case default
+              print *,A%itype,B%itype,C%itype
+              call lsquit("ERROR(tensor_hmul_normal):not yet implemented B%itype",DECinfo%output)
+           end select
+        case default
+           print *,A%itype,B%itype,C%itype
+           call lsquit("ERROR(tensor_hmul_normal):not yet implemented A%itype",DECinfo%output)
+        end select
+     case default
+        print *,A%itype,B%itype,C%itype
+        call lsquit("ERROR(tensor_hmul_normal):not yet implemented C%itype",DECinfo%output)
+     end select 
+    
+     call time_start_phase( PHASE_WORK )
+   end subroutine tensor_hmul
 
 
   !> \brief simple general tensor conraction of the type C = pre1 * A * B + pre2 * C
@@ -2379,6 +2459,37 @@ contains
      end select
 
   end subroutine tensor_zero
+
+  subroutine tensor_random(zeroed)
+     implicit none
+     type(tensor) :: zeroed
+     integer :: i
+
+     select case(zeroed%itype)
+     case(TT_DENSE)
+        call random_seed()
+        call random_number(zeroed%elm1)
+     case(TT_REPLICATED)
+        call random_seed()
+        call random_number(zeroed%elm1)
+        call tensor_sync_replicated(zeroed)
+     case(TT_TILED)
+        if (zeroed%atype=='RTAR') then
+           call tensor_rand_tiled_dist(zeroed)
+        else
+           call random_seed()
+           do i=1,zeroed%ntiles
+              call random_number(zeroed%ti(i)%t)
+              
+           enddo
+        end if
+     case(TT_TILED_DIST,TT_TILED_REPL)
+        call tensor_rand_tiled_dist(zeroed)
+     case default
+        call lsquit("ERROR(tensor_rand):not yet implemented",-1)
+     end select
+
+  end subroutine tensor_random
 
   subroutine tensor_print_tile_norm(arr,globtinr,nrm,returnsquared)
     implicit none

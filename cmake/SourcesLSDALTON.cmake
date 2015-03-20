@@ -3,6 +3,9 @@
 # LSDALTON_FREE_FORTRAN_SOURCES  
 # at the end of the file
 
+set(CUDA_GPU_INTERFACE_SOURCES
+    LSDALTON/cuda/gpu_interfaces.F90
+    )
 set(DFTFUNC_SOURCES
     LSDALTON/dft/fun-example.c
     LSDALTON/dft/fun-b97-1.c
@@ -73,6 +76,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccarray3_simple.F90
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
+    LSDALTON/deccc/rimp2.F90
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
@@ -100,6 +104,8 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsd_gradient.F90
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
+    LSDALTON/deccc/full_rimp2.F90
+    LSDALTON/deccc/full_mp2.F90
     LSDALTON/deccc/snoop_main.F90
     LSDALTON/deccc/snoop_tools.F90
     LSDALTON/deccc/decmpi.F90
@@ -288,6 +294,8 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specR.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL3.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL4.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEriTools.F90
@@ -867,6 +875,7 @@ if(ENABLE_QMATRIX)
 endif()
 # collect all free fortran sources
 set(LSDALTON_FREE_FORTRAN_SOURCES
+    ${CUDA_GPU_INTERFACE_SOURCES}
     ${DFTFUNC_F_SOURCES}
     ${LSDALTONMAIN_FORTRAN_SOURCES}
     ${DDYNAM_SOURCES}

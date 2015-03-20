@@ -804,6 +804,7 @@ contains
     call ls_mpi_buffer(MyFragment%Evir_err,master)
     call ls_mpi_buffer(MyFragment%Elag_err,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
+    CALL ls_mpi_buffer(MyFragment%gpu_flops_slaves,master)
     call ls_mpi_buffer(MyFragment%slavetime_work,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%slavetime_comm,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%slavetime_idle,ndecmodels,master)
@@ -1702,6 +1703,7 @@ contains
        call mem_alloc(jobs%nbasis,jobs%njobs)
        call mem_alloc(jobs%ntasks,jobs%njobs)
        call mem_alloc(jobs%flops,jobs%njobs)
+       call mem_alloc(jobs%gpu_flops,jobs%njobs)
        call mem_alloc(jobs%LMtime,jobs%njobs)
        call mem_alloc(jobs%workt,jobs%njobs)
        call mem_alloc(jobs%commt,jobs%njobs)
@@ -1721,6 +1723,7 @@ contains
     call ls_mpi_buffer(jobs%nbasis,jobs%njobs,master)
     call ls_mpi_buffer(jobs%ntasks,jobs%njobs,master)
     call ls_mpi_buffer(jobs%flops,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%gpu_flops,jobs%njobs,master)
     call ls_mpi_buffer(jobs%LMtime,jobs%njobs,master)
     call ls_mpi_buffer(jobs%workt,jobs%njobs,master)
     call ls_mpi_buffer(jobs%commt,jobs%njobs,master)
@@ -1936,6 +1939,7 @@ contains
     !> String to print describing job list
     character(*),intent(in) :: string
     real(realk) :: Gflops, avflop, minflop, maxflop,tmp,totflops,tottime_actual,localloss
+    real(realk) :: gpuGflops,totgpuflops
     real(realk) :: globalloss, tottime_ideal, slavetime, localuse
     integer :: i, minidx, maxidx,N
 
@@ -1957,6 +1961,7 @@ contains
     write(DECinfo%output,*) 'slotsiz: Number of slaves used for fragment incl. local master (slot size)'
     write(DECinfo%output,*) '#tasks : Number of integral tasks for fragment (nalpha*ngamma)'
     write(DECinfo%output,*) 'GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)'
+    write(DECinfo%output,*) 'GGFLOPS: Accumulated GPU GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'Time(s): Time (in seconds) used by local master (NOT local slaves)'
     write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice)'
     write(DECinfo%output,*) '      Load1 = (Sum of working and communication times for ALL MPI processes in slot)'
@@ -1968,11 +1973,12 @@ contains
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
-         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load1', 'Load2'
+    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,4X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
+         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'GGFLOPS', 'Time(s)', 'Load1', 'Load2'
 
     avflop         = 0.0E0_realk
     totflops       = 0.0E0_realk
+    totgpuflops    = 0.0E0_realk
     tottime_actual = 0.0E0_realk
     slavetime      = 0.0E0_realk
 
@@ -1981,7 +1987,6 @@ contains
     minidx         = 0
     maxidx         = 0
     N              = 0
-
 
     do i=1,jobs%njobs
        ! If nocc is zero, the job was not done and we do not print it
@@ -1994,16 +1999,18 @@ contains
 #else
        Gflops=-1.0_realk
 #endif
+       gpuGflops = jobs%gpu_flops(i)*1.0e-9_realk
        ! Update total number of flops
        totflops = totflops + Gflops
+       totgpuflops = totgpuflops + gpuGflops
        ! Update total time used by ALL nodes (including dead time by local slaves)
        tottime_actual = tottime_actual + jobs%LMtime(i)*jobs%nslaves(i)
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
        if(.not. jobs%dofragopt(i)) then
-          write(DECinfo%output,'(6i8,3X,4g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), &
+          write(DECinfo%output,'(6i8,3X,5g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
+               & jobs%nslaves(i), jobs%ntasks(i), Gflops, gpuGflops, jobs%LMtime(i), &
                &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
                &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
        end if
@@ -2040,14 +2047,15 @@ contains
        ! Average % global loss (idle time at the end when some slots wait for others)
        globalloss = ( 1 - (tottime_actual / tottime_ideal) )*100.0_realk
 
-       ! Average flops per node per sec
-       avflop = totflops/tottime_actual
        write(DECinfo%output,*) '-----------------------------------------------------------------------------'
        write(DECinfo%output,'(1X,a,i8)')    'Number of jobs done     = ', N
        write(DECinfo%output,'(1X,a,g12.3)') 'Time-to-solution (s)    = ', mastertime
        write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL time(s) all nodes = ', tottime_actual
 #ifdef VAR_PAPI
-       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL Gflops  = ', totflops
+       ! Average flops per node per sec
+       avflop = totflops/tottime_actual
+       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL Gflops     = ', totflops
+       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL GPU Gflops = ', totgpuflops
        write(DECinfo%output,'(1X,a,g12.3)') 'AVERAGE Gflops/s per MPI process= ', avflop
        write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MINIMUM Gflops/s per MPI process = ', &
             & minflop, ' for job ', minidx
@@ -2347,15 +2355,17 @@ contains
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
+    call ls_mpi_buffer(DECitem%MPMP2,Master)
     !RIMP2 settings
     call ls_mpi_buffer(DECitem%AuxAtomicExtent,Master)
     call ls_mpi_buffer(DECitem%NAF,Master)
     call ls_mpi_buffer(DECitem%NAFthreshold,Master)
     call ls_mpi_buffer(DECitem%RIMPSubGroupSize,Master)
     call ls_mpi_buffer(DECitem%RIMP2PDMTENSOR,Master)
-
+    call ls_mpi_buffer(DECinfo%RIMP2ForcePDMCalpha,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
+    call ls_mpi_buffer(DECitem%rimpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
     call ls_mpi_buffer(DECitem%ccsdAbatch,Master)
