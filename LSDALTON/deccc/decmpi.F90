@@ -1296,7 +1296,6 @@ contains
        if (abc) then
 
           call ls_mpibcast(vovo,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
-!          call ls_mpibcast(ccsd_t2,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
        else
 

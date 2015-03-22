@@ -47,7 +47,8 @@ module ccsdpt_module
   
 #ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
-       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot
+       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot,&
+       & ccsdpt_info
   private
 #endif
 
@@ -122,6 +123,8 @@ contains
 !
 !#endif
 
+    if (print_frags .and. DECinfo%pt_hack) call lsquit('print_frags .and. .PT_HACK is not allowed...',DECinfo%output) 
+
     master = .true.
     nodtotal = 1
 #ifdef VAR_MPI
@@ -162,7 +165,7 @@ contains
 
        !Zero to be able to sum up
        call tensor_zero(ccsdpt_singles)
- 
+
        if (present(e4)) then
 
           e4 = 0.0E0_realk
@@ -232,9 +235,9 @@ contains
       ! transform vovo and ccsd doubles amplitudes to diagonal basis
       ! ************************************************************
 
-#ifdef VAR_MPI
-
       if (.not. DECinfo%pt_hack) then
+
+#ifdef VAR_MPI
 
          if (abc) then
 
@@ -248,11 +251,7 @@ contains
 
          endif
 
-      endif
-
 #else
-
-      if (.not. DECinfo%pt_hack) then
 
          if (abc) then
 
@@ -266,9 +265,9 @@ contains
    
          endif
 
-      endif
-
 #endif
+
+       endif
 
     end if
 
@@ -276,22 +275,75 @@ contains
     call time_start_phase(PHASE_COMM)
 
     ! bcast the JOB specifier and distribute data to all the slaves within local group
-    waking_the_slaves: if ((nodtotal .gt. 1) .and. master) then
+    waking_the_slaves_info: if ((nodtotal .gt. 1) .and. master) then
 
        ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
-       call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(CCSDPTSLAVE_INFO,infpar%master,infpar%lg_comm)
+
+       call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
+
+    end if waking_the_slaves_info
+
+    call time_start_phase(PHASE_WORK)
+#endif
+
+    if (DECinfo%pt_hack) then
+
+#ifdef VAR_MPI
+       if ((nodtotal .gt. 1) .and. master) then
+
+          if (abc) then
+
+             call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR')
+!             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,1,1],atype='TDAR')
+             call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+
+          else
+
+             call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,nocc,1],atype='TDAR')
+!             call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,1,1],atype='TDAR')
+             call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
+
+          endif
+
+          call tensor_random(ccsd_doubles)
+          call tensor_random(vovo)
+
+       endif
+#else
+       if (abc) then
+
+          call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4)
+          call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+
+       else
+
+          call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
+          call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
+
+       endif
+
+       call tensor_random(ccsd_doubles)
+       call tensor_random(vovo)
+#endif
+
+    endif
+
+#ifdef VAR_MPI
+    call time_start_phase(PHASE_COMM)
+
+    ! bcast the JOB specifier and distribute data to all the slaves within local group
+    waking_the_slaves_work: if ((nodtotal .gt. 1) .and. master) then
+
+       ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
+       call ls_mpibcast(CCSDPTSLAVE_WORK,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
        call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles,&
                                           & mylsitem,print_frags,abc)
 
-    end if waking_the_slaves
-#endif
+    end if waking_the_slaves_work
 
-    call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
-
-#ifdef VAR_MPI
-    ! Communicate important information:
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(eivalocc,nocc,infpar%master)
     call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
@@ -359,11 +411,11 @@ contains
 
        if (abc) then
 
-          call tensor_init(ccsdpt_doubles_2, [nvirt,nocc,nocc,nvirt],4)
+          call tensor_init(ccsdpt_doubles_2,[nvirt,nocc,nocc,nvirt],4)
 
        else
 
-          call tensor_init(ccsdpt_doubles_2, [nocc,nvirt,nvirt,nocc],4)
+          call tensor_init(ccsdpt_doubles_2,[nocc,nvirt,nvirt,nocc],4)
  
        endif
 
@@ -372,7 +424,7 @@ contains
     endif
 
     !************************************************************!
-    ! here: the main  (t) loop: this is where the magic happens! !
+    ! here: the main (t) loop: this is where the magic happens! !
     !************************************************************!
 
 #ifdef VAR_MPI
@@ -558,21 +610,17 @@ contains
 
 #ifdef VAR_MPI
 
-       if (.not. DECinfo%pt_hack) then
+       if (abc) then
 
-          if (abc) then
-
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
 !             call tensor_transform_basis([Uo,Uv],2,[ccsd_doubles],[[1,1,2,2]],[[2,2,2,2]],4,1)
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
 
-          else
+       else
 
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
 !             call tensor_transform_basis([Uo,Uv],2,[ccsd_doubles],[[2,2,1,1]],[[2,2,2,2]],4,1)
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
-
-          endif
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
 
        endif
 
@@ -581,21 +629,17 @@ contains
 
 #else
 
-       if (.not. DECinfo%pt_hack) then
+       if (abc) then
 
-          if (abc) then
- 
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
 
-          else
+       else
 
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
-
-          endif
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
 
        endif
 
@@ -11589,12 +11633,29 @@ end module ccsdpt_module
 
 #ifdef MOD_UNRELEASED
 
+#ifdef VAR_MPI
+
+  subroutine ccsdpt_slave_info()
+
+  use infpar_module
+  use lsmpi_type
+  use decmpi_module
+  use ccsdpt_module, only: ccsdpt_info
+
+    implicit none
+    integer :: nocc, nvirt,nbasis
+    logical :: print_frags,abc
+    integer :: ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal
+
+    ! none of the variable entering here are used - thus, none are initialized
+    call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
+
+  end subroutine ccsdpt_slave_info
+
   !> \brief slaves enter here from lsmpi_slave (or dec_lsmpi_slave) and need to get to work 
   !> \author Janus Juul Eriksen
   !> \date x-mas 2012
-#ifdef VAR_MPI
-
-  subroutine ccsdpt_slave()
+  subroutine ccsdpt_slave_work()
 
   use infpar_module
   use lsmpi_type
@@ -11617,10 +11678,11 @@ end module ccsdpt_module
     integer :: nocc, nvirt,nbasis
     real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
     type(tensor) :: ccsdpt_t1
-    type(tensor) :: vovo,ccsd_t2, ccsdpt_t2
+    type(tensor) :: vovo,ccsd_t2,ccsdpt_t2
     real(realk) :: ccsdpt_e4
     type(lsitem) :: mylsitem
     logical :: print_frags,abc
+    integer :: ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal
 
     abc = .false.
     print_frags = .false.
@@ -11642,7 +11704,7 @@ end module ccsdpt_module
 
     else
 
-       call tensor_init(vovo, [nvirt,nvirt,nocc,nocc],4)
+       call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
 !       call tensor_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
 
        call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
@@ -11715,7 +11777,7 @@ end module ccsdpt_module
 
     call ls_free(mylsitem)
 
-  end subroutine ccsdpt_slave
+  end subroutine ccsdpt_slave_work
 
 #endif
 !endif mod_unreleased

@@ -652,93 +652,45 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
       else
 
-#ifdef VAR_MPI
-         if (abc) then
-            call tensor_minit(t2_final,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,1],atype='TDAR')
-            call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,1,1],atype='TDAR')
-            call tensor_init(t1_final,[nocc,nvirt],2)
-         else
-            call tensor_minit(t2_final,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,nocc,1],atype='TDAR')
-            call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,1,1],atype='TDAR')
-            call tensor_init(t1_final,[nvirt,nocc],2)
-         endif
-#else
-         if (abc) then
-            call tensor_init(t2_final,[nocc,nocc,nvirt,nvirt],4)
-            call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
-            call tensor_init(t1_final,[nocc,nvirt],2)
-         else
-            call tensor_init(t2_final,[nvirt,nvirt,nocc,nocc],4)
-            call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
-            call tensor_init(t1_final,[nvirt,nocc],2)
-         endif
-#endif
-
-         call tensor_random(t2_final)
-         call tensor_random(vovo)
+         call tensor_init(t1_final,[nvirt,nocc],2)
          call tensor_random(t1_final)
+         call tensor_scale(t1_final,1.0E-1_realk)
 
       endif
  
       if(ccmodel == MODEL_CCSDpT)then
-#ifdef VAR_MPI
-         !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
-         !one node is used  FIXME
-         call tensor_init(VOVO_local,VOVO%dims,4)
-         call tensor_cp_data(VOVO,VOVO_local)
-#endif
 
          if (abc) then
-#ifdef VAR_MPI
-            if (.not. DECinfo%pt_hack) then
-               call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-               call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-            endif
-#else
-            if (.not. DECinfo%pt_hack) then
-               call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-               call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-            endif
-#endif
             call tensor_init(ccsdpt_t1,[nocc,nvirt],2)
          else
-#ifdef VAR_MPI
-            if (.not. DECinfo%pt_hack) then
-               call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-               call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-            endif
-#else
-            if (.not. DECinfo%pt_hack) then
-               call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-               call tensor_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-            endif
-#endif
             call tensor_init(ccsdpt_t1,[nvirt,nocc],2)
          endif
 
-#ifdef VAR_MPI
-         if(DECinfo%frozencore) then
-            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc, &
-               & MyMolecule%Cv,mylsitem,VOVO_local,t2_final,ccsdpt_t1,print_frags, &
-               & abc,e4=ccenergies(pT_4_o))
-         else
-            call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock, &
-               & MyMolecule%Co,MyMolecule%Cv,mylsitem,VOVO_local,t2_final,ccsdpt_t1, &
-               & print_frags,abc,e4=ccenergies(pT_4_o))
-         end if
-#else
-         if(DECinfo%frozencore) then
-            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc, &
-               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags, &
-               & abc,e4=ccenergies(pT_4_o))
-         else
-            call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock, &
-               & MyMolecule%Co,MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1, &
-               & print_frags,abc,e4=ccenergies(pT_4_o))
-         end if
-#endif
+         if (.not. DECinfo%pt_hack) then
 
-         if (abc .and. (.not. DECinfo%pt_hack)) call tensor_reorder(ccsdpt_t1,[2,1])
+            if (abc) then
+               call tensor_reorder(vovo,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+               call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+               call tensor_init(ccsdpt_t1,[nocc,nvirt],2)
+            else
+               call tensor_reorder(vovo,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+               call tensor_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+               call tensor_init(ccsdpt_t1,[nvirt,nocc],2)
+            endif
+
+         endif
+
+         if(DECinfo%frozencore) then
+            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc, &
+               & MyMolecule%Cv,mylsitem,vovo,t2_final,ccsdpt_t1,print_frags, &
+               & abc,e4=ccenergies(pT_4_o))
+         else
+            call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock, &
+               & MyMolecule%Co,MyMolecule%Cv,mylsitem,vovo,t2_final,ccsdpt_t1, &
+               & print_frags,abc,e4=ccenergies(pT_4_o))
+         end if
+
+         if (abc) call tensor_reorder(ccsdpt_t1,[2,1])
          call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5_o))
 
          ! sum up energies
@@ -751,9 +703,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwidle = 'MASTER IDLE pT: ')
          endif
 
-#ifdef VAR_MPI
-         call tensor_free(VOVO_local)
-#endif
+         ! free integrals
+         call tensor_free(vovo)
+
       endif
 
       CorrEnergyString = 'correlation energy            '
@@ -792,9 +744,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,*)
 
    endif
-
-   ! free integrals
-   call tensor_free(VOVO)
 
    !MODIFY FOR NEW MODEL
    write(DECinfo%output,*)
