@@ -1122,23 +1122,23 @@ INTERFACE mem_alloc
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,'("                  Additional Memory information          ")')
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
-      WRITE(LUPRI,'("  Allocated memory (linkshell):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (linkshell):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_linkshell
-      WRITE(LUPRI,'("  Allocated memory (integrand):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (integrand):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_integrand
-      WRITE(LUPRI,'("  Allocated memory (integralitem):    ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (integralitem):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_integralitem
-      WRITE(LUPRI,'("  Allocated memory (intwork):         ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (intwork):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_intwork
-      WRITE(LUPRI,'("  Allocated memory (overlap):         ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (overlap):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlap
-      WRITE(LUPRI,'("  Allocated memory (ODitem):          ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (ODitem):            ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ODitem
-      WRITE(LUPRI,'("  Allocated memory (lstensor):        ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (lstensor):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lstensor
-      WRITE(LUPRI,'("  Allocated memory (FMM   ):          ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (FMM   ):            ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_FMM
-      WRITE(LUPRI,'("  Allocated memory (XC    ):          ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (XC    ):            ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_XCcalc
 
       call print_maxmem(lupri,max_mem_used_global,'TOTAL')
@@ -1251,7 +1251,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
       WRITE(LUPRI,'("  Allocated MPI memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
-      WRITE(LUPRI,'("  Allocated MPI memory (fragmentAOS):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (fragmentAOS):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_fragmentAOS
       WRITE(LUPRI,'("  Allocated MPI memory (ARRAY2):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY2
@@ -1270,26 +1270,26 @@ INTERFACE mem_alloc
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,'("                  Additional Memory information          ")')
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
-      WRITE(LUPRI,'("  Allocated MPI memory (linkshell):   ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (linkshell):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_linkshell
-      WRITE(LUPRI,'("  Allocated MPI memory (integrand):   ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (integrand):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_integrand
-      WRITE(LUPRI,'("  Allocated MPI memory (integralitem):",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (integralitem):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_integralitem
-      WRITE(LUPRI,'("  Allocated MPI memory (IntWork):     ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (IntWork):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_IntWork
-      WRITE(LUPRI,'("  Allocated MPI memory (overlap):     ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (overlap):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlap
-      WRITE(LUPRI,'("  Allocated MPI memory (ODitem):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (ODitem):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ODitem
-      WRITE(LUPRI,'("  Allocated MPI memory (lstensor):    ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (lstensor):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lstensor
-      WRITE(LUPRI,'("  Allocated MPI memory (FMM   ):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (FMM   ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_FMM
-      WRITE(LUPRI,'("  Allocated MPI memory (XC    ):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (XC    ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_XCcalc
 #ifdef MOD_UNRELEASED
-      WRITE(LUPRI,'("  Allocated MPI memory (lvec_data):    ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (lvec_data):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lvec_data
       WRITE(LUPRI,'("  Allocated MPI memory (lattice_cell):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lattice_cell
@@ -1405,7 +1405,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECAOBATCHINFO
       WRITE(LUPRI,'("  Allocated memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MYPOINTER
-      WRITE(LUPRI,'("  Allocated memory (fragmentAOS):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (fragmentAOS):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_fragmentAOS
       WRITE(LUPRI,'("  Allocated memory (ARRAY2):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY2
@@ -1424,26 +1424,26 @@ INTERFACE mem_alloc
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,'("                  Additional Memory information          ")')
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
-      WRITE(LUPRI,'("  Allocated memory (linkshell):     ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (linkshell):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_linkshell
-      WRITE(LUPRI,'("  Allocated memory (integrand):     ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (integrand):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_integrand
-      WRITE(LUPRI,'("  Allocated memory (integralitem):  ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (integralitem):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_integralitem
-      WRITE(LUPRI,'("  Allocated memory (IntWork):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (IntWork):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_IntWork
-      WRITE(LUPRI,'("  Allocated memory (overlap):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (overlap):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_overlap
-      WRITE(LUPRI,'("  Allocated memory (ODitem):        ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (ODitem):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ODitem
-      WRITE(LUPRI,'("  Allocated memory (lstensor):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (lstensor):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lstensor
-      WRITE(LUPRI,'("  Allocated memory (FMM   ):        ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (FMM   ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_FMM
 #ifdef MOD_UNRELEASED
-      WRITE(LUPRI,'("  Allocated memory (lvec_data):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (lvec_data):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lvec_data
-      WRITE(LUPRI,'("  Allocated memory (lattice_cell):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (lattice_cell):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lattice_cell
 #endif
 
