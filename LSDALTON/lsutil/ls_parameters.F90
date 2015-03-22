@@ -96,7 +96,7 @@ MODULE lsparameters
   integer,parameter :: PDMA4SLV                     = 31
   integer,parameter :: LSMPI_IIDFTKSME              = 32
 #ifdef MOD_UNRELEASED
-  integer,parameter :: CCSDPTSLAVE                  = 33
+  integer,parameter :: CCSDPTSLAVE_INFO             = 33
 #endif
   integer,parameter :: CCSDSLV4E2                   = 34
   integer,parameter :: DFTADDFU                     = 35
@@ -131,7 +131,9 @@ MODULE lsparameters
   integer,parameter :: PDMMSLAVE                    = 64
   integer,parameter :: MATRIXTY2                    = 65
   integer,parameter :: SET_TENSOR_ALWAYS_SYNC_TRUE  = 66
-
+#ifdef MOD_UNRELEASED
+  integer,parameter :: CCSDPTSLAVE_WORK             = 67
+#endif
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
