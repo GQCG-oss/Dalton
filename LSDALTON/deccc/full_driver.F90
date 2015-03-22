@@ -36,6 +36,7 @@ module full
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
   use ccdriver!,only: ccsolver_justenergy, ccsolver
   use fullrimp2 !,only: full_canonical_rimp2
+  use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
   !  use fragment_energy_module,only : Full_DECMP2_calculation
 
@@ -78,7 +79,6 @@ contains
 
     else
 
-
        !MODIFY FOR NEW MODEL
 
        ! run cc program
@@ -86,10 +86,15 @@ contains
 #ifdef MOD_UNRELEASED
           if(DECinfo%ccModel==MODEL_MP2) then
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
+          elseif(DECinfo%ccModel==MODEL_RIMP2) then
+             call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
 #else
+          if(DECinfo%ccModel==MODEL_RIMP2) then
+             call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr)
+          endif
           call lsquit('f12 not released',-1)
 #endif
        elseif(DECinfo%ccModel==MODEL_RIMP2)then

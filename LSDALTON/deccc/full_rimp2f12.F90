@@ -13,10 +13,11 @@ module fullrimp2f12
   use dec_fragment_utils
   use CABS_operations
 
+  use ccintegrals
 
   !WARNING FOR TESTING
   use f12_routines_module
-
+  use IntegralInterfaceMOD
 
   public :: full_canonical_rimp2_f12
 
@@ -41,16 +42,17 @@ contains
     real(realk) :: mp2_energy
     !local variables
     integer :: nbasis,nocc,nvirt,ncabsAO,ncabs,noccfull
-    real :: E21
+    real(realk) :: E21,Econt(1),ExchangeF12,CoulombF12
     !========================================================
     !WARNING THESE SHOULD NOT BE HERE - ONLY FOR TESTING
     !========================================================
-    Real(realk),pointer :: Vijij(:,:)
-    Real(realk)  :: Ripjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
-    Real(realk)  :: Gipjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
-    Real(realk)  :: Fijkl(:,:,:,:) !nocc,nocc,nocc,nocc
-    Real(realk)  :: Fijkl(:,:,:,:) !nocc,nocc,nocc,nocc
-    Real(realk)  :: gao(:,:,:,:) !nbasis,nbasis,nbasis,nbasis
+    Real(realk),pointer  :: Vijij(:,:)
+    Real(realk),pointer  :: Vjiij(:,:)
+    Real(realk),pointer  :: Ripjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
+    Real(realk),pointer  :: Gipjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
+    Real(realk),pointer  :: Fijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+    Real(realk),pointer  :: gao(:,:,:,:) !nbasis,nbasis,nbasis,nbasis
+    integer :: i,j,p,q
     !========================================================
     logical :: Test 
 
@@ -69,13 +71,15 @@ contains
     !=             Step 1  Fijkl                              =
     !=                                                        =
     !==========================================================
-    call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,[
+    call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+         & [Dmat],Econt,1,GGemCouOperator)
     CoulombF12 = Econt(1) 
     Econt(1) = 0.0E0_realk
-    call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,
+    call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+         & [Dmat],Econt,1,GGemCouOperator)
     ExchangeF12 = Econt(1)       
-    E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E
-    WRITE(LUPRI,*)'E(Fijkl,LS) = ',E21
+    E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E0_realk)
+    WRITE(DECINFO%OUTPUT,*)'E(Fijkl,LS) = ',E21
 
     IF(Test)THEN
        call mem_alloc(Vijij,nocc,nocc)
@@ -99,39 +103,57 @@ contains
        E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
-       WRITE(LUPRI,*)'E(Fijkl,FullIntegral) = ',E21
+       WRITE(DECINFO%OUTPUT,*)'E(Fijkl,FullIntegral) = ',E21
+       mp2f12_energy = E21
     ENDIF
     !==========================================================
     !=                                                        =
     !=             Step 2  Ripjq*Gipjq                        =
     !=                                                        =
     !==========================================================
+
     
-!!$    IF(Test)THEN
-!!$       do q=1,nbasis
-!!$          do j=1,nocc
-!!$             do p=1,nbasis
-!!$                do i=1,nocc
-!!$                   Vijij(i,j) = Vijij(i,j) - Ripjq(i,p,j,q)*Gipjq(i,p,j,q)
-!!$                enddo
-!!$             enddo
-!!$          enddo
-!!$       enddo
-!!$       
-!!$       do q=1,nbasis
-!!$          do j=1,nocc
-!!$             do p=1,nbasis
-!!$                do i=1,nocc
-!!$                   Vjiij(i,j) = Vjiij(i,j) - Ripjq(i,p,j,q)*Gipjq(j,p,i,q)
-!!$                enddo
-!!$             enddo
-!!$          enddo
-!!$       enddo
+    IF(Test)THEN
+       call mem_alloc(Vijij,nocc,nocc)
+       call mem_alloc(Vjiij,nocc,nocc)
+       call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Ripjq)
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Gipjq)
+       call mem_dealloc(gao)
+
+       do q=1,nbasis
+          do j=1,nocc
+             do p=1,nbasis
+                do i=1,nocc
+                   Vijij(i,j) = Vijij(i,j) - Ripjq(i,p,j,q)*Gipjq(i,p,j,q)
+                enddo
+             enddo
+          enddo
+       enddo
        
-!       E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
-!       WRITE(LUPRI,*)'E(Ripjq*Gipjq,FullIntegral) = ',E21
+       do q=1,nbasis
+          do j=1,nocc
+             do p=1,nbasis
+                do i=1,nocc
+                   Vjiij(i,j) = Vjiij(i,j) - Ripjq(i,p,j,q)*Gipjq(j,p,i,q)
+                enddo
+             enddo
+          enddo
+       enddo
+       call mem_dealloc(Ripjq)
+       call mem_dealloc(Gipjq)
+       
+       E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral) = ',E21
+       call mem_dealloc(Vijij)
+       call mem_dealloc(Vjiij)
     ENDIF
-  end subroutine full_canonical_mp2_f12
+
+  end subroutine full_canonical_rimp2_f12
 
   !> Function for finding the E21 energy  
   function mp2f12_E21(Vijij,Vjiij,nocc) result(energy)

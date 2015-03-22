@@ -105,6 +105,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
     LSDALTON/deccc/full_rimp2.F90
+    LSDALTON/deccc/full_rimp2f12.F90
     LSDALTON/deccc/full_mp2.F90
     LSDALTON/deccc/snoop_main.F90
     LSDALTON/deccc/snoop_tools.F90
