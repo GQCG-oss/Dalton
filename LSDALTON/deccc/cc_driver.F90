@@ -1867,8 +1867,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 #endif
 
-   call get_symm_tensor_segmenting_simple(no,nv,os,vs)
-
    ! Sanity check 1: Number of orbitals
    if( (nv < 1) .or. (no < 1) ) then
       write(DECinfo%output,*) 'Number of occupied orbitals = ', no
@@ -1926,6 +1924,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call lsquit("ERROR(ccsolver_par): requested model not yet implemented",-1)
 
    end select ModelSpecificSettings
+
+   call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles)
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -2711,6 +2711,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! RHS or restore the old rhs
    call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
    call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
+   
+   call ccdriver_dealloc_workspace(saferun,local)
 
    call tensor_free(iajb)
 
@@ -2774,6 +2776,133 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
 
 end subroutine ccsolver
+
+subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles)
+   implicit none
+   type(lsitem), intent(inout) :: MyLsitem
+   integer, intent(in)  :: nb, no, nv
+   integer, intent(out) :: os,vs
+   logical, intent(in)  :: local,saferun,use_singles
+   integer :: ntpm(4),nt
+   integer(kind=ls_mpik) :: nnod
+   real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2, MemFree
+   logical :: use_bg
+   integer(kind=8) :: elm
+   integer :: MinAO,iAO
+
+   nnod = 1
+#ifdef VAR_MPI
+   nnod = infpar%lg_nodtot
+#endif
+
+   !get tensor segments
+   call get_symm_tensor_segmenting_simple(no,nv,os,vs)
+
+   ! allocate the buffer in the background
+   use_bg = DECinfo%cc_driver_use_bg_buffer.and..not.saferun
+
+   if(use_bg)then
+
+      !get free memory GB -> bytes conversion, use 80% of the free memory
+      call get_currently_available_memory(MemFree)
+      Freebytes = MemFree * (1024.0E0_realk**3) * 0.8E0_realk
+
+      !estimate memory use in solver while the residual is build, the other
+      ! FOck matrix, MO trafo matrices (bv,bo), Lambda matrices, basis trafo matrices, fock-blocks
+      bytes = (i8*nb**2 + 3_long*nb*no + 3_long*nb*nv + 2_long*no**2 + 2_long*nv**2 + 2_long*no*nv)*8.0E0_realk
+      !singles vectors and residuals, and t1 fock matrix
+      if( use_singles )then
+         elm = (i8*nv)*no * (2*DECinfo%ccMaxDIIS ) + i8*nb**2
+         bytes = bytes + elm * 8.0E0_realk
+      endif
+      ! residual-, trial- and integral vectors, additional two tiles for buffering
+      if( local )then
+         elm = (i8*nv*nv)*no*no * (2*DECinfo%ccMaxDIIS + 1)
+      else
+         !memory requirements are negligible 
+         call tensor_get_ntpm([nv,nv,no,no],[vs,vs,os,os],4,ntpm,ntiles=nt)
+         nt = ceiling(float(nt)/float(nnod))
+
+         elm = nt * (i8*vs**2) * os**2 * (2*DECinfo%ccMaxDIIS + 3 )  
+      endif
+      bytes = bytes + elm * 8.0E0_realk
+
+
+      !estimate memory use in residual without workspaces
+      if(DECinfo%useIchor)then
+         iAO = 4 
+         call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAO)
+      else
+         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAO,'R')
+      endif
+      
+      mem4=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+      mem3=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+      mem2=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+
+      if(mem4<=Freebytes)then
+         bytes = bytes + mem4
+      else if(mem3<=Freebytes)then
+         bytes = bytes + mem3
+      else if(mem2<=Freebytes)then
+         bytes = bytes + mem2
+      else
+         call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+         & calculation is too big for the available memory",-1)
+      endif
+
+      !we may use the difference between bytes and Freebytes now as the background buffer
+      bytes_to_alloc = Freebytes - bytes
+
+      if(bytes_to_alloc <= 0.0E0_realk) then
+         call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+         & wrong counting",-1)
+      endif
+
+
+      if( local )then
+         call mem_init_background_alloc(bytes_to_alloc)
+#ifdef VAR_MPI
+      else
+         call mem_init_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
+         call lspdm_init_global_buffer(.true.)
+#endif
+      endif
+   endif
+   
+end subroutine ccdriver_set_tensor_segments_and_alloc_workspace
+subroutine ccdriver_dealloc_workspace(saferun,local)
+   implicit none
+   logical, intent(in)  :: saferun,local
+   integer :: ntpm(4),nt
+   integer(kind=ls_mpik) :: nnod
+   real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2
+   logical :: use_bg
+   integer(kind=8) :: elm
+   integer :: MinAO,iAO
+
+   nnod = 1
+#ifdef VAR_MPI
+   nnod = infpar%lg_nodtot
+#endif
+
+   ! deallocate the buffer in the background
+   use_bg = DECinfo%cc_driver_use_bg_buffer.and..not.saferun
+
+   if(use_bg)then
+
+
+      if( local )then
+         call mem_free_background_alloc()
+#ifdef VAR_MPI
+      else
+         call mem_free_background_alloc_all_nodes(infpar%lg_comm)
+         call lspdm_free_global_buffer(.true.)
+#endif
+      endif
+   endif
+
+end subroutine ccdriver_dealloc_workspace
 
 subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock,sync)
    implicit none

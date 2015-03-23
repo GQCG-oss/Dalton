@@ -89,32 +89,35 @@ contains
 
     ! -- Debug modes
     DECinfo%test_fully_distributed_integrals = .false.
-    DECinfo%CRASHCALC            = .false.
-    DECinfo%cc_driver_debug      = .false.
-    DECinfo%manual_batchsizes    = .false.
-    DECinfo%ccsdAbatch           = 0
-    DECinfo%ccsdGbatch           = 0
-    DECinfo%manual_occbatchsizes = .false.
-    DECinfo%batchOccI            = 0
-    DECinfo%batchOccJ            = 0 
-    DECinfo%hack                 = .false.
-    DECinfo%hack2                = .false.
-    DECinfo%mpisplit             = 10
-    DECinfo%RIMPIsplit           = 8000
+    DECinfo%CRASHCALC               = .false.
+    DECinfo%cc_driver_debug         = .false.
+    DECinfo%cc_driver_use_bg_buffer = .false.
+    DECinfo%manual_batchsizes       = .false.
+    DECinfo%ccsdAbatch              = 0
+    DECinfo%ccsdGbatch              = 0
+    DECinfo%manual_occbatchsizes    = .false.
+    DECinfo%batchOccI               = 0
+    DECinfo%batchOccJ               = 0 
+    DECinfo%hack                    = .false.
+    DECinfo%hack2                   = .false.
+    DECinfo%mpisplit                = 10
+    DECinfo%RIMPIsplit              = 8000
 #ifdef VAR_MPI
-    DECinfo%dyn_load             = LSMPIASYNCP
+    DECinfo%dyn_load                = LSMPIASYNCP
+#else
+    DECinfo%dyn_load                = .false.
 #endif
-    DECinfo%force_scheme         = .false.
-    DECinfo%en_mem               = 0
-    DECinfo%tensor_test           = .false.
-    DECinfo%reorder_test         = .false.
-    DECinfo%CCSDno_restart       = .false.
-    DECinfo%CCSDnosaferun        = .false.
-    DECinfo%solver_par           = .false.
-    DECinfo%CCSDpreventcanonical = .false.
-    DECinfo%CCSD_NO_DEBUG_COMM   = .true.
-    DECinfo%spawn_comm_proc      = .false.
-    DECinfo%CCSDmultipliers      = .false.
+    DECinfo%force_scheme            = .false.
+    DECinfo%en_mem                  = 0
+    DECinfo%tensor_test              = .false.
+    DECinfo%reorder_test            = .false.
+    DECinfo%CCSDno_restart          = .false.
+    DECinfo%CCSDnosaferun           = .false.
+    DECinfo%solver_par              = .false.
+    DECinfo%CCSDpreventcanonical    = .false.
+    DECinfo%CCSD_NO_DEBUG_COMM      = .true.
+    DECinfo%spawn_comm_proc         = .false.
+    DECinfo%CCSDmultipliers         = .false.
     DECinfo%simple_multipler_residual = .true.
     DECinfo%use_pnos             = .false.
     DECinfo%pno_S_on_the_fly     = .false.
@@ -752,12 +755,13 @@ contains
 #ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
-       case('.CCDRIVERDEBUG');            DECinfo%cc_driver_debug      = .true.
-       case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
-       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
-       case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
-       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
-       case('.DIIS');                     DECinfo%use_crop             = .false.
+       case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
+       case('.CCDRIVER_BG_BUF');      DECinfo%cc_driver_use_bg_buffer = .true.
+       case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
+       case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
+       case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
+       case('.CCSDNO_RESTART');       DECinfo%CCSDno_restart          = .true.
+       case('.DIIS');                 DECinfo%use_crop                = .false.
        case('.CC_TILE_SIZE_GB')
           read(input,*) DECinfo%cc_solver_tile_mem 
        case('.NOTPREC')                 
@@ -1361,6 +1365,7 @@ contains
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
+    write(lupri,*) 'cc_driver_use_bg_buffer ', DECitem%cc_driver_use_bg_buffer
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
     write(lupri,*) 'ccsd_expl ', DECitem%ccsd_expl

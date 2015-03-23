@@ -278,6 +278,10 @@ subroutine lsmpi_slave(comm)
       case(SET_TENSOR_ALWAYS_SYNC_TRUE);
          call tensor_set_always_sync_true(.false.)
 
+      case(INIT_BG_BUF);
+         call mem_init_background_alloc_slave(comm)
+      case(FREE_BG_BUF);
+         call mem_free_background_alloc_slave(comm)
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
