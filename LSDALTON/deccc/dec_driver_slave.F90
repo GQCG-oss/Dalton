@@ -310,7 +310,7 @@ contains
     type(decfrag) :: PairFragment
     type(decfrag) :: MyFragment
     integer :: job,atomA,atomB,i,slavejob,ntasks,no,nv,mymodel
-    real(realk) :: flops_slaves
+    real(realk) :: flops_slaves,gpu_flops_slaves
     type(mp2grad) :: grad
     logical :: morejobs, continuedivide, split,only_update
     real(realk) :: fragenergy(ndecenergies),tottime
@@ -318,7 +318,7 @@ contains
     real(realk) :: tot_work_time, tot_comm_time, tot_idle_time
     real(realk) :: test_work_time, test_comm_time, test_idle_time, test_master, testtime
     real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc, mwork, midle, mcomm
-    real(realk) :: flops
+    real(realk) :: flops,gpu_flops
     real(realk), pointer :: slave_times(:)
     integer(kind=ls_mpik) :: master
     logical :: dividegroup
@@ -521,6 +521,7 @@ contains
 
 
              flops_slaves = MyFragment%flops_slaves
+             gpu_flops_slaves = MyFragment%gpu_flops_slaves
              !   tottime = MyFragment%slavetime_work(MyFragment%ccmodel) + &
              !      & MyFragment%slavetime_comm(MyFragment%ccmodel) + &
              !      & MyFragment%slavetime_idle(MyFragment%ccmodel) 
@@ -541,6 +542,7 @@ contains
                    & AtomicFragments(atomA),grad=grad)
 
                 flops_slaves = AtomicFragments(atomA)%flops_slaves
+                gpu_flops_slaves = AtomicFragments(atomA)%gpu_flops_slaves
                 !tottime = AtomicFragments(atomA)%slavetime_work(AtomicFragments(atomA)%ccmodel) + &
                 !   & AtomicFragments(atomA)%slavetime_comm(AtomicFragments(atomA)%ccmodel) + &
                 !   & AtomicFragments(atomA)%slavetime_idle(AtomicFragments(atomA)%ccmodel) 
@@ -573,6 +575,7 @@ contains
                 end if
 
                 flops_slaves = PairFragment%flops_slaves
+                gpu_flops_slaves = PairFragment%gpu_flops_slaves
                 !tottime = PairFragment%slavetime_work(PairFragment%ccmodel) + &
                 !   & PairFragment%slavetime_comm(PairFragment%ccmodel) + &
                 !   & PairFragment%slavetime_idle(PairFragment%ccmodel) 
@@ -630,8 +633,9 @@ contains
           endif
 
           !FLOPS
-          call end_flop_counter(flops) ! flops for local master
+          call end_flop_counter(flops,gpu_flops) ! flops for local master
           singlejob%flops(1)     = flops + flops_slaves  ! FLOPS for local master + local slaves
+          singlejob%gpu_flops(1)     = gpu_flops + gpu_flops_slaves  ! GPU FLOPS for local master + local slaves
           singlejob%jobsdone(1)  = .true.
           singlejob%esti(1)      = jobs%esti(job)
           singlejob%dofragopt(1) = jobs%dofragopt(job)
@@ -705,6 +709,9 @@ contains
     ! Never split if there is already just one node in the group.
     if(infpar%lg_nodtot==1) dividegroup=.false.
 
+    ! Never split if MPIsplit is set to zero (even for RIMP2)
+    if(DECinfo%MPIsplit==0) dividegroup=.false.
+
   end function divideMPIgroup
 
 !> \brief Get number of tasks in integral loop (nalpha*ngamma)
@@ -743,7 +750,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   if(MyFragment%ccmodel==MODEL_MP2) then ! MP2
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.,.false.,memoryneeded)
   elseif(MyFragment%ccmodel==MODEL_RIMP2) then ! RIMP2
-     !do nothing
+     !do nothing ntasks is not used anyway
   else  ! CC2 or CCSD
      mpi_split = .true.
      call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)
@@ -752,45 +759,31 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      if (ntasks>0) return
   end if
 
-  if(MyFragment%ccmodel==MODEL_RIMP2) then ! RIMP2
-     !the number of MPI nodes that can be used effectively is the number of atoms
-     !However in the rest of the code they use that there should be a greater number of 
-     !integral tasks than number of nodes. They use      
-     !ntasks .LE. infpar%lg_nodtot*DECinfo%MPIsplit  
-     !to determine if the MPI group should be reduced.  
-     !so here we set ntasks to  
-     if(DECinfo%MPIsplit/=0)then
-        ntasks = MyFragment%natoms*DECinfo%MPIsplit
-     else
-        ntasks = MyFragment%natoms
-     endif
-     !FIXME: This should in case of DECinfo%AuxAtomicExtent be nAtomsAux
-     !to obtain:
-     !MyFragment%natoms .LE. infpar%lg_nodtot
-  else
+  if (.not. MyFragment%ccmodel==MODEL_RIMP2) then
      ! Get number of gamma batches
      call mem_alloc(orb2batchGamma,MyFragment%nbasis)
      call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
-          & MyFragment%nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
-          & batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
+        & MyFragment%nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
+        & batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
      call mem_dealloc(orb2batchGamma)
      call mem_dealloc(batchdimGamma)
      call mem_dealloc(batchsizeGamma)
      call mem_dealloc(batchindexGamma)
-     
+
      ! Get number of alpha batches
      call mem_alloc(orb2batchAlpha,MyFragment%nbasis)
      call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
-          & MyFragment%nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
-          & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+        & MyFragment%nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
+        & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
      call mem_dealloc(orb2batchAlpha)
      call mem_dealloc(batchdimAlpha)
      call mem_dealloc(batchsizeAlpha)
      call mem_dealloc(batchindexAlpha)
-     
+
      ! Number of tasks = nalpha*ngamma
      ntasks = nbatchesGamma*nbatchesAlpha
-  endif
+  end if
+
 end subroutine get_number_of_integral_tasks_for_mpi
 
 

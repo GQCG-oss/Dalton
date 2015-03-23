@@ -23,7 +23,7 @@ f.add(string = 'Total CCSD(R12)/B energy',
       abs_tolerance = 1.0e-10)
 f.add(from_string = 'Total energies in Hartree',
       num_lines = 5,
-      abs_tolerance = 1.0e-10)
+      abs_tolerance = 2.0e-10)
 
 test.run(['ccsdr12_be.dal'], ['ccsdr12_be.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
