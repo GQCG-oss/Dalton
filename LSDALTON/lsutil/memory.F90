@@ -2000,7 +2000,7 @@ subroutine mem_free_background_alloc()
 
    if(buf_realk%n/=1)then
       do i = 1, buf_realk%n-1
-         print *,"address not freed",buf_realk%c_addr(i)
+         print *,"address not freed",i
       enddo
       call lsquit("ERROR(mem_free_background_alloc): pointers is still associated",-1)
    endif
