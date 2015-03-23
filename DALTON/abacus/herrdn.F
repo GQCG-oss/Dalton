@@ -925,10 +925,6 @@ C...  initializes Gen1Int interface
      &                       ALPHA(:,:,1), CPRIMU(:,:,:,1))
 #endif
 
-#ifdef ENABLE_XCINT
-      call dalton_xcint_interface_init()
-#endif
-
 C
 C     ***********************************
 C     ***** Process PCM speres data *****
