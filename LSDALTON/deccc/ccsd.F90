@@ -810,7 +810,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 #endif
 !`DIL: temporary:
-!#undef DIL_ACTIVE
+#undef DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -966,7 +966,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
-#ifdef DIL_ACTIVE
+!{`DIL:
      integer:: nors,nvrs
      type(tensor):: tpld,tmid
      logical:: DIL_LOCK_OUTSIDE,bool0
@@ -977,10 +977,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
+#ifdef DIL_ACTIVE
      integer:: scheme_tmp=1
 #else
      integer:: scheme_tmp=2
 #endif
+!}
+
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
      call DetectHeapMemoryInit()
