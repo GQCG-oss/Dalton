@@ -967,7 +967,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      character(4) :: def_atype
      integer, parameter :: bs = 1
 #ifdef DIL_ACTIVE
-!{`DIL:
      integer:: nors,nvrs
      type(tensor):: tpld,tmid
      logical:: DIL_LOCK_OUTSIDE,bool0
@@ -978,7 +977,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
-!}
+     integer:: scheme_tmp=1
+#else
+     integer:: scheme_tmp=2
 #endif
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
@@ -1182,7 +1183,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
 #ifdef DIL_ACTIVE
-     scheme=1 !```DIL: remove
+     scheme=scheme_tmp !```DIL: remove
      if(scheme==1) then
       if(.not.alloc_in_dummy) call lsquit('ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3!',-1)
       DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
@@ -1383,7 +1384,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !get the t+ and t- for the Kobayshi-like B2 term
 #ifdef DIL_ACTIVE
-     scheme=1 !```DIL: remove
+     scheme=scheme_tmp !```DIL: remove
 #endif
      if(scheme==1) then !`DIL: Create distributed TPL & TMI
 #ifdef DIL_ACTIVE
@@ -1406,7 +1407,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !if I am the working process, then
 #ifdef DIL_ACTIVE
-     scheme=1 !```DIL: remove
+     scheme=scheme_tmp !```DIL: remove
 #endif
      if(scheme==1) then !`DIL: Define TPL & TMI
 #ifdef DIL_ACTIVE
@@ -1431,7 +1432,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !get u2 in pdm or local
 #ifdef DIL_ACTIVE
-     scheme=1 !```DIL: remove
+     scheme=scheme_tmp !```DIL: remove
 #endif
      if(scheme==2.or.scheme==1)then
 #ifdef VAR_MPI
@@ -1539,50 +1540,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! allocate working arrays depending on the batch sizes
       w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-#ifdef DIL_ACTIVE
-#ifdef DIL_DEBUG_ON
-      if(DIL_DEBUG) then !`DIL: debug
-       bool0=dil_will_malloc_succeed(int(w0size*realk,INTL))
-       write(DIL_CONS_OUT,'("#DEBUG(DIL): Probable success of malloc(w0): ",l1)') bool0
-      endif
-#endif
-#endif
-      call mem_alloc( w0, w0size , simple = .false. )
-
       w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-#ifdef DIL_ACTIVE
-#ifdef DIL_DEBUG_ON
-      if(DIL_DEBUG) then !`DIL: debug
-       bool0=dil_will_malloc_succeed(int(w1size*realk,INTL))
-       write(DIL_CONS_OUT,'("#DEBUG(DIL): Probable success of malloc(w1): ",l1)') bool0
-      endif
-#endif
-#endif
-      call mem_alloc( w1, w1size , simple = .false.)
-
       w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !``DIL: w2 size must be reduced when DIL
-#ifdef DIL_ACTIVE
-#ifdef DIL_DEBUG_ON
-      if(DIL_DEBUG) then !`DIL: debug
-       bool0=dil_will_malloc_succeed(int(w2size*realk,INTL))
-       write(DIL_CONS_OUT,'("#DEBUG(DIL): Probable success of malloc(w2): ",l1)') bool0
-      endif
-#endif
-#endif
-      call mem_alloc( w2, w2size , simple = .false. )
-
       w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
       if(DIL_DEBUG) then !`DIL: debug
-       bool0=dil_will_malloc_succeed(int(w3size*realk,INTL))
-       write(DIL_CONS_OUT,'("#DEBUG(DIL): Probable success of malloc(w3): ",l1)') bool0
+       bool0=dil_will_malloc_succeed(int((w0size+w1size+w2size+w3size)*realk,INTL))
+       write(DIL_CONS_OUT,'("#DEBUG(DIL): Probable success of malloc(w0+w1+w2+w3): ",l1)') bool0
       endif
 #endif
 #endif
+      call mem_alloc( w0, w0size , simple = .false. )
+      call mem_alloc( w1, w1size , simple = .false. )
+      call mem_alloc( w2, w2size , simple = .false. )
       call mem_alloc( w3, w3size , simple = .false. )
 
      !call get_currently_available_memory(MemFree3)
@@ -1762,7 +1736,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
 #ifdef DIL_ACTIVE
-        scheme=1 !``DIL: remove
+        scheme=scheme_tmp !``DIL: remove
 #endif
         if(scheme==1) then !`DIL: Tensor contraction 1
 #ifdef DIL_ACTIVE
@@ -1882,7 +1856,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
            if(DIL_DEBUG) then
-            write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration started: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !``DIL: remove
+            write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration started: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !`DIL: remove
            endif
 #endif
 #endif
@@ -1905,7 +1879,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
            call time_start_phase(PHASE_WORK, at = time_intloop_work)
            IF(DECinfo%useIchor)THEN
-              dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array:``DIL: This can grow HUGE!!!
+              dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array:`DIL: This can grow HUGE!!!
               call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
                    & w1%d,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
                    & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
@@ -1944,7 +1918,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call lsmpi_poke()
 
            ! I [gamma delta alpha beta] * Lambda^p [beta l] = I[gamma delta alpha l]
-           call dgemm('n','n',lg*la*nb,no,nb,1.0E0_realk,w0%d,lg*nb*la,xo,nb,0.0E0_realk,w2%d,lg*nb*la) !``DIL: w0,w2 in use: HUGE
+           call dgemm('n','n',lg*la*nb,no,nb,1.0E0_realk,w0%d,lg*nb*la,xo,nb,0.0E0_realk,w2%d,lg*nb*la) !`DIL: w0,w2 in use: HUGE
            call lsmpi_poke()
            !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
            call array_reorder_4d(1.0E0_realk,w2%d,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1%d) !`DIL: w1,w2 in use
@@ -1967,7 +1941,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call lsmpi_poke()
               !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
 #ifdef DIL_ACTIVE
-              scheme=1 !``DIL: remove
+              scheme=scheme_tmp !``DIL: remove
 #endif
               if(scheme==4)then
                  call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
@@ -2038,7 +2012,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
 #ifdef DIL_ACTIVE
-              scheme=1 !``DIL: remove
+              scheme=scheme_tmp !``DIL: remove
 #endif
               if(scheme==4)then
 
@@ -2139,7 +2113,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  !and the difference between first element of alpha batch and last element
                  !of gamma batch
 #ifdef DIL_ACTIVE
-                 scheme=1 !```DIL: remove
+                 scheme=scheme_tmp !```DIL: remove
 #endif
                  if(scheme /= 1) then
                   call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
@@ -2175,7 +2149,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call lsmpi_poke()
            if( Ccmodel > MODEL_CC2 )then
 #ifdef DIL_ACTIVE
-              scheme=1 !``DIL: remove
+              scheme=scheme_tmp !``DIL: remove
 #endif
               select case(scheme)
               case(4,3)
@@ -2252,7 +2226,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            ! Omega += Lambda^p[alpha a]^T (w3%d):I[b i j alpha]^T
 #ifdef DIL_ACTIVE
-           scheme=1 !``DIL: remove
+           scheme=scheme_tmp !``DIL: remove
 #endif
            if(scheme==2)then
 #ifdef VAR_MPI
@@ -2302,10 +2276,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
            endif
 #ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
            if(DIL_DEBUG) then
-            write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration finished: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !``DIL: remove
-            flush(DIL_CONS_OUT) !``DIL: remove
+            write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration finished: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !`DIL: remove
+            flush(DIL_CONS_OUT) !`DIL: remove
            endif
+#endif
            scheme=2 !``DIL: remove
 #endif
            if(scheme/=1) call lsmpi_poke()
@@ -2316,9 +2292,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
-     write(*,'("#DEBUG(DIL): Alpha-Gamma loop is done: ",i6)') infpar%mynum !``DIL: remove
+     write(*,'("#DEBUG(DIL)[",i6,"]: Alpha-Gamma loop is done.")') infpar%mynum !`DIL: remove
      if(DIL_DEBUG) then
-      write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma loop is done: ",i6)') infpar%mynum !``DIL: remove
+      write(DIL_CONS_OUT,'("#DEBUG(DIL)[",i6,"]: Alpha-Gamma loop is done.")') infpar%mynum !`DIL: remove
      endif
 #endif
 #endif
@@ -2391,13 +2367,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !Deallocate working arrays:
      call mem_dealloc(uigcj)
 #ifdef DIL_ACTIVE
-#ifdef DIL_DEBUG_ON
-     if(DIL_DEBUG) then
-      call lsmpi_barrier(infpar%lg_comm)
-      write(*,*) '#DIL(DEBUG): sio4 norm1 (position 1) = ',dil_tensor_norm1(sio4) !``DIL:remove
-     endif
-#endif
-     scheme=1 !```DIL: remove
+     scheme=scheme_tmp !```DIL: remove
 #endif
      if(scheme/=1) then
       call mem_dealloc(tpl)
@@ -2604,18 +2574,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call mem_alloc(w1,maxsize64,simple=.true.)
 
 
-     call ccsd_debug_print(ccmodel,1,master,local,scheme,print_debug,o2v2,w1,&
-        &omega2,govov,gvvooa,gvoova)
-
-#ifdef DIL_ACTIVE
-#ifdef DIL_DEBUG_ON
-     if(DIL_DEBUG) then
-      call lsmpi_barrier(infpar%lg_comm)
-      write(*,*) '#DIL(DEBUG): sio4 norm1 (position 2) = ',dil_tensor_norm1(sio4) !``DIL:remove
-      call print_norm(sio4," NORM(sio4)   :",print_on_rank=0)
-     endif
-#endif
-#endif
+     call ccsd_debug_print(ccmodel,1,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
 
 
      if(Ccmodel>MODEL_CC2)then

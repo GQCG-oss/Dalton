@@ -176,6 +176,8 @@ module cc_tools_module
          tpm(1:tpl%ti(lt)%d(1),1:tpl%ti(lt)%d(2)) => tpl%ti(lt)%t
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer(c_loc(tpl%ti(lt)%t(1)),tpm,tpl%ti(lt)%d)
+#else
+         call lsquit('ERROR(lspdm_get_tpl_and_tmi): unable to reshape pointers!',-1)
 #endif
 
          !build list of tiles to get for the current tpl tile
@@ -260,6 +262,8 @@ module cc_tools_module
 !             call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
               call c_f_pointer( c_loc(buf2(1)), tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
+#else
+            call lsquit('ERROR(lspdm_get_tpl_and_tmi): unable to reshape pointers!',-1)
 #endif
 
             !get offset for tile counting
@@ -341,6 +345,8 @@ module cc_tools_module
          tpm(1:tmi%ti(lt)%d(1),1:tmi%ti(lt)%d(2)) => tmi%ti(lt)%t
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer( c_loc(tmi%ti(lt)%t(1)), tpm, tmi%ti(lt)%d )
+#else
+         call lsquit('ERROR(lspdm_get_tpl_and_tmi): unable to reshape pointers!',-1)
 #endif
 
          !build list of tiles to get for the current tmi tile
@@ -425,6 +431,8 @@ module cc_tools_module
 !             call c_f_pointer(c_loc(buf2),tt2,shape=(/tdim(2),tdim(1),tdim(3),tdim(4)/)) !`DIL
               call c_f_pointer( c_loc( buf2(1) ) , tt2, [tdim(2),tdim(1),tdim(3),tdim(4)] )
             endif
+#else
+            call lsquit('ERROR(lspdm_get_tpl_and_tmi): unable to reshape pointers!',-1)
 #endif
 
             !get offset for tile counting
@@ -779,10 +787,6 @@ module cc_tools_module
           &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
          endif
          call dil_array_init(w3,tred*nor)
-         if(DIL_DEBUG) then
-          write(DIL_CONS_OUT,'("#DEBUG(DIL): Initial Low w3 norm = ",D22.14)') dil_array_norm1(w3,tred*nor)
-          write(DIL_CONS_OUT,'("#DEBUG(DIL): Initial Low w2 norm = ",D22.14)') dil_array_norm1(w2,tred*nvr)
-         endif
          tcs='D(z,y)+=L(z,x)*R(y,x)'
          call dil_clean_tens_contr(tch)
          tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
@@ -822,10 +826,6 @@ module cc_tools_module
           &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
          endif
          call dil_array_init(w3(tred*nor+1:),tred*nor)
-         if(DIL_DEBUG) then
-          write(DIL_CONS_OUT,'("#DEBUG(DIL): Initial High w3 norm = ",D22.14)') dil_array_norm1(w3(tred*nor+1:),tred*nor)
-          write(DIL_CONS_OUT,'("#DEBUG(DIL): Initial High w2 norm = ",D22.14)') dil_array_norm1(w2,tred*nvr)
-         endif
          tcs='D(z,y)+=L(z,x)*R(y,x)'
          call dil_clean_tens_contr(tch)
          tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
@@ -946,12 +946,14 @@ module cc_tools_module
 #endif
 
 !``DIL: compute the w3 norm: remove:
-#ifdef DIL_DEBUG_ON
-      if(DIL_DEBUG) then
-       write(DIL_CONS_OUT,'("#DEBUG(DIL): low w3 1-norm in sigma  = ",D22.14)') dil_array_norm1(w3,tred*nor)
-       write(DIL_CONS_OUT,'("#DEBUG(DIL): high w3 1-norm in sigma = ",D22.14)') dil_array_norm1(w3(tred*nor+1:),tred*nor)
-      endif
-#endif
+!#ifdef DIL_ACTIVE
+!#ifdef DIL_DEBUG_ON
+!      if(DIL_DEBUG) then
+!       write(DIL_CONS_OUT,'("#DEBUG(DIL): low w3 1-norm in sigma  = ",D22.14)') dil_array_norm1(w3,tred*nor)
+!       write(DIL_CONS_OUT,'("#DEBUG(DIL): high w3 1-norm in sigma = ",D22.14)') dil_array_norm1(w3(tred*nor+1:),tred*nor)
+!      endif
+!#endif
+!#endif
 
       scaleitby=1.0E0_realk
       if(present(scal)) scaleitby = scal
@@ -1402,6 +1404,8 @@ module cc_tools_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
+#else
+               call lsquit('ERROR(combine_and_transform_sigma): unable to reshape pointers!',-1)
 #endif
                do j=no,1,-1
                   do i=j,1,-1
@@ -1460,6 +1464,8 @@ module cc_tools_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                   call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                   call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
+#else
+                  call lsquit('ERROR(combine_and_transform_sigma): unable to reshape pointers!',-1)
 #endif
                   do j=no,1,-1
                      do i=j,1,-1
@@ -1609,6 +1615,8 @@ module cc_tools_module
          trick(1:nb,1:nb,1:cagi) => w2
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
          call c_f_pointer(c_loc(w2(1)),trick,[nb,nb,cagi])
+#else
+         call lsquit('ERROR(get_I_plusminus_le): unable to reshape pointers!',-1)
 #endif
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          aleg=0
