@@ -419,8 +419,8 @@ if(ENABLE_EFS)
 endif()
 
 if(ENABLE_XCINT)
-    add_dalton_test(xcint_energy "dalton;xcint;unknown")
-    add_dalton_test(xcint_lr "dalton;xcint;unknown")
+    add_dalton_runtest(xcint_energy "dalton;xcint;unknown")
+    add_dalton_runtest(xcint_lr "dalton;xcint;unknown")
 endif()
 
 if(ENABLE_VPOTDAMP)
