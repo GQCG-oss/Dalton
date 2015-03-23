@@ -88,9 +88,6 @@ module tensor_interface_module
   public tensor_mv_dense2tiled, tensor_change_atype_to_d
   public tensor_cp_tiled2dense, tensor_change_atype_to_rep
 
-  !THESE ROUTINES SHOULD NOT BE USED:
-  public tensor_two_dim_1batch, tensor_two_dim_2batch
-
   ! Special operations with tensors
   public tensor_extract_eos_indices, tensor_extract_decnp_indices
   public get_fragment_cc_energy_parallel, get_cc_energy_parallel
