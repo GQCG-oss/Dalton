@@ -75,7 +75,7 @@ C  /* Deck rspoli */
      *                  XINDX,CMO,WRK,LWRK)
 
 #ifdef ENABLE_XCINT_RESPONSE
-      use dalton_xcint_interface, only: use_xcint_integrator,
+      use dalton_xcint_interface, only: xcint_is_active,
      &                                  xcint_integrate_rks_lr
 #endif
 
@@ -163,7 +163,6 @@ C
       real(8), allocatable :: dmat_ao(:)
       real(8), allocatable :: xc_mat(:)
       real(8), allocatable :: fmat_mo(:)
-      real(8)              :: xc_energy(1)
       real(8)              :: num_electrons
       logical              :: file_exists
 #endif
@@ -1135,7 +1134,7 @@ C          Special case of alpha density only (old code)
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
            ELSE
 #ifdef ENABLE_XCINT_RESPONSE
-             if (use_xcint_integrator()) then
+             if (xcint_is_active()) then
 
              if (nosim > 1) then
                 call quit('NOSIM > 1 not implemented with ENABLE_XCINT')
@@ -1162,12 +1161,7 @@ C          Special case of alpha density only (old code)
              ! scale density matrices
              call dscal(nbast*nbast*2, 0.5d0, dmat_ao, 1)
 
-             xc_energy = 0.0d0
-             num_electrons = 0.0d0
-             call xcint_integrate_rks_lr(dmat_ao,
-     &                                   xc_energy,
-     &                                   xc_mat,
-     &                                   num_electrons)
+             call xcint_integrate_rks_lr(dmat_ao, xc_mat)
 
              ! transform ao fock matrix contribution to mo
              call lrao2mo(cmo, ksymop, xc_mat,

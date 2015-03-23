@@ -299,8 +299,8 @@ C
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_integrate_rks_scf,
-     &                                  use_xcint_own_grid,
-     &                                  use_xcint_integrator
+     &                                  xcint_uses_own_grid,
+     &                                  xcint_is_active
 #endif
       use qmcmm_fock, only: qmnpmm_fock
 
@@ -881,8 +881,8 @@ C
             END IF
 
 #ifdef ENABLE_XCINT
-            if (use_xcint_integrator()) then
-               if (.not. use_xcint_own_grid()) then
+            if (xcint_is_active()) then
+               if (.not. xcint_uses_own_grid()) then
                   ! ulgy hack to get dalton grid, we don't care about the integrated result
                   inquire(file='num_grid', exist=file_exists)
                   if (.not. file_exists) then
@@ -910,9 +910,9 @@ C
      &                    dmat_ao, 1)
                
                call xcint_integrate_rks_scf(dmat_ao,
-     &                                      xc_energy,
-     &                                      xc_mat,
-     &                                      xc_num_electrons)
+     &                                xc_energy,
+     &                                xc_mat,
+     &                                xc_num_electrons)
                emy = emy + xc_energy(1)
                
                call dgetsp(nbast, xc_mat, xc_mat_tri)

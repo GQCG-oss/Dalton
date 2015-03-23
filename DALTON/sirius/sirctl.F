@@ -59,7 +59,7 @@ C
       use pcmmod_cfg
 #endif
 #ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: dalton_xcint_interface_init
+      use dalton_xcint_interface, only: xcint_init
 #endif
 
 #include "implicit.h"
@@ -178,7 +178,7 @@ Cbm initialized PCM_save
 
 #ifdef ENABLE_XCINT
       ! initialize XCint interface
-      call dalton_xcint_interface_init()
+      call xcint_init()
 #endif
 
 C
