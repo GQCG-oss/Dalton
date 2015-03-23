@@ -5394,7 +5394,7 @@ contains
    !          the fragment AOS is increased using the nexp most important orbitals from
    !          occupied and virtual priority lists.
    !          The expansion is converged when the difference in energie(s) between two
-   !          is smaller than the FOT.
+   !          step is smaller than the FOT.
    !
    ! Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
    ! Date:    July 2014

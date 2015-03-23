@@ -418,6 +418,11 @@ if(ENABLE_EFS)
     add_dalton_test(efs_hf                           "dalton;efs;unknown")
 endif()
 
+if(ENABLE_XCINT)
+    add_dalton_runtest(xcint_energy "dalton;xcint;unknown")
+    add_dalton_runtest(xcint_lr "dalton;xcint;unknown")
+endif()
+
 if(ENABLE_VPOTDAMP)
     add_dalton_runtest(qmcmm "dalton;runtest;qmcmm;short;parallel")
 endif()

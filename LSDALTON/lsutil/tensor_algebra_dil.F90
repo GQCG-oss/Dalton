@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/03/05 (started 2014/09/01).
+!REVISION: 2015/03/13 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -49,21 +49,23 @@
 !   may have different segment lengths. The tensor tiles are enumerated in Fortran style
 !   (1st dimenstion, 2nd dimension, and so on), flat (global) tile numeration starts from 1.
 !NOTES:
-! * The code assumes Fortran-2008, MPI-3 (defined FORTRAN_2008 and VAR_MPI)!
+! * The code assumes Fortran-2003/2008 & MPI-3 (defined COMPILER_UNDERSTANDS_FORTRAN_2003, VAR_PTR_RESHAPE, VAR_MPI)!
 ! * The number of OMP threads spawned on CPU or MIC must not exceed the MAX_THREADS parameter!
-! * In order to activate the debugging mode, set macro DIL_DEBUG_ON.
+! * In order to activate the debugging mode, set macro DIL_DEBUG_ON below.
 !PREPROCESSOR:
 ! * VAR_OMP: use OpenMP;
-! * USE_OMP_MOD: "use omp_lib" module;
-! * USE_BASIC_ALLOC: disable MPI_ALLOC_MEM() calls and stick to malloc();
+! * USE_OMP_MOD: use omp_lib module;
+! * USE_BASIC_ALLOC: disable MPI_ALLOC_MEM() calls and stick to basic allocate()/malloc();
 ! * DIL_DEBUG_ON: enable debugging information;
-! * USE_MIC: enable Intel MIC accelerators (not implemented).
+! * USE_MIC: enable Intel MIC accelerators (not yet implemented).
        module tensor_algebra_dil
         use lspdm_tensor_operations_module
-#ifdef FORTRAN_2008
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+#ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
 !#define DIL_DEBUG_ON
+#endif
 #endif
 #endif
 
@@ -133,6 +135,7 @@
         logical, public:: DIL_DEBUG=.false.                             !debugging
 #endif
         integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
+        integer(INTD), private:: DIL_TMP_FILE1=1043                     !temporary file handle
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC
 !DIR$ ATTRIBUTES OFFLOAD:mic:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
@@ -286,6 +289,7 @@
         public merge_sort_key_int4
         public merge_sort_key_int8
         public merge_sort_real8
+        private str_parse
         public str2int
         public int2str
         private int2str_i4
@@ -323,6 +327,8 @@
         public dil_tensor_init
         public dil_debug_to_file_start
         public dil_debug_to_file_finish
+        public dil_mm_pipe_efficient
+        public dil_will_malloc_succeed
         public dil_test
 
        contains
@@ -1515,6 +1521,62 @@
         endif
         return
         end subroutine merge_sort_real8
+!----------------------------------------------------------------------
+        subroutine str_parse(str,sep,nwords,words,ierr,str_len,sep_len) !SERIAL
+!This subroutine extracts separable "words" from a string.
+!It allows for multiple word separators, but all of them must have the same length!
+        implicit none
+        character(*), intent(in):: str                !in: string of words separated by allowed separators
+        character(*), intent(in):: sep                !in: concatenated allowed word separators (default length of a separator is 1)
+        integer(INTD), intent(out):: nwords           !out: number of words found in the string
+        integer(INTD), intent(inout):: words(2,*)     !out: beginning (1) and end (2) position of each word in the string
+        integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
+        integer(INTD), intent(in), optional:: str_len !in: string length (default will use the entire <str>)
+        integer(INTD), intent(in), optional:: sep_len !in: individual separator length (all separators must have the same length)
+        integer(INTD):: k,l,errc,strl,sepl,spl
+
+        errc=0; nwords=0
+        sepl=len(sep) !total length of the string containing allowed separators
+        if(present(str_len)) then; strl=str_len; else; strl=len(str); endif !length of the analyzed string
+        if(present(sep_len)) then; spl=sep_len; else; spl=1; endif !length of each individual separator
+        if(strl.gt.0.and.spl.gt.0.and.sepl.ge.spl.and.mod(sepl,spl).eq.0) then
+         k=0; l=1
+         do while(l.le.strl)
+          if(this_is_separator(l)) then !separator found
+           if(k.gt.0) then; nwords=nwords+1; words(1:2,nwords)=(/k,l-1_INTD/); endif
+           k=0; l=l+spl
+          else
+           if(k.eq.0) k=l !beginning of a word
+           l=l+1
+          endif
+         enddo
+         if(k.gt.0) then; nwords=nwords+1; words(1:2,nwords)=(/k,strl/); endif
+        else
+         errc=1
+        endif
+        if(present(ierr)) ierr=errc
+        return
+        contains
+
+         logical function this_is_separator(spos)
+         integer(INTD), intent(in):: spos !examined position in str
+         integer(INTD):: j0,j1,j2
+         this_is_separator=.false.
+         if(strl-spos+1.ge.spl) then
+          j1=0; j2=0
+          do j0=1,sepl
+           if(str(spos+j1:spos+j1).eq.sep(j0:j0)) j2=j2+1
+           j1=j1+1
+           if(j1.eq.spl) then
+            if(j2.eq.spl) then; this_is_separator=.true.; return; endif
+            j1=0; j2=0
+           endif
+          enddo
+         endif
+         return
+         end function this_is_separator
+
+        end subroutine str_parse
 !-------------------------------------------------
         function str2int(str,sl,ierr) result(intg) !SERIAL
 !This function converts an integer number given as a string into an integer.
@@ -4447,7 +4509,114 @@
         endif
         return
         end subroutine dil_debug_to_file_finish
-!==============================================
+!--------------------------------------------------------------------------------------------------
+        logical function dil_mm_pipe_efficient(ll,lr,lc,comp_bandwidth,data_bandwidth,data_latency) !SERIAL
+!This function decides whether a given matrix multiplication can be efficiently pipelined:
+!D(1:ll,1:lr)+=L(1:lc,1:ll)*R(1:lc,1:lr)
+!No argument validity checks!
+        implicit none
+        integer(INTL), intent(in):: ll,lr,lc !in: matrix dimensions
+        real(8), intent(in):: comp_bandwidth !in: computational throughput (Flops/s)
+        real(8), intent(in):: data_bandwidth !in: data transfer bandwidth (Words/s)
+        real(8), intent(in):: data_latency   !in: data transfer latency (s)
+        real(8), parameter:: much_more=5d0   !defines what "much more" exactly means
+        real(8):: l,r,c,v
+
+        l=real(ll,8); r=real(lr,8); c=real(lc,8)
+        if(l*r*c.gt.(2d0*data_latency*comp_bandwidth)*much_more) then
+         v=comp_bandwidth/data_bandwidth
+         if(c.ge.v.and.l*r/(l+r).ge.v) then
+          dil_mm_pipe_efficient=.true.
+         else
+          dil_mm_pipe_efficient=.false.
+         endif
+        else
+         dil_mm_pipe_efficient=.false.
+        endif
+        return
+        end function dil_mm_pipe_efficient
+!----------------------------------------------------------------------------------
+        logical function dil_will_malloc_succeed(mem_bytes,page_size,hugepage_size) !SERIAL
+!This function checks whether a given malloc request has a chance for success.
+!If the arguments passed to this function are invalid, .FALSE. will be returned (no error status).
+!NOTES:
+! # Because of using the same file handle, this subroutine is not threadsafe,
+!   that is, it cannot be called from multiple threads simulateneously.
+! # The result returned is only a probable success (not 100% reliable) because
+!   the buddyinfo can become outdated due to a concurrent malloc() or
+!   the malloc() implementation may not be able to use all the pages
+!   to produce an allocation of a given size.
+        implicit none
+        integer(INTL), intent(in):: mem_bytes               !in: number of bytes to be allocated
+        integer(INTL), intent(in), optional:: page_size     !in: basic page size (default is 4K)
+        integer(INTL), intent(in), optional:: hugepage_size !in: huge page size (defaults to 2M)
+!----------------------------------------------------------
+        real(8), parameter:: RELIABLE_PART=1d0 !effective parameter to account for unreliability
+        integer(INTL), parameter:: DEFAULT_PAGE=4096 !default basic page size in bytes
+        integer(INTL), parameter:: DEFAULT_HUGEPAGE=2097152 !default hugepage size in bytes
+        integer(INTD), parameter:: MAX_BUDDY_LEVELS=128 !max anticipated number of buddy levels
+!------------------------------------------------------
+        integer(INTL):: psz,hsz,pls,ahpm,buds(0:MAX_BUDDY_LEVELS-1)
+        character(512):: str
+        integer(INTD):: i,k,l,m,n,words(2,MAX_BUDDY_LEVELS+16)
+
+        dil_will_malloc_succeed=.false.
+        psz=DEFAULT_PAGE; hsz=DEFAULT_HUGEPAGE
+        if(present(page_size)) psz=page_size
+        if(present(hugepage_size)) hsz=hugepage_size
+        if(psz.le.0.or.hsz.lt.psz.or.mod(hsz,psz).ne.0) return
+!Read current /proc/buddyinfo (may change at any time):
+        open(DIL_TMP_FILE1,file='/proc/buddyinfo',form='FORMATTED',status='OLD',ERR=999)
+        buds(:)=0; m=0; i=0; str=' '
+        do
+         read(DIL_TMP_FILE1,'(A512)',END=100) str; l=len_trim(str)
+         if(l.gt.0) then
+          call str_parse(str,' ,',n,words,ierr=i,str_len=l); if(i.ne.0) exit
+          call fill_buddy_info(k,i); if(i.ne.0) exit
+          m=max(m,k)
+          str(1:l)=' '
+         endif
+        enddo
+100     close(DIL_TMP_FILE1)
+!Compute the probability of success:
+        if(i.eq.0) then
+         pls=psz; ahpm=0 !ahpm: available hugepage memory in bytes
+         do l=0,m-1
+          if(pls.ge.hsz) ahpm=ahpm+pls*buds(l) !count only memory chunks larger or equal to the hugepage size
+          pls=pls*2
+         enddo
+         if(mem_bytes.lt.int(real(ahpm,8)*RELIABLE_PART,INTL)) dil_will_malloc_succeed=.true.
+        endif
+        return
+999     if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_will_malloc_succeed): unable to open buddyinfo!")')
+        return
+        contains
+
+         subroutine fill_buddy_info(jl,errc)
+         integer(INTD), intent(out):: jl
+         integer(INTD), intent(out):: errc
+         integer(INTD):: j0,jb,je,js
+         errc=0; jl=-1
+         do j0=1,n
+          jb=words(1,j0); je=words(2,j0); js=je-jb+1_INTD
+          if(jl.ge.0) then
+           if(jl.ge.MAX_BUDDY_LEVELS) then
+            if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_will_malloc_succeed): MAX_BUDDY_LEVELS exceeded!")')
+            errc=-1; return
+           endif
+           buds(jl)=buds(jl)+str2int(str(jb:je),js,errc); if(errc.ne.0) return
+           jl=jl+1
+          else
+           if(js.eq.len('Normal')) then
+            if(str(jb:je).eq.'Normal') jl=0 !start recording
+           endif
+          endif
+         enddo
+         return
+         end subroutine fill_buddy_info
+
+        end function dil_will_malloc_succeed
+!=============================================
         subroutine dil_test(dtens,ltens,rtens)
         implicit none
         type(tensor), intent(inout), target:: dtens
@@ -4723,6 +4892,6 @@
         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
         return
         end subroutine dil_test
-!DIL_ACTIVE (assumes Fortran-2008, MPI-3):
+!DIL_ACTIVE (assumes Fortran-2003/2008, MPI-3):
 #endif
        end module tensor_algebra_dil

@@ -126,7 +126,7 @@ f.add(from_string = 'Rotational g tensor second derivatives:',
 
 f.add(from_string = 'Nuclear shielding tensor second derivatives for:',
       num_lines = 11,
-      abs_tolerance = 1.0e-2)
+      abs_tolerance = 2.0e-2)
 
 f.add(from_string = 'Polarizability second derivatives:',
       num_lines = 11,
@@ -136,7 +136,7 @@ f.add(from_string = 'Polarizability second derivatives:',
 # Vibrationally averaged molecular properties #
 ###############################################
 
-f.add(from_string = 'Vibrationally averaged molecular properties', 
+f.add(from_string = 'Vibrationally averaged molecular properties',
       to_string = 'Numerical differentiation complete.',
       abs_tolerance = 2.0e-5)
 

@@ -100,6 +100,7 @@ contains
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
+    DECinfo%RIMPIsplit           = 8000
 #ifdef VAR_MPI
     DECinfo%dyn_load             = LSMPIASYNCP
 #endif
@@ -220,6 +221,7 @@ contains
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
     DECinfo%AtomicExtent             = .false.
+    DECinfo%MPMP2                    = .false.
 
     !  RIMP2 settings defauls
     DECinfo%AuxAtomicExtent          = .false.
@@ -462,7 +464,6 @@ contains
           DECinfo%use_singles=.false.
           DECinfo%solver_par=.true.
 
-
        ! CC SOLVER INFO
        ! ==============
        case('.CCSDNOSAFE')
@@ -604,6 +605,7 @@ contains
           DECinfo%manual_occbatchsizes=.true.
           read(input,*) DECinfo%batchOccI, DECinfo%batchOccJ
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
+       case('.RIMPISPLIT'); read(input,*) DECinfo%RIMPIsplit
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
 #ifndef VAR_MPI
@@ -700,6 +702,17 @@ contains
        case('.ATOMICEXTENT')
           !Include all atomic orbitals on atoms in the fragment 
           DECinfo%AtomicExtent  = .true.
+
+       !KEYWORDS FOR CANONICAL FULL MOLECULAR MP2
+       !**************************
+
+       case('.MPMP2') 
+          ! By default a memory conserving integral direct MP2 code is used
+          ! when **CC .MP2 is combined with .CANONICAL
+          ! This keyword activates a MP2 version that distribute the integrals
+          ! across the nodes. The code does less integral recalculation but 
+          ! requires more nodes/more memory
+          DECinfo%MPMP2=.true.
 
 
        !KEYWORDS FOR RIMP2 (.RIMP2) 
@@ -1233,6 +1246,11 @@ contains
             &MPI processes with only one process",-1)
     endif
 
+    ! Meaningful RI split
+    if(DECinfo%RIMPIsplit<1) then
+       call lsquit('RIMPISPLIT must be larger than zero!',-1)
+    end if
+    
 
     ! Set FOTs for geometry opt.
     call set_geoopt_FOTs(DECinfo%FOT)
@@ -1359,6 +1377,7 @@ contains
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
 #endif
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
+    write(lupri,*) 'rimpisplit ', DECitem%rimpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes
     write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,DECitem%ccsdGbatch

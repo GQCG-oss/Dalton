@@ -4756,13 +4756,14 @@ END SUBROUTINE II_get_Econt1
 !> \param D the density matrix
 !> \param ndmat the number of density matrices
 !> \param F the exchange matrix
-SUBROUTINE II_get_exchangeEcont(LUPRI,LUERR,SETTING,D,Econt,ndmat)
+SUBROUTINE II_get_exchangeEcont(LUPRI,LUERR,SETTING,D,Econt,ndmat,InOperator)
 IMPLICIT NONE
 Integer               :: ndmat
 TYPE(MATRIX),target   :: D(ndmat)
 real(realk)           :: Econt(ndmat)
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR
+INTEGER,optional      :: InOperator
 !
 Integer             :: idmat,incdmat,nrow,ncol
 Real(realk),pointer :: DfullLHS(:,:,:)
@@ -4787,11 +4788,14 @@ setting%scheme%daLinK=setting%scheme%LSdaLinK
 IF(.NOT.setting%scheme%LSDASCREEN)setting%scheme%daLinK=.FALSE.
 setting%scheme%dascreen_thrlog = setting%scheme%lsdascreen_thrlog
 IF (SETTING%SCHEME%CAM) THEN
-  Oper = CAMOperator       !Coulomb attenuated method
+   Oper = CAMOperator       !Coulomb attenuated method
 ELSEIF (SETTING%SCHEME%SR_EXCHANGE) THEN
-  Oper = ErfcOperator      !Short-Range Coulomb screened exchange
+   Oper = ErfcOperator      !Short-Range Coulomb screened exchange
 ELSE
-  Oper = CoulombOperator   !Regular Coulomb metric 
+   Oper = CoulombOperator   !Regular Coulomb metric 
+ENDIF
+IF(present(InOperator))THEN
+   Oper = InOperator
 ENDIF
 !Calculates the HF-exchange contribution
 call initIntegralOutputDims(setting%Output,1,1,1,1,ndmat)
@@ -4815,13 +4819,14 @@ END SUBROUTINE II_get_exchangeEcont
 !> \param D the array of density matrix
 !> \param E the coulomb energies 
 !> \param ndmat the number of density matrix
-SUBROUTINE II_get_CoulombEcont(LUPRI,LUERR,SETTING,D,Econt,ndmat)
+SUBROUTINE II_get_CoulombEcont(LUPRI,LUERR,SETTING,D,Econt,ndmat,InOperator)
 IMPLICIT NONE
 Integer             :: ndmat
 TYPE(MATRIX),target   :: D(ndmat)
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR,nbasis
 real(realk)           :: Econt(ndmat)
+INTEGER,optional      :: InOperator
 !
 Real(realk)         :: TS,TE
 logical :: FMM,DaJengine,DaCoulomb
@@ -4846,6 +4851,7 @@ setting%scheme%dascreen_thrlog = setting%scheme%lsdascreen_thrlog
 IF (SETTING%SCHEME%DENSFIT) THEN
    Oper = CoulombOperator
    IF(SETTING%SCHEME%OVERLAP_DF_J) Oper = OverlapOperator
+   IF(present(InOperator))Oper = InOperator
    CALL ls_attachDmatToSetting(D,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
    call initIntegralOutputDims(setting%Output,naux,1,1,1,1)
    call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,Oper,RegularSpec,ContractedInttype,&
@@ -4872,17 +4878,26 @@ IF (SETTING%SCHEME%DENSFIT) THEN
    setting%scheme%DaJengine=setting%scheme%LSDaJengine
    IF(.NOT.setting%scheme%LSDASCREEN)setting%scheme%DaJengine=.FALSE.
    call initIntegralOutputDims(setting%Output,1,1,1,1,ndmat)
-   call ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,EcontribSpec,&
-        & ContractedInttype,SETTING,LUPRI,LUERR)
+   IF(present(InOperator))THEN
+      call ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,Oper,EcontribSpec,&
+           & ContractedInttype,SETTING,LUPRI,LUERR)
+   ELSE
+      call ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,EcontribSpec,&
+           & ContractedInttype,SETTING,LUPRI,LUERR)
+   ENDIF
    CALL retrieve_Output(lupri,setting,Econt,.FALSE.)   
    IF(SETTING%SCHEME%FMM.AND.(Oper.EQ.CoulombOperator)) THEN
       call lsquit('not tested',-1)
 !      call ls_jengineClassicalfull
    ENDIF
+   IF(SETTING%SCHEME%FMM.AND.present(InOperator))THEN
+      call lsquit('not tested',-1)
+   ENDIF
    call mem_dealloc(calphafull)
    CALL ls_freeDmatFromSetting(setting)
    CALL LSTIMER('df-J Econt',TS,TE,LUPRI)
 ELSE
+   IF(present(InOperator))Oper = InOperator
    CALL ls_attachDmatToSetting(D,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
    CALL ls_attachDmatToSetting(D,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
    CALL ls_LHSSameAsRHSDmatToSetting(setting)
@@ -4890,13 +4905,23 @@ ELSE
    IF(SETTING%SCHEME%LSDAJENGINE)THEN
       setting%scheme%DaJengine=setting%scheme%LSDaJengine
       IF(.NOT.setting%scheme%LSDASCREEN)setting%scheme%DaJengine=.FALSE.
-      call ls_jengine(AORdefault,AORdefault,AORdefault,AORdefault,&
-           & CoulombOperator,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+      IF(present(InOperator))THEN
+         call ls_jengine(AORdefault,AORdefault,AORdefault,AORdefault,&
+              & Oper,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+      ELSE
+         call ls_jengine(AORdefault,AORdefault,AORdefault,AORdefault,&
+              & CoulombOperator,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+      ENDIF
    ELSEIF(SETTING%SCHEME%LSDACoulomb)THEN
       setting%scheme%DaCoulomb=setting%scheme%LSDaCoulomb
       IF(.NOT.setting%scheme%LSDASCREEN)setting%scheme%DaCoulomb=.FALSE.
-      call ls_get_coulomb_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
-           & CoulombOperator,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+      IF(present(InOperator))THEN
+         call ls_get_coulomb_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
+              & Oper,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+      ELSE
+         call ls_get_coulomb_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
+              & CoulombOperator,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+      ENDIF
    ELSE
       call lsquit('EcontDaJENGINE or EcontDaCoulomb must be true',-1)
    ENDIF
