@@ -2595,7 +2595,7 @@ contains
 
     if(collective)then
        if( use_bg_buf ) then
-          call mem_dummy_alloc(work,(i8*n1)*n2*n3*n4)
+          call mem_pseudo_alloc(work,(i8*n1)*n2*n3*n4)
        else
           call mem_alloc(work,(i8*n1)*n2*n3*n4)
        endif
