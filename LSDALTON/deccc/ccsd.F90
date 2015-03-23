@@ -5319,7 +5319,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer(kind=8), intent(inout) :: e2a
     logical, intent(in)    :: local, mpi_split
     integer, intent(out),optional :: nbuf
-    integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size
+    integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize
     integer :: nnod,magic,nbuffs,choice
     logical :: checkbg
 
@@ -5344,8 +5344,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !they will be associated to the backtground buffer
     checkbg = mem_is_background_buf_init()
     if( checkbg )then
+       bg_buf_size = mem_get_bg_buf_n()
        choice = 5
     else
+       bg_buf_size = huge(bg_buf_size)
        choice = 4
     endif
 
@@ -5461,10 +5463,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       endif
       !make batches larger until they do not fit anymore
       !determine gamma batch first
-      do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
+      do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg).and.(allsize<= bg_buf_size))
 
         nbg=nbg+1
         mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+
+        w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,scheme,se,is)
+        w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,scheme,se,is)
+        w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
+        w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
+
+        allsize = w0size + w1size + w2size + w3size
 
       enddo
 
@@ -5478,15 +5487,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       !determine alpha batch
 
-      do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
+      do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba).and.(allsize<= bg_buf_size))
         nba      = nba+1
-        !nbg      = nba * 2
-        !if (nbg>=nb)then
-        !   nbg = nb
-        !else if (nbg<=minbsize)then
-        !   nbg = minbsize
-        !endif
+        nbg      = nba * 2
+        if (nbg>=nb)then
+           nbg = nb
+        else if (nbg<=minbsize)then
+           nbg = minbsize
+        endif
         mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+
+        w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,scheme,se,is)
+        w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,scheme,se,is)
+        w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
+        w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
+
+        allsize = w0size + w1size + w2size + w3size
       enddo
 
       if (nba>=nb)then
