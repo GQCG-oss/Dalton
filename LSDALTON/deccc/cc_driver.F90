@@ -2859,7 +2859,6 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          & wrong counting",-1)
       endif
 
-
       if( local )then
          call mem_init_background_alloc(bytes_to_alloc)
 #ifdef VAR_MPI
@@ -2868,6 +2867,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          call lspdm_init_global_buffer(.true.)
 #endif
       endif
+       
    endif
    
 end subroutine ccdriver_set_tensor_segments_and_alloc_workspace
