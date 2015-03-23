@@ -2859,8 +2859,6 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          & wrong counting",-1)
       endif
 
-      print *,"requesting ",bytes,bytes/1024.0**3
-
       if( local )then
          call mem_init_background_alloc(bytes_to_alloc)
 #ifdef VAR_MPI
@@ -2870,7 +2868,6 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 #endif
       endif
        
-      print *,"bg alloc done"
    endif
    
 end subroutine ccdriver_set_tensor_segments_and_alloc_workspace
