@@ -2145,7 +2145,7 @@ contains
     real(realk), pointer :: work(:)
     integer(kind=long) :: w1size, w2size
     real(realk), parameter :: fraction_of = 0.8E0_realk
-    logical :: dynamic_load,completely_distributed
+    logical :: dynamic_load,completely_distributed, use_bg_buf
     integer :: nbuffs
     type(tensor) :: Cint, int1, int2, int3, t1_par, t2_par, t3_fa, t4_fg
     integer :: ndimA,  ndimB,  ndimC,  ndimD
@@ -2578,15 +2578,27 @@ contains
     w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
        &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
 
-    call mem_alloc( w1, w1size )
-    call mem_alloc( w2, w2size )
+    
+    use_bg_buf = mem_is_background_buf_init()
+
+    if( use_bg_buf ) then
+       call mem_pseudo_alloc( w1, w1size )
+       call mem_pseudo_alloc( w2, w2size )
+    else
+       call mem_alloc( w1, w1size )
+       call mem_alloc( w2, w2size )
+    endif
 
     !First touch
     w1(1) = 0.0E0_realk
     w2(1) = 0.0E0_realk
 
     if(collective)then
-       call mem_alloc(work,(i8*n1)*n2*n3*n4)
+       if( use_bg_buf ) then
+          call mem_dummy_alloc(work,(i8*n1)*n2*n3*n4)
+       else
+          call mem_alloc(work,(i8*n1)*n2*n3*n4)
+       endif
        work = 0.0E0_realk
     endif
 
@@ -3014,9 +3026,6 @@ contains
     endif
 #endif
 
-    call mem_dealloc( w1 )
-    call mem_dealloc( w2 )
-
 #ifdef VAR_MPI
 
     call time_start_phase( PHASE_IDLE )
@@ -3026,16 +3035,31 @@ contains
        call time_start_phase( PHASE_COMM )
        call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
-       call tensor_convert(work,integral, order = order )
+       call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size   )
     endif
 
 #else
 
 
     call time_start_phase( PHASE_WORK )
-    call tensor_convert(work,integral, order = order )
+    call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size )
 
 #endif
+    if(collective)then
+       if( use_bg_buf )then
+          call mem_pseudo_dealloc( work )
+       else
+          call mem_dealloc( work )
+       endif
+    endif
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc( w2 )
+       call mem_pseudo_dealloc( w1 )
+    else
+       call mem_dealloc( w2 )
+       call mem_dealloc( w1 )
+    endif
+
 
     if(.not.dynamic_load)then
        call mem_dealloc(jobdist)
@@ -3181,7 +3205,6 @@ contains
     endif
 
 
-    if(collective) call mem_dealloc( work )
 
     if(DECinfo%PL>2)then
        call print_norm(integral," NORM of the integral :",print_on_rank=0)

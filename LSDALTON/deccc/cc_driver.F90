@@ -2855,8 +2855,9 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
       bytes_to_alloc = Freebytes - bytes
 
       if(bytes_to_alloc <= 0.0E0_realk) then
+         print *,Freebytes/1024.0**3,"GB free, need to alloc",bytes/1024.0**3,"GB"
          call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
-         & wrong counting",-1)
+         & not enough space",-1)
       endif
 
       if( local )then
