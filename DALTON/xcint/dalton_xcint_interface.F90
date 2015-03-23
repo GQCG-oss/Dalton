@@ -10,8 +10,10 @@ module dalton_xcint_interface
    public dalton_xcint_interface_finalize
    public set_functional
    public use_xcint_integrator
+   public use_xcint_own_grid
    public select_xcint_integrator
    public unselect_xcint_integrator
+   public set_xcint_grid
 
    private
 
@@ -43,6 +45,11 @@ contains
    end function
 
 
+   logical function use_xcint_own_grid()
+      use_xcint_own_grid = xcint_use_own_grid
+   end function
+
+
    subroutine select_xcint_integrator()
       use_xcint = .true.
    end subroutine
@@ -50,6 +57,19 @@ contains
 
    subroutine unselect_xcint_integrator()
       use_xcint = .false.
+   end subroutine
+
+
+   subroutine set_xcint_grid(radint, &
+                             angmin, &
+                             angint)
+      real(8), intent(in) :: radint
+      integer, intent(in) :: angint
+      integer, intent(in) :: angmin
+      xcint_radint = radint
+      xcint_angmin = angmin
+      xcint_angint = angint
+      xcint_use_own_grid = .true.
    end subroutine
 
 

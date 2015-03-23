@@ -299,7 +299,8 @@ C
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
       use iso_c_binding
-      use dalton_xcint_interface, only: use_xcint_integrator
+      use dalton_xcint_interface, only: use_xcint_integrator,
+     &                                  use_xcint_own_grid
       use xcint_fortran_interface
 #endif
       use qmcmm_fock, only: qmnpmm_fock
@@ -881,18 +882,19 @@ C
 
 #ifdef ENABLE_XCINT
             if (use_xcint_integrator()) then
-               inquire(file='num_grid', exist=file_exists)
-               if (.not. file_exists) then
-                  ! ulgy hack to get the grid, we don't care about the integrated result
-                  allocate(buffer1(nbast*nbast))
-                  allocate(buffer2(nbast*nbast))
-                  dummy_energy = 0.0d0
-                  CALL DFT_ADD_KS(ONLYFC,dummy_energy,DCAO,NDMAT,
-     &            buffer1, buffer2,
-     &            WRK(KFREE),LFREE,IPR_DIIS)
-                  deallocate(buffer1)
-                  deallocate(buffer2)
-!                 call quit('ERROR: num_grid file not found')
+               if (.not. use_xcint_own_grid()) then
+                  ! ulgy hack to get dalton grid, we don't care about the integrated result
+                  inquire(file='num_grid', exist=file_exists)
+                  if (.not. file_exists) then
+                     allocate(buffer1(nbast*nbast))
+                     allocate(buffer2(nbast*nbast))
+                     dummy_energy = 0.0d0
+                     call dft_add_ks(onlyfc, dummy_energy, dcao, ndmat,
+     &                               buffer1, buffer2,
+     &                               wrk(kfree), lfree, ipr_diis)
+                     deallocate(buffer1)
+                     deallocate(buffer2)
+                  end if
                end if
                
                allocate(dmat_ao(nbast*nbast))

@@ -2218,7 +2218,8 @@ C
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: set_functional,
      &                                  select_xcint_integrator,
-     &                                  use_xcint_integrator
+     &                                  use_xcint_integrator,
+     &                                  set_xcint_grid
 #endif
 
 #include "implicit.h"
@@ -2257,7 +2258,7 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','.GASCI ','.XCINT ','.GRID  ','xXXXXXX',
+     *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
      *            '.SRHYBR','.COPFAC','.STEX  ','xXXXXXX','xXXXXXX'/
 C
@@ -2561,13 +2562,30 @@ C *** Option 22: .GASCI
 #ifdef ENABLE_XCINT
       call select_xcint_integrator()
 #else
-      call quit('.XCINT not available in this version')
+      call quit('.XCINT is not available in this version')
 #endif
       go to 100
 
 
-  124 CONTINUE
-      GO TO 100
+      ! .NUMGRID
+  124 continue
+#ifdef ENABLE_XCINT
+      ! radial precision threshold
+      d_radint = 0
+      read(lucmd, *) d_radint
+      ! minimum number of angular points
+      i_angmin = 0
+      read(lucmd, *) i_angmin
+      ! regular number of angular points
+      i_angint = 0
+      read(lucmd, *) i_angint
+      call set_xcint_grid(radint,
+     &                    angmin,
+     &                    angint)
+#else
+      call quit('.NUMGRID is not available in this version')
+#endif
+      go to 100
 
 
   125 CONTINUE
