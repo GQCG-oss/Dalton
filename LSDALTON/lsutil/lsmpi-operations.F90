@@ -1986,7 +1986,6 @@ END SUBROUTINE mpicopy_reduced_screen_info
      integer(kind=ls_mpik),intent(in) :: comm
      integer(kind=ls_mpik) :: nnod,me
      real(realk) :: bytes_int
-
      call time_start_phase(PHASE_WORK)
      
      bytes_int  = bytes
@@ -1997,7 +1996,7 @@ END SUBROUTINE mpicopy_reduced_screen_info
 
      call time_start_phase(PHASE_COMM)
      if(me==infpar%master) then
-        call ls_mpibcast(INIT_BG_BUF,me,comm)
+        call ls_mpibcast(INIT_BG_BUF,infpar%master,comm)
      endif
      call ls_mpibcast(bytes_int,infpar%master,comm)
      call time_start_phase(PHASE_WORK)
@@ -2072,9 +2071,9 @@ subroutine mem_init_background_alloc_slave(comm)
    use lsmpi_op, only: mem_init_background_alloc_all_nodes
    implicit none
    integer(kind=ls_mpik),intent(in) :: comm
-   real(realk), pointer :: bytes
+   real(realk) :: bytes
 
-   bytes=0.0E0_realk
+   bytes=1.0E0_realk
    call mem_init_background_alloc_all_nodes(comm,bytes)
 
 end subroutine mem_init_background_alloc_slave
