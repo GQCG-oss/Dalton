@@ -32,6 +32,9 @@ module mp2_module
       use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
   use dec_workarounds_module
+#if defined(VAR_CUDA) || defined(VAR_OPENACC)
+  use gpu_interfaces
+#endif
 
   use dec_fragment_utils!,only: calculate_fragment_memory, &
 !       & dec_simple_dgemm_update,start_flop_counter,&
@@ -110,7 +113,7 @@ contains
     integer,pointer :: V(:,:)
     integer(kind=long) :: dim1,dim2,dim3,dim4,idx,idx2,max1,max2,max3,maxdim,start,siz
     integer:: Astart, Aend,dimA, A,B,I,J,counter,arrsize
-    real(realk) :: flops
+    real(realk) :: flops,gpuflops
     integer,dimension(4) :: dimocc, dimvirt
     integer :: m,k,n, nvbatches, Abat, GammaStart, GammaEnd, AlphaStart, AlphaEnd,c,d,l
     real(realk) :: deltaEPS
@@ -1474,7 +1477,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
    ! effective time for slaves
     MyFragment%slavetime_work(MODEL_MP2) = tmpidiff
     ! FLOP count for integral loop for slaves
-    call end_flop_counter(flops)
+    call end_flop_counter(flops,gpuflops)
  end if
 
 
@@ -1900,9 +1903,12 @@ endif
    ! FLOP counting
    if(master) then
       flops=0.0E0_realk  ! we want to count only flops from slaves (these were set above)
+      gpuflops=0.0E0_realk  ! we want to count only gpu flops from slaves (these were set above)
    end if
    call lsmpi_reduction(flops,infpar%master,infpar%lg_comm)
+   call lsmpi_reduction(gpuflops,infpar%master,infpar%lg_comm)
    if(master) MyFragment%flops_slaves = flops ! save flops for local slaves (not local master)
+   if(master) MyFragment%gpu_flops_slaves = gpuflops ! save flops for local slaves (not local master)
 
    ! Total time for all slaves (not local master itself)
    if(master) MyFragment%slavetime_work(MODEL_MP2)=0.0E0_realk

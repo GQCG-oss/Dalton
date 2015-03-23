@@ -63,7 +63,7 @@ module ccsd_module
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
          & get_max_batch_sizes,mo_work_dist, check_job, get_mo_ccsd_residual, &
          & wrapper_get_ccsd_batch_sizes, yet_another_ccsd_residual,&
-         & RN_RESIDUAL_INT_DRIVEN, RN_YET_ANOTHER_RES
+         & RN_RESIDUAL_INT_DRIVEN, RN_YET_ANOTHER_RES, get_min_mem_req
     private
 
     interface Get_AOt1Fock
@@ -957,7 +957,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4)
      integer(kind=long) :: xyz,zyx1,zyx2,mem_allocated,HeapMemoryUsage
-     logical :: debug
+     logical :: debug, use_bg_buf
      character(tensor_MSG_LEN) :: msg
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1372,13 +1372,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
         if(DECinfo%PL>1)then
            ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,0,iter,3,scheme,.false.,mylsitem%setting,intspec)
+              &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
            write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
            ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,0,iter,2,scheme,.false.,mylsitem%setting,intspec)
+              &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
            write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
            ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,0,iter,4,scheme,.true.,mylsitem%setting,intspec)
+              &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
         endif
      endif
 
@@ -1540,14 +1540,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !call get_currently_available_memory(MemFree2)
      !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
 
+     use_bg_buf = mem_is_background_buf_init()
      ! allocate working arrays depending on the batch sizes
-      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-      w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-      w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
+     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !``DIL: w2 size must be reduced when DIL
-      w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
+     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
@@ -1557,10 +1558,26 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       endif
 #endif
 #endif
-      call mem_alloc( w0, w0size , simple = .false. )
-      call mem_alloc( w1, w1size , simple = .false. )
-      call mem_alloc( w2, w2size , simple = .false. )
-      call mem_alloc( w3, w3size , simple = .false. )
+     if(use_bg_buf)then
+        call mem_pseudo_alloc(w0, w0size , simple = .false. )
+     else
+        call mem_alloc(w0, w0size , simple = .false. )
+     endif
+     if(use_bg_buf)then
+        call mem_pseudo_alloc(w1, w1size , simple = .false.)
+     else
+        call mem_alloc(w1, w1size , simple = .false.)
+     endif
+     if(use_bg_buf)then
+        call mem_pseudo_alloc(w2, w2size , simple = .false. )
+     else
+        call mem_alloc(w2, w2size , simple = .false. )
+     endif
+     if(use_bg_buf)then
+        call mem_pseudo_alloc(w3, w3size , simple = .false. )
+     else
+        call mem_alloc(w3, w3size , simple = .false. )
+     endif
 
      !call get_currently_available_memory(MemFree3)
 
@@ -2382,11 +2399,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
-     !free working matrices and adapt to new requirements
-     call mem_dealloc(w0)
-     call mem_dealloc(w1)
-     call mem_dealloc(w2)
-     call mem_dealloc(w3)
+     ! free working matrices and adapt to new requirements
+     if( use_bg_buf )then
+        call mem_pseudo_dealloc(w3)
+        call mem_pseudo_dealloc(w2)
+        call mem_pseudo_dealloc(w1)
+        call mem_pseudo_dealloc(w0)
+     else
+        call mem_dealloc(w3)
+        call mem_dealloc(w2)
+        call mem_dealloc(w1)
+        call mem_dealloc(w0)
+     endif
 
 #ifdef VAR_MPI
      maxts=0
@@ -2574,7 +2598,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Reallocate 1 temporary array
      maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
      maxsize64 = max(maxsize64,int((i8*nv2)*nor,kind=8))
-     call mem_alloc(w1,maxsize64,simple=.true.)
+     if( use_bg_buf )then
+        call mem_pseudo_alloc(w1,maxsize64)
+     else
+        call mem_alloc(w1,maxsize64,simple=.true.)
+     endif
 
 
      call ccsd_debug_print(ccmodel,1,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
@@ -2586,14 +2614,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !get B2.2 contributions
         !**********************
-        call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,&
-           &time_Bcnd_work,time_Bcnd_comm)
-
+        call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,time_Bcnd_work,time_Bcnd_comm)
 
         call tensor_free(sio4)
 
-        call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,&
-           &omega2,govov,gvvooa,gvoova)
+        call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
 
 #ifdef VAR_MPI
         call time_start_phase(PHASE_COMM, at = time_Bcnd_work )
@@ -2728,7 +2753,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! slaves should exit the subroutine after the main work is done
      if(.not. master) then
-        call mem_dealloc(w1)
+        if( use_bg_buf )then
+           call mem_pseudo_dealloc(w1)
+        else
+           call mem_dealloc(w1)
+        endif
         call mem_dealloc(Had)
         call mem_dealloc(Gbi)
         if(scheme==4.or.scheme==3)call tensor_free(u2)
@@ -2812,7 +2841,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
         if(scheme==2)then
            call tensor_lock_wins(u2,'s', mode, all_nodes = alloc_in_dummy )
-           call mem_alloc(w2,u2%tsize * 3_long)
+           if( use_bg_buf )then
+              call mem_pseudo_alloc(w2,u2%tsize * 3_long)
+           else
+              call mem_alloc(w2,u2%tsize * 3_long)
+           endif
         endif
 #endif
         !calculate singles I term
@@ -2834,7 +2867,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
         if(scheme==2)then
            call tensor_unlock_wins(u2, check=.not.alloc_in_dummy, all_nodes = alloc_in_dummy )
-           call mem_dealloc(w2)
+           if( use_bg_buf )then
+              call mem_pseudo_dealloc(w2)
+           else
+              call mem_dealloc(w2)
+           endif
         endif
 #endif
 
@@ -2882,7 +2919,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 
-     call mem_dealloc(w1)
+     if( use_bg_buf )then
+        call mem_pseudo_dealloc(w1)
+     else
+        call mem_dealloc(w1)
+     endif
      call tensor_free(u2)
 
      call time_start_phase(PHASE_WORK, ttot = twall)
@@ -3298,7 +3339,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, ttot = time_get_batch_sizes )
 
         ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,nbuffs,iter,4,0,.true.,mylsitem%setting,intspec)
+              &MaxActualDimGamma,nbuffs,4,0,.true.,mylsitem%setting,intspec)
 
         print *,"Getting batchs sizes took",time_get_batch_sizes
         if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
@@ -5059,8 +5100,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            print *,"w3size(2)",w3size
         endif
 
-        call mem_alloc(w2,w2size)
-        call mem_alloc(w3,w3size)
+        if(mem_is_background_buf_init())then
+           call mem_pseudo_alloc(w2,w2size)
+           call mem_pseudo_alloc(w3,w3size)
+        else
+           call mem_alloc(w2,w2size)
+           call mem_alloc(w3,w3size)
+        endif
 
 
         !calculate doubles C term
@@ -5203,8 +5249,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
         endif
 
-        call mem_dealloc(w2)
-        call mem_dealloc(w3)
+        if(mem_is_background_buf_init())then
+           call mem_pseudo_dealloc(w3)
+           call mem_pseudo_dealloc(w2)
+        else
+           call mem_dealloc(w3)
+           call mem_dealloc(w2)
+        endif
 
      endif
 
@@ -5308,7 +5359,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     logical, intent(in)    :: local, mpi_split
     integer, intent(out),optional :: nbuf
     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size
-    integer :: nnod,magic,nbuffs
+    integer :: nnod,magic,nbuffs,choice
+    logical :: checkbg
 
 
     !minimum recommended buffer size
@@ -5326,19 +5378,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     magic = 2
     !test for scheme with highest reqirements --> fastest
     scheme=4
-    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
+
+    !if the background buffer is initalized do not count working arrays, since
+    !they will be associated to the backtground buffer
+    checkbg = mem_is_background_buf_init()
+    if( checkbg )then
+       choice = 5
+    else
+       choice = 4
+    endif
+
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
     if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
        !test for scheme with medium requirements
        scheme=3
-       mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
+       mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
        if (mem_used>frac_of_total_mem*MemFree)then
           !test for scheme with low requirements
           scheme=2
-          mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
+          mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
           if (mem_used>frac_of_total_mem*MemFree)then
              scheme=0
-             mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
+             mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
              frac_of_total_mem=0.60E0_realk
              print *,"mem",mem_used,frac_of_total_mem,MemFree
              if (mem_used>frac_of_total_mem*MemFree)then
@@ -5346,9 +5408,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                 write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
                    &frac_of_total_mem*MemFree
                 write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,3,.false.,se,is)
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,4,3,.false.,se,is)
                 write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,4,.false.,se,is)
+                mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,4,4,.false.,se,is)
                 write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
                 call lsquit("ERROR(CCSD): there is just not enough memory&
                    & available",DECinfo%output)
@@ -5412,7 +5474,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       if( nbg>=nb )       nbg = nb
       if( nba>=nb )       nba = nb
 
-      mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
+      mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
 
       if (frac_of_total_mem*MemFree<mem_used) then
         print *, "ATTENTION your chosen batch sizes might be too large!!!"
@@ -5425,18 +5487,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       nbuffs = 0
       if(scheme==0)then
          do nbuffs=5,5
-            mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
+            mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
             if (frac_of_total_mem*MemFree>mem_used) exit
          enddo
       endif
       if(present(nbuf))nbuf=nbuffs
 
+      if( checkbg )then
+         choice = 6
+      else
+         choice = 3
+      endif
       !make batches larger until they do not fit anymore
       !determine gamma batch first
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
 
         nbg=nbg+1
-        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,3,scheme,.false.,se,is)
+        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
 
       enddo
 
@@ -5452,7 +5519,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
         nba      = nba+1
-        mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,3,scheme,.false.,se,is)
+        !nbg      = nba * 2
+        !if (nbg>=nb)then
+        !   nbg = nb
+        !else if (nbg<=minbsize)then
+        !   nbg = minbsize
+        !endif
+        mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
       enddo
 
       if (nba>=nb)then
@@ -5464,7 +5537,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       endif
 
     endif
-    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,4,scheme,.false.,se,is)
+
+    if( checkbg )then
+       choice = 5
+    else
+       choice = 4
+    endif
+
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
 
     ! mpi_split should be true when we want to estimate the workload associated
     ! to a DEC fragment and eventually split the slots. In this case, the next
@@ -5490,7 +5570,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     if(scheme==2)then
-      mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,2,scheme,.false.,se,is)
+       if( checkbg )then
+          choice = 7
+       else
+          choice = 2
+       endif
+      mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
       e2a = min(v2o2,int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
     endif
   end subroutine get_max_batch_sizes
@@ -5498,11 +5583,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !> \brief calculate the memory requirement for the matrices in the ccsd routine
 !> \author Patrick Ettenhuber
 !> \date January 2012
-  function get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,iter,choice,s,print_stuff,se,is) result (memrq)
+  function get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,s,print_stuff,se,is) result (memrq)
     implicit none
     integer, intent(in) :: no,os,nv,vs,nb,bs
     integer, intent(in) :: nba,nbg,nbuffs
-    integer, intent(in) :: iter,choice
+    integer, intent(in) :: choice
     real(realk) :: memrq, memin, memout
     logical, intent(in) :: print_stuff
     integer, intent(in) :: s
@@ -5586,18 +5671,32 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
     tl4 = tl4 * no
 
+
     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,s,se,is)
     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,s,se,is)
     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
-    !w0
-    memin = 1.0E0_realk * w0size
-    !w1
-    memin = memin + 1.0E0_realk * w1size
-    !w2
-    memin = memin + 1.0E0_realk * w2size
-    !w3
-    memin = memin + 1.0E0_realk * w3size
+    select case( choice )
+    case(1,2,3,4)
+       !w0
+       memin = 1.0E0_realk * w0size
+       !w1
+       memin = memin + 1.0E0_realk * w1size
+       !w2
+       memin = memin + 1.0E0_realk * w2size
+       !w3
+       memin = memin + 1.0E0_realk * w3size
+
+    case(5,6,7)
+
+       memin = 0.0E0_realk
+
+    case default 
+
+       call lsquit("ERROR(get_min_mem_req):requested choice of return value not&
+          & known, should not happen",-1)
+
+    end select
 
     !calculate minimum memory requirement
     ! u+3*integrals
@@ -5747,22 +5846,25 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !SELECTOR OF WHICH INFO TO RETURN
     !********************************
     select case(choice)
-      case(1)
-        memrq = memrq
-      case(2)
-        memrq = memrq + memout
-      case(3)
-        memrq = memrq + memin
-      case(4)
-        memrq = memrq + max(memin,memout)
+    case(1)
+       memrq = memrq
+    case(2)
+       memrq = memrq + memout
+    case(3)
+       memrq = memrq + memin
+    case(4)
+       memrq = memrq + max(memin,memout)
+    ! without working matrices from here onwards
+    ! ************************
+    case(5)
+       memrq = memrq + max(memin,memout)
+    case(6)
+       memrq = memrq + memin
+    case(7)
+       memrq = memrq + memout
     end select
 
     memrq =((memrq*8.0E0_realk)/(1.024E3_realk**3))
-!#ifdef VAR_MPI
-!    if(LSMPIASYNCP)then
-!       memrq = 1.5*memrq
-!    endif
-!#endif
 
   end function get_min_mem_req
 

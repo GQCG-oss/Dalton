@@ -1980,6 +1980,50 @@ END SUBROUTINE mpicopy_reduced_screen_info
 
   end subroutine get_slave_timers
 
+  subroutine mem_init_background_alloc_all_nodes(comm,bytes)
+     implicit none
+     real(realk),intent(in) :: bytes
+     integer(kind=ls_mpik),intent(in) :: comm
+     integer(kind=ls_mpik) :: nnod,me
+     real(realk) :: bytes_int
+     call time_start_phase(PHASE_WORK)
+     
+     bytes_int  = bytes
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     call time_start_phase(PHASE_COMM)
+     if(me==infpar%master) then
+        call ls_mpibcast(INIT_BG_BUF,infpar%master,comm)
+     endif
+     call ls_mpibcast(bytes_int,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+     call mem_init_background_alloc(bytes_int)
+
+  end subroutine mem_init_background_alloc_all_nodes
+  subroutine mem_free_background_alloc_all_nodes(comm)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: comm
+     integer(kind=ls_mpik) :: nnod,me
+     real(realk) :: bytes_int
+
+     call time_start_phase(PHASE_WORK)
+     
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+     call time_start_phase(PHASE_COMM)
+     if(me==infpar%master) then
+        call ls_mpibcast(FREE_BG_BUF,me,comm)
+     endif
+     call time_start_phase(PHASE_WORK)
+
+     call mem_free_background_alloc()
+
+  end subroutine mem_free_background_alloc_all_nodes
 #endif
 
 end module lsmpi_op
@@ -2021,4 +2065,26 @@ subroutine get_slave_timers_slave(comm)
    call mem_dealloc(times)
 
 end subroutine get_slave_timers_slave
+
+subroutine mem_init_background_alloc_slave(comm)
+   use precision, only: realk, ls_mpik
+   use lsmpi_op, only: mem_init_background_alloc_all_nodes
+   implicit none
+   integer(kind=ls_mpik),intent(in) :: comm
+   real(realk) :: bytes
+
+   bytes=1.0E0_realk
+   call mem_init_background_alloc_all_nodes(comm,bytes)
+
+end subroutine mem_init_background_alloc_slave
+
+subroutine mem_free_background_alloc_slave(comm)
+   use precision, only: realk, ls_mpik
+   use lsmpi_op, only: mem_free_background_alloc_all_nodes
+   implicit none
+   integer(kind=ls_mpik),intent(in) :: comm
+
+   call mem_free_background_alloc_all_nodes(comm)
+
+end subroutine mem_free_background_alloc_slave
 #endif

@@ -128,6 +128,8 @@ subroutine lsmpi_slave(comm)
       select case(job)
       case(MATRIXTY);
          call lsmpi_set_matrix_type_slave
+      case(MATRIXTY2);
+         call lsmpi_set_matrix_tmp_type_slave
       case(LSGETINT);
          call lsmpi_getIntegrals_Slave(comm)
       case(LSJENGIN);
@@ -254,6 +256,11 @@ subroutine lsmpi_slave(comm)
          if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
          call lspdm_shut_down_comm_procs
 
+      case(JOB_LSPDM_INIT_GLOBAL_BUFFER);
+         call lspdm_init_global_buffer(.false.)
+      case(JOB_LSPDM_FREE_GLOBAL_BUFFER);
+         call lspdm_free_global_buffer(.false.)
+
       case(SET_GPUMAXMEM);
          call ls_mpibcast(GPUMAXMEM,infpar%master,comm)
 
@@ -261,11 +268,20 @@ subroutine lsmpi_slave(comm)
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
       case(SET_MAX_SIZE_ONE_SIDED);
          call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
+
       case(SET_TENSOR_BACKEND_TRUE);
-         call tensor_set_dil_backend_true
+         call tensor_set_dil_backend_true(.false.)
 
       case(SET_TENSOR_DEBUG_TRUE);
-         call tensor_set_debug_mode_true
+         call tensor_set_debug_mode_true(.false.)
+
+      case(SET_TENSOR_ALWAYS_SYNC_TRUE);
+         call tensor_set_always_sync_true(.false.)
+
+      case(INIT_BG_BUF);
+         call mem_init_background_alloc_slave(comm)
+      case(FREE_BG_BUF);
+         call mem_free_background_alloc_slave(comm)
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########

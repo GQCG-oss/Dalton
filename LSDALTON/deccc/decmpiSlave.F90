@@ -7,6 +7,7 @@ subroutine dec_lsmpi_slave(comm)
    use lsmpi_type
    use integralinterfaceMod!, only: II_screeninit, &
    !           & II_bcast_screen, II_screenfree
+   use tensor_interface_module, only: lspdm_init_global_buffer,lspdm_free_global_buffer
    use dec_driver_slave_module, only: main_fragment_driver_slave
    use f12_integrals_module 
 
@@ -107,6 +108,16 @@ subroutine dec_lsmpi_slave(comm)
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
          call get_slave_timers_slave(comm)
+
+      case(JOB_LSPDM_INIT_GLOBAL_BUFFER);
+         call lspdm_init_global_buffer(.false.)
+      case(JOB_LSPDM_FREE_GLOBAL_BUFFER);
+         call lspdm_free_global_buffer(.false.)
+      case(INIT_BG_BUF);
+         call mem_init_background_alloc_slave(comm)
+      case(FREE_BG_BUF);
+         call mem_free_background_alloc_slave(comm)
+
 #ifdef VAR_SCALAPACK
       case(GRIDINIT);
          call PDM_GRIDINIT_SLAVE

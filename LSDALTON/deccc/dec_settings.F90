@@ -89,31 +89,35 @@ contains
 
     ! -- Debug modes
     DECinfo%test_fully_distributed_integrals = .false.
-    DECinfo%CRASHCALC            = .false.
-    DECinfo%cc_driver_debug      = .false.
-    DECinfo%manual_batchsizes    = .false.
-    DECinfo%ccsdAbatch           = 0
-    DECinfo%ccsdGbatch           = 0
-    DECinfo%manual_occbatchsizes = .false.
-    DECinfo%batchOccI            = 0
-    DECinfo%batchOccJ            = 0 
-    DECinfo%hack                 = .false.
-    DECinfo%hack2                = .false.
-    DECinfo%mpisplit             = 10
+    DECinfo%CRASHCALC               = .false.
+    DECinfo%cc_driver_debug         = .false.
+    DECinfo%cc_driver_use_bg_buffer = .false.
+    DECinfo%manual_batchsizes       = .false.
+    DECinfo%ccsdAbatch              = 0
+    DECinfo%ccsdGbatch              = 0
+    DECinfo%manual_occbatchsizes    = .false.
+    DECinfo%batchOccI               = 0
+    DECinfo%batchOccJ               = 0 
+    DECinfo%hack                    = .false.
+    DECinfo%hack2                   = .false.
+    DECinfo%mpisplit                = 10
+    DECinfo%RIMPIsplit              = 8000
 #ifdef VAR_MPI
-    DECinfo%dyn_load             = LSMPIASYNCP
+    DECinfo%dyn_load                = LSMPIASYNCP
+#else
+    DECinfo%dyn_load                = .false.
 #endif
-    DECinfo%force_scheme         = .false.
-    DECinfo%en_mem               = 0
-    DECinfo%tensor_test           = .false.
-    DECinfo%reorder_test         = .false.
-    DECinfo%CCSDno_restart       = .false.
-    DECinfo%CCSDnosaferun        = .false.
-    DECinfo%solver_par           = .false.
-    DECinfo%CCSDpreventcanonical = .false.
-    DECinfo%CCSD_NO_DEBUG_COMM   = .true.
-    DECinfo%spawn_comm_proc      = .false.
-    DECinfo%CCSDmultipliers      = .false.
+    DECinfo%force_scheme            = .false.
+    DECinfo%en_mem                  = 0
+    DECinfo%tensor_test              = .false.
+    DECinfo%reorder_test            = .false.
+    DECinfo%CCSDno_restart          = .false.
+    DECinfo%CCSDnosaferun           = .false.
+    DECinfo%solver_par              = .false.
+    DECinfo%CCSDpreventcanonical    = .false.
+    DECinfo%CCSD_NO_DEBUG_COMM      = .true.
+    DECinfo%spawn_comm_proc         = .false.
+    DECinfo%CCSDmultipliers         = .false.
     DECinfo%simple_multipler_residual = .true.
     DECinfo%use_pnos             = .false.
     DECinfo%pno_S_on_the_fly     = .false.
@@ -220,6 +224,7 @@ contains
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
     DECinfo%AtomicExtent             = .false.
+    DECinfo%MPMP2                    = .false.
 
     !  RIMP2 settings defauls
     DECinfo%AuxAtomicExtent          = .false.
@@ -462,7 +467,6 @@ contains
           DECinfo%use_singles=.false.
           DECinfo%solver_par=.true.
 
-
        ! CC SOLVER INFO
        ! ==============
        case('.CCSDNOSAFE')
@@ -604,6 +608,7 @@ contains
           DECinfo%manual_occbatchsizes=.true.
           read(input,*) DECinfo%batchOccI, DECinfo%batchOccJ
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
+       case('.RIMPISPLIT'); read(input,*) DECinfo%RIMPIsplit
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
 #ifndef VAR_MPI
@@ -701,6 +706,17 @@ contains
           !Include all atomic orbitals on atoms in the fragment 
           DECinfo%AtomicExtent  = .true.
 
+       !KEYWORDS FOR CANONICAL FULL MOLECULAR MP2
+       !**************************
+
+       case('.MPMP2') 
+          ! By default a memory conserving integral direct MP2 code is used
+          ! when **CC .MP2 is combined with .CANONICAL
+          ! This keyword activates a MP2 version that distribute the integrals
+          ! across the nodes. The code does less integral recalculation but 
+          ! requires more nodes/more memory
+          DECinfo%MPMP2=.true.
+
 
        !KEYWORDS FOR RIMP2 (.RIMP2) 
        !**************************
@@ -739,12 +755,13 @@ contains
 #ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
-       case('.CCDRIVERDEBUG');            DECinfo%cc_driver_debug      = .true.
-       case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
-       case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
-       case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
-       case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
-       case('.DIIS');                     DECinfo%use_crop             = .false.
+       case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
+       case('.CCDRIVER_BG_BUF');      DECinfo%cc_driver_use_bg_buffer = .true.
+       case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
+       case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
+       case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
+       case('.CCSDNO_RESTART');       DECinfo%CCSDno_restart          = .true.
+       case('.DIIS');                 DECinfo%use_crop                = .false.
        case('.CC_TILE_SIZE_GB')
           read(input,*) DECinfo%cc_solver_tile_mem 
        case('.NOTPREC')                 
@@ -1233,6 +1250,11 @@ contains
             &MPI processes with only one process",-1)
     endif
 
+    ! Meaningful RI split
+    if(DECinfo%RIMPIsplit<1) then
+       call lsquit('RIMPISPLIT must be larger than zero!',-1)
+    end if
+    
 
     ! Set FOTs for geometry opt.
     call set_geoopt_FOTs(DECinfo%FOT)
@@ -1343,6 +1365,7 @@ contains
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
+    write(lupri,*) 'cc_driver_use_bg_buffer ', DECitem%cc_driver_use_bg_buffer
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
     write(lupri,*) 'ccsd_expl ', DECitem%ccsd_expl
@@ -1359,6 +1382,7 @@ contains
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
 #endif
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
+    write(lupri,*) 'rimpisplit ', DECitem%rimpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes
     write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,DECitem%ccsdGbatch
