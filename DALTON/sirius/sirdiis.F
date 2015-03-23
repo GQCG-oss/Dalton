@@ -298,10 +298,9 @@ C
       use qmcmm, only: getdim_relmat, comp_relmat, write_relmat, 
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
-      use iso_c_binding
-      use dalton_xcint_interface, only: use_xcint_integrator,
-     &                                  use_xcint_own_grid
-      use xcint_fortran_interface
+      use dalton_xcint_interface, only: xcint_integrate_rks_scf,
+     &                                  use_xcint_own_grid,
+     &                                  use_xcint_integrator
 #endif
       use qmcmm_fock, only: qmnpmm_fock
 
@@ -318,14 +317,15 @@ C
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
 
 #ifdef ENABLE_XCINT
-      real(c_double)              :: xc_energy(1)
-      real(c_double), allocatable :: dmat_ao(:)
-      real(c_double), allocatable :: xc_mat(:)
-      real(c_double), allocatable :: buffer1(:)
-      real(c_double), allocatable :: buffer2(:)
-      real(c_double), allocatable :: xc_mat_tri(:)
-      logical                     :: file_exists
+      real(8)              :: xc_energy(1)
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: xc_mat(:)
+      real(8), allocatable :: buffer1(:)
+      real(8), allocatable :: buffer2(:)
+      real(8), allocatable :: xc_mat_tri(:)
+      logical              :: file_exists
 #endif
+
 #if defined (HAS_PCMSOLVER)
       real(8), allocatable :: density_ao(:), density_ao_symm(:)
       real(8), allocatable :: fock_pcm_ao(:), fock_pcm_ao_symm(:)
@@ -909,20 +909,10 @@ C
                call daxpy(nbast*nbast, 0.5d0, dcao, 1,
      &                    dmat_ao, 1)
                
-               call xcint_wakeup_workers()
-               call xcint_integrate(XCINT_MODE_RKS,
-     &                              0,        
-     &                              (/0/),    
-     &                              (/0/),    
-     &                              1,        
-     &                              (/0/),    
-     &                              (/1/),    
-     &                              dmat_ao,  
-     &                              0,  
-     &                              xc_energy,
-     &                              1,
-     &                              xc_mat,  
-     &                              xc_num_electrons)
+               call xcint_integrate_rks_scf(dmat_ao,
+     &                                      xc_energy,
+     &                                      xc_mat,
+     &                                      xc_num_electrons)
                emy = emy + xc_energy(1)
                
                call dgetsp(nbast, xc_mat, xc_mat_tri)

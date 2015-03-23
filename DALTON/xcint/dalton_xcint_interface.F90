@@ -14,6 +14,9 @@ module dalton_xcint_interface
    public select_xcint_integrator
    public unselect_xcint_integrator
    public set_xcint_grid
+   public xcint_worker
+   public xcint_integrate_rks_scf
+   public xcint_integrate_rks_lr
 
    private
 
@@ -57,6 +60,67 @@ contains
 
    subroutine unselect_xcint_integrator()
       use_xcint = .false.
+   end subroutine
+
+
+   subroutine xcint_worker(comm)
+       integer, intent(in) :: comm
+       call xcint_set_mpi_comm(comm)
+       call xcint_integrate_worker()
+   end subroutine
+
+   subroutine xcint_integrate_rks_scf(dmat,          &
+                                      xc_energy,     &
+                                      xc_mat,        &
+                                      num_electrons) bind(c)
+
+      real(c_double), intent(in)  :: dmat(*)
+      real(c_double), intent(out) :: xc_energy(*)
+      real(c_double), intent(out) :: xc_mat(*)
+      real(c_double), intent(out) :: num_electrons
+
+      call xcint_wakeup_workers()
+      call xcint_integrate(XCINT_MODE_RKS, &
+                           0,              &
+                           (/0/),          &
+                           (/0/),          &
+                           1,              &
+                           (/0/),          &
+                           (/1/),          &
+                           dmat,           &
+                           0,              &
+                           xc_energy,      &
+                           1,              &
+                           xc_mat,         &
+                           num_electrons)
+
+   end subroutine
+
+   subroutine xcint_integrate_rks_lr(dmat,          &
+                                     xc_energy,     &
+                                     xc_mat,        &
+                                     num_electrons) bind(c)
+
+      real(c_double), intent(in)  :: dmat(*)
+      real(c_double), intent(out) :: xc_energy(*)
+      real(c_double), intent(out) :: xc_mat(*)
+      real(c_double), intent(out) :: num_electrons
+
+      call xcint_wakeup_workers()
+      call xcint_integrate(XCINT_MODE_RKS,    &
+                           1,                 &
+                           (/XCINT_PERT_EL/), &
+                           (/1, 1/),          &
+                           2,                 &       
+                           (/0, 1/),          &
+                           (/1, 1/),          &
+                           dmat,              &
+                           0,                 &
+                           xc_energy,         &
+                           1,                 &
+                           xc_mat,            &
+                           num_electrons)
+
    end subroutine
 
 
