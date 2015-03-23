@@ -1662,6 +1662,7 @@ integer :: lun, idum, ldum,iAO,sz,ndmat,matrix_sav
 integer(8) :: fperm, vperm
 logical :: restart_from_dens, no_rhdiis, dalink, vdens_exists,admm_exchange
 logical :: OnMaster,DiagFmat,McWeeny,purify_failed,CS00,integraltransformGC
+character(len=11) :: string11
 type(ConfigItem) :: config
 real(realk),parameter :: THRNEL=1E-3_realk
 real(realk),external :: HOMO_energy
@@ -1732,6 +1733,7 @@ type(LowAccuracyStartType)  :: LAStype
   IF(config%opt%DENSELEVEL2)THEN
      matrix_sav  = matrix_type
      call mat_select_tmp_type(mtype_dense,config%lupri,nbast)
+     Write(ls%lupri,'(A)')'Chosing to do Level 2 in Dense matrix type'
   ENDIF
 
   call mat_init(Dval(1),nbast,nbast) !Level 2 Mat
@@ -1951,18 +1953,18 @@ type(LowAccuracyStartType)  :: LAStype
 
   ! localization of Valence CMO, by least change algorithm
   if (config%decomp%cfg_lcv) then
-      nocc = config%decomp%nocc
-      ls%setting%integraltransformGC = .false.
-      call leastchange_lcv(config%decomp,Cmo,nocc,ls)
-      if (config%decomp%cfg_mlo .and. (.not. config%davidOrbLoc%PFM_input%TESTCASE) .and. (.not. config%davidOrbLoc%NOL2OPT)) then
-              write(ls%lupri,'(a)')'  %LOC%   '
-              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
-              write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 2 ORBITAL LOCALIZATION       *'
-              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
-              write(ls%lupri,'(a)')'  %LOC%   '
-          call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
-      endif
-      ls%setting%integraltransformGC = integraltransformGC
+     nocc = config%decomp%nocc
+     ls%setting%integraltransformGC = .false.
+     call leastchange_lcv(config%decomp,Cmo,nocc,ls)
+     if (config%decomp%cfg_mlo .and. (.not. config%davidOrbLoc%PFM_input%TESTCASE) .and. (.not. config%davidOrbLoc%NOL2OPT)) then
+        write(ls%lupri,'(a)')'  %LOC%   '
+        write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+        write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 2 ORBITAL LOCALIZATION       *'
+        write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+        write(ls%lupri,'(a)')'  %LOC%   '
+        call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
+     endif
+     ls%setting%integraltransformGC = integraltransformGC
   endif
 
   ! shutdown of decomposition and dd
@@ -1994,6 +1996,8 @@ type(LowAccuracyStartType)  :: LAStype
   IF(config%opt%DENSELEVEL2)THEN
      !This restores the proper value
      call mat_select_tmp_type(matrix_sav,config%lupri,nbast)
+     call string11_mtype(matrix_sav,string11)
+     Write(ls%lupri,'(A,A)')'Done Level 2 so revert to chosen matrix type=',string11
   ENDIF
   call set_matop_timer_optlevel(3)
 
