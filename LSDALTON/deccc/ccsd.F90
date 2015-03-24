@@ -6548,7 +6548,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
  
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
-    integer(kind=long) :: tmp_size, no2v2
+    integer(kind=long) :: tmp_size, tmp_size0, tmp_size1, tmp_size2, no2v2
 
     integer :: i, a, O, V, N, X
 
@@ -6604,28 +6604,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! Allocate working memory:
     dimMO = MOinfo%DimInd1(1)
-    tmp_size = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
-    tmp_size = int(i8*tmp_size, kind=long)
-    if (use_bg_buf) then
-       call mem_pseudo_alloc(tmp0, tmp_size)
-    else
-       call mem_alloc(tmp0, tmp_size)
-    end if
+    tmp_size0 = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
+    tmp_size0 = int(i8*tmp_size0, kind=long)
 
-    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
-    tmp_size = int(i8*tmp_size, kind=long)
-    if (use_bg_buf) then
-       call mem_pseudo_alloc(tmp1, tmp_size)
-    else
-       call mem_alloc(tmp1, tmp_size)
-    end if
+    tmp_size1 = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
+    tmp_size1 = int(i8*tmp_size1, kind=long)
 
-    tmp_size = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
-    tmp_size = int(i8*tmp_size, kind=long)
+    tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
+    tmp_size2 = int(i8*tmp_size2, kind=long)
     if (use_bg_buf) then
-       call mem_pseudo_alloc(tmp2, tmp_size)
+       call mem_change_background_alloc(dble((tmp_size1+tmp_size2)*8.0E0_realk))
+
+       call mem_pseudo_alloc(tmp0, tmp_size0)
+       call mem_pseudo_alloc(tmp1, tmp_size1)
+       call mem_pseudo_alloc(tmp2, tmp_size2)
     else
-       call mem_alloc(tmp2, tmp_size)
+       call mem_alloc(tmp0, tmp_size0)
+       call mem_alloc(tmp1, tmp_size1)
+       call mem_alloc(tmp2, tmp_size2)
     end if
 
     call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
