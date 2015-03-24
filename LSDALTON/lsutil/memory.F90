@@ -40,6 +40,7 @@ public mem_dealloc
 public mem_pseudo_alloc
 public mem_pseudo_dealloc
 public mem_init_background_alloc
+public mem_change_background_alloc
 public mem_free_background_alloc
 public mem_is_background_buf_init,mem_get_bg_buf_n
 public mem_allocated_mem_real, mem_deallocated_mem_real
@@ -1994,6 +1995,47 @@ subroutine mem_init_background_alloc(bytes)
    buf_realk%n      = 1
 
 end subroutine mem_init_background_alloc
+subroutine mem_change_background_alloc(bytes,not_lazy)
+   implicit none
+   real(realk), intent(in) :: bytes
+   logical, intent(in), optional :: not_lazy
+   integer :: i
+   integer(kind=8) :: nelms
+   logical :: change
+
+   nelms = int(bytes/8.0E0_realk,kind=8)
+
+   !per default use lazy memory handling
+   change = (nelms>buf_realk%nmax)
+   if(present(not_lazy)) change = not_lazy
+
+   if(buf_realk%n/=1)then
+      do i = 1, buf_realk%n-1
+         print *,"address not freed",i
+      enddo
+      call lsquit("ERROR(mem_change_background_alloc): pointers is still associated, not possible",-1)
+   endif
+
+   if(.not.buf_realk%init)then
+      call lsquit("ERROR(mem_free_background_alloc): background buffer not initialized",-1)
+   endif
+
+
+   if( change )then
+      print *,"mem_change_bg_alloc: Allocating ",bytes/(1024.0_realk**3),"GB"
+
+      call mem_dealloc(buf_realk%p,buf_realk%c)
+
+      call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+
+      buf_realk%init   = .true.
+      buf_realk%offset = 0
+      buf_realk%nmax   = nelms
+
+      buf_realk%n      = 1
+   endif
+
+end subroutine mem_change_background_alloc
 subroutine mem_free_background_alloc()
    implicit none
    integer :: i

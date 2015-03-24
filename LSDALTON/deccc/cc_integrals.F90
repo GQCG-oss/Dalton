@@ -2134,7 +2134,7 @@ contains
     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
     real(realk), pointer :: w1(:),w2(:)
-    real(realk) :: MemFree,nrm
+    real(realk) :: MemFree,nrm, MemToUse
     integer(kind=long) :: maxsize
     logical :: master
     integer(kind=ls_mpik) :: me, nnod
@@ -2153,6 +2153,7 @@ contains
     integer :: startA, startB, startC, startD
     integer :: dims(4), tdim(4), starts(4), order4(4)
     integer :: bs,as,gs,n1s,n2s,n3s,n4s
+    integer(kind=8) :: nbu
     real(realk) :: tot_intloop,         tot_intloop_min,     tot_intloop_max
     real(realk) :: time_t4fg_tot_max,   time_t4fg_tot_min,   time_t4fg_tot,    time_t4fg 
     real(realk) :: time_t3fa_tot_max,   time_t3fa_tot_min,   time_t3fa_tot,    time_t3fa
@@ -2274,6 +2275,13 @@ contains
     !==================================================
 
 
+    use_bg_buf = mem_is_background_buf_init()
+    if(use_bg_buf)then
+       nbu = mem_get_bg_buf_n()
+    else
+       nbu = 0
+    endif
+
     ! Get free memory and determine maximum batch sizes
     ! -------------------------------------------------
     if(master)then
@@ -2296,7 +2304,17 @@ contains
        ENDIF
 
        call get_currently_available_memory(MemFree)
+       
+       MemToUse = MemFree * fraction_of
+       if( use_bg_buf )then
+          MemToUse = MemToUse + (dble(nbu)*8.0E0_realk)/(1024.0E0_realk**3)
+       endif
 
+       if(DECinfo%PL>3)then
+          write(*,'("CC integrals: operating with ",g7.2,"GB")')MemToUse
+       endif
+
+       maxsize = 0.0E0_realk
 
        nba = nb
        nbg = nb
@@ -2310,7 +2328,7 @@ contains
 
              maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
 
-             if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+             if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse )then
 
                 if(i <= MinAObatch .and. k <= MinAObatch .and. collective)then
 
@@ -2341,7 +2359,7 @@ contains
 
                 maxsize = w1size + w2size
 
-                if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+                if(float(maxsize*8)/(1024.0**3) > fraction_of*MemToUse )then
 
                    nba = i
                    nbg = k - 1
@@ -2353,6 +2371,7 @@ contains
              enddo gamm_nc
           enddo alp_nc
        endif
+
 
 
        if(DECinfo%manual_batchsizes)then
@@ -2393,7 +2412,7 @@ contains
           maxsize    = huge(maxsize)/8
        endif
 
-       if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree)then
+       if(float(maxsize*8)/(1024.0**3) > MemToUse)then
           if( local )then
              call lsquit("ERROR(get_mo_integral_par): not enough memory, try running with MPI/more nodes",-1)
           else
@@ -2415,7 +2434,7 @@ contains
 
                    maxsize = w1size + w2size
 
-                   if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+                   if(float(maxsize*8)/(1024.0**3) > MemToUse )then
 
                       nba = i
                       nbg = k - 1
@@ -2436,6 +2455,7 @@ contains
 
     endif
 
+
     if(.not.local)then
        integral%access_type = AT_ALL_ACCESS
        trafo1%access_type   = AT_ALL_ACCESS
@@ -2451,6 +2471,7 @@ contains
        call time_start_phase( PHASE_WORK )
 #endif
     endif
+
 
     if(completely_distributed) then
        dynamic_load = .false.
@@ -2578,10 +2599,15 @@ contains
     w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
        &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
 
+    maxsize = w1size + w2size
+    if( collective )then
+       maxsize = maxsize + (i8*n1)*n2*n3*n4
+    endif
     
-    use_bg_buf = mem_is_background_buf_init()
 
     if( use_bg_buf ) then
+       call mem_change_background_alloc(dble(maxsize*8.0E0_realk))
+
        call mem_pseudo_alloc( w1, w1size )
        call mem_pseudo_alloc( w2, w2size )
     else
