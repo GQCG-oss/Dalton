@@ -676,7 +676,6 @@ contains
      integer(INTD):: tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
-#endif
      character(26), parameter:: elett='abcdefghijklmnopqrstuvwxyz'
 
      call time_start_phase( PHASE_WORK )
@@ -797,7 +796,6 @@ contains
       end select
 
      else !DIL backend (MPI-3 only)
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
         !Get the symbolic tensor contraction pattern:
         tcs(1:2)='D('; tcl=2; i1=C%mode
         do i0=1,i1; tcs(tcl+1:tcl+2)=elett(i0:i0)//','; tcl=tcl+2; enddo
@@ -834,11 +832,10 @@ contains
 
            !Perform the tensor contraction:
 
-#else
            call lsquit("ERROR(tensor_contract_simple): DIL backend requires Fortran 2003/2008",-1)
-#endif
         endif
 
+#endif
         call time_start_phase( PHASE_WORK )
      end subroutine tensor_contract
 

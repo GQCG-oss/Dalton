@@ -1109,7 +1109,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      WRITE(DECinfo%output,'(1X,A)')'MP2MEM: RIMP2_integrals_and_amplitudes_workhorse:'
      WRITE(DECinfo%output,'(1X,A)')'MP2MEM: Memory Statistics at the end of the subroutine'
      call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
      FLUSH(DECinfo%output)
+#endif
   endif
 
   CALL LSTIMER('DECRIMP2: Finalize',TS2,TE2,LUPRI,FORCEPRINT)
@@ -1426,7 +1428,9 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   IF(MynbasisAuxMPI.GT.0)THEN
      call get_currently_available_memory(MemInGBCollected)
      !maxsize = max number of floating point elements
-     maxsize = NINT(MemInGBCollected*1.E9_realk)
+     !allow to building of 3 center integral to use 60 procent of 
+     !currently available memory
+     maxsize = 0.60E0_realk*NINT(MemInGBCollected*1.E9_realk)
      !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
      !It is very annoying but I allocated AlphaCD3 inside 
      !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
