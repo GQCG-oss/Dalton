@@ -2216,9 +2216,10 @@ C
       use eri_contractions, only: set_eri_contractions_xfac
 #endif
 #ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: set_functional,
-     &                                  select_xcint_integrator,
-     &                                  use_xcint_integrator
+      use dalton_xcint_interface, only: xcint_set_functional,
+     &                                  xcint_activate,
+     &                                  xcint_is_active,
+     &                                  xcint_set_grid
 #endif
 
 #include "implicit.h"
@@ -2257,7 +2258,7 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','.GASCI ','.XCINT ','.GRID  ','xXXXXXX',
+     *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
      *            '.SRHYBR','.COPFAC','.STEX  ','xXXXXXX','xXXXXXX'/
 C
@@ -2559,15 +2560,32 @@ C *** Option 22: .GASCI
       ! .XCINT
   123 continue
 #ifdef ENABLE_XCINT
-      call select_xcint_integrator()
+      call xcint_activate()
 #else
-      call quit('.XCINT not available in this version')
+      call quit('.XCINT is not available in this version')
 #endif
       go to 100
 
 
-  124 CONTINUE
-      GO TO 100
+      ! .NUMGRID
+  124 continue
+#ifdef ENABLE_XCINT
+      ! radial precision threshold
+      d_radint = 0
+      read(lucmd, *) d_radint
+      ! minimum number of angular points
+      i_angmin = 0
+      read(lucmd, *) i_angmin
+      ! regular number of angular points
+      i_angint = 0
+      read(lucmd, *) i_angint
+      call xcint_set_grid(radint,
+     &                    angmin,
+     &                    angint)
+#else
+      call quit('.NUMGRID is not available in this version')
+#endif
+      go to 100
 
 
   125 CONTINUE
@@ -2656,10 +2674,11 @@ C
       if (functional_line_read) then
 
 #ifdef ENABLE_XCINT
-         if (use_xcint_integrator()) then
+         if (xcint_is_active()) then
             this_mu   = 0.0d0
             this_beta = 0.0d0
-            call set_functional(titlin, hfxfac, this_mu, this_beta)
+            call xcint_set_functional(titlin,
+     &                                hfxfac, this_mu, this_beta)
             call dftsetcam(this_mu, this_beta)
          else
 #endif
@@ -2677,7 +2696,7 @@ C
          call set_eri_contractions_xfac(hfxfac)
 
          ! sanity check
-         if (.not. use_xcint_integrator()) then
+         if (.not. xcint_is_active()) then
             print *, 'You run OpenRSP DFT without .XCINT'
             print *, 'Either add .XCINT or deactivate'
             print *, 'this warning'

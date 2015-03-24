@@ -18,6 +18,7 @@ inputs.append('blyp.dal')
 inputs.append('camb3lyp.dal')
 inputs.append('lda.dal')
 inputs.append('pbe0.dal')
+inputs.append('blyp_xcint_grid.dal')
 
 test.run(inputs, ['h2o.mol'], f={'out': f})
 
