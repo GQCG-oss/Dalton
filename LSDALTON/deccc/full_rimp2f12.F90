@@ -724,7 +724,7 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJ,EK)
   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
   EK = 0.0E0_realk
   EJ = 0.0E0_realk
-  !$OMP PARALLEL DEFAULT(none) PRIVATE(I,J,P,Q,TMPR,TMPG) SHARED(CalphaR,CalphaG,n2,n1,nba)
+  !$OMP PARALLEL DEFAULT(none) PRIVATE(I,J,P,Q,TMPR,TMPG) SHARED(CalphaR,CalphaG,n2,n1,nba) REDUCTION(+:EK,EJ)
   !$OMP DO COLLAPSE(3)
   DO Q=1,n2
      DO P=1,n2
