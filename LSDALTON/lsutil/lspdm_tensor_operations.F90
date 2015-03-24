@@ -289,7 +289,7 @@ module lspdm_tensor_operations_module
      if(nelms > gm_buf%n)then
 
         if((8.0E0_realk*nelms)/(1024.0**2) > 500.0E0_realk)then
-           print *,"WARNING(lspdm_reinit_global_buffer): background buffer more then&
+           print *,"WARNING(lspdm_reinit_global_buffer): background buffer more than&
               & 500MB. Smaller tiles or switching off the background buffer prevent&
               & this warning"
         endif
