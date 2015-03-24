@@ -25,6 +25,7 @@ module fragment_energy_module
   use orbital_operations
   use mp2_module !,only: max_batch_dimension,get_vovo_integrals, &
 !       & mp2_integrals_and_amplitudes
+  use rimp2_module
   use atomic_fragment_operations!  ,only: atomic_fragment_init_basis_part, &
   !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
   !       & update_full_t1_from_atomic_frag,which_pairs, &
@@ -5393,7 +5394,7 @@ contains
    !          the fragment AOS is increased using the nexp most important orbitals from
    !          occupied and virtual priority lists.
    !          The expansion is converged when the difference in energie(s) between two
-   !          is smaller than the FOT.
+   !          step is smaller than the FOT.
    !
    ! Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
    ! Date:    July 2014

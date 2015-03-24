@@ -627,6 +627,11 @@ C
       END
 C  /* Deck dalton_exedrv */
       SUBROUTINE DALTON_EXEDRV(LMWORK, WRKDLM)
+
+#ifdef BUILD_OPENRSP
+          use openrsp_input, only: read_openrsp_input
+#endif
+
 #if defined(ENABLE_QMATRIX)
 !         added by Bin Gao, September 11, 2014
           use matrix_operations, only: SET_MATRIX_DEFAULT
@@ -698,6 +703,7 @@ C
       REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       real(8), allocatable :: work(:)
+      logical :: openrsp_input_found
 
 #if defined(ENABLE_QMATRIX)
       type(DalQMat) dal_qmat
@@ -707,14 +713,34 @@ C
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
 
-#if defined(ENABLE_QMATRIX) || defined(ENABLE_OPENRSP) || defined(ENABLE_TDRSP)
+
+#ifdef BUILD_OPENRSP
+      ! radovan: we need to read the **OPENRSP input before we run anything
+      call gpopen(lucmd, 'DALTON.INP','OLD',' ','FORMATTED',
+     &            idummy, .false.)
+!     search **OPENRSP in input
+      rewind (lucmd)
+      openrsp_input_found = .false.
+      do
+         read (lucmd, '(a)', end=2) word
+         if (word == '**OPENR') then
+            call read_openrsp_input('DALTON.INP', lucmd)
+            openrsp_input_found = .true.
+            exit
+         end if
+      end do
+2     rewind(lucmd)
+      call gpclose(lucmd, 'KEEP')
+#endif
+
+
+#ifdef ENABLE_QMATRIX
 !     We should first read input in subroutine DALTON_EXEDRV() before any calculation,
 !     and some variables will indicate if required keyword (for instance, **QMATRIX)
 !     read. If yes, we will do the calculations after geometry optimization finished
 !     (indicated by GEOCNV) or after SCF procedure for a single point energy calculation.
       call GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
      &            IDUMMY, .false.)
-#if defined(ENABLE_QMATRIX)
 !     initializes global matrix counters of LSDalton matrix module
       call SET_MATRIX_DEFAULT()
 !     searches **QMATRIX in input
@@ -729,7 +755,6 @@ C
          end if
       end do
 1     rewind(LUCMD)
-#endif
       call GPCLOSE(LUCMD, 'KEEP')
 #endif
 
@@ -1111,17 +1136,6 @@ C search for $RESPON in input (legacy driver)
                END IF
             END DO
  135        CONTINUE
-C
-C     Search for **OPENRSP input
-C
-            REWIND (LUCMD)
-            DO
-               READ (LUCMD,'(A)',END=137) WORD
-               IF (WORD .EQ. '**OPENR') THEN
-                  CALL OPENRSP_DRIVER(WORK(10),LMWORK-9)
-                  EXIT
-               END IF
-            END DO
  137        CONTINUE
 #endif
 
@@ -1224,17 +1238,13 @@ C search for $RESPON in input
                EXIT
             END IF
          END DO
+
  145     CONTINUE
-!        search **OPENRSP in input, then run openrsp
-         rewind (lucmd)
-         do
-            read (lucmd, '(a)', end=147) word
-            if (word == '**OPENR') then
-               call read_openrsp_input('DALTON.INP', lucmd)
-               exit
-            end if
-         end do
-         call openrsp_driver(work(10), lmwork-9)
+         ! radovan: it's really bad to call the driver while reading the input
+         !          we should first read all input, then sanity check, then run the code
+         if (openrsp_input_found) then
+            call openrsp_driver(work(10), lmwork-9)
+         end if
  147     if (lucmd > 0) call gpclose(lucmd, 'KEEP')
 #endif
 
@@ -1319,7 +1329,7 @@ C
       use pcmmod_cfg
       use pcm_write
 #endif
-      use qmcmm, only: qmnpinp
+      use qmcmm_input, only: qmnpinp
 
 #include "implicit.h"
 #include "dummy.h"

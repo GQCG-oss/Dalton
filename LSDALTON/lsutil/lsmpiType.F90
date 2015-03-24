@@ -4515,19 +4515,20 @@ contains
 
   end subroutine init_mpi_groups_general
 
-  !> \brief Initialize a MPI group, which is a subset of the global communicator
+  !> \brief Initialize a MPI group, which is a subset of the global_comm communicator
   !> This routine should be call by all nodes - this routine will not wake up the slaves
   !> \author Thomas Kjaergaard
   !> \date March 2014
-  subroutine init_mpi_subgroup(lg_nodtot,lg_mynum,lg_comm,lg_member,groupsize,lupri)
+  subroutine init_mpi_subgroup(lg_nodtot,lg_mynum,lg_comm,lg_member,groupsize,global_comm,lupri)
     implicit none
     !> Size of each group
     integer(kind=ls_mpik),intent(in) :: groupsize
     !> File unit number for LSDALTON.OUT
     integer,intent(in) :: lupri
     logical,intent(inout) :: lg_member
+    integer(kind=ls_mpik),intent(in) :: global_comm
     integer(kind=ls_mpik),intent(inout) :: lg_nodtot,lg_mynum,lg_comm
-
+    !local variables
     integer :: i
     integer(kind=ls_mpik) :: ierr,ngroups,worldgroup,localgroup
     integer(kind=ls_mpik) :: mygroup,hstatus
@@ -4544,8 +4545,8 @@ contains
        call lsquit('init_mpi_subgroup: Requested group size is unacceptable!',-1)
     end if
 
-    ! Extract group handle for LSDALTON group (world group)
-    call MPI_COMM_GROUP(MPI_COMM_LSDALTON, worldgroup, ierr)
+    ! Extract group handle for global group (world group)
+    call MPI_COMM_GROUP(global_comm, worldgroup, ierr)
 
 
     ! **************************************************
@@ -4581,7 +4582,7 @@ contains
     call MPI_GROUP_INCL(worldgroup, lg(mygroup)%groupsize, lg(mygroup)%ranks, localgroup, ierr)
 
     ! Create local MPI communicator
-    call MPI_COMM_CREATE(MPI_COMM_LSDALTON, localgroup, lg_comm, ierr)
+    call MPI_COMM_CREATE(global_comm, localgroup, lg_comm, ierr)
     ! Done with group information for local group (information is now contained in communicator)
     call MPI_GROUP_FREE(localgroup,ierr)
 

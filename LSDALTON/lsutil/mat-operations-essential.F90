@@ -35,7 +35,7 @@ MODULE matrix_operations
         & mtype_symm_dense, mtype_dense, mtype_unres_dense, mtype_csr,&
         & mtype_scalapack, mtype_pdmm, matrix_type, &
         & SET_MATRIX_DEFAULT, mat_select_type, mat_finalize, mat_pass_info,&
-        & mat_timings, mat_no_of_matmuls,&
+        & mat_timings, mat_no_of_matmuls, mat_select_tmp_type, &
         & mat_init, mat_free, allocated_memory,&
         & stat_deallocated_memory,mat_set_from_full,mat_to_full,mat_print,&
         & mat_trans,mat_chol,mat_dpotrf,mat_dpotrs,mat_dpotri,mat_inv,&
@@ -49,7 +49,7 @@ MODULE matrix_operations
         & mat_read_info_from_disk,mat_extract_diagonal,&
         & no_of_matmuls, mat_tr, mat_trab, mat_dotproduct, mat_sqnorm2, &
         & mat_outdia_sqnorm2, info_memory, max_no_of_matrices, no_of_matrices,&
-        & mat_to_full3D
+        & mat_to_full3D, string11_mtype
 
 !> Matrices are symmetric and dense (not implemented)
    integer, parameter :: mtype_symm_dense = 1
@@ -94,6 +94,28 @@ MODULE matrix_operations
    logical,save :: INFO_memory! = .false. !default no memory printout
 
    contains
+     subroutine string11_mtype(matrix_type_val,String)
+       implicit none
+       integer,intent(in) :: matrix_type_val
+       character(len=11) :: String
+       select case(matrix_type_val)
+       case(mtype_symm_dense)
+          String = 'symm_dense '
+       case(mtype_dense)
+          String = 'dense      '
+       case(mtype_unres_dense)
+          String = 'unres_dense'
+       case(mtype_csr)
+          String = 'csr        '
+       case(mtype_scalapack)
+          String = 'scalapack  '
+       case(mtype_pdmm)
+          String = 'pdmm       '
+       case default
+          call lsquit("Unknown type of matrix",-1)
+       end select
+     end subroutine string11_mtype
+
 !*** is called from LSDALTON.f90
 !> \brief Sets the global variables
 !> \author T. Kjaergaard
@@ -232,7 +254,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(scalapack_nodtot,&
                         & scalapack_mynum,scalapack_comm,scalapack_member,&
-                        & infpar%ScalapackGroupSize,lupri)
+                        & infpar%ScalapackGroupSize,MPI_COMM_LSDALTON,lupri)
                    scalapack_mpi_set = .TRUE.
                 ELSE
                    scalapack_nodtot = infpar%nodtot
@@ -260,7 +282,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(pdmm_nodtot,&
                         & pdmm_mynum,pdmm_comm,pdmm_member,&
-                        & infpar%PDMMGroupSize,lupri)
+                        & infpar%PDMMGroupSize,MPI_COMM_LSDALTON,lupri)
                    pdmm_mpi_set = .TRUE.
                 ELSE
                    pdmm_nodtot = infpar%nodtot
@@ -287,7 +309,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(scalapack_nodtot,&
                         & scalapack_mynum,scalapack_comm,scalapack_member,&
-                        & infpar%ScalapackGroupSize,lupri)
+                        & infpar%ScalapackGroupSize,MPI_COMM_LSDALTON,lupri)
                    scalapack_mpi_set = .TRUE.
                 ELSE
                    scalapack_nodtot = infpar%nodtot
@@ -306,7 +328,7 @@ MODULE matrix_operations
                    ENDIF
                    call init_mpi_subgroup(pdmm_nodtot,&
                         & pdmm_mynum,pdmm_comm,pdmm_member,&
-                        & infpar%PDMMGroupSize,lupri)
+                        & infpar%PDMMGroupSize,MPI_COMM_LSDALTON,lupri)
                    PDMM_mpi_set = .TRUE.
                 ELSE
                    pdmm_nodtot = infpar%nodtot
@@ -319,6 +341,37 @@ MODULE matrix_operations
 #endif
        endif
      END SUBROUTINE mat_select_type
+
+
+!> \brief Sets the global variable matrix_type that determines the matrix type
+!> It does not init SCALAPACK or PDMM module
+!> \author T. Kjaergaard
+!> \date 2015
+!> \param a Indicates the matrix type (see module documentation) 
+     SUBROUTINE mat_select_tmp_type(a,lupri,nbast)
+#ifdef VAR_MPI
+       use infpar_module
+       use lsmpi_type
+#endif
+       implicit none
+       INTEGER, INTENT(IN) :: a,lupri
+       INTEGER, OPTIONAL :: nbast
+       integer :: nrow,ncol,tmpcol,tmprow,nproc,K,I,nblocks
+       WRITE(lupri,'(A)') ' '
+       if(matrix_type.EQ.mtype_unres_dense.AND.a.EQ.mtype_scalapack)then
+          WRITE(6,*)'mat_select_type: FALLBACK WARNING'
+          WRITE(6,*)'SCALAPACK type matrices is not implemented for unrestricted calculations'
+          WRITE(6,*)'We therefore use the dense unrestricted type - which do not use memory distribution'
+       else
+          matrix_type = a
+#ifdef VAR_MPI
+          IF (infpar%mynum.EQ.infpar%master) THEN
+             call ls_mpibcast(MATRIXTY2,infpar%master,MPI_COMM_LSDALTON)
+             call lsmpi_set_matrix_type_master(a)
+          ENDIF
+#endif
+       endif
+     END SUBROUTINE mat_select_tmp_type
 
      subroutine DetermineBlockSize(blocksize,nodtot,nbast,lupri)
        implicit none
@@ -419,7 +472,6 @@ MODULE matrix_operations
          TYPE(Matrix), TARGET :: a 
          INTEGER, INTENT(IN)  :: nrow, ncol
          LOGICAL, INTENT(IN), OPTIONAL :: complex
-
          ! Always start by nullifying matrix components
          call mat_nullify(a)
 
@@ -479,9 +531,12 @@ MODULE matrix_operations
 !> \author L. Thogersen
 !> \date 2003
 !> \param a type(matrix) that should be freed
-      SUBROUTINE mat_free(a)
+      SUBROUTINE mat_free(a,matype)
          implicit none
          TYPE(Matrix), TARGET :: a 
+         integer,intent(in),optional :: matype
+         integer   :: matrix_type_case
+
          !to be free'ed, the matrix must be in the same location where it was init'ed.
          !If not, it is probably a duplicate (like 'a' in (/a,b,c/)), in which case
          !we may end up double-free'ing, so err
@@ -498,7 +553,12 @@ MODULE matrix_operations
             !write(mat_lu,*) 'Free: matrices allocated:', no_of_matrices
          endif
          if (info_memory) write(mat_lu,*) 'Before mat_free: mem_allocated_global =', mem_allocated_global
-         select case(matrix_type)
+         IF(present(matype))THEN
+            matrix_type_case = matype
+         ELSE
+            matrix_type_case = matrix_type
+         ENDIF
+         select case(matrix_type_case)
          case(mtype_dense)
              call mat_dense_free(a)
          case(mtype_unres_dense)
@@ -510,7 +570,7 @@ MODULE matrix_operations
          case(mtype_pdmm)
              call mat_pdmm_free(a)
          case default
-              call lsquit("mat_free not implemented for this type of matrix",-1)
+            call lsquit("mat_free not implemented for this type of matrix",-1)
          end select
 
       !free auxaliary data
@@ -635,13 +695,15 @@ MODULE matrix_operations
 !> you have to hardcode an interface to make them work with unrestriced
 !> matrices (see e.g. di_get_fock in dalton_interface.f90)
 !>
-     SUBROUTINE mat_to_full(a, alpha, afull,mat_label)
+     SUBROUTINE mat_to_full(a, alpha, afull,mat_label,matype)
 
          implicit none
          TYPE(Matrix), intent(in):: a
          real(realk), intent(in) :: alpha
          real(realk), intent(inout):: afull(*)  !output
          character(*), INTENT(IN), OPTIONAL :: mat_label
+         integer,intent(in),optional :: matype
+         integer                 :: matrix_type_case
          real(realk)             :: sparsity
          call time_mat_operations1
 
@@ -651,7 +713,12 @@ MODULE matrix_operations
          !  call lsquit('too small full array in mat_to_full',-1)
          !endif
          if (info_memory) write(mat_lu,*) 'Before mat_to_full: mem_allocated_global =', mem_allocated_global
-         select case(matrix_type)
+         IF(present(matype))THEN
+            matrix_type_case = matype
+         ELSE
+            matrix_type_case = matrix_type
+         ENDIF
+         select case(matrix_type_case)
          case(mtype_dense)
              call mat_dense_to_full(a, alpha, afull)
          case(mtype_csr)
@@ -2619,4 +2686,19 @@ END MODULE Matrix_Operations
         call mat_select_type(a,6)
 
       end subroutine lsmpi_set_matrix_type_slave
+
+      !> \brief obtains the matrix_type from master MPI nodes
+      !> \author T. Kjaergaard
+      !> \date 2011
+      !> \param the matrix type
+      subroutine lsmpi_set_matrix_tmp_type_slave()
+        use matrix_operations
+        use infpar_module
+        use lsmpi_type
+        implicit none
+        integer :: a
+        call ls_mpibcast(a,infpar%master,MPI_COMM_LSDALTON)
+        call mat_select_tmp_type(a,6)
+
+      end subroutine lsmpi_set_matrix_tmp_type_slave
 #endif

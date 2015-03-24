@@ -680,6 +680,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -919,6 +920,7 @@ C...  initializes Gen1Int interface
      &                       KBLOCK, NUC(:,1), NRC(:,1), KPRIM,
      &                       ALPHA(:,:,1), CPRIMU(:,:,:,1))
 #endif
+
 C
 C     ***********************************
 C     ***** Process PCM speres data *****

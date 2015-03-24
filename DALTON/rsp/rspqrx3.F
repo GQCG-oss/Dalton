@@ -241,6 +241,8 @@ C  /* Deck e3init */
      *                  ETRS,XINDX,UDV,PV,WRK,LWRK,KZYVA,KZYVB,KZYVC,
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
+
+      use qmcmm_response, only: qmcmm_qr
 C
 C
 C
@@ -456,11 +458,11 @@ C
 C
       IF (QMNPMM) THEN
          IF (TDHF) THEN
-            CALL QMNPMMQRO(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
+            CALL qmcmm_qr(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
      *                        WRK(KZYMC),UDV,WRK(KFREE),LFREE, KZYVA,
      *                        KZYVB,KZYVC, ISYMA,ISYMB,ISYMC,CMO,MJWOP,
      *                        ISPINA,ISPINB,ISPINC)
-               CALL QMNPMMQRO(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
+               CALL qmcmm_qr(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
      *                        WRK(KZYMB), UDV,WRK(KFREE),LFREE,KZYVA,
      *                        KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
      *                        ISPINA,ISPINC,ISPINB) 

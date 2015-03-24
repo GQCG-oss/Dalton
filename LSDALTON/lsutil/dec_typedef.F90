@@ -209,8 +209,6 @@ module dec_typedef_module
      !> forcing one or the other scheme in get_coubles residual integral_driven
      logical :: force_scheme
      logical :: dyn_load
-     !> Use the cc debug routines from the file cc_debug_routines.F90
-     logical :: CCDEBUG
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> if mpich is used CCSD has some special treats that can be used
@@ -316,8 +314,26 @@ module dec_typedef_module
 
      !> Atomic Extent - include all atomic orbitals of atoms included
      logical :: AtomicExtent
+
+     !> Massively parallel MP2 (Full Molecular canonical MP2)
+     logical :: MPMP2
+    
+     !> RIMP2 settings
+     !> ************
      !> Auxiliary Atomic Extent - for now include ALL atomic orbitals in RI
      logical :: AuxAtomicExtent
+     !> Use Natural Auxiliary Functions (NAF)
+     logical :: NAF
+     !> Natural Auxiliary Functions Threshold
+     real(realk) :: NAFthreshold
+     !> Hardcode the Group size used in RIMP(build_CalphaMO)
+     integer :: RIMPSubGroupSize
+     !> Use Tensor Framework to Construct Calpha
+     logical :: RIMP2PDMTENSOR
+     !> Force the use of the code that distribute the Calpha
+     logical :: RIMP2ForcePDMCalpha
+     !> MPI group is split if #nodes > O*V/RIMPIsplit
+     integer :: RIMPIsplit
 
      !> MPI settings
      !> ************
@@ -1010,6 +1026,8 @@ module dec_typedef_module
      ! ***************
      ! MPI: Sum of flop counts for local slaves (NOT local master, only local slaves!)
      real(realk) :: flops_slaves
+     ! MPI: Sum of GPU flop counts for local slaves (NOT local master, only local slaves!)
+     real(realk) :: gpu_flops_slaves
      ! Number of integral tasks
      integer :: ntasks
 
@@ -1257,6 +1275,8 @@ module dec_typedef_module
      integer,pointer :: ntasks(:)
      !> FLOP count for all local nodes (local master + local slaves)
      real(realk),pointer :: flops(:)
+     !> GPU FLOP count for all local nodes (local master + local slaves)
+     real(realk),pointer :: gpu_flops(:)
      !> Time used for local master
      real(realk),pointer :: LMtime(:)
      !> Measure of load distribution:

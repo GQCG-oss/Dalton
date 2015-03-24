@@ -58,6 +58,9 @@ C
 #if defined (HAS_PCMSOLVER)
       use pcmmod_cfg
 #endif
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_init
+#endif
 #if defined (BUILD_PELIB)
       use pe_variables, only: pe_twoint
       use polarizable_embedding, only: pe_twoints
@@ -185,6 +188,13 @@ Cbm initialized PCM_save
       IF (PCM) THEN
          CALL PCMSOLVNT(WORK,LWORK)
       END IF
+
+
+#ifdef ENABLE_XCINT
+      ! initialize XCint interface
+      call xcint_init()
+#endif
+
 C
 C
 C ***************************************************
