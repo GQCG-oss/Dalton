@@ -1428,7 +1428,9 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   IF(MynbasisAuxMPI.GT.0)THEN
      call get_currently_available_memory(MemInGBCollected)
      !maxsize = max number of floating point elements
-     maxsize = NINT(MemInGBCollected*1.E9_realk)
+     !allow to building of 3 center integral to use 60 procent of 
+     !currently available memory
+     maxsize = 0.60E0_realk*NINT(MemInGBCollected*1.E9_realk)
      !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
      !It is very annoying but I allocated AlphaCD3 inside 
      !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
