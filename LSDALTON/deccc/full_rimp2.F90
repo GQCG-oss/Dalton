@@ -225,9 +225,9 @@ contains
     call mem_alloc(ABdecomp,nAux,nAux)
     ABdecompCreate = .TRUE.
     call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-         & wakeslaves,MyMolecule%Co(:,offset+1:offset+nocc),&
-         & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA,&
-         & ABdecomp,ABdecompCreate)
+         & wakeslaves,MyMolecule%Cv,nvirt,&
+         & MyMolecule%Co(:,offset+1:offset+nocc),nocc,mynum,numnodes,&
+         & nAtoms,Calpha,NBA,ABdecomp,ABdecompCreate)
     call mem_dealloc(ABdecomp)
     CALL LSTIMER('RIMP2: CalphaMO ',TS2,TE2,LUPRI,FORCEPRINT)
 

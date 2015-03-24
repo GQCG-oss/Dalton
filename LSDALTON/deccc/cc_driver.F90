@@ -576,10 +576,12 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       if(ccmodel == MODEL_CCSDpT)then
          ! now we calculate fourth-order and fifth-order energies
          call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
-            & unocc_orbitals,FragEnergies(:,:,pT_4_o:pT_4_v),FragEnergies_tmp,ccenergies(pT_4_o))
+            & unocc_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
+            & FragEnergies_tmp,ccenergies(pT_4_o))
    
          call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
-            & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o:pT_5_v),ccenergies(pT_5_o))
+            & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
+            & ccenergies(pT_5_o))
    
          ! calculate total (T) contributions:
          ccenergies(pT_full_o) = ccenergies(pT_4_o)+ccenergies(pT_5_o)

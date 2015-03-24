@@ -718,7 +718,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
       if(master.AND.DECinfo%PL>0)then
          write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Allocate big array using   ',MemInGB(maxdim),' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
          FLUSH(DECinfo%output)
+#endif
       endif
       MemInGBCollected = MemInGBCollected + MemInGB(maxdim)
       MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -726,7 +728,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       if(master.AND.DECinfo%PL>0)then
          write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Global Memory statistics after big array'
          call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
          FLUSH(DECinfo%output)
+#endif
       endif
       ierr = 0
       if(ierr == 0) then
@@ -853,7 +857,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
               &MemInGB(bat%size1(2)),' GB Tot=',MemInGBCollected,' GB'
            write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp3%p using   ',&
               &MemInGB(bat%size1(3)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
            FLUSH(DECinfo%output)
+#endif
           endif
           MemInGBCollected = MemInGBCollected + MemInGB(max(bat%size1(1),dim1))
           MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -1073,7 +1079,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           if(master.and.DECinfo%PL>0)then
              write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate tmp4%p using   ',&
                 &MemInGB(bat%size2(4)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
              FLUSH(DECinfo%output)
+#endif
           endif
           MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(4))
           MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -1108,7 +1116,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                    &MemInGB(bat%size2(2)),' GB Tot=',MemInGBCollected,' GB'
                 write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b3(',j,')%p using   ',&
                    &MemInGB(bat%size2(3)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
                 FLUSH(DECinfo%output)
+#endif
              endif
              MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(1)) + MemInGB(bat%size2(2)) + MemInGB(bat%size2(3))
              MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -1139,7 +1149,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           if(master.AND.DECinfo%PL>0)then
              WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM: MemInGBCollected = ',MemInGBCollected,&
                 &' GB Before MP2 Workhorse OMP Loop'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
              flush(DECinfo%output)
+#endif
           endif
           call mem_TurnONThread_Memory()
           !$OMP PARALLEL DEFAULT(NONE) PRIVATE(Abat,Astart,Aend,dimA,m,n,siz,ts,&
@@ -1566,7 +1578,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        &MemInGB(bat%size3(1)),' GB Tot=',MemInGBCollected,' GB'
     write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp2%p using   ',&
        &MemInGB(bat%size3(2)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     FLUSH(DECinfo%output)
+#endif
  endif 
  MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(1))
  MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -1654,7 +1668,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        if(master.AND.DECinfo%PL>0)then
           write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate gvirt2 using',&
              &MemInGB(nvirtEOS,nvirtEOS,nocc,nocctot),' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
           FLUSH(DECinfo%output)
+#endif
        endif
        call mem_alloc(gvirt2,nvirtEOS,nvirtEOS,nocc,nocctot)
        do I=1,ncore ! put core orbitals into right position
@@ -1845,7 +1861,9 @@ if(master.and.DECinfo%PL>0) then
    WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:  MaxMemInGBCollected = ',MaxMemInGBCollected,' GB'
    WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:  MemoryNeeded        = ',MemoryNeeded,' GB'
    call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
    FLUSH(DECinfo%output)
+#endif
 !   IF(ABS(MaxMemInGBCollected-MemoryNeeded).GT.1.0E-6_realk)THEN
 !      CALL LSQUIT('Memory Error: MP2 workhorse MemoryNeeded.NE.MaxMemInGBCollected',-1)
 !   ENDIF
@@ -1926,7 +1944,9 @@ if(DECinfo%PL>0)THEN
    WRITE(DECinfo%output,'(1X,A)')'MP2MEM: MP2_integrals_and_amplitudes_workhorse:'
    WRITE(DECinfo%output,'(1X,A)')'MP2MEM: Memory Statistics at the end of the subroutine'
    call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
    FLUSH(DECinfo%output)
+#endif
 endif
 
 

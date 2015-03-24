@@ -627,6 +627,11 @@ C
       END
 C  /* Deck dalton_exedrv */
       SUBROUTINE DALTON_EXEDRV(LMWORK, WRKDLM)
+
+#ifdef BUILD_OPENRSP
+          use openrsp_input, only: read_openrsp_input
+#endif
+
 #if defined(ENABLE_QMATRIX)
 !         added by Bin Gao, September 11, 2014
           use matrix_operations, only: SET_MATRIX_DEFAULT
@@ -697,6 +702,7 @@ C
       REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       real(8), allocatable :: work(:)
+      logical :: openrsp_input_found
 
 #if defined(ENABLE_QMATRIX)
       type(DalQMat) dal_qmat
@@ -705,6 +711,27 @@ C
 
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
+
+
+#ifdef BUILD_OPENRSP
+      ! radovan: we need to read the **OPENRSP input before we run anything
+      call gpopen(lucmd, 'DALTON.INP','OLD',' ','FORMATTED',
+     &            idummy, .false.)
+!     search **OPENRSP in input
+      rewind (lucmd)
+      openrsp_input_found = .false.
+      do
+         read (lucmd, '(a)', end=2) word
+         if (word == '**OPENR') then
+            call read_openrsp_input('DALTON.INP', lucmd)
+            openrsp_input_found = .true.
+            exit
+         end if
+      end do
+2     rewind(lucmd)
+      call gpclose(lucmd, 'KEEP')
+#endif
+
 
 #ifdef ENABLE_QMATRIX
 !     We should first read input in subroutine DALTON_EXEDRV() before any calculation,

@@ -75,9 +75,10 @@ C  /* Deck rspoli */
      *                  XINDX,CMO,WRK,LWRK)
 
 #ifdef ENABLE_XCINT_RESPONSE
-      use iso_c_binding
-      use xcint_fortran_interface
+      use dalton_xcint_interface, only: xcint_is_active,
+     &                                  xcint_integrate_rks_lr
 #endif
+
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
@@ -159,12 +160,11 @@ C
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
 
 #ifdef ENABLE_XCINT_RESPONSE
-      real(c_double), allocatable :: dmat_ao(:)
-      real(c_double), allocatable :: xc_mat(:)
-      real(c_double), allocatable :: fmat_mo(:)
-      real(c_double)              :: xc_energy(1)
-      real(c_double)              :: num_electrons
-      logical                     :: file_exists
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: xc_mat(:)
+      real(8), allocatable :: fmat_mo(:)
+      real(8)              :: num_electrons
+      logical              :: file_exists
 #endif
 
       CALL QENTER('RSPOLI')
@@ -1126,12 +1126,15 @@ C          Special case of alpha density only (old code)
      &              lfree,iprrsp)
              END DO
            ENDIF
-C          Proceed normal way otherwise
+
+
+           ! Proceed normal way otherwise
            IF ((NASHT.GT.0) .AND. (NISHT.GT.0)) THEN
              call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
            ELSE
 #ifdef ENABLE_XCINT_RESPONSE
+             if (xcint_is_active()) then
 
              if (nosim > 1) then
                 call quit('NOSIM > 1 not implemented with ENABLE_XCINT')
@@ -1158,22 +1161,7 @@ C          Proceed normal way otherwise
              ! scale density matrices
              call dscal(nbast*nbast*2, 0.5d0, dmat_ao, 1)
 
-             xc_energy = 0.0d0
-             num_electrons = 0.0d0
-             call xcint_wakeup_workers()
-             call xcint_integrate(XCINT_MODE_RKS,
-     &                            1,
-     &                            (/XCINT_PERT_EL/),
-     &                            (/1, 1/),
-     &                            2,
-     &                            (/0, 1/),
-     &                            (/1, 1/),
-     &                            dmat_ao,
-     &                            0,
-     &                            xc_energy,
-     &                            1,
-     &                            xc_mat,
-     &                            num_electrons)
+             call xcint_integrate_rks_lr(dmat_ao, xc_mat)
 
              ! transform ao fock matrix contribution to mo
              call lrao2mo(cmo, ksymop, xc_mat,
@@ -1185,10 +1173,14 @@ C          Proceed normal way otherwise
              deallocate(dmat_ao)
              deallocate(xc_mat)
              deallocate(fmat_mo)
-#else
+
+             else
+#endif /* ENABLE_XCINT_RESPONSE */
              call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
-#endif /* ENABLE_XCINT_RESPONSE */
+#ifdef ENABLE_XCINT_RESPONSE
+             endif
+#endif
            ENDIF
 #ifdef DEBUG_RSPOLI
            write(lupri,*) 'DODFT: after call dft_lin_resp*'

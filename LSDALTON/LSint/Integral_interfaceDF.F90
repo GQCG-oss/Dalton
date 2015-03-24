@@ -2582,7 +2582,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&
 END SUBROUTINE II_get_RI_AlphaCD_3CenterInt
 
 SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisAux,&
-     & nbasis,nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
+     & nbasis,nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes,InOper)
   IMPLICIT NONE
   Integer,intent(in)            :: LUPRI,LUERR,nbasis,nbasisAux
   Integer,intent(in)            :: nocc,nvirt,mynum,numnodes  
@@ -2591,11 +2591,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   REAL(REALK),intent(in)        :: Cvirt(nbasis,nvirt)
   TYPE(LSSETTING),intent(inout) :: SETTING
   integer(kind=long),intent(in) :: maxsize
+  integer,optional              :: InOper 
   !
   integer(kind=long)         :: nsize
   Integer                    :: nAtoms,nAtomsAux,nBastAux,nBast,N,K,M,ialpha,v,a
   Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
-  Integer                    :: ALPHA,BETA,I
+  Integer                    :: ALPHA,BETA,I,Oper 
   Real(realk) :: TSTART,TEND,tmp,TMP1
   real(realk),pointer :: AlphaCD(:,:,:),AlphaCD2(:,:,:)
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
@@ -2608,6 +2609,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   !
   integer :: iShell, nAuxShellA,nbatches
   integer, pointer :: batchdim(:)
+
+  IF(present(InOper))THEN
+     Oper = InOper
+  ELSE
+     Oper = CoulombOperator
+  ENDIF
 
   SETTING%scheme%CS_SCREEN = .FALSE.
   SETTING%scheme%PS_SCREEN = .FALSE.
@@ -2647,9 +2654,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      call initIntegralOutputDims(setting%Output,nBastAux,1,nbast,nbast,1)
 
      !both Master and non-master calls this
-     
      call ls_getIntegrals(AODFdefault,AOempty,AORdefault,AORdefault,&
-          & CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+          & Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
      
      call mem_alloc(AlphaCD,nbastAux,nbast,nbast)
      CALL retrieve_Output(lupri,setting,AlphaCD,.FALSE.)
@@ -2731,7 +2737,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
                  setting%batchindex(1)=iShell
                  setting%batchdim(1)=nAuxShellA
                  call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,&
-                      &CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+                      & Oper,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
                  setting%batchindex(1)=0
                  setting%batchdim(1)=nAuxShellA
                  call mem_alloc(alphaCD,nAuxShellA,nBast,nBast)
@@ -2757,7 +2763,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
               !Original code
               call initIntegralOutputDims(setting%Output,nAuxA,1,nBast,nBast,1)
               call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,&
-                   &CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+                   & Oper,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
               call mem_alloc(alphaCD,nAuxA,nBast,nBast)
               CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
               ! Transform index delta to diagonal occupied index 
@@ -2874,13 +2880,14 @@ subroutine getMaxAtomicnAux(molecule1,MaxAtomicnAux,nAtoms)
   CALL freeMolecularOrbitalInfo(orbitalInfo)
 end subroutine getMaxAtomicnAux
 
-SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAux)
+SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAux,InOper)
   IMPLICIT NONE
   Integer,intent(in)                :: LUPRI,LUERR,nbasisAux
   REAL(REALK)                       :: AlphaBeta(nbasisAux,nbasisAux)
   TYPE(LSSETTING),intent(inout)     :: SETTING
+  integer,optional                  :: InOper
   !
-  Integer                    :: nAtoms,nBastAux,nBast
+  Integer                    :: nAtoms,nBastAux,nBast,Oper
   Real(realk) :: TSTART,TEND,tmp
   logical :: MasterWakeSlaves,doMPI
   call LSTIMER('START ',TSTART,TEND,LUPRI)
@@ -2902,8 +2909,13 @@ SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAu
   SETTING%SCHEME%doMPI = .FALSE.
   MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
   SETTING%SCHEME%MasterWakeSlaves = .FALSE.
-  call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,RegularSpec,&
-       &                  ContractedInttype,SETTING,LUPRI,LUERR)
+  IF(present(InOper))THEN
+     Oper = InOper
+  ELSE
+     Oper = CoulombOperator
+  ENDIF
+  call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
+       & Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
   SETTING%SCHEME%doMPI = doMPI
   SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
   call retrieve_Output(lupri,setting,AlphaBeta,.FALSE.)
