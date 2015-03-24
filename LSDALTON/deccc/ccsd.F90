@@ -6516,7 +6516,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: i, a, O, V, N, X
 
     !> debug:
-    logical :: print_debug, local_moccsd
+    logical :: print_debug, local_moccsd, use_bg_buf
     real(realk) :: tcpu, twall, tcpu1, twall1
     integer :: idb, iub
 
@@ -6563,20 +6563,33 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     N = ntot
     X = MOinfo%DimInd1(1)
     print_debug = (DECinfo%PL>3.or.DECinfo%cc_driver_debug.and.master)
+    use_bg_buf = mem_is_background_buf_init()
 
     ! Allocate working memory:
     dimMO = MOinfo%DimInd1(1)
     tmp_size = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
     tmp_size = int(i8*tmp_size, kind=long)
-    call mem_alloc(tmp0, tmp_size)
+    if (use_bg_buf) then
+       call mem_pseudo_alloc(tmp0, tmp_size)
+    else
+       call mem_alloc(tmp0, tmp_size)
+    end if
 
     tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
     tmp_size = int(i8*tmp_size, kind=long)
-    call mem_alloc(tmp1, tmp_size)
+    if (use_bg_buf) then
+       call mem_pseudo_alloc(tmp1, tmp_size)
+    else
+       call mem_alloc(tmp1, tmp_size)
+    end if
 
     tmp_size = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
     tmp_size = int(i8*tmp_size, kind=long)
-    call mem_alloc(tmp2, tmp_size)
+    if (use_bg_buf) then
+       call mem_pseudo_alloc(tmp2, tmp_size)
+    else
+       call mem_alloc(tmp2, tmp_size)
+    end if
 
     call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
     call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
@@ -6763,8 +6776,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
                 & govoo,gvooo,gvoov,gvvoo)
 
-    call mem_dealloc(tmp1)
-    call mem_dealloc(tmp2)
+    if (use_bg_buf) then
+       call mem_pseudo_dealloc(tmp2)
+       call mem_pseudo_dealloc(tmp1)
+    else
+       call mem_dealloc(tmp2)
+       call mem_dealloc(tmp1)
+    end if
 
     if (ccmodel>MODEL_CC2) then
       call LSTIMER('MO-CCSD A2 B2 + comm',tcpu1,twall1,DECinfo%output)
@@ -6796,7 +6814,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call mem_dealloc(u2)
       call mem_dealloc(G_Pi)
       call mem_dealloc(H_aQ)
-      call mem_dealloc(tmp0)
+      if (use_bg_buf) then
+         call mem_pseudo_dealloc(tmp0)
+      else
+         call mem_dealloc(tmp0)
+      end if
        
       call mem_dealloc(gvoov)
       call mem_dealloc(gvvoo)
@@ -6893,7 +6915,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call mem_dealloc(u2)
     call mem_dealloc(G_Pi)
     call mem_dealloc(H_aQ)
-    call mem_dealloc(tmp0)
+    if (use_bg_buf) then
+       call mem_pseudo_dealloc(tmp0)
+    else
+       call mem_dealloc(tmp0)
+    end if
 
     call mem_dealloc(gvoov)
     call mem_dealloc(gvvoo)

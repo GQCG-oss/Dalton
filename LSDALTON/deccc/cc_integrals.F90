@@ -863,7 +863,7 @@ contains
     logical :: print_debug
 
     ! MPI variables:
-    logical :: master, local, gdi_lk, gup_lk
+    logical :: master, local, gdi_lk, gup_lk, use_bg_buf
     integer :: myload, win
     integer(kind=ls_mpik) :: ierr, myrank, nnod, dest
     integer, pointer      :: tasks(:)
@@ -874,6 +874,7 @@ contains
 
     call time_start_phase(PHASE_WORK)
     ntot = no + nv
+    use_bg_buf = mem_is_background_buf_init()
 
     ! Set integral info
     ! *****************
@@ -1122,10 +1123,18 @@ contains
     ! working arrays
     tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
     tmp_size = int(i8*ntot*tmp_size, kind=long)
-    call mem_alloc(tmp1, tmp_size)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(tmp1, tmp_size)
+    else
+       call mem_alloc(tmp1, tmp_size)
+    endif
     tmp_size = max(MaxActualDimAlpha*MaxActualDimGamma, dimP*dimP)
     tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
-    call mem_alloc(tmp2, tmp_size)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(tmp2, tmp_size)
+    else
+       call mem_alloc(tmp2, tmp_size)
+    endif
 
 
     ! Sanity checks for matrix sizes which need to be filled:
@@ -1366,8 +1375,13 @@ contains
 
     ! Free matrices:
     call mem_dealloc(gao)
-    call mem_dealloc(tmp1)
-    call mem_dealloc(tmp2)
+    if(use_bg_buf)then
+       call mem_pseudo_dealloc(tmp2)
+       call mem_pseudo_dealloc(tmp1)
+    else
+       call mem_dealloc(tmp2)
+       call mem_dealloc(tmp1)
+    endif
     call mem_dealloc(gmo)
     call mem_dealloc(Cov)
     call mem_dealloc(CP)
