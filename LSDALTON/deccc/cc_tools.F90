@@ -786,7 +786,7 @@ module cc_tools_module
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 6:",3(1x,i7))')&
           &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
          endif
-         call dil_array_init(w3,tred*nor)
+         call dil_array_init(w3,i8*tred*nor)
          tcs='D(z,y)+=L(z,x)*R(y,x)'
          call dil_clean_tens_contr(tch)
          tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
@@ -825,7 +825,7 @@ module cc_tools_module
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 7:",3(1x,i7))')&
           &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
          endif
-         call dil_array_init(w3(tred*nor+1:),tred*nor)
+         call dil_array_init(w3(tred*nor+1:),i8*tred*nor)
          tcs='D(z,y)+=L(z,x)*R(y,x)'
          call dil_clean_tens_contr(tch)
          tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nor,INTD)/)
