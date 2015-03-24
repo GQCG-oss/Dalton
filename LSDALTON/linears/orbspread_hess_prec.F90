@@ -81,33 +81,46 @@ subroutine orbspread_hesslin(Hv,V,mu,norb,orbspread_input)!m,spread2,R,Q,tmpM)
      call mat_extract_diagonal(diagR(:,x),orbspread_input%R(x))
   enddo
 
-
-  tmp = diagQV*(spread2**(m-2))
+  do i=1,norb
+     tmp(i) = diagQV(i)*(spread2(i)**(m-2))
+  enddo
   call mat_zero(Hv)
   call mat_dmul(tmp,Q,'n',-4E0_realk*m*(m-1),0E0_realk,Hv)
 
 
-  tmp =  (spread2**(m-1))
+  do i=1,norb
+     tmp(i) =  (spread2(i)**(m-1))
+  enddo
   call mat_dmul(tmp,QV,'t',-2E0_realk*m,1E0_realk,Hv)
 
   call mat_dmul(tmp,QV,'n',-2E0_realk*m,1E0_realk,Hv)
 
   do x=1, 3
-     tmp = diagR(:,x)*diagQV*(spread2**(m-2))
+     do i=1,norb
+        tmp(i) = diagR(i,x)*diagQV(i)*(spread2(i)**(m-2))
+     enddo
      call mat_dmul(tmp,orbspread_input%R(x),'n',8E0_realk*m*(m-1),1E0_realk,Hv)
 
-     tmp = diagR(:,x)*diagRV(:,x)*(spread2**(m-2))
+     do i=1,norb
+        tmp(i) = diagR(i,x)*diagRV(i,x)*(spread2(i)**(m-2))
+     enddo
      call mat_dmul(tmp,Q,'n',8E0_realk*m*(m-1),1E0_realk,Hv)
 
      do y=1, 3
-        tmp = diagR(:,x)*diagR(:,y)*diagRV(:,x)*(spread2**(m-2))
+        do i=1,norb
+           tmp(i) = diagR(i,x)*diagR(i,y)*diagRV(i,x)*(spread2(i)**(m-2))
+        enddo
         call mat_dmul(tmp,orbspread_input%R(y),'n',-16E0_realk*m*(m-1),1E0_realk,Hv)
      enddo
 
-     tmp = diagRV(:,x)*(spread2**(m-1))
+     do i=1,norb
+        tmp(i) = diagRV(i,x)*(spread2(i)**(m-1))
+     enddo
      call mat_dmul(tmp,orbspread_input%R(x),'n',8E0_realk*m,1E0_realk,Hv)
 
-     tmp = diagR(:,x)*(spread2**(m-1))
+     do i=1,norb
+        tmp = diagR(i,x)*(spread2(i)**(m-1))
+     enddo
      call mat_dmul(tmp,orbspread_input%tmpM(x),'t',4E0_realk*m,1E0_realk,Hv)
 
      call mat_dmul(tmp,orbspread_input%tmpM(x),'n',4E0_realk*m,1E0_realk,Hv)
