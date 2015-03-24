@@ -2338,7 +2338,8 @@ contains
        nba = nb
        nbg = nb
        alp: do i = MinAObatch, nb
-          gamm: do k = MinAObatch, nb
+          !gamm: do k = MinAObatch, nb
+             k = min(2*i,nb)
 
              w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
                 &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
@@ -2356,20 +2357,24 @@ contains
 
                 else
 
-                   nba = i
-                   nbg = k - 1
+                   !nba = i
+                   !nbg = k - 1
+                   nba = max(i-1,MinAObatch)
+                   nbg = min(2*nba,nb)
 
                    exit alp
 
                 endif
              endif
 
-          enddo gamm
+          !enddo gamm
        enddo alp
 
        if(.not. collective)then
           alp_nc: do i = MinAObatch, nb
-             gamm_nc: do k = MinAObatch, nb
+             !gamm_nc: do k = MinAObatch, nb
+                k = min(2*i,nb)
+                
 
                 w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
                    &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
@@ -2380,14 +2385,16 @@ contains
 
                 if(float(maxsize*8)/(1024.0**3) > fraction_of*MemToUse )then
 
-                   nba = i
-                   nbg = k - 1
+                   !nba = i
+                   !nbg = k - 1
+                   nba = max(i-1,MinAObatch)
+                   nbg = min(2*nba,nb)
 
                    exit alp_nc
 
                 endif
 
-             enddo gamm_nc
+             !enddo gamm_nc
           enddo alp_nc
        endif
 
@@ -2398,17 +2405,23 @@ contains
           nba = max(DECinfo%ccsdAbatch,MinAObatch)
        else
           if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>MinAObatch).and.nnod>1)then
-             nba=(nb/(magic*nnod))
-             if(nba<MinAObatch)nba=MinAObatch
+             do while((nb/nba)*(nb/nbg)<magic*nnod)
+                nba = max(nba - 1,MinAObatch)
+                nbg = min(2*nba,nb)
+                if( nba == MinAObatch ) exit
+             enddo
           endif
 
-          if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==MinAObatch).and.nnod>1)then
-             do while((nb/nba)*(nb/nbg)<magic*nnod)
-                nbg=nbg-1
-                if(nbg<=MinAObatch)exit
-             enddo
-             if(nbg<MinAObatch)nbg=MinAObatch
-          endif
+          if(nba<MinAObatch)nba=MinAObatch
+          if(nbg<MinAObatch)nbg=MinAObatch
+
+          !if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==MinAObatch).and.nnod>1)then
+          !   do while((nb/nba)*(nb/nbg)<magic*nnod)
+          !      nbg=nbg-1
+          !      if(nbg<=MinAObatch)exit
+          !   enddo
+          !   if(nbg<MinAObatch)nbg=MinAObatch
+          !endif
        endif
 
        w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
@@ -2416,10 +2429,6 @@ contains
        w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
           &nbuffs,INTSPEC,MyLsItem%setting)
 
-       if(DECinfo%PL>2)then
-          print *,"INFO(get_mo_integral_par): collective:",collective,", completely distributed:",completely_distributed,&
-             &"MinAObatch:",MinAObatch,"nba:",nba,"nbg:",nbg,"size 1:",w1size,"size 2:",w2size
-       endif
 
        maxsize = w1size
        maxsize = maxsize + w2size
@@ -2441,7 +2450,8 @@ contains
              nbg = nb
 
              alp_cd: do i = MinAObatch, nb
-                gamm_cd: do k = MinAObatch, nb
+                !gamm_cd: do k = MinAObatch, nb
+                k = min(2*i,nb)
 
                    w1size = 0
                    w2size = 0
@@ -2455,14 +2465,16 @@ contains
 
                    if(float(maxsize*8)/(1024.0**3) > MemToUse )then
 
-                      nba = i
-                      nbg = k - 1
+                      !nba = i
+                      !nbg = k - 1
+                      nba = max(i-1,MinAObatch)
+                      nbg = min(2*nba,nb)
 
                       exit alp_cd
 
                    endif
 
-                enddo gamm_cd
+                !enddo gamm_cd
              enddo alp_cd
 
 
@@ -2472,6 +2484,9 @@ contains
        MaxAllowedDimGamma = nbg
        MaxAllowedDimAlpha = nba
 
+       if(DECinfo%PL>2)then
+          print *,"INFO(get_mo_integral_par): collective:",collective,", completely distributed:",completely_distributed
+       endif
     endif
 
 
@@ -2602,10 +2617,13 @@ contains
        mylsitem%setting%SCHEME%PS_SCREEN = .FALSE.
        doscreen = mylsitem%setting%SCHEME%CS_SCREEN.OR.mylsitem%setting%SCHEME%PS_SCREEN
 
+
+       print *,"Is it this?"
        call tensor_ainit( t1_par, [nb,n1], 2, local=local, atype="TDAR", tdims=[bs,n1s] )
        call tensor_convert(trafo1%elm1,t1_par)
        call tensor_ainit( t2_par, [nb,n2], 2, local=local, atype="TDAR", tdims=[bs,n2s] )
        call tensor_convert(trafo2%elm1,t2_par)
+       print *,"Is it this? DONE"
 
        nbatchesAlpha = nb / MaxActualDimAlpha
        if( mod( nb, MaxActualDimAlpha ) > 0 ) nbatchesAlpha = nbatchesAlpha + 1
@@ -2613,6 +2631,8 @@ contains
        if( mod( nb, MaxActualDimGamma ) > 0 ) nbatchesGamma = nbatchesGamma + 1
 
     endif
+
+    print *,"allocating"
     w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
        &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
     w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
@@ -2651,6 +2671,7 @@ contains
     ! ************************************************
     ! *  precalculate the full schreening matrix     *
     ! ************************************************
+    print *,"precalc screening"
     if(.not.completely_distributed)then
        IF(DECinfo%useIchor)THEN
           !Calculate Screening integrals 
@@ -2730,6 +2751,8 @@ contains
        call tensor_lock_wins(integral, 's', all_nodes = .true. )
     endif
 #endif
+
+    print *,"start looping"
 
     gammaB   = 0
     alphaB   = 0
