@@ -1526,6 +1526,7 @@ contains
     
     !--- MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
     if (setting%scheme%MOPARI_K) then
+       
        call mem_alloc(MOmatK,nBastReg,nBastReg)
        MOmatK=0E0_realk
 
@@ -1539,8 +1540,13 @@ contains
        INFO=-1
        nOcc=0
        PIV(:)=0
-       matA(:,:) = Dfull(:,:,1)
-    
+       
+       do i=1,nBastReg
+          do j=1,nBastReg
+             matA(i,j) = Dfull(i,j,1)
+          enddo
+       enddo
+           
        call dpstrf('L',nBastReg,matA,nBastReg,PIV,nOcc,chol_tol,Work,INFO)
        
        call mem_alloc(MOcoeff,nBastReg,nOcc)
@@ -1554,7 +1560,7 @@ contains
        call mem_dealloc(PIV)
        call mem_dealloc(matA)
        call mem_dealloc(work)
-       
+
        !write(lupri,*) 'Rank of the Cholesky Decomposition:',nOcc
 
        !write(lupri,'(/A/)') 'Atomic Contributions to the MO'
@@ -1612,13 +1618,12 @@ contains
        neighbours(:,:) = .false.
        call get_neighbours(neighbours,orbitalInfo,regCSfull,threshold,molecule,&
             atoms_A,lupri,luerr,setting)
+      
        !write(lupri,'(/A/)') 'Matrix of atomic neighbours'
        !do iAtomA=1,nAtoms
        !   write(lupri,*) neighbours(iAtomA,:)
        !enddo
 
-       !call lstimer('neighbour',te,ts,lupri)
-                     
        ! Loop over A
        do iAtomA=1,nAtoms
           call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
@@ -1630,7 +1635,7 @@ contains
           call getHQcoeff(matH_Q,calpha_ab_mo,alpha_beta_mo,iAtomA,neighbours,&
                MOcoeff,orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
                nOcc,lupri,luerr)
-                              
+          
           ! --- Construction of matrix D_i^muQ for AtomQ=AtomA
           call mem_alloc(matD_Q,nAuxA,nOcc,nBastReg)
           matD_Q=0E0_realk
@@ -1641,7 +1646,7 @@ contains
           ! --- Addition of the AtomQ=AtomA contribution to the matrix L^munu 
           call dgemm('N','N',nBastReg,nBastReg,nAuxA*nOcc,1.0E0_realk,matH_Q,&
                nBastReg,matD_Q,nAuxA*nOcc,1.0E0_realk,MOmatK,nBastReg)
-                    
+          
           call mem_dealloc(matD_Q)
           call mem_dealloc(matH_Q)
        Enddo !Loop A
@@ -1682,7 +1687,7 @@ contains
              MOMatK(iRegB,iRegA) =  MOMatK(iRegA,iRegB)
           enddo
        enddo
-
+       
        ! --- Add the exchange contribution (K) to the Fock matrix (F)
        call mat_set_from_full(MOMatK(:,:),&
             -Setting%Scheme%exchangeFactor,F(1),'exchange')
