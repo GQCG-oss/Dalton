@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/03/13 (started 2014/09/01).
+!REVISION: 2015/03/20 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -64,7 +64,7 @@
 #ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
-!#define DIL_DEBUG_ON
+#define DIL_DEBUG_ON
 #endif
 #endif
 #endif
@@ -136,6 +136,7 @@
 #endif
         integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
         integer(INTD), private:: DIL_TMP_FILE1=1043                     !temporary file handle
+        integer(INTD), private:: DIL_TMP_FILE2=1044                     !temporary file handle
         logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC
 !DIR$ ATTRIBUTES OFFLOAD:mic:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
@@ -286,8 +287,8 @@
         private my_mpi_rank
         private divide_segment_i8
         public merge_sort_key_int
-        public merge_sort_key_int4
-        public merge_sort_key_int8
+        private merge_sort_key_int4
+        private merge_sort_key_int8
         public merge_sort_real8
         private str_parse
         public str2int
@@ -314,8 +315,10 @@
         private dil_tens_pack_into_tiles
         public dil_tens_fetch_start
         public dil_tens_fetch_finish_prep
+!        public dil_tens_fetch
 !        public dil_tens_upload_start
 !        public dil_tens_upload_finish_prep
+!        public dil_tens_upload
         private dil_divide_space_int
         private dil_divide_space_int4
         private dil_divide_space_int8
@@ -324,9 +327,12 @@
         private dil_tensor_contract_pipe
         public dil_tensor_contract
         public dil_tensor_norm1
+        public dil_array_norm1
         public dil_tensor_init
+        public dil_array_init
         public dil_debug_to_file_start
         public dil_debug_to_file_finish
+        public dil_array_print
         public dil_mm_pipe_efficient
         public dil_will_malloc_succeed
         public dil_test
@@ -1466,23 +1472,29 @@
         endif
         return
         end subroutine merge_sort_key_int8
-!------------------------------------------
-        subroutine merge_sort_real8(ni,trn)
-!This subroutine sorts an array of NI items in a non-descending order.
+!----------------------------------------------
+        subroutine merge_sort_real8(ni,trn,dir)
+!This subroutine sorts an array of NI items.
 !The algorithm is due to Johann von Neumann.
 !INPUT:
 ! - ni - number of items;
 ! - trn(1:ni) - items (arbitrary real*8 numbers);
+! - dir - direction of sort (negative - descending, positive - ascending order);
 !OUTPUT:
-! - trn(0:ni) - sorted items and sign in trn(0).
+! - trn(0:ni) - sorted items.
         implicit none
         integer(INTL), intent(in):: ni
         real(8), intent(inout):: trn(1:ni)
-        integer(INTL):: i,j,k,l,m,n,k1,k2,k3,k4,kf,ierr
-        real(8), parameter:: ds(0:1)=(/+1d0,-1d0/)
+        integer(INTD), intent(in), optional:: dir
+        integer(INTL):: i,j,k,l,m,n,k1,k2,k3,k4,kf
         real(8), allocatable:: prm(:)
+        real(8):: ds
 
         if(ni.gt.1) then
+         ds=+1d0
+         if(present(dir)) then
+          if(dir.lt.0) ds=-1d0
+         endif
          allocate(prm(1:ni))
          n=1
          do while(n.lt.ni)
@@ -1501,7 +1513,7 @@
             elseif(k1.ge.k2) then !left block is over
              prm(i+l:i+kf-1)=trn(k3:k4-1); l=kf
             else
-             if(trn(k1)-trn(k3).gt.0d0) then
+             if((trn(k1)-trn(k3))*ds.gt.0d0) then
               prm(i+l)=trn(k3); k3=k3+1
              else
               prm(i+l)=trn(k1); k1=k1+1
@@ -2347,7 +2359,7 @@
 !$OMP END PARALLEL
         endif !trivial or not
         tm=thread_wtime(time_beg) !debug
-        if(DIL_DEBUG) write(CONS_OUT,'("Done: ",F10.4," s, ",F10.4," GB/s: stat ",i9)')&
+        if(DIL_DEBUG) write(CONS_OUT,'("Done: ",F10.4," s, ",F10.4," GB/s: Status ",i9)')&
         &tm,dble(2_INTL*bs*real_kind)/(tm*1048576d0*1024d0),ierr !debug
 !        write(CONS_OUT,'("#DEBUG(dil_tensor_algebra::dil_tensor_transpose): Done: ",F10.4," sec, ",F10.4," GB/s, error ",i3)')&
 !        &tm,dble(2_INTL*bs*real_kind)/(tm*1024d0*1024d0*1024d0),ierr !debug
@@ -2433,8 +2445,8 @@
 
         ierr=0; call dil_rank_window_clean(rwc)
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
-        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Prefetching (",4(1x,i3,":",i3,","),")")')&
-        &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,4)/) !debug
+        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Prefetching (",16(1x,i6,":",i6,","),")")')&
+        &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,tens_arr%mode)/) !debug
         buf_end=0_INTL; k=DIL_FIRST_CALL
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
@@ -2446,7 +2458,7 @@
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
           call tensor_get_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
-          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i3))') signa(1:tens_arr%mode)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
           ierr=-1; return
@@ -2470,6 +2482,8 @@
 
         ierr=0; call dil_rank_window_clean(rwc)
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Prefetching (",16(1x,i6,":",i6,","),")")')&
+        &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,tens_arr%mode)/) !debug
         k=DIL_FIRST_CALL
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
@@ -2485,7 +2499,7 @@
             call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
            endif
           endif
-          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
          elseif(k.gt.0) then
           ierr=-1; return
          endif
@@ -2509,6 +2523,8 @@
 
         ierr=0; call dil_rank_window_clean(rwc)
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Uploading (",16(1x,i6,":",i6,","),")")')&
+        &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,tens_arr%mode)/) !debug
         buf_end=0_INTL; k=DIL_FIRST_CALL
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
@@ -2520,7 +2536,7 @@
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
           call tensor_accumulate_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
-          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
           ierr=-1; return
@@ -2544,6 +2560,8 @@
 
         ierr=0; call dil_rank_window_clean(rwc)
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Uploading (",16(1x,i6,":",i6,","),")")')&
+        &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,tens_arr%mode)/) !debug
         k=DIL_FIRST_CALL
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
@@ -2559,7 +2577,7 @@
             call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
            endif
           endif
-          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
          elseif(k.gt.0) then
           ierr=-1; return
          endif
@@ -2578,19 +2596,23 @@
         integer(INTD):: i,k,n,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
         integer:: tile_num
+        real(8):: time_beg,tm
 
         ierr=0
         buf_end=0_INTL; n=tens_arr%mode; k=DIL_FIRST_CALL
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
+          if(DIL_DEBUG) time_beg=thread_wtime()
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
-          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",4(1x,i3))',ADVANCE='NO') signa(1:n)
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",16(1x,i6))',ADVANCE='NO') signa(1:n)
           call dil_tensor_insert(n,bufo%buf_ptr,tens_part%dims,bufi%buf_ptr(buf_end+1_INTL:),tile_dims,&
                                 &signa(1:n)-tens_part%lbnd(1:n),i)
-          if(i.ne.0) then; ierr=1; return; endif
-          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
           buf_end=buf_end+tile_vol
+          if(DIL_DEBUG) tm=thread_wtime(time_beg)
+          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
+           &tm,dble(2_INTL*tile_vol*realk)/(tm*1024d0*1024d0*1024d0),i
+          if(i.ne.0) then; ierr=1; return; endif
          elseif(k.gt.0) then
           ierr=2; return
          endif
@@ -2609,19 +2631,23 @@
         integer(INTD):: i,k,n,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
         integer:: tile_num
+        real(8):: time_beg,tm
 
         ierr=0
         buf_end=0_INTL; n=tens_arr%mode; k=DIL_FIRST_CALL
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
+          if(DIL_DEBUG) time_beg=thread_wtime()
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
-          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Packing:",4(1x,i3))',ADVANCE='NO') signa(1:n)
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Packing:",16(1x,i6))',ADVANCE='NO') signa(1:n)
           call dil_tensor_slice(n,bufi%buf_ptr,tens_part%dims,bufo%buf_ptr(buf_end+1_INTL:),tile_dims,&
                                &signa(1:n)-tens_part%lbnd(1:n),i)
-          if(i.ne.0) then; ierr=1; return; endif
-          if(DIL_DEBUG) write(CONS_OUT,'(": Packed: Status ",i9)') i
           buf_end=buf_end+tile_vol
+          if(DIL_DEBUG) tm=thread_wtime(time_beg)
+          if(DIL_DEBUG) write(CONS_OUT,'(": Packed: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
+           &tm,dble(2_INTL*tile_vol*realk)/(tm*1024d0*1024d0*1024d0),i
+          if(i.ne.0) then; ierr=1; return; endif
          elseif(k.gt.0) then
           ierr=2; return
          endif
@@ -2645,8 +2671,8 @@
 
         ierr=0; call dil_rank_window_clean(rwc)
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
-!        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Prefetching (",4(1x,i3,":",i3,","),")")')&
-!        &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,4)/) !debug
+!        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Fetching (",16(1x,i6,":",i6,","),")")')&
+!         &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,tens_arr%mode)/) !debug
         buf_end=0_INTL; k=DIL_FIRST_CALL
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
@@ -2655,10 +2681,10 @@
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
-!          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+!           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
           call tensor_get_tile(tens_arr,tile_num,bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
-!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i3))') signa(1:tens_arr%mode)
+!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
           ierr=-1; return
@@ -2692,7 +2718,7 @@
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
-!          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+!           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
             call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
@@ -2700,13 +2726,13 @@
             call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
            endif
           endif
-!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i3))') signa(1:tens_arr%mode)
-!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",4(1x,i3))',ADVANCE='NO') signa(1:n)
+!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:n)
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",16(1x,i6))',ADVANCE='NO') signa(1:n)
           call dil_tensor_insert(n,bufo,tens_part%dims,bufi(buf_end+1_INTL:buf_end+tile_vol),tile_dims,&
                                 &signa(1:n)-tens_part%lbnd(1:n),i)
-          if(i.ne.0) then; ierr=-2; return; endif
-!          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
           buf_end=buf_end+tile_vol
+!          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
+          if(i.ne.0) then; ierr=-2; return; endif
          elseif(k.gt.0) then
           ierr=-1; return
          endif
@@ -3563,7 +3589,7 @@
         type(dev_buf_t):: buf(0:MAX_DEVS-1)         !Host buffers for all devices (mapped to the Host buffer space)
         type(contr_task_list_t), target:: task_list !`Make it global threadsafe to allow reuse and avoid unnecessary allocations
         character(3):: contr_case,arg_reuse
-        integer(INTL):: i0,i1,i2,i3,size_of_real,tot_buf_vol,dev_buf_vol,arg_buf_vol,dvol,lvol,rvol
+        integer(INTL):: i0,i1,i2,size_of_real,tot_buf_vol,dev_buf_vol,arg_buf_vol,dvol,lvol,rvol
         integer(INTD):: nd,nl,nr,num_dev,dev,first_avail,buf_conf(1:BUFS_PER_DEV,0:MAX_DEVS-1),prmn(1:MAX_TENSOR_RANK,0:2)
         integer(INTD):: tasks_done(0:MAX_DEVS-1),task_curr(0:MAX_DEVS-1),task_prev(0:MAX_DEVS-1),task_next(0:MAX_DEVS-1)
         logical:: buf_alloc,gpu_on,mic_on,first_task,next_load,prev_store,args_here
@@ -4084,8 +4110,8 @@
          jb=buf_conf(2,jdev); jf=buf_conf(5,jdev); jvol=dil_subtensor_vol(tsk%left_arg)
          if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensor
           if(nl.gt.0) then
-           if(jvol.gt.larg%tens_distr_p%tsize) then !more than one tile
-            call dil_tens_unpack_from_tiles(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s)
+           if(.not.one_tile_only(larg%tens_distr_p,tsk%left_arg)) then !more than one tile
+            call dil_tens_unpack_from_tiles(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tiles
             if(je.ne.0) then; errc=6; return; endif
             je=jb; jb=jf; jf=je
            endif
@@ -4114,8 +4140,8 @@
          jb=buf_conf(3,jdev); jf=buf_conf(6,jdev); jvol=dil_subtensor_vol(tsk%right_arg)
          if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensor
           if(nr.gt.0) then
-           if(jvol.gt.rarg%tens_distr_p%tsize) then !more than one tile
-            call dil_tens_unpack_from_tiles(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s)
+           if(.not.one_tile_only(rarg%tens_distr_p,tsk%right_arg)) then !more than one tile
+            call dil_tens_unpack_from_tiles(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tiles
             if(je.ne.0) then; errc=11; return; endif
             je=jb; jb=jf; jf=je
            endif
@@ -4151,6 +4177,7 @@
          integer(INTD), intent(out):: errc    !out: error code (0:success)
          integer(INTD):: jdev,jb,jf,je
          integer(INTL):: jvol
+         real(8):: jtb,jtm
 
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
@@ -4164,8 +4191,8 @@
          endif
          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensor
           if(nd.gt.0) then
-           if(jvol.gt.darg%tens_distr_p%tsize) then !more than one tile
-            call dil_tens_pack_into_tiles(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !pack tile(s)
+           if(.not.one_tile_only(darg%tens_distr_p,tsk%dest_arg)) then !more than one tile
+            call dil_tens_pack_into_tiles(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !pack tiles
             if(je.ne.0) then; errc=2; return; endif
             je=jb; jb=jf; jf=je
            endif
@@ -4173,13 +4200,23 @@
            errc=3; return
           endif
          elseif(darg%store_type.eq.'l'.or.darg%store_type.eq.'L') then !local tensor
+          if(DIL_DEBUG) then
+           jtb=thread_wtime()
+           write(CONS_OUT,'(2x,"#DEBUG(DIL): Updating the local destination ...")',ADVANCE='NO')
+          endif
+          je=0
           if(nd.gt.0) then !insert tensor slice
            call dil_tensor_insert(nd,darg%tens_loc%elems,darg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%dest_arg%dims,&
                                  &tsk%dest_arg%lbnd(1:nd)-(darg%tens_loc%base(1:nd)+IND_NUM_START),je)
-           if(je.ne.0) then; errc=4; return; endif
           elseif(nd.eq.0) then
            darg%tens_loc%elems(1)=buf(jdev)%arg_buf(jb)%buf_ptr(1)
           endif
+          if(DIL_DEBUG) then
+           jtm=thread_wtime(jtb)
+           write(CONS_OUT,'(" Done: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
+           &jtm,dble(2_INTL*jvol*realk)/(jtm*1024d0*1024d0*1024d0),je
+          endif
+          if(je.ne.0) then; errc=4; return; endif
          else
           errc=5; return
          endif
@@ -4193,6 +4230,7 @@
          integer(INTD), intent(out):: errc    !out: error code (0:success)
          integer(INTL):: lld,lrd,lcd
          integer(INTD):: jdev,j0,jp
+         real(8):: jtb,jtm
 
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
@@ -4209,14 +4247,12 @@
           jp=prmn(j0,1) !original position
           lcd=lcd*tsk%left_arg%dims(jp)
          enddo
-         if(DIL_DEBUG) then
-          write(CONS_OUT,'(2x,"#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe:dil_mm_compute)[",'//&
-          &'i2,"]: Matrix dims:",3(1x,i11))') impir,lld,lrd,lcd
-         endif
+         if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL)[",i2,"]: Matrix dims:",3(1x,i11))',ADVANCE='NO') impir,lld,lrd,lcd
          mm_flops=mm_flops+dble(lld)*dble(lrd)*dble(lcd) !count Matrix Multiplication Flops
          if(lld*lrd.gt.buf(jdev)%arg_buf(buf_conf(4,jdev))%buf_vol) then; errc=1; return; endif !trap
          if(lcd*lld.gt.buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_vol) then; errc=2; return; endif !trap
          if(lcd*lrd.gt.buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_vol) then; errc=3; return; endif !trap
+         if(DIL_DEBUG) jtb=thread_wtime()
          if(realk.eq.8) then
           call dgemm('T','N',int(lld,BLAS_INT),int(lrd,BLAS_INT),int(lcd,BLAS_INT),alpha,&
                     &buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_ptr,int(lcd,BLAS_INT),&
@@ -4230,8 +4266,24 @@
          else
           errc=4
          endif
+         if(DIL_DEBUG) then
+          jtm=thread_wtime(jtb)
+          write(CONS_OUT,'(": ",F10.4," GFlops/s")') (dble(lld)*dble(lrd)*dble(lcd))/(jtm*1024d0*1024d0*1024d0)
+         endif
          return
          end subroutine dil_mm_compute
+
+         function one_tile_only(tdistr,tslice) result(oto)
+         type(tensor), intent(in):: tdistr    !in: distributed tensor
+         type(subtens_t), intent(in):: tslice !in: tensor slice specification
+         logical:: oto                        !out: result (?the slice consists only of one tile?)
+         integer(INTD):: j0
+         oto=.true.
+         do j0=1,tdistr%mode
+          if(tslice%dims(j0).gt.tdistr%tdim(j0)) then; oto=.false.; exit; endif
+         enddo
+         return
+         end function one_tile_only
 
          function dil_mark_arg_reuse(tsc,tsn) result(reuse)
  !This function determines which arguments (tensor parts) will be reused in the next task.
@@ -4432,13 +4484,14 @@
         real(realk) function dil_tensor_norm1(tens,ierr) !PARALLEL (MPI+OMP)
 !This function computes 1-norm of a tensor.
         implicit none
-        type(tensor), intent(in):: tens     !in: tensor
-        integer(INTD), intent(inout):: ierr !out: error code (0:success)
+        type(tensor), intent(in):: tens               !in: tensor
+        integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
         integer(INTL):: i,l
         real(realk):: nrm1
-        integer(INTD):: mpi_dtyp
+        integer(INTD):: mpi_dtyp,errc
 
-        ierr=0; dil_tensor_norm1=0E0_realk; nrm1=0E0_realk
+        errc=0; dil_tensor_norm1=0E0_realk; nrm1=0E0_realk
+        call lsmpi_barrier(infpar%lg_comm) !complete all outstanding communications
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,l) REDUCTION(+:nrm1)
         do i=1,tens%nlti
 !$OMP DO SCHEDULE(GUIDED)
@@ -4448,12 +4501,45 @@
 !$OMP END DO
         enddo
 !$OMP END PARALLEL
-        if(realk.eq.8) then; mpi_dtyp=MPI_REAL8; elseif(realk.eq.4) then; mpi_dtyp=MPI_REAL4; endif
-        call MPI_ALLREDUCE(nrm1,dil_tensor_norm1,1_INTD,mpi_dtyp,MPI_SUM,infpar%lg_comm,ierr)
+        if(realk.eq.8) then
+         mpi_dtyp=MPI_REAL8
+        elseif(realk.eq.4) then
+         mpi_dtyp=MPI_REAL4
+        else
+         errc=1
+        endif
+        if(errc.eq.0) call MPI_ALLREDUCE(nrm1,dil_tensor_norm1,1_INTD,mpi_dtyp,MPI_SUM,infpar%lg_comm,errc)
+        if(present(ierr)) ierr=errc
         return
         end function dil_tensor_norm1
+!--------------------------------------------------------------
+        real(realk) function dil_array_norm1(arr,arr_size,ierr) !PARALLEL (OMP)
+        implicit none
+        real(realk), intent(in):: arr(1:*)            !in: array
+        integer(INTL), intent(in):: arr_size          !in: volume of the array (number of elements)
+        integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
+        integer(INTL):: i
+        integer(INTD):: errc
+        real(realk):: v
+
+        errc=0; dil_array_norm1=0E0_realk
+        if(arr_size.gt.0) then
+         v=0E0_realk
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i) SCHEDULE(GUIDED) REDUCTION(+:v)
+         do i=1,arr_size
+          v=v+abs(arr(i))
+         enddo
+!$OMP END PARALLEL DO
+         dil_array_norm1=v
+        else
+         errc=1
+        endif
+        if(present(ierr)) ierr=errc
+        return
+        end function dil_array_norm1
 !----------------------------------------
         subroutine dil_tensor_init(a,val) !SERIAL
+!Each MPI process initializes its own tiles.
         implicit none
         type(tensor), intent(inout) :: a
         real(realk), intent(in), optional:: val
@@ -4472,7 +4558,24 @@
         enddo
         return
         end subroutine dil_tensor_init
-!-------------------------------------
+!------------------------------------------
+        subroutine dil_array_init(a,sz,val) !SERIAL
+        implicit none
+        real(realk), intent(inout):: a(1:*)     !out: array (contiguous)
+        integer(INTL), intent(in):: sz          !in: number of elements to initialize
+        real(realk), intent(in), optional:: val !in: initialization value (defaults to zero)
+        integer(INTL):: i
+        real(realk):: v
+
+        if(present(val)) then; v=val; else; v=0E0_realk; endif
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i) SCHEDULE(GUIDED)
+        do i=1,sz
+         a(i)=v
+        enddo
+!$OMP END PARALLEL DO
+        return
+        end subroutine dil_array_init
+!-----------------------------------------------
         subroutine dil_debug_to_file_start(ierr)
 !This subroutine starts redirecting process's output to file.
         implicit none
@@ -4509,14 +4612,100 @@
         endif
         return
         end subroutine dil_debug_to_file_finish
+!-------------------------------------------------------------------------------------
+        subroutine dil_array_print(arr,ierr,fname,fhandle,print_first,sort,by_modulus) !SERIAL (I/O)
+!This subroutine prints a real array into a file, with an optional ordering done to it.
+        implicit none
+        real(realk), intent(in), target:: arr(1:)         !inout: array to print
+        integer(INTD), intent(inout), optional:: ierr     !out: error code (0:success)
+        character(*), intent(in), optional:: fname        !in: EITHER a file name where to print
+        integer(INTD), intent(in), optional:: fhandle     !in: OR a file handle of an already opened file
+        integer(INTL), intent(in), optional:: print_first !in: print only the first <print_first> elements
+        logical, intent(in), optional:: sort              !in: if .true., the array will be printed in a sorted order
+        logical, intent(in), optional:: by_modulus        !in: if .true., the array will be sorted by modulus
+        real(realk), pointer, contiguous:: sar(:)
+        integer(INTL):: i,arr_size,pfe
+        integer(INTD):: fh,errc
+        logical:: alloc
+
+        errc=0; arr_size=size(arr)
+        if(arr_size.gt.0) then
+         if(present(fhandle).and.(.not.present(fname))) then
+          if(fhandle.gt.8) then !the first few handles are reserved
+           fh=fhandle
+          else
+           errc=1; if(present(ierr)) ierr=errc
+           return
+          endif
+         elseif(present(fname).and.(.not.present(fhandle))) then
+          fh=DIL_TMP_FILE2
+          open(fh,file=fname(1:len_trim(fname)),form='FORMATTED',status='UNKNOWN')
+         elseif((.not.present(fname)).and.(.not.present(fhandle))) then
+          fh=DIL_CONS_OUT
+         else
+          errc=2
+         endif
+         if(errc.eq.0) then
+          alloc=.false.
+          if(present(sort)) then
+           if(sort.and.arr_size.gt.1) then
+            allocate(sar(1:arr_size),STAT=errc)
+            if(errc.eq.0) then
+             alloc=.true.
+             if(present(by_modulus)) then
+              if(by_modulus) then
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i) SCHEDULE(GUIDED)
+               do i=1,arr_size
+                sar(i)=abs(arr(i))
+               enddo
+!$OMP END PARALLEL DO
+              else
+!$OMP WORKSHARE
+               sar(1:arr_size)=arr(1:arr_size)
+!$OMP END WORKSHARE
+              endif
+             else
+!$OMP WORKSHARE
+              sar(1:arr_size)=arr(1:arr_size)
+!$OMP END WORKSHARE
+             endif
+             call merge_sort_real8(arr_size,sar,dir=-1_INTD) !sort in an descending order
+            else
+             errc=3
+            endif
+           else
+            sar=>arr
+           endif
+          else
+           sar=>arr
+          endif
+          if(errc.eq.0) then
+           pfe=arr_size
+           if(present(print_first)) pfe=print_first
+           do i=1,pfe
+            write(fh,'(D22.14)') sar(i)
+           enddo
+           if(alloc) deallocate(sar)
+          endif
+          if(present(fname)) close(fh)
+          nullify(sar)
+         endif
+        else
+         errc=4
+        endif
+        if(present(ierr)) ierr=errc
+        return
+        end subroutine dil_array_print
 !--------------------------------------------------------------------------------------------------
         logical function dil_mm_pipe_efficient(ll,lr,lc,comp_bandwidth,data_bandwidth,data_latency) !SERIAL
-!This function decides whether a given matrix multiplication can be efficiently pipelined:
-!D(1:ll,1:lr)+=L(1:lc,1:ll)*R(1:lc,1:lr)
+!Given the tile dimensions, this function decides whether a matrix multiplication can be efficiently pipelined,
+!that is, whether a matrix multiplication with the given tile dimensions can be efficiently
+!pipelined on a given architecture (data transfer latency/bandwidth, PU Flops/s).
+!Matrix tile multiplication: D(1:ll,1:lr)+=L(1:lc,1:ll)*R(1:lc,1:lr)
 !No argument validity checks!
         implicit none
-        integer(INTL), intent(in):: ll,lr,lc !in: matrix dimensions
-        real(8), intent(in):: comp_bandwidth !in: computational throughput (Flops/s)
+        integer(INTL), intent(in):: ll,lr,lc !in: matrix tile dimensions (left, right, contracted)
+        real(8), intent(in):: comp_bandwidth !in: PU computational throughput (Flops/s)
         real(8), intent(in):: data_bandwidth !in: data transfer bandwidth (Words/s)
         real(8), intent(in):: data_latency   !in: data transfer latency (s)
         real(8), parameter:: much_more=5d0   !defines what "much more" exactly means
@@ -4535,23 +4724,25 @@
         endif
         return
         end function dil_mm_pipe_efficient
-!----------------------------------------------------------------------------------
-        logical function dil_will_malloc_succeed(mem_bytes,page_size,hugepage_size) !SERIAL
+!--------------------------------------------------------------------------------------------
+        logical function dil_will_malloc_succeed(mem_bytes,page_size,hugepage_size,max_avail) !SERIAL
 !This function checks whether a given malloc request has a chance for success.
 !If the arguments passed to this function are invalid, .FALSE. will be returned (no error status).
 !NOTES:
 ! # Because of using the same file handle, this subroutine is not threadsafe,
 !   that is, it cannot be called from multiple threads simulateneously.
 ! # The result returned is only a probable success (not 100% reliable) because
-!   the buddyinfo can become outdated due to a concurrent malloc() or
-!   the malloc() implementation may not be able to use all the pages
-!   to produce an allocation of a given size.
+!   (a) the previously allocated memory might not have been touched yet (touch it, then call);
+!   (b) the buddyinfo can become outdated due to a concurrent malloc() (do not call concurrent mallocs);
+!   (c) the malloc() implementation may not be able to use all the pages
+!       to produce an allocation of a requested size (see parameter RELIABLE_PART below).
         implicit none
         integer(INTL), intent(in):: mem_bytes               !in: number of bytes to be allocated
-        integer(INTL), intent(in), optional:: page_size     !in: basic page size (default is 4K)
-        integer(INTL), intent(in), optional:: hugepage_size !in: huge page size (defaults to 2M)
-!----------------------------------------------------------
-        real(8), parameter:: RELIABLE_PART=1d0 !effective parameter to account for unreliability
+        integer(INTL), intent(in), optional:: page_size     !in: basic page size in bytes (default is 4K)
+        integer(INTL), intent(in), optional:: hugepage_size !in: huge page size in bytes (defaults to 2M)
+        integer(INTL), intent(out), optional:: max_avail    !out: maximum available memory (bytes) backed with huge pages
+!-------------------------------------------------------
+        real(8), parameter:: RELIABLE_PART=1d0 !empiric parameter to account for the non-ideality of the buddy malloc()
         integer(INTL), parameter:: DEFAULT_PAGE=4096 !default basic page size in bytes
         integer(INTL), parameter:: DEFAULT_HUGEPAGE=2097152 !default hugepage size in bytes
         integer(INTD), parameter:: MAX_BUDDY_LEVELS=128 !max anticipated number of buddy levels
@@ -4560,7 +4751,7 @@
         character(512):: str
         integer(INTD):: i,k,l,m,n,words(2,MAX_BUDDY_LEVELS+16)
 
-        dil_will_malloc_succeed=.false.
+        dil_will_malloc_succeed=.false.; ahpm=-1
         psz=DEFAULT_PAGE; hsz=DEFAULT_HUGEPAGE
         if(present(page_size)) psz=page_size
         if(present(hugepage_size)) hsz=hugepage_size
@@ -4585,10 +4776,14 @@
           if(pls.ge.hsz) ahpm=ahpm+pls*buds(l) !count only memory chunks larger or equal to the hugepage size
           pls=pls*2
          enddo
+         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(DIL): malloc requested ",i12," B from hugepage backed RAM of ",i12)')&
+         &mem_bytes,ahpm
          if(mem_bytes.lt.int(real(ahpm,8)*RELIABLE_PART,INTL)) dil_will_malloc_succeed=.true.
         endif
+        if(present(max_avail)) max_avail=ahpm
         return
-999     if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_will_malloc_succeed): unable to open buddyinfo!")')
+999     if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_will_malloc_succeed): unable to open /proc/buddyinfo!")')
+        if(present(max_avail)) max_avail=ahpm
         return
         contains
 

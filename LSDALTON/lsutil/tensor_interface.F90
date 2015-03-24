@@ -9,7 +9,7 @@ module tensor_interface_module
 #ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
 #define DIL_ACTIVE
-!#define DIL_DEBUG_ON
+#define DIL_DEBUG_ON
 #endif
 #endif
 #endif
@@ -24,19 +24,19 @@ module tensor_interface_module
   use matrix_module
   use dec_workarounds_module
 #ifdef DIL_ACTIVE
-  use tensor_algebra_dil  !`DIL: Tensor Algebra
-  public INTD,INTL        !integer sizes for DIL tensor algebra (default, long)
-  public MAX_TENSOR_RANK  !max allowed tensor rank for DIL tensor algebra
-  public DIL_TC_EACH      !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
-  public DIL_TC_ALL       !parameter for <tensor_contract>: All MPI processes work on the same tensor contraction
-  public DIL_ALLOC_BASIC  !Fortran allocate will be used for buffer allocation in <tensor_algebra_dil>
-  public DIL_ALLOC_PINNED !cudaMallocHost will be used for buffer allocation in <tensor_algebra_dil>
-  public DIL_ALLOC_MPI    !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
-  public DIL_CONS_OUT     !output for DIL messages
-  public DIL_DEBUG
-  public subtens_t
-  public dil_tens_contr_t
-  public dil_subtensor_set
+  use tensor_algebra_dil   !`DIL: Tensor Algebra
+  public INTD,INTL         !integer sizes for DIL tensor algebra (default, long)
+  public MAX_TENSOR_RANK   !max allowed tensor rank for DIL tensor algebra
+  public DIL_TC_EACH       !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
+  public DIL_TC_ALL        !parameter for <tensor_contract>: All MPI processes work on the same tensor contraction
+  public DIL_ALLOC_BASIC   !Fortran allocate will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_PINNED  !cudaMallocHost will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_MPI     !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
+  public DIL_CONS_OUT      !output for DIL messages
+  public DIL_DEBUG         !DIL debugging switch
+  public dil_tens_contr_t  !tensor contraction specification
+  public subtens_t         !subtensor specification for Janus
+  public dil_subtensor_set !subtensor setting method for Janus
   public dil_set_alloc_type
   public dil_clean_tens_contr
   public dil_set_tens_contr_args
@@ -47,13 +47,17 @@ module tensor_interface_module
   public dil_debug_to_file_finish
   public thread_wtime
   public process_wtime
+  public dil_array_print
+  public dil_array_init
   public dil_tensor_init
+  public dil_array_norm1
   public dil_tensor_norm1
-  public dil_tens_fetch_start
-  public dil_tens_fetch_finish_prep
-  public dil_tens_upload_start
-  public dil_tens_upload_finish_prep
-  public dil_will_malloc_succeed
+  public dil_tens_fetch_start        !tensor slice fetching for Janus
+  public dil_tens_fetch_finish_prep  !tensor slice fetching for Janus
+!  public dil_tens_upload_start       !tensor slice uploading for Janus
+!  public dil_tens_upload_finish_prep !tensor slice uploading for Janus
+  public dil_will_malloc_succeed     !tells whether a given malloc() request can succeed if issued
+  public int2str !converts integers to strings
 #endif
 
   !This defines the public interface to the tensors
