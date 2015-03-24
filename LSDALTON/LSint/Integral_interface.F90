@@ -2649,6 +2649,51 @@ ENDIF
 
 END SUBROUTINE II_get_4center_eri
 
+subroutine InitGGemOp(setting,Oper)
+IMPLICIT NONE
+TYPE(LSSETTING)       :: SETTING
+integer,intent(in)    :: Oper
+!
+integer             :: i,j,k,l
+real(realk)         :: coeff(6),exponent(6),tmp
+real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
+integer             :: IJ,nGaussian,nG2,ao(4),dummy
+real(realk)         :: GGem
+
+IF(oper.NE.CoulombOperator)THEN
+   nGaussian = 6
+   nG2 = nGaussian*(nGaussian+1)/2
+   GGem = 0E0_realk
+   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   IJ=0
+   DO I=1,nGaussian
+      DO J=1,I
+         IJ = IJ + 1
+         coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+         prodexponent(IJ) = exponent(I) * exponent(J)
+         sumexponent(IJ) = exponent(I) + exponent(J)
+      ENDDO
+      coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+   ENDDO
+   IF (oper .EQ. GGemOperator) THEN! 'G'
+      ! The Gaussian geminal operator g
+      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+   ELSE IF (oper .EQ. GGemCouOperator) THEN !'F'
+      ! The Gaussian geminal divided by the Coulomb operator g/r12      
+      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+   ELSE IF (oper .EQ. GGemGrdOperator) THEN !'D'
+      ! The double commutator [[T,g],g]      
+      call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+   ELSE IF (oper .EQ. GGemOperator) THEN !'2'
+      ! The Gaussian geminal operator squared g^2      
+      call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+   ELSE
+      call lsquit('Error in specification of operator in ',-1)
+   ENDIF
+ENDIF
+
+end subroutine InitGGemOp
+
 !> \brief Calculates the differentiated 4 center eri tensor in Mulliken (ab|cd) or Dirac noation <a(1)c(2)|r_12^-1|b(1)d(2)>
 !> \author S. Reine
 !> \date 2013-02-05
@@ -3018,13 +3063,15 @@ end subroutine II_screenfree
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
 !> \param Gab the output matrix
-SUBROUTINE II_get_2int_BatchScreenMat(LUPRI,LUERR,SETTING,nbatches,batchGAB,nbast)
+SUBROUTINE II_get_2int_BatchScreenMat(LUPRI,LUERR,SETTING,nbatches,batchGAB,nbast,InOperator)
 IMPLICIT NONE
 INTEGER,intent(in)                :: LUPRI,LUERR,nbatches,nbast
 REAL(realk),intent(inout)         :: batchGAB(nbatches,nbatches)
 TYPE(LSSETTING),intent(inout)     :: SETTING
+INTEGER,optional      :: InOperator
 !
 REAL(realk),pointer        :: bastGAB(:,:)
+integer :: Oper
 IF(setting%IntegralTransformGC)THEN
    !I do not think it makes sense to transform afterwards 
    !so here the basis needs to be transformed
@@ -3033,8 +3080,13 @@ ENDIF
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
 setting%Output%RealGabMatrix = .TRUE.
+IF(present(InOperator))THEN
+   Oper = InOperator
+ELSE
+   Oper = CoulombOperator
+ENDIF
 CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
-     &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
+     &Oper,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
 setting%Output%RealGabMatrix = .FALSE.
 call mem_alloc(bastGAB,nbast,nbast)
 call ls_dzero(bastGAB,nbast*nbast)
@@ -3130,11 +3182,14 @@ END SUBROUTINE II_get_2int_ScreenMat
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
 !> \param Gab the output matrix
-SUBROUTINE II_get_2int_ScreenRealMat(LUPRI,LUERR,SETTING,nbast,GAB)
+SUBROUTINE II_get_2int_ScreenRealMat(LUPRI,LUERR,SETTING,nbast,GAB,InOperator)
 IMPLICIT NONE
 INTEGER               :: LUPRI,LUERR,nbast
 real(realk)           :: GAB(nbast,nbast)
 TYPE(LSSETTING)       :: SETTING
+INTEGER,optional      :: InOperator
+!
+integer :: Oper
 IF(setting%IntegralTransformGC)THEN
    !I do not think it makes sense to transform afterwards 
    !so here the basis needs to be transformed
@@ -3144,6 +3199,11 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 call ls_dzero(GAB,nbast*nbast)
 call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,1)
 setting%Output%RealGabMatrix = .TRUE.
+IF(present(InOperator))THEN
+   Oper = InOperator
+ELSE
+   Oper = CoulombOperator
+ENDIF
 CALL ls_getScreenIntegrals1(AORdefault,AORdefault,&
      &CoulombOperator,.TRUE.,.FALSE.,.FALSE.,SETTING,LUPRI,LUERR,.TRUE.)
 setting%Output%RealGabMatrix = .FALSE.
@@ -4795,7 +4855,8 @@ ELSE
    Oper = CoulombOperator   !Regular Coulomb metric 
 ENDIF
 IF(present(InOperator))THEN
-   Oper = InOperator
+   Oper = InOperator   
+   call InitGGemOp(setting,Oper)
 ENDIF
 !Calculates the HF-exchange contribution
 call initIntegralOutputDims(setting%Output,1,1,1,1,ndmat)
@@ -4851,7 +4912,10 @@ setting%scheme%dascreen_thrlog = setting%scheme%lsdascreen_thrlog
 IF (SETTING%SCHEME%DENSFIT) THEN
    Oper = CoulombOperator
    IF(SETTING%SCHEME%OVERLAP_DF_J) Oper = OverlapOperator
-   IF(present(InOperator))Oper = InOperator
+   IF(present(InOperator))THEN
+      Oper = InOperator
+      call InitGGemOp(setting,Oper)
+   ENDIF
    CALL ls_attachDmatToSetting(D,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
    call initIntegralOutputDims(setting%Output,naux,1,1,1,1)
    call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,Oper,RegularSpec,ContractedInttype,&
@@ -4897,7 +4961,10 @@ IF (SETTING%SCHEME%DENSFIT) THEN
    CALL ls_freeDmatFromSetting(setting)
    CALL LSTIMER('df-J Econt',TS,TE,LUPRI)
 ELSE
-   IF(present(InOperator))Oper = InOperator
+   IF(present(InOperator))THEN
+      Oper = InOperator
+      call InitGGemOp(setting,Oper)
+   ENDIF
    CALL ls_attachDmatToSetting(D,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
    CALL ls_attachDmatToSetting(D,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
    CALL ls_LHSSameAsRHSDmatToSetting(setting)
