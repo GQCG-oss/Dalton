@@ -827,7 +827,7 @@ contains
     integer :: ntot ! total number of MO
     real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
     real(realk), pointer :: gmo(:), tmp1(:), tmp2(:)
-    integer(kind=long)   :: gmosize, tmp_size
+    integer(kind=long)   :: gmosize, tmp_size1,tmp_size2
     integer :: Nbatch, PQ_batch, dimP, dimQ, idb, iub
     integer :: P_sta, P_end, Q_sta, Q_end
     type(MObatchInfo), intent(out) :: MOinfo
@@ -1121,19 +1121,19 @@ contains
     call mem_alloc(gmo,gmosize)
 
     ! working arrays
-    tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
-    tmp_size = int(i8*ntot*tmp_size, kind=long)
+    tmp_size1 = max(nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
+    tmp_size1 = int(i8*ntot*tmp_size1, kind=long)
+    tmp_size2 = max(MaxActualDimAlpha*MaxActualDimGamma, dimP*dimP)
+    tmp_size2 = int(i8*ntot*ntot*tmp_size2, kind=long)
+
     if(use_bg_buf)then
-       call mem_pseudo_alloc(tmp1, tmp_size)
+       call mem_change_background_alloc(dble((tmp_size1+tmp_size2)*8.0E0_realk))
+
+       call mem_pseudo_alloc(tmp1, tmp_size1)
+       call mem_pseudo_alloc(tmp2, tmp_size2)
     else
-       call mem_alloc(tmp1, tmp_size)
-    endif
-    tmp_size = max(MaxActualDimAlpha*MaxActualDimGamma, dimP*dimP)
-    tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
-    if(use_bg_buf)then
-       call mem_pseudo_alloc(tmp2, tmp_size)
-    else
-       call mem_alloc(tmp2, tmp_size)
+       call mem_alloc(tmp1, tmp_size1)
+       call mem_alloc(tmp2, tmp_size2)
     endif
 
 
