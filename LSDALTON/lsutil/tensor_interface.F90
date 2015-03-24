@@ -83,6 +83,7 @@ module tensor_interface_module
   public lspdm_get_combined_SingleDouble_amplitudes, get_info_for_mpi_get_and_reorder_t1 
   public get_rpa_energy_parallel, get_sosex_cont_parallel, get_starting_guess
   public precondition_doubles_parallel
+  public tensor_dmul
 
   ! Only for testing and debugging
   public test_tensor_struct, tensor_print_mem_info
@@ -357,6 +358,103 @@ contains
 
      call time_start_phase( PHASE_WORK )
   end subroutine tensor_add_normal
+  ! x = a * x + b * d * y[order]
+  !> \brief add a scaled array to another array. The data may have different
+  !distributions in the two arrays to be added
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
+  subroutine tensor_dmul(x,b,d,y,a,order)
+     implicit none
+     !> array input, this is the result array with overwritten data
+     type(tensor),intent(inout) :: x
+     !> array to add
+     type(tensor),intent(in) :: y
+     !> scaling factor for array y
+     real(realk),intent(in) :: b,d(:)
+     !> order the second array such that it fits the first
+     integer, intent(in), optional :: order(x%mode)
+     !> optional argument to scale x on the fly
+     real(realk), intent(in), optional :: a
+     real(realk),pointer :: buffer(:)
+     real(realk) :: pre2
+     integer :: ti,i,nel,o(x%mode),m,n
+     call time_start_phase( PHASE_WORK )
+
+     pre2 = 1.0E0_realk
+     if(present(a))pre2 = a
+
+     if(x%mode /= 2) call lsquit("ERROR(tensor_dmul): only implemented for mode 2 tensors",-1)
+
+     if(x%mode/=y%mode)call lsquit("ERROR(tensor_dmul): modes of arrays not compatible",-1)
+
+     do i=1,x%mode
+        if(present(order))then
+           o(i) = order(i)
+        else
+           o(i) = i
+        endif
+        if(x%dims(i) /= y%dims(o(i)))call lsquit("ERROR(tensor_dmul): dims of arrays not &
+           &compatible (with the given order)",-1)
+     enddo
+
+
+     select case(x%itype)
+
+     case(TT_DENSE,TT_REPLICATED)
+
+        select case(y%itype)
+        case(TT_DENSE,TT_REPLICATED)
+
+           n = x%dims(1)
+           m = x%dims(2)
+
+           if(abs(pre2)<1.0E-15)then
+              x%elm1 = 0.0E0_realk
+           else if(abs(pre2-1.0E0_realk)>1.0E-15)then
+              call dscal(x%nelms,pre2,x%elm1,1)
+           endif
+
+           if (o(1) == 1 .and. o(2) == 2) then
+
+              do i=1,n
+                 call daxpy(m,b*d(i),y%elm1(i),n,x%elm1(i),n)
+              enddo
+
+           else if (o(1)==2 .and. o(2)==1) then
+
+              do i=1,m
+                 call daxpy(n,b*d(i),y%elm1(n*(i-1)+1),1,x%elm1(i),m)
+              enddo
+           else
+              call lsquit("ERROR(tensor_dmul): wrong order",-1)
+           end if
+
+           if(x%itype==TT_REPLICATED)call tensor_sync_replicated(x)
+
+        case default
+           print *,x%itype,y%itype
+           call lsquit("ERROR(tensor_add):not yet implemented y%itype 1",DECinfo%output)
+        end select
+
+     case(TT_TILED_DIST)
+
+        select case(y%itype)
+        case(TT_TILED_DIST)
+
+           call tensor_dmul_par(pre2,x,b,d,y,o)
+
+        case default
+           print *,x%itype,y%itype
+           call lsquit("ERROR(tensor_add):not yet implemented y%itype 2",DECinfo%output)
+        end select
+
+     case default
+           print *,x%itype,y%itype
+           call lsquit("ERROR(tensor_dmul):not yet implemented x%itype",DECinfo%output)
+     end select
+
+     call time_start_phase( PHASE_WORK )
+  end subroutine tensor_dmul
 
   subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens)
      implicit none
