@@ -1897,70 +1897,71 @@ subroutine debug_mem_stats(lupri)
 
      IF (error_size.LT.0) THEN
         write(ERR,'(A8)') ' < zero '
-        ELSEIF (error_size.LT.1000) THEN
+     ELSEIF (error_size.LT.1000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E0_realk," B "
-        ELSEIF (error_size.LT.1000000) THEN
+     ELSEIF (error_size.LT.1000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-3_realk," kB"
-        ELSEIF (error_size.LT.1000000000) THEN
+     ELSEIF (error_size.LT.1000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-6_realk," MB"
 #ifdef VAR_INT64
-        ELSEIF (error_size.LT.1000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
-        ELSEIF (error_size.LT.1000000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-12_realk," TB"
-        ELSEIF (error_size.LT.1000000000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-15_realk," PB"
      ELSE
         write(ERR,'(F5.1,A3)') error_size*1E-18_realk," EB"
      ENDIF
 #else
-  ELSE
-     write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
-  ENDIF
+     ELSE
+        write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
+     ENDIF
 #endif
 
-  IF (max_mem_used_global.LT.0) THEN
-     write(GLOB,'(A8)') ' < zero '
+     IF (max_mem_used_global.LT.0) THEN
+        write(GLOB,'(A8)') ' < zero '
      ELSEIF (max_mem_used_global.LT.1000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
      ELSEIF (max_mem_used_global.LT.1000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
      ELSEIF (max_mem_used_global.LT.1000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
 #ifdef VAR_INT64
      ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
      ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
-  ELSE
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
-  ENDIF
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
+     ELSE
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
+     ENDIF
 #else
-ELSE
-   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
-ENDIF
+     ELSE
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
+     ENDIF
 #endif
 
-write(myoutput,*) 
-write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
-write(myoutput,*) 'The program was trying to allocate ',ERR,&
-   &' in addition to the ',GLOB,' already allocated.'
-write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
-write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
-write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'
-write(myoutput,*) 
-write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory statistics'
-write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as to what'
-write(myoutput,*) 'memory requirements are needed.'
-write(myoutput,*) 
-write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON...'
+     write(myoutput,*) 
+     write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
+     write(myoutput,*) 'The program was trying to allocate ',ERR,&
+        &' in addition to the ',GLOB,' already allocated.'
+     write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
+     write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
+     write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'
+     write(myoutput,*) 
+     write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory statistics'
+     write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as to what'
+     write(myoutput,*) 'memory requirements are needed.'
+     write(myoutput,*) 
+     write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON...'
+     
+     call stats_mem(myoutput)
+     flush(myoutput)
 
-call stats_mem(myoutput)
+     ! Quit
+     call lsquit(mylabel,-1)
 
-! Quit
-call lsquit(mylabel,-1)
-
-end subroutine memory_error_quit
+   end subroutine memory_error_quit
 
 !----- ALLOCATE REAL POINTERS -----!
 

@@ -94,6 +94,7 @@
        fptr4 => null()
 
        print *,success
+       flush(*)
      end subroutine my_test
 
      subroutine mult_real(a,b,c)

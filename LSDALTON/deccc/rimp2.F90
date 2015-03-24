@@ -1109,7 +1109,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      WRITE(DECinfo%output,'(1X,A)')'MP2MEM: RIMP2_integrals_and_amplitudes_workhorse:'
      WRITE(DECinfo%output,'(1X,A)')'MP2MEM: Memory Statistics at the end of the subroutine'
      call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
      FLUSH(DECinfo%output)
+#endif
   endif
 
   CALL LSTIMER('DECRIMP2: Finalize',TS2,TE2,LUPRI,FORCEPRINT)
