@@ -1431,6 +1431,11 @@ contains
     !===========================================================
     ! Get MO batch size depending on MO-ccsd residual routine.
     call get_currently_available_memory(MemFree)
+
+    if(mem_is_background_buf_init())then
+       MemFree = 0.8E0_realk*MemFree + (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
+    endif
+
     if (nnod>1) then
 
        ! SELECT SCHEME (storage of MO int.): 
