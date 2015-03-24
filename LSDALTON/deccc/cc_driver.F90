@@ -2857,7 +2857,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
       if(DECinfo%PL>2)then
          write (*,'("mem4",g7.2,"GB mem3",g7.2,"GB mem2",g7.2,"GB")')mem4/1024.0E0_realk**3,&
             &mem3/1024.0E0_realk**3,mem2/1024.0E0_realk**3
-         write (*,'("Found free mem",g7.2,,"GB and use",g7.2,"GB")')Freebytes/1024.0E0_realk**3,bytes/1024.0E0_realk**3
+         write (*,'("Found free mem",g7.2,"GB and use",g7.2,"GB")')Freebytes/1024.0E0_realk**3,bytes/1024.0E0_realk**3
          write (*,'("BG BUF: allocating",g7.2," GB")')bytes_to_alloc/1024.0E0_realk**3
       endif
 

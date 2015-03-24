@@ -969,6 +969,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !{`DIL:
      integer:: nors,nvrs
      type(tensor):: tpld,tmid
+#ifdef DIL_ACTIVE
      logical:: DIL_LOCK_OUTSIDE,bool0
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -977,7 +978,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
-#ifdef DIL_ACTIVE
      integer:: scheme_tmp=1
 #else
      integer:: scheme_tmp=2
