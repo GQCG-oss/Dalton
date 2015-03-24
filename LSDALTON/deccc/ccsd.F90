@@ -1563,9 +1563,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 #endif
 
-     call mem_change_background_alloc((w0size+w1size+w2size+w3size)*8.0E0_realk)
 
      if(use_bg_buf)then
+        call mem_change_background_alloc((w0size+w1size+w2size+w3size)*8.0E0_realk)
+
         call mem_pseudo_alloc(w0, w0size , simple = .false. )
         call mem_pseudo_alloc(w1, w1size , simple = .false.)
         call mem_pseudo_alloc(w2, w2size , simple = .false. )
