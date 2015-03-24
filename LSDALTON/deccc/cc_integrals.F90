@@ -2417,8 +2417,8 @@ contains
           &nbuffs,INTSPEC,MyLsItem%setting)
 
        if(DECinfo%PL>2)then
-          print *,"INFO(get_mo_integral_par): c",collective,"MinAObatch",MinAObatch,&
-             &"nba",nba,"nbg",nbg,"size 1",w1size,"size 2",w2size
+          print *,"INFO(get_mo_integral_par): collective:",collective,", completely distributed:",completely_distributed,&
+             &"MinAObatch:",MinAObatch,"nba:",nba,"nbg:",nbg,"size 1:",w1size,"size 2:",w2size
        endif
 
        maxsize = w1size
