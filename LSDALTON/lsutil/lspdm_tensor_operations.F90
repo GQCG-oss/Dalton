@@ -143,6 +143,7 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_GET_MP2_ST_GUESS       = 35
   integer,parameter :: JOB_tensor_rand            = 36
   integer,parameter :: JOB_HMUL_PAR               = 37
+  integer,parameter :: JOB_DMUL_PAR               = 38
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -2412,6 +2413,258 @@ module lspdm_tensor_operations_module
     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #endif
  end subroutine tensor_add_par
+
+  !> x = a * x + b diag(d)* y[order]
+  !> \brief tensor dmul for pdm tensors
+  !> \author Patrick Ettenhuber
+  !> \date January 2013
+  subroutine tensor_dmul_par(a,x,b,d,y,order)
+    implicit none
+    !> array to collect the result in
+    type(tensor), intent(inout) :: x
+    !> array to add to x
+    type(tensor), intent(in) :: y
+    !> scale factor without intent, because it might be overwiritten for the slaves
+    real(realk),intent(in) :: a,b,d(:)
+    !> order y to adapt to dims of b
+    integer, intent(in) :: order(x%mode)
+    real(realk),pointer :: buffer(:)
+    real(realk) :: prex, prey
+    integer :: i,lt,nbuffs,ibuf,ibuf_idx,cmidy,buffer_lt, d_len,m,n,mt,nt,of
+    integer :: xmidx(x%mode), ymidx(y%mode), ytdim(y%mode), ynels
+    integer(kind=ls_mpik),pointer :: req(:)
+#ifdef VAR_MPI
+    call time_start_phase( PHASE_WORK )
+
+    !check if the access_types are the same
+    if(x%access_type/=y%access_type)then
+      call lsquit("ERROR(tensor_dmul_par):different init types&
+      & impossible",DECinfo%output)
+    endif
+    if(x%mode/=2)then
+      call lsquit("ERROR(tensor_dmul_par):not implemented for mode>2",DECinfo%output)
+    endif
+    if(x%mode/=y%mode)then
+      call lsquit("ERROR(tensor_dmul_par):not implemented for x%mode /= y%mode",DECinfo%output)
+    endif
+
+    prex = a
+    prey = b
+
+    n = x%dims(1)
+    m = x%dims(2)
+
+    if (order(1) == 1 .and. order(2) == 2) then
+       d_len = m
+    else if (order(1) == 2 .and. order(2) == 1) then
+       d_len = n
+    endif
+
+
+    !IF NOT AT_MASTER_ACCESS all processes should know b on call-time, else b is
+    !broadcasted here
+    if(x%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+      call pdm_tensor_sync(infpar%lg_comm,JOB_DMUL_PAR,x,y)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(order,x%mode,infpar%master)
+      call ls_mpi_buffer(prex,infpar%master)
+      call ls_mpi_buffer(prey,infpar%master)
+      call ls_mpi_buffer(d_len,infpar%master)
+      call ls_mpi_buffer(d(1:d_len),d_len,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
+    endif
+
+    do i=1,x%mode
+       if(x%tdim(i) /= y%tdim(order(i))) then
+         call lsquit("ERROR(tensor_dmul_par): tdims of arrays not &
+          &compatible (with the given order)",-1)
+      endif
+    enddo
+
+    ! now set to two and that ought to be enough, but should work with any
+    ! number >0
+    if( gm_buf%init )then
+       nbuffs = gm_buf%n / x%tsize
+       !allocate buffer for the tiles
+       buffer => gm_buf%buf
+    else
+       nbuffs = 2
+       !allocate buffer for the tiles
+       call mem_alloc(buffer,x%tsize*nbuffs)
+    endif
+
+    if( alloc_in_dummy )then
+       call mem_alloc(req,nbuffs)
+       call tensor_lock_wins(y,'s',all_nodes=.true.)
+    endif
+    
+
+    !fill buffer
+    do lt=1,min(nbuffs-1,x%nlti)
+
+       call get_midx(x%ti(lt)%gt,xmidx,x%ntpm,x%mode)
+
+       do i=1,x%mode
+          ymidx(order(i)) = xmidx(i)
+       enddo
+
+       call get_tile_dim(ytdim,y,ymidx)
+
+       ynels = 1
+       do i=1,y%mode
+          ynels = ynels * ytdim(i)
+       enddo
+
+       if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+
+       ibuf = mod(lt-1,nbuffs)
+       ibuf_idx = ibuf*x%tsize + 1
+
+       cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+
+       call time_start_phase( PHASE_COMM )
+       if(alloc_in_dummy )then
+
+          if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+             call tensor_flush_win(y, local = .true.)
+             nel_one_sided = 0
+          endif
+
+          call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
+
+          nel_one_sided = nel_one_sided + ynels
+       else
+          call tensor_lock_win(y,cmidy,'s')
+          call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+       endif
+       call time_start_phase( PHASE_WORK )
+
+    enddo
+
+  
+    !lsoop over local tiles of array x
+    do lt=1,x%nlti
+
+       !buffer last element
+       buffer_lt = lt + nbuffs - 1
+       if(buffer_lt <= x%nlti)then
+          call get_midx(x%ti(buffer_lt)%gt,xmidx,x%ntpm,x%mode)
+
+          do i=1,x%mode
+             ymidx(order(i)) = xmidx(i)
+          enddo
+
+          call get_tile_dim(ytdim,y,ymidx)
+
+          ynels = 1
+          do i=1,y%mode
+             ynels = ynels * ytdim(i)
+          enddo
+
+          if(ynels /= x%ti(buffer_lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+
+          ibuf = mod(buffer_lt-1,nbuffs)
+          ibuf_idx = ibuf*x%tsize + 1
+
+          cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+
+          call time_start_phase( PHASE_COMM )
+
+          if(alloc_in_dummy )then
+             if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                call tensor_flush_win(y, local = .true.)
+                nel_one_sided = 0
+             endif
+
+             call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
+
+             nel_one_sided = nel_one_sided + ynels
+
+          else
+
+             call tensor_lock_win(y,cmidy,'s')
+             call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+
+          endif
+
+          call time_start_phase( PHASE_WORK )
+       endif
+
+       call get_midx(x%ti(lt)%gt,xmidx,x%ntpm,x%mode)
+
+       do i=1,x%mode
+          ymidx(order(i)) = xmidx(i)
+       enddo
+
+       call get_tile_dim(ytdim,y,ymidx)
+
+       ynels = 1
+       do i=1,y%mode
+          ynels = ynels * ytdim(i)
+       enddo
+
+       if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+
+       ibuf = mod(lt-1,nbuffs)
+       ibuf_idx = ibuf*x%tsize + 1
+
+       cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+
+       call time_start_phase( PHASE_COMM )
+       if(alloc_in_dummy )then
+          call lsmpi_wait(req(ibuf+1))
+          nel_one_sided = nel_one_sided - ynels
+       else
+          call tensor_unlock_win(y,cmidy)
+       endif
+       call time_start_phase( PHASE_WORK )
+
+       if(abs(prex)<1.0E-15)then
+          x%ti(lt)%t = 0.0E0_realk
+       else if(abs(prex-1.0E0_realk)>1.0E-15)then
+          call dscal(x%ti(lt)%e,prex,x%ti(lt)%t,1)
+       endif
+
+       nt = x%ti(lt)%d(1)
+       mt = x%ti(lt)%d(2)
+
+       of = (xmidx(order(1))-1)*x%tdim(order(1)) 
+
+       if (order(1) == 1 .and. order(2) == 2) then
+
+          do i=1,nt
+             call daxpy(mt,prey*d(of+i),buffer(ibuf_idx+i-1),nt,x%ti(lt)%t(i),nt)
+          enddo
+
+       else if (order(1)==2 .and. order(2)==1) then
+
+          do i=1,mt
+             call daxpy(nt,prey*d(of+i),buffer(ibuf_idx+nt*(i-1)),1,x%ti(lt)%t(i),mt)
+          enddo 
+
+       else                                                                                                                        
+          call lsquit("ERROR(tensor_dmul_par): wrong order",-1)                                                                        
+       end if
+
+    enddo
+
+    if( alloc_in_dummy )then
+       call mem_dealloc(req)
+       call tensor_unlock_wins(y,all_nodes=.true.)
+    endif
+
+    if(.not.gm_buf%init)then
+       call mem_dealloc(buffer)
+    endif
+
+    !crucial barrier, because direct memory access is used
+    call time_start_phase( PHASE_IDLE )
+    call lsmpi_barrier(infpar%lg_comm)
+    call time_start_phase( PHASE_WORK )
+#endif
+ end subroutine tensor_dmul_par
 
  !> \brief Hadamard product Cij = alpha*Aij*Bij+beta*Cij for TT_TILED_DIST arrays
  !> \author Thomas Kjærgaard and Patrick Ettenhuber

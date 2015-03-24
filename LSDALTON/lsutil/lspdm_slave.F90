@@ -124,6 +124,25 @@ subroutine pdm_tensor_slave(comm)
 
       call mem_dealloc(intarr1)
 
+   CASE(JOB_DMUL_PAR)
+      INT1 = A%mode
+      call mem_alloc(intarr1,INT1)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(intarr1,INT1,infpar%master)
+      call ls_mpi_buffer(REAL1,infpar%master)
+      call ls_mpi_buffer(REAL2,infpar%master)
+      call ls_mpi_buffer(INT2,infpar%master)
+      call mem_alloc(realar1,INT2)
+      call ls_mpi_buffer(realar1,INT2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
+
+      call tensor_dmul_par(REAL1,A,REAL2,realar1,B,intarr1)
+
+      call mem_dealloc(intarr1)
+      call mem_dealloc(realar1)
+
    CASE(JOB_HMUL_PAR)
       call time_start_phase(PHASE_COMM)
       call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
