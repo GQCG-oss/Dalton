@@ -32,7 +32,7 @@ module fragment_energy_module
   !       & update_full_t1_from_atomic_frag, update_full_t1_from_pair_frag
 #ifdef MOD_UNRELEASED
   use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
-       ccsdpt_energy_e4_pair,ccsdpt_energy_e5_pair
+       & ccsdpt_energy_e4_pair,ccsdpt_energy_e5_pair, ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
 !endif mod_unreleased
 #endif
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
@@ -390,8 +390,6 @@ contains
        call dec_fragment_time_get(times_ccsd)
 
 #ifdef MOD_UNRELEASED
-       ! TODO: write pT energy routines for DECNP !!
-       !
        ! calculate ccsd(t) fragment energies
        ! ***********************************
 
@@ -448,12 +446,16 @@ contains
 
           endif
 
-          if(pair) then
+          if (DECinfo%DECNP) then
+             call ccsdpt_decnp_e4_frag(MyFragment,t2f_local,ccsdpt_t2,&
+                & MyFragment%OccContribs,MyFragment%VirtContribs)
+             call ccsdpt_decnp_e5_frag(MyFragment,t1,ccsdpt_t1)
+          else if(pair) then
              call ccsdpt_energy_e4_pair(Fragment1,Fragment2,MyFragment,t2f_local,ccsdpt_t2)
              call ccsdpt_energy_e5_pair(MyFragment,t1,ccsdpt_t1)
           else
              call ccsdpt_energy_e4_frag(MyFragment,t2f_local,ccsdpt_t2,&
-                  & MyFragment%OccContribs,MyFragment%VirtContribs)
+                & MyFragment%OccContribs,MyFragment%VirtContribs)
              call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
           end if
 

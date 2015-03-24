@@ -969,6 +969,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !{`DIL:
      integer:: nors,nvrs
      type(tensor):: tpld,tmid
+#ifdef DIL_ACTIVE
      logical:: DIL_LOCK_OUTSIDE,bool0
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -977,7 +978,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
-#ifdef DIL_ACTIVE
      integer:: scheme_tmp=1
 #else
      integer:: scheme_tmp=2
@@ -1544,12 +1544,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+
      w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+
      w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !``DIL: w2 size must be reduced when DIL
+
      w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
       if(DIL_DEBUG) then !`DIL: debug
@@ -1558,24 +1562,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       endif
 #endif
 #endif
+
+
      if(use_bg_buf)then
+        call mem_change_background_alloc((w0size+w1size+w2size+w3size)*8.0E0_realk)
+
         call mem_pseudo_alloc(w0, w0size , simple = .false. )
-     else
-        call mem_alloc(w0, w0size , simple = .false. )
-     endif
-     if(use_bg_buf)then
         call mem_pseudo_alloc(w1, w1size , simple = .false.)
-     else
-        call mem_alloc(w1, w1size , simple = .false.)
-     endif
-     if(use_bg_buf)then
         call mem_pseudo_alloc(w2, w2size , simple = .false. )
-     else
-        call mem_alloc(w2, w2size , simple = .false. )
-     endif
-     if(use_bg_buf)then
         call mem_pseudo_alloc(w3, w3size , simple = .false. )
      else
+        call mem_alloc(w0, w0size , simple = .false. )
+        call mem_alloc(w1, w1size , simple = .false.)
+        call mem_alloc(w2, w2size , simple = .false. )
         call mem_alloc(w3, w3size , simple = .false. )
      endif
 
@@ -5344,21 +5343,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \author Patrick Ettenhuber
   !> \date January 2012
   subroutine get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,nba,nbg,&
-  &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split,se,is,nbuf)
+  &minbsize,manual,iter,MemIn,first,e2a,local,mpi_split,se,is,nbuf)
     implicit none
     integer, intent(inout) :: scheme
     integer, intent(in)    :: nb,bs,nv,vs,no,os
     integer :: iter
     integer, intent(inout) :: nba,nbg,minbsize
-    real(realK),intent(in) :: MemFree
-    real(realk)            :: mem_used,frac_of_total_mem,m
+    real(realk),intent(in) :: MemIn
+    real(realk)            :: mem_used,frac_of_total_mem,m,MemFree
     logical,intent(in)     :: manual,first
     type(lssetting),intent(inout) :: se
     Character,intent(in) :: is(5)
     integer(kind=8), intent(inout) :: e2a
     logical, intent(in)    :: local, mpi_split
     integer, intent(out),optional :: nbuf
-    integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size
+    integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize
     integer :: nnod,magic,nbuffs,choice
     logical :: checkbg
 
@@ -5383,18 +5382,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !they will be associated to the backtground buffer
     checkbg = mem_is_background_buf_init()
     if( checkbg )then
-       choice = 5
-    else
+       bg_buf_size = mem_get_bg_buf_n()
        choice = 4
+       MemFree = MemIn*frac_of_total_mem + (dble(bg_buf_size)*8.0E0_realk)/(1024.0E0_realk**3)
+    else
+       bg_buf_size = huge(bg_buf_size)
+       choice = 4
+       MemFree = MemIn*frac_of_total_mem
     endif
 
     mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-    if (mem_used>frac_of_total_mem*MemFree)then
+    if (mem_used>MemFree)then
 #ifdef VAR_MPI
        !test for scheme with medium requirements
        scheme=3
        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-       if (mem_used>frac_of_total_mem*MemFree)then
+       if (mem_used>MemFree)then
           !test for scheme with low requirements
           scheme=2
           mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
@@ -5402,11 +5405,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
              scheme=0
              mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
              frac_of_total_mem=0.60E0_realk
-             print *,"mem",mem_used,frac_of_total_mem,MemFree
-             if (mem_used>frac_of_total_mem*MemFree)then
+             print *,"mem",MemFree
+             if (mem_used>MemFree)then
                 write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
-                write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
-                   &frac_of_total_mem*MemFree
+                write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')MemFree
                 write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
                 mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,4,3,.false.,se,is)
                 write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
@@ -5476,7 +5478,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
 
-      if (frac_of_total_mem*MemFree<mem_used) then
+      if (MemFree<mem_used) then
         print *, "ATTENTION your chosen batch sizes might be too large!!!"
       endif
 
@@ -5488,21 +5490,25 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       if(scheme==0)then
          do nbuffs=5,5
             mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-            if (frac_of_total_mem*MemFree>mem_used) exit
+            if (MemFree>mem_used) exit
          enddo
       endif
       if(present(nbuf))nbuf=nbuffs
 
-      if( checkbg )then
-         choice = 6
-      else
-         choice = 3
-      endif
+      choice = 3
+
+      allsize = 0
       !make batches larger until they do not fit anymore
       !determine gamma batch first
-      do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
+      do while (MemFree>mem_used .and. (nb>=nbg))
 
         nbg=nbg+1
+        nba = nbg/2
+        if (nba>=nb)then
+           nba = nb
+        else if (nba<=minbsize)then
+           nba = minbsize
+        endif
         mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
 
       enddo
@@ -5517,15 +5523,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       !determine alpha batch
 
-      do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
+      do while ((MemFree>mem_used) .and. (nb>=nba))
         nba      = nba+1
-        !nbg      = nba * 2
-        !if (nbg>=nb)then
-        !   nbg = nb
-        !else if (nbg<=minbsize)then
-        !   nbg = minbsize
-        !endif
+        nbg      = nba * 2
+        if (nbg>=nb)then
+           nbg = nb
+        else if (nbg<=minbsize)then
+           nbg = minbsize
+        endif
         mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+
       enddo
 
       if (nba>=nb)then
@@ -5538,11 +5545,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     endif
 
-    if( checkbg )then
-       choice = 5
-    else
-       choice = 4
-    endif
+    choice = 4
 
     mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
 
@@ -5570,13 +5573,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     if(scheme==2)then
-       if( checkbg )then
-          choice = 7
-       else
-          choice = 2
-       endif
+      choice = 2
       mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-      e2a = min(v2o2,int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
+      e2a = min(v2o2,int(((MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
     endif
   end subroutine get_max_batch_sizes
 
@@ -6550,12 +6549,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
  
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
-    integer(kind=long) :: tmp_size, no2v2
+    integer(kind=long) :: tmp_size, tmp_size0, tmp_size1, tmp_size2, no2v2
 
     integer :: i, a, O, V, N, X
 
     !> debug:
-    logical :: print_debug, local_moccsd
+    logical :: print_debug, local_moccsd, use_bg_buf
     real(realk) :: tcpu, twall, tcpu1, twall1
     integer :: idb, iub
 
@@ -6602,20 +6601,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     N = ntot
     X = MOinfo%DimInd1(1)
     print_debug = (DECinfo%PL>3.or.DECinfo%cc_driver_debug.and.master)
+    use_bg_buf = mem_is_background_buf_init()
 
     ! Allocate working memory:
     dimMO = MOinfo%DimInd1(1)
-    tmp_size = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
-    tmp_size = int(i8*tmp_size, kind=long)
-    call mem_alloc(tmp0, tmp_size)
+    tmp_size0 = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
+    tmp_size0 = int(i8*tmp_size0, kind=long)
 
-    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
-    tmp_size = int(i8*tmp_size, kind=long)
-    call mem_alloc(tmp1, tmp_size)
+    tmp_size1 = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
+    tmp_size1 = int(i8*tmp_size1, kind=long)
 
-    tmp_size = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
-    tmp_size = int(i8*tmp_size, kind=long)
-    call mem_alloc(tmp2, tmp_size)
+    tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
+    tmp_size2 = int(i8*tmp_size2, kind=long)
+    if (use_bg_buf) then
+       call mem_change_background_alloc(dble((tmp_size1+tmp_size2)*8.0E0_realk))
+
+       call mem_pseudo_alloc(tmp0, tmp_size0)
+       call mem_pseudo_alloc(tmp1, tmp_size1)
+       call mem_pseudo_alloc(tmp2, tmp_size2)
+    else
+       call mem_alloc(tmp0, tmp_size0)
+       call mem_alloc(tmp1, tmp_size1)
+       call mem_alloc(tmp2, tmp_size2)
+    end if
 
     call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
     call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
@@ -6802,8 +6810,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
                 & govoo,gvooo,gvoov,gvvoo)
 
-    call mem_dealloc(tmp1)
-    call mem_dealloc(tmp2)
+    if (use_bg_buf) then
+       call mem_pseudo_dealloc(tmp2)
+       call mem_pseudo_dealloc(tmp1)
+    else
+       call mem_dealloc(tmp2)
+       call mem_dealloc(tmp1)
+    end if
 
     if (ccmodel>MODEL_CC2) then
       call LSTIMER('MO-CCSD A2 B2 + comm',tcpu1,twall1,DECinfo%output)
@@ -6835,7 +6848,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call mem_dealloc(u2)
       call mem_dealloc(G_Pi)
       call mem_dealloc(H_aQ)
-      call mem_dealloc(tmp0)
+      if (use_bg_buf) then
+         call mem_pseudo_dealloc(tmp0)
+      else
+         call mem_dealloc(tmp0)
+      end if
        
       call mem_dealloc(gvoov)
       call mem_dealloc(gvvoo)
@@ -6932,7 +6949,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call mem_dealloc(u2)
     call mem_dealloc(G_Pi)
     call mem_dealloc(H_aQ)
-    call mem_dealloc(tmp0)
+    if (use_bg_buf) then
+       call mem_pseudo_dealloc(tmp0)
+    else
+       call mem_dealloc(tmp0)
+    end if
 
     call mem_dealloc(gvoov)
     call mem_dealloc(gvvoo)

@@ -956,8 +956,6 @@ contains
 
        ! Some models are not compatible with DECNP
        select case(DECinfo%ccmodel) 
-       case (MODEL_CCSDpT)
-          call lsquit("CCSD(T) model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_RPA)
           call lsquit("RPA model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_SOSEX)

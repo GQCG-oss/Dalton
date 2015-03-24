@@ -564,7 +564,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       FragEnergies_tmp = 0.0E0_realk
    
       if (DECinfo%DECNP) then
-         call decnp_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
+         call solver_decnp_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
             & VOVO_local,occ_orbitals,FragEnergies(:,:,cc_sol_o:cc_sol_v),FragEnergies_tmp)
       else
          call solver_energy_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
@@ -574,14 +574,25 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    
       if(ccmodel == MODEL_CCSDpT)then
-         ! now we calculate fourth-order and fifth-order energies
-         call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
-            & unocc_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
-            & FragEnergies_tmp,ccenergies(pT_4_o))
-   
-         call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
-            & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
-            & ccenergies(pT_5_o))
+         if (DECinfo%DECNP) then
+            ! now we calculate fourth-order and fifth-order energies
+            call ccsdpt_decnp_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
+               & unocc_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
+               & FragEnergies_tmp,ccenergies(pT_4_o))
+
+            call ccsdpt_decnp_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
+               & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
+               & ccenergies(pT_5_o))
+         else
+            ! now we calculate fourth-order and fifth-order energies
+            call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
+               & unocc_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
+               & FragEnergies_tmp,ccenergies(pT_4_o))
+
+            call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
+               & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
+               & ccenergies(pT_5_o))
+         end if
    
          ! calculate total (T) contributions:
          ccenergies(pT_full_o) = ccenergies(pT_4_o)+ccenergies(pT_5_o)
@@ -2853,10 +2864,18 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
       !we may use the difference between bytes and Freebytes now as the background buffer
       bytes_to_alloc = Freebytes - bytes
+      
+      if(DECinfo%PL>2)then
+         write (*,'("mem4",g7.2,"GB mem3",g7.2,"GB mem2",g7.2,"GB")')mem4/1024.0E0_realk**3,&
+            &mem3/1024.0E0_realk**3,mem2/1024.0E0_realk**3
+         write (*,'("Found free mem",g7.2,"GB and use",g7.2,"GB")')Freebytes/1024.0E0_realk**3,bytes/1024.0E0_realk**3
+         write (*,'("BG BUF: allocating",g7.2," GB")')bytes_to_alloc/1024.0E0_realk**3
+      endif
 
       if(bytes_to_alloc <= 0.0E0_realk) then
+         print *,Freebytes/1024.0**3,"GB free, need to alloc",bytes/1024.0**3,"GB"
          call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
-         & wrong counting",-1)
+         & not enough space",-1)
       endif
 
       if( local )then

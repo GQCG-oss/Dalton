@@ -40,8 +40,9 @@ public mem_dealloc
 public mem_pseudo_alloc
 public mem_pseudo_dealloc
 public mem_init_background_alloc
+public mem_change_background_alloc
 public mem_free_background_alloc
-public mem_is_background_buf_init
+public mem_is_background_buf_init,mem_get_bg_buf_n
 public mem_allocated_mem_real, mem_deallocated_mem_real
 public mem_allocated_global,mem_allocated_type_matrix
 !parameters
@@ -1910,70 +1911,73 @@ subroutine debug_mem_stats(lupri)
 
      IF (error_size.LT.0) THEN
         write(ERR,'(A8)') ' < zero '
-        ELSEIF (error_size.LT.1000) THEN
+     ELSEIF (error_size.LT.1000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E0_realk," B "
-        ELSEIF (error_size.LT.1000000) THEN
+     ELSEIF (error_size.LT.1000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-3_realk," kB"
-        ELSEIF (error_size.LT.1000000000) THEN
+     ELSEIF (error_size.LT.1000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-6_realk," MB"
 #ifdef VAR_INT64
-        ELSEIF (error_size.LT.1000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
-        ELSEIF (error_size.LT.1000000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-12_realk," TB"
-        ELSEIF (error_size.LT.1000000000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-15_realk," PB"
      ELSE
         write(ERR,'(F5.1,A3)') error_size*1E-18_realk," EB"
      ENDIF
 #else
-  ELSE
-     write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
-  ENDIF
+     ELSE
+        write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
+     ENDIF
 #endif
 
-  IF (max_mem_used_global.LT.0) THEN
-     write(GLOB,'(A8)') ' < zero '
+     IF (max_mem_used_global.LT.0) THEN
+        write(GLOB,'(A8)') ' < zero '
      ELSEIF (max_mem_used_global.LT.1000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
      ELSEIF (max_mem_used_global.LT.1000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
      ELSEIF (max_mem_used_global.LT.1000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
 #ifdef VAR_INT64
      ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
      ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
-  ELSE
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
-  ENDIF
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
+     ELSE
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
+     ENDIF
 #else
-ELSE
-   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
-ENDIF
+     ELSE
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
+     ENDIF
 #endif
 
-write(myoutput,*) 
-write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
-write(myoutput,*) 'The program was trying to allocate ',ERR,&
-   &' in addition to the ',GLOB,' already allocated.'
-write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
-write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
-write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'
-write(myoutput,*) 
-write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory statistics'
-write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as to what'
-write(myoutput,*) 'memory requirements are needed.'
-write(myoutput,*) 
-write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON...'
+     write(myoutput,*) 
+     write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
+     write(myoutput,*) 'The program was trying to allocate ',ERR,&
+        &' in addition to the ',GLOB,' already allocated.'
+     write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
+     write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
+     write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'
+     write(myoutput,*) 
+     write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory statistics'
+     write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as to what'
+     write(myoutput,*) 'memory requirements are needed.'
+     write(myoutput,*) 
+     write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON...'
+     
+     call stats_mem(myoutput)
+     flush(myoutput)
 
-call stats_mem(myoutput)
+     ! Quit
+     call lsquit(mylabel,-1)
 
-! Quit
-call lsquit(mylabel,-1)
+   end subroutine memory_error_quit
 
-end subroutine memory_error_quit
+
 !----- Background buffer handling -----!
 subroutine mem_init_background_alloc(bytes)
    implicit none
@@ -1994,6 +1998,47 @@ subroutine mem_init_background_alloc(bytes)
    buf_realk%n      = 1
 
 end subroutine mem_init_background_alloc
+subroutine mem_change_background_alloc(bytes,not_lazy)
+   implicit none
+   real(realk), intent(in) :: bytes
+   logical, intent(in), optional :: not_lazy
+   integer :: i
+   integer(kind=8) :: nelms
+   logical :: change
+
+   nelms = int(bytes/8.0E0_realk,kind=8)
+
+   !per default use lazy memory handling
+   change = (nelms>buf_realk%nmax)
+   if(present(not_lazy)) change = not_lazy
+
+   if(buf_realk%n/=1)then
+      do i = 1, buf_realk%n-1
+         print *,"address not freed",i
+      enddo
+      call lsquit("ERROR(mem_change_background_alloc): pointers is still associated, not possible",-1)
+   endif
+
+   if(.not.buf_realk%init)then
+      call lsquit("ERROR(mem_free_background_alloc): background buffer not initialized",-1)
+   endif
+
+
+   if( change )then
+      print *,"mem_change_bg_alloc: Allocating ",bytes/(1024.0_realk**3),"GB"
+
+      call mem_dealloc(buf_realk%p,buf_realk%c)
+
+      call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+
+      buf_realk%init   = .true.
+      buf_realk%offset = 0
+      buf_realk%nmax   = nelms
+
+      buf_realk%n      = 1
+   endif
+
+end subroutine mem_change_background_alloc
 subroutine mem_free_background_alloc()
    implicit none
    integer :: i
@@ -2081,6 +2126,11 @@ function mem_is_background_buf_init() result(init)
    logical :: init
    init = buf_realk%init
 end function mem_is_background_buf_init
+function mem_get_bg_buf_n() result(n)
+   implicit none
+   integer(kind=8) :: n
+   n = buf_realk%n
+end function mem_get_bg_buf_n
 
 subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
    implicit none

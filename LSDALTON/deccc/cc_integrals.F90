@@ -827,7 +827,7 @@ contains
     integer :: ntot ! total number of MO
     real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
     real(realk), pointer :: gmo(:), tmp1(:), tmp2(:)
-    integer(kind=long)   :: gmosize, tmp_size
+    integer(kind=long)   :: gmosize, tmp_size1,tmp_size2
     integer :: Nbatch, PQ_batch, dimP, dimQ, idb, iub
     integer :: P_sta, P_end, Q_sta, Q_end
     type(MObatchInfo), intent(out) :: MOinfo
@@ -863,7 +863,7 @@ contains
     logical :: print_debug
 
     ! MPI variables:
-    logical :: master, local, gdi_lk, gup_lk
+    logical :: master, local, gdi_lk, gup_lk, use_bg_buf
     integer :: myload, win
     integer(kind=ls_mpik) :: ierr, myrank, nnod, dest
     integer, pointer      :: tasks(:)
@@ -874,6 +874,7 @@ contains
 
     call time_start_phase(PHASE_WORK)
     ntot = no + nv
+    use_bg_buf = mem_is_background_buf_init()
 
     ! Set integral info
     ! *****************
@@ -1120,12 +1121,20 @@ contains
     call mem_alloc(gmo,gmosize)
 
     ! working arrays
-    tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
-    tmp_size = int(i8*ntot*tmp_size, kind=long)
-    call mem_alloc(tmp1, tmp_size)
-    tmp_size = max(MaxActualDimAlpha*MaxActualDimGamma, dimP*dimP)
-    tmp_size = int(i8*ntot*ntot*tmp_size, kind=long)
-    call mem_alloc(tmp2, tmp_size)
+    tmp_size1 = max(nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*MaxActualDimGamma*dimP)
+    tmp_size1 = int(i8*ntot*tmp_size1, kind=long)
+    tmp_size2 = max(MaxActualDimAlpha*MaxActualDimGamma, dimP*dimP)
+    tmp_size2 = int(i8*ntot*ntot*tmp_size2, kind=long)
+
+    if(use_bg_buf)then
+       call mem_change_background_alloc(dble((tmp_size1+tmp_size2)*8.0E0_realk))
+
+       call mem_pseudo_alloc(tmp1, tmp_size1)
+       call mem_pseudo_alloc(tmp2, tmp_size2)
+    else
+       call mem_alloc(tmp1, tmp_size1)
+       call mem_alloc(tmp2, tmp_size2)
+    endif
 
 
     ! Sanity checks for matrix sizes which need to be filled:
@@ -1366,8 +1375,13 @@ contains
 
     ! Free matrices:
     call mem_dealloc(gao)
-    call mem_dealloc(tmp1)
-    call mem_dealloc(tmp2)
+    if(use_bg_buf)then
+       call mem_pseudo_dealloc(tmp2)
+       call mem_pseudo_dealloc(tmp1)
+    else
+       call mem_dealloc(tmp2)
+       call mem_dealloc(tmp1)
+    endif
     call mem_dealloc(gmo)
     call mem_dealloc(Cov)
     call mem_dealloc(CP)
@@ -1417,6 +1431,11 @@ contains
     !===========================================================
     ! Get MO batch size depending on MO-ccsd residual routine.
     call get_currently_available_memory(MemFree)
+
+    if(mem_is_background_buf_init())then
+       MemFree = 0.8E0_realk*MemFree + (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
+    endif
+
     if (nnod>1) then
 
        ! SELECT SCHEME (storage of MO int.): 
@@ -2134,7 +2153,7 @@ contains
     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
     real(realk), pointer :: w1(:),w2(:)
-    real(realk) :: MemFree,nrm
+    real(realk) :: MemFree,nrm, MemToUse
     integer(kind=long) :: maxsize
     logical :: master
     integer(kind=ls_mpik) :: me, nnod
@@ -2145,7 +2164,7 @@ contains
     real(realk), pointer :: work(:)
     integer(kind=long) :: w1size, w2size
     real(realk), parameter :: fraction_of = 0.8E0_realk
-    logical :: dynamic_load,completely_distributed
+    logical :: dynamic_load,completely_distributed, use_bg_buf
     integer :: nbuffs
     type(tensor) :: Cint, int1, int2, int3, t1_par, t2_par, t3_fa, t4_fg
     integer :: ndimA,  ndimB,  ndimC,  ndimD
@@ -2153,6 +2172,7 @@ contains
     integer :: startA, startB, startC, startD
     integer :: dims(4), tdim(4), starts(4), order4(4)
     integer :: bs,as,gs,n1s,n2s,n3s,n4s
+    integer(kind=8) :: nbu
     real(realk) :: tot_intloop,         tot_intloop_min,     tot_intloop_max
     real(realk) :: time_t4fg_tot_max,   time_t4fg_tot_min,   time_t4fg_tot,    time_t4fg 
     real(realk) :: time_t3fa_tot_max,   time_t3fa_tot_min,   time_t3fa_tot,    time_t3fa
@@ -2274,6 +2294,13 @@ contains
     !==================================================
 
 
+    use_bg_buf = mem_is_background_buf_init()
+    if(use_bg_buf)then
+       nbu = mem_get_bg_buf_n()
+    else
+       nbu = 0
+    endif
+
     ! Get free memory and determine maximum batch sizes
     ! -------------------------------------------------
     if(master)then
@@ -2296,7 +2323,17 @@ contains
        ENDIF
 
        call get_currently_available_memory(MemFree)
+       
+       MemToUse = MemFree * fraction_of
+       if( use_bg_buf )then
+          MemToUse = MemToUse + (dble(nbu)*8.0E0_realk)/(1024.0E0_realk**3)
+       endif
 
+       if(DECinfo%PL>3)then
+          write(*,'("CC integrals: operating with ",g7.2,"GB")')MemToUse
+       endif
+
+       maxsize = 0.0E0_realk
 
        nba = nb
        nbg = nb
@@ -2310,7 +2347,7 @@ contains
 
              maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
 
-             if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+             if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse )then
 
                 if(i <= MinAObatch .and. k <= MinAObatch .and. collective)then
 
@@ -2341,7 +2378,7 @@ contains
 
                 maxsize = w1size + w2size
 
-                if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+                if(float(maxsize*8)/(1024.0**3) > fraction_of*MemToUse )then
 
                    nba = i
                    nbg = k - 1
@@ -2353,6 +2390,7 @@ contains
              enddo gamm_nc
           enddo alp_nc
        endif
+
 
 
        if(DECinfo%manual_batchsizes)then
@@ -2379,8 +2417,8 @@ contains
           &nbuffs,INTSPEC,MyLsItem%setting)
 
        if(DECinfo%PL>2)then
-          print *,"INFO(get_mo_integral_par): c",collective,"MinAObatch",MinAObatch,&
-             &"nba",nba,"nbg",nbg,"size 1",w1size,"size 2",w2size
+          print *,"INFO(get_mo_integral_par): collective:",collective,", completely distributed:",completely_distributed,&
+             &"MinAObatch:",MinAObatch,"nba:",nba,"nbg:",nbg,"size 1:",w1size,"size 2:",w2size
        endif
 
        maxsize = w1size
@@ -2393,7 +2431,7 @@ contains
           maxsize    = huge(maxsize)/8
        endif
 
-       if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree)then
+       if(float(maxsize*8)/(1024.0**3) > MemToUse)then
           if( local )then
              call lsquit("ERROR(get_mo_integral_par): not enough memory, try running with MPI/more nodes",-1)
           else
@@ -2415,7 +2453,7 @@ contains
 
                    maxsize = w1size + w2size
 
-                   if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
+                   if(float(maxsize*8)/(1024.0**3) > MemToUse )then
 
                       nba = i
                       nbg = k - 1
@@ -2436,6 +2474,7 @@ contains
 
     endif
 
+
     if(.not.local)then
        integral%access_type = AT_ALL_ACCESS
        trafo1%access_type   = AT_ALL_ACCESS
@@ -2451,6 +2490,7 @@ contains
        call time_start_phase( PHASE_WORK )
 #endif
     endif
+
 
     if(completely_distributed) then
        dynamic_load = .false.
@@ -2578,15 +2618,32 @@ contains
     w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
        &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
 
-    call mem_alloc( w1, w1size )
-    call mem_alloc( w2, w2size )
+    maxsize = w1size + w2size
+    if( collective )then
+       maxsize = maxsize + (i8*n1)*n2*n3*n4
+    endif
+    
+
+    if( use_bg_buf ) then
+       call mem_change_background_alloc(dble(maxsize*8.0E0_realk))
+
+       call mem_pseudo_alloc( w1, w1size )
+       call mem_pseudo_alloc( w2, w2size )
+    else
+       call mem_alloc( w1, w1size )
+       call mem_alloc( w2, w2size )
+    endif
 
     !First touch
     w1(1) = 0.0E0_realk
     w2(1) = 0.0E0_realk
 
     if(collective)then
-       call mem_alloc(work,(i8*n1)*n2*n3*n4)
+       if( use_bg_buf ) then
+          call mem_pseudo_alloc(work,(i8*n1)*n2*n3*n4)
+       else
+          call mem_alloc(work,(i8*n1)*n2*n3*n4)
+       endif
        work = 0.0E0_realk
     endif
 
@@ -3014,9 +3071,6 @@ contains
     endif
 #endif
 
-    call mem_dealloc( w1 )
-    call mem_dealloc( w2 )
-
 #ifdef VAR_MPI
 
     call time_start_phase( PHASE_IDLE )
@@ -3026,16 +3080,31 @@ contains
        call time_start_phase( PHASE_COMM )
        call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
-       call tensor_convert(work,integral, order = order )
+       call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size   )
     endif
 
 #else
 
 
     call time_start_phase( PHASE_WORK )
-    call tensor_convert(work,integral, order = order )
+    call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size )
 
 #endif
+    if(collective)then
+       if( use_bg_buf )then
+          call mem_pseudo_dealloc( work )
+       else
+          call mem_dealloc( work )
+       endif
+    endif
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc( w2 )
+       call mem_pseudo_dealloc( w1 )
+    else
+       call mem_dealloc( w2 )
+       call mem_dealloc( w1 )
+    endif
+
 
     if(.not.dynamic_load)then
        call mem_dealloc(jobdist)
@@ -3181,7 +3250,6 @@ contains
     endif
 
 
-    if(collective) call mem_dealloc( work )
 
     if(DECinfo%PL>2)then
        call print_norm(integral," NORM of the integral :",print_on_rank=0)
