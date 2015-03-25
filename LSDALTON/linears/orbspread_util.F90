@@ -225,7 +225,7 @@ integer                              :: norb
 type(orbspread_data), intent(inout)  :: inp
 
 real(realk)  :: diagR(norb,3), tmp(norb)
-integer      :: x, m,i
+integer      :: x, m
 
   m=inp%m
 
@@ -238,10 +238,8 @@ integer      :: x, m,i
   call mat_dmul(tmp,inp%Q,'n',-2E0_realk*m,0E0_realk,G)
 
   do x=1,3
-     do i=1,norb
-        tmp(i) = diagR(i,x)*(inp%spread2(i)**(m-1))
-     enddo
-     call mat_dmul(tmp,inp%R(x),'n',4E0_realk*m,1E0_realk,G)
+  tmp = diagR(:,x)*(inp%spread2**(m-1))
+  call mat_dmul(tmp,inp%R(x),'n',4E0_realk*m,1E0_realk,G)
   enddo
 
   call mat_trans(G,inp%tmpM(1))
@@ -261,7 +259,7 @@ type(orbspread_data), intent(in) :: inp
 type(matrix) :: P
 integer :: m,norb
 real(realk) :: diagQ(norb),diagR(norb,3)
-real(realk) :: spm1(norb),spm2(norb),tmpV(norb)
+real(realk) :: spm1(norb),spm2(norb)
 integer :: i,x
 type(matrix) :: tmp,tmp1
 real(realk),pointer :: tmpvec(:)
@@ -274,21 +272,12 @@ do x=1,3
   call mat_extract_diagonal(diagR(:,x),inp%R(x))
 end do
 
-do i=1,norb
-   spm1(i) = inp%spread2(i)**(m-1)
-enddo
-if (m>1)then
-   do i=1,norb
-      spm2(i)=inp%spread2(i)**(m-2)
-   enddo
-endif
+spm1= inp%spread2**(m-1)
+if (m>1) spm2=inp%spread2**(m-2)
 call mat_dger(dble(2*m),diagQ,spm1,P)
 
 do x=1,3
-   do i=1,norb
-      tmpV(i) = spm1(i)*diagR(i,x)
-   enddo
-   call mat_dger(-dble(4*m),tmpV,diagR(:,x),P)
+  call mat_dger(-dble(4*m),spm1*diagR(:,x),diagR(:,x),P)
 end do
 
 call mat_init(tmp,P%nrow,P%ncol)
@@ -322,10 +311,7 @@ tmpvec=1.0d0
 call mat_dger(-dble(2*m),diagQ*spm1,tmpvec,P)
 
 do x=1,3
-   do i=1,norb
-      tmpV(i) = spm1(i)*diagR(i,x)*diagR(i,x)
-   enddo
-   call mat_dger(dble(4*m),tmpV,tmpvec,P)
+   call mat_dger(dble(4*m),spm1*diagR(:,x)*diagR(:,x),tmpvec,P)
 end do
 call mem_dealloc(tmpvec)
 
