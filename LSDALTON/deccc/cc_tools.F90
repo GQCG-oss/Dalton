@@ -2897,79 +2897,64 @@ module cc_tools_module
          call tensor_reorder(ccsd_doubles,[1,2,4,3])
 
       end if
-      !if (.not.DECinfo%OnlyOccPart) then
-      !   eccsdpt_exc = 0.0_realk
-      !   energy_res_cou = 0.0E0_realk
-      !   energy_res_exc = 0.0E0_realk
-      !   ccsdpt_e4 = 0.0E0_realk
-      !   !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
-      !   !$OMP REDUCTION(+:energy_res_cou,eccsdpt_cou_virt), &
-      !   !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals)
-      !   do b=1,nvirt
-      !      atomJ = virt_orbitals(b)%CentralAtom
-      !      do a=1,nvirt
-      !         atomI = virt_orbitals(a)%CentralAtom
-        
-      !         do j=1,nocc
-      !            do i=1,nocc
-        
-      !               energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
-      !               eccsdpt_cou_virt(AtomI,AtomJ) = eccsdpt_cou_virt(AtomI,AtomJ) + energy_tmp
-      !               energy_res_cou = energy_res_cou + energy_tmp
-        
-      !            end do
-      !         end do
-        
-      !      end do
-      !   end do
-      !   !$OMP END PARALLEL DO
-        
-      !   ! reorder from (a,b,i,j) to (a,b,j,i)
-      !   call tensor_reorder(ccsd_doubles,[1,2,4,3])
-        
-      !   !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp), &
-      !   !$OMP REDUCTION(+:energy_res_exc,eccsdpt_exc), &
-      !   !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals)
-      !   do b=1,nvirt
-      !      atomJ = virt_orbitals(b)%CentralAtom
-      !      do a=1,nvirt
-      !         atomI = virt_orbitals(a)%CentralAtom
-        
-      !         do j=1,nocc
-      !            do i=1,nocc
-        
-      !               energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
-      !               eccsdpt_exc(AtomI,AtomJ) = eccsdpt_exc(AtomI,AtomJ) + energy_tmp
-      !               energy_res_exc = energy_res_exc + energy_tmp
-        
-      !            end do
-      !         end do
-        
-      !      end do
-      !   end do
-      !   !$OMP END PARALLEL DO
-        
-      !   ! get total fourth--order energy contribution
-      !   eccsdpt_cou_virt(:,:) = 4.0E0_realk * eccsdpt_cou_virt(:,:) &
-      !      & - 2.0E0_realk * eccsdpt_exc
-      !   ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
-        
-      !   ! for the e4 pair fragment energy matrix,
-      !   ! we put the pair energy Delta E_IJ into both entry (I,J) and (J,I)
-        
-      !   do AtomJ=1,nfrags
-      !      do AtomI=AtomJ+1,nfrags
-      !         eccsdpt_cou_virt(AtomI,AtomJ) = eccsdpt_cou_virt(AtomI,AtomJ) &
-      !            & + eccsdpt_cou_virt(AtomJ,AtomI)
-      !         eccsdpt_cou_virt(AtomJ,AtomI) =  eccsdpt_cou_virt(AtomI,AtomJ)
-      !      end do
-      !   end do
-        
-      !   ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
-      !   call tensor_reorder(ccsd_doubles,[1,2,4,3])
-      !end if
-
-
+      if (.not.DECinfo%OnlyOccPart) then
+         eccsdpt_exc = 0.0_realk
+         energy_res_cou = 0.0E0_realk
+         energy_res_exc = 0.0E0_realk
+         ccsdpt_e4 = 0.0E0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp), &
+         !$OMP REDUCTION(+:energy_res_cou,eccsdpt_cou_virt), &
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals)
+         do b=1,nvirt
+            do a=1,nvirt
+               atomI = virt_orbitals(a)%CentralAtom
+       
+               do j=1,nocc
+                  do i=1,nocc
+       
+                     energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                     eccsdpt_cou_virt(AtomI,AtomI) = eccsdpt_cou_virt(AtomI,AtomI) + energy_tmp
+                     energy_res_cou = energy_res_cou + energy_tmp
+       
+                  end do
+               end do
+       
+            end do
+         end do
+         !$OMP END PARALLEL DO
+       
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(ccsd_doubles,[1,2,4,3])
+       
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp), &
+         !$OMP REDUCTION(+:energy_res_exc,eccsdpt_exc), &
+         !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,virt_orbitals)
+         do b=1,nvirt
+            do a=1,nvirt
+               atomI = virt_orbitals(a)%CentralAtom
+       
+               do j=1,nocc
+                  do i=1,nocc
+       
+                     energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
+                     eccsdpt_exc(AtomI,AtomI) = eccsdpt_exc(AtomI,AtomI) + energy_tmp
+                     energy_res_exc = energy_res_exc + energy_tmp
+       
+                  end do
+               end do
+       
+            end do
+         end do
+         !$OMP END PARALLEL DO
+       
+         ! get total fourth--order energy contribution
+         eccsdpt_cou_virt(:,:) = 4.0E0_realk * eccsdpt_cou_virt(:,:) &
+            & - 2.0E0_realk * eccsdpt_exc
+         ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+       
+         ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
+         call tensor_reorder(ccsd_doubles,[1,2,4,3])
+      end if
 
       ! ******************************************************************
       ! ************** done w/ energy for full molecule ******************
@@ -3007,29 +2992,50 @@ module cc_tools_module
       !   do E[5] energy part
       ! ***********************
 
-      ccsdpt_e5 = 0.0_realk
-      energy_tmp = 0.0e0_realk
-      !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
-      !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
-      !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_occ)
-      do i=1,nocc
-         AtomI = occ_orbitals(i+offset)%secondaryatom
-         do a=1,nvirt
+      if (.not.DECinfo%OnlyVirtPart) then
+         ccsdpt_e5 = 0.0_realk
+         energy_tmp = 0.0e0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI),&
+         !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals),&
+         !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_occ)
+         do i=1,nocc
+            AtomI = occ_orbitals(i+offset)%secondaryatom
+            do a=1,nvirt
 
-            energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
-            e5_occ(AtomI,AtomI) = e5_occ(AtomI,AtomI) + energy_tmp
-            ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+               energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+               e5_occ(AtomI,AtomI) = e5_occ(AtomI,AtomI) + energy_tmp
+               ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
+            end do
          end do
-      end do
-      !$OMP END PARALLEL DO
+         !$OMP END PARALLEL DO
 
-      ! get total fifth-order energy correction
-      e5_occ(:,:) = 2.0E0_realk * e5_occ(:,:)
-      ccsdpt_e5 = 2.0E0_realk * ccsdpt_e5
+         ! get total fifth-order energy correction
+         e5_occ(:,:) = 2.0E0_realk * e5_occ(:,:)
+         ccsdpt_e5 = 2.0E0_realk * ccsdpt_e5
+      end if
+      if (.not.DECinfo%OnlyOccPart) then
+         ccsdpt_e5 = 0.0_realk
+         energy_tmp = 0.0e0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomA),&
+         !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,unocc_orbitals),&
+         !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_virt)
+         do i=1,nocc
+            do a=1,nvirt
+               AtomA = unocc_orbitals(a)%secondaryatom
 
-      ! virtual partioning is the same as occupied for [5]:
-      !e5_virt(:,:) = e5_occ(:,:)
+               energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+               e5_virt(AtomA,AtomA) = e5_virt(AtomA,AtomA) + energy_tmp
+               ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ! get total fifth-order energy correction
+         e5_virt(:,:) = 2.0E0_realk * e5_virt(:,:)
+         ccsdpt_e5 = 2.0E0_realk * ccsdpt_e5
+      end if
 
 
       ! ******************************
