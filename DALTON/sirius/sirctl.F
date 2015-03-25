@@ -64,6 +64,9 @@ C
 #if defined (HAS_PCMSOLVER)
       use pcmmod_cfg
 #endif
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_init
+#endif
 
 #include "implicit.h"
 C
@@ -179,6 +182,13 @@ Cbm initialized PCM_save
       IF (PCM) THEN
          CALL PCMSOLVNT(WORK,LWORK)
       END IF
+
+
+#ifdef ENABLE_XCINT
+      ! initialize XCint interface
+      call xcint_init()
+#endif
+
 C
 C
 C ***************************************************

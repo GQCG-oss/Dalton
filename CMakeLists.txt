@@ -79,6 +79,7 @@ option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             
 
 option(ENABLE_SRDFT          "Enable srdft module"                              ON)
 # Gen1Int interface, OpenRSP and TDRSP needs QMatrix library
+# radovan: why is this commented out?
 #if(ENABLE_GEN1INT OR ENABLE_OPENRSP OR ENABLE_TDRSP)
 #    set(ENABLE_QMATRIX ON)
 #endif()

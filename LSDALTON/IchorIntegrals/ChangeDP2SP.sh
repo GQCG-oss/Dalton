@@ -34,6 +34,8 @@ list="AGC_CPU_BuildRJ000Gen AGC_CPU_BuildRJ000Seg1Prim AGC_CPU_HorizontalRecurre
 	sed "s/use IchorEriCoulombintegralCPUMcMspecREcoeffMod/use SPIchorEriCoulombintegralCPUMcMspecREcoeffMod/g" tmp2 > tmp1
 	sed "s/use IchorEriCoulombintegralCPUMcMspecLEcoeffMod/use SPIchorEriCoulombintegralCPUMcMspecLEcoeffMod/g" tmp1 > tmp2
 	sed "s/use IchorEriCoulombintegralCPUMcMspecL2EcoeffMod/use SPIchorEriCoulombintegralCPUMcMspecL2EcoeffMod/g" tmp2 > tmp1
+	sed "s/use IchorEriCoulombintegralCPUMcMspecL3EcoeffMod/use SPIchorEriCoulombintegralCPUMcMspecL3EcoeffMod/g" tmp2 > tmp1
+	sed "s/use IchorEriCoulombintegralCPUMcMspecL4EcoeffMod/use SPIchorEriCoulombintegralCPUMcMspecL4EcoeffMod/g" tmp2 > tmp1
 
 	mv tmp1 $i.SP.F90
    done

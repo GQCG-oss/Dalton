@@ -11,6 +11,8 @@ use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 use IchorEriCoulombintegralCPUMcMspecREcoeffMod
 use IchorEriCoulombintegralCPUMcMspecLEcoeffMod
 use IchorEriCoulombintegralCPUMcMspecL2EcoeffMod
+use IchorEriCoulombintegralCPUMcMspecL3EcoeffMod
+use IchorEriCoulombintegralCPUMcMspecL4EcoeffMod
 !private 
 !public :: Ichorbuild_Ecoeff_LHS,Ichorbuild_Ecoeff_RHS, printEcoeff
 

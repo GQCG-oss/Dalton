@@ -47,7 +47,8 @@ module ccsdpt_module
   
 #ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
-       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot
+       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot, &
+       & ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
   private
 #endif
 
@@ -1726,7 +1727,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    real(realk) :: tcpu,twall
+    real(realk) :: tcpu,twall,norm
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -8935,6 +8936,109 @@ contains
   end subroutine ccsdpt_contract_abc_222
 
 
+  !> \brief: calculate E[5] contribution to fragment decnp-ccsd(t) energy correction
+  !> \author: Pablo Baudin (from Janus Eriksen and Kasper Kristensen)
+  !> \date: Mar 2015
+  subroutine ccsdpt_decnp_e5_frag(MyFragment,ccsd_singles,ccsdpt_singles)
+
+    implicit none
+
+    !> fragment info
+    type(decfrag), intent(inout) :: MyFragment
+    ! ccsd and ccsd(t) singles amplitudes
+    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
+    real(realk) :: energy_tmp, ccsdpt_e5
+    logical :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
+    integer :: noccAOS,nunoccAOS,i,a
+    !> which partitioning schemes?
+    logical :: do_occ, do_virt
+
+    noccAOS = MyFragment%noccAOS
+    nunoccAOS = MyFragment%nunoccAOS
+
+    ! Sanity check
+    if(MyFragment%nEOSatoms/=1) then
+       print *, 'nEOSatoms ',MyFragment%nEOSatoms
+       call lsquit('ccsdpt_decnp_e5_frag called with wrong number of EOS atoms!',-1)
+    end if
+
+    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! based on SECONDARY assignment.
+    call secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+
+
+    ! ***********************
+    !   do E[5] energy part
+    ! ***********************
+
+    ! init energy reals to be on the safe side.
+    ! note: OccEnergyPT and VirtEnergyPT have been initialized in the e4 routine.
+    MyFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
+
+    do_occ = .false.
+    do_virt = .false.
+    if ((.not. DECinfo%OnlyOccPart) .and. (.not. DECinfo%OnlyVirtPart)) then
+       do_occ = .true.
+       do_virt = .true.
+    else if (DECinfo%OnlyOccPart .and. (.not. DECinfo%OnlyVirtPart)) then
+       do_occ = .true.
+    else if (DECinfo%OnlyVirtPart .and. (.not. DECinfo%OnlyOccPart)) then
+       do_virt = .true.
+    end if
+
+    ! *******************************
+    ! do occupied partitioning scheme
+    ! *******************************
+
+    if (do_occ) then
+       ! init temp energy
+       ccsdpt_e5 = 0.0E0_realk
+
+       iloop: do i=1,noccAOS
+          ! Only include contribution if consistent with secondary assignment
+          if(.not. SEC_occ(i)) cycle iloop
+          do a=1,nunoccAOS
+
+             energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+             ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+
+          end do
+       end do iloop
+       MyFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
+
+       ! insert into occ. part. scheme part
+       MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+          & + MyFragment%energies(FRAGMODEL_OCCpT5)
+    end if
+
+    ! *********************************
+    ! do unoccupied partitioning scheme
+    ! *********************************
+
+    if (do_virt) then 
+       ! init temp energy
+       ccsdpt_e5 = 0.0E0_realk
+
+       do i=1,noccAOS
+          aloop: do a=1,nunoccAOS
+             if(.not. SEC_unocc(a)) cycle aloop
+
+             energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+             ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+
+          end do aloop
+       end do
+       MyFragment%energies(FRAGMODEL_VIRTpT5) = 2.0E0_realk * ccsdpt_e5
+
+       ! insert into virt. part. scheme part
+       MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+          & + MyFragment%energies(FRAGMODEL_VIRTpT5)
+    end if
+
+  end subroutine ccsdpt_decnp_e5_frag
+
+
   !> \brief: calculate E[5] contribution to single fragment ccsd(t) energy correction
   !> \author: Janus Eriksen and Kasper Kristensen
   !> \date: september 2012
@@ -9365,6 +9469,278 @@ contains
   end subroutine ccsdpt_energy_e4_frag
 
 
+  !> \brief: calculate E[4] contribution to fragment decnp-ccsd(t) energy correction
+  !> \author: Pablo Baudin (based on Janus's routine)
+  !> \date: Mar 2015
+  subroutine ccsdpt_decnp_e4_frag(MyFragment,ccsd_doubles,ccsdpt_doubles,&
+                             & occ_contribs,virt_contribs,fragopt_pT)
+
+    implicit none
+
+    !> fragment info
+    type(decfrag), intent(inout) :: MyFragment
+    ! ccsd and ccsd(t) doubles amplitudes
+    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    !> is this called from inside the ccsd(t) fragment optimization routine?
+    logical, optional, intent(in) :: fragopt_pT
+    !> incomming orbital contribution vectors
+    real(realk), intent(inout) :: occ_contribs(MyFragment%noccAOS), virt_contribs(MyFragment%nunoccAOS)
+    !> integers
+    integer :: nocc_eos, nocc_aos, nvirt_eos, nvirt_aos, i,j,a,b, i_eos, j_eos, a_eos, b_eos
+    !> energy reals
+    real(realk) :: energy_tmp, energy_res_cou, energy_res_exc
+    !> which partitioning schemes?
+    logical :: do_occ, do_virt
+
+    ! init dimensions
+    nocc_eos = MyFragment%noccEOS
+    nvirt_eos = MyFragment%nunoccEOS
+    nocc_aos = MyFragment%noccAOS
+    nvirt_aos = MyFragment%nunoccAOS
+
+    ! **************************************************************
+    ! ************** do energy for single fragment *****************
+    ! **************************************************************
+
+    ! ***********************
+    !   do E[4] energy part
+    ! ***********************
+
+    ! init energy reals to be on the safe side
+    ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
+    !       as this (e4) routine is called before the e5 routine
+    MyFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
+
+    do_occ = .false.
+    do_virt = .false.
+
+    if ((.not. DECinfo%OnlyOccPart) .and. (.not. DECinfo%OnlyVirtPart)) then
+
+       do_occ = .true.
+       do_virt = .true.
+
+    else if (DECinfo%OnlyOccPart .and. (.not. DECinfo%OnlyVirtPart)) then
+
+       do_occ = .true.
+
+    else if (DECinfo%OnlyVirtPart .and. (.not. DECinfo%OnlyOccPart)) then
+
+       do_virt = .true.
+
+    end if
+
+    ! *******************************
+    ! do occupied partitioning scheme
+    ! *******************************
+
+    if (do_occ) then
+
+       energy_res_cou = 0.0E0_realk
+       energy_res_exc = 0.0E0_realk
+   
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,a,b,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nocc_aos,nvirt_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
+       do j=1,nocc_aos
+          do i=1,nocc_eos
+             i_eos = MyFragment%idxo(i)
+   
+             do b=1,nvirt_aos
+                do a=1,nvirt_aos
+   
+                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j) &
+                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j)
+                   energy_res_cou = energy_res_cou + energy_tmp
+   
+                   ! update contribution from aos orbital a
+                   virt_contribs(a) = virt_contribs(a) + energy_tmp
+   
+                   ! update contribution from aos orbital b 
+                   ! (only if different from aos orbital a to avoid double counting)
+                   if (a .ne. b) virt_contribs(b) = virt_contribs(b) + energy_tmp
+   
+                end do
+             end do
+   
+          end do
+       end do
+       !$OMP END PARALLEL DO
+   
+       ! reorder from (a,b,i,j) to (a,b,j,i)
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
+   
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,a,b,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nocc_aos,nvirt_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:virt_contribs)
+       do j=1,nocc_aos
+          do i=1,nocc_eos
+             i_eos = MyFragment%idxo(i)
+   
+             do b=1,nvirt_aos
+                do a=1,nvirt_aos
+   
+                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j) &
+                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j)
+                   energy_res_exc = energy_res_exc - energy_tmp
+   
+                   ! update contribution from aos orbital a
+                   virt_contribs(a) = virt_contribs(a) - energy_tmp
+   
+                   ! update contribution from aos orbital b 
+                   ! (only if different from aos orbital a to avoid double counting)
+                   if (a .ne. b) virt_contribs(b) = virt_contribs(b) - energy_tmp
+   
+                end do
+             end do
+   
+          end do
+       end do
+       !$OMP END PARALLEL DO
+   
+       !get total fourth--order energy contribution
+       MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
+   
+       ! insert into occ. part. scheme part
+       MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT4)
+
+    end if
+
+    ! *********************************
+    ! do unoccupied partitioning scheme
+    ! *********************************
+
+    if (do_virt) then
+
+       if (do_occ .and. do_virt) then
+
+          ! initially, reorder ccsd_doubles and ccsdpt_doubles
+          ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
+          ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
+          call tensor_reorder(ccsd_doubles,[3,4,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
+
+       else
+
+          ! initially, reorder ccsd_doubles and ccsdpt_doubles
+          ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
+          ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
+          call tensor_reorder(ccsd_doubles,[4,3,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
+
+       end if
+
+       energy_res_cou = 0.0E0_realk
+       energy_res_exc = 0.0E0_realk
+   
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,i,j,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nvirt_aos,nocc_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
+       do b=1,nvirt_aos
+          do a=1,nvirt_eos
+             a_eos = MyFragment%idxu(a)
+   
+             do j=1,nocc_aos
+                do i=1,nocc_aos
+   
+                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b) &
+                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b)
+                   energy_res_exc = energy_res_exc - energy_tmp
+   
+                   ! update contribution from aos orbital i
+                   occ_contribs(i) = occ_contribs(i) - energy_tmp
+   
+                   ! update contribution from aos orbital j 
+                   ! (only if different from aos orbital i to avoid double counting)
+                   if (i .ne. j) occ_contribs(j) = occ_contribs(j) - energy_tmp
+   
+                end do
+             end do
+   
+          end do
+       end do
+       !$OMP END PARALLEL DO
+   
+       ! reorder form (j,i,a,b) to (i,j,a,b)
+       call tensor_reorder(ccsd_doubles,[2,1,3,4])
+   
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,i,j,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nvirt_aos,nocc_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
+       do b=1,nvirt_aos
+          do a=1,nvirt_eos
+             a_eos = MyFragment%idxu(a)
+   
+             do j=1,nocc_aos
+                do i=1,nocc_aos
+   
+                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b) &
+                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b)
+                   energy_res_cou = energy_res_cou + energy_tmp
+   
+                   ! update contribution from aos orbital i
+                   occ_contribs(i) = occ_contribs(i) + energy_tmp
+   
+                   ! update contribution from aos orbital j 
+                   ! (only if different from aos orbital i to avoid double counting)
+                   if (i .ne. j) occ_contribs(j) = occ_contribs(j) + energy_tmp
+   
+                end do
+             end do
+   
+          end do
+       end do
+       !$OMP END PARALLEL DO
+   
+       !get total fourth--order energy contribution
+       MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
+   
+       ! insert into virt. part. scheme part
+       MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+          & + MyFragment%energies(FRAGMODEL_VIRTpT4)
+
+    end if
+
+    ! ******************************
+    !   done with E[4] energy part
+    ! ******************************
+
+    ! ************************************************************************
+    !   as we need to reuse the ccsd doubles in the fragment optimization,
+    !   we here reorder back into (a,i,b,j) sequence IF fragopt_pT == .true. 
+    ! ************************************************************************
+
+    if (present(fragopt_pT)) then
+
+       if (do_occ .and. (.not. do_virt)) then
+
+          ! reorder from (a,b,j,i) to (a,i,b,j)
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[1,4,2,3])
+
+       else if (do_virt .and. (.not. do_virt)) then
+
+          ! reorder from (i,j,a,b) to (a,i,b,j)
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
+
+       else if (do_occ .and. do_virt) then
+
+          ! reorder from (i,j,a,b) to (a,i,b,j)
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
+
+       end if
+
+    end if
+
+    ! *******************************************************************
+    ! ************** done w/ energy for single fragment *****************
+    ! *******************************************************************
+
+  end subroutine ccsdpt_decnp_e4_frag
+
+
   !> \brief: calculate E[4] contribution to pair fragment ccsd(t) energy correction
   !> \author: Janus Eriksen
   !> \date: september 2012
@@ -9611,7 +9987,7 @@ contains
 
       call mem_dealloc(dopair_occ)
 
-    else if (do_virt .and. (.not. do_occ)) then
+       else if (do_virt .and. (.not. do_occ)) then
 
       call mem_dealloc(dopair_virt)
 
@@ -10023,7 +10399,8 @@ contains
           do i=1,nocc
 
              ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             !call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             call dgemv('N',m,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),1,0.0E0_realk,tmp1,1)
 
              ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
              ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
@@ -10085,7 +10462,8 @@ contains
           do i=1,nocc
 
              ! for description, see mpi section above
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             !call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             call dgemv('N',m,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),1,0.0E0_realk,tmp1,1)
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,vvvo%elm4(:,:,:,i))
 
@@ -10122,8 +10500,6 @@ contains
     call mem_dealloc(distribution)
 
 #endif
-
-    call print_norm(vvvo,"VVVO norm",print_on_rank=0)
 
     ! free stuff
     ! **********
