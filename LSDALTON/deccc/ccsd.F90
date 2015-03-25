@@ -5079,7 +5079,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Go through that only if the transformation has to be performed
      if(traf.or.me==0)then
 
-        if(s==4)then
+        if(s==4.or.s==5)then
            faif = fai
            lead = no * nv
            w2size = o2v2
@@ -5112,7 +5112,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !*************************
 
         !Reorder gvvoo [a c k i] -> goovv [a i c k]
-        if(s==4)then
+        if(s==5)then
+           call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w2)
+        else if(s==4)then
            call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w2)
         else if(s==3)then
            call array_reorder_4d(1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,4,2],0.0E0_realk,w1)
@@ -5122,7 +5124,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
         !Reorder t [a d l i] -> t [a i d l]
-        if(s==4)then
+        if(s==4.or.s==5)then
            call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w3)
            !w3 = 0.0E0_realk
            !call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
@@ -5139,7 +5141,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !stop 0
         !SCHEME 4 AND 3 because of w1 being buffer before
         !Reorder govov [k d l c] -> govov [d l c k]
-        if(s==3.or.s==4)then
+        if(s==3.or.s==4.or.s==5)then
            call array_reorder_4d(1.0E0_realk,govov%elm1,no,nv,no,nv,[2,3,4,1],0.0E0_realk,w1)
         endif
 
@@ -5154,7 +5156,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 2         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !(-1) * C [a i c k] * t [c k b j] = preOmC [a i b j]
-        if(s==4)then
+        if(s==4.or.s==5)then
            w1=0.0E0_realk
            call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w3,no*nv,0.0E0_realk,w1(fai),no*nv)
         else if(s==3)then
@@ -5171,7 +5173,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       Omega update           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if(s==3.or.s==4)then
+        if(s==3.or.s==4.or.s==5)then
            !contribution 1: 0.5*preOmC [a i b j] -> =+ Omega [a b i j]
            call array_reorder_4d(0.5E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
            !contribution 3: preOmC [a j b i] -> =+ Omega [a b i j]
@@ -5189,7 +5191,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !************************
         !(-1) * gvvoo [a c k i] -> + 2*gvoov[a i k c] = L [a i k c]
 
-        if(s==4)then
+        if(s==5)then
+           w2=0.0e0_realk
+           ! gvoov is already in the right order
+           call daxpy(nv*no*nv*no,2.0E0_realk,gvoov%elm1,1,w2,1)
+           call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,nv,no,no,[1,4,3,2],1.0E0_realk,w2)
+        else if(s==4)then
            call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
            call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w2)
         else if(s==3)then
@@ -5202,7 +5209,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
         !Transpose u [d a i l] -> u [a i l d]
-        if(s==4)then
+        if(s==5)then
+           call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[1,3,4,2],0.0E0_realk,w3)
+        else if(s==4)then
            call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w3)
         else if(s==3)then
            call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
@@ -5213,7 +5222,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !SCHEME 3 AND 4, because of the reordering using w1
         !(-1) * govov [l c k d] + 2*govov[l d k c] = L [l d k c]
-        if(s==3.or.s==4)then
+        if(s==3.or.s==4.or.s==5)then
            call array_reorder_4d(2.0E0_realk,govov%elm1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,w1)
            call array_reorder_4d(-1.0E0_realk,govov%elm1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,w1)
         endif
@@ -5228,7 +5237,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 2         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! (0.5)*D[a i k c] * u [b j k c]^T  = preOmD [a i b j]
-        if(s==4)then
+        if(s==4.or.s==5)then
            w1=0.0E0_realk
            call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w3,nv*no,0.0E0_realk,w1(fai),nv*no)
         else if(s==3)then
@@ -5244,7 +5253,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       Omega update           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! preOmD [a i b j] -> =+ Omega [a b i j]
-        if(s==4.or.s==3)then
+        if(s==4.or.s==3.or.s==5)then
            call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
         endif
 
@@ -6534,12 +6543,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> Intermediate for B2 term:
     real(realk), pointer :: B2prep(:)
     !> 2 coulomb - exchange amplitudes:
-    real(realk), pointer :: u2(:,:,:,:) 
+    type(tensor) :: u2
     !> Intermediates used to calculate the E2, A1 and B1 terms:
     real(realk), pointer :: G_Pi(:),  H_aQ(:)
     !> T1-transforled MO integrals:
-    real(realk), pointer :: gvoov(:), gvvoo(:)
     real(realk), pointer :: goooo(:), govoo(:), gvooo(:)
+    type(tensor) ::  gvvoo, gvoov
 
     !> MPI info:
     integer, pointer :: joblist(:)
@@ -6557,6 +6566,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     logical :: print_debug, local_moccsd, use_bg_buf
     real(realk) :: tcpu, twall, tcpu1, twall1
     integer :: idb, iub
+    real(realk) :: time_CND_work,time_CND_comm
 
     call time_start_phase(PHASE_WORK)
 
@@ -6565,14 +6575,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     nullify(yocc)
     nullify(gmo)
     nullify(B2prep)
-    nullify(u2)
     nullify(G_Pi)
     nullify(H_aQ)
     nullify(tmp0)
     nullify(tmp1)
     nullify(tmp2)
-    nullify(gvoov)
-    nullify(gvvoo)
     nullify(goooo)
     nullify(govoo)
     nullify(gvooo)
@@ -6629,7 +6636,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
     call mem_alloc(gmo, int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
     call mem_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
-    call mem_alloc(u2, nvir,nvir,nocc,nocc)
     call mem_alloc(G_Pi, ntot*nocc)
     call mem_alloc(H_aQ, nvir*ntot)
 
@@ -6638,9 +6644,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size = int(i8*nvir*nocc*nocc*nocc, kind=long)
     call mem_alloc(govoo, tmp_size)
     call mem_alloc(gvooo, tmp_size)
-    tmp_size = int(i8*nocc*nvir*nocc*nvir, kind=long)
-    call mem_alloc(gvoov, tmp_size)
-    call mem_alloc(gvvoo, tmp_size)
+
+    call tensor_init(u2, [nvir,nvir,nocc,nocc],4)
+    call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4)
+    call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4)
+    call tensor_zero(u2)
+    call tensor_zero(gvoov)
+    call tensor_zero(gvvoo)
 
     ! start timings:
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -6672,12 +6682,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! Initialization
     !$OMP WORKSHARE
-    u2 = 0.0E0_realk
     B2prep = 0.0E0_realk
     G_Pi   = 0.0E0_realk
     H_aQ   = 0.0E0_realk
-    gvoov  = 0.0E0_realk
-    gvvoo  = 0.0E0_realk
     goooo  = 0.0E0_realk
     govoo  = 0.0E0_realk
     gvooo  = 0.0E0_realk
@@ -6687,8 +6694,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     ! Calculate  2*coulomb - exchange doubles amplitudes:
     ! ordered as u2[ab, ij] = 2*t2[ab, ij] - t2[ab, ji]
-    call daxpy(nvir*nvir*nocc*nocc,2.0E0_realk,t2%elm1,1,u2,1)
-    call array_reorder_3d(-1.0E0_realk,t2%elm1,nvir*nvir,nocc,nocc,[1,3,2],1.0E0_realk,u2)
+    call daxpy(nvir*nvir*nocc*nocc,2.0E0_realk,t2%elm1,1,u2%elm1,1)
+    call array_reorder_3d(-1.0E0_realk,t2%elm1,nvir*nvir,nocc,nocc,[1,3,2],1.0E0_realk,u2%elm1)
 
     call LSTIMER('MO-CCSD init calc.',tcpu1,twall1,DECinfo%output)
 
@@ -6783,8 +6790,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       ! Get intermediate for the calculation of residual
       call wrapper_get_intermediates(ccmodel,ntot,nocc,nvir,dimP,dimQ,P_sta,Q_sta,iter,gmo, &
-                         & xvir,yocc,t2%elm1,u2,goooo,B2prep,omega2%elm1,G_Pi,H_aQ, &
-                         & gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
+                         & xvir,yocc,t2%elm1,u2%elm1,goooo,B2prep,omega2%elm1,G_Pi,H_aQ, &
+                         & gvoov%elm1,gvvoo%elm1,govoo,gvooo,tmp0,tmp1,tmp2)
 
     end do BatchPQ
 
@@ -6808,7 +6815,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
-                & govoo,gvooo,gvoov,gvvoo)
+                & govoo,gvooo,gvoov%elm1,gvvoo%elm1)
 
     if (use_bg_buf) then
        call mem_pseudo_dealloc(tmp2)
@@ -6822,7 +6829,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call LSTIMER('MO-CCSD A2 B2 + comm',tcpu1,twall1,DECinfo%output)
 
       ! Get C2 and D2 terms
-      call wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo,nocc,nvir,omega2)
+      time_CND_work = 0.0E0_realk
+      time_CND_comm = 0.0E0_realk
+      call get_cnd_terms_mo_3n4(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo, &
+         & nocc,nvir,omega2,5,.false.,0_long,time_CND_work,time_CND_comm)
+
     end if
 
     nullify(tmp1)
@@ -6845,7 +6856,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call mem_dealloc(yocc)
       call mem_dealloc(gmo)
       call mem_dealloc(B2prep)
-      call mem_dealloc(u2)
       call mem_dealloc(G_Pi)
       call mem_dealloc(H_aQ)
       if (use_bg_buf) then
@@ -6854,8 +6864,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          call mem_dealloc(tmp0)
       end if
        
-      call mem_dealloc(gvoov)
-      call mem_dealloc(gvvoo)
+      call tensor_free(u2)
+      call tensor_free(gvoov)
+      call tensor_free(gvvoo)
       call mem_dealloc(goooo)
       call mem_dealloc(govoo)
       call mem_dealloc(gvooo)
@@ -6875,7 +6886,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     !                          GET MO-FOCK MATRICES
     call get_MO_fock_matrices(ccmodel,nbas,nocc,nvir,lampo,lampv,lamho,lamhv,tmp0, &
-                  & goooo,govoo,gvooo,gvoov,gvvoo,ppfock%elm1,pqfock%elm1, & 
+                  & goooo,govoo,gvooo,gvoov%elm1,gvvoo%elm1,ppfock%elm1,pqfock%elm1, & 
                   & qpfock%elm1,qqfock%elm1,fock%elm1,t1fock%elm1,MyLsItem)
 
     if (print_debug) then
@@ -6908,7 +6919,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        
       ! Calculate C1 term:
       ! Reorder u2[ac, ik] -> u2[ai, kc]
-      call array_reorder_4d(1.0E0_realk,u2,nvir,nvir,nocc,nocc,[1,3,4,2], & 
+      call array_reorder_4d(1.0E0_realk,u2%elm1,nvir,nvir,nocc,nocc,[1,3,4,2], & 
                 & 0.0E0_realk,tmp0)
        
       ! Omega_ai += u2[ai, kc] * F_kc 
@@ -6946,7 +6957,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call mem_dealloc(yocc)
     call mem_dealloc(gmo)
     call mem_dealloc(B2prep)
-    call mem_dealloc(u2)
     call mem_dealloc(G_Pi)
     call mem_dealloc(H_aQ)
     if (use_bg_buf) then
@@ -6955,8 +6965,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        call mem_dealloc(tmp0)
     end if
 
-    call mem_dealloc(gvoov)
-    call mem_dealloc(gvvoo)
+    call tensor_free(u2)
+    call tensor_free(gvoov)
+    call tensor_free(gvvoo)
     call mem_dealloc(goooo)
     call mem_dealloc(govoo)
     call mem_dealloc(gvooo)
@@ -7638,46 +7649,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
   end subroutine  mpi_reduction_after_main_loop
-
-
-  subroutine wrapper_get_C2_and_D2(tmp0,tmp1,tmp2,t2,u2,govov,gvoov,gvvoo,no,nv,omega2)
-
-    implicit none
-    
-    real(realk), intent(inout) :: tmp0(:)
-    real(realk), pointer :: tmp1(:), tmp2(:)
-    real(realk), intent(in) :: u2(:,:,:,:)
-    type(tensor) :: t2
-    type(tensor), intent(inout) :: omega2
-    type(tensor), intent(inout) :: govov
-    real(realk), intent(inout) :: gvoov(:), gvvoo(:)
-    integer, intent(in) :: no, nv
-
-    type(tensor) :: u2a, govova, gvvooa, gvoova
-    real(realk) :: time_CND_work,time_CND_comm
-
-    time_CND_work = 0.0E0_realk
-    time_CND_comm = 0.0E0_realk
-
-    call tensor_init(u2a, [nv,nv,no,no],4)
-    call array_reorder_3d(1.0E0_realk,u2,nv,nv,no*no,[2,1,3],0.0E0_realk,u2a%elm1)
-
-    ! gvoov [aijb] must be ordered as [ajbi]:
-    call tensor_init(gvoova,[nv,no,nv,no],4)
-    call array_reorder_4d(1.0E0_realk,gvoov,nv,no,no,nv,[1,3,4,2],0.0E0_realk,gvoova%elm1)
-
-    ! gvvoo [abij] must be ordered as [aijb]:
-    call tensor_init(gvvooa,[nv,no,no,nv],4)
-    call array_reorder_4d(1.0E0_realk,gvvoo,nv,nv,no,no,[1,3,4,2],0.0E0_realk,gvvooa%elm1)
-
-    call get_cnd_terms_mo_3n4(tmp0,tmp1,tmp2,t2,u2a,govov,gvoova,gvvooa, &
-       & no,nv,omega2,4,.false.,0_long,time_CND_work,time_CND_comm)
-
-    call tensor_free(u2a)
-    call tensor_free(gvoova)
-    call tensor_free(gvvooa)
-
-  end subroutine wrapper_get_C2_and_D2
 
 
   !> Purpose: Calculate fock matrices in MO basis using T1-transformed MO
