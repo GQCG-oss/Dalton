@@ -119,7 +119,7 @@ subroutine orbspread_hesslin(Hv,V,mu,norb,orbspread_input)!m,spread2,R,Q,tmpM)
      call mat_dmul(tmp,orbspread_input%R(x),'n',8E0_realk*m,1E0_realk,Hv)
 
      do i=1,norb
-        tmp = diagR(i,x)*(spread2(i)**(m-1))
+        tmp(i) = diagR(i,x)*(spread2(i)**(m-1))
      enddo
      call mat_dmul(tmp,orbspread_input%tmpM(x),'t',4E0_realk*m,1E0_realk,Hv)
 
