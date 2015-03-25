@@ -2377,8 +2377,8 @@ module cc_tools_module
    !
    !> Author:  Pablo Baudin (Based on Janus's routine)
    !> Date:    Feb. 2015
-   subroutine solver_decnp_full_occ(nocc,nvirt,nfrags,offset,t2,t1,integral,occ_orbitals,&
-         & FragEnergies,tmp_fragener)
+   subroutine solver_decnp_full(nocc,nvirt,nfrags,offset,t2,t1,integral,occ_orbitals,&
+            & virt_orbitals,FragOccEner,FragVirtEner,tmp_fragener)
 
       implicit none
 
@@ -2390,79 +2390,163 @@ module cc_tools_module
       integer, intent(in) :: nocc, nvirt, nfrags, offset
       !> occupied orbital information
       type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
-      !> etot
-      real(realk), dimension(nfrags,nfrags), intent(inout) :: FragEnergies, tmp_fragener
+      !> virtual orbital information
+      type(decorbital), dimension(nvirt), intent(inout) :: virt_orbitals
+      !> Fragment energies array:
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: FragOccEner
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: FragVirtEner
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: tmp_fragener
       !> integers
       integer :: i,j,a,b,atomI
       !> energy reals
       real(realk) :: energy_tmp_1, energy_tmp_2
+      real(realk), pointer :: t1p(:,:), t2p(:,:,:,:), inp(:,:,:,:)
 
-      ! *************************************************************
-      ! ************** do energy for full molecule ******************
-      ! *************************************************************
+      ! Pointer to avoid OMP problems:
+      inp => integral%elm4(:,:,:,:)
+      t2p => t2%elm4(:,:,:,:)
+      t1p => t1%elm2(:,:)
 
-      ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
-      ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
+      ! Get occupied partitioning energy:
+      if (.not.DECinfo%OnlyVirtPart) then
+         tmp_fragener=0.0e0_realk
+         energy_tmp_1=0.0e0_realk
+         energy_tmp_2=0.0e0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:FragOccEner),&
+         !$OMP SHARED(t2p,t1p,inp,nocc,nvirt,occ_orbitals,offset,DECinfo)
+         do j=1,nocc
+            do i=1,nocc
+               atomI = occ_orbitals(i+offset)%CentralAtom
 
-      !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
-      !$OMP REDUCTION(+:FragEnergies),&
-      !$OMP SHARED(t2,t1,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
-      do j=1,nocc
-         do i=1,nocc
-            atomI = occ_orbitals(i+offset)%CentralAtom
+               do b=1,nvirt
+                  do a=1,nvirt
 
-            do b=1,nvirt
-               do a=1,nvirt
+                     energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
+                     if(DECinfo%use_singles)then
+                        energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
+                     else
+                        energy_tmp_2 = 0.0E0_realk
+                     endif
+                     FragOccEner(AtomI,AtomI) = FragOccEner(AtomI,AtomI) &
+                        & + energy_tmp_1 + energy_tmp_2
 
-                  energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
-                  if(DECinfo%use_singles)then
-                     energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
-                  else
-                     energy_tmp_2 = 0.0E0_realk
-                  endif
-                  FragEnergies(AtomI,AtomI) = FragEnergies(AtomI,AtomI) &
-                     & + energy_tmp_1 + energy_tmp_2
-
+                  end do
                end do
+
             end do
-
          end do
-      end do
-      !$OMP END PARALLEL DO
+         !$OMP END PARALLEL DO
 
-      ! reorder from (a,b,i,j) to (a,b,j,i)
-      call tensor_reorder(integral,[1,2,4,3])
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
 
-      !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
-      !$OMP REDUCTION(+:tmp_fragener),&
-      !$OMP SHARED(t2,t1,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
-      do j=1,nocc
-         do i=1,nocc
-            atomI = occ_orbitals(i+offset)%CentralAtom
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:tmp_fragener),&
+         !$OMP SHARED(t2p,t1p,inp,nocc,nvirt,occ_orbitals,offset,DECinfo)
+         do j=1,nocc
+            do i=1,nocc
+               atomI = occ_orbitals(i+offset)%CentralAtom
 
-            do b=1,nvirt
-               do a=1,nvirt
+               do b=1,nvirt
+                  do a=1,nvirt
 
-                  energy_tmp_1 = t2%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
-                  if(DECinfo%use_singles)then
-                     energy_tmp_2 = t1%elm2(a,i) * t1%elm2(b,j) * integral%elm4(a,b,i,j)
-                  else
-                     energy_tmp_2 = 0.0E0_realk
-                  endif
-                  tmp_fragener(AtomI,AtomI) = tmp_fragener(AtomI,AtomI) &
-                     & + energy_tmp_1 + energy_tmp_2
+                     energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
+                     if(DECinfo%use_singles)then
+                        energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
+                     else
+                        energy_tmp_2 = 0.0E0_realk
+                     endif
+                     tmp_fragener(AtomI,AtomI) = tmp_fragener(AtomI,AtomI) &
+                        & + energy_tmp_1 + energy_tmp_2
 
+                  end do
                end do
+
             end do
-
          end do
-      end do
-      !$OMP END PARALLEL DO
+         !$OMP END PARALLEL DO
 
-      ! get total fourth--order energy contribution
-      FragEnergies = 2.0E0_realk * FragEnergies - tmp_fragener
+         ! get total fourth--order energy contribution
+         FragOccEner = 2.0E0_realk * FragOccEner - tmp_fragener
 
-   end subroutine solver_decnp_full_occ
+         ! reorder from (a,b,j,i) to (a,b,i,j)
+         call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
+      end if
+      if (.not.DECinfo%OnlyOccPart) then
+         tmp_fragener=0.0e0_realk
+         energy_tmp_1=0.0e0_realk
+         energy_tmp_2=0.0e0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:FragVirtEner),&
+         !$OMP SHARED(t2p,t1p,inp,nocc,nvirt,virt_orbitals,DECinfo)
+         do b=1,nvirt
+            do a=1,nvirt
+               atomI = virt_orbitals(a)%CentralAtom
+
+               do j=1,nocc
+                  do i=1,nocc
+
+                     energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
+                     if(DECinfo%use_singles)then
+                        energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
+                     else
+                        energy_tmp_2 = 0.0E0_realk
+                     endif
+                     FragVirtEner(AtomI,AtomI) = FragVirtEner(AtomI,AtomI) &
+                        & + energy_tmp_1 + energy_tmp_2
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
+
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:tmp_fragener),&
+         !$OMP SHARED(t2p,t1p,inp,nocc,nvirt,virt_orbitals,DECinfo)
+         do b=1,nvirt
+            do a=1,nvirt
+               atomI = virt_orbitals(a)%CentralAtom
+
+               do j=1,nocc
+                  do i=1,nocc
+
+                     energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
+                     if(DECinfo%use_singles)then
+                        energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
+                     else
+                        energy_tmp_2 = 0.0E0_realk
+                     endif
+                     tmp_fragener(AtomI,AtomI) = tmp_fragener(AtomI,AtomI) &
+                        & + energy_tmp_1 + energy_tmp_2
+
+                  end do
+               end do
+
+            end do
+         end do
+         !$OMP END PARALLEL DO
+
+         FragVirtEner(:,:) = 2.0E0_realk * FragVirtEner(:,:) - tmp_fragener
+
+         ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
+         call tensor_reorder(integral,[1,2,4,3])
+
+      end if
+
+      inp => null()
+      t2p => null()
+      t1p => null()
+
+   end subroutine solver_decnp_full
 
 
    !> \brief: calculate E[4] contribution to ccsd(t) energy correction for full molecule.

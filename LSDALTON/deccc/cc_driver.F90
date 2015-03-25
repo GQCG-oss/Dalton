@@ -564,8 +564,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       FragEnergies_tmp = 0.0E0_realk
    
       if (DECinfo%DECNP) then
-         call solver_decnp_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
-            & VOVO_local,occ_orbitals,FragEnergies(:,:,cc_sol_o:cc_sol_v),FragEnergies_tmp)
+         call solver_decnp_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
+            & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o), &
+            & FragEnergies(:,:,cc_sol_v),FragEnergies_tmp)
       else
          call solver_energy_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
             & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o), &
