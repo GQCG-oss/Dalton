@@ -964,14 +964,6 @@ contains
           call lsquit("RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        end select
 
-       ! DECNP only tested for occupied partitioning scheme
-       if(.not. DECinfo%OnlyOccPart) then
-          write(DECinfo%output,*) 'WARNING: DECNP ONLY TESTED FOR OCCUPIED PART. SCHEME'
-          write(DECinfo%output,*) 'WARNING: I TURN ON OCCUPIED PART. SCHEME'
-          DECinfo%onlyoccpart=.true.
-          DECinfo%onlyvirtpart=.false.
-       end if
-
        if (DECinfo%first_order) then
           call lsquit("No first_order properties with DECNP",DECinfo%output)
        end if
@@ -981,7 +973,6 @@ contains
           call lsquit("SNOOP and DECNP are not compatible yet!",DECinfo%output)
        end if
 
-       !TODO: Add test for expansion reduction model and repeatAF !!!
     end if
 
 
