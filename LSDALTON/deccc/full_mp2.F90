@@ -1955,16 +1955,17 @@ contains
                 tmp_mp2_energy = 0.0E0_realk
                 do I=1,nOccBatchDimI
                    do J=1,nOccBatchDimJ
-                      epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)                    
+                      epsIJ = EpsOcc(I+(iB-1)*nOccBatchDimImax) + EpsOcc(J+(jB-1)*nOccBatchDimJmax)
                       CALL CalcAmat2(nOccBatchDimJ,nOccBatchDimI,nvirt,VOVO,Amat,J,I)
                       call CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
                       tmp_mp2_energy2 = 0.0E0_realk
                       call MP2_EnergyContribution(nvirt,Amat,Bmat,tmp_mp2_energy2)
-                      WRITE(DECinfo%output,*)'E4(',iB,',',jB,')=',tmp_mp2_energy2
+!                      WRITE(DECinfo%output,*)'E4(I=',I+(iB-1)*nOccBatchDimImax,',J=',J+(jB-1)*nOccBatchDimJmax,')=',tmp_mp2_energy2
                       tmp_mp2_energy = tmp_mp2_energy + tmp_mp2_energy2
                    enddo
                 enddo
-                WRITE(DECinfo%output,*)'canon MP2 energy contribution =',tmp_mp2_energy
+!                WRITE(DECinfo%output,*)'E4(iB=',iB,',jB=',jB,')=',tmp_mp2_energy
+!                WRITE(DECinfo%output,*)'canon MP2 energy contribution =',tmp_mp2_energy,'Mynum=',mynum
              ENDIF
              call mem_dealloc(Amat)
              call mem_dealloc(Bmat)
@@ -1990,6 +1991,8 @@ contains
                       nMPI = 2
                       call lsmpi_recv(JobInfo1,nMPI,senderID,TAG1,comm)
                       call lsmpi_recv(tmp_mp2_energy,senderID,TAG2,comm)
+                      
+!                      WRITE(DECinfo%output,*)'canon MP2 energy contribution =',tmp_mp2_energy,'From rank=',senderID
                       mp2_energy = mp2_energy + tmp_mp2_energy
                       JobsCompleted(JobInfo1(1),JobInfo1(2)) = .TRUE.
                       IF(PermutationalSymmetryIJ) JobsCompleted(JobInfo1(2),JobInfo1(1)) = .TRUE.
@@ -2055,8 +2058,12 @@ contains
              CPU_MPICOMM = CPU_MPICOMM + (CPU1-CPU2)
              WALL_MPICOMM = WALL_MPICOMM + (WALL1-WALL2)
              mp2_energy = mp2_energy + tmp_mp2_energy
-             IF(JobInfo1(1).NE.JobInfo1(2))mp2_energy = mp2_energy + tmp_mp2_energy
-             JobsCompleted(JobInfo1(1),JobInfo1(2)) = .TRUE.
+             IF(PermutationalSymmetryIJ)THEN
+                IF(JobInfo1(1).NE.JobInfo1(2))THEN
+                   mp2_energy = mp2_energy + tmp_mp2_energy
+                ENDIF
+             ENDIF
+             JobsCompleted(JobInfo1(1),JobInfo1(2)) = .TRUE.             
              IF(PermutationalSymmetryIJ) JobsCompleted(JobInfo1(2),JobInfo1(1)) = .TRUE.
              NotAllMessagesRecieved = COUNT(JobsCompleted).NE.nOccbatchesI*nOccbatchesJ
           ENDDO

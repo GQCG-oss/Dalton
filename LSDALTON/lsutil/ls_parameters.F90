@@ -131,6 +131,8 @@ MODULE lsparameters
   integer,parameter :: PDMMSLAVE                    = 64
   integer,parameter :: MATRIXTY2                    = 65
   integer,parameter :: SET_TENSOR_ALWAYS_SYNC_TRUE  = 66
+  integer,parameter :: INIT_BG_BUF                  = 67
+  integer,parameter :: FREE_BG_BUF                  = 68
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
