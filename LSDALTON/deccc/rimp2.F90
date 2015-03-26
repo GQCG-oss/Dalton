@@ -149,12 +149,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif  
 
   ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
-  ! handle 1: UoccEOST, EVocc, and EVvirt
-  ! handle 2: UvirtT
-  ! handle 3: UvirtEOST
-  ! handle 4: UoccT
-  ! handle 5: UoccallT
-  num_ids = 5
+  num_ids = 7
   call mem_alloc(async_id,num_ids)
 
 #ifdef VAR_OPENACC
@@ -352,7 +347,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
           & EVocc, EVvirt)
   end if
-!$acc enter data copyin(EVocc,EVvirt) async(async_id(1))
 
   ! Extract occupied EOS indices from rows of Uocc
   call array2_extract_EOS(Uocc,MyFragment,'O','R',tmparray2)
@@ -362,14 +356,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   M = noccEOS   !row of Input Matrix
   N = nocc      !columns of Input Matrix
   call mat_transpose(M,N,1.0E0_realk,tmparray2%val,0.0E0_realk,UoccEOST)
-!$acc enter data copyin(UoccEOST) async(async_id(1))
   call array2_free(tmparray2)
 
   call mem_alloc(UvirtT,nvirt,nvirt) 
   M = nvirt      !row of Input Matrix
   N = nvirt      !columns of Input Matrix
   call mat_transpose(M,N,1.0E0_realk,Uvirt%val,0.0E0_realk,UvirtT)
-!$acc enter data copyin(UvirtT) async(async_id(2))
 
   ! Extract virtual EOS indices from rows of Uvirt
   call array2_extract_EOS(Uvirt,MyFragment,'V','R',tmparray2)
@@ -378,15 +370,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   M = nvirtEOS   !row of Input Matrix
   N = nvirt      !columns of Input Matrix
   call mat_transpose(M,N,1.0E0_realk,tmparray2%val,0.0E0_realk,UvirtEOST)
-!$acc enter data copyin(UvirtEOST) async(async_id(3))
   call array2_free(tmparray2)
 
   call mem_alloc(UoccT,nocc,nocc) 
   M = nocc      !row of Input Matrix
   N = nocc      !columns of Input Matrix
   call mat_transpose(M,N,1.0E0_realk,Uocc%val,0.0E0_realk,UoccT)
-!$acc enter data copyin(UoccT) async(async_id(4))
   call array2_free(Uocc)
+
+!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT) async(async_id(1)) if(.not. fc)
 
   if(fc) then
      call mem_alloc(UoccallT,nocctot,nocctot) 
@@ -395,8 +387,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mat_transpose(M,N,1.0E0_realk,Uoccall%val,0.0E0_realk,UoccallT)
      call array2_free(Uoccall)
   endif
-!$acc enter data copyin(UoccallT) async(async_id(5)) if(fc)
   CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
+
+!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT,UoccallT) async(async_id(1)) if(fc)
 
   ! *************************************************************
   ! *                    Start up MPI slaves                    *
@@ -466,6 +459,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
   !At this point we have the Calpha in the diagonal basis 
 
+! here: wait for async updates on async handle 1
+!$acc wait(async_id(1))
+
   !=====================================================================================
   !  Major Step 5: Generate toccEOS(nvirt,noccEOS,nvirt,noccEOS)
   !=====================================================================================
@@ -477,17 +473,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !Janus will set this variable correctly. For now I set it true if it is a debug
      !run and false for release run. In this way all the code is tested
      PerformTiling = .FALSE.
-     if (DECinfo%RIMP2_tiling) PerformTiling = .TRUE.
      MaxVirtSize = nvirt/2           !should be determined by Janus is some way
      nTiles =  nvirt/MaxVirtSize 
      IF(nTiles.EQ.0)PerformTiling = .FALSE.
+     if (DECinfo%RIMP2_tiling) PerformTiling = .TRUE. ! enforce tiling
      IF(PerformTiling)THEN
         call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
         call mem_alloc(tocc,nocc,noccEOS,nvirt,MaxVirtSize)
         call mem_alloc(tocc2TMP,noccEOS,noccEOS,nvirt,MaxVirtSize)
-!$acc enter data create(tocc,tocc2,tocc2TMP) copyin(Calpha) if(PerformTiling)
-! here: wait for UoccEOST, EVocc, and EVvirt on async handle 1
-!$acc wait(async_id(1))
+!$acc enter data create(tocc,tocc2,tocc2TMP) copyin(Calpha) 
         DO I=1,nTiles
            offsetV = (I-1)*MaxVirtSize
            call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,&
@@ -535,7 +529,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
            call PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
         ENDIF
-!$acc exit data delete(tocc,tocc2TMP) if(PerformTiling)
+!$acc exit data delete(tocc,tocc2TMP)
         call mem_dealloc(tocc)
         call mem_dealloc(tocc2TMP)
      ELSE
@@ -543,10 +537,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !transform 1 occupied indices (IDIAG,JLOC,ADIAG,BDIAG)
         offsetV=0
         call mem_alloc(tocc,nocc,noccEOS,nvirt,nvirt)
-!$acc enter data create(tocc) copyin(Calpha) if(.not. PerformTiling)
+!$acc enter data create(tocc) copyin(Calpha)
 
-! here: wait for UoccEOST, EVocc, and EVvirt on async handle 1
-!$acc wait(async_id(1))
         call RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,UoccEOST,nvirt,offsetV)
 #ifdef VAR_OPENACC
         gpuflops = NBA*nocc*nocc*nvirt*nvirt + nocc*nocc*nvirt*nvirt*noccEOS
@@ -557,7 +549,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = noccEOS*nvirt*nvirt  !columns of Output Matrix
         K = nocc                 !summation dimension
         call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
-!$acc enter data create(tocc2) if(.not. PerformTiling)
+!$acc enter data create(tocc2)
 #ifdef VAR_OPENACC
 !$acc host_data use_device(tocc,UoccEOST,tocc2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
@@ -568,7 +560,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
              & 0.0E0_realk,c_loc(tocc2),int(M,kind=4))
 #endif
 !$acc end host_data
-!$acc exit data delete(tocc) if(.not. PerformTiling)
+!$acc exit data delete(tocc)
         call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
 #else
         call dgemm('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
@@ -582,8 +574,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(tocc3,nvirt,nvirt,noccEOS,noccEOS)
 !$acc enter data create(tocc3)
 #ifdef VAR_OPENACC
-! here: wait for UvirtT on async handle 2
-!$acc wait(async_id(2))
 !$acc host_data use_device(tocc2,UvirtT,tocc3)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
@@ -604,7 +594,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call tensor_ainit(toccEOS,dimocc,4)
 !$acc enter data create(toccEOS%elm1)
      call RIMP2_calc_toccB(nvirt,noccEOS,tocc3,UvirtT,toccEOS%elm1)
-!$acc exit data copyout(toccEOS%elm1) delete(tocc3)
+!$acc exit data copyout(toccEOS%elm1) async(async_id(2))
+!$acc exit data delete(tocc3)
 #ifdef VAR_OPENACC
      gpuflops = noccEOS*noccEOS*nvirt*nvirt*nvirt
      call AddFLOP_FLOPonGPUaccouting(gpuflops)
@@ -618,18 +609,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
   CALL LSTIMER('DECRIMP2: tocc          ',TS2,TE2,LUPRI,FORCEPRINT)
 
-#ifdef VAR_MPI
-  IF(CollaborateWithSlaves) then  
-     call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
-     call time_start_phase( PHASE_COMM )       
-     nSize = nvirt*noccEOS*nvirt*noccEOS
-     call lsmpi_reduction(toccEOS%elm1,nsize,infpar%master,infpar%lg_comm)
-     call time_start_phase(PHASE_WORK)   
-     IF(.NOT.Master )call tensor_free(toccEOS)
-  ENDIF
-#endif
-
   !=====================================================================================
   !  Major Step 6: Generate tvirtEOS(nvirtEOS,nocc,nvirtEOS,nocc)
   !=====================================================================================
@@ -639,8 +618,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      call mem_alloc(tvirt,nocc,nocc,nvirtEOS,nvirt) !IDIAG,JDIAG,ALOC,BDIAG
 !$acc enter data create(tvirt)
-! here: wait for UvirtEOST on async handle 3
-!$acc wait(async_id(3))
      call RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
 !$acc exit data delete(EVocc,EVvirt)
 #ifdef VAR_OPENACC
@@ -680,8 +657,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_alloc(tvirt3,nocc,nocc,nvirtEOS,nvirtEOS)
 !$acc enter data create(tvirt3)
 #ifdef VAR_OPENACC
-! here: wait for UoccT on async handle 4
-!$acc wait(async_id(4))
 !$acc host_data use_device(tvirt2,UoccT,tvirt3)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
      call dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
@@ -702,7 +677,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call tensor_ainit(tvirtEOS,dimvirt,4)
 !$acc enter data create(tvirtEOS%elm1)
      call RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt3,UoccT,tvirtEOS%elm1)
-!$acc exit data delete(tvirt3) copyout(tvirtEOS%elm1)
+!$acc exit data copyout(tvirtEOS%elm1) async(async_id(3))
+!$acc exit data delete(tvirt3)
 #ifdef VAR_OPENACC
      gpuflops = nvirtEOS*nocc*nvirtEOS*nocc*nvirt
      call AddFLOP_FLOPonGPUaccouting(gpuflops)
@@ -716,18 +692,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      nSize = nvirtEOS*nocc*nvirtEOS*nocc
      call ls_dzero8(tvirtEOS%elm1,nSize)
   ENDIF
-
-#ifdef VAR_MPI
-  IF(CollaborateWithSlaves) then         
-     call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
-     call time_start_phase( PHASE_COMM )
-     nSize = nvirtEOS*nocc*nvirtEOS*nocc
-     call lsmpi_reduction(tvirtEOS%elm1,nSize,infpar%master,infpar%lg_comm)
-     call time_start_phase(PHASE_WORK)   
-     IF(.NOT.Master )call tensor_free(tvirtEOS)
-  ENDIF
-#endif
 
   !=====================================================================================
   !  Major Step 7: Generate goccEOS(nvirt,noccEOS,nvirt,noccEOS)
@@ -777,26 +741,16 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(.NOT.first_order)call mem_dealloc(UvirtT)
      
      call tensor_ainit(goccEOS,dimocc,4)
-!     call RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS%elm1)
-
+#ifdef VAR_OPENACC
+!$acc enter data create(goccEOS%elm1)
+     call RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS%elm1)
+!$acc exit data copyout(goccEOS%elm1) async(async_id(4))
+!$acc exit data delete(Calpha3)
+#else
      !goccEOS(nvirt,noccEOS,nvirt,noccEOS)
      M = nvirt*noccEOS  !rows of Output Matrix
      N = nvirt*noccEOS  !columns of Output Matrix
      K = NBA            !summation dimension
-#ifdef VAR_OPENACC
-!$acc enter data create(goccEOS%elm1) 
-!$acc host_data use_device(Calpha3,goccEOS%elm1)
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-     call dgemm_acc('T','N',M,N,K,1.0E0_realk,Calpha3,K,Calpha3,K,0.0E0_realk,goccEOS%elm1,M)
-#elif defined(VAR_CUBLAS)
-     stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
-                           & 1.0E0_realk,c_loc(Calpha3),int(K,kind=4),c_loc(Calpha3),int(K,kind=4),&
-                           & 0.0E0_realk,c_loc(goccEOS%elm1),int(M,kind=4))
-#endif
-!$acc end host_data
-!$acc exit data delete(Calpha3) copyout(goccEOS%elm1)
-     call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
-#else
      call dgemm('T','N',M,N,K,1.0E0_realk,Calpha3,K,Calpha3,K,0.0E0_realk,goccEOS%elm1,M)
 #endif
      call mem_dealloc(Calpha3)
@@ -808,17 +762,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      nSize = nvirt*noccEOS*nvirt*noccEOS
      call ls_dzero8(goccEOS%elm1,nsize)
   ENDIF
-#ifdef VAR_MPI
-  IF(CollaborateWithSlaves) then         
-     call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
-     call time_start_phase( PHASE_COMM )
-     nSize = nvirt*noccEOS*nvirt*noccEOS
-     call lsmpi_reduction(goccEOS%elm1,nSize,infpar%master,infpar%lg_comm)
-     call time_start_phase(PHASE_WORK)   
-     IF(.NOT.Master )call tensor_free(goccEOS)
-  ENDIF
-#endif
 
   !=====================================================================================
   !  Major Step 8: Generate gvirtEOS(nvirtEOS,nocc,nvirtEOS,nocc)
@@ -866,26 +809,16 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call mem_dealloc(Calpha2)
 
      call tensor_ainit(gvirtEOS,dimvirt,4)
+#ifdef VAR_OPENACC
 !$acc enter data create(gvirtEOS%elm1)
-!     call RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS%elm1)
+     call RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,Calpha3,gvirtEOS%elm1)
+!$acc exit data copyout(gvirtEOS%elm1) async(async_id(5))
+!$acc exit data delete(Calpha3)
+#else
      !gvirtEOS(nvirtEOS,nocc,nvirtEOS,nocc)
      M = nvirtEOS*nocc  !rows of Output Matrix
      N = nvirtEOS*nocc  !columns of Output Matrix
      K = NBA            !summation dimension
-#ifdef VAR_OPENACC
-!$acc enter data create(gvirtEOS%elm1) 
-!$acc host_data use_device(Calpha3,gvirtEOS%elm1)
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-     call dgemm_acc('T','N',M,N,K,1.0E0_realk,Calpha3,K,Calpha3,K,0.0E0_realk,gvirtEOS%elm1,M)
-#elif defined(VAR_CUBLAS)
-     stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
-                           & 1.0E0_realk,c_loc(Calpha3),int(K,kind=4),c_loc(Calpha3),int(K,kind=4),&
-                           & 0.0E0_realk,c_loc(gvirtEOS%elm1),int(M,kind=4))
-#endif
-!$acc end host_data
-!$acc exit data delete(Calpha3) copyout(gvirtEOS%elm1)
-     call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
-#else
      call dgemm('T','N',M,N,K,1.0E0_realk,Calpha3,K,Calpha3,K,0.0E0_realk,gvirtEOS%elm1,M)
 #endif
      call mem_dealloc(Calpha3)
@@ -897,15 +830,34 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      nSize = nvirtEOS*nocc*nvirtEOS*nocc
      call ls_dzero8(gvirtEOS%elm1,nsize)
   ENDIF
+
+  !=====================================================================================
+  !  Major Step 9: Collect toccEOS, tvirtEOS, goccEOS, and gvirtEOS
+  !=====================================================================================
+
+! here: wait for async copyouts on async handles 2-5
+!$acc wait(async_id(2),async_id(3),async_id(4),async_id(5))
+
 #ifdef VAR_MPI
-  IF(CollaborateWithSlaves) then         
+  IF(CollaborateWithSlaves) then
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_COMM )
+     nSize = nvirt*noccEOS*nvirt*noccEOS
+     call lsmpi_reduction(toccEOS%elm1,nsize,infpar%master,infpar%lg_comm)
+     nSize = nvirtEOS*nocc*nvirtEOS*nocc
+     call lsmpi_reduction(tvirtEOS%elm1,nSize,infpar%master,infpar%lg_comm)
+     nSize = nvirt*noccEOS*nvirt*noccEOS
+     call lsmpi_reduction(goccEOS%elm1,nSize,infpar%master,infpar%lg_comm)
      nSize = nvirtEOS*nocc*nvirtEOS*nocc
      call lsmpi_reduction(gvirtEOS%elm1,nsize,infpar%master,infpar%lg_comm)
-     call time_start_phase( PHASE_WORK )   
-     IF(.NOT.Master )call tensor_free(gvirtEOS)
+     call time_start_phase(PHASE_WORK)
+     if (.not. Master) then
+        call tensor_free(toccEOS)
+        call tensor_free(tvirtEOS)
+        call tensor_free(goccEOS)
+        call tensor_free(gvirtEOS)
+     endif
   ENDIF
 #endif
 
@@ -966,8 +918,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_alloc(Calpha2,nba,nocctot,nocctot)
 !$acc enter data create(Calpha2) copyin(CalphaOcc)
         IF(DECinfo%frozencore)THEN
-! here: wait for UoccallT on async handle 5 IF frozen_core = .true.
-!$acc wait(async_id(5))
 #ifdef VAR_OPENACC
 !$acc host_data use_device(CalphaOcc,UoccallT,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
@@ -1010,7 +960,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call tensor_ainit(djik,dimvirt,4)
 !$acc enter data create(djik%elm1)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,Calpha4,noccEOS,nocctot,djik%elm1)
-!$acc exit data copyout(djik%elm1) delete(Calpha3,Calpha4)
+!$acc exit data delete(Calpha3,Calpha4)
+!$acc exit data copyout(djik%elm1) async(async_id(6))
         call mem_dealloc(Calpha3)
         call mem_dealloc(Calpha4)
         CALL LSTIMER('RIMP2: djik',TS3,TE3,LUPRI,FORCEPRINT)
@@ -1021,17 +972,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         nSize = nvirt*noccEOS*noccEOS*nocctot
         call ls_dzero8(djik%elm1,nsize)
      ENDIF
-#ifdef VAR_MPI
-     IF(CollaborateWithSlaves) then         
-        call time_start_phase( PHASE_IDLE )
-        call lsmpi_barrier(infpar%lg_comm)
-        call time_start_phase( PHASE_COMM )
-        nSize = nvirt*noccEOS*noccEOS*nocctot
-        call lsmpi_reduction(djik%elm1,nsize,infpar%master,infpar%lg_comm)
-        call time_start_phase( PHASE_WORK )   
-        IF(.NOT.Master )call tensor_free(djik)
-     ENDIF
-#endif
 
      !=====================================================================================
      !  first_order prop: Generate blad(nvirtEOS,noccAOS,nvirtEOS,nvirtAOS)
@@ -1082,7 +1022,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = nvirt            !columns of Output Matrix
         K = nocc             !summation dimension
         call mem_alloc(Calpha2,nba,nvirt,nvirt)
-!$acc enter data create(Calpha2) copyin(CalphaVV) 
+!$acc enter data create(Calpha2) copyin(CalphaVV)
 #ifdef VAR_OPENACC
 !$acc host_data use_device(CalphaVV,UvirtT,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
@@ -1096,7 +1036,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #else
         call dgemm('N','N',M,N,K,1.0E0_realk,CalphaVV,M,UvirtT,K,0.0E0_realk,Calpha2,M)
 #endif
-!$acc exit data delete(CalphaVV,CalphaVV,Calpha)
+!$acc exit data delete(CalphaVV,UvirtT,Calpha)
         call mem_dealloc(CalphaVV)
         call mem_dealloc(UvirtT)
         call mem_dealloc(Calpha)
@@ -1113,7 +1053,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call tensor_ainit(blad,dimvirt,4)
 !$acc enter data create(blad%elm1)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirtEOS,nocc,Calpha4,nvirtEOS,nvirt,blad%elm1)
-!$acc exit data copyout(blad%elm1) delete(Calpha3,Calpha4)
+!$acc exit data delete(Calpha3,Calpha4)
+!$acc exit data copyout(blad%elm1) async(async_id(7))
         call mem_dealloc(Calpha3)
         call mem_dealloc(Calpha4)
         CALL LSTIMER('RIMP2: blad',TS3,TE3,LUPRI,FORCEPRINT)
@@ -1122,21 +1063,35 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_dealloc(UoccT)
         call mem_dealloc(UvirtT)
         call mem_dealloc(UvirtEOST)
-        call tensor_ainit(djik,dimvirt,4)
+        call tensor_ainit(blad,dimvirt,4)
         nSize = nvirtEOS*nocc*nvirtEOS*nvirt
-        call ls_dzero8(djik%elm1,nsize)
+        call ls_dzero8(blad%elm1,nsize)
      ENDIF
+
+     !=====================================================================================
+     !  first_order reduction: djik and blad 
+     !=====================================================================================
+
+! here: wait for async copyouts on async handles 6 and 7
+!$acc wait(async_id(6),async_id(7))
+
 #ifdef VAR_MPI
-     IF(CollaborateWithSlaves) then         
+     IF(CollaborateWithSlaves) then
         call time_start_phase( PHASE_IDLE )
         call lsmpi_barrier(infpar%lg_comm)
         call time_start_phase( PHASE_COMM )
+        nSize = nvirt*noccEOS*noccEOS*nocctot
+        call lsmpi_reduction(djik%elm1,nsize,infpar%master,infpar%lg_comm)
         nSize = nvirtEOS*nocc*nvirtEOS*nvirt
         call lsmpi_reduction(blad%elm1,nsize,infpar%master,infpar%lg_comm)
-        call time_start_phase( PHASE_WORK )   
-        IF(.NOT.Master )call tensor_free(blad)
+        call time_start_phase( PHASE_WORK )
+        if (.not. Master) then
+           call tensor_free(djik)
+           call tensor_free(blad)
+        endif
      ENDIF
 #endif
+
   ENDIF
 
 #ifdef VAR_CUBLAS
@@ -1650,7 +1605,7 @@ subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,Uocc
   !$ACC PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
   !$ACC         ALPHAAUX,ILOC,JLOC,gmocont,deltaEPS,toccTMP,TMP) &
   !$acc firstprivate(nvirt,nocc,noccEOS,NBA,nvirt2,offset2) &
-  !acc present(tocc,Calpha,UoccEOST,EVocc,EVvirt)
+  !$acc present(tocc,Calpha,UoccEOST,EVocc,EVvirt)
 #else
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
   !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
@@ -2021,8 +1976,8 @@ subroutine RIMP2_calc_gen4DimFO(NBA,Calpha3,n1,n2,Calpha4,n3,n4,djik)
   real(realk) :: TMP
 #ifdef VAR_OPENACC
   !$ACC PARALLEL LOOP COLLAPSE(4) &
-  !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,TMP) &
-  !$ACC firstprivate(nvirtEOS,nocc,NBA) &
+  !$ACC PRIVATE(a,b,c,d,ALPHAAUX,TMP) &
+  !$acc firstprivate(n1,n2,n3,n4,NBA) &
   !$acc present(Calpha3,Calpha4,djik)
 #else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
@@ -2035,7 +1990,7 @@ subroutine RIMP2_calc_gen4DimFO(NBA,Calpha3,n1,n2,Calpha4,n3,n4,djik)
            do a=1,n1
               TMP = 0.0E0_realk
 #ifdef VAR_OPENACC
-              !$ACC loop seq
+              !$acc loop seq
 #endif
               do ALPHAAUX = 1,nba
                  tmp = tmp + Calpha3(alphaAUX,A,B)*Calpha4(alphaAUX,C,D)
