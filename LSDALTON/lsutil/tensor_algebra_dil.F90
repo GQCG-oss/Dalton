@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/03/20 (started 2014/09/01).
+!REVISION: 2015/03/26 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -307,17 +307,17 @@
         public dil_tensor_insert
         public dil_tensor_transpose
         private dil_get_next_tile_signa
-        private dil_tens_prefetch_start
-        private dil_tens_prefetch_complete
-        private dil_tens_upload_start
-        private dil_tens_upload_complete
+        private dil_tensor_prefetch_start
+        private dil_tensor_prefetch_complete
+        private dil_tensor_upload_start
+        private dil_tensor_upload_complete
         private dil_tens_unpack_from_tiles
         private dil_tens_pack_into_tiles
         public dil_tens_fetch_start
         public dil_tens_fetch_finish_prep
 !        public dil_tens_fetch
-!        public dil_tens_upload_start
-!        public dil_tens_upload_finish_prep
+        public dil_tens_prep_upload_start
+        public dil_tens_upload_finish
 !        public dil_tens_upload
         private dil_divide_space_int
         private dil_divide_space_int4
@@ -2428,8 +2428,8 @@
         endif
         return
         end subroutine dil_get_next_tile_signa
-!-----------------------------------------------------------------------------
-        subroutine dil_tens_prefetch_start(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
+!-------------------------------------------------------------------------------
+        subroutine dil_tensor_prefetch_start(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
 !This subroutine starts collection of all tiles necessary for constructing a given tensor part.
         implicit none
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
@@ -2465,9 +2465,9 @@
          endif
         enddo
         return
-        end subroutine dil_tens_prefetch_start
-!--------------------------------------------------------------------------------
-        subroutine dil_tens_prefetch_complete(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
+        end subroutine dil_tensor_prefetch_start
+!----------------------------------------------------------------------------------
+        subroutine dil_tensor_prefetch_complete(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
 !This subroutine completes collection of all tiles necessary for constructing a given tensor part.
         implicit none
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
@@ -2505,9 +2505,9 @@
          endif
         enddo
         return
-        end subroutine dil_tens_prefetch_complete
-!---------------------------------------------------------------------------
-        subroutine dil_tens_upload_start(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
+        end subroutine dil_tensor_prefetch_complete
+!-----------------------------------------------------------------------------
+        subroutine dil_tensor_upload_start(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
 !This subroutine starts upload of all tiles constituting a given tensor part.
         implicit none
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
@@ -2543,9 +2543,9 @@
          endif
         enddo
         return
-        end subroutine dil_tens_upload_start
-!------------------------------------------------------------------------------
-        subroutine dil_tens_upload_complete(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
+        end subroutine dil_tensor_upload_start
+!--------------------------------------------------------------------------------
+        subroutine dil_tensor_upload_complete(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
 !This subroutine completes upload of all tiles constituting a given tensor part.
         implicit none
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
@@ -2583,7 +2583,7 @@
          endif
         enddo
         return
-        end subroutine dil_tens_upload_complete
+        end subroutine dil_tensor_upload_complete
 !-------------------------------------------------------------------------------
         subroutine dil_tens_unpack_from_tiles(tens_arr,tens_part,bufi,bufo,ierr) !PARALLEL (OMP)
 !This subroutine unpacks tiles into a dense tensor slice.
@@ -2699,7 +2699,7 @@
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
         type(subtens_t), intent(in):: tens_part !in: tensor part specification
         real(realk), intent(inout):: bufi(1:*)  !in: local buffer containing the tiles
-        real(realk), intent(inout):: bufo(1:*)  !out: local buffer that will contain the tensor slice
+        real(realk), intent(inout):: bufo(1:*)  !out: local buffer that will contain the dense tensor slice
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
@@ -2739,6 +2739,92 @@
         enddo
         return
         end subroutine dil_tens_fetch_finish_prep
+!--------------------------------------------------------------------------------------
+        subroutine dil_tens_prep_upload_start(tens_arr,tens_part,bufi,bufo,ierr,locked) !SERIAL (MPI)
+!This subroutine packs a dense tensor slice into tiles and starts uploading them.
+        implicit none
+        type(tensor), intent(inout):: tens_arr  !inout: tensor stored distributively in terms of tiles
+        type(subtens_t), intent(in):: tens_part !in: tensor part specification
+        real(realk), intent(in):: bufi(1:*)     !in: local buffer containing the dense tensor slice
+        real(realk), intent(inout):: bufo(1:*)  !tmp: temporary buffer from where the tiles will be uploaded
+        integer(INTD), intent(inout):: ierr     !out: error code (0:success)
+        logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
+        integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
+        integer(INTL):: tile_vol,buf_end
+        integer:: tile_num,tile_win
+        type(rank_win_cont_t):: rwc
+        logical:: new_rw,win_lck
+        real(8):: time_beg,tm
+
+        ierr=0; call dil_rank_window_clean(rwc); n=tens_arr%mode
+        if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+!        if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Uploading (",16(1x,i6,":",i6,","),")")')&
+!         &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,n)/) !debug
+        buf_end=0_INTL; k=DIL_FIRST_CALL
+        do while(k.ge.0) !k<0: iterations are over
+         call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
+         if(k.eq.0) then
+!          if(DIL_DEBUG) time_beg=thread_wtime()
+          tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Packing:",16(1x,i6))',ADVANCE='NO') signa(1:n)
+          call dil_tensor_slice(n,bufi,tens_part%dims,bufo(buf_end+1_INTL:buf_end+tile_vol),tile_dims,&
+                               &signa(1:n)-tens_part%lbnd(1:n),i)
+!          if(DIL_DEBUG) tm=thread_wtime(time_beg)
+!          if(DIL_DEBUG) write(CONS_OUT,'(": Packed: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
+!           &tm,dble(2_INTL*tile_vol*realk)/(tm*1024d0*1024d0*1024d0),i
+          if(i.ne.0) then; ierr=1; return; endif
+          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+!           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
+          call tensor_accumulate_tile(tens_arr,tile_num,bufo(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
+!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
+          buf_end=buf_end+tile_vol
+         elseif(k.gt.0) then
+          ierr=-1; return
+         endif
+        enddo
+        return
+        end subroutine dil_tens_prep_upload_start
+!-----------------------------------------------------------------------------
+        subroutine dil_tens_upload_finish(tens_arr,tens_part,bufo,ierr,locked) !SERIAL (MPI)
+!This subroutine completes upload of all tiles constituting a given dense tensor slice.
+        implicit none
+        type(tensor), intent(inout):: tens_arr  !inout: tensor stored distributively in terms of tiles
+        type(subtens_t), intent(in):: tens_part !in: tensor part specification
+        real(realk), intent(inout):: bufo(1:*)  !in: local buffer containing the tiles to upload
+        integer(INTD), intent(inout):: ierr     !out: error code (0:success)
+        logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
+        integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
+        integer:: tile_num,tile_win
+        type(rank_win_cont_t):: rwc
+        logical:: new_rw,win_lck
+
+        ierr=0; call dil_rank_window_clean(rwc)
+        if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        k=DIL_FIRST_CALL
+        do while(k.ge.0)
+         call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
+         if(k.eq.0) then
+          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+!          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+          if(new_rw) then
+           if(win_lck) then
+            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+           else
+            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+           endif
+          endif
+!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
+         elseif(k.gt.0) then
+          ierr=-1; return
+         endif
+        enddo
+        return
+        end subroutine dil_tens_upload_finish
 !------------------------------------------------------------------------
         subroutine dil_divide_space_int4(ndim,dims,subvol,segs,ierr,algn) !SERIAL
 !This subroutine divides an ndim-dimensional block with extents dims(1:ndim)
@@ -3579,9 +3665,10 @@
         logical, intent(in), optional:: locked                          !in: if .true., MPI wins for tens-args are assumed locked
         integer(INTD), intent(in), optional:: num_gpus                  !in: number of NVidia GPUs available on the node: (0..max)
         integer(INTD), intent(in), optional:: num_mics                  !in: number of Intel MICs available on the node: (0..max)
-!-------------------------------------------------
-        logical, parameter:: NO_CHECK=.false.     !argument check
-        integer(INTL), parameter:: alignment=4096 !buffer alignment in bytes (must be multiple of 16)
+!-----------------------------------------------------
+        logical, parameter:: NO_CHECK=.false.         !argument check
+        logical, parameter:: PREP_AND_COMM=.false.    !communication/tensor_preparation overlap
+        integer(INTL), parameter:: alignment=4096     !buffer alignment in bytes (must be multiple of 16)
 !------------------------------------------------
         integer(INTD):: i,j,k,l,m,n,impir
         type(C_PTR):: hbuf_cp
@@ -3994,15 +4081,15 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
 !         if((darg%store_type.eq.'d'.or.darg%store_type.eq.'D').and.(.not.cspec%dest_zero)) then !distributed tensors only
-!          call dil_tens_prefetch_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
+!          call dil_tensor_prefetch_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
 !          if(je.ne.0) then; errc=1; return; endif
 !         endif
          if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensors only
-          call dil_tens_prefetch_start(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
+          call dil_tensor_prefetch_start(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
           if(je.ne.0) then; errc=2; return; endif
          endif
          if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensors only
-          call dil_tens_prefetch_start(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
+          call dil_tensor_prefetch_start(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
           if(je.ne.0) then; errc=3; return; endif
          endif
          return
@@ -4019,15 +4106,15 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
 !         if((darg%store_type.eq.'d'.or.darg%store_type.eq.'D').and.(.not.cspec%dest_zero)) then !distributed tensors only
-!          call dil_tens_prefetch_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
+!          call dil_tensor_prefetch_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
 !          if(je.ne.0) then; errc=1; return; endif
 !         endif
          if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensors only
-          call dil_tens_prefetch_complete(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
+          call dil_tensor_prefetch_complete(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
           if(je.ne.0) then; errc=2; return; endif
          endif
          if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensors only
-          call dil_tens_prefetch_complete(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
+          call dil_tensor_prefetch_complete(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
           if(je.ne.0) then; errc=3; return; endif
          endif
          return
@@ -4044,7 +4131,7 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensors only
-          call dil_tens_upload_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
+          call dil_tensor_upload_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
           if(je.ne.0) then; errc=1; return; endif
          endif
          return
@@ -4061,7 +4148,7 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensors only
-          call dil_tens_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
+          call dil_tensor_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
           if(je.ne.0) then; errc=1; return; endif
          endif
          return

@@ -35,8 +35,8 @@ module tensor_interface_module
   public DIL_CONS_OUT      !output for DIL messages
   public DIL_DEBUG         !DIL debugging switch
   public dil_tens_contr_t  !tensor contraction specification
-  public subtens_t         !subtensor specification for Janus
-  public dil_subtensor_set !subtensor setting method for Janus
+  public subtens_t         !subtensor (tensor slice) specification for Janus
+  public dil_subtensor_set !subtensor (tensor slice) setting method for Janus
   public dil_set_alloc_type
   public dil_clean_tens_contr
   public dil_set_tens_contr_args
@@ -54,8 +54,8 @@ module tensor_interface_module
   public dil_tensor_norm1
   public dil_tens_fetch_start        !tensor slice fetching for Janus
   public dil_tens_fetch_finish_prep  !tensor slice fetching for Janus
-!  public dil_tens_upload_start       !tensor slice uploading for Janus
-!  public dil_tens_upload_finish_prep !tensor slice uploading for Janus
+  public dil_tens_prep_upload_start  !tensor slice uploading for Janus
+  public dil_tens_upload_finish      !tensor slice uploading for Janus
   public dil_will_malloc_succeed     !tells whether a given malloc() request can succeed if issued
   public int2str !converts integers to strings
 #endif
