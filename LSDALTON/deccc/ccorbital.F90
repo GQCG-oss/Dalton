@@ -15,6 +15,8 @@ module orbital_operations
   use files!,only: lsopen,lsclose
   use typedeftype!,only:lsitem
   use dec_typedef_module
+  use lsparameters
+  use IntegralInterfaceMOD
 
 
   ! DEC DEPENDENCIES (within deccc directory)    
@@ -51,7 +53,7 @@ contains
     DECCO: if(DECinfo%DECCO) then
        ! Orbital-based DEC
        call GenerateOrbitals_DECCO(nocc,nunocc,natoms, &
-          & MyMolecule,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
+          & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
        return
 
     else
@@ -380,7 +382,7 @@ contains
     endif
 
     ! Get Lowdin matrix S^{1/2} C
-    call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
+    call Get_matrix_for_lowdin_analysis(MyMolecule, MyLsitem, ShalfC)
     
     ! *********************************************
     ! Get Lowdin charges for all molecular orbitals
@@ -852,7 +854,7 @@ contains
   !> \author Kasper Kristensen
   !> \date September 2014
   subroutine GenerateOrbitals_DECCO(nocc,nunocc,natoms, &
-       & MyMolecule,approximated_norm_threshold,OccOrbitals,UnoccOrbitals)
+       & MyMolecule,MyLsitem,approximated_norm_threshold,OccOrbitals,UnoccOrbitals)
 
     implicit none
     !> Number of occupied orbitals
@@ -863,6 +865,8 @@ contains
     integer,intent(in) :: natoms
     !> Molecule info
     type(fullmolecule), intent(in) :: MyMolecule
+    !> General LS info
+    type(lsitem),intent(inout) :: MyLsitem
     !> Threshold for orbital norm (see above)
     real(realk),intent(in) :: approximated_norm_threshold
     !> Occupied orbitals to create
@@ -893,7 +897,7 @@ contains
     call mem_alloc(basis_idx,nbasis,nMO)
 
     ! Get Lowdin matrix S^{1/2} C
-    call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
+    call Get_matrix_for_lowdin_analysis(MyMolecule, MyLsitem, ShalfC)
 
 
     ! ***********************************
@@ -1179,85 +1183,21 @@ contains
 
   end subroutine DECCO_assignment_sanity_check
 
-!!$
-!!$
-!!$  !> \brief Get norm of approximate orbital.
-!!$  !> \author Kasper Kristensen
-!!$  !> \date September 2011
-!!$  subroutine GetApproximateOrbitalNorm(MyMolecule,which_atoms,orb_idx,OrbitalNorm)
-!!$
-!!$    implicit none
-!!$    !> Information for molecule
-!!$    type(fullmolecule), intent(in) :: MyMolecule
-!!$    !> which_atoms(A) is true if atom A is used to approximate orbital, false otherwise
-!!$    logical, dimension(MyMolecule%natoms), intent(in) :: which_atoms
-!!$    !> Orbital index
-!!$    integer, intent(in) :: Orb_idx
-!!$    !> Norm of approximat orbital
-!!$    real(realk), intent(inout) :: OrbitalNorm
-!!$    real(realk), pointer :: C(:,:)
-!!$    real(realk), pointer :: S(:,:) => null()
-!!$    integer, pointer :: atom_start(:) => null()
-!!$    integer, pointer :: atom_end(:) => null()
-!!$    integer :: atom1,atom2,mu,nu,natoms,nbasis,nocc,nvirt
-!!$
-!!$    ! Init stuff
-!!$    nbasis=MyMolecule%nbasis
-!!$    nocc=MyMolecule%nocc
-!!$    nvirt=MyMolecule%nunocc
-!!$    call mem_alloc(C,nbasis,nbasis)
-!!$    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
-!!$    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
-!!$    S => MyMolecule%overlap ! AO overlap
-!!$    atom_start => MyMolecule%atom_start
-!!$    atom_end => MyMolecule%atom_end
-!!$    OrbitalNorm = 0E0_realk
-!!$    natoms = MyMolecule%natoms
-!!$
-!!$
-!!$    ! Approximate orbital norm for molecular orbital "i":
-!!$    !
-!!$    ! < phi | phi > = \sum_{mu in SET} sum_{nu in SET}  C_{mu i} S_{mu nu} C_{nu i}
-!!$    !
-!!$    ! where SET is the set of atoms defined by which_atoms.
-!!$    do atom1=1,natoms
-!!$       do atom2=1,natoms
-!!$
-!!$          ! Only add contribution if both mu AND nu are in set
-!!$          if( which_atoms(atom1) .and. which_atoms(atom2) ) then
-!!$             do mu=atom_start(atom1),atom_end(atom1) ! mu \in atom
-!!$                do nu=atom_start(atom2),atom_end(atom2) ! nu \in atom
-!!$                   OrbitalNorm = OrbitalNorm + C(mu,orb_idx) * S(mu,nu) * C(nu,orb_idx)
-!!$                end do
-!!$             end do
-!!$          end if
-!!$
-!!$       end do
-!!$    end do
-!!$
-!!$
-!!$    call mem_dealloc(C)
-!!$    S => null()
-!!$    atom_start => null()
-!!$    atom_end => null()
-!!$
-!!$  end subroutine GetApproximateOrbitalNorm
-!!$
-!!$
-!!$
 
   !> \brief Get matrix [S^{1/2} C] used for Lowdin population analysis
   !> \author Kasper Kristensen
-  subroutine Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
+  subroutine Get_matrix_for_lowdin_analysis(MyMolecule, MyLsitem, ShalfC)
 
     implicit none
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
+    !> General LS info
+    type(lsitem),intent(inout) :: MyLsitem
     !> S^{1/2} C matrix
-    real(realk), dimension(MyMolecule%nbasis,MyMolecule%nMO) :: ShalfC
+    real(realk), dimension(MyMolecule%nbasis,MyMolecule%nMO),intent(inout) :: ShalfC
     real(realk), pointer :: Shalf(:,:)
     integer :: nbasis,i,j,k,nMO
-    real(realk),pointer :: basis(:,:)
+    real(realk),pointer :: basis(:,:),S(:,:)
 
     nbasis = MyMolecule%nbasis
     nMO = MyMolecule%nMO
@@ -1277,10 +1217,16 @@ contains
        k=k+1
     enddo
 
+    ! AO overlap
+    call mem_alloc(S,nbasis,nbasis)
+    call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
+         & S,nbasis,nbasis,AORdefault,AORdefault)
+
     ! Get S^{1/2} matrix
     ! ******************
     call mem_alloc(Shalf,nbasis,nbasis)
-    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,MyMolecule%overlap,Shalf)
+    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,S,Shalf)
+    call mem_dealloc(S)
 
     ! S^{1/2} C
     ! *********
@@ -1622,7 +1568,7 @@ contains
     ! Set Fock and overlap matrices
     ! *****************************
     call mat_set_from_full(MyMolecule%fock(1:nbasis,1:nbasis), 1E0_realk,F)
-    call mat_set_from_full(MyMolecule%overlap(1:nbasis,1:nbasis), 1E0_realk,S)
+    call II_get_overlap(DECinfo%output,DECinfo%output,mylsitem%SETTING,S)
 
 
     ! Get canonical orbitals, sorted in order of increasing orbital energies
