@@ -153,6 +153,7 @@ implicit none
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
   config%InteractionEnergy = .false.
+  config%access_stream = .false.
   config%SameSubSystems = .false.
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
@@ -1247,6 +1248,10 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            !Calculated the Interaction energy 
            !using Counter Poise Correction
            config%InteractionEnergy = .true.
+        CASE('.ACCESS_STREAM')
+           ! Use stream access on all files open with lsopen
+           config%access_stream = .true.
+           access_stream = .true.
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
         CASE('.SUBSYSTEMDENSITY')

@@ -1,6 +1,7 @@
 module files
 
     logical, save :: first = .true.
+    logical, save :: access_stream = .false.
     integer, save :: IUNTAB(99)
 
 contains 
@@ -29,11 +30,12 @@ contains
 !>  FILEIN   Suggested name for the file (OPTIONAL, but strongly recommended)
 !>  STATIN   Suggested status of the file (OPTIONAL and maybe not recommended)
 !>  FORMIN   Formatted or unformatted file format. Default is 'UNFORMATTED'
+!>  POSIN    File positioning (OPTIONAL, default is 'ASIS')
 !>
 !> Output:
 !>  LUNIT    Assigned file unit number
 !>
-subroutine lsopen(lunit,filein,statin,formin)
+subroutine lsopen(lunit,filein,statin,formin,posin)
 implicit none
         !> Suggested unit number
         integer, intent(inout)  :: lunit
@@ -43,12 +45,16 @@ implicit none
         character(len=*), intent(in) :: statin 
         !> Formatted or unformatted file format ('FORMATTED','UNFORMATTED'(default))
         character(len=*), intent(in) :: formin 
+        !> Optional file positioning ('ASIS'(default),'REWIND','APPEND')
+        character(len=*), optional, intent(in) :: posin
         integer       :: FILELEN, STATLEN, FORMLEN, iunit
         integer       :: LENOUT,LENWRK,IOS,i
         character(len=200) :: filename, filestatus, fileformat 
-        character(len=20) :: outfil
+        character(len=20) :: outfil,acc_type,pos
         character(len=200) :: wrkdir
         logical :: fileexists
+        pos='ASIS'
+        if (present(posin)) pos = posin
         do I=1,200
            filestatus(I:I) = ' '
            filename(I:I) = ' '
@@ -65,6 +71,11 @@ implicit none
 #endif
       first = .false.
    endif
+   if (access_stream) then
+      acc_type='STREAM'
+   else
+      acc_type='SEQUENTIAL'
+   end if
 
 !
 !     We first deal with the unit number
@@ -161,7 +172,7 @@ implicit none
          END IF
 
          OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS='OLD', &
-     &     FORM=fileformat(1:FORMLEN),IOSTAT=IOS)
+     &     FORM=fileformat(1:FORMLEN),IOSTAT=IOS,ACCESS=ACC_TYPE,POSITION=POS)
 
          if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
 
@@ -183,7 +194,8 @@ implicit none
          END IF
 
          IF (filestatus(1:7) == 'SCRATCH') THEN 
-            OPEN(UNIT=LUNIT,STATUS='SCRATCH',FORM=fileformat(1:FORMLEN),IOSTAT=IOS)
+            OPEN(UNIT=LUNIT,STATUS='SCRATCH',FORM=fileformat(1:FORMLEN),IOSTAT=IOS, &
+               & ACCESS=ACC_TYPE, POSITION=POS)
             if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
          ELSE
 
@@ -197,14 +209,14 @@ implicit none
 
                IF (fileexists) THEN
                   OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS='OLD', &
-                     & FORM=fileformat(1:FORMLEN),IOSTAT=IOS)
+                     & FORM=fileformat(1:FORMLEN),IOSTAT=IOS,ACCESS=ACC_TYPE,POSITION=POS)
                   if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
                   CLOSE(UNIT=LUNIT,STATUS='DELETE')
                END IF
             END IF
 
             OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS=filestatus(1:STATLEN), &
-               & FORM=fileformat(1:FORMLEN),IOSTAT=IOS)
+               & FORM=fileformat(1:FORMLEN),IOSTAT=IOS,ACCESS=ACC_TYPE,POSITION=POS)
             if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
          END IF
       ENDIF
