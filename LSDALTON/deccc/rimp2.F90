@@ -134,14 +134,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer :: num_ids
 #ifdef VAR_OPENACC
   integer(kind=acc_handle_kind), pointer, dimension(:) :: async_id
-  integer(kind=acc_device_kind) :: acc_device_type
 #ifdef VAR_PGF90
   integer*4, external :: acc_set_cuda_stream
 #endif
+  integer(c_size_t) :: total_gpu,free_gpu ! total and free gpu mem in bytes
 #else
   integer, pointer, dimension(:) :: async_id
 #endif
-  type(c_ptr) :: tocc_dev, tocc2_dev, tocc3_dev
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
@@ -178,7 +177,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   ! initialize the CUBLAS context
   stat = cublasCreate_v2(cublas_handle)
-
   ! set the cublas handle to match the synchronous openacc handle 
   stat = acc_set_cuda_stream(acc_async_sync,cublas_handle)
 
@@ -488,6 +486,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !Janus will set this variable correctly. For now I set it true if it is a debug
      !run and false for release run. In this way all the code is tested
      PerformTiling = .FALSE.
+#if defined(VAR_OPENACC) && defined(VAR_CUDA)
+     call get_dev_mem(total_gpu,free_gpu)
+#endif
      MaxVirtSize = nvirt/2           !should be determined by Janus is some way
      nTiles =  nvirt/MaxVirtSize 
      IF(nTiles.EQ.0)PerformTiling = .FALSE.
