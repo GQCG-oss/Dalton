@@ -34,30 +34,32 @@ module tensor_interface_module
   public DIL_ALLOC_MPI     !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
   public DIL_CONS_OUT      !output for DIL messages
   public DIL_DEBUG         !DIL debugging switch
-  public dil_tens_contr_t  !tensor contraction specification
-  public subtens_t         !subtensor (tensor slice) specification for Janus
-  public dil_subtensor_set !subtensor (tensor slice) setting method for Janus
-  public dil_set_alloc_type
-  public dil_clean_tens_contr
-  public dil_set_tens_contr_args
-  public dil_get_min_buf_size
-  public dil_set_tens_contr_spec
-  public dil_tensor_contract
-  public dil_debug_to_file_start
-  public dil_debug_to_file_finish
-  public thread_wtime
-  public process_wtime
-  public dil_array_print
-  public dil_array_init
-  public dil_tensor_init
-  public dil_array_norm1
-  public dil_tensor_norm1
-  public dil_tens_fetch_start        !tensor slice fetching for Janus
-  public dil_tens_fetch_finish_prep  !tensor slice fetching for Janus
-  public dil_tens_prep_upload_start  !tensor slice uploading for Janus
-  public dil_tens_upload_finish      !tensor slice uploading for Janus
-  public dil_will_malloc_succeed     !tells whether a given malloc() request can succeed if issued
-  public int2str !converts integers to strings
+  public dil_tens_contr_t             !tensor contraction specification
+  public subtens_t                    !subtensor (tensor slice) specification for Janus
+  public dil_subtensor_set            !subtensor (tensor slice) setting method for Janus
+  public dil_set_alloc_type           !set default memory allocation flags (BASIC,MPI_ALLOC,PINNED,etc.)
+  public dil_clean_tens_contr         !clean the tensor contraction handle
+  public dil_set_tens_contr_args      !set up an argument for a tensor contraction
+  public dil_set_tens_contr_spec      !define the tensor contraction specification
+  public dil_get_min_buf_size         !get the minimal buffer size needed to perform the tensor contraction
+  public dil_prep_buffer              !prepare a work buffer for a tensor contraction
+  public dil_tensor_contract          !contract tensors (pipelined)
+  public dil_tensor_contract_finalize !finalize a non-blocking tensor contraction
+  public dil_debug_to_file_start      !start redirecting debugging information to a file
+  public dil_debug_to_file_finish     !finish redirecting debugging information to a file
+  public thread_wtime                 !OMP thread wall time
+  public process_wtime                !MPI process wall time
+  public dil_array_print              !print a whole (local) array or its part
+  public dil_array_init               !initialize a local array
+  public dil_tensor_init              !initialize a distributed tensor
+  public dil_array_norm1              !compute the 1-norm of a local array
+  public dil_tensor_norm1             !compute the 1-norm of a distributed tensor (blocking)
+  public dil_tens_fetch_start         !tensor slice fetching for Janus (start)
+  public dil_tens_fetch_finish_prep   !tensor slice fetching for Janus (finish)
+  public dil_tens_prep_upload_start   !tensor slice uploading for Janus (start)
+  public dil_tens_upload_finish       !tensor slice uploading for Janus  (finish)
+  public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued
+  public int2str                      !converts integers to strings
 #endif
 
   !This defines the public interface to the tensors

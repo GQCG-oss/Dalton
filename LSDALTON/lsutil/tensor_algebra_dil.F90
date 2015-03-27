@@ -50,6 +50,8 @@
 !   (1st dimenstion, 2nd dimension, and so on), flat (global) tile numeration starts from 1.
 !NOTES:
 ! * The code assumes Fortran-2003/2008 & MPI-3 (defined COMPILER_UNDERSTANDS_FORTRAN_2003, VAR_PTR_RESHAPE, VAR_MPI)!
+! * The code assumes an explicit interface for MPI_FREE_MEM specified in MPI.mod. If not, it will NOT work correctly!
+!   Set the PROTO_MPI_FREE_MEM macro as a workaround.
 ! * The number of OMP threads spawned on CPU or MIC must not exceed the MAX_THREADS parameter!
 ! * In order to activate the debugging mode, set macro DIL_DEBUG_ON below.
 !PREPROCESSOR:
@@ -109,9 +111,11 @@
         integer(INTD), parameter, private:: DIL_DONE=-1                 !iterations are over
         integer(INTD), parameter, private:: DIL_NO_WORK=-1              !no work for an MPI processes
         integer(INTD), parameter, public:: DIL_SUCCESS=0                !success
+        integer(INTD), parameter, public:: DIL_ALLOC_NOT=-1             !not allocated
         integer(INTD), parameter, public:: DIL_ALLOC_BASIC=0            !basic memory allocation
         integer(INTD), parameter, public:: DIL_ALLOC_PINNED=1           !pinned memory allocation
         integer(INTD), parameter, public:: DIL_ALLOC_MPI=2              !memory allocation by MPI_ALLOC_MEM
+        integer(INTD), parameter, public:: DIL_ALLOC_EXT=3              !pointer associated with an external allocation
         integer(INTD), parameter, public:: DEV_HOST_CPU=0               !Regular CPU device (multi-core)
         integer(INTD), parameter, public:: DEV_NVIDIA_GPU=1             !NVidia GPU device
         integer(INTD), parameter, public:: DEV_INTEL_MIC=2              !Intel MIC device
@@ -122,9 +126,9 @@
         logical, parameter, public:: DIL_TC_ALL=.true.                  !MPI processes work collectively on a tensor contraction
 !VARIABLES:
 #ifndef USE_BASIC_ALLOC
-        integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_MPI           !allocator type for communication buffers
+        integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_MPI           !default allocator type for communication buffers
 #else
-        integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_BASIC         !allocator type for communication buffers
+        integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_BASIC         !default allocator type for communication buffers
 #endif
         integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device (defaults to screen)
         integer(INTD), public:: DIL_CONS_OUT=6                          !console output device for external use (defaults to screen)
@@ -195,7 +199,9 @@
          real(realk), private:: alpha              !multiplication prefactor (can be explicit)
          real(realk), private:: beta               !scaling factor for the destination tensor (always implicit)
          integer(INTD), private:: num_async        !number of asynchronous outstanding MPI uploads left after the contraction
-         type(rank_win_t), private:: list_async(1:MAX_TILES_PER_PART) !asynchronous outstanding MPI uploads left after the contraction
+         type(rank_win_t), private:: list_async(1:MAX_TILES_PER_PART)  !asynchronous outstanding MPI uploads left after the contraction
+         real(realk), pointer, contiguous, private:: buffer(:)=>NULL() !work buffer
+         integer(INTD), private:: alloc_type=DIL_ALLOC_NOT             !allocation type for the work buffer
         end type dil_tens_contr_t
  !Subtensor part specification:
         type, public:: subtens_t
@@ -241,6 +247,10 @@
         interface cpu_ptr_alloc
          module procedure cpu_ptr_alloc_r !deafult real kind (realk)
         end interface cpu_ptr_alloc
+ !CPU pointer memory deallocation:
+        interface cpu_ptr_free
+         module procedure cpu_ptr_free_r !deafult real kind (realk)
+        end interface cpu_ptr_free
  !Integer to String conversion:
         interface int2str
          module procedure int2str_i4
@@ -265,6 +275,7 @@
         public dil_set_tens_contr_args
         private dil_get_arg_tile_vol
         public dil_get_min_buf_size
+        public dil_prep_buffer
         public dil_set_tens_contr_spec
         public dil_subtensor_set
         private dil_subtensor_vol
@@ -285,6 +296,8 @@
         public dil_set_alloc_type
         private cpu_ptr_alloc
         private cpu_ptr_alloc_r
+        private cpu_ptr_free
+        private cpu_ptr_free_r
         private my_mpi_size
         private my_mpi_rank
         private divide_segment_i8
@@ -328,6 +341,7 @@
         private dil_tens_contr_partition
         private dil_tensor_contract_pipe
         public dil_tensor_contract
+        public dil_tensor_contract_finalize
         public dil_tensor_norm1
         public dil_array_norm1
         public dil_tensor_init
@@ -559,6 +573,8 @@
         call dil_tens_arg_clean(tcontr%right_arg)
         tcontr%alpha=1E0_realk; tcontr%beta=0E0_realk
         tcontr%num_async=-1 !-1 means undefined because 0 will have a special meaning later!
+        call cpu_ptr_free(tcontr%buffer,errc,attr=tcontr%alloc_type)
+        if(errc.eq.0) tcontr%alloc_type=DIL_ALLOC_NOT
         if(present(ierr)) ierr=errc
         return
         end subroutine dil_clean_tens_contr
@@ -670,6 +686,43 @@
         dil_get_min_buf_size=max(dil_get_min_buf_size*scl,MIN_BUF_MEM)
         return
         end function dil_get_min_buf_size
+!-------------------------------------------------------------------------
+        subroutine dil_prep_buffer(tcontr,mem_lim,ierr,ext_buf,alloc_type) !SERIAL
+!This subroutine prepares an internal work buffer for a giving tensor contraction.
+        implicit none
+        type(dil_tens_contr_t), intent(inout):: tcontr           !inout: full tensor contraction specification
+        integer(INTL), intent(in):: mem_lim                      !in: minimal size of the buffer in bytes
+        integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
+        real(realk), intent(in), target, optional:: ext_buf(1:)  !in: external buffer space
+        integer(INTD), intent(in), optional:: alloc_type         !in: allocation type
+        integer(INTL):: nelems,sreal
+        real(realk):: val
+
+        ierr=0
+        call cpu_ptr_free(tcontr%buffer,ierr,attr=tcontr%alloc_type)
+        if(ierr.eq.0) then
+         tcontr%alloc_type=DIL_ALLOC_NOT
+         if(mem_lim.gt.0_INTL) then
+          val=0E0_realk; sreal=int(sizeof(val),INTL)
+          if(present(ext_buf)) then
+           nelems=mem_lim/sreal !associate to at most <mem_lim> bytes
+           tcontr%buffer(1:nelems)=>ext_buf; tcontr%alloc_type=DIL_ALLOC_EXT
+          else
+           nelems=(mem_lim-1_INTL)/sreal+1_INTL !allocate at least <mem_lim> bytes
+           if(present(alloc_type)) then
+            call cpu_ptr_alloc(tcontr%buffer,nelems,ierr,attr=alloc_type)
+            if(ierr.eq.0) tcontr%alloc_type=alloc_type
+           else
+            call cpu_ptr_alloc(tcontr%buffer,nelems,ierr)
+            if(ierr.eq.0) tcontr%alloc_type=DIL_ALLOC_TYPE
+           endif
+          endif
+         else
+          ierr=1
+         endif
+        endif
+        return
+        end subroutine dil_prep_buffer
 !--------------------------------------------------------------------------------------------------------------
         subroutine dil_set_tens_contr_spec(tcontr,tcs,ierr,ddims,ldims,rdims,dbase,lbase,rbase,alpha,dest_zero) !SERIAL
 !This user-level subroutine sets up a formal tensor contraction specification.
@@ -1267,11 +1320,11 @@
         subroutine cpu_ptr_alloc_r(arr,nelems,ierr,base,attr) !SERIAL
 !This subroutine allocates memory for a 1d pointer array (default real).
         implicit none
-        real(realk), pointer:: arr(:)              !out: 1d array
-        integer(INTL), intent(in):: nelems         !in: number of elements to allocate
-        integer(INTD), intent(inout):: ierr        !out: error code (0:success)
-        integer(INTL), intent(in), optional:: base !in: index numeration start offset (default is 1)
-        integer(INTD), intent(in), optional:: attr !in: attributes (pinned, etc.)
+        real(realk), pointer, contiguous, intent(inout):: arr(:) !out: 1d array
+        integer(INTL), intent(in):: nelems                       !in: number of elements to allocate
+        integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
+        integer(INTL), intent(in), optional:: base               !in: index numeration start offset (default is 1)
+        integer(INTD), intent(in), optional:: attr               !in: attributes (pinned, etc.)
         integer(INTL):: bs
         integer(INTD):: flags
         integer(C_SIZE_T):: csize
@@ -1283,19 +1336,22 @@
 
         ierr=0
         if(nelems.gt.0_INTL) then
-         if(present(attr)) then; flags=attr; else; flags=DIL_ALLOC_BASIC; endif
+         if(present(attr)) then; flags=attr; else; flags=DIL_ALLOC_TYPE; endif
          if(present(base)) then; bs=base; else; bs=1_INTL; endif
          select case(flags)
+ !Basic malloc:
          case(DIL_ALLOC_BASIC)
           allocate(arr(bs:bs+nelems-1_INTL),STAT=ierr)
           if(ierr.ne.0) then
            if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): memory allocation failed: ",i11)') ierr
            ierr=1
           endif
+ !Pinned malloc:
          case(DIL_ALLOC_PINNED)
           val=0E0_realk; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
           !`Write (call C wrapper for cudaMallocHost)
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
+ !MPI malloc:
          case(DIL_ALLOC_MPI)
           caddr=C_NULL_PTR
           val=0E0_realk; mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND)
@@ -1303,7 +1359,7 @@
           if(mpi_err.ne.0) then
            if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): MPI memory allocation failed: ",i11)')&
            &mpi_err
-           ierr=2
+           ierr=3
           else
            call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
           endif
@@ -1316,6 +1372,54 @@
         endif
         return
         end subroutine cpu_ptr_alloc_r
+!-----------------------------------------------
+        subroutine cpu_ptr_free_r(arr,ierr,attr) !SERIAL
+!This subroutine deallocates memory assigned to a 1d pointer array (default real).
+!WARNING: This subroutine assumes that MPI_FREE_MEM has an explicitly defined interface via MPI.mod!
+!If not, it will NOT work correctly!!!
+        implicit none
+        real(realk), pointer, contiguous, intent(inout):: arr(:) !inout: 1d array
+        integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
+        integer(INTD), intent(in), optional:: attr               !in: attributes (pinned, etc.)
+        type(C_PTR):: caddr
+        integer(INTD):: flags
+
+#ifdef PROTO_MPI_FREE_MEM
+        interface
+         subroutine MPI_FREE_MEM(base_ptr,ierr)
+          import
+          type(C_PTR), value:: base_ptr
+          integer(INTD), intent(out):: ierr
+         end subroutine MPI_FREE_MEM
+        end interface
+#endif
+
+        ierr=0
+        if(associated(arr)) then
+         if(present(attr)) then; flags=attr; else; flags=DIL_ALLOC_TYPE; endif
+         select case(flags)
+         case(DIL_ALLOC_NOT)
+          ierr=1
+         case(DIL_ALLOC_BASIC)
+          deallocate(arr,STAT=ierr)
+          if(ierr.ne.0) ierr=2
+         case(DIL_ALLOC_PINNED)
+          caddr=c_loc(arr);
+          !`Write (call C wrapper for cudaMallocHost)
+          if(ierr.ne.0) ierr=3
+         case(DIL_ALLOC_MPI)
+          caddr=c_loc(arr); call MPI_FREE_MEM(caddr,ierr) !<caddr> must be passed by value!!!
+          if(ierr.ne.0) ierr=4
+         case(DIL_ALLOC_EXT)
+          nullify(arr)
+         case default
+          ierr=5
+         end select
+        else
+         ierr=6
+        endif
+        return
+        end subroutine cpu_ptr_free_r
 !--------------------------------------------------
         integer(INTD) function my_mpi_size(my_comm) !SERIAL
 !Returns the rank of an MPI process.
@@ -3678,20 +3782,20 @@
 ! * If <nasync> and <lasync> are present, the last series of MPI uploads will not be finalized here,
 !   but postponed for later: lasync(1:nasync) will contain the needed information.
         implicit none
-        type(contr_spec_t), intent(in):: cspec                          !in: tensor contraction specification
-        type(tens_arg_t), intent(inout):: darg                          !inout: destination tensor argument
-        type(tens_arg_t), intent(in):: larg                             !in: left tensor argument
-        type(tens_arg_t), intent(in):: rarg                             !in: right tensor argument
-        real(realk), intent(in):: alpha                                 !in: tensor contraction prefactor (GEMM alpha)
-        real(realk), intent(in):: beta                                  !in: GEMM beta
-        integer(INTL), intent(in):: mem_lim                             !in: local memory limit (bytes): buffer space
-        integer(INTD), intent(inout):: ierr                             !out: error code (0:success)
-        real(realk), intent(inout), target, optional:: ebuf(1:mem_lim)  !inout: existing external buffer (to avoid mem allocations)
-        logical, intent(in), optional:: locked                          !in: if .true., MPI wins for tens-args are assumed locked
-        integer(INTD), intent(out), optional:: nasync                   !out: number of outstanding async MPI uploads
-        type(rank_win_t), intent(inout), optional:: lasync(1:)          !out: outstanding async MPI uploads
-        integer(INTD), intent(in), optional:: num_gpus                  !in: number of NVidia GPUs available on the node: (0..max)
-        integer(INTD), intent(in), optional:: num_mics                  !in: number of Intel MICs available on the node: (0..max)
+        type(contr_spec_t), intent(in):: cspec                   !in: tensor contraction specification
+        type(tens_arg_t), intent(inout):: darg                   !inout: destination tensor argument
+        type(tens_arg_t), intent(in):: larg                      !in: left tensor argument
+        type(tens_arg_t), intent(in):: rarg                      !in: right tensor argument
+        real(realk), intent(in):: alpha                          !in: tensor contraction prefactor (GEMM alpha)
+        real(realk), intent(in):: beta                           !in: GEMM beta
+        integer(INTL), intent(in):: mem_lim                      !in: local memory limit (bytes): buffer space
+        integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
+        real(realk), intent(inout), target, optional:: ebuf(1:)  !inout: existing external buffer (to avoid mem allocations)
+        logical, intent(in), optional:: locked                   !in: if .true., MPI wins for tens-args are assumed locked
+        integer(INTD), intent(out), optional:: nasync            !out: number of outstanding async MPI uploads
+        type(rank_win_t), intent(inout), optional:: lasync(1:)   !out: outstanding async MPI uploads
+        integer(INTD), intent(in), optional:: num_gpus           !in: number of NVidia GPUs available on the node: (0..max)
+        integer(INTD), intent(in), optional:: num_mics           !in: number of Intel MICs available on the node: (0..max)
 !-----------------------------------------------------
         logical, parameter:: NO_CHECK=.false.         !argument check
         logical, parameter:: PREP_AND_COMM=.false.    !communication/tensor_preparation overlap
@@ -4550,7 +4654,7 @@
         logical, intent(in):: globality                   !in: globality kind of the tensor contraction
         integer(INTL), intent(in):: mem_lim               !in: local buffer memory limit in bytes
         integer(INTD), intent(inout):: ierr               !out: error (0:success)
-        real(realk), intent(inout), target, optional:: ext_buffer(1:mem_lim) !in: existing external buffer (length >= mem_lim/realk)
+        real(realk), intent(inout), target, optional:: ext_buffer(1:) !in: existing external buffer (length >= mem_lim/realk)
         logical, intent(in), optional:: locked            !in: if .true., MPI windows for tensor arguments are assumed locked
         logical, intent(in), optional:: async             !in: if .TRUE., the tensor contraction will not be finalized here
         integer(INTD), intent(in), optional:: num_gpus    !in: number of Nvidia GPUs to utilize (0..num_gpus-1)
@@ -4633,8 +4737,8 @@
         &write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Exited Process ",i6," of ",i6,": Status ",i9)') impir,impis,ierr
         return
         end subroutine dil_tensor_contract
-!------------------------------------------------------------------
-        subroutine dil_tensor_contract_finalize(tcontr,ierr,locked) !PARALLEL (MPI)
+!------------------------------------------------------------------------------
+        subroutine dil_tensor_contract_finalize(tcontr,ierr,locked,free_buffer) !PARALLEL (MPI)
 !This subroutine finalizes any outstanding MPI communications associated
 !with a non-blocking tensor contraction represented by <tcontr>. It is safe
 !to finalize blocking tensor contractions here as well (nothing will be done).
@@ -4642,6 +4746,7 @@
         type(dil_tens_contr_t), intent(inout):: tcontr !inout: full tensor contraction specification
         integer(INTD), intent(inout):: ierr            !out: error (0:success)
         logical, intent(in), optional:: locked         !in: if .true., MPI windows for tensor arguments are assumed locked
+        logical, intent(in), optional:: free_buffer    !in: if .true., the internal work buffer will be deallocated
         integer(INTD):: i
         logical:: win_lck
 
@@ -4655,6 +4760,12 @@
          endif
         enddo
         tcontr%num_async=0
+        if(present(free_buffer)) then
+         if(free_buffer) then
+          call cpu_ptr_free(tcontr%buffer,ierr,attr=tcontr%alloc_type)
+          if(ierr.eq.0) tcontr%alloc_type=DIL_ALLOC_NOT
+         endif
+        endif
         return
         end subroutine dil_tensor_contract_finalize
 !-------------------------------------------------------
