@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/03/26 (started 2014/09/01).
+!REVISION: 2015/03/27 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -143,6 +143,19 @@
 !DIR$ ATTRIBUTES ALIGN:128:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
 #endif
 !TYPES:
+ !Rank/Window descriptor:
+        type, private:: rank_win_t
+         integer(INTD), private:: rank
+         integer(INTL), private:: window
+        end type rank_win_t
+ !Rank/window container:
+        type, private:: rank_win_cont_t
+         integer(INTD), private:: num_entries=0
+         integer(INTD), private:: first_entry=-1
+         type(rank_win_t), private:: rw_entry(MAX_TILES_PER_PART)
+         integer(INTD), private:: next_win(MAX_TILES_PER_PART)
+         integer(INTD), private:: next_rank(MAX_TILES_PER_PART)
+        end type rank_win_cont_t
  !Tensor contraction specification:
         type, private:: contr_spec_t
          logical, private:: dest_zero                      !if .true., the destination (sub)tensor will be set to zero before contraction
@@ -181,6 +194,8 @@
          type(tens_arg_t), private:: right_arg     !right tensor argument
          real(realk), private:: alpha              !multiplication prefactor (can be explicit)
          real(realk), private:: beta               !scaling factor for the destination tensor (always implicit)
+         integer(INTD), private:: num_async        !number of asynchronous outstanding MPI uploads left after the contraction
+         type(rank_win_t), private:: list_async(1:MAX_TILES_PER_PART) !asynchronous outstanding MPI uploads left after the contraction
         end type dil_tens_contr_t
  !Subtensor part specification:
         type, public:: subtens_t
@@ -219,19 +234,6 @@
          integer(INTD), private:: num_bufs=BUFS_PER_DEV     !number of buffers belonging to device
          type(arg_buf_t), private:: arg_buf(1:BUFS_PER_DEV) !buffers belonging to device
         end type dev_buf_t
- !Rank/Window descriptor:
-        type, private:: rank_win_t
-         integer(INTD), private:: rank
-         integer(INTL), private:: window
-        end type rank_win_t
- !Rank/window container:
-        type, private:: rank_win_cont_t
-         integer(INTD), private:: num_entries=0
-         integer(INTD), private:: first_entry=-1
-         type(rank_win_t), private:: rw_entry(MAX_TILES_PER_PART)
-         integer(INTD), private:: next_win(MAX_TILES_PER_PART)
-         integer(INTD), private:: next_rank(MAX_TILES_PER_PART)
-        end type rank_win_cont_t
 !DATA:
 
 !INTERFACES:
@@ -556,6 +558,7 @@
         call dil_tens_arg_clean(tcontr%left_arg)
         call dil_tens_arg_clean(tcontr%right_arg)
         tcontr%alpha=1E0_realk; tcontr%beta=0E0_realk
+        tcontr%num_async=-1 !-1 means undefined because 0 will have a special meaning later!
         if(present(ierr)) ierr=errc
         return
         end subroutine dil_clean_tens_contr
@@ -2544,21 +2547,30 @@
         enddo
         return
         end subroutine dil_tensor_upload_start
-!--------------------------------------------------------------------------------
-        subroutine dil_tensor_upload_complete(tens_arr,tens_part,buf,ierr,locked) !SERIAL (MPI)
+!-----------------------------------------------------------------------------------------------------
+        subroutine dil_tensor_upload_complete(tens_arr,tens_part,buf,ierr,locked,num_async,list_async) !SERIAL (MPI)
 !This subroutine completes upload of all tiles constituting a given tensor part.
+!If both <num_async> and <list_async> are present, no MPI passive synchronization will be done.
+!Instead, the list of outstanding MPI uploads will be returned for later finalization.
         implicit none
-        type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
-        type(subtens_t), intent(in):: tens_part !in: tensor part specification
-        type(arg_buf_t), intent(in):: buf       !in: local buffer containing the tiles to upload
-        integer(INTD), intent(inout):: ierr     !out: error code (0:success)
-        logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
-        integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
+        type(tensor), intent(inout):: tens_arr                     !inout: tensor stored distributively in terms of tiles
+        type(subtens_t), intent(in):: tens_part                    !in: tensor part specification
+        type(arg_buf_t), intent(in):: buf                          !in: local buffer containing the tiles to upload
+        integer(INTD), intent(inout):: ierr                        !out: error code (0:success)
+        logical, intent(in), optional:: locked                     !in: if .TRUE., MPI windows are assumed already locked
+        integer(INTD), intent(inout), optional:: num_async         !inout: number of the outstanding MPI uploads left
+        type(rank_win_t), intent(inout), optional:: list_async(1:) !out: list of the outstanding MPI uploads
+        integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK),max_async
         integer:: tile_num,tile_win
         type(rank_win_cont_t):: rwc
-        logical:: new_rw,win_lck
+        logical:: new_rw,win_lck,async
 
         ierr=0; call dil_rank_window_clean(rwc)
+        if(present(num_async).and.present(list_async)) then !both arguments must be present for asynchronous scenario
+         async=.true.; max_async=ubound(list_async,1)
+        else
+         async=.false.
+        endif
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL): Uploading (",16(1x,i6,":",i6,","),")")')&
         &(/(tens_part%lbnd(i),tens_part%lbnd(i)+tens_part%dims(i)-1_INTD,i=1,tens_arr%mode)/) !debug
@@ -2571,10 +2583,20 @@
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
-           if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+           if(.not.async) then
+            if(win_lck) then
+             call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+            else
+             call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+            endif
            else
-            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+            num_async=num_async+1
+            if(num_async.le.max_async) then
+             list_async(num_async)%rank=tile_host
+             list_async(num_async)%window=tens_arr%wi(tile_win)
+            else
+             ierr=1000
+            endif
            endif
           endif
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
@@ -3635,8 +3657,9 @@
          end function get_next_mlndx
 
         end subroutine dil_tens_contr_partition
-!----------------------------------------------------------------------------------------------------------------------
-        subroutine dil_tensor_contract_pipe(cspec,darg,larg,rarg,alpha,beta,mem_lim,ierr,ebuf,locked,num_gpus,num_mics) !PARALLEL (MPI+OMP+CUDA+MIC)
+!-----------------------------------------------------------------------------------------
+        subroutine dil_tensor_contract_pipe(cspec,darg,larg,rarg,alpha,beta,mem_lim,ierr,&
+                                           &ebuf,locked,nasync,lasync,num_gpus,num_mics)   !PARALLEL (MPI+OMP+CUDA+MIC)
 !This subroutine implements pipelined tensor contractions for CPU/GPU/MIC.
 !Details:
 ! * Each Device is assigned several buffers:
@@ -3652,6 +3675,8 @@
 !   (a) Argument load (prefetch) is always done into buffers referred to as 1-3 (D,L,R);
 !   (b) Computation always uses buffers referred to as 4-6 (D,L,R);
 !   (c) Result upload is always done from buffer referred to as 7.
+! * If <nasync> and <lasync> are present, the last series of MPI uploads will not be finalized here,
+!   but postponed for later: lasync(1:nasync) will contain the needed information.
         implicit none
         type(contr_spec_t), intent(in):: cspec                          !in: tensor contraction specification
         type(tens_arg_t), intent(inout):: darg                          !inout: destination tensor argument
@@ -3663,6 +3688,8 @@
         integer(INTD), intent(inout):: ierr                             !out: error code (0:success)
         real(realk), intent(inout), target, optional:: ebuf(1:mem_lim)  !inout: existing external buffer (to avoid mem allocations)
         logical, intent(in), optional:: locked                          !in: if .true., MPI wins for tens-args are assumed locked
+        integer(INTD), intent(out), optional:: nasync                   !out: number of outstanding async MPI uploads
+        type(rank_win_t), intent(inout), optional:: lasync(1:)          !out: outstanding async MPI uploads
         integer(INTD), intent(in), optional:: num_gpus                  !in: number of NVidia GPUs available on the node: (0..max)
         integer(INTD), intent(in), optional:: num_mics                  !in: number of Intel MICs available on the node: (0..max)
 !-----------------------------------------------------
@@ -3680,7 +3707,7 @@
         integer(INTD):: nd,nl,nr,num_dev,dev,first_avail,buf_conf(1:BUFS_PER_DEV,0:MAX_DEVS-1),prmn(1:MAX_TENSOR_RANK,0:2)
         integer(INTD):: tasks_done(0:MAX_DEVS-1),task_curr(0:MAX_DEVS-1),task_prev(0:MAX_DEVS-1),task_next(0:MAX_DEVS-1)
         logical:: buf_alloc,gpu_on,mic_on,first_task,next_load,prev_store,args_here
-        logical:: win_lck,err_curr,err_prev,err_next,triv_d,triv_l,triv_r
+        logical:: win_lck,err_curr,err_prev,err_next,triv_d,triv_l,triv_r,async
         real(8):: tmb,tms,tm,tmm,tc_flops,mm_flops
         real(realk):: val
 
@@ -3691,40 +3718,49 @@
         val=0E0_realk; size_of_real=sizeof(val)
         tc_flops=0d0; mm_flops=0d0; tmm=0d0
         hbuf=>NULL(); hbuf_cp=C_NULL_PTR; buf_alloc=.false.
-        num_dev=1; gpu_on=.false.; mic_on=.false.
+        num_dev=1; gpu_on=.false.; mic_on=.false.; async=.false.
+        if(present(nasync)) then
+         if(present(lasync)) then
+          nasync=0; async=.true.
+         else
+          call cleanup(1_INTD); return
+         endif
+        else
+         if(present(lasync)) then; call cleanup(39_INTD); return; endif
+        endif
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: OUTSIDE LOCK = ",l1)')&
          &impir,win_lck !debug
         contr_case=darg%store_type//larg%store_type//rarg%store_type !contraction case
 !Check input arguments:
-        if(mem_lim.lt.MIN_BUF_MEM) then; call cleanup(1_INTD); return; endif
+        if(mem_lim.lt.MIN_BUF_MEM) then; call cleanup(2_INTD); return; endif
         if(.not.NO_CHECK) then
          i=dil_tens_contr_spec_check(cspec)
          if(i.ne.0) then
           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: ContrSpec error ",i6)')&
           &impir,i
-          call cleanup(2_INTD); return
+          call cleanup(3_INTD); return
          endif
         endif
         if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then
          if(associated(darg%tens_distr_p)) then
-          if(darg%tens_distr_p%tsize.le.0) then; call cleanup(3_INTD); return; endif
+          if(darg%tens_distr_p%tsize.le.0) then; call cleanup(4_INTD); return; endif
          else
-          call cleanup(4_INTD); return
+          call cleanup(5_INTD); return
          endif
         endif
         if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then
          if(associated(larg%tens_distr_p)) then
-          if(larg%tens_distr_p%tsize.le.0) then; call cleanup(5_INTD); return; endif
+          if(larg%tens_distr_p%tsize.le.0) then; call cleanup(6_INTD); return; endif
          else
-          call cleanup(6_INTD); return
+          call cleanup(7_INTD); return
          endif
         endif
         if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then
          if(associated(rarg%tens_distr_p)) then
-          if(rarg%tens_distr_p%tsize.le.0) then; call cleanup(7_INTD); return; endif
+          if(rarg%tens_distr_p%tsize.le.0) then; call cleanup(8_INTD); return; endif
          else
-          call cleanup(8_INTD); return
+          call cleanup(9_INTD); return
          endif
         endif
 !Get tensor rank/size and other info:
@@ -3741,7 +3777,7 @@
         call permutation_invert(nl,cspec%lprmn,prmn(1:,1),i) !N2O for the left tensor
         call permutation_invert(nr,cspec%rprmn,prmn(1:,2),i) !NwO for the right tensor
         if(nd.lt.0.or.nl.le.0.or.nr.le.0.or.dvol.lt.1_INTL.or.lvol.lt.1_INTL.or.rvol.lt.1_INTL) then
-         call cleanup(9_INTD); return
+         call cleanup(10_INTD); return
         endif
 !Check dimension range consistency:
         if(DIL_DEBUG) then
@@ -3791,20 +3827,20 @@
          select case(darg%store_type)
          case('l','L')
           do i=1,nd; if(cspec%dbase(i).lt.darg%tens_loc%base(i)) then; j=1; exit; endif; enddo
-          if(j.ne.0) then; call cleanup(10_INTD); return; endif
-          do i=1,nd; if(cspec%dbase(i)+cspec%ddims(i).gt.darg%tens_loc%base(i)+darg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
           if(j.ne.0) then; call cleanup(11_INTD); return; endif
+          do i=1,nd; if(cspec%dbase(i)+cspec%ddims(i).gt.darg%tens_loc%base(i)+darg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
+          if(j.ne.0) then; call cleanup(12_INTD); return; endif
          case('d','D')
           if(associated(darg%tens_distr_p)) then
            do i=1,nd; if(cspec%dbase(i).lt.0) then; j=1; exit; endif; enddo
-           if(j.ne.0) then; call cleanup(12_INTD); return; endif
-           do i=1,nd; if(cspec%dbase(i)+cspec%ddims(i)-1.gt.darg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
            if(j.ne.0) then; call cleanup(13_INTD); return; endif
+           do i=1,nd; if(cspec%dbase(i)+cspec%ddims(i)-1.gt.darg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
+           if(j.ne.0) then; call cleanup(14_INTD); return; endif
           else
-           call cleanup(14_INTD); return
+           call cleanup(15_INTD); return
           endif
          case default
-          call cleanup(15_INTD); return
+          call cleanup(16_INTD); return
          end select
         endif
  !Left tensor argument:
@@ -3813,20 +3849,20 @@
          select case(larg%store_type)
          case('l','L')
           do i=1,nl; if(cspec%lbase(i).lt.larg%tens_loc%base(i)) then; j=1; exit; endif; enddo
-          if(j.ne.0) then; call cleanup(16_INTD); return; endif
-          do i=1,nl; if(cspec%lbase(i)+cspec%ldims(i).gt.larg%tens_loc%base(i)+larg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
           if(j.ne.0) then; call cleanup(17_INTD); return; endif
+          do i=1,nl; if(cspec%lbase(i)+cspec%ldims(i).gt.larg%tens_loc%base(i)+larg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
+          if(j.ne.0) then; call cleanup(18_INTD); return; endif
          case('d','D')
           if(associated(larg%tens_distr_p)) then
            do i=1,nl; if(cspec%lbase(i).lt.0) then; j=1; exit; endif; enddo
-           if(j.ne.0) then; call cleanup(18_INTD); return; endif
-           do i=1,nl; if(cspec%lbase(i)+cspec%ldims(i)-1.gt.larg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
            if(j.ne.0) then; call cleanup(19_INTD); return; endif
+           do i=1,nl; if(cspec%lbase(i)+cspec%ldims(i)-1.gt.larg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
+           if(j.ne.0) then; call cleanup(20_INTD); return; endif
           else
-           call cleanup(20_INTD); return
+           call cleanup(21_INTD); return
           endif
          case default
-          call cleanup(21_INTD); return
+          call cleanup(22_INTD); return
          end select
         endif
  !Right tensor argument:
@@ -3835,20 +3871,20 @@
          select case(rarg%store_type)
          case('l','L')
           do i=1,nr; if(cspec%rbase(i).lt.rarg%tens_loc%base(i)) then; j=1; exit; endif; enddo
-          if(j.ne.0) then; call cleanup(22_INTD); return; endif
-          do i=1,nr; if(cspec%rbase(i)+cspec%rdims(i).gt.rarg%tens_loc%base(i)+rarg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
           if(j.ne.0) then; call cleanup(23_INTD); return; endif
+          do i=1,nr; if(cspec%rbase(i)+cspec%rdims(i).gt.rarg%tens_loc%base(i)+rarg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
+          if(j.ne.0) then; call cleanup(24_INTD); return; endif
          case('d','D')
           if(associated(rarg%tens_distr_p)) then
            do i=1,nr; if(cspec%rbase(i).lt.0) then; j=1; exit; endif; enddo
-           if(j.ne.0) then; call cleanup(24_INTD); return; endif
-           do i=1,nr; if(cspec%rbase(i)+cspec%rdims(i)-1.gt.rarg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
            if(j.ne.0) then; call cleanup(25_INTD); return; endif
+           do i=1,nr; if(cspec%rbase(i)+cspec%rdims(i)-1.gt.rarg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
+           if(j.ne.0) then; call cleanup(26_INTD); return; endif
           else
-           call cleanup(26_INTD); return
+           call cleanup(27_INTD); return
           endif
          case default
-          call cleanup(27_INTD); return
+          call cleanup(28_INTD); return
          end select         
         endif
 !Count available computing devices: 
@@ -3858,7 +3894,7 @@
           if(num_gpus.le.MAX_GPUS) then
            num_dev=num_dev+num_gpus; gpu_on=.true.
           else
-           call cleanup(28_INTD); return
+           call cleanup(29_INTD); return
           endif
          endif
         endif
@@ -3868,7 +3904,7 @@
           if(num_mics.le.MAX_MICS) then
            num_dev=num_dev+num_mics; mic_on=.true.
           else
-           call cleanup(29_INTD); return
+           call cleanup(30_INTD); return
           endif
          endif
         endif
@@ -3879,19 +3915,19 @@
          hbuf=>ebuf; buf_alloc=.false. !ebuf(1:tot_buf_vol) will be used for hbuf(:)
         else
          if(DIL_ALLOC_TYPE.eq.DIL_ALLOC_BASIC) then
-          allocate(hbuf(1_INTL:tot_buf_vol),STAT=ierr); if(ierr.ne.0) then; call cleanup(30_INTD); return; endif
+          allocate(hbuf(1_INTL:tot_buf_vol),STAT=ierr); if(ierr.ne.0) then; call cleanup(31_INTD); return; endif
          elseif(DIL_ALLOC_TYPE.eq.DIL_ALLOC_MPI) then
           call mem_alloc(hbuf,hbuf_cp,tot_buf_vol) !This call will abort the program if memory allocation is unsuccessful
          elseif(DIL_ALLOC_TYPE.eq.DIL_ALLOC_PINNED) then
           !`Enable
          else
-          call cleanup(31_INTD); return
+          call cleanup(32_INTD); return
          endif
          buf_alloc=.true.
         endif
         dev_buf_vol=tot_buf_vol/num_dev      !total buffer volume for each device
         arg_buf_vol=dev_buf_vol/BUFS_PER_DEV !max buffer volume for each tensor argument (tensor part)
-        if(mod(arg_buf_vol*size_of_real,alignment).ne.0_INTL) then; call cleanup(32_INTD); return; endif !trap
+        if(mod(arg_buf_vol*size_of_real,alignment).ne.0_INTL) then; call cleanup(33_INTD); return; endif !trap
  !Associate CPU buffers:
         i0=0_INTL; k=dil_dev_num(DEV_HOST_CPU,0_INTD)
         do i=1,buf(k)%num_bufs
@@ -3921,7 +3957,7 @@
           enddo
          enddo
         endif
-        if(i0.gt.tot_buf_vol) then; call cleanup(33_INTD); return; endif
+        if(i0.gt.tot_buf_vol) then; call cleanup(34_INTD); return; endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe): Buffer volumes (W):",3(1x,i12))')&
         &tot_buf_vol,dev_buf_vol,arg_buf_vol !debug
 !Partition tensor contraction into smaller parts (tasks) if argument(s) do not fit into local buffers:
@@ -3940,19 +3976,19 @@
          call dil_tens_contr_partition(cspec,arg_buf_vol,contr_case,task_list,i,&
                                       &darr=darg%tens_distr_p,larr=larg%tens_distr_p,rarr=rarg%tens_distr_p)
         case default
-         call cleanup(34_INTD); return
+         call cleanup(35_INTD); return
         end select
         if(i.ne.0) then
          if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_tensor_contract_pipe): Partitioning failed: ",i9)') i
-         call cleanup(35_INTD); return
+         call cleanup(36_INTD); return
         endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Case: ",'//&
         &'A3,": Task amount: ",i9)') impir,contr_case,task_list%num_tasks !debug
 !Perform partitioned tensor contraction via pipelining:
         if(task_list%num_tasks.gt.0) then
-         if(.not.associated(task_list%contr_tasks)) then; call cleanup(36_INTD); return; endif !trap
+         if(.not.associated(task_list%contr_tasks)) then; call cleanup(37_INTD); return; endif !trap
          first_avail=lbound(task_list%contr_tasks,1) !first available task
-         if(first_avail.ne.1) then; call cleanup(37_INTD); return; endif !trap
+         if(first_avail.ne.1) then; call cleanup(38_INTD); return; endif !trap
  !CPU (multicore): !`Implement REUSE for tensor arguments
          dev=dil_dev_num(DEV_HOST_CPU,0_INTD); buf_conf(1:BUFS_PER_DEV,dev)=(/(i,i=1,BUFS_PER_DEV)/)
          tasks_done(dev)=0; task_curr(dev)=0; task_prev(dev)=0; task_next(dev)=0
@@ -4066,7 +4102,8 @@
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Done in ",F10.4'&
         &//'," s ( ",F15.4," GFlops/s VS MM ",F15.4," GFlops/s). Ok")') impir,tm,tc_flops/(tm*1024d0*1024d0*1024d0),&
         &mm_flops/(tmm*1024d0*1024d0*1024d0) !debug
-        call cleanup(0_INTD); return
+        call cleanup(0_INTD)
+        return
 
         contains
 
@@ -4148,7 +4185,12 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensors only
-          call dil_tensor_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
+          if(task_curr(jdev).ge.1.or.(.not.async)) then !not the last upload for this device (finalize it)
+           call dil_tensor_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
+          else !last upload for this device (asynchronous)
+           call dil_tensor_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck,&
+                                          &nasync,lasync)
+          endif
           if(je.ne.0) then; errc=1; return; endif
          endif
          return
@@ -4491,32 +4533,43 @@
          end subroutine cleanup
 
         end subroutine dil_tensor_contract_pipe
-!--------------------------------------------------------------------------------------------------------
-        subroutine dil_tensor_contract(tcontr,globality,mem_lim,ierr,ext_buffer,locked,num_gpus,num_mics) !PARALLEL (MPI)
-!This is a user-level API subroutine for performing tensor contractions.
-!Argument <globality> determines the globality kind of the tensor contraction:
-! .FALSE.: Each MPI process entering here is assumed to have its own unique piece of work
-!          specified via its own tcontr%contr_spec;
-!  .TRUE.: tcontr%contr_spec specifies the full tensor contraction that will be
-!          split into parts here, each part (piece of work) assigned to an MPI process.
+!--------------------------------------------------------------------------------------------------------------
+        subroutine dil_tensor_contract(tcontr,globality,mem_lim,ierr,ext_buffer,locked,async,num_gpus,num_mics) !PARALLEL (MPI)
+!This is a user-level API subroutine for performing pipelined tensor contractions.
+! # Argument <globality> determines the globality kind of the tensor contraction:
+!    .FALSE.: Each MPI process entering here is assumed to have its own unique piece of work
+!             specified via its own <tcontr%contr_spec>;
+!     .TRUE.: <tcontr%contr_spec> specifies the full tensor contraction that will be
+!             split into parts here, each part (piece of work) assigned to an MPI process.
+! # If <async> is present and TRUE, one will need to call <dil_tensor_contract_finalize> later
+!   to finalize this tensor contraction (for each MPI process). In this case, <ext_buffer>
+!   must be present and it is erroneous to free or reuse <ext_buffer> until the later call to
+!   <dil_tensor_contract_finalize> returns.
         implicit none
-        type(dil_tens_contr_t), intent(inout):: tcontr         !in: full tensor contraction specification
-        logical, intent(in):: globality                        !in: globality kind of the tensor contraction
-        integer(INTL), intent(in):: mem_lim                    !in: local buffer memory limit in bytes
-        integer(INTD), intent(inout):: ierr                    !out: error (0:success)
-        real(realk), intent(inout), optional:: ext_buffer(1:*) !in: existing external buffer (length >= mem_lim/realk)
-        logical, intent(in), optional:: locked                 !in: if .true., MPI windows for tensor arguments are assumed locked
-        integer(INTD), intent(in), optional:: num_gpus         !in: number of Nvidia GPUs to utilize (0..num_gpus-1)
-        integer(INTD), intent(in), optional:: num_mics         !in: number of Intel MICs to utilize (0..num_mics-1)
+        type(dil_tens_contr_t), intent(inout):: tcontr    !in: full tensor contraction specification
+        logical, intent(in):: globality                   !in: globality kind of the tensor contraction
+        integer(INTL), intent(in):: mem_lim               !in: local buffer memory limit in bytes
+        integer(INTD), intent(inout):: ierr               !out: error (0:success)
+        real(realk), intent(inout), target, optional:: ext_buffer(1:mem_lim) !in: existing external buffer (length >= mem_lim/realk)
+        logical, intent(in), optional:: locked            !in: if .true., MPI windows for tensor arguments are assumed locked
+        logical, intent(in), optional:: async             !in: if .TRUE., the tensor contraction will not be finalized here
+        integer(INTD), intent(in), optional:: num_gpus    !in: number of Nvidia GPUs to utilize (0..num_gpus-1)
+        integer(INTD), intent(in), optional:: num_mics    !in: number of Intel MICs to utilize (0..num_mics-1)
         type(contr_spec_t):: cspec
         integer(INTD):: i,j,k,l,m,n,ngpus,nmics,nd,nl,nr,impis,impir,impir_world
-        logical:: win_lck
+        logical:: win_lck,asncr
 
         ierr=0
         impis=my_mpi_size(infpar%lg_comm); if(impis.le.0) then; ierr=1; return; endif
         impir=my_mpi_rank(infpar%lg_comm); if(impir.lt.0) then; ierr=2; return; endif
         impir_world=my_mpi_rank()
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        if(present(async)) then
+         asncr=async
+         if(asncr.and.(.not.present(ext_buffer))) then; ierr=3; return; endif
+        else
+         asncr=.false.
+        endif
         if(present(num_gpus)) then; ngpus=max(num_gpus,0); else; ngpus=0; endif
         if(present(num_mics)) then; nmics=max(num_mics,0); else; nmics=0; endif
         if(DIL_DEBUG)&
@@ -4539,17 +4592,30 @@
          call dil_tens_contr_distribute(tcontr,impis,impir,ierr)
          if(ierr.gt.0) then !ierr=-1 is OK, meaning NO WORK
           if(VERBOSE) write(CONS_OUT,'("#ERROR(dil_tensor_contract): Tensor contraction distribution failed: ",i9)') ierr
-          ierr=3
+          ierr=4
          endif
         endif
 !Execute tensor contraction:
         if(ierr.eq.0) then
-         if(present(ext_buffer)) then
-          call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,&
-          &tcontr%alpha,tcontr%beta,mem_lim,ierr,ebuf=ext_buffer,locked=win_lck,num_gpus=ngpus,num_mics=nmics)
-         else
-          call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,&
-          &tcontr%alpha,tcontr%beta,mem_lim,ierr,locked=win_lck,num_gpus=ngpus,num_mics=nmics)
+         if(asncr) then !asynchronous execution (will need <dil_tensor_contract_finalize> later)
+          if(present(ext_buffer)) then !preallocated (pinned!) external buffer is available
+           call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,&
+           &tcontr%alpha,tcontr%beta,mem_lim,ierr,ebuf=ext_buffer,locked=win_lck,&
+           &nasync=tcontr%num_async,lasync=tcontr%list_async,num_gpus=ngpus,num_mics=nmics)
+           if(ierr.ne.0) ierr=5
+          else !no preallocated buffer
+           ierr=6
+          endif
+         else !blocking execution (will be finalized here)
+          if(present(ext_buffer)) then !preallocated (pinned!) external buffer is available
+           call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,&
+           &tcontr%alpha,tcontr%beta,mem_lim,ierr,ebuf=ext_buffer,locked=win_lck,num_gpus=ngpus,num_mics=nmics)
+           if(ierr.ne.0) ierr=7
+          else !no preallocated buffer
+           call dil_tensor_contract_pipe(tcontr%contr_spec,tcontr%dest_arg,tcontr%left_arg,tcontr%right_arg,&
+           &tcontr%alpha,tcontr%beta,mem_lim,ierr,locked=win_lck,num_gpus=ngpus,num_mics=nmics)
+           if(ierr.ne.0) ierr=8
+          endif
          endif
         elseif(ierr.lt.0) then !no work for this MPI process: Ok
          ierr=0
@@ -4567,6 +4633,30 @@
         &write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Exited Process ",i6," of ",i6,": Status ",i9)') impir,impis,ierr
         return
         end subroutine dil_tensor_contract
+!------------------------------------------------------------------
+        subroutine dil_tensor_contract_finalize(tcontr,ierr,locked) !PARALLEL (MPI)
+!This subroutine finalizes any outstanding MPI communications associated
+!with a non-blocking tensor contraction represented by <tcontr>. It is safe
+!to finalize blocking tensor contractions here as well (nothing will be done).
+        implicit none
+        type(dil_tens_contr_t), intent(inout):: tcontr !inout: full tensor contraction specification
+        integer(INTD), intent(inout):: ierr            !out: error (0:success)
+        logical, intent(in), optional:: locked         !in: if .true., MPI windows for tensor arguments are assumed locked
+        integer(INTD):: i
+        logical:: win_lck
+
+        ierr=0
+        if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        do i=1,tcontr%num_async
+         if(win_lck) then
+          call lsmpi_win_flush(int(tcontr%list_async(i)%window,ls_mpik),int(tcontr%list_async(i)%rank,ls_mpik))
+         else
+          call lsmpi_win_unlock(int(tcontr%list_async(i)%rank,ls_mpik),int(tcontr%list_async(i)%window,ls_mpik))
+         endif
+        enddo
+        tcontr%num_async=0
+        return
+        end subroutine dil_tensor_contract_finalize
 !-------------------------------------------------------
         real(realk) function dil_tensor_norm1(tens,ierr) !PARALLEL (MPI+OMP)
 !This function computes 1-norm of a tensor.
