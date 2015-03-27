@@ -193,7 +193,7 @@ module dec_typedef_module
 
      !> 32 vs. 64 bit issues
      !> ********************
-     !> DEC files (lcm_orbitals.u, fock.restart, dens.restart, overlapmatrix, DECorbitals.info) 
+     !> DEC files (lcm_orbitals.u, fock.restart, dens.restart, DECorbitals.info) 
      !> are in 64 (or 32) bit integers but the program was compiled with 32 (or 64) 
      !> bit integers so these files need to be converted during the read-in.
      logical :: convert64to32
@@ -699,8 +699,6 @@ module dec_typedef_module
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
-     !> Overlap matrix (AO basis)
-     real(realk), pointer :: overlap(:,:) => null()
 
      !> Abs overlap information
      real(realk), pointer :: ov_abs_overlap(:,:) => null()

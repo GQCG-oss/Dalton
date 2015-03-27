@@ -508,7 +508,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
            ! Single point DEC calculation using current HF files
            DECcalculation: IF(DECinfo%doDEC) then
-              call dec_main_prog_input(ls,config,F(1),D(1),S,CMO,E(1))
+              call dec_main_prog_input(ls,config,F(1),D(1),CMO,E(1))
            endif DECcalculation
            ! free Cmo
            IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
