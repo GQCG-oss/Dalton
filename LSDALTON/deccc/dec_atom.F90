@@ -3284,7 +3284,7 @@ contains
     type(array2) :: S,tmp1
     real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:),Sfull(:,:)
     integer :: i,j,idx,atom_k,nocc,nunocc,nbasis,natoms,k,bas_offset,offset, &
-         full_orb_idx,bas_k
+         & full_orb_idx,bas_k,fullcomm,fullnode,fullnumnodes
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
 
@@ -3312,9 +3312,24 @@ contains
          & fragment%S,fragment%nbasis,fragment%nbasis,AORdefault,AORdefault)
 
     ! Overlap matrix for full molecule
+    ! ********************************
+    ! Caution: MyLsitem needs to refer to full molecule, however, 
+    ! the MPI communication stuff needs to be done only within local slot.
+    ! Save full LSITEM MPI info
+    fullcomm = MyLsitem%setting%comm 
+    fullnode = MyLsitem%setting%node
+    fullnumnodes = MyLsitem%setting%numnodes
+    ! Temporarily set full LSITEM MPI info equal to local slot MPI info
+    MyLsitem%setting%comm = fragment%MyLsitem%setting%comm
+    MyLsitem%setting%node = fragment%MyLsitem%setting%node
+    MyLsitem%setting%numnodes = fragment%MyLsitem%setting%numnodes
     call mem_alloc(Sfull,MyMolecule%nbasis,MyMolecule%nbasis)
     call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
          & Sfull,nbasis,nbasis,AORdefault,AORdefault)
+    ! Reset full LSITEM MPI info
+    MyLsitem%setting%comm = fullcomm
+    MyLsitem%setting%node = fullnode
+    MyLsitem%setting%numnodes = fullnumnodes
 
 
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
