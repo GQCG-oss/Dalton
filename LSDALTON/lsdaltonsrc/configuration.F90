@@ -3903,7 +3903,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('Compressed Sparse Row (CSR) not implemented for unrestricted!',config%lupri)
       else
 #ifdef VAR_MKL
-         CALL mat_select_type(mtype_csr,lupri)
+         CALL mat_select_type(mtype_csr,lupri)         
          call mat_inquire_cutoff(cutoff)
          write(config%lupri,*)
          write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d10.2)') cutoff
