@@ -2119,14 +2119,13 @@ contains
   end subroutine unpack_gmo
 #endif
 
-  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective,order)
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective)
     implicit none
     type(tensor),intent(inout)   :: integral
     type(tensor),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
     type(lsitem), intent(inout) :: mylsitem
     logical, intent(in) :: local
     logical, intent(inout) :: collective
-    integer, intent(in), optional :: order(4)
     !Integral stuff
     logical :: save_cs_screen, save_ps_screen
     integer :: alphaB,gammaB,dimAlpha,dimGamma
@@ -2170,7 +2169,7 @@ contains
     integer :: ndimA,  ndimB,  ndimC,  ndimD
     integer :: ndimAs, ndimBs, ndimCs, ndimDs
     integer :: startA, startB, startC, startD
-    integer :: dims(4), tdim(4), starts(4), order4(4), tile
+    integer :: dims(4), tdim(4), starts(4), order4(4), buf_done, buf_sent, tilenr
     integer :: bs,as,gs,n1s,n2s,n3s,n4s, inc,b,e,m,n,t1,t2,t3,t4
     real(realk), pointer :: one(:),two(:),thr(:)
     integer              :: onen,  twon,  thrn
@@ -2214,7 +2213,11 @@ contains
     flushing_time = time_lsmpi_win_flush
 #endif
     completely_distributed = .false.
-    nbuffs         = 2
+    if(.not.local)then
+       nbuffs         = integral%ntpm(4)
+    else
+       nbuffs         = 2
+    endif
     time_t4fg_tot  = 0.0E0_realk
     time_t3fa_tot  = 0.0E0_realk
     time_cont1_tot = 0.0E0_realk
@@ -2295,8 +2298,6 @@ contains
     !                  Batch construction             !
     !==================================================
 
-    print *,"in integrals 2"
-
     use_bg_buf = mem_is_background_buf_init()
     if(use_bg_buf)then
        nbu = mem_get_bg_buf_n()
@@ -2338,7 +2339,7 @@ contains
 
        maxsize = 0.0E0_realk
 
-       !get minimum memory requrements in 
+       !get minimum memory requrements
        mem_saving             = .false.
        completely_distributed = .false.
        nba                    = MinAObatch
@@ -2373,7 +2374,7 @@ contains
                 mem_saving             = .false.
                 completely_distributed = .true.
                 inc                    = nb/4
-                nbuffs         = get_nbuffs_scheme_0()
+                nbuffs                 = get_nbuffs_scheme_0()
              endif
 
           else
@@ -2397,14 +2398,21 @@ contains
           call lsquit("ERROR(get_mo_integral_par): only one can be true at a time",-1)
        endif
 
+       !set requested batch sizes to the largest possible and overwrite these
+       !values if this is not possible
+       nba                    = nb
+       nbg                    = nb
+
        alp: do i = MinAObatch, nb, inc
+          print *,"LOOPPING",i,MinAObatch,nb,inc
           if(completely_distributed)then
-             b = i*2
-             e = i*2
+             b = max(i/2,MinAObatch)
+             e = b
           else
-             b = i*2
+             b = max(i/2,MinAObatch)
              e = min(i,nb)
           endif
+
           do k = b, e
 
              w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
@@ -2417,11 +2425,11 @@ contains
              if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
              if(mem_saving) maxsize = maxsize + (nbuffs*i8*n1*n2)*n3*n4
 
-             if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse )then
+             if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse )then
 
                 if(completely_distributed)then
                    nba = max(i-inc,MinAObatch)
-                   nbg = min(nba*2,nb)
+                   nbg = max(nba/2,MinAObatch)
                 else
                    nba = max(i,MinAObatch)
                    nbg = max(min(k-1,nb),MinAObatch)
@@ -2436,24 +2444,23 @@ contains
 
 
        if(DECinfo%manual_batchsizes)then
-          nbg = max(DECinfo%ccsdGbatch,MinAObatch)
-          nba = max(DECinfo%ccsdAbatch,MinAObatch)
+          nbg = min(max(DECinfo%ccsdGbatch,MinAObatch),nb)
+          nba = min(max(DECinfo%ccsdAbatch,MinAObatch),nb)
        else
           !split, such that there are enough jobs for each node
           if(.not.completely_distributed)then
              if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>MinAObatch).and.nnod>1)then
                 do while((nb/nba)*(nb/nbg)<magic*nnod)
                    nba = max(nba - 1,MinAObatch)
-                   nbg = min(nba*2,nb)
+                   nbg = min(max(nba/2,MinAObatch),nb)
                    if( nba == MinAObatch ) exit
                 enddo
              endif
 
-             if(nba<MinAObatch)nba=MinAObatch
-             if(nbg<MinAObatch)nbg=MinAObatch
           endif
 
        endif
+
 
        w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
           &mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
@@ -2660,7 +2667,9 @@ contains
        else
           call mem_alloc(work,addsize)
        endif
+
        work = 0.0E0_realk
+
     endif
 
 
@@ -2752,6 +2761,8 @@ contains
     alphaB   = 0
     modeBdim = [nbatchesAlpha,nbatchesGamma]
     jobidx   = 0
+    buf_sent = 0
+    buf_done = 0
 
     call time_start_phase( PHASE_WORK, twall = tot_intloop )
     call time_phases_get_current(current_wt=phase_cntrs)
@@ -2885,16 +2896,12 @@ contains
 
 #ifdef VAR_MPI
 
-             !FIXME: IMPLEMENT TENSOR SORTING
-             if(present(order))call lsquit("ERROR(get_mo_integral_par): order not implemented for this option",-1)
 
              one => w2(1:onen)
              two => w2(onen+1:onen+twon)
              thr => w2(onen+twon+1:onen+twon+thrn)
 
              !TODO: introduce OMP in order to speed up the routine
-
-             tile = 0
              do t1 = 1, integral%ntpm(1)
 
                 startA = 1 + (t1-1)*integral%tdim(1)
@@ -2960,22 +2967,28 @@ contains
                          k = lg
 
 
-                         bidx = mod(tile,nbuffs)+1
+                         tilenr=get_cidx([t1,t2,t3,t4],integral%ntpm,integral%mode)
 
-                         if(alloc_in_dummy) call lsmpi_wait(req(bidx))
+                         bidx = mod(buf_sent,nbuffs)+1
 
-                         bpos = 1 + (bidx-1) * m * n
+                         bpos = 1 + (bidx-1) * n1s*n2s*n3s*n4s
+
+                         if(alloc_in_dummy .and. buf_sent>=nbuffs)then
+                            call lsmpi_wait(req(bidx))
+                            buf_done = buf_done + 1
+                         endif
+    
 
                          call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm2(fg,startD),nb,0.0E0_realk,work(bpos),m)
                          !accumulate TODO, meeds to be optimized
 #ifdef VAR_HAVE_MPI3
                          call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
-                            &lock_set=.not.alloc_in_dummy,req=req(bidx))
+                            &lock_set=.true.,req=req(bidx))
 #else
-                         call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
+                         call tensor_accumulate_tile(integral,tilenr,work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.false.)
 #endif
-                         tile = tile + 1
+                         buf_sent = buf_sent + 1
                       enddo
                    enddo
                 enddo
@@ -3036,7 +3049,7 @@ contains
                 call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm1(fg),nb,0.0E0_realk,w1,m)
 
                 call time_start_phase( PHASE_COMM )
-                call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size, order = order)
+                call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size)
                 call time_start_phase( PHASE_WORK )
              endif
              call time_start_phase(PHASE_WORK, ttot = time_cont4 )
@@ -3222,18 +3235,19 @@ contains
 #ifdef VAR_MPI
     if(.not.collective .and. alloc_in_dummy)then
        if(mem_saving)then
-          call mem_dealloc(req)
 
-          do t1 = tile, tile+nbuffs - 1
-             bidx = mod(t1,nbuffs)+1
+          do t1 = buf_done+1, buf_sent
+             bidx = mod(t1-1,nbuffs)+1
              call lsmpi_wait(req(bidx))
           enddo
-       endif
-       call tensor_unlock_wins(integral, all_nodes = .true. )
-    endif
-#endif
 
-#ifdef VAR_MPI
+          call mem_dealloc(req)
+
+       endif
+
+       call tensor_unlock_wins(integral, all_nodes = .true. )
+
+    endif
 
     call time_start_phase( PHASE_IDLE )
     call lsmpi_barrier(infpar%lg_comm)
@@ -3242,16 +3256,17 @@ contains
        call time_start_phase( PHASE_COMM )
        call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
-       call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size   )
+       call tensor_convert(work,integral, wrk = w1, iwrk = w1size   )
     endif
 
 #else
 
-
     call time_start_phase( PHASE_WORK )
-    call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size )
+    call tensor_convert(work,integral, wrk = w1, iwrk = w1size )
 
 #endif
+
+
     if(collective.or.mem_saving)then
        if( use_bg_buf )then
           call mem_pseudo_dealloc( work )

@@ -2847,7 +2847,10 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAO,'R')
       endif
 
-      if(JOB == SOLVE_MULTIPLIERS .and. ccmodel == MODEL_CCSD)then     
+      if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_CCSD)then     
+
+         ! Find memory requirements in CCSD residual WITHOUT the space needed
+         ! for the matrices, that use the background buffer
          mem4=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
          mem3=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
          mem2=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
@@ -2868,6 +2871,10 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
             call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
             & calculation is too big for the available memory",-1)
          endif
+
+      else if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_MP2)then     
+
+         mem = 0.0E0_realk
 
       else
 
