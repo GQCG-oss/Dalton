@@ -681,10 +681,6 @@ C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
 
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: dalton_xcint_interface_init
-#endif
-
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -923,10 +919,6 @@ C...  initializes Gen1Int interface
      &                       NBLCK(:,1), KANG, JCO(:,:,1),
      &                       KBLOCK, NUC(:,1), NRC(:,1), KPRIM,
      &                       ALPHA(:,:,1), CPRIMU(:,:,:,1))
-#endif
-
-#ifdef ENABLE_XCINT
-      call dalton_xcint_interface_init()
 #endif
 
 C

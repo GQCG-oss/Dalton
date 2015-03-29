@@ -105,6 +105,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
     LSDALTON/deccc/full_rimp2.F90
+    LSDALTON/deccc/full_rimp2f12.F90
     LSDALTON/deccc/full_mp2.F90
     LSDALTON/deccc/snoop_main.F90
     LSDALTON/deccc/snoop_tools.F90
@@ -764,6 +765,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/f12.F90
     LSDALTON/lsutil/IntegralType.F90
     LSDALTON/lsutil/TYPE-DEF.F90
+    LSDALTON/lsutil/background_buffer.F90
     LSDALTON/lsutil/memory.F90
     LSDALTON/lsutil/MemoryLeakTool.F90
     LSDALTON/lsutil/gridgeneration_memory.F90

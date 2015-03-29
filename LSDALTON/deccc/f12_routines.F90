@@ -4,7 +4,6 @@
 
 module f12_routines_module
 
-#ifdef MOD_UNRELEASED
 
   use fundamental
   use precision
@@ -37,23 +36,22 @@ module f12_routines_module
      integer :: n1
      integer :: n2
   END TYPE ctype
-#endif
   
-contains
-#ifdef MOD_UNRELEASED
-  function norm1D(A)
-    implicit none
-    real(realk), intent(in) :: A(:)
-    integer :: m,i
-    real(realk) :: norm1D   
-    
-    norm1D = 0.0E0_realk
-    
-    m = size(A,1)
-    do i=1,m
-       norm1D = norm1D + A(i)
-    enddo
-  end function norm1D
+   contains
+
+   function norm1D(A)
+      implicit none
+      real(realk), intent(in) :: A(:)
+      integer :: m,i
+      real(realk) :: norm1D   
+
+      norm1D = 0.0E0_realk
+
+      m = size(A,1)
+      do i=1,m
+         norm1D = norm1D + A(i)
+      enddo
+   end function norm1D
 
 
   !> Takes the norm of a matrix 
@@ -2141,11 +2139,11 @@ contains
     call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
  
     if(DECinfo%F12DEBUG) then
-          print *, "----------------------------------"
-          print *, " Inside get_max_batchsize summary "
-          print *, "----------------------------------"
-          print *, "MemAvailable: ", MemAvailable*UNIT
-          print *, "MAXstepmem: ", MAXstepmem*UNIT
+!!$       print *, "----------------------------------"
+!!$       print *, " Inside get_max_batchsize summary "
+!!$       print *, "----------------------------------"
+!!$       print *, "MemAvailable: ", MemAvailable*UNIT
+!!$       print *, "MAXstepmem: ", MAXstepmem*UNIT
 !!$       print *, "n11: ", n11
 !!$       print *, "n21: ", n21
 !!$       print *, "n31: ", n31
@@ -2661,15 +2659,6 @@ contains
     call mat_free(CMO_RI)
 
   end subroutine dec_get_RI_orbitals
-
-#else
-
-  subroutine dummy_f12_routines()
-    implicit none
-
-  end subroutine dummy_f12_routines
-
-#endif 
 
 end module f12_routines_module
 

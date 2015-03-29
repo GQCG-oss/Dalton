@@ -3389,8 +3389,8 @@ integer :: ncore, i, icharge,nAtoms
     icharge = INT(ls%setting%MOLECULE(1)%p%ATOM(i)%charge)
   
     if (icharge.gt. 2)  ncore = ncore + 1
-    if (icharge.gt. 10) ncore = ncore + 4
-    if (icharge.gt. 18) ncore = ncore + 4
+    if (icharge.gt. 12) ncore = ncore + 4
+    if (icharge.gt. 20) ncore = ncore + 4
     if (icharge.gt. 30) ncore = ncore + 6
 
   enddo

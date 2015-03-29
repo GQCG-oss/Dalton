@@ -453,13 +453,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ABdecompCreate = .TRUE.
   IF(fc)THEN
      call Build_CalphaMO(MyFragment%mylsitem,master,nbasis,nbasisAux,LUPRI,&
-          & FORCEPRINT,CollaborateWithSlaves,CDIAGoccALL,nocctot,&
-          & CDIAGvirt%val,nvirt,mynum,numnodes,nAtomsAux,Calpha,NBA,&
+          & FORCEPRINT,CollaborateWithSlaves,CDIAGvirt%val,nvirt,&
+          & CDIAGoccALL,nocctot,mynum,numnodes,nAtomsAux,Calpha,NBA,&
           & ABdecomp,ABdecompCreate)
   ELSE
      call Build_CalphaMO(MyFragment%mylsitem,master,nbasis,nbasisAux,LUPRI,&
-          & FORCEPRINT,CollaborateWithSlaves,CDIAGocc%val,nocc,&
-          & CDIAGvirt%val,nvirt,mynum,numnodes,nAtomsAux,Calpha,NBA,&
+          & FORCEPRINT,CollaborateWithSlaves,CDIAGvirt%val,nvirt,&
+          & CDIAGocc%val,nocc,mynum,numnodes,nAtomsAux,Calpha,NBA,&
           & ABdecomp,ABdecompCreate)
   ENDIF
   CALL LSTIMER('DECRIMP2: CalphaMO',TS2,TE2,LUPRI,FORCEPRINT)
@@ -1198,7 +1198,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      WRITE(DECinfo%output,'(1X,A)')'MP2MEM: RIMP2_integrals_and_amplitudes_workhorse:'
      WRITE(DECinfo%output,'(1X,A)')'MP2MEM: Memory Statistics at the end of the subroutine'
      call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
      FLUSH(DECinfo%output)
+#endif
   endif
 
   CALL LSTIMER('DECRIMP2: Finalize',TS2,TE2,LUPRI,FORCEPRINT)
@@ -1291,8 +1293,8 @@ subroutine PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
 end subroutine PlugInTotocc2
 
 subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
-     & CollaborateWithSlaves,Cocc,nocc,Cvirt,nvirt,mynum,&
-     & numnodes,nAtomsAux,Calpha,NBA,AlphaBetaDecomp,AlphaBetaDecompCreate)
+     & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,nAtomsAux,Calpha,&
+     & NBA,AlphaBetaDecomp,AlphaBetaDecompCreate,Oper)
   implicit none
   type(lsitem), intent(inout) :: mylsitem
   integer,intent(inout) :: NBA
@@ -1302,6 +1304,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   real(realk) :: AlphaBetaDecomp(nbasisAux,nbasisAux)
   real(realk),intent(in) :: Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
   real(realk),pointer :: Calpha(:,:,:)
+  integer,optional :: Oper
   !
   integer :: MynbasisAuxMPI
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
@@ -1429,8 +1432,13 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
            mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
            mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
         ENDIF
-        call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-             & AlphaBeta,mylsitem%setting,nbasisAux)
+        IF(present(Oper))THEN
+           call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+                & AlphaBeta,mylsitem%setting,nbasisAux,Oper)
+        ELSE
+           call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+                & AlphaBeta,mylsitem%setting,nbasisAux)
+        ENDIF
         IF(DECinfo%AuxAtomicExtent)THEN
            mylsitem%SETTING%MOLECULE(1)%p => molecule1
            mylsitem%SETTING%MOLECULE(2)%p => molecule2
@@ -1509,7 +1517,9 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   IF(MynbasisAuxMPI.GT.0)THEN
      call get_currently_available_memory(MemInGBCollected)
      !maxsize = max number of floating point elements
-     maxsize = NINT(MemInGBCollected*1.E9_realk)
+     !allow to building of 3 center integral to use 60 procent of 
+     !currently available memory
+     maxsize = 0.60E0_realk*NINT(MemInGBCollected*1.E9_realk)
      !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
      !It is very annoying but I allocated AlphaCD3 inside 
      !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
@@ -1523,9 +1533,15 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
         mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
         mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
      ENDIF
-     call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
-          & AlphaCD3,mylsitem%setting,nbasisAux,nbasis,&
-          & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
+     IF(present(Oper))THEN
+        call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
+             & AlphaCD3,mylsitem%setting,nbasisAux,nbasis,&
+             & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes,Oper)
+     ELSE
+        call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
+             & AlphaCD3,mylsitem%setting,nbasisAux,nbasis,&
+             & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
+     ENDIF
      IF(DECinfo%AuxAtomicExtent)THEN
         mylsitem%SETTING%MOLECULE(1)%p => molecule1
         mylsitem%SETTING%MOLECULE(2)%p => molecule2

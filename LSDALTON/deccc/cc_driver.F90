@@ -564,8 +564,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       FragEnergies_tmp = 0.0E0_realk
    
       if (DECinfo%DECNP) then
-         call decnp_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
-            & VOVO_local,occ_orbitals,FragEnergies(:,:,cc_sol_o:cc_sol_v),FragEnergies_tmp)
+         call solver_decnp_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
+            & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o), &
+            & FragEnergies(:,:,cc_sol_v),FragEnergies_tmp)
       else
          call solver_energy_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
             & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o), &
@@ -574,12 +575,25 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    
       if(ccmodel == MODEL_CCSDpT)then
-         ! now we calculate fourth-order and fifth-order energies
-         call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
-            & unocc_orbitals,FragEnergies(:,:,pT_4_o:pT_4_v),FragEnergies_tmp,ccenergies(pT_4_o))
-   
-         call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
-            & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o:pT_5_v),ccenergies(pT_5_o))
+         if (DECinfo%DECNP) then
+            ! now we calculate fourth-order and fifth-order energies
+            call ccsdpt_decnp_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
+               & unocc_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
+               & FragEnergies_tmp,ccenergies(pT_4_o))
+
+            call ccsdpt_decnp_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
+               & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
+               & ccenergies(pT_5_o))
+         else
+            ! now we calculate fourth-order and fifth-order energies
+            call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
+               & unocc_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
+               & FragEnergies_tmp,ccenergies(pT_4_o))
+
+            call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
+               & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
+               & ccenergies(pT_5_o))
+         end if
    
          ! calculate total (T) contributions:
          ccenergies(pT_full_o) = ccenergies(pT_4_o)+ccenergies(pT_5_o)
@@ -650,32 +664,39 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       end if
  
       if(ccmodel == MODEL_CCSDpT)then
+#ifdef VAR_MPI
          !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
          !one node is used  FIXME
          call tensor_init( VOVO_local, VOVO%dims,    4 )
          call tensor_init( t2f_local, t2_final%dims, 4 )
          call tensor_cp_data( VOVO,     VOVO_local )
          call tensor_cp_data( t2_final, t2f_local  )
+#endif
 
          print_frags = DECinfo%print_frags
          abc = DECinfo%abc
 
          if (abc) then
-
+#ifdef VAR_MPI
             call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
             call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-
+#else
+            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+#endif
             call tensor_init(ccsdpt_t1, [nocc,nvirt],2)
-
          else
-
+#ifdef VAR_MPI
             call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
             call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-
+#else
+            call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call tensor_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+#endif
             call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
-
          endif
 
+#ifdef VAR_MPI
          if(DECinfo%frozencore) then
             call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc, &
                & MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1,print_frags, &
@@ -685,7 +706,17 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                & MyMolecule%Co,MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1, &
                & print_frags,abc,e4=ccenergies(pT_4_o))
          end if
-
+#else
+         if(DECinfo%frozencore) then
+            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc, &
+               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags, &
+               & abc,e4=ccenergies(pT_4_o))
+         else
+            call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock, &
+               & MyMolecule%Co,MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1, &
+               & print_frags,abc,e4=ccenergies(pT_4_o))
+         end if
+#endif
 
          if (abc) call tensor_reorder(ccsdpt_t1,[2,1])
          call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5_o))
@@ -700,8 +731,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwidle = 'MASTER IDLE pT: ')
          endif
 
+#ifdef VAR_MPI
          call tensor_free(t2f_local)
          call tensor_free(VOVO_local)
+#endif
       endif
 
       CorrEnergyString = 'correlation energy            '
@@ -1846,8 +1879,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 #endif
 
-   call get_symm_tensor_segmenting_simple(no,nv,os,vs)
-
    ! Sanity check 1: Number of orbitals
    if( (nv < 1) .or. (no < 1) ) then
       write(DECinfo%output,*) 'Number of occupied orbitals = ', no
@@ -1905,6 +1936,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call lsquit("ERROR(ccsolver_par): requested model not yet implemented",-1)
 
    end select ModelSpecificSettings
+
+   call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles)
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -2690,6 +2723,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! RHS or restore the old rhs
    call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
    call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
+   
+   call ccdriver_dealloc_workspace(saferun,local)
 
    call tensor_free(iajb)
 
@@ -2753,6 +2788,141 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
 
 end subroutine ccsolver
+
+subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles)
+   implicit none
+   type(lsitem), intent(inout) :: MyLsitem
+   integer, intent(in)  :: nb, no, nv
+   integer, intent(out) :: os,vs
+   logical, intent(in)  :: local,saferun,use_singles
+   integer :: ntpm(4),nt
+   integer(kind=ls_mpik) :: nnod
+   real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2, MemFree
+   logical :: use_bg
+   integer(kind=8) :: elm
+   integer :: MinAO,iAO
+
+   nnod = 1
+#ifdef VAR_MPI
+   nnod = infpar%lg_nodtot
+#endif
+
+   !get tensor segments
+   call get_symm_tensor_segmenting_simple(no,nv,os,vs)
+
+   ! allocate the buffer in the background
+   use_bg = DECinfo%cc_driver_use_bg_buffer.and..not.saferun
+
+   if(use_bg)then
+
+      !get free memory GB -> bytes conversion, use 80% of the free memory
+      call get_currently_available_memory(MemFree)
+      Freebytes = MemFree * (1024.0E0_realk**3) * 0.8E0_realk
+
+      !estimate memory use in solver while the residual is build, the other
+      ! FOck matrix, MO trafo matrices (bv,bo), Lambda matrices, basis trafo matrices, fock-blocks
+      bytes = (i8*nb**2 + 3_long*nb*no + 3_long*nb*nv + 2_long*no**2 + 2_long*nv**2 + 2_long*no*nv)*8.0E0_realk
+      !singles vectors and residuals, and t1 fock matrix
+      if( use_singles )then
+         elm = (i8*nv)*no * (2*DECinfo%ccMaxDIIS ) + i8*nb**2
+         bytes = bytes + elm * 8.0E0_realk
+      endif
+      ! residual-, trial- and integral vectors, additional two tiles for buffering
+      if( local )then
+         elm = (i8*nv*nv)*no*no * (2*DECinfo%ccMaxDIIS + 1)
+      else
+         !memory requirements are negligible 
+         call tensor_get_ntpm([nv,nv,no,no],[vs,vs,os,os],4,ntpm,ntiles=nt)
+         nt = ceiling(float(nt)/float(nnod))
+
+         elm = nt * (i8*vs**2) * os**2 * (2*DECinfo%ccMaxDIIS + 3 )  
+      endif
+      bytes = bytes + elm * 8.0E0_realk
+
+
+      !estimate memory use in residual without workspaces
+      if(DECinfo%useIchor)then
+         iAO = 4 
+         call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAO)
+      else
+         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAO,'R')
+      endif
+      
+      mem4=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+      mem3=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+      mem2=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+
+      if(mem4<=Freebytes)then
+         bytes = bytes + mem4
+      else if(mem3<=Freebytes)then
+         bytes = bytes + mem3
+      else if(mem2<=Freebytes)then
+         bytes = bytes + mem2
+      else
+         call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+         & calculation is too big for the available memory",-1)
+      endif
+
+      !we may use the difference between bytes and Freebytes now as the background buffer
+      bytes_to_alloc = Freebytes - bytes
+      
+      if(DECinfo%PL>2)then
+         write (*,'("mem4",g7.2,"GB mem3",g7.2,"GB mem2",g7.2,"GB")')mem4/1024.0E0_realk**3,&
+            &mem3/1024.0E0_realk**3,mem2/1024.0E0_realk**3
+         write (*,'("Found free mem",g7.2,"GB and use",g7.2,"GB")')Freebytes/1024.0E0_realk**3,bytes/1024.0E0_realk**3
+         write (*,'("BG BUF: allocating",g7.2," GB")')bytes_to_alloc/1024.0E0_realk**3
+      endif
+
+      if(bytes_to_alloc <= 0.0E0_realk) then
+         print *,Freebytes/1024.0**3,"GB free, need to alloc",bytes/1024.0**3,"GB"
+         call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+         & not enough space",-1)
+      endif
+
+      if( local )then
+         call mem_init_background_alloc(bytes_to_alloc)
+#ifdef VAR_MPI
+      else
+         call mem_init_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
+         call lspdm_init_global_buffer(.true.)
+#endif
+      endif
+       
+   endif
+   
+end subroutine ccdriver_set_tensor_segments_and_alloc_workspace
+subroutine ccdriver_dealloc_workspace(saferun,local)
+   implicit none
+   logical, intent(in)  :: saferun,local
+   integer :: ntpm(4),nt
+   integer(kind=ls_mpik) :: nnod
+   real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2
+   logical :: use_bg
+   integer(kind=8) :: elm
+   integer :: MinAO,iAO
+
+   nnod = 1
+#ifdef VAR_MPI
+   nnod = infpar%lg_nodtot
+#endif
+
+   ! deallocate the buffer in the background
+   use_bg = DECinfo%cc_driver_use_bg_buffer.and..not.saferun
+
+   if(use_bg)then
+
+
+      if( local )then
+         call mem_free_background_alloc()
+#ifdef VAR_MPI
+      else
+         call mem_free_background_alloc_all_nodes(infpar%lg_comm)
+         call lspdm_free_global_buffer(.true.)
+#endif
+      endif
+   endif
+
+end subroutine ccdriver_dealloc_workspace
 
 subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock,sync)
    implicit none

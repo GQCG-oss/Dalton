@@ -153,6 +153,7 @@ implicit none
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
   config%InteractionEnergy = .false.
+  config%access_stream = .false.
   config%SameSubSystems = .false.
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
@@ -1031,7 +1032,7 @@ subroutine DEC_meaningful_input(config)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
-
+  logical :: NotAcceptedModel
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
@@ -1129,10 +1130,11 @@ subroutine DEC_meaningful_input(config)
         endif
         ! For the release we only include DEC-MP2
 #ifndef MOD_UNRELEASED
-        if(DECinfo%ccmodel/=MODEL_MP2 .and. (.not. DECinfo%full_molecular_cc) ) then
+        NotAcceptedModel = DECinfo%ccmodel/=MODEL_MP2 .AND. DECinfo%ccmodel/=MODEL_RIMP2
+        if(NotAcceptedModel .and. (.not. DECinfo%full_molecular_cc) ) then
            print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
            print *, 'using the **CC section rather than the **DEC section.'
-           call lsquit('DEC is currently only available for the MP2 model!',-1)
+           call lsquit('DEC is currently only available for the MP2 and RI-MP2 model!',-1)
         end if
 #endif
      end if OrbLocCheck
@@ -1247,6 +1249,10 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            !Calculated the Interaction energy 
            !using Counter Poise Correction
            config%InteractionEnergy = .true.
+        CASE('.ACCESS_STREAM')
+           ! Use stream access on all files open with lsopen
+           config%access_stream = .true.
+           access_stream = .true.
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
         CASE('.SUBSYSTEMDENSITY')
