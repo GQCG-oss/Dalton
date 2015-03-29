@@ -2169,7 +2169,7 @@ contains
     integer :: ndimA,  ndimB,  ndimC,  ndimD
     integer :: ndimAs, ndimBs, ndimCs, ndimDs
     integer :: startA, startB, startC, startD
-    integer :: dims(4), tdim(4), starts(4), order4(4), buff_cntr
+    integer :: dims(4), tdim(4), starts(4), order4(4), buf_done, buf_sent, tilenr
     integer :: bs,as,gs,n1s,n2s,n3s,n4s, inc,b,e,m,n,t1,t2,t3,t4
     real(realk), pointer :: one(:),two(:),thr(:)
     integer              :: onen,  twon,  thrn
@@ -2213,7 +2213,11 @@ contains
     flushing_time = time_lsmpi_win_flush
 #endif
     completely_distributed = .false.
-    nbuffs         = 4
+    if(.not.local)then
+       nbuffs         = integral%ntpm(4)
+    else
+       nbuffs         = 2
+    endif
     time_t4fg_tot  = 0.0E0_realk
     time_t3fa_tot  = 0.0E0_realk
     time_cont1_tot = 0.0E0_realk
@@ -2294,8 +2298,6 @@ contains
     !                  Batch construction             !
     !==================================================
 
-    print *,"in integrals 2"
-
     use_bg_buf = mem_is_background_buf_init()
     if(use_bg_buf)then
        nbu = mem_get_bg_buf_n()
@@ -2372,7 +2374,7 @@ contains
                 mem_saving             = .false.
                 completely_distributed = .true.
                 inc                    = nb/4
-                nbuffs         = get_nbuffs_scheme_0()
+                nbuffs                 = get_nbuffs_scheme_0()
              endif
 
           else
@@ -2659,7 +2661,9 @@ contains
        else
           call mem_alloc(work,addsize)
        endif
+
        work = 0.0E0_realk
+
     endif
 
 
@@ -2747,11 +2751,12 @@ contains
 #endif
 
 
-    gammaB    = 0
-    alphaB    = 0
-    modeBdim  = [nbatchesAlpha,nbatchesGamma]
-    jobidx    = 0
-    buff_cntr = 0
+    gammaB   = 0
+    alphaB   = 0
+    modeBdim = [nbatchesAlpha,nbatchesGamma]
+    jobidx   = 0
+    buf_sent = 0
+    buf_done = 0
 
     call time_start_phase( PHASE_WORK, twall = tot_intloop )
     call time_phases_get_current(current_wt=phase_cntrs)
@@ -2956,23 +2961,28 @@ contains
                          k = lg
 
 
-                         bidx = mod(buff_cntr,nbuffs)+1
+                         tilenr=get_cidx([t1,t2,t3,t4],integral%ntpm,integral%mode)
 
-                         if(alloc_in_dummy .and. buff_cntr>=nbuffs) call lsmpi_wait(req(bidx))
+                         bidx = mod(buf_sent,nbuffs)+1
 
-                         bpos = 1 + (bidx-1) * m * n
+                         bpos = 1 + (bidx-1) * n1s*n2s*n3s*n4s
+
+                         if(alloc_in_dummy .and. buf_sent>=nbuffs)then
+                            call lsmpi_wait(req(bidx))
+                            buf_done = buf_done + 1
+                         endif
+    
 
                          call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm2(fg,startD),nb,0.0E0_realk,work(bpos),m)
                          !accumulate TODO, meeds to be optimized
 #ifdef VAR_HAVE_MPI3
                          call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.true.,req=req(bidx))
-                         !call lsmpi_wait(req(bidx))
 #else
-                         call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
+                         call tensor_accumulate_tile(integral,tilenr,work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.false.)
 #endif
-                         buff_cntr = buff_cntr + 1
+                         buf_sent = buf_sent + 1
                       enddo
                    enddo
                 enddo
@@ -3220,8 +3230,8 @@ contains
     if(.not.collective .and. alloc_in_dummy)then
        if(mem_saving)then
 
-          do t1 = buff_cntr, buff_cntr+nbuffs-1
-             bidx = mod(t1,nbuffs)+1
+          do t1 = buf_done+1, buf_sent
+             bidx = mod(t1-1,nbuffs)+1
              call lsmpi_wait(req(bidx))
           enddo
 
