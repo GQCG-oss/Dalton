@@ -1151,6 +1151,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         ! Get free memory and determine maximum batch sizes
         ! -------------------------------------------------
+        print *,"MASTER GETTING MIN"
         IF(DECinfo%useIchor)THEN
            !Determine the minimum allowed AObatch size MinAObatch
            !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
@@ -1162,6 +1163,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ELSE
            call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
         ENDIF
+        print *,"MASTER GETTING MAX",MinAObatch
         call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
         &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.,mylsitem%setting,intspec)
 
@@ -1355,10 +1357,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ************************************************
 
 
-
      ! PRINT some information about the calculation
      ! --------------------------------------------
      if(master)then
+
         if(scheme==4) then
          write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
         elseif(scheme==3) then
@@ -1380,6 +1382,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
               &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
         endif
+
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+        FLUSH(DECinfo%output)
+#endif
+
      endif
 
      ! Use the dense amplitudes
@@ -1565,7 +1572,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
      if(use_bg_buf)then
-        call mem_change_background_alloc((w0size+w1size+w2size+w3size)*8.0E0_realk)
+        if(iter==1)call mem_change_background_alloc((w0size+w1size+w2size+w3size)*8.0E0_realk)
 
         call mem_pseudo_alloc(w0, w0size , simple = .false. )
         call mem_pseudo_alloc(w1, w1size , simple = .false.)
@@ -5360,8 +5367,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize
     integer :: nnod,magic,nbuffs,choice
     logical :: checkbg
+    integer(kind=8) :: w0size,w1size,w2size,w3size
 
-
+    print *,"MASTER IN GET MAX"
     !minimum recommended buffer size
     nbuffs = 5
     frac_of_total_mem=0.80E0_realk
@@ -5392,19 +5400,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
 
     mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+    print *,"MASTER MEM 4",MemFree,mem_used
     if (mem_used>MemFree)then
 #ifdef VAR_MPI
        !test for scheme with medium requirements
        scheme=3
        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+       print *,"MASTER MEM 3",MemFree,mem_used
        if (mem_used>MemFree)then
           !test for scheme with low requirements
           scheme=2
           mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-          if (mem_used>frac_of_total_mem*MemFree)then
+          print *,"MASTER MEM 2",MemFree,mem_used
+          if (mem_used>MemFree)then
              scheme=0
+             print *,"MASTER check 0"
              mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-             frac_of_total_mem=0.60E0_realk
+             print *,"MASTER MEM 0",MemFree,mem_used
              print *,"mem",MemFree
              if (mem_used>MemFree)then
                 write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
@@ -5421,6 +5433,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        endif
 #endif
     endif
+    print *,"MASTER SCHEME",scheme
 
     if(DECinfo%force_scheme)then
       scheme=DECinfo%en_mem
@@ -5485,6 +5498,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! This block is routinely used in a calculation
     else
 
+      print *,"master DOING OPT",scheme
       !optimize buffers, deactivated for the moment
       nbuffs = 0
       if(scheme==0)then
@@ -5502,45 +5516,74 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !determine gamma batch first
       do while (MemFree>mem_used .and. (nb>=nbg))
 
-        nbg=nbg+1
+        nbg = nbg+1
         nba = nbg/2
         if (nba>=nb)then
            nba = nb
         else if (nba<=minbsize)then
            nba = minbsize
         endif
+
         mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
 
-      enddo
+        w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,scheme,se,is)
+        w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,scheme,se,is)
+        w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
+        w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
 
-      if (nbg>=nb)then
-        nbg = nb
-      else if (nbg<=minbsize)then
-        nbg = minbsize
-      else
-        nbg=nbg-1
-      endif
+        if( (w0size+w1size+w2size+w3size>= bg_buf_size) .and. checkbg )then
+           nbg = nbg-1
+           nba = nbg/2
+
+           if (nbg<minbsize)then
+              call lsquit("ERROR(get_max_batch_sizes): background buffer not large enough",-1)
+           endif
+
+           exit
+
+        endif
+
+      enddo
+      print *,"MASTER GAMMA",nba,nbg
 
       !determine alpha batch
 
       do while ((MemFree>mem_used) .and. (nb>=nba))
+
         nba      = nba+1
-        nbg      = nba * 2
+        nbg      = nba*2
         if (nbg>=nb)then
            nbg = nb
         else if (nbg<=minbsize)then
            nbg = minbsize
         endif
+
         mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
 
+        w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,scheme,se,is)
+        w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,scheme,se,is)
+        w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
+        w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
+
+        if( (w0size+w1size+w2size+w3size>= bg_buf_size) .and. checkbg )then
+           nba = nba-1
+           nbg = nba*2
+           exit
+        endif
+
       enddo
+      print *,"MASTER ALPHA",nba,nbg
+
+      if (nbg>=nb)then
+        nbg = nb
+      else if (nbg<=minbsize)then
+        nbg = minbsize
+      endif
 
       if (nba>=nb)then
          nba = nb
       else if (nba<=minbsize)then
          nba = minbsize
-      else
-         nba=nba-1
       endif
 
     endif
@@ -5556,6 +5599,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !if much more slaves than jobs are available, split the jobs to get at least
       !one for all the slaves
       !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
+      print *,"MASTER SPLITTING"
       if(.not.manual)then
         if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
           nba=(nb/(magic*nnod))
@@ -5564,15 +5608,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        
         if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
           do while((nb/nba)*(nb/nbg)<magic*nnod)
+            print *,"splitting gammas",nbg
             nbg=nbg-1
-            if(nbg<1)exit
+            if(nbg<=Minbsize)exit
           enddo
           if(nbg<minbsize)nbg=minbsize
         endif
       endif
+      print *,"MASTER SPLIT",nba,nbg
     end if
 
-    if(scheme==2)then
+    if(scheme==2.and..false.)then
       choice = 2
       mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
       e2a = min(v2o2,int(((MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
@@ -8256,7 +8302,7 @@ subroutine calculate_E2_and_permute_slave()
   use infpar_module
   use lsmpi_type, only:ls_mpibcast
   use daltoninfo, only:ls_free
-  use memory_handling, only: mem_alloc, mem_dealloc
+  use memory_handling, only: mem_alloc, mem_dealloc,mem_pseudo_alloc,mem_pseudo_dealloc,mem_is_background_buf_init
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use decmpi_module, only: share_E2_with_slaves
@@ -8281,8 +8327,15 @@ subroutine calculate_E2_and_permute_slave()
   call time_start_phase(PHASE_WORK)
 
   o2v2 = int((i8*no)*no*nv*nv,kind=8)
-  call mem_alloc(ppf,no*no)
-  call mem_alloc(qqf,nv*nv)
+  if(mem_is_background_buf_init())then
+     call mem_pseudo_alloc(w1,o2v2)
+     call mem_pseudo_alloc(ppf,no*no)
+     call mem_pseudo_alloc(qqf,nv*nv)
+  else
+     call mem_alloc(w1,o2v2)
+     call mem_alloc(ppf,no*no)
+     call mem_alloc(qqf,nv*nv)
+  endif
 
   call time_start_phase(PHASE_COMM)
 
@@ -8291,17 +8344,27 @@ subroutine calculate_E2_and_permute_slave()
 
   call time_start_phase(PHASE_WORK)
 
-  call mem_alloc(w1,o2v2)
+
   call calculate_E2_and_permute(ccmodel,ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
      &omega2,o2v2,s,.false.,lo,time_E2_work,time_E2_comm)
 
-  call mem_dealloc(ppf)
-  call mem_dealloc(qqf)
-  call mem_dealloc(xo)
-  call mem_dealloc(yv)
-  call mem_dealloc(Gbi)
-  call mem_dealloc(Had)
-  call mem_dealloc(w1)
+  if(mem_is_background_buf_init())then
+     call mem_pseudo_dealloc(qqf)
+     call mem_pseudo_dealloc(ppf)
+     call mem_pseudo_dealloc(w1)
+     call mem_pseudo_dealloc(Had)
+     call mem_pseudo_dealloc(Gbi)
+     call mem_pseudo_dealloc(yv)
+     call mem_pseudo_dealloc(xo)
+  else
+     call mem_dealloc(qqf)
+     call mem_dealloc(ppf)
+     call mem_dealloc(w1)
+     call mem_dealloc(Had)
+     call mem_dealloc(Gbi)
+     call mem_dealloc(yv)
+     call mem_dealloc(xo)
+  endif
 end subroutine calculate_E2_and_permute_slave
 
 

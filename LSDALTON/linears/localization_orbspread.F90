@@ -75,6 +75,10 @@ real(realk),pointer :: max_orbspreads(:)
         &   '  mu = ',CFG%mu,'  grd =', nrmG, '  it =',CFG%it, '  trust-region = ', CFG%stepsize&
         & ,' step= ',stepsize
 
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+     FLUSH(ls%lupri)
+#endif
+
      if(CFG%quit_after_10it)then
         if (i>10) then
            if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.02 .and. &
@@ -264,6 +268,10 @@ real(realk),pointer :: max_orbspreads(:)
     write (ls%lupri,'(A,I3,A,f6.2,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
          &'  %LOC%',i,' sigma_2 =',max_orbspreads(i),&
          &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region = ',CFG%stepsize,' step =', stepsize
+
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+    FLUSH(ls%lupri)
+#endif
   
 
     if(CFG%quit_after_10it)then

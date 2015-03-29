@@ -2129,7 +2129,7 @@ end function mem_is_background_buf_init
 function mem_get_bg_buf_n() result(n)
    implicit none
    integer(kind=8) :: n
-   n = buf_realk%n
+   n = buf_realk%nmax
 end function mem_get_bg_buf_n
 
 subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
