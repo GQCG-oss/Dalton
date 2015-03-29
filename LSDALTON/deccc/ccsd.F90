@@ -2723,8 +2723,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_free(gvoova)
            call tensor_free(gvvooa)
            if( use_bg_buf )then
-              call mem_pseudo_dealloc(gvvoo)
               call mem_pseudo_dealloc(gvoov)
+              call mem_pseudo_dealloc(gvvoo)
            else
               call mem_dealloc(gvvoo)
               call mem_dealloc(gvoov)
