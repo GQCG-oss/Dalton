@@ -2119,14 +2119,13 @@ contains
   end subroutine unpack_gmo
 #endif
 
-  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective,order)
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective)
     implicit none
     type(tensor),intent(inout)   :: integral
     type(tensor),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
     type(lsitem), intent(inout) :: mylsitem
     logical, intent(in) :: local
     logical, intent(inout) :: collective
-    integer, intent(in), optional :: order(4)
     !Integral stuff
     logical :: save_cs_screen, save_ps_screen
     integer :: alphaB,gammaB,dimAlpha,dimGamma
@@ -2389,9 +2388,9 @@ contains
 
        endif
 
-       collective = .false.
-       mem_saving = .true.
-       completely_distributed = .false.
+       !collective = .false.
+       !mem_saving = .true.
+       !completely_distributed = .false.
 
        if((collective.and.completely_distributed).or.(completely_distributed.and.mem_saving).or.(collective.and.mem_saving))then
           call lsquit("ERROR(get_mo_integral_par): only one can be true at a time",-1)
@@ -2886,15 +2885,12 @@ contains
 
 #ifdef VAR_MPI
 
-             !FIXME: IMPLEMENT TENSOR SORTING
-             if(present(order))call lsquit("ERROR(get_mo_integral_par): order not implemented for this option",-1)
 
              one => w2(1:onen)
              two => w2(onen+1:onen+twon)
              thr => w2(onen+twon+1:onen+twon+thrn)
 
              !TODO: introduce OMP in order to speed up the routine
-
              do t1 = 1, integral%ntpm(1)
 
                 startA = 1 + (t1-1)*integral%tdim(1)
@@ -3037,7 +3033,7 @@ contains
                 call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm1(fg),nb,0.0E0_realk,w1,m)
 
                 call time_start_phase( PHASE_COMM )
-                call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size, order = order)
+                call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size)
                 call time_start_phase( PHASE_WORK )
              endif
              call time_start_phase(PHASE_WORK, ttot = time_cont4 )
@@ -3244,13 +3240,13 @@ contains
        call time_start_phase( PHASE_COMM )
        call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
-       call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size   )
+       call tensor_convert(work,integral, wrk = w1, iwrk = w1size   )
     endif
 
 #else
 
     call time_start_phase( PHASE_WORK )
-    call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size )
+    call tensor_convert(work,integral, wrk = w1, iwrk = w1size )
 
 #endif
 
