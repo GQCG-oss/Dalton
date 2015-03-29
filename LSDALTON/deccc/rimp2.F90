@@ -814,6 +814,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call dgemm('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccALLT,K,0.0E0_realk,Calpha2,M)
 #endif        
         call mem_dealloc(Calpha3)
+        IF(.NOT.first_order)call mem_dealloc(UoccALLT)
      ELSE
         ! Transform index delta to local occupied index 
         !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
@@ -968,6 +969,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #else
            call dgemm('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccallT,K,0.0E0_realk,Calpha2,M)
 #endif
+           call mem_dealloc(UoccallT)
         ELSE
 #ifdef VAR_OPENACC
 !$acc host_data use_device(CalphaOcc,UoccT,Calpha2)
