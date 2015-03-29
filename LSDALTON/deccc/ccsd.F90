@@ -5367,7 +5367,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize
     integer :: nnod,magic,nbuffs,choice
     logical :: checkbg
-    integer(kind=8) :: w0size,w1size,w2size,w3size
 
     print *,"MASTER IN GET MAX"
     !minimum recommended buffer size
