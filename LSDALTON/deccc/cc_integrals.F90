@@ -2389,9 +2389,9 @@ contains
 
        endif
 
-       !collective = .false.
-       !mem_saving = .true.
-       !completely_distributed = .false.
+       collective = .false.
+       mem_saving = .true.
+       completely_distributed = .false.
 
        if((collective.and.completely_distributed).or.(completely_distributed.and.mem_saving).or.(collective.and.mem_saving))then
           call lsquit("ERROR(get_mo_integral_par): only one can be true at a time",-1)
