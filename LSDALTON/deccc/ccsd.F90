@@ -1871,456 +1871,456 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !BatchAlpha: do while(alphaB<=nbatchesAlpha) ! AO batches
 
 
-           
-           IF(DECinfo%useIchor)THEN
-              dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
-              AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
-              AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
-              AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
-              AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
-           ELSE
-              dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-              AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-              AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
-           ENDIF
 
-           !short hand notation
-           fa         = AlphaStart
-           la         = dimAlpha
-           myload     = myload + la * lg
+        IF(DECinfo%useIchor)THEN
+           dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+           AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+           AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+           AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+           AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+        ELSE
+           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
+           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
+        ENDIF
+
+        !short hand notation
+        fa         = AlphaStart
+        la         = dimAlpha
+        myload     = myload + la * lg
 
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
-           if(DIL_DEBUG) then
-            write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration started: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !`DIL: remove
-           endif
+        if(DIL_DEBUG) then
+           write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration started: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !`DIL: remove
+        endif
 #endif
 #endif
 
-           !u[k gamma  c j] * Lambda^p [alpha j] ^T = u [k gamma c alpha]
-           call dgemm('n','t',no*nv*lg,la,no,1.0E0_realk,uigcj%d,no*nv*lg,xo(fa),nb,0.0E0_realk,w1%d,nv*no*lg) !`DIL: uigcj,w1 used
-           call lsmpi_poke()
-           !Transpose u[k gamma c alpha]^T -> u[c alpha k gamma]
-           call array_reorder_4d(1.0E0_realk,w1%d,no,lg, nv,la,[3,4,1,2],0.0E0_realk,w3%d) !`DIL: w1,w3 in use
-           call lsmpi_poke()
+        !u[k gamma  c j] * Lambda^p [alpha j] ^T = u [k gamma c alpha]
+        call dgemm('n','t',no*nv*lg,la,no,1.0E0_realk,uigcj%d,no*nv*lg,xo(fa),nb,0.0E0_realk,w1%d,nv*no*lg) !`DIL: uigcj,w1 used
+        call lsmpi_poke()
+        !Transpose u[k gamma c alpha]^T -> u[c alpha k gamma]
+        call array_reorder_4d(1.0E0_realk,w1%d,no,lg, nv,la,[3,4,1,2],0.0E0_realk,w3%d) !`DIL: w1,w3 in use
+        call lsmpi_poke()
 
-           !print*,"GAMMA:",fg,nbatchesGamma,"ALPHA:",fa,nbatchesAlpha
-           !print*,"--------------------------------------------------"
+        !print*,"GAMMA:",fg,nbatchesGamma,"ALPHA:",fa,nbatchesAlpha
+        !print*,"--------------------------------------------------"
 
-           !setup RHS screening - here we only have a set of AO basisfunctions
-           !                      so we use the batchscreening matrices.
-           !                      like BatchfilenamesCS(alphaB,gammaB)
-           !Note that it is faster to calculate the integrals in the form
-           !(dimAlpha,dimGamma,nbasis,nbasis) so the subset of the AO basis is used on the LHS
-           !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
-           call time_start_phase(PHASE_WORK, at = time_intloop_work)
-           IF(DECinfo%useIchor)THEN
-              dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array:`DIL: This can grow HUGE!!!
-              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
-                   & w1%d,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                   & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
-           ELSE
-              IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-              IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-              ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-              ! ************************************************************************************
-              dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
-              ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-              call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-              !Mylsitem%setting%scheme%intprint=6
-              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
-                   &batchindexGamma(gammaB),&
-                   &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC,DECinfo%IntegralThreshold)
-              !Mylsitem%setting%scheme%intprint=0
-           ENDIF
-           call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+        !setup RHS screening - here we only have a set of AO basisfunctions
+        !                      so we use the batchscreening matrices.
+        !                      like BatchfilenamesCS(alphaB,gammaB)
+        !Note that it is faster to calculate the integrals in the form
+        !(dimAlpha,dimGamma,nbasis,nbasis) so the subset of the AO basis is used on the LHS
+        !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
+        call time_start_phase(PHASE_WORK, at = time_intloop_work)
+        IF(DECinfo%useIchor)THEN
+           dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array:`DIL: This can grow HUGE!!!
+           call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
+              & w1%d,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+              & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
+        ELSE
+           IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+           IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
+           ! ************************************************************************************
+           dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array
+           ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
+           call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+           !Mylsitem%setting%scheme%intprint=6
+           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1%d,batchindexAlpha(alphaB),&
+              &batchindexGamma(gammaB),&
+              &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,INTSPEC,DECinfo%IntegralThreshold)
+           !Mylsitem%setting%scheme%intprint=0
+        ENDIF
+        call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-           call time_start_phase(PHASE_COMM, at = time_intloop_int)
+        call time_start_phase(PHASE_COMM, at = time_intloop_int)
 #ifdef VAR_MPI
-           !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
-           if( alloc_in_dummy )then
+        !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
+        if( alloc_in_dummy )then
 #ifdef DIL_ACTIVE
-              if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) call lsmpi_win_flush(omega2%wi(1),local=.true.)
+           if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) call lsmpi_win_flush(omega2%wi(1),local=.true.)
 #else
-              if(scheme==2.or.scheme==1) call lsmpi_win_flush(omega2%wi(1),local=.true.)
+           if(scheme==2.or.scheme==1) call lsmpi_win_flush(omega2%wi(1),local=.true.)
 #endif
-           else
-              if(lock_outside.and.scheme==2) call tensor_unlock_wins(omega2,.true.)
-           endif
+        else
+           if(lock_outside.and.scheme==2) call tensor_unlock_wins(omega2,.true.)
+        endif
 #endif
-           call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+        call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 
-           call array_reorder_4d(1.0E0_realk,w1%d,nb,nb,la,lg,[4,2,3,1],0.0E0_realk,w0%d) !`DIL: w1,w0 in use
+        call array_reorder_4d(1.0E0_realk,w1%d,nb,nb,la,lg,[4,2,3,1],0.0E0_realk,w0%d) !`DIL: w1,w0 in use
+        call lsmpi_poke()
+
+        ! I [gamma delta alpha beta] * Lambda^p [beta l] = I[gamma delta alpha l]
+        call dgemm('n','n',lg*la*nb,no,nb,1.0E0_realk,w0%d,lg*nb*la,xo,nb,0.0E0_realk,w2%d,lg*nb*la) !`DIL: w0,w2 in use: HUGE
+        call lsmpi_poke()
+        !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
+        call array_reorder_4d(1.0E0_realk,w2%d,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1%d) !`DIL: w1,w2 in use
+        call lsmpi_poke()
+
+        !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
+        call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3%d,nv,w1%d,lg*la*no,1.0E0_realk,Had,nv) !`DIL: w1,w3 in use
+        call lsmpi_poke()
+
+        !VVOO
+        if ( Ccmodel > MODEL_CC2 ) then
+           !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
+           call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1%d,la*no*lg,yo,nb,0.0E0_realk,w3%d,la*no*lg) !`DIL: w1,w3 in use
            call lsmpi_poke()
-
-           ! I [gamma delta alpha beta] * Lambda^p [beta l] = I[gamma delta alpha l]
-           call dgemm('n','n',lg*la*nb,no,nb,1.0E0_realk,w0%d,lg*nb*la,xo,nb,0.0E0_realk,w2%d,lg*nb*la) !`DIL: w0,w2 in use: HUGE
+           ! gvvoo = (vv|oo) constructed from w2%d                 = I [alpha i j  gamma]
+           call array_reorder_4d(1.0E0_realk,w3%d,la,no,lg,no,[1,2,4,3],0.0E0_realk,w2%d) !`DIL: w3,w2 in use
            call lsmpi_poke()
-           !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
-           call array_reorder_4d(1.0E0_realk,w2%d,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1%d) !`DIL: w1,w2 in use
+           !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
+           call dgemm('n','n',la*no2,nv,lg,1.0E0_realk,w2%d,la*no2,yv(fg),nb,0.0E0_realk,w3%d,la*no2) !`DIL: w2,w3 in use
            call lsmpi_poke()
-
-           !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
-           call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3%d,nv,w1%d,lg*la*no,1.0E0_realk,Had,nv) !`DIL: w1,w3 in use
-           call lsmpi_poke()
-
-           !VVOO
-           if ( Ccmodel > MODEL_CC2 ) then
-              !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
-              call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1%d,la*no*lg,yo,nb,0.0E0_realk,w3%d,la*no*lg) !`DIL: w1,w3 in use
-              call lsmpi_poke()
-              ! gvvoo = (vv|oo) constructed from w2%d                 = I [alpha i j  gamma]
-              call array_reorder_4d(1.0E0_realk,w3%d,la,no,lg,no,[1,2,4,3],0.0E0_realk,w2%d) !`DIL: w3,w2 in use
-              call lsmpi_poke()
-              !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
-              call dgemm('n','n',la*no2,nv,lg,1.0E0_realk,w2%d,la*no2,yv(fg),nb,0.0E0_realk,w3%d,la*no2) !`DIL: w2,w3 in use
-              call lsmpi_poke()
-              !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
-#ifdef DIL_ACTIVE
-              scheme=scheme_tmp !``DIL: remove
-#endif
-              if(scheme==4)then
-                 call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
-              elseif(scheme==3.or.scheme==2)then
-#if VAR_MPI
-                 if(.not. alloc_in_dummy .and. lock_outside) call tensor_lock_wins(gvvooa,'s',mode)
-                 call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,0.0E0_realk,w2%d,nv)
-                 call time_start_phase(PHASE_COMM, at = time_intloop_work)
-                 call tensor_add(gvvooa,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
-                 call time_start_phase(PHASE_WORK, at = time_intloop_comm)
-#endif
-              elseif(scheme==1) then !`DIL: Tensor contraction 2
-#ifdef DIL_ACTIVE
-               if(DIL_DEBUG) then
-                write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 2:")')&
-                &infpar%lg_mynum,infpar%mynum
-                write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha range [",i4,":",i4,"]")') fa,fa+la-1
-               endif
-               tcs='D(a,i,j,b)+=L(u,a)*R(u,i,j,b)'
-               call dil_clean_tens_contr(tch)
-               call dil_set_tens_contr_args(tch,'d',errc,tens_distr=gvvooa)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: DA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Destination arg set failed!',-1)
-               tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
-               call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,xv)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: LA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Left arg set failed!',-1)
-               tens_rank=4; tens_dims(1:tens_rank)=(/la,no,no,nv/); tens_bases(1:tens_rank)=(/fa-1_INTD,0,0,0/)
-               call dil_set_tens_contr_args(tch,'r',errc,tens_rank,tens_dims,w3%d,tens_bases)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: RA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Right arg set failed!',-1)
-               call dil_set_tens_contr_spec(tch,tcs,errc,&
-                     &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
-                     &rdims=(/int(la,INTD),int(no,INTD),int(no,INTD),int(nv,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/))
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: CC: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Contr spec set failed!',-1)
-               dil_mem=dil_get_min_buf_size(tch,errc)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: BS: ',infpar%lg_mynum,errc,dil_mem
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Buf size set failed!',-1)
-               call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: TC: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Tens contr failed!',-1)
-#else
-               call lsquit('ERROR(ccsd_residual_integral_driven): This part (4) of Scheme 1 requires DIL backend!',-1)
-#endif
-              endif
-              if(scheme/=1) call lsmpi_poke()
-#ifdef DIL_ACTIVE
-              scheme=2 !``DIL: remove
-#endif
-           endif
-
-           ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
-           call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1%d,la*no*lg,yv,nb,0.0E0_realk,w3%d,la*no*lg) !`DIL: w1,w3 in use
-           call lsmpi_poke()
-           !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
-           call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3%d,la,uigcj%d,nv*no*lg,1.0E0_realk,Gbi(fa),nb) !`DIL: w3,uigcj in use
-           call lsmpi_poke()
-
-           if ( Ccmodel > MODEL_CC2 ) then
-
-              !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
-              call array_reorder_4d(1.0E0_realk,w3%d,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2%d) !`DIL: w3,w2 in use
-              ! gvoov = (vo|ov) constructed from w2%d               = I [alpha j b  gamma]
-              !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
-              call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2%d,la*no*nv,yo(fg),nb,0.0E0_realk,w1%d,la*no*nv) !`DIL: w2,w1 in use
-              call lsmpi_poke()
-
-              !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
-#ifdef DIL_ACTIVE
-              scheme=scheme_tmp !``DIL: remove
-#endif
-              if(scheme==4)then
-
-                 call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
-
-              else if(scheme==3.or.scheme==2)then
-#ifdef VAR_MPI
-                 call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,0.0E0_realk,w2%d,nv)
-                 call time_start_phase(PHASE_COMM, at = time_intloop_work)
-                 if( .not. alloc_in_dummy.and.lock_outside )call tensor_lock_wins(gvoova,'s',mode)
-                 call tensor_add(gvoova,1.0E0_realk,w2%d,wrk = w3%d, iwrk=w3%n)
-                 call time_start_phase(PHASE_WORK, at = time_intloop_comm)
-#endif
-              else if(scheme==1)then !`DIL: Tensor contraction 3
-#ifdef DIL_ACTIVE
-               if(DIL_DEBUG) then
-                write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 3:")')&
-                &infpar%lg_mynum,infpar%mynum
-               endif
-               tcs='D(a,j,b,i)+=L(u,a)*R(u,j,b,i)'
-               call dil_clean_tens_contr(tch)
-               call dil_set_tens_contr_args(tch,'d',errc,tens_distr=gvoova)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: DA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Destination arg set failed!',-1)
-               tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
-               call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,xv)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: LA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Left arg set failed!',-1)
-               tens_rank=4; tens_dims(1:tens_rank)=(/la,no,nv,no/); tens_bases(1:tens_rank)=(/fa-1_INTD,0,0,0/)
-               call dil_set_tens_contr_args(tch,'r',errc,tens_rank,tens_dims,w1%d,tens_bases)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: RA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Right arg set failed!',-1)
-               call dil_set_tens_contr_spec(tch,tcs,errc,&
-                     &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
-                     &rdims=(/int(la,INTD),int(no,INTD),int(nv,INTD),int(no,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/))
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: CC: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Contr spec set failed!',-1)
-               dil_mem=dil_get_min_buf_size(tch,errc)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: BS: ',infpar%lg_mynum,errc,dil_mem
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Buf size set failed!',-1)
-               call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: TC: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Tens contr failed!',-1)
-#else
-               call lsquit('ERROR(ccsd_residual_integral_driven): This part (5) of Scheme 1 requires DIL backend!',-1)
-#endif
-              endif
-              if(scheme/=1) call lsmpi_poke()
-#ifdef DIL_ACTIVE
-              scheme=2 !``DIL: remove
-#endif
-           endif
-
-           call time_start_phase(PHASE_WORK, at = time_intloop_work)
-           IF(DECinfo%useIchor)THEN
-              !Build (batchA,full,batchC,full)
-              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,dimAlpha,nb,dimGamma,nb,&
-                   & w1%d,INTSPEC,FULLRHS,AOAlphaStart,AOAlphaEnd,1,nAObatches,AOGammaStart,AOGammaEnd,& !`DIL: w1 in use
-                   & 1,nAObatches,MoTrans,dimAlpha,nb,dimGamma,nb,NoSymmetry,DECinfo%IntegralThreshold)
-           ELSE
-              IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
-              IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
-              
-              call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
-                   & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),& !`DIL: w1 in use
-                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,&
-                   & INTSPEC,fullRHS,DECinfo%IntegralThreshold)
-           ENDIF
-           call lsmpi_poke()
-
-           call time_start_phase(PHASE_COMM, at = time_intloop_int)
-#ifdef VAR_MPI
-           if( Ccmodel>MODEL_CC2 )then
-              if( alloc_in_dummy )then
-#ifdef DIL_ACTIVE
-                 if(scheme==2.or.scheme==3.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
-#else
-                 if(scheme==2.or.scheme==3.or.scheme==1)then
-#endif
-                    call lsmpi_win_flush(gvvooa%wi(1),local=.true.)
-                    call lsmpi_win_flush(gvoova%wi(1),local=.true.)
-                 endif
-              else
-                 if((scheme==2.or.scheme==3) .and. lock_outside)then
-                    call tensor_unlock_wins(gvvooa,.true.)
-                    call tensor_unlock_wins(gvoova,.true.)
-                 endif
-              endif
-           endif
-#endif
-           call time_start_phase(PHASE_WORK, at = time_intloop_comm)
-
-           if( Ccmodel > MODEL_CC2 )then
-              if(fa<=fg+lg-1)then
-                 !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
-                 !element in the alpha batch has a smaller index as the last element in
-                 !the gamma batch, chose the trafolength as minimum of alpha batch-length
-                 !and the difference between first element of alpha batch and last element
-                 !of gamma batch
-#ifdef DIL_ACTIVE
-                 scheme=scheme_tmp !```DIL: remove
-#endif
-                 if(scheme /= 1) then
-                  call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
-                        &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
-                        &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
-                 else !`DIL: Scheme 1: TPL and TMI are distributed tensors
-#ifdef DIL_ACTIVE
-                  call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpld,tmid,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
-                        &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,.false.,&
-                        &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
-#else
-                  call lsquit('ERROR(ccsd_residual_integral_driven): This part (6) of Scheme 1 requires DIL backend!',-1)
-#endif
-                 endif
-#ifdef DIL_ACTIVE
-                 scheme=2 !``DIL: remove
-#endif
-                 !start a new timing phase after these terms
-                 call time_start_phase(PHASE_WORK)
-
-              endif
-           endif
-
-
-           !(w0%d):I[ delta gamma alpha beta] <- (w1%d):I[ alpha beta gamma delta ]
-           call array_reorder_4d(1.0E0_realk,w1%d,la,nb,lg,nb,[2,3,1,4],0.0E0_realk,w0%d) !`DIL: w1,w0 in use
-           call lsmpi_poke()
-           ! (w3%d):I[i gamma alpha beta] = Lambda^h[delta i] I[delta gamma alpha beta]
-           call dgemm('t','n',no,lg*la*nb,nb,1.0E0_realk,yo,nb,w0%d,nb,0.0E0_realk,w2%d,no) !`DIL: w0,w2 in use
-           call lsmpi_poke()
-           ! (w0%d):I[i gamma alpha j] = (w3%d):I[i gamma alpha beta] Lambda^h[beta j]
-           call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la) !`DIL: w2,w0 in use
-           call lsmpi_poke()
-           if( Ccmodel > MODEL_CC2 )then
-#ifdef DIL_ACTIVE
-              scheme=scheme_tmp !``DIL: remove
-#endif
-              select case(scheme)
-              case(4,3)
-                 ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
-                 call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%elm1)
-              case(2)
-#ifdef VAR_MPI
-                 ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
-                 call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d) !`DIL: w0,w3 in use
-                 ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
-                 call dgemm('t','n',no,no*no*la,lg,1.0E0_realk,xo(fg),nb,w3%d,lg,0.0E0_realk,w2%d,no) !`DIL: w3,w2 in use
-                 ! (w3):I[ k l i j] <- (w2):Lambda^p [alpha k ]^T I[ l i j , alpha]^T
-                 call dgemm('t','t',no,no*no*no,la,1.0E0_realk,xo(fa),nb,w2%d,no*no*no,0.0E0_realk,w3%d,no) !`DIL: w2,w3 in use
-                 if(.not.alloc_in_dummy)call tensor_lock_wins(sio4,'s',mode)
-                 call tensor_add(sio4,1.0E0_realk,w3%d,order = [1,2,3,4],wrk=w2%d,iwrk=w2%n) !`DIL: w3,w2 in use
-                 if( alloc_in_dummy )then
-                    call lsmpi_win_flush(sio4%wi(1),local=.true.)
-                 else
-                    call tensor_unlock_wins(sio4,.true.)
-                 endif
-#endif
-              case(1) !`DIL: Tensor contraction 4
-#ifdef DIL_ACTIVE
-               ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
-               call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d) !`DIL: w0,w3 in use
-               ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
-               call dgemm('t','n',no,no*no*la,lg,1.0E0_realk,xo(fg),nb,w3%d,lg,0.0E0_realk,w2%d,no) !`DIL: w3,w2 in use
-               ! (w3):I[ k l i j] <- (w2):Lambda^p [alpha k ]^T I[ l i j , alpha]^T
-               if(DIL_DEBUG) then
-                write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 4:")')&
-                &infpar%lg_mynum,infpar%mynum
-               endif
-               tcs='D(k,l,i,j)+=L(u,k)*R(l,i,j,u)'
-               call dil_clean_tens_contr(tch)
-               call dil_set_tens_contr_args(tch,'d',errc,tens_distr=sio4)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: DA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Destination arg set failed!',-1)
-               tens_rank=2; tens_dims(1:tens_rank)=(/nb,no/)
-               call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,xo)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: LA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Left arg set failed!',-1)
-               tens_rank=4; tens_dims(1:tens_rank)=(/no,no,no,la/); tens_bases(1:tens_rank)=(/0,0,0,fa-1_INTD/)
-               call dil_set_tens_contr_args(tch,'r',errc,tens_rank,tens_dims,w2%d,tens_bases)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: RA: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Right arg set failed!',-1)
-               call dil_set_tens_contr_spec(tch,tcs,errc,&
-                     &ldims=(/int(la,INTD),int(no,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
-                     &rdims=(/int(no,INTD),int(no,INTD),int(no,INTD),int(la,INTD)/),rbase=(/0_INTD,0_INTD,0_INTD,int(fa-1,INTD)/))
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: CC: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Contr spec set failed!',-1)
-               dil_mem=dil_get_min_buf_size(tch,errc)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: BS: ',infpar%lg_mynum,errc,dil_mem
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Buf size set failed!',-1)
-               call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
-               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: TC: ',infpar%lg_mynum,errc
-               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Tens contr failed!',-1)
-#else
-               call lsquit('ERROR(ccsd_residual_integral_driven): This part (7) of Scheme 1 requires DIL backend!',-1)
-#endif
-              end select
-#ifdef DIL_ACTIVE
-              scheme=2 !``DIL: remove
-#endif
-           endif
-           if(scheme/=1) call lsmpi_poke()
-
-
-           ! (w2%d):I[gamma i j alpha] <- (w0%d):I[i gamma alpha j]
-           call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w2%d) !`DIL: w0,w2 in use
-           call lsmpi_poke()
-           ! (w3%d):I[b i j alpha] = Lamda^p[gamma b] (w2%d):I[gamma i j alpha]
-           call dgemm('t','n',nv,no2*la,lg,1.0E0_realk,xv(fg),nb,w2%d,lg,0.0E0_realk,w3%d,nv) !`DIL: w2,w3 in use
-           call lsmpi_poke()
-
-           ! Omega += Lambda^p[alpha a]^T (w3%d):I[b i j alpha]^T
+           !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
 #ifdef DIL_ACTIVE
            scheme=scheme_tmp !``DIL: remove
 #endif
-           if(scheme==2)then
+           if(scheme==4)then
+              call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
+              elseif(scheme==3.or.scheme==2)then
+#if VAR_MPI
+              if(.not. alloc_in_dummy .and. lock_outside) call tensor_lock_wins(gvvooa,'s',mode)
+              call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,0.0E0_realk,w2%d,nv)
+              call time_start_phase(PHASE_COMM, at = time_intloop_work)
+              call tensor_add(gvvooa,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
+              call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+#endif
+              elseif(scheme==1) then !`DIL: Tensor contraction 2
+#ifdef DIL_ACTIVE
+              if(DIL_DEBUG) then
+                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 2:")')&
+                    &infpar%lg_mynum,infpar%mynum
+                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha range [",i4,":",i4,"]")') fa,fa+la-1
+              endif
+              tcs='D(a,i,j,b)+=L(u,a)*R(u,i,j,b)'
+              call dil_clean_tens_contr(tch)
+              call dil_set_tens_contr_args(tch,'d',errc,tens_distr=gvvooa)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: DA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Destination arg set failed!',-1)
+              tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+              call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,xv)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: LA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Left arg set failed!',-1)
+              tens_rank=4; tens_dims(1:tens_rank)=(/la,no,no,nv/); tens_bases(1:tens_rank)=(/fa-1_INTD,0,0,0/)
+              call dil_set_tens_contr_args(tch,'r',errc,tens_rank,tens_dims,w3%d,tens_bases)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: RA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Right arg set failed!',-1)
+              call dil_set_tens_contr_spec(tch,tcs,errc,&
+                 &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
+                 &rdims=(/int(la,INTD),int(no,INTD),int(no,INTD),int(nv,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/))
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: CC: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Contr spec set failed!',-1)
+              dil_mem=dil_get_min_buf_size(tch,errc)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: BS: ',infpar%lg_mynum,errc,dil_mem
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Buf size set failed!',-1)
+              call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: TC: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Tens contr failed!',-1)
+#else
+              call lsquit('ERROR(ccsd_residual_integral_driven): This part (4) of Scheme 1 requires DIL backend!',-1)
+#endif
+           endif
+           if(scheme/=1) call lsmpi_poke()
+#ifdef DIL_ACTIVE
+           scheme=2 !``DIL: remove
+#endif
+        endif
+
+        ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
+        call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1%d,la*no*lg,yv,nb,0.0E0_realk,w3%d,la*no*lg) !`DIL: w1,w3 in use
+        call lsmpi_poke()
+        !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
+        call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3%d,la,uigcj%d,nv*no*lg,1.0E0_realk,Gbi(fa),nb) !`DIL: w3,uigcj in use
+        call lsmpi_poke()
+
+        if ( Ccmodel > MODEL_CC2 ) then
+
+           !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
+           call array_reorder_4d(1.0E0_realk,w3%d,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2%d) !`DIL: w3,w2 in use
+           ! gvoov = (vo|ov) constructed from w2%d               = I [alpha j b  gamma]
+           !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
+           call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2%d,la*no*nv,yo(fg),nb,0.0E0_realk,w1%d,la*no*nv) !`DIL: w2,w1 in use
+           call lsmpi_poke()
+
+           !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
+#ifdef DIL_ACTIVE
+           scheme=scheme_tmp !``DIL: remove
+#endif
+           if(scheme==4)then
+
+              call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
+
+           else if(scheme==3.or.scheme==2)then
 #ifdef VAR_MPI
-              call time_start_phase(PHASE_COMM, at = time_intloop_work )
-              if( lock_outside .and. .not. alloc_in_dummy )call tensor_lock_wins(omega2,'s',mode)
-              call time_start_phase(PHASE_WORK, at = time_intloop_comm )
-              call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,0.0E0_realk,w2%d,nv)
-              call time_start_phase(PHASE_COMM, at = time_intloop_work )
-              call tensor_add(omega2,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
-              call time_start_phase(PHASE_WORK, at = time_intloop_comm )
+              call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,0.0E0_realk,w2%d,nv)
+              call time_start_phase(PHASE_COMM, at = time_intloop_work)
+              if( .not. alloc_in_dummy.and.lock_outside )call tensor_lock_wins(gvoova,'s',mode)
+              call tensor_add(gvoova,1.0E0_realk,w2%d,wrk = w3%d, iwrk=w3%n)
+              call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+#endif
+           else if(scheme==1)then !`DIL: Tensor contraction 3
+#ifdef DIL_ACTIVE
+              if(DIL_DEBUG) then
+                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 3:")')&
+                    &infpar%lg_mynum,infpar%mynum
+              endif
+              tcs='D(a,j,b,i)+=L(u,a)*R(u,j,b,i)'
+              call dil_clean_tens_contr(tch)
+              call dil_set_tens_contr_args(tch,'d',errc,tens_distr=gvoova)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: DA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Destination arg set failed!',-1)
+              tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+              call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,xv)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: LA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Left arg set failed!',-1)
+              tens_rank=4; tens_dims(1:tens_rank)=(/la,no,nv,no/); tens_bases(1:tens_rank)=(/fa-1_INTD,0,0,0/)
+              call dil_set_tens_contr_args(tch,'r',errc,tens_rank,tens_dims,w1%d,tens_bases)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: RA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Right arg set failed!',-1)
+              call dil_set_tens_contr_spec(tch,tcs,errc,&
+                 &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
+                 &rdims=(/int(la,INTD),int(no,INTD),int(nv,INTD),int(no,INTD)/),rbase=(/int(fa-1,INTD),0_INTD,0_INTD,0_INTD/))
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: CC: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Contr spec set failed!',-1)
+              dil_mem=dil_get_min_buf_size(tch,errc)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: BS: ',infpar%lg_mynum,errc,dil_mem
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Buf size set failed!',-1)
+              call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: TC: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Tens contr failed!',-1)
+#else
+              call lsquit('ERROR(ccsd_residual_integral_driven): This part (5) of Scheme 1 requires DIL backend!',-1)
+#endif
+           endif
+           if(scheme/=1) call lsmpi_poke()
+#ifdef DIL_ACTIVE
+           scheme=2 !``DIL: remove
+#endif
+        endif
+
+        call time_start_phase(PHASE_WORK, at = time_intloop_work)
+        IF(DECinfo%useIchor)THEN
+           !Build (batchA,full,batchC,full)
+           call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,dimAlpha,nb,dimGamma,nb,&
+              & w1%d,INTSPEC,FULLRHS,AOAlphaStart,AOAlphaEnd,1,nAObatches,AOGammaStart,AOGammaEnd,& !`DIL: w1 in use
+              & 1,nAObatches,MoTrans,dimAlpha,nb,dimGamma,nb,NoSymmetry,DECinfo%IntegralThreshold)
+        ELSE
+           IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
+           IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
+
+           call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
+              & Mylsitem%setting,w1%d,batchindexAlpha(alphaB),batchindexGamma(gammaB),& !`DIL: w1 in use
+              & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,&
+              & INTSPEC,fullRHS,DECinfo%IntegralThreshold)
+        ENDIF
+        call lsmpi_poke()
+
+        call time_start_phase(PHASE_COMM, at = time_intloop_int)
+#ifdef VAR_MPI
+        if( Ccmodel>MODEL_CC2 )then
+           if( alloc_in_dummy )then
+#ifdef DIL_ACTIVE
+              if(scheme==2.or.scheme==3.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
+#else
+              if(scheme==2.or.scheme==3.or.scheme==1)then
+#endif
+                 call lsmpi_win_flush(gvvooa%wi(1),local=.true.)
+                 call lsmpi_win_flush(gvoova%wi(1),local=.true.)
+              endif
+           else
+              if((scheme==2.or.scheme==3) .and. lock_outside)then
+                 call tensor_unlock_wins(gvvooa,.true.)
+                 call tensor_unlock_wins(gvoova,.true.)
+              endif
+           endif
+        endif
+#endif
+        call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+
+        if( Ccmodel > MODEL_CC2 )then
+           if(fa<=fg+lg-1)then
+              !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
+              !element in the alpha batch has a smaller index as the last element in
+              !the gamma batch, chose the trafolength as minimum of alpha batch-length
+              !and the difference between first element of alpha batch and last element
+              !of gamma batch
+#ifdef DIL_ACTIVE
+              scheme=scheme_tmp !```DIL: remove
+#endif
+              if(scheme /= 1) then
+                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
+                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
+                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
+              else !`DIL: Scheme 1: TPL and TMI are distributed tensors
+#ifdef DIL_ACTIVE
+                 call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpld,tmid,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
+                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,.false.,&
+                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
+#else
+                 call lsquit('ERROR(ccsd_residual_integral_driven): This part (6) of Scheme 1 requires DIL backend!',-1)
+#endif
+              endif
+#ifdef DIL_ACTIVE
+              scheme=2 !``DIL: remove
+#endif
+              !start a new timing phase after these terms
+              call time_start_phase(PHASE_WORK)
+
+           endif
+        endif
+
+
+        !(w0%d):I[ delta gamma alpha beta] <- (w1%d):I[ alpha beta gamma delta ]
+        call array_reorder_4d(1.0E0_realk,w1%d,la,nb,lg,nb,[2,3,1,4],0.0E0_realk,w0%d) !`DIL: w1,w0 in use
+        call lsmpi_poke()
+        ! (w3%d):I[i gamma alpha beta] = Lambda^h[delta i] I[delta gamma alpha beta]
+        call dgemm('t','n',no,lg*la*nb,nb,1.0E0_realk,yo,nb,w0%d,nb,0.0E0_realk,w2%d,no) !`DIL: w0,w2 in use
+        call lsmpi_poke()
+        ! (w0%d):I[i gamma alpha j] = (w3%d):I[i gamma alpha beta] Lambda^h[beta j]
+        call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la) !`DIL: w2,w0 in use
+        call lsmpi_poke()
+        if( Ccmodel > MODEL_CC2 )then
+#ifdef DIL_ACTIVE
+           scheme=scheme_tmp !``DIL: remove
+#endif
+           select case(scheme)
+           case(4,3)
+              ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
+              call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%elm1)
+           case(2)
+#ifdef VAR_MPI
+              ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
+              call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d) !`DIL: w0,w3 in use
+              ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
+              call dgemm('t','n',no,no*no*la,lg,1.0E0_realk,xo(fg),nb,w3%d,lg,0.0E0_realk,w2%d,no) !`DIL: w3,w2 in use
+              ! (w3):I[ k l i j] <- (w2):Lambda^p [alpha k ]^T I[ l i j , alpha]^T
+              call dgemm('t','t',no,no*no*no,la,1.0E0_realk,xo(fa),nb,w2%d,no*no*no,0.0E0_realk,w3%d,no) !`DIL: w2,w3 in use
+              if(.not.alloc_in_dummy)call tensor_lock_wins(sio4,'s',mode)
+              call tensor_add(sio4,1.0E0_realk,w3%d,order = [1,2,3,4],wrk=w2%d,iwrk=w2%n) !`DIL: w3,w2 in use
+              if( alloc_in_dummy )then
+                 call lsmpi_win_flush(sio4%wi(1),local=.true.)
+              else
+                 call tensor_unlock_wins(sio4,.true.)
+              endif
+#endif
+           case(1) !`DIL: Tensor contraction 4
+#ifdef DIL_ACTIVE
+              ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
+              call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d) !`DIL: w0,w3 in use
+              ! (w2):I[ l i j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i j alpha]
+              call dgemm('t','n',no,no*no*la,lg,1.0E0_realk,xo(fg),nb,w3%d,lg,0.0E0_realk,w2%d,no) !`DIL: w3,w2 in use
+              ! (w3):I[ k l i j] <- (w2):Lambda^p [alpha k ]^T I[ l i j , alpha]^T
+              if(DIL_DEBUG) then
+                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 4:")')&
+                    &infpar%lg_mynum,infpar%mynum
+              endif
+              tcs='D(k,l,i,j)+=L(u,k)*R(l,i,j,u)'
+              call dil_clean_tens_contr(tch)
+              call dil_set_tens_contr_args(tch,'d',errc,tens_distr=sio4)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: DA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Destination arg set failed!',-1)
+              tens_rank=2; tens_dims(1:tens_rank)=(/nb,no/)
+              call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,xo)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: LA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Left arg set failed!',-1)
+              tens_rank=4; tens_dims(1:tens_rank)=(/no,no,no,la/); tens_bases(1:tens_rank)=(/0,0,0,fa-1_INTD/)
+              call dil_set_tens_contr_args(tch,'r',errc,tens_rank,tens_dims,w2%d,tens_bases)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: RA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Right arg set failed!',-1)
+              call dil_set_tens_contr_spec(tch,tcs,errc,&
+                 &ldims=(/int(la,INTD),int(no,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
+                 &rdims=(/int(no,INTD),int(no,INTD),int(no,INTD),int(la,INTD)/),rbase=(/0_INTD,0_INTD,0_INTD,int(fa-1,INTD)/))
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: CC: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Contr spec set failed!',-1)
+              dil_mem=dil_get_min_buf_size(tch,errc)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: BS: ',infpar%lg_mynum,errc,dil_mem
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Buf size set failed!',-1)
+              call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: TC: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Tens contr failed!',-1)
+#else
+              call lsquit('ERROR(ccsd_residual_integral_driven): This part (7) of Scheme 1 requires DIL backend!',-1)
+#endif
+           end select
+#ifdef DIL_ACTIVE
+           scheme=2 !``DIL: remove
+#endif
+        endif
+        if(scheme/=1) call lsmpi_poke()
+
+
+        ! (w2%d):I[gamma i j alpha] <- (w0%d):I[i gamma alpha j]
+        call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w2%d) !`DIL: w0,w2 in use
+        call lsmpi_poke()
+        ! (w3%d):I[b i j alpha] = Lamda^p[gamma b] (w2%d):I[gamma i j alpha]
+        call dgemm('t','n',nv,no2*la,lg,1.0E0_realk,xv(fg),nb,w2%d,lg,0.0E0_realk,w3%d,nv) !`DIL: w2,w3 in use
+        call lsmpi_poke()
+
+        ! Omega += Lambda^p[alpha a]^T (w3%d):I[b i j alpha]^T
+#ifdef DIL_ACTIVE
+        scheme=scheme_tmp !``DIL: remove
+#endif
+        if(scheme==2)then
+#ifdef VAR_MPI
+           call time_start_phase(PHASE_COMM, at = time_intloop_work )
+           if( lock_outside .and. .not. alloc_in_dummy )call tensor_lock_wins(omega2,'s',mode)
+           call time_start_phase(PHASE_WORK, at = time_intloop_comm )
+           call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,0.0E0_realk,w2%d,nv)
+           call time_start_phase(PHASE_COMM, at = time_intloop_work )
+           call tensor_add(omega2,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
+           call time_start_phase(PHASE_WORK, at = time_intloop_comm )
 #endif
            elseif(scheme==1)then !`DIL: Tensor contraction 5
 #ifdef DIL_ACTIVE
-            if(DIL_DEBUG) then
-             write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 5:")')&
-             &infpar%lg_mynum,infpar%mynum
-            endif
-            tcs='D(a,b,i,j)+=L(u,a)*R(b,i,j,u)'
-            call dil_clean_tens_contr(tch)
-            call dil_set_tens_contr_args(tch,'d',errc,tens_distr=omega2)
-            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: DA: ',infpar%lg_mynum,errc
-            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Destination arg set failed!',-1)
-            tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
-            call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,xv)
-            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: LA: ',infpar%lg_mynum,errc
-            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Left arg set failed!',-1)
-            tens_rank=4; tens_dims(1:tens_rank)=(/nv,no,no,la/); tens_bases(1:tens_rank)=(/0,0,0,fa-1_INTD/)
-            call dil_set_tens_contr_args(tch,'r',errc,tens_rank,tens_dims,w3%d,tens_bases)
-            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: RA: ',infpar%lg_mynum,errc
-            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Right arg set failed!',-1)
-            call dil_set_tens_contr_spec(tch,tcs,errc,&
-                  &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
-                  &rdims=(/int(nv,INTD),int(no,INTD),int(no,INTD),int(la,INTD)/),rbase=(/0_INTD,0_INTD,0_INTD,int(fa-1,INTD)/),&
-                  &alpha=0.5E0_realk)
-            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: CC: ',infpar%lg_mynum,errc
-            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Contr spec set failed!',-1)
-            dil_mem=dil_get_min_buf_size(tch,errc)
-            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: BS: ',infpar%lg_mynum,errc,dil_mem
-            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Buf size set failed!',-1)
-            call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
-            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: TC: ',infpar%lg_mynum,errc
-            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Tens contr failed!',-1)
-#else
-            call lsquit('ERROR(ccsd_residual_integral_driven): This part (8) of Scheme 1 requires DIL backend!',-1)
-#endif
-           else !scheme 3,4,0
-              call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
+           if(DIL_DEBUG) then
+              write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 5:")')&
+                 &infpar%lg_mynum,infpar%mynum
            endif
+           tcs='D(a,b,i,j)+=L(u,a)*R(b,i,j,u)'
+           call dil_clean_tens_contr(tch)
+           call dil_set_tens_contr_args(tch,'d',errc,tens_distr=omega2)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: DA: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Destination arg set failed!',-1)
+           tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+           call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,xv)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: LA: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Left arg set failed!',-1)
+           tens_rank=4; tens_dims(1:tens_rank)=(/nv,no,no,la/); tens_bases(1:tens_rank)=(/0,0,0,fa-1_INTD/)
+           call dil_set_tens_contr_args(tch,'r',errc,tens_rank,tens_dims,w3%d,tens_bases)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: RA: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Right arg set failed!',-1)
+           call dil_set_tens_contr_spec(tch,tcs,errc,&
+              &ldims=(/int(la,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
+              &rdims=(/int(nv,INTD),int(no,INTD),int(no,INTD),int(la,INTD)/),rbase=(/0_INTD,0_INTD,0_INTD,int(fa-1,INTD)/),&
+              &alpha=0.5E0_realk)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: CC: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Contr spec set failed!',-1)
+           dil_mem=dil_get_min_buf_size(tch,errc)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: BS: ',infpar%lg_mynum,errc,dil_mem
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Buf size set failed!',-1)
+           call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: TC: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Tens contr failed!',-1)
+#else
+           call lsquit('ERROR(ccsd_residual_integral_driven): This part (8) of Scheme 1 requires DIL backend!',-1)
+#endif
+        else !scheme 3,4,0
+           call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
+        end if
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
-           if(DIL_DEBUG) then
-            write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration finished: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !`DIL: remove
-            flush(DIL_CONS_OUT) !`DIL: remove
-           endif
+        if(DIL_DEBUG) then
+           write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration finished: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !`DIL: remove
+           flush(DIL_CONS_OUT) !`DIL: remove
+        end if
 #endif
-           scheme=2 !``DIL: remove
+        scheme=2 !``DIL: remove
 #endif
-           if(scheme/=1) call lsmpi_poke()
+        if(scheme/=1) call lsmpi_poke()
 
 
         !end do BatchAlpha
