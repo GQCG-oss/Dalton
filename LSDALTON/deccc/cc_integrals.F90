@@ -2339,7 +2339,7 @@ contains
 
        maxsize = 0.0E0_realk
 
-       !get minimum memory requrements in 
+       !get minimum memory requrements
        mem_saving             = .false.
        completely_distributed = .false.
        nba                    = MinAObatch
@@ -2398,14 +2398,21 @@ contains
           call lsquit("ERROR(get_mo_integral_par): only one can be true at a time",-1)
        endif
 
+       !set requested batch sizes to the largest possible and overwrite these
+       !values if this is not possible
+       nba                    = nb
+       nbg                    = nb
+
        alp: do i = MinAObatch, nb, inc
+          print *,"LOOPPING",i,MinAObatch,nb,inc
           if(completely_distributed)then
-             b = i*2
-             e = i*2
+             b = max(i/2,MinAObatch)
+             e = b
           else
-             b = i*2
+             b = max(i/2,MinAObatch)
              e = min(i,nb)
           endif
+
           do k = b, e
 
              w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
@@ -2418,11 +2425,11 @@ contains
              if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
              if(mem_saving) maxsize = maxsize + (nbuffs*i8*n1*n2)*n3*n4
 
-             if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse )then
+             if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse )then
 
                 if(completely_distributed)then
                    nba = max(i-inc,MinAObatch)
-                   nbg = min(nba*2,nb)
+                   nbg = max(nba/2,MinAObatch)
                 else
                    nba = max(i,MinAObatch)
                    nbg = max(min(k-1,nb),MinAObatch)
@@ -2437,24 +2444,23 @@ contains
 
 
        if(DECinfo%manual_batchsizes)then
-          nbg = max(DECinfo%ccsdGbatch,MinAObatch)
-          nba = max(DECinfo%ccsdAbatch,MinAObatch)
+          nbg = min(max(DECinfo%ccsdGbatch,MinAObatch),nb)
+          nba = min(max(DECinfo%ccsdAbatch,MinAObatch),nb)
        else
           !split, such that there are enough jobs for each node
           if(.not.completely_distributed)then
              if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>MinAObatch).and.nnod>1)then
                 do while((nb/nba)*(nb/nbg)<magic*nnod)
                    nba = max(nba - 1,MinAObatch)
-                   nbg = min(nba*2,nb)
+                   nbg = min(max(nba/2,MinAObatch),nb)
                    if( nba == MinAObatch ) exit
                 enddo
              endif
 
-             if(nba<MinAObatch)nba=MinAObatch
-             if(nbg<MinAObatch)nbg=MinAObatch
           endif
 
        endif
+
 
        w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
           &mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
