@@ -2170,7 +2170,7 @@ contains
     integer :: ndimA,  ndimB,  ndimC,  ndimD
     integer :: ndimAs, ndimBs, ndimCs, ndimDs
     integer :: startA, startB, startC, startD
-    integer :: dims(4), tdim(4), starts(4), order4(4), tile
+    integer :: dims(4), tdim(4), starts(4), order4(4), buff_cntr
     integer :: bs,as,gs,n1s,n2s,n3s,n4s, inc,b,e,m,n,t1,t2,t3,t4
     real(realk), pointer :: one(:),two(:),thr(:)
     integer              :: onen,  twon,  thrn
@@ -2214,7 +2214,7 @@ contains
     flushing_time = time_lsmpi_win_flush
 #endif
     completely_distributed = .false.
-    nbuffs         = 2
+    nbuffs         = 4
     time_t4fg_tot  = 0.0E0_realk
     time_t3fa_tot  = 0.0E0_realk
     time_cont1_tot = 0.0E0_realk
@@ -2748,10 +2748,11 @@ contains
 #endif
 
 
-    gammaB   = 0
-    alphaB   = 0
-    modeBdim = [nbatchesAlpha,nbatchesGamma]
-    jobidx   = 0
+    gammaB    = 0
+    alphaB    = 0
+    modeBdim  = [nbatchesAlpha,nbatchesGamma]
+    jobidx    = 0
+    buff_cntr = 0
 
     call time_start_phase( PHASE_WORK, twall = tot_intloop )
     call time_phases_get_current(current_wt=phase_cntrs)
@@ -2894,7 +2895,6 @@ contains
 
              !TODO: introduce OMP in order to speed up the routine
 
-             tile = 0
              do t1 = 1, integral%ntpm(1)
 
                 startA = 1 + (t1-1)*integral%tdim(1)
@@ -2960,9 +2960,9 @@ contains
                          k = lg
 
 
-                         bidx = mod(tile,nbuffs)+1
+                         bidx = mod(buff_cntr,nbuffs)+1
 
-                         if(alloc_in_dummy .and. tile>=nbuffs) call lsmpi_wait(req(bidx))
+                         if(alloc_in_dummy .and. buff_cntr>=nbuffs) call lsmpi_wait(req(bidx))
 
                          bpos = 1 + (bidx-1) * m * n
 
@@ -2971,11 +2971,12 @@ contains
 #ifdef VAR_HAVE_MPI3
                          call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.true.,req=req(bidx))
+                         !call lsmpi_wait(req(bidx))
 #else
                          call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.false.)
 #endif
-                         tile = tile + 1
+                         buff_cntr = buff_cntr + 1
                       enddo
                    enddo
                 enddo
@@ -3223,7 +3224,7 @@ contains
     if(.not.collective .and. alloc_in_dummy)then
        if(mem_saving)then
 
-          do t1 = tile, tile+nbuffs - 1
+          do t1 = buff_cntr, buff_cntr+nbuffs-1
              bidx = mod(t1,nbuffs)+1
              call lsmpi_wait(req(bidx))
           enddo
@@ -3231,11 +3232,10 @@ contains
           call mem_dealloc(req)
 
        endif
-       call tensor_unlock_wins(integral, all_nodes = .true. )
-    endif
-#endif
 
-#ifdef VAR_MPI
+       call tensor_unlock_wins(integral, all_nodes = .true. )
+
+    endif
 
     call time_start_phase( PHASE_IDLE )
     call lsmpi_barrier(infpar%lg_comm)
@@ -3249,11 +3249,12 @@ contains
 
 #else
 
-
     call time_start_phase( PHASE_WORK )
     call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size )
 
 #endif
+
+
     if(collective.or.mem_saving)then
        if( use_bg_buf )then
           call mem_pseudo_dealloc( work )
