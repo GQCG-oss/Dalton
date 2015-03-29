@@ -1936,7 +1936,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end select ModelSpecificSettings
 
-   call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles)
+   call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel)
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -2788,15 +2788,15 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 end subroutine ccsolver
 
-subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles)
+subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel)
    implicit none
    type(lsitem), intent(inout) :: MyLsitem
-   integer, intent(in)  :: nb, no, nv
+   integer, intent(in)  :: nb, no, nv, JOB, ccmodel
    integer, intent(out) :: os,vs
    logical, intent(in)  :: local,saferun,use_singles
-   integer :: ntpm(4),nt
+   integer :: ntpm(4),nt, sch
    integer(kind=ls_mpik) :: nnod
-   real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2, MemFree
+   real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2, MemFree,mem
    logical :: use_bg
    integer(kind=8) :: elm
    integer :: MinAO,iAO
@@ -2846,34 +2846,55 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
       else
          call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAO,'R')
       endif
-      
-      mem4=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
-      mem3=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
-      mem2=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
 
-      if(mem4<=Freebytes)then
-         bytes = bytes + mem4
-      else if(mem3<=Freebytes)then
-         bytes = bytes + mem3
-      else if(mem2<=Freebytes)then
-         bytes = bytes + mem2
+      if(JOB == SOLVE_MULTIPLIERS .and. ccmodel == MODEL_CCSD)then     
+         mem4=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+         mem3=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+         mem2=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+
+         if(mem4<=Freebytes)then
+            bytes = bytes + mem4
+            sch   = 4
+            mem   = mem4
+         else if(mem3<=Freebytes)then
+            bytes = bytes + mem3
+            sch   = 3
+            mem   = mem3
+         else if(mem2<=Freebytes)then
+            bytes = bytes + mem2
+            sch   = 2
+            mem   = mem2
+         else
+            call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+            & calculation is too big for the available memory",-1)
+         endif
+
       else
+
          call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
-         & calculation is too big for the available memory",-1)
+         & background buffering not implemented for your model/job combination",-1)
       endif
 
       !we may use the difference between bytes and Freebytes now as the background buffer
       bytes_to_alloc = Freebytes - bytes
       
       if(DECinfo%PL>2)then
-         write (*,'("mem4 ",g7.2,"GB mem3 ",g7.2,"GB mem2 ",g7.2,"GB")')mem4/1024.0E0_realk**3,&
-            &mem3/1024.0E0_realk**3,mem2/1024.0E0_realk**3
-         write (*,'("Found free mem ",g7.2,"GB and use ",g7.2,"GB")')Freebytes/1024.0E0_realk**3,bytes/1024.0E0_realk**3
-         write (*,'("BG BUF: allocating ",g7.2," GB")')bytes_to_alloc/1024.0E0_realk**3
+         write (DECinfo%output,*) "cc driver info:"
+         write (DECinfo%output,*) "---------------"
+         write (DECinfo%output,'("Free memory is ",g9.2," GB")')Freebytes/1024.0E0_realk**3,bytes/1024.0E0_realk**3
+
+         if(ccmodel == MODEL_CCSD)then
+            write (DECinfo%output,'("Predicted memory requirements CCSD scheme ",I1," (w/o work-space): ",g9.2," GB")')&
+               &sch,mem/1024.0E0_realk**3
+         endif
+
+         write (DECinfo%output,'("Predicted memory requirements crop solver                    : ",g9.2," GB")')&
+               &bytes/1024.0E0_realk**3
+         write (DECinfo%output,'("Requesting ",g9.2," GB to be allocated in BG buffer")')bytes_to_alloc/1024.0E0_realk**3
       endif
 
       if(bytes_to_alloc <= 0.0E0_realk) then
-         print *,Freebytes/1024.0**3,"GB free, need to alloc",bytes/1024.0**3,"GB"
+         print *,Freebytes/1024.0**3,"GB free, need to alloc",bytes_to_alloc/1024.0**3,"GB"
          call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
          & not enough space",-1)
       endif
@@ -2996,7 +3017,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
 
    ! MODIFY FOR NEW MODEL
    ! If you implement a new model, please insert call to your own residual routine here!
-   SelectCoupledClusterModel : select case( CCmodel )
+   SelectCoupledClusterModel : select case( ccmodel )
    case( MODEL_MP2 )
 
       select case(JOB)
@@ -3024,7 +3045,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
 #ifdef MOD_UNRELEASED
       case( SOLVE_MULTIPLIERS )
 
-         if (JOB == MODEL_CC2)then
+         if (ccmodel == MODEL_CC2)then
             call lsquit("ERROR(ccsolver_get_residual): CC2 multipliers not implemented",-1)
          endif
 
