@@ -132,8 +132,13 @@ module cc_tools_module
 
       integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
       integer :: otmi(2),otpl(2),ot2(4)
+#ifdef VAR_PTR_RESHAPE
       real(realk), pointer, contiguous :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
       real(realk), pointer, contiguous :: buf1(:),buf2(:)
+#else
+      real(realk), pointer :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
+      real(realk), pointer :: buf1(:),buf2(:)
+#endif
       integer :: dcged,dilej,ccged,cilej,gcged,gilej
       real(realk) :: sol
       integer :: nor,no,nvr,nv,k,c,d

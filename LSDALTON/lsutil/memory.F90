@@ -2075,7 +2075,7 @@ subroutine mem_pseudo_alloc_realk(p,n)
       call lsquit("ERROR(mem_pseudo_alloc_realk): more requested than available",-1)
    endif
 
-   p(1:n) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+n)
+   p => buf_realk%p(buf_realk%offset+1:buf_realk%offset+n)
 
    buf_realk%offset = buf_realk%offset+n
 

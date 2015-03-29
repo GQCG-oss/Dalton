@@ -2333,7 +2333,7 @@ contains
        endif
 
        if(DECinfo%PL>3)then
-          write(*,'("CC integrals: operating with ",g7.2,"GB")')MemToUse
+          write(*,'("CC integrals: operating with ",g9.2,"GB")')MemToUse
        endif
 
        maxsize = 0.0E0_realk
