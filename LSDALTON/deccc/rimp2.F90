@@ -104,7 +104,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
   real(realk) :: Evirt,Evirt2,dummy(2),MemInGBCollected,gpuflops
-  integer(kind=long) :: maxsize
+  real(realk) :: maxsize
   Integer :: iAtomA,nBastLocA,startRegA,endRegA,nAuxA,startAuxA,endAuxA,lupri
   integer :: MynAtomsMPI,startA2,StartA,B,I,startB2,iAtomB,StartB,node,myOriginalRank
   Integer :: OriginalRanknbasisAuxMPI,NBA,dimocc(4),dimvirt(4)
@@ -291,39 +291,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   CALL LSTIMER('DECRIMP2: INIT ',TS2,TE2,LUPRI,FORCEPRINT)
 
-  if(master.AND.DECinfo%PL>0)THEN
-     MemInGBCollected = 0.0E0_realk
-     call get_currently_available_memory(MemInGBCollected)
-     WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: RIMP2_integrals_and_amplitudes: Internal memory bookkeeping'
-     WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Memory Statistics at the beginning of the subroutine'
-     write(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Total memory:    ', DECinfo%memory
-     WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Memory Available:', MemInGBCollected
-
-     !building Calpha 
-#ifdef VAR_MPI
-     MemEstimate = 2*nbasisAux/infpar%lg_nodtot*nvirt*nocc
-     MemStep2 = nbasisAux/infpar%lg_nodtot*nvirt*nocc
-#else
-     MemEstimate = nbasisAux*nvirt*nocc
-     MemStep2 = nbasisAux*nvirt*nocc
-#endif
-     !building toccEOS
-     MemEstimate=MAX(MemEstimate,noccEOS*nocc*nvirt*nvirt+MemStep2)     
-     MemEstimate=MAX(MemEstimate,noccEOS*noccEOS*nvirt*nvirt &
-          & +nocc*nocc*nvirtEOS*nvirt+MemStep2)!building tvirtEOS + storage of toccEOS     
-     MemEstimate=MAX(MemEstimate,2.0E0_realk*noccEOS*noccEOS*nvirt*nvirt&
-          & +2.0E0_realk*nocc*nocc*nvirtEOS*nvirtEOS)  !storage of (toccEOS,tvirtEOS,goccEOS,gvirtEOS)
-     IF(first_order) then !additional storage
-        MemEstimate = MemEstimate + nvirt*noccEOS*noccEOS*nocctot + nvirtEOS*nocc*nvirtEOS*nvirt
-     ENDIF
-     MemEstimate = MemEstimate*mem_realsize
-     WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Estimated memory usage',MemEstimate
-     if(DECinfo%PL>0)THEN
-        call stats_globalmem(DECinfo%output)
-     endif
-  endif
-  CALL LSTIMER('DECRIMP2: MEMcheck ',TS2,TE2,LUPRI,FORCEPRINT)
-
   ! *************************************
   ! Get arrays for transforming integrals: Cocc,Cvirt,UoccEOST,UvirtT,UvirtEOST,UoccT
   ! *************************************
@@ -481,18 +448,45 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   dimocc = [nvirt,noccEOS,nvirt,noccEOS]   ! Output order
   IF(NBA.GT.0)THEN
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-     !Perform tiling if the tocc(nocc,noccEOS,nvirt,nvirt) cannot fit on the device
-     !Janus will set this variable correctly. For now I set it true if it is a debug
-     !run and false for release run. In this way all the code is tested
-     PerformTiling = .FALSE.
+     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)     
+     !Perform Tiling if tocc(nocc,noccEOS,nvirt,nvirt) does not fit in memory
+     MemInGBCollected = 0.0E0_realk
+     call get_currently_available_memory(MemInGBCollected)
+     MemInGBCollected = MemInGBCollected*0.80E0_realk !80%
+     MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk
+     PerformTiling = MaxSize.GT.MemInGBCollected
+     IF(PerformTiling)THEN 
+        MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-(NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk)/(nocc*noccEOS*nvirt*8.0E-9_realk)))
+        nTiles =  nvirt/MaxVirtSize 
+        IF(nTiles.EQ.0)PerformTiling = .FALSE.
+     ENDIF
 #if defined(VAR_OPENACC) && defined(VAR_CUDA)
-     call get_dev_mem(total_gpu,free_gpu)
+     !In case of GPU usage tocc must also fit on device memory
+     call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
+     MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk  !in BYTES
+     PerformTiling = MaxSize.GT.free_gpu
+     IF(PerformTiling)THEN 
+        maxsize = (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+noccEOS*nocc+nocc*noccEOS*nvirt+noccEOS*noccEOS*nvirt)*8
+        IF(Maxsize .GT. free_gpu)THEN
+           print*,'Calpha requires',NBA*nvirt*nocc*8,'Bytes'
+           print*,'U requires',noccEOS*nocc*8,'Bytes'
+           print*,'tocc2 requires',noccEOS*noccEOS*nvirt*nvirt*8,'Bytes'
+           print*,'tocc which requires at least ',nocc*noccEOS*nvirt*8,'Bytes'
+           print*,'tocc2TMP which requires at least',noccEOS*noccEOS*nvirt*8,'Bytes'
+           print*,'In total',MaxSize,'Bytes'
+           print*,'Free on the GPU: ',free_gpu,'Bytes'
+           call lsquit('GPU memory cannot hold required objects')
+        ENDIF
+        MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu-(noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk)/(((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk))) 
+        nTiles =  nvirt/MaxVirtSize
+        IF(nTiles.EQ.0)PerformTiling = .FALSE.
+     ENDIF
 #endif
-     MaxVirtSize = nvirt/2           !should be determined by Janus is some way
-     nTiles =  nvirt/MaxVirtSize 
-     IF(nTiles.EQ.0)PerformTiling = .FALSE.
-     if (DECinfo%RIMP2_tiling) PerformTiling = .TRUE. ! enforce tiling
+     if (DECinfo%RIMP2_tiling)THEN
+        PerformTiling = .TRUE. ! enforce tiling
+        MaxVirtSize = 1
+        nTiles =  nvirt/MaxVirtSize
+     ENDIF
      IF(PerformTiling)THEN
         call mem_alloc(tocc2,noccEOS,noccEOS,nvirt,nvirt)
         call mem_alloc(tocc,nocc,noccEOS,nvirt,MaxVirtSize)
