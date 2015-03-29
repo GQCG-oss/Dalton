@@ -61,7 +61,7 @@ module ccsd_module
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
-         & get_max_batch_sizes,mo_work_dist, check_job, get_mo_ccsd_residual, &
+         & get_max_batch_sizes,mo_work_dist, get_mo_ccsd_residual, &
          & wrapper_get_ccsd_batch_sizes, yet_another_ccsd_residual,&
          & RN_RESIDUAL_INT_DRIVEN, RN_YET_ANOTHER_RES, get_min_mem_req
     private
@@ -941,7 +941,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os
      integer(kind=8) :: nb4,o2v2,no4,buf_size
      integer :: tlen,tred,nor,nvr,goffs,aoffs
-     integer :: prev_alphaB,mpi_buf,ccmodel_copy
+     integer :: prev_alphaB,mpi_buf,ccmodel_copy,batch
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !TEST AND DEVELOPMENT VARIABLES!!!!!
@@ -955,7 +955,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: time_Esing,time_Esing_work,time_Esing_comm, time_Esing_idle
      real(realk) :: unlock_time, waiting_time, flushing_time
      real(realk) :: phase_counters_int_dir(nphases)
-     integer :: testmode(4)
+     integer :: testmode(4), old_gammaB
      integer(kind=long) :: xyz,zyx1,zyx2,mem_allocated,HeapMemoryUsage
      logical :: debug, use_bg_buf
      character(tensor_MSG_LEN) :: msg
@@ -1699,14 +1699,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ENDIF
      else
 
-        lenI2 = nbatchesGamma
+        lenI2 = 1
 
         call mem_alloc( tasks, tasksc, lenI2 ) 
 
         tasks = 0
-        if(lg_me == 0) tasks(1) = lg_nnod
+        if(lg_me == 0) tasks(1) = lg_nnod+1
 
-        call lsmpi_win_create(tasks,tasksw,nbatchesGamma,infpar%lg_comm)
+        call lsmpi_win_create(tasks,tasksw,1,infpar%lg_comm)
 #ifdef VAR_HAVE_MPI3
         call lsmpi_win_lock_all(tasksw,ass=mode)
 #endif
@@ -1741,126 +1741,136 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Begin the loop over gamma batches
      !**********************************
 
+     old_gammaB = -1
+     batch      =  0
+
      first_round=.false.
-     if(dynamic_load)first_round=.true.
+     if(dynamic_load)then
+        first_round = .true.
+        batch       = lg_me + 1
+     endif
 
-     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-        IF(DECinfo%useIchor)THEN
-           dimGamma     = AOGammabatchinfo(gammaB)%dim      ! Dimension of gamma batch
-           GammaStart   = AOGammabatchinfo(gammaB)%orbstart ! First orbital index in gamma batch
-           GammaEnd     = AOGammabatchinfo(gammaB)%orbEnd   ! Last orbital index in gamma batch
-           AOGammaStart = AOGammabatchinfo(gammaB)%AOstart  ! First AO batch index in gamma batch
-           AOGammaEnd   = AOGammabatchinfo(gammaB)%AOEnd    ! Last AO batch index in gamma batch
-        ELSE
-           dimGamma     = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-           GammaStart   = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-           GammaEnd     = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
-        ENDIF
-        !short hand notation
-        fg         = GammaStart
-        lg         = dimGamma
+     BatchLoop: do while(batch <= nbatchesGamma*nbatchesAlpha) ! AO batches
 
-        !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
+
+        !check if the current job is to be done by current node
+        call check_job(batch,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
+           &nbatchesGamma,tasks,tasksw,print_debug) 
+
+        !exit the loop
+        if(batch > nbatchesGamma*nbatchesAlpha ) exit BatchLoop
+
+
+        ! If the new gamma is different form the old gamma batch
+        NewGammaBatch: if( gammaB /= old_gammaB )then
+
+           old_gammaB = gammaB
+
+           IF(DECinfo%useIchor)THEN
+              dimGamma     = AOGammabatchinfo(gammaB)%dim      ! Dimension of gamma batch
+              GammaStart   = AOGammabatchinfo(gammaB)%orbstart ! First orbital index in gamma batch
+              GammaEnd     = AOGammabatchinfo(gammaB)%orbEnd   ! Last orbital index in gamma batch
+              AOGammaStart = AOGammabatchinfo(gammaB)%AOstart  ! First AO batch index in gamma batch
+              AOGammaEnd   = AOGammabatchinfo(gammaB)%AOEnd    ! Last AO batch index in gamma batch
+           ELSE
+              dimGamma     = batchdimGamma(gammaB)                         ! Dimension of gamma batch
+              GammaStart   = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+              GammaEnd     = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
+           ENDIF
+           !short hand notation
+           fg         = GammaStart
+           lg         = dimGamma
+
+           !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
 #ifdef DIL_ACTIVE
-        scheme=scheme_tmp !``DIL: remove
+           scheme=scheme_tmp !``DIL: remove
 #endif
-        if(scheme==1) then !`DIL: Tensor contraction 1
+           if(scheme==1) then !`DIL: Tensor contraction 1
 #ifdef DIL_ACTIVE
-         call time_start_phase(PHASE_COMM, at = time_intloop_work )
-         if(gammaB/=1)then
-          if(alloc_in_dummy) then
-           call lsmpi_win_flush(omega2%wi(1),local=.false.)
-          else
-           if(lock_outside) call tensor_unlock_wins(omega2,.true.)
-          endif
-         endif
-         call time_start_phase(PHASE_WORK, at = time_intloop_comm)
-         if(DIL_DEBUG) then
-          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 1:")')&
-          &infpar%lg_mynum,infpar%mynum
-          write(DIL_CONS_OUT,'("#DEBUG(DIL): Gamma range [",i4,":",i4,"]")') fg,fg+lg-1
-         endif
-!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(l0) SCHEDULE(GUIDED)
-         do l0=1,no*lg*nv*no
-          uigcj%d(l0)=0E0_realk !zero out the local destination tensor
-         enddo
-!$OMP END PARALLEL DO
-         tcs='D(i,g,c,j)+=L(g,d)*R(d,c,i,j)'
-         call dil_clean_tens_contr(tch)
-         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=u2)
-         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: RA: ',infpar%lg_mynum,errc
-         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Right arg set failed!',-1)
-         tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
-         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,yv)
-         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: LA: ',infpar%lg_mynum,errc
-         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Left arg set failed!',-1)
-         tens_rank=4; tens_dims(1:tens_rank)=(/no,lg,nv,no/); tens_bases(1:tens_rank)=(/0,fg-1_INTD,0,0/)
-         call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,uigcj%d,tens_bases)
-         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: DA: ',infpar%lg_mynum,errc
-         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Destination arg set failed!',-1)
-         call dil_set_tens_contr_spec(tch,tcs,errc,&
-               &ldims=(/int(lg,INTD),int(nv,INTD)/),lbase=(/int(fg-1,INTD),0_INTD/),&
-               &ddims=(/int(no,INTD),int(lg,INTD),int(nv,INTD),int(no,INTD)/),dbase=(/0_INTD,int(fg-1,INTD),0_INTD,0_INTD/))
-         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: CC: ',infpar%lg_mynum,errc
-         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Contr spec set failed!',-1)
-         dil_mem=dil_get_min_buf_size(tch,errc)
-         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: BS: ',infpar%lg_mynum,errc,dil_mem
-         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Buf size set failed!',-1)
-         call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
-         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: TC: ',infpar%lg_mynum,errc
-         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
-#else
-         call lsquit('ERROR(ccsd_residual_integral_driven): This part (3) of Scheme 1 requires DIL backend!',-1)
-#endif
-        elseif(scheme==2) then
-#ifdef VAR_MPI
-           call time_start_phase(PHASE_COMM, at = time_intloop_work )
-           !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
-           if(gammaB /= 1)then
-              if( alloc_in_dummy )then
-                 call lsmpi_win_flush(omega2%wi(1),local=.false.)
-              else
-                 if( lock_outside )call tensor_unlock_wins(omega2,.true.)
+              call time_start_phase(PHASE_COMM, at = time_intloop_work )
+              if(gammaB/=1)then
+                 if(alloc_in_dummy) then
+                    call lsmpi_win_flush(omega2%wi(1),local=.false.)
+                 else
+                    if(lock_outside) call tensor_unlock_wins(omega2,.true.)
+                 endif
               endif
-           endif
-
-           call tensor_convert(u2,w2%d,wrk=w1%d,iwrk=w1%n)
-
-           if( alloc_in_dummy )call lsmpi_win_flush(u2%wi(1),local=.true.)
-
-           call time_start_phase(PHASE_WORK, at = time_intloop_comm)
-
-           call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,w2%d,nv,0.0E0_realk,w1%d,lg)
-#endif 
-        else !scheme={3,4}
-           call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,u2%elm1,nv,0.0E0_realk,w1%d,lg)
-        endif
-        !u [gamma c i j ] -> u [i gamma c j]
-        if(scheme/=1) call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
-#ifdef DIL_ACTIVE
-        scheme=2 !``DIL: remove
+              call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+              if(DIL_DEBUG) then
+                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 1:")')&
+                    &infpar%lg_mynum,infpar%mynum
+                 write(DIL_CONS_OUT,'("#DEBUG(DIL): Gamma range [",i4,":",i4,"]")') fg,fg+lg-1
+              endif
+              !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(l0) SCHEDULE(GUIDED)
+              do l0=1,no*lg*nv*no
+                 uigcj%d(l0)=0E0_realk !zero out the local destination tensor
+              enddo
+              !$OMP END PARALLEL DO
+              tcs='D(i,g,c,j)+=L(g,d)*R(d,c,i,j)'
+              call dil_clean_tens_contr(tch)
+              call dil_set_tens_contr_args(tch,'r',errc,tens_distr=u2)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: RA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Right arg set failed!',-1)
+              tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+              call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,yv)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: LA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Left arg set failed!',-1)
+              tens_rank=4; tens_dims(1:tens_rank)=(/no,lg,nv,no/); tens_bases(1:tens_rank)=(/0,fg-1_INTD,0,0/)
+              call dil_set_tens_contr_args(tch,'d',errc,tens_rank,tens_dims,uigcj%d,tens_bases)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: DA: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Destination arg set failed!',-1)
+              call dil_set_tens_contr_spec(tch,tcs,errc,&
+                 &ldims=(/int(lg,INTD),int(nv,INTD)/),lbase=(/int(fg-1,INTD),0_INTD/),&
+                 &ddims=(/int(no,INTD),int(lg,INTD),int(nv,INTD),int(no,INTD)/),dbase=(/0_INTD,int(fg-1,INTD),0_INTD,0_INTD/))
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: CC: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Contr spec set failed!',-1)
+              dil_mem=dil_get_min_buf_size(tch,errc)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: BS: ',infpar%lg_mynum,errc,dil_mem
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Buf size set failed!',-1)
+              call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
+              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: TC: ',infpar%lg_mynum,errc
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
+#else
+              call lsquit('ERROR(ccsd_residual_integral_driven): This part (3) of Scheme 1 requires DIL backend!',-1)
 #endif
+              elseif(scheme==2) then
+#ifdef VAR_MPI
+              call time_start_phase(PHASE_COMM, at = time_intloop_work )
+              !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
+              if(gammaB /= 1)then
+                 if( alloc_in_dummy )then
+                    call lsmpi_win_flush(omega2%wi(1),local=.false.)
+                 else
+                    if( lock_outside )call tensor_unlock_wins(omega2,.true.)
+                 endif
+              endif
 
+              call tensor_convert(u2,w2%d,wrk=w1%d,iwrk=w1%n)
 
-        alphaB=0
+              if( alloc_in_dummy )call lsmpi_win_flush(u2%wi(1),local=.true.)
+
+              call time_start_phase(PHASE_WORK, at = time_intloop_comm)
+
+              call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,w2%d,nv,0.0E0_realk,w1%d,lg)
+#endif 
+           else !scheme={3,4}
+              call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,u2%elm1,nv,0.0E0_realk,w1%d,lg)
+           endif
+           !u [gamma c i j ] -> u [i gamma c j]
+           if(scheme/=1) call array_reorder_4d(1.0E0_realk,w1%d,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj%d)
+#ifdef DIL_ACTIVE
+           scheme=2 !``DIL: remove
+#endif
+        endif NewGammaBatch
+
 
         !**********************************
         ! Begin the loop over alpha batches
         !**********************************
 
+        !BatchAlpha: do while(alphaB<=nbatchesAlpha) ! AO batches
 
-        BatchAlpha: do while(alphaB<=nbatchesAlpha) ! AO batches
 
-           !check if the current job is to be done by current node
-           call time_start_phase(PHASE_COMM, at = time_intloop_work)
-           call check_job(scheme,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
-              &nbatchesGamma,tasks,tasksw,print_debug) !``DIL: This call takes <scheme> as an argument, Scheme=1 safe?
-           call time_start_phase(PHASE_WORK, at = time_intloop_comm)
-
-           !break the loop if alpha become too large, necessary to account for all
-           !of the mpi and non mpi schemes, this is accounted for, because static,
-           !and dynamic load balancing are enabled
-           if(alphaB>nbatchesAlpha) exit
            
            IF(DECinfo%useIchor)THEN
               dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
@@ -2313,8 +2323,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(scheme/=1) call lsmpi_poke()
 
 
-        end do BatchAlpha
-     end do BatchGamma
+        !end do BatchAlpha
+     end do BatchLoop
 
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
@@ -4814,57 +4824,86 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine calculate_E2_and_permute
 
 
-  subroutine check_job(s,fr,dyn,a,g,na,ng,static,win,prnt)
-    implicit none
-    logical,intent(in) :: dyn,prnt
-    logical,intent(inout) :: fr
-    integer,intent(in) :: s,g,na,ng
-    integer,intent(inout) :: a
-    integer :: static(:)
-    integer(kind=ls_mpik) :: win
-    real(realk) :: mpi_buf
-    integer :: el 
-    integer(kind=ls_mpik) :: i, job
+  subroutine check_job(batch,fr,dyn,a,g,nA,nG,static,win,prnt)
+     implicit none
+     integer, intent(inout) :: batch
+     logical, intent(inout) :: fr
+     logical,intent(in) :: dyn,prnt
+     integer,intent(in) :: nA,nG
+     integer,intent(inout) :: a,g
+     integer :: static(:)
+     integer(kind=ls_mpik) :: win
+     real(realk) :: mpi_buf
+     integer :: GammaAlpha(2)
+     integer :: one
 #ifdef VAR_MPI
-       !ugly construction to get both schemes in
-       if(.not.dyn)then
-         a=a+1
-         do while(a<=na)
-           if(static((a-1)*ng+g)/=infpar%lg_mynum)then
-             a=a+1
+     one  = 1
+
+     !GET MPI batch number
+     if(.not.dyn)then
+
+        batch=batch+1
+        FindJobLoop: do while(batch<=nA*nG)
+
+           call get_midx(batch,GammaAlpha,[nG,nA],2)
+
+           g = GammaAlpha(1)
+           a = GammaAlpha(2)
+
+           !check whether this job has been assigned to me
+           if(static((a-1)*nG+g)/=infpar%lg_mynum)then
+              batch=batch+1
            else
-             a=a-1
-             exit
+
+              exit FindJobLoop
+
            endif
-         enddo
-       else
-         !BE CAREFUL THIS IS HIGHLY EXPERIMENTAL CODE
-         if(fr)then
-           a=infpar%lg_mynum
-         else
-           el=1
+
+        enddo FindJobLoop
+
+     else
+
+        if(fr)then
+
+           fr   = .false.
+           batch = infpar%lg_mynum + 1
+
+        else
+           call time_start_phase( PHASE_COMM )
 #ifdef VAR_HAVE_MPI3
-           call lsmpi_get_acc(el,a,infpar%master,g,win)
+           call lsmpi_get_acc(one,batch,infpar%master,1,win)
            call lsmpi_win_flush(win,rank = infpar%master, local=.true.)
 #else
            call lsmpi_win_lock(infpar%master,win,'e')
-           call lsmpi_get_acc(el,a,infpar%master,g,win)
+           call lsmpi_get_acc(one,batch,infpar%master,1,win)
            call lsmpi_win_unlock(infpar%master,win)
 #endif
-         endif
-       endif
-       if(fr) fr=.false.
-#endif
-       a=a+1
-       if(a>na)return
-#ifdef VAR_MPI
-       if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
-       &a,na,g,ng
+           call time_start_phase( PHASE_WORK )
+        endif
+     endif
+
 #else
-       if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
-       &na,g,ng
+     !Non--MPI job countin
+     batch = batch + 1
 #endif
-       call lsmpi_poke()
+
+     ! No more jobs to be done exit
+     if(batch > nG*nA )return
+
+     call get_midx(batch,GammaAlpha,[nG,nA],2)
+
+     g = GammaAlpha(1)
+     a = GammaAlpha(2)
+
+#ifdef VAR_MPI
+     if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
+        &a,na,g,ng
+#else
+     if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
+        &na,g,ng
+#endif
+     call lsmpi_poke()
+
   end subroutine check_job
 
   !> \brief Routine to get the c and the d terms from t1 tranformed integrals
