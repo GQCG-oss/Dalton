@@ -2369,11 +2369,11 @@ contains
 
        alp: do i = MinAObatch, nb, inc
           if(completely_distributed)then
-             b = 2*i
-             e = 2*i
+             b = i*2
+             e = i*2
           else
-             b = i
-             e = min(2*i,nb)
+             b = i*2
+             e = min(i,nb)
           endif
           do k = b, e
 
@@ -2390,10 +2390,10 @@ contains
 
                 if(completely_distributed)then
                    nba = max(i-inc,MinAObatch)
-                   nbg = min(2*nba,nb)
+                   nbg = min(nba*2,nb)
                 else
                    nba = max(i,MinAObatch)
-                   nbg = min(k-1,nb)
+                   nbg = max(min(k-1,nb),MinAObatch)
                 endif
 
                 exit alp
@@ -2413,7 +2413,7 @@ contains
              if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>MinAObatch).and.nnod>1)then
                 do while((nb/nba)*(nb/nbg)<magic*nnod)
                    nba = max(nba - 1,MinAObatch)
-                   nbg = min(2*nba,nb)
+                   nbg = min(nba*2,nb)
                    if( nba == MinAObatch ) exit
                 enddo
              endif
