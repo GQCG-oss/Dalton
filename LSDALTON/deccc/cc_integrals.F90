@@ -2154,24 +2154,26 @@ contains
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
     real(realk), pointer :: w1(:),w2(:)
     real(realk) :: MemFree,nrm, MemToUse
-    integer(kind=long) :: maxsize
+    integer(kind=long) :: maxsize, addsize
     logical :: master
     integer(kind=ls_mpik) :: me, nnod
-    integer               :: lenI2, modeBidx(2), modeBdim(2), el,jobidx,pos
+    integer               :: lenI2, modeBidx(2), modeBdim(2), el,jobidx,pos, bidx, bpos
     integer, pointer      :: jobdist(:)
     type(c_ptr)           :: jobdistc
     integer(kind=ls_mpik) :: jobdistw
     real(realk), pointer :: work(:)
     integer(kind=long) :: w1size, w2size
     real(realk), parameter :: fraction_of = 0.8E0_realk
-    logical :: dynamic_load,completely_distributed, use_bg_buf
+    logical :: dynamic_load,completely_distributed, use_bg_buf, mem_saving
     integer :: nbuffs
     type(tensor) :: Cint, int1, int2, int3, t1_par, t2_par, t3_fa, t4_fg
     integer :: ndimA,  ndimB,  ndimC,  ndimD
     integer :: ndimAs, ndimBs, ndimCs, ndimDs
     integer :: startA, startB, startC, startD
-    integer :: dims(4), tdim(4), starts(4), order4(4)
-    integer :: bs,as,gs,n1s,n2s,n3s,n4s, inc,b,e
+    integer :: dims(4), tdim(4), starts(4), order4(4), tile
+    integer :: bs,as,gs,n1s,n2s,n3s,n4s, inc,b,e,m,n,t1,t2,t3,t4
+    real(realk), pointer :: one(:),two(:),thr(:)
+    integer              :: onen,  twon,  thrn
     integer(kind=8) :: nbu
     real(realk) :: tot_intloop,         tot_intloop_min,     tot_intloop_max
     real(realk) :: time_t4fg_tot_max,   time_t4fg_tot_min,   time_t4fg_tot,    time_t4fg 
@@ -2188,12 +2190,12 @@ contains
     real(realk) :: time_w_min, time_w_max
     real(realk) :: time_c_min, time_c_max
     real(realk) :: time_i_min, time_i_max
+    integer(kind=ls_mpik),pointer :: req(:)
 #ifdef VAR_MPI
     integer(kind=ls_mpik), parameter :: mode = MPI_MODE_NOCHECK
 #endif
 
     call time_start_phase( PHASE_WORK, twall = total_integral_time )
-
 
     master        = .true.
     me            = 0
@@ -2212,7 +2214,7 @@ contains
     flushing_time = time_lsmpi_win_flush
 #endif
     completely_distributed = .false.
-    nbuffs         = get_nbuffs_scheme_0()
+    nbuffs         = 2
     time_t4fg_tot  = 0.0E0_realk
     time_t3fa_tot  = 0.0E0_realk
     time_cont1_tot = 0.0E0_realk
@@ -2293,6 +2295,7 @@ contains
     !                  Batch construction             !
     !==================================================
 
+    print *,"in integrals 2"
 
     use_bg_buf = mem_is_background_buf_init()
     if(use_bg_buf)then
@@ -2336,11 +2339,15 @@ contains
        maxsize = 0.0E0_realk
 
        !get minimum memory requrements in 
+       mem_saving             = .false.
        completely_distributed = .false.
-       w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MinAObatch,MinAObatch,&
-          &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
-       w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MinAObatch,MinAObatch,&
-          &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+       nba                    = MinAObatch
+       nbg                    = MinAObatch
+
+       w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,&
+          &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
+       w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,&
+          &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
 
        maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
 
@@ -2351,8 +2358,24 @@ contains
 
 
           if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals )then
-             completely_distributed = .true.
-             inc = nb/4
+
+             mem_saving = .true.
+             inc = 1
+
+             w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,&
+                &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
+             w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,&
+                &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
+
+             maxsize = w1size + w2size + (nbuffs*i8*n1s*n2s)*n3s*n4s
+
+             if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals )then
+                mem_saving             = .false.
+                completely_distributed = .true.
+                inc                    = nb/4
+                nbuffs         = get_nbuffs_scheme_0()
+             endif
+
           else
              completely_distributed = .false.
              inc = 1
@@ -2366,6 +2389,13 @@ contains
 
        endif
 
+       !collective = .false.
+       !mem_saving = .true.
+       !completely_distributed = .false.
+
+       if((collective.and.completely_distributed).or.(completely_distributed.and.mem_saving).or.(collective.and.mem_saving))then
+          call lsquit("ERROR(get_mo_integral_par): only one can be true at a time",-1)
+       endif
 
        alp: do i = MinAObatch, nb, inc
           if(completely_distributed)then
@@ -2378,13 +2408,14 @@ contains
           do k = b, e
 
              w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
-                &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+                &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
              w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
-                &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+                &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
 
              maxsize = w1size + w2size
 
              if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
+             if(mem_saving) maxsize = maxsize + (nbuffs*i8*n1*n2)*n3*n4
 
              if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse )then
 
@@ -2425,14 +2456,15 @@ contains
        endif
 
        w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
-          &nbuffs,INTSPEC,MyLsItem%setting)
+          &mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
        w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
-          &nbuffs,INTSPEC,MyLsItem%setting)
+          &mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
 
 
        maxsize = w1size + w2size
 
        if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
+       if(mem_saving) maxsize = maxsize + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
        if(float(maxsize*8)/(1024.0**3) > MemToUse)then
           print*,"ERROR(get_mo_integral_par):requesting ",float(maxsize*8)/(1024.0**3),"GB available ",MemToUse,"GB"
@@ -2443,7 +2475,8 @@ contains
        MaxAllowedDimAlpha = nba
 
        if(DECinfo%PL>2)then
-          print *,"INFO(get_mo_integral_par): collective:",collective,", completely distributed:",completely_distributed
+          print *,"INFO(get_mo_integral_par): collective:",collective,", mem saving:",&
+             &mem_saving,",completely distributed:",completely_distributed
        endif
     endif
 
@@ -2460,10 +2493,11 @@ contains
        call ls_mpibcast(MaxAllowedDimGamma,infpar%master,infpar%lg_comm)
        call ls_mpibcast(collective,infpar%master,infpar%lg_comm)
        call ls_mpibcast(completely_distributed,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(mem_saving,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(nbuffs,infpar%master,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
 #endif
     endif
-
 
     if(completely_distributed) then
        dynamic_load = .false.
@@ -2589,16 +2623,20 @@ contains
     endif
 
     w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
-       &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+       &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
     w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
-       &completely_distributed,nbuffs,INTSPEC,MyLsItem%setting)
+       &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
+
+    onen = (n1s*nb)*MaxActualDimAlpha*MaxActualDimGamma
+    twon = (n1s*n2s)*MaxActualDimAlpha*MaxActualDimGamma
+    thrn = (n1s*n2s)*n3s*MaxActualDimGamma
 
     maxsize = w1size + w2size
-    if( collective )then
-       maxsize = maxsize + (i8*n1)*n2*n3*n4
-    endif
+    addsize = 0
+    if( collective ) addsize = (i8*n1)*n2*n3*n4
+    if( mem_saving ) addsize = nbuffs*(i8*n1s)*n2s*n3s*n4s
+    maxsize = maxsize + addsize
     
-
     if( use_bg_buf ) then
        call mem_change_background_alloc(dble(maxsize*8.0E0_realk))
 
@@ -2613,11 +2651,14 @@ contains
     w1(1) = 0.0E0_realk
     w2(1) = 0.0E0_realk
 
-    if(collective)then
+    if(collective.or.mem_saving)then
+
+       if(mem_saving)call mem_alloc(req,nbuffs)
+
        if( use_bg_buf ) then
-          call mem_pseudo_alloc(work,(i8*n1)*n2*n3*n4)
+          call mem_pseudo_alloc(work,addsize)
        else
-          call mem_alloc(work,(i8*n1)*n2*n3*n4)
+          call mem_alloc(work,addsize)
        endif
        work = 0.0E0_realk
     endif
@@ -2833,39 +2874,176 @@ contains
 
 
 #ifdef VAR_MPI
-          if( .not.collective.and.alloc_in_dummy )then
+          if( .not.(collective.or.mem_saving).and.alloc_in_dummy )then
              call lsmpi_win_flush(integral%wi(1),local=.true.)
           endif
 #endif
 
-          !something more sophisticated can be implemented here
-          call time_start_phase(PHASE_WORK, twall = time_cont1 )
-          call dgemm('t','n',nb*la*lg,n1,nb,1.0E0_realk,w1,nb,trafo1%elm1,nb,0.0E0_realk,w2,nb*la*lg)
-          call time_start_phase(PHASE_WORK, ttot = time_cont1 )
-          time_cont1_tot = time_cont1_tot + time_cont1
 
-          call time_start_phase(PHASE_WORK, twall = time_cont2 )
-          call dgemm('t','n',la*lg*n1,n2,nb,1.0E0_realk,w2,nb,trafo2%elm1,nb,0.0E0_realk,w1,la*lg*n1)
-          call time_start_phase(PHASE_WORK, ttot = time_cont2 )
-          time_cont2_tot = time_cont2_tot + time_cont2
 
-          call time_start_phase(PHASE_WORK, twall = time_cont3 )
-          call dgemm('t','n',lg*n1*n2,n3,la,1.0E0_realk,w1,la,trafo3%elm1(fa),nb,0.0E0_realk,w2,lg*n1*n2)
-          call time_start_phase(PHASE_WORK, ttot = time_cont3 )
-          time_cont3_tot = time_cont3_tot + time_cont3
+          if(mem_saving)then
 
-          call time_start_phase(PHASE_WORK, twall = time_cont4 )
-          if(collective) then
-             call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,1.0E0_realk,work,n1*n2*n3)
+#ifdef VAR_MPI
+
+             !FIXME: IMPLEMENT TENSOR SORTING
+             if(present(order))call lsquit("ERROR(get_mo_integral_par): order not implemented for this option",-1)
+
+             one => w2(1:onen)
+             two => w2(onen+1:onen+twon)
+             thr => w2(onen+twon+1:onen+twon+thrn)
+
+             !TODO: introduce OMP in order to speed up the routine
+
+             tile = 0
+             do t1 = 1, integral%ntpm(1)
+
+                startA = 1 + (t1-1)*integral%tdim(1)
+                if(((n1-(t1-1)*n1s)/n1s)>=1)then
+                   ndimA=n1s
+                else
+                   ndimA=mod(n1,n1s)
+                endif
+
+                m = nb*la*lg
+                n = ndimA
+                k = nb
+                call time_start_phase(PHASE_WORK, twall = time_cont1 )
+                call dgemm('t','n',m,n,k,1.0E0_realk,w1,k,trafo1%elm2(1,startA),nb,0.0E0_realk,one,m)
+                call time_start_phase(PHASE_WORK, ttot = time_cont1 )
+                time_cont1_tot = time_cont1_tot + time_cont1
+
+                do t2 = 1, integral%ntpm(2)
+
+                   startB = 1 + (t2-1)*integral%tdim(2)
+                   if(((n2-(t2-1)*n2s)/n2s)>=1)then
+                      ndimB=n2s
+                   else
+                      ndimB=mod(n2,n2s)
+                   endif
+
+                   m = la*lg*ndimA
+                   n = ndimB
+                   k = nb
+                   call time_start_phase(PHASE_WORK, twall = time_cont2 )
+                   call dgemm('t','n',m,n,k,1.0E0_realk,one,k,trafo2%elm2(1,startB),nb,0.0E0_realk,two,m)
+                   call time_start_phase(PHASE_WORK, ttot = time_cont2 )
+                   time_cont2_tot = time_cont2_tot + time_cont2
+
+                   do t3 = 1, integral%ntpm(3)
+
+                      startC = 1 + (t3-1)*integral%tdim(3)
+                      if(((n3-(t3-1)*n3s)/n3s)>=1)then
+                         ndimC=n3s
+                      else
+                         ndimC=mod(n3,n3s)
+                      endif
+                      m = lg*ndimA*ndimB
+                      n = ndimC
+                      k = la
+
+                      call time_start_phase(PHASE_WORK, twall = time_cont3 )
+                      call dgemm('t','n',m,n,k,1.0E0_realk,two,k,trafo3%elm2(fa,startC),nb,0.0E0_realk,thr,m)
+                      call time_start_phase(PHASE_WORK, ttot = time_cont3 )
+                      time_cont3_tot = time_cont3_tot + time_cont3
+
+                      do t4 = 1, integral%ntpm(4)
+
+                         startD = 1 + (t4-1)*integral%tdim(4)
+                         if(((n4-(t4-1)*n4s)/n4s)>=1)then
+                            ndimD=n4s
+                         else
+                            ndimD=mod(n4,n4s)
+                         endif
+
+                         m = ndimA*ndimB*ndimC
+                         n = ndimD
+                         k = lg
+
+
+                         bidx = mod(tile,nbuffs)+1
+
+                         if(alloc_in_dummy) call lsmpi_wait(req(bidx))
+
+                         bpos = 1 + (bidx-1) * m * n
+
+                         call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm2(fg,startD),nb,0.0E0_realk,work(bpos),m)
+                         !accumulate TODO, meeds to be optimized
+#ifdef VAR_HAVE_MPI3
+                         call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
+                            &lock_set=.not.alloc_in_dummy,req=req(bidx))
+#else
+                         call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
+                            &lock_set=.false.)
+#endif
+                         tile = tile + 1
+                      enddo
+                   enddo
+                enddo
+             enddo
+#else
+             call lsquit("ERROR(get_mo_integral_par):this option is MPI only",-1)
+#endif
+
+
           else
-             call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
+             ndimA  = n1
+             ndimB  = n2
+             ndimC  = n3
+             ndimD  = n4
 
-             call time_start_phase( PHASE_COMM )
-             call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size, order = order)
-             call time_start_phase( PHASE_WORK )
+             startA = 1
+             startB = 1
+             startC = 1
+             startD = 1
+
+             one => w2
+             two => w1
+             thr => w2
+
+             !something more sophisticated can be implemented here
+             m = nb*la*lg
+             n = ndimA
+             k = nb
+             call time_start_phase(PHASE_WORK, twall = time_cont1 )
+             call dgemm('t','n',m,n,k,1.0E0_realk,w1,k,trafo1%elm2(1,startA),nb,0.0E0_realk,one,m)
+             call time_start_phase(PHASE_WORK, ttot = time_cont1 )
+             time_cont1_tot = time_cont1_tot + time_cont1
+
+             m = la*lg*ndimA
+             n = ndimB
+             k = nb
+             call time_start_phase(PHASE_WORK, twall = time_cont2 )
+             call dgemm('t','n',m,n,k,1.0E0_realk,one,k,trafo2%elm2(1,startB),nb,0.0E0_realk,two,m)
+             call time_start_phase(PHASE_WORK, ttot = time_cont2 )
+             time_cont2_tot = time_cont2_tot + time_cont2
+
+             m = lg*ndimA*ndimB
+             n = ndimC
+             k = la
+             call time_start_phase(PHASE_WORK, twall = time_cont3 )
+             call dgemm('t','n',m,n,k,1.0E0_realk,two,k,trafo3%elm2(fa,startC),nb,0.0E0_realk,thr,m)
+             call time_start_phase(PHASE_WORK, ttot = time_cont3 )
+             time_cont3_tot = time_cont3_tot + time_cont3
+
+             m = ndimA*ndimB*ndimC
+             n = ndimD
+             k = lg
+
+             call time_start_phase(PHASE_WORK, twall = time_cont4 )
+             if(collective) then
+                call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm1(fg),nb,1.0E0_realk,work,m)
+             else
+                call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm1(fg),nb,0.0E0_realk,w1,m)
+
+                call time_start_phase( PHASE_COMM )
+                call tensor_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=w2size, order = order)
+                call time_start_phase( PHASE_WORK )
+             endif
+             call time_start_phase(PHASE_WORK, ttot = time_cont4 )
+             time_cont4_tot = time_cont4_tot + time_cont4
           endif
-          call time_start_phase(PHASE_WORK, ttot = time_cont4 )
-          time_cont4_tot = time_cont4_tot + time_cont4
+
+
 
        else
 
@@ -3043,6 +3221,14 @@ contains
 
 #ifdef VAR_MPI
     if(.not.collective .and. alloc_in_dummy)then
+       if(mem_saving)then
+          call mem_dealloc(req)
+
+          do t1 = tile, tile+nbuffs - 1
+             bidx = mod(t1,nbuffs)+1
+             call lsmpi_wait(req(bidx))
+          enddo
+       endif
        call tensor_unlock_wins(integral, all_nodes = .true. )
     endif
 #endif
@@ -3066,7 +3252,7 @@ contains
     call tensor_convert(work,integral, order = order, wrk = w1, iwrk = w1size )
 
 #endif
-    if(collective)then
+    if(collective.or.mem_saving)then
        if( use_bg_buf )then
           call mem_pseudo_dealloc( work )
        else
@@ -3243,10 +3429,10 @@ contains
 
 
     function get_work_array_size(which_array,mo1,mo2,mo3,mo4,mo1s,mo2s,mo3s,mo4s,nb,bsplit,nba,nbg,&
-          &cd,nbuf,intspec,setting) result(s)
+          &cd,ms,nbuf,intspec,setting) result(s)
        implicit none
        integer, intent(in) :: which_array,mo1,mo2,mo3,mo4,mo1s,mo2s,mo3s,mo4s,nb,bsplit,nba,nbg,nbuf
-       logical, intent(in) :: cd
+       logical, intent(in) :: cd,ms
        Character,intent(in) :: intspec(5)
        type(lssetting),intent(inout) :: setting
        integer(kind=long)  :: s,maxbuf,MAX_INTEGRAL_BUF
@@ -3264,13 +3450,21 @@ contains
              call simulate_intloop_and_get_worksize(MAX_INTEGRAL_BUF,nb,nbg,nba,bsplit,intspec,setting)
              s = max(max(max(i8*nba*mo3,i8*nbg*mo4),maxbuf),MAX_INTEGRAL_BUF)
           else
-             s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+             if(ms)then
+                s = (i8*nb**2)*nba*nbg
+             else
+                s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+             endif
           endif
        case(2)
           if(cd)then
              s = 1
           else
-             s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+             if(ms)then
+                s = (i8*mo1s*nb)*nba*nbg+(i8*mo1s*mo2s)*nba*nbg+(i8*mo1s*mo2s)*mo3s*nbg
+             else
+                s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+             endif
           endif
        case default
           call lsquit("ERROR(get_work_array_size):wrong selection of array",-1)
