@@ -4884,10 +4884,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         batch=batch+1
         FindJobLoop: do while(batch<=nA*nG)
 
-           call get_midx(batch,GammaAlpha,[nG,nA],2)
+           call get_midx(batch,GammaAlpha,[nA,nG],2)
 
-           g = GammaAlpha(1)
-           a = GammaAlpha(2)
+           a = GammaAlpha(1)
+           g = GammaAlpha(2)
 
            !check whether this job has been assigned to me
            if(static((a-1)*nG+g)/=infpar%lg_mynum)then
@@ -4929,10 +4929,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! No more jobs to be done exit
      if(batch > nG*nA )return
 
-     call get_midx(batch,GammaAlpha,[nG,nA],2)
+     call get_midx(batch,GammaAlpha,[nA,nG],2)
 
-     g = GammaAlpha(1)
-     a = GammaAlpha(2)
+     a = GammaAlpha(1)
+     g = GammaAlpha(2)
 
 #ifdef VAR_MPI
      if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
