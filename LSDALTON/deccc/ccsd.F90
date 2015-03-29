@@ -8328,8 +8328,8 @@ subroutine calculate_E2_and_permute_slave()
   o2v2 = int((i8*no)*no*nv*nv,kind=8)
   if(mem_is_background_buf_init())then
      call mem_pseudo_alloc(w1,o2v2)
-     call mem_pseudo_alloc(ppf,no*no)
-     call mem_pseudo_alloc(qqf,nv*nv)
+     call mem_pseudo_alloc(ppf,i8*no*no)
+     call mem_pseudo_alloc(qqf,i8*nv*nv)
   else
      call mem_alloc(w1,o2v2)
      call mem_alloc(ppf,no*no)

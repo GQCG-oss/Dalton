@@ -1176,10 +1176,10 @@ contains
     call ls_mpi_buffer(taddr,infpar%lg_nodtot,infpar%master)
     if(.not.master)then
        if(mem_is_background_buf_init())then
-          call mem_pseudo_alloc(xo,nb*no)
-          call mem_pseudo_alloc(yv,nb*nv)
-          call mem_pseudo_alloc(Gbi,nb*no)
-          call mem_pseudo_alloc(Had,nv*nb)
+          call mem_pseudo_alloc(xo,i8*nb*no)
+          call mem_pseudo_alloc(yv,i8*nb*nv)
+          call mem_pseudo_alloc(Gbi,i8*nb*no)
+          call mem_pseudo_alloc(Had,i8*nv*nb)
        else
           call mem_alloc(xo,nb*no)
           call mem_alloc(yv,nb*nv)
