@@ -2962,7 +2962,7 @@ contains
 
                          bidx = mod(tile,nbuffs)+1
 
-                         if(alloc_in_dummy) call lsmpi_wait(req(bidx))
+                         if(alloc_in_dummy .and. tile>=nbuffs) call lsmpi_wait(req(bidx))
 
                          bpos = 1 + (bidx-1) * m * n
 
@@ -2970,7 +2970,7 @@ contains
                          !accumulate TODO, meeds to be optimized
 #ifdef VAR_HAVE_MPI3
                          call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
-                            &lock_set=.not.alloc_in_dummy,req=req(bidx))
+                            &lock_set=.true.,req=req(bidx))
 #else
                          call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.false.)
@@ -3222,12 +3222,14 @@ contains
 #ifdef VAR_MPI
     if(.not.collective .and. alloc_in_dummy)then
        if(mem_saving)then
-          call mem_dealloc(req)
 
           do t1 = tile, tile+nbuffs - 1
              bidx = mod(t1,nbuffs)+1
              call lsmpi_wait(req(bidx))
           enddo
+
+          call mem_dealloc(req)
+
        endif
        call tensor_unlock_wins(integral, all_nodes = .true. )
     endif
