@@ -710,7 +710,8 @@ CONTAINS
 
  subroutine BuildMyjobsList(numnodes,Myjobs,OD_LHS,output,mynum,OD_LHSnbatches)
    implicit none
-   integer,intent(in) :: numnodes,mynum,OD_LHSnbatches
+   integer(kind=ls_mpik),intent(in) :: numnodes,mynum
+   integer,intent(in) :: OD_LHSnbatches
    integer,intent(inout) :: Myjobs(OD_LHSnbatches)
    TYPE(INTEGRALOUTPUT),intent(in) :: OUTPUT
    TYPE(ODITEM),intent(in) :: OD_LHS

@@ -472,7 +472,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk
      PerformTiling = MaxSize.GT.MemInGBCollected
      IF(PerformTiling)THEN 
-        MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-(NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk)/(nocc*noccEOS*nvirt*8.0E-9_realk)))
+        MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-&
+             & (NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk)/(nocc*noccEOS*nvirt*8.0E-9_realk)))
         nTiles =  nvirt/MaxVirtSize 
         IF(nTiles.EQ.0)PerformTiling = .FALSE.
      ENDIF
@@ -1756,7 +1757,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   
   IF(master)THEN
      !Memory requirement to have the full MO integral in memory 
-     MemForFullMOINT = (nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+     MemForFullMOINT = (nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
+          & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
 !     print*,'MemForFullMOINT=',MemForFullMOINT,'maxsize',maxsize
 !     print*,'MemForFullMOINT.LT.maxsize: ',MemForFullMOINT.LT.maxsize
 
@@ -1771,7 +1773,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                     ',MemInGBCollected,' GB'
         WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available (70%)               ',maxsize,' GB'
         !Memory requirement to have the full AO integral in memory 
-        MemForFullAOINT = MAX(nbasisAux*nvirt*nocc+nbasisAux*nbasis1*nocc,nbasisAux*nbasis1*nocc+nbasisAux*nbasis1*nbasis2)*8.0E-9_realk
+        MemForFullAOINT = MAX(nbasisAux*nvirt*nocc+nbasisAux*nbasis1*nocc,&
+             & nbasisAux*nbasis1*nocc+nbasisAux*nbasis1*nbasis2)*8.0E-9_realk
         IF(MemForFullAOINT.LT.maxsize)THEN 
            !Full AO can fit on all nodes Which means we can do a reduction.
            MaxNaux = nbasisAux

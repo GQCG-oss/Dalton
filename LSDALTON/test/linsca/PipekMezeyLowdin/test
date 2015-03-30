@@ -25,7 +25,7 @@ f.add(string = 'HOMO-LUMO Gap',
       rel_tolerance = 1.0e-5)
 
 f.add(string = 'Trace of Absolute nummerical overlap',
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(string = 'Allocated memory (TOTAL)')
 
