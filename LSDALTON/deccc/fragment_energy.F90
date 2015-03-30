@@ -317,8 +317,8 @@ contains
              ! Extract EOS indices for amplitudes and integrals
              ! ************************************************
              ! Note: EOS space is different for DECNP !!
-             call tensor_extract_decnp_indices(t2,MyFragment,t2occ)
-             call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc)
+             call tensor_extract_decnp_indices(t2,MyFragment,t2occ,t2virt)
+             call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
            
              ! free stuff
              ! **********
@@ -501,8 +501,8 @@ contains
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
           ! Note: EOS space is different for DECNP !!
-          call tensor_extract_decnp_indices(u,MyFragment,t2occ)
-          call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc)
+          call tensor_extract_decnp_indices(u,MyFragment,t2occ,t2virt)
+          call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
 
        else
           ! Extract EOS indices for amplitudes and integrals
@@ -576,7 +576,7 @@ contains
 
        ! Pair and fragment energy contributions are calculated together
        ! **************************************************************
-       call  get_decnp_fragment_energy(MyFragment,VOVOocc,t2occ)
+       call  get_decnp_fragment_energy(MyFragment,VOVOocc,VOVOvirt,t2occ,t2virt)
 
     else ! use VOVOvirt as it is -- MOST COMMON CASE
      
@@ -671,11 +671,8 @@ contains
     ! Free remaining arrays
     call tensor_free(VOVOocc)
     call tensor_free(t2occ)
-    if (.not.DECinfo%DECNP) then
-       ! TODO: free this when virt part is implemented:
-       call tensor_free(VOVOvirt)
-       call tensor_free(t2virt)
-    end if
+    call tensor_free(VOVOvirt)
+    call tensor_free(t2virt)
 
     !print *,"s1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"s2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
@@ -696,7 +693,7 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    Feb. 2015
-  subroutine get_decnp_fragment_energy(MyFragment,gocc,t2occ)
+  subroutine get_decnp_fragment_energy(MyFragment,gocc,gvirt,t2occ,t2virt)
 
      implicit none
 
@@ -704,10 +701,12 @@ contains
      type(decfrag), intent(inout) :: MyFragment
      !> Energy integrals (ai|bj)
      type(tensor), intent(inout) :: gocc
+     type(tensor), intent(inout) :: gvirt
      !> double amplitudes from CC calculation (MP2, CCSD...)
      !  singles might be included as:
      !  t2(a,i,b,j) := t2(a,i,b,j) + t1(a,i)*t1(b,j)
      type(tensor), intent(inout) :: t2occ
+     type(tensor), intent(inout) :: t2virt
 
      real(realk), pointer :: occ_tmp(:), virt_tmp(:)
      real(realk), pointer :: t(:,:,:,:), g(:,:,:,:)
@@ -719,13 +718,18 @@ contains
      integer :: noccEOS, nvirtEOS, noccAOS, nvirtAOS
      integer :: i,j,k,a,b
 
-     ! Get occupied DECNP energy contributions:
-     ! ----------------------------------------
+     ! Get occupied and virtual DECNP energy contributions:
+     ! ----------------------------------------------------
      !
-     ! E = sum_{ijab} t_{ij}^{ab} [ 2g_{aibj} - g_{biaj} ]
+     ! Eocc  = sum_{ijab} t_{ij}^{ab} [ 2g_{aibj} - g_{biaj} ]
      ! where index i is restricted to the occupied EOS space,
      ! index j is restricted to the occupied AOS space,
      ! and indices a and b are restricted to the virtual AOS space
+     !
+     ! Evirt = sum_{ijab} t_{ij}^{ab} [ 2g_{aibj} - g_{biaj} ]
+     ! where index a is restricted to the virtual EOS space,
+     ! indices i and j are restricted to the occupied AOS space,
+     ! and index b is restricted to the virtual AOS space
      ! 
      ! MyFragment%OccContribs and MyFragment%VirtContribs contains the contributions from
      ! each individual occupied and virtual orbital -- e.g. MyFragment%OccContribs(i)
@@ -764,25 +768,25 @@ contains
      if(gocc%dims(3) /= nvirtAOS) something_wrong=.true.
      if(gocc%dims(4) /= noccAOS) something_wrong=.true.
       
-     !if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
-     !if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
-     !if(t2virt%dims(3) /= nvirtEOS) something_wrong=.true.
-     !if(t2virt%dims(4) /= noccAOS) something_wrong=.true.
-     !
-     !if(gvirt%dims(1) /= nvirtEOS) something_wrong=.true.
-     !if(gvirt%dims(2) /= noccAOS) something_wrong=.true.
-     !if(gvirt%dims(3) /= nvirtEOS) something_wrong=.true.
-     !if(gvirt%dims(4) /= noccAOS) something_wrong=.true.
+     if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
+     if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
+     if(t2virt%dims(3) /= nvirtAOS) something_wrong=.true.
+     if(t2virt%dims(4) /= noccAOS) something_wrong=.true.
+     
+     if(gvirt%dims(1) /= nvirtEOS) something_wrong=.true.
+     if(gvirt%dims(2) /= noccAOS) something_wrong=.true.
+     if(gvirt%dims(3) /= nvirtAOS) something_wrong=.true.
+     if(gvirt%dims(4) /= noccAOS) something_wrong=.true.
       
      if(something_wrong) then
         print *, 't2occ%dims =', t2occ%dims
         print *, 'gocc%dims  =', gocc%dims
-        !print *, 't2virt%dims=', t2virt%dims
-        !print *, 'gvirt%dims =', gvirt%dims
+        print *, 't2virt%dims=', t2virt%dims
+        print *, 'gvirt%dims =', gvirt%dims
         print *, 'noccEOS  = ', noccEOS
         print *, 'noccAOS  = ', noccAOS
-        !print *, 'nvirtEOS = ', nvirtEOS
-        !print *, 'nvirtAOS = ', nvirtAOS
+        print *, 'nvirtEOS = ', nvirtEOS
+        print *, 'nvirtAOS = ', nvirtAOS
         call lsquit('get_decnp_fragment_energy: &
              & Input dimensions do not match!',-1)
      end if
@@ -805,7 +809,7 @@ contains
      !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
      do j=1,noccAOS
         do b=1,nvirtAOS
-           do i=1,noccEOS
+           do i=1,noccEOS ! EOS index
               do a=1,nvirtAOS
       
       
@@ -838,6 +842,62 @@ contains
      !$OMP END CRITICAL
       
      call mem_dealloc(virt_tmp)
+     call collect_thread_memory()
+     !$OMP END PARALLEL
+     call mem_TurnOffThread_Memory()
+
+
+     ! Point to tensor structure to avoid OMP problems:
+     t => t2virt%elm4
+     g => gvirt%elm4
+
+     call mem_TurnONThread_Memory()
+     !$OMP PARALLEL DEFAULT(none) PRIVATE(tmp,j,b,i,a,occ_tmp) &
+     !$OMP SHARED(t,g,noccAOS,nvirtAOS,nvirtEOS,prefac_coul,prefac_k,myfragment) &
+     !$OMP REDUCTION(+:Evirt)
+     call init_threadmemvar()
+     ! Contributions from each individual occupied orbital
+     call mem_alloc(occ_tmp,noccAOS)
+     occ_tmp = 0.0E0_realk
+
+     ! Calculate Evirt
+     ! ***************
+     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
+     do j=1,noccAOS
+        do b=1,nvirtAOS
+           do i=1,noccAOS
+              do a=1,nvirtEOS ! EOS index
+
+
+                 ! Contribution 2
+                 ! --------------
+
+                 ! Energy contribution for orbitals (j,b,i,a)
+                 tmp = (prefac_coul*t(a,i,b,j) -prefac_k*t(a,j,b,i))*g(a,i,b,j)
+
+                 ! Update total atomic fragment energy contribution 3
+                 Evirt = Evirt + tmp
+
+                 ! Update contribution from orbital i
+                 occ_tmp(i) = occ_tmp(i) + tmp
+                 ! Update contribution from orbital j (only if different from i to avoid double counting)
+                 if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+
+
+              end do
+           end do
+        end do
+     end do
+     !$OMP END DO NOWAIT
+
+     !$OMP CRITICAL
+     ! Update total occupied contributions to fragment energy
+     do i=1,noccAOS
+        MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
+     end do
+     !$OMP END CRITICAL
+
+     call mem_dealloc(occ_tmp)
      call collect_thread_memory()
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()

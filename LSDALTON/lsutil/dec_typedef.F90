@@ -193,7 +193,7 @@ module dec_typedef_module
 
      !> 32 vs. 64 bit issues
      !> ********************
-     !> DEC files (lcm_orbitals.u, fock.restart, dens.restart, overlapmatrix, DECorbitals.info) 
+     !> DEC files (lcm_orbitals.u, fock.restart, dens.restart, DECorbitals.info) 
      !> are in 64 (or 32) bit integers but the program was compiled with 32 (or 64) 
      !> bit integers so these files need to be converted during the read-in.
      logical :: convert64to32
@@ -334,6 +334,8 @@ module dec_typedef_module
      logical :: RIMP2PDMTENSOR
      !> Force the use of the code that distribute the Calpha
      logical :: RIMP2ForcePDMCalpha
+     !> Force tiling in Step 5 of RIMP2 code
+     logical :: RIMP2_tiling
      !> MPI group is split if #nodes > O*V/RIMPIsplit
      integer :: RIMPIsplit
 
@@ -699,8 +701,6 @@ module dec_typedef_module
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
-     !> Overlap matrix (AO basis)
-     real(realk), pointer :: overlap(:,:) => null()
 
      !> Abs overlap information
      real(realk), pointer :: ov_abs_overlap(:,:) => null()

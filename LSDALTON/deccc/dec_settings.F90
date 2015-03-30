@@ -233,6 +233,7 @@ contains
     DECinfo%RIMPSubGroupSize         = 0
     DECinfo%RIMP2PDMTENSOR           = .false.
     DECinfo%RIMP2ForcePDMCalpha      = .false.
+    DECinfo%RIMP2_tiling             = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -731,9 +732,11 @@ contains
        case('.RIMP2SUBGROUPSIZE')
           read(input,*) DECinfo%RIMPSubGroupSize
        case('.RIMP2PDMTENSOR')
-          DECinfo%RIMP2PDMTENSOR     = .true.
+          DECinfo%RIMP2PDMTENSOR      = .true.
        case('.RIMP2FORCEPDMCALPHA')
           DECinfo%RIMP2ForcePDMCalpha = .true.
+       case('.RIMP2_TILING')
+          DECinfo%RIMP2_tiling        = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -964,14 +967,6 @@ contains
           call lsquit("RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        end select
 
-       ! DECNP only tested for occupied partitioning scheme
-       if(.not. DECinfo%OnlyOccPart) then
-          write(DECinfo%output,*) 'WARNING: DECNP ONLY TESTED FOR OCCUPIED PART. SCHEME'
-          write(DECinfo%output,*) 'WARNING: I TURN ON OCCUPIED PART. SCHEME'
-          DECinfo%onlyoccpart=.true.
-          DECinfo%onlyvirtpart=.false.
-       end if
-
        if (DECinfo%first_order) then
           call lsquit("No first_order properties with DECNP",DECinfo%output)
        end if
@@ -981,7 +976,6 @@ contains
           call lsquit("SNOOP and DECNP are not compatible yet!",DECinfo%output)
        end if
 
-       !TODO: Add test for expansion reduction model and repeatAF !!!
     end if
 
 

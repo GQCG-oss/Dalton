@@ -1376,7 +1376,7 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    Feb. 2015
-  subroutine tensor_extract_decnp_indices(tensor_full,myfragment,Arr)
+  subroutine tensor_extract_decnp_indices(tensor_full,myfragment,ArrOcc,ArrVir)
 
      implicit none
 
@@ -1385,20 +1385,23 @@ contains
      !> Atomic fragment
      type(decfrag), target, intent(inout) :: MyFragment
      !> Array where EOS indices where are extracted
-     type(tensor),intent(inout) :: Arr
+     type(tensor),intent(inout) :: ArrOcc, ArrVir
 
      !> Number of EOS indices
      integer :: nEOS
      !> List of EOS indices in the total (EOS+buffer) list of orbitals
      integer, pointer :: EOS_idx(:)
-     integer :: nocc,nvirt,i,a,b,j,ix,jx
+     integer :: nocc,nvirt,i,a,b,j,ix,ax
      integer, dimension(4) :: new_dims
 
-     nEOS = myfragment%noccEOS
-     EOS_idx => myFragment%idxo(1:nEOS)
+     !---------------------------------------------------------------------
+     !                 EXTRACT OCCUPIED PARTITIONING ARRAY
+     !---------------------------------------------------------------------
 
      ! Initialize stuff
      ! ****************
+     nEOS     = myfragment%noccEOS
+     EOS_idx  => myFragment%idxo(1:nEOS)
      nocc     = tensor_full%dims(2)     ! Total number of occupied orbitals
      nvirt    = tensor_full%dims(1)     ! Total number of virtual orbitals
      new_dims = [nvirt,nEOS,nvirt,nocc] ! nEOS=Number of occupied EOS orbitals
@@ -1424,7 +1427,7 @@ contains
         write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
         write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
         call lsquit('tensor_extract_decnp_indices: &
-           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+           & ArrOcc dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
      end if
 
      ! 3. EOS dimension must be smaller than (or equal to) total number of occ orbitals
@@ -1448,22 +1451,22 @@ contains
      end do
 
 
-     ! Extract occupied EOS indices and store in Arr
-     ! *********************************************
+     ! Extract occupied EOS indices and store in ArrOcc
+     ! ************************************************
 
-     ! Initiate Arr with new dimensions (nvirt,nocc,nvirt,nocc_EOS)
-     call tensor_init(Arr,new_dims,4)
+     ! Initiate ArrOcc with new dimensions (nvirt,nocc,nvirt,nocc_EOS)
+     call tensor_init(ArrOcc,new_dims,4)
 
      select case( tensor_full%itype )
      case( TT_DENSE, TT_REPLICATED )
 
-        ! Set Arr equal to the EOS indices of the original Arr array (tensor_full)
+        ! Set ArrOcc equal to the EOS indices of the original ArrOcc array (tensor_full)
         do j=1,nocc
            do b=1,nvirt
               do i=1,nEOS
                  ix=EOS_idx(i)
                  do a=1,nvirt
-                    Arr%elm4(a,i,b,j) = tensor_full%elm4(a,ix,b,j)
+                    ArrOcc%elm4(a,i,b,j) = tensor_full%elm4(a,ix,b,j)
                  end do
               end do
            end do
@@ -1471,14 +1474,81 @@ contains
 
      case( TT_TILED_DIST )
 
-        call tensor_zero(Arr)
+        call tensor_zero(ArrOcc)
 
-        call lspdm_extract_decnp_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
+        call lspdm_extract_decnp_indices_occ(ArrOcc,tensor_full,nEOS,EOS_idx)
 
      case default
-        call lsquit("ERROR(tensor_extract_eos_indices_occ): NO PDM version implemented yet",-1)
+        call lsquit("ERROR(tensor_extract_decnp_indices): NO PDM version implemented yet",-1)
      end select
 
+     !---------------------------------------------------------------------
+     !                 EXTRACT VIRTUAL PARTITIONING ARRAY
+     !---------------------------------------------------------------------
+
+     ! Initialize stuff
+     ! ****************
+     nEOS     = myfragment%nunoccEOS
+     EOS_idx  => myFragment%idxu(1:nEOS)
+     new_dims = [nEOS,nocc,nvirt,nocc]  ! nEOS=Number of virtual EOS orbitals
+
+
+     ! Sanity checks
+     ! *************
+
+     ! 5. EOS dimension must be smaller than (or equal to) total number of virt orbitals
+     if(nEOS > nvirt) then
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        write(DECinfo%output,*) 'nEOS  = ', nEOS
+        call lsquit('tensor_extract_decnp_indices: &
+           & Number of EOS orbitals must be smaller than (or equal to) total number of &
+           & virtual orbitals!',DECinfo%output)
+     end if
+
+     ! 6. EOS indices must not exceed total number of virtual orbitals
+     do i=1,nEOS
+        if(EOS_idx(i) > nvirt) then
+           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
+           write(DECinfo%output,*) 'nvirt   = ', nvirt
+           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+           call lsquit('tensor_extract_decnp_indices: &
+              & EOS index value larger than nvirt!',DECinfo%output)
+        end if
+     end do
+
+     ! Extract virtual EOS indices and store in ArrVir
+     ! ***********************************************
+
+     ! Initiate ArrVir with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc) on the
+     ! local node, as the tensor will be small enough to store locally
+     call tensor_init(ArrVir,new_dims,4)
+
+     select case ( tensor_full%itype )
+     case( TT_DENSE, TT_REPLICATED )
+
+        ! Set ArrVir equal to the EOS indices of the original ArrVir array (tensor_full)
+        do j=1,nocc
+           do b=1,nvirt
+              do i=1,nocc
+                 do a=1,nEOS
+                    ax=EOS_idx(a)
+                    ArrVir%elm4(a,i,b,j) = tensor_full%elm4(ax,i,b,j)
+                 end do
+              end do
+           end do
+        end do
+
+     case( TT_TILED_DIST )
+
+        call tensor_zero(ArrVir)
+
+        call lspdm_extract_decnp_indices_virt(ArrVir,tensor_full,nEOS,EOS_idx)
+
+     case default
+        call lsquit("ERROR(tensor_extract_decnp_indices): NO PDM version implemented yet",-1)
+     end select
+
+     EOS_idx  => null()
 
   end subroutine tensor_extract_decnp_indices
 

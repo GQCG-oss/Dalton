@@ -632,6 +632,12 @@ subroutine ICHOR_Ecoeffn_maxAngP4_maxAngA3_LHS(nPrimP,nPass,Ecoeffn,ETIJ,PreExpF
      EcoeffN(i,ii,15,15) = EcoeffN(i,ii,15,15)*PreExpFac(i,iAtomA,iAtomB)
      EcoeffN(i,ii,14,15) = EcoeffN(i,ii,14,15)*PreExpFac(i,iAtomA,iAtomB)
      EcoeffN(i,ii,28,15) = EcoeffN(i,ii,28,15)*PreExpFac(i,iAtomA,iAtomB)
+    ENDDO
+   ENDDO
+   DO ii = 1, nPass
+    DO i = 1, nPrimP
+     iAtomA = IatomAPass(ii)
+     iAtomB = IatomBPass(ii)
      EcoeffN(i,ii,1,16) = EcoeffN(i,ii,1,16)*PreExpFac(i,iAtomA,iAtomB)
      EcoeffN(i,ii,4,16) = EcoeffN(i,ii,4,16)*PreExpFac(i,iAtomA,iAtomB)
      EcoeffN(i,ii,10,16) = EcoeffN(i,ii,10,16)*PreExpFac(i,iAtomA,iAtomB)

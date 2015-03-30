@@ -2579,9 +2579,9 @@ C *** Option 22: .GASCI
       ! regular number of angular points
       i_angint = 0
       read(lucmd, *) i_angint
-      call xcint_set_grid(radint,
-     &                    angmin,
-     &                    angint)
+      call xcint_set_grid(d_radint,
+     &                    i_angmin,
+     &                    i_angint)
 #else
       call quit('.NUMGRID is not available in this version')
 #endif
