@@ -1813,24 +1813,30 @@ contains
        call mat_dger(-dble(16*m),omen*dia(:,y)*dia(:,z)*dia(:,yz),tempvec2,P)
 
 
-       TEMPVEC = -8.0_realk*dia(:,xx)*dia(:,y)+8_realk*dia(:,xxy)+24.0_realk*dia(:,x)*dia(:,x)*dia(:,y)-16.0_realk*dia(:,xy)*dia(:,x) 
+       TEMPVEC = -8.0_realk*dia(:,xx)*dia(:,y)+8_realk*dia(:,xxy)+24.0_realk*dia(:,x)*dia(:,x)*dia(:,y)&
+            &-16.0_realk*dia(:,xy)*dia(:,x) 
        call mat_dger(-dble(m),omen*TEMPVEC,dia(:,y),P)
        call mat_dger(dble(m),omen*TEMPVEC*dia(:,y),tempvec2,P)
-       TEMPVEC = -8.0_realk*dia(:,yy)*dia(:,x)+8_realk*dia(:,xyy)+24.0_realk*dia(:,y)*dia(:,y)*dia(:,x)-16.0_realk*dia(:,xy)*dia(:,y) 
+       TEMPVEC = -8.0_realk*dia(:,yy)*dia(:,x)+8_realk*dia(:,xyy)+24.0_realk*dia(:,y)*dia(:,y)*dia(:,x)&
+            &-16.0_realk*dia(:,xy)*dia(:,y) 
        call mat_dger(-dble(m),omen*TEMPVEC,dia(:,x),P)
        call mat_dger(dble(m),omen*TEMPVEC*dia(:,x),tempvec2,P)
 
-       TEMPVEC = -8.0_realk*dia(:,xx)*dia(:,z)+8_realk*dia(:,xxz)+24.0_realk*dia(:,x)*dia(:,x)*dia(:,z)-16.0_realk*dia(:,xz)*dia(:,x) 
+       TEMPVEC = -8.0_realk*dia(:,xx)*dia(:,z)+8_realk*dia(:,xxz)+24.0_realk*dia(:,x)*dia(:,x)*dia(:,z)&
+            &-16.0_realk*dia(:,xz)*dia(:,x) 
        call mat_dger(-dble(m),omen*TEMPVEC,dia(:,z),P)
        call mat_dger(dble(m),omen*TEMPVEC*dia(:,z),tempvec2,P)
-       TEMPVEC = -8.0_realk*dia(:,zz)*dia(:,x)+8_realk*dia(:,xzz)+24.0_realk*dia(:,z)*dia(:,z)*dia(:,x)-16.0_realk*dia(:,xz)*dia(:,z) 
+       TEMPVEC = -8.0_realk*dia(:,zz)*dia(:,x)+8_realk*dia(:,xzz)+24.0_realk*dia(:,z)*dia(:,z)*dia(:,x)&
+            &-16.0_realk*dia(:,xz)*dia(:,z) 
        call mat_dger(-dble(m),omen*TEMPVEC,dia(:,x),P)
        call mat_dger(dble(m),omen*TEMPVEC*dia(:,x),tempvec2,P)
 
-       TEMPVEC = -8.0_realk*dia(:,yy)*dia(:,z)+8_realk*dia(:,yyz)+24.0_realk*dia(:,y)*dia(:,y)*dia(:,z)-16.0_realk*dia(:,yz)*dia(:,y) 
+       TEMPVEC = -8.0_realk*dia(:,yy)*dia(:,z)+8_realk*dia(:,yyz)+24.0_realk*dia(:,y)*dia(:,y)*dia(:,z)&
+            &-16.0_realk*dia(:,yz)*dia(:,y) 
        call mat_dger(-dble(m),omen*TEMPVEC,dia(:,z),P)
        call mat_dger(dble(m),omen*TEMPVEC*dia(:,z),tempvec2,P)
-       TEMPVEC = -8.0_realk*dia(:,zz)*dia(:,y)+8_realk*dia(:,yzz)+24.0_realk*dia(:,z)*dia(:,z)*dia(:,y)-16.0_realk*dia(:,yz)*dia(:,z) 
+       TEMPVEC = -8.0_realk*dia(:,zz)*dia(:,y)+8_realk*dia(:,yzz)+24.0_realk*dia(:,z)*dia(:,z)*dia(:,y)&
+            &-16.0_realk*dia(:,yz)*dia(:,z) 
        call mat_dger(-dble(m),omen*TEMPVEC,dia(:,y),P)
        call mat_dger(dble(m),omen*TEMPVEC*dia(:,y),tempvec2,P)
 
