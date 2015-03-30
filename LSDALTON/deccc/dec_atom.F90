@@ -3458,10 +3458,12 @@ contains
 
 
     ! adjust fock matrix in ao basis
-    call mem_alloc(fragment%fock,fragment%nbasis,fragment%nbasis)
-    fragment%fock=0.0E0_realk
-    call adjust_square_matrix2(MyMolecule%fock,fragment%fock,fragment%basis_idx,&
-         & MyMolecule%nbasis,fragment%nbasis)
+    if(.not. DECinfo%noaofock) then
+       call mem_alloc(fragment%fock,fragment%nbasis,fragment%nbasis)
+       fragment%fock=0.0E0_realk
+       call adjust_square_matrix2(MyMolecule%fock,fragment%fock,fragment%basis_idx,&
+            & MyMolecule%nbasis,fragment%nbasis)
+    end if
 
 
     ! adjust fock matrices in mo basis
@@ -3469,21 +3471,21 @@ contains
 
     ! For fragment-adapted orbitals, MO Fock matrix is set elsewhere (fragment_adapted_transformation_matrices)
 
-       ! Occ-occ block  (valence-valence for frozen core)
-       call mem_alloc(fragment%ppfockLOC,fragment%noccLOC,fragment%noccLOC)
-       call dec_simple_basis_transform1(fragment%nbasis,fragment%noccLOC,&
-            & fragment%CoLOC,fragment%fock,fragment%ppfockLOC)
+    ! Occ-occ block  (valence-valence for frozen core)
+    call mem_alloc(fragment%ppfockLOC,fragment%noccLOC,fragment%noccLOC)
+    call adjust_square_matrix2(MyMolecule%ppfock,fragment%ppfockLOC,fragment%occAOSidx,&
+         & MyMolecule%nocc,fragment%noccAOS)
 
-       ! Virtual-virtual block
-       call mem_alloc(fragment%qqfockLOC,fragment%nunoccLOC,fragment%nunoccLOC)
-       call dec_simple_basis_transform1(fragment%nbasis,fragment%nunoccLOC,&
-            & fragment%CvLOC,fragment%fock,fragment%qqfockLOC)
+    ! Virtual-virtual block
+    call mem_alloc(fragment%qqfockLOC,fragment%nunoccLOC,fragment%nunoccLOC)
+    call adjust_square_matrix2(MyMolecule%qqfock,fragment%qqfockLOC,fragment%unoccAOSidx,&
+         & MyMolecule%nunocc,fragment%nunoccAOS)
 
     ! Core-core block
     if(fragment%ncore>0) then
        call mem_alloc(fragment%ccfock,fragment%ncore,fragment%ncore)
-       call dec_simple_basis_transform1(fragment%nbasis,fragment%ncore,&
-            & fragment%coreMO,fragment%fock,fragment%ccfock)
+       call adjust_square_matrix2(MyMolecule%ppfock,fragment%ccfock,fragment%coreidx,&
+            & MyMolecule%ncore,fragment%ncore)
     end if
 
     ! Make MO coeff and Fock matrices point to local orbital quantities unless we use fragment-adapted

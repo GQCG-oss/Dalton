@@ -87,7 +87,7 @@ contains
     call dec_main_prog(MyLsitem,config,molecule,D,E)
 
     ! Restore input matrices
-    call molecule_copyback_FC_matrices(Molecule,F,C)
+    call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Delete molecule structure
     call molecule_finalize(molecule)
@@ -378,7 +378,7 @@ contains
     EMP2 = EHF + Ecorr
 
     ! Restore input matrices
-    call molecule_copyback_FC_matrices(Molecule,F,C)
+    call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Free molecule structure and other stuff
     call molecule_finalize(Molecule)
@@ -462,7 +462,7 @@ contains
     ! Total CC energy: EHF + Ecorr
     ECC = EHF + Ecorr
     ! Restore input matrices
-    call molecule_copyback_FC_matrices(Molecule,F,C)
+    call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Free molecule structure and other stuff
     call molecule_finalize(Molecule)

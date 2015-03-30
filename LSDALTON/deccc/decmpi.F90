@@ -643,7 +643,7 @@ contains
 !          call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
 !          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
 !       ENDIF
-       call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
+       if(.not. DECinfo%aofock) call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc)
        call mem_alloc(MyMolecule%qqfock,MyMolecule%nunocc,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
@@ -694,7 +694,9 @@ contains
 !       call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
 !       call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
 !    ENDIF
-    call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+    if(.not. DECinfo%noaofock) then
+       call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+    end if
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%qqfock,MyMolecule%nunocc,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -1009,7 +1011,9 @@ contains
           call mem_alloc(MyFragment%CoLOC,MyFragment%nbasis,MyFragment%noccLOC)
           call mem_alloc(MyFragment%CvLOC,MyFragment%nbasis,MyFragment%nunoccLOC)
           call mem_alloc(MyFragment%coreMO,MyFragment%nbasis,MyFragment%ncore)
-          call mem_alloc(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis)
+          if(.not. DECinfo%noaofock) then
+             call mem_alloc(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis)
+          end if
           call mem_alloc(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore)
           call mem_alloc(MyFragment%ppfockLOC,MyFragment%noccLOC,MyFragment%noccLOC)
           call mem_alloc(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC)
@@ -1022,7 +1026,9 @@ contains
        call ls_mpi_buffer(MyFragment%CoLOC,MyFragment%nbasis,MyFragment%noccLOC,master)
        call ls_mpi_buffer(MyFragment%CvLOC,MyFragment%nbasis,MyFragment%nunoccLOC,master)
        call ls_mpi_buffer(MyFragment%coreMO,MyFragment%nbasis,MyFragment%ncore,master)
-       call ls_mpi_buffer(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis,master)
+       if(.not. DECinfo%noaofock) then
+          call ls_mpi_buffer(MyFragment%fock,MyFragment%nbasis,MyFragment%nbasis,master)
+       end if
        call ls_mpi_buffer(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore,master)
        call ls_mpi_buffer(MyFragment%ppfockLOC,MyFragment%noccLOC,MyFragment%noccLOC,master)
        call ls_mpi_buffer(MyFragment%qqfockLOC,MyFragment%nunoccLOC,MyFragment%nunoccLOC,master)
@@ -2456,6 +2462,7 @@ contains
     endif
     call ls_mpi_buffer(DECitem%UseIchor,Master)
     call ls_mpi_buffer(DECitem%IntegralThreshold,Master)
+    call ls_mpi_buffer(DECitem%noaofock,Master)
 
   end subroutine mpicopy_dec_settings
 

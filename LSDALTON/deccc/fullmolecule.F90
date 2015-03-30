@@ -50,7 +50,7 @@ contains
     type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
     real(realk) :: tcpu, twall
     
-    
+
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Init basic info (molecular dimensions etc.)
@@ -62,11 +62,12 @@ contains
             & as requested in the input!'
        return
     end if
-    
+
     ! Get Fock, overlap, and MO coefficient matrices.
     call molecule_get_reference_state(molecule,mylsitem)
+
     call molecule_mo_fock(molecule)
-    
+
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule,mylsitem)
     end if
@@ -84,7 +85,7 @@ contains
 #ifdef MOD_UNRELEASED
        !> Sanity check 
        if(.NOT. present(D)) then
-          call lsquit("ERROR: (molecule_init_from_files) : Density needs to be persent for F12 calc",-1)
+          call lsquit("ERROR: (molecule_init_from_files) : Density needs to be present for F12 calc",-1)
        end if
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
@@ -95,7 +96,14 @@ contains
        ENDIF
 #endif
     end if
+
     
+    ! Do not store AO Fock matrix if requested
+    if(DECinfo%noaofock) then
+       write(DECinfo%output,*) 'Warning: Not storing AO Fock matrix to minimize memory usage - use at own risk!'
+       call mem_dealloc(molecule%fock)
+    end if
+
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
   end subroutine molecule_init_from_files
@@ -164,6 +172,12 @@ contains
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
 #endif
+    end if
+
+    ! Do not store AO Fock matrix if requested
+    if(DECinfo%noaofock) then
+       write(DECinfo%output,*) 'Warning: Not storing AO Fock matrix to minimize memory usage - use at own risk!'
+       call mem_dealloc(molecule%fock)
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -294,6 +308,7 @@ contains
     call mem_alloc(molecule%fock,F%nrow,F%ncol)
     call mat_to_full(F, 1.0_realk, molecule%fock)
 
+
     ! MO coefficient matrix
     call mem_alloc(basis,C%nrow,C%ncol)
     call mat_to_full(C, 1.0_realk, basis)
@@ -307,11 +322,13 @@ contains
   !> (included intialization of matrices)
   !> \author Kasper Kristensen
   !> \date December 2012
-  subroutine molecule_copyback_FC_matrices(molecule,F,C)
+  subroutine molecule_copyback_FC_matrices(mylsitem,molecule,F,C)
 
     implicit none
+    !> LS integral info
+    type(lsitem), intent(inout) :: mylsitem
     !> Full molecule structure
-    type(fullmolecule), intent(in) :: molecule
+    type(fullmolecule), intent(inout) :: molecule
     !> Fock matrix
     type(matrix),intent(inout) :: F
     !> MO coefficients
@@ -320,8 +337,13 @@ contains
     real(realk),pointer :: tmp(:,:)
 
     nbasis = molecule%nbasis
-    call mat_init(F,nbasis,nbasis)
     call mat_init(C,nbasis,nbasis)
+    if(DECinfo%noaofock) then
+       ! We need to read Fock file first because it 
+       ! is not stored in full molecule structure.
+       call molecule_get_fock(molecule,mylsitem)
+    end if
+    call mat_init(F,nbasis,nbasis)
     call mat_set_from_full(Molecule%fock,1.0_realk,F)
 
     call mem_alloc(tmp,nbasis,nbasis)
@@ -415,7 +437,7 @@ contains
   end function get_num_aux_basis_functions
 
 
-  !> \brief Read or construct (if it does not already exit) the fock matrix
+  !> \brief Read or construct (if it does not already exist) the fock matrix
   subroutine molecule_get_fock(molecule,mylsitem)
 
     implicit none
@@ -465,6 +487,10 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     integer :: nbasis,i,nocc,nunocc
     real(realk), pointer :: eival(:), C(:,:), S(:,:)
+
+    if(DECinfo%noaofock) then
+       call lsquit('You cannot use canonical orbitals in combination with .NOAOFOCK keyword!',-1)
+    end if
 
     nbasis = molecule%nbasis
     nocc = molecule%nocc
@@ -1002,57 +1028,21 @@ contains
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
-    type(array2) :: ppfock, qqfock, Co,Cv,Co2,Cv2,fock
-    integer :: nocc, nvirt, oo(2), bo(2), bv(2), vv(2), bb(2),nbasis
-    integer :: i,j,k
+    integer :: nocc, nvirt,nbasis
 
     nocc = molecule%nocc
     nvirt = molecule%nunocc
     nbasis = molecule%nbasis
-    oo(1)=nocc
-    oo(2)=nocc
-    vv(1)=nvirt
-    vv(2)=nvirt
-    bo(1)=nbasis
-    bo(2)=nocc
-    bv(1)=nbasis
-    bv(2)=nvirt
-    bb(1)=nbasis
-    bb(2)=nbasis
 
-    ! Fock matrix in AO basis
-    fock = array2_init(bb,molecule%fock)
-
-    ! Occ-occ block
-    Co = array2_init(bo,molecule%Co)
-    Co2 = array2_init(bo,molecule%Co)
-    ppfock = array2_similarity_transformation(Co,fock,Co2,oo)
-    call array2_free(Co)
-    call array2_free(Co2)
+    ! Occ-occ Fock matrix
     call mem_alloc(molecule%ppfock,nocc,nocc)
-    !molecule%ppfock(1:nocc,1:nocc) = ppfock%val(1:nocc,1:nocc)
-    do i =1,nocc
-    do j=1,nocc
-    molecule%ppfock(j,i) = ppfock%val(j,i)
-    enddo
-    enddo
-    call array2_free(ppfock)
+    call dec_simple_basis_transform1(nbasis,nocc,molecule%Co,&
+         & molecule%fock,molecule%ppfock)
 
-    ! Virt-virt block
-    Cv = array2_init(bv,molecule%Cv)
-    Cv2 = array2_init(bv,molecule%Cv)
-    qqfock = array2_similarity_transformation(Cv,fock,Cv2,vv)
-    call array2_free(Cv)
-    call array2_free(Cv2)
-    call array2_free(fock)
+    ! Virt-virt Fock matrix
     call mem_alloc(molecule%qqfock,nvirt,nvirt)
-    !molecule%qqfock(1:nvirt,1:nvirt) = qqfock%val(1:nvirt,1:nvirt)
-    do i=1,nvirt
-    do j=1,nvirt
-    molecule%qqfock(j,i) = qqfock%val(j,i)
-    enddo
-    enddo
-    call array2_free(qqfock)
+    call dec_simple_basis_transform1(nbasis,nvirt,molecule%Cv,&
+         & molecule%fock,molecule%qqfock)
 
   end subroutine molecule_mo_fock
 

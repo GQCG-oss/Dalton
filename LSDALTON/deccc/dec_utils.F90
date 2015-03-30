@@ -2787,6 +2787,14 @@ end function max_batch_dimension
     !> get E_DFT
     type(matrix) :: F,h
     real(realk)  :: exchangeFactor,enuc,edft(1)
+
+    if(DECinfo%noaofock) then
+       write(DECinfo%output,*) 'Warning: NOFOCKAO keyword is set and HF energy is &
+            & set to zero'
+       Ehf = 0.0_realk
+       return
+    end if
+
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
 

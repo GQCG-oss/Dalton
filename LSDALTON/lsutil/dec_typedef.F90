@@ -538,6 +538,14 @@ module dec_typedef_module
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
 
+
+     !> Stripped down keywords - reduce memory usage to a minimum
+     !> *********************************************************
+     !> Should only be used by someone who knows what they are
+     !> doing...
+     !> Do not store AO Fock matrix in full molecule structure.
+     logical :: noaofock
+
   end type DECSETTINGS
 
 
@@ -797,7 +805,7 @@ module dec_typedef_module
      !> Unoccupied AOS orbital indices in the full basis  
      integer, pointer :: unoccAOSidx(:) => null()
      !> Core orbitals indices (only used for frozen core approx, 
-     !> otherwise there are included in the occAOSidx list).
+     !> otherwise these are included in the occAOSidx list).
      integer,pointer :: coreidx(:) => null()
      !> Indices of occupied EOS in AOS basis
      integer, pointer :: idxo(:) => null()
