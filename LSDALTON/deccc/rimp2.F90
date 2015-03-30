@@ -816,22 +816,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(Calpha2)
 
 #ifdef VAR_OPENACC
-!$acc host_data use_device(Calpha3,UoccALLT,Calpha2)
+!$acc host_data use_device(Calpha3,UoccallT,Calpha2)
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-        call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccALLT,K,0.0E0_realk,Calpha2,M)
+        call dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M)
 #elif defined(VAR_CUBLAS)
         stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(M,kind=4),int(N,kind=4),int(K,kind=4),&
-             & 1.0E0_realk,c_loc(Calpha3),int(M,kind=4),c_loc(UoccALLT),int(K,kind=4),&
+             & 1.0E0_realk,c_loc(Calpha3),int(M,kind=4),c_loc(UoccallT),int(K,kind=4),&
              & 0.0E0_realk,c_loc(Calpha2),int(M,kind=4))
 #endif
 !$acc end host_data
-!$acc exit data delete(UoccALLT,Calpha3) if(fc)
+!$acc exit data delete(UoccallT,Calpha3) if(fc .and. (.not. first_order))
+!$acc exit data delete(Calpha3) if(fc .and. first_order)
         call addDGEMM_FLOPonGPUaccouting(M,N,K,0.0E0_realk)
 #else
-        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccALLT,K,0.0E0_realk,Calpha2,M)
+        call dgemm('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M)
 #endif        
         call mem_dealloc(Calpha3)
-        IF(.NOT.first_order)call mem_dealloc(UoccALLT)
+        IF(.NOT.first_order)call mem_dealloc(UoccallT)
      ELSE
         ! Transform index delta to local occupied index 
         !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
@@ -1000,6 +1001,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #else
            call dgemm('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccallT,K,0.0E0_realk,Calpha2,M)
 #endif
+!$acc exit data delete(UoccallT)
            call mem_dealloc(UoccallT)
         ELSE
 #ifdef VAR_OPENACC
