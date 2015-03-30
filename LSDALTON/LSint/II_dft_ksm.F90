@@ -7,9 +7,7 @@ use IIDFTD, only: II_DFT_DISP
 use dft_type
 use dft_memory_handling
 use IIDFTKSMWORK
-#ifdef MOD_UNRELEASED
 use IIABSVALINT
-#endif
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
 #ifdef VAR_MPI
@@ -219,7 +217,6 @@ logical,intent(in) :: SameCmat
 !> absolute valued Overlap matrix
 REAL(REALK),intent(inout) :: ABSVALOVERLAP(NMO1,NMO2)
 !
-#ifdef MOD_UNRELEASED
 LOGICAL          :: USE_MPI
 REAL(REALK)      :: DFTHRI
 USE_MPI = SETTING%SCHEME%doMPI
@@ -245,7 +242,6 @@ IF(USE_MPI)THEN
    CALL lsmpi_reduction(ABSVALOVERLAP,NMO1,NMO2,infpar%master,setting%comm)
 ENDIF
 !=============================================================
-#endif
 #endif
 END SUBROUTINE II_DFT_ABSVAL_OVERLAP
 

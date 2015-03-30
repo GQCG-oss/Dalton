@@ -11,6 +11,7 @@ implicit none
 TYPE(INTEGRALOUTPUT) :: IntOut
 NULLIFY(IntOut%resultTensor)
 NULLIFY(IntOut%ResultMat)
+NULLIFY(IntOut%Result3D)
 NULLIFY(IntOut%screenTensor)
 NULLIFY(IntOut%postprocess)
 NULLIFY(IntOut%IBUF)
@@ -19,12 +20,16 @@ NULLIFY(IntOut%NBUF)
 IntOut%decpacked = .FALSE.
 IntOut%decpacked2 = .FALSE.
 IntOut%decpackedK = .FALSE.
+IntOut%FullAlphaCD = .FALSE.
 IntOut%exchangefactor = 0E0_realk
 IntOut%ndim(1) = 0
 IntOut%ndim(2) = 0
 IntOut%ndim(3) = 0
 IntOut%ndim(4) = 0
 IntOut%ndim(5) = 0
+IntOut%ndim3D(1) = 0
+IntOut%ndim3D(2) = 0
+IntOut%ndim3D(3) = 0
 IntOut%memdistResultTensor = .FALSE.
 IntOut%doGRAD = .FALSE.
 IntOut%RealGabMatrix = .FALSE.
@@ -48,6 +53,7 @@ NULLIFY(IntOut%resultTensor)
 IntOut%decpacked = .FALSE.
 IntOut%decpacked2 = .FALSE.
 IntOut%decpackedK = .FALSE.
+IntOut%FullAlphaCD = .FALSE.
 call mem_alloc(IntOut%postprocess,dim5)
 IntOut%postprocess = 0
 call initIntegralOutputDims1(IntOut,dim1,dim2,dim3,dim4,dim5)
@@ -72,6 +78,7 @@ INTEGER              :: dim1,dim2,dim3,dim4,dim5
 IntOut%decpacked = .FALSE.
 IntOut%decpacked2 = .FALSE.
 IntOut%decpackedK = .FALSE.
+IntOut%FullAlphaCD = .FALSE.
 IntOut%exchangefactor = 0E0_realk
 IntOut%ndim(1) = dim1
 IntOut%ndim(2) = dim2
