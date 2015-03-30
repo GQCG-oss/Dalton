@@ -93,7 +93,7 @@ contains
     ! **********
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     naux   = MyMolecule%nauxbasis
     nAtoms = MyMolecule%nAtoms
 

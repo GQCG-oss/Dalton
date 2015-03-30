@@ -5388,7 +5388,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
     ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
     nocc = MyFragment%noccAOS
-    nvir = MyFragment%nunoccAOS 
+    nvir = MyFragment%nvirtAOS 
     bs   = get_split_scheme_0(MyFragment%nbasis)
 
     ! For MO-CCSD part
@@ -6284,7 +6284,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Dimensions
     nbasis = MyMolecule%nbasis
     nocc = MyMolecule%nocc
-    nvirt = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     bo(1) = nbasis
     bo(2) = nocc
     bv(1) = nbasis
@@ -6325,7 +6325,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! **********
     nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS
-    nvirt = MyFragment%nunoccAOS
+    nvirt = MyFragment%nvirtAOS
     bo(1) = nbasis
     bo(2) = nocc
     bv(1) = nbasis

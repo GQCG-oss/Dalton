@@ -615,8 +615,8 @@ module f12_routines_module
     integer :: noccEOS
     !> Number of occupied orbitals MO in AOS space
     integer :: noccAOS
-    !> Number of unoccupied (virtual) orbitals MO in EOS space
-    integer :: nunoccEOS
+    !> Number of virtupied (virtual) orbitals MO in EOS space
+    integer :: nvirtEOS
     !> Number of occupied + virtual MO in AOS space 
     integer :: nocvAOS
     !> Number of CABS AO orbitals
@@ -657,9 +657,9 @@ module f12_routines_module
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
     noccAOS  =  MyFragment%noccAOS
-    nunoccEOS = MyFragment%nunoccEOS
-    nvirtAOS = MyFragment%nunoccAOS
-    nocvAOS =   MyFragment%noccAOS + MyFragment%nunoccAOS
+    nvirtEOS = MyFragment%nvirtEOS
+    nvirtAOS = MyFragment%nvirtAOS
+    nocvAOS =   MyFragment%noccAOS + MyFragment%nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
 
@@ -1157,8 +1157,8 @@ module f12_routines_module
     integer :: noccEOS
     !> Number of occupied orbitals MO in AOS space
     integer :: noccAOS
-    !> Number of unoccupied (virtual) orbitals MO in EOS space
-    integer :: nunoccEOS
+    !> Number of virtupied (virtual) orbitals MO in EOS space
+    integer :: nvirtEOS
     !> Number of occupied + virtual MO in AOS space 
     integer :: nocvAOS
     !> Number of CABS AO orbitals
@@ -1199,9 +1199,9 @@ module f12_routines_module
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
     noccAOS  =  MyFragment%noccAOS
-    nunoccEOS = MyFragment%nunoccEOS
-    nvirtAOS = MyFragment%nunoccAOS
-    nocvAOS =   MyFragment%noccAOS + MyFragment%nunoccAOS
+    nvirtEOS = MyFragment%nvirtEOS
+    nvirtAOS = MyFragment%nvirtAOS
+    nocvAOS =   MyFragment%noccAOS + MyFragment%nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
 
@@ -2256,7 +2256,7 @@ module f12_routines_module
 !!$    ! **********
 !!$    nbasis = MyMolecule%nbasis
 !!$    nocc   = MyMolecule%nocc
-!!$    nvirt  = MyMolecule%nunocc
+!!$    nvirt  = MyMolecule%nvirt
 !!$    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
 !!$    noccfull = nocc
 !!$
@@ -2322,7 +2322,7 @@ module f12_routines_module
     ! **********
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
     

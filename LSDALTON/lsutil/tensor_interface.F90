@@ -1153,7 +1153,7 @@ contains
 
     ! Number of occ and virt orbitals on central atom in fragment
     nocc  = MyFragment%noccEOS
-    nvirt = MyFragment%nunoccEOS
+    nvirt = MyFragment%nvirtEOS
 
     ! Extract virtual EOS indices and leave occupied indices untouched
     ! ****************************************************************
@@ -1488,7 +1488,7 @@ contains
 
      ! Initialize stuff
      ! ****************
-     nEOS     = myfragment%nunoccEOS
+     nEOS     = myfragment%nvirtEOS
      EOS_idx  => myFragment%idxu(1:nEOS)
      new_dims = [nEOS,nocc,nvirt,nocc]  ! nEOS=Number of virtual EOS orbitals
 

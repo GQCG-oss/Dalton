@@ -164,7 +164,7 @@ contains
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     naux   = MyMolecule%nauxbasis
     !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
     !with MyMolecule%nocc = Core + Valence 

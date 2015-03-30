@@ -46,11 +46,11 @@ contains
     implicit none
     integer :: job,i
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
-    integer :: nunocc,nocc,siz,nfrags
+    integer :: nvirt,nocc,siz,nfrags
     type(lsitem) :: MyLsitem
     type(decfrag),pointer :: AtomicFragments(:),EstAtomicFragments(:)
     type(fullmolecule) :: MyMolecule
-    type(decorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
+    type(decorbital),pointer :: OccOrbitals(:), virtOrbitals(:)
     logical,pointer :: dofrag(:)
     type(joblist) :: jobs
     integer :: groups,signal,step
@@ -75,25 +75,25 @@ contains
     ! ***********************************
 
     ! Get very basic dimension information from main master
-    call mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nunocc,master)
+    call mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nvirt,master)
 
     ! Allocate arrays needed for fragment calculations
     call mem_alloc(OccOrbitals,nocc)
-    call mem_alloc(UnoccOrbitals,nunocc)
+    call mem_alloc(virtOrbitals,nvirt)
 
     ! Get remaining full molecular information needed for all fragment calculations
-    call mpi_dec_fullinfo_master_to_slaves(nocc,nunocc,&
-         & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
+    call mpi_dec_fullinfo_master_to_slaves(nocc,nvirt,&
+         & OccOrbitals, virtOrbitals, MyMolecule, MyLsitem)
     nfrags=MyMolecule%nfrags
 
     ! Get list of which atoms have orbitals assigned
     call mem_alloc(dofrag,nfrags)
-    call which_fragments_to_consider(MyMolecule%ncore,nocc,nunocc,&
-         & nfrags,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
+    call which_fragments_to_consider(MyMolecule%ncore,nocc,nvirt,&
+         & nfrags,OccOrbitals,virtOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     IF(DECinfo%StressTest)THEN
-     call StressTest_mod_dofrag(MyMolecule%nfrags,nocc,nunocc,MyMolecule%ncore,&
-          & MyMolecule%DistanceTable,OccOrbitals,UnoccOrbitals,dofrag,mylsitem)
+     call StressTest_mod_dofrag(MyMolecule%nfrags,nocc,nvirt,MyMolecule%ncore,&
+          & MyMolecule%DistanceTable,OccOrbitals,virtOrbitals,dofrag,mylsitem)
     ENDIF
 
     ! Internal control of first order property keywords
@@ -215,12 +215,12 @@ contains
        ! ======================================================
        if(step==1 .and. esti) then
           ! Calculate estimated pair fragment energies
-          call fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
-               & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,&
+          call fragments_slave(nfrags,nocc,nvirt,OccOrbitals,&
+               & virtOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,&
                & EstAtomicFragments=EstAtomicFragments)
        else
-          call fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
-               & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
+          call fragments_slave(nfrags,nocc,nvirt,OccOrbitals,&
+               & virtOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
        end if
 
        ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
@@ -264,11 +264,11 @@ contains
     do i=1,nOcc
        call orbital_free(OccOrbitals(i))
     end do
-    do i=1,nUnocc
-       call orbital_free(UnoccOrbitals(i))
+    do i=1,nvirt
+       call orbital_free(virtOrbitals(i))
     end do
     call mem_dealloc(OccOrbitals)
-    call mem_dealloc(UnoccOrbitals)
+    call mem_dealloc(virtOrbitals)
     call mem_dealloc(dofrag)
     call ls_free(MyLsitem)
     call molecule_finalize(MyMolecule)
@@ -281,8 +281,8 @@ contains
 !> for those  fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-  subroutine fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
-       & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,EstAtomicFragments)
+  subroutine fragments_slave(nfrags,nocc,nvirt,OccOrbitals,&
+       & virtOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,EstAtomicFragments)
 
     implicit none
 
@@ -290,12 +290,12 @@ contains
     integer,intent(in) :: nfrags
     !> Number of occupied orbitals in the molecule
     integer,intent(in) :: nocc
-    !> Number of unoccupied orbitals in the molecule
-    integer,intent(in) :: nunocc
+    !> Number of virtupied orbitals in the molecule
+    integer,intent(in) :: nvirt
     !> Occupied orbitals, DEC format
     type(decorbital),intent(in) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals, DEC format
-    type(decorbital),intent(in) :: UnoccOrbitals(nunocc)
+    !> virtupied orbitals, DEC format
+    type(decorbital),intent(in) :: virtOrbitals(nvirt)
     !> Full molecular info (not changed at output)
     type(fullmolecule),intent(inout) :: MyMolecule
     !> LS item structure
@@ -422,12 +422,12 @@ contains
           if(atomA==atomB) then ! single fragment
              FragoptCheck2: if(.not. jobs%dofragopt(job)) then
                 ! Init basis for fragment
-                call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                     & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
+                call atomic_fragment_init_basis_part(nvirt, nocc, OccOrbitals,&
+                     & virtOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
                 call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
                 no = AtomicFragments(atomA)%noccAOS
-                nv = AtomicFragments(atomA)%nunoccAOS
+                nv = AtomicFragments(atomA)%nvirtAOS
                 mymodel = AtomicFragments(atomA)%ccmodel
   
              else
@@ -442,16 +442,16 @@ contains
              if(jobs%esti(job)) then
                 ! Estimated pair fragment
                 call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
-                     & nunocc, nocc, nfrags,OccOrbitals,UnoccOrbitals, &
+                     & nvirt, nocc, nfrags,OccOrbitals,virtOrbitals, &
                      & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
              else
                 call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                     & nunocc, nocc, nfrags,OccOrbitals,UnoccOrbitals, &
+                     & nvirt, nocc, nfrags,OccOrbitals,virtOrbitals, &
                      & MyMolecule,mylsitem,.true.,PairFragment)
              end if
              call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
              no = PairFragment%noccAOS
-             nv = PairFragment%nunoccAOS
+             nv = PairFragment%nvirtAOS
              mymodel = PairFragment%ccmodel
 
           end if
@@ -517,7 +517,7 @@ contains
 
              ! Fragment optimization
              call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nfrags, &
-                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, MyMolecule,mylsitem,.true.)
+                & OccOrbitals,nOcc,virtOrbitals,nvirt, MyMolecule,mylsitem,.true.)
 
 
              flops_slaves = MyFragment%flops_slaves
@@ -535,10 +535,10 @@ contains
              SingleOrPair: if( atomA == atomB ) then ! single  fragment
                 write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Slave ',infpar%mynum,'will do job: ', &
                    &job, ' of size ', jobs%jobsize(job),&
-                   &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nunoccAOS,&
+                   &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nvirtAOS,&
                    &' #b',AtomicFragments(atomA)%nbasis,' single fragment: ', atomA
 
-                call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+                call atomic_driver(MyMolecule,mylsitem,OccOrbitals,virtOrbitals,&
                    & AtomicFragments(atomA),grad=grad)
 
                 flops_slaves = AtomicFragments(atomA)%flops_slaves
@@ -560,7 +560,7 @@ contains
 
                    write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
-                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nvirtAOS,&
                       &' #b',PairFragment%nbasis,' pair   estimate: ', atomA,atomB
                 else
                    ! Pair fragment according to FOT precision
@@ -569,7 +569,7 @@ contains
 
                    write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
-                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nvirtAOS,&
                       &' #b',PairFragment%nbasis,' pair   fragment: ', atomA,atomB
 
                 end if

@@ -351,7 +351,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    type(tensor) :: m1_final, m2_final
    integer :: natoms,nfrags,ncore,nocc_tot,p,pdx,i
    type(decorbital), pointer :: occ_orbitals(:)
-   type(decorbital), pointer :: unocc_orbitals(:)
+   type(decorbital), pointer :: virt_orbitals(:)
    logical, pointer :: orbitals_assigned(:)
    logical :: local,print_frags,abc
    ! Fragment and total energies as listed in decfrag type def "energies"
@@ -516,13 +516,13 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
       ! as we want to  print out fragment and pair interaction fourth-order energy contributions,
       ! then for locality analysis purposes we need occ_orbitals and
-      ! unocc_orbitals (adapted from fragment_energy.f90)
+      ! virt_orbitals (adapted from fragment_energy.f90)
    
       ! -- Analyze basis and create orbitals
       call mem_alloc(occ_orbitals,nocc_tot)
-      call mem_alloc(unocc_orbitals,nvirt)
+      call mem_alloc(virt_orbitals,nvirt)
       call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
-         & occ_orbitals,unocc_orbitals)
+         & occ_orbitals,virt_orbitals)
    
       ! Orbital assignment
       call mem_alloc(orbitals_assigned,nfrags)
@@ -534,7 +534,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          end do
       else if (DECinfo%onlyvirtpart) then
          do p=1,nvirt
-            pdx = unocc_orbitals(p)%centralatom
+            pdx = virt_orbitals(p)%centralatom
             orbitals_assigned(pdx) = .true.
          end do
       else
@@ -543,7 +543,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             orbitals_assigned(pdx) = .true.
          end do
          do p=1,nvirt
-            pdx = unocc_orbitals(p)%centralatom
+            pdx = virt_orbitals(p)%centralatom
             orbitals_assigned(pdx) = .true.
          end do
       end if
@@ -565,11 +565,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
       if (DECinfo%DECNP) then
          call solver_decnp_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
-            & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o), &
+            & VOVO_local,occ_orbitals,virt_orbitals,FragEnergies(:,:,cc_sol_o), &
             & FragEnergies(:,:,cc_sol_v),FragEnergies_tmp)
       else
          call solver_energy_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
-            & VOVO_local,occ_orbitals,unocc_orbitals,FragEnergies(:,:,cc_sol_o), &
+            & VOVO_local,occ_orbitals,virt_orbitals,FragEnergies(:,:,cc_sol_o), &
             & FragEnergies(:,:,cc_sol_v),FragEnergies_tmp)
       end if
 
@@ -578,20 +578,20 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          if (DECinfo%DECNP) then
             ! now we calculate fourth-order and fifth-order energies
             call ccsdpt_decnp_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
-               & unocc_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
+               & virt_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
                & FragEnergies_tmp,ccenergies(pT_4_o))
 
             call ccsdpt_decnp_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
-               & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
+               & occ_orbitals,virt_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
                & ccenergies(pT_5_o))
          else
             ! now we calculate fourth-order and fifth-order energies
             call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
-               & unocc_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
+               & virt_orbitals,FragEnergies(:,:,pT_4_o),FragEnergies(:,:,pT_4_v), &
                & FragEnergies_tmp,ccenergies(pT_4_o))
 
             call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
-               & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
+               & occ_orbitals,virt_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
                & ccenergies(pT_5_o))
          end if
    
@@ -613,9 +613,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call mem_dealloc(occ_orbitals)
    
       do i=1,nvirt
-         call orbital_free(unocc_orbitals(i))
+         call orbital_free(virt_orbitals(i))
       end do
-      call mem_dealloc(unocc_orbitals)
+      call mem_dealloc(virt_orbitals)
       call mem_dealloc(orbitals_assigned)
    
       ! release stuff
@@ -886,14 +886,14 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
    ! singles effects.
    ! In this case the fragment t1 amplitudes are stored in MyFragment%t1
    if(MyFragment%t1_stored) then
-      dims(1) = MyFragment%nunoccAOS
+      dims(1) = MyFragment%nvirtAOS
       dims(2) = MyFragment%noccAOS
       call tensor_init(t1,dims,2)
       call tensor_convert(MyFragment%t1,t1)
    end if
 
    call ccsolver_job(myfragment%ccmodel,myfragment%Co,myfragment%Cv,myfragment%fock,myfragment%nbasis,myfragment%noccAOS,&
-      & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,myfragment%ppfock,myfragment%qqfock,ccenergy,&
+      & myfragment%nvirtAOS,myfragment%mylsitem,DECinfo%PL,myfragment%ppfock,myfragment%qqfock,ccenergy,&
       & VOVO,myfragment%t1_stored,local,t1,t2,m1f=m1,m2f=m2,frag=MyFragment)
 
 
@@ -948,7 +948,7 @@ subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
    !end if
 
    nb    = frag%nbasis
-   nv    = frag%nunoccAOS
+   nv    = frag%nvirtAOS
    no    = frag%noccAOS
    Ncore = frag%ncore
 
@@ -1008,7 +1008,7 @@ subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
    !end if
 
    nb    = mol%nbasis
-   nv    = mol%nunocc
+   nv    = mol%nvirt
    Ncore = mol%ncore
 
    if(DECinfo%frozencore) then
@@ -1065,11 +1065,11 @@ end subroutine mp2_solver_mol
 !   implicit none
 !   !> Number of occupied orbitals (dimension of ppfock)
 !   integer, intent(in) :: nocc
-!   !> Number of unoccupied orbitals (dimension of qqfock)
+!   !> Number of virtupied orbitals (dimension of qqfock)
 !   integer, intent(in) :: nvirt
 !   !> Occupied-occupied block of Fock matrix
 !   real(realk) :: ppfock(nocc,nocc)
-!   !> Unoccupied-unoccupied block of Fock matrix
+!   !> virtupied-virtupied block of Fock matrix
 !   real(realk) :: qqfock(nvirt,nvirt)
 !   !> RHS array
 !   type(array4), intent(in) :: RHS
@@ -1104,7 +1104,7 @@ end subroutine mp2_solver_mol
 !   ! Check that nvirt /= 0.
 !   if(nvirt<1 .or. nocc<1) then
 !      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
-!      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
+!      write(DECinfo%output,*) 'Number of virtupied orbitals = ', nvirt
 !      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
 !   endif
 !
@@ -1346,11 +1346,11 @@ end subroutine mp2_solver_mol
 !   implicit none
 !   !> Number of occupied orbitals (dimension of ppfock)
 !   integer, intent(in) :: nocc
-!   !> Number of unoccupied orbitals (dimension of qqfock)
+!   !> Number of virtupied orbitals (dimension of qqfock)
 !   integer, intent(in) :: nvirt
 !   !> Occupied-occupied block of Fock matrix
 !   real(realk) :: ppfock(nocc,nocc)
-!   !> Unoccupied-unoccupied block of Fock matrix
+!   !> virtupied-virtupied block of Fock matrix
 !   real(realk) :: qqfock(nvirt,nvirt)
 !   !> RHS array, storing type 1 (see array4_init_file)
 !   type(array4), intent(in) :: RHS
@@ -1387,7 +1387,7 @@ end subroutine mp2_solver_mol
 !   ! Check that nvirt /= 0.
 !   if(nvirt<1 .or. nocc<1) then
 !      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
-!      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
+!      write(DECinfo%output,*) 'Number of virtupied orbitals = ', nvirt
 !      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
 !   endif
 !

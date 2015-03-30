@@ -137,7 +137,7 @@ contains
     ! **********
     nbasis = MyMolecule%nbasis
     nb = nbasis
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
     !with MyMolecule%nocc = Valence + Core 
     !In case of Frozen core we only need Valence and will access
@@ -1415,7 +1415,7 @@ contains
        nocc   = MyMolecule%nocc
        offset = 0
     ENDIF
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     nAtoms = MyMolecule%nAtoms
     LUPRI = DECinfo%output
 
@@ -2444,9 +2444,9 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Canonical MP2 correlation energy
     real(realk),intent(inout) :: Ecorr
-    real(realk),pointer :: Cocc(:,:), Cunocc(:,:)
+    real(realk),pointer :: Cocc(:,:), Cvirt(:,:)
     type(array4) :: g
-    integer :: nbasis,i,j,a,b,ncore,offset,nocc,nunocc
+    integer :: nbasis,i,j,a,b,ncore,offset,nocc,nvirt
     real(realk) :: eps
     real(realk), pointer :: ppfock(:,:)
 
@@ -2467,7 +2467,7 @@ contains
        nocc = MyMolecule%nocc
     end if
 
-    nunocc = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     ncore = MyMolecule%ncore
     nbasis=MyMolecule%nbasis
     call mem_alloc(ppfock,nocc,nocc)
@@ -2492,22 +2492,22 @@ contains
        ppfock = MyMolecule%ppfock
        offset=0
     end if
-    call mem_alloc(Cunocc,nbasis,nunocc)
-    Cunocc = MyMolecule%Cv
+    call mem_alloc(Cvirt,nbasis,nvirt)
+    Cvirt = MyMolecule%Cv
 
     ! Get (AI|BJ) integrals stored in the order (A,I,B,J)
     ! ***************************************************
-    call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cunocc,Cocc,g)
+    call get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,g)
     call mem_dealloc(Cocc)
-    call mem_dealloc(Cunocc)
+    call mem_dealloc(Cvirt)
 
     ! Calculate canonical MP2 energy
     ! ******************************
     Ecorr = 0.0_realk
     do J=1,nocc
-       do B=1,nunocc
+       do B=1,nvirt
           do I=1,nocc
-             do A=1,nunocc
+             do A=1,nvirt
                 ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
                 eps = MyMolecule%ppfock(I+offset,I+offset) + MyMolecule%ppfock(J+offset,J+offset) &
                      & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)

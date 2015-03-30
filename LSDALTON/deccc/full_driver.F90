@@ -146,7 +146,7 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Correlation energy
     real(realk),intent(inout) :: Ecorr
-    integer :: nocc,nunocc,nbasis,print_level,i,j
+    integer :: nocc,nvirt,nbasis,print_level,i,j
     logical :: fragment_job
     real(realk),pointer :: ppfock_fc(:,:), Co_fc(:,:)
 
@@ -157,7 +157,7 @@ contains
     else
        nocc = MyMolecule%nocc
     end if
-    nunocc = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
 
     fragment_job = .false.
@@ -180,7 +180,7 @@ contains
           end do
        end do
 
-       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
           & mylsitem,print_level,fragment_job,Co_fc=Co_fc,ppfock_fc=ppfock_fc)
 
        call mem_dealloc(ppfock_fc)
@@ -192,14 +192,14 @@ contains
 #ifdef MOD_UNRELEASED
        if(DECinfo%CCSDmultipliers)then
           call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
+             & MyMolecule%fock, nbasis,nocc,nvirt,mylsitem, &
              & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
        else
-          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
              & mylsitem,print_level,fragment_job)
        endif
 #else
-       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
              & mylsitem,print_level,fragment_job)
 #endif
 
@@ -358,7 +358,7 @@ contains
     ! **********
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
 
@@ -1248,7 +1248,7 @@ contains
 
     ! Init dimensions
     nocc = MyMolecule%nocc
-    nvirt = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
     noccfull = nocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
@@ -1821,7 +1821,7 @@ contains
     type(tensor),intent(inout) :: Tai_local
     !> Doubles amplitudes
     type(tensor),intent(inout) :: Taibj_local
-    integer :: nocc,nunocc,nbasis,print_level,save_model,startidx,endidx,i,j
+    integer :: nocc,nvirt,nbasis,print_level,save_model,startidx,endidx,i,j
     logical :: fragment_job
     real(realk) :: energy
     type(tensor) :: VOVO,Tai,Taibj
@@ -1842,7 +1842,7 @@ contains
     else
        nocc = MyMolecule%nocc
     end if
-    nunocc = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
 
     fragment_job = .false.
@@ -1863,7 +1863,7 @@ contains
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%nocc
        call ccsolver(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
-            & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
+            & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nvirt,mylsitem,&
             & print_level,energy,&
             & VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
        call mem_dealloc(ppfock)
@@ -1871,7 +1871,7 @@ contains
     else
 
        call ccsolver(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-            & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
+            & MyMolecule%fock, nbasis,nocc,nvirt,mylsitem, print_level, &
             & energy,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
 
     end if
@@ -1880,9 +1880,9 @@ contains
 
     !convert the parallel distributed quantities to local quantities, this is
     !essentially a copying if the tensors are not parallel distributed
-    call tensor_minit(Tai_local,[nunocc,nocc],2,atype="LDAR")
+    call tensor_minit(Tai_local,[nvirt,nocc],2,atype="LDAR")
     call tensor_add(Tai_local,1.0E0_realk,Tai,a=0.0E0_realk)
-    call tensor_minit(Taibj_local,[nunocc,nocc,nunocc,nocc],4,atype="LDAR")
+    call tensor_minit(Taibj_local,[nvirt,nocc,nvirt,nocc],4,atype="LDAR")
     call tensor_add(Taibj_local,1.0E0_realk,Taibj,a=0.0E0_realk)
 
     call tensor_free(Taibj)

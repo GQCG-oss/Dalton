@@ -233,9 +233,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   natoms = MyFragment%natoms
   nbasis = MyFragment%nbasis
   nocc = MyFragment%noccAOS        ! occupied AOS (only valence for frozen core)
-  nvirt = MyFragment%nunoccAOS     ! virtual AOS
+  nvirt = MyFragment%nvirtAOS     ! virtual AOS
   noccEOS = MyFragment%noccEOS     ! occupied EOS
-  nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
+  nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
   call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%SETTING,MinAuxBatch,'D')

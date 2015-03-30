@@ -219,7 +219,7 @@ contains
     end if
 
     molecule%nocc = molecule%nelectrons/2
-    molecule%nunocc = molecule%nMO - molecule%nocc
+    molecule%nvirt = molecule%nMO - molecule%nocc
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%nocc - molecule%ncore
     molecule%nCabsAO = 0
@@ -269,7 +269,7 @@ contains
        write(DECinfo%output,'(a,i6)')   'SUB: Number of core orbitals    : ',molecule%ncore
        write(DECinfo%output,'(a,i6)')   'SUB: Number of valence orbitals : ',molecule%nval
        write(DECinfo%output,'(a,i6)')   'SUB: Number of occ. orbitals    : ',molecule%nocc
-       write(DECinfo%output,'(a,i6)')   'SUB: Number of virt. orbitals   : ',molecule%nunocc
+       write(DECinfo%output,'(a,i6)')   'SUB: Number of virt. orbitals   : ',molecule%nvirt
 
     else      ! full molecule
 
@@ -282,7 +282,7 @@ contains
        write(DECinfo%output,'(a,i6)')   'FULL: Number of core orbitals    : ',molecule%ncore
        write(DECinfo%output,'(a,i6)')   'FULL: Number of valence orbitals : ',molecule%nval
        write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%nocc
-       write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%nunocc
+       write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%nvirt
 
     end if
     write(DECinfo%output,*)
@@ -352,7 +352,7 @@ contains
        tmp(1:nbasis,i) = Molecule%Co(1:nbasis,i)
     end do
     ! Put virt orbitals into tmp
-    do i=1,Molecule%nunocc
+    do i=1,Molecule%nvirt
        tmp(1:nbasis,i+Molecule%nocc) = Molecule%Cv(1:nbasis,i)
     end do
     
@@ -485,7 +485,7 @@ contains
     type(fullmolecule), intent(inout) :: molecule
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
-    integer :: nbasis,i,nocc,nunocc
+    integer :: nbasis,i,nocc,nvirt
     real(realk), pointer :: eival(:), C(:,:), S(:,:)
 
     if(DECinfo%noaofock) then
@@ -494,7 +494,7 @@ contains
 
     nbasis = molecule%nbasis
     nocc = molecule%nocc
-    nunocc = molecule%nunocc
+    nvirt = molecule%nvirt
 
     ! AO overlap
     call mem_alloc(S,nbasis,nbasis)
@@ -512,7 +512,7 @@ contains
 
     ! Set MO coefficients
     Molecule%Co = C(:,1:nocc)   ! occupied 
-    Molecule%Cv = C(:,nocc+1:nbasis)   ! unoccupied
+    Molecule%Cv = C(:,nocc+1:nbasis)   ! virtupied
 
     ! Set Fock matrix in canonical MO basis 
     Molecule%ppfock=0.0_realk
@@ -520,7 +520,7 @@ contains
     do i=1,nocc
        molecule%ppfock(i,i) = eival(i)
     end do
-    do i=1,nunocc
+    do i=1,nvirt
        molecule%qqfock(i,i) = eival(i+nocc)
     end do
 
@@ -580,10 +580,10 @@ contains
     type(lsitem), intent(inout) :: mylsitem
 
     if(DECinfo%use_abs_overlap)then
-       call mem_alloc(molecule%ov_abs_overlap,molecule%nocc,molecule%nunocc)
+       call mem_alloc(molecule%ov_abs_overlap,molecule%nocc,molecule%nvirt)
        molecule%ov_abs_overlap=0.0E0_realk
        call II_get_AbsoluteValue_overlap(DECinfo%output,6,Mylsitem%SETTING,molecule%nbasis,&
-          &molecule%nocc,molecule%nunocc,molecule%Co,molecule%Cv,molecule%ov_abs_overlap)
+          &molecule%nocc,molecule%nvirt,molecule%Co,molecule%Cv,molecule%ov_abs_overlap)
     endif
 
  end subroutine molecule_init_abs_overlap
@@ -604,7 +604,7 @@ contains
     ! Init stuff
     nbasis = molecule%nbasis
     nocc = molecule%nocc
-    nvirt = molecule%nunocc
+    nvirt = molecule%nvirt
     natoms = molecule%natoms
 
 !    inquire(file='carmommatrix',exist=carmom_exist)
@@ -999,7 +999,7 @@ contains
 
     nbasis = molecule%nbasis
     nocc = molecule%nocc
-    nvirt = molecule%nunocc
+    nvirt = molecule%nvirt
     call mem_alloc(molecule%Co,nbasis,nocc)
     call mem_alloc(molecule%Cv,nbasis,nvirt)
 
@@ -1022,7 +1022,7 @@ contains
 
   end subroutine molecule_generate_basis
 
-  !> \brief Get full molecular Fock matrix in MO basis (occupied and unoccupied)
+  !> \brief Get full molecular Fock matrix in MO basis (occupied and virtupied)
   !> \param molecule Full molecule info
   subroutine molecule_mo_fock(molecule)
 
@@ -1031,7 +1031,7 @@ contains
     integer :: nocc, nvirt,nbasis
 
     nocc = molecule%nocc
-    nvirt = molecule%nunocc
+    nvirt = molecule%nvirt
     nbasis = molecule%nbasis
 
     ! Occ-occ Fock matrix
@@ -1057,7 +1057,7 @@ contains
     
     nbasis   = MyMolecule%nbasis
     nocc     = MyMolecule%nocc
-    nvirt    = MyMolecule%nunocc
+    nvirt    = MyMolecule%nvirt
     noccfull = nocc
 
 !HACK we do call Fcp for Fcp - indicating 
@@ -1142,7 +1142,7 @@ contains
     ! Number of occupied (O), Virtual (V), atomic basis functions (A)
     ! ***************************************************************
     O = MyMolecule%nocc
-    V = MyMolecule%nunocc
+    V = MyMolecule%nvirt
     A = MyMolecule%nbasis
 
 
@@ -1272,14 +1272,14 @@ contains
 !!$    call mat_free(AOint_mat)
 !!$
 !!$    ! Init interaction matrix: Occupied,virtual dimension
-!!$    call mem_alloc(molecule%orbint,molecule%nocc,molecule%nunocc)
+!!$    call mem_alloc(molecule%orbint,molecule%nocc,molecule%nvirt)
 !!$
 !!$    ! Transform to MO basis
-!!$    call dec_diff_basis_transform1(molecule%nbasis,molecule%nocc,molecule%nunocc,&
+!!$    call dec_diff_basis_transform1(molecule%nbasis,molecule%nocc,molecule%nvirt,&
 !!$         & molecule%Co, molecule%Cv, AOint, molecule%orbint)
 !!$
 !!$    ! Take absolute value (should not be necessary but do it to be on the safe side)
-!!$    do j=1,molecule%nunocc
+!!$    do j=1,molecule%nvirt
 !!$       do i=1,molecule%nocc
 !!$          molecule%orbint(i,j) = abs(molecule%orbint(i,j))
 !!$       end do
