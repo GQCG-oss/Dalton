@@ -638,6 +638,8 @@ DO
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
+      config%integral%PreCalcDFscreening =  config%doRIMP2
+      config%integral%PreCalcF12screening =  config%doF12
    END IF DECInput
 
    ! Input for full molecular CC calculation
@@ -646,6 +648,8 @@ DO
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
+      config%integral%PreCalcDFscreening =  config%doRIMP2
+      config%integral%PreCalcF12screening =  config%doF12
    END IF CCinput
 
 

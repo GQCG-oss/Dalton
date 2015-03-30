@@ -710,6 +710,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ThermiteDistributeDEC.F90
     LSDALTON/LSint/ThermiteDriver.F90
     LSDALTON/LSint/ThermiteIntegrals.F90
+    LSDALTON/LSint/ThermiteIntTransform.F90
     LSDALTON/LSint/ThermiteOverlapDistribution.F90
     LSDALTON/LSint/ThermiteProp.F90
     LSDALTON/LSint/ThermiteMem.F90
