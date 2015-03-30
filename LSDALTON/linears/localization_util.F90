@@ -14,39 +14,39 @@ use matrix_util, only: matrix_exponential
 use memory_handling, only: mem_alloc,mem_dealloc
 contains
 
-function idmax(n,vec)
- implicit none
- integer :: idmax
- integer, intent(in) :: n
- real(realk), intent(in) :: vec(n)
- real(realk)         :: mxvec
- integer             :: i
+  function idmax(n,vec)
+    implicit none
+    integer :: idmax
+    integer, intent(in) :: n
+    real(realk), intent(in) :: vec(n)
+    real(realk)         :: mxvec
+    integer             :: i
 
- mxvec=vec(1); idmax=1
- do i=2,n
-    if(vec(i).gt.mxvec) then
-       mxvec=vec(i)
-       idmax=i
-    endif
- enddo
+    mxvec=vec(1); idmax=1
+    do i=2,n
+       if(vec(i).gt.mxvec) then
+          mxvec=vec(i)
+          idmax=i
+       endif
+    enddo
 
- return
-endfunction
+    return
+  endfunction idmax
 
 
-subroutine updatecmo(CMO,X)
-implicit none
-type(Matrix), intent(inout) :: CMO
-type(Matrix), intent(in)    :: X
+  subroutine updatecmo(CMO,X)
+    implicit none
+    type(Matrix), intent(inout) :: CMO
+    type(Matrix), intent(in)    :: X
 
-integer    ::  norb,nbas
-type(Matrix) :: expX, tmp
+    integer    ::  norb,nbas
+    type(Matrix) :: expX, tmp
 
     norb=CMO%ncol
     nbas=CMO%nrow
 
     call mat_init(expX,norb,norb)
- 
+
     call matrix_exponential(X,expX,1E-12_realk)
 
     call mat_init(tmp,nbas,norb)
@@ -59,7 +59,7 @@ type(Matrix) :: expX, tmp
 
     call mat_free(tmp)
 
-end subroutine updatecmo
+  end subroutine updatecmo
 
 
 end module loc_utils
