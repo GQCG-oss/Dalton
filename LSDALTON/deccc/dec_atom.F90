@@ -3588,8 +3588,8 @@ contains
     ! Write minimum (but necessary) fragment info by appending to existing file
     ! *************************************************************************
 
-    ! Init stuff. Yes, I know this hardcored funit is not pretty, but I need to circumvent lsopen...
-    funit = 99
+    ! Init stuff
+    funit = -1
     FileName='atomicfragments.info'
 
     inquire(file=FileName,exist=file_exist)
@@ -3598,15 +3598,14 @@ contains
     ! Also - always open new file if file does not already exist
     if(  ( first_entry .and. (.not. DECinfo%DECrestart) ) &
          & .or. (.not. file_exist)   ) then
-       open(funit,FILE=FileName,STATUS='REPLACE',FORM='UNFORMATTED')
+       call lsopen(funit,FileName,'REPLACE','UNFORMATTED')
     else
-       ! Need to open without lsopen to be able to append to end of file
-       open(funit,FILE=FileName,STATUS='OLD',FORM='UNFORMATTED',POSITION='APPEND')
+       call lsopen(funit,FileName,'OLD','UNFORMATTED',POSIN='APPEND')
     end if
 
     ! Write fragment data to file
     call fragment_write_data(funit,fragment)
-    close(funit,STATUS='KEEP')
+    call lsclose(funit,'KEEP')
 
     first_entry=.false.
 
@@ -3763,8 +3762,9 @@ contains
     do i=1,ndone
 
        ! Atom index for the i'th fragment in atomicfragments.info
+       ! Note that MyAtom can therefore not be read again in fragment_read_data
+       ! Don't use the backspace function, it does not work with stream files !!
        call read_64bit_to_int(funit,MyAtom)
-       backspace(funit)  ! Go one step in file again to read properly in fragment_read_data
 
        ! Sanity check
        ! ------------
@@ -3797,7 +3797,7 @@ contains
           call atomic_fragment_init_f12(fragments(MyAtom),MyMolecule)
        endif
     
-       call fragment_read_data(funit,fragments(MyAtom),&
+       call fragment_read_data(funit,fragments(MyAtom),MyAtom, &
             & OccOrbitals,UnoccOrbitals,MyMolecule,Mylsitem,DoBasis)
 
     end do
@@ -3814,7 +3814,7 @@ contains
   !> \param mylsitem Full molecular lsitem
   !> \param runit File unit number to read from
   !> \param fragment Atomic fragment
-  subroutine fragment_read_data(runit,fragment,&
+  subroutine fragment_read_data(runit,fragment,MyAtom,&
        &OccOrbitals,UnoccOrbitals,MyMolecule,MyLsitem,DoBasis)
     implicit none
     type(fullmolecule),intent(in)  :: MyMolecule
@@ -3822,10 +3822,10 @@ contains
     type(decorbital),intent(in)     :: OccOrbitals(MyMolecule%nocc)
     type(decorbital),intent(in)     :: UnoccOrbitals(MyMolecule%nunocc)
     type(decfrag),intent(inout)        :: fragment
-    integer, intent(in) :: runit
+    integer, intent(in) :: runit, MyAtom
     !> Construct Fock matrix and MO coeff for fragment?
     logical,intent(in) :: DoBasis
-    integer             :: i,MyAtom
+    integer             :: i
     logical,pointer :: Occ_list(:),virt_list(:)
     integer :: noccAOS,nvirtAOS
     integer,pointer :: occAOSidx(:), virtAOSidx(:)
@@ -3835,8 +3835,7 @@ contains
     ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    ! Central atom
-    call read_64bit_to_int(runit,MyAtom)
+    ! Central atom is input and therefore must be read before calling this routine!!
 
     ! Number of occupied AOS orbitals
     call read_64bit_to_int(runit,noccAOS)
