@@ -643,7 +643,9 @@ contains
 !          call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
 !          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
 !       ENDIF
-       if(.not. DECinfo%aofock) call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
+       if(.not. DECinfo%noaofock) then
+          call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
+       end if
        call mem_alloc(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc)
        call mem_alloc(MyMolecule%qqfock,MyMolecule%nunocc,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
