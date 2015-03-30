@@ -25,13 +25,17 @@ CONTAINS
     type(matrix) :: cmo,CMOblock
     integer :: i,ncore,nval,nvirt,nbas,indx(1) 
     real(realk), pointer :: kurtvec(:),tmp(:)
+    logical :: DoNotAllocateTmpM,Memreduced,MajorMemreduced
+    DoNotAllocateTmpM = .TRUE.
+    Memreduced = .TRUE.
+    MajorMemreduced = .TRUE.
 
     nbas = cmo%nrow
 
     ! *** COMPUTE FOURTH MOMENT FOR ORBITALS ***
     CFG%PFM_input%crossterms=.true.
     CFG%PFM_input%m=1
-    call kurt_initAO(CFG%PFM_input,ls,cmo%nrow)
+    IF(.NOT.MajorMemreduced)call kurt_initAO(CFG%PFM_input,ls,cmo%nrow)
     call orbspread_propint(orbspread_input,ls)
     if (ncore > 0) then
        !######### CORE #############
@@ -42,15 +46,24 @@ CONTAINS
        call mat_retrieve_block(CMO,tmp,nbas,ncore,1,1)
        call mat_set_from_full(tmp,1d0,CMOblock)
        call mem_dealloc(tmp)
-       call kurt_initMO(CFG%PFM_input,CMOblock)
-       call orbspread_init(orbspread_input,1,ncore)
+       IF(MajorMemreduced)THEN
+          call compute_memreduced_noAOinit_omega(CFG%PFM_input,CMOblock,nbas,ls)
+       ELSE
+          call kurt_initMO(CFG%PFM_input,CMOblock,Memreduced)
+       ENDIF
+       call orbspread_init(orbspread_input,1,ncore,DoNotAllocateTmpM)
        call orbspread_update(orbspread_input,CMOblock)
+       call orbspread_free(orbspread_input,DoNotAllocateTmpM)
        write(CFG%lupri,*)
        write(ls%lupri,'(a)') '  %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%'
        call LocalityMeasure_print(CFG,orbspread_input,ncore,0)
        write(CFG%lupri,*)
-       call kurt_freeMO(CFG%PFM_input)
-       call orbspread_free(orbspread_input)
+       IF(DoNotAllocateTmpM) call mem_dealloc(orbspread_input%spread2) 
+       IF(MajorMemreduced)THEN
+          call mem_dealloc(CFG%PFM_input%omega)
+       ELSE
+          call kurt_freeMO(CFG%PFM_input,Memreduced)
+       ENDIF
        call  mat_free(CMOblock)
     end if
     !######### VALENCE #############
@@ -61,9 +74,14 @@ CONTAINS
        call mat_retrieve_block(CMO,tmp,nbas,nval,1,ncore+1)
        call mat_set_from_full(tmp,1d0,CMOblock)
        call mem_dealloc(tmp)
-       call kurt_initMO(CFG%PFM_input,CMOblock)
-       call orbspread_init(orbspread_input,1,nval)
+       IF(MajorMemreduced)THEN
+          call compute_memreduced_noAOinit_omega(CFG%PFM_input,CMOblock,nbas,ls)
+       ELSE
+          call kurt_initMO(CFG%PFM_input,CMOblock,Memreduced)
+       ENDIF
+       call orbspread_init(orbspread_input,1,nval,DoNotAllocateTmpM)
        call orbspread_update(orbspread_input,CMOblock)
+       call orbspread_free(orbspread_input,DoNotAllocateTmpM)
        indx=maxloc(orbspread_input%spread2)
        CFG%leastl_occ  = indx(1)+ncore
        indx=minloc(orbspread_input%spread2)
@@ -72,8 +90,12 @@ CONTAINS
        write(CFG%lupri,'(a)') '  %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%'
        call LocalityMeasure_print(CFG,orbspread_input,nval,ncore)
        write(CFG%lupri,*)
-       call kurt_freeMO(CFG%PFM_input)
-       call orbspread_free(orbspread_input)
+       IF(DoNotAllocateTmpM) call mem_dealloc(orbspread_input%spread2) 
+       IF(MajorMemreduced)THEN
+          call mem_dealloc(CFG%PFM_input%omega)
+       ELSE
+          call kurt_freeMO(CFG%PFM_input,Memreduced)
+       ENDIF
        call  mat_free(CMOblock)
     end if
 
@@ -85,9 +107,14 @@ CONTAINS
        call mat_retrieve_block(CMO,tmp,nbas,nvirt,1,ncore+nval+1)
        call mat_set_from_full(tmp,1d0,CMOblock)
        call mem_dealloc(tmp)
-       call kurt_initMO(CFG%PFM_input,CMOblock)
-       call orbspread_init(orbspread_input,1,nvirt)
+       IF(MajorMemreduced)THEN
+          call compute_memreduced_noAOinit_omega(CFG%PFM_input,CMOblock,nbas,ls)
+       ELSE
+          call kurt_initMO(CFG%PFM_input,CMOblock,Memreduced)
+       ENDIF
+       call orbspread_init(orbspread_input,1,nvirt,DoNotAllocateTmpM)
        call orbspread_update(orbspread_input,CMOblock)
+       call orbspread_free(orbspread_input,DoNotAllocateTmpM)
        indx=maxloc(orbspread_input%spread2)
        CFG%leastl_virt = indx(1)+ncore+nval
        indx=minloc(orbspread_input%spread2)
@@ -95,16 +122,21 @@ CONTAINS
        write(CFG%lupri,*)
        write(CFG%lupri,'(a)') '  %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%'
        call LocalityMeasure_print(CFG,orbspread_input,nvirt,ncore+nval)
+       IF(DoNotAllocateTmpM) call mem_dealloc(orbspread_input%spread2) 
        write(CFG%lupri,*)
-       call kurt_freeMO(CFG%PFM_input)
-       call orbspread_free(orbspread_input)
+       IF(MajorMemreduced)THEN
+          call mem_dealloc(CFG%PFM_input%omega)
+       ELSE
+          call kurt_freeMO(CFG%PFM_input,Memreduced)
+       ENDIF
        call  mat_free(CMOblock)
     end if
 
 
     call orbspread_propint_free(orbspread_input)
-    call kurt_freeAO(CFG%PFM_input)
-
+    IF(.NOT.MajorMemreduced)THEN
+       call kurt_freeAO(CFG%PFM_input)
+    ENDIF
   end subroutine LocalityMeasure
 
   subroutine LocalityMeasure_print(CFG,inp,ndim,offset)

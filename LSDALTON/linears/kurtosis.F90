@@ -135,23 +135,29 @@ contains
 
 !> \brief initialize cartesian moment matrices in MO basis
 !> \brief Do once for each core, valence and virtual
-  subroutine kurt_initMO(KURT,cmo)
+  subroutine kurt_initMO(KURT,cmo,Memreduced)
     implicit none
     type(PFMitem) :: KURT
     type(matrix) :: cmo
+    logical,optional :: Memreduced
     type(lsitem) :: ls
     integer :: i
+    logical :: DoMemreduced
 
+    DoMemreduced = .FALSE.
+    IF(present(Memreduced))DoMemreduced = Memreduced
 
     KURT%norb = cmo%ncol
     call mem_alloc(KURT%omega,KURT%norb)
-
-    do i=1,24
-       call mat_init(KURT%carmomMO(i),cmo%ncol,cmo%ncol)
-       call carmomAO_to_carmomMO(KURT%carmomAO(i),cmo,KURT%carmomMO(i))
-    end do
-    call compute_omega(KURT%carmomMO,KURT%omega,KURT%crossterms,KURT%norb)
-
+    IF(DoMemreduced)THEN
+       call compute_memreduced_omega(KURT%carmomAO,KURT%omega,KURT%crossterms,KURT%norb,cmo)
+    ELSE
+       do i=1,24
+          call mat_init(KURT%carmomMO(i),cmo%ncol,cmo%ncol)
+          call carmomAO_to_carmomMO(KURT%carmomAO(i),cmo,KURT%carmomMO(i))
+       end do
+       call compute_omega(KURT%carmomMO,KURT%omega,KURT%crossterms,KURT%norb)
+    ENDIF
 
   end subroutine kurt_initMO
 
@@ -168,17 +174,22 @@ contains
   end subroutine kurt_freeAO
 
 !> \brief Free cartesian matrices in MO basis. Done for both core/valence/virtual
-  subroutine kurt_freeMO(KURT)
+  subroutine kurt_freeMO(KURT,Memreduced)
     implicit none
     type(PFMitem) :: kurt
+    logical,optional :: Memreduced
     integer :: i
+    logical :: DoMemreduced
+    
+    DoMemreduced = .FALSE.
+    IF(present(Memreduced))DoMemreduced = Memreduced
 
     call mem_dealloc(KURT%omega)
-
-    do i=1,24
-       call mat_free(KURT%carmomMO(i))
-    end do
-
+    IF(.NOT.DoMemreduced)THEN
+       do i=1,24
+          call mat_free(KURT%carmomMO(i))
+       end do
+    ENDIF
   end subroutine kurt_freeMO
 
 !> \brief Update CM matrices with current CMO: Mnew = CMO^T M_AO CMO
@@ -670,6 +681,228 @@ contains
     omega=total
 
   end subroutine compute_omega
+
+  subroutine compute_memreduced_noAOinit_omega(KURT,cmo,nbas,ls)
+    implicit none
+    type(PFMitem) :: KURT
+    type(matrix),intent(in) :: cmo
+    integer,intent(in) :: nbas
+    type(lsitem) :: ls
+    !
+    real(realk),pointer :: matdiag(:,:)
+    integer :: I,nderiv,nmat,mat_indx(24)
+    type(matrix) :: carmomMO,temp,matAO
+
+    call mem_alloc(KURT%omega,KURT%norb)
+    nderiv = 4
+    nmat=(nderiv+1)*(nderiv+2)*(nderiv+3)/6
+    ! Map essential matrix numbers to a vector
+    do i=2,14
+       mat_indx(i-1)=i
+    end do
+    do i=16,21
+       mat_indx(i-2)=i
+    end do
+    mat_indx(20)=24
+    mat_indx(21)=26
+    mat_indx(22)=31
+    mat_indx(23)=33
+    mat_indx(24)=35
+
+    call mem_alloc(matdiag,KURT%norb,24)
+    call mat_init(matAO,nbas,nbas)
+    call mat_init(carmomMO,cmo%ncol,cmo%ncol)
+    call mat_init(temp,cmo%ncol,nbas)
+    do I=1,24
+       call II_get_single_carmom(6,6,ls%setting,matAO,mat_indx(I),nderiv,&
+            & 0.0_realk,0.0_realk,0.0_realk)
+       call mat_mul(cmo,matAO,'T','n',1.0_realk,0.0_realk,temp)
+       call mat_mul(temp,cmo,'n','n',1.0_realk,0.0_realk,carmomMO)
+       call mat_extract_diagonal(matdiag(:,I),carmomMO)
+    enddo
+    call mat_free(temp)
+    call mat_free(carmomMO)
+    call mat_free(matAO)
+    call compute_omega_diagonal(matdiag,KURT%omega,KURT%crossterms,KURT%norb)
+    call mem_dealloc(matdiag)
+
+  end subroutine compute_memreduced_noAOinit_omega
+
+  subroutine compute_memreduced_omega(matAO,omega,crossterms,n,cmo)
+    implicit none
+    type(matrix),intent(in) :: matAO(24) 
+    real(realk),intent(inout) :: omega(n)
+    type(matrix),intent(in) :: cmo
+    integer :: n   !Number of orbitals
+    logical :: crossterms
+    real(realk),pointer :: matdiag(:,:)
+    integer :: I
+    type(matrix) :: carmomMO,temp
+    call mem_alloc(matdiag,n,24)
+    call mat_init(carmomMO,cmo%ncol,cmo%ncol)
+    call mat_init(temp,cmo%ncol,matAO(1)%ncol)
+    do I=1,24
+       call mat_mul(cmo,matAO(I),'T','n',1.0_realk,0.0_realk,temp)
+       call mat_mul(temp,cmo,'n','n',1.0_realk,0.0_realk,carmomMO)
+       call mat_extract_diagonal(matdiag(:,I),carmomMO)
+    enddo
+    call mat_free(temp)
+    call mat_free(carmomMO)
+    call compute_omega_diagonal(matdiag,omega,crossterms,n)
+    call mem_dealloc(matdiag)
+
+  end subroutine compute_memreduced_omega
+
+  subroutine compute_omega_diagonal(matdiag,omega,crossterms,n)
+    implicit none
+    integer,intent(in) :: n   !Number of orbitals
+    real(realk),intent(in) :: matdiag(n,24) 
+    logical :: crossterms
+    real(realk) :: temp(n),temp2(n),temp3(n)
+    real(realk) :: cross_total(n),total(n),omega(n)
+    integer ::x,y,z,xx,xy,xz,yy,yz,zz,xxx,xxy,xxz,&
+         &xyy,xzz,yyy,yyz,yzz,zzz,xxxx,xxyy,xxzz,yyyy,&
+         &yyzz,zzzz
+
+    ! mapping to matrix numbers
+    x=1;y=2;z=3;xx=4;xy=5;xz=6;yy=7;yz=8;zz=9
+    xxx=10;xxy=11;xxz=12;xyy=13;xzz=14;yyy=15
+    yyz=16;yzz=17;zzz=18;xxxx=19;xxyy=20;xxzz=21
+    yyyy=22;yyzz=23;zzzz=24
+
+    total=0.0_realk
+    temp=matdiag(:,xxxx)
+    total=temp
+    temp=matdiag(:,yyyy)
+    total = total +temp
+    temp=matdiag(:,zzzz)
+    total = total +temp
+
+    temp=matdiag(:,xxx)
+    temp2=matdiag(:,x)
+    temp3=temp*temp2
+    temp = matdiag(:,yyy)
+    temp2 = matdiag(:,y)
+    temp3=temp3+temp*temp2
+    temp = matdiag(:,zzz)
+    temp2 = matdiag(:,z)
+    temp3=temp3+temp*temp2
+    total = total - 4.0_realk*temp3
+
+    temp3 = 0.0_realk
+    temp = matdiag(:,xx)
+    temp2 = matdiag(:,x)
+    temp3=temp*temp2*temp2
+    temp = matdiag(:,yy)
+    temp2 = matdiag(:,y)
+    temp3=temp3+temp*temp2*temp2
+    temp = matdiag(:,zz)
+    temp2 = matdiag(:,z)
+    temp3=temp3+temp*temp2*temp2
+    total=total+6.0_realk*temp3
+
+    temp = matdiag(:,x)
+    total= total -3.0_realk*temp*temp*temp*temp
+
+    temp = matdiag(:,y)
+    total= total -3.0_realk*temp*temp*temp*temp
+
+    temp = matdiag(:,z)
+    total= total -3.0_realk*temp*temp*temp*temp
+
+
+    if (crossterms) then
+       temp = matdiag(:,xxyy)
+       cross_total = 2.0_realk*temp
+       temp = matdiag(:,xxzz)
+       cross_total = cross_total+2.0_realk*temp
+       temp = matdiag(:,yyzz)
+       cross_total = cross_total+2.0_realk*temp
+
+       temp = matdiag(:,xx)
+       temp2 = matdiag(:,y)
+       cross_total=cross_total+2.0_realk*temp*temp2*temp2
+
+       temp = matdiag(:,yy)
+       temp2 = matdiag(:,x)
+       cross_total=cross_total+2.0_realk*temp*temp2*temp2
+
+
+       temp = matdiag(:,xx)
+       temp2 = matdiag(:,z)
+       cross_total=cross_total+2.0_realk*temp*temp2*temp2
+
+       temp = matdiag(:,zz)
+       temp2 = matdiag(:,x)
+       cross_total=cross_total+2.0_realk*temp*temp2*temp2
+
+       temp = matdiag(:,yy)
+       temp2 = matdiag(:,z)
+       cross_total=cross_total+2.0_realk*temp*temp2*temp2
+
+       temp = matdiag(:,zz)
+       temp2 = matdiag(:,y)
+       cross_total=cross_total+2.0_realk*temp*temp2*temp2
+
+       temp = matdiag(:,xxy)
+       temp2 = matdiag(:,y)
+       cross_total = cross_total -4.0_realk*temp*temp2
+
+       temp = matdiag(:,xyy)
+       temp2 = matdiag(:,x)
+       cross_total = cross_total -4.0_realk*temp*temp2
+
+       temp = matdiag(:,xxz)
+       temp2 = matdiag(:,z)
+       cross_total = cross_total -4.0_realk*temp*temp2
+
+       temp = matdiag(:,xzz)
+       temp2 = matdiag(:,x)
+       cross_total = cross_total -4.0_realk*temp*temp2
+
+       temp = matdiag(:,yyz)
+       temp2 = matdiag(:,z)
+       cross_total = cross_total -4.0_realk*temp*temp2
+
+       temp = matdiag(:,yzz)
+       temp2 = matdiag(:,y)
+       cross_total = cross_total -4.0_realk*temp*temp2
+
+       temp = matdiag(:,x)
+       temp2 = matdiag(:,y)
+       cross_total = cross_total-6.0_realk*temp*temp*temp2*temp2
+
+       temp = matdiag(:,x)
+       temp2 = matdiag(:,z)
+       cross_total = cross_total-6.0_realk*temp*temp*temp2*temp2
+
+
+       temp = matdiag(:,y)
+       temp2 = matdiag(:,z)
+       cross_total = cross_total-6.0_realk*temp*temp*temp2*temp2
+
+       temp = matdiag(:,x)
+       temp2 = matdiag(:,y)
+       temp3 = matdiag(:,xy)
+       cross_total =cross_total+8.0_realk*temp*temp2*temp3
+
+
+       temp = matdiag(:,x)
+       temp2 = matdiag(:,z)
+       temp3 = matdiag(:,xz)
+       cross_total =cross_total+8.0_realk*temp*temp2*temp3
+
+       temp = matdiag(:,y)
+       temp2 = matdiag(:,z)
+       temp3 = matdiag(:,yz)
+       cross_total =cross_total+8.0_realk*temp*temp2*temp3
+
+       total=total+cross_total
+    end if
+
+    omega=total
+
+  end subroutine compute_omega_diagonal
 
 !> \brief Compute linear transformations Hkappa
 !> \param kappa  trial vector (input)

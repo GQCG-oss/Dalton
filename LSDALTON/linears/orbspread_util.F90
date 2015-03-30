@@ -20,22 +20,30 @@ use decompMod !orbspread_data
 use arhDensity
 
 contains
-  subroutine orbspread_free(orbspread_input)
+  subroutine orbspread_free(orbspread_input,DoNotAllocateTmpM)
     implicit none
     type(orbspread_data) :: orbspread_input
+    logical,optional :: DoNotAllocateTmpM
     integer :: i
+    logical :: DeAllocTMP
 
-    call mem_dealloc(orbspread_input%spread2) 
+    DeAllocTMP = .TRUE.
+    IF(present(DoNotAllocateTmpM))THEN
+       DeAllocTMP = .NOT.DoNotAllocateTmpM
+    ENDIF
+
 
     call mat_free(orbspread_input%Q)
 
     do i=1,3
        call mat_free(orbspread_input%R(i))
     enddo
-
-    do i=1,4
-       call mat_free(orbspread_input%tmpM(i))
-    enddo
+    IF(DeAllocTMP)THEN
+       call mem_dealloc(orbspread_input%spread2) 
+       do i=1,4
+          call mat_free(orbspread_input%tmpM(i))
+       enddo
+    ENDIF
 
   end subroutine orbspread_free
 
@@ -65,47 +73,73 @@ contains
 
     !     n   = ls%setting%BASIS(1)%p%REGULAR%nbast
     n = getNbasis(AORdefault,Contractedinttype,ls%SETTING%MOLECULE(1)%p,ls%lupri)
-    DO i=1,nMAT
-       call mat_init(orbspread_input%propint(I),n,n)
-    ENDDO
 
     IF(.FALSE.)THEN !speed optimized version
+       DO i=1,nMAT
+          call mat_init(orbspread_input%propint(I),n,n)
+       ENDDO
        call II_get_carmom(6,6,ls%setting,orbspread_input%propint,nMAT,nderiv,0E0_realk,0E0_realk,0E0_realk)
+       call mat_free(orbspread_input%propint(1))
+       call mat_free(orbspread_input%propint(6))
+       call mat_free(orbspread_input%propint(7))
+       call mat_free(orbspread_input%propint(9))
+       
+       ! propint(5)   -> SECX+SECY+SECZ 
+       call mat_daxpy(1E0_realk,orbspread_input%propint(8),orbspread_input%propint(5))
+       call mat_free(orbspread_input%propint(8))
+       call mat_daxpy(1E0_realk,orbspread_input%propint(10),orbspread_input%propint(5))
+       call mat_free(orbspread_input%propint(10))
     ELSE !memory optimized version
-       do I=1,nMat
-          call II_get_single_carmom(6,6,ls%setting,orbspread_input%propint(i),i,nderiv,0E0_realk,0E0_realk,0E0_realk)
+       I = 5
+       call mat_init(orbspread_input%propint(I),n,n)
+       call II_get_single_carmom(6,6,ls%setting,orbspread_input%propint(I),I,nderiv,0E0_realk,0E0_realk,0E0_realk)
+       I = 8
+       call mat_init(orbspread_input%propint(I),n,n)
+       call II_get_single_carmom(6,6,ls%setting,orbspread_input%propint(I),I,nderiv,0E0_realk,0E0_realk,0E0_realk)
+       ! propint(5)   -> SECX+SECY+SECZ 
+       call mat_daxpy(1E0_realk,orbspread_input%propint(8),orbspread_input%propint(5))
+       call mat_free(orbspread_input%propint(8))
+       I = 10
+       call mat_init(orbspread_input%propint(I),n,n)
+       call II_get_single_carmom(6,6,ls%setting,orbspread_input%propint(I),I,nderiv,0E0_realk,0E0_realk,0E0_realk)
+       ! propint(5)   -> SECX+SECY+SECZ 
+       call mat_daxpy(1E0_realk,orbspread_input%propint(10),orbspread_input%propint(5))
+       call mat_free(orbspread_input%propint(10))                
+       do I = 2,4
+          call mat_init(orbspread_input%propint(I),n,n)
+          call II_get_single_carmom(6,6,ls%setting,orbspread_input%propint(I),I,nderiv,0E0_realk,0E0_realk,0E0_realk)
        enddo
     ENDIF
-    call mat_free(orbspread_input%propint(1))
-    call mat_free(orbspread_input%propint(6))
-    call mat_free(orbspread_input%propint(7))
-    call mat_free(orbspread_input%propint(9))
-
-    ! propint(5)   -> SECX+SECY+SECZ 
-    call mat_daxpy(1E0_realk,orbspread_input%propint(8),orbspread_input%propint(5))
-    call mat_free(orbspread_input%propint(8))
-    call mat_daxpy(1E0_realk,orbspread_input%propint(10),orbspread_input%propint(5))
-    call mat_free(orbspread_input%propint(10))
-
+    
   end subroutine orbspread_propint
 
 
 
-  subroutine orbspread_init(orbspread_input,m,norb)
+  subroutine orbspread_init(orbspread_input,m,norb,DoNotAllocateTmpM)
     implicit none
     type(orbspread_data), intent(inout) :: orbspread_input
     integer             , intent(in) :: norb, m
+    logical,optional :: DoNotAllocateTmpM
     TYPE(lsitem) :: ls
     integer   :: i
+    logical :: AllocTMP
 
     ! init R Q and tmpM matrices
     call mat_init(orbspread_input%Q,norb,norb)
     do i=1,3
        call mat_init(orbspread_input%R(i),norb,norb)
     enddo
-    do i=1,4
-       call mat_init(orbspread_input%tmpM(i),norb,norb)
-    enddo
+
+    AllocTMP = .TRUE.
+    IF(present(DoNotAllocateTmpM))THEN
+       AllocTMP = .NOT.DoNotAllocateTmpM
+    ENDIF
+    
+    IF(AllocTMP)THEN
+       do i=1,4
+          call mat_init(orbspread_input%tmpM(i),norb,norb)
+       enddo
+    ENDIF
 
     ! set norb
     orbspread_input%norb =  norb
