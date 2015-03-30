@@ -29,9 +29,11 @@ module tensor_interface_module
   public MAX_TENSOR_RANK   !max allowed tensor rank for DIL tensor algebra
   public DIL_TC_EACH       !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
   public DIL_TC_ALL        !parameter for <tensor_contract>: All MPI processes work on the same tensor contraction
-  public DIL_ALLOC_BASIC   !Fortran allocate will be used for buffer allocation in <tensor_algebra_dil>
-  public DIL_ALLOC_PINNED  !cudaMallocHost will be used for buffer allocation in <tensor_algebra_dil>
-  public DIL_ALLOC_MPI     !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
+  public DIL_ALLOC_NOT     !status "NOT ALLOCATED"
+  public DIL_ALLOC_BASIC   !Fortran allocate() will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_PINNED  !cudaMallocHost() will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_MPI     !MPI_ALLOC_MEM() will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
+  public DIL_ALLOC_EXT     !external buffer will be used in <tensor_algebra_dil>
   public DIL_CONS_OUT      !output for DIL messages
   public DIL_DEBUG         !DIL debugging switch
   public dil_tens_contr_t             !tensor contraction specification
@@ -42,7 +44,7 @@ module tensor_interface_module
   public dil_set_tens_contr_args      !set up an argument for a tensor contraction
   public dil_set_tens_contr_spec      !define the tensor contraction specification
   public dil_get_min_buf_size         !get the minimal buffer size needed to perform the tensor contraction
-  public dil_prep_buffer              !prepare a work buffer for a tensor contraction
+  public dil_prepare_buffer           !prepare a work buffer for a tensor contraction
   public dil_tensor_contract          !contract tensors (pipelined)
   public dil_tensor_contract_finalize !finalize a non-blocking tensor contraction
   public dil_debug_to_file_start      !start redirecting debugging information to a file
