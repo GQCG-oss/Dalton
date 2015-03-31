@@ -9,6 +9,7 @@ module dec_typedef_module
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
+  use tensor_interface_module, only: tensor
   !Could someone please rename ri to something less generic. TK!!
   !  private
   !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
@@ -345,6 +346,8 @@ module dec_typedef_module
      integer :: mpisplit
      !> Manually set starting group size for local MPI group
      integer(kind=ls_mpik) :: MPIgroupsize
+     !> set whether to distribute the data in the full molecule structure
+     logical :: distribute_fullmolecule
 
      !> Integral batching
      !> *****************
@@ -698,24 +701,27 @@ module dec_typedef_module
      !> Index of the first CABS basis function for an atom
      integer, pointer :: atom_cabsstart(:) => null()
 
+     !> logical that saves whether the tensors are in PDM or dense
+     logical :: mem_distributed
+
      !> Occupied MO coefficients (mu,i)
-     real(realk), pointer :: Co(:,:) => null()
+     type(tensor) :: Co
      !> Virtual MO coefficients (mu,a)
-     real(realk), pointer :: Cv(:,:) => null()
+     type(tensor) :: Cv
      !> CABS MO coefficients (mu,x)
      !     real(realk), pointer :: Ccabs(:,:) => null()
      !> RI MO coefficients 
      !     real(realk), pointer :: Cri(:,:) => null() 
 
      !> Fock matrix (AO basis)
-     real(realk), pointer :: fock(:,:) => null()
+     type(tensor) :: fock
+     !> Occ-occ block of Fock matrix in MO basis
+     type(tensor) :: oofock
+     !> Virt-virt block of Fock matrix in MO basis
+     type(tensor) :: vvfock
 
      !> Abs overlap information
      real(realk), pointer :: ov_abs_overlap(:,:) => null()
-     !> Occ-occ block of Fock matrix in MO basis
-     real(realk), pointer :: ppfock(:,:) => null()
-     !> Virt-virt block of Fock matrix in MO basis
-     real(realk), pointer :: qqfock(:,:) => null()
      !> carmom coord for occ
      real(realk), pointer :: carmomocc(:,:) => null()
      !> carmom coord for virt

@@ -2216,7 +2216,7 @@ contains
     integer,intent(in),optional:: order(arr%mode)
     logical :: pdm
     pdm=.false.
-    if(arr%itype/=TT_DENSE)then
+    if(arr%itype/=TT_DENSE.and.arr%itype/=TT_REPLICATED)then
       if(.not.associated(arr%elm1))then
         call memory_allocate_tensor_dense(arr)
       else

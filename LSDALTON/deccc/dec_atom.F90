@@ -1478,6 +1478,10 @@ contains
       real(realk), intent(out) :: priority_list(Nfull)
 
       integer :: ncore, i, j, idx
+
+      if( MyMolecule%mem_distributed )then
+         call lsquit("ERROR(get_fock_priority_list) mem_distributed not implemented",-1)
+      endif
       
       priority_list = 0.0E0_realk
 
@@ -1488,8 +1492,6 @@ contains
          ncore = 0
       end if
 
-      print *,"WE HAVE PABLO",MyFragment%noccEOS,MyFragment%nvirtEOS
-
       ! Get contribution to fock matrix for a given orbital as the maximum fock
       ! element between the given orbital and all the EOS orbitals.
       if (occ_list) then
@@ -1497,14 +1499,14 @@ contains
          do i=ncore+1,Nfull
             do j=1,MyFragment%noccEOS
                idx = MyFragment%occEOSidx(j)
-               priority_list(i) = max(priority_list(i), abs(MyMolecule%ppFock(idx,i)))
+               priority_list(i) = max(priority_list(i), abs(MyMolecule%ooFock%elm2(idx,i)))
             end do
          end do
       else
          do i=1,Nfull
             do j=1,MyFragment%nvirtEOS
                idx = MyFragment%virtEOSidx(j)
-               priority_list(i) = max(priority_list(i), abs(MyMolecule%qqFock(idx,i)))
+               priority_list(i) = max(priority_list(i), abs(MyMolecule%vvFock%elm2(idx,i)))
             end do
          end do
       end if
@@ -3288,6 +3290,10 @@ contains
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
 
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(atomic_fragment_basis):mem distributed not implemented",-1)
+    endif
+
     ! allocate C^o(nbasis,occ) C^v(nbasis,virt)
     call mem_alloc(fragment%CoLOC, fragment%nbasis,  fragment%noccLOC   )
     call mem_alloc(fragment%CvLOC, fragment%nbasis,  fragment%nvirtLOC )
@@ -3346,7 +3352,7 @@ contains
        ! Occupied
        ! ********
        ! half transformed overlap: S = Co^T Sfull  (full dims)
-       call dec_simple_dgemm(nocc,nbasis,nbasis,MyMolecule%Co,Sfull,S%val,'T','N')
+       call dec_simple_dgemm(nocc,nbasis,nbasis,MyMolecule%Co%elm2,Sfull,S%val,'T','N')
 
        ! Occ orbitals (only valence if frozen core approx is used)
        do i=1,fragment%noccLOC
@@ -3402,7 +3408,7 @@ contains
           ! Virtual
           ! *******
           ! half transformed overlap: S = Co^T Sfull  (full dims)
-          call dec_simple_dgemm(nvirt,nbasis,nbasis,MyMolecule%Cv,Sfull,S%val,'T','N')
+          call dec_simple_dgemm(nvirt,nbasis,nbasis,MyMolecule%Cv%elm2,Sfull,S%val,'T','N')
 
           do i=1,fragment%nvirtLOC
 
@@ -3436,11 +3442,11 @@ contains
        end if
 
        ! Fragment Co
-       call adjust_basis_matrix2(MyMolecule%Co,fragment%CoLOC,fragment%occAOSidx, &
+       call adjust_basis_matrix2(MyMolecule%Co%elm2,fragment%CoLOC,fragment%occAOSidx, &
             nbasis,nocc,fragment%nbasis,fragment%noccLOC,Fragment%basis_idx)
 
        ! Fragment Cv
-       call adjust_basis_matrix2(MyMolecule%Cv,fragment%CvLOC,fragment%virtAOSidx, &
+       call adjust_basis_matrix2(MyMolecule%Cv%elm2,fragment%CvLOC,fragment%virtAOSidx, &
             nbasis,nvirt,fragment%nbasis,fragment%nvirtLOC,Fragment%basis_idx)
 
     end if FitOrbitalsForFragment
@@ -3461,7 +3467,7 @@ contains
     if(.not. DECinfo%noaofock) then
        call mem_alloc(fragment%fock,fragment%nbasis,fragment%nbasis)
        fragment%fock=0.0E0_realk
-       call adjust_square_matrix2(MyMolecule%fock,fragment%fock,fragment%basis_idx,&
+       call adjust_square_matrix2(MyMolecule%fock%elm2,fragment%fock,fragment%basis_idx,&
             & MyMolecule%nbasis,fragment%nbasis)
     end if
 
@@ -3473,18 +3479,18 @@ contains
 
     ! Occ-occ block  (valence-valence for frozen core)
     call mem_alloc(fragment%ppfockLOC,fragment%noccLOC,fragment%noccLOC)
-    call adjust_square_matrix2(MyMolecule%ppfock,fragment%ppfockLOC,fragment%occAOSidx,&
+    call adjust_square_matrix2(MyMolecule%oofock%elm2,fragment%ppfockLOC,fragment%occAOSidx,&
          & MyMolecule%nocc,fragment%noccAOS)
 
     ! Virtual-virtual block
     call mem_alloc(fragment%qqfockLOC,fragment%nvirtLOC,fragment%nvirtLOC)
-    call adjust_square_matrix2(MyMolecule%qqfock,fragment%qqfockLOC,fragment%virtAOSidx,&
+    call adjust_square_matrix2(MyMolecule%vvfock%elm2,fragment%qqfockLOC,fragment%virtAOSidx,&
          & MyMolecule%nvirt,fragment%nvirtAOS)
 
     ! Core-core block
     if(fragment%ncore>0) then
        call mem_alloc(fragment%ccfock,fragment%ncore,fragment%ncore)
-       call adjust_square_matrix2(MyMolecule%ppfock,fragment%ccfock,fragment%coreidx,&
+       call adjust_square_matrix2(MyMolecule%oofock%elm2,fragment%ccfock,fragment%coreidx,&
             & MyMolecule%ncore,fragment%ncore)
     end if
 

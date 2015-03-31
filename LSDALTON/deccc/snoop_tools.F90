@@ -800,6 +800,10 @@ contains
     integer :: i,this,j,noccsub,nvirtsub,atom,idx
     type(decorbital),pointer :: OccOrbitals(:), VirtOrbitals(:)
 
+    if(MyMoleculeFULL%mem_distributed)then
+       call lsquit("ERROR(initial_subsystem_MOs_from_full) not implemented for pdm",-1)
+    endif
+
     ! Determine DEC orbital structures for local orbital analysis below
     call mem_alloc(OccOrbitals,MyMoleculeFULL%nocc)
     call mem_alloc(VirtOrbitals,MyMoleculeFULL%nvirt)
@@ -824,7 +828,7 @@ contains
           ! Does atom to which orbital "j" is assigned belong to subsystem "this"
           if(MyMoleculeFULL%SubSystemIndex(atom)==this) then  
              idx = idx + 1
-             Cocc(:,idx) = MyMoleculeFULL%Co(:,j)
+             Cocc(:,idx) = MyMoleculeFULL%Co%elm2(:,j)
           end if
        end do
        noccsub=idx
@@ -839,7 +843,7 @@ contains
     ! Virtual orbitals
     ! ================
     ! Simply copy from molecule structure
-    call mat_set_from_full(MyMoleculeFULL%Cv,1E0_realk, Cvirtall)
+    call mat_set_from_full(MyMoleculeFULL%Cv%elm2,1E0_realk, Cvirtall)
 
   
     call mem_dealloc(Cocc)
@@ -1002,6 +1006,9 @@ contains
     integer :: noccSUB,nbasis,nvirt,ncoreFULL,ncoreSUB,nvalSUB,nvalFULL,noccFULL
     integer :: i
 
+    if(MyMoleculeFULL%mem_distributed)then
+       call lsquit("ERROR(rotate_subsystem_orbitals_to_mimic_FULL_orbitals) not implemented for pdm",-1)
+    endif
 
     nvirt = MyMoleculeFULL%nvirt  ! #virt orbitals same for SNOOP subsystem and FULL
     nbasis = MyMoleculeFULL%nbasis
@@ -1045,7 +1052,7 @@ contains
     ! Simply copy ALL virtual FULL orbitals because virtual dimensions are
     ! the same for subsystem and FULL
     call mem_alloc(CvirtFULL,nbasis,nvirt)
-    CvirtFULL = MyMoleculeFULL%Cv
+    CvirtFULL = MyMoleculeFULL%Cv%elm2
 
     
     ! Rotate core subsystem orbitals to mimic FULL orbitals
@@ -1105,6 +1112,9 @@ contains
     integer :: j,idx,atom
 
 
+    if(MyMoleculeFULL%mem_distributed)then
+       call lsquit("ERROR(extract_subsystem_occorbitals_from_FULL) not implemented for pdm",-1)
+    endif
 
     ! Extract core orbitals
     ! *********************
@@ -1119,7 +1129,7 @@ contains
              call lsquit('extract_subsystem_occorbitals_from_FULL: &
                   & Core idx is too large',-1)
           end if
-          Ccore(:,idx) = MyMoleculeFULL%Co(:,j)
+          Ccore(:,idx) = MyMoleculeFULL%Co%elm2(:,j)
        end if
     end do
 
@@ -1143,7 +1153,7 @@ contains
              call lsquit('extract_subsystem_occorbitals_from_FULL: &
                   & Valence idx is too large',-1)
           end if
-          Cval(:,idx) = MyMoleculeFULL%Co(:,j)
+          Cval(:,idx) = MyMoleculeFULL%Co%elm2(:,j)
        end if
     end do
 

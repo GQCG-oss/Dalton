@@ -1196,44 +1196,67 @@ contains
     !> S^{1/2} C matrix
     real(realk), dimension(MyMolecule%nbasis,MyMolecule%nMO),intent(inout) :: ShalfC
     real(realk), pointer :: Shalf(:,:)
-    integer :: nbasis,i,j,k,nMO
-    real(realk),pointer :: basis(:,:),S(:,:)
+    integer :: nb,no,nv,i,j,k,nMO
+    real(realk),pointer :: basis(:,:),S(:,:), Co(:,:), Cv(:,:)
 
-    nbasis = MyMolecule%nbasis
+    nb = MyMolecule%nbasis
+    no = MyMolecule%nocc
+    nv = MyMolecule%nvirt
     nMO = MyMolecule%nMO
-    call mem_alloc(basis,nbasis,nbasis)
-    !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
-    !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nvirt)
+    call mem_alloc(basis,nb,nb)
+
+    !basis(1:nb,1:MyMolecule%nocc) = MyMolecule%Co(1:nb,1:MyMolecule%nocc)
+    !basis(1:nb,MyMolecule%nocc+1:nb) = MyMolecule%Cv(1:nb,1:MyMolecule%nvirt)
+    if( MyMolecule%mem_distributed )then
+       call mem_alloc(Co,nb,MyMolecule%nocc)
+       call mem_alloc(Cv,nb,MyMolecule%nvirt)
+
+       call tensor_gather(1.0E0_realk,MyMolecule%Co,0.0E0_realk,Co,i8*nb*no)
+       call tensor_gather(1.0E0_realk,MyMolecule%Cv,0.0E0_realk,Cv,i8*nb*nv)
+    else
+       Co => MyMolecule%Co%elm2
+       Cv => MyMolecule%Cv%elm2
+    endif
+
     do j=1,MyMolecule%nocc
-       do i =1,nbasis
-          basis(i,j) =MyMolecule%Co(i,j)
+       do i =1,nb
+          basis(i,j) = Co(i,j)
        enddo
     enddo
     k = MyMolecule%nocc+1
     do j = 1,MyMolecule%nvirt
-       do i =1,nbasis
-          basis(i,k) = MyMolecule%Cv(i,j)
+       do i =1,nb
+          basis(i,k) = Cv(i,j)
        enddo
        k=k+1
     enddo
 
+    if( MyMolecule%mem_distributed )then
+       call mem_dealloc(Co)
+       call mem_dealloc(Cv)
+    endif
+
+    Co => null()
+    Cv => null()
+
     ! AO overlap
-    call mem_alloc(S,nbasis,nbasis)
+    call mem_alloc(S,nb,nb)
     call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
-         & S,nbasis,nbasis,AORdefault,AORdefault)
+         & S,nb,nb,AORdefault,AORdefault)
 
     ! Get S^{1/2} matrix
     ! ******************
-    call mem_alloc(Shalf,nbasis,nbasis)
-    call get_power_of_symmetric_matrix(nbasis,0.5E0_realk,S,Shalf)
+    call mem_alloc(Shalf,nb,nb)
+    call get_power_of_symmetric_matrix(nb,0.5E0_realk,S,Shalf)
     call mem_dealloc(S)
 
     ! S^{1/2} C
     ! *********
-    call dec_simple_dgemm(nbasis,nbasis,nMO,Shalf,basis,ShalfC,'n','n')
+    call dec_simple_dgemm(nb,nb,nMO,Shalf,basis,ShalfC,'n','n')
 
     call mem_dealloc(Shalf)
     call mem_dealloc(basis)
+
 
   end subroutine Get_matrix_for_lowdin_analysis
 
@@ -1248,7 +1271,11 @@ contains
     type(fullmolecule), intent(in) :: MyMolecule
     real(realk), dimension(nbasis), intent(inout) :: charges
     real(realk), dimension(nbasis,nbasis), intent(in) :: CtS
+#ifdef VAR_PTR_RESHAPE
+    real(realk), pointer, contiguous :: C(:,:)
+#else
     real(realk), pointer :: C(:,:)
+#endif
     integer :: nu
     integer :: nocc,nvirt
 
@@ -1256,8 +1283,17 @@ contains
     nocc=MyMolecule%nocc
     nvirt=MyMolecule%nvirt
     call mem_alloc(C,nbasis,nbasis)
-    C(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
-    C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
+
+    if( MyMolecule%mem_distributed )then
+       print *,"WARNING(GetMullikenVector): getting matrix in full, this should&
+       & be replaced by a PDM operation, plus this is not tested at all"
+       call tensor_gather(1.0E0_realk,MyMolecule%Co,0.0E0_realk,C(1:nbasis,1:nocc) ,i8*nbasis*nocc)
+       call tensor_gather(1.0E0_realk,MyMolecule%Cv,0.0E0_realk,C(1:nbasis,nocc+1:nbasis),i8*nbasis*nvirt)
+    else
+       C(1:nbasis,1:nocc) = MyMolecule%Co%elm2(1:nbasis,1:nocc)
+       C(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv%elm2(1:nbasis,1:nvirt)
+    endif
+
 !    charges=0.0E0_realk
 
     do nu=1,nbasis
@@ -1542,7 +1578,7 @@ contains
     type(matrix) :: Ccan,F,S, SCLocc, SCLvirt, UnitMatrix, Clcm
     type(matrix) :: tmp1
     real(realk), pointer :: eival(:)
-    integer :: nbasis,nocc,nvirt, nstart, nend,nvirt_end,i,j
+    integer :: nb,no,nv, nstart, nend,nvirt_end,i,j
     integer :: idx,a,b,funit
     real(realk) :: nocc_calc, nvirt_calc, tmp
     real(realk) :: can_norm, lcm_norm
@@ -1556,18 +1592,29 @@ contains
 
     ! Initialize stuff
     ! ****************
-    nbasis = MyMolecule%nbasis
-    nocc = MyMolecule%nocc
-    nvirt = MyMolecule%nvirt
-    call mat_init(Ccan,nbasis,nbasis)
-    call mat_init(F,nbasis,nbasis)
-    call mat_init(S,nbasis,nbasis)
-    call mem_alloc(eival,nbasis)
+    nb = MyMolecule%nbasis
+    no = MyMolecule%nocc
+    nv = MyMolecule%nvirt
+    call mat_init(Ccan, nb, nb )
+    call mat_init(F,    nb, nb )
+    call mat_init(S,    nb, nb )
+    call mem_alloc(eival,   nb )
 
 
     ! Set Fock and overlap matrices
     ! *****************************
-    call mat_set_from_full(MyMolecule%fock(1:nbasis,1:nbasis), 1E0_realk,F)
+    
+    if( MyMolecule%mem_distributed )then
+       !if(matrix_type == mtype_dense) then
+       !   call tensor_convert(MyMolecule%fock,F%elms)
+       !if(matrix_type == mtype_pdmm) then !pdmm_Marray is not known here!!!
+       !   call tensor_copy_data(MyMolecule%fock,pdmm_Marray(F%PDMID)%p)
+       !else
+          call lsquit("ERROR(check_lcm_against_canonical)this does not work with the selected matrix type (yet)",-1)
+       !endif
+    else
+       call mat_set_from_full(MyMolecule%fock%elm2(1:nb,1:nb), 1E0_realk,F)
+    endif
     call II_get_overlap(DECinfo%output,DECinfo%output,mylsitem%SETTING,S)
 
 
@@ -1580,43 +1627,52 @@ contains
     ! Occupied canonical orbitals
     ! ***************************
 
-    ! These are the first nbasis*nocc elements in Ccan
-    call mat_init(Cocc_can,nbasis,nocc)
+    ! These are the first nb*no elements in Ccan
+    call mat_init(Cocc_can,nb,no)
     nstart=1
-    nend = nbasis*nocc
+    nend = nb*no
     Cocc_can%elms(nstart:nend) = Ccan%elms(nstart:nend)
 
     ! Unoccupied canonical orbitals
     ! *****************************
-    ! These are the last nbasis*nvirt elements,
-    ! i.e. from element nbasis*nocc+1 to nbasis*nbasis
-    call mat_init(Cvirt_can,nbasis,nvirt)
-    nstart = nbasis*nocc + 1
-    nvirt_end = nbasis*nvirt
-    nend = nbasis*nbasis
+    ! These are the last nb*nv elements,
+    ! i.e. from element nb*no+1 to nb*nb
+    call mat_init(Cvirt_can,nb,nv)
+    nstart = nb*no + 1
+    nvirt_end = nb*nv
+    nend = nb*nb
     Cvirt_can%elms(1:nvirt_end) = Ccan%elms(nstart:nend)
 
 
 
     ! Set LCM orbitals
     ! ****************
-    call mat_init(Cocc_lcm,nbasis,nocc)
-    call mat_init(Cvirt_lcm,nbasis,nvirt)
-    call mat_set_from_full(MyMolecule%Co(1:nbasis,1:nocc), 1E0_realk,Cocc_lcm)
-    call mat_set_from_full(MyMolecule%Cv(1:nbasis,1:nvirt), 1E0_realk,Cvirt_lcm)
+    call mat_init(Cocc_lcm,nb,no)
+    call mat_init(Cvirt_lcm,nb,nv)
+    if( MyMolecule%mem_distributed )then
+       if(matrix_type == mtype_dense) then
+          call tensor_gather(1.0E0_realk,MyMolecule%Co,0.0E0_realk,Cocc_lcm%elms ,i8*nb*no)
+          call tensor_gather(1.0E0_realk,MyMolecule%Cv,0.0E0_realk,Cvirt_lcm%elms,i8*nb*nv)
+       else
+          call lsquit("ERROR(check_lcm_against_canonical)this does not work with the selected matrix type (yet)",-1)
+       endif
+    else
+       call mat_set_from_full(MyMolecule%Co%elm2(1:nb,1:no), 1E0_realk,Cocc_lcm)
+       call mat_set_from_full(MyMolecule%Cv%elm2(1:nb,1:nv), 1E0_realk,Cvirt_lcm)
+    endif
 
 
     ! Construct canonical/LCM overlap matrix for occupied space
     ! *********************************************************
     ! SCLocc = Cocc_can^T S Cocc_lcm
-    call mat_init(SCLocc,nocc,nocc)
+    call mat_init(SCLocc,no,no)
     call util_AO_to_MO_different_trans(Cocc_can, S, Cocc_lcm, SCLocc)
 
 
     ! Construct canonical/LCM overlap matrix for virtual space
     ! ********************************************************
     ! SCLvirt = Cvirt_can^T S Cvirt_lcm
-    call mat_init(SCLvirt,nvirt,nvirt)
+    call mat_init(SCLvirt,nv,nv)
     call util_AO_to_MO_different_trans(Cvirt_can, S, Cvirt_lcm, SCLvirt)
 
 
@@ -1624,16 +1680,16 @@ contains
     ! ********************
 
     ! Unit matrices
-    call mat_init(UnitMatrix,nbasis,nbasis)
+    call mat_init(UnitMatrix,nb,nb)
     call mat_zero(UnitMatrix)
-    do i=1,nbasis
-       idx = get_matrix_position(i,i,nbasis,nbasis)
+    do i=1,nb
+       idx = get_matrix_position(i,i,nb,nb)
        UnitMatrix%elms(idx) = 1E0_realk
     end do
 
     ! Overlap for canonical orbitals
     ! ''''''''''''''''''''''''''''''
-    call mat_init(tmp1,nbasis,nbasis)
+    call mat_init(tmp1,nb,nb)
     call util_AO_to_MO_different_trans(Ccan, S, Ccan, tmp1)
     ! Subtract unit matrix from occupied-occupied overlap
     call mat_daxpy(-1E0_realk,UnitMatrix,tmp1)
@@ -1643,15 +1699,15 @@ contains
 
     ! Overlap for LCM orbitals
     ! ''''''''''''''''''''''''
-    call mat_init(Clcm,nbasis,nbasis)
+    call mat_init(Clcm,nb,nb)
     ! Set occupied orbitals
     nstart=1
-    nend = nbasis*nocc
+    nend = nb*no
     Clcm%elms(nstart:nend) = Cocc_lcm%elms(nstart:nend)
     ! Set virtual orbitals
-    nstart = nbasis*nocc + 1
-    nend = nbasis*nbasis
-    nvirt_end = nbasis*nvirt
+    nstart = nb*no + 1
+    nend = nb*nb
+    nvirt_end = nb*nv
     Clcm%elms(nstart:nend) = Cvirt_lcm%elms(1:nvirt_end)
     ! Get LCM overlap
     call util_AO_to_MO_different_trans(Clcm, S, Clcm, tmp1)
@@ -1678,19 +1734,19 @@ contains
     ! occupied_vector(i) = sum_j SCLocc(i,j)**2
     ! and similarly for the virtual vector.
     ! Thus, each element in the occupied_vector and the virtupied_vector
-    ! has to equal one. And the sum of elements equals nocc/nvirt for
+    ! has to equal one. And the sum of elements equals no/nv for
     ! occupied/virtupied vectors.
 
-    call mem_alloc(occ_vector,nocc)
-    call mem_alloc(virt_vector,nvirt)
+    call mem_alloc(occ_vector,no)
+    call mem_alloc(virt_vector,nv)
     occ_vector=0E0_realk
     virt_vector=0E0_realk
 
     ! Occupied vector
     ! '''''''''''''''
-    do i=1,nocc
-       do j=1,nocc
-          idx = get_matrix_position(i,j,nocc,nocc)
+    do i=1,no
+       do j=1,no
+          idx = get_matrix_position(i,j,no,no)
           tmp = SCLocc%elms(idx)
           occ_vector(i) = occ_vector(i) + tmp**2
        end do
@@ -1698,16 +1754,16 @@ contains
 
     ! Total number of occupied orbitals
     nocc_calc=0E0_realk
-    do i=1,nocc
+    do i=1,no
        nocc_calc = nocc_calc + occ_vector(i)
     end do
 
 
     ! Virtual vector
     ! ''''''''''''''
-    do a=1,nvirt
-       do b=1,nvirt
-          idx = get_matrix_position(a,b,nvirt,nvirt)
+    do a=1,nv
+       do b=1,nv
+          idx = get_matrix_position(a,b,nv,nv)
           tmp = SCLvirt%elms(idx)
           virt_vector(a) = virt_vector(a) + tmp**2
        end do
@@ -1715,7 +1771,7 @@ contains
 
     ! Total number of virtual orbitals
     nvirt_calc=0E0_realk
-    do a=1,nvirt
+    do a=1,nv
        nvirt_calc = nvirt_calc + virt_vector(a)
     end do
 
@@ -1733,22 +1789,22 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,'(3X,a)') '  Occupied projections  '
     write(DECinfo%output,'(3X,a)') '------------------------'
-    do i=1,nocc
+    do i=1,no
        write(DECinfo%output,'(3X,i8,g18.8)') i, occ_vector(i)
     end do
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,'(3X,a)') '  Virtual projections   '
     write(DECinfo%output,'(3X,a)') '------------------------'
-    do a=1,nvirt
+    do a=1,nv
        write(DECinfo%output,'(3X,i8,g18.8)') a, virt_vector(a)
     end do
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,'(3X,a,g18.8)') 'Calculated number of occ. orbitals  :', nocc_calc
     write(DECinfo%output,'(3X,a,g18.8)') 'Calculated number of virt. orbitals :', nvirt_calc
-    write(DECinfo%output,'(3X,a,g18.8)') 'Exact number of occ. orbitals       :', real(nocc)
-    write(DECinfo%output,'(3X,a,g18.8)') 'Exact number of virt. orbitals      :', real(nvirt)
+    write(DECinfo%output,'(3X,a,g18.8)') 'Exact number of occ. orbitals       :', real(no)
+    write(DECinfo%output,'(3X,a,g18.8)') 'Exact number of virt. orbitals      :', real(nv)
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -1845,12 +1901,12 @@ contains
     !MOs assigned to SubSystem 1 and AOs belonging to Subsystem 2
     call mem_alloc(Cocc1,nbasisSub(2),noccsub(1))
     call BuildSubsystemCMO(1,nbasisSub(2),noccsub(1),nocc,nAtoms,nbasis,&
-         & nOrb,MyMolecule%Co,Cocc1,CentralAtom,MyMolecule%SubSystemIndex)      
+         & nOrb,MyMolecule%Co%elm2,Cocc1,CentralAtom,MyMolecule%SubSystemIndex)      
 
     !MOs assigned to SubSystem 2 and AOs belonging to Subsystem 1
     call mem_alloc(Cocc2,nbasisSub(1),noccsub(2))
     call BuildSubsystemCMO(2,nbasisSub(1),noccsub(2),nocc,nAtoms,nbasis,&
-         & nOrb,MyMolecule%Co,Cocc2,CentralAtom,MyMolecule%SubSystemIndex)      
+         & nOrb,MyMolecule%Co%elm2,Cocc2,CentralAtom,MyMolecule%SubSystemIndex)      
 
     ! Delete orbitals
     call mem_dealloc(nOrb)
@@ -1877,7 +1933,7 @@ contains
     call ls_output(Cocc2,1,nbasisSub(1),1,noccsub(2),nbasisSub(1),noccsub(2),1,DECinfo%output)
 
     WRITE(DECinfo%output,*)'Full CMO '
-    call ls_output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
+    call ls_output(MyMolecule%Co%elm2,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
 
     call mem_dealloc(Cocc1)
     call mem_dealloc(Cocc2)
@@ -1948,13 +2004,13 @@ contains
     !MOs assigned to SubSystem 1 and AOs belonging to Subsystem 2
 
     call ZeroSubsystemCMO(1,nbasisSub(2),noccsub(1),nocc,nAtoms,nbasis,&
-         & nOrb,MyMolecule%Co,CentralAtom,MyMolecule%SubSystemIndex)      
+         & nOrb,MyMolecule%Co%elm2,CentralAtom,MyMolecule%SubSystemIndex)      
 
     call ZeroSubsystemCMO(2,nbasisSub(1),noccsub(2),nocc,nAtoms,nbasis,&
-         & nOrb,MyMolecule%Co,CentralAtom,MyMolecule%SubSystemIndex)      
+         & nOrb,MyMolecule%Co%elm2,CentralAtom,MyMolecule%SubSystemIndex)      
 
     WRITE(DECinfo%output,*)'CMO after force_Occupied_SubSystemLocality'
-    call ls_output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
+    call ls_output(MyMolecule%Co%elm2,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
 
     ! Delete orbitals
     call mem_dealloc(nOrb)

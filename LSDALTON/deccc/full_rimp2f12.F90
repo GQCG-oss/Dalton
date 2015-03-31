@@ -67,6 +67,10 @@ contains
     logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG
     logical :: RIF12,FORCEPRINT
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_canonical_rimp2_f12): does not work with PDM type fullmolecule",-1)
+    endif
+
     Test =.TRUE.
     RIF12 = .TRUE.
     lupri = DECinfo%output
@@ -113,12 +117,12 @@ contains
        call mem_alloc(Cfull,nbasis,nbasis)
        do J=1,nocc
           do I=1,nbasis
-             Cfull(I,J) = MyMolecule%Co(I,J)
+             Cfull(I,J) = MyMolecule%Co%elm2(I,J)
           enddo
        enddo
        do P=1,nvirt
           do I=1,nbasis
-             Cfull(I,nocc+P) = MyMolecule%Cv(I,P)
+             Cfull(I,nocc+P) = MyMolecule%Cv%elm2(I,P)
           enddo
        enddo
     ENDIF
@@ -146,7 +150,7 @@ contains
        call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
        call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRF')
        call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-            &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Fijkl)
+            &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Fijkl)
        call mem_dealloc(gao)
        do j=1,nocc
           do i=1,nocc
@@ -177,14 +181,14 @@ contains
        call mem_alloc(ABdecompR,nAux,nAux)
        ABdecompCreateR = .TRUE.
        call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-            & wakeslaves,MyMolecule%Co,nocc,Cfull,nbasis,mynum,numnodes,nAtoms,&
+            & wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,mynum,numnodes,nAtoms,&
             & CalphaR,NBA,ABdecompR,ABdecompCreateR,CoulombOperator)
        ABdecompCreateR = .FALSE.
        print*,'size(CalphaR)',size(CalphaR,1),size(CalphaR,2),size(CalphaR,3)
        call mem_alloc(ABdecompG,nAux,nAux)
        ABdecompCreateG = .TRUE.
        call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-            & wakeslaves,MyMolecule%Co,nocc,Cfull,nbasis,mynum,numnodes,nAtoms,&
+            & wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,mynum,numnodes,nAtoms,&
             & CalphaG,NBA,ABdecompG,ABdecompCreateG,GGemOperator)
        ABdecompCreateG = .FALSE.
        call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,&
@@ -207,10 +211,10 @@ contains
        call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
        call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
        call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-            &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Ripjq)
+            &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Ripjq)
        call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
        call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-            &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Gipjq)
+            &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Gipjq)
        call mem_dealloc(gao)
 
        do q=1,nbasis

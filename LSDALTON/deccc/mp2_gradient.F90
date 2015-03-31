@@ -1323,6 +1323,10 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(get_mp2gradient_main) not implemented for distributed matrices in molecule",-1)
+    endif
+
 
     ! Easy reference to molecule info
     ! *******************************
@@ -1364,11 +1368,11 @@ contains
        call mat_init(C,nbasis,nbasis)
        call mat_init(F,nbasis,nbasis)
        call mem_alloc(basis,nbasis,nbasis)
-       basis(1:nbasis,1:nocc) = MyMolecule%Co(1:nbasis,1:nocc)
-       basis(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:nvirt)
+       basis(1:nbasis,1:nocc) = MyMolecule%Co%elm2(1:nbasis,1:nocc)
+       basis(1:nbasis,nocc+1:nbasis) = MyMolecule%Cv%elm2(1:nbasis,1:nvirt)
        call mat_set_from_full(basis(1:nbasis,1:nbasis), 1E0_realk, C)
        call mem_dealloc(basis)
-       call mat_set_from_full(MyMolecule%fock(1:nbasis,1:nbasis), 1E0_realk, F)
+       call mat_set_from_full(MyMolecule%fock%elm2(1:nbasis,1:nbasis), 1E0_realk, F)
 
        ! Reorthonormalization matrix W
        call util_get_symm_part(rho)
@@ -2893,6 +2897,10 @@ end if UNRELAXED2
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(get_full_mp2density) not implemented for distributed matrices in molecule",-1)
+    endif
+
     ! Frozen core sanity check
     if(DECinfo%frozencore) then
        if(.not. present(Phioo)) then
@@ -2920,8 +2928,8 @@ end if UNRELAXED2
     ! **********************************
     call mat_init(Cocc,nbasis,nocc)
     call mat_init(Cvirt,nbasis,nvirt)
-    call mat_set_from_full(MyMolecule%Co(1:nbasis,1:nocc), 1E0_realk, Cocc)
-    call mat_set_from_full(MyMolecule%Cv(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
+    call mat_set_from_full(MyMolecule%Co%elm2(1:nbasis,1:nocc), 1E0_realk, Cocc)
+    call mat_set_from_full(MyMolecule%Cv%elm2(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
 
 
     ! Get RHS matrix for kappabar orbital rotation multiplier equation (dimension nvirt,nocc)
@@ -3362,6 +3370,9 @@ end if UNRELAXED2
     integer :: iter, last_iter, i,j,dim1,dim2,a
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(dec_solve_kappabar_equation) not implemented for distributed matrices in molecule",-1)
+    endif
 
 
     ! Dimensions for RHS (and thus for kappabar)
@@ -3445,12 +3456,12 @@ end if UNRELAXED2
        call mem_alloc(Fockvalval,nval,nval)
        do j=1,ncore
           do i=1,ncore
-             Fockcorecore(i,j) = MyMolecule%ppfock(i,j)
+             Fockcorecore(i,j) = MyMolecule%oofock%elm2(i,j)
           end do
        end do
        do j=1,nval
           do i=1,nval
-             Fockvalval(i,j) = MyMolecule%ppfock(i+ncore,j+ncore)
+             Fockvalval(i,j) = MyMolecule%vvfock%elm2(i+ncore,j+ncore)
           end do
        end do
 
@@ -3476,17 +3487,17 @@ end if UNRELAXED2
 
        ! Occ-occ Fock block (both core and valence)
        call mat_init(ppfock,nocc,nocc)
-       call mat_set_from_full(MyMolecule%ppfock(1:nocc,1:nocc), 1E0_realk,ppfock)
+       call mat_set_from_full(MyMolecule%oofock%elm2(1:nocc,1:nocc), 1E0_realk,ppfock)
 
        ! Virt-virt Fock matrix block
        call mat_init(qqfock,nvirt,nvirt)
-       call mat_set_from_full(MyMolecule%qqfock(1:nvirt,1:nvirt), 1E0_realk,qqfock)
+       call mat_set_from_full(MyMolecule%vvfock%elm2(1:nvirt,1:nvirt), 1E0_realk,qqfock)
 
        ! Preconditioning matrix
        call mem_alloc(precfull,nvirt,nocc)
        do i=1,nocc
           do a=1,nvirt
-             precfull(a,i) = MyMolecule%qqfock(a,a) - MyMolecule%ppfock(i,i)
+             precfull(a,i) = MyMolecule%oofock%elm2(a,a) - MyMolecule%oofock%elm2(i,i)
           end do
        end do
        call mat_init(prec,nvirt,nocc)
@@ -4063,6 +4074,10 @@ end if UNRELAXED2
        return
     end if
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(dec_get_rho_matrix_in_AO_basis) not implemented for distributed matrices in molecule",-1)
+    endif
+
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
@@ -4163,10 +4178,10 @@ end if UNRELAXED2
     ! Collect occ and virt MO coefficients
     call mem_alloc(C,nbasis,nbasis)
     do i=1,nocc
-       C(:,i) = MyMolecule%Co(:,i)
+       C(:,i) = MyMolecule%Co%elm2(:,i)
     end do
     do i=1,nvirt
-       C(:,i+nocc) = MyMolecule%Cv(:,i)
+       C(:,i+nocc) = MyMolecule%Cv%elm2(:,i)
     end do
 
     ! tmp = C rhoMO_relaxation
@@ -4618,7 +4633,7 @@ end if UNRELAXED2
     call mem_alloc(Phiov_simple,nocc,nvirt)
     call mem_alloc(Phioo_simple,nocc,nocc)
     call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,S,&
-         & MyMolecule%Co,MyMolecule%Cv,fullgrad%Phi,&
+         & MyMolecule%Co%elm2,MyMolecule%Cv%elm2,fullgrad%Phi,&
          & Phivo_simple,Phiov_simple,Phioo_simple)
     call mem_dealloc(S)
 

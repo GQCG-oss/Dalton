@@ -1741,6 +1741,10 @@ contains
 
     write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
 
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(Full_DECMP2_calculation) not implemented for distributed mol",-1)
+    endif
+
     ! Only for MP2
     if(DECinfo%ccModel/=MODEL_MP2) then
        call lsquit('Full_DECMP2_calculation: Only implemented for MP2!', DECinfo%output)
@@ -1777,25 +1781,25 @@ contains
        ! Only copy valence orbitals into array2 structure
        call mem_alloc(Cocc,nbasis,nocc)
        do i=1,nocc
-          Cocc(:,i) = MyMolecule%Co(:,i+Ncore)
+          Cocc(:,i) = MyMolecule%Co%elm2(:,i+Ncore)
        end do
 
        ! Fock valence
        do j=1,nocc
           do i=1,nocc
-             ppfock(i,j) = MyMolecule%ppfock(i+Ncore,j+Ncore)
+             ppfock(i,j) = MyMolecule%oofock%elm2(i+Ncore,j+Ncore)
           end do
        end do
        offset = ncore
     else
        ! No frozen core, simply copy elements for all occupied orbitals
        call mem_alloc(Cocc,nbasis,nocc)
-       Cocc=MyMolecule%Co
-       ppfock = MyMolecule%ppfock
+       Cocc=MyMolecule%Co%elm2
+       ppfock = MyMolecule%oofock%elm2
        offset=0
     end if
     call mem_alloc(Cvirt,nbasis,nvirt)
-    Cvirt = MyMolecule%Cv
+    Cvirt = MyMolecule%Cv%elm2
     e1=0E0_realk
     e2=0E0_realk
     e3=0E0_realk
@@ -1979,7 +1983,7 @@ contains
                 ! Contribution 2
                 ! ''''''''''''''
                 do c=1,nvirt
-                   tmp = t2val(c,i,b)*MyMolecule%qqfock(a,c) + t2val(a,i,c)*MyMolecule%qqfock(b,c)
+                   tmp = t2val(c,i,b)*MyMolecule%vvfock%elm2(a,c) + t2val(a,i,c)*MyMolecule%vvfock%elm2(b,c)
                    tmp = multaibj*tmp
                    ! Update total atomic fragment energy contribution 2
                    e2_tmp(atomI,atomJ) = e2_tmp(atomI,atomJ) + tmp
@@ -2926,6 +2930,10 @@ contains
     integer :: noccEOS,j,centralatom,nvirtEOS
     integer,pointer :: occEOSidx(:),virtEOSidx(:)
 
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(GetSortedFockMaxElements) not implemented for distributed mol",-1)
+    endif
+
     noccEOS = 0
     do j=1,nOcc !note this include core orbitals
        CentralAtom=OccOrbitals(j)%centralatom
@@ -2944,7 +2952,7 @@ contains
        endif
        OrbOccFockTrackMyAtom(j) = j
     enddo
-    call GetFockMaxElement(FmaxOcc,nocc,MyMolecule%ppFock,noccEOS,occEOSidx,ncore)
+    call GetFockMaxElement(FmaxOcc,nocc,MyMolecule%oofock%elm2,noccEOS,occEOSidx,ncore)
     call mem_dealloc(occEOSidx)
     call real_inv_sort_with_tracking(FmaxOcc,OrbOccFockTrackMyAtom,nocc)
 
@@ -2966,7 +2974,7 @@ contains
        endif
        OrbVirtFockTrackMyAtom(j) = j
     enddo
-    call GetFockMaxElement(FmaxVirt,nvirt,MyMolecule%qqFock,nvirtEOS,virtEOSidx,0)
+    call GetFockMaxElement(FmaxVirt,nvirt,MyMolecule%vvfock%elm2,nvirtEOS,virtEOSidx,0)
     call mem_dealloc(virtEOSidx)
     call real_inv_sort_with_tracking(FmaxVirt,OrbVirtFockTrackMyAtom,nvirt)
   end subroutine GetSortedFockMaxElements

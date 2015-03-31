@@ -2821,7 +2821,7 @@ end function max_batch_dimension
 
       call mat_free(h)
     else
-      call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
+      call mat_set_from_full(MyMolecule%fock%elm1, 1E0_realk, F)
     endif
 
     ! Get HF energy

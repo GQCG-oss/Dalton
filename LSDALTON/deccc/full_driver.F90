@@ -150,6 +150,10 @@ contains
     logical :: fragment_job
     real(realk),pointer :: ppfock_fc(:,:), Co_fc(:,:)
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_cc_dispatch): does not work with distributed full molecule",-1)
+    endif
+
     Ecorr = 0.0E0_realk
 
     if(DECinfo%FrozenCore) then
@@ -168,7 +172,7 @@ contains
        call mem_alloc(ppfock_fc,nocc,nocc)
        do j=1,nocc
           do i=1,nocc
-             ppfock_fc(i,j) = MyMolecule%ppfock(MyMolecule%ncore+i,MyMolecule%ncore+j)
+             ppfock_fc(i,j) = MyMolecule%oofock%elm2(MyMolecule%ncore+i,MyMolecule%ncore+j)
           end do
        end do
 
@@ -176,7 +180,7 @@ contains
        call mem_alloc(Co_fc,nbasis,nocc)
        do j=1,nocc
           do i=1,nbasis
-             Co_fc(i,j) = MyMolecule%Co(i,MyMolecule%ncore+j)
+             Co_fc(i,j) = MyMolecule%Co%elm2(i,MyMolecule%ncore+j)
           end do
        end do
 
@@ -191,9 +195,9 @@ contains
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%CCSDmultipliers)then
-          call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-             & MyMolecule%fock, nbasis,nocc,nvirt,mylsitem, &
-             & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
+          call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,&
+             & MyMolecule%fock%elm2, nbasis,nocc,nvirt,mylsitem, &
+             & print_level,fragment_job,MyMolecule%oofock%elm2,MyMolecule%vvfock%elm2,ecorr)
        else
           Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
              & mylsitem,print_level,fragment_job)
@@ -354,6 +358,10 @@ contains
     !    fulldriver = .TRUE.
     !    call init_cabs(fulldriver)
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_canonical_mp2_f12): does not work with PDM type fullmolecule",-1)
+    endif
+
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
@@ -374,7 +382,7 @@ contains
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
     ! Transform AO integrals to MO integrals (A I | B J)
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'aiai',gAO,gMO)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'aiai',gAO,gMO)
     call mem_dealloc(gao)
 
     call get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
@@ -404,8 +412,8 @@ contains
              do I=1,nocc
                 do A=1,nvirt
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%ppfock(I,I) + MyMolecule%ppfock(J,J) &
-                        & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
+                   eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                        & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
                    eps = gmo(A,I,B,J)/eps
                    Taibj(a,i,b,j) = eps
                 enddo
@@ -421,8 +429,8 @@ contains
                 do A=1,nvirt
 
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%ppfock(I,I) + MyMolecule%ppfock(J,J) &
-                        & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
+                   eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                        & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
 
                    ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
                    mp2_energy = mp2_energy + gmo(A,I,B,J)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))/eps
@@ -1246,6 +1254,10 @@ contains
     real(realk) :: tmp
     real(realk) :: E21_Viajb, E21_Viija, E21_Viajj 
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_get_ccsd_f12_energy): does not work with PDM fullmolecule",-1)
+    endif
+
     ! Init dimensions
     nocc = MyMolecule%nocc
     nvirt = MyMolecule%nvirt
@@ -1267,7 +1279,7 @@ contains
 
     ! Transform AO integrals to MO integrals (A I | B J)
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'aiai',gAO,AIBJ)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'aiai',gAO,AIBJ)
     call mem_dealloc(gao)
 
     call get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
@@ -1280,10 +1292,10 @@ contains
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
     !   Rapbq
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'apap',gAO,Rapbq)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'apap',gAO,Rapbq)
     !   Ripaq
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ipap',gAO,Ripaq)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipap',gAO,Ripaq)
     call mem_dealloc(gao)
 
     !   Rrrrc
@@ -1292,13 +1304,13 @@ contains
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCC')
     !   Rambc
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'amac',gAO,Rambc)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'amac',gAO,Rambc)
     !   Rimac
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'imac',gAO,Rimac)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imac',gAO,Rimac)
     !   Ramic
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'amic',gAO,Ramic)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'amic',gAO,Ramic)
     call mem_dealloc(gao)
 
     !   Rrrrc
@@ -1307,10 +1319,10 @@ contains
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRF')
     !   Fiajb
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'iaia',gAO,Fiajb)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iaia',gAO,Fiajb)
     !   Fijka
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'iiia',gAO,Fijka)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiia',gAO,Fijka)
     call mem_dealloc(gao)
 
     ! Calculate standard CCSD energy (brainless summation in this test code)
@@ -1832,6 +1844,9 @@ contains
 #ifdef VAR_MPI
     local = .false.
 #endif
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_get_ccsd_singles_and_doubles): does not work with PDM fullmolecule",-1)
+    endif
 
     ! Quick fix to always use CCSD model
     !    save_model=DECinfo%ccmodel
@@ -1856,22 +1871,22 @@ contains
        call mem_alloc(ppfock,nocc,nocc)
        do j=1,nocc
           do i=1,nocc
-             ppfock(i,j) = MyMolecule%ppfock(MyMolecule%ncore+i,MyMolecule%ncore+j)
+             ppfock(i,j) = MyMolecule%oofock%elm2(MyMolecule%ncore+i,MyMolecule%ncore+j)
           end do
        end do
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%nocc
-       call ccsolver(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
-            & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nvirt,mylsitem,&
+       call ccsolver(solver_ccmodel,MyMolecule%Co%elm2(1:nbasis,startidx:endidx),&
+            & MyMolecule%Cv%elm2,MyMolecule%fock%elm2, nbasis,nocc,nvirt,mylsitem,&
             & print_level,energy,&
             & VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
        call mem_dealloc(ppfock)
 
     else
 
-       call ccsolver(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-            & MyMolecule%fock, nbasis,nocc,nvirt,mylsitem, print_level, &
+       call ccsolver(solver_ccmodel,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,&
+            & MyMolecule%fock%elm2, nbasis,nocc,nvirt,mylsitem, print_level, &
             & energy,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
 
     end if

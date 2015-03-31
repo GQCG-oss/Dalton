@@ -3943,6 +3943,9 @@ subroutine get_CCSDgradient_main(MyMolecule,mylsitem,DHF,mp2gradient,fullgrad)
 
   call LSTIMER('START',tcpu,twall,DECinfo%output)
   call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+  if(MyMolecule%mem_distributed)then
+     call lsquit("ERROR(get_CCSDgradient_main) not implemented for distributed matrices in molecule",-1)
+  endif
 
 print*, "ready to calculate the dipole moment"
 
@@ -3958,8 +3961,8 @@ print*, "ready to calculate the dipole moment"
   ! **********************************
   call mat_init(Cocc,nbasis,nocc)
   call mat_init(Cvirt,nbasis,nvirt)
-  call mat_set_from_full(MyMolecule%Co(1:nbasis,1:nocc), 1E0_realk, Cocc)
-  call mat_set_from_full(MyMolecule%Cv(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
+  call mat_set_from_full(MyMolecule%Co%elm2(1:nbasis,1:nocc), 1E0_realk, Cocc)
+  call mat_set_from_full(MyMolecule%Cv%elm2(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
 
   DMP2AO = array2_init([nbasis,nbasis])
 
@@ -3989,27 +3992,27 @@ print*, "ready to calculate the dipole moment"
   call print_matrix_real(dij%val,nocc,nocc)
 
   call dec_simple_basis_transform2(nbasis,nocc,&
-       & MyMolecule%Co,dij%val,dijao%val) 
+       & MyMolecule%Co%elm2,dij%val,dijao%val) 
 
   call dec_simple_basis_transform2(nbasis,nvirt,&
-       & MyMolecule%Cv,dab%val,dabao%val) 
+       & MyMolecule%Cv%elm2,dab%val,dabao%val) 
   
   write(*, *) ''
   write(*, *) 'Co basis'
   k=1
   do i=1,nocc
     do j=1,nbasis
-      write(*,'(f16.10)',advance='no') MyMolecule%Co(j,i)
+      write(*,'(f16.10)',advance='no') MyMolecule%Co%elm2(j,i)
       k=k+1
     end do
     write(*, *) ''
   end do
 
-  call dec_diff_basis_transform2(nbasis,nocc,nvirt,MyMolecule%Co,&
-       & MyMolecule%Cv,dia%val,diaao%val) 
+  call dec_diff_basis_transform2(nbasis,nocc,nvirt,MyMolecule%Co%elm2,&
+       & MyMolecule%Cv%elm2,dia%val,diaao%val) 
 
-  call dec_diff_basis_transform2(nbasis,nvirt,nocc,MyMolecule%Cv,&
-       & MyMolecule%Co,dai%val,daiao%val) 
+  call dec_diff_basis_transform2(nbasis,nvirt,nocc,MyMolecule%Cv%elm2,&
+       & MyMolecule%Co%elm2,dai%val,daiao%val) 
 
   DMP2AO = dijao+diaao+daiao+dabao
 

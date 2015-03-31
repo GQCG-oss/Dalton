@@ -598,6 +598,12 @@ contains
     logical :: gm
     integer(kind=ls_mpik) :: master
     integer :: natoms2
+    integer :: Co_addr(infpar%nodtot)
+    integer :: Cv_addr(infpar%nodtot)
+    integer :: fock_addr(infpar%nodtot)
+    integer :: oofock_addr(infpar%nodtot)
+    integer :: vvfock_addr(infpar%nodtot)
+
     master = 0
 
     IF(infpar%mynum==0)THEN ! Global master
@@ -621,6 +627,9 @@ contains
     call ls_mpibcast(MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
 
+    !simple logicals
+    call ls_mpibcast(MyMolecule%mem_distributed,master,MPI_COMM_LSDALTON)
+
     ! Simple reals
     call ls_mpibcast(MyMolecule%Edisp,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
@@ -637,17 +646,21 @@ contains
           call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
           call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
        ENDIF
-       call mem_alloc(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc)
-       call mem_alloc(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nvirt)
-!       IF(DECinfo%F12)THEN
-!          call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
-!          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-!       ENDIF
-       if(.not. DECinfo%noaofock) then
-          call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
-       end if
-       call mem_alloc(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc)
-       call mem_alloc(MyMolecule%qqfock,MyMolecule%nvirt,MyMolecule%nvirt)
+       !IF(DECinfo%F12)THEN
+       !   call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
+       !   call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+       !ENDIF
+
+       if(.not.MyMolecule%mem_distributed)then
+          call tensor_init(MyMolecule%Co,[MyMolecule%nbasis,MyMolecule%nocc],2)
+          call tensor_init(MyMolecule%Cv,[MyMolecule%nbasis,MyMolecule%nvirt],2)
+          if(.not. DECinfo%noaofock) then
+             call tensor_init(MyMolecule%fock,[MyMolecule%nbasis,MyMolecule%nbasis],2)
+          end if
+          call tensor_init(MyMolecule%oofock,[MyMolecule%nocc,MyMolecule%nocc],2)
+          call tensor_init(MyMolecule%vvfock,[MyMolecule%nvirt,MyMolecule%nvirt],2)
+       endif
+
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nvirt)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
@@ -690,17 +703,56 @@ contains
 
     ! Real pointers
     ! -------------
-    call ls_mpibcast(MyMolecule%Co,MyMolecule%nbasis,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%Cv,MyMolecule%nbasis,MyMolecule%nvirt,master,MPI_COMM_LSDALTON)
-!    IF(DECinfo%F12)THEN
-!       call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
-!       call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-!    ENDIF
-    if(.not. DECinfo%noaofock) then
-       call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
-    end if
-    call ls_mpibcast(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%qqfock,MyMolecule%nvirt,MyMolecule%nvirt,master,MPI_COMM_LSDALTON)
+    !IF(DECinfo%F12)THEN
+    !   call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
+    !   call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+    !ENDIF
+
+    if(.not.MyMolecule%mem_distributed)then
+
+       !master get adresses
+       if(gm)then
+          Co_addr=MyMolecule%Co%addr_p_arr
+          Cv_addr=MyMolecule%Cv%addr_p_arr
+          if(.not. DECinfo%noaofock) then
+             fock_addr=MyMolecule%fock%addr_p_arr
+          endif
+          oofock_addr=MyMolecule%oofock%addr_p_arr
+          vvfock_addr=MyMolecule%vvfock%addr_p_arr
+       endif
+
+       !broadcast addresses
+       call ls_mpibcast(Co_addr,infpar%lg_nodtot,infpar%master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(Cv_addr,infpar%lg_nodtot,infpar%master,MPI_COMM_LSDALTON)
+       if(.not. DECinfo%noaofock) then
+          call ls_mpibcast(fock_addr,infpar%lg_nodtot,infpar%master,MPI_COMM_LSDALTON)
+       endif
+       call ls_mpibcast(oofock_addr,infpar%lg_nodtot,infpar%master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(vvfock_addr,infpar%lg_nodtot,infpar%master,MPI_COMM_LSDALTON)
+
+       !slaves set matrices
+       if(.not.gm)then
+          MyMolecule%Co     = get_tensor_from_parr(Co_addr(infpar%lg_mynum+1))
+          MyMolecule%Cv     = get_tensor_from_parr(Cv_addr(infpar%lg_mynum+1))
+          if(.not. DECinfo%noaofock) then
+             MyMolecule%fock   = get_tensor_from_parr(fock_addr(infpar%lg_mynum+1))
+          endif
+          MyMolecule%oofock = get_tensor_from_parr(oofock_addr(infpar%lg_mynum+1))
+          MyMolecule%vvfock = get_tensor_from_parr(vvfock_addr(infpar%lg_mynum+1))
+       endif
+
+    else
+
+       call ls_mpibcast(MyMolecule%Co%elm2,MyMolecule%nbasis,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%Cv%elm2,MyMolecule%nbasis,MyMolecule%nvirt,master,MPI_COMM_LSDALTON)
+       if(.not. DECinfo%noaofock) then
+          call ls_mpibcast(MyMolecule%fock%elm2,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+       end if
+       call ls_mpibcast(MyMolecule%oofock%elm2,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%vvfock%elm2,MyMolecule%nvirt,MyMolecule%nvirt,master,MPI_COMM_LSDALTON)
+
+    endif
+
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%nvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
@@ -2403,6 +2455,7 @@ contains
     call ls_mpi_buffer(DECitem%PL,Master)
     call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
+    call ls_mpi_buffer(DECitem%distribute_fullmolecule,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)

@@ -409,6 +409,10 @@ contains
        ! fragment calculations) to calculate appriximate T1-transformed Fock matrix
        ! which effectively describes singles polarization effects in a simple manner.
        if(DECinfo%SinglesPolari) then
+          if(MyMolecule%mem_distributed)then
+             call lsquit("ERROR(main_fragment_driver): singles polarization does &
+             &not work with distributed molecular structure",-1)
+          endif
 
           fockt1 = array2_init([nbasis,nbasis])
           ! Get T1 transformed Fock matrix in AO basis
@@ -416,7 +420,7 @@ contains
 
           ! Set fock matrix associated with fullmolecule structure
           ! equal to T1 transformed Fock matrix
-          MyMolecule%fock(1:nbasis,1:nbasis) = fockt1%val(1:nbasis,1:nbasis)
+          MyMolecule%fock%elm2(1:nbasis,1:nbasis) = fockt1%val(1:nbasis,1:nbasis)
           call array2_free(fockt1)
 
           ! Init improved full molecular singles constructed from
@@ -523,7 +527,7 @@ contains
     ! ensure that the fullmolecule structure contains the standard
     ! (NOT T1 transformed) Fock matrix at output
     if(DECinfo%SinglesPolari) then
-       call mem_dealloc(MyMolecule%fock)
+       call tensor_free(MyMolecule%fock)
        call molecule_get_fock(MyMolecule,mylsitem)  ! Get standard Fock matrix again
        call array2_free(t1old)
        call array2_free(t1new)

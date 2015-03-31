@@ -6291,9 +6291,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     bv(2) = nvirt
 
     ! Initialize stuff in array2 format
-    Co = array2_init(bo,MyMolecule%Co)
-    Co2 = array2_init(bo,MyMolecule%Co)
-    Cv = array2_init(bv,MyMolecule%Cv)
+    Co = array2_init(bo,MyMolecule%Co%elm2)
+    Co2 = array2_init(bo,MyMolecule%Co%elm2)
+    Cv = array2_init(bv,MyMolecule%Cv%elm2)
 
     ! Get T1-transformed Fock matrix in AO basis
     call Get_AOt1Fock(mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
