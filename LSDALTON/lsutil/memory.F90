@@ -1942,6 +1942,8 @@ subroutine debug_mem_stats(lupri)
      ELSEIF (max_mem_used_global.LT.1000000000) THEN
         write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
 #ifdef VAR_INT64
+     ELSEIF (max_mem_used_global.LT.1000000000000) THEN
+        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
      ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
         write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
      ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
