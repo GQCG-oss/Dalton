@@ -85,6 +85,16 @@ contains
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
          & OccOrbitals, UnoccOrbitals)
 
+    if (DECinfo%only_generate_DECorbs) then
+       print*,
+       print*, 'Quitting after DEC orbitals have been written to file'
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a)') 'Quitting after DEC orbitals have been written to file'
+       call lsquit('Quitting after DEC orbitals have been written to file',DECinfo%output)
+    end if
+
+
+
     ! *************************************************
     ! Optimize all atomic fragments and calculate pairs
     ! *************************************************
