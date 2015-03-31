@@ -361,7 +361,7 @@ contains
   !>    MOs for this subsystem fixed (they are already orthogonal).                  
   !> \author Kasper Kristensen
   subroutine get_orthogonal_basis_for_subsystem(this,nsub,&
-       & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsub,Cvirtsub)
+       & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsub,Cvirtsub,S)
     implicit none
     !> Subsystem under consideration
     integer,intent(in) :: this
@@ -384,6 +384,8 @@ contains
     !              in the virtual MOs for other subsystems,
     !              this is investigated inside this subroutine).
     type(matrix),intent(inout) :: Cvirtsub
+    !> AO Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     integer :: nocciso,nvirtiso,nbasisiso,nvirtmax,i,nbasisfull,j
     integer :: idx,nbasissub,sub,nbasisother,nvirtother,norb,nvirtsub
     integer,pointer :: basisidx(:),basisidx_other(:)
@@ -496,7 +498,7 @@ contains
              ! Project out components from the norb orbitals already
              ! included in C array
              call project_out_MOs(nbasisfull,norb,C(:,1:norb),&
-                  & MyMoleculeFULL%overlap,Cother,Cother_norm)
+                  & S,Cother,Cother_norm)
 
              ! Include orbital "i" only if its norm after
              ! projection is above threshold
@@ -509,7 +511,7 @@ contains
                 end do
                 if(DECinfo%SNOOPdebug) then
                    call dec_simple_basis_transform1(nbasisfull,1,&
-                        & C(:,norb),MyMoleculeFULL%overlap,testnorm)
+                        & C(:,norb),S,testnorm)
                    write(DECinfo%output,*) 'sub,norb,norm1,norm2',sub,&
                         & norb,Cother_norm,testnorm(1,1)
                 end if
@@ -554,7 +556,7 @@ contains
   !> against the occupied orbitals on subsystem assuming that all MOs
   !> use all are expanded in terms of all basis functions.
   !> \author Kasper Kristensen
-  subroutine get_orthogonal_basis_for_subsystem_allvirt(MyMoleculeFULL,Cocc,Cvirt)
+  subroutine get_orthogonal_basis_for_subsystem_allvirt(MyMoleculeFULL,Cocc,Cvirt,S)
     implicit none
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMoleculeFULL
@@ -562,6 +564,8 @@ contains
     type(matrix),intent(in) :: Cocc
     !> Virtual MO coefficients (orthogonalized against Cocc -and possibly remove redundancies)
     type(matrix),intent(inout) :: Cvirt
+    !> AO Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     integer :: nocc,nbasis,i,j,nvirtmax,nvirtsub,idx,norb
     real(realk),pointer :: C(:,:), Ctmp(:,:)
     real(realk) :: Ctmp_norm,thr,testnorm(1,1)
@@ -622,7 +626,7 @@ contains
 
        ! Project out components already included in C array
        call project_out_MOs(nbasis,norb,C(:,1:norb),&
-            & MyMoleculeFULL%overlap,Ctmp,Ctmp_norm)
+            & S,Ctmp,Ctmp_norm)
 
        ! Include orbital "i" only if its norm after
        ! projection is above threshold
@@ -635,7 +639,7 @@ contains
           end do
           if(DECinfo%SNOOPdebug) then
              call dec_simple_basis_transform1(nbasis,1,&
-                  & C(:,norb),MyMoleculeFULL%overlap,testnorm)
+                  & C(:,norb),S,testnorm)
              write(DECinfo%output,*) 'i,norb,norm1,norm2',i,&
                   & norb,Ctmp_norm,testnorm(1,1)
           end if
@@ -978,7 +982,7 @@ contains
   !> such that they mimic the FULL occupied and virtual orbitals as much as possible
   !> in a least squares sense (defined by the natural connection).
   subroutine rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,sub,&
-       & OccOrbitals,VirtOrbitals,lssub,CoccSUBmat,CvirtSUBmat)
+       & OccOrbitals,VirtOrbitals,lssub,CoccSUBmat,CvirtSUBmat,S)
     implicit none
     !> Full molecule info for FULL
     type(fullmolecule),intent(in) :: MyMoleculeFULL
@@ -991,6 +995,8 @@ contains
     type(lsitem), intent(inout) :: lssub
     !> Occupied and virtual orbitals for subsystem to be rotated
     type(matrix),intent(inout) :: CoccSUBmat, CvirtSUBmat
+    !> AO Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     real(realk),pointer :: CcoreSUB(:,:),CvalSUB(:,:),CvirtSUB(:,:),CoccSUB(:,:)
     real(realk),pointer :: CcoreFULL(:,:),CvalFULL(:,:),CvirtFULL(:,:)
     integer :: noccSUB,nbasis,nvirt,ncoreFULL,ncoreSUB,nvalSUB,nvalFULL,noccFULL
@@ -1043,15 +1049,15 @@ contains
 
     
     ! Rotate core subsystem orbitals to mimic FULL orbitals
-    call get_natural_connection_subsystem_matrix(nbasis,ncoreSUB,MyMoleculeFULL%overlap,&
+    call get_natural_connection_subsystem_matrix(nbasis,ncoreSUB,S,&
          & CcoreFULL,CcoreSUB)
 
     ! Rotate valence subsystem orbitals to mimic FULL orbitals
-    call get_natural_connection_subsystem_matrix(nbasis,nvalSUB,MyMoleculeFULL%overlap,&
+    call get_natural_connection_subsystem_matrix(nbasis,nvalSUB,S,&
          & CvalFULL,CvalSUB)
 
     ! Rotate virtual subsystem orbitals to mimic FULL orbitals
-    call get_natural_connection_subsystem_matrix(nbasis,nvirt,MyMoleculeFULL%overlap,&
+    call get_natural_connection_subsystem_matrix(nbasis,nvirt,S,&
          & CvirtFULL,CvirtSUB)
 
     ! Collect occupied orbitals in one matrix with core before valence

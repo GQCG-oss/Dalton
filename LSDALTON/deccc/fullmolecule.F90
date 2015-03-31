@@ -65,11 +65,10 @@ contains
     
     ! Get Fock, overlap, and MO coefficient matrices.
     call molecule_get_reference_state(molecule,mylsitem)
-    call molecule_get_overlap(molecule,mylsitem)
     call molecule_mo_fock(molecule)
     
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
-       call dec_get_canonical_orbitals(molecule)
+       call dec_get_canonical_orbitals(molecule,mylsitem)
     end if
 
     call molecule_get_carmom(molecule,mylsitem)
@@ -103,12 +102,12 @@ contains
 
 
   !> \brief Initialize informations about full molecule
-  !> using input Fock,MO, and overlap matrix 
+  !> using input Fock and MO matrices.
   !> NOTE: If this routine is modified, then molecule_init_from_files must be modified
   !> in the same manner!
   !> \author Kasper Kristensen
   !> \date November 2011
-  subroutine molecule_init_from_inputs(molecule,mylsitem,F,S,C,D)
+  subroutine molecule_init_from_inputs(molecule,mylsitem,F,C,D)
 
     implicit none
     !> Full molecule structure to be initialized
@@ -117,8 +116,6 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Fock matrix
     type(matrix),intent(in) :: F
-    !> Overlap matrix
-    type(matrix),intent(in) :: S
     !> MO coefficients
     type(matrix),intent(in) :: C
     !> Density Matrix 
@@ -134,8 +131,8 @@ contains
      ! Init basic info (molecular dimensions etc.)
     call molecule_init_basics(molecule,mylsitem,nMO=nMO)
 
-    ! Copy Fock, density, MO, and overlap matrices to molecule structure
-    call molecule_copy_FSC_matrices(molecule,F,S,C)
+    ! Copy Fock and MO overlap matrices to molecule structure
+    call molecule_copy_FC_matrices(molecule,F,C)
 
     ! Get absolute overlap matrix for space selection
     call molecule_init_abs_overlap(molecule,mylsitem)
@@ -145,7 +142,7 @@ contains
 
  
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
-       call dec_get_canonical_orbitals(molecule)
+       call dec_get_canonical_orbitals(molecule,mylsitem)
     end if
      
     call molecule_get_carmom(molecule,mylsitem)
@@ -279,18 +276,16 @@ contains
   end subroutine molecule_init_basics
 
 
-  !> \brief Copy Fock,density,MO, and overlap matrices in type(matrix) format to molecule structure.
+  !> \brief Copy Fock and MO matrices in type(matrix) format to molecule structure.
   !> \author Kasper Kristensen
   !> \date November 2011
-  subroutine molecule_copy_FSC_matrices(molecule,F,S,C)
+  subroutine molecule_copy_FC_matrices(molecule,F,C)
 
     implicit none
     !> Full molecule structure to be initialized
     type(fullmolecule), intent(inout) :: molecule
     !> Fock matrix
     type(matrix),intent(in) :: F
-    !> Overlap matrix
-    type(matrix),intent(in) :: S
     !> MO coefficients
     type(matrix),intent(in) :: C
     real(realk),pointer :: basis(:,:)
@@ -299,32 +294,26 @@ contains
     call mem_alloc(molecule%fock,F%nrow,F%ncol)
     call mat_to_full(F, 1.0_realk, molecule%fock)
 
-    ! Overlap matrix
-    call mem_alloc(molecule%overlap,S%nrow,S%ncol)
-    call mat_to_full(S, 1.0_realk, molecule%overlap)
-
     ! MO coefficient matrix
     call mem_alloc(basis,C%nrow,C%ncol)
     call mat_to_full(C, 1.0_realk, basis)
     call molecule_generate_basis(molecule,basis)
     call mem_dealloc(basis)
 
-  end subroutine molecule_copy_FSC_matrices
+  end subroutine molecule_copy_FC_matrices
 
 
-  !> \brief Copy Fock,density,MO, and overlap matrices in molecule strucutre to type(matrix) format.
+  !> \brief Copy Fock and MO matrices in molecule strucutre to type(matrix) format.
   !> (included intialization of matrices)
   !> \author Kasper Kristensen
   !> \date December 2012
-  subroutine molecule_copyback_FSC_matrices(molecule,F,S,C)
+  subroutine molecule_copyback_FC_matrices(molecule,F,C)
 
     implicit none
     !> Full molecule structure
     type(fullmolecule), intent(in) :: molecule
     !> Fock matrix
     type(matrix),intent(inout) :: F
-    !> Overlap matrix
-    type(matrix),intent(inout) :: S
     !> MO coefficients
     type(matrix),intent(inout) :: C
     integer :: nbasis,i
@@ -332,10 +321,8 @@ contains
 
     nbasis = molecule%nbasis
     call mat_init(F,nbasis,nbasis)
-    call mat_init(S,nbasis,nbasis)
     call mat_init(C,nbasis,nbasis)
     call mat_set_from_full(Molecule%fock,1.0_realk,F)
-    call mat_set_from_full(Molecule%overlap,1.0_realk,S)
 
     call mem_alloc(tmp,nbasis,nbasis)
     ! Put occ orbitals into tmp
@@ -352,7 +339,7 @@ contains
     call mem_dealloc(tmp)
 
 
-  end subroutine molecule_copyback_FSC_matrices
+  end subroutine molecule_copyback_FC_matrices
 
 
 
@@ -469,17 +456,24 @@ contains
   !> and virt-virt blocks of the diagonal canonical MO Fock matrix.
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine dec_get_canonical_orbitals(molecule)
+  subroutine dec_get_canonical_orbitals(molecule,mylsitem)
 
     implicit none
     !> Full molecule info
     type(fullmolecule), intent(inout) :: molecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
     integer :: nbasis,i,nocc,nunocc
-    real(realk), pointer :: eival(:), C(:,:)
+    real(realk), pointer :: eival(:), C(:,:), S(:,:)
 
     nbasis = molecule%nbasis
     nocc = molecule%nocc
     nunocc = molecule%nunocc
+
+    ! AO overlap
+    call mem_alloc(S,nbasis,nbasis)
+    call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
+         & S,nbasis,nbasis,AORdefault,AORdefault)
 
     ! Canonical MO coefficients
     call mem_alloc(C,nbasis,nbasis)
@@ -488,7 +482,7 @@ contains
     call mem_alloc(eival,nbasis)
 
     ! Diagonalize Fock matrix
-    call solve_eigenvalue_problem(nbasis,molecule%fock,molecule%overlap,eival,C)
+    call solve_eigenvalue_problem(nbasis,molecule%fock,S,eival,C)
 
     ! Set MO coefficients
     Molecule%Co = C(:,1:nocc)   ! occupied 
@@ -511,6 +505,7 @@ contains
 
     call mem_dealloc(C)
     call mem_dealloc(eival)
+    call mem_dealloc(S)
 
   end subroutine dec_get_canonical_orbitals
 
@@ -547,53 +542,6 @@ contains
 
 
 
-
-
-  !> \brief Read or construct (if it does not already exist) the overlap matrix
-  !> \author Kasper Kristensen
-  !> \date January 2012
-  subroutine molecule_get_overlap(molecule,mylsitem)
-
-    implicit none
-    !> Full molecule info
-    type(fullmolecule), intent(inout) :: molecule
-    !> LSitem
-    type(lsitem), intent(inout) :: mylsitem
-    type(matrix) :: S
-    integer :: nbasis
-    logical :: overlap_exist
-
-    ! Init stuff
-    nbasis = molecule%nbasis
-    call mem_alloc(molecule%overlap,nbasis,nbasis)
-    inquire(file='overlapmatrix',exist=overlap_exist)
-
-    ! Read or construct overlap matrix
-    ! ********************************
-    if(overlap_exist) then
-
-       ! Read overlap matrix from file
-       write(DECinfo%output,*) 'Reading overlap matrix from file overlapmatrix...'
-       write(DECinfo%output,*)
-       call dec_read_mat_from_file('overlapmatrix',nbasis,nbasis,molecule%overlap)
-
-    else
-
-       ! Calculate overlap matrix from scratch
-       write(DECinfo%output,*) 'Calculating overlap matrix for DEC calculation...'
-       call mat_init(s,nbasis,nbasis)
-       call mat_zero(s)
-       call II_get_overlap(DECinfo%output,DECinfo%output,mylsitem%setting,s)
-       molecule%overlap=0.0E0_realk
-       call mat_to_full(s,1.0E0_realk,molecule%overlap)
-       call mat_free(s)
-
-    end if
-
-    !get occ-virt numerical overlap
-    call molecule_init_abs_overlap(molecule,mylsitem)
-
-  end subroutine molecule_get_overlap
 
   !> \author Patrick Ettenhuber
   !> \date Feb 2015
@@ -832,10 +780,6 @@ contains
 
     if(associated(molecule%atom_cabsstart)) then
        call mem_dealloc(molecule%atom_cabsstart)
-    end if
-
-    if(associated(molecule%overlap)) then
-       call mem_dealloc(molecule%overlap)
     end if
 
     if(associated(molecule%carmomocc)) then

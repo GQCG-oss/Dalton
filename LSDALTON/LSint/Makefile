@@ -35,6 +35,7 @@ F90_OBJS = \
         ThermiteDriver.o \
         ThermiteOverlapDistribution.o \
         ThermiteIntegrals.o \
+        ThermiteIntTransform.o \
         ThermiteProp.o \
         ThermiteMem.o \
         ODbatches.o     \

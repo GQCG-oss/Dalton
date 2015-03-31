@@ -1334,10 +1334,10 @@ contains
 
     ! Get MP2 gradient matrices in type(matrix) form
     if(DECinfo%frozencore) then
-       call convert_mp2gradient_matrices_to_typematrix(MyMolecule,fullgrad,&
+       call convert_mp2gradient_matrices_to_typematrix(mylsitem,MyMolecule,fullgrad,&
             & rho,Phi,Phivo, Phiov,Phioo=Phioo)
     else
-       call convert_mp2gradient_matrices_to_typematrix(MyMolecule,fullgrad,&
+       call convert_mp2gradient_matrices_to_typematrix(mylsitem,MyMolecule,fullgrad,&
             & rho,Phi,Phivo, Phiov)
     end if
 
@@ -2061,10 +2061,12 @@ contains
   !> Matrices are also initialized here.
   !> \author Kasper Kristensen
   !> \date December 2012
-  subroutine convert_mp2gradient_matrices_to_typematrix(MyMolecule,fullgrad,rho,Phi,&
+  subroutine convert_mp2gradient_matrices_to_typematrix(mylsitem,MyMolecule,fullgrad,rho,Phi,&
        & Phivo, Phiov,Phioo)
     implicit none
 
+    !> LS setting info
+    type(lsitem), intent(inout) :: mylsitem
     !> Full molecular info
     type(fullmolecule) :: MyMolecule
     !> MP2 gradient structure
@@ -2093,9 +2095,9 @@ contains
           call lsquit('convert_mp2gradient_matrices_to_typematrix: &
                & Phioo must be present for frozen core!',-1)
        end if
-       call get_Phi_MO_blocks(MyMolecule,fullgrad,Phivo,Phiov,Phioo=Phioo)
+       call get_Phi_MO_blocks(mylsitem,MyMolecule,fullgrad,Phivo,Phiov,Phioo=Phioo)
     else
-       call get_Phi_MO_blocks(MyMolecule,fullgrad,Phivo,Phiov)
+       call get_Phi_MO_blocks(mylsitem,MyMolecule,fullgrad,Phivo,Phiov)
     end if
 
   end subroutine convert_mp2gradient_matrices_to_typematrix
@@ -4573,9 +4575,11 @@ end if UNRELAXED2
   !> Matrices are also intialized here!
   !> \author Kasper Kristesen
   !> \date March 2013
-  subroutine get_Phi_MO_blocks(MyMolecule,fullgrad,Phivo,Phiov,Phioo)
+  subroutine get_Phi_MO_blocks(mylsitem,MyMolecule,fullgrad,Phivo,Phiov,Phioo)
 
     implicit none
+    !> LS setting info
+    type(lsitem), intent(inout) :: mylsitem
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Full MP2 gradient structure
@@ -4588,7 +4592,7 @@ end if UNRELAXED2
     type(matrix),intent(inout),optional :: Phioo
     integer :: nbasis,nocc,nvirt
     real(realk),pointer :: Phivo_simple(:,:), Phiov_simple(:,:), &
-         & Phioo_simple(:,:)
+         & Phioo_simple(:,:),S(:,:)
 
     ! Sanity check
     if(DECinfo%frozencore) then
@@ -4603,13 +4607,20 @@ end if UNRELAXED2
     nocc = MyMolecule%nocc
     nvirt = MyMolecule%nunocc
 
+    ! AO overlap matrix
+    call mem_alloc(S,nbasis,nbasis)
+    call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,mylsitem%SETTING,&
+         & S,nbasis,nbasis,AORdefault,AORdefault)
+
+
     ! Get MO blocks for Phi matrix in simple fortran form
     call mem_alloc(Phivo_simple,nvirt,nocc)
     call mem_alloc(Phiov_simple,nocc,nvirt)
     call mem_alloc(Phioo_simple,nocc,nocc)
-    call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,MyMolecule%overlap,&
+    call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,S,&
          & MyMolecule%Co,MyMolecule%Cv,fullgrad%Phi,&
          & Phivo_simple,Phiov_simple,Phioo_simple)
+    call mem_dealloc(S)
 
     ! Init and convert to type(matrix) form
     call mat_init(Phivo,nvirt,nocc)

@@ -644,7 +644,6 @@ contains
 !          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
 !       ENDIF
        call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
-       call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc)
        call mem_alloc(MyMolecule%qqfock,MyMolecule%nunocc,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
@@ -696,7 +695,6 @@ contains
 !       call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
 !    ENDIF
     call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%qqfock,MyMolecule%nunocc,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -1175,10 +1173,17 @@ contains
     if(master)taddr=t2%addr_p_arr
     call ls_mpi_buffer(taddr,infpar%lg_nodtot,infpar%master)
     if(.not.master)then
-      call mem_alloc(xo,nb*no)
-      call mem_alloc(yv,nb*nv)
-      call mem_alloc(Gbi,nb*no)
-      call mem_alloc(Had,nv*nb)
+       if(mem_is_background_buf_init())then
+          call mem_pseudo_alloc(xo,i8*nb*no)
+          call mem_pseudo_alloc(yv,i8*nb*nv)
+          call mem_pseudo_alloc(Gbi,i8*nb*no)
+          call mem_pseudo_alloc(Had,i8*nv*nb)
+       else
+          call mem_alloc(xo,nb*no)
+          call mem_alloc(yv,nb*nv)
+          call mem_alloc(Gbi,nb*no)
+          call mem_alloc(Had,nv*nb)
+       endif
     endif
     call ls_mpi_buffer(xo,nb*no,infpar%master)
     call ls_mpi_buffer(yv,nb*nv,infpar%master)
@@ -2364,6 +2369,7 @@ contains
     call ls_mpi_buffer(DECitem%RIMPSubGroupSize,Master)
     call ls_mpi_buffer(DECitem%RIMP2PDMTENSOR,Master)
     call ls_mpi_buffer(DECinfo%RIMP2ForcePDMCalpha,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_tiling,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%rimpisplit,Master)
