@@ -3778,9 +3778,9 @@
          end function get_next_mlndx
 
         end subroutine dil_tens_contr_partition
-!---------------------------------------------------------------------------------------------
-        subroutine dil_tensor_contract_pipe(cspec,darg,larg,rarg,alpha,beta,mem_lim,ebuf,ierr,&
-                                           &locked,nasync,lasync,num_gpus,num_mics)   !PARALLEL (MPI+OMP+CUDA+MIC)
+!----------------------------------------------------------------------------------------------
+        subroutine dil_tensor_contract_pipe(cspec,darg,larg,rarg,alpha,beta,mem_lim,hbuf,ierr,&
+                                           &locked,nasync,lasync,num_gpus,num_mics)             !PARALLEL (MPI+OMP+CUDA+MIC)
 !This subroutine implements pipelined tensor contractions for CPU/GPU/MIC.
 !Details:
 ! * Each Device is assigned several buffers:
@@ -3788,7 +3788,7 @@
 !   (b) 1 upload MPI buffer in Host RAM, same size as (a);
 !   (c) Accelerators only (No GPU Direct): 3 smaller MPI buffers in Host RAM (should fit the largest tile at least).
 !Notes:
-! * For GPU pipelining, <ebuf> must be pinned and its starting address must be properly aligned!
+! * For GPU pipelining, <hbuf> must be pinned and its starting address must be properly aligned!
 ! * There is no MPI barriers in this subroutine: Each process performs its own work and returns independently.
 ! * If <locked> is present and is .TRUE., MPI windows for distributed tensor arguments are assumed locked,
 !   such that MPI_WIN_FLUSH operation will be used for progressing the RMA. Otherwise, MPI_WIN_LOCK/UNLOCK will be used.
@@ -3799,27 +3799,25 @@
 ! * If <nasync> and <lasync> are present, the last series of MPI uploads will not be finalized here,
 !   but postponed for later: lasync(1:nasync) will contain the needed information.
         implicit none
-        type(contr_spec_t), intent(in):: cspec                 !in: tensor contraction specification
-        type(tens_arg_t), intent(inout):: darg                 !inout: destination tensor argument
-        type(tens_arg_t), intent(in):: larg                    !in: left tensor argument
-        type(tens_arg_t), intent(in):: rarg                    !in: right tensor argument
-        real(realk), intent(in):: alpha                        !in: tensor contraction prefactor (GEMM alpha)
-        real(realk), intent(in):: beta                         !in: GEMM beta
-        integer(INTL), intent(in):: mem_lim                    !in: local memory limit (bytes): buffer space
-        real(realk), intent(inout), target:: ebuf(1:)          !inout: existing external buffer (to avoid mem allocations)
-        integer(INTD), intent(inout):: ierr                    !out: error code (0:success)
-        logical, intent(in), optional:: locked                 !in: if .true., MPI wins for tens-args are assumed locked
-        integer(INTD), intent(out), optional:: nasync          !out: number of outstanding async MPI uploads
-        type(rank_win_t), intent(inout), optional:: lasync(1:) !out: outstanding async MPI uploads
-        integer(INTD), intent(in), optional:: num_gpus         !in: number of NVidia GPUs available on the node: (0..max)
-        integer(INTD), intent(in), optional:: num_mics         !in: number of Intel MICs available on the node: (0..max)
+        type(contr_spec_t), intent(in):: cspec                    !in: tensor contraction specification
+        type(tens_arg_t), intent(inout):: darg                    !inout: destination tensor argument
+        type(tens_arg_t), intent(in):: larg                       !in: left tensor argument
+        type(tens_arg_t), intent(in):: rarg                       !in: right tensor argument
+        real(realk), intent(in):: alpha                           !in: tensor contraction prefactor (GEMM alpha)
+        real(realk), intent(in):: beta                            !in: GEMM beta
+        integer(INTL), intent(in):: mem_lim                       !in: local memory limit (bytes): buffer space
+        real(realk), intent(inout), target, contiguous:: hbuf(1:) !inout: existing external buffer (to avoid mem allocations)
+        integer(INTD), intent(inout):: ierr                       !out: error code (0:success)
+        logical, intent(in), optional:: locked                    !in: if .true., MPI wins for tens-args are assumed locked
+        integer(INTD), intent(out), optional:: nasync             !out: number of outstanding async MPI uploads
+        type(rank_win_t), intent(inout), optional:: lasync(1:)    !out: outstanding async MPI uploads
+        integer(INTD), intent(in), optional:: num_gpus            !in: number of NVidia GPUs available on the node: (0..max)
+        integer(INTD), intent(in), optional:: num_mics            !in: number of Intel MICs available on the node: (0..max)
 !-----------------------------------------------------
         logical, parameter:: NO_CHECK=.false.         !argument check
         logical, parameter:: PREP_AND_COMM=.false.    !communication/tensor_preparation overlap
 !-------------------------------------------------
         integer(INTD):: i,j,k,l,m,n,impir
-        type(C_PTR):: hbuf_cp
-        real(realk), pointer, contiguous:: hbuf(:)  !Host buffer space
         type(dev_buf_t):: buf(0:MAX_DEVS-1)         !Host buffers for all devices (mapped to the Host buffer space)
         type(contr_task_list_t), target:: task_list !`Make it global threadsafe to allow reuse and avoid unnecessary allocations
         character(3):: contr_case,arg_reuse
@@ -3837,7 +3835,6 @@
 !Init:
         val=0E0_realk; size_of_real=sizeof(val)
         tc_flops=0d0; mm_flops=0d0; tmm=0d0
-        hbuf=>NULL(); hbuf_cp=C_NULL_PTR
         num_dev=1; gpu_on=.false.; mic_on=.false.
         async=.false.
         if(present(nasync)) then
@@ -4032,7 +4029,6 @@
 !Allocate/associate buffers:`Accelerators should allocate only an upload buffer (full size) and 3 MPI buffers (tile size)
  !Allocate global Host buffer space:
         tot_buf_vol=(mem_lim-mod(mem_lim,ALIGNMENT*BUFS_PER_DEV*num_dev))/size_of_real !total buffer volume for all devices
-        hbuf=>ebuf;                          !ebuf(1:tot_buf_vol) will be used for hbuf(1:)
         dev_buf_vol=tot_buf_vol/num_dev      !total buffer volume for each device
         arg_buf_vol=dev_buf_vol/BUFS_PER_DEV !max buffer volume for each tensor argument (tensor part)
         if(mod(arg_buf_vol*size_of_real,ALIGNMENT).ne.0_INTL) then; call cleanup(33_INTD); return; endif !trap
@@ -4624,8 +4620,6 @@
            call dil_dev_buf_destroy(buf(dil_dev_num(DEV_INTEL_MIC,j0)),je)
           enddo
          endif
- !Buffer space:
-         if(associated(hbuf)) nullify(hbuf)
          return
          end subroutine cleanup
 
