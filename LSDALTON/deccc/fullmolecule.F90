@@ -1274,7 +1274,7 @@ contains
 
     !Do we need to distribute the arrays? -> if more than 3GB and keyword, do distribute
 #ifdef VAR_MPI
-    if(Decinfo%distribute_fullmolecule_mem)then
+    if(Decinfo%distribute_fullmolecule)then
        if(molmem>((3*GB)/realk))then
           MyMolecule%mem_distributed = .true.
        else

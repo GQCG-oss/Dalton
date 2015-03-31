@@ -3125,8 +3125,8 @@ module lspdm_tensor_operations_module
     p_arr%a(addr)%comm        = infpar%lg_comm
 #else
     !set to invalid, since not used here
-    p_arr%a(addr)%nnod        = tiny(p_arr%a(addr)%comm)
-    p_arr%a(addr)%comm        = tiny(p_arr%a(addr)%comm)
+    p_arr%a(addr)%nnod        = -1
+    p_arr%a(addr)%comm        = -1
 #endif
 
     allocate( p_arr%a(addr)%access_type )
