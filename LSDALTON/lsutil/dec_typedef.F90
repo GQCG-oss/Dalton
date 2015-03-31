@@ -730,10 +730,7 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
-     !> Distances between Occ Orbitals and Atoms
-     real(realk), pointer :: DistanceTableOrbAtomOcc(:,:) => null()
-     !> Distances between Virtual Orbitals and Atoms
-     real(realk), pointer :: DistanceTableOrbAtomVirt(:,:) => null()
+
      !> Which atoms are phantom atoms (only basis functions)
      Logical, pointer :: PhantomAtom(:) => null()
 
