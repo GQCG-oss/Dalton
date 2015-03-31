@@ -400,6 +400,8 @@ module dec_typedef_module
 
      !> DEC Orbital treatment
      !> *********************
+     !> DEC is quitting after generating DEC orbitals to file
+     logical :: only_generate_DECorbs
      !> Absorb H atoms into heavy atoms during orbital assignment
      logical :: AbsorbHatoms
      !> Fit orbital coefficients in fragment (default: true)

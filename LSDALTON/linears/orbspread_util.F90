@@ -40,9 +40,9 @@ contains
     enddo
     IF(DeAllocTMP)THEN
        call mem_dealloc(orbspread_input%spread2) 
-       do i=1,4
-          call mat_free(orbspread_input%tmpM(i))
-       enddo
+!       do i=1,4
+!          call mat_free(orbspread_input%tmpM(i))
+!       enddo
     ENDIF
 
   end subroutine orbspread_free
@@ -136,9 +136,9 @@ contains
     ENDIF
     
     IF(AllocTMP)THEN
-       do i=1,4
-          call mat_init(orbspread_input%tmpM(i),norb,norb)
-       enddo
+!       do i=1,4
+!          call mat_init(orbspread_input%tmpM(i),norb,norb)
+!       enddo
     ENDIF
 
     ! set norb
@@ -257,6 +257,7 @@ contains
 
     real(realk)  :: diagR(norb,3), tmp(norb)
     integer      :: x, m,i
+    type(matrix) :: tmpM1
 
     m=inp%m
 
@@ -275,8 +276,10 @@ contains
        call mat_dmul(tmp,inp%R(x),'n',4E0_realk*m,1E0_realk,G)
     enddo
 
-    call mat_trans(G,inp%tmpM(1))
-    call mat_daxpy(-1E0_realk,inp%tmpM(1),G)
+    call mat_init(tmpM1,G%ncol,G%nrow)
+    call mat_trans(G,tmpM1)
+    call mat_daxpy(-1E0_realk,tmpM1,G)
+    call mat_free(tmpM1)
 
     !call mat_scal(0.5E0_realk,G)
 
