@@ -3461,7 +3461,7 @@ end if UNRELAXED2
        end do
        do j=1,nval
           do i=1,nval
-             Fockvalval(i,j) = MyMolecule%vvfock%elm2(i+ncore,j+ncore)
+             Fockvalval(i,j) = MyMolecule%oofock%elm2(i+ncore,j+ncore)
           end do
        end do
 
@@ -3497,7 +3497,7 @@ end if UNRELAXED2
        call mem_alloc(precfull,nvirt,nocc)
        do i=1,nocc
           do a=1,nvirt
-             precfull(a,i) = MyMolecule%oofock%elm2(a,a) - MyMolecule%oofock%elm2(i,i)
+             precfull(a,i) = MyMolecule%vvfock%elm2(a,a) - MyMolecule%oofock%elm2(i,i)
           end do
        end do
        call mat_init(prec,nvirt,nocc)

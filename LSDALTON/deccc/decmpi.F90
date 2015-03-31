@@ -708,7 +708,7 @@ contains
     !   call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
     !ENDIF
 
-    if(.not.MyMolecule%mem_distributed)then
+    if(MyMolecule%mem_distributed)then
 
        !master get adresses
        if(gm)then

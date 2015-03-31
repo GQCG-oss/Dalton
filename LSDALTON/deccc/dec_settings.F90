@@ -89,6 +89,7 @@ contains
 
     ! -- Debug modes
     DECinfo%test_fully_distributed_integrals = .false.
+    DECinfo%distribute_fullmolecule = .false.
     DECinfo%CRASHCALC               = .false.
     DECinfo%cc_driver_debug         = .false.
     DECinfo%cc_driver_use_bg_buffer = .false.
@@ -618,6 +619,8 @@ contains
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+       case('.DISTRIBUTE_FULLINFO')
+          DECinfo%distribute_fullmolecule = .true.
 
 
        !KEYWORDS RELATED TO FRAGMENT SPACES
