@@ -412,7 +412,6 @@ contains
                & t2wallacc-t1wallacc
           endif
           morejobs=.false.
-          print *,"I AM QUITTING"
        else
 
           ! Timing and flops

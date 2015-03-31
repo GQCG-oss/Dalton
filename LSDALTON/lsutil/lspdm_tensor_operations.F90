@@ -4706,8 +4706,6 @@ module lspdm_tensor_operations_module
 
         do i=1,arr%ntiles
            
-           print *,"this is weird, getting",i
-
            !set the buffer index
            bidx = mod(i-1,maxintmp)+1
 
@@ -4745,7 +4743,6 @@ module lspdm_tensor_operations_module
                  nel_one_sided = 0
               endif
 
-              print *,"get tile called",b,e
               call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=.true.,req = req(bidx))
               nel_one_sided = nel_one_sided + nelintile
            else
@@ -4789,8 +4786,6 @@ module lspdm_tensor_operations_module
            else
               if(arr%lock_set(i))call tensor_unlock_win(arr,i)
            endif
-
-           print *,"I AM PUTTING",alloc_in_dummy,norm2(tmp(b:e)),b,e
 
            call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
 

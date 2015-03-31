@@ -1064,6 +1064,12 @@ contains
        if(DECinfo%DECCO) then
           call lsquit('SNOOP cannot be used in connection with the DECCO keyword!',-1)
        end if
+
+       if(Decinfo%distribute_fullmolecule)then
+          print*,"WARNING: memory distribution for the molecule type in a snoop&
+             & calculation is currently not implemented -> falling back to standart"
+          Decinfo%distribute_fullmolecule = .false.
+       endif
        
     end if
 
@@ -1130,6 +1136,13 @@ contains
                & It is therefore not possible to print the fragment energies. &
                & Suggestion: Remove .PRINTFRAGS keyword!', DECinfo%output)
        ENDIF
+
+       if(Decinfo%distribute_fullmolecule)then
+          print*,"WARNING: memory distribution for the molecule type in a full&
+          & calculation is currently not implemented -> falling back to standart"
+          Decinfo%distribute_fullmolecule = .false.
+       endif
+
     ENDIF
 
     FirstOrderModel: if(DECinfo%ccModel /= MODEL_MP2.and.DECinfo%ccModel /= MODEL_CCSD.and.DECinfo%ccModel /= MODEL_RIMP2) then

@@ -313,22 +313,16 @@ contains
     logical :: loc
     integer :: tdim(2)
 
-    if( molecule%mem_distributed )then
-       call lsquit("ERROR(molecule_copy_FC_matrices) not working with PDM mol yet",-1)
-    endif
-
     loc = .not.molecule%mem_distributed
     tdim = [mol_block_size,mol_block_size]
 
     !FIXME: Avoid the mat_to_full and distribute it directly as tensor
-
     ! Fock matrix
     call tensor_minit(molecule%fock,[F%nrow,F%ncol],2, local=loc, atype="TDPD",tdims=tdim)
     call mat_to_full(F, 1.0_realk, molecule%fock%elm2)
     if(.not.loc)then
        call tensor_mv_dense2tiled(molecule%fock,.true.,dealloc_local=.true.)
     endif
-    call print_norm(molecule%fock,"molFock:")
 
 
     ! MO coefficient matrix
@@ -634,15 +628,20 @@ contains
     !> LSitem
     type(lsitem), intent(inout) :: mylsitem
 
-    if(molecule%mem_distributed)then
-       call lsquit("ERROR(molecule_init_abs_overlap): not working with PDM yet",-1)
-    endif
 
     if(DECinfo%use_abs_overlap)then
+
+       if(molecule%mem_distributed)then
+          call lsquit("ERROR(molecule_init_abs_overlap): not working with PDM yet",-1)
+       endif
+
        call mem_alloc(molecule%ov_abs_overlap,molecule%nocc,molecule%nvirt)
+
        molecule%ov_abs_overlap=0.0E0_realk
+
        call II_get_AbsoluteValue_overlap(DECinfo%output,6,Mylsitem%SETTING,molecule%nbasis,&
           &molecule%nocc,molecule%nvirt,molecule%Co%elm2,molecule%Cv%elm2,molecule%ov_abs_overlap)
+
     endif
 
  end subroutine molecule_init_abs_overlap
@@ -792,30 +791,25 @@ contains
     endif
     
     ! Delete transformation matrices for general basis
-    if(free_tensors)print*,"FREEING FULL Co",molecule%Co%addr_p_arr,"Comm",infpar%lg_comm,MPI_COMM_LSDALTON
     if(molecule%Co%initialized.and.free_tensors) then
        call tensor_free(molecule%Co)
     end if
 
-    if(free_tensors)print*,"FREEING FULL Cv"
     if(molecule%Cv%initialized.and.free_tensors) then
        call tensor_free(molecule%Cv)
     end if
 
     ! Delete AO fock matrix
-    if(free_tensors)print*,"FREEING FULL fock"
     if(molecule%fock%initialized.and.free_tensors) then
        call tensor_free(molecule%fock)
     end if
 
     ! OOFock
-    if(free_tensors)print*,"FREEING FULL oofock"
     if(molecule%oofock%initialized.and.free_tensors) then
        call tensor_free(molecule%oofock)
     end if
 
     ! VVFock
-    if(free_tensors)print*,"FREEING FULL vvfock"
     if(molecule%vvfock%initialized.and.free_tensors) then
        call tensor_free(molecule%vvfock)
     end if
@@ -1106,7 +1100,6 @@ contains
     if(.not.loc)then
        call tensor_mv_dense2tiled(molecule%Co,.true.,dealloc_local=.true.)
     endif
-    call print_norm(molecule%Co,"molCo:")
 
 
     call tensor_minit(molecule%Cv,[nbasis,nvirt],2, local=loc, atype="TDPD",tdims=tdim)
@@ -1121,8 +1114,6 @@ contains
     if(.not.loc)then
        call tensor_mv_dense2tiled(molecule%Cv,.true.,dealloc_local=.true.)
     endif
-
-    call print_norm(molecule%Cv,"molCv:")
 
   end subroutine molecule_generate_basis
 
@@ -1283,8 +1274,20 @@ contains
 
     !Do we need to distribute the arrays? -> if more than 3GB and keyword, do distribute
 #ifdef VAR_MPI
-    !MyMolecule%mem_distributed = (molmem>((3*GB)/realk)).and.Decinfo%distribute_fullmolecule_mem
-    MyMolecule%mem_distributed = Decinfo%distribute_fullmolecule
+    if(Decinfo%distribute_fullmolecule_mem)then
+       if(molmem>((3*GB)/realk))then
+          MyMolecule%mem_distributed = .true.
+       else
+          print *,"WARNING(calculate_fullmolecule_memory): a distributed full&
+          & molecular structure has been requested. However, the memory&
+          & requirements for this structure are so low, that we keep it in local&
+          & memory"
+          MyMolecule%mem_distributed = .false.
+       endif
+    else
+       MyMolecule%mem_distributed = .false.
+    endif
+
     nnod = infpar%nodtot
 #else
     MyMolecule%mem_distributed = .false.
