@@ -2059,9 +2059,6 @@ contains
     type(decfrag), intent(inout) :: fragment
     integer :: j,idx
 
-    ! Basis info
-    call atomic_fragment_basis(fragment,MyMolecule)
-
     ! lsitem
 #ifdef VAR_MPI
     ! Quick fix such that lsitem is never constructed for global master
@@ -2086,6 +2083,9 @@ contains
             & fragment%nbasis,MyMolecule%nbasis,DECinfo%output,0)
     ENDIF
 #endif
+
+    ! Basis info
+    call atomic_fragment_basis(fragment,mylsitem,MyMolecule)
 
     !Build F12 Cabs and Ri for a fragment
     if(DECinfo%F12) then
@@ -3274,15 +3274,17 @@ contains
   !> \author Marcin Ziolkowski and Kasper Kristensen
   !> \param fragment Atomic fragment/atomic pair fragment
   !> \param MyMolecule Full molecule info
-  subroutine atomic_fragment_basis(fragment,MyMolecule)
+  subroutine atomic_fragment_basis(fragment,mylsitem,MyMolecule)
 
     implicit none
     type(decfrag), intent(inout) :: fragment
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
     type(fullmolecule), intent(in) :: MyMolecule
-    type(array2) :: S,tmp1,tmp2
-    real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:)
+    type(array2) :: S,tmp1
+    real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:),Sfull(:,:)
     integer :: i,j,idx,atom_k,nocc,nunocc,nbasis,natoms,k,bas_offset,offset, &
-         full_orb_idx,bas_k
+         & full_orb_idx,bas_k,fullcomm,fullnode,fullnumnodes
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
 
@@ -3306,8 +3308,29 @@ contains
 
     ! Overlap matrix for fragment
     call mem_alloc(fragment%S,fragment%nbasis,fragment%nbasis)
-    call adjust_square_matrix2(MyMolecule%overlap,fragment%S,fragment%basis_idx, &
-         & nbasis,fragment%nbasis)
+    call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,fragment%MyLsitem%SETTING,&
+         & fragment%S,fragment%nbasis,fragment%nbasis,AORdefault,AORdefault)
+
+    ! Overlap matrix for full molecule
+    ! ********************************
+    ! Caution: MyLsitem needs to refer to full molecule, however, 
+    ! the MPI communication stuff needs to be done only within local slot.
+    ! Save full LSITEM MPI info
+    fullcomm = MyLsitem%setting%comm 
+    fullnode = MyLsitem%setting%node
+    fullnumnodes = MyLsitem%setting%numnodes
+    ! Temporarily set full LSITEM MPI info equal to local slot MPI info
+    MyLsitem%setting%comm = fragment%MyLsitem%setting%comm
+    MyLsitem%setting%node = fragment%MyLsitem%setting%node
+    MyLsitem%setting%numnodes = fragment%MyLsitem%setting%numnodes
+    call mem_alloc(Sfull,MyMolecule%nbasis,MyMolecule%nbasis)
+    call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
+         & Sfull,nbasis,nbasis,AORdefault,AORdefault)
+    ! Reset full LSITEM MPI info
+    MyLsitem%setting%comm = fullcomm
+    MyLsitem%setting%node = fullnode
+    MyLsitem%setting%numnodes = fullnumnodes
+
 
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
 
@@ -3320,11 +3343,10 @@ contains
        call mem_alloc(correct_vector_moS,fragment%nbasis)
        call mem_alloc(approximated_orbital,fragment%nbasis)
 
-       ! Fragment Co
-       ! half transform overlap
-       tmp1 = array2_init(dimsMO,MyMolecule%Co)
-       tmp2 = array2_init(dimsAO,MyMolecule%overlap)
-       call array2_matmul(tmp1,tmp2,S,'T','N',1E0_realk,0E0_realk)
+       ! Occupied
+       ! ********
+       ! half transformed overlap: S = Co^T Sfull  (full dims)
+       call dec_simple_dgemm(nocc,nbasis,nbasis,MyMolecule%Co,Sfull,S%val,'T','N')
 
        ! Occ orbitals (only valence if frozen core approx is used)
        do i=1,fragment%noccLOC
@@ -3370,18 +3392,17 @@ contains
        end do
 
 
-          call array2_free(tmp1)
           call array2_free(S)
           dimsMO(1) = nbasis
           dimsMO(2) = nunocc
           dims(1) = nunocc
           dims(2) = nbasis
           S = array2_init(dims)
-          tmp1 = array2_init(dimsMO,MyMolecule%Cv)
 
-
-          ! Fragmant Cv
-          call array2_matmul(tmp1,tmp2,S,'T','N',1E0_realk,0E0_realk)
+          ! Virtual
+          ! *******
+          ! half transformed overlap: S = Co^T Sfull  (full dims)
+          call dec_simple_dgemm(nunocc,nbasis,nbasis,MyMolecule%Cv,Sfull,S%val,'T','N')
 
           do i=1,fragment%nunoccLOC
 
@@ -3404,8 +3425,6 @@ contains
        ! remove stuff
        call mem_dealloc(correct_vector_moS)
        call mem_dealloc(approximated_orbital)
-       call array2_free(tmp1)
-       call array2_free(tmp2)
        call array2_free(S)
 
 
@@ -3426,6 +3445,7 @@ contains
 
     end if FitOrbitalsForFragment
 
+    call mem_dealloc(Sfull)
 
     ! KK: Purification can be problematic for local orbitals in the context of fragment optimization,
     ! so currently it is only used in combination with fragment-adapted orbitals.
@@ -3568,8 +3588,8 @@ contains
     ! Write minimum (but necessary) fragment info by appending to existing file
     ! *************************************************************************
 
-    ! Init stuff. Yes, I know this hardcored funit is not pretty, but I need to circumvent lsopen...
-    funit = 99
+    ! Init stuff
+    funit = -1
     FileName='atomicfragments.info'
 
     inquire(file=FileName,exist=file_exist)
@@ -3578,15 +3598,14 @@ contains
     ! Also - always open new file if file does not already exist
     if(  ( first_entry .and. (.not. DECinfo%DECrestart) ) &
          & .or. (.not. file_exist)   ) then
-       open(funit,FILE=FileName,STATUS='REPLACE',FORM='UNFORMATTED')
+       call lsopen(funit,FileName,'REPLACE','UNFORMATTED')
     else
-       ! Need to open without lsopen to be able to append to end of file
-       open(funit,FILE=FileName,STATUS='OLD',FORM='UNFORMATTED',POSITION='APPEND')
+       call lsopen(funit,FileName,'OLD','UNFORMATTED',POSIN='APPEND')
     end if
 
     ! Write fragment data to file
     call fragment_write_data(funit,fragment)
-    close(funit,STATUS='KEEP')
+    call lsclose(funit,'KEEP')
 
     first_entry=.false.
 
@@ -3743,8 +3762,9 @@ contains
     do i=1,ndone
 
        ! Atom index for the i'th fragment in atomicfragments.info
+       ! Note that MyAtom can therefore not be read again in fragment_read_data
+       ! Don't use the backspace function, it does not work with stream files !!
        call read_64bit_to_int(funit,MyAtom)
-       backspace(funit)  ! Go one step in file again to read properly in fragment_read_data
 
        ! Sanity check
        ! ------------
@@ -3777,7 +3797,7 @@ contains
           call atomic_fragment_init_f12(fragments(MyAtom),MyMolecule)
        endif
     
-       call fragment_read_data(funit,fragments(MyAtom),&
+       call fragment_read_data(funit,fragments(MyAtom),MyAtom, &
             & OccOrbitals,UnoccOrbitals,MyMolecule,Mylsitem,DoBasis)
 
     end do
@@ -3794,7 +3814,7 @@ contains
   !> \param mylsitem Full molecular lsitem
   !> \param runit File unit number to read from
   !> \param fragment Atomic fragment
-  subroutine fragment_read_data(runit,fragment,&
+  subroutine fragment_read_data(runit,fragment,MyAtom,&
        &OccOrbitals,UnoccOrbitals,MyMolecule,MyLsitem,DoBasis)
     implicit none
     type(fullmolecule),intent(in)  :: MyMolecule
@@ -3802,10 +3822,10 @@ contains
     type(decorbital),intent(in)     :: OccOrbitals(MyMolecule%nocc)
     type(decorbital),intent(in)     :: UnoccOrbitals(MyMolecule%nunocc)
     type(decfrag),intent(inout)        :: fragment
-    integer, intent(in) :: runit
+    integer, intent(in) :: runit, MyAtom
     !> Construct Fock matrix and MO coeff for fragment?
     logical,intent(in) :: DoBasis
-    integer             :: i,MyAtom
+    integer             :: i
     logical,pointer :: Occ_list(:),virt_list(:)
     integer :: noccAOS,nvirtAOS
     integer,pointer :: occAOSidx(:), virtAOSidx(:)
@@ -3815,8 +3835,7 @@ contains
     ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    ! Central atom
-    call read_64bit_to_int(runit,MyAtom)
+    ! Central atom is input and therefore must be read before calling this routine!!
 
     ! Number of occupied AOS orbitals
     call read_64bit_to_int(runit,noccAOS)

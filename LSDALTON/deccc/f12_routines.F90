@@ -4,7 +4,6 @@
 
 module f12_routines_module
 
-#ifdef MOD_UNRELEASED
 
   use fundamental
   use precision
@@ -37,11 +36,8 @@ module f12_routines_module
      integer :: n1
      integer :: n2
   END TYPE ctype
-#endif
   
    contains
-
-#ifdef MOD_UNRELEASED
 
    function norm1D(A)
       implicit none
@@ -2663,15 +2659,6 @@ module f12_routines_module
     call mat_free(CMO_RI)
 
   end subroutine dec_get_RI_orbitals
-
-#else
-
-  subroutine dummy_f12_routines()
-    implicit none
-
-  end subroutine dummy_f12_routines
-
-#endif 
 
 end module f12_routines_module
 

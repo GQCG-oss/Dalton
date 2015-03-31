@@ -1557,6 +1557,68 @@ enddo
 call free_aoitem(lupri,AO)
 end subroutine build_minimalbatchesOfAOs2
 
+subroutine MPIdistributeAOs(setting,AOspec,nAuxMPI,numnodes,IndexToGlobal,&
+     & MaxnAuxMPI,GindexToLocal,nAuxBasis)
+implicit none
+integer,intent(in)    :: numnodes,nAuxBasis
+integer,pointer :: IndexToGlobal(:,:)
+integer,intent(inout) :: nAuxMPI(numnodes),MaxnAuxMPI,GIndexToLocal(nAuxBasis)
+type(lssetting) :: setting
+character(len=1),intent(in) :: AOspec
+!
+integer :: I,A,idx(1),lupri,J,K,NA
+integer,pointer :: load(:)
+logical :: uncont,intnrm
+type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis
+uncont=.FALSE.
+intnrm = .false.
+IF(AOspec.EQ.'R')THEN      !    The regular AO-basis
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'D')THEN  !    The Aux AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
+ELSEIF(AOspec.EQ.'C')THEN  !    The CABS AO-type basis
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+lupri = 6
+call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+
+call mem_alloc(load,numnodes)
+load = 0
+nAuxMPI = 0 
+do I=1,AO%nbatches
+   idx = MINLOC(load)
+   DO A=1,AO%BATCH(I)%nAngmom
+      nAuxMPI(idx(1)) = nAuxMPI(idx(1)) + AO%BATCH(I)%norbitals(A)
+      load(idx(1)) = load(idx(1)) + AO%BATCH(I)%norbitals(A)
+   ENDDO
+enddo
+MaxnAuxMPI = MAXVAL(nAuxMPI)
+call mem_alloc(IndexToGlobal,MaxnAuxMPI,numnodes)
+load = 0
+nAuxMPI = 0 
+NA = 0
+do I=1,AO%nbatches
+   idx = MINLOC(load)
+   load(idx(1)) = load(idx(1)) + (2*AO%BATCH(I)%maxAngmom+1)
+   K=0
+   DO A=1,AO%BATCH(I)%nAngmom
+      DO J=1,AO%BATCH(I)%nOrbitals(A)
+         nA = NA + 1
+         nAuxMPI(idx(1)) = nAuxMPI(idx(1)) + 1
+         GIndexToLocal(NA) = nAuxMPI(idx(1))
+         IndexToGlobal(nAuxMPI(idx(1)),idx(1)) = AO%BATCH(I)%startOrbital(A)+K
+         K=K+1
+      ENDDO
+   ENDDO
+enddo
+call mem_dealloc(load)
+call free_aoitem(lupri,AO)
+end subroutine MPIdistributeAOs
+
 subroutine determine_MaxOrbitals(lupri,setting,maxallowedorbitals,MaxOrbitals,AOspec)
 implicit none
 integer,intent(in)    :: lupri,maxallowedorbitals
