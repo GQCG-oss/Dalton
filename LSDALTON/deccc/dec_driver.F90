@@ -86,7 +86,7 @@ contains
          & OccOrbitals, UnoccOrbitals)
 
     if (DECinfo%only_generate_DECorbs) then
-       print*,
+       print*,' '
        print*, 'Quitting after DEC orbitals have been written to file'
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a)') 'Quitting after DEC orbitals have been written to file'
