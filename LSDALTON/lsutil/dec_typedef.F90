@@ -400,6 +400,8 @@ module dec_typedef_module
 
      !> DEC Orbital treatment
      !> *********************
+     !> DEC is quitting after generating DEC orbitals to file
+     logical :: only_generate_DECorbs
      !> Absorb H atoms into heavy atoms during orbital assignment
      logical :: AbsorbHatoms
      !> Fit orbital coefficients in fragment (default: true)
@@ -728,10 +730,7 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
-     !> Distances between Occ Orbitals and Atoms
-     real(realk), pointer :: DistanceTableOrbAtomOcc(:,:) => null()
-     !> Distances between Virtual Orbitals and Atoms
-     real(realk), pointer :: DistanceTableOrbAtomVirt(:,:) => null()
+
      !> Which atoms are phantom atoms (only basis functions)
      Logical, pointer :: PhantomAtom(:) => null()
 

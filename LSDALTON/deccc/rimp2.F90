@@ -471,17 +471,44 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      MemInGBCollected = MemInGBCollected*0.80E0_realk !80%
      MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk
      PerformTiling = MaxSize.GT.MemInGBCollected
+     if(DECinfo%PL>2)then
+        WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Perform Tiling  MaxSize=',&
+             &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
+     endif
      IF(PerformTiling)THEN 
         MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-&
              & (NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk)/(nocc*noccEOS*nvirt*8.0E-9_realk)))
+        if(DECinfo%PL>2)then
+           WRITE(DECinfo%output,'(A,I10)')'DECRIMP2: MaxVirtSize =',MaxVirtSize 
+        endif
         nTiles =  nvirt/MaxVirtSize 
         IF(nTiles.EQ.0)PerformTiling = .FALSE.
      ENDIF
 #if defined(VAR_OPENACC) && defined(VAR_CUDA)
      !In case of GPU usage tocc must also fit on device memory
      call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
-     MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk  !in BYTES
-     PerformTiling = MaxSize.GT.free_gpu*0.80E0_realk
+     IF(PerformTiling)THEN 
+        !check that tilesize determine accoriding to CPU memory is valid for gpu
+        IF(DECinfo%PL>2)then
+           WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The CPU requires tiling in step 5  MaxVirtSize=',MaxVirtSize        
+        ENDIF
+        MaxSize = (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk+&
+             & MaxVirtSize*((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk
+        IF(Maxsize .GT. free_gpu)THEN
+           !reduce MaxVirtSize
+           MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu*0.80E0_realk-(noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*&
+                & 8.0E0_realk)/(((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk))) 
+           IF(DECinfo%PL>2)then
+              WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The GPU requires a smaller tiling in step 5 New MaxVirtSize=',MaxVirtSize        
+           ENDIF
+           nTiles =  nvirt/MaxVirtSize
+           IF(nTiles.EQ.0)PerformTiling = .FALSE.
+        ENDIF
+     ELSE
+        !determine if GPU requires tiling even if CPU does not
+        MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk  !in BYTES
+        PerformTiling = MaxSize.GT.free_gpu*0.80E0_realk
+     ENDIF
      IF(PerformTiling)THEN 
         maxsize = (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+noccEOS*nocc+nocc*noccEOS*nvirt+noccEOS*noccEOS*nvirt)*8.0E0_realk
         IF(Maxsize .GT. free_gpu)THEN
@@ -494,7 +521,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            print*,'Free on the GPU: ',free_gpu,'Bytes'
            call lsquit('GPU memory cannot hold required objects')
         ENDIF
-        MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu*0.80E0_realk-(noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk)/(((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk))) 
+        MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu*0.80E0_realk-(noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*&
+             & 8.0E0_realk)/(((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk))) 
         nTiles =  nvirt/MaxVirtSize
         IF(nTiles.EQ.0)PerformTiling = .FALSE.
      ENDIF
@@ -506,11 +534,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
         WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 5)     ',free_gpu*1.0E0_realk,' Bytes'
         IF(PerformTiling)THEN 
+           WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: MaxVirtSize',MaxVirtSize
            WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 using tiling  ',&
                 & (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk+MaxVirtSize*((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk,' Bytes'
         ELSE
            WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 without tiling',&
-                & (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk+MaxVirtSize*((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk,' Bytes'
+                & (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk+nocc*noccEOS*nvirt*nvirt*8.0E0_realk,' Bytes'
         ENDIF
      endif
 #endif

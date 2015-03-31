@@ -2376,8 +2376,8 @@ contains
      real(realk)  :: FmaxOcc(nocc),FmaxVirt(nvirt)
      real(realk),pointer :: OccContribs(:),VirtContribs(:)    
      real(realk),pointer :: times_fragopt(:)
-     real(realk),pointer :: SortedDistanceTableOrbAtomOcc(:)
-     real(realk),pointer :: SortedDistanceTableOrbAtomVirt(:)
+     real(realk),pointer :: SortedDistanceTableOrbAtomOcc(:),DistanceTableOrbAtomOcc(:,:)
+     real(realk),pointer :: SortedDistanceTableOrbAtomVirt(:),DistanceTableOrbAtomVirt(:,:)
      integer,pointer :: OrbOccDistTrackMyAtom(:),OrbOccFockTrackMyAtom(:)
      integer,pointer :: OrbVirtDistTrackMyAtom(:),OrbVirtFockTrackMyAtom(:)
      logical,pointer :: OccAOS(:),VirtAOS(:),OldOccAOS(:),OldVirtAOS(:)
@@ -2615,14 +2615,25 @@ contains
      end if
 
      IF(OrbDistanceSpec)THEN
+        ! Occupied
         call mem_alloc(SortedDistanceTableOrbAtomOcc,nocc)
         call mem_alloc(OrbOccDistTrackMyAtom,nocc)
+        call mem_alloc(DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms)
+        call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
+             & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistanceTableOrbAtomOcc)
         call GetSortedList(SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
-             & mymolecule%DistanceTableOrbAtomOcc,nocc,natoms,MyAtom)
+             & DistanceTableOrbAtomOcc,nocc,natoms,MyAtom)
+        call mem_dealloc(DistanceTableOrbAtomOcc)
+
+        ! Virtual
         call mem_alloc(SortedDistanceTableOrbAtomVirt,nvirt)
         call mem_alloc(OrbVirtDistTrackMyAtom,nvirt)
+        call mem_alloc(DistanceTableOrbAtomVirt,MyMolecule%nvirt,MyMolecule%natoms)
+        call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
+             & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
         call GetSortedList(SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
-             & mymolecule%DistanceTableOrbAtomVirt,nvirt,natoms,MyAtom)
+             & DistanceTableOrbAtomVirt,nvirt,natoms,MyAtom)
+        call mem_dealloc(DistanceTableOrbAtomVirt)
      ENDIF
 
      ! Do fragment expansion at different level than target model?

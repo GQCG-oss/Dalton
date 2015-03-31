@@ -84,6 +84,7 @@ contains
     DECinfo%CheckPairs         = .false.
     DECinfo%frozencore         = .false.
     DECinfo%ncalc              = 0
+    DECinfo%only_generate_DECorbs = .false.
     call dec_set_model_names(DECinfo)
 
 
@@ -901,6 +902,7 @@ contains
        ! DEC ORBITAL TREATMENT
        ! *********************
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
+       case('.ONLY_GENERATE_DECORBS'); DECinfo%only_generate_DECorbs=.true.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
        case('.DISTANCE'); DECinfo%distance=.true.
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
@@ -1377,6 +1379,7 @@ contains
     write(lupri,*) 'DECrestart ', DECitem%HFrestart
     write(lupri,*) 'TimeBackup ', DECitem%TimeBackup
     write(lupri,*) 'read_dec_orbitals ', DECitem%read_dec_orbitals
+    write(lupri,*) 'only_generate_DECorbs ', DECitem%only_generate_DECorbs
     write(lupri,*) 'IntegralThreshold ', DECitem%IntegralThreshold
     write(lupri,*) 'UseIchor ', DECitem%UseIchor
     write(lupri,*) 'memory ', DECitem%memory

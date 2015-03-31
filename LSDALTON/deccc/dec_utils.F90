@@ -6057,5 +6057,31 @@ end function max_batch_dimension
  end subroutine general_distance_table
 
 
+ !> \brief Get distance between atoms and orbitals.
+ subroutine GetOrbAtomDistances(norb,natoms,&
+      & Carmom,AtomCenters,DistanceTableOrbAtom)
+   implicit none
+   !> Number of orbitals and atoms
+   integer,intent(in) :: norb,natoms
+   !> Position of atoms
+   real(realk),intent(in) :: AtomCenters(3,nAtoms)
+   !> Positions of orbitals
+   real(realk),intent(in) :: Carmom(3,norb)
+   !> Distances between orbitals and atoms
+   real(realk),intent(inout) :: DistanceTableOrbAtom(norb,natoms)
+   integer :: iatom,i
+   real(realk) :: Xa,Ya,Za
+
+   do iatom=1,nAtoms
+      Xa = -AtomCenters(1,iatom)
+      Ya = -AtomCenters(2,iatom)
+      Za = -AtomCenters(3,iatom)
+      do i=1,norb
+         DistanceTableOrbAtom(i,iatom)= sqrt( (Xa+Carmom(1,i))*(Xa+Carmom(1,i))  &
+              & + (Ya+Carmom(2,i))*(Ya+Carmom(2,i)) + (Za+Carmom(3,i))*(Za+Carmom(3,i)) )
+      end do
+   end do
+
+ end subroutine GetOrbAtomDistances
 
 end module dec_fragment_utils
