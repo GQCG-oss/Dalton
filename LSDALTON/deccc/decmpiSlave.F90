@@ -26,6 +26,8 @@ subroutine dec_lsmpi_slave(comm)
       call ls_mpibcast(job,infpar%master,comm)
       call time_start_phase(PHASE_WORK)
 
+      print *,"LOCAL SLAVE",job
+
       select case(job)
       case(MATRIXTY);
          call lsmpi_set_matrix_type_slave
@@ -134,13 +136,11 @@ subroutine dec_lsmpi_slave(comm)
       case(QUITNOMOREJOBS); 
          infpar%lg_morejobs   = .false.
          stay_in_slaveroutine = .false.
-         !infpar%lg_comm       = MPI_COMM_LSDALTON
-         !infpar%lg_mynum      = infpar%mynum
-         !infpar%lg_nodtot     = infpar%nodtot
       end select
 
    end do
 
+   print *,"LOCAL SLAVE EXIT",comm,infpar%lg_comm,MPI_COMM_LSDALTON
 
 end subroutine dec_lsmpi_slave
 

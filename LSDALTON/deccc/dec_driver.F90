@@ -1280,6 +1280,8 @@ subroutine print_dec_info()
 
 #ifdef VAR_MPI
     call MPI_COMM_FREE(infpar%lg_comm,IERR)
+    infpar%lg_comm  = MPI_COMM_LSDALTON
+    infpar%lg_mynum = infpar%mynum
 #else
     call free_joblist(singlejob)
 #endif

@@ -124,6 +124,8 @@ subroutine lsmpi_slave(comm)
       call ls_mpibcast(job,infpar%master,comm)
       call time_start_phase(PHASE_WORK)
 
+      print *,"GLOBAL SLAVE",job
+
 
       select case(job)
       case(MATRIXTY);

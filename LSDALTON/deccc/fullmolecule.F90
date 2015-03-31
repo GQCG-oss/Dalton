@@ -792,25 +792,30 @@ contains
     endif
     
     ! Delete transformation matrices for general basis
+    if(free_tensors)print*,"FREEING FULL Co",molecule%Co%addr_p_arr,"Comm",infpar%lg_comm,MPI_COMM_LSDALTON
     if(molecule%Co%initialized.and.free_tensors) then
        call tensor_free(molecule%Co)
     end if
 
+    if(free_tensors)print*,"FREEING FULL Cv"
     if(molecule%Cv%initialized.and.free_tensors) then
        call tensor_free(molecule%Cv)
     end if
 
     ! Delete AO fock matrix
+    if(free_tensors)print*,"FREEING FULL fock"
     if(molecule%fock%initialized.and.free_tensors) then
        call tensor_free(molecule%fock)
     end if
 
     ! OOFock
+    if(free_tensors)print*,"FREEING FULL oofock"
     if(molecule%oofock%initialized.and.free_tensors) then
        call tensor_free(molecule%oofock)
     end if
 
     ! VVFock
+    if(free_tensors)print*,"FREEING FULL vvfock"
     if(molecule%vvfock%initialized.and.free_tensors) then
        call tensor_free(molecule%vvfock)
     end if

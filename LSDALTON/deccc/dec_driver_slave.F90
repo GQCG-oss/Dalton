@@ -154,8 +154,6 @@ contains
 
        end if Step2
 
-       print *,"slave somewhere here!!!"
-
        ! Initialize local MPI groups
        ! ***************************
 
@@ -169,7 +167,6 @@ contains
        call ls_mpibcast(groupsize,master,MPI_COMM_LSDALTON)
        if(DECinfo%PL>0) print *, 'node/groupsize', infpar%mynum, groupsize
 
-       print *,"make new groups"
        ! Initialize new MPI groups
        call init_mpi_groups(groupsize,DECinfo%output)
 
@@ -180,7 +177,6 @@ contains
           localslave = .false.
        end if
 
-       print *,"Fragjoblist"
        !  Get fragment job list (includes initialization of pointers in job list)
        call bcast_dec_fragment_joblist(jobs,MPI_COMM_LSDALTON)
 
@@ -210,7 +206,6 @@ contains
 
           ! Check if the current rank has become a local master (rank=master within local group)
           if(infpar%lg_mynum==master) localslave=.false.
-          print *,"localslave looop"
 
        end do
 
@@ -227,7 +222,6 @@ contains
                & virtOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
        end if
 
-       print *,"SHHIIIT"
 
        ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
        job=QUITNOMOREJOBS
@@ -235,13 +229,13 @@ contains
           call ls_mpibcast(job,master,infpar%lg_comm)
        end if
 
-       print *,"free jobslist again"
        ! Done with existing job list
        call free_joblist(jobs)
 
-       print *,"free comm"
        ! Free existing group communicators
        call MPI_COMM_FREE(infpar%lg_comm, IERR)
+       infpar%lg_comm  = MPI_COMM_LSDALTON
+       infpar%lg_mynum = infpar%mynum
 
        ! Clean up estimated fragments used in step 1 and receive CC models to use for all pairs
        CleanupAndUpdateCCmodel: if(step==1 .and. esti) then
@@ -258,12 +252,10 @@ contains
 
        end if CleanupAndUpdateCCmodel
 
-       print *,"steploop"
 
     end do StepLoop
 
 
-    print *,"free return to slave routine"
     ! Free stuff
     ! **********
     do i=1,nfrags
@@ -283,9 +275,7 @@ contains
     call mem_dealloc(dofrag)
     call ls_free(MyLsitem)
 
-    print *,"NEW FREE THE SHIT MOLECULE"
     call molecule_finalize(MyMolecule,.false.)
-    print *,"Molecule freed"
 
   end subroutine main_fragment_driver_slave
 
@@ -664,15 +654,11 @@ contains
 
        end if DoJob
    
-       print *,"SHOULD BE DOOOOOONE"
-
 
     end do AskForJob
 
 
-    print *,"free joblist"
     call free_joblist(singlejob)
-    print *,"free joblist done"
 
   end subroutine fragments_slave
 

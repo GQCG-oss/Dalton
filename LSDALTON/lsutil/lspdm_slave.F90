@@ -37,6 +37,7 @@ subroutine pdm_tensor_slave(comm)
    CALL PDM_tensor_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
    call time_start_phase(PHASE_WORK)
 
+   print *,"PDMSLAVE",JOB,A%addr_p_arr
 
    SELECT CASE(JOB)
    CASE(JOB_PC_DEALLOC_DENSE)

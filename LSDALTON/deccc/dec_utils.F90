@@ -2787,6 +2787,7 @@ end function max_batch_dimension
     !> get E_DFT
     type(matrix) :: F,h
     real(realk)  :: exchangeFactor,enuc,edft(1)
+    real(realk), pointer :: fock(:,:)
 
     if(DECinfo%noaofock) then
        write(DECinfo%output,*) 'Warning: NOFOCKAO keyword is set and HF energy is &
@@ -2821,7 +2822,20 @@ end function max_batch_dimension
 
       call mat_free(h)
     else
-      call mat_set_from_full(MyMolecule%fock%elm1, 1E0_realk, F)
+
+       if( MyMolecule%mem_distributed )then
+          call mem_alloc(fock,MyMolecule%nbasis,MyMolecule%nbasis)
+          call tensor_gather(1.0E0_realk,MyMolecule%fock,0.0E0_realk,fock,MyMolecule%nbasis**2*i8)
+       else
+          fock => MyMolecule%fock%elm2
+       endif
+
+       call mat_set_from_full(fock, 1E0_realk, F)
+
+       if( MyMolecule%mem_distributed )then
+          call mem_dealloc( fock )
+       endif
+
     endif
 
     ! Get HF energy
