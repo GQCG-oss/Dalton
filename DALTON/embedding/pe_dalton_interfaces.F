@@ -80,7 +80,7 @@
 
 !-----------------------------------------------------------------------------
 
-      subroutine pe_ifc_lf
+      subroutine pe_ifc_lf()
 
         use pe_variables, only: pe_lf
         use polarizable_embedding, only: pe_master
@@ -88,6 +88,7 @@
 #include "priunit.h"
 #include "inforb.h"
 #include "inftap.h"
+#include "orgcom.h"
         real*8, dimension(nnbasx) :: dip
         real*8, dimension(3*nnbasx) :: fckmats
         integer :: i, j, k
@@ -101,6 +102,7 @@
         call pe_ifc_start_slaves(7)
 #endif
         write(lupri,*) 'PEQM: Local field factors are included.'
+        call flshfo(lupri)
         lopen = .false.
         dip = 0.0d0
 
@@ -143,9 +145,12 @@
 
 !-----------------------------------------------------------------------------
 
-      subroutine pe_ifc_infld
+      subroutine pe_ifc_infld()
         use polarizable_embedding, only: pe_master
+        use pe_variables, only: pe_infld
         implicit none
+#include "priunit.h"
+        if (.not. pe_infld) return
         call qenter('pe_ifc_infld')
         call pe_master(runtype='infld')
         call qexit('pe_ifc_infld')

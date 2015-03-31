@@ -1741,6 +1741,7 @@ C
       END IF
       IF (PEQM) THEN
 #if defined (BUILD_PELIB)
+        CALL PE_IFC_INFLD
         IF (NASHT == 0 .OR. HSROHF) THEN
             CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
