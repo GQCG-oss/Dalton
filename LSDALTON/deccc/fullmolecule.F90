@@ -520,9 +520,13 @@ contains
 
     end if
 
+    call print_norm(molecule%fock%elm2,i8*nbasis*nbasis,"FULL:")
+
     if(.not.loc)then
        call tensor_mv_dense2tiled(molecule%fock,.true.,dealloc_local=.true.)
     endif
+
+    call print_norm(molecule%fock,"DIST: ")
 
   end subroutine molecule_get_fock
 
@@ -610,13 +614,15 @@ contains
 
     nbasis = molecule%nbasis
 
-    if(molecule%mem_distributed)then
-       call lsquit("ERROR(molecule_get_reference_state) not yet implemented",-1)
-    endif
 
 
     ! Get Fock matrix
     call molecule_get_fock(molecule,mylsitem)
+
+    
+    if(molecule%mem_distributed)then
+       call lsquit("ERROR(molecule_get_reference_state) not yet implemented",-1)
+    endif
 
     ! Get orbitals
     call mem_alloc(C,nbasis,nbasis)
