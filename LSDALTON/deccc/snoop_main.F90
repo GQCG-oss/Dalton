@@ -1130,7 +1130,7 @@ contains
 
 
     call mat_free(D)
-    call molecule_finalize(MySubsystem)
+    call molecule_finalize(MySubsystem,.true.)
 
   end subroutine subsystem_correlation_energy
 
@@ -1250,7 +1250,7 @@ contains
     end if
 
     call mem_dealloc(dummy)
-    call molecule_finalize(MySubsystem)
+    call molecule_finalize(MySubsystem,.true.)
 
   end subroutine DECsubsystem_correlation_energy
 

@@ -3289,10 +3289,7 @@ contains
          & full_orb_idx,bas_k,fullcomm,fullnode,fullnumnodes
     integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
-
-    if( MyMolecule%mem_distributed )then
-       call lsquit("ERROR(atomic_fragment_basis):mem distributed not implemented",-1)
-    endif
+    real(realk), pointer :: Co(:,:),Cv(:,:),fock(:,:),oofock(:,:),vvfock(:,:)
 
     ! allocate C^o(nbasis,occ) C^v(nbasis,virt)
     call mem_alloc(fragment%CoLOC, fragment%nbasis,  fragment%noccLOC   )
@@ -3337,6 +3334,18 @@ contains
     MyLsitem%setting%node = fullnode
     MyLsitem%setting%numnodes = fullnumnodes
 
+       
+    if( MyMolecule%mem_distributed )then
+       !FIXME: in the long run, avoid this, also the statements further down
+       print *,"WARNING(atomic_fragment_basis) converting to full dense, this should be avoided"
+       call mem_alloc( Co, nbasis, nocc  )
+       call mem_alloc( Cv, nbasis, nvirt )
+       call tensor_gather(1.0E0_realk,MyMolecule%Co,0.0E0_realk,Co,i8*nbasis*nocc)
+       call tensor_gather(1.0E0_realk,MyMolecule%Cv,0.0E0_realk,Cv,i8*nbasis*nvirt)
+    else
+       Co => MyMolecule%Co%elm2
+       Cv => MyMolecule%Cv%elm2
+    endif
 
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
 
@@ -3352,7 +3361,7 @@ contains
        ! Occupied
        ! ********
        ! half transformed overlap: S = Co^T Sfull  (full dims)
-       call dec_simple_dgemm(nocc,nbasis,nbasis,MyMolecule%Co%elm2,Sfull,S%val,'T','N')
+       call dec_simple_dgemm(nocc,nbasis,nbasis,Co,Sfull,S%val,'T','N')
 
        ! Occ orbitals (only valence if frozen core approx is used)
        do i=1,fragment%noccLOC
@@ -3408,7 +3417,7 @@ contains
           ! Virtual
           ! *******
           ! half transformed overlap: S = Co^T Sfull  (full dims)
-          call dec_simple_dgemm(nvirt,nbasis,nbasis,MyMolecule%Cv%elm2,Sfull,S%val,'T','N')
+          call dec_simple_dgemm(nvirt,nbasis,nbasis,Cv,Sfull,S%val,'T','N')
 
           do i=1,fragment%nvirtLOC
 
@@ -3442,16 +3451,33 @@ contains
        end if
 
        ! Fragment Co
-       call adjust_basis_matrix2(MyMolecule%Co%elm2,fragment%CoLOC,fragment%occAOSidx, &
+       call adjust_basis_matrix2(Co,fragment%CoLOC,fragment%occAOSidx, &
             nbasis,nocc,fragment%nbasis,fragment%noccLOC,Fragment%basis_idx)
 
        ! Fragment Cv
-       call adjust_basis_matrix2(MyMolecule%Cv%elm2,fragment%CvLOC,fragment%virtAOSidx, &
+       call adjust_basis_matrix2(Cv,fragment%CvLOC,fragment%virtAOSidx, &
             nbasis,nvirt,fragment%nbasis,fragment%nvirtLOC,Fragment%basis_idx)
 
     end if FitOrbitalsForFragment
 
     call mem_dealloc(Sfull)
+
+    if( MyMolecule%mem_distributed )then
+
+       call mem_dealloc(Co)
+       call mem_dealloc(Cv)
+
+       call mem_alloc( fock, nbasis, nbasis )
+
+       call tensor_gather(1.0E0_realk,MyMolecule%fock,0.0E0_realk,fock,i8*nbasis*nbasis)
+    else
+
+       Co => null()
+       Cv => null()
+
+       fock => MyMolecule%fock%elm2
+
+    endif
 
     ! KK: Purification can be problematic for local orbitals in the context of fragment optimization,
     ! so currently it is only used in combination with fragment-adapted orbitals.
@@ -3467,10 +3493,26 @@ contains
     if(.not. DECinfo%noaofock) then
        call mem_alloc(fragment%fock,fragment%nbasis,fragment%nbasis)
        fragment%fock=0.0E0_realk
-       call adjust_square_matrix2(MyMolecule%fock%elm2,fragment%fock,fragment%basis_idx,&
+       call adjust_square_matrix2(fock,fragment%fock,fragment%basis_idx,&
             & MyMolecule%nbasis,fragment%nbasis)
     end if
 
+    if( MyMolecule%mem_distributed )then
+
+       call mem_dealloc(fock)
+
+       call mem_alloc(oofock,nocc,nocc)
+       call mem_alloc(vvfock,nvirt,nvirt)
+
+       call tensor_gather(1.0E0_realk,MyMolecule%oofock,0.0E0_realk,oofock,i8*nocc*nocc   )
+       call tensor_gather(1.0E0_realk,MyMolecule%vvfock,0.0E0_realk,vvfock,i8*nvirt*nvirt )
+
+    else
+       fock => null()
+
+       oofock => MyMolecule%oofock%elm2
+       vvfock => MyMolecule%vvfock%elm2
+    endif
 
     ! adjust fock matrices in mo basis
     ! --------------------------------
@@ -3479,20 +3521,28 @@ contains
 
     ! Occ-occ block  (valence-valence for frozen core)
     call mem_alloc(fragment%ppfockLOC,fragment%noccLOC,fragment%noccLOC)
-    call adjust_square_matrix2(MyMolecule%oofock%elm2,fragment%ppfockLOC,fragment%occAOSidx,&
+    call adjust_square_matrix2(oofock,fragment%ppfockLOC,fragment%occAOSidx,&
          & MyMolecule%nocc,fragment%noccAOS)
 
     ! Virtual-virtual block
     call mem_alloc(fragment%qqfockLOC,fragment%nvirtLOC,fragment%nvirtLOC)
-    call adjust_square_matrix2(MyMolecule%vvfock%elm2,fragment%qqfockLOC,fragment%virtAOSidx,&
+    call adjust_square_matrix2(vvfock,fragment%qqfockLOC,fragment%virtAOSidx,&
          & MyMolecule%nvirt,fragment%nvirtAOS)
 
     ! Core-core block
     if(fragment%ncore>0) then
        call mem_alloc(fragment%ccfock,fragment%ncore,fragment%ncore)
-       call adjust_square_matrix2(MyMolecule%oofock%elm2,fragment%ccfock,fragment%coreidx,&
+       call adjust_square_matrix2(oofock,fragment%ccfock,fragment%coreidx,&
             & MyMolecule%ncore,fragment%ncore)
     end if
+
+    if( MyMolecule%mem_distributed )then
+       call mem_dealloc(oofock)
+       call mem_dealloc(vvfock)
+    else
+       oofock => null()
+       vvfock => null()
+    endif
 
     ! Make MO coeff and Fock matrices point to local orbital quantities unless we use fragment-adapted
     ! orbitals

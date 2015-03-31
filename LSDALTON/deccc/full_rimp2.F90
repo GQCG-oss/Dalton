@@ -697,7 +697,7 @@ subroutine full_canonical_rimp2_slave
   call full_canonical_rimp2(MyMolecule,MyLsitem,rimp2_energy)
 
   call ls_free(MyLsitem)
-  call molecule_finalize(MyMolecule)
+  call molecule_finalize(MyMolecule,.false.)
   
 end subroutine full_canonical_rimp2_slave
 #endif

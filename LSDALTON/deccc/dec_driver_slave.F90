@@ -154,6 +154,7 @@ contains
 
        end if Step2
 
+       print *,"slave somewhere here!!!"
 
        ! Initialize local MPI groups
        ! ***************************
@@ -168,6 +169,7 @@ contains
        call ls_mpibcast(groupsize,master,MPI_COMM_LSDALTON)
        if(DECinfo%PL>0) print *, 'node/groupsize', infpar%mynum, groupsize
 
+       print *,"make new groups"
        ! Initialize new MPI groups
        call init_mpi_groups(groupsize,DECinfo%output)
 
@@ -178,6 +180,7 @@ contains
           localslave = .false.
        end if
 
+       print *,"Fragjoblist"
        !  Get fragment job list (includes initialization of pointers in job list)
        call bcast_dec_fragment_joblist(jobs,MPI_COMM_LSDALTON)
 
@@ -207,6 +210,7 @@ contains
 
           ! Check if the current rank has become a local master (rank=master within local group)
           if(infpar%lg_mynum==master) localslave=.false.
+          print *,"localslave looop"
 
        end do
 
@@ -223,15 +227,19 @@ contains
                & virtOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
        end if
 
+       print *,"SHHIIIT"
+
        ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
        job=QUITNOMOREJOBS
        if(infpar%lg_mynum==master .and. infpar%lg_nodtot>1) then
           call ls_mpibcast(job,master,infpar%lg_comm)
        end if
 
+       print *,"free jobslist again"
        ! Done with existing job list
        call free_joblist(jobs)
 
+       print *,"free comm"
        ! Free existing group communicators
        call MPI_COMM_FREE(infpar%lg_comm, IERR)
 
@@ -250,9 +258,12 @@ contains
 
        end if CleanupAndUpdateCCmodel
 
+       print *,"steploop"
+
     end do StepLoop
 
 
+    print *,"free return to slave routine"
     ! Free stuff
     ! **********
     do i=1,nfrags
@@ -271,7 +282,10 @@ contains
     call mem_dealloc(virtOrbitals)
     call mem_dealloc(dofrag)
     call ls_free(MyLsitem)
-    call molecule_finalize(MyMolecule)
+
+    print *,"NEW FREE THE SHIT MOLECULE"
+    call molecule_finalize(MyMolecule,.false.)
+    print *,"Molecule freed"
 
   end subroutine main_fragment_driver_slave
 
@@ -403,11 +417,12 @@ contains
        ! ********************************************************************************
        DoJob: IF(job==-1) then
           call LSTIMER('START',t2cpuacc,t2wallacc,DECinfo%output)
-          if(t2wallacc-t1wallacc > 5.0E0_realk.or.DECinfo%PL>1)then
+          if(t2wallacc-t1wallacc > 5.0E0_realk.or.DECinfo%PL>2)then
              print '(X,a,i5,a,g14.6)', 'Slave ', infpar%mynum, ' exits  fragments. Time: ',&
                & t2wallacc-t1wallacc
           endif
           morejobs=.false.
+          print *,"I AM QUITTING"
        else
 
           ! Timing and flops
@@ -649,12 +664,15 @@ contains
 
        end if DoJob
    
+       print *,"SHOULD BE DOOOOOONE"
 
 
     end do AskForJob
 
 
+    print *,"free joblist"
     call free_joblist(singlejob)
+    print *,"free joblist done"
 
   end subroutine fragments_slave
 

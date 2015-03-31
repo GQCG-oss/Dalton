@@ -2586,7 +2586,7 @@ subroutine full_canonical_mp2_slave
      call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   ENDIF
   call ls_free(MyLsitem)
-  call molecule_finalize(MyMolecule)
+  call molecule_finalize(MyMolecule,.false.)
   
 end subroutine full_canonical_mp2_slave
 #endif

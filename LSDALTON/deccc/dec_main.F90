@@ -90,7 +90,7 @@ contains
     call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Delete molecule structure
-    call molecule_finalize(molecule)
+    call molecule_finalize(molecule,.true.)
 
 
   end subroutine dec_main_prog_input
@@ -154,7 +154,7 @@ contains
     call dec_main_prog(MyLsitem,config,molecule,D,E)
      
     ! Delete molecule structure and density
-    call molecule_finalize(molecule)
+    call molecule_finalize(molecule,.true.)
     call mat_free(D)
 
   end subroutine dec_main_prog_file
@@ -381,7 +381,7 @@ contains
     call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Free molecule structure and other stuff
-    call molecule_finalize(Molecule)
+    call molecule_finalize(Molecule,.true.)
     
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
@@ -465,7 +465,7 @@ contains
     call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Free molecule structure and other stuff
-    call molecule_finalize(Molecule)
+    call molecule_finalize(Molecule,.true.)
 
     ! Reset DEC parameters to the same as they were at input
     DECinfo%first_order = save_first_order

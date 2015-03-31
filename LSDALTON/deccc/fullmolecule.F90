@@ -328,6 +328,7 @@ contains
     if(.not.loc)then
        call tensor_mv_dense2tiled(molecule%fock,.true.,dealloc_local=.true.)
     endif
+    call print_norm(molecule%fock,"molFock:")
 
 
     ! MO coefficient matrix
@@ -491,12 +492,7 @@ contains
     logical :: fock_exist, loc
     integer :: tdim(2)
 
-    if( molecule%mem_distributed )then
-       call lsquit("ERROR(molecule_generate_basis) not working with PDM mol yet",-1)
-    endif
-
     loc = .not.molecule%mem_distributed
-
     tdim = [mol_block_size,mol_block_size]
 
     ! Init stuff
@@ -520,13 +516,9 @@ contains
 
     end if
 
-    call print_norm(molecule%fock%elm2,i8*nbasis*nbasis,"FULL:")
-
     if(.not.loc)then
        call tensor_mv_dense2tiled(molecule%fock,.true.,dealloc_local=.true.)
     endif
-
-    call print_norm(molecule%fock,"DIST: ")
 
   end subroutine molecule_get_fock
 
@@ -614,15 +606,8 @@ contains
 
     nbasis = molecule%nbasis
 
-
-
     ! Get Fock matrix
     call molecule_get_fock(molecule,mylsitem)
-
-    
-    if(molecule%mem_distributed)then
-       call lsquit("ERROR(molecule_get_reference_state) not yet implemented",-1)
-    endif
 
     ! Get orbitals
     call mem_alloc(C,nbasis,nbasis)
@@ -790,21 +775,44 @@ contains
 
   !> \brief Destroy fullmolecule structure
   !> \param molecule Full molecular info
-  subroutine molecule_finalize(molecule)
+  subroutine molecule_finalize(molecule,free_pdm)
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
+    logical, intent(in) :: free_pdm
+    logical :: free_tensors
 
     ! Do not free anything if it has not been initiated (mainly for testing)
     if(DECinfo%SkipReadIn) return
 
+    if(molecule%mem_distributed)then
+       free_tensors = free_pdm
+    else
+       free_tensors = .true.
+    endif
+    
     ! Delete transformation matrices for general basis
-    if(molecule%Co%initialized) then
+    if(molecule%Co%initialized.and.free_tensors) then
        call tensor_free(molecule%Co)
     end if
 
-    if(molecule%Cv%initialized) then
+    if(molecule%Cv%initialized.and.free_tensors) then
        call tensor_free(molecule%Cv)
+    end if
+
+    ! Delete AO fock matrix
+    if(molecule%fock%initialized.and.free_tensors) then
+       call tensor_free(molecule%fock)
+    end if
+
+    ! OOFock
+    if(molecule%oofock%initialized.and.free_tensors) then
+       call tensor_free(molecule%oofock)
+    end if
+
+    ! VVFock
+    if(molecule%vvfock%initialized.and.free_tensors) then
+       call tensor_free(molecule%vvfock)
     end if
 
     !Deallocate CABS MO!
@@ -816,21 +824,6 @@ contains
 !    if(associated(molecule%Cri)) then
 !       call mem_dealloc(molecule%Cri)
 !    end if
-
-    ! Delete AO fock matrix
-    if(molecule%fock%initialized) then
-       call tensor_free(molecule%fock)
-    end if
-
-    ! P^Fock
-    if(molecule%oofock%initialized) then
-       call tensor_free(molecule%oofock)
-    end if
-
-    ! Q^Fock
-    if(molecule%vvfock%initialized) then
-       call tensor_free(molecule%vvfock)
-    end if
 
     ! Delete F12-Fock and K and hJir info
     if(associated(molecule%Fij)) then
@@ -1086,7 +1079,6 @@ contains
     logical :: loc
 
     if( molecule%mem_distributed )then
-       call lsquit("ERROR(molecule_generate_basis) not working with PDM mol yet",-1)
        print *,"WARNING(molecule_generate_basis): going to full, this is not scalable"
     endif
     loc = .not.molecule%mem_distributed
@@ -1109,6 +1101,7 @@ contains
     if(.not.loc)then
        call tensor_mv_dense2tiled(molecule%Co,.true.,dealloc_local=.true.)
     endif
+    call print_norm(molecule%Co,"molCo:")
 
 
     call tensor_minit(molecule%Cv,[nbasis,nvirt],2, local=loc, atype="TDPD",tdims=tdim)
@@ -1123,6 +1116,8 @@ contains
     if(.not.loc)then
        call tensor_mv_dense2tiled(molecule%Cv,.true.,dealloc_local=.true.)
     endif
+
+    call print_norm(molecule%Cv,"molCv:")
 
   end subroutine molecule_generate_basis
 
@@ -1141,17 +1136,9 @@ contains
      nvirt = molecule%nvirt
      nbasis = molecule%nbasis
 
-     if( molecule%mem_distributed )then
-        call lsquit("ERROR(molecule_mo_fock) not working with PDM mol yet",-1)
-     endif
-
      ord = [1,2]
 
-#ifdef VAR_MPI
      loc = .not.molecule%mem_distributed
-#else
-     loc = .true.
-#endif
      tdim = [mol_block_size,mol_block_size]
 
      ! Occ-occ Fock matrix

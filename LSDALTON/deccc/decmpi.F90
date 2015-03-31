@@ -48,6 +48,7 @@ contains
 
 
     ! Sanity check 1: Meaningful rank
+    print *,"Poss 1"
     call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
     if( (mynum/=MySender) .and. (mynum/=MyReceiver) ) then
        print '(a,3i6)', 'Rank,sender,receiver',mynum,MySender,MyReceiver
@@ -96,6 +97,7 @@ contains
     master=0
 
     ! Sanity check 1: Meaningful rank
+    print *,"Poss 2"
     call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
     if( (mynum/=MySender) .and. (mynum/=MyReceiver) ) then
        print '(a,3i6)', 'Rank,sender,receiver',mynum,MySender,MyReceiver
@@ -144,6 +146,7 @@ contains
     master = 0
 
     ! Sanity check 1: Meaningful rank
+    print *,"Poss 3"
     call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
     if( (mynum/=MySender) .and. (mynum/=MyReceiver) ) then
        print '(a,3i6)', 'Rank,sender,receiver',mynum,MySender,MyReceiver
@@ -208,6 +211,7 @@ contains
 
     ! Sanity check: Meaningful rank
     call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
+    print *,"Poss 4"
     if( (mynum/=MySender) .and. (mynum/=MyReceiver) ) then
        print '(a,3i6)', 'Rank,sender,receiver',mynum,MySender,MyReceiver
        call lsquit('mpi_send_recv_many_fragments: Rank number is neither sender nor receiver!',-1)
@@ -282,6 +286,7 @@ contains
     integer(kind=ls_mpik) :: mynum,master
     master = 0
 
+    print *,"Poss 5"
     call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
 
     ! Init buffer

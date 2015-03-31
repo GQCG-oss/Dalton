@@ -1987,6 +1987,9 @@ contains
     p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
     p_arr%a(addr)%local_addr  = addr
     p_arr%a(addr)%initialized = .true.
+    !set to invalid, since not used here
+    p_arr%a(addr)%nnod        = -1
+    p_arr%a(addr)%comm        = -1
 
     !SET MODE
     p_arr%a(addr)%mode      = nmodes
