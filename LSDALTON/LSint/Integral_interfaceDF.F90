@@ -2829,10 +2829,10 @@ END SUBROUTINE II_get_RI_AlphaCD_3CenterInt2
 !> \date 2015
 SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      & SETTING,nAux,n1,n2,intspec,MaxnAux,nMO1,nMO2,AOtoMO,C1,C2,nthreads,dim1,&
-     & GindexToLocal)
+     & GindexToLocal,DECPRINTLEVEL)
   IMPLICIT NONE
   Integer,intent(in)     :: LUPRI,LUERR,n1,n2,nAux,MaxnAux,nthreads
-  integer,intent(in)     :: nMO1,nMO2,dim1 
+  integer,intent(in)     :: nMO1,nMO2,dim1,DECPRINTLEVEL
   REAL(REALK),pointer    :: FullAlphaCD(:,:,:) !dim1,nMO1,nMO2
   TYPE(LSSETTING),intent(inout) :: SETTING
   character,intent(in)  :: intspec(4)
@@ -2871,11 +2871,18 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      !MO basis with accumulation in setting%output%Result3D
      call InitThermiteIntTransform(n1,nMO1,n2,nMO2,C1,C2,dim1,MaxN,nthreads) !full
      call initIntegralOutputDims(setting%Output,MaxN,1,n1,n2,nthreads)
+     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A,F13.5,A)')&
+          & '3 center RI: Allocating 5dim Buffer',MaxN*n1*n2*8E-9_realk,&
+          & ' GB for each thread = ',MaxN*n1*n2*nthreads*8E-9_realk,' GB'
      call mem_alloc(setting%output%ResultMat,MaxN,1,n1,n2,nthreads)
      n8 = MaxN*n1*n2*nthreads
      call ls_dzero8(setting%output%ResultMat,n8) !due to screening 
+     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
+          & '3 center RI: Allocating TmpArray of ',MaxN*n1*nMO2*8E-9_realk,' GB'
      call ThermiteIntTransform_alloc_TmpArray() !MaxN,n1,nMO2
      n8 = dim1*nMO1*nMO2
+     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
+          & '3 center RI: Allocating MO (alpha|AI)',dim1*nMO1*nMO2*8E-9_realk,' GB'
      call mem_alloc(FullAlphaCD,dim1,nMO1,nMO2)
      call ls_dzero8(FullAlphaCD,n8)
      setting%output%Result3D => FullAlphaCD     
@@ -2894,6 +2901,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      call initIntegralOutputDims(setting%Output,1,1,1,1,1)
      call mem_alloc(setting%output%ResultMat,1,1,1,1,1)
      n8 = dim1*n1*n2
+     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
+          & '3 center RI: Allocating AO (alpha|CD)',dim1*n1*n2*8E-9_realk,' GB'
      call mem_alloc(FullAlphaCD,dim1,n1,n2)
      call ls_dzero8(FullAlphaCD,n8)
      setting%output%Result3D => FullAlphaCD
@@ -2933,6 +2942,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         M = dim1*n1   !rows of Output Matrix
         N = nMO2      !columns of Output Matrix
         K = n2        !summation dimension
+        IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
+             & '3 center RI: Allocating Full TmpArray ',M*N*8E-9_realk,' GB'
         call mem_alloc(TmpAlphaCD,M,N)
         call dgemm('N','N',M,N,K,1.0E0_realk,FullAlphaCD,M,C2,K,0.0E0_realk,TmpAlphaCD,M)
 
