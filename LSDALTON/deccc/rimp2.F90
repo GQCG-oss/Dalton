@@ -472,7 +472,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk
      PerformTiling = MaxSize.GT.MemInGBCollected
      if(DECinfo%PL>2)then
-        WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Perform Tiling  MaxSize=',MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
+        WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Perform Tiling  MaxSize=',&
+             &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
      endif
      IF(PerformTiling)THEN 
         MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-&
