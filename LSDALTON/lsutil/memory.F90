@@ -1933,27 +1933,27 @@ subroutine debug_mem_stats(lupri)
      ENDIF
 #endif
 
-     IF (max_mem_used_global.LT.0) THEN
+     IF (mem_allocated_global.LT.0) THEN
         write(GLOB,'(A8)') ' < zero '
-     ELSEIF (max_mem_used_global.LT.1000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
-     ELSEIF (max_mem_used_global.LT.1000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
-     ELSEIF (max_mem_used_global.LT.1000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
+     ELSEIF (mem_allocated_global.LT.1000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E0_realk," B "
+     ELSEIF (mem_allocated_global.LT.1000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-3_realk," kB"
+     ELSEIF (mem_allocated_global.LT.1000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-6_realk," MB"
 #ifdef VAR_INT64
-     ELSEIF (max_mem_used_global.LT.1000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
-     ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
-     ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
+     ELSEIF (mem_allocated_global.LT.1000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-9_realk," GB"
+     ELSEIF (mem_allocated_global.LT.1000000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-12_realk," TB"
+     ELSEIF (mem_allocated_global.LT.1000000000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-15_realk," PB"
      ELSE
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-18_realk," EB"
      ENDIF
 #else
      ELSE
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-9_realk," GB"
      ENDIF
 #endif
 
