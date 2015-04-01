@@ -2878,14 +2878,14 @@ contains
     call time_start_phase(PHASE_WORK)
 
     ! alloc and init stuff for preloading
-    call mem_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,nbuffs)
-    call mem_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,nbuffs)
-    call mem_alloc(needed_vovv,nbuffs)
-    call mem_alloc(needed_ccsd,nbuffs)
-    call mem_alloc(tiles_in_buf_vovv,nbuffs)
-    call mem_alloc(tiles_in_buf_ccsd,nbuffs)
-    call mem_alloc(req_vovv,nbuffs)
-    call mem_alloc(req_ccsd,nbuffs)
+    call mem_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
+    call mem_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,3*nbuffs)
+    call mem_alloc(needed_vovv,3*nbuffs)
+    call mem_alloc(needed_ccsd,3*nbuffs)
+    call mem_alloc(tiles_in_buf_vovv,3*nbuffs)
+    call mem_alloc(tiles_in_buf_ccsd,3*nbuffs)
+    call mem_alloc(req_vovv,3*nbuffs)
+    call mem_alloc(req_ccsd,3*nbuffs)
     if (alloc_in_dummy) call tensor_lock_wins(vovv,'s',all_nodes=.true.)
     if (alloc_in_dummy) call tensor_lock_wins(ccsd_doubles,'s',all_nodes=.true.)
     needed_vovv       = .false.
@@ -11755,13 +11755,13 @@ contains
    
             if (manual_abc_1) then
    
-               if (abc_nbuffs .lt. 3) call lsquit('manually set abc_nbuffs (NBUFFS_ABC) .lt. 3 - aborting...',DECinfo%output)
+               if (abc_nbuffs .lt. 1) call lsquit('manually set abc_nbuffs (NBUFFS_ABC) .lt. 1 - aborting...',DECinfo%output)
    
             else
    
 !               ! here; determine ijk_nbuffs based on available cpu/gpu memory
 !               if (abc_nbuffs .eq. abc_default) call new_abc_nbuffs_routine()
-               abc_nbuffs = 6
+               abc_nbuffs = 2
    
             endif
    
