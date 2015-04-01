@@ -90,6 +90,7 @@ contains
 
     ! -- Debug modes
     DECinfo%test_fully_distributed_integrals = .false.
+    DECinfo%distribute_fullmolecule = .false.
     DECinfo%CRASHCALC               = .false.
     DECinfo%cc_driver_debug         = .false.
     DECinfo%cc_driver_use_bg_buffer = .false.
@@ -278,7 +279,8 @@ contains
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
 
-    ! Test stuff
+    ! Stripped down keywords
+    DECinfo%noaofock=.false.
 
 
 
@@ -618,6 +620,8 @@ contains
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+       case('.DISTRIBUTE_FULLINFO')
+          DECinfo%distribute_fullmolecule = .true.
 
 
        !KEYWORDS RELATED TO FRAGMENT SPACES
@@ -795,6 +799,10 @@ contains
        case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
                                           read(input,*) DECinfo%en_mem
        case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
+
+          ! Stripped-down keywords
+          ! **********************
+       case('.NOAOFOCK'); DECinfo%noaofock   = .true.
 
 
 #ifdef MOD_UNRELEASED
@@ -1058,6 +1066,12 @@ contains
        if(DECinfo%DECCO) then
           call lsquit('SNOOP cannot be used in connection with the DECCO keyword!',-1)
        end if
+
+       if(Decinfo%distribute_fullmolecule)then
+          print*,"WARNING: memory distribution for the molecule type in a snoop&
+             & calculation is currently not implemented -> falling back to standart"
+          Decinfo%distribute_fullmolecule = .false.
+       endif
        
     end if
 
@@ -1124,6 +1138,13 @@ contains
                & It is therefore not possible to print the fragment energies. &
                & Suggestion: Remove .PRINTFRAGS keyword!', DECinfo%output)
        ENDIF
+
+       if(Decinfo%distribute_fullmolecule)then
+          print*,"WARNING: memory distribution for the molecule type in a full&
+          & calculation is currently not implemented -> falling back to standart"
+          Decinfo%distribute_fullmolecule = .false.
+       endif
+
     ENDIF
 
     FirstOrderModel: if(DECinfo%ccModel /= MODEL_MP2.and.DECinfo%ccModel /= MODEL_CCSD.and.DECinfo%ccModel /= MODEL_RIMP2) then
@@ -1252,6 +1273,24 @@ contains
 
     ! Set FOTs for geometry opt.
     call set_geoopt_FOTs(DECinfo%FOT)
+
+    if(DECinfo%noaofock) then
+       if(DECinfo%SinglesPolari) then
+          call lsquit('Singles polarization does not work with .NOAOFOCK keyword!',-1)
+       end if
+       if(DECinfo%use_canonical) then
+          call lsquit('NOAOFOCK keyword does not work with canonical orbitals!',-1)
+       end if       
+       if(DECinfo%check_lcm_orbitals) then
+          call lsquit('NOAOFOCK keyword does not work with CHECKLCM keyword!',-1)
+       end if
+       if(DECinfo%fragadapt) then
+          call lsquit('NOAOFOCK keyword does not work with fragment-adapted orbitals!',-1)
+       end if
+       if(DECinfo%full_molecular_cc) then
+          call lsquit('NOAOFOCK keyword does not work for full molecular calculation!',-1)
+       end if
+    end if
 
   end subroutine check_dec_input
 

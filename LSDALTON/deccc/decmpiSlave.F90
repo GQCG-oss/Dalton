@@ -138,7 +138,6 @@ subroutine dec_lsmpi_slave(comm)
 
    end do
 
-
 end subroutine dec_lsmpi_slave
 
 #else
