@@ -26,7 +26,7 @@ f.add(from_string = 'Dipole moment gradient (au)',
       abs_tolerance = 1.0e-4)
 f.add(from_string = 'ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS',
       num_lines = 218,
-      rel_tolerance = 1.0e-4)
+      rel_tolerance = 5.0e-4)
 
 test.run(['pehf_geoopt.dal'], ['water.mol'], ['14h2o.pot'], f={'out': f})
 
