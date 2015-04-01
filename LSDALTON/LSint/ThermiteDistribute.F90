@@ -538,4 +538,3 @@ END SUBROUTINE distributeCoulomb
 
 END MODULE thermite_distribute
 
-

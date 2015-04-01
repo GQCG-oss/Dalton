@@ -1187,6 +1187,7 @@ logical :: slave,isAssociated
 integer(kind=ls_mpik) :: master
 integer :: n1
 call LS_MPI_BUFFER(output%ndim,5,Master)
+!call LS_MPI_BUFFER(output%ndim3D,3,Master)
 call LS_MPI_BUFFER(output%doGrad,Master)
 call LS_MPI_BUFFER(output%USEBUFMM,Master)
 call LS_MPI_BUFFER(output%MMBUFLEN,Master)
@@ -1200,6 +1201,7 @@ call LS_MPI_BUFFER(output%LUITNMR,Master)
 call LS_MPI_BUFFER(output%decpacked,Master)
 call LS_MPI_BUFFER(output%decpacked2,Master)
 call LS_MPI_BUFFER(output%decpackedK,Master)
+call LS_MPI_BUFFER(output%FullAlphaCD,Master)
 call LS_MPI_BUFFER(output%exchangeFactor,Master)
 
 isAssociated = ASSOCIATED(output%postprocess)
@@ -1401,6 +1403,8 @@ call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
 call LS_MPI_BUFFER(dalton%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(dalton%PreCalcDFscreening,Master)
+call LS_MPI_BUFFER(dalton%PreCalcF12screening,Master)
 
 END SUBROUTINE MPICOPY_INTEGRALCONFIG
 #endif
@@ -1555,6 +1559,8 @@ call LS_MPI_BUFFER(scheme%DO_PROP,Master)
 call LS_MPI_BUFFER(scheme%PropOper,Master)
 
 call LS_MPI_BUFFER(scheme%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(scheme%PreCalcDFscreening,Master)
+call LS_MPI_BUFFER(scheme%PreCalcF12screening,Master)
 
 END SUBROUTINE mpicopy_scheme
 

@@ -2931,7 +2931,8 @@ dummy=1
 call time_II_operations1()
 
 dofit = SETTING%SCHEME%DENSFIT .OR. SETTING%SCHEME%PARI_J .OR. &
-     SETTING%SCHEME%PARI_K .OR. SETTING%SCHEME%MOPARI_K
+     & SETTING%SCHEME%PARI_K .OR. SETTING%SCHEME%MOPARI_K .OR. &
+     & SETTING%SCHEME%PreCalcDFscreening
 
 IF(SETTING%SCHEME%saveGABtoMem)THEN
  IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN &
@@ -2947,11 +2948,30 @@ IF(SETTING%SCHEME%saveGABtoMem)THEN
     Oper(6)=GGemCouOperator
     Oper(7)=GGemGrdOperator
     Oper(8)=CoulombOperator !Density-fitting screening integrals
+!    Oper(9)=GGemGrdOperator
     CS_INT = SETTING%SCHEME%CS_SCREEN
     PS_INT = SETTING%SCHEME%PS_SCREEN
     DO J=1,size(Oper)
        IF(J.EQ.3.AND.(.NOT.SETTING%SCHEME%SR_EXCHANGE) )CYCLE
        IF(J.EQ.4.AND.(.NOT.SETTING%SCHEME%CAM) )CYCLE
+!       IF(SETTING%SCHEME%PreCalcF12screening)THEN
+          !WARNING FIXME QQQQ 
+! The Gaussian geminal operator g and 
+! The Gaussian geminal operator squared g^2
+! has the same operator parameter - and therefore same filename
+! 
+!          IF(J.EQ.9)THEN
+!             double = 2
+!            call SetGGem(Oper(J),Setting,double)
+!          ELSE
+!             call SetGGem(Oper(J),Setting)
+!          ENDIF
+!       ELSE
+!          IF(J.EQ.5)CYCLE
+!          IF(J.EQ.6)CYCLE
+!          IF(J.EQ.7)CYCLE
+!          IF(J.EQ.9)CYCLE
+!       ENDIF
        IF(J.EQ.5.AND.(.NOT.SETTING%GGEM%is_set) )CYCLE
        IF(J.EQ.6.AND.(.NOT.SETTING%GGEM%is_set) )CYCLE
        IF(J.EQ.7.AND.(.NOT.SETTING%GGEM%is_set) )CYCLE
@@ -3029,6 +3049,47 @@ call II_bcast_screen(setting%comm)
 call time_II_operations2(JOB_II_precalc_ScreenMat)
 
 END SUBROUTINE II_precalc_ScreenMat
+
+subroutine SetGGem(oper,Setting,double)
+implicit none
+integer :: Oper,double
+TYPE(LSSETTING)       :: SETTING
+!local variables
+integer             :: i,j,k,l
+real(realk)         :: coeff(6),exponent(6),tmp
+real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
+integer             :: IJ,nGaussian,nG2,ao(4),dummy
+
+nGaussian = 6
+nG2 = nGaussian*(nGaussian+1)/2
+call stgfit(1E0_realk,nGaussian,exponent,coeff)
+IJ=0
+DO I=1,nGaussian
+   DO J=1,I
+      IJ = IJ + 1
+      coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+      prodexponent(IJ) = exponent(I) * exponent(J)
+      sumexponent(IJ) = exponent(I) + exponent(J)
+   ENDDO
+   coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+ENDDO
+IF(double.EQ.2)THEN
+   ! The Gaussian geminal operator squared g^2
+   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+ELSE
+   IF(oper .EQ. GGemOperator)THEN 
+      ! The Gaussian geminal operator g
+      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+   ELSE IF (oper.EQ.GGemCouOperator)THEN 
+      ! The Gaussian geminal divided by the Coulomb operator g/r12
+      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+   ELSE IF (oper.EQ.GGemGrdOperator)THEN 
+      ! The double commutator [[T,g],g]
+      call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+   ENDIF
+ENDIF
+end subroutine SetGGem
+
 
 #ifdef VAR_MPI
 subroutine II_bcast_screen(comm)

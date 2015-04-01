@@ -24,9 +24,8 @@ f.add(string = 'Min. sigma',
 f.add(string = 'HOMO-LUMO Gap',
       rel_tolerance = 1.0e-5)
 
-f.add(from_string = 'absolute Overlap in MO basis',
-      to_string   = 'Trace of Absolute nummerical overlap',
-      abs_tolerance = 1.0e-6)
+f.add(string = 'Trace of Absolute nummerical overlap',
+      abs_tolerance = 1.0e-5)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

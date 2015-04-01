@@ -37,7 +37,6 @@ subroutine pdm_tensor_slave(comm)
    CALL PDM_tensor_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
    call time_start_phase(PHASE_WORK)
 
-
    SELECT CASE(JOB)
    CASE(JOB_PC_DEALLOC_DENSE)
       call memory_deallocate_tensor_dense_pc(A)
@@ -294,6 +293,27 @@ subroutine pdm_tensor_slave(comm)
       call tensor_zero(AUX)
 
       call lspdm_extract_eos_indices_occ(AUX,A,INT1,intarr1)
+
+      call mem_dealloc(intarr1)
+      call tensor_free(AUX)
+
+   CASE(JOB_TENSOR_EXTRACT_VDECNP)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(INT1,infpar%master)
+      call mem_alloc(intarr1,INT1)
+      call ls_mpi_buffer(intarr1,INT1,infpar%master)
+      call ls_mpi_buffer(INT2,infpar%master)
+      call mem_alloc(intarr2,INT2)
+      call ls_mpi_buffer(intarr2,INT2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      
+      call tensor_init(AUX,intarr2,INT2)
+
+      call mem_dealloc(intarr2)
+
+      call tensor_zero(AUX)
+
+      call lspdm_extract_decnp_indices_virt(AUX,A,INT1,intarr1)
 
       call mem_dealloc(intarr1)
       call tensor_free(AUX)

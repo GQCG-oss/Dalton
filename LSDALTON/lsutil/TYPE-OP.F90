@@ -61,7 +61,6 @@ INTEGER FUNCTION getNbasis(AOtype,intType,MOLECULE,LUPRI)
 implicit none
 integer           :: AOtype,intType
 Integer           :: LUPRI
-!Type(DaltonInput) :: DALTON
 TYPE(MOLECULEINFO):: MOLECULE
 !
 integer :: np,nc
@@ -290,6 +289,8 @@ CALL DFT_set_default_config(DALTON%DFT)
 ! DEC TEST PARAMETERS
 DALTON%run_dec_gradient_test=.false.
 DALTON%ForceRIMP2memReduced = .FALSE.
+DALTON%PreCalcDFscreening = .FALSE.
+DALTON%PreCalcF12screening = .FALSE.
 
 dalton%LU_LUINTM=0
 dalton%LU_LUINTR=0
@@ -1005,6 +1006,8 @@ call WRITE_FORMATTET_DFT_param(LUPRI,DALTON%DFT)
 !EXCHANGE FACTOR
 WRITE(LUPRI,'(2X,A35,F16.8)') 'exchangeFactor',DALTON%exchangeFactor
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ForceRIMP2memReduced ',DALTON%ForceRIMP2memReduced
+WRITE(LUPRI,'(2X,A35,7X,L1)')'PreCalcDFscreening   ',DALTON%PreCalcDFscreening
+WRITE(LUPRI,'(2X,A35,7X,L1)')'PreCalcF12screening  ',DALTON%PreCalcF12screening
 
 END SUBROUTINE PRINT_DALTONITEM
 
@@ -2819,6 +2822,8 @@ scheme%CAMbeta               = dalton_inp%CAMbeta
 scheme%CAMmu                 = dalton_inp%CAMmu
 scheme%exchangeFactor        = dalton_inp%exchangeFactor
 scheme%ForceRIMP2memReduced  = dalton_inp%ForceRIMP2memReduced
+scheme%PreCalcDFscreening    = dalton_inp%PreCalcDFscreening
+scheme%PreCalcF12screening    = dalton_inp%PreCalcF12screening
 
 !DFT parameters 
 call dft_setIntegralSchemeFromInput(scheme%DFT,dalton_inp%DFT)
@@ -2952,6 +2957,8 @@ WRITE(IUNIT,'(3X,A22,L7)')'INCREMENTAL           ', scheme%INCREMENTAL
 WRITE(IUNIT,'(3X,A22,L7)')'DO_PROP               ', scheme%DO_PROP
 WRITE(IUNIT,'(3X,A22,I7)')'PropOper              ', scheme%PropOper
 WRITE(IUNIT,'(3X,A22,I7)')'ForceRIMP2memReduced  ', scheme%ForceRIMP2memReduced
+WRITE(IUNIT,'(3X,A22,I7)')'PreCalcDFscreening    ', scheme%PreCalcDFscreening
+WRITE(IUNIT,'(3X,A22,I7)')'PreCalcF12screening   ', scheme%PreCalcF12screening
 
 END SUBROUTINE typedef_printScheme
 
