@@ -26,7 +26,7 @@ type orbspread_data
  type(Matrix), pointer :: G
  type(Matrix), pointer :: P
  type(Matrix) :: propint(10)
- type(Matrix) :: tmpM(4)
+! type(Matrix) :: tmpM(4)
 end type orbspread_data
 
 !> \brief Contains settings for decomposition and OAO decomposed overlap.

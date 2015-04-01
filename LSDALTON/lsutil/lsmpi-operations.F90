@@ -1988,7 +1988,7 @@ END SUBROUTINE mpicopy_reduced_screen_info
 
   subroutine mem_init_background_alloc_all_nodes(comm,bytes)
      implicit none
-     real(realk),intent(in) :: bytes
+     integer(kind=8),intent(in) :: bytes
      integer(kind=ls_mpik),intent(in) :: comm
      integer(kind=ls_mpik) :: nnod,me
      real(realk) :: bytes_int
@@ -2077,9 +2077,9 @@ subroutine mem_init_background_alloc_slave(comm)
    use lsmpi_op, only: mem_init_background_alloc_all_nodes
    implicit none
    integer(kind=ls_mpik),intent(in) :: comm
-   real(realk) :: bytes
+   integer(kind=8):: bytes
 
-   bytes=1.0E0_realk
+   bytes=8
    call mem_init_background_alloc_all_nodes(comm,bytes)
 
 end subroutine mem_init_background_alloc_slave

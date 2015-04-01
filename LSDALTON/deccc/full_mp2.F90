@@ -103,6 +103,11 @@ contains
     integer(kind=4) :: JobInfo1(2)
     !  Character(80)        :: FilenameCS,FilenamePS
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_canonical_mpmp2): does not work with distributed&
+       & moleule structure",-1)
+    endif
+
 #ifdef VAR_TIME    
     FORCEPRINT = .TRUE.
 #else
@@ -137,7 +142,7 @@ contains
     ! **********
     nbasis = MyMolecule%nbasis
     nb = nbasis
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
     !with MyMolecule%nocc = Valence + Core 
     !In case of Frozen core we only need Valence and will access
@@ -189,11 +194,8 @@ contains
 
     ! Set integral info
     ! *****************
-    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
-    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
-    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
-    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
-    INTSPEC(5)='C' !C = Coulomb operator
+    !R = Regular Basis set on centers 1-4, C = Coulomb operator
+    INTSPEC = ['R','R','R','R','C']
 
     doscreen = mylsitem%setting%scheme%cs_screen.OR.&
          & mylsitem%setting%scheme%ps_screen
@@ -588,14 +590,14 @@ contains
     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
     !$OMP SHARED(noccfull,MyMolecule,EpsOcc,offset)
     do I=1+offset,noccfull
-       EpsOcc(I-offset) = MyMolecule%ppfock(I,I)
+       EpsOcc(I-offset) = MyMolecule%oofock%elm2(I,I)
     enddo
     !$OMP END PARALLEL DO
     call mem_alloc(EpsVirt,nvirt)
     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
     !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
     do A=1,nvirt
-       EpsVirt(A) = MyMolecule%qqfock(A,A)
+       EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
     enddo
     !$OMP END PARALLEL DO
 
@@ -662,7 +664,7 @@ contains
        !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
        !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax,offset)
        do I=1,nOccBatchDimI
-          CoI(:,I) = Mymolecule%Co(:,offset+I+(iB-1)*nOccBatchDimImax) 
+          CoI(:,I) = Mymolecule%Co%elm2(:,offset+I+(iB-1)*nOccBatchDimImax) 
        enddo
        !$OMP END PARALLEL DO
        call mem_alloc(tmp2,dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
@@ -757,7 +759,7 @@ contains
        M = nvirt                                 !rows of Output Matrix
        N = nOccBatchDimI*dimAlphaMPI*dimGammaMPI !columns of Output Matrix
        K = nb                                    !summation dimension
-       call dgemm('T','N',M,N,K,1.0E0_realk,MyMolecule%Cv,K,tmp3,K,0.0E0_realk,tmp4,M)
+       call dgemm('T','N',M,N,K,1.0E0_realk,MyMolecule%Cv%elm2,K,tmp3,K,0.0E0_realk,tmp4,M)
        call mem_dealloc(tmp3)
 
        nOccBatchDimJ = nOccBatchDimJrank(JNODE)
@@ -789,7 +791,7 @@ contains
                    JB = OccIndexJrank(J,JNODE)
                    do kk = 1,nBlocksGamma(jnodeLoop)
                       CgammaMPI(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J)=&
-                           &Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),offset+JB)
+                           &Mymolecule%Co%elm2(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),offset+JB)
                    enddo
                 enddo
 
@@ -826,7 +828,7 @@ contains
                       JB = OccIndexJrank(J,JNODE)
                       do kk = 1,nBlocksGamma(jnodeLoop)
                          CgammaMPI2(offsetGamma(kk,jnodeLoop)+1:offsetGamma(kk,jnodeLoop)+AOdimGamma(kk,jnodeLoop),J) = &
-                              & Mymolecule%Co(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),offset+JB)
+                              & Mymolecule%Co%elm2(AOstartGamma(kk,jnodeLoop):AOendGamma(kk,jnodeLoop),offset+JB)
                       enddo
                    enddo
                    !share alpha batches
@@ -862,7 +864,7 @@ contains
        do a=1,nvirt
           do kk = 1,nBlocksAlpha(inode)
              CAV(offsetAlpha(kk,inode)+1:offsetAlpha(kk,inode)+AOdimAlpha(kk,inode),A) = &
-                  Mymolecule%Cv(AOstartAlpha(kk,inode):AOendAlpha(kk,inode),A) 
+                  Mymolecule%Cv%elm2(AOstartAlpha(kk,inode):AOendAlpha(kk,inode),A) 
           enddo
        enddo
        !VOVO(nvirt,noccBJ,nvirt,noccBI) = CAV(dimAlpha,nvirt)*tmp7(dimAlpha*nOccBatchDimJ,nvirt*nOccBatchDimI)
@@ -1375,6 +1377,11 @@ contains
     integer(kind=4) :: JobInfo1(2)
     !  Character(80)        :: FilenameCS,FilenamePS
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_canonical_mp2): this does not work with PDM&
+       & molecular structure",-1)
+    endif
+
 #ifdef VAR_TIME    
     FORCEPRINT = .TRUE.
 #endif
@@ -1415,7 +1422,7 @@ contains
        nocc   = MyMolecule%nocc
        offset = 0
     ENDIF
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     nAtoms = MyMolecule%nAtoms
     LUPRI = DECinfo%output
 
@@ -1436,11 +1443,8 @@ contains
 
     ! Set integral info
     ! *****************
-    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
-    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
-    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
-    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
-    INTSPEC(5)='C' !C = Coulomb operator
+    !R = Regular Basis set on centers 1-4, C = Coulomb operator
+    INTSPEC = ['R','R','R','R','C']
 
     !determine MinAObatch: the minimum allowed AObatch size + number of AO batches
     IF(DECinfo%useIchor)THEN
@@ -1595,14 +1599,14 @@ contains
        !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
        !$OMP SHARED(noccfull,MyMolecule,EpsOcc,offset)
        do I=1+offset,noccfull
-          EpsOcc(I-offset) = MyMolecule%ppfock(I,I)
+          EpsOcc(I-offset) = MyMolecule%oofock%elm2(I,I)
        enddo
        !$OMP END PARALLEL DO
        call mem_alloc(EpsVirt,nvirt)
        !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
        !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
        do A=1,nvirt
-          EpsVirt(A) = MyMolecule%qqfock(A,A)
+          EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
        enddo
        !$OMP END PARALLEL DO
 
@@ -1729,7 +1733,7 @@ contains
           !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
           !$OMP SHARED(nOccBatchDimI,MyMolecule,CoI,iB,nOccBatchDimImax,offset)
           do I=1,nOccBatchDimI
-             CoI(:,I) = Mymolecule%Co(:,offset+I+(iB-1)*nOccBatchDimImax) 
+             CoI(:,I) = Mymolecule%Co%elm2(:,offset+I+(iB-1)*nOccBatchDimImax) 
           enddo
           !$OMP END PARALLEL DO
 
@@ -1754,7 +1758,7 @@ contains
              !$OMP PARALLEL DO DEFAULT(none) PRIVATE(J) &
              !$OMP SHARED(nOccBatchDimJ,MyMolecule,CoJ,jB,nOccBatchDimJmax,offset)
              do J=1,nOccBatchDimJ
-                CoJ(:,J) = Mymolecule%Co(:,offset+J+(jB-1)*nOccBatchDimJmax) 
+                CoJ(:,J) = Mymolecule%Co%elm2(:,offset+J+(jB-1)*nOccBatchDimJmax) 
              enddo
              !$OMP END PARALLEL DO
              IF(.NOT.FullRHS)THEN
@@ -1832,7 +1836,7 @@ contains
                    M = nvirt                            !rows of Output Matrix
                    N = nOccBatchDimJ*dimAlpha*dimGamma  !columns of Output Matrix
                    K = nb                               !summation dimension
-                   call dgemm('T','N',M,N,K,1.0E0_realk,MyMolecule%Cv,K,tmp3,K,0.0E0_realk,tmp4,M)
+                   call dgemm('T','N',M,N,K,1.0E0_realk,MyMolecule%Cv%elm2,K,tmp3,K,0.0E0_realk,tmp4,M)
                    call mem_dealloc(tmp3)
 
                    !reorder: tmp5(dimAlpha,dimGamma,nvirt,nOccBatchDimJ) <= tmp4(nvirt,nOccBatchDimJ,dimAlpha,dimGamma)
@@ -1844,7 +1848,7 @@ contains
 
                    call mem_alloc(CvA,dimAlpha,nvirt)
                    do B=1,nvirt
-                      CvA(1:dimAlpha,B) = Mymolecule%Cv(AlphaStart:AlphaEnd,B)
+                      CvA(1:dimAlpha,B) = Mymolecule%Cv%elm2(AlphaStart:AlphaEnd,B)
                    enddo
                    !VGVO(nvirt,dimGamma,nvirt,nOccBatchDimJ) = CvA(dimAlpha,nvirt)*tmp5(dimAlpha,dimGamma,nvirt,nOccBatchDimJ)
                    IF(nbatchesAlpha.EQ.1)THEN
@@ -2444,9 +2448,9 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Canonical MP2 correlation energy
     real(realk),intent(inout) :: Ecorr
-    real(realk),pointer :: Cocc(:,:), Cunocc(:,:)
+    real(realk),pointer :: Cocc(:,:), Cvirt(:,:)
     type(array4) :: g
-    integer :: nbasis,i,j,a,b,ncore,offset,nocc,nunocc
+    integer :: nbasis,i,j,a,b,ncore,offset,nocc,nvirt
     real(realk) :: eps
     real(realk), pointer :: ppfock(:,:)
 
@@ -2456,6 +2460,11 @@ contains
             & Insert .CANONICAL keyword OR insert .PRINTFRAGS keyword to run test calculation,&
             & where the individual fragment energies are calculated',-1)
     end if
+
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_canonical_mp2_correlation_energy): does not work&
+       & with PDM distributed molecule structure",-1)
+    endif
 
     ! Initialize stuff
     ! ****************
@@ -2467,7 +2476,7 @@ contains
        nocc = MyMolecule%nocc
     end if
 
-    nunocc = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     ncore = MyMolecule%ncore
     nbasis=MyMolecule%nbasis
     call mem_alloc(ppfock,nocc,nocc)
@@ -2475,42 +2484,42 @@ contains
        ! Only copy valence orbitals into array2 structure
        call mem_alloc(Cocc,nbasis,nocc)
        do i=1,nocc
-          Cocc(:,i) = MyMolecule%Co(:,i+Ncore)
+          Cocc(:,i) = MyMolecule%Co%elm2(:,i+Ncore)
        end do
 
        ! Fock valence
        do j=1,nocc
           do i=1,nocc
-             ppfock(i,j) = MyMolecule%ppfock(i+Ncore,j+Ncore)
+             ppfock(i,j) = MyMolecule%oofock%elm2(i+Ncore,j+Ncore)
           end do
        end do
        offset = ncore
     else
        ! No frozen core, simply copy elements for all occupied orbitals
        call mem_alloc(Cocc,nbasis,nocc)
-       Cocc=MyMolecule%Co
-       ppfock = MyMolecule%ppfock
+       Cocc=MyMolecule%Co%elm2
+       ppfock = MyMolecule%oofock%elm2
        offset=0
     end if
-    call mem_alloc(Cunocc,nbasis,nunocc)
-    Cunocc = MyMolecule%Cv
+    call mem_alloc(Cvirt,nbasis,nvirt)
+    Cvirt = MyMolecule%Cv%elm2
 
     ! Get (AI|BJ) integrals stored in the order (A,I,B,J)
     ! ***************************************************
-    call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cunocc,Cocc,g)
+    call get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,g)
     call mem_dealloc(Cocc)
-    call mem_dealloc(Cunocc)
+    call mem_dealloc(Cvirt)
 
     ! Calculate canonical MP2 energy
     ! ******************************
     Ecorr = 0.0_realk
     do J=1,nocc
-       do B=1,nunocc
+       do B=1,nvirt
           do I=1,nocc
-             do A=1,nunocc
+             do A=1,nvirt
                 ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                eps = MyMolecule%ppfock(I+offset,I+offset) + MyMolecule%ppfock(J+offset,J+offset) &
-                     & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
+                eps = MyMolecule%oofock%elm2(I+offset,I+offset) + MyMolecule%oofock%elm2(J+offset,J+offset) &
+                     & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
 
                 ! Ecorr = sum_{IJAB} (AI|BJ) * [ 2*(AI|BJ) - (BI|AJ) ] / [eps(I)+eps(J)-eps(A)-eps(B)]
                 Ecorr = Ecorr + g%val(A,I,B,J)*(2E0_realk*g%val(A,I,B,J)-g%val(B,I,A,J))/eps
@@ -2577,7 +2586,7 @@ subroutine full_canonical_mp2_slave
      call full_canonical_mp2(MyMolecule,MyLsitem,mp2_energy)
   ENDIF
   call ls_free(MyLsitem)
-  call molecule_finalize(MyMolecule)
+  call molecule_finalize(MyMolecule,.false.)
   
 end subroutine full_canonical_mp2_slave
 #endif

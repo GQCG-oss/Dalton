@@ -233,9 +233,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   natoms = MyFragment%natoms
   nbasis = MyFragment%nbasis
   nocc = MyFragment%noccAOS        ! occupied AOS (only valence for frozen core)
-  nvirt = MyFragment%nunoccAOS     ! virtual AOS
+  nvirt = MyFragment%nvirtAOS     ! virtual AOS
   noccEOS = MyFragment%noccEOS     ! occupied EOS
-  nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
+  nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
   call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%SETTING,MinAuxBatch,'D')
@@ -471,19 +471,46 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      MemInGBCollected = MemInGBCollected*0.80E0_realk !80%
      MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk
      PerformTiling = MaxSize.GT.MemInGBCollected
+     if(DECinfo%PL>2)then
+        WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Perform Tiling  MaxSize=',&
+             &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
+     endif
      IF(PerformTiling)THEN 
         MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-&
              & (NBA*nvirt*nocc+nocc*noccEOS)*8.0E-9_realk)/(nocc*noccEOS*nvirt*8.0E-9_realk)))
+        if(DECinfo%PL>2)then
+           WRITE(DECinfo%output,'(A,I10)')'DECRIMP2: MaxVirtSize =',MaxVirtSize 
+        endif
         nTiles =  nvirt/MaxVirtSize 
         IF(nTiles.EQ.0)PerformTiling = .FALSE.
      ENDIF
 #if defined(VAR_OPENACC) && defined(VAR_CUDA)
      !In case of GPU usage tocc must also fit on device memory
      call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
-     MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk  !in BYTES
-     PerformTiling = MaxSize.GT.free_gpu
      IF(PerformTiling)THEN 
-        maxsize = (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+noccEOS*nocc+nocc*noccEOS*nvirt+noccEOS*noccEOS*nvirt)*8
+        !check that tilesize determine accoriding to CPU memory is valid for gpu
+        IF(DECinfo%PL>2)then
+           WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The CPU requires tiling in step 5  MaxVirtSize=',MaxVirtSize        
+        ENDIF
+        MaxSize = (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk+&
+             & MaxVirtSize*((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk
+        IF(Maxsize .GT. free_gpu)THEN
+           !reduce MaxVirtSize
+           MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu*0.80E0_realk-(noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*&
+                & 8.0E0_realk)/(((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk))) 
+           IF(DECinfo%PL>2)then
+              WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The GPU requires a smaller tiling in step 5 New MaxVirtSize=',MaxVirtSize        
+           ENDIF
+           nTiles =  nvirt/MaxVirtSize
+           IF(nTiles.EQ.0)PerformTiling = .FALSE.
+        ENDIF
+     ELSE
+        !determine if GPU requires tiling even if CPU does not
+        MaxSize = (nocc*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk  !in BYTES
+        PerformTiling = MaxSize.GT.free_gpu*0.80E0_realk
+     ENDIF
+     IF(PerformTiling)THEN 
+        maxsize = (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+noccEOS*nocc+nocc*noccEOS*nvirt+noccEOS*noccEOS*nvirt)*8.0E0_realk
         IF(Maxsize .GT. free_gpu)THEN
            print*,'Calpha requires',NBA*nvirt*nocc*8,'Bytes'
            print*,'U requires',noccEOS*nocc*8,'Bytes'
@@ -494,10 +521,27 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            print*,'Free on the GPU: ',free_gpu,'Bytes'
            call lsquit('GPU memory cannot hold required objects')
         ENDIF
-        MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu-(noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk)/(((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk))) 
+        MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu*0.80E0_realk-(noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*&
+             & 8.0E0_realk)/(((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk))) 
         nTiles =  nvirt/MaxVirtSize
         IF(nTiles.EQ.0)PerformTiling = .FALSE.
      ENDIF
+#endif
+
+#if defined(VAR_OPENACC) && defined(VAR_CUDA)
+     if(DECinfo%PL>2)then
+        !In case of GPU usage tocc must also fit on device memory
+        call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
+        WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 5)     ',free_gpu*1.0E0_realk,' Bytes'
+        IF(PerformTiling)THEN 
+           WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: MaxVirtSize',MaxVirtSize
+           WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 using tiling  ',&
+                & (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk+MaxVirtSize*((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk,' Bytes'
+        ELSE
+           WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 without tiling',&
+                & (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk+nocc*noccEOS*nvirt*nvirt*8.0E0_realk,' Bytes'
+        ENDIF
+     endif
 #endif
      if (DECinfo%RIMP2_tiling)THEN
         PerformTiling = .TRUE. ! enforce tiling
@@ -637,6 +681,22 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
   CALL LSTIMER('DECRIMP2: tocc          ',TS2,TE2,LUPRI,FORCEPRINT)
 
+#if defined(VAR_OPENACC) && defined(VAR_CUDA)
+  !In case of GPU usage tvirt must also fit on device memory
+  call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
+  if(DECinfo%PL>2)then
+     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 6)     ',free_gpu*1.0E0_realk,' Bytes'
+     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Additional memory requirement in Step 6 ',&
+          & (nvirtEOS*nvirt*nocc*nocc+nocc*nocc*nvirtEOS*nvirtEOS)*8.0E0_realk,' Bytes'     
+  endif
+  IF((nvirtEOS*nvirt*nocc*nocc+nocc*nocc*nvirtEOS*nvirtEOS)*8.0E0_realk.GT.free_gpu*1.0E0_realk)THEN
+     print*,'DECRIMP2: Memory available on device (step 6)     ',free_gpu*1.0E0_realk,' Bytes'
+     print*,'DECRIMP2: Additional memory requirement in Step 6 ',&
+          & (nvirtEOS*nvirt*nocc*nocc+nocc*nocc*nvirtEOS*nvirtEOS)*8.0E0_realk,' Bytes'     
+     call lsquit('DECRIMP2: Not enough memory on the device for step 6')
+  ENDIF
+#endif
+
   !=====================================================================================
   !  Major Step 6: Generate tvirtEOS(nvirtEOS,nocc,nvirtEOS,nocc)
   !=====================================================================================
@@ -721,6 +781,20 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call ls_dzero8(tvirtEOS%elm1,nSize)
   ENDIF
 
+#if defined(VAR_OPENACC) && defined(VAR_CUDA)
+  call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
+  if(DECinfo%PL>2)then
+     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 7)     ',free_gpu*1.0E0_realk,' Bytes'
+     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Additional memory requirement in Step 7 ',&
+          & (nba*nvirt*noccEOS*2)*8.0E0_realk,' Bytes'     
+  endif
+  IF((nba*nvirt*noccEOS*2)*8.0E0_realk.GT.free_gpu*1.0E0_realk)THEN
+     print*,'DECRIMP2: Memory available on device (step 7)     ',free_gpu*1.0E0_realk,' Bytes'
+     print*,'DECRIMP2: Additional memory requirement in Step 7 ',(nba*nvirt*noccEOS*2)*8.0E0_realk,' Bytes'     
+     call lsquit('DECRIMP2: Not enough memory on the device for step 6')
+  ENDIF
+#endif
+
   !=====================================================================================
   !  Major Step 7: Generate goccEOS(nvirt,noccEOS,nvirt,noccEOS)
   !=====================================================================================
@@ -794,6 +868,20 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   !  Major Step 8: Generate gvirtEOS(nvirtEOS,nocc,nvirtEOS,nocctot)
   !=====================================================================================
+#if defined(VAR_OPENACC) && defined(VAR_CUDA)
+  call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
+  if(DECinfo%PL>2)then
+     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 8)     ',free_gpu*1.0E0_realk,' Bytes'
+     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Additional memory requirement in Step 8 ',&
+          & (nba*nvirt*nocctot*2)*8.0E0_realk,' Bytes'     
+  endif
+  IF((nba*nvirt*nocctot*2)*8.0E0_realk.GT.free_gpu*1.0E0_realk)THEN
+     print*,'DECRIMP2: Memory available on device (step 8)     ',free_gpu*1.0E0_realk,' Bytes'
+     print*,'DECRIMP2: Additional memory requirement in Step 8 ',(nba*nvirt*nocctot*2)*8.0E0_realk,' Bytes'     
+     call lsquit('DECRIMP2: Not enough memory on the device for step 6')
+  ENDIF
+#endif
+
   dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot]   ! Output order
   IF(NBA.GT.0)THEN
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
@@ -1733,7 +1821,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   MynbasisAuxMPI2 = 0 
   MaxNaux = 0
   call get_currently_available_memory(MemInGBCollected)
-  maxsize = MemInGBCollected*0.70E0_realk
+  maxsize = MemInGBCollected*0.65E0_realk
   call GetOperatorFromCharacter(Oper,intspec(4),mylsitem%Setting)
 
   IF(DECinfo%AuxAtomicExtent)THEN
@@ -1771,12 +1859,17 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         MaxNaux = 0
      ELSE
         !Full MO can fit on all nodes Which means we can do a reduction.        
-        WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
-        WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                     ',MemInGBCollected,' GB'
-        WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available (70%)               ',maxsize,' GB'
+        IF(DECinfo%PL.GT.0)THEN
+           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
+           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                     ',MemInGBCollected,' GB'
+           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available (65%)               ',maxsize,' GB'
+        ENDIF
         !Memory requirement to have the full AO integral in memory 
         MemForFullAOINT = MAX(nbasisAux*nvirt*nocc+nbasisAux*nbasis1*nocc,&
              & nbasisAux*nbasis1*nocc+nbasisAux*nbasis1*nbasis2)*8.0E-9_realk
+        IF(DECinfo%PL.GT.0)THEN
+           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full AO (alpha|cd) integral requires ',MemForFullAOINT,' GB'           
+        ENDIF
         IF(MemForFullAOINT.LT.maxsize)THEN 
            !Full AO can fit on all nodes Which means we can do a reduction.
            MaxNaux = nbasisAux
@@ -1787,13 +1880,23 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            !so we build a subset (MaxNaux,nbasis1,nbasis2) and then 
            !transform to MO basis during the integral evaluation. 
            !The bigger MaxNaux the fewer times we have to do the AO to MO
-           !Memory requirement = nbasisAux*nvirt*nocc+MaxN*nthreads*
+           !Memory requirement = nbasisAux*nvirt*nocc+MaxNaux*nthreads*
            !  (nbasis1*nocc+nbasis1*nbasis2)+nbasis1*nvirt+nbasis2*nocc 
            !so we choose MaxNaux to be
-           MaxNaux = MIN(nbasisAux,FLOOR((MaxSize/8.0E-9_realk-nbasisAux*nvirt*nocc-nbasis1*nvirt-nbasis2*nocc) &
-                & /((nbasis1*nocc+nbasis1*nbasis2)*nthreads)))
+           MaxNaux = MIN(nbasisAux,FLOOR((MaxSize/8.0E-9_realk-nbasisAux*nvirt*nocc-2*nbasis1*nvirt-2*nbasis2*nocc) &
+                & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
            PerformReduction = MaxNaux
 !           print*,'MemForFullMOINT.LT.maxsize: MaxNaux',MaxNaux
+
+           IF(DECinfo%PL.GT.0)THEN
+              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: Memory available (65%)',maxsize,' GB'           
+              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: Memory available after MO int + CMO',&
+                   & (MaxSize-nbasisAux*nvirt*nocc*8.0E-9_realk-2*nbasis1*nvirt*8.0E-9_realk-2*nbasis2*nocc*8.0E-9_realk),' GB'           
+              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: MaxNaux',MaxNaux,' compared to nAux=',nbasisAux
+              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: This MaxNaux Correspond to Memory usage of ',&
+                   &   nbasisAux*nvirt*nocc*8.0E-9_realk+2*nbasis1*nvirt*8.0E-9_realk+2*nbasis2*nocc*8.0E-9_realk&
+                   & + MaxNaux*nthreads*nbasis1*nbasis2*8.0E-9_realk + MaxNaux*nbasis1*nocc*8.0E-9_realk,' GB'
+           ENDIF
         ENDIF
         IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
            MaxNaux = MinAuxBatch + 1
@@ -1958,7 +2061,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   !Output: AlphaCD3(dim1,nvirt,nocc) 
   call II_get_RI_AlphaCD_3CenterIntFullOnAllNN(DECinfo%output,DECinfo%output,&
        & AlphaCD3,mylsitem%setting,nbasisAux,nbasis1,nbasis2,intspec,MaxNaux,&
-       & nvirt,nocc,.TRUE.,Cvirt,Cocc,nthreads,dim1,GindexToLocal)
+       & nvirt,nocc,.TRUE.,Cvirt,Cocc,nthreads,dim1,GindexToLocal,DECinfo%PL)
 
 !  call sleep(mynum*10)
 !  print*,'XXX AlphaCD3 dim1=',dim1,'mynum',mynum

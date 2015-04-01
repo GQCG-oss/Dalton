@@ -957,7 +957,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4), old_gammaB
      integer(kind=long) :: xyz,zyx1,zyx2,mem_allocated,HeapMemoryUsage
-     logical :: debug, use_bg_buf
+     logical :: debug, use_bg_buf, reduce_bg_size
      character(tensor_MSG_LEN) :: msg
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -966,7 +966,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
-!{`DIL:
+     !{`DIL:
      integer:: nors,nvrs
      type(tensor):: tpld,tmid
 #ifdef DIL_ACTIVE
@@ -982,7 +982,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #else
      integer:: scheme_tmp=2
 #endif
-!}
+     !}
 
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
@@ -1054,9 +1054,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
-      call dil_debug_to_file_start()
-      write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)')&
-      &infpar%lg_mynum,infpar%mynum,MemFree
+        call dil_debug_to_file_start()
+        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)')&
+           &infpar%lg_mynum,infpar%mynum,MemFree
      endif
 #endif
 #endif
@@ -1163,9 +1163,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ELSE
            call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
         ENDIF
-        print *,"MASTER GETTING MAX",MinAObatch
         call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-        &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.,mylsitem%setting,intspec)
+           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.,mylsitem%setting,intspec)
 
         !SOME WORDS ABOUT THE CHOSEN SCHEME:
         ! Depending on the availability of memory on the nodes a certain scheme
@@ -1190,23 +1189,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=scheme_tmp !```DIL: remove
      if(scheme==1) then
-      if(.not.alloc_in_dummy) call lsquit('ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3!',-1)
-      DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
+        if(.not.alloc_in_dummy) call lsquit('ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3!',-1)
+        DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
      else
-      DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
+        DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
      endif
 #endif
 #ifdef VAR_MPI
      if(.not.local) then
         t2%access_type = AT_ALL_ACCESS
         if(scheme/=1) then
-         call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
-         call tensor_allocate_dense( t2 )
-         buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
-         call mem_alloc(buf1,buf_size)
-         call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
-         call mem_dealloc(buf1)
-         call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+           call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
+           call tensor_allocate_dense( t2 )
+           buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
+           call mem_alloc(buf1,buf_size)
+           call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
+           call mem_dealloc(buf1)
+           call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         endif
      endif
 #ifdef DIL_ACTIVE
@@ -1234,8 +1233,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
-      write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",'//&
-      &'A32,": outside locks = ",l1,1x,l1)') infpar%lg_mynum,infpar%mynum,MemFree,hname(1:32),lock_outside,DIL_LOCK_OUTSIDE
+        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] with free RAM = ",F15.4," sits on ",'//&
+           &'A32,": outside locks = ",l1,1x,l1)') infpar%lg_mynum,infpar%mynum,MemFree,hname(1:32),lock_outside,DIL_LOCK_OUTSIDE
      endif
 #endif
 #endif
@@ -1245,165 +1244,165 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
 #else
-     if(alloc_in_dummy.and.(scheme==2.or.scheme==1)) then
+        if(alloc_in_dummy.and.(scheme==2.or.scheme==1)) then
 #endif
-      call tensor_lock_wins(omega2,'s',all_nodes = .true.)
-     endif
+           call tensor_lock_wins(omega2,'s',all_nodes = .true.)
+        endif
 #endif
 
-     !if the residual is handeled as dense, allocate and zero it, adjust the
-     !access parameters to the data
-     if(omega2%itype/=TT_DENSE.and.(scheme==3.or.scheme==4))then
-        call tensor_allocate_dense(omega2)
-        omega2%itype=TT_DENSE
-     endif
-     call tensor_zero(omega2)
-
-
-     ! ************************************************
-     ! * Determine batch information for Gamma batch  *
-     ! ************************************************
-     IF(DECinfo%useIchor)THEN
-        iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
-        !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
-        !size of the AO batches. iAO is the center that the batching should occur on. 
-        !'R'  !Specifies that it is the Regular AO basis that should be batched 
-        call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
-             & nbatchesGamma,DECinfo%output)
-        call mem_alloc(AOGammabatchinfo,nbatchesGamma)
-        !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
-        !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
-        !to determine_Ichor_nbatchesofAOS
-        !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
-        !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
-        call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
-             & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
-     ELSE
-        ! Orbital to batch information
-        ! ----------------------------
-        call mem_alloc(orb2batchGamma,nb)
-        call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
-             & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-             &nbatchesGamma,orb2BatchGamma,'R')
-     ENDIF
-     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
-        & 'with maximum size',MaxActualDimGamma
-
-     IF(.NOT.DECinfo%useIchor)THEN
-        ! Translate batchindex to orbital index
-        ! -------------------------------------
-        call mem_alloc(batch2orbGamma,nbatchesGamma)
-        do idx=1,nbatchesGamma
-           call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
-           batch2orbGamma(idx)%orbindex = 0
-           batch2orbGamma(idx)%norbindex = 0
-        end do
-        do iorb=1,nb
-           idx = orb2batchGamma(iorb)
-           batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-           K = batch2orbGamma(idx)%norbindex
-           batch2orbGamma(idx)%orbindex(K) = iorb
-        end do
-     ENDIF
-     ! ************************************************
-     ! * Determine batch information for Alpha batch  *
-     ! ************************************************
-
-     IF(DECinfo%useIchor)THEN
-        iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
-        !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
-        !size of the AO batches. iAO is the center that the batching should occur on. 
-        !'R'  !Specifies that it is the Regular AO basis that should be batched 
-        call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
-             & nbatchesAlpha,DECinfo%output)
-        call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
-        !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
-        !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
-        !to determine_Ichor_nbatchesofAOS
-        !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
-        !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
-        call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
-             & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
-     ELSE
-        ! Orbital to batch information
-        ! ----------------------------
-        call mem_alloc(orb2batchAlpha,nb)
-        call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
-             & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-     ENDIF
-
-     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
-        &, 'with maximum size',MaxActualDimAlpha
-
-     IF(.NOT.DECinfo%useIchor)THEN
-        ! Translate batchindex to orbital index
-        ! -------------------------------------
-        call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-        do idx=1,nbatchesAlpha
-           call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-           batch2orbAlpha(idx)%orbindex = 0
-           batch2orbAlpha(idx)%norbindex = 0
-        end do
-        do iorb=1,nb
-           idx = orb2batchAlpha(iorb)
-           batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-           K = batch2orbAlpha(idx)%norbindex
-           batch2orbAlpha(idx)%orbindex(K) = iorb
-        end do
-     ENDIF
-
-     ! ************************************************
-     ! *  Allocate matrices used in the batched loop  *
-     ! ************************************************
-
-
-     ! PRINT some information about the calculation
-     ! --------------------------------------------
-     if(master)then
-
-        if(scheme==4) then
-         write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
-        elseif(scheme==3) then
-         write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
-        elseif(scheme==2) then
-         write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
-        elseif(scheme==1) then
-         write(DECinfo%output,'("Using memory intensive scheme with no O^2V^2")')
-        else
-         call lsquit('ERROR(ccsd_residual_integral_driven): unknown scheme!',-1)
+        !if the residual is handeled as dense, allocate and zero it, adjust the
+        !access parameters to the data
+        if(omega2%itype/=TT_DENSE.and.(scheme==3.or.scheme==4))then
+           call tensor_allocate_dense(omega2)
+           omega2%itype=TT_DENSE
         endif
-        if(DECinfo%PL>1)then
-           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
-           write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
-           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
-           write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
-           ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-              &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
-        endif
+        call tensor_zero(omega2)
+
+
+        ! ************************************************
+        ! * Determine batch information for Gamma batch  *
+        ! ************************************************
+        IF(DECinfo%useIchor)THEN
+           iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+           !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
+           !size of the AO batches. iAO is the center that the batching should occur on. 
+           !'R'  !Specifies that it is the Regular AO basis that should be batched 
+           call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+              & nbatchesGamma,DECinfo%output)
+           call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+           !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
+           !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
+           !to determine_Ichor_nbatchesofAOS
+           !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+           !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
+           call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+              & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+        ELSE
+           ! Orbital to batch information
+           ! ----------------------------
+           call mem_alloc(orb2batchGamma,nb)
+           call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
+              & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
+              &nbatchesGamma,orb2BatchGamma,'R')
+        ENDIF
+        if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
+           & 'with maximum size',MaxActualDimGamma
+
+        IF(.NOT.DECinfo%useIchor)THEN
+           ! Translate batchindex to orbital index
+           ! -------------------------------------
+           call mem_alloc(batch2orbGamma,nbatchesGamma)
+           do idx=1,nbatchesGamma
+              call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
+              batch2orbGamma(idx)%orbindex = 0
+              batch2orbGamma(idx)%norbindex = 0
+           end do
+           do iorb=1,nb
+              idx = orb2batchGamma(iorb)
+              batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+              K = batch2orbGamma(idx)%norbindex
+              batch2orbGamma(idx)%orbindex(K) = iorb
+           end do
+        ENDIF
+        ! ************************************************
+        ! * Determine batch information for Alpha batch  *
+        ! ************************************************
+
+        IF(DECinfo%useIchor)THEN
+           iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+           !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
+           !size of the AO batches. iAO is the center that the batching should occur on. 
+           !'R'  !Specifies that it is the Regular AO basis that should be batched 
+           call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+              & nbatchesAlpha,DECinfo%output)
+           call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+           !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
+           !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
+           !to determine_Ichor_nbatchesofAOS
+           !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+           !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
+           call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+              & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+        ELSE
+           ! Orbital to batch information
+           ! ----------------------------
+           call mem_alloc(orb2batchAlpha,nb)
+           call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
+              & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+        ENDIF
+
+        if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
+           &, 'with maximum size',MaxActualDimAlpha
+
+        IF(.NOT.DECinfo%useIchor)THEN
+           ! Translate batchindex to orbital index
+           ! -------------------------------------
+           call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+           do idx=1,nbatchesAlpha
+              call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+              batch2orbAlpha(idx)%orbindex = 0
+              batch2orbAlpha(idx)%norbindex = 0
+           end do
+           do iorb=1,nb
+              idx = orb2batchAlpha(iorb)
+              batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+              K = batch2orbAlpha(idx)%norbindex
+              batch2orbAlpha(idx)%orbindex(K) = iorb
+           end do
+        ENDIF
+
+        ! ************************************************
+        ! *  Allocate matrices used in the batched loop  *
+        ! ************************************************
+
+
+        ! PRINT some information about the calculation
+        ! --------------------------------------------
+        if(master)then
+
+           if(scheme==4) then
+              write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
+              elseif(scheme==3) then
+              write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
+              elseif(scheme==2) then
+              write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
+              elseif(scheme==1) then
+              write(DECinfo%output,'("Using memory intensive scheme with no O^2V^2")')
+           else
+              call lsquit('ERROR(ccsd_residual_integral_driven): unknown scheme!',-1)
+           endif
+           if(DECinfo%PL>1)then
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                 &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
+              write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                 &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
+              write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                 &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
+           endif
 
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
-        FLUSH(DECinfo%output)
+           FLUSH(DECinfo%output)
 #endif
 
-     endif
+        endif
 
-     ! Use the dense amplitudes
-     ! ------------------------
+        ! Use the dense amplitudes
+        ! ------------------------
 
-     !get the t+ and t- for the Kobayshi-like B2 term
+        !get the t+ and t- for the Kobayshi-like B2 term
 #ifdef DIL_ACTIVE
-     scheme=scheme_tmp !```DIL: remove
+        scheme=scheme_tmp !```DIL: remove
 #endif
-     if(scheme==1) then !`DIL: Create distributed TPL & TMI
+        if(scheme==1) then !`DIL: Create distributed TPL & TMI
 #ifdef DIL_ACTIVE
-      call tensor_ainit(tpld,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype='TDAR')
-      call tensor_ainit(tmid,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype='TDAR')
+           call tensor_ainit(tpld,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype='TDAR')
+           call tensor_ainit(tmid,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype='TDAR')
 #else
-      call lsquit('ERROR(ccsd_residual_integral_driven): This part (1) of Scheme 1 requires DIL backend!',-1)
+           call lsquit('ERROR(ccsd_residual_integral_driven): This part (1) of Scheme 1 requires DIL backend!',-1)
 #endif
-     else
+        else
       call mem_alloc( tpl, int(i8*nor*nvr,kind=long), simple = .true. )
       call mem_alloc( tmi, int(i8*nor*nvr,kind=long), simple = .true. )
      endif
@@ -1572,7 +1571,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
      if(use_bg_buf)then
-        if(iter==1)call mem_change_background_alloc((w0size+w1size+w2size+w3size)*8.0E0_realk)
+        !if the needed space is smaller than the allocated space, reduce the buffer size
+        reduce_bg_size = ((w0size+w1size+w2size+w3size)*8 < mem_get_bg_buf_n()*8/10)
+        if(iter==1)call mem_change_background_alloc(i8*(w0size+w1size+w2size+w3size)*8,reduce_bg_size)
 
         call mem_pseudo_alloc(w0, w0size , simple = .false. )
         call mem_pseudo_alloc(w1, w1size , simple = .false. )
@@ -5388,7 +5389,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
     ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
     nocc = MyFragment%noccAOS
-    nvir = MyFragment%nunoccAOS 
+    nvir = MyFragment%nvirtAOS 
     bs   = get_split_scheme_0(MyFragment%nbasis)
 
     ! For MO-CCSD part
@@ -5809,7 +5810,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
     select case( choice )
-    case(1,2,3,4)
+    case(1,2,3,4,8)
        !w0
        memin = 1.0E0_realk * w0size
        !w1
@@ -5839,18 +5840,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !************************
 
       ! u 2 + Omega 2 +  H +G  
-      memrq = 1.0E0_realk*(2_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
-      !gvoov gvvoo
-      memrq=memrq+ 2.0E0_realk*(i8*nv*nv)*no*no
+      if( choice /= 8 )then
+         memrq = 1.0E0_realk*(2_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
+         !gvoov gvvoo
+         memrq=memrq+ 2.0E0_realk*(i8*nv*nv)*no*no
 
 
-      !INSIDE OF MAIN LOOP
-      !*******************
+         !INSIDE OF MAIN LOOP
+         !*******************
 
-      !uigcj sio4
-      memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
-      !tpl tmi
-      memin = memin + (i8*nor)*nvr*2.0E0_realk
+         !uigcj sio4
+         memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+         !tpl tmi
+         memin = memin + (i8*nor)*nvr*2.0E0_realk
+      else
+
+         memrq = 0.0E0_realk
+
+      endif
 
 
       !OUTSIDE OF MAIN LOOP
@@ -5875,20 +5882,26 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !THROUGHOUT THE ALGORITHM
       !************************
 
-      !govov stays in pdm and is dense in second part
-      ! u 2 + omega2 + H +G 
-      memrq = 1.0E0_realk*((2_long*no*no)*nv*nv+ i8*nb*nv+i8*nb*no) 
-      !gvoov gvvoo  (they are allocated on the bg buffer and govov, is allocated outside)
-      memrq=memrq+ 2.0E0_realk*tsze*nloctiles
+      if( choice /= 8 )then
+         !govov stays in pdm and is dense in second part
+         ! u 2 + omega2 + H +G 
+         memrq = 1.0E0_realk*((2_long*no*no)*nv*nv+ i8*nb*nv+i8*nb*no) 
+         !gvoov gvvoo  (they are allocated on the bg buffer and govov, is allocated outside)
+         memrq=memrq+ 2.0E0_realk*tsze*nloctiles
 
 
-      !INSIDE OF MAIN LOOP
-      !*******************
+         !INSIDE OF MAIN LOOP
+         !*******************
 
-      !uigcj sio4
-      memin = memin + 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
-      !tpl tmi
-      memin = memin + 1.0E0_realk*nor*(nvr*2_long)
+         !uigcj sio4
+         memin = memin + 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+         !tpl tmi
+         memin = memin + 1.0E0_realk*nor*(nvr*2_long)
+      else
+
+         memrq = 0.0E0_realk
+
+      endif
 
       !OUTSIDE OF MAIN LOOP
       !********************
@@ -5915,20 +5928,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       do i = 1, mode
         tsze = tsze * tdim(i)
       enddo
-      !govov stays in pdm and is dense in second part
-      ! u2 + H +G + space for 2 update tile s
-      memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no + i8*2*tsze)
-      !gvoov gvvoo
-      memrq=memrq+ 2.0E0_realk*tsze*nloctiles
+
+      if( choice /= 8 )then
+         !govov stays in pdm and is dense in second part
+         ! u2 + H +G + space for 2 update tile s
+         memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no + i8*2*tsze)
+         !gvoov gvvoo
+         memrq=memrq+ 2.0E0_realk*tsze*nloctiles
 
 
-      !INSIDE OF MAIN LOOP
-      !*******************
+         !INSIDE OF MAIN LOOP
+         !*******************
 
-      !uigcj sio4
-      memin = memin + 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
-      !tpl tmi
-      memin = memin + 1.0E0_realk*(nor*nvr*i8)
+         !uigcj sio4
+         memin = memin + 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+         !tpl tmi
+         memin = memin + 1.0E0_realk*(nor*nvr*i8)
+      else
+
+         memrq = 0.0E0_realk
+
+      endif
 
       !OUTSIDE OF MAIN LOOP
       !********************
@@ -6003,6 +6023,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        memrq = memrq + memin
     case(7)
        memrq = memrq + memout
+    case(8)
+       memrq = memrq + max(memin,memout)
     end select
 
     memrq =((memrq*8.0E0_realk)/(1.024E3_realk**3))
@@ -6284,16 +6306,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Dimensions
     nbasis = MyMolecule%nbasis
     nocc = MyMolecule%nocc
-    nvirt = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     bo(1) = nbasis
     bo(2) = nocc
     bv(1) = nbasis
     bv(2) = nvirt
 
     ! Initialize stuff in array2 format
-    Co = array2_init(bo,MyMolecule%Co)
-    Co2 = array2_init(bo,MyMolecule%Co)
-    Cv = array2_init(bv,MyMolecule%Cv)
+    Co = array2_init(bo,MyMolecule%Co%elm2)
+    Co2 = array2_init(bo,MyMolecule%Co%elm2)
+    Cv = array2_init(bv,MyMolecule%Cv%elm2)
 
     ! Get T1-transformed Fock matrix in AO basis
     call Get_AOt1Fock(mylsitem,t1,fockt1,nocc,nvirt,nbasis,Co,Co2,Cv)
@@ -6325,7 +6347,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! **********
     nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS
-    nvirt = MyFragment%nunoccAOS
+    nvirt = MyFragment%nvirtAOS
     bo(1) = nbasis
     bo(2) = nocc
     bv(1) = nbasis
@@ -6754,7 +6776,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
     tmp_size2 = int(i8*tmp_size2, kind=long)
     if (use_bg_buf) then
-       call mem_change_background_alloc(dble((tmp_size1+tmp_size2)*8.0E0_realk))
+       call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
 
        call mem_pseudo_alloc(tmp0, tmp_size0)
        call mem_pseudo_alloc(tmp1, tmp_size1)
