@@ -2782,11 +2782,15 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    logical, intent(in)  :: local,saferun,use_singles
    integer :: ntpm(4),nt, sch
    integer(kind=ls_mpik) :: nnod
-   real(realk) :: mem4,mem3,mem2, MemFree,mem
-   integer(kind=8) :: bytes, Freebytes, bytes_to_alloc, nelms_ccdriver
+   real(realk) :: MemFree
+   integer(kind=8) :: mem41,mem31,mem21
+   integer(kind=8) :: mem42,mem32,mem22
+   integer(kind=8) ::mem_out, mem_in, w1,w2
+   integer(kind=8) :: bytes, Freebytes, bytes_to_alloc
+   integer(kind=8) :: nelms_ccdriver, nelms_int, nelms_res_in, nelms_res_out
    logical :: use_bg
    integer(kind=8) :: elm
-   integer :: MinAO,iAO
+   integer :: MinAO,iAO,s,nbuffs, bs
 
    nnod = 1
 #ifdef VAR_MPI
@@ -2825,7 +2829,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
       endif
       nelms_ccdriver = nelms_ccdriver + elm
 
-      bytes = nelms_ccdriver * 8
+      mem_out = nelms_ccdriver * 8
 
 
       !estimate memory use in residual without workspaces
@@ -2836,57 +2840,120 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAO,'R')
       endif
 
+      !find buffer size for integral calculation
+      nbuffs = ceiling(float(nv)/float(vs))
+      bs     = get_split_scheme_0(nb)
+      s      = 0
+      w1     = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+      w2     = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+      nelms_int = w1 + w2 + (i8*no*nv)*no*nv
+
+      if(nelms_int*8 > Freebytes .or. DECinfo%test_fully_distributed_integrals)then
+
+         s = 1
+         nelms_int = w1 + w2
+
+         if(nelms_int*8 > Freebytes .or. DECinfo%test_fully_distributed_integrals )then
+
+            s = 2
+            w1 = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+            w2 = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+            nelms_int = w1 + w2 + (nbuffs*i8*os*vs)*os*vs
+
+            if(nelms_int*8 > Freebytes .or. DECinfo%test_fully_distributed_integrals )then
+               s      = 3
+               nbuffs = get_nbuffs_scheme_0()
+               w1 = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+               w2 = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+               nelms_int = w1 + w2 
+            endif
+
+         endif
+      endif
+
+      mem_in = nelms_int * 8
+
+
+      nelms_res_in  = 0
+      nelms_res_out = 0
+
       if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_CCSD)then     
 
-         ! Find memory requirements in CCSD residual WITHOUT the space needed
-         ! for the matrices, that use the background buffer
-         mem4=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-         mem3=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-         mem2=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+         ! Find memory requirements in CCSD residual WITHOUT the space needed for the matrices, that use the background buffer
+         mem41=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+         mem31=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+         mem21=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+         !find minimum requirements for all that IS allocated on the BG buffer
+         mem42=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+         mem32=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+         mem22=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
 
-         if(mem4<=Freebytes)then
-            bytes = bytes + mem4
+         if(mem41<=Freebytes)then
             sch   = 4
-            mem   = mem4
-         else if(mem3<=Freebytes)then
-            bytes = bytes + mem3
+         else if(mem31<=Freebytes)then
             sch   = 3
-            mem   = mem3
-         else if(mem2<=Freebytes)then
-            bytes = bytes + mem2
+         else if(mem21<=Freebytes)then
             sch   = 2
-            mem   = mem2
          else
             call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
             & calculation is too big for the available memory",-1)
          endif
 
+         if(DECinfo%force_scheme)then
+            sch=DECinfo%en_mem
+         endif
+
+         select case(sch)
+         case(4)
+            nelms_res_out = ceiling(float(mem41)/8.0)
+            nelms_res_in  = ceiling(float(mem42)/8.0)
+         case(3)
+            nelms_res_out = ceiling(float(mem31)/8.0)
+            nelms_res_in  = ceiling(float(mem32)/8.0)
+         case(2)
+            nelms_res_out = ceiling(float(mem21)/8.0)
+            nelms_res_in  = ceiling(float(mem22)/8.0)
+         case default
+            call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+            & the found scheme is not known",-1)
+         end select
+
+
+
       else if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_MP2)then     
 
-         mem = 0.0E0_realk
 
       else
 
          call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
          & background buffering not implemented for your model/job combination",-1)
+
       endif
 
-      !we may use the difference between bytes and Freebytes now as the background buffer
-      bytes_to_alloc = Freebytes - bytes
+      mem_out = mem_out + nelms_res_out
+      mem_in  = max(mem_in,nelms_res_in)
+
+      bytes = mem_out
+
+      !we may use 50% of the difference between bytes and Freebytes now as the background buffer or 2*mem_in
+      bytes_to_alloc = max(min( (Freebytes - bytes)/2, 2*mem_in ), mem_in)
       
-      if(DECinfo%PL>2)then
+      if(DECinfo%PL>1)then
+
          write (DECinfo%output,*) "cc driver info:"
          write (DECinfo%output,*) "---------------"
-         write (DECinfo%output,'("Free memory is ",g9.2," GB")')Freebytes/1024.0E0_realk**3,bytes/1024.0E0_realk**3
+         write (DECinfo%output,'("Free memory is                   : ",g9.2," GB")')Freebytes/1024.0E0_realk**3
+         write (DECinfo%output,'("Requirement for the solver   (o) : ",g9.2," GB")')(nelms_ccdriver*8)/1024.0E0_realk**3
+         write (DECinfo%output,'("Requirement for int trafo    (i) : ",g9.2," GB")')(nelms_int*8)/1024.0E0_realk**3
+         write (DECinfo%output,'("Requirement for the residual (o) : ",g9.2," GB")')(nelms_res_out*8)/1024.0E0_realk**3
+         write (DECinfo%output,'("Requirement for the residual (i) : ",g9.2," GB")')(nelms_res_in*8)/1024.0E0_realk**3
 
-         if(ccmodel == MODEL_CCSD)then
-            write (DECinfo%output,'("Predicted memory requirements CCSD scheme ",I1," (w/o work-space): ",g9.2," GB")')&
-               &sch,mem/1024.0E0_realk**3
-         endif
+         write (DECinfo%output,'("Min heap memory requirement (=o) : ",g9.2," GB")') mem_out/1024.0E0_realk**3
+         write (DECinfo%output,'("Min buffer requirement (=i)      : ",g9.2," GB")') mem_in /1024.0E0_realk**3
 
-         write (DECinfo%output,'("Predicted memory requirements crop solver                    : ",g9.2," GB")')&
-               &bytes/1024.0E0_realk**3
-         write (DECinfo%output,'("Requesting ",g9.2," GB to be allocated in BG buffer")')bytes_to_alloc/1024.0E0_realk**3
+         write (DECinfo%output,'("Requesting                       : ",g9.2," GB to be allocated in BG buffer")')&
+            &bytes_to_alloc/1024.0E0_realk**3
+
       endif
 
       if(bytes_to_alloc <= 0) then

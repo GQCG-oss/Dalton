@@ -1127,7 +1127,7 @@ contains
     tmp_size2 = int(i8*ntot*ntot*tmp_size2, kind=long)
 
     if(use_bg_buf)then
-       call mem_change_background_alloc(dble((tmp_size1+tmp_size2)*8.0E0_realk))
+       call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
 
        call mem_pseudo_alloc(tmp1, tmp_size1)
        call mem_pseudo_alloc(tmp2, tmp_size2)
@@ -2131,7 +2131,7 @@ contains
     integer :: alphaB,gammaB,dimAlpha,dimGamma
     integer :: dim1,dim2,dim3,MinAObatch
     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
-    integer :: iorb,nthreads,magic
+    integer :: iorb,nthreads
     integer :: idx,nb,n1,n2,n3,n4,fa,fg,la,lg,i,k,myload,nba,nbg,biA,biG,bsA,bsG
     logical :: FoundInMem,doscreen
     type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
@@ -2170,7 +2170,7 @@ contains
     integer :: ndimAs, ndimBs, ndimCs, ndimDs
     integer :: startA, startB, startC, startD
     integer :: dims(4), tdim(4), starts(4), order4(4), buf_done, buf_sent, tilenr
-    integer :: bs,as,gs,n1s,n2s,n3s,n4s, inc,b,e,m,n,t1,t2,t3,t4
+    integer :: bs,as,gs,n1s,n2s,n3s,n4s, inc,b,e,m,n,t1,t2,t3,t4, scheme
     real(realk), pointer :: one(:),two(:),thr(:)
     integer              :: onen,  twon,  thrn
     integer(kind=8) :: nbu
@@ -2199,7 +2199,6 @@ contains
     master        = .true.
     me            = 0
     nnod          = 1
-    magic         = 3
     dynamic_load  = DECinfo%dyn_load
     unlock_time   = 0.0E0_realk 
     waiting_time  = 0.0E0_realk
@@ -2337,149 +2336,28 @@ contains
           write(*,'("CC integrals: operating with ",g9.2,"GB")')MemToUse
        endif
 
-       maxsize = 0.0E0_realk
+       call get_max_batch_and_scheme_ccintegral(maxsize,MinAObatch,scheme,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+       & n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nbuffs,nbu,MyLsItem%setting,MemToUse)
 
-       !get minimum memory requrements
-       mem_saving             = .false.
-       completely_distributed = .false.
-       nba                    = MinAObatch
-       nbg                    = MinAObatch
-
-       w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,&
-          &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
-       w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,&
-          &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
-
-       maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
-
-       if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals)then
-
-          collective = .false.
-          maxsize = w1size + w2size
-
-
-          if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals )then
-
-             mem_saving = .true.
-             inc = 1
-
-             w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,&
-                &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
-             w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,&
-                &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
-
-             maxsize = w1size + w2size + (nbuffs*i8*n1s*n2s)*n3s*n4s
-
-             if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals )then
-                mem_saving             = .false.
-                completely_distributed = .true.
-                inc                    = nb/4
-                nbuffs                 = get_nbuffs_scheme_0()
-             endif
-
-          else
-             completely_distributed = .false.
-             inc = 1
-          endif
-
-       else
-
+       select case(scheme)
+       case(0)
           collective             = .true.
+          mem_saving             = .false.
           completely_distributed = .false.
-          inc = 1
+       case(1)
+          collective             = .false.
+          mem_saving             = .false.
+          completely_distributed = .false.
+       case(2)
+          collective             = .false.
+          mem_saving             = .true.
+          completely_distributed = .false.
+       case(3)
+          collective             = .false.
+          mem_saving             = .false.
+          completely_distributed = .true.
+       end select
 
-       endif
-
-       !collective = .false.
-       !mem_saving = .true.
-       !completely_distributed = .false.
-
-       if((collective.and.completely_distributed).or.(completely_distributed.and.mem_saving).or.(collective.and.mem_saving))then
-          call lsquit("ERROR(get_mo_integral_par): only one can be true at a time",-1)
-       endif
-
-       !set requested batch sizes to the largest possible and overwrite these
-       !values if this is not possible
-       nba                    = nb
-       nbg                    = nb
-
-       alp: do i = MinAObatch, nb, inc
-          print *,"LOOPPING",i,MinAObatch,nb,inc
-          if(completely_distributed)then
-             b = max(i/2,MinAObatch)
-             e = b
-          else
-             b = max(i/2,MinAObatch)
-             e = min(i,nb)
-          endif
-
-          do k = b, e
-
-             w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
-                &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
-             w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,&
-                &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
-
-             maxsize = w1size + w2size
-
-             if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
-             if(mem_saving) maxsize = maxsize + (nbuffs*i8*n1*n2)*n3*n4
-
-             if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or.  maxsze > nbu)then
-
-                if(completely_distributed)then
-                   nba = max(i-inc,MinAObatch)
-                   nbg = max(nba/2,MinAObatch)
-                else
-                   nba = max(i,MinAObatch)
-                   nbg = max(min(k-1,nb),MinAObatch)
-                endif
-
-                exit alp
-
-             endif
-          enddo
-
-       enddo alp
-
-
-       if(DECinfo%manual_batchsizes)then
-          nbg = min(max(DECinfo%ccsdGbatch,MinAObatch),nb)
-          nba = min(max(DECinfo%ccsdAbatch,MinAObatch),nb)
-       else
-          !split, such that there are enough jobs for each node
-          if(.not.completely_distributed)then
-             if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>MinAObatch).and.nnod>1)then
-                do while((nb/nba)*(nb/nbg)<magic*nnod)
-                   nba = max(nba - 1,MinAObatch)
-                   nbg = min(max(nba/2,MinAObatch),nb)
-                   if( nba == MinAObatch ) exit
-                enddo
-             endif
-
-          endif
-
-       endif
-
-
-       w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
-          &mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
-       w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,completely_distributed,&
-          &mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
-
-
-       maxsize = w1size + w2size
-
-       if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
-       if(mem_saving) maxsize = maxsize + (nbuffs*i8*n1s*n2s)*n3s*n4s
-
-       if(float(maxsize*8)/(1024.0**3) > MemToUse)then
-          print*,"ERROR(get_mo_integral_par):requesting ",float(maxsize*8)/(1024.0**3),"GB available ",MemToUse,"GB"
-          call lsquit("ERROR(get_mo_integral_par): the memory adaption is invalid, should not happen",-1)
-       endif
-
-       MaxAllowedDimGamma = nbg
-       MaxAllowedDimAlpha = nba
 
        if(DECinfo%PL>2)then
           print *,"INFO(get_mo_integral_par): collective:",collective,", mem saving:",&
@@ -2630,9 +2508,9 @@ contains
     endif
 
     w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
-       &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
+       & scheme,nbuffs,MyLsItem%setting)
     w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,MaxActualDimAlpha,MaxActualDimGamma,&
-       &completely_distributed,mem_saving,nbuffs,INTSPEC,MyLsItem%setting)
+       & scheme,nbuffs,MyLsItem%setting)
 
     onen = (n1s*nb)*MaxActualDimAlpha*MaxActualDimGamma
     twon = (n1s*n2s)*MaxActualDimAlpha*MaxActualDimGamma
@@ -2645,7 +2523,7 @@ contains
     maxsize = maxsize + addsize
     
     if( use_bg_buf ) then
-       !call mem_change_background_alloc(dble(maxsize*8.0E0_realk))
+       if(maxsize > nbu) call mem_change_background_alloc(maxsize*8_long)
 
        call mem_pseudo_alloc( w1, w1size )
        call mem_pseudo_alloc( w2, w2size )
@@ -3440,53 +3318,205 @@ contains
        trafo4%access_type = AT_MASTER_ACCESS
     endif
 
-    contains
 
-
-    function get_work_array_size(which_array,mo1,mo2,mo3,mo4,mo1s,mo2s,mo3s,mo4s,nb,bsplit,nba,nbg,&
-          &cd,ms,nbuf,intspec,setting) result(s)
-       implicit none
-       integer, intent(in) :: which_array,mo1,mo2,mo3,mo4,mo1s,mo2s,mo3s,mo4s,nb,bsplit,nba,nbg,nbuf
-       logical, intent(in) :: cd,ms
-       Character,intent(in) :: intspec(5)
-       type(lssetting),intent(inout) :: setting
-       integer(kind=long)  :: s,maxbuf,MAX_INTEGRAL_BUF
-       integer :: ab,gb,starts(4),ntpm(4)
-
-       select case(which_array)
-       case(1)
-          if(cd)then
-
-             maxbuf = nbuf * max(max(max(bsplit**3*mo1s,bsplit**2*mo1s*mo2s),&
-                &i8*bsplit*mo1s*mo2s*mo3s),i8*mo1s*mo2s*mo3s*mo4s)
-
-             MAX_INTEGRAL_BUF = 0
-
-             call simulate_intloop_and_get_worksize(MAX_INTEGRAL_BUF,nb,nbg,nba,bsplit,intspec,setting)
-             s = max(max(max(i8*nba*mo3,i8*nbg*mo4),maxbuf),MAX_INTEGRAL_BUF)
-          else
-             if(ms)then
-                s = (i8*nb**2)*nba*nbg
-             else
-                s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
-             endif
-          endif
-       case(2)
-          if(cd)then
-             s = 1
-          else
-             if(ms)then
-                s = (i8*mo1s*nb)*nba*nbg+(i8*mo1s*mo2s)*nba*nbg+(i8*mo1s*mo2s)*mo3s*nbg
-             else
-                s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
-             endif
-          endif
-       case default
-          call lsquit("ERROR(get_work_array_size):wrong selection of array",-1)
-       end select
-    end function get_work_array_size
 
   end subroutine get_mo_integral_par
+
+
+  subroutine get_max_batch_and_scheme_ccintegral(maxsize,MinAObatch,s,MaxADA,MaxADG,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,&
+        &nbuffs,nbu,set,MemToUse)
+     implicit none
+     type(lssetting),intent(inout) :: set
+     integer, intent(in)  :: MinAObatch,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nbu
+     real(realk), intent(in) :: MemToUse
+     integer, intent(out) :: s,MaxADA,MaxADG
+     integer, intent(inout) :: nbuffs
+     integer(kind=long), intent(out) :: maxsize
+     integer :: nba, nbg, inc, i, b, e, k, magic
+     integer(kind=long) :: w1size,w2size
+     integer(kind=ls_mpik) :: nnod
+     nnod  = 1
+     magic = 3
+#ifdef VAR_MPI
+     nnod  = infpar%lg_nodtot
+#endif
+
+
+     maxsize = 0.0E0_realk
+
+     !get minimum memory requrements for fastest scheme
+     s   = 0
+     nba = MinAObatch
+     nbg = MinAObatch
+     inc = 1
+
+     ! schemes 0 and 1 will return the same here!!
+     w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,s,nbuffs,set)
+     w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,s,nbuffs,set)
+
+     maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
+
+     if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals)then
+
+        s = 1
+        maxsize = w1size + w2size
+
+        if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals )then
+
+           s = 2
+           w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,s,nbuffs,set)
+           w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,s,nbuffs,set)
+
+           maxsize = w1size + w2size + (nbuffs*i8*n1s*n2s)*n3s*n4s
+
+           if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals )then
+              s      = 3
+              inc    = nb/4
+              nbuffs = get_nbuffs_scheme_0()
+           endif
+
+        endif
+     endif
+
+
+     !set requested batch sizes to the largest possible and overwrite these
+     !values if this is not possible
+     nba                    = nb
+     nbg                    = nb
+
+     alp: do i = MinAObatch, nb, inc
+        if(s==3)then
+           b = max(i/2,MinAObatch)
+           e = b
+        else
+           b = max(i/2,MinAObatch)
+           e = min(i,nb)
+        endif
+
+        do k = b, e
+
+           w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,s,nbuffs,set)
+           w2size = get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,i,k,s,nbuffs,set)
+
+           maxsize = w1size + w2size
+
+           if(s==0) maxsize = maxsize + (i8*n1*n2)*n3*n4
+           if(s==2) maxsize = maxsize + (nbuffs*i8*n1*n2)*n3*n4
+
+           if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or.  maxsize > nbu)then
+
+              if(s==3)then
+                 nba = max(i-inc,MinAObatch)
+                 nbg = max(nba/2,MinAObatch)
+              else
+                 nba = max(i,MinAObatch)
+                 nbg = max(min(k-1,nb),MinAObatch)
+              endif
+
+              exit alp
+
+           endif
+        enddo
+
+     enddo alp
+
+
+     if(DECinfo%manual_batchsizes)then
+        nbg = min(max(DECinfo%ccsdGbatch,MinAObatch),nb)
+        nba = min(max(DECinfo%ccsdAbatch,MinAObatch),nb)
+     else
+        !split, such that there are enough jobs for each node
+        if(s/=3)then
+           if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>MinAObatch).and.nnod>1)then
+              do while((nb/nba)*(nb/nbg)<magic*nnod)
+                 nba = max(nba - 1,MinAObatch)
+                 nbg = min(max(nba/2,MinAObatch),nb)
+                 if( nba == MinAObatch ) exit
+              enddo
+           endif
+
+        endif
+
+     endif
+
+
+     w1size=get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,s,nbuffs,set)
+     w2size=get_work_array_size(2,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,s,nbuffs,set)
+
+
+     maxsize = w1size + w2size
+
+     if(s==0) maxsize = maxsize + (i8*n1*n2)*n3*n4
+     if(s==2) maxsize = maxsize + (nbuffs*i8*n1s*n2s)*n3s*n4s
+
+     if(float(maxsize*8)/(1024.0**3) > MemToUse)then
+        print*,"ERROR(get_mo_integral_par):requesting ",float(maxsize*8)/(1024.0**3),"GB available ",MemToUse,"GB"
+        call lsquit("ERROR(get_mo_integral_par): the memory adaption is invalid, should not happen",-1)
+     endif
+
+     MaxADG = nbg
+     MaxADA = nba
+  end subroutine get_max_batch_and_scheme_ccintegral
+
+  function get_work_array_size(which_array,mo1,mo2,mo3,mo4,mo1s,mo2s,mo3s,mo4s,nb,bsplit,nba,nbg,&
+        &scheme,nbuf,setting) result(s)
+     implicit none
+     integer, intent(in) :: which_array,mo1,mo2,mo3,mo4,mo1s,mo2s,mo3s,mo4s,nb,bsplit,nba,nbg,scheme,nbuf
+     type(lssetting),intent(inout) :: setting
+     integer(kind=long)  :: s,maxbuf,MAX_INTEGRAL_BUF
+     logical :: cd,ms
+     integer :: ab,gb,starts(4),ntpm(4)
+     Character :: intspec(5)
+
+     intspec = ['R','R','R','R','C']
+
+     select case(scheme)
+     case(0)
+        ms = .false.
+        cd = .false.
+     case(1)
+        ms = .false.
+        cd = .false.
+     case(2)
+        ms = .true.
+        cd = .false.
+     case(3)
+        ms = .false.
+        cd = .true.
+     end select
+
+     select case(which_array)
+     case(1)
+        if(cd)then
+
+           maxbuf = nbuf * max(max(max(bsplit**3*mo1s,bsplit**2*mo1s*mo2s),&
+              &i8*bsplit*mo1s*mo2s*mo3s),i8*mo1s*mo2s*mo3s*mo4s)
+
+           MAX_INTEGRAL_BUF = 0
+
+           call simulate_intloop_and_get_worksize(MAX_INTEGRAL_BUF,nb,nbg,nba,bsplit,intspec,setting)
+           s = max(max(max(i8*nba*mo3,i8*nbg*mo4),maxbuf),MAX_INTEGRAL_BUF)
+        else
+           if(ms)then
+              s = (i8*nb**2)*nba*nbg
+           else
+              s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+           endif
+        endif
+     case(2)
+        if(cd)then
+           s = 1
+        else
+           if(ms)then
+              s = (i8*mo1s*nb)*nba*nbg+(i8*mo1s*mo2s)*nba*nbg+(i8*mo1s*mo2s)*mo3s*nbg
+           else
+              s = max(max((i8*nb**2)*nba*nbg,(i8*mo1*mo2)*nba*nbg),(i8*mo1*mo2)*mo3*mo4)
+           endif
+        endif
+     case default
+        call lsquit("ERROR(get_work_array_size):wrong selection of array",-1)
+     end select
+  end function get_work_array_size
 
   subroutine copy_stripe_from_full_matrix(Mi,Mo,f,l,d1,d2)
      implicit none
