@@ -1270,12 +1270,11 @@ contains
 
     implicit none
 
-    integer                     :: nocc,nvirt,nbasis,ierr
-    real(realk)                 :: vovo(:,:,:,:)
-    type(tensor), intent(inout) :: ccsd_t2
-    type(lsitem)                :: mylsitem
-    logical                     :: print_frags,abc
-    integer                     :: t2_addr(infpar%lg_nodtot)
+    integer                             :: nocc,nvirt,nbasis,ierr
+    type(tensor), intent(inout)         :: vovo,ccsd_t2
+    type(lsitem)                        :: mylsitem
+    logical                             :: print_frags,abc
+    integer,dimension(infpar%lg_nodtot) :: vovo_addr,t2_addr
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1287,6 +1286,8 @@ contains
     call ls_mpi_buffer(abc,infpar%master)
     if (infpar%lg_mynum .eq. infpar%master) t2_addr = ccsd_t2%addr_p_arr
     call ls_mpi_buffer(t2_addr,infpar%lg_nodtot,infpar%master)
+    if (infpar%lg_mynum .eq. infpar%master) vovo_addr = vovo%addr_p_arr
+    call ls_mpi_buffer(vovo_addr,infpar%lg_nodtot,infpar%master)
     call mpicopy_lsitem(mylsitem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
@@ -1295,11 +1296,11 @@ contains
     if (infpar%lg_mynum .eq. infpar%master) then
        if (abc) then
 
-          call ls_mpibcast(vovo,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+!          call ls_mpibcast(vovo,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
        else
 
-          call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+!          call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
        endif
     endif
@@ -1307,10 +1308,12 @@ contains
     if (infpar%lg_mynum .ne. infpar%master) then
 
        ccsd_t2 = get_tensor_from_parr(t2_addr(infpar%lg_mynum+1))
+       vovo = get_tensor_from_parr(vovo_addr(infpar%lg_mynum+1))
 
     endif
 
     ccsd_t2%access_type = AT_ALL_ACCESS
+    vovo%access_type = AT_ALL_ACCESS
 
   end subroutine mpi_communicate_ccsdpt_calcdata
 
