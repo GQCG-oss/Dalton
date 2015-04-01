@@ -1892,7 +1892,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
               WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: Memory available (65%)',maxsize,' GB'           
               WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: Memory available after MO int + CMO',&
                    & (MaxSize-nbasisAux*nvirt*nocc*8.0E-9_realk-2*nbasis1*nvirt*8.0E-9_realk-2*nbasis2*nocc*8.0E-9_realk),' GB'           
-              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: MaxNaux',MaxNaux,' compared to nAux=',nbasisAux
+              WRITE(DECinfo%output,'(A,I10,A,I10)')'RIMP2: MaxNaux Determination: MaxNaux',MaxNaux,' compared to nAux=',nbasisAux
               WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: This MaxNaux Correspond to Memory usage of ',&
                    &   nbasisAux*nvirt*nocc*8.0E-9_realk+2*nbasis1*nvirt*8.0E-9_realk+2*nbasis2*nocc*8.0E-9_realk&
                    & + MaxNaux*nthreads*nbasis1*nbasis2*8.0E-9_realk + MaxNaux*nbasis1*nocc*8.0E-9_realk,' GB'
