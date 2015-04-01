@@ -2796,7 +2796,8 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    logical, intent(in)  :: local,saferun,use_singles
    integer :: ntpm(4),nt, sch
    integer(kind=ls_mpik) :: nnod
-   real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2, MemFree,mem
+   real(realk) :: mem4,mem3,mem2, MemFree,mem
+   integer(kind=8) :: bytes, Freebytes, bytes_to_alloc, nelms_ccdriver
    logical :: use_bg
    integer(kind=8) :: elm
    integer :: MinAO,iAO
@@ -2816,15 +2817,15 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
       !get free memory GB -> bytes conversion, use 80% of the free memory
       call get_currently_available_memory(MemFree)
-      Freebytes = MemFree * (1024.0E0_realk**3) * 0.8E0_realk
+      Freebytes = int(MemFree * (1024.0E0_realk**3) * 0.8E0_realk,kind=8)
 
       !estimate memory use in solver while the residual is build, the other
       ! FOck matrix, MO trafo matrices (bv,bo), Lambda matrices, basis trafo matrices, fock-blocks
-      bytes = (i8*nb**2 + 3_long*nb*no + 3_long*nb*nv + 2_long*no**2 + 2_long*nv**2 + 2_long*no*nv)*8.0E0_realk
+      nelms_ccdriver = i8*nb**2 + 3_long*nb*no + 3_long*nb*nv + 2_long*no**2 + 2_long*nv**2 + 2_long*no*nv
       !singles vectors and residuals, and t1 fock matrix
       if( use_singles )then
          elm = (i8*nv)*no * (2*DECinfo%ccMaxDIIS ) + i8*nb**2
-         bytes = bytes + elm * 8.0E0_realk
+         nelms_ccdriver = nelms_ccdriver + elm
       endif
       ! residual-, trial- and integral vectors, additional two tiles for buffering
       if( local )then
@@ -2836,7 +2837,9 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
          elm = nt * (i8*vs**2) * os**2 * (2*DECinfo%ccMaxDIIS + 3 )  
       endif
-      bytes = bytes + elm * 8.0E0_realk
+      nelms_ccdriver = nelms_ccdriver + elm
+
+      bytes = nelms_ccdriver * 8
 
 
       !estimate memory use in residual without workspaces
@@ -2851,9 +2854,9 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
          ! Find memory requirements in CCSD residual WITHOUT the space needed
          ! for the matrices, that use the background buffer
-         mem4=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
-         mem3=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
-         mem2=(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3)
+         mem4=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+         mem3=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+         mem2=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
 
          if(mem4<=Freebytes)then
             bytes = bytes + mem4
@@ -2900,7 +2903,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          write (DECinfo%output,'("Requesting ",g9.2," GB to be allocated in BG buffer")')bytes_to_alloc/1024.0E0_realk**3
       endif
 
-      if(bytes_to_alloc <= 0.0E0_realk) then
+      if(bytes_to_alloc <= 0) then
          print *,Freebytes/1024.0**3,"GB free, need to alloc",bytes_to_alloc/1024.0**3,"GB"
          call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
          & not enough space",-1)

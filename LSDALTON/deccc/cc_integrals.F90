@@ -2425,7 +2425,7 @@ contains
              if(collective) maxsize = maxsize + (i8*n1*n2)*n3*n4
              if(mem_saving) maxsize = maxsize + (nbuffs*i8*n1*n2)*n3*n4
 
-             if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse )then
+             if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or.  maxsze > nbu)then
 
                 if(completely_distributed)then
                    nba = max(i-inc,MinAObatch)
@@ -2645,7 +2645,7 @@ contains
     maxsize = maxsize + addsize
     
     if( use_bg_buf ) then
-       call mem_change_background_alloc(dble(maxsize*8.0E0_realk))
+       !call mem_change_background_alloc(dble(maxsize*8.0E0_realk))
 
        call mem_pseudo_alloc( w1, w1size )
        call mem_pseudo_alloc( w2, w2size )

@@ -1981,14 +1981,14 @@ subroutine debug_mem_stats(lupri)
 !----- Background buffer handling -----!
 subroutine mem_init_background_alloc(bytes)
    implicit none
-   real(realk), intent(in) :: bytes
+   integer(kind=8), intent(in) :: bytes
    integer(kind=8) :: nelms
 
    if(buf_realk%init)then
       call lsquit("ERROR(mem_free_background_alloc): background buffer already initialized",-1)
    endif
 
-   nelms = int(bytes/8.0E0_realk,kind=8)
+   nelms = bytes/8_long
    call mem_alloc(buf_realk%p,buf_realk%c,nelms)
 
    buf_realk%init   = .true.
@@ -2000,13 +2000,13 @@ subroutine mem_init_background_alloc(bytes)
 end subroutine mem_init_background_alloc
 subroutine mem_change_background_alloc(bytes,not_lazy)
    implicit none
-   real(realk), intent(in) :: bytes
+   integer(kind=8), intent(in) :: bytes
    logical, intent(in), optional :: not_lazy
    integer :: i
    integer(kind=8) :: nelms
    logical :: change
 
-   nelms = int(bytes/8.0E0_realk,kind=8)
+   nelms = bytes
 
    !per default use lazy memory handling
    change = (nelms>buf_realk%nmax)
@@ -2129,7 +2129,7 @@ end function mem_is_background_buf_init
 function mem_get_bg_buf_n() result(n)
    implicit none
    integer(kind=8) :: n
-   n = buf_realk%nmax
+   n = buf_realk%nmax - buf_realk%offset
 end function mem_get_bg_buf_n
 
 subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
