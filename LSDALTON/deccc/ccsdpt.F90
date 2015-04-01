@@ -774,9 +774,6 @@ contains
     call mem_alloc(vvvo_pdm_buff,nvirt**3,3*nbuffs)
     call mem_alloc(vvoo_pdm_buff,nvirt**2,6*nbuffs)
     call mem_alloc(ccsd_pdm_buff,nocc*nvirt**2,3*nbuffs)
-!    call mem_alloc(vvoo_pdm_ij,nvirt**2); call mem_alloc(vvoo_pdm_ji,nvirt**2)
-!    call mem_alloc(vvoo_pdm_ik,nvirt**2); call mem_alloc(vvoo_pdm_ki,nvirt**2)
-!    call mem_alloc(vvoo_pdm_jk,nvirt**2); call mem_alloc(vvoo_pdm_kj,nvirt**2)
     call mem_alloc(needed_vvvo,3*nbuffs)
     call mem_alloc(needed_vvoo,6*nbuffs)
     call mem_alloc(needed_ccsd,3*nbuffs)
@@ -969,22 +966,6 @@ contains
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
-!                  call time_start_phase(PHASE_COMM)
-!
-!                  ij = (j-1)*nocc+i; ji = (i-1)*nocc+j
-!
-!                  call tensor_lock_win(vvoo,ij,'s',assert=mode)
-!                  call tensor_get_tile(vvoo,ij,vvoo_pdm_ij,nvirt**2,&
-!                                      & lock_set=.true.,flush_it=.true.)
-!                  call tensor_unlock_win(vvoo,ij)
-!
-!                  call tensor_lock_win(vvoo,ji,'s',assert=mode)
-!                  call tensor_get_tile(vvoo,ji,vvoo_pdm_ji,nvirt**2,&
-!                                      & lock_set=.true.,flush_it=.true.)
-!                  call tensor_unlock_win(vvoo,ji)
-!
-!                  call time_start_phase(PHASE_WORK)
-
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -1033,17 +1014,6 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-!                     call time_start_phase(PHASE_COMM)
-!
-!                     ij = (j-1)*nocc+i
-!
-!                     call tensor_lock_win(vvoo,ij,'s',assert=mode)
-!                     call tensor_get_tile(vvoo,ij,vvoo_pdm_ij,nvirt**2,&
-!                                         & lock_set=.true.,flush_it=.true.)
-!                     call tensor_unlock_win(vvoo,ij)
-!
-!                     call time_start_phase(PHASE_WORK)
-
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_i,&
@@ -1085,22 +1055,6 @@ contains
                      call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
-
-!                     call time_start_phase(PHASE_COMM)
-!
-!                     ij = (j-1)*nocc+i; ji = (i-1)*nocc+j
-!
-!                     call tensor_lock_win(vvoo,ij,'s',assert=mode)
-!                     call tensor_get_tile(vvoo,ij,vvoo_pdm_ij,nvirt**2,&
-!                                         & lock_set=.true.,flush_it=.true.)
-!                     call tensor_unlock_win(vvoo,ij)
-!
-!                     call tensor_lock_win(vvoo,ji,'s',assert=mode)
-!                     call tensor_get_tile(vvoo,ji,vvoo_pdm_ji,nvirt**2,&
-!                                         & lock_set=.true.,flush_it=.true.)
-!                     call tensor_unlock_win(vvoo,ji)
-!
-!                     call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
@@ -1152,17 +1106,6 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-!                     call time_start_phase(PHASE_COMM)
-!
-!                     ij = (j-1)*nocc+i
-!
-!                     call tensor_lock_win(vvoo,ij,'s',assert=mode)
-!                     call tensor_get_tile(vvoo,ij,vvoo_pdm_ij,nvirt**2,&
-!                                         & lock_set=.true.,flush_it=.true.)
-!                     call tensor_unlock_win(vvoo,ij)
-!
-!                     call time_start_phase(PHASE_WORK)
-
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_i,&
@@ -1212,22 +1155,6 @@ contains
                      call array_reorder_3d(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
-
-!                     call time_start_phase(PHASE_COMM)
-!
-!                     ij = (j-1)*nocc+i; ji = (i-1)*nocc+j
-!
-!                     call tensor_lock_win(vvoo,ij,'s',assert=mode)
-!                     call tensor_get_tile(vvoo,ij,vvoo_pdm_ij,nvirt**2,&
-!                                         & lock_set=.true.,flush_it=.true.)
-!                     call tensor_unlock_win(vvoo,ij)
-!
-!                     call tensor_lock_win(vvoo,ji,'s',assert=mode)
-!                     call tensor_get_tile(vvoo,ji,vvoo_pdm_ji,nvirt**2,&
-!                                         & lock_set=.true.,flush_it=.true.)
-!                     call tensor_unlock_win(vvoo,ji)
-!
-!                     call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
@@ -1311,22 +1238,6 @@ contains
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
-!                        call time_start_phase(PHASE_COMM)
-!   
-!                        ik = (k-1)*nocc+i; ki = (i-1)*nocc+k
-!   
-!                        call tensor_lock_win(vvoo,ik,'s',assert=mode)
-!                        call tensor_get_tile(vvoo,ik,vvoo_pdm_ik,nvirt**2,&
-!                                            & lock_set=.true.,flush_it=.true.)
-!                        call tensor_unlock_win(vvoo,ik)
-!   
-!                        call tensor_lock_win(vvoo,ki,'s',assert=mode)
-!                        call tensor_get_tile(vvoo,ki,vvoo_pdm_ki,nvirt**2,&
-!                                            & lock_set=.true.,flush_it=.true.)
-!                        call tensor_unlock_win(vvoo,ki)
-!   
-!                        call time_start_phase(PHASE_WORK)
-
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_k,&
@@ -1354,17 +1265,6 @@ contains
                            if(vvoo%lock_set(jk)) call tensor_unlock_win(vvoo,jk)
 
                         endif
-
-!                        call time_start_phase(PHASE_COMM)
-!
-!                        jk = (k-1)*nocc+j
-!
-!                        call tensor_lock_win(vvoo,jk,'s',assert=mode)
-!                        call tensor_get_tile(vvoo,jk,vvoo_pdm_jk,nvirt**2,&
-!                                            & lock_set=.true.,flush_it=.true.)
-!                        call tensor_unlock_win(vvoo,jk)
-!
-!                        call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 !
@@ -1409,33 +1309,6 @@ contains
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
-!                        call time_start_phase(PHASE_COMM)
-!
-!                        ik = (k-1)*nocc+i; ki = (i-1)*nocc+k
-!                        jk = (k-1)*nocc+j; kj = (j-1)*nocc+k
-!
-!                        call tensor_lock_win(vvoo,ik,'s',assert=mode)
-!                        call tensor_get_tile(vvoo,ik,vvoo_pdm_ik,nvirt**2,&
-!                                            & lock_set=.true.,flush_it=.true.)
-!                        call tensor_unlock_win(vvoo,ik)
-!
-!                        call tensor_lock_win(vvoo,ki,'s',assert=mode)
-!                        call tensor_get_tile(vvoo,ki,vvoo_pdm_ki,nvirt**2,&
-!                                            & lock_set=.true.,flush_it=.true.)
-!                        call tensor_unlock_win(vvoo,ki)
-!
-!                        call tensor_lock_win(vvoo,jk,'s',assert=mode)
-!                        call tensor_get_tile(vvoo,jk,vvoo_pdm_jk,nvirt**2,&
-!                                            & lock_set=.true.,flush_it=.true.)
-!                        call tensor_unlock_win(vvoo,jk)
-!
-!                        call tensor_lock_win(vvoo,kj,'s',assert=mode)
-!                        call tensor_get_tile(vvoo,kj,vvoo_pdm_kj,nvirt**2,&
-!                                            & lock_set=.true.,flush_it=.true.)
-!                        call tensor_unlock_win(vvoo,kj)
-!
-!                        call time_start_phase(PHASE_WORK)
-
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
 !$acc enter data copyin(vvvo_pdm_k,&
@@ -1460,10 +1333,8 @@ contains
                                                  & needed_vvvo,tiles_in_buf_vvvo,vvvo_pdm_buff,req_vvvo)
                      call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nvirt,nocc,i,j,k,ij_count,3*nbuffs,&
                                                  & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd)
-                     print *,'proc. = ',infpar%lg_mynum,'before with i,j,k,count(needed) = ',i,j,k,count(needed_vvoo)
                      call preload_tiles_in_bg_buf(vvoo,jobs,b_size,nvirt,nocc,i,j,k,ij_count,6*nbuffs,&
                                                  & needed_vvoo,tiles_in_buf_vvoo,vvoo_pdm_buff,req_vvoo,vovo_array=.true.)
-                     print *,'proc. = ',infpar%lg_mynum,'after with i,j,k,count(needed) = ',i,j,k,count(needed_vvoo)
                      call time_start_phase(PHASE_WORK, ttot = time_preload )
                      time_preload_tot = time_preload_tot + time_preload
 
@@ -1679,14 +1550,10 @@ contains
 
                      end select TypeOfTuple_par_ijk
 
-                     print *,'proc. = ',infpar%lg_mynum,'DONE IN K-LOOP with i,j,k,count = ',i,j,k,count(needed_vvoo)
-
                      needed_vvvo(kbuf_vvvo) = .false.
                      needed_ccsd(kbuf_ccsd) = .false.
                      needed_vvoo(ikbuf)     = .false.; needed_vvoo(kibuf)     = .false.
                      needed_vvoo(jkbuf)     = .false.; needed_vvoo(kjbuf)     = .false.
-
-                     print *,'proc. = ',infpar%lg_mynum,'AFTER falsing with i,j,k,count = ',i,j,k,count(needed_vvoo)
 
                   end do krun_par
 
@@ -1792,9 +1659,6 @@ contains
     call mem_dealloc(vvvo_pdm_buff)
     call mem_dealloc(vvoo_pdm_buff)
     call mem_dealloc(ccsd_pdm_buff)
-!    call mem_dealloc(vvoo_pdm_ij); call mem_dealloc(vvoo_pdm_ji)
-!    call mem_dealloc(vvoo_pdm_ik); call mem_dealloc(vvoo_pdm_ki)
-!    call mem_dealloc(vvoo_pdm_jk); call mem_dealloc(vvoo_pdm_kj)
     call mem_dealloc(needed_vvvo)
     call mem_dealloc(needed_vvoo)
     call mem_dealloc(needed_ccsd)
@@ -1963,10 +1827,10 @@ contains
      !set testing integers
      i_test        = current_i
      j_test        = current_j
-     k_test        = current_k + 1
+     k_test        = current_k + 1 ! we manually increment k by 1
      ij_count_test = current_ij_count
      ij_done       = .false.
-     keep_looping  = (count(needed)<nbuffs)
+     keep_looping  = (count(needed) .lt. nbuffs)
 
      new_i_needed = .false.; new_i_needed = .false.; new_k_needed = .false.
      new_ij_needed = .false.; new_ji_needed = .false.
@@ -1981,14 +1845,16 @@ contains
         !break condition
         if (vovo) then
 
-           keep_looping = (count(needed) .lt. nbuffs .and. .not. (ij_done .and. (k_test .ge. j_test)))
-           if (count(needed) .eq. nbuffs) return
+           keep_looping = (.not. (ij_done .and. (k_test .ge. j_test)))
 
         else
 
-           keep_looping = (count(needed) .lt. nbuffs .and. .not. (ij_done .and. (k_test .ge. j_test)) .and. count(needed) .lt. nocc)
+           keep_looping = (.not. (ij_done .and. (k_test .ge. j_test)) .and. count(needed) .lt. nocc)
 
         endif
+
+        ! return condition
+        if (count(needed) .eq. nbuffs) return
 
         if (k_test < j_test) then
 
@@ -1997,9 +1863,6 @@ contains
            if (vovo) then
 
               if ((i_test .eq. j_test) .and. (j_test .gt. k_test)) then
-
-                 print *,'proc = ',infpar%lg_mynum,'tuple_type = 1-1 for i_test,j_test,k_test = ',i_test,j_test,k_test,&
-                      &'count(needed) = ',count(needed)
 
                  ik_test = (k_test-1)*nocc+i_test; ki_test = (i_test-1)*nocc+k_test
                  !Load the next ik tile
@@ -2011,29 +1874,17 @@ contains
                     new_ki_needed = .false.
                  endif
 
-                 print *,'proc = ',infpar%lg_mynum,'tuple_type = 1-2 for i,j,k = ',i_test,j_test,k_test,'n_ik_n,n_ki_n',&
-                    &new_ik_needed,new_ki_needed,'count(needed) = ',count(needed)
-
                  tuple_type = 1
 
               elseif ((i_test .gt. j_test) .and. (j_test .eq. k_test)) then
-
-                 print *,'proc = ',infpar%lg_mynum,'tuple_type = 2-1 for i_test,j_test,k_test = ',i_test,j_test,k_test,&
-                      &'count(needed) = ',count(needed)
 
                  jk_test = (k_test-1)*nocc+j_test
                  !Load the next jk tile
                  call check_if_new_instance_needed(jk_test,tiles_in_buf,nbuffs,new_jk_needed,set_needed=needed)
 
-                 print *,'proc = ',infpar%lg_mynum,'tuple_type = 2-2 for i,j,k = ',i_test,j_test,k_test,'n_jk',&
-                    &new_jk_needed,'count(needed) = ',count(needed)
-
                  tuple_type = 2
 
               elseif ((i_test .gt. j_test) .and. (j_test .gt. k_test)) then
-
-                 print *,'proc = ',infpar%lg_mynum,'tuple_type = 3-1 for i_test,j_test,k_test = ',i_test,j_test,k_test,&
-                      &'count(needed) = ',count(needed)
 
                  ik_test = (k_test-1)*nocc+i_test; ki_test = (i_test-1)*nocc+k_test
                  jk_test = (k_test-1)*nocc+j_test; kj_test = (j_test-1)*nocc+k_test
@@ -2057,9 +1908,6 @@ contains
                  else
                     new_kj_needed = .false.
                  endif
-
-                 print *,'proc = ',infpar%lg_mynum,'tuple_type = 3-2 for i,j,k = ',i_test,j_test,k_test,&
-                    &'n_ik,n_ki,n_jk,n_kj',new_ik_needed,new_ki_needed,new_jk_needed,new_kj_needed,'count(needed) = ',count(needed)
 
                  tuple_type = 3
 
@@ -2098,7 +1946,6 @@ contains
                     else
                        found_ki = .false.
                     endif
-                    print *,'proc. = ',infpar%lg_mynum,'after find_free(1), ikbuf,kibuf = ',ikbuf_test,kibuf_test
 
                  elseif (tuple_type .eq. 2) then
 
@@ -2110,14 +1957,12 @@ contains
                           tiles_in_buf(jkbuf_test) = jk_test
                        endif
                     endif
-                    print *,'proc. = ',infpar%lg_mynum,'after find_free(2), jkbuf = ',jkbuf_test
 
                  elseif (tuple_type .eq. 3) then
 
                     !find pos in buff
                     if (new_ik_needed) then
                        call find_free_pos_in_buf(needed,nbuffs,ikbuf_test,found_ik)
-                       print *,'ikbuf_test, found_ik? ',ikbuf_test,found_ik
                        if (found_ik) then
                           needed(ikbuf_test) = .true.
                           tiles_in_buf(ikbuf_test) = ik_test
@@ -2152,8 +1997,6 @@ contains
                     else
                        found_kj = .false.
                     endif
-                    print *,'proc. = ',infpar%lg_mynum,'after find_free(3), ikbuf,kibuf,jkbuf,kjbuf = ',&
-                          &ikbuf_test,kibuf_test,jkbuf_test,kjbuf_test
 
                  endif
 
@@ -2172,8 +2015,6 @@ contains
 
                     if (tuple_type .eq. 1) then
 
-                       print *,'proc. = ',infpar%lg_mynum,'i,j,k = ',i_test,j_test,k_test,'found_ik,found_ki = ',found_ik,found_ki
-
                        if (.not. alloc_in_dummy) then
                           if (found_ik) call tensor_lock_win(array,ik_test,'s',assert=mode)
                           if (found_ki) call tensor_lock_win(array,ki_test,'s',assert=mode)
@@ -2191,14 +2032,6 @@ contains
                              &lock_set=.true.,flush_it=.true.)
                        endif
 
-!                       if (found_ik) then
-!                          needed(ikbuf_test)       = .true.
-!                          tiles_in_buf(ikbuf_test) = ik_test
-!                       elseif (found_ki) then
-!                          needed(kibuf_test)       = .true.
-!                          tiles_in_buf(kibuf_test) = ki_test
-!                       endif
-
                     elseif (tuple_type .eq. 2) then
 
                        if (.not. alloc_in_dummy) call tensor_lock_win(array,jk_test,'s',assert=mode)
@@ -2210,9 +2043,6 @@ contains
                           call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts_vovo,&
                              &lock_set=.true.,flush_it=.true.)
                        endif
-
-!                       needed(jkbuf_test)       = .true.
-!                       tiles_in_buf(jkbuf_test) = jk_test
 
                     elseif (tuple_type .eq. 3) then
 
@@ -2242,20 +2072,6 @@ contains
                           if (found_kj) call tensor_get_tile(array,kj_test,array_pdm_buff(:,kjbuf_test),ts_vovo,&
                              &lock_set=.true.,flush_it=.true.)
                        endif
-
-!                       if (found_ik) then
-!                          needed(ikbuf_test)       = .true.
-!                          tiles_in_buf(ikbuf_test) = ik_test
-!                       elseif (found_ki) then
-!                          needed(kibuf_test)       = .true.
-!                          tiles_in_buf(kibuf_test) = ki_test
-!                       elseif (found_jk) then
-!                          needed(jkbuf_test)       = .true.
-!                          tiles_in_buf(jkbuf_test) = jk_test
-!                       elseif (found_kj) then
-!                          needed(kjbuf_test)       = .true.
-!                          tiles_in_buf(kjbuf_test) = kj_test
-!                       endif
 
                     endif
 
@@ -2301,8 +2117,6 @@ contains
               !load new j
               if (new_j_needed .or. vovo) then
 
-                 print *,'proc = ',infpar%lg_mynum,'i,j,k,count (new_j_needed) = ',i_test,j_test,k_test,count(needed)
-
                  if (vovo) then
 
                     if (i_test .eq. j_test) then
@@ -2322,9 +2136,6 @@ contains
                        else
                           found_ij = .false.; found_ji = .false.
                        endif
-
-                       print *,'proc = ',infpar%lg_mynum,'(i .eq. j), i,j,count,ijbuf,found_ij,found_ji',&
-                             i_test,j_test,count(needed),ijbuf_test,found_ij,found_ji
 
                     else
 
@@ -2358,9 +2169,6 @@ contains
                           found_ji = .false.
                        endif
 
-                       print *,'proc = ',infpar%lg_mynum,'(i .gt. j), i,j,count,ijbuf,jibuf,found_ij,found_ji',&
-                             & i_test,j_test,count(needed),ijbuf_test,jibuf_test,found_ij,found_ji
-
                     endif
 
                     if (found_ij .or. found_ji) found = .true.
@@ -2375,9 +2183,6 @@ contains
                  if(found)then
 
                     if (vovo) then
-
-!                       ij_test = (j_test-1)*nocc+i_test
-!                       if (i_test .ne. j_test) ji_test = (i_test-1)*nocc+j_test
 
                        if (.not. alloc_in_dummy) then
                           if (found_ij) call tensor_lock_win(array,ij_test,'s',assert=mode)
@@ -2395,13 +2200,6 @@ contains
                              &array_pdm_buff(:,jibuf_test),ts_vovo,lock_set=.true.,flush_it=.true.)
                        endif
    
-!                       if (found_ij) needed(ijbuf_test)       = .true.
-!                       if (found_ij) tiles_in_buf(ijbuf_test) = ij_test
-!                       if (i_test .ne. j_test .and. found_ji) then
-!                          needed(jibuf_test)       = .true.
-!                          tiles_in_buf(jibuf_test) = ji_test
-!                       endif
-
                     else
 
                        if( .not. alloc_in_dummy ) call tensor_lock_win(array,j_test,'s',assert=mode)
@@ -12226,26 +12024,6 @@ end module ccsdpt_module
     ! call ccsd(t) data routine in order to receive data from master
     call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc)
 
-    !FIXME: split MPI messages!!!!!!!!!!
-    ! init and receive vovo and ccsd_doubles array structures
-    if (abc) then
-
-       call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
-!       call tensor_init(ccsd_t2, [nocc,nocc,nvirt,nvirt],4)
-
-       call ls_mpibcast(vovo%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
-!       call ls_mpibcast(ccsd_t2%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
-
-    else
-
-!       call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
-!       call tensor_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
-
-!       call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-!       call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-
-    endif
-
     if (print_frags) then
  
        ! init ccsd(t) singles and ccsd(t) doubles
@@ -12295,9 +12073,6 @@ end module ccsdpt_module
     call time_start_phase(PHASE_WORK)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
-!    call tensor_free(vovo)
-!    call tensor_free(ccsd_t2)
-
     if (print_frags) then
 
        call tensor_free(ccsdpt_t1)
