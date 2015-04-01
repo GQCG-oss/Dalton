@@ -1291,20 +1291,6 @@ contains
     call mpicopy_lsitem(mylsitem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    ! communicate rest of the quantities, master here, slaves back in the slave
-    ! routine, due to crappy pointer/non-pointer issues (->allocations)
-    if (infpar%lg_mynum .eq. infpar%master) then
-       if (abc) then
-
-!          call ls_mpibcast(vovo,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
-
-       else
-
-!          call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-
-       endif
-    endif
-
     if (infpar%lg_mynum .ne. infpar%master) then
 
        ccsd_t2 = get_tensor_from_parr(t2_addr(infpar%lg_mynum+1))
