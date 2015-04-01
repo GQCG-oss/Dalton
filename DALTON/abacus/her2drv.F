@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -3576,12 +3576,24 @@ C
 C
 C     Determine NORBSH()
 C
-      DO 300 I = 1, MAXSHL
-         NORBSH(I) = 0
-         DO 310 J = 1, KMAX
-            IF (IPTSHL(J) .EQ. I) NORBSH(I) = NORBSH(I) + 1
-  310    CONTINUE
-  300 CONTINUE
+C jars 20150226 : This breaks with ICC 15 and -O2 or higher; last
+C                 elements never get updated
+
+C      DO 300 I = 1, MAXSHL
+C         NORBSH(I) = 0
+C         DO 310 J = 1, KMAX
+C            IF (IPTSHL(J) .EQ. I) NORBSH(I) = NORBSH(I) + 1
+C  310    CONTINUE
+C  300 CONTINUE
+
+C jars 20150226 : Use a simpler approach to count orbital shells
+      do i=1, maxshl
+          norbsh(i) = 0
+      enddo
+      do j=1,kmax
+          i = iptshl(j)
+          norbsh(i) = norbsh(i) + 1
+      enddo
 C
 C     Determine and NSTRSH()
 C

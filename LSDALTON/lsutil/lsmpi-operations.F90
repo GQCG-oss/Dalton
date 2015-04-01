@@ -1187,6 +1187,7 @@ logical :: slave,isAssociated
 integer(kind=ls_mpik) :: master
 integer :: n1
 call LS_MPI_BUFFER(output%ndim,5,Master)
+!call LS_MPI_BUFFER(output%ndim3D,3,Master)
 call LS_MPI_BUFFER(output%doGrad,Master)
 call LS_MPI_BUFFER(output%USEBUFMM,Master)
 call LS_MPI_BUFFER(output%MMBUFLEN,Master)
@@ -1200,6 +1201,7 @@ call LS_MPI_BUFFER(output%LUITNMR,Master)
 call LS_MPI_BUFFER(output%decpacked,Master)
 call LS_MPI_BUFFER(output%decpacked2,Master)
 call LS_MPI_BUFFER(output%decpackedK,Master)
+call LS_MPI_BUFFER(output%FullAlphaCD,Master)
 call LS_MPI_BUFFER(output%exchangeFactor,Master)
 
 isAssociated = ASSOCIATED(output%postprocess)
@@ -1303,9 +1305,11 @@ call LS_MPI_BUFFER(dalton%DEBUGuncontAObatch,Master)
 call LS_MPI_BUFFER(dalton%DEBUGDECPACKED,Master)
 
 call LS_MPI_BUFFER(dalton%DO4CENTERERI,Master)
+call LS_MPI_BUFFER(dalton%DUMP4CENTERERI,Master)
 call LS_MPI_BUFFER(dalton%OVERLAP_DF_J,Master)
 call LS_MPI_BUFFER(dalton%PARI_J,Master)
 call LS_MPI_BUFFER(dalton%PARI_K,Master)
+call LS_MPI_BUFFER(dalton%MOPARI_K,Master)
 call LS_MPI_BUFFER(dalton%SIMPLE_PARI,Master)
 call LS_MPI_BUFFER(dalton%NON_ROBUST_PARI,Master)
 
@@ -1381,6 +1385,7 @@ call LS_MPI_BUFFER(dalton%ADMM_FUNC,len(dalton%ADMM_FUNC),Master)
 call LS_MPI_BUFFER(dalton%ADMMS,Master)
 call LS_MPI_BUFFER(dalton%ADMMP,Master)
 call LS_MPI_BUFFER(dalton%ADMM_separateX,Master)
+call LS_MPI_BUFFER(dalton%ADMMexchangeMetric,Master)
 call LS_MPI_BUFFER(dalton%PRINT_EK3,Master)
 call LS_MPI_BUFFER(dalton%ADMMBASISFILE,Master)
 call LS_MPI_BUFFER(dalton%SR_EXCHANGE,Master)
@@ -1398,6 +1403,8 @@ call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
 call LS_MPI_BUFFER(dalton%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(dalton%PreCalcDFscreening,Master)
+call LS_MPI_BUFFER(dalton%PreCalcF12screening,Master)
 
 END SUBROUTINE MPICOPY_INTEGRALCONFIG
 #endif
@@ -1448,6 +1455,7 @@ call LS_MPI_BUFFER(scheme%DO4CENTERERI,Master)
 call LS_MPI_BUFFER(scheme%OVERLAP_DF_J,Master)
 call LS_MPI_BUFFER(scheme%PARI_J,Master)
 call LS_MPI_BUFFER(scheme%PARI_K,Master)
+call LS_MPI_BUFFER(scheme%MOPARI_K,Master)
 call LS_MPI_BUFFER(scheme%SIMPLE_PARI,Master)
 call LS_MPI_BUFFER(scheme%NON_ROBUST_PARI,Master)
 call LS_MPI_BUFFER(scheme%PARI_CHARGE,Master)
@@ -1533,6 +1541,7 @@ call LS_MPI_BUFFER(scheme%ADMMQ,Master)
 call LS_MPI_BUFFER(scheme%ADMMS,Master)
 call LS_MPI_BUFFER(scheme%ADMMP,Master)
 call LS_MPI_BUFFER(scheme%ADMM_separateX,Master)
+call LS_MPI_BUFFER(scheme%ADMMexchangeMetric,Master)
 call LS_MPI_BUFFER(scheme%PRINT_EK3,Master)
 call LS_MPI_BUFFER(scheme%ADMM_CONSTRAIN_FACTOR,Master)
 call LS_MPI_BUFFER(scheme%ADMM_LARGE_LAMBDA,Master)
@@ -1550,6 +1559,8 @@ call LS_MPI_BUFFER(scheme%DO_PROP,Master)
 call LS_MPI_BUFFER(scheme%PropOper,Master)
 
 call LS_MPI_BUFFER(scheme%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(scheme%PreCalcDFscreening,Master)
+call LS_MPI_BUFFER(scheme%PreCalcF12screening,Master)
 
 END SUBROUTINE mpicopy_scheme
 
@@ -1975,6 +1986,50 @@ END SUBROUTINE mpicopy_reduced_screen_info
 
   end subroutine get_slave_timers
 
+  subroutine mem_init_background_alloc_all_nodes(comm,bytes)
+     implicit none
+     real(realk),intent(in) :: bytes
+     integer(kind=ls_mpik),intent(in) :: comm
+     integer(kind=ls_mpik) :: nnod,me
+     real(realk) :: bytes_int
+     call time_start_phase(PHASE_WORK)
+     
+     bytes_int  = bytes
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     call time_start_phase(PHASE_COMM)
+     if(me==infpar%master) then
+        call ls_mpibcast(INIT_BG_BUF,infpar%master,comm)
+     endif
+     call ls_mpibcast(bytes_int,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+     call mem_init_background_alloc(bytes_int)
+
+  end subroutine mem_init_background_alloc_all_nodes
+  subroutine mem_free_background_alloc_all_nodes(comm)
+     implicit none
+     integer(kind=ls_mpik),intent(in) :: comm
+     integer(kind=ls_mpik) :: nnod,me
+     real(realk) :: bytes_int
+
+     call time_start_phase(PHASE_WORK)
+     
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+     call time_start_phase(PHASE_COMM)
+     if(me==infpar%master) then
+        call ls_mpibcast(FREE_BG_BUF,me,comm)
+     endif
+     call time_start_phase(PHASE_WORK)
+
+     call mem_free_background_alloc()
+
+  end subroutine mem_free_background_alloc_all_nodes
 #endif
 
 end module lsmpi_op
@@ -2016,4 +2071,26 @@ subroutine get_slave_timers_slave(comm)
    call mem_dealloc(times)
 
 end subroutine get_slave_timers_slave
+
+subroutine mem_init_background_alloc_slave(comm)
+   use precision, only: realk, ls_mpik
+   use lsmpi_op, only: mem_init_background_alloc_all_nodes
+   implicit none
+   integer(kind=ls_mpik),intent(in) :: comm
+   real(realk) :: bytes
+
+   bytes=1.0E0_realk
+   call mem_init_background_alloc_all_nodes(comm,bytes)
+
+end subroutine mem_init_background_alloc_slave
+
+subroutine mem_free_background_alloc_slave(comm)
+   use precision, only: realk, ls_mpik
+   use lsmpi_op, only: mem_free_background_alloc_all_nodes
+   implicit none
+   integer(kind=ls_mpik),intent(in) :: comm
+
+   call mem_free_background_alloc_all_nodes(comm)
+
+end subroutine mem_free_background_alloc_slave
 #endif

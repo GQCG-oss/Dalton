@@ -6,7 +6,7 @@
   	url = git://repo.ctcc.no/xcfun.git
 [submodule "external/pelib"]
 	path = external/pelib
-	url = git@repo.ctcc.no:pelib.git
+	url = git@gitlab.com:pe-software/pelib.git
 [submodule "external/ls-matrix-defop"]
 	path = external/ls-matrix-defop
 	url = git://repo.ctcc.no/matrix-defop.git
@@ -22,3 +22,6 @@
 [submodule "external/pcmsolver"]
 	path = external/pcmsolver
 	url = https://github.com/PCMSolver/pcmsolver.git
+[submodule "external/xcint"]
+	path = external/xcint
+	url = https://github.com/rbast/xcint.git

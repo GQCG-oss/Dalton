@@ -24,9 +24,12 @@ module ccsdpt_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use lspdm_tensor_operations_module
-  use ptr_assoc_module 
+  use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer
 #ifdef VAR_OPENACC
   use openacc
+#endif
+#if defined(VAR_CUDA) || defined(VAR_OPENACC)
+  use gpu_interfaces
 #endif
 
   ! DEC DEPENDENCIES (within deccc directory)  
@@ -44,67 +47,9 @@ module ccsdpt_module
   
 #ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
-       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair,&
-       & ccsdpt_energy_e4_full, print_e4_full,&
-       & ccsdpt_energy_e5_full,print_e5_full,ccsdpt_energy_e5_ddot
+       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot, &
+       & ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
   private
-#endif
-
-#ifdef VAR_OPENACC
-#ifdef VAR_CUBLAS
-  interface
-
-     ! cublasCreate
-     integer (C_INT) function cublasCreate_v2 ( handle ) bind (C, name="cublasCreate_v2")
-       use iso_c_binding
-       implicit none
-       type (C_PTR) :: handle
-     end function cublasCreate_v2
-
-     ! cublasDestroy
-     integer (C_INT) function cublasDestroy_v2 ( handle ) bind (C, name="cublasDestroy_v2")
-       use iso_c_binding
-       implicit none
-       type (C_PTR), value :: handle
-     end function cublasDestroy_v2
-
-    ! cublasDgemm_v2
-    integer (C_INT) function cublasDgemm_v2 ( handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc ) bind (C, name="cublasDgemm_v2")
-      use iso_c_binding
-      implicit none
-      type (C_PTR), value :: handle
-      type (C_PTR), value :: A, B, C
-      integer (C_INT), value :: m, n, k, lda, ldb, ldc
-      integer (C_INT), value :: transa, transb
-      real (C_DOUBLE) :: alpha, beta
-    end function cublasDgemm_v2
-
-    ! cublasSetStream_v2
-    integer (C_INT) function cublasSetStream_v2 ( handle, stream ) bind (C, name="cublasSetStream_v2")
-      use iso_c_binding
-      implicit none
-      type (C_PTR), value :: handle
-      type (C_PTR), value :: stream
-    end function cublasSetStream_v2
-
-  end interface
-#endif
-#endif
-
-#ifdef VAR_CUDA
-
-  interface
-  
-    subroutine get_dev_mem( total , free ) bind(C, name="get_dev_mem")
-  
-       use iso_c_binding
-  
-       integer (C_SIZE_T) :: total,free
-  
-    end subroutine get_dev_mem
-  
-  end interface
-
 #endif
 
 contains
@@ -166,6 +111,16 @@ contains
     real(realk) :: tcpu,twall
 
     call time_start_phase(PHASE_WORK)
+
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
 
     master = .true.
     nodtotal = 1
@@ -265,7 +220,8 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles%elm4,mylsitem,print_frags,abc)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles%elm4,&
+                                          & mylsitem,print_frags,abc)
 
     end if waking_the_slaves
 #endif
@@ -407,7 +363,8 @@ contains
        if (print_frags) then
 
           call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
+                          & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
 
        else
 
@@ -422,7 +379,8 @@ contains
        if (print_frags) then
    
           call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
+                          & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
    
        else
    
@@ -570,6 +528,13 @@ contains
     call mem_dealloc(eivalocc)
     call mem_dealloc(eivalvirt)
 
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
+
     if (master) call LSTIMER('CCSDPT_DRIVER (TOTAL)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine ccsdpt_driver
@@ -580,7 +545,8 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: january 2014
   subroutine ijk_loop_par(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
-                        & eivalocc,eivalvirt,nodtotal,nbuffs,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & eivalocc,eivalvirt,nodtotal,nbuffs,ccsdpt_singles,&
+                        & ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
 
@@ -717,27 +683,25 @@ contains
 
 #ifdef VAR_OPENACC
 
-    do m = 1,num_ids
-       async_id(m) = int(m,kind=acc_handle_kind)
-    enddo
+    if (DECinfo%acc_sync) then
+       async_id = acc_async_sync
+    else
+       do m = 1,num_ids
+          async_id(m) = int(m,kind=acc_handle_kind)
+       enddo
+    endif
 
 #else
 
-    do m = 1,num_ids
-       async_id(m) = -m
-    enddo
+    if (DECinfo%acc_sync) then
+       async_id = 0
+    else
+       do m = 1,num_ids
+          async_id(m) = -m
+       enddo
+    endif
 
 #endif
-
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -1434,13 +1398,6 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
-
     ! release async handles array
     call mem_dealloc(async_id)
 
@@ -1733,7 +1690,8 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: january 2014
   subroutine ijk_loop_ser(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
-                        & eivalocc,eivalvirt,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & eivalocc,eivalvirt,ccsdpt_singles,&
+                        & ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
 
@@ -1769,7 +1727,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
-    real(realk) :: tcpu,twall
+    real(realk) :: tcpu,twall,norm
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -1798,27 +1756,25 @@ contains
 
 #ifdef VAR_OPENACC
 
-    do m = 1,num_ids
-       async_id(m) = int(m,kind=acc_handle_kind)
-    enddo
+    if (DECinfo%acc_sync) then
+       async_id = acc_async_sync
+    else
+       do m = 1,num_ids
+          async_id(m) = int(m,kind=acc_handle_kind)
+       enddo
+    endif
 
 #else
 
-    do m = 1,num_ids
-       async_id(m) = -m
-    enddo
+    if (DECinfo%acc_sync) then
+       async_id = 0
+    else
+       do m = 1,num_ids
+          async_id(m) = -m
+       enddo
+    endif
 
 #endif
-
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -2236,13 +2192,6 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
-
     ! release async handles array
     call mem_dealloc(async_id)
 
@@ -2265,7 +2214,8 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
   subroutine abc_loop_par(nocc,nvirt,ooov,oovv,vovv,ccsd_doubles,&
-                        & eivalocc,eivalvirt,nodtotal,nbuffs,tile_size,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & eivalocc,eivalvirt,nodtotal,nbuffs,tile_size,ccsdpt_singles,&
+                        & ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
 
@@ -2373,27 +2323,25 @@ contains
 
 #ifdef VAR_OPENACC
 
-    do m = 1,num_ids
-       async_id(m) = int(m,kind=acc_handle_kind)
-    enddo
+    if (DECinfo%acc_sync) then
+       async_id = acc_async_sync
+    else
+       do m = 1,num_ids
+          async_id(m) = int(m,kind=acc_handle_kind)
+       enddo
+    endif
 
 #else
 
-    do m = 1,num_ids
-       async_id(m) = -m
-    enddo
+    if (DECinfo%acc_sync) then
+       async_id = 0
+    else
+       do m = 1,num_ids
+          async_id(m) = -m
+       enddo
+    endif
 
 #endif
-
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -2571,11 +2519,11 @@ contains
 !$acc enter data copyin(ccsd_doubles(:,:,:,b)) async(async_id(1))
 
 #ifdef VAR_OPENACC
-                   call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
-                           & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b,async_id(1))
+                      call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
+                              & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b,async_id(1))
 #else
-                   call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
-                           & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
+                      call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
+                              & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
 #endif
 
 !$acc enter data copyin(ooov(:,:,:,b)) async(async_id(2))
@@ -2997,13 +2945,6 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
-
     ! release async handles array
     call mem_dealloc(async_id)
 
@@ -3268,7 +3209,8 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
   subroutine abc_loop_ser(nocc,nvirt,ooov,oovv,vovv,ccsd_doubles,&
-                        & eivalocc,eivalvirt,ccsdpt_singles,ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & eivalocc,eivalvirt,ccsdpt_singles,&
+                        & ccsdpt_doubles,ccsdpt_doubles_2,e4)
 
     implicit none
 
@@ -3333,27 +3275,25 @@ contains
 
 #ifdef VAR_OPENACC
 
-    do m = 1,num_ids
-       async_id(m) = int(m,kind=acc_handle_kind)
-    enddo
+    if (DECinfo%acc_sync) then
+       async_id = acc_async_sync
+    else
+       do m = 1,num_ids
+          async_id(m) = int(m,kind=acc_handle_kind)
+       enddo
+    endif
 
 #else
 
-    do m = 1,num_ids
-       async_id(m) = -m
-    enddo
+    if (DECinfo%acc_sync) then
+       async_id = 0
+    else
+       do m = 1,num_ids
+          async_id(m) = -m
+       enddo
+    endif
 
 #endif
-
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
 
 #ifdef VAR_CUBLAS
 
@@ -3764,13 +3704,6 @@ contains
 
 #endif
 
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
-
     ! release async handles array
     call mem_dealloc(async_id)
 
@@ -3810,6 +3743,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -3974,6 +3910,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4138,6 +4077,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4302,6 +4244,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4467,6 +4412,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -4757,6 +4705,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5202,6 +5153,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5305,6 +5259,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5418,6 +5375,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5521,6 +5481,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5636,6 +5599,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5758,6 +5724,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -5911,6 +5880,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6067,6 +6039,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6238,6 +6213,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6397,6 +6375,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6580,6 +6561,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -6874,6 +6858,9 @@ contains
     integer*4 :: stat
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx(num_idxs), handle
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
 #else
     integer :: async_idx(num_idxs), handle
 #endif
@@ -8949,6 +8936,109 @@ contains
   end subroutine ccsdpt_contract_abc_222
 
 
+  !> \brief: calculate E[5] contribution to fragment decnp-ccsd(t) energy correction
+  !> \author: Pablo Baudin (from Janus Eriksen and Kasper Kristensen)
+  !> \date: Mar 2015
+  subroutine ccsdpt_decnp_e5_frag(MyFragment,ccsd_singles,ccsdpt_singles)
+
+    implicit none
+
+    !> fragment info
+    type(decfrag), intent(inout) :: MyFragment
+    ! ccsd and ccsd(t) singles amplitudes
+    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
+    real(realk) :: energy_tmp, ccsdpt_e5
+    logical :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
+    integer :: noccAOS,nunoccAOS,i,a
+    !> which partitioning schemes?
+    logical :: do_occ, do_virt
+
+    noccAOS = MyFragment%noccAOS
+    nunoccAOS = MyFragment%nunoccAOS
+
+    ! Sanity check
+    if(MyFragment%nEOSatoms/=1) then
+       print *, 'nEOSatoms ',MyFragment%nEOSatoms
+       call lsquit('ccsdpt_decnp_e5_frag called with wrong number of EOS atoms!',-1)
+    end if
+
+    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! based on SECONDARY assignment.
+    call secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+
+
+    ! ***********************
+    !   do E[5] energy part
+    ! ***********************
+
+    ! init energy reals to be on the safe side.
+    ! note: OccEnergyPT and VirtEnergyPT have been initialized in the e4 routine.
+    MyFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
+
+    do_occ = .false.
+    do_virt = .false.
+    if ((.not. DECinfo%OnlyOccPart) .and. (.not. DECinfo%OnlyVirtPart)) then
+       do_occ = .true.
+       do_virt = .true.
+    else if (DECinfo%OnlyOccPart .and. (.not. DECinfo%OnlyVirtPart)) then
+       do_occ = .true.
+    else if (DECinfo%OnlyVirtPart .and. (.not. DECinfo%OnlyOccPart)) then
+       do_virt = .true.
+    end if
+
+    ! *******************************
+    ! do occupied partitioning scheme
+    ! *******************************
+
+    if (do_occ) then
+       ! init temp energy
+       ccsdpt_e5 = 0.0E0_realk
+
+       iloop: do i=1,noccAOS
+          ! Only include contribution if consistent with secondary assignment
+          if(.not. SEC_occ(i)) cycle iloop
+          do a=1,nunoccAOS
+
+             energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+             ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+
+          end do
+       end do iloop
+       MyFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
+
+       ! insert into occ. part. scheme part
+       MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+          & + MyFragment%energies(FRAGMODEL_OCCpT5)
+    end if
+
+    ! *********************************
+    ! do unoccupied partitioning scheme
+    ! *********************************
+
+    if (do_virt) then 
+       ! init temp energy
+       ccsdpt_e5 = 0.0E0_realk
+
+       do i=1,noccAOS
+          aloop: do a=1,nunoccAOS
+             if(.not. SEC_unocc(a)) cycle aloop
+
+             energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+             ccsdpt_e5 = ccsdpt_e5 + energy_tmp
+
+          end do aloop
+       end do
+       MyFragment%energies(FRAGMODEL_VIRTpT5) = 2.0E0_realk * ccsdpt_e5
+
+       ! insert into virt. part. scheme part
+       MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+          & + MyFragment%energies(FRAGMODEL_VIRTpT5)
+    end if
+
+  end subroutine ccsdpt_decnp_e5_frag
+
+
   !> \brief: calculate E[5] contribution to single fragment ccsd(t) energy correction
   !> \author: Janus Eriksen and Kasper Kristensen
   !> \date: september 2012
@@ -9240,7 +9330,8 @@ contains
        MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
    
        ! insert into occ. part. scheme part
-       MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT4)
+       MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT4)
 
     end if
 
@@ -9336,7 +9427,8 @@ contains
        MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
    
        ! insert into virt. part. scheme part
-       MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_VIRTpT4)
+       MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+          & + MyFragment%energies(FRAGMODEL_VIRTpT4)
 
     end if
 
@@ -9375,6 +9467,278 @@ contains
     ! *******************************************************************
 
   end subroutine ccsdpt_energy_e4_frag
+
+
+  !> \brief: calculate E[4] contribution to fragment decnp-ccsd(t) energy correction
+  !> \author: Pablo Baudin (based on Janus's routine)
+  !> \date: Mar 2015
+  subroutine ccsdpt_decnp_e4_frag(MyFragment,ccsd_doubles,ccsdpt_doubles,&
+                             & occ_contribs,virt_contribs,fragopt_pT)
+
+    implicit none
+
+    !> fragment info
+    type(decfrag), intent(inout) :: MyFragment
+    ! ccsd and ccsd(t) doubles amplitudes
+    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    !> is this called from inside the ccsd(t) fragment optimization routine?
+    logical, optional, intent(in) :: fragopt_pT
+    !> incomming orbital contribution vectors
+    real(realk), intent(inout) :: occ_contribs(MyFragment%noccAOS), virt_contribs(MyFragment%nunoccAOS)
+    !> integers
+    integer :: nocc_eos, nocc_aos, nvirt_eos, nvirt_aos, i,j,a,b, i_eos, j_eos, a_eos, b_eos
+    !> energy reals
+    real(realk) :: energy_tmp, energy_res_cou, energy_res_exc
+    !> which partitioning schemes?
+    logical :: do_occ, do_virt
+
+    ! init dimensions
+    nocc_eos = MyFragment%noccEOS
+    nvirt_eos = MyFragment%nunoccEOS
+    nocc_aos = MyFragment%noccAOS
+    nvirt_aos = MyFragment%nunoccAOS
+
+    ! **************************************************************
+    ! ************** do energy for single fragment *****************
+    ! **************************************************************
+
+    ! ***********************
+    !   do E[4] energy part
+    ! ***********************
+
+    ! init energy reals to be on the safe side
+    ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
+    !       as this (e4) routine is called before the e5 routine
+    MyFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
+
+    do_occ = .false.
+    do_virt = .false.
+
+    if ((.not. DECinfo%OnlyOccPart) .and. (.not. DECinfo%OnlyVirtPart)) then
+
+       do_occ = .true.
+       do_virt = .true.
+
+    else if (DECinfo%OnlyOccPart .and. (.not. DECinfo%OnlyVirtPart)) then
+
+       do_occ = .true.
+
+    else if (DECinfo%OnlyVirtPart .and. (.not. DECinfo%OnlyOccPart)) then
+
+       do_virt = .true.
+
+    end if
+
+    ! *******************************
+    ! do occupied partitioning scheme
+    ! *******************************
+
+    if (do_occ) then
+
+       energy_res_cou = 0.0E0_realk
+       energy_res_exc = 0.0E0_realk
+   
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,a,b,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nocc_aos,nvirt_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
+       do j=1,nocc_aos
+          do i=1,nocc_eos
+             i_eos = MyFragment%idxo(i)
+   
+             do b=1,nvirt_aos
+                do a=1,nvirt_aos
+   
+                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j) &
+                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j)
+                   energy_res_cou = energy_res_cou + energy_tmp
+   
+                   ! update contribution from aos orbital a
+                   virt_contribs(a) = virt_contribs(a) + energy_tmp
+   
+                   ! update contribution from aos orbital b 
+                   ! (only if different from aos orbital a to avoid double counting)
+                   if (a .ne. b) virt_contribs(b) = virt_contribs(b) + energy_tmp
+   
+                end do
+             end do
+   
+          end do
+       end do
+       !$OMP END PARALLEL DO
+   
+       ! reorder from (a,b,i,j) to (a,b,j,i)
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
+   
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,a,b,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nocc_aos,nvirt_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:virt_contribs)
+       do j=1,nocc_aos
+          do i=1,nocc_eos
+             i_eos = MyFragment%idxo(i)
+   
+             do b=1,nvirt_aos
+                do a=1,nvirt_aos
+   
+                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j) &
+                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j)
+                   energy_res_exc = energy_res_exc - energy_tmp
+   
+                   ! update contribution from aos orbital a
+                   virt_contribs(a) = virt_contribs(a) - energy_tmp
+   
+                   ! update contribution from aos orbital b 
+                   ! (only if different from aos orbital a to avoid double counting)
+                   if (a .ne. b) virt_contribs(b) = virt_contribs(b) - energy_tmp
+   
+                end do
+             end do
+   
+          end do
+       end do
+       !$OMP END PARALLEL DO
+   
+       !get total fourth--order energy contribution
+       MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
+   
+       ! insert into occ. part. scheme part
+       MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT4)
+
+    end if
+
+    ! *********************************
+    ! do unoccupied partitioning scheme
+    ! *********************************
+
+    if (do_virt) then
+
+       if (do_occ .and. do_virt) then
+
+          ! initially, reorder ccsd_doubles and ccsdpt_doubles
+          ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
+          ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
+          call tensor_reorder(ccsd_doubles,[3,4,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
+
+       else
+
+          ! initially, reorder ccsd_doubles and ccsdpt_doubles
+          ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
+          ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
+          call tensor_reorder(ccsd_doubles,[4,3,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
+
+       end if
+
+       energy_res_cou = 0.0E0_realk
+       energy_res_exc = 0.0E0_realk
+   
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,i,j,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nvirt_aos,nocc_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
+       do b=1,nvirt_aos
+          do a=1,nvirt_eos
+             a_eos = MyFragment%idxu(a)
+   
+             do j=1,nocc_aos
+                do i=1,nocc_aos
+   
+                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b) &
+                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b)
+                   energy_res_exc = energy_res_exc - energy_tmp
+   
+                   ! update contribution from aos orbital i
+                   occ_contribs(i) = occ_contribs(i) - energy_tmp
+   
+                   ! update contribution from aos orbital j 
+                   ! (only if different from aos orbital i to avoid double counting)
+                   if (i .ne. j) occ_contribs(j) = occ_contribs(j) - energy_tmp
+   
+                end do
+             end do
+   
+          end do
+       end do
+       !$OMP END PARALLEL DO
+   
+       ! reorder form (j,i,a,b) to (i,j,a,b)
+       call tensor_reorder(ccsd_doubles,[2,1,3,4])
+   
+       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,i,j,energy_tmp),&
+       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nvirt_aos,nocc_aos,MyFragment),&
+       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
+       do b=1,nvirt_aos
+          do a=1,nvirt_eos
+             a_eos = MyFragment%idxu(a)
+   
+             do j=1,nocc_aos
+                do i=1,nocc_aos
+   
+                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b) &
+                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b)
+                   energy_res_cou = energy_res_cou + energy_tmp
+   
+                   ! update contribution from aos orbital i
+                   occ_contribs(i) = occ_contribs(i) + energy_tmp
+   
+                   ! update contribution from aos orbital j 
+                   ! (only if different from aos orbital i to avoid double counting)
+                   if (i .ne. j) occ_contribs(j) = occ_contribs(j) + energy_tmp
+   
+                end do
+             end do
+   
+          end do
+       end do
+       !$OMP END PARALLEL DO
+   
+       !get total fourth--order energy contribution
+       MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
+   
+       ! insert into virt. part. scheme part
+       MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+          & + MyFragment%energies(FRAGMODEL_VIRTpT4)
+
+    end if
+
+    ! ******************************
+    !   done with E[4] energy part
+    ! ******************************
+
+    ! ************************************************************************
+    !   as we need to reuse the ccsd doubles in the fragment optimization,
+    !   we here reorder back into (a,i,b,j) sequence IF fragopt_pT == .true. 
+    ! ************************************************************************
+
+    if (present(fragopt_pT)) then
+
+       if (do_occ .and. (.not. do_virt)) then
+
+          ! reorder from (a,b,j,i) to (a,i,b,j)
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[1,4,2,3])
+
+       else if (do_virt .and. (.not. do_virt)) then
+
+          ! reorder from (i,j,a,b) to (a,i,b,j)
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
+
+       else if (do_occ .and. do_virt) then
+
+          ! reorder from (i,j,a,b) to (a,i,b,j)
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
+
+       end if
+
+    end if
+
+    ! *******************************************************************
+    ! ************** done w/ energy for single fragment *****************
+    ! *******************************************************************
+
+  end subroutine ccsdpt_decnp_e4_frag
 
 
   !> \brief: calculate E[4] contribution to pair fragment ccsd(t) energy correction
@@ -9512,10 +9876,12 @@ contains
        !$OMP END PARALLEL DO
    
        ! get total fourth--order energy contribution
-       PairFragment%energies(FRAGMODEL_OCCpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+       PairFragment%energies(FRAGMODEL_OCCpT4) = 4.0E0_realk * energy_res_cou &
+          & - 2.0E0_realk * energy_res_exc
    
        ! insert into occ. part. scheme part
-       PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT4)
+       PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) &
+          &+ PairFragment%energies(FRAGMODEL_OCCpT4)
 
     end if
 
@@ -9598,10 +9964,12 @@ contains
        !$OMP END PARALLEL DO
    
        ! get total fourth--order energy contribution
-       PairFragment%energies(FRAGMODEL_VIRTpT4) = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
+       PairFragment%energies(FRAGMODEL_VIRTpT4) = 4.0E0_realk * energy_res_cou &
+          &- 2.0E0_realk * energy_res_exc
    
        ! insert into virt. part. scheme part
-       PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_VIRTpT4)
+       PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) &
+          & + PairFragment%energies(FRAGMODEL_VIRTpT4)
 
     end if
 
@@ -9619,7 +9987,7 @@ contains
 
       call mem_dealloc(dopair_occ)
 
-    else if (do_virt .and. (.not. do_occ)) then
+       else if (do_virt .and. (.not. do_occ)) then
 
       call mem_dealloc(dopair_virt)
 
@@ -9630,311 +9998,6 @@ contains
     ! ******************************************************************
 
   end subroutine ccsdpt_energy_e4_pair
-
-  !> \brief: calculate E[4] contribution to ccsd(t) energy correction for full molecule calculation
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine ccsdpt_energy_e4_full(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
-                           & eccsdpt_matrix_cou,eccsdpt_matrix_exc,ccsdpt_e4)
-
-    implicit none
-
-    !> ccsd and ccsd(t) doubles amplitudes
-    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
-    !> dimensions
-    integer, intent(in) :: nocc, nvirt, nfrags, offset
-    !> occupied orbital information
-    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
-    !> etot
-    real(realk), intent(inout) :: ccsdpt_e4
-    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
-    !> integers
-    integer :: i,j,a,b,atomI,atomJ
-    !> energy reals
-    real(realk) :: energy_tmp, energy_res_cou, energy_res_exc
-
-    ! *************************************************************
-    ! ************** do energy for full molecule ******************
-    ! *************************************************************
-
-    ! ***********************
-    !   do E[4] energy part
-    ! ***********************
-
-    eccsdpt_matrix_cou = 0.0_realk
-    eccsdpt_matrix_exc = 0.0_realk
-    energy_res_cou = 0.0E0_realk
-    energy_res_exc = 0.0E0_realk
-    ccsdpt_e4 = 0.0E0_realk
-
-    ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
-    ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_cou),&
-    !$OMP REDUCTION(+:eccsdpt_matrix_cou),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
-
-          do b=1,nvirt
-             do a=1,nvirt
-
-                energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
-                eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) + energy_tmp
-                energy_res_cou = energy_res_cou + energy_tmp
-
-             end do
-          end do
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! reorder from (a,b,i,j) to (a,b,j,i)
-    call tensor_reorder(ccsd_doubles,[1,2,4,3])
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_exc),&
-    !$OMP REDUCTION(+:eccsdpt_matrix_exc),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
-    do j=1,nocc
-    atomJ = occ_orbitals(j+offset)%CentralAtom
-       do i=1,nocc
-       atomI = occ_orbitals(i+offset)%CentralAtom
-
-          do b=1,nvirt
-             do a=1,nvirt
-
-                energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
-                eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) + energy_tmp
-                energy_res_exc = energy_res_exc + energy_tmp
-
-             end do
-          end do
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! get total fourth--order energy contribution
-    eccsdpt_matrix_cou = 4.0E0_realk * eccsdpt_matrix_cou - 2.0E0_realk * eccsdpt_matrix_exc
-    ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
-
-    ! for the e4 pair fragment energy matrix,
-    ! we put the pair energy Delta E_IJ into both entry (I,J) and (J,I)
-
-    do AtomJ=1,nfrags
-       do AtomI=AtomJ+1,nfrags
-
-          eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
-                                              & + eccsdpt_matrix_cou(AtomJ,AtomI)
-          eccsdpt_matrix_cou(AtomJ,AtomI) =  eccsdpt_matrix_cou(AtomI,AtomJ)
-                                           
-
-       end do
-    end do
-
-
-
-    ! ******************************************************************
-    ! ************** done w/ energy for full molecule ******************
-    ! ******************************************************************
-
-  end subroutine ccsdpt_energy_e4_full
-
-! code not used
-!  !> \brief: print out E[4] fragment and pair interaction contribution to 
-!  !>         ccsd(t) energy correction for full molecule calculation
-!  !> \author: Janus Juul Eriksen
-!  !> \date: February 2013
-!  subroutine print_e4_full(natoms,e4_matrix,orbitals_assigned,distancetable)
-!
-!    implicit none
-!
-!    !> number of atoms in molecule
-!    integer, intent(in) :: natoms
-!    !> matrices containing E[4] energies and interatomic distances
-!    real(realk), dimension(natoms,natoms), intent(in) :: e4_matrix, distancetable
-!    !> vector handling how the orbitals are assigned?
-!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-!    !> loop counters
-!    integer :: i,j
-!!    use the one in lsutil/fundamental.f90
-!!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
-!
-!    ! print out fragment energies
-!
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(1X,a)') '***************************************************************'
-!    write(DECinfo%output,'(1X,a)') '*                         E[4] energies                       *'
-!    write(DECinfo%output,'(1X,a)') '***************************************************************'
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (fourth--order E[4])'
-!    write(DECinfo%output,'(8X,a)') '------    --------------------'
-!    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-!    write(DECinfo%output,'(8X,a)') '------    --------------------'
-!    write(DECinfo%output,*)
-!
-!    do i=1,natoms
-!
-!       if (orbitals_assigned(i)) then
-!
-!          write(DECinfo%output,'(1X,a,i6,4X,g20.10)') '#SING#', i, e4_matrix(i,i)
-!
-!       end if
-!
-!    end do
-!
-!    ! now print out pair interaction energies
-!
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (fourth--order E[4])     '
-!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-!    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-!    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-!    write(DECinfo%output,*)
-!
-!    do j=1,natoms
-!       do i=j+1,natoms
-!
-!          ! write increments only if pair interaction energy is nonzero
-!          if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
-!
-!             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
-!                  & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
-!
-!          end if
-!
-!       end do
-!    end do
-!
-!
-!  end subroutine print_e4_full
-
-
-
-  !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule calculation
-  !> \author: Janus Juul Eriksen
-  !> \date: February 2013
-  subroutine ccsdpt_energy_e5_full(nocc,nvirt,nfrags,offset,ccsd_singles,ccsdpt_singles,&
-                             & occ_orbitals,unocc_orbitals,e5_matrix,ccsdpt_e5)
-
-    implicit none
-
-    !> ccsd and ccsd(t) singles amplitudes
-    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
-    !> dimensions
-    integer, intent(in) :: nocc, nvirt, nfrags, offset
-    !> occupied orbital information
-    type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
-    !> virtual orbital information
-    type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
-    !> etot
-    real(realk), intent(inout) :: ccsdpt_e5
-    real(realk), dimension(nfrags,nfrags), intent(inout) :: e5_matrix
-    !> integers
-    integer :: i,a,AtomI,AtomA
-    !> tmp energy real
-    real(realk) :: energy_tmp
-
-    ! ***********************
-    !   do E[5] energy part
-    ! ***********************
-
-    e5_matrix = 0.0_realk
-    ccsdpt_e5 = 0.0_realk
-
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
-    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
-    !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_matrix)
-    do i=1,nocc
-    AtomI = occ_orbitals(i+offset)%secondaryatom
-       do a=1,nvirt
-       AtomA = unocc_orbitals(a)%secondaryatom
-
-           energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
-           e5_matrix(AtomA,AtomI) = e5_matrix(AtomA,AtomI) + energy_tmp
-           ! Important to update both (AtomI,AtomA) and (AtomA,AtomI) 
-           e5_matrix(AtomI,AtomA) = e5_matrix(AtomA,AtomI)
-           ccsdpt_e5 = ccsdpt_e5 + energy_tmp
-
-       end do
-    end do
-    !$OMP END PARALLEL DO
-
-    ! get total fifth-order energy correction
-    e5_matrix = 2.0E0_realk * e5_matrix
-    ccsdpt_e5 = 2.0E0_realk * ccsdpt_e5
-
-
-
-    ! ******************************
-    !   done with E[5] energy part
-    ! ******************************
-
-  end subroutine ccsdpt_energy_e5_full
-
-! code not used
-!  !> \brief: print out fifth-order pair interaction energies for full molecule calculation 
-!  !> \author: Janus Juul Eriksen
-!  !> \date: February 2013
-!  subroutine print_e5_full(natoms,e5_matrix,orbitals_assigned,distancetable)
-!
-!    implicit none
-!
-!    !> number of atoms in molecule
-!    integer, intent(in) :: natoms
-!    !> matrices containing E[4] energies and interatomic distances
-!    real(realk), dimension(natoms,natoms), intent(in) :: e5_matrix, distancetable
-!    !> vector handling how the orbitals are assigned?
-!    logical, dimension(natoms), intent(inout) :: orbitals_assigned
-!    !> loop counters
-!    integer :: i,a
-!
-!    ! print out fragment energies
-!
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(1X,a)') '***************************************************************'
-!    write(DECinfo%output,'(1X,a)') '*                         E[5] energies                       *'
-!    write(DECinfo%output,'(1X,a)') '***************************************************************'
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,*)
-!    write(DECinfo%output,'(8X,a)') '-- Pair fragment energies (fifth--order E[5])          '
-!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-!    write(DECinfo%output,'(9X,a)') 'P(virt)    Q(occ)      R(Ang)           E(PQ)          '
-!    write(DECinfo%output,'(9X,a)') '-------    ------    ----------    --------------------'
-!    write(DECinfo%output,*)
-!
-!    ! the total singles energy must result from an unrestricted summation over all occ and virt indices
-!    ! as we are only interested in general orbital interactions and hence not the nature (occ/virt)
-!    ! of the individual orbitals
-!
-!    do i=1,natoms
-!       do a=1,natoms
-!
-!          ! write increments only if pair interaction energy is nonzero
-!          if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
-!
-!             if (i .eq. a) then
-!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-!                     &0.000, e5_matrix(a,i)
-!
-!             else
-!
-!                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
-!                     &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
-!
-!             end if
-!
-!          end if
-!
-!       end do
-!    end do
-!
-!  end subroutine print_e5_full
 
 
   !> \brief Get MO integrals for ijk-CCSD(T) (in canonical basis), see integral storing order below.
@@ -10336,7 +10399,8 @@ contains
           do i=1,nocc
 
              ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             !call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             call dgemv('N',m,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),1,0.0E0_realk,tmp1,1)
 
              ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
              ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
@@ -10398,7 +10462,8 @@ contains
           do i=1,nocc
 
              ! for description, see mpi section above
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             !call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             call dgemv('N',m,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),1,0.0E0_realk,tmp1,1)
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,vvvo%elm4(:,:,:,i))
 
@@ -10413,7 +10478,13 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call ass_D4to1(ovoo%elm1,dummy2,[nocc,nvirt,nocc,nocc])
+#ifdef VAR_PTR_RESHAPE
+       dummy2(1:(i8*nocc*nvirt)*nocc*nocc) => ovoo%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+       call c_f_pointer(c_loc(ovoo%elm1(1)),dummy2,[(i8*nocc*nvirt)*nocc*nocc])      
+#else
+       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
@@ -10429,8 +10500,6 @@ contains
     call mem_dealloc(distribution)
 
 #endif
-
-    call print_norm(vvvo,"VVVO norm",print_on_rank=0)
 
     ! free stuff
     ! **********
@@ -10946,7 +11015,13 @@ contains
 
     if (infpar%lg_nodtot .gt. 1) then
 
-       call ass_D4to1(ooov%elm1,dummy2,[nocc,nocc,nocc,nvirt])
+#ifdef VAR_PTR_RESHAPE
+       dummy2(1:(i8*nocc*nocc)*nocc*nvirt) => ooov%elm1
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+       call c_f_pointer(c_loc(ooov%elm1(1)),dummy2,[(i8*nocc*nocc)*nocc*nvirt])
+#else
+       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
        
        call time_start_phase(PHASE_IDLE)
        call lsmpi_barrier(infpar%lg_comm)
@@ -11350,6 +11425,7 @@ contains
 #ifdef VAR_OPENACC
       integer(kind=acc_device_kind) :: acc_device_type
 #endif
+      logical :: acc_async
       real(realk) :: free_cpu ! in gb
       integer(c_size_t) :: total_gpu,free_gpu ! in bytes
       real(realk), parameter :: gb =  1073741824.0E0_realk ! 1 GB
@@ -11366,6 +11442,9 @@ contains
       free_cpu = 0.0E0_realk
       total_gpu = 0
       free_gpu = 0
+      acc_async = .true.
+
+      if (DECinfo%acc_sync) acc_async = .false.
 
       call get_currently_available_memory(free_cpu)
 
@@ -11492,9 +11571,12 @@ contains
          write(DECinfo%output,'(a,g11.4)')     'Free CPU memory (GB)   = ',free_cpu
          write(DECinfo%output,'(a,l4)')     'Are we using GPUs?     = ',gpu
          if (gpu) then
+            write(DECinfo%output,'(a,l4)')     'Asynchronous OpenACC?  = ',acc_async
             write(DECinfo%output,'(a,i4)')     'Number of GPUs         = ',num_gpu
-            write(DECinfo%output,'(a,g11.4)')     'Total GPU memory (GB)  = ',total_gpu * gb
-            write(DECinfo%output,'(a,g11.4)')     'Free GPU memory (GB)   = ',free_gpu * gb
+            write(DECinfo%output,'(a,g11.4)')     'Total GPU memory (GB)  = ',total_gpu / gb
+            write(DECinfo%output,'(a,g11.4)')     'Free GPU memory (GB)   = ',free_gpu / gb
+            print *,'Total GPU memory (Bytes) = ',total_gpu
+            print *,'Free GPU memory  (Bytes) = ',free_gpu
          endif
          write(DECinfo%output,*)
          write(DECinfo%output,*)

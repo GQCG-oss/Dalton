@@ -5,7 +5,7 @@
      ******************************************************************    
   
   
-      This is output from LSDALTON 2014.0
+      This is output from LSDALTON 2016.alpha
   
   
       IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
@@ -114,12 +114,12 @@
                           | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
                           | o
  Static linking           | OFF
- Last Git revision        | 09cb17c2f337b4a5f0ecaad7e1372631b8391a03
+ Last Git revision        | 7416689a9c113f9be6f42054c9d2dfdfe1227216
  Git branch               | master
- Configuration time       | 2014-12-11 13:50:47.991770
+ Configuration time       | 2015-03-05 21:23:15.685531
 
 Start simulation
-     Date and time (Linux)  : Thu Dec 11 13:56:52 2014
+     Date and time (Linux)  : Thu Mar  5 21:56:23 2015
      Host name              : localhost.localdomain                   
                       
  -----------------------------------------
@@ -141,6 +141,8 @@ Start simulation
           PRINTING THE LSDALTON.INP FILE 
  -----------------------------------------
                       
+  **INTEGRALS                                                                                         
+  .ForceRIMP2memReduced                                                                               
   **WAVE FUNCTIONS                                                                                    
   .HF                                                                                                 
   *DENSOPT                                                                                            
@@ -151,6 +153,7 @@ Start simulation
   .DEBUG_MPI_MEM                                                                                      
   **CC                                                                                                
   .CANONICAL                                                                                          
+  .FROZENCORE                                                                                         
   .RIMP2                                                                                              
   .MEMORY                                                                                             
   1.0                                                                                                 
@@ -204,15 +207,15 @@ BASISSETLIBRARY
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
  OPENING FILE
- /home/tkjaer/DaltonDevelopment2015/DebugMasterBracnjh/build-debug/basis/6-31G
+ /home/tkjaer/DaltonDevelopment2015/RIMP2GPUaaron/build-debug/basis/6-31G
  OPENING FILE
- /home/tkjaer/DaltonDevelopment2015/DebugMasterBracnjh/build-debug/basis/STO-3G
+ /home/tkjaer/DaltonDevelopment2015/RIMP2GPUaaron/build-debug/basis/STO-3G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
  OPENING FILE
- /home/tkjaer/DaltonDevelopment2015/DebugMasterBracnjh/build-debug/basis/Ahlrich
- s-Coulomb-Fit
+ /home/tkjaer/DaltonDevelopment2015/RIMP2GPUaaron/build-debug/basis/Ahlrichs-Cou
+ lomb-Fit
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -400,7 +403,7 @@ Matrix OAO F has nnz=       112 sparsity:     77.778 %
 No linesearch due to no levelshift, step size=  1.7435362E-01
     2 step norm =  0.174 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    41
- >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
  >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   2
  The Coulomb energy contribution    37.5935777976986     
@@ -420,8 +423,8 @@ Matrix OAO F has nnz=       112 sparsity:     77.778 %
  OAO gradnorm  0.132649821452670     
     3 step norm =  0.063 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    66
- >>>  CPU Time used in SCF iteration is   0.15 seconds
- >>> wall Time used in SCF iteration is   0.15 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   3
  The Coulomb energy contribution    38.2322455136402     
  The Exchange energy contribution    7.54336065495228     
@@ -436,8 +439,8 @@ Matrix OAO F has nnz=       112 sparsity:     77.778 %
  OAO gradnorm  1.446816449181947E-002
     4 step norm =  0.013 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    64
- >>>  CPU Time used in SCF iteration is   0.15 seconds
- >>> wall Time used in SCF iteration is   0.15 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   4
  The Coulomb energy contribution    38.1875968903351     
  The Exchange energy contribution    7.53984574000845     
@@ -452,8 +455,8 @@ Matrix OAO F has nnz=       112 sparsity:     77.778 %
  OAO gradnorm  2.254158709020883E-003
     5 step norm =  0.003 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    64
- >>>  CPU Time used in SCF iteration is   0.15 seconds
- >>> wall Time used in SCF iteration is   0.15 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   5
  The Coulomb energy contribution    38.1901588989437     
  The Exchange energy contribution    7.54009369619573     
@@ -468,8 +471,8 @@ Matrix OAO F has nnz=       112 sparsity:     77.778 %
  OAO gradnorm  1.923332588308013E-004
     6 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    69
- >>>  CPU Time used in SCF iteration is   0.15 seconds
- >>> wall Time used in SCF iteration is   0.15 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   6
  The Coulomb energy contribution    38.1902583601386     
  The Exchange energy contribution    7.54008548899111     
@@ -485,7 +488,7 @@ Matrix OAO F has nnz=       112 sparsity:     77.778 %
     7 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    62
  >>>  CPU Time used in SCF iteration is   0.14 seconds
- >>> wall Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   7
  The Coulomb energy contribution    38.1902563254860     
  The Exchange energy contribution    7.54008184792766     
@@ -500,7 +503,7 @@ Matrix OAO F has nnz=       112 sparsity:     77.778 %
  OAO gradnorm  3.766620500548153E-006
     8 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    62
- >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
  >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   8
  The Coulomb energy contribution    38.1902553660098     
@@ -508,8 +511,8 @@ No. of matmuls in get_density:    62
  The Fock energy contribution   -30.6501740647335     
   8    -56.1252143103   -0.00000000001    0.00      0.00000    0.00    4.12E-07  ###
 SCF converged in      8 iterations
- >>>  CPU Time used in **ITER is   1.16 seconds
- >>> wall Time used in **ITER is   1.16 seconds
+ >>>  CPU Time used in **ITER is   1.14 seconds
+ >>> wall Time used in **ITER is   1.14 seconds
  
 Total no. of matmuls in SCF optimization:        578
  
@@ -607,6 +610,7 @@ Full molecular calculation is carried out...
               Full molecular driver               
  ================================================ 
 
+ MemoryReduced RIMP2 scheme chosen as default
  >>>  CPU Time used in RIMP2: MemCheck is   0.00 seconds
  >>> wall Time used in RIMP2: MemCheck is   0.00 seconds
  >>>  CPU Time used in RIMP2: WakeSlaves is   0.00 seconds
@@ -615,21 +619,11 @@ Full molecular calculation is carried out...
  >>> wall Time used in AlphaBeta is   0.03 seconds
  >>>  CPU Time used in AlphaBetamSq is   0.00 seconds
  >>> wall Time used in AlphaBetamSq is   0.00 seconds
- >>>  CPU Time used in RIMP2: AlphaBeta is   0.04 seconds
- >>> wall Time used in RIMP2: AlphaBeta is   0.04 seconds
- >>>  CPU Time used in RIMP2: MPI Basis is   0.00 seconds
- >>> wall Time used in RIMP2: MPI Basis is   0.00 seconds
- >>>  CPU Time used in RIMP2: MPI AlphaBetaTmp is   0.00 seconds
- >>> wall Time used in RIMP2: MPI AlphaBetaTmp is   0.00 seconds
- >>>  CPU Time used in RIMP2: AlphaCD is   0.05 seconds
- >>> wall Time used in RIMP2: AlphaCD is   0.05 seconds
- >>>  CPU Time used in RIMP2: Calpha is   0.00 seconds
- >>> wall Time used in RIMP2: Calpha is   0.00 seconds
- >>>  CPU Time used in RIMP2: EpsOcc is   0.00 seconds
- >>> wall Time used in RIMP2: EpsOcc is   0.00 seconds
- >>>  CPU Time used in RIMP2: EnergyCont is   0.01 seconds
- >>> wall Time used in RIMP2: EnergyCont is   0.01 seconds
- RIMP2 CORRELATION ENERGY =  -0.119670970059679     
+ >>>  CPU Time used in RIMP2: Calpha is   0.15 seconds
+ >>> wall Time used in RIMP2: Calpha is   0.15 seconds
+ >>>  CPU Time used in RIMP2: EnergyCont is   0.00 seconds
+ >>> wall Time used in RIMP2: EnergyCont is   0.00 seconds
+ RIMP2 CORRELATION ENERGY =  -0.118589852919125     
  LEAK TOOL STATISTICS IN full_canonical_rimp2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
             LeakTool Memory statistics          
@@ -638,8 +632,8 @@ Full molecular calculation is carried out...
   Allocated memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         44.800 kB
-  Max allocated memory, real(realk)                   44.800 kB
+  Max allocated memory, TOTAL                         88.000 Byte
+  Max allocated memory, real(realk)                   88.000 Byte
   Max allocated memory, integer                        0.000 Byte
   Max allocated memory, logical                        0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -656,8 +650,8 @@ Full molecular calculation is carried out...
              **********************************************************
  
                E: Hartree-Fock energy :      -56.1252143103
-               E: Correlation energy  :       -0.1196709701
-               G: Total RIMP2 energy  :      -56.2448852804
+               E: Correlation energy  :       -0.1185898529
+               G: Total RIMP2 energy  :      -56.2438041632
  
  
  
@@ -674,12 +668,12 @@ Full molecular calculation is carried out...
  
 
 ------------------------------------------------------
-Total CPU  time used in CC           :        0.105000     s
-Total Wall time used in CC           :        0.106000     s
+Total CPU  time used in CC           :        0.162000     s
+Total Wall time used in CC           :        0.162000     s
 ------------------------------------------------------
 
  
-Job finished   : Date: 11/12/2014   Time: 13:56:55
+Job finished   : Date: 05/03/2015   Time: 21:56:25
  
  
 
@@ -689,8 +683,8 @@ Job finished   : Date: 11/12/2014   Time: 13:56:55
 
  
  
- >>>  CPU Time used in *SCF is   1.98 seconds
- >>> wall Time used in *SCF is   1.99 seconds
+ >>>  CPU Time used in *SCF is   1.91 seconds
+ >>> wall Time used in *SCF is   1.92 seconds
  
 Total no. of matmuls used:                       606
 Total no. of Fock/KS matrix evaluations:           9
@@ -742,8 +736,8 @@ Max no. of matrices allocated in Level 3:         56
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         85.468 MB
-  Max allocated memory, type(matrix)                  91.312 kB
+  Max allocated memory, TOTAL                         85.469 MB
+  Max allocated memory, type(matrix)                  91.712 kB
   Max allocated memory, real(realk)                    6.616 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
@@ -764,12 +758,12 @@ Max no. of matrices allocated in Level 3:         56
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        4.136 kB
-  Max allocated memory, LSAOTENSOR                    27.136 kB
+  Max allocated memory, ODBATCH                        2.816 kB
+  Max allocated memory, LSAOTENSOR                    13.568 kB
   Max allocated memory, SLSAOTENSOR                   13.312 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
   Max allocated memory, ATOMTYPEITEM                 337.584 kB
-  Max allocated memory, ATOMITEM                       2.560 kB
+  Max allocated memory, ATOMITEM                       3.264 kB
   Max allocated memory, LSMATRIX                      11.520 kB
   Max allocated memory, OverlapT                     100.352 kB
   Max allocated memory, linkshell                      0.660 kB
@@ -777,8 +771,8 @@ Max no. of matrices allocated in Level 3:         56
   Max allocated memory, integralitem                   1.280 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, Overlap                        4.308 MB
-  Max allocated memory, ODitem                         3.008 kB
-  Max allocated memory, LStensor                     127.069 kB
+  Max allocated memory, ODitem                         2.048 kB
+  Max allocated memory, LStensor                      64.215 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
@@ -796,21 +790,21 @@ Max no. of matrices allocated in Level 3:         56
    L1 mat_assign              19            0.0000            0.0000
    L1 mat_copy                 8            0.0000            0.0000
    L1 mat_mul                 21            0.0000            0.0000
-   L1 mat_add                 23            0.0000            0.0000
+   L1 mat_add                 23            0.0010            0.0000
    L1 mat_daxpy               43            0.0000            0.0000
    L1 mat_dotproduct          45            0.0000            0.0000
    L1 mat_sqnorm2             40            0.0000            0.0000
    L1 mat_zero                18            0.0000            0.0000
       ==============================================================
-   L1 TOTAL MAT                             0.0000            0.0000
+   L1 TOTAL MAT                             0.0010            0.0000
       ==============================================================
-   L1     II_get_overlap       2            0.0020            0.0030
-   L1     II_get_kinetic       2            0.0020            0.0020
-   L1   II_get_nucel_mat       2            0.0050            0.0030
-   L1 II_GET_EXCHANGE_MA       7            0.1350            0.1370
-   L1 II_get_coulomb_mat       7            0.0910            0.0890
+   L1     II_get_overlap       2            0.0030            0.0030
+   L1     II_get_kinetic       2            0.0040            0.0020
+   L1   II_get_nucel_mat       2            0.0030            0.0040
+   L1 II_GET_EXCHANGE_MA       7            0.1280            0.1270
+   L1 II_get_coulomb_mat       7            0.0900            0.0900
       ==============================================================
-   L1 TOTAL INTEGRAL                        0.2350            0.2340
+   L1 TOTAL INTEGRAL                        0.2280            0.2260
       ==============================================================
       ===============================================================
       Overall Timings for the Matrix Operations and Integral routines
@@ -819,39 +813,39 @@ Max no. of matrices allocated in Level 3:         56
       ===============================================================
    L3 mat_set_from_full        7            0.0000            0.0000
    L3 mat_to_full              7            0.0000            0.0000
-   L3 mat_trans              267            0.0020            0.0020
-   L3 mat_assign             292            0.0000            0.0020
+   L3 mat_trans              267            0.0010            0.0020
+   L3 mat_assign             292            0.0000            0.0000
    L3 mat_copy                14            0.0000            0.0000
-   L3 mat_mul                584            0.0020            0.0000
-   L3 mat_add               1022            0.0020            0.0010
-   L3 mat_daxpy             3228            0.0030            0.0050
-   L3 mat_dotproduct        1307            0.0020            0.0000
-   L3 mat_sqnorm2            682            0.0020            0.0010
-   L3 mat_diag_f               2            0.0010            0.0000
-   L3 mat_scal               328            0.0040            0.0010
-   L3 mat_zero               601            0.0010            0.0010
+   L3 mat_mul                584            0.0010            0.0000
+   L3 mat_add               1022            0.0010            0.0050
+   L3 mat_daxpy             3228            0.0040            0.0010
+   L3 mat_dotproduct        1307            0.0030            0.0020
+   L3 mat_sqnorm2            679            0.0010            0.0000
+   L3 mat_diag_f               2            0.0010            0.0010
+   L3 mat_scal               328            0.0010            0.0000
+   L3 mat_zero               601            0.0000            0.0020
    L3 mat_density_from_o       1            0.0000            0.0000
    L3 mat_scal_dia_vec         2            0.0000            0.0000
    L3 mat_dsyev                1            0.0000            0.0000
-   L3 mat_identity             9            0.0000            0.0010
-   L3 mat_write_to_disk       10            0.0000            0.0000
+   L3 mat_identity             9            0.0000            0.0000
+   L3 mat_write_to_disk       10            0.0000            0.0010
       ==============================================================
-   L3 TOTAL MAT                             0.0190            0.0130
+   L3 TOTAL MAT                             0.0130            0.0140
       ==============================================================
-   L3     II_get_overlap       1            0.0020            0.0010
-   L3     II_get_kinetic       2            0.0030            0.0040
-   L3   II_get_nucel_mat       2            0.0140            0.0150
-   L3 II_precalc_ScreenM       1            0.0540            0.0540
+   L3     II_get_overlap       1            0.0000            0.0020
+   L3     II_get_kinetic       2            0.0020            0.0040
+   L3   II_get_nucel_mat       2            0.0180            0.0160
+   L3 II_precalc_ScreenM       1            0.0520            0.0510
    L3      II_get_nucpot       2            0.0000            0.0000
-   L3 II_GET_EXCHANGE_MA       9            0.6690            0.6690
-   L3 II_get_coulomb_mat       9            0.5250            0.5300
-   L3           homolumo       1            0.7080            0.7110
+   L3 II_GET_EXCHANGE_MA       9            0.6480            0.6480
+   L3 II_get_coulomb_mat       9            0.5190            0.5240
+   L3           homolumo       1            0.6090            0.6100
       ==============================================================
-   L3 TOTAL INTEGRAL                        2.0110            2.0210
+   L3 TOTAL INTEGRAL                        1.8840            1.8910
       ==============================================================
- >>>  CPU Time used in LSDALTON is   2.38 seconds
- >>> wall Time used in LSDALTON is   2.39 seconds
+ >>>  CPU Time used in LSDALTON is   2.30 seconds
+ >>> wall Time used in LSDALTON is   2.31 seconds
 
 End simulation
-     Date and time (Linux)  : Thu Dec 11 13:56:55 2014
+     Date and time (Linux)  : Thu Mar  5 21:56:25 2015
      Host name              : localhost.localdomain                   

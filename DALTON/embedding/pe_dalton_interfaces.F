@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -254,6 +254,45 @@
 
 !-----------------------------------------------------------------------------
 
+      function pe_ifc_docube()
+        use pe_variables, only: pe_cube
+        implicit none
+        integer :: pe_ifc_docube
+        call qenter('pe_ifc_docube')
+        if (pe_cube) then
+            pe_ifc_docube = 1
+        else
+            pe_ifc_docube = 0
+        end if
+        call qexit('pe_ifc_docube')
+      end function pe_ifc_docube
+
+!-----------------------------------------------------------------------------
+
+      subroutine pe_ifc_cube(denmats, idx_state)
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: pe_cube
+        implicit none
+#include "inforb.h"
+        real*8, dimension(nnbasx), intent(in) :: denmats
+        integer, intent(in) :: idx_state
+        call qenter('pe_ifc_cube')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(8)
+#endif
+        if (pe_cube) then
+          call pe_master(runtype='cube',
+     &                   triang=.true.,
+     &                   ndim=nbast,
+     &                   nmats=1,
+     &                   denmats=denmats,
+     &                   idx = idx_state )
+        end if
+        call qexit('pe_ifc_cube')
+      end subroutine pe_ifc_cube
+
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_mepcalc_noqm()
         use polarizable_embedding, only: pe_master
         implicit none
@@ -320,6 +359,8 @@
             call pe_slave('mep')
         else if (runtype == 7) then
             call pe_slave('effdipole')
+        else if (runtype == 8) then
+            call pe_slave('cube')
         end if
         call qexit('pe_ifc_slave')
       end subroutine pe_ifc_slave

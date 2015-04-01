@@ -1,10 +1,10 @@
 
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -33,7 +33,7 @@ C  /* Deck her_pardrv */
      &                      WORK,LWORK,ITYPE,MAXDER,IATOM,NODV,
      &                      NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                      DINTSKP,RELCAL,GENCTR)
+     &                      DINTSKP,RELCALC,GENCTR)
 
 C
 #include "implicit.h"
@@ -45,7 +45,7 @@ Cef begin
 #include "incore.h"
 Cef end
 C
-      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL, rma_model_save
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCALC, rma_model_save
       LOGICAL   GENCTR
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), WORK(LWORK), HESSEE(*)
@@ -1491,7 +1491,7 @@ C
      &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
      &     JSTRS,NPRIM,NCONT,IORBS,
      &     ICEDIF,IFTHRS,WORK(KGABAO),WORK(KDMRAO),
-     &     WORK(KDMRSO),DINTSKP,RELCAL,GENCTR)
+     &     WORK(KDMRSO),DINTSKP,RELCALC,GENCTR)
 
 !------------------------
 !     free memory windows
@@ -1609,7 +1609,6 @@ C
 #include "parint.h"
 #include "r12int.h"
 #include "expopt.h"
-#include "pcmlog.h"
 C
 #include "cbisol.h"
 #include "incore.h"
@@ -1977,7 +1976,7 @@ C
      &        DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DONE,
      &        SOFOCK,RELCALC,GENCTR
-      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*),
+      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*), 
      & IODDHR(*), INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK), IJS(NTASK),
@@ -2449,7 +2448,7 @@ C
                CALL ADDGRD(GSOLNN)
             END IF
             IF (PCM) CALL ADDGRD(GSOLCV)
-            IF (PEQM) call ADDGRD(PEGRAD)
+            IF (PEQM) CALL ADDGRD(PEGRAD)
             CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP

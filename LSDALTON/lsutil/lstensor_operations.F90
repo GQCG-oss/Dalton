@@ -4546,6 +4546,12 @@ case(mtype_scalapack)
    call mem_dealloc(fullMAT)
 case(mtype_csr)
    call Build_single_csr_mat_from_lst(TENSOR,MAT)
+case(mtype_pdmm)
+   call mem_alloc(fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),1)
+   call Build_full_5dim_from_lstensor(TENSOR,fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),1)
+   IF(TENSOR%nbast(2) .EQ. 1) call mat_set_from_full(fullmat,1E0_realk, MAT)
+   IF(TENSOR%nbast(3) .EQ. 1) call mat_set_from_full(fullmat,1E0_realk, MAT)
+   call mem_dealloc(fullMAT)
 case default
    stop "BUILD_SINGLEMAT_FROM_LST not implemented for this type of matrix"
 end select
@@ -5078,6 +5084,22 @@ case(mtype_scalapack)
 !      call ls_output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(2),TENSOR%nbast(1),TENSOR%nbast(2),1,lupri)
    ENDIF
    call mem_dealloc(fullMAT)
+case(mtype_pdmm)
+   call mem_alloc(fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),TENSOR%ndim5)
+   call Build_full_5dim_from_lstensor(TENSOR,fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),TENSOR%ndim5)
+   IF(TENSOR%nbast(2) .EQ. 1) THEN
+      do I=1,TENSOR%ndim5
+         call mat_set_from_full(fullmat(:,1,:,1,I),1E0_realk, MAT(I))
+      enddo
+!      call ls_output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(3),TENSOR%nbast(1),TENSOR%nbast(3),1,lupri)
+   ENDIF
+   IF(TENSOR%nbast(3) .EQ. 1) THEN
+      do I=1,TENSOR%ndim5
+         call mat_set_from_full(fullmat(:,:,1,1,I),1E0_realk, MAT(I))
+      enddo
+!      call ls_output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(2),TENSOR%nbast(1),TENSOR%nbast(2),1,lupri)
+   ENDIF
+   call mem_dealloc(fullMAT)
 case(mtype_unres_dense)
    call Build_unres_matarray_from_lst(TENSOR,MAT)
 case(mtype_csr)
@@ -5208,6 +5230,8 @@ select case(matrix_type)
 case(mtype_dense)
    call Build_lst_from_dense_matarray(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,useAO1,useAO2,ODscreen,lupri)
 case(mtype_scalapack)
+   call Build_lst_from_matarray_fallback(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,useAO1,useAO2,lupri)
+case(mtype_pdmm)
    call Build_lst_from_matarray_fallback(TENSOR,MAT,AO1,AO2,nbast1,nbast2,nmat,useAO1,useAO2,lupri)
 case(mtype_unres_dense)
    call lsquit('BUILD_LST_FROM_MATARRAY not implemented for unres',-1)

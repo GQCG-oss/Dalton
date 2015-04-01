@@ -644,7 +644,6 @@ contains
 !          call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
 !       ENDIF
        call mem_alloc(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis)
-       call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc)
        call mem_alloc(MyMolecule%qqfock,MyMolecule%nunocc,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
@@ -669,6 +668,9 @@ contains
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
        call mem_alloc(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags)
+       if(DECinfo%use_abs_overlap)then
+          call mem_alloc(MyMolecule%ov_abs_overlap,MyMolecule%nocc,MyMolecule%nunocc)
+       endif
     end if
 
 
@@ -693,7 +695,6 @@ contains
 !       call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
 !    ENDIF
     call ls_mpibcast(MyMolecule%fock,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%qqfock,MyMolecule%nunocc,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -719,6 +720,9 @@ contains
     call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PairFOTlevel,MyMolecule%nfrags,MyMolecule%nfrags,&
          & master,MPI_COMM_LSDALTON)
+    if(DECinfo%use_abs_overlap)then
+       call ls_mpibcast(MyMolecule%ov_abs_overlap,MyMolecule%nocc,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
+    endif
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -784,6 +788,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%PNOset,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
     CALL ls_mpi_buffer(MyFragment%pairfrag,master)
+    CALL ls_mpi_buffer(MyFragment%isopt,master)
 
     ! Reals that are not pointers
     ! ---------------------------
@@ -793,7 +798,11 @@ contains
     call ls_mpi_buffer(MyFragment%EoccFOP,master)
     call ls_mpi_buffer(MyFragment%EvirtFOP,master)
     call ls_mpi_buffer(MyFragment%LagFOP,master)
+    call ls_mpi_buffer(MyFragment%Eocc_err,master)
+    call ls_mpi_buffer(MyFragment%Evir_err,master)
+    call ls_mpi_buffer(MyFragment%Elag_err,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
+    CALL ls_mpi_buffer(MyFragment%gpu_flops_slaves,master)
     call ls_mpi_buffer(MyFragment%slavetime_work,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%slavetime_comm,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%slavetime_idle,ndecmodels,master)
@@ -1164,10 +1173,17 @@ contains
     if(master)taddr=t2%addr_p_arr
     call ls_mpi_buffer(taddr,infpar%lg_nodtot,infpar%master)
     if(.not.master)then
-      call mem_alloc(xo,nb*no)
-      call mem_alloc(yv,nb*nv)
-      call mem_alloc(Gbi,nb*no)
-      call mem_alloc(Had,nv*nb)
+       if(mem_is_background_buf_init())then
+          call mem_pseudo_alloc(xo,i8*nb*no)
+          call mem_pseudo_alloc(yv,i8*nb*nv)
+          call mem_pseudo_alloc(Gbi,i8*nb*no)
+          call mem_pseudo_alloc(Had,i8*nv*nb)
+       else
+          call mem_alloc(xo,nb*no)
+          call mem_alloc(yv,nb*nv)
+          call mem_alloc(Gbi,nb*no)
+          call mem_alloc(Had,nv*nb)
+       endif
     endif
     call ls_mpi_buffer(xo,nb*no,infpar%master)
     call ls_mpi_buffer(yv,nb*nv,infpar%master)
@@ -1692,6 +1708,7 @@ contains
        call mem_alloc(jobs%nbasis,jobs%njobs)
        call mem_alloc(jobs%ntasks,jobs%njobs)
        call mem_alloc(jobs%flops,jobs%njobs)
+       call mem_alloc(jobs%gpu_flops,jobs%njobs)
        call mem_alloc(jobs%LMtime,jobs%njobs)
        call mem_alloc(jobs%workt,jobs%njobs)
        call mem_alloc(jobs%commt,jobs%njobs)
@@ -1711,6 +1728,7 @@ contains
     call ls_mpi_buffer(jobs%nbasis,jobs%njobs,master)
     call ls_mpi_buffer(jobs%ntasks,jobs%njobs,master)
     call ls_mpi_buffer(jobs%flops,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%gpu_flops,jobs%njobs,master)
     call ls_mpi_buffer(jobs%LMtime,jobs%njobs,master)
     call ls_mpi_buffer(jobs%workt,jobs%njobs,master)
     call ls_mpi_buffer(jobs%commt,jobs%njobs,master)
@@ -1732,8 +1750,9 @@ contains
   !> because the PDM memory allocation has to happen in the smaller groups now
   !> \author Kasper Kristensen, modified by Patrick Ettenhuber
   !> \date May 2012
-  subroutine dec_half_local_group
+  subroutine dec_half_local_group(print_)
     implicit none
+    logical, intent(in), optional :: print_
     integer(kind=ls_mpik) :: ngroups
     integer(kind=ls_mpik) :: groupdims(2)
 
@@ -1751,7 +1770,7 @@ contains
     ! Current values of infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm
     ! will be overwritten.
     ngroups=2
-    call divide_local_mpi_group(ngroups,groupdims)
+    call divide_local_mpi_group(ngroups,groupdims,print_=print_)
     call new_group_reset_persistent_array
 
   end subroutine dec_half_local_group
@@ -1925,6 +1944,7 @@ contains
     !> String to print describing job list
     character(*),intent(in) :: string
     real(realk) :: Gflops, avflop, minflop, maxflop,tmp,totflops,tottime_actual,localloss
+    real(realk) :: gpuGflops,totgpuflops
     real(realk) :: globalloss, tottime_ideal, slavetime, localuse
     integer :: i, minidx, maxidx,N
 
@@ -1946,22 +1966,24 @@ contains
     write(DECinfo%output,*) 'slotsiz: Number of slaves used for fragment incl. local master (slot size)'
     write(DECinfo%output,*) '#tasks : Number of integral tasks for fragment (nalpha*ngamma)'
     write(DECinfo%output,*) 'GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)'
+    write(DECinfo%output,*) 'GGFLOPS: Accumulated GPU GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'Time(s): Time (in seconds) used by local master (NOT local slaves)'
-    write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice): '
-    write(DECinfo%output,*) '           (Sum of effective work times for ALL MPI processes in slot)'
-    write(DECinfo%output,*) '         / (slotsiz * [Local master time] )'
+    write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice)'
+    write(DECinfo%output,*) '      Load1 = (Sum of working and communication times for ALL MPI processes in slot)'
+    write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
+    write(DECinfo%output,*) '      Load2 = (Sum of working times for ALL MPI processes in slot)'
+    write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Note: Load print is currently only implemented for MP2 calculations'
-    write(DECinfo%output,*) '      and not for atomic fragment optimizations.'
-    write(DECinfo%output,*) '      The Load given below is set to -1 for cases where it is not implemented'
+    write(DECinfo%output,*) 'Note: The Load given below is set to -1 for cases where it is not implemented'
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
-         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load1', 'Load2'
+    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,4X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
+         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'GGFLOPS', 'Time(s)', 'Load1', 'Load2'
 
     avflop         = 0.0E0_realk
     totflops       = 0.0E0_realk
+    totgpuflops    = 0.0E0_realk
     tottime_actual = 0.0E0_realk
     slavetime      = 0.0E0_realk
 
@@ -1970,7 +1992,6 @@ contains
     minidx         = 0
     maxidx         = 0
     N              = 0
-
 
     do i=1,jobs%njobs
        ! If nocc is zero, the job was not done and we do not print it
@@ -1983,16 +2004,18 @@ contains
 #else
        Gflops=-1.0_realk
 #endif
+       gpuGflops = jobs%gpu_flops(i)*1.0e-9_realk
        ! Update total number of flops
        totflops = totflops + Gflops
+       totgpuflops = totgpuflops + gpuGflops
        ! Update total time used by ALL nodes (including dead time by local slaves)
        tottime_actual = tottime_actual + jobs%LMtime(i)*jobs%nslaves(i)
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
        if(.not. jobs%dofragopt(i)) then
-          write(DECinfo%output,'(6i8,3X,4g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), &
+          write(DECinfo%output,'(6i8,3X,5g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
+               & jobs%nslaves(i), jobs%ntasks(i), Gflops, gpuGflops, jobs%LMtime(i), &
                &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
                &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
        end if
@@ -2029,14 +2052,15 @@ contains
        ! Average % global loss (idle time at the end when some slots wait for others)
        globalloss = ( 1 - (tottime_actual / tottime_ideal) )*100.0_realk
 
-       ! Average flops per node per sec
-       avflop = totflops/tottime_actual
        write(DECinfo%output,*) '-----------------------------------------------------------------------------'
        write(DECinfo%output,'(1X,a,i8)')    'Number of jobs done     = ', N
        write(DECinfo%output,'(1X,a,g12.3)') 'Time-to-solution (s)    = ', mastertime
        write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL time(s) all nodes = ', tottime_actual
 #ifdef VAR_PAPI
-       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL Gflops  = ', totflops
+       ! Average flops per node per sec
+       avflop = totflops/tottime_actual
+       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL Gflops     = ', totflops
+       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL GPU Gflops = ', totgpuflops
        write(DECinfo%output,'(1X,a,g12.3)') 'AVERAGE Gflops/s per MPI process= ', avflop
        write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MINIMUM Gflops/s per MPI process = ', &
             & minflop, ' for job ', minidx
@@ -2262,6 +2286,7 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
+    call ls_mpi_buffer(DECitem%DECNP,Master)
     call ls_mpi_buffer(DECitem%frozencore,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)
@@ -2295,7 +2320,7 @@ contains
     call ls_mpi_buffer(DECitem%abc_tile_size,Master)
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
-    call ls_mpi_buffer(DECitem%CCDEBUG,Master)
+    call ls_mpi_buffer(DECitem%acc_sync,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
@@ -2314,8 +2339,10 @@ contains
     call ls_mpi_buffer(DECitem%PNOtriangular,Master)
     call ls_mpi_buffer(DECitem%pno_S_on_the_fly,Master)
     call ls_mpi_buffer(DECitem%CCSDmultipliers,Master)
+    call ls_mpi_buffer(DECitem%simple_multipler_residual,Master)
     call ls_mpi_buffer(DECitem%CRASHCALC,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
+    call ls_mpi_buffer(DECitem%cc_driver_use_bg_buffer,Master)
     call ls_mpi_buffer(DECitem%cc_solver_tile_mem,Master)
     call ls_mpi_buffer(DECitem%en_mem,Master)
     call ls_mpi_buffer(DECitem%ccsolver_overwrite_prec,Master)
@@ -2329,13 +2356,23 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
+    call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
+    call ls_mpi_buffer(DECitem%MPMP2,Master)
+    !RIMP2 settings
     call ls_mpi_buffer(DECitem%AuxAtomicExtent,Master)
+    call ls_mpi_buffer(DECitem%NAF,Master)
+    call ls_mpi_buffer(DECitem%NAFthreshold,Master)
+    call ls_mpi_buffer(DECitem%RIMPSubGroupSize,Master)
+    call ls_mpi_buffer(DECitem%RIMP2PDMTENSOR,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2ForcePDMCalpha,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_tiling,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
+    call ls_mpi_buffer(DECitem%rimpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
     call ls_mpi_buffer(DECitem%ccsdAbatch,Master)
@@ -2356,6 +2393,7 @@ contains
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
@@ -2384,8 +2422,11 @@ contains
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%OnlyVirtPart,Master)
     call ls_mpi_buffer(DECitem%all_init_radius,Master)
+    call ls_mpi_buffer(DECitem%occ_init_radius,Master)
+    call ls_mpi_buffer(DECitem%vir_init_radius,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
+    call ls_mpi_buffer(DECitem%use_abs_overlap,Master)
     call ls_mpi_buffer(DECitem%pairestimateignore,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
@@ -2399,6 +2440,7 @@ contains
     call ls_mpi_buffer(DECitem%FOTscaling,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%density,Master)
+    call ls_mpi_buffer(DECitem%unrelaxed,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner_in_b,Master)
@@ -2411,6 +2453,7 @@ contains
     call ls_mpi_buffer(DECitem%ncalc,nFOTs,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
+    call ls_mpi_buffer(DECitem%no_pairs,Master)
     call ls_mpi_buffer(DECitem%only_pair_frag_jobs,Master)
     call ls_mpi_buffer(DECitem%only_n_frag_jobs,Master)
     if(DECitem%only_n_frag_jobs>0)then

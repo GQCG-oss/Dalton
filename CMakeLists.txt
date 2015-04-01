@@ -65,6 +65,7 @@ option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_ICHOR          "Enable ichor integrals"                           ON)
+option(ENABLE_QMMM_CUDA      "Enable QMMM CUDA library"                         OFF) # radovan: untested
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
 option(ENABLE_QMATRIX        "Enable QMatrix library"                           OFF)
 option(ENABLE_OPENRSP        "Enable OPENRSP library (need QMatrix library)"    OFF)
@@ -77,6 +78,7 @@ option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
 
 # Gen1Int interface, OpenRSP and TDRSP needs QMatrix library
+# radovan: why is this commented out?
 #if(ENABLE_GEN1INT OR ENABLE_OPENRSP OR ENABLE_TDRSP)
 #    set(ENABLE_QMATRIX ON)
 #endif()

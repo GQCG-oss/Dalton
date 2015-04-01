@@ -31,7 +31,10 @@
 //#define __SSE2__
 //#define __AVX__
 
-#ifdef __AVX__
+//#ifdef __AVX__
+// radovan: deactivated this section
+//          this crashes with GNU compilers due to invalid mem access
+#ifdef __AVX__UNDEFINED
 
 #define DOUBLES_PER_AVX 4
 

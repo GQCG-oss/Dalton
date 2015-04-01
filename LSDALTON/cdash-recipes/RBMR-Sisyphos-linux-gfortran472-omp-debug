@@ -3,9 +3,9 @@ SCRATCH_DIR=/tmp/sisyphos/DaltonGfortranDebugRBMR
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
-git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
-git checkout Dalton2014
+git checkout Dalton2015
 export OMP_NUM_THREADS=6
 #export MATH_ROOT=
 export DALTON_TMPDIR=$SCRATCH_DIR
@@ -23,6 +23,6 @@ if [[ -e  DALTON-Source.tar.gz ]]; then
  cd DALTON-Source
 ./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --blas=builtin --lapack=builtin -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-debug" build
 cd build
-ctest --track ReleaseBranch2014MakeRelease -D Nightly -L linsca
+ctest --track ReleaseBranch2015MakeRelease -D Nightly -L linsca
 fi
 exit 0

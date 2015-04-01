@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2211,11 +2211,17 @@ C  /* Deck sir_geninp */
       SUBROUTINE SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
 C
 C 1-Oct 1987 Hans Agren
-#ifdef MOD_XCINT
-      use xcint_integrator
-      use eri_contractions
-#endif
 C
+#ifdef BUILD_OPENRSP
+      use eri_contractions, only: set_eri_contractions_xfac
+#endif
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_set_functional,
+     &                                  xcint_activate,
+     &                                  xcint_is_active,
+     &                                  xcint_set_grid
+#endif
+
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2223,9 +2229,8 @@ C
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
-#ifdef MOD_XCINT
-      real(8) :: hfx_out, mu_out, beta_out
-#endif
+      character(80) :: functional_line
+      logical functional_line_read
 C
 C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
@@ -2253,10 +2258,12 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',
+     *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
      *            '.SRHYBR','.COPFAC','.STEX  ','xXXXXXX','xXXXXXX'/
 C
+
+      functional_line_read = .false.
 C
 C
       SR_FUNCS = ' ERROR: .SRFUN was not specified in input.'
@@ -2468,7 +2475,8 @@ C    Default: specified by integral program
   115 CONTINUE
         READ (LUCMD,*) (NBAS(I), I = 1,NSYM)
       GO TO 100
-C
+
+
 C *** Option 17 >DFT   <  Restricted Kohn-Sham DFT
   117 CONTINUE
          IF (DOSCF) THEN
@@ -2501,23 +2509,15 @@ C        ... no P-supermatrix for DFT
             GO TO 1101
          END IF
          WDFTMP = 0.0D0
-         CALL DFTsetFunc(TITLIN,INPERR)
-#ifdef MOD_XCFUN
-         CALL xcfun_select(TITLIN)
-#endif
-#ifdef MOD_XCINT
-         call parse_functional(titlin, hfx_out, mu_out, beta_out)
-         open(42,
-     &        file   = 'xc_functional',
-     &        status = 'unknown',
-     &        form   = 'formatted',
-     &        access = 'sequential')
-         rewind(42)
-         write(42, *) titlin
-         close(42, status = 'keep')
 
-         call set_eri_contractions_xfac(hfx_out)
-#endif
+         ! we save the functional line
+         ! we will parse it later
+         ! at this moment we do not know the integrator yet
+         do i = 1, 80
+            functional_line(i:i) = titlin(i:i)
+         end do
+         functional_line_read = .true.
+
          IF (WDFTMP.NE.0.0D0) THEN
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.
@@ -2555,9 +2555,39 @@ C *** Option 22: .GASCI
         DOLUCITA = .TRUE.
         NUMRUN   = NUMRUN + 1
       GO TO 100
-C *** Options 23-25 not used
-  123 CONTINUE
-  124 CONTINUE
+
+
+      ! .XCINT
+  123 continue
+#ifdef ENABLE_XCINT
+      call xcint_activate()
+#else
+      call quit('.XCINT is not available in this version')
+#endif
+      go to 100
+
+
+      ! .NUMGRID
+  124 continue
+#ifdef ENABLE_XCINT
+      ! radial precision threshold
+      d_radint = 0
+      read(lucmd, *) d_radint
+      ! minimum number of angular points
+      i_angmin = 0
+      read(lucmd, *) i_angmin
+      ! regular number of angular points
+      i_angint = 0
+      read(lucmd, *) i_angint
+      call xcint_set_grid(d_radint,
+     &                    i_angmin,
+     &                    i_angint)
+#else
+      call quit('.NUMGRID is not available in this version')
+#endif
+      go to 100
+
+
   125 CONTINUE
       GO TO 100
 C
@@ -2630,15 +2660,62 @@ C
       GO TO 100
 C
  8000 CONTINUE
-C     if long-range WFT short-range DFT, process functional keywords :
+
+
+!     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
 #else
       IF (ADDSRI) CALL QUIT('srDFT not implemented in this version')
 #endif
-C
-      RETURN
+
+
+      ! here we parse the functional
+      if (functional_line_read) then
+
+#ifdef ENABLE_XCINT
+         if (xcint_is_active()) then
+            this_mu   = 0.0d0
+            this_beta = 0.0d0
+            call xcint_set_functional(titlin,
+     &                                hfxfac, this_mu, this_beta)
+            call dftsetcam(this_mu, this_beta)
+         else
+#endif
+            call dftsetfunc(functional_line, inperr)
+#ifdef MOD_XCFUN
+            call xcfun_select(functional_line)
+#endif
+#ifdef ENABLE_XCINT
+         end if
+#endif
+
+#ifdef BUILD_OPENRSP
+#ifdef ENABLE_XCINT
+         ! we pass hfxfac to the 2-el integral code
+         call set_eri_contractions_xfac(hfxfac)
+
+         ! sanity check
+         if (.not. xcint_is_active()) then
+            print *, 'You run OpenRSP DFT without .XCINT'
+            print *, 'Either add .XCINT or deactivate'
+            print *, 'this warning'
+            stop 1
+         end if
+#else
+         print *, 'You run OpenRSP DFT without XCint code compiled'
+         print *, 'This is probably not what you want'
+         stop 1
+#endif /* ENABLE_XCINT */
+#endif /* BUILD_OPENRSP */
+      end if
+
+
       END
+
+
+
+
 C  /* Deck haminp */
       SUBROUTINE HAMINP(WORD,INPERR,ALLOPT)
 C

@@ -1,0 +1,8 @@
+ATOMBASIS
+HF on gold surface
+------------------------
+AtomTypes=2 NoSymmetry Angstroms
+        9.0   1    Basis=cc-pVDZ
+F            0.00000    0.000000     2.500000
+        1.0   1    Basis=cc-pVDZ
+H            0.00000    0.000000     3.600000

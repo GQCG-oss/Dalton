@@ -4,7 +4,6 @@
 module rpa_module
 
   use precision
-  use ptr_assoc_module!,only:ass_D4to1,ass_D2to1,ass_D1to3
   use lstiming!, only: lstimer
   use typedeftype!, only: lsitem,lssetting
   use matrix_module!, only:matrix

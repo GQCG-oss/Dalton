@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -965,9 +965,10 @@ C
 #ifdef MOD_CGTO_DIFF_ERI
       use eri_basis_loops
 #endif
-#ifdef MOD_XCINT
-      use xcint_integrator, only: xc_integrate_worker
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_integrate_worker
 #endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -976,6 +977,7 @@ C infpar.h: MASTER,MYNUM
 #include "infpar.h"
 C iprtyp.h: define parallel calculation types
 #include "iprtyp.h"
+#include "mpif.h"
 
       real(8), allocatable  :: work(:)
       integer(4), parameter :: TEN_4 = 10
@@ -1142,10 +1144,9 @@ C added by Bin Gao, May 12, 2012
             CALL unopt_geodiff_loop_worker(LUPRI,IPRINT)
 #endif
 
-#ifdef MOD_XCINT
-         ! XCint: XC integration, added by R. Bast
+#ifdef ENABLE_XCINT
          else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
-            call xc_integrate_worker()
+            call xcint_integrate_worker(MPI_COMM_WORLD)
 #endif
 
          ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN

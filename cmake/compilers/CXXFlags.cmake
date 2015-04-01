@@ -1,10 +1,6 @@
-if (NOT DEFINED DEFAULT_CXX_FLAGS_SET)
-
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    set(CMAKE_CXX_FLAGS         "-ffloat-store -fno-rtti -fno-exceptions")
-    if(DEVELOPMENT_CODE)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-    else()
+    set(CMAKE_CXX_FLAGS         "-g -Wall -fno-rtti -fno-exceptions")
+    if(NOT DEVELOPMENT_CODE)
         # suppress warnings in exported code
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
     endif()
@@ -97,4 +93,3 @@ if(DEFINED EXTRA_CXX_FLAGS)
 endif()
 
 save_compiler_flags(CXX)
-endif ()

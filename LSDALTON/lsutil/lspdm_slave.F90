@@ -123,6 +123,34 @@ subroutine pdm_tensor_slave(comm)
       call tensor_add_par(REAL1,A,REAL2,B,intarr1)
 
       call mem_dealloc(intarr1)
+
+   CASE(JOB_DMUL_PAR)
+      INT1 = A%mode
+      call mem_alloc(intarr1,INT1)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(intarr1,INT1,infpar%master)
+      call ls_mpi_buffer(REAL1,infpar%master)
+      call ls_mpi_buffer(REAL2,infpar%master)
+      call ls_mpi_buffer(INT2,infpar%master)
+      call mem_alloc(realar1,INT2)
+      call ls_mpi_buffer(realar1,INT2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
+
+      call tensor_dmul_par(REAL1,A,REAL2,realar1,B,intarr1)
+
+      call mem_dealloc(intarr1)
+      call mem_dealloc(realar1)
+
+   CASE(JOB_HMUL_PAR)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(REAL1,infpar%master)
+      call ls_mpi_buffer(REAL2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
+      call tensor_hmul_par(REAL1,A,B,REAL2,C)
    CASE(JOB_CP_ARR)
       INT1 = A%mode
       call mem_alloc(intarr1,INT1)
@@ -270,6 +298,48 @@ subroutine pdm_tensor_slave(comm)
       call mem_dealloc(intarr1)
       call tensor_free(AUX)
 
+   CASE(JOB_TENSOR_EXTRACT_VDECNP)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(INT1,infpar%master)
+      call mem_alloc(intarr1,INT1)
+      call ls_mpi_buffer(intarr1,INT1,infpar%master)
+      call ls_mpi_buffer(INT2,infpar%master)
+      call mem_alloc(intarr2,INT2)
+      call ls_mpi_buffer(intarr2,INT2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      
+      call tensor_init(AUX,intarr2,INT2)
+
+      call mem_dealloc(intarr2)
+
+      call tensor_zero(AUX)
+
+      call lspdm_extract_decnp_indices_virt(AUX,A,INT1,intarr1)
+
+      call mem_dealloc(intarr1)
+      call tensor_free(AUX)
+
+   CASE(JOB_TENSOR_EXTRACT_ODECNP)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(INT1,infpar%master)
+      call mem_alloc(intarr1,INT1)
+      call ls_mpi_buffer(intarr1,INT1,infpar%master)
+      call ls_mpi_buffer(INT2,infpar%master)
+      call mem_alloc(intarr2,INT2)
+      call ls_mpi_buffer(intarr2,INT2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      
+      call tensor_init(AUX,intarr2,INT2)
+
+      call mem_dealloc(intarr2)
+
+      call tensor_zero(AUX)
+
+      call lspdm_extract_decnp_indices_occ(AUX,A,INT1,intarr1)
+
+      call mem_dealloc(intarr1)
+      call tensor_free(AUX)
+
    CASE(JOB_GET_COMBINEDT1T2_1)
 
       call lspdm_get_combined_SingleDouble_amplitudes(A,B,C)
@@ -293,6 +363,8 @@ subroutine pdm_tensor_slave(comm)
       call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
       call ls_mpibcast(LOG1,infpar%master,infpar%lg_comm)
       call lspdm_get_starting_guess(A,B,C,D,INT1,LOG1)
+   CASE(JOB_tensor_rand)
+      call tensor_rand_tiled_dist(A)
 
    CASE DEFAULT
         call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)

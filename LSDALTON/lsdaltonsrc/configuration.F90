@@ -9,7 +9,8 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
-use tensor_interface_module, only: tensor_set_dil_backend_true, tensor_set_debug_mode_true
+use tensor_interface_module, only: tensor_set_dil_backend_true, &
+   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -38,7 +39,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
-     & check_cc_input
+     & check_cc_input, check_dec_input
 use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
@@ -152,6 +153,7 @@ implicit none
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
   config%InteractionEnergy = .false.
+  config%access_stream = .false.
   config%SameSubSystems = .false.
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
@@ -172,6 +174,7 @@ implicit none
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
+  print*,'config_set_default_config:',infpar%inputBLOCKSIZE
 #endif
 end subroutine config_set_default_config
 
@@ -503,6 +506,7 @@ DO
                config%skipscfloop =  .TRUE.
             CASE('.RESTART');    config%diag%CFG_restart =  .TRUE.
             CASE('.CRASHCALC');    config%opt%crashcalc =  .TRUE.
+            CASE('.TESTABSVAL');    config%decomp%debugAbsOverlap=.true.
             CASE('.PURIFYRESTARTDENSITY'); config%diag%CFG_purifyrestart =  .TRUE.
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
@@ -566,6 +570,9 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
+            CASE('.DENSELEVEL2');
+               !Use Dense Matrix type in level 2 of Trilevel
+               config%opt%DENSELEVEL2=.TRUE.
             CASE('.MWPURIFYATOMSTART');               
                !Perform McWeeny purification on the non idempotent Atoms Density
                config%opt%MWPURIFYATOMSTART=.TRUE.
@@ -631,6 +638,8 @@ DO
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
+      config%integral%PreCalcDFscreening =  config%doRIMP2
+      config%integral%PreCalcF12screening =  config%doF12
    END IF DECInput
 
    ! Input for full molecular CC calculation
@@ -639,6 +648,8 @@ DO
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
+      config%integral%PreCalcDFscreening =  config%doRIMP2
+      config%integral%PreCalcF12screening =  config%doF12
    END IF CCinput
 
 
@@ -1025,7 +1036,7 @@ subroutine DEC_meaningful_input(config)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
-
+  logical :: NotAcceptedModel
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
@@ -1069,6 +1080,15 @@ subroutine DEC_meaningful_input(config)
      GeoOptCheck: if(config%optinfo%optimize .or. config%dynamics%do_dynamics) then
         ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
+
+        ! Modify DECinfo to calculate first order properties (gradient) for MP2
+        DECinfo%gradient=.true.
+        DECinfo%first_order=.true.
+        if (DECinfo%ccmodel /= MODEL_MP2) then
+           write(DECinfo%output,*) "WARNING: DEC Geometry optimization only available for MP2"
+           write(DECinfo%output,*) "WARNING: We are switching to DEC-MP2  !!!"
+           DECinfo%ccmodel = MODEL_MP2
+        end if 
 
         ! DEC restart for geometry optimizations not implemented
         if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
@@ -1114,13 +1134,17 @@ subroutine DEC_meaningful_input(config)
         endif
         ! For the release we only include DEC-MP2
 #ifndef MOD_UNRELEASED
-        if(DECinfo%ccmodel/=MODEL_MP2 .and. (.not. DECinfo%full_molecular_cc) ) then
+        NotAcceptedModel = DECinfo%ccmodel/=MODEL_MP2 .AND. DECinfo%ccmodel/=MODEL_RIMP2
+        if(NotAcceptedModel .and. (.not. DECinfo%full_molecular_cc) ) then
            print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
            print *, 'using the **CC section rather than the **DEC section.'
-           call lsquit('DEC is currently only available for the MP2 model!',-1)
+           call lsquit('DEC is currently only available for the MP2 and RI-MP2 model!',-1)
         end if
 #endif
      end if OrbLocCheck
+
+     ! Check DEC input internally
+     call check_dec_input()
 
   end if DECcalculation
 
@@ -1229,18 +1253,42 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            !Calculated the Interaction energy 
            !using Counter Poise Correction
            config%InteractionEnergy = .true.
+        CASE('.ACCESS_STREAM')
+           ! Use stream access on all files open with lsopen
+           config%access_stream = .true.
+           access_stream = .true.
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
         CASE('.SUBSYSTEMDENSITY')
            config%SubSystemDensity = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
+        CASE('.PDMM')
+#ifdef VAR_MPI
+           config%opt%cfg_prefer_PDMM = .true.
+           !Set tensor synchronization to always, TODO: see if this can be optimized
+           call tensor_set_always_sync_true(.true.)
+           !Set the background buffer on, this will use additional memory
+           call lspdm_init_global_buffer(.true.)
+#endif
+        CASE('.PDMMBLOCKSIZE');  
+#ifdef VAR_MPI
+           print*,'PDMMBLOCKSIZE CHOSEN'
+           READ(LUCMD,*) infpar%inputBLOCKSIZE
+#endif
+        CASE('.PDMMGROUPSIZE');
+#ifdef VAR_MPI
+           READ(LUCMD,*) infpar%PDMMGroupSize
+#endif
 #ifdef VAR_MPI
         CASE('.SCALAPACKGROUPSIZE');
            READ(LUCMD,*) infpar%ScalapackGroupSize
+        CASE('.SCALAPACKWORKAROUND');
+           infpar%ScalapackWORKAROUND=.TRUE.
         CASE('.SCALAPACKAUTOGROUPSIZE');
            infpar%ScalapackGroupSize = -1
         CASE('.SCALAPACKBLOCKSIZE');  
+           print*,'SCALAPACKBLOCKSIZE CHOSEN'
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
         CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
@@ -1289,15 +1337,9 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            end if
            select case(word)
            case('.DIL_BACKEND')
-              call tensor_set_dil_backend_true
-#ifdef VAR_MPI
-              call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,infpar%master,MPI_COMM_LSDALTON)
-#endif
+              call tensor_set_dil_backend_true(.true.)
            case('.DEBUG')
-              call tensor_set_debug_mode_true
-#ifdef VAR_MPI
-              call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,infpar%master,MPI_COMM_LSDALTON)
-#endif
+              call tensor_set_debug_mode_true(.true.)
            case default
               print *,"UNRECOGNIZED KEYWORD: ",word
               call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
@@ -1348,6 +1390,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.NOGCINTEGRALTRANSFORM'); INTEGRAL%NOGCINTEGRALTRANSFORM=.TRUE.
         CASE ('.NOBQBQ'); INTEGRAL%NOBQBQ=.TRUE.
         CASE ('.FRAGMENT'); READ(LUCMD,*) INTEGRAL%numAtomsPerFragment; INTEGRAL%FRAGMENT = .TRUE.
+        CASE ('.DUMP4CENTERERI');  INTEGRAL%DUMP4CENTERERI = .TRUE.
         CASE ('.2CENTERERI'); INTEGRAL%DO2CENTERERI = .TRUE.
         CASE ('.3CENTEROVL'); INTEGRAL%DO3CENTEROVL = .TRUE.
         CASE ('.4CENTERERI');  INTEGRAL%DO4CENTERERI = .TRUE.
@@ -1520,6 +1563,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         ! calculate and print full Exchange when doing ADMM exchange approx.
         ! > Debugging purpose only
            INTEGRAL%PRINT_EK3       = .TRUE.
+        CASE ('.ADMM-K-METRIC'); ! EXPERIMENTAL
+        ! calculate and print the residual error in the exchange metric
+        ! > Development purpose only
+           INTEGRAL%ADMMexchangeMetric = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -1539,6 +1586,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.PARI-J'); INTEGRAL%PARI_J=.TRUE.
         CASE ('.EASY-PARI'); INTEGRAL%SIMPLE_PARI=.TRUE.
         CASE ('.PARI-K');  INTEGRAL%PARI_K=.TRUE.
+        CASE ('.MOPARI-K'); INTEGRAL%MOPARI_K=.TRUE.
         CASE ('.DF-K');    INTEGRAL%DF_K=.TRUE.
         CASE ('.NR-PARI'); INTEGRAL%NON_ROBUST_PARI=.TRUE.
         CASE ('.PARI-UNCONSTRAINED');
@@ -3381,6 +3429,8 @@ config%av%ediis_history_size = config%av%diis_history_size
       config%diag%cfg_unres =.TRUE.
       config%opt%cfg_unres =.TRUE.
       config%soeoinp%cfg_unres = .true.
+      config%diag%nocca = config%decomp%NOCCA
+      config%diag%noccb = config%decomp%NOCCb
       !write(lupri,*) 'alpha_specified, beta_specified', alpha_specified, beta_specified
       if (config%decomp%alpha_specified .and. config%decomp%beta_specified) then
          if (config%decomp%nocca + config%decomp%noccb /= 2*config%decomp%nocc + config%decomp%nactive) then
@@ -3659,7 +3709,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       ENDIF
    endif
 
-   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K))then
+   if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K.OR.config%integral%mopari_K))then
       WRITE(config%LUPRI,'(/A)') 'The Pari keywords do not currently work with response'
       WRITE(config%LUPRI,'(/A)') 'Please remove the Pari keywords'
       CALL lsQUIT('The Pari keywords do not currently work with response',config%lupri)
@@ -3863,7 +3913,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('Compressed Sparse Row (CSR) not implemented for unrestricted!',config%lupri)
       else
 #ifdef VAR_MKL
-         CALL mat_select_type(mtype_csr,lupri)
+         CALL mat_select_type(mtype_csr,lupri)         
          call mat_inquire_cutoff(cutoff)
          write(config%lupri,*)
          write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d10.2)') cutoff
@@ -3904,6 +3954,27 @@ IF(nthreads_test.NE.1)THEN
 ENDIF
 #endif
 
+!PDMM sanity check:
+!==================
+
+if (config%opt%cfg_prefer_PDMM) then
+   if (matrix_type == mtype_unres_dense) then
+      call lsquit('PDMM not implemented for unrestricted!',config%lupri)
+   else
+#ifdef VAR_MPI
+      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+      WRITE(lupri,'(4X,A)')'with PDMM for memory distribution and parallelization.'
+      CALL mat_select_type(mtype_pdmm,lupri,nbast)      
+#else
+      !no VAR_MPI
+      WRITE(lupri,'(4X,A)')'This is a Standard Serial compilation.'
+      WRITE(lupri,'(4X,A)')'.PDMM requires compilation using MPI.'
+      print*,'This is a Standard Serial compilation.'
+      print*,'.PDMM requires compilation using MPI.'
+      CALL LSQUIT('PDMM requires MPI - recompile using MPI and the -DVAR_MPI flag',config%lupri)
+#endif
+   endif
+endif
 
 !SCALAPACK sanity check:
 !==================

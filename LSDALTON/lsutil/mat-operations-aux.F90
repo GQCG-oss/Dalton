@@ -27,6 +27,7 @@ MODULE matrix_operations_aux
 !   Use matrix_operations_symm_dense
    use matrix_operations_dense
    use matrix_operations_scalapack
+   use matrix_operations_pdmm
    use matrix_operations_csr
 !   Use matrix_operations_unres_symm_dense
    use matrix_op_unres_dense
@@ -1277,15 +1278,18 @@ subroutine mat_read_from_disk2(iunit,A)
          REAL(realk), INTENT(IN)  :: alpha, beta
          TYPE(Matrix), intent(inout):: c
          integer :: ak, bk, ci, cj
+         call time_mat_operations1
          select case(matrix_type)
          case(mtype_dense)
             call mat_dense_dmul(a,b,transb,alpha,beta,c)
          case(mtype_scalapack)
             call mat_scalapack_dmul(a,b,transb,alpha,beta,c)
+         case(mtype_pdmm)
+            call mat_pdmm_dmul(a,b,transb,alpha,beta,c)
          case default
               call lsquit("mat_dmul not implemented for this type of matrix",-1)
          end select
-
+         call time_mat_operations2(JOB_mat_dmul)
     end subroutine mat_dmul
 
     !> \brief Make Cij = alpha*Aij*Bij+beta*Cij (Hadamard product), where alpha is a realk and A,B,C are type(matrix)
@@ -1302,17 +1306,23 @@ subroutine mat_read_from_disk2(iunit,A)
     type(matrix),intent(in) :: A,B
     type(matrix),intent(inout) :: C
     integer :: i
+    call time_mat_operations1
  
     select case(matrix_type)
     case (mtype_dense)
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i) SHARED(A,B,C,alpha,beta)
        do i=1,A%nrow*A%ncol
           C%elms(i)= alpha*A%elms(i)*B%elms(i)+beta*C%elms(i)
        end do
+       !$OMP END PARALLEL DO
     case (mtype_scalapack)
       call mat_scalapack_hmul(alpha,A,B,beta,C)
+    case (mtype_pdmm)
+      call mat_pdmm_hmul(alpha,A,B,beta,C)
     case default
-      call lsquit("mat_hmul not implemented for this type of matrix",-1)
+       call lsquit("mat_hmul not implemented for this type of matrix",-1)
     end select
+    call time_mat_operations2(JOB_mat_hmul)
     end subroutine mat_hmul
 
     !> \brief Make Aij = Aij/(Bij -mu)
@@ -1330,21 +1340,25 @@ subroutine mat_read_from_disk2(iunit,A)
 
     real(realk) :: denom
     integer :: i
+    call time_mat_operations1
    
     if ((A%nrow.ne.B%nrow).or.(A%ncol.ne.B%ncol)) &
     &  call lsquit('Incompatible matrix dimensions in mat_hdiv',-1)
 
     select case(matrix_type)
     case (mtype_dense)
-      do i=1,A%nrow*A%ncol
-       denom = B%elms(i) - mu
-       if (denom.ne.0.0_realk) A%elms(i)= A%elms(i)/denom
-      enddo
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,denom) SHARED(A,B,mu)
+       do i=1,A%nrow*A%ncol
+          denom = B%elms(i) - mu
+          if (denom.ne.0.0E0_realk) A%elms(i)= A%elms(i)/denom
+       enddo
+       !$OMP END PARALLEL DO
     case (mtype_scalapack)
       call mat_scalapack_hdiv(A,B,mu)
     case default
       call lsquit('mat_hdiv not implemented for this type of matrix',-1)
     end select
+    call time_mat_operations2(JOB_mat_hdiv)
     end subroutine mat_hdiv
 
 
@@ -1356,21 +1370,31 @@ subroutine mat_read_from_disk2(iunit,A)
 !> \param y realk(:)
 !> \param A type(matrix)
   subroutine mat_dger(alpha,x,y,A)
-  implicit none
-  real(realk) :: alpha
-  type(matrix) :: A
-  real(realk) :: x(A%nrow),y(A%ncol)
+    implicit none
+    real(realk) :: alpha
+    type(matrix) :: A
+    real(realk) :: x(A%nrow),y(A%ncol)
+    real(realk),pointer :: Afull(:,:)
+    call time_mat_operations1
 
-   select case(matrix_type)
-   case(mtype_dense)
-      call dger(A%nrow,A%ncol,alpha,x,1,y,1,A%elms,A%nrow)
-   case(mtype_scalapack)
-      call mat_scalapack_dger(alpha,x,y,A)
-   case default
-      call lsquit("mat_dger not implemented for this type of matrix",-1)
+    select case(matrix_type)
+    case(mtype_dense)
+       call dger(A%nrow,A%ncol,alpha,x,1,y,1,A%elms,A%nrow)       
+!    case(mtype_scalapack)
+!       call mat_scalapack_dger(alpha,x,y,A)
+    case(mtype_pdmm)
+       call mat_pdmm_dger(alpha,x,y,A)
+    case default
+       !FALLBACK 
+       call mem_alloc(Afull,A%nrow,A%ncol)
+       call mat_to_full(A,1.0E0_realk,Afull)
+       call DGER(A%nrow,A%ncol,alpha,x,1,y,1,Afull,A%nrow)
+       call mat_set_from_full(Afull,1.0E0_realk,A)
+       call mem_dealloc(Afull)
+!       call lsquit("mat_dger not implemented for this type of matrix",-1)
    end select
-
-  end subroutine mat_dger
+   call time_mat_operations2(JOB_mat_dger)
+ end subroutine mat_dger
 
 
 !> \brief Make C = alpha*diag(x)*A*B+beta*C (diagonal matrix multiplied with Hadamard product). Diagonal matrix is represented by vector a realk vector.

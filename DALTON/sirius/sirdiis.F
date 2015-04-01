@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -87,6 +87,7 @@ C Copyright (c) 1993, 1997 Hans Joergen Aa. Jensen
 C
 C Driver for DIIS iterations in SIRIUS.
 C
+
 #include "implicit.h"
       DIMENSION CMO(*), WRK(*)
 C
@@ -111,9 +112,6 @@ Cholesky
 #include "ccdeco.h"
 #include "choscf.h"
 C
-C QM/NP/MM code
-#include "qmnpmm.h"
-C
       PARAMETER (NBLOC = 1)
       INTEGER LUBLOC(NBLOC)
       DATA LUBLOC / 21 /
@@ -135,23 +133,6 @@ C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
 
-
-      ! QM/NP/MM embedding
-      IF (QMNPMM) THEN
-         CALL GETDIM_RELMAT(IDIM,.TRUE.)
-         CALL MEMGET('REAL',KRELMAT,IDIM,WRK,KFREE,LFREE)
-         CALL COMP_RELMAT(WRK(KRELMAT),WRK(KFREE),LFREE)
-         CALL WRITE_RELMAT(WRK(KRELMAT))
-         IF (DOMMSUB.AND.DOMMPOL) THEN
-            CALL GETDIM_MMMAT(IDIM, .TRUE.)
-            CALL MEMGET('REAL',KMMRELMAT,IDIM,WRK,KFREE,LFREE)
-            CALL COMP_MMRELMAT(WRK(KMMRELMAT),WRK(KFREE),LFREE)
-         ELSE
-            KMMRELMAT = 1
-         END IF
-      ELSE
-         KRELMAT = 1
-      END IF
 C
 CHJMAERKE: define IPR_DIIS separately?
 C
@@ -290,7 +271,7 @@ C
       CALL DIIS_CTL(CMO,WRK(KCMO1),WRK(KGVEC),WRK(KBMAT),WRK(KH1AO),
      &            WRK(KFSAV),WRK(KEVSAV),WRK(KEGSAV),MXERRV,C2DIIS,
      &            WRK(KSMOAO),WRK(KDCAO),WRK(KFCAO),WRK(KDSAV),WRK(KDV),
-     &            WRK(KCVEC),WRK(KTNLM),WRK(KRELMAT),WRK(KMMRELMAT),
+     &            WRK(KCVEC),WRK(KTNLM),
      &            WRK,KFREE,LFREE, IPR_DIIS,ICONV)
 C
  9990 CALL MEMREL('SRDIIS',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -302,13 +283,9 @@ C
 C  /* Deck DIIS_CTL */
       SUBROUTINE DIIS_CTL(CMO,CMO1,GVEC,BMAT,H1AO,FAOSAV,EVCSAV,EGSAV,
      *                    MXERRV,C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,
-     *                    CVEC,TNLM,RCPMAT,RMMMAT,WRK,KFRSAV,LFRSAV,
+     *                    CVEC,TNLM,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
 
-!#define USE_XCINT
-#ifdef USE_XCINT
-      use xcint_integrator
-#endif
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
@@ -322,6 +299,15 @@ C
 C DFT modifications T.  Helgaker
 C
 C
+      use qmcmm, only: getdim_relmat, comp_relmat, write_relmat, 
+     &                 getdim_mmmat, comp_mmrelmat
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_integrate_rks_scf,
+     &                                  xcint_uses_own_grid,
+     &                                  xcint_is_active
+#endif
+      use qmcmm_fock, only: qmnpmm_fock
+
 #if defined (HAS_PCMSOLVER)
       use pcm_scf
       use pcmmod_cfg
@@ -333,7 +319,16 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
-      DIMENSION RCPMAT(*), RMMMAT(*)
+
+#ifdef ENABLE_XCINT
+      real(8)              :: xc_energy(1)
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: xc_mat(:)
+      real(8), allocatable :: buffer1(:)
+      real(8), allocatable :: buffer2(:)
+      real(8), allocatable :: xc_mat_tri(:)
+      logical              :: file_exists
+#endif
 
 #if defined (HAS_PCMSOLVER)
       real(8), allocatable :: density_ao(:), density_ao_symm(:)
@@ -390,7 +385,10 @@ C
 C------------------------
 #include "pcmdef.h"
 #include "pcm.h"
-C
+
+! QM/NP/MM code
+#include "qmnpmm.h"
+
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
       PARAMETER (THREVC = 0.01D0, THRINC = 1.0D-10, CNVFAC = 0.8D0)
@@ -400,6 +398,10 @@ C
       DIMENSION NISH_save(8), NCAN(8)
       CHARACTER*8 CMOLBL
       INTEGER :: PE_IFC_MEP
+
+      real(8), allocatable :: relay_matrix(:, :, :)
+      real(8), allocatable :: mm_relay_matrix(:)
+      real(8), allocatable :: qmcmm_sol(:)
 
 !#define EXPERIMENTAL_DMAT_RESTART
 #ifdef EXPERIMENTAL_DMAT_RESTART
@@ -450,7 +452,7 @@ C
 #else              
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM) THEN
 #endif
-C     this also includes the case of MMPCM
+C     this also includes the case of MMPCM   
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
      &      ' Iter      Total energy       Solvation energy    '//
@@ -884,40 +886,56 @@ C
                CALL DAXPY(N2BASX,-D1,DCAO(1+N2BASX),1,DCAO,1)
             END IF
 
-#ifdef USE_XCINT
-             allocate(dmat_ao(nbast*nbast))
-             allocate(fmat_ao(nbast*nbast))
-             allocate(fmat_ao_tri(nnbast))
-             dmat_ao     = 0.0d0
-             fmat_ao     = 0.0d0
-             fmat_ao_tri = 0.0d0
-             xc_energy   = 0.0d0
-             call daxpy(nbast*nbast, 0.5d0, dcao, 1,
-     &                  dmat_ao, 1)
-             call interface_ao_write()
-             call xc_integrate(
-     &                         xc_mat_dim=nbast,
-     &                         xc_nr_dmat=1,
-     &                         xc_dmat=dmat_ao,
-     &                         xc_nr_geo_pert=0,
-     &                         xc_nr_fld_pert=0,
-     &                         xc_energy=xc_energy,
-     &                         xc_fmat=fmat_ao
-     &                        )
-             emy = emy + xc_energy
-
-             call dgetsp(nbast, fmat_ao, fmat_ao_tri)
-             call daxpy(nnbast, 1.0d0, fmat_ao_tri, 1,
-     &                  faosav(1, indevc, 1), 1)
-
-             deallocate(dmat_ao)
-             deallocate(fmat_ao)
-             deallocate(fmat_ao_tri)
-#else
-            CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
-     &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
-     &                  WRK(KFREE),LFREE,IPR_DIIS)
-#endif /* USE_XCINT */
+#ifdef ENABLE_XCINT
+            if (xcint_is_active()) then
+               if (.not. xcint_uses_own_grid()) then
+                  ! ulgy hack to get dalton grid, we don't care about the integrated result
+                  inquire(file='num_grid', exist=file_exists)
+                  if (.not. file_exists) then
+                     allocate(buffer1(nbast*nbast))
+                     allocate(buffer2(nbast*nbast))
+                     dummy_energy = 0.0d0
+                     call dft_add_ks(onlyfc, dummy_energy, dcao, ndmat,
+     &                               buffer1, buffer2,
+     &                               wrk(kfree), lfree, ipr_diis)
+                     deallocate(buffer1)
+                     deallocate(buffer2)
+                  end if
+               end if
+               
+               allocate(dmat_ao(nbast*nbast))
+               allocate(xc_mat(nbast*nbast))
+               allocate(xc_mat_tri(nnbast))
+               
+               dmat_ao     = 0.0d0
+               xc_mat     = 0.0d0
+               xc_mat_tri = 0.0d0
+               xc_energy   = 0.0d0
+               xc_num_electrons = 0.0d0
+               call daxpy(nbast*nbast, 0.5d0, dcao, 1,
+     &                    dmat_ao, 1)
+               
+               call xcint_integrate_rks_scf(dmat_ao,
+     &                                xc_energy,
+     &                                xc_mat,
+     &                                xc_num_electrons)
+               emy = emy + xc_energy(1)
+               
+               call dgetsp(nbast, xc_mat, xc_mat_tri)
+               call daxpy(nnbast, 1.0d0, xc_mat_tri, 1,
+     &                    faosav(1, indevc, 1), 1)
+               
+               deallocate(dmat_ao)
+               deallocate(xc_mat)
+               deallocate(xc_mat_tri)
+            else
+#endif /* ENABLE_XCINT */
+               CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+     &                    FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
+     &                    WRK(KFREE),LFREE,IPR_DIIS)
+#ifdef ENABLE_XCINT
+            end if
+#endif
          END IF
 
 CAMT If calculated add the empirical dispersion energy correction
@@ -962,13 +980,30 @@ c        density
            END IF
 
            IF (QMNPMM) THEN
-             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
-             CALL DZERO(WRK(KFCSOL),NNBAST)
-             CALL QMNPMM_FOCK(DAOSAV(1,1),DAOSAV(1,2),RCPMAT,RMMMAT,
-     &                        WRK(KFCSOL),ESOLT,WRK(KFREE),LFREE)
-             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DIIS_CTL.QMNPMM',WRK,1,KFCSOL,KFREE,
-     &                   LFREE)
+
+             CALL GETDIM_RELMAT(IDIM,.TRUE.)
+             idim_side = idim**0.5
+             allocate(relay_matrix(idim_side, idim_side, 1))
+             CALL COMP_RELMAT(relay_matrix,WRK(KFREE),LFREE)
+             CALL WRITE_RELMAT(relay_matrix)
+
+             IF (DOMMSUB.AND.DOMMPOL) THEN
+                CALL GETDIM_MMMAT(IDIM, .TRUE.)
+                allocate(mm_relay_matrix(idim))
+                CALL COMP_MMRELMAT(mm_relay_matrix,WRK(KFREE),LFREE)
+             END IF
+
+             allocate(qmcmm_sol(nnbast))
+             qmcmm_sol = 0.0d0
+             CALL QMNPMM_FOCK(DAOSAV(1,1),DAOSAV(1,2),relay_matrix,
+     &                        mm_relay_matrix,
+     &                        qmcmm_sol,ESOLT,WRK(KFREE),LFREE)
+             CALL DAXPY(NNBAST,1.0d0,qmcmm_sol,1,FAOSAV(1,INDEVC,1),1)
+
+             deallocate(relay_matrix)
+             if (allocated(mm_relay_matrix)) deallocate(mm_relay_matrix)
+             deallocate(qmcmm_sol)
+
            END IF
 
            IF (FLAG(16)) THEN
@@ -1034,7 +1069,7 @@ C            Now the PCM part ...
 C
          IF (PEQM) THEN
 #if defined (BUILD_PELIB)
-           IF (PCM .OR. FLAG(16) .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
+           IF (FLAG(16) .OR. PCM .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
              CALL QUIT(
      &             'PEQM is not compatible with other embedding models')
            END IF

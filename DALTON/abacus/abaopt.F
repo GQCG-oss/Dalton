@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -531,7 +531,7 @@ C
             END IF
             IF (.NOT. CARTCO) CARTCO = .TRUE.
             IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
-            DO 474 I = 1, NFREEZ
+            DO I = 1, NFREEZ
                READ (LUCMD,*) NFRZ
                IF ((NFRZ .LE. 0) .OR. (NFRZ .GT. MXCENT)) THEN
                   WRITE(LUPRI,'(/A,I6,A/)')
@@ -547,8 +547,9 @@ C
                END IF
                IFREEZ(IFREEZ(0)) = NFRZ
                IF (NFRZ .GT. 0) PRJTRO = .FALSE.
- 474        CONTINUE
-            IF (IFREEZ(0) .GT. 0) PRJTRO = .FALSE. ! Do not project out translation-rotation if some coordinates are frozen.
+            END DO
+            ! Do not project out translation-rotation if some coordinates are frozen.
+            IF (IFREEZ(0) .GT. 0) PRJTRO = .FALSE.
             GOTO 100
  75         READ (LUCMD,*) ITRFRZ
             GOTO 100
@@ -1557,7 +1558,7 @@ C  /* Deck runopt */
 #include "cbinum.h"
       LOGICAL EXHER, EXSIR, EXABA, MINEND, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
-      CHARACTER TMPLIN*80, WRDRSP*7, WRDNMD*7
+      CHARACTER TMPLIN*80, WRDRSP*7
       DIMENSION EGRAD(MXCOOR), CSTEP(MXCOOR), SCLVEC(MXCOOR)
       DIMENSION GRDOLD(MXRCRD), GRDMAT(25,MXRCRD)
       DIMENSION STPMAT(25,MXRCRD), HESOLD(MXRCRD,MXRCRD)
@@ -2058,7 +2059,6 @@ C
      &           WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
      &           ACTIVE,EMOD,VECMOD)
          END IF
-         GEINFO(ITRNMR,3) = INDTOT*1.0D0
          GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
          CALL PRIALL(CSTEP,WORK(KTEMP1))
@@ -2405,7 +2405,7 @@ C
       IF (IPRINT .GE. 3 .OR. INDTOT .NE. INDHES(0)) THEN
          DO, I = 0, MAXREP
             IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I2,A,I8)')
-     &                 ' Hessian index (irrep',I,')        :', INDHES(I)
+     &           ' Hessian index (irrep',I,')        :', INDHES(I)
          END DO
       END IF
       WRITE(LUPRI,'(A,I8//)')' Total effective Hessian index  :',INDTOT
@@ -2830,7 +2830,8 @@ C
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "pvibav.h"
-      LOGICAL EXHER, EXSIR, EXABA, SAVE_PEQM
+      LOGICAL EXHER, EXSIR, EXABA
+      LOGICAL SAVE_PEQM
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
@@ -2855,6 +2856,7 @@ C         NAORDR = 1; Analytical gradients available
 C         NAORDR = 2; Analytical gradients and hessians available.
 C
 
+      SAVE_PEQM = .FALSE.
       IF (PEQM .AND. INITHS) THEN
          SAVE_PEQM = PEQM
          PEQM = .FALSE.
@@ -2862,7 +2864,7 @@ C
 
       CALL FNDANA(NAORDR)
 
-      IF (SAVE_PEQM) PEQM = SAVE_PEQM
+      IF (SAVE_PEQM .AND. INITHS) PEQM = .TRUE.
 
       IF (NAORDR .LT. 2) THEN
          CALL QUIT('2nd order optimization aborted because'//
@@ -3030,12 +3032,12 @@ C
          END IF
          WRITE(LUPRI,'(/A)') 'Initial Hessian has been read from file'
          IF (REDINT) THEN
-            WRITE(LUPRI,'(A)') ' in redundant internal coordinates.'
+            WRITE(LUPRI,'(A/)') ' in redundant internal coordinates.'
          ELSE IF (DELINT) THEN
-            WRITE(LUPRI,'(A)')
+            WRITE(LUPRI,'(A/)')
      &         ' in delocalized redundant internal coordinates.'
          ELSE
-            WRITE(LUPRI,'(A)') ' in cartesian coordinates.'
+            WRITE(LUPRI,'(A/)') ' in cartesian coordinates.'
          END IF
 
          HSFILE = .FALSE.
@@ -3103,13 +3105,13 @@ C
  18         CONTINUE
          END IF
          IF (REDINT) THEN
-            WRITE(LUPRI,'(/A)') 'Initial Hessian has been calculated'//
+            WRITE(LUPRI,'(/A/)') 'Initial Hessian has been calculated'//
      &                          ' in redundant internal coordinates.'
          ELSE IF (DELINT) THEN
-            WRITE(LUPRI,'(/A)') 'Initial Hessian has been calculated'//
+            WRITE(LUPRI,'(/A/)') 'Initial Hessian has been calculated'//
      &              ' in delocalized redundant internal coordinates.'
          ELSE
-            WRITE(LUPRI,'(/A)') 'Initial Hessian has been calculated'//
+            WRITE(LUPRI,'(/A/)') 'Initial Hessian has been calculated'//
      &                          ' in Cartesian coordinates.'
          END IF
 C
@@ -3195,7 +3197,6 @@ C
          END IF
 !        if (initial Hessian in internal coordinates and
 !            not optimization in internal coordinates) then
-             
          WRITE(LUPRI,'(/A)') 'Initial model Hessian '//
      &      'in internal coordinates has been calculated'
          IF ((INRDHS .OR. INMDHS) .AND. .NOT. (REDINT .OR. DELINT)) THEN
@@ -6397,25 +6398,27 @@ C
 C     Newton step is calculated.
 C
          INDTOT_eff = 0
-         IF (IFREEZ(0) .GT. 0 .AND. .NOT.NEWTON) THEN
+         IF (IFREEZ(0) .GT. 0 .AND. .NOT. NEWTON) THEN
             THR_ZERO_EVAL = 3.0D-3
          ELSE
             THR_ZERO_EVAL = THRLDP
          END IF
-         DO, I = 1, NVEC
+         DO I = 1, NVEC
             IF (EVAL(I) .LT. -THR_ZERO_EVAL) INDTOT_eff = INDTOT_eff + 1
-            IF (ABS(EVAL(I)) .LT. THRLDP) THEN ! do not divide by zero, or very small unreliable values
+            ! do not divide by zero, or very small unreliable values
+            IF (ABS(EVAL(I)) .LT. THRLDP) THEN
                EVAL_EFF = SIGN(THRLDP, EVAL(I))
             ELSE
-               STPDIA(I) = -GRDDIA(I)/EVAL(I)
                EVAL_EFF = EVAL(I)
             END IF
             STPDIA(I) = -GRDDIA(I)/EVAL_EFF
          END DO
-         IF (INDTOT .ne. INDHES(0) .AND. .NOT.NOBRKS) THEN
-            INDTOT_eff = INDTOT ! Do not reset INDTOT because we probably want to break symmetry
-                                ! Instead we reset INDTOT_eff because it is used below
-         ELSE IF (INDTOT_eff .NE. INDTOT) THEN
+         IF (INDTOT .NE. INDHES(0) .AND. .NOT. NOBRKS) THEN
+            ! Do not reset INDTOT because we probably want to break 
+            ! symmetry. Instead we reset INDTOT_eff because it is used
+            ! below
+            INDTOT_eff = INDTOT
+         ELSE IF (INDTOT_eff .NE. INDTOT .AND. .NOT. SADDLE) THEN
             WRITE(LUPRI,'(/A,I3,A,I3/A/A)')
      &      ' Calculated Hessian index',INDTOT,
      &        ' is reset to effective Hessian index',INDTOT_eff,
@@ -8294,12 +8297,15 @@ C
 #include "numder.h"
 #include "cbinum.h"
       INTEGER IORDR
+      LOGICAL SAVE_REUHES
 
       CALL NMDINI(IPRUSR)
       NAORDR = IORDR
+      SAVE_REUHES = REUHES
       REUHES = .TRUE.
       NMORDR = 2 - NAORDR
       CALL NUMDRV(WRK,LWRK,IPRUSR,WRKDLM)
+      REUHES = SAVE_REUHES
       HESFIL = .TRUE.
       END
 
