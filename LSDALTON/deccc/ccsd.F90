@@ -1802,11 +1802,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                     &infpar%lg_mynum,infpar%mynum
                  write(DIL_CONS_OUT,'("#DEBUG(DIL): Gamma range [",i4,":",i4,"]")') fg,fg+lg-1
               endif
-              !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(l0) SCHEDULE(GUIDED)
-              do l0=1,no*lg*nv*no
-                 uigcj%d(l0)=0E0_realk !zero out the local destination tensor
-              enddo
-              !$OMP END PARALLEL DO
+              call dil_array_init(uigcj%d,int(no*lg*nv*no,INTL))
               tcs='D(i,g,c,j)+=L(g,d)*R(d,c,i,j)'
               call dil_clean_tens_contr(tch)
               call dil_set_tens_contr_args(tch,'r',errc,tens_distr=u2)

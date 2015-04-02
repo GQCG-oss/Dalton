@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/03/30 (started 2014/09/01).
+!REVISION: 2015/04/02 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -161,7 +161,7 @@
         end type rank_win_cont_t
  !Tensor contraction specification:
         type, private:: contr_spec_t
-         logical, private:: dest_zero                      !if .true., the destination (sub)tensor will be set to zero before contraction
+         logical, private:: dest_zero !if .true., the LOCAL destination (sub)tensor will be set to zero before tensor contraction
          integer(INTD), private:: ndims_left               !number of uncontracted dimensions coming from the left tensor
          integer(INTD), private:: ndims_right              !number of uncontracted dimensions coming from the right tensor
          integer(INTD), private:: ndims_contr              !number of contracted dimensions
@@ -408,7 +408,7 @@
          if(present(dst_zero)) then
           cspec%dest_zero=dst_zero
          else
-          cspec%dest_zero=.false.
+          cspec%dest_zero=.false. !by default, a tensor contraction assumes accumulation
          endif
          if(.not.NO_CHECK) then
           i=dil_tens_contr_spec_check(cspec)
@@ -856,9 +856,9 @@
  !Other stuff:
           if(present(alpha)) then; tcontr%alpha=alpha; else; tcontr%alpha=1E0_realk; endif
           if(tcontr%dest_arg%store_type.eq.'l'.or.tcontr%dest_arg%store_type.eq.'L') then
-           tcontr%beta=1E0_realk
+           tcontr%beta=1E0_realk !local destination arguments use accumulation in GEMM
           else
-           tcontr%beta=0E0_realk
+           tcontr%beta=0E0_realk !distributed destination arguments use assignment in GEMM (accumulated via MPI)
           endif
           if(present(dest_zero)) then; dz=dest_zero; else; dz=.false.; endif
  !Set up a formal tensor contraction specification:
@@ -3820,7 +3820,7 @@
         integer(INTD):: i,j,k,l,m,n,impir
         type(dev_buf_t):: buf(0:MAX_DEVS-1)         !Host buffers for all devices (mapped to the Host buffer space)
         type(contr_task_list_t), target:: task_list !`Make it global threadsafe to allow reuse and avoid unnecessary allocations
-        character(3):: contr_case,arg_reuse
+        character(3):: contr_case,arg_reuse,arg_keep
         integer(INTL):: i0,i1,i2,size_of_real,tot_buf_vol,dev_buf_vol,arg_buf_vol,dvol,lvol,rvol
         integer(INTD):: nd,nl,nr,num_dev,dev,first_avail,buf_conf(1:BUFS_PER_DEV,0:MAX_DEVS-1),prmn(1:MAX_TENSOR_RANK,0:2)
         integer(INTD):: tasks_done(0:MAX_DEVS-1),task_curr(0:MAX_DEVS-1),task_prev(0:MAX_DEVS-1),task_next(0:MAX_DEVS-1)
@@ -4106,7 +4106,8 @@
            if(task_curr(dev).ge.1.and.task_curr(dev).le.task_list%num_tasks)&
            &call dil_contr_task_print(cspec,task_list%contr_tasks(task_curr(dev))) !debug
           endif !debug end
-          arg_reuse=dil_mark_arg_reuse(task_curr(dev),task_prev(dev))
+          arg_reuse=dil_mark_arg_reuse(task_curr(dev),task_prev(dev)) !determine arguments to be reused from the previous task
+          arg_keep=dil_mark_arg_reuse(task_curr(dev),task_next(dev))  !determine arguments to be reused in the next task
           if(first_task) then
            if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): First task arg load initiation started ... ")')
            tms=thread_wtime()
@@ -4222,16 +4223,22 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
 !         if((darg%store_type.eq.'d'.or.darg%store_type.eq.'D').and.(.not.cspec%dest_zero)) then !distributed tensors only
-!          call dil_tensor_prefetch_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
-!          if(je.ne.0) then; errc=1; return; endif
+!          if(arg_reuse(1:1).ne.'R') then
+!           call dil_tensor_prefetch_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
+!           if(je.ne.0) then; errc=1; return; endif
+!          endif
 !         endif
          if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensors only
-          call dil_tensor_prefetch_start(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
-          if(je.ne.0) then; errc=2; return; endif
+          if(arg_reuse(2:2).ne.'R') then
+           call dil_tensor_prefetch_start(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
+           if(je.ne.0) then; errc=2; return; endif
+          endif
          endif
          if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensors only
-          call dil_tensor_prefetch_start(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
-          if(je.ne.0) then; errc=3; return; endif
+          if(arg_reuse(3:3).ne.'R') then
+           call dil_tensor_prefetch_start(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
+           if(je.ne.0) then; errc=3; return; endif
+          endif
          endif
          return
          end subroutine dil_args_load_start
@@ -4247,16 +4254,22 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
 !         if((darg%store_type.eq.'d'.or.darg%store_type.eq.'D').and.(.not.cspec%dest_zero)) then !distributed tensors only
-!          call dil_tensor_prefetch_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
-!          if(je.ne.0) then; errc=1; return; endif
+!          if(arg_reuse(1:1).ne.'R') then
+!           call dil_tensor_prefetch_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
+!           if(je.ne.0) then; errc=1; return; endif
+!          endif
 !         endif
          if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensors only
-          call dil_tensor_prefetch_complete(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
-          if(je.ne.0) then; errc=2; return; endif
+          if(arg_reuse(2:2).ne.'R') then
+           call dil_tensor_prefetch_complete(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
+           if(je.ne.0) then; errc=2; return; endif
+          endif
          endif
          if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensors only
-          call dil_tensor_prefetch_complete(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
-          if(je.ne.0) then; errc=3; return; endif
+          if(arg_reuse(3:3).ne.'R') then
+           call dil_tensor_prefetch_complete(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
+           if(je.ne.0) then; errc=3; return; endif
+          endif
          endif
          return
          end subroutine dil_args_load_complete
@@ -4272,8 +4285,10 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensors only
-          call dil_tensor_upload_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
-          if(je.ne.0) then; errc=1; return; endif
+          if(arg_keep(1:1).ne.'R') then
+           call dil_tensor_upload_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
+           if(je.ne.0) then; errc=1; return; endif
+          endif
          endif
          return
          end subroutine dil_args_store_start
@@ -4289,8 +4304,10 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensors only
-          if(task_curr(jdev).ge.1.or.(.not.async)) then !not the last upload for this device (finalize it)
-           call dil_tensor_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
+          if(task_curr(jdev).ge.0.or.(.not.async)) then !not the last upload for this device (finalize it)
+           if(arg_keep(1:1).ne.'R') then
+            call dil_tensor_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
+           endif
           else !last upload for this device (asynchronous)
            call dil_tensor_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck,&
                                           &nasync,lasync)
@@ -4312,93 +4329,99 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
   !Destination tensor:
-         jb=buf_conf(1,jdev); jf=buf_conf(4,jdev); jvol=dil_subtensor_vol(tsk%dest_arg)
-         if(darg%store_type.eq.'l'.or.darg%store_type.eq.'L') then !local tensor
-          if(nd.gt.0) then !slice
-           call dil_tensor_slice(nd,darg%tens_loc%elems,darg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%dest_arg%dims,&
-                                &tsk%dest_arg%lbnd(1:nd)-(darg%tens_loc%base(1:nd)+IND_NUM_START),je)
-           if(je.ne.0) then; errc=1; return; endif
-          elseif(nd.eq.0) then !scalar
-           buf(jdev)%arg_buf(jb)%buf_ptr(1)=darg%tens_loc%elems(1)
+         if(arg_reuse(1:1).ne.'R') then
+          jb=buf_conf(1,jdev); jf=buf_conf(4,jdev); jvol=dil_subtensor_vol(tsk%dest_arg)
+          if(darg%store_type.eq.'l'.or.darg%store_type.eq.'L') then !local tensor
+           if(nd.gt.0) then !slice
+            call dil_tensor_slice(nd,darg%tens_loc%elems,darg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%dest_arg%dims,&
+                                 &tsk%dest_arg%lbnd(1:nd)-(darg%tens_loc%base(1:nd)+IND_NUM_START),je)
+            if(je.ne.0) then; errc=1; return; endif
+           elseif(nd.eq.0) then !scalar
+            buf(jdev)%arg_buf(jb)%buf_ptr(1)=darg%tens_loc%elems(1)
+           endif
+           if(.not.triv_d) then !permute (if needed)
+            call dil_tensor_transpose(nd,tsk%dest_arg%dims,cspec%dprmn,&
+                                     &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
+            if(je.ne.0) then; errc=2; return; endif
+            je=jb; jb=jf; jf=je
+           endif
+          elseif(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensor
+!          call dil_arg_buf_clean(buf(jdev)%arg_buf(jb),je,jvol) !zero out buffer
+!          if(je.ne.0) then; errc=3; return; endif
+!          if(nd.gt.0) then
+!           call dil_tens_unpack_from_tiles(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s)
+!           if(je.ne.0) then; errc=4; return; endif
+!           je=jb; jb=jf; jf=je
+!          endif
+          else
+           errc=5; return
           endif
-          if(.not.triv_d) then !permute (if needed)
-           call dil_tensor_transpose(nd,tsk%dest_arg%dims,cspec%dprmn,&
+          buf_conf(4,jdev)=jb; buf_conf(1,jdev)=jf
+         endif
+  !Left tensor:
+         if(arg_reuse(2:2).ne.'R') then
+          jb=buf_conf(2,jdev); jf=buf_conf(5,jdev); jvol=dil_subtensor_vol(tsk%left_arg)
+          if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensor
+           if(nl.gt.0) then
+            if(.not.one_tile_only(larg%tens_distr_p,tsk%left_arg)) then !more than one tile
+             call dil_tens_unpack_from_tiles(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tiles
+             if(je.ne.0) then; errc=6; return; endif
+             je=jb; jb=jf; jf=je
+            endif
+           else
+            errc=7; return
+           endif
+          elseif(larg%store_type.eq.'l'.or.larg%store_type.eq.'L') then !local tensor
+           if(nl.gt.0) then !slice
+            call dil_tensor_slice(nl,larg%tens_loc%elems,larg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%left_arg%dims,&
+                                 &tsk%left_arg%lbnd(1:nl)-(larg%tens_loc%base(1:nl)+IND_NUM_START),je)
+            if(je.ne.0) then; errc=8; return; endif
+           elseif(nl.eq.0) then !scalar
+            buf(jdev)%arg_buf(jb)%buf_ptr(1)=larg%tens_loc%elems(1)
+           endif
+          else
+           errc=9; return
+          endif
+          if(.not.triv_l) then !permute (if needed)
+           call dil_tensor_transpose(nl,tsk%left_arg%dims,cspec%lprmn,&
                                     &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
-           if(je.ne.0) then; errc=2; return; endif
+           if(je.ne.0) then; errc=10; return; endif
            je=jb; jb=jf; jf=je
           endif
-         elseif(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensor
-!         call dil_arg_buf_clean(buf(jdev)%arg_buf(jb),je,jvol) !zero out buffer
-!         if(je.ne.0) then; errc=3; return; endif
-!         if(nd.gt.0) then
-!          call dil_tens_unpack_from_tiles(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tile(s) `One tile case?
-!          if(je.ne.0) then; errc=4; return; endif
-!          je=jb; jb=jf; jf=je
-!         endif
-         else
-          errc=5; return
+          buf_conf(5,jdev)=jb; buf_conf(2,jdev)=jf
          endif
-         buf_conf(4,jdev)=jb; buf_conf(1,jdev)=jf
-  !Left tensor:
-         jb=buf_conf(2,jdev); jf=buf_conf(5,jdev); jvol=dil_subtensor_vol(tsk%left_arg)
-         if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensor
-          if(nl.gt.0) then
-           if(.not.one_tile_only(larg%tens_distr_p,tsk%left_arg)) then !more than one tile
-            call dil_tens_unpack_from_tiles(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tiles
-            if(je.ne.0) then; errc=6; return; endif
-            je=jb; jb=jf; jf=je
-           endif
-          else
-           errc=7; return
-          endif
-         elseif(larg%store_type.eq.'l'.or.larg%store_type.eq.'L') then !local tensor
-          if(nl.gt.0) then !slice
-           call dil_tensor_slice(nl,larg%tens_loc%elems,larg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%left_arg%dims,&
-                                &tsk%left_arg%lbnd(1:nl)-(larg%tens_loc%base(1:nl)+IND_NUM_START),je)
-           if(je.ne.0) then; errc=8; return; endif
-          elseif(nl.eq.0) then !scalar
-           buf(jdev)%arg_buf(jb)%buf_ptr(1)=larg%tens_loc%elems(1)
-          endif
-         else
-          errc=9; return
-         endif
-         if(.not.triv_l) then !permute (if needed)
-          call dil_tensor_transpose(nl,tsk%left_arg%dims,cspec%lprmn,&
-                                   &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
-          if(je.ne.0) then; errc=10; return; endif
-          je=jb; jb=jf; jf=je
-         endif
-         buf_conf(5,jdev)=jb; buf_conf(2,jdev)=jf
   !Right tensor:
-         jb=buf_conf(3,jdev); jf=buf_conf(6,jdev); jvol=dil_subtensor_vol(tsk%right_arg)
-         if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensor
-          if(nr.gt.0) then
-           if(.not.one_tile_only(rarg%tens_distr_p,tsk%right_arg)) then !more than one tile
-            call dil_tens_unpack_from_tiles(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tiles
-            if(je.ne.0) then; errc=11; return; endif
-            je=jb; jb=jf; jf=je
+         if(arg_reuse(3:3).ne.'R') then
+          jb=buf_conf(3,jdev); jf=buf_conf(6,jdev); jvol=dil_subtensor_vol(tsk%right_arg)
+          if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensor
+           if(nr.gt.0) then
+            if(.not.one_tile_only(rarg%tens_distr_p,tsk%right_arg)) then !more than one tile
+             call dil_tens_unpack_from_tiles(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !unpack tiles
+             if(je.ne.0) then; errc=11; return; endif
+             je=jb; jb=jf; jf=je
+            endif
+           else
+            errc=12; return
+           endif
+          elseif(rarg%store_type.eq.'l'.or.rarg%store_type.eq.'L') then !local tensor
+           if(nr.gt.0) then !slice
+            call dil_tensor_slice(nr,rarg%tens_loc%elems,rarg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%right_arg%dims,&
+                                 &tsk%right_arg%lbnd(1:nr)-(rarg%tens_loc%base(1:nr)+IND_NUM_START),je)
+            if(je.ne.0) then; errc=13; return; endif
+           elseif(nr.eq.0) then !scalar
+            buf(jdev)%arg_buf(jb)%buf_ptr(1)=rarg%tens_loc%elems(1)
            endif
           else
-           errc=12; return
+           errc=14; return
           endif
-         elseif(rarg%store_type.eq.'l'.or.rarg%store_type.eq.'L') then !local tensor
-          if(nr.gt.0) then !slice
-           call dil_tensor_slice(nr,rarg%tens_loc%elems,rarg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%right_arg%dims,&
-                                &tsk%right_arg%lbnd(1:nr)-(rarg%tens_loc%base(1:nr)+IND_NUM_START),je)
-           if(je.ne.0) then; errc=13; return; endif
-          elseif(nr.eq.0) then !scalar
-           buf(jdev)%arg_buf(jb)%buf_ptr(1)=rarg%tens_loc%elems(1)
+          if(.not.triv_r) then !permute (if needed)
+           call dil_tensor_transpose(nr,tsk%right_arg%dims,cspec%rprmn,&
+                                    &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
+           if(je.ne.0) then; errc=15; return; endif
+           je=jb; jb=jf; jf=je
           endif
-         else
-          errc=14; return
+          buf_conf(6,jdev)=jb; buf_conf(3,jdev)=jf
          endif
-         if(.not.triv_r) then !permute (if needed)
-          call dil_tensor_transpose(nr,tsk%right_arg%dims,cspec%rprmn,&
-                                   &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
-          if(je.ne.0) then; errc=15; return; endif
-          je=jb; jb=jf; jf=je
-         endif
-         buf_conf(6,jdev)=jb; buf_conf(3,jdev)=jf
          return
          end subroutine dil_args_prepare_input
 
@@ -4415,45 +4438,47 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
   !Destination tensor:
-         jb=buf_conf(4,jdev); jf=buf_conf(7,jdev); jvol=dil_subtensor_vol(tsk%dest_arg)
-         if(.not.triv_d) then !permute (if needed)
-          call dil_tensor_transpose(nd,tsk%dest_arg%dims(prmn(1:nd,0)),prmn(1:,0),&
-                                   &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
-          if(je.ne.0) then; errc=1; return; endif
-          je=jb; jb=jf; jf=je
-         endif
-         if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensor
-          if(nd.gt.0) then
-           if(.not.one_tile_only(darg%tens_distr_p,tsk%dest_arg)) then !more than one tile
-            call dil_tens_pack_into_tiles(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !pack tiles
-            if(je.ne.0) then; errc=2; return; endif
-            je=jb; jb=jf; jf=je
+         if(arg_keep(1:1).ne.'R') then
+          jb=buf_conf(4,jdev); jf=buf_conf(7,jdev); jvol=dil_subtensor_vol(tsk%dest_arg)
+          if(.not.triv_d) then !permute (if needed)
+           call dil_tensor_transpose(nd,tsk%dest_arg%dims(prmn(1:nd,0)),prmn(1:,0),&
+                                    &buf(jdev)%arg_buf(jb)%buf_ptr,buf(jdev)%arg_buf(jf)%buf_ptr,je)
+           if(je.ne.0) then; errc=1; return; endif
+           je=jb; jb=jf; jf=je
+          endif
+          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensor
+           if(nd.gt.0) then
+            if(.not.one_tile_only(darg%tens_distr_p,tsk%dest_arg)) then !more than one tile
+             call dil_tens_pack_into_tiles(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(jb),buf(jdev)%arg_buf(jf),je) !pack tiles
+             if(je.ne.0) then; errc=2; return; endif
+             je=jb; jb=jf; jf=je
+            endif
+           else
+            errc=3; return
            endif
+          elseif(darg%store_type.eq.'l'.or.darg%store_type.eq.'L') then !local tensor
+           if(DIL_DEBUG) then
+            jtb=thread_wtime()
+            write(CONS_OUT,'(2x,"#DEBUG(DIL): Updating local destination ...")',ADVANCE='NO')
+           endif
+           je=0
+           if(nd.gt.0) then !insert tensor slice
+            call dil_tensor_insert(nd,darg%tens_loc%elems,darg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%dest_arg%dims,&
+                                  &tsk%dest_arg%lbnd(1:nd)-(darg%tens_loc%base(1:nd)+IND_NUM_START),je)
+           elseif(nd.eq.0) then
+            darg%tens_loc%elems(1)=buf(jdev)%arg_buf(jb)%buf_ptr(1)
+           endif
+           if(DIL_DEBUG) then
+            jtm=thread_wtime(jtb)
+            write(CONS_OUT,'(" Done: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
+            &jtm,dble(2_INTL*jvol*realk)/(jtm*1024d0*1024d0*1024d0),je
+           endif
+           if(je.ne.0) then; errc=4; return; endif
           else
-           errc=3; return
+           errc=5; return
           endif
-         elseif(darg%store_type.eq.'l'.or.darg%store_type.eq.'L') then !local tensor
-          if(DIL_DEBUG) then
-           jtb=thread_wtime()
-           write(CONS_OUT,'(2x,"#DEBUG(DIL): Updating the local destination ...")',ADVANCE='NO')
-          endif
-          je=0
-          if(nd.gt.0) then !insert tensor slice
-           call dil_tensor_insert(nd,darg%tens_loc%elems,darg%tens_loc%dims,buf(jdev)%arg_buf(jb)%buf_ptr,tsk%dest_arg%dims,&
-                                 &tsk%dest_arg%lbnd(1:nd)-(darg%tens_loc%base(1:nd)+IND_NUM_START),je)
-          elseif(nd.eq.0) then
-           darg%tens_loc%elems(1)=buf(jdev)%arg_buf(jb)%buf_ptr(1)
-          endif
-          if(DIL_DEBUG) then
-           jtm=thread_wtime(jtb)
-           write(CONS_OUT,'(" Done: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
-           &jtm,dble(2_INTL*jvol*realk)/(jtm*1024d0*1024d0*1024d0),je
-          endif
-          if(je.ne.0) then; errc=4; return; endif
-         else
-          errc=5; return
+          buf_conf(7,jdev)=jb; buf_conf(4,jdev)=jf
          endif
-         buf_conf(7,jdev)=jb; buf_conf(4,jdev)=jf
          return
          end subroutine dil_args_prepare_output
 
@@ -4463,7 +4488,7 @@
          integer(INTD), intent(out):: errc    !out: error code (0:success)
          integer(INTL):: lld,lrd,lcd
          integer(INTD):: jdev,j0,jp
-         real(8):: jtb,jtm
+         real(8):: jtb,jtm,bts
 
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
@@ -4485,16 +4510,17 @@
          if(lld*lrd.gt.buf(jdev)%arg_buf(buf_conf(4,jdev))%buf_vol) then; errc=1; return; endif !trap
          if(lcd*lld.gt.buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_vol) then; errc=2; return; endif !trap
          if(lcd*lrd.gt.buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_vol) then; errc=3; return; endif !trap
+         if(arg_reuse(1:1).eq.'R') then; bts=1d0; else; bts=beta; endif !switch to accumulation if reusing
          if(DIL_DEBUG) jtb=thread_wtime()
          if(realk.eq.8) then
           call dgemm('T','N',int(lld,BLAS_INT),int(lrd,BLAS_INT),int(lcd,BLAS_INT),alpha,&
                     &buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_ptr,int(lcd,BLAS_INT),&
-                    &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),beta,&
+                    &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),bts,&
                     &buf(jdev)%arg_buf(buf_conf(4,jdev))%buf_ptr,int(lld,BLAS_INT))
          elseif(realk.eq.4) then
           call sgemm('T','N',int(lld,BLAS_INT),int(lrd,BLAS_INT),int(lcd,BLAS_INT),alpha,&
                     &buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_ptr,int(lcd,BLAS_INT),&
-                    &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),beta,&
+                    &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),bts,&
                     &buf(jdev)%arg_buf(buf_conf(4,jdev))%buf_ptr,int(lld,BLAS_INT))
          else
           errc=4
@@ -4519,10 +4545,10 @@
          end function one_tile_only
 
          function dil_mark_arg_reuse(tsc,tsn) result(reuse)
- !This function determines which arguments (tensor parts) will be reused in the next task.
-         integer(INTD), intent(in):: tsc !in: current task number
-         integer(INTD), intent(in):: tsn !in: next task number
-         character(3):: reuse            !out: triplet of letter XXX: {X="N":new arg | X="R":arg reuse}
+ !This function determines which arguments (tensor parts) will be reused among two tasks.
+         integer(INTD), intent(in):: tsc !in: first task number
+         integer(INTD), intent(in):: tsn !in: second task number
+         character(3):: reuse            !out: triplet of letters XXX: {X="N":new arg | X="R":arg reuse}: DLR
          character(1):: jch
          type(subtens_t), pointer:: jstc,jstn
          integer(INTD):: j0
