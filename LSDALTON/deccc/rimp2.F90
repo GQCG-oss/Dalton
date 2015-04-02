@@ -534,7 +534,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
         WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 5)     ',free_gpu*1.0E0_realk,' Bytes'
         IF(PerformTiling)THEN 
-           WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: MaxVirtSize',MaxVirtSize
+           WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: MaxVirtSize',MaxVirtSize
            WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 using tiling  ',&
                 & (noccEOS*noccEOS*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccEOS)*8.0E0_realk+MaxVirtSize*((nocc+noccEOS)*noccEOS*nvirt)*8.0E0_realk,' Bytes'
         ELSE
