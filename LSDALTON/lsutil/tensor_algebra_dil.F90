@@ -140,10 +140,9 @@
         integer(INTD), private:: DIL_DEBUG_FILE=666                     !debug file handle
         integer(INTD), private:: DIL_TMP_FILE1=1043                     !temporary file handle
         integer(INTD), private:: DIL_TMP_FILE2=1044                     !temporary file handle
-        logical, private:: DIL_ARG_REUSE=.true.                         !argument reuse in tensor contractions
 #ifdef USE_MIC
-!DIR$ ATTRIBUTES OFFLOAD:mic:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
-!DIR$ ATTRIBUTES ALIGN:128:: INTD,INTL,BLAS_INT,CONS_OUT,DIL_ARG_REUSE,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
+!DIR$ ATTRIBUTES OFFLOAD:mic:: INTD,INTL,BLAS_INT,CONS_OUT,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
+!DIR$ ATTRIBUTES ALIGN:128:: INTD,INTL,BLAS_INT,CONS_OUT,VERBOSE,DIL_DEBUG,MAX_TENSOR_RANK,MAX_THREADS,IND_NUM_START
 #endif
 !TYPES:
  !Rank/Window descriptor:
@@ -3816,7 +3815,9 @@
 !-----------------------------------------------------
         logical, parameter:: NO_CHECK=.false.         !argument check
         logical, parameter:: PREP_AND_COMM=.false.    !communication/tensor_preparation overlap
-!-------------------------------------------------
+        logical, parameter:: ARGS_REUSE=.true.        !argument reuse in tensor contractions
+        logical, parameter:: TASK_RESHUFFLE=.false.   !task reshuffling (to reduce the number of MPI collisions)
+!--------------------------------------------------
         integer(INTD):: i,j,k,l,m,n,impir
         type(dev_buf_t):: buf(0:MAX_DEVS-1)         !Host buffers for all devices (mapped to the Host buffer space)
         type(contr_task_list_t), target:: task_list !`Make it global threadsafe to allow reuse and avoid unnecessary allocations
@@ -3844,41 +3845,41 @@
           call cleanup(1_INTD); return
          endif
         else
-         if(present(lasync)) then; call cleanup(39_INTD); return; endif
+         if(present(lasync)) then; call cleanup(2_INTD); return; endif
         endif
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: OUTSIDE LOCK = ",l1'//&
         &',": ASYNC = ",l1)') impir,win_lck,async !debug
         contr_case=darg%store_type//larg%store_type//rarg%store_type !contraction case
 !Check input arguments:
-        if(mem_lim.lt.MIN_BUF_MEM) then; call cleanup(2_INTD); return; endif
+        if(mem_lim.lt.MIN_BUF_MEM) then; call cleanup(3_INTD); return; endif
         if(.not.NO_CHECK) then
          i=dil_tens_contr_spec_check(cspec)
          if(i.ne.0) then
           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: ContrSpec error ",i6)')&
           &impir,i
-          call cleanup(3_INTD); return
+          call cleanup(4_INTD); return
          endif
         endif
         if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then
          if(associated(darg%tens_distr_p)) then
-          if(darg%tens_distr_p%tsize.le.0) then; call cleanup(4_INTD); return; endif
+          if(darg%tens_distr_p%tsize.le.0) then; call cleanup(5_INTD); return; endif
          else
-          call cleanup(5_INTD); return
+          call cleanup(6_INTD); return
          endif
         endif
         if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then
          if(associated(larg%tens_distr_p)) then
-          if(larg%tens_distr_p%tsize.le.0) then; call cleanup(6_INTD); return; endif
+          if(larg%tens_distr_p%tsize.le.0) then; call cleanup(7_INTD); return; endif
          else
-          call cleanup(7_INTD); return
+          call cleanup(8_INTD); return
          endif
         endif
         if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then
          if(associated(rarg%tens_distr_p)) then
-          if(rarg%tens_distr_p%tsize.le.0) then; call cleanup(8_INTD); return; endif
+          if(rarg%tens_distr_p%tsize.le.0) then; call cleanup(9_INTD); return; endif
          else
-          call cleanup(9_INTD); return
+          call cleanup(10_INTD); return
          endif
         endif
 !Get tensor rank/size and other info:
@@ -3895,7 +3896,7 @@
         call permutation_invert(nl,cspec%lprmn,prmn(1:,1),i) !N2O for the left tensor
         call permutation_invert(nr,cspec%rprmn,prmn(1:,2),i) !NwO for the right tensor
         if(nd.lt.0.or.nl.le.0.or.nr.le.0.or.dvol.lt.1_INTL.or.lvol.lt.1_INTL.or.rvol.lt.1_INTL) then
-         call cleanup(10_INTD); return
+         call cleanup(11_INTD); return
         endif
 !Check dimension range consistency:
         if(DIL_DEBUG) then
@@ -3945,20 +3946,20 @@
          select case(darg%store_type)
          case('l','L')
           do i=1,nd; if(cspec%dbase(i).lt.darg%tens_loc%base(i)) then; j=1; exit; endif; enddo
-          if(j.ne.0) then; call cleanup(11_INTD); return; endif
-          do i=1,nd; if(cspec%dbase(i)+cspec%ddims(i).gt.darg%tens_loc%base(i)+darg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
           if(j.ne.0) then; call cleanup(12_INTD); return; endif
+          do i=1,nd; if(cspec%dbase(i)+cspec%ddims(i).gt.darg%tens_loc%base(i)+darg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
+          if(j.ne.0) then; call cleanup(13_INTD); return; endif
          case('d','D')
           if(associated(darg%tens_distr_p)) then
            do i=1,nd; if(cspec%dbase(i).lt.0) then; j=1; exit; endif; enddo
-           if(j.ne.0) then; call cleanup(13_INTD); return; endif
-           do i=1,nd; if(cspec%dbase(i)+cspec%ddims(i)-1.gt.darg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
            if(j.ne.0) then; call cleanup(14_INTD); return; endif
+           do i=1,nd; if(cspec%dbase(i)+cspec%ddims(i)-1.gt.darg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
+           if(j.ne.0) then; call cleanup(15_INTD); return; endif
           else
-           call cleanup(15_INTD); return
+           call cleanup(16_INTD); return
           endif
          case default
-          call cleanup(16_INTD); return
+          call cleanup(17_INTD); return
          end select
         endif
  !Left tensor argument:
@@ -3967,20 +3968,20 @@
          select case(larg%store_type)
          case('l','L')
           do i=1,nl; if(cspec%lbase(i).lt.larg%tens_loc%base(i)) then; j=1; exit; endif; enddo
-          if(j.ne.0) then; call cleanup(17_INTD); return; endif
-          do i=1,nl; if(cspec%lbase(i)+cspec%ldims(i).gt.larg%tens_loc%base(i)+larg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
           if(j.ne.0) then; call cleanup(18_INTD); return; endif
+          do i=1,nl; if(cspec%lbase(i)+cspec%ldims(i).gt.larg%tens_loc%base(i)+larg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
+          if(j.ne.0) then; call cleanup(19_INTD); return; endif
          case('d','D')
           if(associated(larg%tens_distr_p)) then
            do i=1,nl; if(cspec%lbase(i).lt.0) then; j=1; exit; endif; enddo
-           if(j.ne.0) then; call cleanup(19_INTD); return; endif
-           do i=1,nl; if(cspec%lbase(i)+cspec%ldims(i)-1.gt.larg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
            if(j.ne.0) then; call cleanup(20_INTD); return; endif
+           do i=1,nl; if(cspec%lbase(i)+cspec%ldims(i)-1.gt.larg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
+           if(j.ne.0) then; call cleanup(21_INTD); return; endif
           else
-           call cleanup(21_INTD); return
+           call cleanup(22_INTD); return
           endif
          case default
-          call cleanup(22_INTD); return
+          call cleanup(23_INTD); return
          end select
         endif
  !Right tensor argument:
@@ -3989,20 +3990,20 @@
          select case(rarg%store_type)
          case('l','L')
           do i=1,nr; if(cspec%rbase(i).lt.rarg%tens_loc%base(i)) then; j=1; exit; endif; enddo
-          if(j.ne.0) then; call cleanup(23_INTD); return; endif
-          do i=1,nr; if(cspec%rbase(i)+cspec%rdims(i).gt.rarg%tens_loc%base(i)+rarg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
           if(j.ne.0) then; call cleanup(24_INTD); return; endif
+          do i=1,nr; if(cspec%rbase(i)+cspec%rdims(i).gt.rarg%tens_loc%base(i)+rarg%tens_loc%dims(i)) then; j=2; exit; endif; enddo
+          if(j.ne.0) then; call cleanup(25_INTD); return; endif
          case('d','D')
           if(associated(rarg%tens_distr_p)) then
            do i=1,nr; if(cspec%rbase(i).lt.0) then; j=1; exit; endif; enddo
-           if(j.ne.0) then; call cleanup(25_INTD); return; endif
-           do i=1,nr; if(cspec%rbase(i)+cspec%rdims(i)-1.gt.rarg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
            if(j.ne.0) then; call cleanup(26_INTD); return; endif
+           do i=1,nr; if(cspec%rbase(i)+cspec%rdims(i)-1.gt.rarg%tens_distr_p%dims(i)) then; j=2; exit; endif; enddo
+           if(j.ne.0) then; call cleanup(27_INTD); return; endif
           else
-           call cleanup(27_INTD); return
+           call cleanup(28_INTD); return
           endif
          case default
-          call cleanup(28_INTD); return
+          call cleanup(29_INTD); return
          end select         
         endif
 !Count available computing devices: 
@@ -4012,7 +4013,7 @@
           if(num_gpus.le.MAX_GPUS) then
            num_dev=num_dev+num_gpus; gpu_on=.true.
           else
-           call cleanup(29_INTD); return
+           call cleanup(30_INTD); return
           endif
          endif
         endif
@@ -4022,7 +4023,7 @@
           if(num_mics.le.MAX_MICS) then
            num_dev=num_dev+num_mics; mic_on=.true.
           else
-           call cleanup(30_INTD); return
+           call cleanup(31_INTD); return
           endif
          endif
         endif
@@ -4031,7 +4032,7 @@
         tot_buf_vol=(mem_lim-mod(mem_lim,ALIGNMENT*BUFS_PER_DEV*num_dev))/size_of_real !total buffer volume for all devices
         dev_buf_vol=tot_buf_vol/num_dev      !total buffer volume for each device
         arg_buf_vol=dev_buf_vol/BUFS_PER_DEV !max buffer volume for each tensor argument (tensor part)
-        if(mod(arg_buf_vol*size_of_real,ALIGNMENT).ne.0_INTL) then; call cleanup(33_INTD); return; endif !trap
+        if(mod(arg_buf_vol*size_of_real,ALIGNMENT).ne.0_INTL) then; call cleanup(32_INTD); return; endif !trap
  !Associate CPU buffers:
         i0=0_INTL; k=dil_dev_num(DEV_HOST_CPU,0_INTD)
         do i=1,buf(k)%num_bufs
@@ -4061,7 +4062,7 @@
           enddo
          enddo
         endif
-        if(i0.gt.tot_buf_vol) then; call cleanup(34_INTD); return; endif
+        if(i0.gt.tot_buf_vol) then; call cleanup(33_INTD); return; endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe): Buffer volumes (W):",3(1x,i12))')&
         &tot_buf_vol,dev_buf_vol,arg_buf_vol !debug
 !Partition tensor contraction into smaller parts (tasks) if argument(s) do not fit into local buffers:
@@ -4080,14 +4081,25 @@
          call dil_tens_contr_partition(cspec,arg_buf_vol,contr_case,task_list,i,&
                                       &darr=darg%tens_distr_p,larr=larg%tens_distr_p,rarr=rarg%tens_distr_p)
         case default
-         call cleanup(35_INTD); return
+         call cleanup(34_INTD); return
         end select
         if(i.ne.0) then
          if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_tensor_contract_pipe): Partitioning failed: ",i9)') i
-         call cleanup(36_INTD); return
+         call cleanup(35_INTD); return
         endif
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Case: ",'//&
         &'A3,": Task amount: ",i9)') impir,contr_case,task_list%num_tasks !debug
+!Reshuffle the task list:
+        if(TASK_RESHUFFLE) then
+         j=impir
+         call dil_contr_task_list_shuffle(task_list,i,shift=j)
+         if(i.ne.0) then
+          if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_tensor_contract_pipe): Task reshuffling failed: ",i9)') i
+          call cleanup(36_INTD); return
+         endif
+         if(DIL_DEBUG) write(CONS_OUT,'("DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2'//&
+         &',"]: Task list reshuffled: Shift = ",i9)') impir,j
+        endif
 !Perform partitioned tensor contraction via pipelining:
         if(task_list%num_tasks.gt.0) then
          if(.not.associated(task_list%contr_tasks)) then; call cleanup(37_INTD); return; endif !trap
@@ -4553,7 +4565,7 @@
          type(subtens_t), pointer:: jstc,jstn
          integer(INTD):: j0
          reuse='NNN' !All three tensor arguments are assumed new by default
-         if(DIL_ARG_REUSE) then
+         if(ARGS_REUSE) then
           if(tsc.gt.0.and.tsn.gt.0) then
            jstc=>task_list%contr_tasks(tsc)%dest_arg; jstn=>task_list%contr_tasks(tsn)%dest_arg
            if(jstc%rank.eq.jstn%rank) then
@@ -4590,19 +4602,21 @@
          integer(INTD), intent(in):: dvk       !in: device kind
          integer(INTD), intent(in):: dvn       !in: device id (within its kind)
          integer(INTD), intent(in):: curr_task !in: current task number (for that device), zero means no previous task existed
-         integer(INTD):: jn
+         integer(INTD):: jn,jlo,jf
          dil_get_next_task=-1; if(first_avail.le.0) return
   !Look forward for an appropriate task size for this device`Enable:
          do jn=max(first_avail,curr_task+1_INTD),task_list%num_tasks
-          if(task_list%contr_tasks(jn)%task_stat.eq.TASK_SET) then
-           dil_get_next_task=jn; exit
+          if(task_list%reordered) then; jlo=task_list%task_order(jn); else; jlo=jn; endif
+          if(task_list%contr_tasks(jlo)%task_stat.eq.TASK_SET) then
+           dil_get_next_task=jlo; jf=jn; exit
           endif
          enddo
   !Look backwards for any task size:
          if(dil_get_next_task.le.0) then
-          do jn=first_avail,curr_task-1
-           if(task_list%contr_tasks(jn)%task_stat.eq.TASK_SET) then
-            dil_get_next_task=jn; exit
+          do jn=first_avail,curr_task-1_INTD
+           if(task_list%reordered) then; jlo=task_list%task_order(jn); else; jlo=jn; endif
+           if(task_list%contr_tasks(jlo)%task_stat.eq.TASK_SET) then
+            dil_get_next_task=jlo; jf=jn; exit
            endif
           enddo
          endif
@@ -4611,11 +4625,12 @@
           task_list%contr_tasks(dil_get_next_task)%dev_kind=dvk
           task_list%contr_tasks(dil_get_next_task)%dev_id=dvn
           task_list%contr_tasks(dil_get_next_task)%task_stat=TASK_SCHEDULED
-          if(dil_get_next_task.eq.first_avail) then
+          if(jf.eq.first_avail) then
            do while(first_avail.gt.0)
             if(first_avail.lt.task_list%num_tasks) then
              first_avail=first_avail+1
-             if(task_list%contr_tasks(first_avail)%task_stat.eq.TASK_SET) exit
+             if(task_list%reordered) then; jlo=task_list%task_order(first_avail); else; jlo=first_avail; endif
+             if(task_list%contr_tasks(jlo)%task_stat.eq.TASK_SET) exit
             else
              first_avail=-1
             endif
