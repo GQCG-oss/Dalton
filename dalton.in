@@ -271,13 +271,6 @@ if [ $len_INSTALL_BASDIR -gt 1 ]; then
 fi
 export BASDIR
 
-# check for correct input
-if [ -z "$1" ]; then
-   echo 'Input file[s] not specified'
-   usage
-   exit 1
-fi
-
 if [ -z "$DALTON_TMPDIR" ]; then  # not set as environment variable and not set with "-t dir" option
     scratch_dir_candidates="$SCRATCH /global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
     for dir in $scratch_dir_candidates; do
@@ -303,7 +296,7 @@ fi
 # -- identify input files and construct output file name
 
 # check for correct input
-if [ -z $dalfil ] && [ -z "$1" ]; then
+if [ -z "$dalfil" ] && [ -z "$1" ]; then
     echo 'Fatal error: Input file[s] not specified'
     echo "Your command was: $0 $paramlist"
     usage
