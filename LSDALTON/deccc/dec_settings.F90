@@ -93,7 +93,7 @@ contains
     DECinfo%distribute_fullmolecule = .false.
     DECinfo%CRASHCALC               = .false.
     DECinfo%cc_driver_debug         = .false.
-    DECinfo%cc_driver_use_bg_buffer = .false.
+    DECinfo%use_bg_buffer           = .false.
     DECinfo%manual_batchsizes       = .false.
     DECinfo%ccsdAbatch              = 0
     DECinfo%ccsdGbatch              = 0
@@ -764,7 +764,7 @@ contains
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
-       case('.CCDRIVER_BG_BUF');      DECinfo%cc_driver_use_bg_buffer = .true.
+       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
        case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
        case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
@@ -1399,7 +1399,7 @@ contains
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
-    write(lupri,*) 'cc_driver_use_bg_buffer ', DECitem%cc_driver_use_bg_buffer
+    write(lupri,*) 'use_bg_buffer ', DECitem%use_bg_buffer
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
     write(lupri,*) 'ccsd_expl ', DECitem%ccsd_expl
