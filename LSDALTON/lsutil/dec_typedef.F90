@@ -246,8 +246,8 @@ module dec_typedef_module
      logical :: CRASHESTI
      !> Debug CC driver
      logical :: cc_driver_debug
-     !> Debug CC driver
-     logical :: cc_driver_use_bg_buffer
+     !> Use Background buffer
+     logical :: use_bg_buffer
      !> Integer specifying which scheme to use in CCSD calculations (debug)
      integer :: en_mem
      !overwrite standard preconditioning settings in solver

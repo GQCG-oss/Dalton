@@ -2796,7 +2796,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    call get_symm_tensor_segmenting_simple(no,nv,os,vs)
 
    ! allocate the buffer in the background
-   use_bg = DECinfo%cc_driver_use_bg_buffer.and..not.saferun
+   use_bg = DECinfo%use_bg_buffer.and..not.saferun
 
    if(use_bg)then
 
@@ -2920,7 +2920,7 @@ subroutine ccdriver_dealloc_workspace(saferun,local)
 #endif
 
    ! deallocate the buffer in the background
-   use_bg = DECinfo%cc_driver_use_bg_buffer.and..not.saferun
+   use_bg = DECinfo%use_bg_buffer.and..not.saferun
 
    if(use_bg)then
 

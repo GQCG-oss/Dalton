@@ -1347,8 +1347,8 @@ C        Read one electron part, in symmetry blocked triangular form
       END IF
       CALL GPCLOSE(LUONEL,'KEEP')
 C
- 9999 CALL QEXIT('RDONEL')
       if ( allocated(IJ) ) deallocate( IJ )
+ 9999 CALL QEXIT('RDONEL')
       RETURN
       END
       subroutine rd_lucia(cmo,nbas,norb,nsym,lu,found)

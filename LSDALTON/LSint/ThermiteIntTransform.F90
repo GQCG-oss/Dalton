@@ -11,7 +11,7 @@ logical,save :: DoThermiteIntTransform
 integer,save :: nT1,nTMO1,nT2,nTMO2,nTA,nTMaxN,TITThreadID,nTITthreads
 real(realk),save,pointer :: TCMO1(:,:)
 real(realk),save,pointer :: TCMO2(:,:)
-real(realk),save,pointer :: TmpAlphaCD(:,:,:)
+real(realk),save,pointer :: TmpAlphaCD(:)
 integer,save,pointer :: TOrbToFull(:,:),iLocalTIT(:),iLocalTIT2(:)
 integer,save,pointer :: TITGindexToLocal(:)
 !$OMP THREADPRIVATE(TITThreadID)
@@ -78,9 +78,16 @@ subroutine InitThermiteIntThreadID(threadID)
   TITThreadID = ThreadID+1
 end subroutine InitThermiteIntThreadID
 
-subroutine ThermiteIntTransform_alloc_TmpArray()
+subroutine ThermiteIntTransform_alloc_TmpArray(use_bg_buf)
   implicit none
-  call mem_alloc(TmpAlphaCD,nTMaxN,nT1,nTMO2)
+  logical :: use_bg_buf
+  integer(kind=long) :: n8
+  n8 = nTMaxN*nT1*nTMO2
+  IF(use_bg_buf)THEN
+     call mem_pseudo_alloc(TmpAlphaCD,n8)
+  ELSE
+     call mem_alloc(TmpAlphaCD,n8)
+  ENDIF
 end subroutine ThermiteIntTransform_alloc_TmpArray
 
 !TmpArray is batch of  AO integrals. FullAlphaCD is used to allocate MO integrals
@@ -200,10 +207,15 @@ subroutine DF3centerTrans2OMP(nvirt,nocc,nbast,nAuxA,nAFull,Cvirt,AlphaCD2,FullA
   !$OMP END PARALLEL DO
 end subroutine DF3centerTrans2OMP
 
-subroutine FreeThermiteIntTransform()
+subroutine FreeThermiteIntTransform(use_bg_buf)
   implicit none
+  logical :: use_bg_buf
   IF(associated(TmpAlphaCD))THEN
-     call mem_dealloc(TmpAlphaCD)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(TmpAlphaCD)
+     ELSE
+        call mem_dealloc(TmpAlphaCD)
+     ENDIF
      call mem_dealloc(TCMO1)
      call mem_dealloc(TCMO2)
      call mem_dealloc(TOrbToFull)
