@@ -3816,15 +3816,16 @@
         logical, parameter:: NO_CHECK=.false.         !argument check
         logical, parameter:: PREP_AND_COMM=.false.    !communication/tensor_preparation overlap
         logical, parameter:: ARGS_REUSE=.true.        !argument reuse in tensor contractions
-        logical, parameter:: TASK_RESHUFFLE=.false.   !task reshuffling (to reduce the number of MPI collisions)
-!--------------------------------------------------
-        integer(INTD):: i,j,k,l,m,n,impir
+        logical, parameter:: TASK_RESHUFFLE=.true.    !task reshuffling (to reduce the number of MPI collisions)
+!-------------------------------------------------
+        integer(INTD):: i,j,k,l,m,n
         type(dev_buf_t):: buf(0:MAX_DEVS-1)         !Host buffers for all devices (mapped to the Host buffer space)
         type(contr_task_list_t), target:: task_list !`Make it global threadsafe to allow reuse and avoid unnecessary allocations
         character(3):: contr_case,arg_reuse,arg_keep
         integer(INTL):: i0,i1,i2,size_of_real,tot_buf_vol,dev_buf_vol,arg_buf_vol,dvol,lvol,rvol
-        integer(INTD):: nd,nl,nr,num_dev,dev,first_avail,buf_conf(1:BUFS_PER_DEV,0:MAX_DEVS-1),prmn(1:MAX_TENSOR_RANK,0:2)
+        integer(INTD):: impir,nd,nl,nr,num_dev,dev,buf_conf(1:BUFS_PER_DEV,0:MAX_DEVS-1),prmn(1:MAX_TENSOR_RANK,0:2)
         integer(INTD):: tasks_done(0:MAX_DEVS-1),task_curr(0:MAX_DEVS-1),task_prev(0:MAX_DEVS-1),task_next(0:MAX_DEVS-1)
+        integer(INTD):: first_avail(0:MAX_DEVS-1)
         logical:: gpu_on,mic_on,first_task,next_load,prev_store,args_here
         logical:: win_lck,err_curr,err_prev,err_next,triv_d,triv_l,triv_r,async
         real(8):: tmb,tms,tm,tmm,tc_flops,mm_flops
@@ -4098,20 +4099,23 @@
           call cleanup(36_INTD); return
          endif
          if(DIL_DEBUG) write(CONS_OUT,'("DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2'//&
-         &',"]: Task list reshuffled: Shift = ",i9)') impir,j
+         &',"]: Task list reshuffled: Shift = ",i6)') impir,j
         endif
 !Perform partitioned tensor contraction via pipelining:
         if(task_list%num_tasks.gt.0) then
          if(.not.associated(task_list%contr_tasks)) then; call cleanup(37_INTD); return; endif !trap
-         first_avail=lbound(task_list%contr_tasks,1) !first available task
-         if(first_avail.ne.1) then; call cleanup(38_INTD); return; endif !trap
+         if(lbound(task_list%contr_tasks,1).eq.1) then !first available task is #1
+          first_avail(:)=1_INTD
+         else
+          call cleanup(38_INTD); return
+         endif !trap
  !CPU (multicore): !`Implement REUSE for tensor arguments
          dev=dil_dev_num(DEV_HOST_CPU,0_INTD); buf_conf(1:BUFS_PER_DEV,dev)=(/(i,i=1,BUFS_PER_DEV)/)
          tasks_done(dev)=0; task_curr(dev)=0; task_prev(dev)=0; task_next(dev)=0
-         task_curr(dev)=dil_get_next_task(DEV_HOST_CPU,0_INTD,task_curr(dev)); first_task=.true.
+         task_curr(dev)=dil_get_next_task(DEV_HOST_CPU,0_INTD); first_task=.true.
          next_load=.false.; prev_store=.false.; args_here=.false.; err_curr=.false.; err_prev=.false.; err_next=.false.
          tloop: do while(task_prev(dev).ge.0_INTD) !loop over the tensor contraction tasks
-          task_next(dev)=dil_get_next_task(DEV_HOST_CPU,0_INTD,task_curr(dev))
+          task_next(dev)=dil_get_next_task(DEV_HOST_CPU,0_INTD)
           if(DIL_DEBUG) then !debug begin
            write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe): DEVICE: ",i2,": Tasks(c,p,n):",3(1x,l1,1x,i7))')&
            &dev,(.not.err_curr),task_curr(dev),(.not.err_prev),task_prev(dev),(.not.err_next),task_next(dev) !debug
@@ -4596,45 +4600,40 @@
          return
          end function dil_mark_arg_reuse
 
-         integer(INTD) function dil_get_next_task(dvk,dvn,curr_task) !MASTER THREAD only!`Add task size consideration
+         integer(INTD) function dil_get_next_task(dvk,dvn) !MASTER THREAD only!
  !This function selects the next tensor contraction task from the global task list for execution on a specific device.
  !Negative value on return means the tasks are over.
-         integer(INTD), intent(in):: dvk       !in: device kind
-         integer(INTD), intent(in):: dvn       !in: device id (within its kind)
-         integer(INTD), intent(in):: curr_task !in: current task number (for that device), zero means no previous task existed
-         integer(INTD):: jn,jlo,jf
-         dil_get_next_task=-1; if(first_avail.le.0) return
-  !Look forward for an appropriate task size for this device`Enable:
-         do jn=max(first_avail,curr_task+1_INTD),task_list%num_tasks
-          if(task_list%reordered) then; jlo=task_list%task_order(jn); else; jlo=jn; endif
-          if(task_list%contr_tasks(jlo)%task_stat.eq.TASK_SET) then
-           dil_get_next_task=jlo; jf=jn; exit
-          endif
-         enddo
-  !Look backwards for any task size:
-         if(dil_get_next_task.le.0) then
-          do jn=first_avail,curr_task-1_INTD
+         integer(INTD), intent(in):: dvk !in: device kind
+         integer(INTD), intent(in):: dvn !in: device id (within its kind)
+         integer(INTD):: jn,jlo,jf,jdev
+         dil_get_next_task=-1_INTD; jdev=dil_dev_num(dvk,dvn)
+  !Find an appropriate task for this device:
+         if(first_avail(jdev).gt.0_INTD) then
+   !Forward loop:
+          do jn=first_avail(jdev),task_list%num_tasks
            if(task_list%reordered) then; jlo=task_list%task_order(jn); else; jlo=jn; endif
            if(task_list%contr_tasks(jlo)%task_stat.eq.TASK_SET) then
             dil_get_next_task=jlo; jf=jn; exit
            endif
           enddo
-         endif
-  !Mark the task as scheduled and correct <first_avail> if needed:
-         if(dil_get_next_task.gt.0) then
-          task_list%contr_tasks(dil_get_next_task)%dev_kind=dvk
-          task_list%contr_tasks(dil_get_next_task)%dev_id=dvn
-          task_list%contr_tasks(dil_get_next_task)%task_stat=TASK_SCHEDULED
-          if(jf.eq.first_avail) then
-           do while(first_avail.gt.0)
-            if(first_avail.lt.task_list%num_tasks) then
-             first_avail=first_avail+1
-             if(task_list%reordered) then; jlo=task_list%task_order(first_avail); else; jlo=first_avail; endif
-             if(task_list%contr_tasks(jlo)%task_stat.eq.TASK_SET) exit
-            else
-             first_avail=-1
+   !Backward loop:
+          if(dil_get_next_task.le.0_INTD) then
+           do jn=first_avail(jdev)-1_INTD,1_INTD,-1_INTD
+            if(task_list%reordered) then; jlo=task_list%task_order(jn); else; jlo=jn; endif
+            if(task_list%contr_tasks(jlo)%task_stat.eq.TASK_SET) then
+             dil_get_next_task=jlo; jf=jn; exit
             endif
            enddo
+          endif
+    !Set the task if found:
+          if(dil_get_next_task.gt.0_INTD) then
+           task_list%contr_tasks(dil_get_next_task)%dev_kind=dvk
+           task_list%contr_tasks(dil_get_next_task)%dev_id=dvn
+           task_list%contr_tasks(dil_get_next_task)%task_stat=TASK_SCHEDULED
+           first_avail(jdev)=jf+1_INTD
+           if(first_avail(jdev).gt.task_list%num_tasks) first_avail(jdev)=-1_INTD
+          else
+           first_avail(jdev)=-1_INTD
           endif
          endif
          return
