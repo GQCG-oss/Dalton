@@ -1210,7 +1210,6 @@ subroutine print_dec_info()
 #endif
 
 
-       print*,'DBG',k,nfragopt,counter
        ! Crash calculation on purpose to test restart option
        if (( jobdone >= 2*nfragopt-1).and.(DECinfo%CrashEsti)) then
           print*,'Calculation was intentionally crashed due to keyword .CRASHESTI'
@@ -1223,7 +1222,6 @@ subroutine print_dec_info()
        end if
 
 
-       print *, 'DBG jobdone',jobdone
        RestartStuff: if(jobdone>0) then
 
           ! Backup files to be able to do restart
@@ -1270,7 +1268,6 @@ subroutine print_dec_info()
           backup_files =  (((float(jobdone) < 0.25*float(jobs%njobs)) .or. &
               &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) .or. DECinfo%CRASHESTI) &
               & .and. (.not. all(jobs%dofragopt))) .or. (DECinfo%only_n_frag_jobs>0) 
-       print *, 'DBG backup_files',backup_files
 
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
           Backup: if( backup_files )then
@@ -1279,7 +1276,6 @@ subroutine print_dec_info()
 
              if(esti) then
                 ! Save info for estimated pair fragments restart
-       print *, 'DBG backing up esti!!'
                 call write_fragment_energies_for_restart(nfrags,FragEnergies,estijobs,esti)
              else
                 ! Standard fragments, save info for restart
