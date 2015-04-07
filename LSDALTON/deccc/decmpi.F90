@@ -2398,6 +2398,7 @@ contains
     call ls_mpi_buffer(DECitem%CCSDmultipliers,Master)
     call ls_mpi_buffer(DECitem%simple_multipler_residual,Master)
     call ls_mpi_buffer(DECitem%CRASHCALC,Master)
+    call ls_mpi_buffer(DECitem%CRASHESTI,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
     call ls_mpi_buffer(DECitem%cc_driver_use_bg_buffer,Master)
     call ls_mpi_buffer(DECitem%cc_solver_tile_mem,Master)

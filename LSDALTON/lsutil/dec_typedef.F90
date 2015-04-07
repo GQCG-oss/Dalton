@@ -242,6 +242,8 @@ module dec_typedef_module
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option
      logical :: CRASHCALC
+     !> Crash Calc Debug keyword - to test restart option
+     logical :: CRASHESTI
      !> Debug CC driver
      logical :: cc_driver_debug
      !> Debug CC driver

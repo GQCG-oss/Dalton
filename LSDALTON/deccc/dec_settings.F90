@@ -92,6 +92,7 @@ contains
     DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%distribute_fullmolecule = .false.
     DECinfo%CRASHCALC               = .false.
+    DECinfo%CRASHESTI               = .false.
     DECinfo%cc_driver_debug         = .false.
     DECinfo%cc_driver_use_bg_buffer = .false.
     DECinfo%manual_batchsizes       = .false.
@@ -586,6 +587,7 @@ contains
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.CRASHCALC'); DECinfo%CRASHCALC=.true.
+       case('.CRASHESTI'); DECinfo%CRASHESTI=.true.
        case('.PUREHYDROGENDEBUG'); DECinfo%PureHydrogenDebug=.true.
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
@@ -1398,6 +1400,7 @@ contains
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
+    write(lupri,*) 'CRASHESTI            ', DECitem%CRASHESTI
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
     write(lupri,*) 'cc_driver_use_bg_buffer ', DECitem%cc_driver_use_bg_buffer
     write(lupri,*) 'en_mem ', DECitem%en_mem
