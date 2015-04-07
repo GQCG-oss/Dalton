@@ -274,6 +274,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         MinMem = MinMem + nvirt*noccEOS*noccEOS*nocctot  ! djik
         MinMem = MinMem + nvirtEOS*nocc*nvirtEOS*nvirt   ! blad
      ENDIF
+     !The transformation matrices
+     MinMem = MinMem + nocc+nvirt+2*nocc*noccEOS+2*nvirt*nvirt+2*nvirt*nvirtEOS+2*nocc*nocc
+     if(fc) then
+        MinMem = MinMem + 2*nocctot*nocctot + 2*nocctot*nbasis 
+     endif
      bytes_to_alloc = (MemInGBCollected-MinMem*8.0E-9_realk)*0.95E0_realk*1.0E+9 
      print*,'MemInGBCollected',MemInGBCollected,'bytes_to_alloc',bytes_to_alloc
      call mem_init_background_alloc(bytes_to_alloc)     
