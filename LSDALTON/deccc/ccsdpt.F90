@@ -295,19 +295,19 @@ contains
           if (abc) then
 
              call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR')
-!             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,1,1],atype='TDAR')
-             call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,1,1],atype='TDAR')
 
           else
 
              call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,nocc,1],atype='TDAR')
-!             call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,1,1],atype='TDAR')
              call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,1,1],atype='TDAR')
 
           endif
 
           call tensor_random(ccsd_doubles)
           call tensor_random(vovo)
+          call tensor_scale(ccsd_doubles,1.0E-1_realk)
+          call tensor_scale(vovo,1.0E-1_realk)
 
        endif
 #else
@@ -436,13 +436,13 @@ contains
        ! the parallel version of the abc-loop
        if (print_frags) then
 
-          call abc_loop_par(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles,&
+          call abc_loop_par(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
                           & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
                           & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
 
        else
 
-          call abc_loop_par(nocc,nvirt,ooov%elm1,vovo%elm1,vovv,ccsd_doubles,&
+          call abc_loop_par(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
                           & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
                           & ccsdpt_singles%elm1,e4=e4)
 
@@ -2805,7 +2805,10 @@ contains
     integer, intent(in) :: nocc,nvirt
     !> 2-el integrals
     real(realk), dimension(nocc,nocc,nocc,nvirt) :: ooov ! integrals (AI|JK) in the order (K,I,J,A)
-    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: oovv ! integrals (AI|BJ) in the order (I,J,A,B)
+    type(tensor), intent(inout)  :: oovv ! integrals (AI|BJ) in the order (I,J,A,B)
+    real(realk), pointer, dimension(:) :: oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca ! o^2*tile_size tiles from oovv
+    real(realk), pointer, dimension(:) :: oovv_pdm_bc,oovv_pdm_cb ! o^2*tile_size tiles from oovv
+    real(realk), pointer, dimension(:,:) :: oovv_pdm_buff      ! buffers to prefetch oovv tiles
     type(tensor), intent(inout)  :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
     real(realk), pointer, dimension(:) :: vovv_pdm_a,vovv_pdm_b,vovv_pdm_c ! ov^2*tile_size tiles from vovv
     real(realk), pointer, dimension(:,:) :: vovv_pdm_buff      ! buffers to prefetch vovv tiles
@@ -2831,13 +2834,15 @@ contains
     integer :: a,b,c,tuple_type,counter
     integer :: a_tile,b_tile,c_tile,a_pos,b_pos,c_pos,a_count,b_count,c_count
     integer :: a_buf_vovv,a_buf_ccsd,b_buf_vovv,b_buf_ccsd,c_buf_vovv,c_buf_ccsd
+    integer :: abbuf,babuf,acbuf,cabuf,bcbuf,cbbuf
+    integer :: ab,ba,ac,ca,bc,cb
     integer :: total_num_tiles_1,total_num_tiles_2,total_num_tiles
     integer :: nelms,tile_size_tmp_a,tile_size_tmp_b,tile_size_tmp_c
     !> preloading
     integer, intent(in) :: nbuffs
-    integer,pointer, dimension(:) :: tiles_in_buf_vovv,tiles_in_buf_ccsd
-    integer(kind=ls_mpik), pointer, dimension(:) :: req_vovv,req_ccsd
-    logical,pointer,dimension(:) :: needed_vovv,needed_ccsd
+    integer,pointer, dimension(:) :: tiles_in_buf_vovv,tiles_in_buf_ccsd,tiles_in_buf_oovv
+    integer(kind=ls_mpik), pointer, dimension(:) :: req_vovv,req_ccsd,req_oovv
+    logical,pointer,dimension(:) :: needed_vovv,needed_ccsd,needed_oovv
     !> async handles
     integer :: num_ids,m
 #ifdef VAR_OPENACC
@@ -2880,18 +2885,27 @@ contains
     ! alloc and init stuff for preloading
     call mem_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
     call mem_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,3*nbuffs)
+    call mem_alloc(oovv_pdm_buff,nocc**2,6*nbuffs)
     call mem_alloc(needed_vovv,3*nbuffs)
     call mem_alloc(needed_ccsd,3*nbuffs)
+    call mem_alloc(needed_oovv,6*nbuffs)
     call mem_alloc(tiles_in_buf_vovv,3*nbuffs)
     call mem_alloc(tiles_in_buf_ccsd,3*nbuffs)
+    call mem_alloc(tiles_in_buf_oovv,6*nbuffs)
     call mem_alloc(req_vovv,3*nbuffs)
     call mem_alloc(req_ccsd,3*nbuffs)
-    if (alloc_in_dummy) call tensor_lock_wins(vovv,'s',all_nodes=.true.)
-    if (alloc_in_dummy) call tensor_lock_wins(ccsd_doubles,'s',all_nodes=.true.)
+    call mem_alloc(req_oovv,6*nbuffs)
+    if (alloc_in_dummy) then
+       call tensor_lock_wins(vovv,'s',all_nodes=.true.)
+       call tensor_lock_wins(ccsd_doubles,'s',all_nodes=.true.)
+       call tensor_lock_wins(oovv,'s',all_nodes=.true.)
+    endif
     needed_vovv       = .false.
     needed_ccsd       = .false.
+    needed_oovv       = .false.
     tiles_in_buf_vovv = -1
     tiles_in_buf_ccsd = -1
+    tiles_in_buf_oovv = -1
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_a,nvirt,nocc,nocc)
@@ -2986,9 +3000,9 @@ contains
        tile_size_tmp_a = int(nelms/(nocc*nvirt**2))
 
        !FIND a in buffer
-       call assoc_ptr_to_buf(a_tile,vovv,nbuffs,tiles_in_buf_vovv,needed_vovv,&
+       call assoc_ptr_to_buf(a_tile,vovv,3*nbuffs,tiles_in_buf_vovv,needed_vovv,&
                             & vovv_pdm_a,vovv_pdm_buff,a_buf_vovv,req_vovv)
-       call assoc_ptr_to_buf(a_tile,ccsd_doubles,nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+       call assoc_ptr_to_buf(a_tile,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
                             & ccsd_pdm_a,ccsd_pdm_buff,a_buf_ccsd,req_ccsd)
 
        call time_start_phase(PHASE_COMM)
@@ -3021,9 +3035,9 @@ contains
           tile_size_tmp_b = int(nelms/(nocc*nvirt**2))
 
           !FIND b in buffer
-          call assoc_ptr_to_buf(b_tile,vovv,nbuffs,tiles_in_buf_vovv,needed_vovv,&
+          call assoc_ptr_to_buf(b_tile,vovv,3*nbuffs,tiles_in_buf_vovv,needed_vovv,&
                                & vovv_pdm_b,vovv_pdm_buff,b_buf_vovv,req_vovv)
-          call assoc_ptr_to_buf(b_tile,ccsd_doubles,nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+          call assoc_ptr_to_buf(b_tile,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
                                & ccsd_pdm_b,ccsd_pdm_buff,b_buf_ccsd,req_ccsd)
 
           call time_start_phase(PHASE_COMM)
@@ -3056,9 +3070,9 @@ contains
              tile_size_tmp_c = int(nelms/(nocc*nvirt**2))
 
              !FIND c in buffer
-             call assoc_ptr_to_buf(c_tile,vovv,nbuffs,tiles_in_buf_vovv,needed_vovv,&
+             call assoc_ptr_to_buf(c_tile,vovv,3*nbuffs,tiles_in_buf_vovv,needed_vovv,&
                                   & vovv_pdm_c,vovv_pdm_buff,c_buf_vovv,req_vovv)
-             call assoc_ptr_to_buf(c_tile,ccsd_doubles,nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+             call assoc_ptr_to_buf(c_tile,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
                                   & ccsd_pdm_c,ccsd_pdm_buff,c_buf_ccsd,req_ccsd)
 
              call time_start_phase(PHASE_COMM)
@@ -3122,7 +3136,28 @@ contains
 
                    endif
 
+                   !FIND ab and ba in buffer
+                   ab = (b-1)*nvirt+a; ba = (a-1)*nvirt+b
+                   call assoc_ptr_to_buf(ab,oovv,6*nbuffs,tiles_in_buf_oovv,needed_oovv,&
+                                     & oovv_pdm_ab,oovv_pdm_buff,abbuf,req_oovv)
+                   call assoc_ptr_to_buf(ba,oovv,6*nbuffs,tiles_in_buf_oovv,needed_oovv,&
+                                     & oovv_pdm_ba,oovv_pdm_buff,babuf,req_oovv)
+
                    if (b .eq. a) then
+
+                      call time_start_phase(PHASE_COMM)
+
+                      if( alloc_in_dummy )then
+
+                         call lsmpi_wait(req_oovv(abbuf))
+
+                      else
+
+                         if(oovv%lock_set(ab)) call tensor_unlock_win(oovv,ab)
+
+                      endif
+
+                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(oovv(:,:,a,b)) async(async_id(3)) if(full_no_frags)
 !
@@ -3130,6 +3165,22 @@ contains
 !$acc& ccsdpt_doubles(:,:,a,b)) async(async_id(3)) if(.not. full_no_frags)
 
                    else ! a .gt. b
+
+                      call time_start_phase(PHASE_COMM)
+
+                      if( alloc_in_dummy )then
+
+                         call lsmpi_wait(req_oovv(abbuf))
+                         call lsmpi_wait(req_oovv(babuf))
+
+                      else
+
+                         if(oovv%lock_set(ab)) call tensor_unlock_win(oovv,ab)
+                         if(oovv%lock_set(ba)) call tensor_unlock_win(oovv,ba)
+
+                      endif
+
+                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,b)) async(async_id(1))
 
@@ -3151,6 +3202,8 @@ contains
 
                    endif
 
+                   needed_oovv(abbuf)     = .true.; needed_oovv(babuf)     = .true.
+
                    do c = c_pos,c_pos + tile_size_tmp_c - 1
 
                       c_count = c_count + 1
@@ -3164,7 +3217,7 @@ contains
 
                       ! select type of tuple
                       tuple_type = -1
-         
+
                       if ((a .eq. b) .and. (b .eq. c)) then
          
                          ! a == b == c
@@ -3172,11 +3225,41 @@ contains
 
                          if (c_count .eq. tile_size_tmp_c) c_count = 0
                          cycle
-         
-                      else if ((a .eq. b) .and. (b .gt. c)) then
+
+                      endif
+
+                      !FIND ac, ca, bc, and cb in buffer
+                      ac = (c-1)*nvirt+a; ca = (a-1)*nvirt+c
+                      bc = (c-1)*nvirt+b; cb = (b-1)*nvirt+c
+                      call assoc_ptr_to_buf(ac,oovv,6*nbuffs,tiles_in_buf_oovv,needed_oovv,&
+                                        & oovv_pdm_ac,oovv_pdm_buff,acbuf,req_oovv)
+                      call assoc_ptr_to_buf(ca,oovv,6*nbuffs,tiles_in_buf_oovv,needed_oovv,&
+                                        & oovv_pdm_ca,oovv_pdm_buff,cabuf,req_oovv)
+                      call assoc_ptr_to_buf(bc,oovv,6*nbuffs,tiles_in_buf_oovv,needed_oovv,&
+                                        & oovv_pdm_bc,oovv_pdm_buff,bcbuf,req_oovv)
+                      call assoc_ptr_to_buf(cb,oovv,6*nbuffs,tiles_in_buf_oovv,needed_oovv,&
+                                        & oovv_pdm_cb,oovv_pdm_buff,cbbuf,req_oovv) 
+
+                      if ((a .eq. b) .and. (b .gt. c)) then
          
                          ! a == b > c
                          tuple_type = 1
+
+                         call time_start_phase(PHASE_COMM)
+ 
+                         if( alloc_in_dummy )then
+ 
+                            call lsmpi_wait(req_oovv(acbuf))
+                            call lsmpi_wait(req_oovv(cabuf))
+ 
+                         else
+ 
+                            if(oovv%lock_set(ac)) call tensor_unlock_win(oovv,ac)
+                            if(oovv%lock_set(ca)) call tensor_unlock_win(oovv,ca)
+ 
+                         endif
+ 
+                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
 
@@ -3193,6 +3276,20 @@ contains
                          ! a > b == c
                          tuple_type = 2
 
+                         call time_start_phase(PHASE_COMM)
+
+                         if( alloc_in_dummy )then
+
+                            call lsmpi_wait(req_oovv(bcbuf))
+
+                         else
+
+                            if(oovv%lock_set(bc)) call tensor_unlock_win(oovv,bc)
+
+                         endif
+
+                         call time_start_phase(PHASE_WORK)
+
 !$acc enter data copyin(oovv(:,:,b,c)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(oovv(:,:,b,c),&
@@ -3202,6 +3299,26 @@ contains
          
                          ! a > b > c 
                          tuple_type = 3
+
+                         call time_start_phase(PHASE_COMM)
+
+                         if( alloc_in_dummy )then
+
+                            call lsmpi_wait(req_oovv(acbuf))
+                            call lsmpi_wait(req_oovv(cabuf))
+                            call lsmpi_wait(req_oovv(bcbuf))
+                            call lsmpi_wait(req_oovv(cbbuf))
+
+                         else
+
+                            if(oovv%lock_set(ac)) call tensor_unlock_win(oovv,ac)
+                            if(oovv%lock_set(ca)) call tensor_unlock_win(oovv,ca)
+                            if(oovv%lock_set(bc)) call tensor_unlock_win(oovv,bc)
+                            if(oovv%lock_set(cb)) call tensor_unlock_win(oovv,cb)
+
+                         endif
+
+                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
 
@@ -3227,6 +3344,9 @@ contains
 #endif
          
                       end if
+
+                      needed_oovv(acbuf)     = .true.; needed_oovv(cabuf)     = .true.
+                      needed_oovv(bcbuf)     = .true.; needed_oovv(cbbuf)     = .true.
 
                       ! generate tuple(s)
                       TypeOfTuple_par_abc: select case(tuple_type)
@@ -3257,7 +3377,7 @@ contains
 
                             call time_start_phase(PHASE_WORK, twall = time_efull )
                             call ccsdpt_energy_full_abc_case1(a,a,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                                  & oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),&
+                                                  & oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ca,&
                                                   & ccsdpt_singles(:,a),ccsdpt_singles(:,c),e4,async_id,num_ids,cublas_handle)
                             call time_start_phase(PHASE_WORK, ttot = time_efull )
                             time_efull_tot = time_efull_tot + time_efull
@@ -3277,7 +3397,7 @@ contains
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
             
-                            call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv(:,:,a,a),oovv(:,:,a,c),oovv(:,:,c,a),vovv,&
+                            call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ca,vovv,&
                                                  & ooov(:,:,:,a),ooov(:,:,:,c),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,c),&
                                                  & ccsdpt_doubles(:,:,a,a),ccsdpt_doubles(:,:,a,c),&
@@ -3321,7 +3441,7 @@ contains
 
                             call time_start_phase(PHASE_WORK, twall = time_efull )
                             call ccsdpt_energy_full_abc_case2(a,b,b,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                                  & oovv(:,:,a,b),oovv(:,:,b,a),oovv(:,:,b,b),&
+                                                  & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_bc,&
                                                   & ccsdpt_singles(:,a),ccsdpt_singles(:,b),e4,async_id,num_ids,cublas_handle)
                             call time_start_phase(PHASE_WORK, ttot = time_efull )
                             time_efull_tot = time_efull_tot + time_efull
@@ -3340,7 +3460,7 @@ contains
             
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
             
-                            call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv(:,:,a,b),oovv(:,:,b,a),oovv(:,:,b,b),vovv,&
+                            call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_bc,vovv,&
                                                  & ooov(:,:,:,a),ooov(:,:,:,b),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,b),&
                                                  & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
@@ -3387,8 +3507,8 @@ contains
 
                             call time_start_phase(PHASE_WORK, twall = time_efull )
                             call ccsdpt_energy_full_abc_case3(a,b,c,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                                  & oovv(:,:,a,b),oovv(:,:,a,c),oovv(:,:,b,a),&
-                                                  & oovv(:,:,b,c),oovv(:,:,c,a),oovv(:,:,c,b),&
+                                                  & oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ba,&
+                                                  & oovv_pdm_bc,oovv_pdm_ca,oovv_pdm_cb,&
                                                   & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
                                                   & e4,async_id,num_ids,cublas_handle)
                             call time_start_phase(PHASE_WORK, ttot = time_efull )
@@ -3408,9 +3528,10 @@ contains
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))            
             
-                            call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,oovv(:,:,a,b),oovv(:,:,a,c),oovv(:,:,b,a),&
-                                                 & oovv(:,:,b,c),oovv(:,:,c,a),oovv(:,:,c,b),vovv,&
-                                                 & ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
+                            call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,&
+                                                 & oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ba,&
+                                                 & oovv_pdm_bc,oovv_pdm_ca,oovv_pdm_cb,&
+                                                 & vovv,ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
                                                  & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,a,c),&
                                                  & ccsdpt_doubles(:,:,b,a),ccsdpt_doubles(:,:,b,c),&
@@ -3436,10 +3557,15 @@ contains
                       end select TypeOfTuple_par_abc
 
                       if (c_count .eq. tile_size_tmp_c) c_count = 0
+
+                      needed_oovv(acbuf)     = .false.; needed_oovv(cabuf)     = .false.
+                      needed_oovv(bcbuf)     = .false.; needed_oovv(cbbuf)     = .false.
  
                    end do ! end c loop 
 
                    if (b_count .eq. tile_size_tmp_b) b_count = 0
+
+                   needed_oovv(abbuf)     = .false.; needed_oovv(babuf)     = .false.
 
                    if (b .eq. a) then
          
@@ -3554,8 +3680,11 @@ contains
 
 !$acc wait
 
-    if (alloc_in_dummy) call tensor_unlock_wins(vovv,all_nodes=.true.)
-    if (alloc_in_dummy) call tensor_unlock_wins(ccsd_doubles,all_nodes=.true.)
+    if (alloc_in_dummy) then
+       call tensor_unlock_wins(vovv,all_nodes=.true.)
+       call tensor_unlock_wins(ccsd_doubles,all_nodes=.true.)
+       call tensor_unlock_wins(oovv,all_nodes=.true.)
+    endif
 
 #ifdef VAR_CUBLAS
 
@@ -3575,12 +3704,16 @@ contains
     ! release preloading stuff
     call mem_dealloc(vovv_pdm_buff)
     call mem_dealloc(ccsd_pdm_buff)
+    call mem_dealloc(oovv_pdm_buff)
     call mem_dealloc(needed_vovv)
     call mem_dealloc(needed_ccsd)
+    call mem_dealloc(needed_oovv)
     call mem_dealloc(req_vovv)
     call mem_dealloc(req_ccsd)
+    call mem_dealloc(req_oovv)
     call mem_dealloc(tiles_in_buf_vovv)
     call mem_dealloc(tiles_in_buf_ccsd)
+    call mem_dealloc(tiles_in_buf_oovv)
 
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
