@@ -20,7 +20,7 @@ MODULE IntegralInterfaceModuleDF
   use dec_typedef_module, only: batchTOorb
   use screen_mod
   use BUILDAOBATCH
-  use,intrinsic :: iso_c_binding,only:c_f_pointer, c_loc
+  use,intrinsic :: iso_c_binding,only:c_f_pointer, c_loc,C_PTR
   use ThermiteIntTransform_module
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
        & II_get_df_exchange_mat, II_get_pari_df_exchange_mat,&
@@ -2848,6 +2848,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
   integer :: Oper,MaxN,i,startF,N,M,K,TID
   integer :: ao(3),dims(3),GlobalToLocal(nAux)
   integer(kind=8) :: n8,w0size,w1size
+  type(C_PTR) :: cpointer
   use_bg_buf = .FALSE.
   IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
   call nullThermiteIntTransform()
@@ -2892,7 +2893,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         w0size = MaxN*n1*n2*nthreads
         call mem_pseudo_alloc(w0, w0size)
 !        setting%output%ResultMat(1:MaxN,1,1:n1,1:n2,1:nthreads) => w0(1:w0size)
-        call c_f_pointer(c_loc(w0(1)),setting%output%ResultMat,[MaxN,1,n1,n2,nthreads])
+        cpointer = c_loc(w0(1))
+        call c_f_pointer(cpointer,setting%output%ResultMat,[MaxN,1,n1,n2,nthreads])
      ELSE
         call mem_alloc(setting%output%ResultMat,MaxN,1,n1,n2,nthreads)
      ENDIF
@@ -2903,6 +2905,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      call ThermiteIntTransform_alloc_TmpArray(use_bg_buf) !MaxN,n1,nMO2
      call ls_dzero8(FullAlphaCD,w1size)
 !     setting%output%Result3D => FullAlphaCD
+     cpointer = c_loc(FullAlphaCD(1))
      call c_f_pointer(c_loc(FullAlphaCD(1)),setting%output%Result3D,[dim1,nMO1,nMO2])
      setting%Output%ndim3D(1) = dim1
      setting%Output%ndim3D(2) = nMO1
@@ -2928,7 +2931,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         call mem_alloc(FullAlphaCD,w1size)
      ENDIF
      call ls_dzero8(FullAlphaCD,w1size)
-     call c_f_pointer(c_loc(FullAlphaCD(1)),setting%output%Result3D,[dim1,n1,n2])
+     cpointer = c_loc(FullAlphaCD(1))
+     call c_f_pointer(cpointer,setting%output%Result3D,[dim1,n1,n2])
 !     setting%output%Result3D => FullAlphaCD
      setting%Output%ndim3D(1) = dim1
      setting%Output%ndim3D(2) = n1
