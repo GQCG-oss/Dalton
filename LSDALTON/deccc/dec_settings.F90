@@ -1246,7 +1246,7 @@ contains
        write(DECinfo%output,*) '.BG_MEMORY'
        write(DECinfo%output,*) '8.0'
        write(DECinfo%output,*) ''
-       call lsquit('**DEC or **CC calculation requires specification of .BG_MEMORY keyword!',-1)
+       call lsquit('.BACKGROUND_BUFFER requires specification of .BG_MEMORY keyword!',-1)
     end if
 
     ! Use purification of FOs when using fragment-adapted orbitals.
