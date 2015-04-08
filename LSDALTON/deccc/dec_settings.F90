@@ -66,6 +66,7 @@ contains
     DECinfo%memory                 = 2.0E0_realk
     DECinfo%memory_defined         = .false.
     DECinfo%use_system_memory_info = .false.
+    DECinfo%bg_memory              = -2.0E0_realk
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc  = .false. ! full molecular cc
@@ -529,6 +530,9 @@ contains
        case('.MEMORY') 
           read(input,*) DECinfo%memory           
           DECinfo%memory_defined=.true.
+
+       case('.BG_MEMORY') 
+          read(input,*) DECinfo%bg_memory           
 
        case('.USE_SYS_MEM_INFO') 
           DECinfo%use_system_memory_info = .true.
@@ -1229,6 +1233,22 @@ contains
        write(DECinfo%output,*) ''
        call lsquit('**DEC or **CC calculation requires specification of available memory using &
             & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
+    end if
+
+    if(DECinfo%use_bg_buffer.AND.DECinfo%bg_memory.LT.0.0E0_realk) then
+       write(DECinfo%output,*) 'Background Memory buffer size not set!'
+       write(DECinfo%output,*) 'Please specify .BG_MEMORY keyword (in gigabytes)'
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#endif
+       write(DECinfo%output,*) '.BG_MEMORY'
+       write(DECinfo%output,*) '8.0'
+       write(DECinfo%output,*) ''
+       call lsquit('**DEC or **CC calculation requires specification of .BG_MEMORY keyword!',-1)
     end if
 
     ! Use purification of FOs when using fragment-adapted orbitals.

@@ -1804,7 +1804,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
    logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
-   logical                :: trafo_vovo, trafo_m4, trafo_m2
+   logical                :: trafo_vovo, trafo_m4, trafo_m2,bg_was_init
    logical                :: diag_oo_block, diag_vv_block, prec, prec_not1, prec_in_b
    character(4)           :: atype
 
@@ -1922,7 +1922,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end select ModelSpecificSettings
 
-   call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel)
+   call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel,bg_was_init)
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -2709,7 +2709,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
    call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
    
-   call ccdriver_dealloc_workspace(saferun,local)
+   call ccdriver_dealloc_workspace(saferun,local,bg_was_init)
 
    call tensor_free(iajb)
 
@@ -2774,12 +2774,13 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 end subroutine ccsolver
 
-subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel)
+subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel,bg_was_init)
    implicit none
    type(lsitem), intent(inout) :: MyLsitem
    integer, intent(in)  :: nb, no, nv, JOB, ccmodel
    integer, intent(out) :: os,vs
    logical, intent(in)  :: local,saferun,use_singles
+   logical, intent(inout) :: bg_was_init
    integer :: ntpm(4),nt, sch
    integer(kind=ls_mpik) :: nnod
    real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2, MemFree,mem
@@ -2797,7 +2798,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
    ! allocate the buffer in the background
    use_bg = DECinfo%use_bg_buffer.and..not.saferun
-
+   bg_was_init = mem_is_background_buf_init()
    if(use_bg)then
 
       !get free memory GB -> bytes conversion, use 80% of the free memory
@@ -2892,21 +2893,32 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          & not enough space",-1)
       endif
 
-      if( local )then
-         call mem_init_background_alloc(bytes_to_alloc)
+      if( bg_was_init )then
+         if( local )then
+            call mem_change_background_alloc(bytes_to_alloc)
 #ifdef VAR_MPI
-      else
-         call mem_init_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
-         call lspdm_init_global_buffer(.true.)
+         else
+            call mem_change_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
+            call lspdm_init_global_buffer(.true.)
 #endif
+         endif
+      else
+         if( local )then
+            call mem_init_background_alloc(bytes_to_alloc)
+#ifdef VAR_MPI
+         else
+            call mem_init_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
+            call lspdm_init_global_buffer(.true.)
+#endif
+         endif
       endif
        
    endif
    
 end subroutine ccdriver_set_tensor_segments_and_alloc_workspace
-subroutine ccdriver_dealloc_workspace(saferun,local)
+subroutine ccdriver_dealloc_workspace(saferun,local,bg_was_init)
    implicit none
-   logical, intent(in)  :: saferun,local
+   logical, intent(in)  :: saferun,local,bg_was_init
    integer :: ntpm(4),nt
    integer(kind=ls_mpik) :: nnod
    real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2
@@ -2924,14 +2936,19 @@ subroutine ccdriver_dealloc_workspace(saferun,local)
 
    if(use_bg)then
 
-
-      if( local )then
-         call mem_free_background_alloc()
+      if (bg_was_init)then
 #ifdef VAR_MPI
-      else
-         call mem_free_background_alloc_all_nodes(infpar%lg_comm)
          call lspdm_free_global_buffer(.true.)
 #endif
+      else
+         if( local )then
+            call mem_free_background_alloc()
+#ifdef VAR_MPI
+         else
+            call mem_free_background_alloc_all_nodes(infpar%lg_comm)
+            call lspdm_free_global_buffer(.true.)
+#endif
+         endif
       endif
    endif
 

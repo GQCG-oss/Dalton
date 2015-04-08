@@ -262,28 +262,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !==================================================================
   use_bg_buf = .FALSE.
 #ifdef VAR_MPI
-  IF(DECinfo%use_bg_buffer)use_bg_buf = .TRUE.
+  IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
 #endif
-  IF(use_bg_buf)THEN
-     call get_currently_available_memory(MemInGBCollected)
-     !requires goccEOS, toccEOS,gvirtEOS, tvirtEOS, djik,blad outside the buffer
-     MinMem = 2*nvirt*(i8*noccEOS)*nvirt*noccEOS !goccEOS, toccEOS
-     MinMem = MinMem + nvirtEOS*nocc*nvirtEOS*nocc    ! tvirtEOS
-     MinMem = MinMem + nvirtEOS*nocc*nvirtEOS*nocctot ! gvirtEOS
-     IF(first_order)THEN
-        MinMem = MinMem + nvirt*noccEOS*noccEOS*nocctot  ! djik
-        MinMem = MinMem + nvirtEOS*nocc*nvirtEOS*nvirt   ! blad
-     ENDIF
-     !The transformation matrices
-     MinMem = MinMem + nocc+nvirt+2*nocc*noccEOS+2*nvirt*nvirt+2*nvirt*nvirtEOS+2*nocc*nocc
-     if(fc) then
-        MinMem = MinMem + 2*nocctot*nocctot + 2*nocctot*nbasis 
-     endif
-     bytes_to_alloc = (MemInGBCollected-MinMem*8.0E-9_realk)*0.95E0_realk*1.0E+9 
-     print*,'MemInGBCollected',MemInGBCollected,'bytes_to_alloc',bytes_to_alloc
-     call mem_init_background_alloc(bytes_to_alloc)     
-  ENDIF
-
 
   IF(DECinfo%AuxAtomicExtent)THEN
      call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
@@ -1493,9 +1473,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   write(*,'(A,g10.3,A)')"DECRIMP2 time COMM",time_c," seconds"
   write(*,'(A,g10.3,A)')"DECRIMP2 time IDLE",time_i," seconds"
 #endif
-  IF(use_bg_buf)THEN
-     call mem_free_background_alloc()
-  ENDIF
 
 end subroutine RIMP2_integrals_and_amplitudes
 
@@ -2025,10 +2002,10 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         !Full MO can fit on all nodes Which means we can do a reduction.        
         IF(DECinfo%PL.GT.0)THEN
            WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                     ',MemInGBCollected,' GB'
+           IF(.NOT.use_bg_buf)WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                     ',MemInGBCollected,' GB'
            WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available (65%)               ',maxsize,' GB'
            print*,'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
-           print*,'RIMP2: Memory available                     ',MemInGBCollected,' GB'
+           IF(.NOT.use_bg_buf)print*,'RIMP2: Memory available                     ',MemInGBCollected,' GB'
            print*,'RIMP2: Memory available (65%)               ',maxsize,' GB'
         ENDIF
         !Memory requirement to have the full AO integral in memory 
