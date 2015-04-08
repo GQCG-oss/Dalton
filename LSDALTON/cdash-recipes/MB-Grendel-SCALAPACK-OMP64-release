@@ -5,6 +5,7 @@ rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 mv $TMP_DIR /home/tkjaer/NightlyTestingCdash/tmp/tmp3
 rm -rf /home/tkjaer/NightlyTestingCdash/tmp/tmp3
+#due to launch with crontab PATH is empty. We need PATH to git and cmake, ..
 export PATH=/usr/local/torque/bin:/com/bin:/usr/local/bin:/bin:/usr/bin
 
 git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
