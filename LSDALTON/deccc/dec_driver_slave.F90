@@ -59,7 +59,6 @@ contains
     integer(kind=ls_mpik) :: master
     master=0
 
-
     ! DEC settings
     ! ************
     ! Just in case, initialize using default settings
@@ -297,7 +296,8 @@ contains
     IF(use_bg_buf)THEN
        !DECinfo%memory is in GB we need it in bytes 
        IF(DECinfo%PL.GT.0)THEN
-          WRITE(DECinfo%output,'(A,F10.2,A)')'Background buffer initilizes with ',DECinfo%bg_memory,' GB'
+          print*,'Background buffer initilizes with ',DECinfo%bg_memory,' GB'
+          !WRITE(DECinfo%output,'(A,F10.2,A)')'Background buffer initilizes with ',DECinfo%bg_memory,' GB'
           IF(DECinfo%bg_memory.LT.0.OR.DECinfo%bg_memory.GT.DECinfo%memory)THEN
              print*,'DECinfo%bg_memory=',DECinfo%bg_memory
              print*,'DECinfo%memory   =',DECinfo%memory
