@@ -2002,7 +2002,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         !Full MO can fit on all nodes Which means we can do a reduction.        
         IF(DECinfo%PL.GT.0)THEN
            WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
-           IF(.NOT.use_bg_buf)WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                     ',MemInGBCollected,' GB'
+           IF(.NOT.use_bg_buf)WRITE(DECinfo%output,'(A,F8.1,A)') &
+                & 'RIMP2: Memory available                     ',MemInGBCollected,' GB'
            WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available (65%)               ',maxsize,' GB'
            print*,'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
            IF(.NOT.use_bg_buf)print*,'RIMP2: Memory available                     ',MemInGBCollected,' GB'
