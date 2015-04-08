@@ -1489,6 +1489,25 @@ contains
     doscreen = mylsitem%setting%scheme%cs_screen.OR.&
          & mylsitem%setting%scheme%ps_screen
 
+#ifdef VAR_MPI 
+    ! Master starts up slave
+    StartUpSlaves: if(wakeslaves .and. master) then
+       ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
+       ! and call full_canonical_rimp2_slave which communicate info 
+       ! then calls full_canonical_rimp2.
+       CALL LS_GETTIM(CPU1,WALL1)
+       call ls_mpibcast(CANONMP2FULL,infpar%master,comm)
+       ! Communicate fragment information to slaves
+       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+       call mpicopy_lsitem(MyLsitem,comm)
+       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+       call mpi_bcast_fullmolecule(MyMolecule)    
+       CALL LS_GETTIM(CPU2,WALL2)
+       CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+       WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+    endif StartUpSlaves
+#endif
+
     ! ***************************************************************************************
     !Get optimal values of: MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax
     ! ***************************************************************************************
@@ -1499,11 +1518,13 @@ contains
        call get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvirt,&
             & MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax,&
             & numnodes,DECinfo%output)
-
+       
        Ibuf(1) = nOccBatchDimImax
        Ibuf(2) = nOccBatchDimJmax
        Ibuf(3) = MaxAllowedDimAlpha
        Ibuf(4) = MaxAllowedDimGamma
+    ELSE
+       Ibuf = 0
     ENDIF
     nbuf1 = 4
     call ls_mpibcast(Ibuf,nbuf1,infpar%master,comm)
@@ -1540,25 +1561,6 @@ contains
     ENDIF
     write(DECinfo%output,*)'nOccBatchesI',nOccBatchesI
     write(DECinfo%output,*)'nOccBatchesJ',nOccBatchesJ
-
-#ifdef VAR_MPI 
-    ! Master starts up slave
-    StartUpSlaves: if(wakeslaves .and. master) then
-       ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
-       ! and call full_canonical_rimp2_slave which communicate info 
-       ! then calls full_canonical_rimp2.
-       CALL LS_GETTIM(CPU1,WALL1)
-       call ls_mpibcast(CANONMP2FULL,infpar%master,comm)
-       ! Communicate fragment information to slaves
-       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
-       call mpicopy_lsitem(MyLsitem,comm)
-       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
-       call mpi_bcast_fullmolecule(MyMolecule)    
-       CALL LS_GETTIM(CPU2,WALL2)
-       CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-       WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-    endif StartUpSlaves
-#endif
 
     ! ************************************************
     ! * Restart Option                               *
