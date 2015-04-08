@@ -2906,7 +2906,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      call ls_dzero8(FullAlphaCD,w1size)
 !     setting%output%Result3D => FullAlphaCD
      cpointer = c_loc(FullAlphaCD(1))
-     call c_f_pointer(c_loc(FullAlphaCD(1)),setting%output%Result3D,[dim1,nMO1,nMO2])
+     call c_f_pointer(cpointer,setting%output%Result3D,[dim1,nMO1,nMO2])
      setting%Output%ndim3D(1) = dim1
      setting%Output%ndim3D(2) = nMO1
      setting%Output%ndim3D(3) = nMO2
