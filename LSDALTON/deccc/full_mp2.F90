@@ -240,13 +240,13 @@ contains
     ! ***************************************************************************************
     ! Get optimal values of: MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax
     ! ***************************************************************************************
-    call get_optimal_batch_sizes_for_canonical_mpmp2(MinAObatch,nbasis,nocc,nvirt,&
-         & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-         & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
-
 #ifdef VAR_MPI
     !use the numbers obtained by master  
     IF(master)THEN
+       call get_optimal_batch_sizes_for_canonical_mpmp2(MinAObatch,nbasis,nocc,nvirt,&
+            & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+            & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
+
        Ibuf(1) = nrownodes
        Ibuf(2) = ncolnodes
        Ibuf(3) = MaxAllowedDimAlpha
@@ -268,6 +268,10 @@ contains
        nOccBatchDimImax = Ibuf(7)
        nOccBatchDimJmax = Ibuf(8)
     ENDIF
+#else
+    call get_optimal_batch_sizes_for_canonical_mpmp2(MinAObatch,nbasis,nocc,nvirt,&
+         & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+         & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
 #endif
 
     IF(master)THEN
@@ -1362,7 +1366,7 @@ contains
     integer :: MinAObatch,gammaB,alphaB,nOccBatchesI,nOccBatchesJ,jB,nOccBatchDimI,nOccBatchDimJ
     integer :: nbatchesGammaRestart,nbatchesAlphaRestart,dimGamma,GammaStart,GammaEnd,dimAlpha
     integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB,offset
-    integer :: nOccBatchesIrestart,noccIstart
+    integer :: nOccBatchesIrestart,noccIstart,nbuf1,Ibuf(4)
     logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
     logical :: PermutationalSymmetryIJ
     logical,pointer :: JobsCompleted(:,:)
@@ -1489,9 +1493,31 @@ contains
     !Get optimal values of: MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax
     ! ***************************************************************************************
 
+#ifdef VAR_MPI
+    !use the numbers obtained by master  
+    IF(master)THEN
+       call get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvirt,&
+            & MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax,&
+            & numnodes,DECinfo%output)
+
+       Ibuf(1) = nOccBatchDimImax
+       Ibuf(2) = nOccBatchDimJmax
+       Ibuf(3) = MaxAllowedDimAlpha
+       Ibuf(4) = MaxAllowedDimGamma
+    ENDIF
+    nbuf1 = 4
+    call ls_mpibcast(Ibuf,nbuf1,infpar%master,comm)
+    IF(.NOT.master)THEN
+       nOccBatchDimImax = Ibuf(1)
+       nOccBatchDimJmax = Ibuf(2)
+       MaxAllowedDimAlpha = Ibuf(3)
+       MaxAllowedDimGamma = Ibuf(4)
+    ENDIF
+#else
     call get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvirt,&
          & MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax,&
          & numnodes,DECinfo%output)
+#endif
 
     write(DECinfo%output,*)'nbasis',nbasis
     write(DECinfo%output,*)'nocc  ',nocc
