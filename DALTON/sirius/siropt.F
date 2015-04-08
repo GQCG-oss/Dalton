@@ -430,7 +430,7 @@ C         --- Normalize CI vector (i.e. CREF)
 C         6-Dec-1984-hjaaj: SIRSAV changed so CREF normally normalized now
 C
       IF (NCONF .GT. 1) THEN
-         C0NORM = DNORM2(NCONF,WRK(KCREF),1)
+         C0NORM = DNRM2(NCONF,WRK(KCREF),1)
          THREQL = SQRT(NCONF*THRLDP)
          IF (ABS(C0NORM-D1) .GT. THREQL) THEN
             IF (C0NORM.EQ.D0) THEN

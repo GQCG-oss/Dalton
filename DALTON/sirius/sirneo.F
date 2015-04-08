@@ -946,8 +946,8 @@ C
                JWKAP = JWKAP  + NWOPT
             END IF
             IF (JROOT(ISIMX) .EQ. ISTATE .AND. P4FLAG(6)) THEN
-               IF(NCONFX.GT.0) YCNRM=DNORM2(NCONF,WRK(JCRV),1)
-               IF(NWOPT.GT.0)  YONRM=DNORM2(NWOPT,WRK(JORV),1)
+               IF(NCONFX.GT.0) YCNRM=DNRM2(NCONF,WRK(JCRV),1)
+               IF(NWOPT.GT.0)  YONRM=DNRM2(NWOPT,WRK(JORV),1)
                YNRM  = SQRT(YCNRM**2+YONRM**2)
             END IF
             JCRV  = JCRV + NVARX
@@ -1054,8 +1054,8 @@ C
          IBNOFF = NBVIT3
          DO 1100 ISIMX = JSIMX+1,JSIMX+NSIMX
             JROOTX = JROOT(ISIMX)
-            IF (NCONFX.GT.0) QCNRM = DNORM2(NCONF,WRK(JCRV),1)
-            IF (NWOPT.GT.0)  QONRM = DNORM2(NWOPT,WRK(JORV),1)
+            IF (NCONFX.GT.0) QCNRM = DNRM2(NCONF,WRK(JCRV),1)
+            IF (NWOPT.GT.0)  QONRM = DNRM2(NWOPT,WRK(JORV),1)
             QNRM  = SQRT(QCNRM**2+QONRM**2)
 C
             IF (JROOTX .EQ. ISTATE) THEN
@@ -1503,7 +1503,7 @@ C               will destroy KAPOPT performance.
                ICRV = ICRV + NCONF
             END IF
             IF (SYMTRZ) THEN
-               CNORM = DNORM2(NCONF,WRK(ICRV+1),1)
+               CNORM = DNRM2(NCONF,WRK(ICRV+1),1)
                IF (CNORM .GT. TLINDP) THEN
                   CNORM = D1 / CNORM
                   CALL DSCAL(NCONF,CNORM,WRK(ICRV+1),1)
@@ -2193,7 +2193,7 @@ C
 C     Normalize input BCVECS and BOVECS
 C
       DO 100 I = 1,NBC
-         TT = DNORM2(NDMBC,BCVECS(1,I),1)
+         TT = DNRM2(NDMBC,BCVECS(1,I),1)
          IF (TT.LE.THRLDP) THEN
             TT0(I)       = TT
             IBNDX(IBC+I) = 0
@@ -2201,14 +2201,14 @@ C
          ELSE
             IF (TT.LT.THRTT) THEN
                CALL DSCAL(NDMBC,(D1/TT),BCVECS(1,I),1)
-               TT = DNORM2(NDMBC,BCVECS(1,I),1)
+               TT = DNRM2(NDMBC,BCVECS(1,I),1)
             END IF
             CALL DSCAL(NDMBC,(D1/TT),BCVECS(1,I),1)
          END IF
   100 CONTINUE
 C
       DO 200 I = 1,NBO
-         TT = DNORM2(NDMBO,BOVECS(1,I),1)
+         TT = DNRM2(NDMBO,BOVECS(1,I),1)
          IF (TT.LE.THRLDP) THEN
             TT0(NBC+I)   = TT
             IBNDX(IBO+I) = 0
@@ -2216,7 +2216,7 @@ C
          ELSE
             IF (TT.LT.THRTT) THEN
                CALL DSCAL(NDMBO,(D1/TT),BOVECS(1,I),1)
-               TT = DNORM2(NDMBO,BOVECS(1,I),1)
+               TT = DNRM2(NDMBO,BOVECS(1,I),1)
             END IF
             CALL DSCAL(NDMBO,(D1/TT),BOVECS(1,I),1)
          END IF
@@ -2268,7 +2268,7 @@ C        ... orthogonalize using that prev. vectors are normalized
             TT = -DDOT(NDMBC,BCVECS(1,J),1,BCVECS(1,I),1)
             CALL DAXPY(NDMBC,TT,BCVECS(1,J),1,BCVECS(1,I),1)
  2300    CONTINUE
-         TT = DNORM2(NDMBC,BCVECS(1,I),1)
+         TT = DNRM2(NDMBC,BCVECS(1,I),1)
          IF (ITURN.EQ.1) TT0(I)=TT
          IF (TT .LE. TLINDP) THEN
             WRITE (LUPRI,3250) 'CSF',I,TT
@@ -2277,7 +2277,7 @@ C        ... orthogonalize using that prev. vectors are normalized
             IF (TT .LT. THRRND) IROUND = IROUND+1
             IF (TT.LT.THRTT) THEN
                CALL DSCAL(NDMBC,(D1/TT),BCVECS(1,I),1)
-               TT = DNORM2(NDMBC,BCVECS(1,I),1)
+               TT = DNRM2(NDMBC,BCVECS(1,I),1)
             END IF
             CALL DSCAL(NDMBC,(D1/TT),BCVECS(1,I),1)
          END IF
@@ -2291,7 +2291,7 @@ C        ... orthogonalize using that prev. vectors are normalized
             TT = -DDOT(NDMBO,BOVECS(1,J),1,BOVECS(1,I),1)
             CALL DAXPY(NDMBO,TT,BOVECS(1,J),1,BOVECS(1,I),1)
  2500    CONTINUE
-         TT = DNORM2(NDMBO,BOVECS(1,I),1)
+         TT = DNRM2(NDMBO,BOVECS(1,I),1)
          IF (ITURN.EQ.1) TT0(NBC+I) = TT
          IF (TT .LE. TLINDP) THEN
             WRITE (LUPRI,3250) 'orbital',I,TT
@@ -2300,7 +2300,7 @@ C        ... orthogonalize using that prev. vectors are normalized
             IF (TT .LT. THRRND) IROUND = IROUND+1
             IF (TT.LT.THRTT) THEN
                CALL DSCAL(NDMBO,(D1/TT),BOVECS(1,I),1)
-               TT = DNORM2(NDMBO,BOVECS(1,I),1)
+               TT = DNRM2(NDMBO,BOVECS(1,I),1)
             END IF
             CALL DSCAL(NDMBO,(D1/TT),BOVECS(1,I),1)
          END IF
