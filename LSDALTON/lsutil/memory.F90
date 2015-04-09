@@ -42,7 +42,7 @@ public mem_pseudo_dealloc
 public mem_init_background_alloc
 public mem_change_background_alloc
 public mem_free_background_alloc
-public mem_is_background_buf_init,mem_get_bg_buf_n
+public mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
 public mem_allocated_mem_real, mem_deallocated_mem_real
 public mem_allocated_global,mem_allocated_type_matrix
 !parameters
@@ -1933,27 +1933,27 @@ subroutine debug_mem_stats(lupri)
      ENDIF
 #endif
 
-     IF (max_mem_used_global.LT.0) THEN
+     IF (mem_allocated_global.LT.0) THEN
         write(GLOB,'(A8)') ' < zero '
-     ELSEIF (max_mem_used_global.LT.1000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
-     ELSEIF (max_mem_used_global.LT.1000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
-     ELSEIF (max_mem_used_global.LT.1000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
+     ELSEIF (mem_allocated_global.LT.1000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E0_realk," B "
+     ELSEIF (mem_allocated_global.LT.1000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-3_realk," kB"
+     ELSEIF (mem_allocated_global.LT.1000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-6_realk," MB"
 #ifdef VAR_INT64
-     ELSEIF (max_mem_used_global.LT.1000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
-     ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
-     ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
+     ELSEIF (mem_allocated_global.LT.1000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-9_realk," GB"
+     ELSEIF (mem_allocated_global.LT.1000000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-12_realk," TB"
+     ELSEIF (mem_allocated_global.LT.1000000000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-15_realk," PB"
      ELSE
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-18_realk," EB"
      ENDIF
 #else
      ELSE
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-9_realk," GB"
      ENDIF
 #endif
 
@@ -2128,11 +2128,18 @@ function mem_is_background_buf_init() result(init)
    logical :: init
    init = buf_realk%init
 end function mem_is_background_buf_init
+
 function mem_get_bg_buf_n() result(n)
    implicit none
    integer(kind=8) :: n
    n = buf_realk%nmax - buf_realk%offset
 end function mem_get_bg_buf_n
+
+function mem_get_bg_buf_free() result(n)
+   implicit none
+   integer(kind=8) :: n
+   n = buf_realk%nmax-buf_realk%offset
+end function mem_get_bg_buf_free
 
 subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
    implicit none

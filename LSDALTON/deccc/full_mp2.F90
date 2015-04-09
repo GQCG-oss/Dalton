@@ -240,13 +240,13 @@ contains
     ! ***************************************************************************************
     ! Get optimal values of: MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax
     ! ***************************************************************************************
-    call get_optimal_batch_sizes_for_canonical_mpmp2(MinAObatch,nbasis,nocc,nvirt,&
-         & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-         & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
-
 #ifdef VAR_MPI
     !use the numbers obtained by master  
     IF(master)THEN
+       call get_optimal_batch_sizes_for_canonical_mpmp2(MinAObatch,nbasis,nocc,nvirt,&
+            & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+            & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
+
        Ibuf(1) = nrownodes
        Ibuf(2) = ncolnodes
        Ibuf(3) = MaxAllowedDimAlpha
@@ -268,6 +268,10 @@ contains
        nOccBatchDimImax = Ibuf(7)
        nOccBatchDimJmax = Ibuf(8)
     ENDIF
+#else
+    call get_optimal_batch_sizes_for_canonical_mpmp2(MinAObatch,nbasis,nocc,nvirt,&
+         & numnodes,nrownodes,ncolnodes,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+         & MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,nOccBatchDimImax,nOccBatchDimJmax)
 #endif
 
     IF(master)THEN
@@ -1362,7 +1366,7 @@ contains
     integer :: MinAObatch,gammaB,alphaB,nOccBatchesI,nOccBatchesJ,jB,nOccBatchDimI,nOccBatchDimJ
     integer :: nbatchesGammaRestart,nbatchesAlphaRestart,dimGamma,GammaStart,GammaEnd,dimAlpha
     integer :: AlphaStart,AlphaEnd,B,noccRestartI,noccRestartJ,nJobs,startjB,offset
-    integer :: nOccBatchesIrestart,noccIstart
+    integer :: nOccBatchesIrestart,noccIstart,nbuf1,Ibuf(4)
     logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
     logical :: PermutationalSymmetryIJ
     logical,pointer :: JobsCompleted(:,:)
@@ -1485,13 +1489,56 @@ contains
     doscreen = mylsitem%setting%scheme%cs_screen.OR.&
          & mylsitem%setting%scheme%ps_screen
 
+#ifdef VAR_MPI 
+    ! Master starts up slave
+    StartUpSlaves: if(wakeslaves .and. master) then
+       ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
+       ! and call full_canonical_rimp2_slave which communicate info 
+       ! then calls full_canonical_rimp2.
+       CALL LS_GETTIM(CPU1,WALL1)
+       call ls_mpibcast(CANONMP2FULL,infpar%master,comm)
+       ! Communicate fragment information to slaves
+       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+       call mpicopy_lsitem(MyLsitem,comm)
+       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+       call mpi_bcast_fullmolecule(MyMolecule)    
+       CALL LS_GETTIM(CPU2,WALL2)
+       CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+       WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+    endif StartUpSlaves
+#endif
+
     ! ***************************************************************************************
     !Get optimal values of: MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax
     ! ***************************************************************************************
 
+#ifdef VAR_MPI
+    !use the numbers obtained by master  
+    IF(master)THEN
+       call get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvirt,&
+            & MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax,&
+            & numnodes,DECinfo%output)
+       
+       Ibuf(1) = nOccBatchDimImax
+       Ibuf(2) = nOccBatchDimJmax
+       Ibuf(3) = MaxAllowedDimAlpha
+       Ibuf(4) = MaxAllowedDimGamma
+    ELSE
+       Ibuf = 0
+    ENDIF
+    nbuf1 = 4
+    call ls_mpibcast(Ibuf,nbuf1,infpar%master,comm)
+    IF(.NOT.master)THEN
+       nOccBatchDimImax = Ibuf(1)
+       nOccBatchDimJmax = Ibuf(2)
+       MaxAllowedDimAlpha = Ibuf(3)
+       MaxAllowedDimGamma = Ibuf(4)
+    ENDIF
+#else
     call get_optimal_batch_sizes_for_canonical_mp2(MinAObatch,nbasis,nocc,nvirt,&
          & MaxAllowedDimAlpha,MaxAllowedDimGamma,nOccBatchDimImax,nOccBatchDimJmax,&
          & numnodes,DECinfo%output)
+#endif
 
     write(DECinfo%output,*)'nbasis',nbasis
     write(DECinfo%output,*)'nocc  ',nocc
@@ -1514,25 +1561,6 @@ contains
     ENDIF
     write(DECinfo%output,*)'nOccBatchesI',nOccBatchesI
     write(DECinfo%output,*)'nOccBatchesJ',nOccBatchesJ
-
-#ifdef VAR_MPI 
-    ! Master starts up slave
-    StartUpSlaves: if(wakeslaves .and. master) then
-       ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
-       ! and call full_canonical_rimp2_slave which communicate info 
-       ! then calls full_canonical_rimp2.
-       CALL LS_GETTIM(CPU1,WALL1)
-       call ls_mpibcast(CANONMP2FULL,infpar%master,comm)
-       ! Communicate fragment information to slaves
-       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
-       call mpicopy_lsitem(MyLsitem,comm)
-       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
-       call mpi_bcast_fullmolecule(MyMolecule)    
-       CALL LS_GETTIM(CPU2,WALL2)
-       CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-       WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-    endif StartUpSlaves
-#endif
 
     ! ************************************************
     ! * Restart Option                               *
@@ -2172,6 +2200,8 @@ contains
     nOccTMP = nocc
     nbasisTMP = nbasis
     !test if full is possible
+    MaxAllowedDimAlpha = -1
+    MaxAllowedDimGamma = -1
     if(DECinfo%manual_occbatchsizes)then
        nOccBatchDimI = DECinfo%batchOccI
        nOccBatchDimJ = DECinfo%batchOccJ
@@ -2296,20 +2326,27 @@ contains
                       WRITE(DECinfo%output,*)'CANONMP2MEM: Final AO batches chosen:',MaxAllowedDimAlpha,MaxAllowedDimGamma
                    ENDIF
                    EXIT OccLoopI
-                ENDIF
-                IF(iiB.EQ.nOcc*nOcc)THEN
-                   WRITE(DECinfo%output,*)
-                   nOccBatchDimI = 1
-                   nOccBatchDimJ = 1
-                   MaxAllowedDimAlpha = MinAObatch
-                   MaxAllowedDimGamma = MinAObatch
-                   WRITE(DECinfo%output,*)'CANONMP2MEM: Final Occupied batches chosen:',nOccBatchDimI,nOccBatchDimJ
-                   WRITE(DECinfo%output,*)'CANONMP2MEM: Final AO batches chosen:',MaxAllowedDimAlpha,MaxAllowedDimGamma
+                ELSE
+                   IF(iiB.EQ.nOcc)THEN
+                      nOccBatchDimI = 1
+                      nOccBatchDimJ = 1
+                      MaxAllowedDimAlpha = MinAObatch
+                      MaxAllowedDimGamma = MinAObatch
+                      WRITE(DECinfo%output,*)'CANONMP2MEM: Final Occupied batches chosen:',nOccBatchDimI,nOccBatchDimJ
+                      WRITE(DECinfo%output,*)'CANONMP2MEM: Final AO batches chosen:',MaxAllowedDimAlpha,MaxAllowedDimGamma
+                   ENDIF
                 ENDIF
              enddo OccLoopI
           ENDIF
        ENDIF
     ENDIF
+    IF(MaxAllowedDimAlpha.LT.MinAObatch)THEN
+       call lsquit('Not enough memory in MP2',-1)
+    ENDIF
+    IF(MaxAllowedDimGamma.LT.MinAObatch)THEN
+       call lsquit('Not enough memory in MP2',-1)
+    ENDIF
+
   end subroutine get_optimal_batch_sizes_for_canonical_mp2
 
   subroutine memestimateCANONMP2(iB,jB,dimAlpha,dimGamma,nbasis,nvirt,maxsize)

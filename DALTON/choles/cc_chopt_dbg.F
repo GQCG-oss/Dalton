@@ -1176,8 +1176,8 @@ C     ---------------------------
 C     Print norms.
 C     ------------
 
-      XNORM = DNORM2(LENMAT,XMAT,1)
-      RNORM = DNORM2(LENMAT,RMAT,1)
+      XNORM = DNRM2(LENMAT,XMAT,1)
+      RNORM = DNRM2(LENMAT,RMAT,1)
 
       WRITE(6,*)
       WRITE(6,*) '   CCHO_RXMAT_DBG:'
@@ -1433,10 +1433,10 @@ C
       WRITE(6,*)
       WRITE(6,*) '   Entering H_VW_2:'
       WRITE(6,*) '   ================'
-      WRITE(6,*) '   Norm of K1: ',DNORM2(NO3V,XK1,1)
-      WRITE(6,*) '   Norm of K2: ',DNORM2(NO3V,XK2,1)
-      WRITE(6,*) '   Norm of M1: ',DNORM2(NO2V2,XM1,1)
-      WRITE(6,*) '   Norm of M2: ',DNORM2(NO2V2,XM2,1)
+      WRITE(6,*) '   Norm of K1: ',DNRM2(NO3V,XK1,1)
+      WRITE(6,*) '   Norm of K2: ',DNRM2(NO3V,XK2,1)
+      WRITE(6,*) '   Norm of M1: ',DNRM2(NO2V2,XM1,1)
+      WRITE(6,*) '   Norm of M2: ',DNRM2(NO2V2,XM2,1)
       WRITE(6,*)
 
 C     VMAT Coul.
@@ -1462,14 +1462,14 @@ C     ----------
          ENDDO
       ENDDO
       WRITE(6,*) '   Norm of VMAT after Coul.: ',
-     &               DNORM2(NO3V,VMAT,1)
+     &               DNRM2(NO3V,VMAT,1)
 
 C     WMAT Coul.
 C     ----------
 
       CALL DCOPY(NO3V,VMAT,1,WMAT,1)
       WRITE(6,*) '   Norm of WMAT after Coul.: ',
-     &               DNORM2(NO3V,WMAT,1)
+     &               DNRM2(NO3V,WMAT,1)
 
 C     VMAT Exch.
 C     ----------
@@ -1494,7 +1494,7 @@ C     ----------
          ENDDO
       ENDDO
       WRITE(6,*) '   Norm of VMAT after Exch.: ',
-     &               DNORM2(NO3V,VMAT,1)
+     &               DNRM2(NO3V,VMAT,1)
 
 C     WMAT Exch.
 C     ----------
@@ -1518,29 +1518,29 @@ C     ----------
          ENDDO
       ENDDO
       WRITE(6,*) '   Norm of WMAT after Exch.: ',
-     &               DNORM2(NO3V,WMAT,1)
+     &               DNRM2(NO3V,WMAT,1)
       WRITE(6,*)
 
       NAI = NVIRT*NRHFT
       NJK = NRHFT*NRHFT
 
       WRITE(6,*) '   VMAT(ai,jk):'
-      WRITE(6,*) '   Norm of V: ',DNORM2(NAI*NJK,VMAT,1)
+      WRITE(6,*) '   Norm of V: ',DNRM2(NAI*NJK,VMAT,1)
       CALL OUTPUT(VMAT,1,NAI,1,NJK,NAI,NJK,1,6)
       WRITE(6,*)
 
       WRITE(6,*) '   WMAT(ai,jk):'
-      WRITE(6,*) '   Norm of W: ',DNORM2(NAI*NJK,WMAT,1)
+      WRITE(6,*) '   Norm of W: ',DNRM2(NAI*NJK,WMAT,1)
       CALL OUTPUT(WMAT,1,NAI,1,NJK,NAI,NJK,1,6)
       WRITE(6,*)
 
       WRITE(6,*)
       WRITE(6,*) '   Exiting H_VW_2:'
       WRITE(6,*) '   ==============='
-      WRITE(6,*) '   Norm of K1: ',DNORM2(NO3V,XK1,1)
-      WRITE(6,*) '   Norm of K2: ',DNORM2(NO3V,XK2,1)
-      WRITE(6,*) '   Norm of M1: ',DNORM2(NO2V2,XM1,1)
-      WRITE(6,*) '   Norm of M2: ',DNORM2(NO2V2,XM2,1)
+      WRITE(6,*) '   Norm of K1: ',DNRM2(NO3V,XK1,1)
+      WRITE(6,*) '   Norm of K2: ',DNRM2(NO3V,XK2,1)
+      WRITE(6,*) '   Norm of M1: ',DNRM2(NO2V2,XM1,1)
+      WRITE(6,*) '   Norm of M2: ',DNRM2(NO2V2,XM2,1)
       WRITE(6,*)
 
       RETURN
@@ -1568,9 +1568,9 @@ C
       NO3V  = NO2*NOV
       NO2V2 = NOV*NOV
 
-      XT1NRM = DNORM2(NOV,T1AM,1)
-      XT2NRM = DNORM2(NO2V2,T2AM,1)
-      XNIJKA = DNORM2(NO3V,XIJKA,1)
+      XT1NRM = DNRM2(NOV,T1AM,1)
+      XT2NRM = DNRM2(NO2V2,T2AM,1)
+      XNIJKA = DNRM2(NO3V,XIJKA,1)
       XNAIBJ = 0.00D0
       DO J = 1,NRHFT
          DO B = 1,NVIRT
@@ -1614,14 +1614,14 @@ C     ----------
          ENDDO
       ENDDO
       WRITE(6,*) '   Norm of VMAT after Coul.: ',
-     &               DNORM2(NO3V,VMAT,1)
+     &               DNRM2(NO3V,VMAT,1)
 
 C     WMAT Coul.
 C     ----------
 
       CALL DCOPY(NO3V,VMAT,1,WMAT,1)
       WRITE(6,*) '   Norm of WMAT after Coul.: ',
-     &               DNORM2(NO3V,WMAT,1)
+     &               DNRM2(NO3V,WMAT,1)
 
 C     VMAT Exch.
 C     ----------
@@ -1647,7 +1647,7 @@ C     ----------
          ENDDO
       ENDDO
       WRITE(6,*) '   Norm of VMAT after Exch.: ',
-     &               DNORM2(NO3V,VMAT,1)
+     &               DNRM2(NO3V,VMAT,1)
 
 C     WMAT Exch.
 C     ----------
@@ -1672,7 +1672,7 @@ C     ----------
          ENDDO
       ENDDO
       WRITE(6,*) '   Norm of WMAT after Exch.: ',
-     &               DNORM2(NO3V,WMAT,1)
+     &               DNRM2(NO3V,WMAT,1)
       WRITE(6,*)
 
 C     PMAT
@@ -1721,12 +1721,12 @@ C     ----
       NJK = NRHFT*NRHFT
 
       WRITE(6,*) '   VMAT(ai,jk):'
-      WRITE(6,*) '   Norm of V: ',DNORM2(NAI*NJK,VMAT,1)
+      WRITE(6,*) '   Norm of V: ',DNRM2(NAI*NJK,VMAT,1)
       CALL OUTPUT(VMAT,1,NAI,1,NJK,NAI,NJK,1,6)
       WRITE(6,*)
 
       WRITE(6,*) '   WMAT(ai,jk):'
-      WRITE(6,*) '   Norm of W: ',DNORM2(NAI*NJK,WMAT,1)
+      WRITE(6,*) '   Norm of W: ',DNRM2(NAI*NJK,WMAT,1)
       CALL OUTPUT(WMAT,1,NAI,1,NJK,NAI,NJK,1,6)
       WRITE(6,*)
 
@@ -1734,12 +1734,12 @@ C     ----
       NJ   = NRHFT
 
       WRITE(6,*) '   PMAT(aik,j):'
-      WRITE(6,*) '   Norm of P: ',DNORM2(NAIK*NJ,PMAT,1)
+      WRITE(6,*) '   Norm of P: ',DNRM2(NAIK*NJ,PMAT,1)
       CALL OUTPUT(PMAT,1,NAIK,1,NJ,NAIK,NJ,1,6)
       WRITE(6,*)
 
       WRITE(6,*) '   QMAT(aik,j):'
-      WRITE(6,*) '   Norm of Q: ',DNORM2(NAIK*NJ,QMAT,1)
+      WRITE(6,*) '   Norm of Q: ',DNRM2(NAIK*NJ,QMAT,1)
       CALL OUTPUT(QMAT,1,NAIK,1,NJ,NAIK,NJ,1,6)
       WRITE(6,*)
 

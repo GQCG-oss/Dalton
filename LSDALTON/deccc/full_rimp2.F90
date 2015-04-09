@@ -120,7 +120,7 @@ contains
     integer(kind=long) :: maxsize
     real(realk) :: tcpuTOT,twallTOT,tcpu_start,twall_start, tcpu_end,twall_end
     real(realk),pointer :: AlphaCD(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
-    real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:)
+    real(realk),pointer :: Calpha(:),Calpha2(:,:,:),Calpha3(:,:,:)
     real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:)
     real(realk),pointer :: EpsOcc(:),EpsVirt(:),ABdecomp(:,:)
     logical :: ABdecompCreate
@@ -231,30 +231,18 @@ contains
     CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
     call mem_alloc(ABdecomp,nAux,nAux)
     ABdecompCreate = .TRUE.
-    IF(.FALSE.)THEN
-       call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-            & wakeslaves,MyMolecule%Cv%elm2,nvirt,&
-            & MyMolecule%Co%elm2(:,offset+1:offset+nocc),nocc,mynum,numnodes,&
-            & nAtoms,Calpha,NBA,ABdecomp,ABdecompCreate)
-       !    PRINT*,'Build_CalphaMO  nbasis,nAux,nvirt,nocc,NBA',NBA
-       !    WRITE(6,*)'Final Calph(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
-       !    WRITE(6,*)'Print Subset Final Calph(NBA=',NBA,',1:4)  MYNUM',MYNUM
-       !    call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
-       CALL LSTIMER('RIMP2: CalphaMO ',TS2,TE2,LUPRI,FORCEPRINT)
-    ELSE
-       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-       intspec(2) = 'R' !Regular AO basis function on center 3
-       intspec(3) = 'R' !Regular AO basis function on center 4
-       intspec(4) = 'C' !Coulomb Operator
-       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-            & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,&
-            & MyMolecule%Co%elm2(:,offset+1:offset+nocc),nocc,mynum,numnodes,&
-            & Calpha,NBA,ABdecomp,ABdecompCreate,intspec)
-       !    PRINT*,'Build_CalphaMO2  nbasis,nAux,nvirt,nocc,NBA',NBA
-       !    WRITE(6,*)'Final Calph2(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
-       !    WRITE(6,*)'Print Subset Final Calph2(NBA=',NBA,',1:4)  MYNUM',MYNUM
-       !    call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
-    ENDIF
+    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+    intspec(2) = 'R' !Regular AO basis function on center 3
+    intspec(3) = 'R' !Regular AO basis function on center 4
+    intspec(4) = 'C' !Coulomb Operator
+    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+         & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,&
+         & MyMolecule%Co%elm2(:,offset+1:offset+nocc),nocc,mynum,numnodes,&
+         & Calpha,NBA,ABdecomp,ABdecompCreate,intspec,.FALSE.)
+    !    PRINT*,'Build_CalphaMO2  nbasis,nAux,nvirt,nocc,NBA',NBA
+    !    WRITE(6,*)'Final Calph2(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
+    !    WRITE(6,*)'Print Subset Final Calph2(NBA=',NBA,',1:4)  MYNUM',MYNUM
+    !    call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
     call mem_dealloc(ABdecomp)
 
     call mem_alloc(EpsOcc,nocc)
