@@ -1369,7 +1369,7 @@ contains
     integer :: nOccBatchesIrestart,noccIstart,nbuf1,Ibuf(4)
     logical :: MoTrans, NoSymmetry,SameMol,JobDone,JobInfo1Free,FullRHS,doscreen,NotAllMessagesRecieved
     logical :: PermutationalSymmetryIJ
-    logical,pointer :: JobsCompleted(:,:)
+    logical,pointer :: JobsCompleted(:,:),JobsCompletedOrig(:,:)
     integer(kind=8) :: maxsize
     TYPE(DECscreenITEM)   :: DecScreen
     Character            :: intSpec(5)
@@ -1566,6 +1566,7 @@ contains
     ! * Restart Option                               *
     ! ************************************************
     call mem_alloc(JobsCompleted,nOccBatchesI,nOccBatchesJ)
+    call mem_alloc(JobsCompletedOrig,nOccBatchesI,nOccBatchesJ)
     JobDone = .FALSE.           
     IF(master)THEN
        IF(DECinfo%DECrestart)THEN
@@ -1608,6 +1609,7 @@ contains
        JobsCompleted = .FALSE.
        JobDone = .FALSE.
     ENDIF
+    JobsCompletedOrig = JobsCompleted
 
 #ifdef VAR_MPI
     IF(DECinfo%DECrestart)THEN
@@ -1773,8 +1775,7 @@ contains
                 !the remainder
                 nOccBatchDimJ = MOD(nOcc,nOccBatchDimJmax)
              ENDIF
-             IF(JobsCompleted(iB,jB))CYCLE
-
+             IF(JobsCompletedOrig(iB,jB))CYCLE BatchOccJ
              nJobs = nJobs + 1 
 #ifdef VAR_MPI
              ! MPI: Only do this Job if this is a task for this particular rank
@@ -1999,6 +2000,7 @@ contains
 !                WRITE(DECinfo%output,*)'E4(iB=',iB,',jB=',jB,')=',tmp_mp2_energy
 !                WRITE(DECinfo%output,*)'canon MP2 energy contribution =',tmp_mp2_energy,'Mynum=',mynum
              ENDIF
+
              call mem_dealloc(Amat)
              call mem_dealloc(Bmat)
              call mem_dealloc(VOVO)
@@ -2090,11 +2092,6 @@ contains
              CPU_MPICOMM = CPU_MPICOMM + (CPU1-CPU2)
              WALL_MPICOMM = WALL_MPICOMM + (WALL1-WALL2)
              mp2_energy = mp2_energy + tmp_mp2_energy
-             IF(PermutationalSymmetryIJ)THEN
-                IF(JobInfo1(1).NE.JobInfo1(2))THEN
-                   mp2_energy = mp2_energy + tmp_mp2_energy
-                ENDIF
-             ENDIF
              JobsCompleted(JobInfo1(1),JobInfo1(2)) = .TRUE.             
              IF(PermutationalSymmetryIJ) JobsCompleted(JobInfo1(2),JobInfo1(1)) = .TRUE.
              NotAllMessagesRecieved = COUNT(JobsCompleted).NE.nOccbatchesI*nOccbatchesJ
@@ -2155,7 +2152,8 @@ contains
        call mem_dealloc(EpsVirt)
     ENDIF
     call mem_dealloc(JobsCompleted)
-
+    call mem_dealloc(JobsCompletedOrig)
+    
     IF(MASTER)THEN
        write(lupri,*)  ''
        write(lupri,*)  'MP2 CORRELATION ENERGY = ', mp2_energy
