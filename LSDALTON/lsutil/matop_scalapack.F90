@@ -3273,7 +3273,7 @@ call lsquit('TKTKTKTKTKTKTKTKTKTK',-1)
    ! MPI_COMM_WORLD and SL_INIT should not be called directly
    SLGrid%ictxt = scalapack_comm
    ! Set up the process grid - sets ictxt to a BLACS handle
-   CALL BLACS_GRIDINIT(SLGrid%ictxt, 'Row-major', TMP(1), TMP(2))
+   CALL BLACS_GRIDINIT(SLGrid%ictxt, 'R', TMP(1), TMP(2))
    ! Again, do not call blacs_get. The BLACS system context
    ! and corresponding communicator are simply MPI communicators.
    SLGrid%Masterictxt = scalapack_comm

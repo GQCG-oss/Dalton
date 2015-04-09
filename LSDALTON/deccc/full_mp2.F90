@@ -2200,6 +2200,8 @@ contains
     nOccTMP = nocc
     nbasisTMP = nbasis
     !test if full is possible
+    MaxAllowedDimAlpha = -1
+    MaxAllowedDimGamma = -1
     if(DECinfo%manual_occbatchsizes)then
        nOccBatchDimI = DECinfo%batchOccI
        nOccBatchDimJ = DECinfo%batchOccJ
@@ -2324,20 +2326,27 @@ contains
                       WRITE(DECinfo%output,*)'CANONMP2MEM: Final AO batches chosen:',MaxAllowedDimAlpha,MaxAllowedDimGamma
                    ENDIF
                    EXIT OccLoopI
-                ENDIF
-                IF(iiB.EQ.nOcc*nOcc)THEN
-                   WRITE(DECinfo%output,*)
-                   nOccBatchDimI = 1
-                   nOccBatchDimJ = 1
-                   MaxAllowedDimAlpha = MinAObatch
-                   MaxAllowedDimGamma = MinAObatch
-                   WRITE(DECinfo%output,*)'CANONMP2MEM: Final Occupied batches chosen:',nOccBatchDimI,nOccBatchDimJ
-                   WRITE(DECinfo%output,*)'CANONMP2MEM: Final AO batches chosen:',MaxAllowedDimAlpha,MaxAllowedDimGamma
+                ELSE
+                   IF(iiB.EQ.nOcc)THEN
+                      nOccBatchDimI = 1
+                      nOccBatchDimJ = 1
+                      MaxAllowedDimAlpha = MinAObatch
+                      MaxAllowedDimGamma = MinAObatch
+                      WRITE(DECinfo%output,*)'CANONMP2MEM: Final Occupied batches chosen:',nOccBatchDimI,nOccBatchDimJ
+                      WRITE(DECinfo%output,*)'CANONMP2MEM: Final AO batches chosen:',MaxAllowedDimAlpha,MaxAllowedDimGamma
+                   ENDIF
                 ENDIF
              enddo OccLoopI
           ENDIF
        ENDIF
     ENDIF
+    IF(MaxAllowedDimAlpha.LT.MinAObatch)THEN
+       call lsquit('Not enough memory in MP2',-1)
+    ENDIF
+    IF(MaxAllowedDimGamma.LT.MinAObatch)THEN
+       call lsquit('Not enough memory in MP2',-1)
+    ENDIF
+
   end subroutine get_optimal_batch_sizes_for_canonical_mp2
 
   subroutine memestimateCANONMP2(iB,jB,dimAlpha,dimGamma,nbasis,nvirt,maxsize)

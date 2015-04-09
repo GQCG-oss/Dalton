@@ -2774,8 +2774,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 end subroutine ccsolver
 
-subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,&
-     & saferun,use_singles,JOB,ccmodel,bg_was_init)
+subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,&
+     & use_singles,JOB,ccmodel,bg_was_init)
    implicit none
    type(lsitem), intent(inout) :: MyLsitem
    integer, intent(in)  :: nb, no, nv, JOB, ccmodel
