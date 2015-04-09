@@ -221,10 +221,11 @@ contains
    tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
   end subroutine tensor_set_dil_backend
 
-  subroutine tensor_allocate_dense(T)
+  subroutine tensor_allocate_dense(T,bg)
      implicit none
      type(tensor), intent(inout) :: T
-     call memory_allocate_tensor_dense(T)
+     logical, optional, intent(in) :: bg
+     call memory_allocate_tensor_dense(T, bg=bg)
   end subroutine tensor_allocate_dense
 
 

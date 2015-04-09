@@ -697,7 +697,8 @@ module lspdm_tensor_operations_module
 
       call time_start_phase(PHASE_WORK)
     endif
-    call memory_allocate_tensor_dense(gmo)
+    use_bg = mem_is_background_buf_init() 
+    call memory_allocate_tensor_dense(gmo,bg=)
 
     call time_start_phase(PHASE_COMM)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)

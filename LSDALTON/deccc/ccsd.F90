@@ -1186,6 +1186,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      endif
 
+     use_bg_buf = mem_is_background_buf_init()
+
 #ifdef DIL_ACTIVE
      scheme=scheme_tmp !```DIL: remove
      if(scheme==1) then
@@ -1200,11 +1202,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         t2%access_type = AT_ALL_ACCESS
         if(scheme/=1) then
            call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
-           call tensor_allocate_dense( t2 )
+           call tensor_allocate_dense( t2, bg = use_bg_buf )
            buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
-           call mem_alloc(buf1,buf_size)
+           if( use_bg_buf )then
+              call mem_pseudo_alloc(buf1,buf_size)
+           else
+              call mem_alloc(buf1,buf_size)
+           endif
            call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
-           call mem_dealloc(buf1)
+           if( use_bg_buf )then
+              call mem_pseudo_dealloc(buf1)
+           else
+              call mem_dealloc(buf1)
+           endif
            call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         endif
      endif
@@ -1546,7 +1556,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !call get_currently_available_memory(MemFree2)
      !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
 
-     use_bg_buf = mem_is_background_buf_init()
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
@@ -2963,10 +2972,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
      endif
 
+     if( use_bg_buf )then
+        call mem_pseudo_dealloc(w1)
+     else
+        call mem_dealloc(w1)
+     endif
+     call tensor_free(u2)
+
 #ifdef VAR_MPI
      if((.not.local).and.(scheme==4.or.scheme==3))then
+
         call tensor_mv_dense2tiled(omega2,.true.)
-        call tensor_mv_dense2tiled(t2,.true.)
+        call tensor_deallocate_dense( t2 )
+
      endif
      if(master.and.DECinfo%PL>2)then
         write(*,'("CCSD time in lsmpi_win_unlock phase C",g10.3)') time_lsmpi_win_unlock - unlock_time
@@ -2975,12 +2993,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 
-     if( use_bg_buf )then
-        call mem_pseudo_dealloc(w1)
-     else
-        call mem_dealloc(w1)
-     endif
-     call tensor_free(u2)
 
      call time_start_phase(PHASE_WORK, ttot = twall)
      if(master.and.DECinfo%PL>2)then
