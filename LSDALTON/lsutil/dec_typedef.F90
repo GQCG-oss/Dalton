@@ -175,6 +175,8 @@ module dec_typedef_module
      !> use system information to determine available memory during a dec
      !calculation
      logical :: use_system_memory_info
+     !> Memory available for Background buffer in DEC calculation
+     real(realk) :: bg_memory
 
      ! Memory use for full molecule structure
      real(realk) :: fullmolecule_memory
@@ -242,10 +244,12 @@ module dec_typedef_module
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option
      logical :: CRASHCALC
+     !> Crash Calc Debug keyword - to test restart option
+     logical :: CRASHESTI
      !> Debug CC driver
      logical :: cc_driver_debug
-     !> Debug CC driver
-     logical :: cc_driver_use_bg_buffer
+     !> Use Background buffer
+     logical :: use_bg_buffer
      !> Integer specifying which scheme to use in CCSD calculations (debug)
      integer :: en_mem
      !overwrite standard preconditioning settings in solver

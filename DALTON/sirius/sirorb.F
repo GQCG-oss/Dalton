@@ -191,7 +191,7 @@ C        EVAL defined to avoid ftnchek error message, not needed here
 C        CALL NEXKAP(NGDM,GDM,NBFIL3,IFIL3,IFIL5,IBNDX,
 C    *               NRSEQ,ROTRST,THRKAP,EVAL,DAMP,DIAOR,
 C    *               CMO,GORB,DV,PV,FC,FV,WRK,LFREE)
-         OSTP0  = DNORM2(NWOPT,WRK(KXKAP),1)
+         OSTP0  = DNRM2(NWOPT,WRK(KXKAP),1)
          XKAPN2 = OSTP0**2
          DEPRED = DP5*EVAL*(XKAPN2 + D1/(DAMP*DAMP))
          WRITE (LUPRI,'(/A,F15.10)')
@@ -464,7 +464,7 @@ C
 C
 C     SCALE STEP TO ROTRST
 C
-      OSTP1  = DNORM2(NWOPT,XKAP,1)
+      OSTP1  = DNRM2(NWOPT,XKAP,1)
       FAC    = ROTRST/OSTP1
       CALL DSCAL(NWOPT,FAC,XKAP,1)
 C

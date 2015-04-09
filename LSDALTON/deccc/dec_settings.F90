@@ -66,6 +66,7 @@ contains
     DECinfo%memory                 = 2.0E0_realk
     DECinfo%memory_defined         = .false.
     DECinfo%use_system_memory_info = .false.
+    DECinfo%bg_memory              = -2.0E0_realk
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc  = .false. ! full molecular cc
@@ -92,8 +93,9 @@ contains
     DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%distribute_fullmolecule = .false.
     DECinfo%CRASHCALC               = .false.
+    DECinfo%CRASHESTI               = .false.
     DECinfo%cc_driver_debug         = .false.
-    DECinfo%cc_driver_use_bg_buffer = .false.
+    DECinfo%use_bg_buffer           = .false.
     DECinfo%manual_batchsizes       = .false.
     DECinfo%ccsdAbatch              = 0
     DECinfo%ccsdGbatch              = 0
@@ -529,6 +531,9 @@ contains
           read(input,*) DECinfo%memory           
           DECinfo%memory_defined=.true.
 
+       case('.BG_MEMORY') 
+          read(input,*) DECinfo%bg_memory           
+
        case('.USE_SYS_MEM_INFO') 
           DECinfo%use_system_memory_info = .true.
 
@@ -586,6 +591,7 @@ contains
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.CRASHCALC'); DECinfo%CRASHCALC=.true.
+       case('.CRASHESTI'); DECinfo%CRASHESTI=.true.
        case('.PUREHYDROGENDEBUG'); DECinfo%PureHydrogenDebug=.true.
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
@@ -764,7 +770,7 @@ contains
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
-       case('.CCDRIVER_BG_BUF');      DECinfo%cc_driver_use_bg_buffer = .true.
+       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
        case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
        case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
@@ -1229,6 +1235,22 @@ contains
             & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
     end if
 
+    if(DECinfo%use_bg_buffer.AND.DECinfo%bg_memory.LT.0.0E0_realk) then
+       write(DECinfo%output,*) 'Background Memory buffer size not set!'
+       write(DECinfo%output,*) 'Please specify .BG_MEMORY keyword (in gigabytes)'
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#endif
+       write(DECinfo%output,*) '.BG_MEMORY'
+       write(DECinfo%output,*) '8.0'
+       write(DECinfo%output,*) ''
+       call lsquit('.BACKGROUND_BUFFER requires specification of .BG_MEMORY keyword!',-1)
+    end if
+
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
@@ -1398,8 +1420,9 @@ contains
     write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
+    write(lupri,*) 'CRASHESTI            ', DECitem%CRASHESTI
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
-    write(lupri,*) 'cc_driver_use_bg_buffer ', DECitem%cc_driver_use_bg_buffer
+    write(lupri,*) 'use_bg_buffer ', DECitem%use_bg_buffer
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
     write(lupri,*) 'ccsd_expl ', DECitem%ccsd_expl

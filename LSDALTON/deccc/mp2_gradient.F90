@@ -2014,11 +2014,12 @@ contains
     funit = -1
     FileName='mp2grad.info'
 
-    ! Sanity check
+    ! Check if file exists
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then
-       call lsquit('read_gradient_and_energies_for_restart: &
-            & File mp2grad.info does not exist!',-1)
+       write(DECinfo%output,*) 'WARNING: Restart file: ', FileName
+       write(DECinfo%output,*) 'does not exist! I therefore calculate it from scratch...'
+       return
     end if
 
     ! Open file mp2grad.info

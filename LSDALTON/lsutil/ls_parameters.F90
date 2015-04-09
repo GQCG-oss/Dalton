@@ -133,6 +133,7 @@ MODULE lsparameters
   integer,parameter :: SET_TENSOR_ALWAYS_SYNC_TRUE  = 66
   integer,parameter :: INIT_BG_BUF                  = 67
   integer,parameter :: FREE_BG_BUF                  = 68
+  integer,parameter :: CHANGE_BG_BUF                = 69
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
