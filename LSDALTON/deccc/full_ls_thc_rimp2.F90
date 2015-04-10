@@ -46,7 +46,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   integer :: nAtoms,lupri,ngrid,Iprint,NBA,M,N,K,I,J,A,B,ALPHA,P,Q,offset
   real(realk) :: TS,TE,epsilon,TMP
   real(realk),pointer :: EpsOcc(:),EpsVirt(:),X(:,:),S(:,:),S_inv(:,:),Zpq(:,:)
-  real(realk),pointer :: Calpha(:,:,:),ABdecomp(:,:),Mmat(:,:),Epq(:,:),XO(:,:)
+  real(realk),pointer :: Calpha(:),ABdecomp(:,:),Mmat(:,:),Epq(:,:),XO(:,:)
   real(realk),pointer :: XV(:,:),TZpq(:,:),IntTHC(:,:,:,:),IntRI(:,:,:,:)
   real(realk),pointer :: SC(:,:)
   logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate
@@ -65,7 +65,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   nbasis = MyMolecule%nbasis
   nb = nbasis
   nocc   = MyMolecule%nocc
-  nvirt  = MyMolecule%nunocc
+  nvirt  = MyMolecule%nvirt
   noccfull = nocc
   nAtoms = MyMolecule%nAtoms
   LUPRI = DECinfo%output
@@ -94,14 +94,14 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   M = ngrid   !rows of Output Matrix
   N = nvirt   !columns of Output Matrix
   K = nbasis  !summation dimension
-  call dgemm('N','N',M,N,K,1.0E0_realk,X,M,MyMolecule%Cv,K,0.0E0_realk,XV,M)
+  call dgemm('N','N',M,N,K,1.0E0_realk,X,M,MyMolecule%Cv%elm2,K,0.0E0_realk,XV,M)
 
   !step 2c XO(P,i)=X(P,mu)*Co(mu,i)
   call mem_alloc(XO,ngrid,nocc)
   M = ngrid   !rows of Output Matrix
   N = nocc    !columns of Output Matrix
   K = nbasis  !summation dimension
-  call dgemm('N','N',M,N,K,1.0E0_realk,X,M,MyMolecule%Co,K,0.0E0_realk,XO,M)
+  call dgemm('N','N',M,N,K,1.0E0_realk,X,M,MyMolecule%Co%elm2,K,0.0E0_realk,XO,M)
   call mem_dealloc(X)
 
   !Step 3 Construct the Grid Overlap Matrix Eq. 28 of JCP 137, 224106
@@ -122,9 +122,9 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
   ABdecompCreate = .TRUE.
   call Build_CalphaMO2(Mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
-       & FORCEPRINT,CollaborateWithSlaves,MyMolecule%Cv,nvirt,&
-       & MyMolecule%Co,nocc,mynum,numnodes,Calpha,NBA,ABdecomp,&
-       & ABdecompCreate,intspec)
+       & FORCEPRINT,CollaborateWithSlaves,MyMolecule%Cv%elm2,nvirt,&
+       & MyMolecule%Co%elm2,nocc,mynum,numnodes,Calpha,NBA,ABdecomp,&
+       & ABdecompCreate,intspec,.FALSE.)
   call mem_dealloc(ABdecomp)
 
   !step 6 construct M(P,alpha) 
@@ -162,17 +162,17 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
   !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset)
   do I=1,nocc
-     EpsOcc(I) = MyMolecule%ppfock(I+offset,I+offset)
+     EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset)
   enddo
   !$OMP END PARALLEL DO
   call mem_alloc(EpsVirt,nvirt)
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
   !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
   do A=1,nvirt
-     EpsVirt(A) = MyMolecule%qqfock(A,A)
+     EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
   enddo
   !$OMP END PARALLEL DO
-  
+
   call LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,mp2_energy)
 
   call mem_dealloc(XO)

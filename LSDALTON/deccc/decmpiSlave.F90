@@ -72,7 +72,7 @@ subroutine dec_lsmpi_slave(comm)
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
       case(LSTHCRIMP2FULL);
-         call full_canonical_ls_thc_rimp2_slave
+!         call full_canonical_ls_thc_rimp2_slave
       case(CANONMP2FULL);
          call full_canonical_mp2_slave
 #ifdef MOD_UNRELEASED 
