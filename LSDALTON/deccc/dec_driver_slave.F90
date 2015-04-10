@@ -751,6 +751,8 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.,.false.,memoryneeded)
   elseif(MyFragment%ccmodel==MODEL_RIMP2) then ! RIMP2
      !do nothing ntasks is not used anyway
+  elseif(MyFragment%ccmodel==MODEL_LSTHCRIMP2) then ! LS-THC-RIMP2
+     !do nothing
   else  ! CC2 or CCSD
      mpi_split = .true.
      call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)

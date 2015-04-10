@@ -628,6 +628,13 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCRIMP2)
        ENDIF
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2, use occ energy
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTLSTHCRIMP2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCLSTHCRIMP2)
+       ENDIF
     case(MODEL_RPA)
        ! RPA, use occ energy
        if(SOS) then

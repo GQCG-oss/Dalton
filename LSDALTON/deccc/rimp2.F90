@@ -127,7 +127,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk) :: phase_cntrs(nphases)
   integer(kind=long) :: nSize
   character :: intspec(4)
-  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
+  TYPE(MoleculeInfo),pointer :: molecule1,molecule2,molecule3,molecule4
   ! cublas stuff
   type(c_ptr) :: cublas_handle
   integer*4 :: stat

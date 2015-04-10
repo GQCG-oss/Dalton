@@ -791,6 +791,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,'(1X,a)') '*                      Full MP2 calculation is done !                       *'
    else if (ccmodel == MODEL_RIMP2) then
       write(DECinfo%output,'(1X,a)') '*                      Full RI-MP2 calculation is done !                    *'
+   else if (ccmodel == MODEL_LSTHCRIMP2) then
+      write(DECinfo%output,'(1X,a)') '*                      Full LS-THC-RI-MP2 calculation is done !             *'
    else if (ccmodel == MODEL_RPA ) then
       write(DECinfo%output,'(1X,a)') '*                      Full dRPA calculation is done !                       *'
    else if (ccmodel == MODEL_SOSEX ) then
@@ -1906,7 +1908,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       use_singles = .false.
       atype = 'REAR'
 
-   case( MODEL_RIMP2 )
+   case( MODEL_RIMP2,MODEL_LSTHCRIMP2 )
 
       call lsquit("ERROR(ccsolver_par): RI-MP2 is not implemented iteratively",-1)
 
@@ -2468,7 +2470,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
                ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
-            case( MODEL_RIMP2 )
+            case( MODEL_RIMP2,MODEL_LSTHCRIMP2)
 
                ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
@@ -2615,7 +2617,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          EnergyForCCmodelRestart: select case(CCmodel)
          case( MODEL_MP2 )
             ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
-         case( MODEL_RIMP2 )
+         case( MODEL_RIMP2,MODEL_LSTHCRIMP2)
             ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
             ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
@@ -3036,7 +3038,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
          call lsquit("ERROR(ccsolver_get_residual): job not implemented for MP2",-1)
       end select
 
-   case( MODEL_RIMP2 )
+   case( MODEL_RIMP2,MODEL_LSTHCRIMP2 )
 
       call lsquit('ERROR(get_residual): RI-MP2 has no residual - non iterative',-1)
 
@@ -3132,7 +3134,7 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
             B(j,i) = B(i,j)
          end do
       end do
-   case( MODEL_RIMP2 ) 
+   case( MODEL_RIMP2,MODEL_LSTHCRIMP2 ) 
       call lsquit('RIMP2 not implemented in ccsolver_calculate_crop_matrix',-1)
    case( MODEL_CC2, MODEL_CCSD ) 
 
@@ -3382,6 +3384,8 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
    case(MODEL_MP2)
       use_singles = .false.
    case(MODEL_RIMP2)
+      use_singles = .false.
+   case(MODEL_LSTHCRIMP2)
       use_singles = .false.
    case(MODEL_CC2)
       use_singles = .true.
