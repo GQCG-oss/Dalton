@@ -3444,10 +3444,11 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
    character(tensor_MSG_LEN) :: msg
    integer :: a,i
-   logical :: use_singles, get_multipliers
+   logical :: use_singles, get_multipliers, use_bg
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
    get_multipliers = (JOB == SOLVE_MULTIPLIERS)
+   use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > t2%nelms)
 
    !MODIFY FOR NEW MODEL THAT IS USING THE CC DRIVER
    ! set model specifics here
@@ -3680,7 +3681,7 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
 
    if(readfile2)then
       ! allocate dense part of t2 array:
-      if (.not.local) call memory_allocate_tensor_dense(t2)
+      if (.not.local) call tensor_allocate_dense(t2,bg=use_bg)
       READ(fu_t2) t2%elm1
       READ(fu_t2) norm
       READ(fu_t2) energy

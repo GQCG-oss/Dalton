@@ -516,10 +516,10 @@ module tensor_basic_module
   subroutine tensor_free_basic(arr)
     implicit none
     type(tensor), intent(inout) :: arr
-    call tensor_free_aux(arr)
     if(associated(arr%elm1))call memory_deallocate_tensor_dense(arr)
     if(associated(arr%ti))  call memory_deallocate_tile(arr)
     if(associated(arr%access_type)) deallocate( arr%access_type )
+    call tensor_free_aux(arr)
   end subroutine tensor_free_basic
 
   !> \author Patrick Ettenhuber

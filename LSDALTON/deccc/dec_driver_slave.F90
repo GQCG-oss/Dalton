@@ -288,7 +288,7 @@ contains
   subroutine BackGroundBufferAllocate()
     implicit none
     logical :: use_bg_buf
-    real(realk) :: bytes_to_alloc
+    integer(kind=8) :: bytes_to_alloc
     use_bg_buf = .FALSE.
 #ifdef VAR_MPI
     IF(DECinfo%use_bg_buffer)use_bg_buf = .TRUE.
@@ -303,7 +303,7 @@ contains
              print*,'DECinfo%memory   =',DECinfo%memory
              call lsquit('.BGMEMORY not set correctly',-1)
           ENDIF
-          bytes_to_alloc = DECinfo%bg_memory*1.0E+9_realk 
+          bytes_to_alloc = int(DECinfo%bg_memory*1.0E+9_realk,kind=8)
           call mem_init_background_alloc(bytes_to_alloc)     
        ENDIF
     ENDIF

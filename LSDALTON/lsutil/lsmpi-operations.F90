@@ -2033,10 +2033,10 @@ END SUBROUTINE mpicopy_reduced_screen_info
 
   subroutine mem_change_background_alloc_all_nodes(comm,bytes)
      implicit none
-     real(realk),intent(in) :: bytes
+     integer(kind=8),intent(in) :: bytes
      integer(kind=ls_mpik),intent(in) :: comm
      integer(kind=ls_mpik) :: nnod,me
-     real(realk) :: bytes_int
+     integer(kind=8) :: bytes_int
      call time_start_phase(PHASE_WORK)
      
      bytes_int  = bytes
