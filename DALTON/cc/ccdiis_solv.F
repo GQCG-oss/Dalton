@@ -591,7 +591,7 @@ C
 C        Set norm of solution vector to 1 and save on file
 C
          DO IBVEC = 1, NBX
-           XNRM = DNORM2(NCCVAR,WRK(KSOL+(IBVEC-1)*NCCVAR),1)
+           XNRM = DNRM2(NCCVAR,WRK(KSOL+(IBVEC-1)*NCCVAR),1)
            CALL DSCAL(NCCVAR,1.0D0/XNRM,WRK(KSOL+(IBVEC-1)*NCCVAR),1)
 
            IVEC = ISIMC - 1 + IBVEC   
@@ -662,7 +662,7 @@ C
 
          DO JR = 1,NBX
             JROOTJ  = ISIMC - 1 + JR
-            QNORM   = DNORM2(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),1)
+            QNORM   = DNRM2(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),1)
             RNORM(JROOTJ) = QNORM
             RMXNORM = MAX(RMXNORM,QNORM)
 C
@@ -693,7 +693,7 @@ C
      *                        WRK(KWRK1),LWRK1)
 
 
-               XNRM = DNORM2(NCCVAR,WRK(KSOL1),1)
+               XNRM = DNRM2(NCCVAR,WRK(KSOL1),1)
                CALL DSCAL(NCCVAR,1.0D0/XNRM,WRK(KSOL1),1)
 
                CALL CC_PUTVEC(LUFC1,FILC1,LUFC2,FILC2,LUFC12,FILC12,

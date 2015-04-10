@@ -1,17 +1,38 @@
-!SIMPLE TEST PROGRAM FOR TESTING POINTER RESHAPES
+!SIMPLE TEST PROGRAM FOR TESTING POINTER RESHAPES                                                                  
+module typedefmod
+type vec
+   real,pointer,contiguous :: t(:)
+end type vec
+
+type tile
+   real,pointer,contiguous :: t(:) => null()
+end type tile
+
+end module typedefmod
 
 program test
+  use typedefmod
    implicit none
    real,pointer :: fptr1(:)
    real,pointer :: fptr2(:)
    real,pointer,contiguous :: fptr3(:,:,:)
    logical      :: success
-   integer      :: a,b,c
-   
+   integer      :: a,b,c,n1,n2
+   real,pointer :: matV(:)
+   type(vec)    :: vect
+   type(tile),pointer   :: tt(:)
+   real,pointer,contiguous :: tpm(:,:)
+   n1=3
+   n2=5
+   allocate(tt(3))
+   tpm(1:n1,1:n2) => tt(1)%t
+
+   matV(1:5) => vect%t
+
    allocate(fptr1(12))
    call random_number(fptr1)
-   
-   !Test pointer reshape II
+
+   !Test pointer reshape II                                                                                        
    fptr3(1:2,1:2,1:2) => fptr1(4:)
    success = .true.
 
