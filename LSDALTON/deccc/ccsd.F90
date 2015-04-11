@@ -1205,7 +1205,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme/=1) then
            call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
            call tensor_allocate_dense( t2, bg = use_bg_buf )
-           buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),3)*t2%tsize
+           buf_size = 3*t2%tsize
            if( use_bg_buf )then
               call mem_pseudo_alloc(buf1,buf_size)
            else
@@ -5032,13 +5032,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: os, vs
      integer(kind=ls_mpik) :: me, nnod, mode
      integer(kind=8) :: o2v2
-     logical :: master
+     logical :: master,bg
      character(4) :: atype
+
 
      call time_start_phase(PHASE_WORK)
 
      me     = 0_ls_mpik
      nnod   = 1_ls_mpik
+     bg     = mem_is_background_buf_init()
 #ifdef VAR_MPI
      nnod   = infpar%lg_nodtot
      me     = infpar%lg_mynum
@@ -5055,7 +5057,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Cterm
      fdim1 = [no,no,nv,nv]
      sdim1 = [os,os,vs,vs]
-     call tensor_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype,local=local)
+     call tensor_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype,local=local,bg=bg)
      call tensor_lock_local_wins(Coovv,'e',mode)
 
      !Build C intermediate
@@ -5095,8 +5097,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      sdim1  = [vs,os,os,vs]
      fdim2  = govov%dims
      sdim2  = govov%tdim
-     call tensor_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype,local=local)
-     call tensor_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype,local=local)
+     call tensor_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype,local=local,bg=bg)
+     call tensor_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype,local=local,bg=bg)
      call tensor_lock_local_wins(Dvoov,'e',mode)
      call tensor_lock_local_wins(Lovov,'e',mode)
 
@@ -6002,15 +6004,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       !THROUGHOUT THE ALGORITHM
       !************************
-
-      call tensor_default_batches(d1,mode,tdim,splt)
-      call tensor_get_ntpm(d1,tdim,mode,ntpm,ntiles)
-      nloctiles=ceiling(float(ntiles)/float(nnod))
-      tsze = 1
-      do i = 1, mode
-        tsze = tsze * tdim(i)
-      enddo
-
       if( choice /= 8 )then
          !govov stays in pdm and is dense in second part
          ! u2 + H +G + space for 2 update tile s
@@ -6036,12 +6029,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !********************
 
       ! w1 + FO + w2 + w3
-      !in cd terms w2 and w3 have tl1, in b2 w2 has tl2
-      cd = max(2_long*tl1,i8*tl2)
-      ! in e2 term w2 has max(tl2,tl3) and w3 has max(no2,nv2)
-      e2 = max(tl3,tl4) + max(no*no,nv*nv)
+      e2 = max(no*no,nv*nv)
 
-      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*max(cd,e2)))
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*e2))
 
       if( choice == 8 )then
          !in the beginning when t2 is contracted to be local

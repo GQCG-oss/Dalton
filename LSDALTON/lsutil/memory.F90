@@ -2074,6 +2074,7 @@ subroutine mem_pseudo_alloc_realk(p,n)
    integer(kind=8), intent(in) :: n
 
    if (buf_realk%offset+n > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",n
       call lsquit("ERROR(mem_pseudo_alloc_realk): more requested than available",-1)
    endif
 

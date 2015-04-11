@@ -2905,6 +2905,18 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
             sch=DECinfo%en_mem
          endif
 
+         if(DECinfo%PL>2)then
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Found scheme :",I2)')sch
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g7.2," GB")')&
+               &Freebytes/1024.0E0_realk**3
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4     : ",g7.2," GB")')&
+               &mem41/1024.0E0_realk**3
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3     : ",g7.2," GB")')&
+               &mem31/1024.0E0_realk**3
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2     : ",g7.2," GB")')&
+               &mem21/1024.0E0_realk**3
+         endif
+
          select case(sch)
          case(4)
             nelms_res_out = ceiling(float(mem41)/8.0)
@@ -2932,13 +2944,13 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
       endif
 
-      mem_out = mem_out + nelms_res_out
-      mem_in  = max(mem_in,nelms_res_in)
+      mem_out = mem_out + nelms_res_out*8
+      mem_in  = max(mem_in,nelms_res_in*8)
 
       bytes = mem_out
 
-      !we may use 50% of the difference between bytes and Freebytes now as the background buffer or 2*mem_in
-      bytes_to_alloc = max(min( (Freebytes - bytes)/2, 2*mem_in ), mem_in)
+      !we may use 80% of the difference between bytes and Freebytes now as the background buffer or 2*mem_in
+      bytes_to_alloc = max(min( (Freebytes - bytes) * 8 / 10, 5 * mem_in ), mem_in)
       
       if(DECinfo%PL>1)then
 
@@ -2951,7 +2963,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          write (DECinfo%output,'("Requirement for the residual (i) : ",g9.2," GB")')(nelms_res_in*8)/1024.0E0_realk**3
 
          write (DECinfo%output,'("Min heap memory requirement (=o) : ",g9.2," GB")') mem_out/1024.0E0_realk**3
-         write (DECinfo%output,'("Min buffer requirement (=i)      : ",g9.2," GB")') mem_in /1024.0E0_realk**3
+         write (DECinfo%output,'("Min buffer requirement      (=i) : ",g9.2," GB")') mem_in /1024.0E0_realk**3
 
          write (DECinfo%output,'("Requesting                       : ",g9.2," GB to be allocated in BG buffer")')&
             &bytes_to_alloc/1024.0E0_realk**3
