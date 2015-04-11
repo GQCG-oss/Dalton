@@ -281,9 +281,9 @@ contains
     nullify(mini1,mini2,mini3,mini4)
     nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS   ! occupied AOS (only valence for frozen core)
-    nvirt = MyFragment%nunoccAOS   ! virtual AOS
+    nvirt = MyFragment%nvirtAOS   ! virtual AOS
     noccEOS = MyFragment%noccEOS  ! occupied EOS
-    nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
+    nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
     nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
     ncore = MyFragment%ncore   ! number of core orbitals
     ! For frozen core energy calculation, we never need core orbitals
@@ -2005,7 +2005,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
   !>     STARTING POINT FOR MORE ADVANCED ROUTINES!
   !> \author Kasper Kristensen
   !> \date March 2013
-  subroutine get_ijba_integrals(MySetting,nbasis,nocc,nunocc,Cocc,Cunocc,ijba)
+  subroutine get_ijba_integrals(MySetting,nbasis,nocc,nvirt,Cocc,Cvirt,ijba)
 
     implicit none
 
@@ -2015,16 +2015,16 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     integer,intent(in) :: nbasis
     !> Number of occupied orbitals
     integer,intent(in) :: nocc
-    !> Number of unoccupied orbitals
-    integer,intent(in) :: nunocc
+    !> Number of virtupied orbitals
+    integer,intent(in) :: nvirt
     !> Occupied MO coefficients
     real(realk),intent(in),dimension(nbasis,nocc) :: Cocc
     !> Unoccupied MO coefficients
-    real(realk),intent(in),dimension(nbasis,nunocc) :: Cunocc
+    real(realk),intent(in),dimension(nbasis,nvirt) :: Cvirt
     !>  (a i | b j) integrals stored in the order (i,j,b,a)
-    real(realk),intent(inout) :: ijba(nocc,nocc,nunocc,nunocc)
+    real(realk),intent(inout) :: ijba(nocc,nocc,nvirt,nvirt)
     integer :: alphaB,gammaB,dimAlpha,dimGamma,GammaStart, GammaEnd, AlphaStart, AlphaEnd
-    real(realk),pointer :: tmp1(:),tmp2(:),CoccT(:,:), CunoccT(:,:)
+    real(realk),pointer :: tmp1(:),tmp2(:),CoccT(:,:), CvirtT(:,:)
     integer(kind=long) :: dim1,dim2
     integer :: m,k,n,idx
     logical :: FullRHS,doscreen
@@ -2044,9 +2044,9 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! For efficiency when calling dgemm, save transposed matrices
     ! ***********************************************************
     call mem_alloc(CoccT,nocc,nbasis)
-    call mem_alloc(CunoccT,nunocc,nbasis)
+    call mem_alloc(CvirtT,nvirt,nbasis)
     call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
-    call mat_transpose(nbasis,nunocc,1.0E0_realk,Cunocc,0.0E0_realk,CunoccT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,Cvirt,0.0E0_realk,CvirtT)
 
 
 
@@ -2200,17 +2200,17 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call mem_dealloc(tmp1)
 
 
-       ! Transform beta to unoccupied index "b".
+       ! Transform beta to virtupied index "b".
        ! ***************************************
-       ! tmp1(b,alphaB,gammaB,j) = sum_{delta} CunoccT(b,delta) tmp2(delta,alphaB,gammaB,j)
-       ! Note: We have stored the transposed Cunocc matrix, so no need to transpose in
+       ! tmp1(b,alphaB,gammaB,j) = sum_{delta} CvirtT(b,delta) tmp2(delta,alphaB,gammaB,j)
+       ! Note: We have stored the transposed Cvirt matrix, so no need to transpose in
        ! the call to dgemm.
-       m = nunocc
+       m = nvirt
        k = nbasis
        n = dimAlpha*dimGamma*nocc
-       dim1 = i8*nocc*nunocc*dimAlpha*dimGamma  ! dimension of tmp2 array
+       dim1 = i8*nocc*nvirt*dimAlpha*dimGamma  ! dimension of tmp2 array
        call mem_alloc(tmp1,dim1)
-       call dec_simple_dgemm(m,k,n,CunoccT,tmp2,tmp1, 'n', 'n')
+       call dec_simple_dgemm(m,k,n,CvirtT,tmp2,tmp1, 'n', 'n')
        call mem_dealloc(tmp2)
 
 
@@ -2219,7 +2219,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        dim2=dim1
        call mem_alloc(tmp2,dim2)
        ! tmp2(gammaB,j,b,alphaB) = tmp1^T(b,alphaB;gammaB,j)
-       m = nunocc*dimAlpha    ! dimension of "row" in tmp1 array (to be "column" in tmp2)
+       m = nvirt*dimAlpha    ! dimension of "row" in tmp1 array (to be "column" in tmp2)
        n = nocc*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
        call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
        call mem_dealloc(tmp1)
@@ -2230,23 +2230,23 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        ! tmp1(i,j,b,alphaB) = sum_{gamma in gammaBatch} CoccT(i,gamma) tmp2(gamma,j,b,alphaB)
        m = nocc
        k = dimGamma
-       n = nocc*nunocc*dimAlpha
-       dim1 = i8*nocc*nocc*nunocc*dimAlpha
+       n = nocc*nvirt*dimAlpha
+       dim1 = i8*nocc*nocc*nvirt*dimAlpha
        call mem_alloc(tmp1,dim1)
        call dec_simple_dgemm(m,k,n,CoccT(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
        call mem_dealloc(tmp2)
 
 
-       ! Transform alpha batch index to unoccupied index and update output integral
+       ! Transform alpha batch index to virtupied index and update output integral
        ! **************************************************************************
-       ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  Cunocc(alpha,a)
-       m = nocc*nocc*nunocc
+       ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  Cvirt(alpha,a)
+       m = nocc*nocc*nvirt
        k = dimAlpha
-       n = nunocc
-       call dec_simple_dgemm_update(m,k,n,tmp1,CunoccT(:,AlphaStart:AlphaEnd),ijba, 'n', 't')
+       n = nvirt
+       call dec_simple_dgemm_update(m,k,n,tmp1,CvirtT(:,AlphaStart:AlphaEnd),ijba, 'n', 't')
        call mem_dealloc(tmp1)
-       ! Note: To have things consecutive in memory it is better to pass CunoccT to the dgemm
-       ! routine and then transpose (insted of passing Cunocc and not transpose).
+       ! Note: To have things consecutive in memory it is better to pass CvirtT to the dgemm
+       ! routine and then transpose (insted of passing Cvirt and not transpose).
 
     end do BatchAlpha
  end do BatchGamma
@@ -2293,7 +2293,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
 
 
  call mem_dealloc(CoccT)
- call mem_dealloc(CunoccT)
+ call mem_dealloc(CvirtT)
 
 end subroutine Get_ijba_integrals
 
@@ -2472,10 +2472,10 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
   ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
   nocc=MyFragment%noccAOS
-  nvirt=MyFragment%nunoccAOS
+  nvirt=MyFragment%nvirtAOS
 
   noccEOS=MyFragment%noccEOS
-  nvirtEOS=MyFragment%nunoccEOS
+  nvirtEOS=MyFragment%nvirtEOS
   nbasis = MyFragment%nbasis
 
 
@@ -2815,10 +2815,10 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
   ! Set the relevant dimensions for easy reference
   ! **********************************************
   nocc=MyFragment%noccAOS  ! occupied AOS (only valence for frozen core)
-  nvirt = MyFragment%nunoccAOS   ! virtual AOS
+  nvirt = MyFragment%nvirtAOS   ! virtual AOS
   nbasis = MyFragment%nbasis      ! number of basis functions in atomic extent
   noccEOS = MyFragment%noccEOS  ! occupied EOS
-  nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
+  nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
   if(DECinfo%frozencore .and. first_order_integrals) then
      nocctot = MyFragment%nocctot     ! core+valence
   else

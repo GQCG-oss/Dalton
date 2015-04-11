@@ -524,6 +524,8 @@ module tensor_basic_module
      arr%offset      = -1
      arr%zeros       = .false.
      arr%initialized = .false.
+     arr%nnod        = -1
+     arr%comm        = -1
   end subroutine tensor_reset_value_defaults
 
   !> \author Patrick Ettenhuber

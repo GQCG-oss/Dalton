@@ -37,7 +37,6 @@ subroutine pdm_tensor_slave(comm)
    CALL PDM_tensor_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
    call time_start_phase(PHASE_WORK)
 
-
    SELECT CASE(JOB)
    CASE(JOB_PC_DEALLOC_DENSE)
       call memory_deallocate_tensor_dense_pc(A)
