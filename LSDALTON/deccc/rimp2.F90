@@ -1937,12 +1937,12 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   integer,pointer :: IndexToGlobal(:,:)
   real(realk),pointer :: AlphaBeta(:,:)
   real(realk),pointer :: TMPAlphaBetaDecomp(:,:),AlphaCD3(:),NBAR(:,:)
-  real(realk),pointer :: AlphaCD5(:),Calpha2(:,:,:),CalphaNAF(:,:,:)
+  real(realk),pointer :: AlphaCD5(:),Calpha2(:),CalphaNAF(:)
   real(realk),pointer :: W(:,:),Wprime(:,:),NBARTMP(:,:)
   real(realk) :: TS3,TE3,MemInGBCollected,MemInGBCollected2
   real(realk) :: MemForFullAOINT,MemForFullMOINT,maxsize,MemForPartialMOINT
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
-  integer(kind=long)    :: nSize,n8,nbuf1,nbuf2,nbuf3
+  integer(kind=long)    :: nSize,n8
   integer(kind=ls_mpik) :: node 
   integer :: MaxNaux,M,N,K,ndimMax1,nbasisAuxMPI2(numnodes),MynbasisAuxMPI2
   integer :: nthreads,PerformReduction,Oper,nAuxMPI(numnodes),MaxnAuxMPI,I
@@ -2285,7 +2285,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         M = NREDLOC          !rows of Output Matrix
         N = nvirt*nocc       !columns of Output Matrix
         K = nbasisAux        !summation dimension
-        IF(.NOT.use_bg_buf) call mem_alloc(Calpha,NREDLOC,nvirt,nocc)
+        nsize = NREDLOC*nvirt*nocc
+        IF(.NOT.use_bg_buf) call mem_alloc(Calpha,nsize)
         call dgemm('N','N',M,N,K,1.0E0_realk,W,M,AlphaCD3,K,0.0E0_realk,Calpha,M)
         IF(use_bg_buf)THEN
            call mem_pseudo_dealloc(alphaCD3)
@@ -2293,7 +2294,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            !of a "permanent" memory array. I only need the first 1:NREDLOC*nvirt*nocc elements
            !so I shrink the array dimension by deassociating (NOT deallocating) and reassociate
            call mem_pseudo_dealloc(Calpha)
-           call mem_pseudo_alloc(Calpha,NREDLOC,nvirt,nocc)
+           nsize = NREDLOC*nvirt*nocc
+           call mem_pseudo_alloc(Calpha,nsize)
         ELSE
            call mem_dealloc(alphaCD3)
         ENDIF
@@ -2350,7 +2352,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            call lsmpi_barrier(infpar%lg_comm)
            call time_start_phase( PHASE_COMM )
            node = mynum
-           call ls_mpibcast(AlphaCD3,nbuf1*nbuf2*nbuf3,node,infpar%lg_comm)
+           nsize = nbuf1*nbuf2*nbuf3
+           call ls_mpibcast(AlphaCD3,nsize,node,infpar%lg_comm)
 #endif
            call RIMP2_buildCalphaFromAlphaCD(nocc,nvirt,numnodes,&
                 & nAuxMPI,IndexToGlobal,MaxnAuxMPI,AlphaCD3,nAuxMPI(inode),&
@@ -2373,7 +2376,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            call time_start_phase( PHASE_IDLE )
            call lsmpi_barrier(infpar%lg_comm)
            call time_start_phase( PHASE_COMM )
-           call ls_mpibcast(AlphaCD5,nbuf1*nbuf2*nbuf3,node,infpar%lg_comm)
+           nsize = nbuf1*nbuf2*nbuf3
+           call ls_mpibcast(AlphaCD5,nsize,node,infpar%lg_comm)
            call time_start_phase( PHASE_WORK )
 #endif
            call RIMP2_buildCalphaFromAlphaCD(nocc,nvirt,numnodes,&
@@ -2432,8 +2436,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            J=J+1
         enddo
         NREDLOC = nbasisAuxMPI3(mynum+1)
-        IF(.NOT.use_bg_buf)call mem_alloc(CalphaNAF,NREDLOC,nvirt,nocc)
         nsize = NREDLOC*nvirt*nocc
+        IF(.NOT.use_bg_buf)call mem_alloc(CalphaNAF,nsize)
         call ls_dzero8(CalphaNAF,nsize)
         call mem_alloc(NBARTMP,NREDLOC,nbasisAux)
         call buildNBARTMP(NBARTMP,NBAR,NREDLOC,NRED,nbasisAux,mynum,ndimMax2,numnodes)
@@ -2448,7 +2452,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
               call lsmpi_barrier(infpar%lg_comm)
               call time_start_phase( PHASE_COMM )
               node = mynum
-              call ls_mpibcast(Calpha,nbuf1,nbuf2,nbuf3,node,infpar%lg_comm)
+              nsize = nbuf1*nbuf2*nbuf3
+              call ls_mpibcast(Calpha,nsize,node,infpar%lg_comm)
 #endif
               offset = (inode-1)*ndimMax1
               offset2 = numnodes*ndimMax1 + inode - 1 
@@ -2458,16 +2463,18 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            ELSE
               node = inode-1
               !recieve
+              nsize = nbasisAuxMPI2(inode)*nvirt*nocc
               IF(use_bg_buf)THEN
-                 call mem_pseudo_alloc(Calpha2,nbasisAuxMPI2(inode),nvirt,nocc)
+                 call mem_pseudo_alloc(Calpha2,nsize)
               ELSE
-                 call mem_alloc(Calpha2,nbasisAuxMPI2(inode),nvirt,nocc)
+                 call mem_alloc(Calpha2,nsize)
               ENDIF
 #ifdef VAR_MPI
               call time_start_phase( PHASE_IDLE )
               call lsmpi_barrier(infpar%lg_comm)
               call time_start_phase( PHASE_COMM )
-              call ls_mpibcast(Calpha2,nbuf1,nbuf2,nbuf3,node,infpar%lg_comm)
+              nsize = nbuf1*nbuf2*nbuf3
+              call ls_mpibcast(Calpha2,nsize,node,infpar%lg_comm)
               call time_start_phase( PHASE_WORK )
 #endif
               
@@ -2488,6 +2495,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         IF(use_bg_buf)THEN
            call mem_pseudo_dealloc(Calpha)
            Calpha => CalphaNAF
+           call lsquit('clearly not working',-1)
         ELSE
            call mem_dealloc(Calpha)
            Calpha => CalphaNAF           
