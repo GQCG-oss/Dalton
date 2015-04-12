@@ -1489,7 +1489,7 @@ C
          ECROOT = EMY + EVAL(JCROTX)
          IF (JCROTX .LE. LSTJCR) THEN
 C           this is one of the roots we want to converge
-            QCNRM = DNORM2(NCONF,WRK(JRVECS),1)
+            QCNRM = DNRM2(NCONF,WRK(JRVECS),1)
 C
             IF (WCRESD) THEN
 C
@@ -1639,7 +1639,7 @@ C               WARNING : if symmetry were broken in residual vectors,
 C                         and thus in sigma vectors, then this will
 C                         lead to constant residual.
 C
-            CNORM = DNORM2(NCONF,WRK(ICRV+1),1)
+            CNORM = DNRM2(NCONF,WRK(ICRV+1),1)
             TLINDP = SQRT(NCONF*THRLDP)
             IF (CNORM .GT. TLINDP) THEN
                CNORM = D1 / CNORM
@@ -1766,7 +1766,7 @@ C
 C Normalize input CVEC
 C
       DO 100 I = 1,NCNEW
-         TT = DNORM2(NCONF,CVEC(1,I),1)
+         TT = DNRM2(NCONF,CVEC(1,I),1)
          IF (TT.LE.TLINDP) THEN
             WRITE (LUPRI,3240) I,KCROOT(I),TT
             KCROOT(I) = 0
@@ -1774,7 +1774,7 @@ C
             IF (TT.LT.THRTT) THEN
                TT = D1 / TT
                CALL DSCAL(NCONF,TT,CVEC(1,I),1)
-               TT = DNORM2(NCONF,CVEC(1,I),1)
+               TT = DNRM2(NCONF,CVEC(1,I),1)
             END IF
             TT = D1 / TT
             CALL DSCAL(NCONF,TT,CVEC(1,I),1)
@@ -1811,7 +1811,7 @@ C        (which have been normalized in the code following 2300)
             END IF
  2300    CONTINUE
 C        Normalize
-         TT = DNORM2(NCONF,CVEC(1,I),1)
+         TT = DNRM2(NCONF,CVEC(1,I),1)
          IF (TT .LE. TLINDP) THEN
             WRITE (LUPRI,3250) I,KCROOT(I),TT
             KCROOT(I) = 0
@@ -1820,7 +1820,7 @@ C        Normalize
             IF (TT.LT.THRTT) THEN
                TT = D1 / TT
                CALL DSCAL(NCONF,TT,CVEC(1,I),1)
-               TT = DNORM2(NCONF,CVEC(1,I),1)
+               TT = DNRM2(NCONF,CVEC(1,I),1)
             END IF
             TT = D1 / TT
             CALL DSCAL(NCONF,TT,CVEC(1,I),1)

@@ -1183,7 +1183,7 @@ C
  2350       JTURN = JTURN + 1
             OVLPI = D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
             IF (IPRRSP .GE. 0) THEN
-               X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+               X1 = DNRM2(LBZY,BVECS(IBVEC),1)
                WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
      *         ' RSPNOR, norm and <ZY/YZ> overlap before S-1/2',X1,OVLPI
             call flshfo(lupri)
@@ -1211,7 +1211,7 @@ C
 !              that OVLPI ca. 1.0D-14 after first S-1/2;
 !              but ca. 1.0D-16 after second S-1/2
                IF (IPRRSP .GE. 0) THEN
-                  X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+                  X1 = DNRM2(LBZY,BVECS(IBVEC),1)
                   OVLPI= D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
                   WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
      *            ' RSPNOR, norm and <ZY/YZ> overlap after  S-1/2',
@@ -1578,7 +1578,7 @@ C
  2350       JTURN = JTURN + 1
             OVLPI = D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
             IF (IPRRSP .GE. 10) THEN
-               X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+               X1 = DNRM2(LBZY,BVECS(IBVEC),1)
                WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
      *    ' RSPORTMCD, norm and <ZY/YZ> overlap before S-1/2',X1,OVLPI
             call flshfo(lupri)
@@ -1608,7 +1608,7 @@ C
 !              but ca. 1.0D-16 after second S-1/2
                !IF (IPRRSP .GE. 22) THEN
                IF (IPRRSP .GE. 10) THEN
-                  X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+                  X1 = DNRM2(LBZY,BVECS(IBVEC),1)
                   OVLPI= D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
                   WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
      *      ' RSPORTMCD, norm and <ZY/YZ> overlap after  S-1/2',

@@ -268,7 +268,7 @@ C
       DIMENSION CIVEC(*)
 C
       NCIVAR = NCSASM(IREFSM)
-      VNRM = DNORM2(NCIVAR,CIVEC,1)
+      VNRM = DNRM2(NCIVAR,CIVEC,1)
       ITRM = 0
       ILOOP = 0
       IF(THRES .LT. 0.0D0 ) THRES = ABS(THRES)
@@ -420,7 +420,7 @@ c
       LUN98=-13300
       if (owrite) CALL GPOPEN(
      *   LUN98,'DETSTR','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
-      VNRM = DNORM2(NCIVAR,CIVEC,1)
+      VNRM = DNRM2(NCIVAR,CIVEC,1)
       ITRM = 0
       IDET = 0
       IIDET = 0

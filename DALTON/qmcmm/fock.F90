@@ -465,6 +465,7 @@ contains
       real(8) :: rad, rad3, rfact, rdval, fact, ripol, rqval, rdim
       real(8) :: enucfx, enucfy, enucfz
       real(8) :: elex, eley, elez
+      real(8), external :: derf
       real(8), external :: ddot
       real(8), allocatable :: intao(:)
 !

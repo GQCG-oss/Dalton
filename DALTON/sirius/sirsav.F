@@ -375,17 +375,12 @@ C          /j(n+1)"> = exp(-xkap) /j(n)>. The modified vector
 C          x(j) - xkap is thus a guess for the orbital part of
 C          NEO eigenvector no. j in next iteration).
 C
-         DN = DNORM2(NCONF,WRK(KYJ),1)
-
-!        write(lupri,*) ' bla bla 2'
-!        call wrtmatmn(wrk(kyj),1,nconf,1,nconf,lupri)
-!        write(lupri,*) ' norm is ... => ',dn
-
+         DN = DNRM2(NCONF,WRK(KYJ),1)
          IF (DN.NE.D1 .AND. DN.NE.D0) THEN
             IF (DN .LE. THRTT) THEN
                DN = D1 / DN
                CALL DSCAL(NCONF,DN,WRK(KYJ),1)
-               DN = DNORM2(NCONF,WRK(KYJ),1)
+               DN = DNRM2(NCONF,WRK(KYJ),1)
             END IF
             DN = D1 / DN
             CALL DSCAL(NCONF,DN,WRK(KYJ),1)
@@ -558,7 +553,7 @@ C
       WRITE (LUIT1) LAB123(1), STAKEY, RSTKEY, TABLE(3)
 C
       NREDH  = NREDL - 1
-      STPLEN = DNORM2(NREDH,EVEC,1)
+      STPLEN = DNRM2(NREDH,EVEC,1)
       STPC = D0
       STPO = D0
       DO 6010 K = 1,NREDH
@@ -615,12 +610,12 @@ C
  6200 CONTINUE
 C
       IF (NCONF .GT. 1) THEN
-         DN = DNORM2(NCONF,WRK(KY),1)
+         DN = DNRM2(NCONF,WRK(KY),1)
          IF (DN.NE.D1) THEN
             IF (DN .LE. THRTT) THEN
                DN = D1 / DN
                CALL DSCAL(NCONF,DN,WRK(KY),1)
-               DN = DNORM2(NCONF,WRK(KY),1)
+               DN = DNRM2(NCONF,WRK(KY),1)
             END IF
             DN = D1 / DN
             CALL DSCAL(NCONF,DN,WRK(KY),1)

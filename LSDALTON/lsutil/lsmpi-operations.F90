@@ -1187,6 +1187,7 @@ logical :: slave,isAssociated
 integer(kind=ls_mpik) :: master
 integer :: n1
 call LS_MPI_BUFFER(output%ndim,5,Master)
+!call LS_MPI_BUFFER(output%ndim3D,3,Master)
 call LS_MPI_BUFFER(output%doGrad,Master)
 call LS_MPI_BUFFER(output%USEBUFMM,Master)
 call LS_MPI_BUFFER(output%MMBUFLEN,Master)
@@ -1200,6 +1201,7 @@ call LS_MPI_BUFFER(output%LUITNMR,Master)
 call LS_MPI_BUFFER(output%decpacked,Master)
 call LS_MPI_BUFFER(output%decpacked2,Master)
 call LS_MPI_BUFFER(output%decpackedK,Master)
+call LS_MPI_BUFFER(output%FullAlphaCD,Master)
 call LS_MPI_BUFFER(output%exchangeFactor,Master)
 
 isAssociated = ASSOCIATED(output%postprocess)
@@ -1401,6 +1403,8 @@ call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
 call LS_MPI_BUFFER(dalton%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(dalton%PreCalcDFscreening,Master)
+call LS_MPI_BUFFER(dalton%PreCalcF12screening,Master)
 
 END SUBROUTINE MPICOPY_INTEGRALCONFIG
 #endif
@@ -1555,6 +1559,8 @@ call LS_MPI_BUFFER(scheme%DO_PROP,Master)
 call LS_MPI_BUFFER(scheme%PropOper,Master)
 
 call LS_MPI_BUFFER(scheme%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(scheme%PreCalcDFscreening,Master)
+call LS_MPI_BUFFER(scheme%PreCalcF12screening,Master)
 
 END SUBROUTINE mpicopy_scheme
 
@@ -2024,6 +2030,31 @@ END SUBROUTINE mpicopy_reduced_screen_info
      call mem_free_background_alloc()
 
   end subroutine mem_free_background_alloc_all_nodes
+
+  subroutine mem_change_background_alloc_all_nodes(comm,bytes)
+     implicit none
+     real(realk),intent(in) :: bytes
+     integer(kind=ls_mpik),intent(in) :: comm
+     integer(kind=ls_mpik) :: nnod,me
+     real(realk) :: bytes_int
+     call time_start_phase(PHASE_WORK)
+     
+     bytes_int  = bytes
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     call time_start_phase(PHASE_COMM)
+     if(me==infpar%master) then
+        call ls_mpibcast(CHANGE_BG_BUF,infpar%master,comm)
+     endif
+     call ls_mpibcast(bytes_int,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+     call mem_change_background_alloc(bytes_int)
+
+   end subroutine mem_change_background_alloc_all_nodes
 #endif
 
 end module lsmpi_op
