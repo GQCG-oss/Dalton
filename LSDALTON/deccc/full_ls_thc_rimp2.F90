@@ -172,7 +172,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
      EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
   enddo
   !$OMP END PARALLEL DO
-
+  mp2_energy=0.0E0_realk
   call LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,mp2_energy)
 
   call mem_dealloc(XO)
@@ -190,6 +190,8 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
 !  C(Q,S) = X(b,Q)*X(b,S)
 !  D(Q,S) = X(j,Q)*X(j,S)
 !  Coulomb: (A(P,R)*B(P,R))*Z(P,Q)*(C(Q,S)*D(Q,S))*Z(R,S)/(epsilon_I+epsilon_J-epsilon_A+epsilon_B)
+!  AB(P,R) = A(P,R)*B(P,R)
+!  CD(Q,S) = C(Q,S)*D(Q,S)
 !  Coulomb: AB(P,R)*Z(P,Q)*CD(Q,S)*Z(R,S)  (Ngrid**3)
 
 !  Exchange:X(a,P)*X(i,P)*Z(P,Q)*X(b,Q)*X(j,Q)*X(b,R)*X(i,R)*Z(R,S)*X(a,S)*X(j,S)
@@ -225,28 +227,67 @@ subroutine LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,Ecorr)
   real(realk),intent(inout) :: Ecorr
   !
   integer :: A,B,I,J,P,Q
-  real(realk) :: gaibj,gbiaj
-  DO A=1,nvirt
-     DO B=1,nvirt
-        DO I=1,nocc
-           DO J=1,nocc
-              gaibj = 0.0E0_realk
-              DO P=1,ngrid
-                 DO Q=1,ngrid
-                    gaibj = gaibj + XV(P,A)*XO(P,I)*Zpq(P,Q)*XV(Q,B)*XO(Q,J)
-                 ENDDO
-              ENDDO
-              gbiaj = 0.0E0_realk
-              DO P=1,ngrid
-                 DO Q=1,ngrid
-                    gbiaj = gbiaj + XV(P,B)*XO(P,I)*Zpq(P,Q)*XV(Q,A)*XO(Q,J)
-                 ENDDO
-              ENDDO
-              Ecorr = gaibj*(2.0E0_realk*gaibj-gbiaj)/(EpsOcc(I)+EpsOcc(J)-EpsVirt(A)-EpsVirt(B))
-           ENDDO
-        ENDDO
+  real(realk) :: gaibj,gbiaj,TMP,EpsIAB
+  real(realk),pointer :: Z(:,:,:) 
+  call mem_alloc(Z,ngrid,nvirt,nocc)
+!  DO A=1,nvirt
+!     DO B=1,nvirt
+!        DO I=1,nocc
+!           DO J=1,nocc
+!              gaibj = 0.0E0_realk
+!              DO P=1,ngrid
+!                 DO Q=1,ngrid
+!                    gaibj = gaibj + XV(P,A)*XO(P,I)*Zpq(P,Q)*XV(Q,B)*XO(Q,J)
+!                 ENDDO
+!              ENDDO
+!              gbiaj = 0.0E0_realk
+!              DO P=1,ngrid
+!                 DO Q=1,ngrid
+!                    gbiaj = gbiaj + XV(P,B)*XO(P,I)*Zpq(P,Q)*XV(Q,A)*XO(Q,J)
+!                 ENDDO
+!              ENDDO
+!              Ecorr = Ecorr + gaibj*(2.0E0_realk*gaibj-gbiaj)/(EpsOcc(I)+EpsOcc(J)-EpsVirt(A)-EpsVirt(B))
+!           ENDDO
+!        ENDDO
+!     ENDDO
+!  ENDDO
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(I,A,Q,P,&
+!$OMP TMP) SHARED(XO,XV,Z,Zpq,nocc,nvirt,ngrid)
+  DO I=1,nocc
+   DO A=1,nvirt
+    DO Q=1,ngrid
+     TMP = 0.0E0_realk
+     DO P=1,ngrid
+      TMP = TMP + XV(P,A)*XO(P,I)*Zpq(P,Q)
      ENDDO
+     Z(Q,A,I) = TMP
+    ENDDO
+   ENDDO
   ENDDO
+!$OMP END PARALLEL DO
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(I,A,B,J,Q,EpsIAB,&
+!$OMP gaibj,gbiaj) SHARED(XO,XV,Z,EpsOcc,EpsVirt,nocc,nvirt,&
+!$OMP ngrid) REDUCTION(+:Ecorr) 
+  DO I=1,nocc
+   DO A=1,nvirt
+    DO B=1,nvirt
+     EpsIAB = EpsOcc(I)-EpsVirt(A)-EpsVirt(B)
+     DO J=1,nocc
+      gaibj = 0.0E0_realk
+      DO Q=1,ngrid
+         gaibj = gaibj + Z(Q,A,I)*XV(Q,B)*XO(Q,J)
+      ENDDO
+      gbiaj = 0.0E0_realk
+      DO Q=1,ngrid
+         gbiaj = gbiaj + Z(Q,B,I)*XV(Q,A)*XO(Q,J)
+      ENDDO
+      Ecorr = Ecorr + gaibj*(2.0E0_realk*gaibj-gbiaj)/(EpsOcc(J)+EpsIAB)
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO
+  call mem_dealloc(Z)
 end subroutine LS_THC_RIMP2_Ecorr
 
 subroutine build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,M)
