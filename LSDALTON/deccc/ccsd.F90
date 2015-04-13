@@ -1399,6 +1399,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                     &MaxActualDimGamma,0,10,scheme,.false.,mylsitem%setting,intspec)
                  write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part C on master")')&
                     &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,8,scheme,.true.,mylsitem%setting,intspec)
               else
                  ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
                     &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
@@ -1406,10 +1408,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
                     &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
                  write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
               endif
 
-              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                 &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
            endif
 
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
