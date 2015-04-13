@@ -6,7 +6,11 @@ module tensor_type_def_module
   !tile structure
   type tile
     type(c_ptr)           :: c    =  c_null_ptr
+#ifdef VAR_PTR_RESHAPE
+    real(realk),pointer, contiguous :: t(:) => null()         !data in tiles
+#else
     real(realk),pointer   :: t(:) => null()         !data in tiles
+#endif
     integer,pointer       :: d(:) => null()         !actual dimension of the tiles
     integer(kind=8)       :: e                      !number of elements in current tile
     integer               :: gt                     !global ti nr.
@@ -60,6 +64,7 @@ module tensor_type_def_module
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
      !logical :: allocd_w_c_p                        ! allocated with comm_threads or not?
      logical :: initialized = .false.                !check variable if array is initialized
+     logical :: bg_alloc
 
   end type tensor
 

@@ -681,6 +681,7 @@ module lspdm_tensor_operations_module
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode),fr_i,fr_j,fr_a,fr_b
     integer :: i_high,j_high,a_high,b_high
+    logical :: use_bg
 
 #ifdef VAR_MPI
     !Get the slaves to this routine
@@ -697,7 +698,8 @@ module lspdm_tensor_operations_module
 
       call time_start_phase(PHASE_WORK)
     endif
-    call memory_allocate_tensor_dense(gmo)
+    use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+    call memory_allocate_tensor_dense(gmo,use_bg)
 
     call time_start_phase(PHASE_COMM)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
@@ -1781,13 +1783,17 @@ module lspdm_tensor_operations_module
     real(realk) :: E1,E2,Ec
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+    logical :: use_bg
 
 #ifdef VAR_MPI
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_GET_RPA_ENERGY,t2,gmo)
     endif
-    call memory_allocate_tensor_dense(gmo)
+
+    use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+
+    call memory_allocate_tensor_dense(gmo, use_bg)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
 
     E2=0.0E0_realk
@@ -1854,13 +1860,17 @@ module lspdm_tensor_operations_module
     real(realk) :: E2,Ec
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+    logical :: use_bg
 
 #ifdef VAR_MPI
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_GET_SOS_ENERGY,t2,gmo)
     endif
-    call memory_allocate_tensor_dense(gmo)
+
+    use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+
+    call memory_allocate_tensor_dense(gmo,use_bg)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
 
     E2=0.0E0_realk
@@ -3072,7 +3082,7 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date January 2013
   !> \brief initialized a replicated matrix on each node
-  subroutine tensor_init_replicated(arr,dims,nmodes,pdm)
+  subroutine tensor_init_replicated(arr,dims,nmodes,pdm,bg)
     implicit none
     !> array to be initialilzed
     type(tensor),intent(inout) :: arr
@@ -3080,13 +3090,14 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: nmodes,dims(nmodes)
     !> integer specifying the access_type of the array
     integer,intent(in) :: pdm
+    logical, intent(in) :: bg
     integer(kind=long) :: i,j
     integer :: addr,tdimdummy(nmodes)
     integer :: nelms
     integer(kind=ls_mpik) :: lg_nnodes,pc_nnodes
     integer(kind=ls_mpik) :: pc_me, lg_me
     integer, pointer :: lg_buf(:),pc_buf(:)
-    logical :: master,pc_master,lg_master,child
+    logical :: master,pc_master,lg_master,child, bg_int
 
     !set the initial values and overwrite them later
     pc_nnodes               = 1
@@ -3095,6 +3106,7 @@ module lspdm_tensor_operations_module
     lg_nnodes               = 1
     lg_master               = .true.
     child                   = .false.
+    bg_int                  = bg
 
 #ifdef VAR_MPI
     child     = (infpar%parent_comm /= MPI_COMM_NULL)
@@ -3188,6 +3200,11 @@ module lspdm_tensor_operations_module
     !SET THE ADDRESSES ON ALL NODES     
     lg_buf(infpar%lg_mynum+1)=addr 
     call lsmpi_allreduce(lg_buf,lg_nnodes,infpar%lg_comm)
+
+    if( p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
+       call ls_mpibcast(bg_int,infpar%master,infpar%lg_comm)
+    endif
+
     call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
     !if( lspdm_use_comm_proc )then
     !  pc_buf(infpar%pc_mynum+1)=addr 
@@ -3197,7 +3214,7 @@ module lspdm_tensor_operations_module
 #endif
   
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
-    call memory_allocate_tensor_dense(p_arr%a(addr))
+    call memory_allocate_tensor_dense(p_arr%a(addr),bg_int)
 
     !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)
@@ -3327,12 +3344,13 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief initialized a distributed tiled array
-  subroutine tensor_init_tiled(arr,dims,nmodes,at,it,pdm,tdims,ps_d,force_offset)
+  subroutine tensor_init_tiled(arr,dims,nmodes,at,it,pdm,bg,tdims,ps_d,force_offset)
     implicit none
     type(tensor),intent(inout) :: arr
     integer,intent(in) :: nmodes,dims(nmodes)
     character(4) :: at
     integer :: it, pdm
+    logical, intent(in) :: bg
     integer,optional :: tdims(nmodes)
     logical, optional :: ps_d
     integer,intent(in), optional :: force_offset
@@ -3346,7 +3364,9 @@ module lspdm_tensor_operations_module
     logical :: pc_master,lg_master,child
     integer :: infobuf(2),fo
     logical,parameter :: zeros_in_tiles=.false.
+    logical :: bg_int
    
+    bg_int                  = bg
     !set the initial values and overwrite them later
     pc_nnodes               = 1
     pc_master               = .true.
@@ -3489,6 +3509,9 @@ module lspdm_tensor_operations_module
     lg_buf(infpar%lg_mynum+1)=addr 
     lg_buf(lg_nnodes+infpar%lg_mynum+1)=p_arr%a(addr)%offset
     call lsmpi_allreduce(lg_buf,2*lg_nnodes,infpar%lg_comm)
+    if( p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
+       call ls_mpibcast(bg_int,infpar%master,infpar%lg_comm)
+    endif
     call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
     do i=1,lg_nnodes
       if(lg_buf(lg_nnodes+i)/=p_arr%a(addr)%offset)then
@@ -3498,12 +3521,14 @@ module lspdm_tensor_operations_module
       endif
     enddo
 #endif
+
+    p_arr%a(addr)%bg_alloc = bg_int
  
     call tensor_init_lock_set(p_arr%a(addr))
-    call memory_allocate_tiles(p_arr%a(addr))
+    call memory_allocate_tiles(p_arr%a(addr),bg_int)
 
     if(pseudo_dense .and. (lg_master.or.p_arr%a(addr)%access_type==AT_ALL_ACCESS))then
-      call memory_allocate_tensor_dense(p_arr%a(addr))
+      call memory_allocate_tensor_dense(p_arr%a(addr),bg_int)
     endif
 
     arr = p_arr%a(addr)
@@ -6197,7 +6222,8 @@ module lspdm_tensor_operations_module
       !  call pdm_tensor_sync(infpar%pc_comm,JOB_PC_ALLOC_DENSE,arr,loc_addr=.true.)
       !endif
 #endif
-      call memory_allocate_tensor_dense(arr)
+      !this is deprecated
+      call memory_allocate_tensor_dense(arr,.false.)
   end subroutine memory_allocate_tensor_dense_pc
 
   subroutine memory_deallocate_tensor_dense_pc(arr)

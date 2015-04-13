@@ -943,6 +943,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: tlen,tred,nor,nvr,goffs,aoffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy,batch
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
+     logical :: use_bg_buf, reduce_bg_size
+     integer(kind=8) :: locally_stored_v2o2, locally_stored_tiles, local_nel_in_bg, min_size_bg
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !TEST AND DEVELOPMENT VARIABLES!!!!!
      real(realk) :: op_start,op_stop, dt_last_phase
@@ -957,7 +959,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk) :: phase_counters_int_dir(nphases)
      integer :: testmode(4), old_gammaB
      integer(kind=long) :: xyz,zyx1,zyx2,mem_allocated,HeapMemoryUsage
-     logical :: debug, use_bg_buf, reduce_bg_size
+     logical :: debug
      character(tensor_MSG_LEN) :: msg
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1186,6 +1188,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      endif
 
+     use_bg_buf = mem_is_background_buf_init()
+
 #ifdef DIL_ACTIVE
      scheme=scheme_tmp !```DIL: remove
      if(scheme==1) then
@@ -1200,11 +1204,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         t2%access_type = AT_ALL_ACCESS
         if(scheme/=1) then
            call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
-           call tensor_allocate_dense( t2 )
-           buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
-           call mem_alloc(buf1,buf_size)
+           call tensor_allocate_dense( t2, bg = use_bg_buf )
+           buf_size = 3*t2%tsize
+           if( use_bg_buf )then
+              call mem_pseudo_alloc(buf1,buf_size)
+           else
+              call mem_alloc(buf1,buf_size)
+           endif
            call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
-           call mem_dealloc(buf1)
+           if( use_bg_buf )then
+              call mem_pseudo_dealloc(buf1)
+           else
+              call mem_dealloc(buf1)
+           endif
            call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         endif
      endif
@@ -1372,14 +1384,34 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call lsquit('ERROR(ccsd_residual_integral_driven): unknown scheme!',-1)
            endif
            if(DECinfo%PL>1)then
-              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                 &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
-              write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
-              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                 &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
-              write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
-              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                 &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
+              if(use_bg_buf)then
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,6,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part B on master")')ActuallyUsed/MemFree*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,9,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part B on master")')&
+                    &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,7,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,10,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part C on master")')&
+                    &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,8,scheme,.true.,mylsitem%setting,intspec)
+              else
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part B on master")')ActuallyUsed/MemFree*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
+              endif
+
            endif
 
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -1420,24 +1452,69 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      if(scheme==1) then !`DIL: Define TPL & TMI
 #ifdef DIL_ACTIVE
-      call get_tpl_and_tmi(t2,tpld,tmid)
-      if(DIL_DEBUG)then
-       call print_norm(tpld," NORM(tpld)   :",print_on_rank=0)
-       call print_norm(tmid," NORM(tmid)   :",print_on_rank=0)
-      endif
+        call get_tpl_and_tmi(t2,tpld,tmid)
+        if(DIL_DEBUG)then
+           call print_norm(tpld," NORM(tpld)   :",print_on_rank=0)
+           call print_norm(tmid," NORM(tmid)   :",print_on_rank=0)
+        endif
 #else
-      call lsquit('ERROR(ccsd_residual_integral_driven): This part (2) of Scheme 1 requires DIL backend!',-1)
+        call lsquit('ERROR(ccsd_residual_integral_driven): This part (2) of Scheme 1 requires DIL backend!',-1)
 #endif
      else
-      call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
-      if(master.and.print_debug)then
-       call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
-       call print_norm(tmi%d,int(nor*nvr,kind=8)," NORM(tmi)   :")
-      endif
+        call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
+        if(master.and.print_debug)then
+           call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
+           call print_norm(tmi%d,int(nor*nvr,kind=8)," NORM(tmi)   :")
+        endif
+
+        if(scheme==2) call tensor_deallocate_dense(t2)
+
      endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
+
+     ! allocate working arrays depending on the batch sizes
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+
+     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !``DIL: w2 size must be reduced when DIL
+
+     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+
+     !If the buffer needs to be changed, it is here, since there is not pointer
+     !associated at the bg buffer at this point
+     if(use_bg_buf)then
+        !if the needed space is smaller than the allocated space, reduce the buffer size
+#ifdef VAR_MPI
+        locally_stored_tiles = (t2%tsize*ceiling(float(t2%ntiles)/float(lg_nnod)))
+#else
+        locally_stored_tiles = 0
+#endif
+        locally_stored_v2o2  = o2v2
+        select case(scheme)
+        case(4)
+           locally_stored_tiles = 0
+           locally_stored_v2o2  = locally_stored_v2o2  * 3
+        case(3)
+           locally_stored_tiles = locally_stored_tiles * 2
+           locally_stored_v2o2  = locally_stored_v2o2  * 1
+        case(2)
+           locally_stored_tiles = locally_stored_tiles * 3
+           locally_stored_v2o2  = 0
+        case default
+           call lsquit("ERROR(ccsd_residual_integral_driven): bg buffering only imlemented for schemes 4-2",-1)
+        end select
+        local_nel_in_bg = w0size+w1size+w2size+w3size+locally_stored_tiles+locally_stored_v2o2
+        min_size_bg     = local_nel_in_bg * 8_long
+        reduce_bg_size  = ( min_size_bg < mem_get_bg_buf_free()*8/10)
+        if(iter==1)call mem_change_background_alloc(min_size_bg,reduce_bg_size)
+     endif
 
      !get u2 in pdm or local
 #ifdef DIL_ACTIVE
@@ -1445,11 +1522,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      if(scheme==2.or.scheme==1)then
 #ifdef VAR_MPI
-        if(scheme/=1) call tensor_deallocate_dense(t2)
 
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
-        call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+        call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=use_bg_buf )
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
@@ -1465,7 +1541,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
      else
-        call tensor_ainit(u2, [nv,nv,no,no], 4, local=local, atype='LDAR' )
+        call tensor_ainit(u2, [nv,nv,no,no], 4, local=local, atype='LDAR', bg=use_bg_buf  )
         !calculate u matrix: t[c d i j] -> t[d c i j], 2t[d c i j] - t[d c j i] = u [d c i j]
         call array_reorder_4d(  2.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
         call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
@@ -1487,8 +1563,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         else
            write(def_atype,'(A4)')'TDAR'
         endif
-        call tensor_ainit(gvvooa, [nv,no,no,nv],4, local=local, atype=def_atype, tdims=[vs,os,os,vs])
-        call tensor_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os])
+        call tensor_ainit(gvvooa, [nv,no,no,nv],4, local=local, atype=def_atype, tdims=[vs,os,os,vs], bg=use_bg_buf )
+        call tensor_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os], bg=use_bg_buf )
         call tensor_zero(gvvooa)
         call tensor_zero(gvoova)
 !        call mem_alloc(sio4,int(i8*nor*no2,kind=long))
@@ -1546,19 +1622,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !call get_currently_available_memory(MemFree2)
      !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
 
-     use_bg_buf = mem_is_background_buf_init()
-     ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-
-     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-
-     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !``DIL: w2 size must be reduced when DIL
-
-     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
 
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
@@ -1572,8 +1635,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      if(use_bg_buf)then
         !if the needed space is smaller than the allocated space, reduce the buffer size
-        reduce_bg_size = ((w0size+w1size+w2size+w3size)*8 < mem_get_bg_buf_n()*8/10)
-        if(iter==1)call mem_change_background_alloc(i8*(w0size+w1size+w2size+w3size)*8,reduce_bg_size)
+        reduce_bg_size = ((w0size+w1size+w2size+w3size)*8 < mem_get_bg_buf_free()*8/10)
+        !if(iter==1)call mem_change_background_alloc(i8*(w0size+w1size+w2size+w3size)*8,reduce_bg_size)
 
         call mem_pseudo_alloc(w0, w0size , simple = .false. )
         call mem_pseudo_alloc(w1, w1size , simple = .false. )
@@ -2709,16 +2772,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
 
-        !DEALLOCATE STUFF
-        if(scheme==4)then
-           call tensor_free(gvoova)
-           call tensor_free(gvvooa)
-#ifdef VAR_MPI
-        else if(scheme==3)then
+        if(scheme==3)then
            gvvooa%elm1 => null()
            gvoova%elm1 => null()
-           call tensor_free(gvoova)
-           call tensor_free(gvvooa)
            if( use_bg_buf )then
               call mem_pseudo_dealloc(gvoov)
               call mem_pseudo_dealloc(gvvoo)
@@ -2726,16 +2782,26 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call mem_dealloc(gvvoo)
               call mem_dealloc(gvoov)
            endif
-        else if(scheme==2)then
-           call tensor_free(gvoova)
-           call tensor_free(gvvooa)
+        endif
+     endif
+
+     if( use_bg_buf )then
+        call mem_pseudo_dealloc(w1)
+     else
+        call mem_dealloc(w1)
+     endif
+
+     if(Ccmodel>MODEL_CC2)then
+        !DEALLOCATE STUFF
+        call tensor_free(gvoova)
+        call tensor_free(gvvooa)
+#ifdef VAR_MPI
+        if(scheme==2)then
            if(alloc_in_dummy)then
               call tensor_unlock_wins(omega2,all_nodes=.true.)
               call tensor_unlock_wins(u2,all_nodes=.true.)
            endif
         else if(scheme==1)then
-           call tensor_free(gvoova)
-           call tensor_free(gvvooa)
 #ifdef DIL_ACTIVE
            if(DIL_LOCK_OUTSIDE)then
 #endif
@@ -2805,11 +2871,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! slaves should exit the subroutine after the main work is done
      if(.not. master) then
-        if( use_bg_buf )then
-           call mem_pseudo_dealloc(w1)
-        else
-           call mem_dealloc(w1)
-        endif
         call mem_dealloc(Had)
         call mem_dealloc(Gbi)
         if(scheme==4.or.scheme==3)call tensor_free(u2)
@@ -2834,6 +2895,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
      call time_start_phase(PHASE_WORK, ttot = time_get_ao_fock, twall = time_get_mo_fock)
+
+     ! Reallocate 1 temporary array
+     maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
+     if( use_bg_buf )then
+        call mem_pseudo_alloc(w1,maxsize64)
+     else
+        call mem_alloc(w1,maxsize64,simple=.true.)
+     endif
 
 
 
@@ -2959,10 +3028,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
      endif
 
+     if( use_bg_buf )then
+        call mem_pseudo_dealloc(w1)
+     else
+        call mem_dealloc(w1)
+     endif
+     call tensor_free(u2)
+
 #ifdef VAR_MPI
      if((.not.local).and.(scheme==4.or.scheme==3))then
+
         call tensor_mv_dense2tiled(omega2,.true.)
-        call tensor_mv_dense2tiled(t2,.true.)
+        call tensor_deallocate_dense( t2 )
+
      endif
      if(master.and.DECinfo%PL>2)then
         write(*,'("CCSD time in lsmpi_win_unlock phase C",g10.3)') time_lsmpi_win_unlock - unlock_time
@@ -2971,12 +3049,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 
-     if( use_bg_buf )then
-        call mem_pseudo_dealloc(w1)
-     else
-        call mem_dealloc(w1)
-     endif
-     call tensor_free(u2)
 
      call time_start_phase(PHASE_WORK, ttot = twall)
      if(master.and.DECinfo%PL>2)then
@@ -4976,13 +5048,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: os, vs
      integer(kind=ls_mpik) :: me, nnod, mode
      integer(kind=8) :: o2v2
-     logical :: master
+     logical :: master,bg
      character(4) :: atype
+
 
      call time_start_phase(PHASE_WORK)
 
      me     = 0_ls_mpik
      nnod   = 1_ls_mpik
+     bg     = mem_is_background_buf_init()
 #ifdef VAR_MPI
      nnod   = infpar%lg_nodtot
      me     = infpar%lg_mynum
@@ -4999,7 +5073,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Cterm
      fdim1 = [no,no,nv,nv]
      sdim1 = [os,os,vs,vs]
-     call tensor_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype,local=local)
+     call tensor_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype,local=local,bg=bg)
      call tensor_lock_local_wins(Coovv,'e',mode)
 
      !Build C intermediate
@@ -5039,8 +5113,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      sdim1  = [vs,os,os,vs]
      fdim2  = govov%dims
      sdim2  = govov%tdim
-     call tensor_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype,local=local)
-     call tensor_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype,local=local)
+     call tensor_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype,local=local,bg=bg)
+     call tensor_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype,local=local,bg=bg)
      call tensor_lock_local_wins(Dvoov,'e',mode)
      call tensor_lock_local_wins(Lovov,'e',mode)
 
@@ -5451,6 +5525,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize,chksze
     integer :: nnod,magic,nbuffs,choice
     logical :: checkbg
+    integer(kind=8) :: locally_stored_v2o2, locally_stored_tiles
 
     print *,"MASTER IN GET MAX"
     !minimum recommended buffer size
@@ -5473,7 +5548,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !they will be associated to the backtground buffer
     checkbg = mem_is_background_buf_init()
     if( checkbg )then
-       bg_buf_size = mem_get_bg_buf_n()
+       bg_buf_size = mem_get_bg_buf_free()
        choice = 4
        MemFree = MemIn*frac_of_total_mem + (dble(bg_buf_size)*8.0E0_realk)/(1024.0E0_realk**3)
     else
@@ -5594,6 +5669,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       choice = 3
 
       allsize = 0
+      if( vs>0.and. os>0)then
+         locally_stored_tiles = (vs**2*i8*os**2*ceiling(float( ceiling(float(nv**2*i8*no**2)/float(vs**2*i8*os**2)) )/float(nnod)))
+      else
+         locally_stored_tiles = 0
+      endif
+
+      locally_stored_v2o2  = v2o2
+
+      select case(scheme)
+      case(4)
+         locally_stored_tiles = 0
+         locally_stored_v2o2  = locally_stored_v2o2  * 3
+      case(3)
+         locally_stored_tiles = locally_stored_tiles * 2
+         locally_stored_v2o2  = locally_stored_v2o2  * 1
+      case(2)
+         locally_stored_tiles = locally_stored_tiles * 3
+         locally_stored_v2o2  = 0
+      case default
+         call lsquit("ERROR(ccsd_residual_integral_driven): bg buffering only imlemented for schemes 4-2",-1)
+      end select
+
       !make batches larger until they do not fit anymore
       !determine gamma batch first
       do while (MemFree>mem_used .and. (nb>=nbg))
@@ -5613,7 +5710,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
         w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
 
-        chksze = w0size+w1size+w2size+w3size
+        chksze = w0size+w1size+w2size+w3size+locally_stored_tiles+locally_stored_v2o2
 
         if( (chksze>= bg_buf_size) .and. checkbg )then
            nbg = nbg-1
@@ -5648,7 +5745,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
         w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,scheme,se,is)
 
-        chksze = w0size+w1size+w2size+w3size
+        chksze = w0size+w1size+w2size+w3size+locally_stored_tiles+locally_stored_v2o2
 
         if( (chksze>= bg_buf_size) .and. checkbg )then
            nba = nba-1
@@ -5800,13 +5897,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
     tl4 = tl4 * no
 
+    tdim=[vs,vs,os,os]
+    d1  =[nv,nv,no,no]
+    call tensor_get_ntpm(d1,tdim,mode,ntpm,ntiles)
+    nloctiles=ceiling(float(ntiles)/float(nnod))
+    tsze = 1
+    do i = 1, mode
+       tsze = tsze * tdim(i)
+    enddo
+
+
 
     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,s,se,is)
     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,bs,nba,nbg,nbuffs,s,se,is)
     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
     select case( choice )
-    case(1,2,3,4,8)
+    case(1,2,3,4,8,9,10)
        !w0
        memin = 1.0E0_realk * w0size
        !w1
@@ -5836,7 +5943,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !************************
 
       ! u 2 + Omega 2 +  H +G  
-      if( choice /= 8 )then
+      if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
          memrq = 1.0E0_realk*(2_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
          !gvoov gvvoo
          memrq=memrq+ 2.0E0_realk*(i8*nv*nv)*no*no
@@ -5851,7 +5958,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          memin = memin + (i8*nor)*nvr*2.0E0_realk
       else
 
-         memrq = 0.0E0_realk
+         memrq = 3.0E0_realk*no*no*nv*nv
 
       endif
 
@@ -5863,26 +5970,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb)+i8*nb*nb+(2_long*no*no)*nv*nv)
       ! govov
       memout = memout + (1.0E0_realk*no*no)*nv*nv
+      if( choice == 8 .or. choice == 9 .or. choice == 10)then
+         !in the beginning when t2 is contracted to be local
+         memout = max(memout,(1.0E0_realk*no*nv)*no*nv+3.0E0_realk*tsze*nloctiles)
+      endif
 
     case(3)
-
-      call tensor_default_batches(d1,mode,tdim,splt)
-      call tensor_get_ntpm(d1,tdim,mode,ntpm,ntiles)
-      nloctiles=ceiling(float(ntiles)/float(nnod))
-      tsze = 1
-      do i = 1, mode
-        tsze = tsze * tdim(i)
-      enddo
 
 
       !THROUGHOUT THE ALGORITHM
       !************************
 
-      if( choice /= 8 )then
+      if( choice /= 8 .and. choice /= 9 .and. choice /= 10 )then
          !govov stays in pdm and is dense in second part
          ! u 2 + omega2 + H +G 
          memrq = 1.0E0_realk*((2_long*no*no)*nv*nv+ i8*nb*nv+i8*nb*no) 
-         !gvoov gvvoo  (they are allocated on the bg buffer and govov, is allocated outside)
+         !gvoov gvvoo  
          memrq=memrq+ 2.0E0_realk*tsze*nloctiles
 
 
@@ -5895,19 +5998,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          memin = memin + 1.0E0_realk*nor*(nvr*2_long)
       else
 
-         memrq = 0.0E0_realk
+         memrq = 2.0E0_realk*tsze*nloctiles + 1.0E0_realk*no*no*nv*nv
 
       endif
 
       !OUTSIDE OF MAIN LOOP
       !********************
 
-      ! w1 + FO + w2 + w3 + govov + full gvvoo + full gvoov
+      ! w1 + FO + w2 + w3 + govov + full gvvoo + full gvoov(they are allocated on the bg buffer and govov, is allocated outside )
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb) &
            & + max(i8*nb*nb,max(2_long*tl1,i8*tl2)))
 
       if(choice /= 5.and.choice/=6.and.choice/=7)then
          memout = memout  + 2.0E0_realk * (i8*nv**2)*no**2
+      else if( choice == 8 .or. choice == 9 .or. choice == 10 )then
+         !in the beginning when t2 is contracted to be local
+         memout = max(memout,(1.0E0_realk*no*nv)*no*nv+3.0E0_realk*tsze*nloctiles)
       endif
 
     case(2)
@@ -5916,16 +6022,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       !THROUGHOUT THE ALGORITHM
       !************************
-
-      call tensor_default_batches(d1,mode,tdim,splt)
-      call tensor_get_ntpm(d1,tdim,mode,ntpm,ntiles)
-      nloctiles=ceiling(float(ntiles)/float(nnod))
-      tsze = 1
-      do i = 1, mode
-        tsze = tsze * tdim(i)
-      enddo
-
-      if( choice /= 8 )then
+      if( choice /=8 .and. choice /= 9 .and. choice /= 10 )then
          !govov stays in pdm and is dense in second part
          ! u2 + H +G + space for 2 update tile s
          memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no + i8*2*tsze)
@@ -5942,7 +6039,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          memin = memin + 1.0E0_realk*(nor*nvr*i8)
       else
 
-         memrq = 0.0E0_realk
+         memrq = 3.0E0_realk*tsze*nloctiles
 
       endif
 
@@ -5950,12 +6047,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !********************
 
       ! w1 + FO + w2 + w3
-      !in cd terms w2 and w3 have tl1, in b2 w2 has tl2
-      cd = max(2_long*tl1,i8*tl2)
-      ! in e2 term w2 has max(tl2,tl3) and w3 has max(no2,nv2)
-      e2 = max(tl3,tl4) + max(no*no,nv*nv)
+      e2 = max(no*no,nv*nv)
 
-      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*max(cd,e2)))
+      memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*e2))
+
+      if( choice == 8 .or. choice == 9 .or. choice == 10 )then
+         !in the beginning when t2 is contracted to be local
+         memout = max(memout,(1.0E0_realk*no*nv)*no*nv+3.0E0_realk*tsze*nloctiles)
+      endif
 
     case(1)
 
@@ -6019,8 +6118,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        memrq = memrq + memin
     case(7)
        memrq = memrq + memout
+    ! only the stuff that is allocated in the background buffer
+    ! *********************************************************
     case(8)
        memrq = memrq + max(memin,memout)
+    case(9)
+       memrq = memrq + memin
+    case(10)
+       memrq = memrq + memout
     end select
 
     memrq =((memrq*8.0E0_realk)/(1.024E3_realk**3))

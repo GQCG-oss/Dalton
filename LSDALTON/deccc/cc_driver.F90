@@ -772,6 +772,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,'(1X,a)') '*                      Full MP2 calculation is done !                       *'
    else if (ccmodel == MODEL_RIMP2) then
       write(DECinfo%output,'(1X,a)') '*                      Full RI-MP2 calculation is done !                    *'
+   else if (ccmodel == MODEL_LSTHCRIMP2) then
+      write(DECinfo%output,'(1X,a)') '*                      Full LS-THC-RI-MP2 calculation is done !             *'
    else if (ccmodel == MODEL_RPA ) then
       write(DECinfo%output,'(1X,a)') '*                      Full dRPA calculation is done !                       *'
    else if (ccmodel == MODEL_SOSEX ) then
@@ -1804,7 +1806,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
    logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
-   logical                :: trafo_vovo, trafo_m4, trafo_m2
+   logical                :: trafo_vovo, trafo_m4, trafo_m2,bg_was_init
    logical                :: diag_oo_block, diag_vv_block, prec, prec_not1, prec_in_b
    character(4)           :: atype
 
@@ -1891,7 +1893,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       use_singles = .false.
       atype = 'REAR'
 
-   case( MODEL_RIMP2 )
+   case( MODEL_RIMP2,MODEL_LSTHCRIMP2 )
 
       call lsquit("ERROR(ccsolver_par): RI-MP2 is not implemented iteratively",-1)
 
@@ -1922,7 +1924,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    end select ModelSpecificSettings
 
-   call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel)
+   call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel,bg_was_init)
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -2453,7 +2455,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
                ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
-            case( MODEL_RIMP2 )
+            case( MODEL_RIMP2,MODEL_LSTHCRIMP2)
 
                ccenergy = get_mp2_energy(t2(iter_idx),iajb,no,nv)
 
@@ -2600,7 +2602,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          EnergyForCCmodelRestart: select case(CCmodel)
          case( MODEL_MP2 )
             ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
-         case( MODEL_RIMP2 )
+         case( MODEL_RIMP2,MODEL_LSTHCRIMP2)
             ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
             ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
@@ -2709,7 +2711,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
    call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
    
-   call ccdriver_dealloc_workspace(saferun,local)
+   call ccdriver_dealloc_workspace(saferun,local,bg_was_init)
 
    call tensor_free(iajb)
 
@@ -2774,12 +2776,14 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 end subroutine ccsolver
 
-subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel)
+subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,&
+     & use_singles,JOB,ccmodel,bg_was_init)
    implicit none
    type(lsitem), intent(inout) :: MyLsitem
    integer, intent(in)  :: nb, no, nv, JOB, ccmodel
    integer, intent(out) :: os,vs
    logical, intent(in)  :: local,saferun,use_singles
+   logical, intent(inout) :: bg_was_init
    integer :: ntpm(4),nt, sch
    integer(kind=ls_mpik) :: nnod
    real(realk) :: MemFree
@@ -2801,8 +2805,8 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    call get_symm_tensor_segmenting_simple(no,nv,os,vs)
 
    ! allocate the buffer in the background
-   use_bg = DECinfo%cc_driver_use_bg_buffer.and..not.saferun
-
+   use_bg = DECinfo%use_bg_buffer.and..not.saferun
+   bg_was_init = mem_is_background_buf_init()
    if(use_bg)then
 
       !get free memory GB -> bytes conversion, use 80% of the free memory
@@ -2903,6 +2907,18 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
             sch=DECinfo%en_mem
          endif
 
+         if(DECinfo%PL>2)then
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Found scheme :",I2)')sch
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g7.2," GB")')&
+               &Freebytes/1024.0E0_realk**3
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4     : ",g7.2," GB")')&
+               &mem41/1024.0E0_realk**3
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3     : ",g7.2," GB")')&
+               &mem31/1024.0E0_realk**3
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2     : ",g7.2," GB")')&
+               &mem21/1024.0E0_realk**3
+         endif
+
          select case(sch)
          case(4)
             nelms_res_out = ceiling(float(mem41)/8.0)
@@ -2930,13 +2946,13 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
       endif
 
-      mem_out = mem_out + nelms_res_out
-      mem_in  = max(mem_in,nelms_res_in)
+      mem_out = mem_out + nelms_res_out*8
+      mem_in  = max(mem_in,nelms_res_in*8)
 
       bytes = mem_out
 
-      !we may use 50% of the difference between bytes and Freebytes now as the background buffer or 2*mem_in
-      bytes_to_alloc = max(min( (Freebytes - bytes)/2, 2*mem_in ), mem_in)
+      !we may use 80% of the difference between bytes and Freebytes now as the background buffer or 2*mem_in
+      bytes_to_alloc = max(min( (Freebytes - bytes) * 8 / 10, 5 * mem_in ), mem_in)
       
       if(DECinfo%PL>1)then
 
@@ -2949,7 +2965,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          write (DECinfo%output,'("Requirement for the residual (i) : ",g9.2," GB")')(nelms_res_in*8)/1024.0E0_realk**3
 
          write (DECinfo%output,'("Min heap memory requirement (=o) : ",g9.2," GB")') mem_out/1024.0E0_realk**3
-         write (DECinfo%output,'("Min buffer requirement (=i)      : ",g9.2," GB")') mem_in /1024.0E0_realk**3
+         write (DECinfo%output,'("Min buffer requirement      (=i) : ",g9.2," GB")') mem_in /1024.0E0_realk**3
 
          write (DECinfo%output,'("Requesting                       : ",g9.2," GB to be allocated in BG buffer")')&
             &bytes_to_alloc/1024.0E0_realk**3
@@ -2962,21 +2978,32 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          & not enough space",-1)
       endif
 
-      if( local )then
-         call mem_init_background_alloc(bytes_to_alloc)
+      if( bg_was_init )then
+         if( local )then
+            call mem_change_background_alloc(bytes_to_alloc)
 #ifdef VAR_MPI
-      else
-         call mem_init_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
-         call lspdm_init_global_buffer(.true.)
+         else
+            call mem_change_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
+            call lspdm_init_global_buffer(.true.)
 #endif
+         endif
+      else
+         if( local )then
+            call mem_init_background_alloc(bytes_to_alloc)
+#ifdef VAR_MPI
+         else
+            call mem_init_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
+            call lspdm_init_global_buffer(.true.)
+#endif
+         endif
       endif
        
    endif
    
 end subroutine ccdriver_set_tensor_segments_and_alloc_workspace
-subroutine ccdriver_dealloc_workspace(saferun,local)
+subroutine ccdriver_dealloc_workspace(saferun,local,bg_was_init)
    implicit none
-   logical, intent(in)  :: saferun,local
+   logical, intent(in)  :: saferun,local,bg_was_init
    integer :: ntpm(4),nt
    integer(kind=ls_mpik) :: nnod
    real(realk) :: bytes, Freebytes,bytes_to_alloc,mem4,mem3,mem2
@@ -2990,18 +3017,23 @@ subroutine ccdriver_dealloc_workspace(saferun,local)
 #endif
 
    ! deallocate the buffer in the background
-   use_bg = DECinfo%cc_driver_use_bg_buffer.and..not.saferun
+   use_bg = DECinfo%use_bg_buffer.and..not.saferun
 
    if(use_bg)then
 
-
-      if( local )then
-         call mem_free_background_alloc()
+      if (bg_was_init)then
 #ifdef VAR_MPI
-      else
-         call mem_free_background_alloc_all_nodes(infpar%lg_comm)
          call lspdm_free_global_buffer(.true.)
 #endif
+      else
+         if( local )then
+            call mem_free_background_alloc()
+#ifdef VAR_MPI
+         else
+            call mem_free_background_alloc_all_nodes(infpar%lg_comm)
+            call lspdm_free_global_buffer(.true.)
+#endif
+         endif
       endif
    endif
 
@@ -3091,7 +3123,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
          call lsquit("ERROR(ccsolver_get_residual): job not implemented for MP2",-1)
       end select
 
-   case( MODEL_RIMP2 )
+   case( MODEL_RIMP2,MODEL_LSTHCRIMP2 )
 
       call lsquit('ERROR(get_residual): RI-MP2 has no residual - non iterative',-1)
 
@@ -3187,7 +3219,7 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
             B(j,i) = B(i,j)
          end do
       end do
-   case( MODEL_RIMP2 ) 
+   case( MODEL_RIMP2,MODEL_LSTHCRIMP2 ) 
       call lsquit('RIMP2 not implemented in ccsolver_calculate_crop_matrix',-1)
    case( MODEL_CC2, MODEL_CCSD ) 
 
@@ -3426,10 +3458,11 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
    character(tensor_MSG_LEN) :: msg
    integer :: a,i
-   logical :: use_singles, get_multipliers
+   logical :: use_singles, get_multipliers, use_bg
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
    get_multipliers = (JOB == SOLVE_MULTIPLIERS)
+   use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > t2%nelms)
 
    !MODIFY FOR NEW MODEL THAT IS USING THE CC DRIVER
    ! set model specifics here
@@ -3437,6 +3470,8 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
    case(MODEL_MP2)
       use_singles = .false.
    case(MODEL_RIMP2)
+      use_singles = .false.
+   case(MODEL_LSTHCRIMP2)
       use_singles = .false.
    case(MODEL_CC2)
       use_singles = .true.
@@ -3662,7 +3697,7 @@ subroutine get_guess_vectors(ccmodel,JOB,prec,restart,iter_start,nb,norm,energy,
 
    if(readfile2)then
       ! allocate dense part of t2 array:
-      if (.not.local) call memory_allocate_tensor_dense(t2)
+      if (.not.local) call tensor_allocate_dense(t2,bg=use_bg)
       READ(fu_t2) t2%elm1
       READ(fu_t2) norm
       READ(fu_t2) energy

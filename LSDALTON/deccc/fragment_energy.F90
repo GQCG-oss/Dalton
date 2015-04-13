@@ -26,6 +26,7 @@ module fragment_energy_module
   use mp2_module !,only: max_batch_dimension,get_vovo_integrals, &
 !       & mp2_integrals_and_amplitudes
   use rimp2_module
+  use dec_ls_thc_rimp2_module
   use atomic_fragment_operations!  ,only: atomic_fragment_init_basis_part, &
   !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
   !       & update_full_t1_from_atomic_frag,which_pairs, &
@@ -358,6 +359,10 @@ contains
           ! calculate also RIMP2 density integrals
           call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        endif
+    case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
+
+       if(DECinfo%first_order)call lsquit('no first order LSTHCRIMP2',-1)       
+       call LSTHCRIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX) ! higher order CC (-like)
 
@@ -4978,6 +4983,11 @@ contains
        fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRIMP2)
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRIMP2)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRIMP2)
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2
+       fragment%LagFOP = fragment%energies(FRAGMODEL_LAGLSTHCRIMP2)
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCLSTHCRIMP2)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTLSTHCRIMP2)
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', fragment%ccmodel
@@ -5050,6 +5060,11 @@ contains
        fragment%energies(FRAGMODEL_LAGRIMP2) = fragment%LagFOP 
        fragment%energies(FRAGMODEL_OCCRIMP2) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTRIMP2) = fragment%EvirtFOP 
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2
+       fragment%energies(FRAGMODEL_LAGLSTHCRIMP2) = fragment%LagFOP 
+       fragment%energies(FRAGMODEL_OCCLSTHCRIMP2) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTLSTHCRIMP2) = fragment%EvirtFOP 
 
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
@@ -5154,6 +5169,10 @@ contains
        ! RI-MP2
        energies(FRAGMODEL_OCCRIMP2) = Eocc     ! occupied
        energies(FRAGMODEL_VIRTRIMP2) = Evirt   ! virtual
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2
+       energies(FRAGMODEL_OCCLSTHCRIMP2) = Eocc     ! occupied
+       energies(FRAGMODEL_VIRTLSTHCRIMP2) = Evirt   ! virtual
     case default
        call lsquit('case unknown in put_fragment_energy_contribs',-1)
     end select

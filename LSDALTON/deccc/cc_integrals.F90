@@ -2299,7 +2299,7 @@ contains
 
     use_bg_buf = mem_is_background_buf_init()
     if(use_bg_buf)then
-       nbu = mem_get_bg_buf_n()
+       nbu = mem_get_bg_buf_free()
     else
        nbu = 0
     endif
@@ -2339,29 +2339,10 @@ contains
        call get_max_batch_and_scheme_ccintegral(maxsize,MinAObatch,scheme,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
        & n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nbuffs,nbu,MyLsItem%setting,MemToUse)
 
-       select case(scheme)
-       case(0)
-          collective             = .true.
-          mem_saving             = .false.
-          completely_distributed = .false.
-       case(1)
-          collective             = .false.
-          mem_saving             = .false.
-          completely_distributed = .false.
-       case(2)
-          collective             = .false.
-          mem_saving             = .true.
-          completely_distributed = .false.
-       case(3)
-          collective             = .false.
-          mem_saving             = .false.
-          completely_distributed = .true.
-       end select
-
 
        if(DECinfo%PL>2)then
-          print *,"INFO(get_mo_integral_par): collective:",collective,", mem saving:",&
-             &mem_saving,",completely distributed:",completely_distributed
+          print *,"INFO(get_mo_integral_par): Requesting scheme:",scheme
+          print *,"INFO(get_mo_integral_par): with Alpha:",MaxAllowedDimAlpha," Gamma:",MaxAllowedDimGamma
        endif
     endif
 
@@ -2376,13 +2357,30 @@ contains
        call time_start_phase( PHASE_COMM )
        call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
        call ls_mpibcast(MaxAllowedDimGamma,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(collective,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(completely_distributed,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(mem_saving,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(scheme,infpar%master,infpar%lg_comm)
        call ls_mpibcast(nbuffs,infpar%master,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
 #endif
     endif
+
+    select case(scheme)
+    case(0)
+       collective             = .true.
+       mem_saving             = .false.
+       completely_distributed = .false.
+    case(1)
+       collective             = .false.
+       mem_saving             = .false.
+       completely_distributed = .false.
+    case(2)
+       collective             = .false.
+       mem_saving             = .true.
+       completely_distributed = .false.
+    case(3)
+       collective             = .false.
+       mem_saving             = .false.
+       completely_distributed = .true.
+    end select
 
     if(completely_distributed) then
        dynamic_load = .false.
@@ -2522,8 +2520,16 @@ contains
     if( mem_saving ) addsize = nbuffs*(i8*n1s)*n2s*n3s*n4s
     maxsize = maxsize + addsize
     
+    if(.not.master)then
+       print *,"INFO(get_mo_integral_par): Getting Alpha:",MaxActualDimGamma," Gamma:",MaxActualDimGamma
+       print *,"INFO(get_mo_integral_par): with elements:",maxsize,"in buffer",nbu
+    endif
+
     if( use_bg_buf ) then
-       if(maxsize > nbu) call mem_change_background_alloc(maxsize*8_long)
+       if(maxsize > nbu) then
+          print *, "Warning(get_mo_integral_par):  This should not happen, if the memory counting is correct"
+          call mem_change_background_alloc(maxsize*8_long)
+       endif
 
        call mem_pseudo_alloc( w1, w1size )
        call mem_pseudo_alloc( w2, w2size )
@@ -3335,6 +3341,7 @@ contains
      integer :: nba, nbg, inc, i, b, e, k, magic
      integer(kind=long) :: w1size,w2size
      integer(kind=ls_mpik) :: nnod
+     logical :: check_next
      nnod  = 1
      magic = 3
 #ifdef VAR_MPI
@@ -3356,12 +3363,25 @@ contains
 
      maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
 
-     if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals)then
+     write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=0: ",g7.2," GB")')&
+        &dble(maxsize*8.0E0_realk)/(1024.0**3)
+
+     check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
+        & nbu < maxsize .or. &
+        & DECinfo%test_fully_distributed_integrals
+
+     if(check_next)then
 
         s = 1
         maxsize = w1size + w2size
+        write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=1: ",g7.2," GB")')&
+           &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
-        if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals )then
+        check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
+           & nbu < maxsize .or. &
+           & DECinfo%test_fully_distributed_integrals
+
+        if( check_next )then
 
            s = 2
            w1size = get_work_array_size(1,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nba,nbg,s,nbuffs,set)
@@ -3369,7 +3389,14 @@ contains
 
            maxsize = w1size + w2size + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
-           if(dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or. DECinfo%test_fully_distributed_integrals )then
+           write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=2: ",g7.2," GB")')&
+              &dble(maxsize*8.0E0_realk)/(1024.0**3)
+
+           check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
+              & nbu < maxsize .or. &
+              & DECinfo%test_fully_distributed_integrals
+
+           if(check_next)then
               s      = 3
               inc    = nb/4
               nbuffs = get_nbuffs_scheme_0()
@@ -3401,7 +3428,7 @@ contains
            maxsize = w1size + w2size
 
            if(s==0) maxsize = maxsize + (i8*n1*n2)*n3*n4
-           if(s==2) maxsize = maxsize + (nbuffs*i8*n1*n2)*n3*n4
+           if(s==2) maxsize = maxsize + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
            if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or.  maxsize > nbu)then
 
@@ -3449,9 +3476,15 @@ contains
      if(s==0) maxsize = maxsize + (i8*n1*n2)*n3*n4
      if(s==2) maxsize = maxsize + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
+     print *,"REQUESTING scheme",s,"with a,g",nba,nbg,"maxsize,nbu",maxsize,nbu
+
      if(float(maxsize*8)/(1024.0**3) > MemToUse)then
         print*,"ERROR(get_mo_integral_par):requesting ",float(maxsize*8)/(1024.0**3),"GB available ",MemToUse,"GB"
         call lsquit("ERROR(get_mo_integral_par): the memory adaption is invalid, should not happen",-1)
+     endif
+
+     if(maxsize > nbu)then
+        call lsquit("ERROR(get_mo_integral_par): the memory adaption to the bg_buffer is invalid",-1)
      endif
 
      MaxADG = nbg

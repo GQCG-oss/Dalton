@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc3r12_n2_sym_exc_lhtr.info <<'%EOF%'
-   cc3r12_n2_sym_exc_lhtr
+cat > cc3r12_n2_sym_exc_lhtr_tight.info <<'%EOF%'
+   cc3r12_n2_sym_exc_lhtr_tight
    -------------
    Molecule:         N2
    Wave Function:    CC3(R12) / cc-pVDZ
@@ -31,7 +31,7 @@ cat > cc3r12_n2_sym_exc_lhtr.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > cc3r12_n2_sym_exc_lhtr.mol <<'%EOF%'
+cat > cc3r12_n2_sym_exc_lhtr_tight.mol <<'%EOF%'
 BASIS
 cc-pVDZ aug-cc-pVTZ
 N2
@@ -46,7 +46,7 @@ N        0.0000000000000     0.0000000000000     1.0371572000000       *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc3r12_n2_sym_exc_lhtr.dal <<'%EOF%'
+cat > cc3r12_n2_sym_exc_lhtr_tight.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 *MOLBAS
@@ -95,8 +95,8 @@ cat > cc3r12_n2_sym_exc_lhtr.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >cc3r12_n2_sym_exc_lhtr.check
-cat >>cc3r12_n2_sym_exc_lhtr.check <<'%EOF%'
+echo $CHECK_SHELL >cc3r12_n2_sym_exc_lhtr_tight.check
+cat >>cc3r12_n2_sym_exc_lhtr_tight.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then

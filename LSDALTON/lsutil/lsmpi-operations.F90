@@ -1991,7 +1991,8 @@ END SUBROUTINE mpicopy_reduced_screen_info
      integer(kind=8),intent(in) :: bytes
      integer(kind=ls_mpik),intent(in) :: comm
      integer(kind=ls_mpik) :: nnod,me
-     integer(kind=8):: bytes_int
+     integer(kind=8) :: bytes_int
+
      call time_start_phase(PHASE_WORK)
      
      bytes_int  = bytes
@@ -2030,6 +2031,31 @@ END SUBROUTINE mpicopy_reduced_screen_info
      call mem_free_background_alloc()
 
   end subroutine mem_free_background_alloc_all_nodes
+
+  subroutine mem_change_background_alloc_all_nodes(comm,bytes)
+     implicit none
+     integer(kind=8),intent(in) :: bytes
+     integer(kind=ls_mpik),intent(in) :: comm
+     integer(kind=ls_mpik) :: nnod,me
+     integer(kind=8) :: bytes_int
+     call time_start_phase(PHASE_WORK)
+     
+     bytes_int  = bytes
+
+     call get_rank_for_comm( comm, me   )
+     call get_size_for_comm( comm, nnod )
+
+
+     call time_start_phase(PHASE_COMM)
+     if(me==infpar%master) then
+        call ls_mpibcast(CHANGE_BG_BUF,infpar%master,comm)
+     endif
+     call ls_mpibcast(bytes_int,infpar%master,comm)
+     call time_start_phase(PHASE_WORK)
+
+     call mem_change_background_alloc(bytes_int)
+
+   end subroutine mem_change_background_alloc_all_nodes
 #endif
 
 end module lsmpi_op

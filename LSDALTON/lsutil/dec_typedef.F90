@@ -28,16 +28,17 @@ module dec_typedef_module
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
   !> how many real models in total are there, disregard MODEL_NONE
-  integer,parameter :: ndecmodels   = 7
+  integer,parameter :: ndecmodels   = 8
   !> Number of different fragment energies
-  integer,parameter :: MODEL_NONE   = 0
-  integer,parameter :: MODEL_MP2    = 1
-  integer,parameter :: MODEL_CC2    = 2
-  integer,parameter :: MODEL_CCSD   = 3
-  integer,parameter :: MODEL_CCSDpT = 4
-  integer,parameter :: MODEL_RPA    = 5
-  integer,parameter :: MODEL_RIMP2  = 6
-  integer,parameter :: MODEL_SOSEX  = 7
+  integer,parameter :: MODEL_NONE       = 0
+  integer,parameter :: MODEL_MP2        = 1
+  integer,parameter :: MODEL_CC2        = 2
+  integer,parameter :: MODEL_CCSD       = 3
+  integer,parameter :: MODEL_CCSDpT     = 4
+  integer,parameter :: MODEL_RPA        = 5
+  integer,parameter :: MODEL_RIMP2      = 6
+  integer,parameter :: MODEL_SOSEX      = 7
+  integer,parameter :: MODEL_LSTHCRIMP2 = 8
 
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
@@ -49,7 +50,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 23
+  integer, parameter :: ndecenergies = 26
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -74,7 +75,10 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_VIRTRIMP2= 21  ! RI-MP2 virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCSOS   = 22  ! SOSEX occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTSOS  = 23  ! SOSEX virtual partitioning scheme
-  
+  integer,parameter :: FRAGMODEL_LAGLSTHCRIMP2  = 24 ! LS-THC-RI-MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCLSTHCRIMP2  = 25 ! LS-THC-RI-MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTLSTHCRIMP2 = 26 ! LS-THC-RI-MP2 virtual partitioning scheme
+
   !> \author Kasper Kristensen
   !> \date June 2010
   !> \brief Contains settings for DEC calculation, see default settings in dec_set_default_config.
@@ -175,6 +179,8 @@ module dec_typedef_module
      !> use system information to determine available memory during a dec
      !calculation
      logical :: use_system_memory_info
+     !> Memory available for Background buffer in DEC calculation
+     real(realk) :: bg_memory
 
      ! Memory use for full molecule structure
      real(realk) :: fullmolecule_memory
@@ -242,10 +248,12 @@ module dec_typedef_module
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option
      logical :: CRASHCALC
+     !> Crash Calc Debug keyword - to test restart option
+     logical :: CRASHESTI
      !> Debug CC driver
      logical :: cc_driver_debug
-     !> Debug CC driver
-     logical :: cc_driver_use_bg_buffer
+     !> Use Background buffer
+     logical :: use_bg_buffer
      !> Integer specifying which scheme to use in CCSD calculations (debug)
      integer :: en_mem
      !overwrite standard preconditioning settings in solver
