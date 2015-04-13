@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/04/02 (started 2014/09/01).
+!REVISION: 2015/04/10 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -1419,6 +1419,7 @@
           caddr=c_loc(arr);
           !`Write (call C wrapper for cudaMallocHost)
           if(ierr.ne.0) ierr=3
+          nullify(arr)
          case(DIL_ALLOC_MPI)
           errc=0
 !         caddr=c_loc(arr); call MPI_FREE_MEM(caddr,errc) !<caddr> must be passed by value!!!
@@ -4675,7 +4676,7 @@
 ! # If <async> is present and TRUE, one will need to call <dil_tensor_contract_finalize> later
 !   to finalize this tensor contraction (for each MPI process). In this case, it is errorneous
 !   to free or reuse <tcontr%buffer(:)> until the later call to <dil_tensor_contract_finalize> returns.
-!   The full tensor contraction handle <tcontr> cannot be reused until that point.
+!   The full tensor contraction handle <tcontr> cannot be reused until that point!
         implicit none
         type(dil_tens_contr_t), target, intent(inout):: tcontr !in: full tensor contraction specification
         logical, intent(in):: globality                        !in: globality kind of the tensor contraction
@@ -4778,7 +4779,7 @@
            tcontr%alloc_type=DIL_ALLOC_NOT
            if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Work buffer freed: ",l1)') associated(tcontr%buffer)
           else
-           if(VERBOSE) write(CONS_OUT,'("#ERROR(dil_tensor_contract): Work buffer deallocation failed: ",i9)') ierr
+           if(VERBOSE) write(CONS_OUT,'("#ERROR(dil_tensor_contract): Work buffer deallocation failed: ",i11)') ierr
            ierr=9
           endif
          endif
@@ -4789,7 +4790,7 @@
         end subroutine dil_tensor_contract
 !------------------------------------------------------------------------------
         subroutine dil_tensor_contract_finalize(tcontr,ierr,locked,free_buffer) !PARALLEL (MPI)
-!This subroutine finalizes any outstanding MPI communications associated
+!This subroutine finalizes any outstanding MPI communications (uploads) associated
 !with a non-blocking tensor contraction represented by <tcontr>. It is safe
 !to finalize blocking tensor contractions here as well.
         implicit none
@@ -4809,7 +4810,7 @@
           call lsmpi_win_unlock(int(tcontr%list_async(i)%rank,ls_mpik),int(tcontr%list_async(i)%window,ls_mpik))
          endif
         enddo
-        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract_finalize): Number of finalized uploads = ",i6)')&
+        if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract_finalize): Number of finalized MPI uploads = ",i6)')&
                       &tcontr%num_async
         tcontr%num_async=0
         if(present(free_buffer)) then
@@ -4817,7 +4818,8 @@
           if(associated(tcontr%buffer)) call cpu_ptr_free(tcontr%buffer,ierr,attr=tcontr%alloc_type)
           if(ierr.eq.0) then
            tcontr%alloc_type=DIL_ALLOC_NOT
-           if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract_finalize): Work buffer has been freed.")')
+           if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract_finalize): Work buffer freed: ",l1)')&
+           &associated(tcontr%buffer)
           else
            if(VERBOSE) write(CONS_OUT,'("#ERROR(dil_tensor_contract_finalize): Unable to free the work buffer: ",i11)') ierr
           endif
@@ -5069,8 +5071,8 @@
         endif
         return
         end function dil_mm_pipe_efficient
-!--------------------------------------------------------------------------------------------
-        logical function dil_will_malloc_succeed(mem_bytes,page_size,hugepage_size,max_avail) !SERIAL
+!---------------------------------------------------------------------------------------------------
+        logical function dil_will_malloc_succeed(mem_bytes,page_size,hugepage_size,max_huge,max_mem) !SERIAL
 !This function checks whether a given malloc request has a chance for success.
 !If the arguments passed to this function are invalid, .FALSE. will be returned (no error status).
 !NOTES:
@@ -5085,18 +5087,20 @@
         integer(INTL), intent(in):: mem_bytes               !in: number of bytes to be allocated
         integer(INTL), intent(in), optional:: page_size     !in: basic page size in bytes (default is 4K)
         integer(INTL), intent(in), optional:: hugepage_size !in: huge page size in bytes (defaults to 2M)
-        integer(INTL), intent(out), optional:: max_avail    !out: maximum available memory (bytes) backed with huge pages
+        integer(INTL), intent(out), optional:: max_huge     !out: maximum available memory (bytes) backed with huge pages
+        integer(INTL), intent(out), optional:: max_mem      !out: total maximum available memory (bytes)
 !-------------------------------------------------------
         real(8), parameter:: RELIABLE_PART=1d0 !empiric parameter to account for the non-ideality of the buddy malloc()
         integer(INTL), parameter:: DEFAULT_PAGE=4096 !default basic page size in bytes
         integer(INTL), parameter:: DEFAULT_HUGEPAGE=2097152 !default hugepage size in bytes
         integer(INTD), parameter:: MAX_BUDDY_LEVELS=128 !max anticipated number of buddy levels
+        integer(INTL), parameter:: MEMINFO_UNIT=1024 !number of bytes in a /proc/meminfo memory measurement unit
 !------------------------------------------------------
-        integer(INTL):: psz,hsz,pls,ahpm,buds(0:MAX_BUDDY_LEVELS-1)
+        integer(INTL):: psz,hsz,pls,ahpm,totm,buds(0:MAX_BUDDY_LEVELS-1)
         character(512):: str
         integer(INTD):: i,k,l,m,n,words(2,MAX_BUDDY_LEVELS+16)
 
-        dil_will_malloc_succeed=.false.; ahpm=-1
+        dil_will_malloc_succeed=.false.; ahpm=-1; totm=-1
         psz=DEFAULT_PAGE; hsz=DEFAULT_HUGEPAGE
         if(present(page_size)) psz=page_size
         if(present(hugepage_size)) hsz=hugepage_size
@@ -5114,23 +5118,79 @@
          endif
         enddo
 100     close(DIL_TMP_FILE1)
-!Compute the probability of success:
+!Compute the free memory amount:
         if(i.eq.0) then
+ !Compute the amount of hugepage backed free memory (only for the mmap path):
          pls=psz; ahpm=0 !ahpm: available hugepage memory in bytes
          do l=0,m-1
           if(pls.ge.hsz) ahpm=ahpm+pls*buds(l) !count only memory chunks larger or equal to the hugepage size
           pls=pls*2
          enddo
-         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(DIL): malloc requested ",i12," B from hugepage backed RAM of ",i12)')&
-         &mem_bytes,ahpm
+!         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(DIL): malloc requested ",i12," B from hugepage backed RAM of ",i12)')&
+!         &mem_bytes,ahpm
          if(mem_bytes.lt.int(real(ahpm,8)*RELIABLE_PART,INTL)) dil_will_malloc_succeed=.true.
+ !Compute the total amount of free memory (only for the mmap path):
+         totm=0 !totm: total available memory in bytes
+         open(DIL_TMP_FILE1,file='/proc/meminfo',form='FORMATTED',status='OLD',ERR=888)
+         i=0; str=' '
+         do
+          read(DIL_TMP_FILE1,'(A512)',END=200) str; l=len_trim(str)
+          if(l.gt.0) then
+           call str_parse(str,' ',n,words,ierr=i,str_len=l); if(i.ne.0) exit
+           call collect_total_mem(i); if(i.ne.0) exit
+           str(1:l)=' '
+          endif
+         enddo
+200      close(DIL_TMP_FILE1)
         endif
-        if(present(max_avail)) max_avail=ahpm
+        if(present(max_huge)) max_huge=ahpm
+        if(present(max_mem)) max_mem=totm
+        return
+888     if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_will_malloc_succeed): unable to open /proc/meminfo!")')
+        if(present(max_huge)) max_huge=ahpm
+        if(present(max_mem)) max_mem=totm
         return
 999     if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::dil_will_malloc_succeed): unable to open /proc/buddyinfo!")')
-        if(present(max_avail)) max_avail=ahpm
+        if(present(max_huge)) max_huge=ahpm
+        if(present(max_mem)) max_mem=totm
         return
         contains
+
+         subroutine collect_total_mem(errc)
+         integer(INTD), intent(out):: errc
+         integer(INTD):: jb,je
+         errc=0_INTD
+         if(n.eq.3) then !three fields must be present
+          jb=words(1,1); je=words(2,1)
+          if(je-jb+1.eq.len('MemFree:')) then
+           if(str(jb:je).eq.'MemFree:') then
+            totm=totm+str2int(str(jb:je),je-jb+1_INTD,errc)*MEMINFO_UNIT; if(errc.ne.0_INTD) totm=-1
+            return
+           endif
+          endif
+          if(je-jb+1.eq.len('Buffers:')) then
+           if(str(jb:je).eq.'Buffers:') then
+            totm=totm+str2int(str(jb:je),je-jb+1_INTD,errc)*MEMINFO_UNIT; if(errc.ne.0_INTD) totm=-1
+            return
+           endif
+          endif
+          if(je-jb+1.eq.len('Cached:')) then
+           if(str(jb:je).eq.'Cached:') then
+            totm=totm+str2int(str(jb:je),je-jb+1_INTD,errc)*MEMINFO_UNIT; if(errc.ne.0_INTD) totm=-1
+            return
+           endif
+          endif
+          if(je-jb+1.eq.len('SwapFree:')) then
+           if(str(jb:je).eq.'SwapFree:') then
+            totm=totm+str2int(str(jb:je),je-jb+1_INTD,errc)*MEMINFO_UNIT; if(errc.ne.0_INTD) totm=-1
+            return
+           endif
+          endif
+         else
+          errc=-1_INTD
+         endif
+         return
+         end subroutine collect_total_mem
 
          subroutine fill_buddy_info(jl,errc)
          integer(INTD), intent(out):: jl
