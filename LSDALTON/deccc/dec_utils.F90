@@ -4341,56 +4341,58 @@ end function max_batch_dimension
     write(lupri,*)
     if(DECinfo%first_order) then
        IF(.NOT.DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy      :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'G: HF energy (KS orb)  :', Ehf
-          write(lupri,'(15X,a,f20.10)') 'G: DFT energy          :', Edft
+          write(lupri,'(15X,a,f20.10)') 'G: HF energy (KS orb)       :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'G: DFT energy               :', Edft
        ENDIF
-       write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
+       write(lupri,'(15X,a,f20.10)')    'G: Correlation energy       :', Ecorr
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc)then  
           if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
-             write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 1 :', dE_est1
+             write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 1      :', dE_est1
           endif
-          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 2 :', dE_est2
-          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 3 :', dE_est3
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 2      :', dE_est2
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 3      :', dE_est3
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
           else          
-             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy         :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==MODEL_RIMP2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy  :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy       :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy         :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy     :', Ehf+Ecorr
           else    
-             write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy    :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy         :', Ehf+Ecorr
           endif
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-          write(lupri,'(15X,a,f20.10)')  'G: Total CCSD(T) energy:', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy     :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_SOSEX) then
-         write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy   :', Ehf+Ecorr
+         write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy        :', Ehf+Ecorr
          IF(DECinfo%DFTreference) then
-           write(lupri,'(15X,a,f20.10)') 'G: KS + SOSEX energy   :',&
+           write(lupri,'(15X,a,f20.10)')'G: KS + SOSEX energy        :',&
              & Edft+Ecorr
          endif
        elseif(DECinfo%ccmodel==MODEL_RPA) then
          if(.not. SOS) then
-           write(lupri,'(15X,a,f20.10)') 'G: HF + dRPA energy    :', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)')  'G: HF + dRPA energy         :', Ehf+Ecorr
            IF(DECinfo%DFTreference) then
-             write(lupri,'(15X,a,f20.10)') 'G: KS + dRPA energy    :',&
+             write(lupri,'(15X,a,f20.10)')'G: KS + dRPA energy         :',&
               & Edft+Ecorr
            endif
          else
-           write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy   :', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy        :', Ehf+Ecorr
            IF(DECinfo%DFTreference) then
-             write(lupri,'(15X,a,f20.10)') 'G: KS + SOSEX energy   :',&
+             write(lupri,'(15X,a,f20.10)')'G: KS + SOSEX energy        :',&
               & Edft+Ecorr
            endif
          endif
@@ -4399,38 +4401,40 @@ end function max_batch_dimension
        end if
     else
        IF(.NOT.DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy      :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)  :', Ehf
-          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Edft
+          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)       :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: DFT energy               :', Edft
        ENDIF
        if(SOS) then
-         write(lupri,'(15X,a,f20.10)')       'E: SOSEX energy        :', Ecorr
+         write(lupri,'(15X,a,f20.10)')     'E: SOSEX energy             :', Ecorr
        else
-         write(lupri,'(15X,a,f20.10)')       'E: Correlation energy  :', Ecorr
+         write(lupri,'(15X,a,f20.10)')     'E: Correlation energy       :', Ecorr
        endif
 
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc)then  
           if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
-             write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 1 :', dE_est1
+             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC err 1      :', dE_est1
           endif
-          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2 :', dE_est2
-          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3 :', dE_est3
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2      :', dE_est2
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3      :', dE_est3
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
           else          
-             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2 energy         :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==MODEL_RIMP2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy  :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'E: Total RIMP2 energy       :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
-          write(lupri,'(15X,a,f20.10)')    'E: Total MP2-F12 energy:', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
-          write(lupri,'(15X,a,f20.10)')    'E: Total CC2 energy    :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy         :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
           if (DECinfo%F12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
@@ -4860,7 +4864,47 @@ end function max_batch_dimension
                &'RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGRIMP2)
        end if
        write(DECinfo%output,*)
+    case(MODEL_LSTHCRIMP2)
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCLSTHCRIMP2),dofrag,&
+               & 'LS-THC-RI-MP2 occupied single energies','AF_RI_MP2_OCC')
+       endif
+       if(.not. DECinfo%onlyoccpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTLSTHCRIMP2),dofrag,&
+               & 'LS-THC-RI-MP2 virtual single energies','AF_RI_MP2_VIR')
+       endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGLSTHCRIMP2),dofrag,&
+               & 'LS-THC-RI-MP2 Lagrangian single energies','AF_RI_MP2_LAG')
+       end if
 
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCLSTHCRIMP2),dofrag,&
+               & DistanceTable, 'LS-THC-RI-MP2 occupied pair energies','PF_RI_MP2_OCC')
+       endif
+       if((.not. DECinfo%onlyoccpart).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTLSTHCRIMP2),dofrag,&
+               & DistanceTable, 'LS-THC-RI-MP2 virtual pair energies','PF_RI_MP2_VIR')          
+       endif
+       if((.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGLSTHCRIMP2),dofrag,&
+               & DistanceTable, 'LS-THC-RI-MP2 Lagrangian pair energies','PF_RI_MP2_LAG')
+       end if
+
+       write(DECinfo%output,*)
+       if(.not.DECinfo%onlyvirtpart) then  
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') &
+               & 'LS-THC-RI-MP2 occupied   ',CorrEnergyString(1:iCorrLen),' : ',energies(FRAGMODEL_OCCLSTHCRIMP2)
+       endif
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') &
+               & 'LS-THC-RI-MP2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_VIRTLSTHCRIMP2)
+       endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') &
+               &'LS-THC-RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGLSTHCRIMP2)
+       end if
+       write(DECinfo%output,*)
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
@@ -5477,6 +5521,8 @@ end function max_batch_dimension
 
     case(MODEL_RIMP2)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCRIMP2)
+    case(MODEL_LSTHCRIMP2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCLSTHCRIMP2)
 
     case default
        print *, 'Model is: ', ccmodel
@@ -5526,6 +5572,9 @@ end function max_batch_dimension
 
     case(MODEL_RIMP2)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTRIMP2)
+
+    case(MODEL_LSTHCRIMP2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTLSTHCRIMP2)
 
     case default
        print *, 'Model is: ', ccmodel
@@ -5587,6 +5636,12 @@ end function max_batch_dimension
        ! Energy error = difference between occ and virt energies
        dE_est1 = max(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2)) &
             & - min(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2))
+
+    case(MODEL_LSTHCRIMP2)
+       ! Energy error = difference between occ and virt energies
+       dE_est1 = max(energies(FRAGMODEL_LAGLSTHCRIMP2),energies(FRAGMODEL_OCCLSTHCRIMP2),energies(FRAGMODEL_VIRTLSTHCRIMP2)) &
+            & - min(energies(FRAGMODEL_LAGLSTHCRIMP2),energies(FRAGMODEL_OCCLSTHCRIMP2),energies(FRAGMODEL_VIRTLSTHCRIMP2))
+
     case default
        print *, 'Model is: ', DECinfo%ccmodel
        call lsquit('get_estimated_energy_error: Model needs implementation!',-1)

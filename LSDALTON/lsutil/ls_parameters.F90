@@ -134,6 +134,8 @@ MODULE lsparameters
   integer,parameter :: INIT_BG_BUF                  = 67
   integer,parameter :: FREE_BG_BUF                  = 68
   integer,parameter :: CHANGE_BG_BUF                = 69
+  integer,parameter :: LSTHCRIMP2INAMP              = 70
+  integer,parameter :: LSTHCRIMP2FULL               = 71
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

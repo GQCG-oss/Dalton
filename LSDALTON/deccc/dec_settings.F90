@@ -293,7 +293,7 @@ contains
     implicit none
     !> The DEC item
     type(decsettings),intent(inout) :: DECitem
-
+    ! MODIFY FOR NEW MODEL
     DECitem%cc_models(MODEL_MP2)   ='MP2     '
     DECitem%cc_models(MODEL_CC2)   ='CC2     '
     DECitem%cc_models(MODEL_CCSD)  ='CCSD    '
@@ -301,7 +301,7 @@ contains
     DECitem%cc_models(MODEL_RPA)   ='RPA     '
     DECitem%cc_models(MODEL_SOSEX) ='SOSEX   '
     DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
-
+    DECitem%cc_models(MODEL_LSTHCRIMP2) ='THCRIMP2'
   end subroutine dec_set_model_names
 
 
@@ -449,6 +449,11 @@ contains
           DECinfo%use_singles = .false.  
           DECinfo%NO_MO_CCSD  = .true.
           doRIMP2 = .TRUE.
+       case('.LSTHCRIMP2') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles = .false.  
+          DECinfo%NO_MO_CCSD  = .true.
+          doRIMP2 = .TRUE. !we need an Aux basis 
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -972,7 +977,7 @@ contains
        DECinfo%PairEstimate=.false.
        DECinfo%PairEstimateIgnore = .true.
        DECinfo%no_pairs = .true.
-
+       ! MODIFY FOR NEW MODEL
        ! Some models are not compatible with DECNP
        select case(DECinfo%ccmodel) 
        case (MODEL_RPA)
@@ -981,6 +986,8 @@ contains
           call lsquit("SOSEX model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_RIMP2)
           call lsquit("RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
+       case (MODEL_LSTHCRIMP2)
+          call lsquit("LS-THC-RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        end select
 
        if (DECinfo%first_order) then
@@ -1549,6 +1556,7 @@ contains
     case('.RPA');     modelnumber = MODEL_RPA
     case('.SOSEX');   modelnumber = MODEL_SOSEX
     case('.RIMP2');   modelnumber = MODEL_RIMP2
+    case('.LSTHCRIMP2'); modelnumber = MODEL_LSTHCRIMP2
     case default
        print *, 'Model not found: ', myword
        write(DECinfo%output,*)'Model not found: ', myword
@@ -1561,6 +1569,7 @@ contains
        write(DECinfo%output,*)'.RPA'
        write(DECinfo%output,*)'.SOSEX'
        write(DECinfo%output,*)'.RIMP2'
+       write(DECinfo%output,*)'.LS-THC-RIMP2'       
        call lsquit('Requested model not found!',-1)
     end SELECT
 
