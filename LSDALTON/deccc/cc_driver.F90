@@ -483,11 +483,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          endif
 
          if(DECinfo%frozencore) then
-            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,&
+            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
                & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
          end if
   
          ! now, reorder amplitude and integral arrays
@@ -617,7 +617,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
             & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
             & m1f=m1_final, m2f=m2_final)
-   
+
          if(DECinfo%CCSDmultipliers)then
             call tensor_free(m2_final)
             if(DECinfo%use_singles)then
@@ -666,20 +666,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             call tensor_init(ccsdpt_t1,[nvirt,nocc],2)
          endif
 
-         if (.not. DECinfo%pt_hack) then
-
-            if (abc) then
-               call tensor_reorder(vovo,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-               call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-               call tensor_init(ccsdpt_t1,[nocc,nvirt],2)
-            else
-               call tensor_reorder(vovo,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-               call tensor_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-               call tensor_init(ccsdpt_t1,[nvirt,nocc],2)
-            endif
-
-         endif
-
          if(DECinfo%frozencore) then
             call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc, &
                & MyMolecule%Cv,mylsitem,vovo,t2_final,ccsdpt_t1,print_frags, &
@@ -703,8 +689,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwidle = 'MASTER IDLE pT: ')
          endif
 
-         ! free integrals
-         call tensor_free(vovo)
+!         ! free integrals
+!         call tensor_free(vovo)
 
       endif
 
@@ -789,7 +775,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call tensor_free(t1_final)
    endif
 
-   call tensor_free(t2_final)
+   if (DECinfo%print_frags) then
+      call tensor_free(t2_final)
+      call tensor_free(VOVO)
+   endif
    call mem_dealloc(ccenergies)
 
 !else mod unreleased

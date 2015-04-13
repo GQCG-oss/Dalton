@@ -439,7 +439,7 @@ contains
                & MyFragment%nbasis,MyFragment%ppfock,&
                & MyFragment%qqfock,MyFragment%Co,&
                & MyFragment%Cv,MyFragment%mylsitem,&
-               & VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+               & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
           if (abc) then
 
              call tensor_reorder(t2f_local,[3,4,1,2]) ! ccsd_doubles in the order (a,b,i,j)

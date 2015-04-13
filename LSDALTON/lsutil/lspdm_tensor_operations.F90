@@ -5945,7 +5945,6 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
      mode = MPI_MODE_NOCHECK
 
-
      call find_tile_pos_in_buf(tilenr,buf_pos,nbuffs,pos,found)
 
      if(found)then
