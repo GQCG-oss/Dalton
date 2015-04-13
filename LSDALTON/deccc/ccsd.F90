@@ -5653,12 +5653,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       choice = 3
 
       allsize = 0
-#ifdef VAR_MPI
-      locally_stored_tiles = (vs**2*i8*os**2*ceiling(float( ceiling(float(nv**2*i8*no**2)/float(vs**2*i8*os**2)) )/float(nnod)))
-#else
-      locally_stored_tiles = 0
-#endif
+      if( vs>0.and. os>0)then
+         locally_stored_tiles = (vs**2*i8*os**2*ceiling(float( ceiling(float(nv**2*i8*no**2)/float(vs**2*i8*os**2)) )/float(nnod)))
+      else
+         locally_stored_tiles = 0
+      endif
+
       locally_stored_v2o2  = v2o2
+
       select case(scheme)
       case(4)
          locally_stored_tiles = 0
