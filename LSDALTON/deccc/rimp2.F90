@@ -2082,7 +2082,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 
   IF(AlphaBetaDecompCreate)THEN
      IF(master)THEN
-        call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
+!        call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
         IF(DECinfo%AuxAtomicExtent)THEN
            molecule1 => mylsitem%SETTING%MOLECULE(1)%p
            molecule2 => mylsitem%SETTING%MOLECULE(2)%p
@@ -2095,7 +2095,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         ENDIF
         CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
         call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-             & AlphaBeta,mylsitem%setting,nbasisAux,Oper)
+             & AlphaBetaDecomp,mylsitem%setting,nbasisAux,Oper)
         CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
         IF(DECinfo%AuxAtomicExtent)THEN
            mylsitem%SETTING%MOLECULE(1)%p => molecule1
@@ -2106,9 +2106,10 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         ! Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
         ! Warning the inverse is not unique so in order to make sure all slaves have the same
         ! inverse matrix we calculate it on the master a BCAST to slaves
-        call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBetaDecomp, lupri)
+!        call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBetaDecomp,lupri)
+        call Get_InverseCholeskyFactor(nbasisAux,AlphaBetaDecomp,lupri)
         CALL LSTIMER('DF_Calpha:AlphaBetaDecomp',TS4,TE4,LUPRI,ForcePrint)
-        call mem_dealloc(AlphaBeta)
+!        call mem_dealloc(AlphaBeta)
      ENDIF
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
@@ -2543,6 +2544,39 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 
 end subroutine Build_CalphaMO2
 
+!computes the Cholesky factorization of the inverse of 
+!a real symmetric positive definite matrix A = U^T * U 
+subroutine Get_InverseCholeskyFactor(n,A,lupri)
+  implicit none
+  integer, intent(in)          :: n,lupri
+  real(realk), intent(inout)   :: A(n,n)
+  !
+  integer                      :: i,j,np,k,info
+  real(realk) :: TS,TE
+  call LSTIMER('START ',TS,TE,lupri,.TRUE.)
+  call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor
+  IF(INFO.ne. 0) THEN
+     print *, 'DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',INFO
+     call lsquit('DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',-1)
+  ENDIF
+  call DPOTRI('U', N, A, N, INFO ) !U=inverse of a original U
+  IF(INFO.ne. 0) THEN
+     print *, 'DPOTRI Failed in Get_InverseCholeskyFactor',INFO
+     call lsquit('DPOTRI Failed in Get_InverseCholeskyFactor',-1)
+  ENDIF
+  call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor of inverse of a original U
+  IF(INFO.ne. 0) THEN
+     print *, 'DPOTRF NR 2 Failed in Get_InverseCholeskyFactor',INFO
+     call lsquit('DPOTRF NR 2 Failed in Get_InverseCholeskyFactor',-1)
+  ENDIF
+  do J=1,N
+     do I=J+1,N
+        A(I,J) = 0.0E0_realk
+     enddo
+  enddo
+  call LSTIMER('Get_CholeskyFactor',TS,TE,lupri,.TRUE.)
+end subroutine Get_InverseCholeskyFactor
+
 subroutine NAF_buildCalphaNAF(Calpha,nAux2,nvirt,nocc,&
      & CalphaNAF,NREDLOC,NBARTMP,nbasisAux,&
      & offset,offset2,ndimMax,numnodes)
@@ -2659,13 +2693,15 @@ subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred,SumSV,FullSumSV)
   real(realk),intent(in)    :: epsilon
   integer,intent(inout)     :: nred
   !local variables
-  integer                :: lwork,INFO,I,K,J,infdiag
-  real(realk), pointer   :: work(:),SV(:),U(:,:),VT(:,:)
+  integer                :: lwork,INFO,I,K,J,infdiag,liwork
+  real(realk), pointer   :: work(:),U(:,:),VT(:,:)
   integer,pointer        :: IPVT(:)
-  real(realk)            :: RCOND, dummy(2),maxSV,SVm1
+  real(realk)            :: RCOND, dummy(2),maxSV,SVm1,idummy(2),SV(N)
 !
   real(realk),pointer :: W2(:,:)
+  logical :: doSVD
   infdiag = 0
+!  doSVD = .FALSE. ! do diagonalization instead (faster)
 
   !Perform a SVD  decomposition 
   ! W = U * SIGMA * transpose(V)
@@ -2673,27 +2709,30 @@ subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred,SumSV,FullSumSV)
   ! its min(m,n) diagonal elements
   ! for efficient storage the SIGMA non zero elements are stored in 
   ! SV (non singular values)
-  call mem_alloc(SV,N)   !sigular values 
   !only the first min(m,n) columns of U (the left singular
   !vectors) are returned in the array U;
   !call mem_alloc(U,n,N)  Use TMP
   !only the first min(m,n) rows of V**T (the transposed right singular
   !vectors) are returned in the array V;
-  call mem_alloc(VT,N,N)
 !  call mem_alloc(U,N,N)
   !S(n,m) = U(n,N) SV(N) VT(N,m)
-  lwork = -1      !workspace query
-  call dgesvd('S','S',N,N,W,N,SV,TMP,N,VT,N,dummy,lwork,INFO)
-  lwork = dummy(1)
-  call mem_alloc(work,lwork)
-  call dgesvd('S','S',N,N,W,N,SV,TMP,N,VT,N,work,lwork,INFO)
-  call mem_dealloc(VT)
+!!$  IF(doSVD)THEN
+!!$     call mem_alloc(VT,N,N)
+!!$     lwork = -1      !workspace query
+!!$     call dgesvd('S','S',N,N,W,N,SV,TMP,N,VT,N,dummy,lwork,INFO)
+!!$     lwork = dummy(1)
+!!$     call mem_alloc(work,lwork)
+!!$     call dgesvd('S','S',N,N,W,N,SV,TMP,N,VT,N,work,lwork,INFO)
+!!$     call mem_dealloc(VT)
+!!$     !content of W destroyed
+!!$     IF(INFO.NE.0)THEN
+!!$        print*,'dgesvd in NAF_SVD_W failed  INFO=',INFO
+!!$     ENDIF
+!!$     call mem_dealloc(work)
+!!$  ELSE
+     call my_dsyev('V', 'U', N, W, SV)
+!!$  ENDIF
 
-  !content of W destroyed
-  IF(INFO.NE.0)THEN
-     print*,'dgesvd in NAF_SVD_W failed  INFO=',INFO
-  ENDIF
-  call mem_dealloc(work)
   nred = 0 
   SumSV = 0.0E0_realk
   FullSumSV = 0.0E0_realk
@@ -2707,16 +2746,26 @@ subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred,SumSV,FullSumSV)
   ENDDO
   call mem_alloc(NBAR,nred,N)
   nred = 0
-  DO I=1,N
-     IF(ABS(SV(I)).GT.epsilon)THEN
-        nred = nred + 1
-        DO J=1,N
-           !NBAR(nred,J) = U(n,nmin)
-           NBAR(nred,J) = TMP(J,I)
-        ENDDO
-     ENDIF
-  ENDDO
-  call mem_dealloc(SV)
+!!$  IF(doSVD)THEN
+!!$     DO I=1,N
+!!$        IF(ABS(SV(I)).GT.epsilon)THEN
+!!$           nred = nred + 1
+!!$           DO J=1,N
+!!$              !NBAR(nred,J) = U(n,nmin)
+!!$              NBAR(nred,J) = TMP(J,I)
+!!$           ENDDO
+!!$        ENDIF
+!!$     ENDDO
+!!$  ELSE
+     DO I=1,N
+        IF(SV(I).GT.epsilon)THEN
+           nred = nred + 1
+           DO J=1,N
+              NBAR(nred,J) = W(J,I)
+           ENDDO
+        ENDIF
+     ENDDO
+!!$  ENDIF
 end subroutine NAF_SVD_W
 
 subroutine NAF_buildW(W,Wprime,AlphaBetaDecomp,N) 
@@ -2729,7 +2778,7 @@ subroutine NAF_buildW(W,Wprime,AlphaBetaDecomp,N)
   real(realk),pointer :: TMP(:,:)
   !W(A,B) = Decomp(A,C)*Wprime(C,D)*Decomp(D,B)
   call mem_alloc(TMP,N,N)
-  call dgemm('N','N',N,N,N,1.0E0_realk,Wprime,N,AlphaBetaDecomp,N,0.0E0_realk,TMP,N)
+  call dgemm('N','T',N,N,N,1.0E0_realk,Wprime,N,AlphaBetaDecomp,N,0.0E0_realk,TMP,N)
   call dgemm('N','N',N,N,N,1.0E0_realk,AlphaBetaDecomp,N,TMP,N,0.0E0_realk,W,N)
   call mem_dealloc(TMP)
 end subroutine NAF_buildW
