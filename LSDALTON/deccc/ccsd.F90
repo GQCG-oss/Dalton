@@ -1384,12 +1384,30 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call lsquit('ERROR(ccsd_residual_integral_driven): unknown scheme!',-1)
            endif
            if(DECinfo%PL>1)then
-              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                 &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
-              write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
-              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                 &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
-              write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
+              if(use_bg_buf)then
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,6,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part B on master")')ActuallyUsed/MemFree*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,9,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part B on master")')&
+                    &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,7,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,10,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part C on master")')&
+                    &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
+              else
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part B on master")')ActuallyUsed/MemFree*100
+                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+                    &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
+                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
+              endif
+
               ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
                  &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
            endif
@@ -5897,7 +5915,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,nba,nbg,nbuffs,s,se,is)
     select case( choice )
-    case(1,2,3,4,8)
+    case(1,2,3,4,8,9,10)
        !w0
        memin = 1.0E0_realk * w0size
        !w1
@@ -5927,7 +5945,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !************************
 
       ! u 2 + Omega 2 +  H +G  
-      if( choice /= 8 )then
+      if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
          memrq = 1.0E0_realk*(2_long*no*no*nv*nv+ i8*nb*nv+i8*nb*no)
          !gvoov gvvoo
          memrq=memrq+ 2.0E0_realk*(i8*nv*nv)*no*no
@@ -5954,7 +5972,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,i8*nb*nb)+i8*nb*nb+(2_long*no*no)*nv*nv)
       ! govov
       memout = memout + (1.0E0_realk*no*no)*nv*nv
-      if( choice == 8 )then
+      if( choice == 8 .or. choice == 9 .or. choice == 10)then
          !in the beginning when t2 is contracted to be local
          memout = max(memout,(1.0E0_realk*no*nv)*no*nv+3.0E0_realk*tsze*nloctiles)
       endif
@@ -5965,7 +5983,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !THROUGHOUT THE ALGORITHM
       !************************
 
-      if( choice /= 8 )then
+      if( choice /= 8 .and. choice /= 9 .and. choice /= 10 )then
          !govov stays in pdm and is dense in second part
          ! u 2 + omega2 + H +G 
          memrq = 1.0E0_realk*((2_long*no*no)*nv*nv+ i8*nb*nv+i8*nb*no) 
@@ -5995,7 +6013,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       if(choice /= 5.and.choice/=6.and.choice/=7)then
          memout = memout  + 2.0E0_realk * (i8*nv**2)*no**2
-      else if( choice == 8 )then
+      else if( choice == 8 .or. choice == 9 .or. choice == 10 )then
          !in the beginning when t2 is contracted to be local
          memout = max(memout,(1.0E0_realk*no*nv)*no*nv+3.0E0_realk*tsze*nloctiles)
       endif
@@ -6006,7 +6024,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       !THROUGHOUT THE ALGORITHM
       !************************
-      if( choice /= 8 )then
+      if( choice /=8 .and. choice /= 9 .and. choice /= 10 )then
          !govov stays in pdm and is dense in second part
          ! u2 + H +G + space for 2 update tile s
          memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no + i8*2*tsze)
@@ -6035,7 +6053,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*e2))
 
-      if( choice == 8 )then
+      if( choice == 8 .or. choice == 9 .or. choice == 10 )then
          !in the beginning when t2 is contracted to be local
          memout = max(memout,(1.0E0_realk*no*nv)*no*nv+3.0E0_realk*tsze*nloctiles)
       endif
@@ -6106,6 +6124,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! *********************************************************
     case(8)
        memrq = memrq + max(memin,memout)
+    case(9)
+       memrq = memrq + memin
+    case(10)
+       memrq = memrq + memout
     end select
 
     memrq =((memrq*8.0E0_realk)/(1.024E3_realk**3))
