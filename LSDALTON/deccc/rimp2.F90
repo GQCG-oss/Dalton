@@ -1939,8 +1939,9 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   real(realk),pointer :: TMPAlphaBetaDecomp(:,:),AlphaCD3(:),NBAR(:,:)
   real(realk),pointer :: AlphaCD5(:),Calpha2(:),CalphaNAF(:)
   real(realk),pointer :: W(:,:),Wprime(:,:),NBARTMP(:,:)
-  real(realk) :: TS3,TE3,MemInGBCollected,MemInGBCollected2
+  real(realk) :: TS3,TE3,MemInGBCollected,MemInGBCollected2,TS,TE,SumSV,FullSumSV
   real(realk) :: MemForFullAOINT,MemForFullMOINT,maxsize,MemForPartialMOINT
+  real(realk) :: TS4,TE4
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
   integer(kind=long)    :: nSize,n8
   integer(kind=ls_mpik) :: node 
@@ -1953,6 +1954,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
+  CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
+  CALL LSTIMER('START ',TS3,TE3,LUPRI,ForcePrint)
   use_bg_buf = .FALSE.
   IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
   epsilon = DECinfo%NAFthreshold 
@@ -1995,7 +1998,6 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 #else
   nthreads = 1
 #endif
-  CALL LSTIMER('START ',TS3,TE3,LUPRI)
   
   IF(master)THEN
      !Memory requirement to have the full MO integral in memory 
@@ -2072,6 +2074,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   IF(PerformReduction.NE.0) MaxNaux = PerformReduction
   call time_start_phase( PHASE_WORK )
 #endif
+  CALL LSTIMER('DF_Calpha:Init ',TS3,TE3,LUPRI,ForcePrint)
 
   !=====================================================================================
   ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
@@ -2090,8 +2093,10 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
            mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
         ENDIF
+        CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
         call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
              & AlphaBeta,mylsitem%setting,nbasisAux,Oper)
+        CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
         IF(DECinfo%AuxAtomicExtent)THEN
            mylsitem%SETTING%MOLECULE(1)%p => molecule1
            mylsitem%SETTING%MOLECULE(2)%p => molecule2
@@ -2102,8 +2107,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         ! Warning the inverse is not unique so in order to make sure all slaves have the same
         ! inverse matrix we calculate it on the master a BCAST to slaves
         call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBetaDecomp, lupri)
+        CALL LSTIMER('DF_Calpha:AlphaBetaDecomp',TS4,TE4,LUPRI,ForcePrint)
         call mem_dealloc(AlphaBeta)
-        CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
      ENDIF
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
@@ -2113,6 +2118,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      call time_start_phase(PHASE_WORK)   
 #endif
   ENDIF
+  CALL LSTIMER('DF_Calpha:AlphaBeta',TS3,TE3,LUPRI,ForcePrint)
 
   !==================================================================
   ! Determine:  
@@ -2209,6 +2215,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
        & nvirt,nocc,.TRUE.,Cvirt,Cocc,nthreads,dim1,GindexToLocal,DECinfo%PL,&
        & use_bg_buf)
 
+  CALL LSTIMER('DF_Calpha:3CenterInt',TS3,TE3,LUPRI,ForcePrint)
+
 !  call sleep(mynum*10)
 !  print*,'XXX AlphaCD3 dim1=',dim1,'mynum',mynum
 !  call ls_output(AlphaCD3,1,dim1,1,4,dim1,nvirt*nocc,1,6)
@@ -2247,7 +2255,14 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         IF(master)THEN
            call mem_alloc(W,nbasisAux,nbasisAux)
            call NAF_buildW(W,Wprime,AlphaBetaDecomp,nbasisAux)
-           call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED) 
+           call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED,SumSV,FullSumSV) 
+           IF(DECinfo%PL.GT.2)THEN
+              WRITE(DECinfo%output,*)'NAF: Auxiliary functions         = ',nbasisAux
+              WRITE(DECinfo%output,*)'NAF: Natural Auxiliary functions = ',NRED
+              WRITE(DECinfo%output,*)'NAF: Sum of included eigenvalues = ',SumSV
+              WRITE(DECinfo%output,*)'NAF: Sum of neglected eigenvalues= ',FullSumSV-SumSV
+              WRITE(DECinfo%output,*)'NAF: Sum of all eigenvalues      = ',FullSumSV
+           ENDIF
            call mem_dealloc(W)
         ENDIF
         call mem_dealloc(Wprime)
@@ -2327,6 +2342,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ENDIF
      !  print*,'MY RIMP2 INTEGRAL AlphaCD2(1:nA,1:4) NEW VERSION MYNUM',MYNUM
      !  call ls_output(AlphaCD3,1,size(AlphaCD3,1),1,4,size(AlphaCD3,1),nvirt*nocc,1,6)
+     CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
   ELSE
      !=====================================================================================
      ! MPI scheme:  Bcast Routine
@@ -2400,6 +2416,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ELSE
         call mem_dealloc(AlphaCD3)
      ENDIF
+     CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
      IF(DECinfo%NAF)THEN
 #ifdef VAR_MPI
         call time_start_phase( PHASE_IDLE )
@@ -2410,8 +2427,15 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 #endif
         IF(master)THEN
            call mem_alloc(W,nbasisAux,nbasisAux)
-           call NAF_buildW(W,Wprime,AlphaBetaDecomp,nbasisAux)
-           call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED) 
+           call NAF_buildW(W,Wprime,AlphaBetaDecomp,nbasisAux)           
+           call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED,SumSV,FullSumSV) 
+           IF(DECinfo%PL.GT.2)THEN
+              WRITE(DECinfo%output,*)'NAF: Auxiliary functions         = ',nbasisAux
+              WRITE(DECinfo%output,*)'NAF: Natural Auxiliary functions = ',NRED
+              WRITE(DECinfo%output,*)'NAF: Sum of included eigenvalues = ',SumSV
+              WRITE(DECinfo%output,*)'NAF: Sum of neglected eigenvalues= ',FullSumSV-SumSV
+              WRITE(DECinfo%output,*)'NAF: Sum of all eigenvalues      = ',FullSumSV
+           ENDIF
            call mem_dealloc(W)
         ENDIF
         call mem_dealloc(Wprime)
@@ -2500,6 +2524,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            call mem_dealloc(Calpha)
            Calpha => CalphaNAF           
         ENDIF
+        CALL LSTIMER('DF_Calpha:NAF',TS3,TE3,LUPRI,ForcePrint)
      ENDIF
      !allocated inside II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim
      IF(CollaborateWithSlaves.OR.DECinfo%RIMP2ForcePDMCalpha)THEN
@@ -2514,7 +2539,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 !  WRITE(6,*)'Build_CalphaMO2:Print Subset Final Calph(NBA=',NBA,',1:4)  MYNUM',MYNUM
 !  call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
 !
-  CALL LSTIMER('Build_CalphaMO2',TS3,TE3,LUPRI)
+  CALL LSTIMER('Build_CalphaMO2',TS,TE,LUPRI,ForcePrint)
 
 end subroutine Build_CalphaMO2
 
@@ -2625,11 +2650,11 @@ subroutine buildNBARTMP(NBARTMP,NBAR,NREDLOC,NRED,nbasisAux,mynum,ndimMax,numnod
   ENDIF
 end subroutine buildNBARTMP
 
-subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred)
+subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred,SumSV,FullSumSV)
   implicit none
   integer,intent(in)        :: N
   real(realk),intent(in)    :: W(N,N)
-  real(realk),intent(inout) :: TMP(N,N)
+  real(realk),intent(inout) :: TMP(N,N),SumSV,FullSumSV
   real(realk),pointer       :: NBAR(:,:)
   real(realk),intent(in)    :: epsilon
   integer,intent(inout)     :: nred
@@ -2670,9 +2695,15 @@ subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred)
   ENDIF
   call mem_dealloc(work)
   nred = 0 
+  SumSV = 0.0E0_realk
+  FullSumSV = 0.0E0_realk
   DO I=1,N
      IF(DECinfo%PL.GT.2) print*,'W SV(I)',SV(I),'SV(I).GT.epsilon',SV(I).GT.epsilon
-     IF(SV(I).GT.epsilon) nred = nred + 1
+     IF(SV(I).GT.epsilon)THEN
+        nred = nred + 1
+        SumSV = SumSV + SV(I)
+     ENDIF
+     FullSumSV = FullSumSV + SV(I)
   ENDDO
   call mem_alloc(NBAR,nred,N)
   nred = 0
