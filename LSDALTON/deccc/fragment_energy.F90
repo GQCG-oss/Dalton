@@ -659,10 +659,10 @@ contains
              call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,&
                   & VOVV,VOVOocc,VOVOvirt,grad)
           end if
-          if(.not. DECinfo%unrelaxed) then
-             call tensor_free(VOOO)
-             call tensor_free(VOVV)
-          end if
+!          if(.not. DECinfo%unrelaxed) then
+!             call tensor_free(VOOO)
+!             call tensor_free(VOVV)
+!          end if
        end if
     end if
     !
@@ -678,6 +678,15 @@ contains
     call tensor_free(t2occ)
     call tensor_free(VOVOvirt)
     call tensor_free(t2virt)
+
+    if(DECinfo%first_order) then
+       if(DECinfo%ccmodel == MODEL_MP2.OR.DECinfo%ccmodel == MODEL_RIMP2)then
+          if(.not. DECinfo%unrelaxed) then
+             call tensor_free(VOOO)
+             call tensor_free(VOVV)
+          end if
+       end if
+    end if
 
     !print *,"s1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"s2",VOVOvirt%initialized,associated(VOVOvirt%elm1)

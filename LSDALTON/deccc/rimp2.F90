@@ -296,6 +296,29 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call Test_if_64bit_integer_required(nvirt,noccEOS,noccEOS,nocctot)
   endif
 
+  IF(use_bg_buf)THEN
+     !Due to the push pull mechanisme we must deallocate in the 
+     !reverse order we allocate - which means I need to allocate these
+     !quantities before I allocate anything else in the background buffer
+
+     !deallocated in fragment_energy.F90 line 663 (April 2015)
+     if(first_order) then
+        dimvirt = [nvirtEOS,nocc,nvirtEOS,nvirt]   
+        call tensor_ainit(blad,dimvirt,4,bg=.TRUE.)
+        dimvirt = [nvirt,noccEOS,noccEOS,nocctot]   
+        call tensor_ainit(djik,dimvirt,4,bg=.TRUE.)
+     endif
+
+     !deallocated in fragment_energy.F90 line 677 (April 2015)
+     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]    
+     call tensor_ainit(tvirtEOS,dimvirt,4,bg=.TRUE.)
+     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot] 
+     call tensor_ainit(gvirtEOS,dimvirt,4,bg=.TRUE.)
+     dimocc = [nvirt,noccEOS,nvirt,noccEOS]     
+     call tensor_ainit(toccEOS,dimocc,4,bg=.TRUE.)
+     call tensor_ainit(goccEOS,dimocc,4,bg=.TRUE.)
+  ENDIF
+
   CALL LSTIMER('DECRIMP2: INIT ',TS2,TE2,LUPRI,FORCEPRINT)
 
   ! *************************************
@@ -700,8 +723,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #else
      call dgemm('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
 #endif     
-     !Final virtual transformation and reorder to dimocc
-     call tensor_ainit(toccEOS,dimocc,4)
+     IF(.NOT.use_bg_buf)call tensor_ainit(toccEOS,dimocc,4)
 !$acc enter data create(toccEOS%elm1)
      call RIMP2_calc_toccB(nvirt,noccEOS,tocc3,UvirtT,toccEOS%elm1)
 !$acc exit data copyout(toccEOS%elm1) async(async_id(2))
@@ -719,7 +741,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ENDIF
      CALL LSTIMER('RIMP2: toccEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
-     call tensor_ainit(toccEOS,dimocc,4)
+     IF(.NOT.use_bg_buf)call tensor_ainit(toccEOS,dimocc,4)
      nsize = nvirt*noccEOS*nvirt*noccEOS
      call ls_dzero8(toccEOS%elm1,nsize)
   ENDIF
@@ -817,7 +839,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 
      !transform last occ index to local basis and reorder 
-     call tensor_ainit(tvirtEOS,dimvirt,4)
+     IF(.NOT.use_bg_buf)call tensor_ainit(tvirtEOS,dimvirt,4)     
 !$acc enter data create(tvirtEOS%elm1)
      call RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt3,UoccT,tvirtEOS%elm1)
 !$acc exit data copyout(tvirtEOS%elm1) async(async_id(3))
@@ -835,7 +857,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ENDIF
      CALL LSTIMER('RIMP2: tvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
-     call tensor_ainit(tvirtEOS,dimvirt,4)
+     IF(.NOT.use_bg_buf)call tensor_ainit(tvirtEOS,dimvirt,4)
      call mem_dealloc(EVocc)
      call mem_dealloc(EVvirt)
      nSize = nvirtEOS*nocc*nvirtEOS*nocc
@@ -906,7 +928,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
      IF(.NOT.first_order)call mem_dealloc(UvirtT)
      
-     call tensor_ainit(goccEOS,dimocc,4)
+     IF(.NOT.use_bg_buf) call tensor_ainit(goccEOS,dimocc,4)
 #ifdef VAR_OPENACC
 !$acc enter data create(goccEOS%elm1)
      call RIMP2_calc_gocc(nvirt,noccEOS,NBA,Calpha3,goccEOS%elm1)
@@ -930,7 +952,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ELSE
      IF(.NOT.first_order)call mem_dealloc(UoccEOST)
      IF(.NOT.first_order)call mem_dealloc(UvirtT)
-     call tensor_ainit(goccEOS,dimocc,4)
+     IF(.NOT.use_bg_buf)call tensor_ainit(goccEOS,dimocc,4)
      nSize = nvirt*noccEOS*nvirt*noccEOS
      call ls_dzero8(goccEOS%elm1,nsize)
   ENDIF
@@ -1045,7 +1067,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
      IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
 
-     call tensor_ainit(gvirtEOS,dimvirt,4)
+     IF(.NOT.use_bg_buf)call tensor_ainit(gvirtEOS,dimvirt,4)
 !$acc enter data create(gvirtEOS%elm1)
      call RIMP2_calc_gvirt(nvirtEOS,nocctot,NBA,nocc,Calpha3,gvirtEOS%elm1,offset)
 !$acc exit data copyout(gvirtEOS%elm1) async(async_id(5))
@@ -1070,7 +1092,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ELSE
      IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
      IF(.NOT.first_order)call mem_dealloc(UoccT)
-     call tensor_ainit(gvirtEOS,dimvirt,4)
+     IF(.NOT.use_bg_buf)call tensor_ainit(gvirtEOS,dimvirt,4)
      nSize = nvirtEOS*nocc*nvirtEOS*nocctot
      call ls_dzero8(gvirtEOS%elm1,nsize)
   ENDIF
@@ -1097,10 +1119,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call lsmpi_reduction(gvirtEOS%elm1,nsize,infpar%master,infpar%lg_comm)
      call time_start_phase(PHASE_WORK)
      if (.not. Master) then
-        call tensor_free(toccEOS)
-        call tensor_free(tvirtEOS)
         call tensor_free(goccEOS)
+        call tensor_free(toccEOS)
         call tensor_free(gvirtEOS)
+        call tensor_free(tvirtEOS)
      endif
   ENDIF
 #endif
@@ -1227,7 +1249,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_dealloc(UoccEOST)
         
         !  djikEOS(nvirtAOS,noccEOS,noccEOS,noccAOS)
-        call tensor_ainit(djik,dimvirt,4)
+        IF(.NOT.use_bg_buf)call tensor_ainit(djik,dimvirt,4)
 !$acc enter data create(djik%elm1)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,Calpha4,noccEOS,nocctot,djik%elm1)
 !$acc exit data delete(Calpha3,Calpha4)
@@ -1245,7 +1267,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ELSE
         call array2_free(CDIAGocc)
         call mem_dealloc(UoccEOST)
-        call tensor_ainit(djik,dimvirt,4)
+        IF(.NOT.use_bg_buf)call tensor_ainit(djik,dimvirt,4)
         nSize = nvirt*noccEOS*noccEOS*nocctot
         call ls_dzero8(djik%elm1,nsize)
      ENDIF
@@ -1341,7 +1363,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_dealloc(UvirtEOST)
         
         !generate blad(nvirtEOS,noccAOS,nvirtEOS,nvirtAOS)
-        call tensor_ainit(blad,dimvirt,4)
+        IF(.NOT.use_bg_buf)call tensor_ainit(blad,dimvirt,4)
 !$acc enter data create(blad%elm1)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirtEOS,nocc,Calpha4,nvirtEOS,nvirt,blad%elm1)
 !$acc exit data delete(Calpha3,Calpha4)
@@ -1363,7 +1385,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_dealloc(UoccT)
         call mem_dealloc(UvirtT)
         call mem_dealloc(UvirtEOST)
-        call tensor_ainit(blad,dimvirt,4)
+        IF(.NOT.use_bg_buf)call tensor_ainit(blad,dimvirt,4)
         nSize = nvirtEOS*nocc*nvirtEOS*nvirt
         call ls_dzero8(blad%elm1,nsize)
      ENDIF
@@ -2157,7 +2179,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
              & MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
              & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
         IF(MemForPartialMOINT.GE.maxsize)THEN !Error 
-           CALL lsquit('Not enough memory in build_calpha bcast schem',-1)
+           CALL lsquit('Not enough memory in build_calpha bcast scheme',-1)
         ELSE
            MaxNaux = MIN(nAuxMPI(mynum+1),&
                 &FLOOR((MaxSize/8.0E-9_realk-nAuxMPI(mynum+1)*nvirt*nocc-&
