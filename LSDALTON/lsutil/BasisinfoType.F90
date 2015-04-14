@@ -52,6 +52,7 @@ Character(len=80)        :: NAME
 END TYPE ATOMTYPEITEM
 
 TYPE BASISSETINFO
+REAL(REALK)                :: GeminalScalingFactor
 LOGICAL                    :: DunningsBasis
 LOGICAL                    :: SPHERICAL
 LOGICAL                    :: GCbasis

@@ -3124,7 +3124,7 @@ ELSE
          coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
       ENDDO
       IF (intSpec.EQ.'G') THEN
-         ! The Gaussian geminal operator g
+         ! The Gaussian geminal operatorg 
          oper = GGemOperator
          call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
       ELSE IF (intSpec.EQ.'F') THEN
