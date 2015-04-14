@@ -1518,6 +1518,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   LIBRARY(RegBasParam)%pointcharges = .FALSE.
   LIBRARY(RegBasParam)%phantom = .FALSE.
   LIBRARY(RegBasParam)%DunningsBasis = .TRUE.
+  LIBRARY(RegBasParam)%GeminalScalingFactor = 1.0E0_realk
   call mem_dealloc(UNIQUECHARGES)  
   call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%BINFO(RegBasParam),LIBRARY,&
        &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.,RegBasParam)

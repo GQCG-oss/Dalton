@@ -135,6 +135,7 @@ subroutine nullifyBasisset(BAS)
   implicit none
   TYPE(BASISSETINFO) :: BAS
   BAS%DunningsBasis = .FALSE.
+  BAS%GeminalScalingFactor = 1.0E0_realk
   BAS%SPHERICAL = .FALSE.
   BAS%GCbasis = .FALSE.
   BAS%GCONT = .FALSE.
