@@ -545,7 +545,7 @@ subroutine ContractOne4CenterF12IntegralsRI(nBA,n,Calpha,EJ,EK)
         ENDDO
      ENDDO
   ENDDO
-  !$OMP END DO
+  !$OMP END PARALLEL DO
 end subroutine ContractOne4CenterF12IntegralsRI
 
 subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJ,EK)
