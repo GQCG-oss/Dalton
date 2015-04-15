@@ -115,7 +115,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk), pointer   :: work1(:),Etmp2222(:)
   real(realk)            :: RCOND
   integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
-  real(realk) :: TS,TE,TS2,TE2,TS3,TE3
+  real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPUTIME,WALLTIMESTART,WALLTIMEEND,WTIME
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate,memstep2
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
   integer :: MaxVirtSize,nTiles,offsetV,offset,MinAuxBatch
@@ -140,11 +140,21 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #else
   integer, pointer, dimension(:) :: async_id
 #endif
+#ifdef VAR_PAPI
+  integer(8) :: papiflops
+  integer :: retval,eventset2
+#endif
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 1319
 #endif  
+
+#ifdef VAR_PAPI
+  CALL LS_GETTIM(CPUTIME,WALLTIMESTART)
+  call PAPIf_start(eventset2,retval)
+#endif
+
 
   ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
   num_ids = 7
@@ -1495,6 +1505,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   write(*,'(A,g10.3,A)')"DECRIMP2 time WORK",time_w," seconds"
   write(*,'(A,g10.3,A)')"DECRIMP2 time COMM",time_c," seconds"
   write(*,'(A,g10.3,A)')"DECRIMP2 time IDLE",time_i," seconds"
+#ifdef VAR_PAPI
+  CALL LS_GETTIM(CPUTIME,WALLTIMEEND)
+  WTIME = WALLTIMEEND-WALLTIMESTART  
+  CALL ls_TIMTXT('>>>  WALL Time used in RIMP2_integrals_and_amp is ',WTIME,LUPRI)
+  papiflops=0 ! zero flops (this is probably redundant)
+  call PAPIf_stop(eventset2,papiflops,retval)
+  write(LUPRI,*) 'FLOPS for RIMP2_integrals_and_amplitudes   = ', papiflops
+  write(LUPRI,*) 'FLOPS/s for RIMP2_integrals_and_amplitudes = ', papiflops/WTIME
+#endif
 #endif
 
 end subroutine RIMP2_integrals_and_amplitudes
