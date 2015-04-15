@@ -70,7 +70,7 @@ contains
     integer :: retval    
     flops=0 ! zero flops (this is probably redundant)
     call PAPIf_stop(es,flops,retval)
-  end subroutine mypapi_start
+  end subroutine mypapi_stop
 
 
   !> Simple example of FLOP counting using PAPI
