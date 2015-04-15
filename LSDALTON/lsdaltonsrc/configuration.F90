@@ -172,6 +172,7 @@ implicit none
   config%doRIMP2=.false.
   config%doTestMPIcopy = .false.
   config%skipscfloop = .false.
+  config%papitest=.false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
   print*,'config_set_default_config:',infpar%inputBLOCKSIZE
@@ -1253,6 +1254,8 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            !Calculated the Interaction energy 
            !using Counter Poise Correction
            config%InteractionEnergy = .true.
+        CASE('.PAPITEST')
+           config%papitest=.true.
         CASE('.ACCESS_STREAM')
            ! Use stream access on all files open with lsopen
            config%access_stream = .true.

@@ -142,7 +142,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 #ifdef VAR_PAPI
   integer(8) :: papiflops
-  integer :: retval,eventset2
+  integer :: eventset2
 #endif
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
@@ -152,7 +152,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
 #ifdef VAR_PAPI
   CALL LS_GETTIM(CPUTIME,WALLTIMESTART)
-  call PAPIf_start(eventset2,retval)
+  call myPAPI_start(eventset2)
 #endif
 
 
@@ -1488,7 +1488,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   WTIME = WALLTIMEEND-WALLTIMESTART  
   CALL ls_TIMTXT('>>>  WALL Time used in RIMP2_integrals_and_amp is ',WTIME,LUPRI)
   papiflops=0 ! zero flops (this is probably redundant)
-  call PAPIf_stop(eventset2,papiflops,retval)
+  call myPAPI_stop(eventset2,papiflops)
   write(LUPRI,*) 'FLOPS for RIMP2_integrals_and_amplitudes   = ', papiflops
   write(LUPRI,*) 'FLOPS/s for RIMP2_integrals_and_amplitudes = ', papiflops/WTIME
 #endif
