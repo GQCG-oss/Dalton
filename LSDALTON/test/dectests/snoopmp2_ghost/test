@@ -28,6 +28,6 @@ f.add(string = 'Corr Interaction energy',
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['snoopmp2.dal'], ['HFdimer.mol'], {'out': f})
+test.run(['snoopmp2_ghost.dal'], ['Nedimer.mol'], {'out': f})
 
 sys.exit(test.return_code)
