@@ -22,39 +22,32 @@
 !
 !
 C ============================================================================
-C     newabs.F: Main author Joanna Kauczor
-C     This implementation is published in:
-C
-C     Reference C:
-C        J. Kauczor, P. Jorgensen, and P. Norman, 
-C        "On the efficiency of algorithms for solving Hartree-Fock and Kohn-Sham
-C        response equations",
-C        J. Chem. Theory Comput. 7 (2011) 1610.
+C     abscrs.F: Main author Tobias Fahleson
 C ============================================================================
 C
       SUBROUTINE ABS_GAMMA_SETUP
-C                                                                                             
-C ======================================================================                      
-C                                                                                             
-C  Purpose : determine what is to be calculated for the requested CR                          
-C                                                                                             
-C   Author : Tobias Fahleson, 2014                                                            
-C                                                                                             
-C ======================================================================                      
-C                                                                                             
+C
+C ======================================================================
+C
+C  Purpose : determine what is to be calculated for the requested CR
+C
+C   Author : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "inforb.h"
 #include "abslrs.h"
 #include "abscrs.h"
-C                                                                                             
+C
       PARAMETER (THRZERO = 1.0D-6)
       LOGICAL DOHYP
       CHARACTER*8 ALAB,BLAB,CLAB,DLAB
-C                                                                                             
+C
       ABS_NCRF = 0
       ABS_CRF_NEQTO = 0
-C                                                                                             
+C
 C     Form the three lists (acting as starting points for the CR                              
 C     calculations) ABS_CRFLAB(ABS_NCRF,4), ABS_CRFSYM(ABS_NCRF,4),                           
 C     ABS_CRFFRQ(ABS_NCRF,4), containing operator labels, symmetries of                       
@@ -712,7 +705,7 @@ C
 C                                                                                             
 C
       SUBROUTINE ABS_NXY(CMO, UDV, PV, XINDX, MJWOP, FC, FCAC, FV,
-     &                   H2AC, RESLRF, WRK, LWRK)
+     &                   H2AC, FOCK, RESLRF, WRK, LWRK)
 C                                                                                             
 C ======================================================================                      
 C                                                                                             
@@ -740,25 +733,30 @@ C
 C
       PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
       DIMENSION WRK(LWRK),CMO(*),UDV(*),PV(*),XINDX(*),MJWOP(*)
-      DIMENSION FC(*), FCAC(*), FV(*), H2AC(*), RESLRF(*)
+      DIMENSION FC(*), FCAC(*), FV(*), H2AC(*), FOCK(*), RESLRF(*)
       CHARACTER*8 XLAB, YLAB, BLANK
       PARAMETER (BLANK='        ')
       LOGICAL FOUND, CONV, ISOLATE
       PARAMETER ( IDUMMY = - 9999999 )
 C                                                                                             
-      ISOLATE = .TRUE.
+      ISOLATE = .FALSE.
 C                                                                                             
       KFREE = 1
       LFREE = LWRK
+C
+C     Determine MZYVAR for all symmetries NSYM
+C     ========================================
+C
+      DO ISYM=1,NSYM
+         KSYMOP = ISYM
+         CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
+         CALL SETZY(MJWOP)
+      END DO
 C                                                                                             
 C     Main loop that loops over all ABS_NXYVEC operator and frequency                         
 C     combinations set up by ABS_GAMMA_SETUP                                                  
 C     ===============================================================                         
 C
-C ---
-C PRINT FLAG
-      WRITE(LUPRI,*) 'Starting loop over ABS_NXYVEC'
-C ---                                                                                             
       DO INXY = 1,ABS_NXYVEC
 C                                                                                             
 C     Set the labels, frequencies, and symmetries of operators X and Y                        
@@ -785,14 +783,22 @@ C     array referens in ABS_XYMEMREF. In addition, allocate memory for
 C     the three vectors T[3]NxNy, X[1]Ny, and Y[1]Nx, and also for Nx                         
 C     and Ny                                                                                  
 C     ================================================================                        
-C                                                                                             
+C
       ABS_XYMEMREF(INXY) = KFREE
-      KVECT              = ABS_XYMEMREF(INXY) + 4*KZVAR
-      KGRAD              = KVECT              + 4*KZVAR
-      KVECX              = KGRAD              + 4*KZVAR
-      KVECY              = KVECX              + 4*KZVAR
-      KFREE              = KVECY              + 4*KZVAR
+      KVECT              = ABS_XYMEMREF(INXY) + 2*KZYVXY
+      KGRAD              = KVECT              + 2*KZYVXY
+      KVECX              = KGRAD              + 2*KZYVXY
+      KVECY              = KVECX              + 2*KZYVX
+      KFREE              = KVECY              + 2*KZYVY
       LFREE              = LWRK - KFREE
+C
+C    If by symmetry the vectors Nx or Ny are zero, set Nxy to zero and
+C    skip the calculation
+C    =================================================================
+C
+      IF ((KZYVX .OR. KZYVY) .EQ. 0) THEN
+         CALL DZERO(WRK(ABS_XYMEMREF(INXY)),2*KZYVXY)
+      ELSE
 C                                                                                             
 C     Read in Nx                                                                              
 C     ==========                                                                              
@@ -849,7 +855,7 @@ C     absent here until further notice due to it being zero in
 C     single-determinant processes (HF, DFT, ...))                                            
 C     ===============================================================                         
 C
-      CALL DZERO(WRK(KVECT),4*KZVAR)
+      CALL DZERO(WRK(KVECT),2*KZYVXY)
 C                                                                                             
       CALL T3DRV(1,ISYMXY,ISYMX,ISYMY,WRK(KVECX),WRK(KVECY), .FALSE.,
      &           WRK(KVECX),-FREQX,-FREQY,XINDX,UDV,PV,MJWOP,
@@ -874,25 +880,25 @@ C
 C     Calculate X[2]Ny and Y[2]Nx                                                             
 C     ===========================                                                             
 C
-      CALL DZERO(WRK(KGRAD),4*KZVAR)
+      CALL DZERO(WRK(KGRAD),2*KZYVXY)
       CALL X2INIT(1, KZYVXY, KZYVY, ISYMXY, ISPINXY, ISYMY, ISPINY,
      &            WRK(KVECX), WRK(KVECY), WRK(KGRAD), XINDX, UDV, PV,
      &            XLAB, ISYMX, ISPINX, CMO, MJWOP, WRK(KFREE), LFREE)
       CALL DAXPY(KZYVXY, DM1, WRK(KGRAD), 1, WRK(KVECT), 1)
 C                                                                                             
-      CALL DZERO(WRK(KGRAD),4*KZVAR)
+      CALL DZERO(WRK(KGRAD),2*KZYVXY)
       CALL X2INIT(1, KZYVXY, KZYVY, ISYMXY, ISPINXY, ISYMY, ISPINY,
      &           WRK(KVECX), WRK(KVECY+KZYVY), WRK(KGRAD), XINDX, UDV,
      &           PV, XLAB, ISYMX, ISPINX, CMO, MJWOP, WRK(KFREE), LFREE)
       CALL DAXPY(KZYVXY, DM1, WRK(KGRAD), 1, WRK(KVECT+KZYVXY), 1)
 C                                                                                             
-      CALL DZERO(WRK(KGRAD),4*KZVAR)
+      CALL DZERO(WRK(KGRAD),2*KZYVXY)
       CALL X2INIT(1, KZYVXY, KZYVX, ISYMXY, ISPINXY, ISYMX, ISPINX,
      &            WRK(KVECX), WRK(KVECX), WRK(KGRAD), XINDX, UDV, PV,
      &            YLAB, ISYMY, ISPINY, CMO, MJWOP, WRK(KFREE), LFREE)
       CALL DAXPY(KZYVXY, DM1, WRK(KGRAD), 1, WRK(KVECT),1)
 C                                                                                             
-      CALL DZERO(WRK(KGRAD),4*KZVAR)
+      CALL DZERO(WRK(KGRAD),2*KZYVXY)
       CALL X2INIT(1, KZYVXY, KZYVX, ISYMXY, ISPINXY, ISYMX, ISPINX,
      &           WRK(KVECX), WRK(KVECX+KZYVX), WRK(KGRAD), XINDX, UDV,
      &           PV, YLAB, ISYMY, ISPINY, CMO, MJWOP, WRK(KFREE), LFREE)
@@ -902,26 +908,28 @@ C     Transfer the results from temporary memory WRK(KVECT) to a
 C     permanent save at WRK(ABS_XYMEMREF(INXY))                                               
 C     ==========================================================                              
 C                                                                                             
-      CALL DZERO(WRK(ABS_XYMEMREF(INXY)),4*KZVAR)
+      CALL DZERO(WRK(ABS_XYMEMREF(INXY)),2*KZYVXY)
       CALL DAXPY(2*KZYVXY, D1, WRK(KVECT), 1, WRK(ABS_XYMEMREF(INXY)),1)
 C                                                                                             
 C     Nullify temporary memory, and rewind memory to just after                               
 C     the latest NXY vector                                                                   
 C     =========================================================                               
 C
-      CALL DZERO(WRK(KVECT),4*KZVAR)
-      CALL DZERO(WRK(KGRAD),4*KZVAR)
-      CALL DZERO(WRK(KVECX),4*KZVAR)
-      CALL DZERO(WRK(KVECY),4*KZVAR)
+      CALL DZERO(WRK(KVECT),2*KZYVXY)
+      CALL DZERO(WRK(KGRAD),2*KZYVXY)
+      CALL DZERO(WRK(KVECX),2*KZYVX)
+      CALL DZERO(WRK(KVECY),2*KZYVY)
       KFREE = KVECT
+C
+      END IF
 C                                                                                             
       END DO
 C                                                                                             
 C     Allocate memory for the NXY solution, which will be written                             
 C     to file                                                                                 
-      KXSOL = KFREE
-      KFREE = KXSOL + 4*KZVAR
-      LFREE = LWRK  - KFREE
+C      KXSOL = KFREE
+C      KFREE = KXSOL + 4*KZVAR
+C      LFREE = LWRK  - KFREE
 C                                                                                             
 C     Logical in ABS_CTL that enables the double-indexed solver mode                          
       ABS_IDRI_NXY = .TRUE.
@@ -930,6 +938,8 @@ C     Putting NFREQS and NGD to 1 so that ABS_CTL is called once for
 C     every ABS_NXYVEC                                                                        
       NFREQS = 1
       NGD = 1
+C
+      IF (.NOT. ISOLATE) THEN
 C                                                                                             
 C     Call the LR solver for every ABS_NXYVEC                                                 
 C     =======================================                                                 
@@ -950,14 +960,32 @@ C        Set labels, frequencies, and symmetries
          ISYMX  = ABS_XYSYM(INXY,1)
          ISYMY  = ABS_XYSYM(INXY,2)
          ISYMXY = MULD2H(ISYMX, ISYMY)
+C
+C        Determine various response variables for symmetry ISYMXY
+         KSYMOP = ISYMXY
+         CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
+         CALL SETZY(MJWOP)
+C
+C        Set the length of vector Nxy
+         KZYVXY = MZYVAR(ISYMXY)
 C                                                                                             
 C        Form the sum of frequencies for term (omega1 + omega2)S[2]                           
          FREQS = FREQX + FREQY
+C
+C        Allocate memory for the NXY solution, which will be written
+C        to file
+         KXSOL = KFREE
+         KFREE = KXSOL + 2*KZYVXY
+         LFREE = LWRK  - KFREE
+C ---
+C PRINT FLAG
+         WRITE(LUPRI,*) 'KXSOL=',KXSOL,' KFREE=',KFREE,' LFREE=',LFREE
+C ---
 C                                                                                             
 C        Determine the norm of the r.h.s.                                                     
-         VNORM = DNRM2(4*KZVAR,WRK(ABS_XYMEMREF(INXY)),1)
+         VNORM = DNRM2(2*KZYVXY,WRK(ABS_XYMEMREF(INXY)),1)
 C                                                                                             
-         CALL DZERO(WRK(KXSOL),4*KZVAR)
+         CALL DZERO(WRK(KXSOL),2*KZYVXY)
 C                                                                                             
 C        Check if norm of vector is sufficiently big for solver                               
          IF (VNORM .GT. 1.0D-6) THEN
@@ -971,12 +999,23 @@ C        Open temporary auxiliary files
          CALL GPOPEN(LUAB,'ABS_AB','NEW',' ',' ',IDUMMY,.FALSE.)
          CALL GPOPEN(LUSS,'ABS_SS','NEW',' ',' ',IDUMMY,.FALSE.)
          CALL GPOPEN(LUAS,'ABS_AS','NEW',' ',' ',IDUMMY,.FALSE.)
-C                                                                                             
-         CALL ABS_CTL('XYLAB   ',KZVAR,WRK(ABS_XYMEMREF(INXY)),
+C
+C        Solve the linear response equation
+C ---
+C PRINT FLAG
+         WRITE(LUPRI,*) 'Entering ABS_CTL'
+         WRITE(LUPRI,*) 'KZYVXY/2=',KZYVXY/2
+         WRITE(LUPRI,*) 'WRK(ABS_XYMEMREF(',INXY,'))='
+         DO ITEST=1,2*KZYVXY
+            WRITE(LUPRI,*) ITEST,' ',WRK(ABS_XYMEMREF(INXY)+ITEST-1)
+         END DO
+C ---
+         CALL ABS_CTL('XYLAB   ',KZYVXY/2,WRK(ABS_XYMEMREF(INXY)),
      &        NGD, WRK(KXSOL), FREQS, NFREQS, LUTEMP,
      &        MJWOP, CMO, UDV, FC, FCAC, FV, PV, XINDX,
      &        RESLRF, WRK(KFREE),LFREE)
 C
+C        Delete temporary files
          CALL GPCLOSE(LUSB,'DELETE')
          CALL GPCLOSE(LUAB,'DELETE')
          CALL GPCLOSE(LUSS,'DELETE')
@@ -987,8 +1026,8 @@ C        permanent storage
 C        ==================================================                                   
 C                                                                                             
 C        Read in the vector
-         CALL DZERO(WRK(KXSOL),4*KZVAR)
-         CALL READ_XVEC2(LUTEMP, 4*KZVAR, WRK(KXSOL), 'XYLAB   ', BLANK,
+         CALL DZERO(WRK(KXSOL),2*KZYVXY)
+         CALL READ_XVEC2(LUTEMP, 2*KZYVXY, WRK(KXSOL), 'XYLAB   ',BLANK,
      &                   ISYMXY, FREQS, D0, ABS_THCLR, FOUND, CONV)
          IF (.NOT. (FOUND .AND. CONV)) THEN
             IF (.NOT. FOUND) THEN
@@ -1006,21 +1045,23 @@ C        Read in the vector
             END IF
          END IF
          IF (FREQS .LT. D0) THEN
-            CALL DSWAP(KZVAR,WRK(KXSOL),1,WRK(KXSOL+KZVAR),1)
-            CALL DSWAP(KZVAR,WRK(KXSOL+2*KZVAR),1,
-     &           WRK(KXSOL+2*KZVAR+KZVAR),1)
-            CALL DSCAL(2*KZVAR,DM1,WRK(KXSOL),1)
+            CALL DSWAP(KZYVXY/2,WRK(KXSOL),1,WRK(KXSOL+KZYVXY/2),1)
+            CALL DSWAP(KZYVXY/2,WRK(KXSOL+KZYVXY),1,
+     &           WRK(KXSOL+KZYVXY+KZYVXY/2),1)
+            CALL DSCAL(KZYVXY,DM1,WRK(KXSOL),1)
          END IF
 C                                                                                             
          END IF
 C                                                                                             
 C        Write the vector to file                                                             
-         CALL WRITE_XVEC2(LUABSVECS,4*KZVAR,WRK(KXSOL),XLAB,YLAB,
+         CALL WRITE_XVEC2(LUABSVECS,2*KZYVXY,WRK(KXSOL),XLAB,YLAB,
      &                    FREQX,FREQY,ABS_THCLR)
 C                                                                                             
          CALL GPCLOSE(LUTEMP, 'DELETE')
 C                                                                                             
       END DO
+C
+      END IF !Isolation end (debugging)
 C                                                                                             
 C     End of ABS_NXY                                                                          
 C                                                                                             
@@ -1028,4 +1069,1671 @@ C
       END
 C                                                                                             
 C                                                                                             
+C
+      SUBROUTINE ABS_CRF(CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC, XINDX,  
+     &                   MJWOP, WRK, LWRK)
+C
+C ======================================================================
+C
+C  Purpose : Compute the cubic response functions and print the results
+C
+C   Author : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "wrkrsp.h"
+#include "infvar.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "cbilrs.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "qrinf.h"
+#include "infdim.h"
+#include "abslrs.h"
+#include "abscrs.h"
+#include "thrzer.h"
+C
+      PARAMETER ( D0=0.0D0 )
+C
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
+      DIMENSION XINDX(*), MJWOP(*), WRK(LWRK)
+C
+      CHARACTER*8 ALAB, BLAB, CLAB, DLAB
+      DIMENSION HYPVAL(2), TMPVAL(2), VAL(4)
+      LOGICAL ISOLATE
+      ISOLATE = .FALSE.
+C
+C     Spin multiplicity is always 1, i.e. only singlets 
+      ISPINA  = 0
+      ISPINB  = 0
+      ISPINC  = 0
+      ISPIND  = 0
+      ISPINBC = 0
+      ISPINBD = 0
+      ISPINCD = 0
+C
+C     Allocating appropriate memory for response vectors
+      MZYVMX = 2*NVARMA
+      KVECA  = 1
+      KVECB  = KVECA  + 2*MZYVMX
+      KVECC  = KVECB  + 2*MZYVMX
+      KVECD  = KVECC  + 2*MZYVMX
+      KVECBC = KVECD  + 2*MZYVMX
+      KVECBD = KVECBC + 2*MZYVMX
+      KVECCD = KVECBD + 2*MZYVMX
+      KGRAD  = KVECCD + 2*MZYVMX
+      KFREE  = KGRAD  + 2*MZYVMX
+      LFREE  = LWRK   - KFREE
+C
+C     Opening the file where response vectors are saved
+      LURSPRES = -1
+      CALL GPOPEN(LURSPRES,'RESULTS.RSP','UNKNOWN','SEQUENTIAL',
+     &     'FORMATTED',0,.FALSE.)
+C
+C     Main loop that loops over all the CRF set up by ABS_GAMMA_SETUP
+C     ===============================================================
+C
+      DO ICRF = 1,ABS_NCRF
+C
+C     Real and imaginary values of the hyperpolarizability
+      HYPVAL(1) = D0
+      HYPVAL(2) = D0
+C
+C     Labels, symmetries, and frequencies, of operators A to D
+      ALAB   = ABS_CRFLAB(ICRF,1)
+      BLAB   = ABS_CRFLAB(ICRF,2)
+      CLAB   = ABS_CRFLAB(ICRF,3)
+      DLAB   = ABS_CRFLAB(ICRF,4)
+      ISYMA  = ABS_CRFSYM(ICRF,1)
+      ISYMB  = ABS_CRFSYM(ICRF,2)
+      ISYMC  = ABS_CRFSYM(ICRF,3)
+      ISYMD  = ABS_CRFSYM(ICRF,4)
+      ISYMBC = MULD2H(ISYMB,ISYMC)
+      ISYMBD = MULD2H(ISYMB,ISYMD)
+      ISYMCD = MULD2H(ISYMC,ISYMD)
+      FREQA  = ABS_CRFFRQ(ICRF,1)
+      FREQB  = ABS_CRFFRQ(ICRF,2)
+      FREQC  = ABS_CRFFRQ(ICRF,3)
+      FREQD  = ABS_CRFFRQ(ICRF,4)
+C
+C     Write details of current CRF to output
+C     ======================================
+C
+      WRITE(LUPRI,'(/,2(A,I4),A,4(/A,A10,I4,F10.6))')
+     &        ' Cubic response function no',ICRF,' of',ABS_NCRF,'.',
+     &        ' A operator, symmetry, frequency: ', ALAB, ISYMA, FREQA,
+     &        ' B operator, symmetry, frequency: ', BLAB, ISYMB, FREQB,
+     &        ' C operator, symmetry, frequency: ', CLAB, ISYMC, FREQC,
+     &        ' D operator, symmetry, frequency: ', DLAB, ISYMD, FREQD
+C     
+C     Read in requested response vectors
+C     ==================================
+C
+      CALL ABS_CRRDVE(ISYMA,       ISYMB,       ISYMC,       ISYMD,
+     &                ISYMBC,      ISYMBD,      ISYMCD,
+     &                ALAB,        BLAB,        CLAB,        DLAB,
+     &                FREQA,       FREQB,       FREQC,       FREQD,
+     &                KZYVA,       KZYVB,       KZYVC,       KZYVD,
+     &                KZYVBC,      KZYVBD,      KZYVCD,
+     &                WRK(KVECA),  WRK(KVECB),  WRK(KVECC),  WRK(KVECD),
+     &                WRK(KVECBC), WRK(KVECBD), WRK(KVECCD))
+C
+C     Check if some of the single-indexed vectors are equal or zero
+C     =============================================================
+C
+      CALL ABS_BCDCHK(IBCDEQ,
+     &                FREQA,      FREQB,      FREQC,      FREQD,
+     &                ISYMA,      ISYMB,      ISYMC,      ISYMD,
+     &                KZYVA,      KZYVB,      KZYVC,      KZYVD,
+     &                WRK(KVECA), WRK(KVECB), WRK(KVECC), WRK(KVECD))
+C
+C     Print individual contributions if requested
+      IF (IPRABSLRS .GT. 0) THEN
+      WRITE(LUPRI,'(//A13,2A36,/A13,2A36,/A13,4A18,/A)')
+     &   'Contribution','Term','Accumulated',
+     &   ' ','----------------------','----------------------',
+     &   ' ','Real','Imag','Real','Imag',
+     &   ' ---------------------------------------------------------'//
+     &   '---------------------------'
+      END IF
+C
+C     1. Calculate Na T[3] Nb Ncd type terms (three permutations)
+C     ===========================================================
+C
+C     This is the A B CD permutation
+      CALL T3COMPLEX(KZYVA,      KZYVB,      KZYVCD,
+     &               ISYMA,      ISYMB,      ISYMCD,
+     &               WRK(KVECA), WRK(KVECB), WRK(KVECCD),
+     &               VAL(1),     FREQB,      FREQC+FREQD,
+     &               ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+     &               WRK(KFREE), LFREE)
+      VAL(1) = -VAL(1)
+      VAL(2) = -VAL(2)
+      TMPVAL(1) = VAL(1)
+      TMPVAL(2) = VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+C     If all single-indexed vectors are equal, add twice the value of
+C     the first permutation
+      IF (IBCDEQ.EQ.24) THEN
+         TMPVAL(1) = TMPVAL(1) + 2*VAL(1)
+         TMPVAL(2) = TMPVAL(2) + 2*VAL(2)
+         HYPVAL(1) = HYPVAL(1) + 2*VAL(1)
+         HYPVAL(2) = HYPVAL(2) + 2*VAL(2)
+C
+C     If vectors WRK(KVECB) and WRK(KVECC) are equal, add the value of
+C     the first permutation and calculate the A D BC permutation
+      ELSE IF (IBCDEQ.EQ.2) THEN
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+         CALL T3COMPLEX(KZYVA,      KZYVD,      KZYVBC,
+     &                  ISYMA,      ISYMD,      ISYMBC,
+     &                  WRK(KVECA), WRK(KVECD), WRK(KVECBC),
+     &                  VAL(1),     FREQD,      FREQB+FREQC,
+     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+     &                  WRK(KFREE), LFREE)
+         VAL(1) = -VAL(1)
+         VAL(2) = -VAL(2)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+C     If vectors WRK(KVECB) and WRK(KVECD) are equal, add the value of
+C     the first permutation and calculate the A C BD permutation
+      ELSE IF (IBCDEQ.EQ.3) THEN
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+         CALL T3COMPLEX(KZYVA,      KZYVC,      KZYVBD,
+     &                  ISYMA,      ISYMC,      ISYMBD,
+     &                  WRK(KVECA), WRK(KVECC), WRK(KVECBD),
+     &                  VAL(1),     FREQC,      FREQB+FREQD,
+     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+     &                  WRK(KFREE), LFREE)
+         VAL(1) = -VAL(1)
+         VAL(2) = -VAL(2)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+C     If vectors WRK(KVECC) and WRK(KVECD) are equal, calculate the
+C     A C BD permutation and add twice its value
+      ELSE IF (IBCDEQ.EQ.4) THEN
+         CALL T3COMPLEX(KZYVA,      KZYVC,      KZYVBD,
+     &                  ISYMA,      ISYMC,      ISYMBD,
+     &                  WRK(KVECA), WRK(KVECC), WRK(KVECBD),
+     &                  VAL(1),     FREQC,      FREQB+FREQD,
+     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+     &                  WRK(KFREE), LFREE)
+         VAL(1) = -VAL(1)
+         VAL(2) = -VAL(2)
+         TMPVAL(1) = TMPVAL(1) + 2*VAL(1)
+         TMPVAL(2) = TMPVAL(2) + 2*VAL(2)
+         HYPVAL(1) = HYPVAL(1) + 2*VAL(1)
+         HYPVAL(2) = HYPVAL(2) + 2*VAL(2)
+C
+C     If no single-indexed vectors are equal, add the remaining two
+C     permutations A C BD and A D BC
+      ELSE
+         CALL T3COMPLEX(KZYVA,      KZYVC,      KZYVBD,
+     &                  ISYMA,      ISYMC,      ISYMBD,
+     &                  WRK(KVECA), WRK(KVECC), WRK(KVECBD),
+     &                  VAL(1),     FREQC,      FREQB+FREQD,
+     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+     &                  WRK(KFREE), LFREE)
+         VAL(1) = -VAL(1)
+         VAL(2) = -VAL(2)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+         CALL T3COMPLEX(KZYVA,      KZYVD,      KZYVBC,
+     &                  ISYMA,      ISYMD,      ISYMBC,
+     &                  WRK(KVECA), WRK(KVECD), WRK(KVECBC),
+     &                  VAL(1),     FREQD,      FREQB+FREQC,
+     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+     &                  WRK(KFREE), LFREE)
+         VAL(1) = -VAL(1)
+         VAL(2) = -VAL(2)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+      IF (IPRABSLRS .GT. 0) THEN
+      WRITE(LUPRI,'(A13,4F18.8)') 'Na T[3] NbNcd',
+     &        TMPVAL(1),TMPVAL(2),HYPVAL(1),HYPVAL(2)
+      END IF
+C
+C     2. Calculate Na T[4] Nb Nc Nd type terms (all permutations
+C     done in a single call)
+C     ==========================================================
+C
+      CALL T4COMPLEX(IBCDEQ,
+     &               ISYMA,      ISYMB,      ISYMC,      ISYMD,
+     &               KZYVA,      KZYVB,      KZYVC,      KZYVD,
+     &               WRK(KVECA), WRK(KVECB), WRK(KVECC), WRK(KVECD),
+     &                           FREQB,      FREQC,      FREQD,
+     &               ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC,
+     &               WRK(KFREE), LFREE, VAL(1))
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL R4DRV(IBCDEQ,
+     &              ISYMA,      ISYMB,      ISYMC,      ISYMD,
+     &              KZYVA,      KZYVB,      KZYVC,      KZYVD,
+     &              WRK(KVECA), WRK(KVECB), WRK(KVECC), WRK(KVECD),
+     &              ABS_DAMP, XINDX, UDV, MJWOP,
+     &              WRK(KFREE), LFREE, VAL(3))
+      END IF
+C
+      TMPVAL(1) = VAL(1) + VAL(3)
+      TMPVAL(2) = VAL(2) + VAL(4)
+      HYPVAL(1) = HYPVAL(1) + VAL(1) + VAL(3)
+      HYPVAL(2) = HYPVAL(2) + VAL(2) + VAL(4)
+C
+      IF (IPRABSLRS .GT. 0) THEN
+      WRITE(LUPRI,'(A13,4F18.8)') 'Na T[4] NbNcNd',
+     &        TMPVAL(1),TMPVAL(2),HYPVAL(1),HYPVAL(2)
+      END IF
+C
+C     3. Calculate Na B[2] Ncd type terms (three permutations)
+C     ========================================================
+C
+C     This is the A B CD permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL X2INIT(1, KZYVA, KZYVCD, ISYMA, ISPINA, ISYMCD, ISPINCD,
+     &            WRK(KVECA), WRK(KVECCD), WRK(KGRAD), XINDX, UDV, PV,
+     &            BLAB, ISYMB, ISPINB, CMO, MJWOP, WRK(KFREE), LFREE)
+      VAL(1) = DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA), 1)
+      VAL(2) = DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA + KZYVA), 1)
+      TMPVAL(1) = VAL(1)
+      TMPVAL(2) = VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL X2INIT(1, KZYVA, KZYVCD, ISYMA, ISPINA, ISYMCD, ISPINCD,
+     &            WRK(KVECA), WRK(KVECCD + KZYVCD), WRK(KGRAD), XINDX,
+     &            UDV, PV, BLAB, ISYMB, ISPINB, CMO, MJWOP,
+     &            WRK(KFREE), LFREE)
+         VAL(1) = -DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA + KZYVA), 1)
+         VAL(2) =  DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA), 1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+C     This is the A C BD permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL X2INIT(1, KZYVA, KZYVBD, ISYMA, ISPINA, ISYMBD, ISPINBD,
+     &            WRK(KVECA), WRK(KVECBD), WRK(KGRAD), XINDX, UDV, PV,
+     &            CLAB, ISYMC, ISPINC, CMO, MJWOP, WRK(KFREE), LFREE)
+      VAL(1) = DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA), 1)
+      VAL(2) = DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA + KZYVA), 1)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL X2INIT(1, KZYVA, KZYVBD, ISYMA, ISPINA, ISYMBD, ISPINBD,
+     &            WRK(KVECA), WRK(KVECBD + KZYVBD), WRK(KGRAD), XINDX,
+     &            UDV, PV, CLAB, ISYMC, ISPINC, CMO, MJWOP,
+     &            WRK(KFREE), LFREE)
+         VAL(1) = -DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA + KZYVA), 1)
+         VAL(2) =  DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA), 1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+C     This is the A D BC permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL X2INIT(1, KZYVA, KZYVBC, ISYMA, ISPINA, ISYMBC, ISPINBC,
+     &            WRK(KVECA), WRK(KVECBC), WRK(KGRAD), XINDX, UDV, PV,
+     &            DLAB, ISYMD, ISPIND, CMO, MJWOP, WRK(KFREE), LFREE)
+      VAL(1) = DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA), 1)
+      VAL(2) = DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA + KZYVA), 1)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL X2INIT(1, KZYVA, KZYVBC, ISYMA, ISPINA, ISYMBC, ISPINBC,
+     &            WRK(KVECA), WRK(KVECBC + KZYVBC), WRK(KGRAD), XINDX,
+     &            UDV, PV, DLAB, ISYMD, ISPIND, CMO, MJWOP,
+     &            WRK(KFREE), LFREE)
+         VAL(1) = -DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA + KZYVA), 1)
+         VAL(2) =  DDOT(KZYVA, WRK(KGRAD), 1, WRK(KVECA), 1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+      IF (IPRABSLRS .GT. 0) THEN
+      WRITE(LUPRI,'(A13,4F18.8)') 'Na B[2] Ncd',
+     &        TMPVAL(1),TMPVAL(2),HYPVAL(1),HYPVAL(2)
+      END IF
+C
+C     4. Calculate Na B[3] Nc Nd type terms (two of six permutations in
+C     each call)
+C     =================================================================
+C
+C     This is the A B C D permutation
+      CALL X3COMPLEX(KZYVA,      KZYVC,      KZYVD,
+     &               ISYMA,      ISYMC,      ISYMD,
+     &               WRK(KVECA), WRK(KVECC), WRK(KVECD),
+     &               VAL(1), BLAB, ISYMB, XINDX, UDV, CMO, MJWOP,
+     &               WRK(KFREE), LFREE)
+      VAL(1) = -VAL(1)
+      VAL(2) = -VAL(2)
+      TMPVAL(1) = VAL(1)
+      TMPVAL(2) = VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+C     This is the A C B D permutation
+      CALL X3COMPLEX(KZYVA,      KZYVB,      KZYVD,
+     &               ISYMA,      ISYMB,      ISYMD,
+     &               WRK(KVECA), WRK(KVECB), WRK(KVECD),
+     &               VAL(1), CLAB, ISYMC, XINDX, UDV, CMO, MJWOP,
+     &               WRK(KFREE), LFREE)
+      VAL(1) = -VAL(1)
+      VAL(2) = -VAL(2)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+C     This is the A D B C permutation
+      CALL X3COMPLEX(KZYVA,      KZYVB,      KZYVC,
+     &               ISYMA,      ISYMB,      ISYMC,
+     &               WRK(KVECA), WRK(KVECB), WRK(KVECC),
+     &               VAL(1), DLAB, ISYMD, XINDX, UDV, CMO, MJWOP,
+     &               WRK(KFREE), LFREE)
+      VAL(1) = -VAL(1)
+      VAL(2) = -VAL(2)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (IPRABSLRS .GT. 0) THEN
+      WRITE(LUPRI,'(A13,4F18.8)') 'Na B[3] NcNd',
+     &        TMPVAL(1),TMPVAL(2),HYPVAL(1),HYPVAL(2)
+      END IF
+C
+C     5. Calculate Nb A[2] Ncd type terms (six permutations)
+C     ======================================================
+C
+C     This is the B A CD permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL A2INIT(1,KZYVB,KZYVCD,ISYMB,ISPINB,ISYMCD,ISPINCD,1,
+     &            WRK(KVECCD),WRK(KGRAD),
+     &            XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &            WRK(KFREE),LFREE)
+      VAL(1) = DDOT(KZYVB,WRK(KGRAD),1,WRK(KVECB),1)
+      VAL(2) = DDOT(KZYVB,WRK(KGRAD),1,WRK(KVECB+KZYVB),1)
+      TMPVAL(1) = VAL(1)
+      TMPVAL(2) = VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL A2INIT(1,KZYVB,KZYVCD,ISYMB,ISPINB,ISYMCD,ISPINCD,1,
+     &               WRK(KVECCD+KZYVCD),WRK(KGRAD),
+     &               XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &               WRK(KFREE),LFREE)
+         VAL(1) = -DDOT(KZYVB,WRK(KGRAD),1,WRK(KVECB+KZYVB),1)
+         VAL(2) =  DDOT(KZYVB,WRK(KGRAD),1,WRK(KVECB),1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+C     This is the CD A B permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL A2INIT(1,KZYVCD,KZYVB,ISYMCD,ISPINCD,ISYMB,ISPINB,1,
+     &            WRK(KVECB),WRK(KGRAD),
+     &            XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &            WRK(KFREE),LFREE)
+      VAL(1) = DDOT(KZYVCD,WRK(KGRAD),1,WRK(KVECCD),1)
+      VAL(2) = DDOT(KZYVCD,WRK(KGRAD),1,WRK(KVECCD+KZYVCD),1)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL A2INIT(1,KZYVCD,KZYVB,ISYMCD,ISPINCD,ISYMB,ISPINB,1,
+     &               WRK(KVECB+KZYVB),WRK(KGRAD),
+     &               XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &               WRK(KFREE),LFREE)
+         VAL(1) = -DDOT(KZYVCD,WRK(KGRAD),1,WRK(KVECCD+KZYVCD),1)
+         VAL(2) =  DDOT(KZYVCD,WRK(KGRAD),1,WRK(KVECCD),1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+C     This is the C A BD permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL A2INIT(1,KZYVC,KZYVBD,ISYMC,ISPINC,ISYMBD,ISPINBD,1,
+     &            WRK(KVECBD),WRK(KGRAD),
+     &            XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &            WRK(KFREE),LFREE)
+      VAL(1) = DDOT(KZYVC,WRK(KGRAD),1,WRK(KVECC),1)
+      VAL(2) = DDOT(KZYVC,WRK(KGRAD),1,WRK(KVECC+KZYVC),1)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL A2INIT(1,KZYVC,KZYVBD,ISYMC,ISPINC,ISYMBD,ISPINBD,1,
+     &               WRK(KVECBD+KZYVBD),WRK(KGRAD),
+     &               XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &               WRK(KFREE),LFREE)
+         VAL(1) = -DDOT(KZYVC,WRK(KGRAD),1,WRK(KVECC+KZYVC),1)
+         VAL(2) =  DDOT(KZYVC,WRK(KGRAD),1,WRK(KVECC),1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+C     This is the BD A C permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL A2INIT(1,KZYVBD,KZYVC,ISYMBD,ISPINBD,ISYMC,ISPINC,1,
+     &            WRK(KVECC),WRK(KGRAD),
+     &            XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &            WRK(KFREE),LFREE)
+      VAL(1) = DDOT(KZYVBD,WRK(KGRAD),1,WRK(KVECBD),1)
+      VAL(2) = DDOT(KZYVBD,WRK(KGRAD),1,WRK(KVECBD+KZYVBD),1)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL A2INIT(1,KZYVBD,KZYVC,ISYMBD,ISPINBD,ISYMC,ISPINC,1,
+     &               WRK(KVECC+KZYVC),WRK(KGRAD),
+     &               XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &               WRK(KFREE),LFREE)
+         VAL(1) = -DDOT(KZYVBD,WRK(KGRAD),1,WRK(KVECBD+KZYVBD),1)
+         VAL(2) =  DDOT(KZYVBD,WRK(KGRAD),1,WRK(KVECBD),1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+C     This is the D A BC permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL A2INIT(1,KZYVD,KZYVBC,ISYMD,ISPIND,ISYMBC,ISPINBC,1,
+     &            WRK(KVECBC),WRK(KGRAD),
+     &            XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &            WRK(KFREE),LFREE)
+      VAL(1) = DDOT(KZYVD,WRK(KGRAD),1,WRK(KVECD),1)
+      VAL(2) = DDOT(KZYVD,WRK(KGRAD),1,WRK(KVECD+KZYVD),1)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL A2INIT(1,KZYVD,KZYVBC,ISYMD,ISPIND,ISYMBC,ISPINBC,1,
+     &               WRK(KVECBC+KZYVBC),WRK(KGRAD),
+     &               XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &               WRK(KFREE),LFREE)
+         VAL(1) = -DDOT(KZYVD,WRK(KGRAD),1,WRK(KVECD+KZYVD),1)
+         VAL(2) =  DDOT(KZYVD,WRK(KGRAD),1,WRK(KVECD),1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+C     This is the BC A D permutation
+      CALL DZERO(WRK(KGRAD),2*MZYVMX)
+      CALL A2INIT(1,KZYVBC,KZYVD,ISYMBC,ISPINBC,ISYMD,ISPIND,1,
+     &            WRK(KVECD),WRK(KGRAD),
+     &            XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &            WRK(KFREE),LFREE)
+      VAL(1) = DDOT(KZYVBC,WRK(KGRAD),1,WRK(KVECBC),1)
+      VAL(2) = DDOT(KZYVBC,WRK(KGRAD),1,WRK(KVECBC+KZYVBC),1)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+         CALL DZERO(WRK(KGRAD),2*MZYVMX)
+         CALL A2INIT(1,KZYVBC,KZYVD,ISYMBC,ISPINBC,ISYMD,ISPIND,1,
+     &               WRK(KVECD+KZYVD),WRK(KGRAD),
+     &               XINDX,UDV,PV,ALAB,ISYMA,ISPINA,CMO,MJWOP,
+     &               WRK(KFREE),LFREE)
+         VAL(1) = -DDOT(KZYVBC,WRK(KGRAD),1,WRK(KVECBC+KZYVBC),1)
+         VAL(2) =  DDOT(KZYVBC,WRK(KGRAD),1,WRK(KVECBC),1)
+         TMPVAL(1) = TMPVAL(1) + VAL(1)
+         TMPVAL(2) = TMPVAL(2) + VAL(2)
+         HYPVAL(1) = HYPVAL(1) + VAL(1)
+         HYPVAL(2) = HYPVAL(2) + VAL(2)
+      END IF
+C
+      IF (IPRABSLRS .GT. 0) THEN
+      WRITE(LUPRI,'(A13,4F18.8)') 'Nb A[2] Ncd',
+     &        TMPVAL(1),TMPVAL(2),HYPVAL(1),HYPVAL(2)
+      END IF
+C
+C     6. Calculate Nb A[3] Nc Nd type terms (two of six permutations in
+C     each call)
+C     =================================================================
+C
+C     This is the B A C D permutation
+      CALL A3COMPLEX(KZYVB,      KZYVC,      KZYVD,
+     &               ISYMB,      ISYMC,      ISYMD,
+     &               WRK(KVECB), WRK(KVECC), WRK(KVECD),
+     &               VAL(1),     ALAB,       ISYMA,
+     &               XINDX, UDV, CMO, MJWOP,
+     &               WRK(KFREE), LFREE)
+      VAL(1) = -VAL(1)
+      VAL(2) = -VAL(2)
+      TMPVAL(1) = VAL(1)
+      TMPVAL(2) = VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+C     This is the C A B D permutation
+      CALL A3COMPLEX(KZYVC,      KZYVB,      KZYVD,
+     &               ISYMC,      ISYMB,      ISYMD,
+     &               WRK(KVECC), WRK(KVECB), WRK(KVECD),
+     &               VAL(1),     ALAB,       ISYMA,
+     &               XINDX, UDV, CMO, MJWOP,
+     &               WRK(KFREE), LFREE)
+      VAL(1) = -VAL(1)
+      VAL(2) = -VAL(2)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+C     This is the D A B C permutation
+      CALL A3COMPLEX(KZYVD,      KZYVB,      KZYVC,
+     &               ISYMD,      ISYMB,      ISYMC,
+     &               WRK(KVECD), WRK(KVECB), WRK(KVECC),
+     &               VAL(1),     ALAB,       ISYMA,
+     &               XINDX, UDV, CMO, MJWOP,
+     &               WRK(KFREE), LFREE)
+      VAL(1) = -VAL(1)
+      VAL(2) = -VAL(2)
+      TMPVAL(1) = TMPVAL(1) + VAL(1)
+      TMPVAL(2) = TMPVAL(2) + VAL(2)
+      HYPVAL(1) = HYPVAL(1) + VAL(1)
+      HYPVAL(2) = HYPVAL(2) + VAL(2)
+C
+      IF (IPRABSLRS .GT. 0) THEN
+      WRITE(LUPRI,'(A13,4F18.8)') 'Nb A[3] NcNd',
+     &        TMPVAL(1),TMPVAL(2),HYPVAL(1),HYPVAL(2)
+      END IF
+C
+C     Print essential information on a single line
+C     ============================================
+C
+      WRITE(LUPRI,'(/A4,7A1,A2,3F11.6,2F26.6)') 
+     & '@ <<',ALAB(1:1),';',BLAB(1:1),',',CLAB(1:1),',',DLAB(1:1),'>>',
+     & FREQB,FREQC,FREQD,HYPVAL(1),HYPVAL(2)
+C
+C     Save value of response function as <<A;B,C,D>>
+C     ==============================================
+C
+      RES_CRF(ICRF,1) = HYPVAL(1)
+      RES_CRF(ICRF,2) = HYPVAL(2)
+C
+C     Check if current element has any equals by permutational symmetry
+C     =================================================================
+C
+      DO IEQTO=1,ABS_CRF_NEQTO
+         IF (ABS_CRF_EQTO(IEQTO) .EQ. ICRF) THEN
+      WRITE(LUPRI,'(/A10,7A1,A29,7A1,A2)')
+     & 'Element <<',ALAB(1:1),';',BLAB(1:1),',',CLAB(1:1),',',DLAB(1:1),
+     & '>> is identical to element <<',
+     & ABS_CRFLAB_EQTO(IEQTO,1)(1:1),';',
+     & ABS_CRFLAB_EQTO(IEQTO,2)(1:1),',',
+     & ABS_CRFLAB_EQTO(IEQTO,3)(1:1),',',
+     & ABS_CRFLAB_EQTO(IEQTO,4)(1:1),'>>'
+C
+       WRITE(LUPRI,'(/A4,7A1,A2,3F11.6,2F26.6)')
+     & '@ <<',ABS_CRFLAB_EQTO(IEQTO,1)(1:1),';',
+     &        ABS_CRFLAB_EQTO(IEQTO,2)(1:1),',',
+     &        ABS_CRFLAB_EQTO(IEQTO,3)(1:1),',',
+     &        ABS_CRFLAB_EQTO(IEQTO,4)(1:1),'>>',
+     &        FREQB,FREQC,FREQD,HYPVAL(1),HYPVAL(2)
+         END IF
+      END DO
+C
+C     End of loop over ABS_NCRF
+      END DO
+C
+C     Close the file where response vectors are saved while keeping it
+      CALL GPCLOSE(LURSPRES,'KEEP')
+C
+C     End of ABS_CRF
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE ABS_BCDCHK(IBCDEQ,
+     &                      FREQA,  FREQB, FREQC, FREQD,
+     &                      ISYMA,  ISYMB, ISYMC, ISYMD,
+     &                      KZYVA,  KZYVB, KZYVC, KZYVD,
+     &                      VECA,   VECB,  VECC,  VECD)
+C
+C ======================================================================
+C
+C  Purpose : Check if some of the vectors VECB, VECC, and VECD are equal
+C            or zero (VECA also checked if zero). IBCDEQ indicates the
+C            result as in
+C            0    at least one vector is equal to zero
+C            1    all vectors are unequal
+C            2    VECB = VECC
+C            3    VECB = VECD
+C            4    VECC = VECD
+C            24   all vectors are equal
+C
+C  Author  : Tobias Fahleson, 2014
+C 
+C ======================================================================
+C
+#include "implicit.h"
+C
+      PARAMETER ( D0=0.0D0, THRSML=1.0D-9, THRZER=1.0D-14 )
+      DIMENSION VECB(*), VECC(*), VECD(*)
+C
+C     Assume that all vectors are unequal
+      IBCDEQ = 1
+C
+C     Compare vectors VECB, VECC, and VECD
+C     ====================================
+C
+      IF ( ISYMB.EQ.ISYMC .AND. FREQB.EQ.FREQC ) THEN
+         VMIN = D0
+         DO I = 1,2*KZYVB
+            VMIN = VMIN + ABS(VECB(I) - VECC(I))
+         END DO
+         IF (VMIN .LE. THRZER) THEN
+            IBCDEQ = 2
+         END IF
+      END IF
+C
+      IF ( ISYMB.EQ.ISYMD .AND. FREQB.EQ.FREQD ) THEN
+         VMIN = D0
+         DO I = 1,2*KZYVB
+            VMIN = VMIN + ABS(VECB(I) - VECD(I))
+         END DO
+         IF (VMIN .LE. THRZER) THEN
+            IBCDEQ = IBCDEQ * 3
+         END IF
+      END IF
+C
+      IF ( ISYMC.EQ.ISYMD .AND. FREQC.EQ.FREQD ) THEN
+         VMIN = D0
+         DO I = 1,2*KZYVC
+            VMIN = VMIN + ABS(VECC(I) - VECD(I))
+         END DO
+         IF (VMIN .LE. THRZER) THEN
+            IBCDEQ = IBCDEQ * 4
+         END IF
+      END IF
+C
+C     Check if some vector is equal to zero
+C     =====================================
+C
+      VNORM = DNRM2(2*KZYVA,VECA,1)
+      IF (VNORM .LT. THRSML) THEN
+         IBCDEQ = 0
+      END IF
+C
+      VNORM = DNRM2(2*KZYVB,VECB,1)
+      IF (VNORM .LT. THRSML) THEN
+         IBCDEQ = 0
+      END IF
+C
+      VNORM = DNRM2(2*KZYVC,VECC,1)
+      IF (VNORM .LT. THRSML) THEN
+         IBCDEQ = 0
+      END IF
+C
+      VNORM = DNRM2(2*KZYVD,VECD,1)
+      IF (VNORM .LT. THRSML) THEN
+         IBCDEQ = 0
+      END IF
+C
+C     End of ABS_BCDCHK
+C
+      RETURN
+      END
+C
+C
+C
+
+      SUBROUTINE T4COMPLEX(IBCDEQ,
+     &                     ISYMA,  ISYMB, ISYMC,  ISYMD,
+     &                     KZYVA,  KZYVB, KZYVC,  KZYVD,
+     &                     VECA,   VECB,  VECC,   VECD,
+     &                             FREQB, FREQC,  FREQD,
+     &                     FACTOR, XINDX, UDV, PV, MJWOP, CMO, FC,
+     &                     WRK, LWRK, RESULT)
+C
+C ======================================================================
+C
+C  Purpose : Calculate the T[4] times 3 complex vectors
+C
+C  Author  : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "abslrs.h"
+C
+      PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
+      DIMENSION VECA(2*KZYVA),VECB(2*KZYVB),VECC(2*KZYVC),VECD(2*KZYVD)
+      DIMENSION WRK(LWRK),XINDX(*),UDV(*),PV(*),MJWOP(*),CMO(*),FC(*)
+      DIMENSION RESULT(2)
+C
+      KFREE = 1
+      LFREE = LWRK - KFREE
+C
+      RESULT(1) = D0
+      RESULT(2) = D0
+C
+C     If any of the four vectors are zero, return zero contribution
+C     =============================================================
+C
+      IF (IBCDEQ .EQ. 0) RETURN
+C
+C     Calculate four real and four imaginary terms of T[4] NbNcNd and
+C     multiply with Na
+C     ===============================================================
+C
+C     Four real terms
+C     ===============
+C
+C     Na T[4] Re{Nb}Re{Nc}Re{Nd}
+      CALL T4DRV(IBCDEQ,
+     &           ISYMA,   ISYMB,   ISYMC,   ISYMD,
+     &           VECA(1), VECB(1), VECC(1), VECD(1),
+     &                   -FREQB,  -FREQC,  -FREQD,
+     &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      RESULT(1) = RESULT(1) + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      RESULT(2) = RESULT(2) + DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+C
+C     Na T[4] (-)Re{Nb}Im{Nc}Im{Nd}
+      CALL T4DRV(IBCDEQ,
+     &           ISYMA,   ISYMB,   ISYMC,         ISYMD,
+     &           VECA(1), VECB(1), VECC(1+KZYVC), VECD(1+KZYVD),
+     &                   -FREQB,  -FREQC,        -FREQD,
+     &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      RESULT(2) = RESULT(2) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+C
+C     Na T[4] (-)Im{Nb}Re{Nc}Im{Nd}
+      CALL T4DRV(IBCDEQ,
+     &           ISYMA,   ISYMB,         ISYMC,   ISYMD,
+     &           VECA(1), VECB(1+KZYVB), VECC(1), VECD(1+KZYVD),
+     &                   -FREQB,        -FREQC,  -FREQD,
+     &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      RESULT(2) = RESULT(2) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+C
+C     Na T[4] (-)Im{Nb}Im{Nc}Re{Nd}
+      CALL T4DRV(IBCDEQ,
+     &           ISYMA,   ISYMB,         ISYMC,         ISYMD,
+     &           VECA(1), VECB(1+KZYVB), VECC(1+KZYVC), VECD(1),
+     &                   -FREQB,        -FREQC,        -FREQD,
+     &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      RESULT(2) = RESULT(2) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+C
+C     Four imaginary terms
+C     ===================
+C
+C     Na T[4] (+i)Re{Nb}Re{Nc}Im{Nd}
+      CALL T4DRV(IBCDEQ,
+     &           ISYMA,   ISYMB,   ISYMC,   ISYMD,
+     &           VECA(1), VECB(1), VECC(1), VECD(1+KZYVD),
+     &                   -FREQB,  -FREQC,  -FREQD,
+     &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      RESULT(2) = RESULT(2) + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+C
+C     Na T[4] (+i)Re{Nb}Im{Nc}Re{Nd}
+      CALL T4DRV(IBCDEQ,
+     &           ISYMA,   ISYMB,   ISYMC,         ISYMD,
+     &           VECA(1), VECB(1), VECC(1+KZYVC), VECD(1),
+     &                   -FREQB,  -FREQC,        -FREQD,
+     &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      RESULT(2) = RESULT(2) + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+C
+C     Na T[4] (+i)Im{Nb}Re{Nc}Re{Nd}
+      CALL T4DRV(IBCDEQ,
+     &           ISYMA,   ISYMB,         ISYMC,   ISYMD,
+     &           VECA(1), VECB(1+KZYVB), VECC(1), VECD(1),
+     &                   -FREQB,        -FREQC,  -FREQD,
+     &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      RESULT(2) = RESULT(2) + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+C
+C     Na T[4] (-i)Im{Nb}Im{Nc}Im{Nd}
+      CALL T4DRV(IBCDEQ,
+     &           ISYMA,   ISYMB,         ISYMC,         ISYMD,
+     &           VECA(1), VECB(1+KZYVB), VECC(1+KZYVC), VECD(1+KZYVD),
+     &                   -FREQB,        -FREQC,        -FREQD,
+     &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      RESULT(1) = RESULT(1) + DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      RESULT(2) = RESULT(2) - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+C
+      END IF
+C
+C     End of T4COMPLEX
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE R4DRV(IBCDEQ,
+     &                 ISYMA,  ISYMB, ISYMC,  ISYMD,
+     &                 KZYVA,  KZYVB, KZYVC,  KZYVD,
+     &                 VECA,   VECB,  VECC,   VECD,
+     &                 FACTOR, XINDX, UDV,    MJWOP,
+     &                 WRK,    LWRK,  RESULT)
+C
+C ======================================================================
+C
+C  Purpose : Calculate the R[4] contribution as Nb(bar) S[4] Na(bar)NcNd
+C            (see Eq. (80) in JCP 123, 194103 (2005), Norman et al.)
+C
+C  Author  : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+C
+      PARAMETER ( D0=0.0D0, D1=1.0D0 )
+      DIMENSION WRK(LWRK),XINDX(*),MJWOP(*),UDV(*)
+      DIMENSION VECA(2*KZYVA),VECB(2*KZYVB),VECC(2*KZYVC),VECD(2*KZYVD)
+      DIMENSION RESULT(2)
+      LOGICAL ISOLATE
+      ISOLATE = .TRUE.
+C
+      RESULT(1) = D0
+      RESULT(2) = D0
+C
+      KVECABAR = 1
+      KVECBBAR = KVECABAR + 2*KZYVA
+      KVECCBAR = KVECBBAR + 2*KZYVB
+      KVECDBAR = KVECCBAR + 2*KZYVC
+      KS4      = KVECDBAR + 2*KZYVD
+C
+C     If any of the four vectors are zero, return zero contribution
+C     =============================================================
+C
+      IF (IBCDEQ .EQ. 0) RETURN
+C
+C     Form the bar-vectors
+C     ====================
+C
+      CALL DCOPY(2*KZYVA,VECA(1),1,WRK(KVECABAR),1)
+      CALL DCOPY(2*KZYVB,VECB(1),1,WRK(KVECBBAR),1)
+      CALL DCOPY(2*KZYVC,VECC(1),1,WRK(KVECCBAR),1)
+      CALL DCOPY(2*KZYVD,VECD(1),1,WRK(KVECDBAR),1)
+C
+      CALL DSWAP(KZYVA/2,WRK(KVECABAR),1,
+     &                   WRK(KVECABAR+KZYVA/2),1)
+      CALL DSWAP(KZYVA/2,WRK(KVECABAR+KZYVA),1,
+     &                   WRK(KVECABAR+KZYVA+KZYVA/2),1)
+C
+      CALL DSWAP(KZYVB/2,WRK(KVECBBAR),1,
+     &                   WRK(KVECBBAR+KZYVB/2),1)
+      CALL DSWAP(KZYVB/2,WRK(KVECBBAR+KZYVB),1,
+     &                   WRK(KVECBBAR+KZYVB+KZYVB/2),1)
+C
+      CALL DSWAP(KZYVC/2,WRK(KVECCBAR),1,
+     &                   WRK(KVECCBAR+KZYVC/2),1)
+      CALL DSWAP(KZYVC/2,WRK(KVECCBAR+KZYVC),1,
+     &                   WRK(KVECCBAR+KZYVC+KZYVC/2),1)
+C
+      CALL DSWAP(KZYVD/2,WRK(KVECDBAR),1,
+     &                   WRK(KVECDBAR+KZYVD/2),1)
+      CALL DSWAP(KZYVD/2,WRK(KVECDBAR+KZYVD),1,
+     &                   WRK(KVECDBAR+KZYVD+KZYVD/2),1)
+C
+C     Calculate Na(bar) S[4] Nb(bar)NcNd (six permutations, two in each call)
+C     =======================================================================
+C
+      KFREE = KS4  + 2*KZYVB
+      LFREE = LWRK - KFREE
+C
+C     Nb(bar) S[4] [Na(bar)NcNd + Na(bar)NdNc]
+      CALL DZERO(WRK(KS4),2*KZYVB)
+      CALL S4COMPLEX(KZYVB,    KZYVA,         KZYVC, KZYVD,
+     &               ISYMB,    ISYMA,         ISYMC, ISYMD,
+     &               WRK(KS4), WRK(KVECABAR), VECC,  VECD,
+     &               XINDX, UDV, MJWOP, WRK(KFREE), LFREE)
+      RESULT(1)=RESULT(1) - DDOT(KZYVB,WRK(KVECBBAR),1,WRK(KS4+KZYVB),1)
+     &                    - DDOT(KZYVB,WRK(KVECBBAR+KZYVB),1,WRK(KS4),1)
+      RESULT(2)=RESULT(2) - DDOT(KZYVB,WRK(KVECBBAR+KZYVB),1,
+     &                                 WRK(KS4+KZYVB),1)
+     &                    + DDOT(KZYVB,WRK(KVECBBAR),1,WRK(KS4),1)
+C
+      KFREE = KS4  + 2*KZYVC
+      LFREE = LWRK - KFREE
+C
+C     Nc(bar) S[4] [Na(bar)NbNd + Na(bar)NdNb]
+      CALL DZERO(WRK(KS4),2*KZYVC)
+      CALL S4COMPLEX(KZYVC,    KZYVA,         KZYVB, KZYVD,
+     &               ISYMC,    ISYMA,         ISYMB, ISYMD,
+     &               WRK(KS4), WRK(KVECABAR), VECB,  VECD,
+     &               XINDX, UDV, MJWOP, WRK(KFREE), LFREE)
+      RESULT(1)=RESULT(1) - DDOT(KZYVC,WRK(KVECCBAR),1,WRK(KS4+KZYVC),1)
+     &                    - DDOT(KZYVC,WRK(KVECCBAR+KZYVC),1,WRK(KS4),1)
+      RESULT(2)=RESULT(2) - DDOT(KZYVC,WRK(KVECCBAR+KZYVC),1,
+     &                                 WRK(KS4+KZYVC),1)
+     &                    + DDOT(KZYVC,WRK(KVECCBAR),1,WRK(KS4),1)
+C
+      KFREE = KS4  + 2*KZYVD
+      LFREE = LWRK - KFREE
+C
+C     Nd(bar) S[4] [Na(bar)NbNc + Na(bar)NcNb]
+      CALL DZERO(WRK(KS4),2*KZYVD)
+      CALL S4COMPLEX(KZYVD,    KZYVA,         KZYVB, KZYVC,
+     &               ISYMD,    ISYMA,         ISYMB, ISYMC,
+     &               WRK(KS4), WRK(KVECABAR), VECB,  VECC,
+     &               XINDX, UDV, MJWOP, WRK(KFREE), LFREE)
+      RESULT(1)=RESULT(1) - DDOT(KZYVD,WRK(KVECDBAR),1,WRK(KS4+KZYVD),1)
+     &                    - DDOT(KZYVD,WRK(KVECDBAR+KZYVD),1,WRK(KS4),1)
+      RESULT(2)=RESULT(2) - DDOT(KZYVD,WRK(KVECDBAR+KZYVD),1,
+     &                                 WRK(KS4+KZYVD),1)
+     &                    + DDOT(KZYVD,WRK(KVECDBAR),1,WRK(KS4),1)
+C
+C     Finish by multiplying with minus the damping parameter: -FACTOR
+C     ===============================================================
+C
+      RESULT(1) = -FACTOR*RESULT(1)
+      RESULT(2) = -FACTOR*RESULT(2)
+C
+C     End of R4DRV
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE S4COMPLEX(KZYV1,  KZYV2, KZYV3, KZYV4,
+     &                     ISYM1,  ISYM2, ISYM3, ISYM4,
+     &                     RESKS4, VEC2,  VEC3,  VEC4,
+     &                     XINDX,  UDV,   MJWOP, WRK,   LWRK)
+C
+C ======================================================================
+C
+C  Purpose : Calculate S[4] times three complex vectors
+C
+C  Author  : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+C
+      PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
+      DIMENSION RESKS4(2*KZYV1)
+      DIMENSION VEC2(2*KZYV2), VEC3(2*KZYV3), VEC4(2*KZYV4)
+      DIMENSION WRK(LWRK), XINDX(*), MJWOP(*), UDV(*)
+C
+      KS4   = 1
+      KFREE = KS4  + KZYV1
+      LFREE = LWRK - KFREE
+C
+C     Calculate four real and four imaginary terms of S[4] N1N2N3 and
+C     add to RESKS4
+C     ===============================================================
+C
+C     Four real terms
+C     ===============
+C
+C     S[4] Re{N1}Re{N2}Re{N3}
+      CALL DZERO(WRK(KS4),KZYV1)
+      CALL S4INIT(KZYV1, KZYV2,   KZYV3,   KZYV4,
+     &            ISYM1, ISYM2,   ISYM3,   ISYM4,
+     &                   VEC2(1), VEC3(1), VEC4(1),
+     &            WRK(KS4),XINDX,UDV,MJWOP,WRK(KFREE),LFREE)
+      CALL DAXPY(KZYV1, D1, WRK(KS4), 1, RESKS4(1), 1)
+C
+C     S[4] (-)Re{N1}Im{N2}Im{N3}
+      CALL DZERO(WRK(KS4),KZYV1)
+      CALL S4INIT(KZYV1, KZYV2,   KZYV3,         KZYV4,
+     &            ISYM1, ISYM2,   ISYM3,         ISYM4,
+     &                   VEC2(1), VEC3(1+KZYV3), VEC4(1+KZYV4),
+     &            WRK(KS4),XINDX,UDV,MJWOP,WRK(KFREE),LFREE)
+      CALL DAXPY(KZYV1, DM1, WRK(KS4), 1, RESKS4(1), 1)
+C
+C     S[4] (-)Im{N1}Re{N2}Im{N3}
+      CALL DZERO(WRK(KS4),KZYV1)
+      CALL S4INIT(KZYV1, KZYV2,         KZYV3,   KZYV4,
+     &            ISYM1, ISYM2,         ISYM3,   ISYM4,
+     &                   VEC2(1+KZYV2), VEC3(1), VEC4(1+KZYV4),
+     &            WRK(KS4),XINDX,UDV,MJWOP,WRK(KFREE),LFREE)
+      CALL DAXPY(KZYV1, DM1, WRK(KS4), 1, RESKS4(1), 1)
+C
+C     S[4] (-)Im{N1}Im{N2}Re{N3}
+      CALL DZERO(WRK(KS4),KZYV1)
+      CALL S4INIT(KZYV1, KZYV2,         KZYV3,         KZYV4,
+     &            ISYM1, ISYM2,         ISYM3,         ISYM4,
+     &                   VEC2(1+KZYV2), VEC3(1+KZYV3), VEC4(1),
+     &            WRK(KS4),XINDX,UDV,MJWOP,WRK(KFREE),LFREE)
+      CALL DAXPY(KZYV1, DM1, WRK(KS4), 1, RESKS4(1), 1)
+C
+C     Four imaginary terms
+C     ====================
+C
+C     S[4] Re{N1}Re{N2}Im{N3}
+      CALL DZERO(WRK(KS4),KZYV1)
+      CALL S4INIT(KZYV1, KZYV2,   KZYV3,   KZYV4,
+     &            ISYM1, ISYM2,   ISYM3,   ISYM4,
+     &                   VEC2(1), VEC3(1), VEC4(1+KZYV4),
+     &            WRK(KS4),XINDX,UDV,MJWOP,WRK(KFREE),LFREE)
+      CALL DAXPY(KZYV1, D1, WRK(KS4), 1, RESKS4(1+KZYV1), 1)
+C
+C     S[4] Re{N1}Im{N2}Re{N3}
+      CALL DZERO(WRK(KS4),KZYV1)
+      CALL S4INIT(KZYV1, KZYV2,   KZYV3,         KZYV4,
+     &            ISYM1, ISYM2,   ISYM3,         ISYM4,
+     &                   VEC2(1), VEC3(1+KZYV3), VEC4(1),
+     &            WRK(KS4),XINDX,UDV,MJWOP,WRK(KFREE),LFREE)
+      CALL DAXPY(KZYV1, D1, WRK(KS4), 1, RESKS4(1+KZYV1), 1)
+C
+C     S[4] Im{N1}Re{N2}Re{N3}
+      CALL DZERO(WRK(KS4),KZYV1)
+      CALL S4INIT(KZYV1, KZYV2,         KZYV3,   KZYV4,
+     &            ISYM1, ISYM2,         ISYM3,   ISYM4,
+     &                   VEC2(1+KZYV2), VEC3(1), VEC4(1),
+     &            WRK(KS4),XINDX,UDV,MJWOP,WRK(KFREE),LFREE)
+      CALL DAXPY(KZYV1, D1, WRK(KS4), 1, RESKS4(1+KZYV1), 1)
+C
+C     S[4] (-)Im{N1}Im{N2}Im{N3}
+      CALL DZERO(WRK(KS4),KZYV1)
+      CALL S4INIT(KZYV1, KZYV2,         KZYV3,   KZYV4,
+     &            ISYM1, ISYM2,         ISYM3,   ISYM4,
+     &                   VEC2(1+KZYV2), VEC3(1+KZYV3), VEC4(1+KZYV4),
+     &            WRK(KS4),XINDX,UDV,MJWOP,WRK(KFREE),LFREE)
+      CALL DAXPY(KZYV1, DM1, WRK(KS4), 1, RESKS4(1+KZYV1), 1)
+C
+C     End of S4COMPLEX
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE T3COMPLEX(KZYV1,  KZYV2, KZYV3,
+     &                     ISYM1,  ISYM2, ISYM3,
+     &                     VEC1,   VEC2,  VEC3,
+     &                     RESKT3, FREQ2, FREQ3,
+     &                     FACTOR, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+     &                     WRK, LWRK)
+C
+C ======================================================================
+C
+C  Purpose : Calculate N1 (T[3] - i*gamma*R[3]) N2N3 with
+C            complex vectors
+C
+C  Author  : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "abslrs.h"
+C
+      PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
+      DIMENSION VEC1(2*KZYV1), VEC2(2*KZYV2), VEC3(2*KZYV3)
+      DIMENSION WRK(LWRK), RESKT3(2)
+      DIMENSION XINDX(*), UDV(*), PV(*), MJWOP(*), CMO(*), FC(*), FV(*)
+C
+      KT3   = 1
+      KFREE = KT3  + KZYV1
+      LFREE = LWRK - KFREE
+C
+      RESKT3(1) = D0
+      RESKT3(2) = D0
+C
+C     Calculate T[3] N2N3 and multiply with complex vector N1
+C     =======================================================
+C
+C     (Re{N1} + iIm{N1}) T[3] Re{N2}Re{N3}
+      CALL DZERO(WRK(KT3),KZYV1)
+      CALL T3DRV(1,ISYM1,ISYM2,ISYM3,VEC2(1),VEC3(1),
+     &           .FALSE.,VEC1,-FREQ2,-FREQ3,XINDX,UDV,PV,MJWOP,
+     &           WRK(KT3),LFREE,CMO,FC,FV)
+      RESKT3(1) = RESKT3(1) + DDOT(KZYV1,VEC1(1),1,WRK(KT3),1)
+      RESKT3(2) = RESKT3(2) + DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KT3),1)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+C
+C     (Re{N1} + iIm{N1}) T[3] (-)Im{N2}Im{N3}
+      CALL DZERO(WRK(KT3),KZYV1)
+      CALL T3DRV(1,ISYM1,ISYM2,ISYM3,VEC2(1+KZYV2),VEC3(1+KZYV3),
+     &           .FALSE.,VEC1,-FREQ2,-FREQ3,XINDX,UDV,PV,MJWOP,
+     &           WRK(KT3),LFREE,CMO,FC,FV)
+      RESKT3(1) = RESKT3(1) + DDOT(KZYV1,VEC1(1),1,WRK(KT3),1)
+      RESKT3(2) = RESKT3(2) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KT3),1)
+C
+C     (Re{N1} + iIm{N1}) T[3] i*Im{N2}Re{N3}
+      CALL DZERO(WRK(KT3),KZYV1)
+      CALL T3DRV(1,ISYM1,ISYM2,ISYM3,VEC2(1+KZYV2),VEC3(1),
+     &           .FALSE.,VEC1,-FREQ2,-FREQ3,XINDX,UDV,PV,MJWOP,
+     &           WRK(KT3),LFREE,CMO,FC,FV)
+      RESKT3(1) = RESKT3(1) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KT3),1)
+      RESKT3(2) = RESKT3(2) + DDOT(KZYV1,VEC1(1),1,WRK(KT3),1)
+C
+C     (Re{N1} + iIm{N1}) T[3] i*Re{N2}Im{N3}
+      CALL DZERO(WRK(KT3),KZYV1)
+      CALL T3DRV(1,ISYM1,ISYM2,ISYM3,VEC2(1),VEC3(1+KZYV3),
+     &           .FALSE.,VEC1,-FREQ2,-FREQ3,XINDX,UDV,PV,MJWOP,
+     &           WRK(KT3),LFREE,CMO,FC,FV)
+      RESKT3(1) = RESKT3(1) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KT3),1)
+      RESKT3(2) = RESKT3(2) + DDOT(KZYV1,VEC1(1),1,WRK(KT3),1)
+C
+      END IF
+C
+C     End of T3COMPLEX
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE X3COMPLEX(KZYV1,  KZYV2,   KZYV3,
+     &                     ISYM1,  ISYM2,   ISYM3,
+     &                     VEC1,   VEC2,    VEC3,
+     &                     RESKX3, GRADLAB, ISYMGRAD,
+     &                     XINDX, UDV, CMO, MJWOP,
+     &                     WRK, LWRK)
+C
+C ======================================================================
+C
+C  Purpose : Calculate N1 X[3] N2N3 with complex vectors
+C
+C  Author  : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "abslrs.h"
+C
+      PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
+      DIMENSION VEC1(2*KZYV1), VEC2(2*KZYV2), VEC3(2*KZYV3)
+      DIMENSION WRK(LWRK), RESKX3(2)
+      DIMENSION XINDX(*), UDV(*),  CMO(*), MJWOP(*)
+      CHARACTER*8 GRADLAB
+C
+      KGRAD = 1
+      KFREE = KGRAD + KZYV1
+      LFREE = LWRK  - KFREE
+C
+      RESKX3(1) = D0
+      RESKX3(2) = D0
+C
+C     Calculate X[3] N2N3 and multiply with complex vector N1
+C     =======================================================
+C
+C     (Re{N1} + iIm{N1}) X[3] Re{N2}Re{N3}
+      CALL DZERO(WRK(KGRAD),KZYV1)
+      CALL X3INIT(KZYV1, KZYV2, KZYV3, ISYM1, ISYM2, ISYM3,
+     &            GRADLAB, ISYMGRAD, VEC2(1), VEC3(1),
+     &            WRK(KGRAD), XINDX, UDV, CMO, MJWOP, WRK(KFREE), LFREE)
+      RESKX3(1) = RESKX3(1) + DDOT(KZYV1,VEC1(1),1,WRK(KGRAD),1)
+      RESKX3(2) = RESKX3(2) + DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KGRAD),1)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+C
+C     (Re{N1} + iIm{N1}) X[3] (-)Im{N2}Im{N3}
+      CALL DZERO(WRK(KGRAD),KZYV1)
+      CALL X3INIT(KZYV1, KZYV2, KZYV3, ISYM1, ISYM2, ISYM3,
+     &            GRADLAB, ISYMGRAD, VEC2(1+KZYV2), VEC3(1+KZYV3), 
+     &            WRK(KGRAD), XINDX, UDV, CMO, MJWOP, WRK(KFREE), LFREE)
+      RESKX3(1) = RESKX3(1) - DDOT(KZYV1,VEC1(1),1,WRK(KGRAD),1)
+      RESKX3(2) = RESKX3(2) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KGRAD),1)
+C
+C     (Re{N1} + iIm{N1}) X[3] i*Im{N2}Re{N3}
+      CALL DZERO(WRK(KGRAD),KZYV1)
+      CALL X3INIT(KZYV1, KZYV2, KZYV3, ISYM1, ISYM2, ISYM3,
+     &            GRADLAB, ISYMGRAD, VEC2(1+KZYV2), VEC3(1),
+     &            WRK(KGRAD), XINDX, UDV, CMO, MJWOP, WRK(KFREE), LFREE)
+      RESKX3(1) = RESKX3(1) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KGRAD),1)
+      RESKX3(2) = RESKX3(2) + DDOT(KZYV1,VEC1(1),1,WRK(KGRAD),1)
+C
+C     (Re{N1} + iIm{N1}) X[3] i*Re{N2}Im{N3}
+      CALL DZERO(WRK(KGRAD),KZYV1)
+      CALL X3INIT(KZYV1, KZYV2, KZYV3, ISYM1, ISYM2, ISYM3,
+     &            GRADLAB, ISYMGRAD, VEC2(1), VEC3(1+KZYV3),
+     &            WRK(KGRAD), XINDX, UDV, CMO, MJWOP, WRK(KFREE), LFREE)
+      RESKX3(1) = RESKX3(1) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KGRAD),1)
+      RESKX3(2) = RESKX3(2) + DDOT(KZYV1,VEC1(1),1,WRK(KGRAD),1)
+C
+      END IF
+C
+C     End of X3COMPLEX
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE A3COMPLEX(KZYV1,  KZYV2,   KZYV3,
+     &                     ISYM1,  ISYM2,   ISYM3,
+     &                     VEC1,   VEC2,    VEC3,
+     &                     RESKA3, GRADLAB, ISYMGRAD,
+     &                     XINDX, UDV, CMO, MJWOP,
+     &                     WRK, LWRK)
+C
+C ======================================================================
+C
+C  Purpose : Calculate N1 A[3] N2N3 with complex vectors
+C
+C  Author  : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "abslrs.h"
+C
+      PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
+      DIMENSION VEC1(2*KZYV1), VEC2(2*KZYV2), VEC3(2*KZYV3)
+      DIMENSION WRK(LWRK), RESKA3(2)
+      DIMENSION XINDX(*), UDV(*), CMO(*), MJWOP(*)
+      CHARACTER*8 GRADLAB
+C
+      KGRAD = 1
+      KFREE = KGRAD + KZYV1
+      LFREE = LWRK  - KFREE
+C
+      RESKA3(1) = D0
+      RESKA3(2) = D0
+C
+C     Calculate A[3] N2N3 and multiply with complex vector N1
+C     =======================================================
+C
+C     (Re{N1} + iIm{N1}) A[3] Re{N2}Re{N3}
+      CALL A3INIT(KZYV1, KZYV2, KZYV3, ISYM1, ISYM2, ISYM3,
+     &            GRADLAB, ISYMGRAD, VEC2(1), VEC3(1),
+     &            WRK(KGRAD), XINDX, UDV, CMO, MJWOP, WRK(KFREE), LFREE)
+      RESKA3(1) = RESKA3(1) + DDOT(KZYV1,VEC1(1),1,WRK(KGRAD),1)
+      RESKA3(2) = RESKA3(2) + DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KGRAD),1)
+C
+      IF (ABS_DAMP .GT. D0) THEN
+C
+C     (Re{N1} + iIm{N1}) A[3] (-)Im{N2}Im{N3}
+      CALL A3INIT(KZYV1, KZYV2, KZYV3, ISYM1, ISYM2, ISYM3,
+     &            GRADLAB, ISYMGRAD, VEC2(1+KZYV2), VEC3(1+KZYV3),
+     &            WRK(KGRAD), XINDX, UDV, CMO, MJWOP, WRK(KFREE), LFREE)
+      RESKA3(1) = RESKA3(1) - DDOT(KZYV1,VEC1(1),1,WRK(KGRAD),1)
+      RESKA3(2) = RESKA3(2) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KGRAD),1)
+C
+C     (Re{N1} + iIm{N1}) A[3] i*Im{N2}Re{N3}
+      CALL A3INIT(KZYV1, KZYV2, KZYV3, ISYM1, ISYM2, ISYM3,
+     &            GRADLAB, ISYMGRAD, VEC2(1+KZYV2), VEC3(1),
+     &            WRK(KGRAD), XINDX, UDV, CMO, MJWOP, WRK(KFREE), LFREE)
+      RESKA3(1) = RESKA3(1) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KGRAD),1)
+      RESKA3(2) = RESKA3(2) + DDOT(KZYV1,VEC1(1),1,WRK(KGRAD),1)
+C
+C     (Re{N1} + iIm{N1}) A[3] i*Re{N2}Im{N3}
+      CALL A3INIT(KZYV1, KZYV2, KZYV3, ISYM1, ISYM2, ISYM3,
+     &            GRADLAB, ISYMGRAD, VEC2(1), VEC3(1+KZYV3),
+     &            WRK(KGRAD), XINDX, UDV, CMO, MJWOP, WRK(KFREE), LFREE)
+      RESKA3(1) = RESKA3(1) - DDOT(KZYV1,VEC1(1+KZYV1),1,WRK(KGRAD),1)
+      RESKA3(2) = RESKA3(2) + DDOT(KZYV1,VEC1(1),1,WRK(KGRAD),1)
+C
+      END IF
+C
+C     End of A3COMPLEX
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE ABS_CRRDVE(ISYMA,  ISYMB,  ISYMC,  ISYMD,
+     &                      ISYMBC, ISYMBD, ISYMCD,
+     &                      ALAB,   BLAB,   CLAB,   DLAB,
+     &                      FREQA,  FREQB,  FREQC,  FREQD,
+     &                      KZYVA,  KZYVB,  KZYVC,  KZYVD,
+     &                      KZYVBC, KZYVBD, KZYVCD,
+     &                      VECA,   VECB,   VECC,   VECD,
+     &                      VECBC,  VECBD,  VECCD)
+C
+C ======================================================================
+C
+C  Purpose : Read Nx and Nxy vectors from file and return them
+C
+C   Author : Tobias Fahleson, 2014
+C
+C ======================================================================
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "abslrs.h"
+#include "abscrs.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "qrinf.h"
+#include "wrkrsp.h"
+C
+      LOGICAL FOUND, CONV
+      CHARACTER*8 ALAB, BLAB, CLAB, DLAB, BLANK
+      PARAMETER ( D0=0.0D0, DM1=-1.0D0 )
+      PARAMETER (BLANK='        ')
+      DIMENSION VECA(*), VECB(*), VECC(*), VECD(*)
+      DIMENSION VECBC(*), VECBD(*), VECCD(*)
+C
+C     Set the length of the vectors Na to Nd, Nbc, Nbd, and Ncd
+      KZYVA  = MZYVAR(ISYMA)
+      KZYVB  = MZYVAR(ISYMB)
+      KZYVC  = MZYVAR(ISYMC)
+      KZYVD  = MZYVAR(ISYMD)
+      KZYVBC = MZYVAR(ISYMBC)
+      KZYVBD = MZYVAR(ISYMBD)
+      KZYVCD = MZYVAR(ISYMCD)
+C
+C     Read in Na
+C     ==========
+C
+c      CALL READ_XVEC(LUABSVECS, 2*KZYVA, VECA, ALAB, ISYMA,
+c     &               ABS(FREQA), ABS_THCLR, FOUND, CONV)
+      CALL READ_XVEC2(LUABSVECS, 2*KZYVA, VECA, ALAB, BLANK, ISYMA,
+     &               ABS(FREQA), D0, ABS_THCLR, FOUND, CONV)
+      IF (.NOT. (FOUND .AND. CONV)) THEN
+         IF (.NOT. FOUND) THEN
+            WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',ALAB,
+     &           ' with frequency ',FREQA, ' and symmetry',
+     &           ISYMA,' not found on file LUABSVECS'
+            CALL QUIT('Response vector not found on file')
+         ELSE
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+     &           ' Response label ',ALAB,
+     &           ' with frequency ',FREQA, ' and symmetry',
+     &           ISYMA,' not converged on file LUABSVECS'
+         END IF
+      END IF
+      IF (FREQA .GT. D0) THEN
+         CALL DSWAP(KZYVA/2,VECA,1,VECA(1+KZYVA/2),1)
+         CALL DSWAP(KZYVA/2,VECA(1+KZYVA),1,VECA(1+KZYVA+KZYVA/2),1)
+         CALL DSCAL(KZYVA,DM1,VECA,1)
+      END IF
+C
+C     Read in Nb
+C     ==========
+C
+c      CALL READ_XVEC(LUABSVECS,2*KZYVB,VECB,BLAB,ISYMB,
+c     &              ABS(FREQB),ABS_THCLR,FOUND,CONV)
+      CALL READ_XVEC2(LUABSVECS,2*KZYVB,VECB,BLAB,BLANK,ISYMB,
+     &              ABS(FREQB),D0,ABS_THCLR,FOUND,CONV)
+      IF (.NOT. (FOUND .AND. CONV)) THEN
+         IF (.NOT. FOUND) THEN
+            WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',BLAB,
+     &           ' with frequency ',FREQB, ' and symmetry',
+     &           ISYMB,' not found on file LUABSVECS'
+            CALL QUIT('Response vector not found on file')
+         ELSE
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+     &           ' Response label ',BLAB,
+     &           ' with frequency ',FREQB, ' and symmetry',
+     &           ISYMB,' not converged on file LUABSVECS'
+         END IF
+      END IF
+      IF (FREQB .LT. D0) THEN
+         CALL DSWAP(KZYVB/2,VECB,1,VECB(1+KZYVB/2),1)
+         CALL DSWAP(KZYVB/2,VECB(1+KZYVB),1,VECB(1+KZYVB+KZYVB/2),1)
+         CALL DSCAL(KZYVB,DM1,VECB,1)
+      END IF
+C
+C     Read in Nc
+C     ==========
+C
+c      CALL READ_XVEC(LUABSVECS,2*KZYVC,VECC,CLAB,ISYMC,
+c     &              ABS(FREQC),ABS_THCLR,FOUND,CONV)
+      CALL READ_XVEC2(LUABSVECS,2*KZYVC,VECC,CLAB,BLANK,ISYMC,
+     &              ABS(FREQC),D0,ABS_THCLR,FOUND,CONV)
+      IF (.NOT. (FOUND .AND. CONV)) THEN
+         IF (.NOT. FOUND) THEN
+            WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',CLAB,
+     &           ' with frequency ',FREQC, ' and symmetry',
+     &           ISYMC,' not found on file LUABSVECS'
+            CALL QUIT('Response vector not found on file')
+         ELSE
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+     &           ' Response label ',CLAB,
+     &           ' with frequency ',FREQC, ' and symmetry',
+     &           ISYMC,' not converged on file LUABSVECS'
+         END IF
+      END IF
+      IF (FREQC .LT. D0) THEN
+         CALL DSWAP(KZYVC/2,VECC,1,VECC(1+KZYVC/2),1)
+         CALL DSWAP(KZYVC/2,VECC(1+KZYVC),1,VECC(1+KZYVC+KZYVC/2),1)
+         CALL DSCAL(KZYVC,DM1,VECC,1)
+      END IF
+C
+C     Read in Nd
+C     ==========
+C
+c      CALL READ_XVEC(LUABSVECS,2*KZYVD,VECD,DLAB,ISYMD,
+c     &              ABS(FREQD),ABS_THCLR,FOUND,CONV)
+      CALL READ_XVEC2(LUABSVECS,2*KZYVD,VECD,DLAB,BLANK,ISYMD,
+     &              ABS(FREQD),D0,ABS_THCLR,FOUND,CONV)
+      IF (.NOT. (FOUND .AND. CONV)) THEN
+         IF (.NOT. FOUND) THEN
+            WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') ' Response label ',DLAB,
+     &           ' with frequency ',FREQD, ' and symmetry',
+     &           ISYMD,' not found on file LUABSVECS'
+            CALL QUIT('Response vector not found on file')
+         ELSE
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+     &           ' Response label ',DLAB,
+     &           ' with frequency ',FREQD, ' and symmetry',
+     &           ISYMD,' not converged on file LUABSVECS'
+         END IF
+      END IF
+      IF (FREQD .LT. D0) THEN
+         CALL DSWAP(KZYVD/2,VECD,1,VECD(1+KZYVD/2),1)
+         CALL DSWAP(KZYVD/2,VECD(1+KZYVD),1,VECD(1+KZYVD+KZYVD/2),1)
+         CALL DSCAL(KZYVD,DM1,VECD,1)
+      END IF
+C
+C     Read in Nbc
+C     ===========
+C
+C     Reading vector according to input
+      CALL READ_XVEC2(LUABSVECS,2*KZYVBC,VECBC,BLAB,CLAB,ISYMBC,
+     &                FREQB, FREQC, ABS_THCLR,FOUND,CONV)
+C
+      IF (.NOT. FOUND) THEN
+C
+C     If not found, attempt to find vector with interchanged
+C     operators and frequencies
+      CALL READ_XVEC2(LUABSVECS,2*KZYVBC,VECBC,CLAB,BLAB,ISYMBC,
+     &                FREQC, FREQB, ABS_THCLR,FOUND,CONV)
+      END IF
+C
+      IF (.NOT. (FOUND .AND. CONV)) THEN
+         IF (.NOT. FOUND) THEN
+            WRITE (LUPRI,'(/4A,2(F10.5),A,2(I3),/A)')
+     &            ' Response label ',BLAB, CLAB,' with frequencies ',
+     &            FREQB,FREQC,' and symmetries',ISYMB,ISYMC,
+     &            ' not found on file LUABSVECS'
+            CALL QUIT('Response vector not found on file')
+         ELSE
+            WRITE (LUPRI,'(/4A,2(F10.5),/A,2(I3),A)') ' @WARNING>>>>'//
+     &           ' Response label ',BLAB,CLAB,
+     &           ' with frequencies ',FREQB,FREQC,
+     &           ' and symmetries', ISYMB, ISYMC,
+     &           ' not converged on file LUABSVECS'
+         END IF
+      END IF
+      IF ((FREQB + FREQC) .LT. D0) THEN
+         CALL DSWAP(KZYVBC/2,VECBC,1,VECBC(1+KZYVBC/2),1)
+         CALL DSWAP(KZYVBC/2,VECBC(1+KZYVBC),
+     &              1,VECBC(1+KZYVBC+KZYVBC/2),1)
+         CALL DSCAL(KZYVBC,DM1,VECBC,1)
+      END IF
+C
+C     Read in Nbd
+C     ===========
+C
+C     Reading vector according to input
+      CALL READ_XVEC2(LUABSVECS,2*KZYVBD,VECBD,BLAB,DLAB,ISYMBD,
+     &                FREQB, FREQD, ABS_THCLR,FOUND,CONV)
+C
+      IF (.NOT. FOUND) THEN
+C
+C     If not found, attempt to find vector with interchanged
+C     operators and frequencies
+      CALL READ_XVEC2(LUABSVECS,2*KZYVBD,VECBD,DLAB,BLAB,ISYMBD,
+     &                FREQD, FREQB, ABS_THCLR,FOUND,CONV)
+      END IF
+C
+      IF (.NOT. (FOUND .AND. CONV)) THEN
+         IF (.NOT. FOUND) THEN
+            WRITE (LUPRI,'(/4A,2(F10.5),A,2(I3),/A)')
+     &            ' Response label ',BLAB, DLAB,' with frequencies ',
+     &            FREQB,FREQD,' and symmetries',ISYMB,ISYMD,
+     &            ' not found on file LUABSVECS'
+            CALL QUIT('Response vector not found on file')
+         ELSE
+            WRITE (LUPRI,'(/4A,2(F10.5),/A,2(I3),A)') ' @WARNING>>>>'//
+     &           ' Response label ',BLAB,DLAB,
+     &           ' with frequencies ',FREQB,FREQD,
+     &           ' and symmetries', ISYMB, ISYMD,
+     &           ' not converged on file LUABSVECS'
+         END IF
+      END IF
+      IF ((FREQB + FREQD) .LT. D0) THEN
+         CALL DSWAP(KZYVBD/2,VECBD,1,VECBD(1+KZYVBD/2),1)
+         CALL DSWAP(KZYVBD/2,VECBD(1+KZYVBD),
+     &              1,VECBD(1+KZYVBD+KZYVBD/2),1)
+         CALL DSCAL(KZYVBD,DM1,VECBD,1)
+      END IF
+C
+C     Read in Ncd
+C     ===========
+C
+C     Reading vector according to input
+      CALL READ_XVEC2(LUABSVECS,2*KZYVCD,VECCD,CLAB,DLAB,ISYMCD,
+     &                FREQC, FREQD, ABS_THCLR,FOUND,CONV)
+C
+      IF (.NOT. FOUND) THEN
+C
+C     If not found, attempt to find vector with interchanged
+C     operators and frequencies
+      CALL READ_XVEC2(LUABSVECS,2*KZYVCD,VECCD,DLAB,CLAB,ISYMCD,
+     &                FREQD, FREQC, ABS_THCLR,FOUND,CONV)   
+      END IF
+C
+      IF (.NOT. (FOUND .AND. CONV)) THEN
+         IF (.NOT. FOUND) THEN
+            WRITE (LUPRI,'(/4A,2(F10.5),A,2(I3),/A)')
+     &            ' Response label ',CLAB, DLAB,' with frequencies ',
+     &            FREQC,FREQD,' and symmetries',ISYMC,ISYMD,
+     &            ' not found on file LUABSVECS'
+            CALL QUIT('Response vector not found on file')
+         ELSE
+            WRITE (LUPRI,'(/4A,2(F10.5),/A,2(I3),A)') ' @WARNING>>>>'//
+     &           ' Response label ',CLAB,DLAB,
+     &           ' with frequencies ',FREQC,FREQD,
+     &           ' and symmetries', ISYMC, ISYMD,
+     &           ' not converged on file LUABSVECS'
+         END IF
+      END IF
+      IF ((FREQC + FREQD) .LT. D0) THEN
+         CALL DSWAP(KZYVCD/2,VECCD,1,VECCD(1+KZYVCD/2),1)
+         CALL DSWAP(KZYVCD/2,VECCD(1+KZYVCD),
+     &              1,VECCD(1+KZYVCD+KZYVCD/2),1)
+         CALL DSCAL(KZYVCD,DM1,VECCD,1)
+      END IF
+C
+C     End of ABS_CRRDVE
+C
+      RETURN
+      END
+C
+C
 C

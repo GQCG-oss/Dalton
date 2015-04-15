@@ -450,7 +450,7 @@ C              .BATCH
                   NFREQ_BATCH = MXFREQ
                END IF
                GOTO 100
-C                                                                                             
+C
 C              .IDRI
  33            CONTINUE
                   ABSLRS_ALPHA = .FALSE.
@@ -458,15 +458,15 @@ C              .IDRI
                   ABSLRS_GAMMA = .FALSE.
                   ABSLRS_IDRI  = .TRUE.
                GOTO 100
-C                                                                                             
-C              .GAMMA                                                                         
+C
+C              .GAMMA
  34            CONTINUE
                   ABSLRS_ALPHA = .FALSE.
                   ABSLRS_BETA  = .FALSE.
                   ABSLRS_GAMMA = .TRUE.
                GOTO 100
-C                                                                                             
-C              .DFREQ                                                                         
+C
+C              .DFREQ
  35            CONTINUE
                   IF (ABSLRS_GAMMA) THEN
                      READ (LUCMD,*) ABS_NFREQ_GAMMA_D
@@ -489,12 +489,12 @@ C              .DFREQ
                      READ(LUCMD,*)
                   END IF
                GOTO 100
-C                                                                                             
-C              .DFREQI                                                                        
+C
+C              .DFREQI
  36            CONTINUE
                GOTO 100
-C                                                                                             
-C              .ELEMNT                                                                        
+C
+C              .ELEMNT
  37            CONTINUE
                   IF (ABSLRS_GAMMA .AND. .NOT. ABS_GAMMA_ALLELE) THEN
                      ABS_GAMMA_ELEMENT = .TRUE.
@@ -508,14 +508,14 @@ C              .ELEMNT
      &               (ABS_ELEMENTS_GAMMA(J),J=1,ABS_NELEMENTS_GAMMA)
                   END IF
                GOTO 100
-C                                                                                             
-C              .OTOFGA                                                                        
+C
+C              .OTOFGA
  38            CONTINUE
                   IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
                      ABS_OTOF_GAMMA = .TRUE.
                   END IF
                GOTO 100
-C                                                                                             
+C
 C              .ALLELE
  39            CONTINUE
                   IF (ABSLRS_GAMMA .AND. .NOT. ABS_GAMMA_ELEMENT) THEN
@@ -806,8 +806,8 @@ C     End of ABSORP_INPUT
 C
       RETURN
       END
-C                                                                                             
-C                                                                                             
+C
+C
 C
       SUBROUTINE ABSLRSCALC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &                  XINDX,WRK,LWRK)
@@ -847,22 +847,22 @@ C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
      &     KFREE,LFREE)
 C
-C     Determine the QR that is to be calculated                                               
-C     =========================================                                               
+C     Determine the QR that is to be calculated
+C     =========================================
 C
       IF (ABSLRS_BETA .OR. ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD)
      &     THEN
          CALL ABS_BETA_SETUP
       END IF
-C                                                                                             
-C     Determine the CR that is to be calculated                                               
-C     =========================================                                               
-C                                                                                             
+C
+C     Determine the CR that is to be calculated
+C     =========================================
+C
       IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
          CALL ABS_GAMMA_SETUP
       END IF
 C
-C     Allocate memory for results of linear absorption calc                                   
+C     Allocate memory for results of linear absorption calc
 C     =====================================================
 C
       DSMALL=1.0000001
@@ -878,7 +878,7 @@ C
      &                   KFREE,LFREE)
       CALL DZERO(WRK(KRES),2*ABS_NFREQ_INTERVAL*3*3*2)
 C
-C     Determine linear response vectors                                                       
+C     Determine linear response vectors
 C     =================================
 C
       CALL AROUND('Solving Linear Response Equations')
@@ -886,21 +886,17 @@ C
 C     Default: use the new SCF solver (see Reference C) 
       CALL ABS_LRS(NSYM,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &        XINDX,WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
-C                                                                                             
-C     Determine double-indexed response vectors for cubic response                            
-C     ============================================================                            
-C                     
-C ---
-C PRINT FLAG
-      WRITE(LUPRI,*) 'Entering ABS_NXY'
-C ---
+C
+C     Determine double-indexed response vectors for cubic response
+C     ============================================================
+C
       IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
          CALL ABS_NXY(CMO, UDV, PV, XINDX, WRK(KMJWOP), FC, FCAC, FV,
-     &                H2AC, WRK(KRES), WRK(KFREE), LFREE)
+     &                H2AC, FOCK, WRK(KRES), WRK(KFREE), LFREE)
       END IF
 C
-C     Evaluation of QRF                                                                       
-C     =================                                                                       
+C     Evaluation of QRF
+C     =================
 C
       IF (ABSLRS_BETA .OR. ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD)
      &     THEN
@@ -908,29 +904,29 @@ C
          CALL ABSQRF(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &               XINDX,WRK(KMJWOP),WRK(KFREE),LFREE)
       END IF
-C                                                                                             
-C     Evaluation of CRF                                                                       
-C     =================                                                                       
-C                                                                                             
+C
+C     Evaluation of CRF
+C     =================
+C
 C      IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
 C         CALL AROUND('Evaluate Cubic Response Functions')
 C         CALL ABS_CRF(CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
 C     &                XINDX, WRK(KMJWOP), WRK(KFREE), LFREE)
 C      END IF
 C
-C     Print obtained response results                                                         
+C     Print obtained response results
 C     ===============================
 C
       CALL ABSLRSRESULT(WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
 c
       CALL GPCLOSE(LUABSVECS,'KEEP')
 C
-C     End of ABSLRSCALC                                                                       
+C     End of ABSLRSCALC
 C
       RETURN
       END
-C                                                                                             
-C                                                                                             
+C
+C
 C
       SUBROUTINE ABS_LRS(NSYM,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &                   XINDX,MJWOP,RESLRF,WRK,LWRK)
@@ -960,6 +956,7 @@ C
 C
       NGD=1
       DO ISYM=1,NSYM
+C
          IF (ABS_NOPER(ISYM).GT.0) THEN
 C
             LFREE=LWRK
