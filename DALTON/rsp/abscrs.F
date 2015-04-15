@@ -963,6 +963,7 @@ C        Set labels, frequencies, and symmetries
 C
 C        Determine various response variables for symmetry ISYMXY
          KSYMOP = ISYMXY
+         abs_gradsym = isymxy
          CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
          CALL SETZY(MJWOP)
 C
