@@ -388,7 +388,7 @@ contains
     type(matrix),intent(inout) :: Cvirtsub
     !> AO Overlap matrix
     real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
-    integer :: nocciso,nvirtiso,nbasisiso,nvirtmax,i,nbasisfull,j
+    integer :: nocciso,nvirtiso,nbasisiso,nvirtmax,i,nbasisfull,j,atom
     integer :: idx,nbasissub,sub,nbasisother,nvirtother,norb,nvirtsub
     integer,pointer :: basisidx(:),basisidx_other(:)
     real(realk),pointer :: C(:,:), Cother(:,:)
@@ -402,11 +402,17 @@ contains
     nvirtiso = Cvirtiso(this)%ncol     ! nvirt for isolated monomer
     nbasisiso = Cocciso(this)%nrow     ! nbasis for isolated monomer
     ! Maximum number of virtual orbitals (if there are no redundancies)
-    ! - sum of virtual orbitals for all subsystems
+    ! - sum of virtual orbitals for all subsystems + possibly ghost atoms
     nvirtmax=0
     do i=1,nsub
        nvirtmax = nvirtmax + Cvirtiso(i)%ncol
     end do
+    do atom=1,MyMoleculeFULL%natoms  ! loop over atoms
+       if(MyMoleculeFULL%PhantomAtom(atom)) then
+          nvirtmax = nvirtmax +MyMoleculeFULL%atom_size(atom)
+       end if
+    end do
+
 
     ! Indices for basis functions in subsystem "this"
     call mem_alloc(basisidx,nbasisiso)
@@ -417,7 +423,7 @@ contains
     ! this threshold
     thr = 1.0e-5_realk
 
-    
+
 
 
     ! *************************************************************
@@ -526,6 +532,61 @@ contains
        end if DifferentSub
 
     end do SubsystemLoop
+
+
+
+    ! Include possible ghost atoms (phantoms)
+    AtomLoop: do atom=1,MyMoleculeFULL%natoms  ! loop over atoms
+
+       Phantom: if(MyMoleculeFULL%PhantomAtom(atom)) then
+
+          ! Number of basis functions for phantom
+          nbasisother = MyMoleculeFULL%atom_size(atom)
+
+          ! Basis indices for phantom
+          call mem_alloc(basisidx_other,nbasisother)
+          call basis_idx_phantom(atom,MyMoleculeFULL,nbasisother,basisidx_other)
+
+          ! Loop over AO basis functions on phantom and include them
+          ! ********************************************************
+          idx=0
+          PhantomVirt: do i=1,nbasisother
+
+             ! Make MO coefficient vector which is just phantom AO number "i"
+             ! --------------------------------------------------------------
+             Cother=0.0_realk
+             Cother(basisidx_other(i),1) = 1.0_realk
+
+             ! Project out components from phantom AO already included in C array
+             call project_out_MOs(nbasisfull,norb,C(:,1:norb),&
+                  & S,Cother,Cother_norm)
+
+             ! Include orbital "i" only if its norm after
+             ! projection is above threshold
+             if(Cother_norm > thr) then
+                norb = norb + 1
+
+                ! Normalize before putting Cother into array
+                do j=1,nbasisfull
+                   C(j,norb) = (1.0_realk/Cother_norm)*Cother(j,1)
+                end do
+                if(DECinfo%SNOOPdebug) then
+                   call dec_simple_basis_transform1(nbasisfull,1,&
+                        & C(:,norb),S,testnorm)
+                   write(DECinfo%output,*) 'PHANTOM,norb,norm1,norm2',atom,&
+                        & norb,Cother_norm,testnorm(1,1)
+                end if
+
+             end if
+
+          end do PhantomVirt
+          call mem_dealloc(basisidx_other)
+
+       end if Phantom
+
+    end do AtomLoop
+
+
     call mem_dealloc(Cother)
 
     ! ***********************************************************
@@ -545,7 +606,7 @@ contains
     ! Virtual MOs (see comments in declaration above)
     call mat_init(Cvirtsub,nbasisfull,nvirtsub)
     call mat_set_from_full(C(:,nocciso+1:norb),1E0_realk, Cvirtsub)
-    
+
 
     call mem_dealloc(C)
     call mem_dealloc(basisidx)
@@ -706,7 +767,7 @@ contains
           ! Subsystem to which atom "i" belongs
           atomsub = MyMoleculeFULL%SubSystemIndex(i)
 
-          if(atomsub == this) then 
+          if(atomsub == this .and. (.not. MyMoleculeFULL%PhantomAtom(i)) ) then 
              ! Atom "i" is in subsystem 
              ! --> include basis function indices for atom "i"
              do j=1,MyMoleculeFULL%atom_size(i)
@@ -727,6 +788,36 @@ contains
 
 
   end subroutine basis_idx_subsystem
+
+
+
+  !> Get basis indices for the basis function associated with a phantom atom
+  subroutine basis_idx_phantom(this,MyMoleculeFULL,nbasisphantom,basisidx)
+    implicit none
+    !> Phantom atom index
+    integer,intent(in) :: this
+    !> Full molecule info
+    type(fullmolecule),intent(in) :: MyMoleculeFULL
+    !> Number of basis functions for subsystem
+    integer,intent(in) :: nbasisphantom
+    !> Basis function indices for subsystem basis functions
+    integer,intent(inout) :: basisidx(nbasisphantom)
+    integer :: j,idx
+
+    basisidx=0
+    idx=0
+    do j=1,MyMoleculeFULL%atom_size(this)
+       idx=idx+1
+       basisidx(idx) = MyMoleculeFULL%atom_start(this) + j-1
+    end do
+
+    ! Sanity check
+    if(idx/=nbasisphantom) then
+       print *, 'idx, nbasisphantom',idx, nbasisphantom
+       call lsquit('basis_idx_phantom: Index mismatch',-1)
+    end if
+
+  end subroutine basis_idx_phantom
 
 
 
