@@ -5903,12 +5903,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     tdim=[vs,vs,os,os]
     d1  =[nv,nv,no,no]
-    call tensor_get_ntpm(d1,tdim,mode,ntpm,ntiles)
-    nloctiles=ceiling(float(ntiles)/float(nnod))
-    tsze = 1
-    do i = 1, mode
-       tsze = tsze * tdim(i)
-    enddo
+    if( vs>0 .and. os>0.and.nnod>0)then
+       call tensor_get_ntpm(d1,tdim,mode,ntpm,ntiles)
+       nloctiles=ceiling(float(ntiles)/float(nnod))
+       tsze = 1
+       do i = 1, mode
+          tsze = tsze * tdim(i)
+       enddo
+    else
+       tsze=no*no*nv*nv
+    endif
 
 
 

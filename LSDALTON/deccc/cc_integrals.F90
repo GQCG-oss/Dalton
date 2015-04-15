@@ -3365,22 +3365,22 @@ contains
 
      maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
 
-     write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=0: ",g7.2," GB")')&
+     write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=0: ",g9.2," GB")')&
         &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
      check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-        & nbu < maxsize .or. &
+        & (nbu < maxsize.and. use_bg_buf) .or. &
         & DECinfo%test_fully_distributed_integrals
 
      if(check_next)then
 
         s = 1
         maxsize = w1size + w2size
-        write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=1: ",g7.2," GB")')&
+        write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=1: ",g9.2," GB")')&
            &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
         check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-           & nbu < maxsize .or. &
+           & (nbu < maxsize.and.use_bg_buf) .or. &
            & DECinfo%test_fully_distributed_integrals
 
         if( check_next )then
@@ -3391,11 +3391,11 @@ contains
 
            maxsize = w1size + w2size + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
-           write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=2: ",g7.2," GB")')&
+           write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=2: ",g9.2," GB")')&
               &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
            check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-              & nbu < maxsize .or. &
+              & (nbu < maxsize.and.use_bg_buf) .or. &
               & DECinfo%test_fully_distributed_integrals
 
            if(check_next)then
