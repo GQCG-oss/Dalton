@@ -1366,9 +1366,11 @@ IF (SubSystems) THEN
          READ (TEMPLINE((IPOS + IPOS2):),StringFormat) SubsystemLabel
       ENDIF
    ELSE
-      WRITE (LUPRI,*) 'SubSystems selected, but no SubSystem Label specified for one atom type'
-      CALL LSQUIT( 'SubSystems selected, but no SubSystem Label &
-           &specified for one atom type',lupri)
+      if(.not. phantom) then
+         WRITE (LUPRI,*) 'SubSystems selected, but no SubSystem Label specified for one atom type'
+         CALL LSQUIT( 'SubSystems selected, but no SubSystem Label &
+              &specified for one atom type',lupri)
+      end if
    ENDIF
 ENDIF
 

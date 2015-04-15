@@ -63,8 +63,10 @@ contains
 
     ! Number of atoms for subsystem and list of these atoms
     call get_natoms_for_subsystem(this,MyMoleculeFULL,natomssub)
+
     call mem_alloc(subatoms,natomssub)
     call list_of_atoms_for_subsystem(this,MyMoleculeFULL,natomssub,subatoms)
+
 
     ! Build lssub with atoms for subsystem
     call build_AtomSpecfragmentlsitem(lsfull,lssub,subatoms,natomssub,DECinfo%output,DECinfo%output)
@@ -90,7 +92,7 @@ contains
     ! ***********************************
     natomssub=0
     do i=1,MyMoleculeFULL%natoms
-       if(MyMoleculeFULL%SubSystemIndex(i)==this) then
+       if(MyMoleculeFULL%SubSystemIndex(i)==this .and. (.not. MyMoleculeFUll%PhantomAtom(i))) then
           natomssub = natomssub + 1
        end if
     end do
@@ -117,7 +119,7 @@ contains
 
     idx=0
     do i=1,MyMoleculeFULL%natoms
-       if(MyMoleculeFULL%SubSystemIndex(i)==this) then
+       if(MyMoleculeFULL%SubSystemIndex(i)==this .and. (.not. MyMoleculeFUll%PhantomAtom(i)) ) then
           idx=idx+1
           subatoms(idx) = i
        end if
@@ -1149,7 +1151,7 @@ contains
        if(MyMoleculeFULL%SubSystemIndex(atom)==sub) then  
           idx = idx + 1
           if(idx>nvalSUB) then
-             print *, 'Valecne error: idx,nvalSUB',idx,nvalSUB
+             print *, 'Valence error: idx,nvalSUB',idx,nvalSUB
              call lsquit('extract_subsystem_occorbitals_from_FULL: &
                   & Valence idx is too large',-1)
           end if
