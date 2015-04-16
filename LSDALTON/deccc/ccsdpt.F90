@@ -102,7 +102,6 @@ contains
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
     !> MOs and unitary transformation matrices
     type(array2) :: C_can_occ, C_can_virt, Uocc, Uvirt
-    type(tensor) :: Uo,Uv
     !> dimensions
     integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
@@ -240,15 +239,23 @@ contains
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
 
-    ! bcast the JOB specifier and distribute data to all the slaves within local group
-    waking_the_slaves_info: if ((nodtotal .gt. 1) .and. master) then
+    if (nodtotal .gt. 1) then
 
-       ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
-       call ls_mpibcast(CCSDPTSLAVE_INFO,infpar%master,infpar%lg_comm)
+       ! bcast the JOB specifier and distribute data to all the slaves within local group
+       waking_the_slaves_info: if (master) then
+   
+          ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
+          call ls_mpibcast(CCSDPTSLAVE_INFO,infpar%master,infpar%lg_comm)
+   
+          call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
+   
+       end if waking_the_slaves_info
+
+    else
 
        call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,abc_tile_size,nodtotal)
 
-    end if waking_the_slaves_info
+    endif
 
     call time_start_phase(PHASE_WORK)
 #else
@@ -258,7 +265,7 @@ contains
     if (DECinfo%pt_hack) then
 
 #ifdef VAR_MPI
-       if (master) then
+       if ((nodtotal .gt. 1) .and. master) then
 
           if (abc) then
 
@@ -276,6 +283,23 @@ contains
           call tensor_random(vovo)
           call tensor_scale(ccsd_doubles,1.0E-1_realk)
           call tensor_scale(vovo,1.0E-1_realk)
+
+       elseif (nodtotal .eq. 1) then
+
+          if (abc) then
+   
+             call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4)
+             call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+   
+          else
+   
+             call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
+             call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
+   
+          endif
+   
+          call tensor_random(ccsd_doubles)
+          call tensor_random(vovo)
 
        endif
 #else
@@ -298,7 +322,7 @@ contains
     else
 
 #ifdef VAR_MPI
-       if (master) then
+       if ((nodtotal .gt. 1) .and. master) then
 
           if (abc) then
 
@@ -340,6 +364,32 @@ contains
 
           endif
 
+       elseif (nodtotal .eq. 1) then
+
+          if (abc) then
+
+             call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+             call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
+             if (.not. print_frags) call tensor_free(vovo_in)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+             call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4)
+             call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,ccsd_doubles%elm1)
+             if (.not. print_frags) call tensor_free(ccsd_doubles_in)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+
+          else
+   
+             call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
+             call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
+             if (.not. print_frags) call tensor_free(vovo_in)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+             call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
+             call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,ccsd_doubles%elm1)
+             if (.not. print_frags) call tensor_free(ccsd_doubles_in)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+   
+          endif
+
        endif
 #else
        if (abc) then
@@ -372,27 +422,31 @@ contains
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
 
-    ! bcast the JOB specifier and distribute data to all the slaves within local group
-    waking_the_slaves_work: if ((nodtotal .gt. 1) .and. master) then
+    if (nodtotal .gt. 1) then
 
-       ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
-       call ls_mpibcast(CCSDPTSLAVE_WORK,infpar%master,infpar%lg_comm)
+       ! bcast the JOB specifier and distribute data to all the slaves within local group
+       waking_the_slaves_work: if (master) then
+   
+          ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
+          call ls_mpibcast(CCSDPTSLAVE_WORK,infpar%master,infpar%lg_comm)
+   
+          ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
+          call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_doubles,&
+                                             & mylsitem,print_frags,abc)
+   
+       end if waking_the_slaves_work
+   
+       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+       call ls_mpi_buffer(eivalocc,nocc,infpar%master)
+       call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
+       call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
+       call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
+       call ls_mpi_buffer(ijk_nbuffs,infpar%master)
+       call ls_mpi_buffer(abc_nbuffs,infpar%master)
+       call ls_mpi_buffer(abc_tile_size,infpar%master)
+       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-       ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_doubles,&
-                                          & mylsitem,print_frags,abc)
-
-    end if waking_the_slaves_work
-
-    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(eivalocc,nocc,infpar%master)
-    call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
-    call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
-    call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
-    call ls_mpi_buffer(ijk_nbuffs,infpar%master)
-    call ls_mpi_buffer(abc_nbuffs,infpar%master)
-    call ls_mpi_buffer(abc_tile_size,infpar%master)
-    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    endif
 
     call time_start_phase(PHASE_WORK)
 #endif
@@ -477,25 +531,52 @@ contains
        if (print_frags) then
 
           if (master) then
-             call abc_loop_par(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
-                             & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
-                             & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+             if (nodtotal .gt. 1) then
+
+                call abc_loop_par(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
+                                & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
+                                & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+             else
+
+                call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
+                                & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
+                                & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+             endif
+
           else
+
              call abc_loop_par(nocc,nvirt,ooov%elm1,vovo_in,vovv,ccsd_doubles_in,&
                              & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
                              & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
           endif
 
        else
 
           if (master) then
-             call abc_loop_par(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
-                             & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
-                             & ccsdpt_singles%elm1,e4=e4)
+
+             if (nodtotal .gt. 1) then
+
+                call abc_loop_par(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
+                                & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
+                                & ccsdpt_singles%elm1,e4=e4)
+
+             else
+
+                call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
+                                & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
+
+             endif
+
           else
+
              call abc_loop_par(nocc,nvirt,ooov%elm1,vovo_in,vovv,ccsd_doubles_in,&
                              & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
                              & ccsdpt_singles%elm1,e4=e4)
+
           endif
 
        endif
@@ -506,25 +587,52 @@ contains
        if (print_frags) then
   
           if (master) then 
-             call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo,vvvo,ccsd_doubles,&
-                             & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
-                             & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+             if (nodtotal .gt. 1) then
+
+                call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo,vvvo,ccsd_doubles,&
+                                & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
+                                & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+             else
+
+                call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
+                                & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
+                                & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+             endif
+
           else
+
              call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo_in,vvvo,ccsd_doubles_in,&
                              & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
                              & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
           endif   
 
        else
 
           if (master) then
-             call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo,vvvo,ccsd_doubles,&
-                             & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
-                             & ccsdpt_singles%elm1,e4=e4)
+
+             if (nodtotal .gt. 1) then
+
+                call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo,vvvo,ccsd_doubles,&
+                                & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
+                                & ccsdpt_singles%elm1,e4=e4)
+
+             else
+
+                call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
+                                & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
+
+             endif
+
           else
+
              call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo_in,vvvo,ccsd_doubles_in,&
                              & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,&
                              & ccsdpt_singles%elm1,e4=e4)
+
           endif   
 
        endif
@@ -631,7 +739,7 @@ contains
 
     end if releasing_the_slaves
 
-    if (master) then
+    if ((nodtotal .gt. 1) .and. master) then
 
        ccsd_doubles%access_type = AT_MASTER_ACCESS
        vovo%access_type = AT_MASTER_ACCESS
@@ -680,42 +788,15 @@ contains
 
     if (print_frags) then
 
-#ifdef VAR_MPI
-
        if (abc) then
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
-!             call tensor_transform_basis([Uo,Uv],2,[ccsd_doubles],[[1,1,2,2]],[[2,2,2,2]],4,1)
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
 
        else
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
-!             call tensor_transform_basis([Uo,Uv],2,[ccsd_doubles],[[2,2,1,1]],[[2,2,2,2]],4,1)
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
 
        endif
-
-!       call tensor_free(Uo)
-!       call tensor_free(Uv)
-
-#else
-
-       if (abc) then
-
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
-
-       else
-
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
-
-       endif
-
-#endif
 
     else
 
@@ -989,15 +1070,13 @@ contains
 
                end if
 
-               !FIND i in buffer
+               !FIND i and j in buffer
                call assoc_ptr_to_buf(i,vvvo,3*nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
                                      & vvvo_pdm_i,vvvo_pdm_buff,ibuf_vvvo,req_vvvo)
-               call assoc_ptr_to_buf(i,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
-                                     & ccsd_pdm_i,ccsd_pdm_buff,ibuf_ccsd,req_ccsd)
-
-               !FIND j in buffer
                call assoc_ptr_to_buf(j,vvvo,3*nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
                                      & vvvo_pdm_j,vvvo_pdm_buff,jbuf_vvvo,req_vvvo)
+               call assoc_ptr_to_buf(i,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+                                     & ccsd_pdm_i,ccsd_pdm_buff,ibuf_ccsd,req_ccsd)
                call assoc_ptr_to_buf(j,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
                                      & ccsd_pdm_j,ccsd_pdm_buff,jbuf_ccsd,req_ccsd)
 
@@ -1008,30 +1087,38 @@ contains
                call assoc_ptr_to_buf(ji,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
                                      & vvoo_pdm_ji,vvoo_pdm_buff,jibuf,req_vvoo)
 
+               call time_start_phase(PHASE_COMM)
+
+               if( alloc_in_dummy )then
+
+                  call lsmpi_wait(req_vvvo(ibuf_vvvo))
+                  call lsmpi_wait(req_vvvo(jbuf_vvvo))
+                  call lsmpi_wait(req_ccsd(ibuf_ccsd))
+                  call lsmpi_wait(req_ccsd(jbuf_ccsd))
+                  call lsmpi_wait(req_vvoo(ijbuf))
+                  call lsmpi_wait(req_vvoo(jibuf))
+
+               else
+
+                  if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
+                  if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
+                  if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
+                  if(ccsd_doubles%lock_set(j)) call tensor_unlock_win(ccsd_doubles,j)
+                  if(vvoo%lock_set(ij)) call tensor_unlock_win(vvoo,ij)
+                  if(vvoo%lock_set(ji)) call tensor_unlock_win(vvoo,ji)
+
+               endif
+
+               needed_vvvo(ibuf_vvvo) = .true.; needed_vvvo(jbuf_vvvo) = .true.
+               needed_ccsd(ibuf_ccsd) = .true.; needed_ccsd(jbuf_ccsd) = .true.
+               needed_vvoo(ijbuf) = .true.; needed_vvoo(jibuf) = .true.
+
+               call time_start_phase(PHASE_WORK)
+
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
 
                case(1) ! i .gt. j
-
-                  call time_start_phase(PHASE_COMM)
-
-                  if( alloc_in_dummy )then
-
-                     call lsmpi_wait(req_vvvo(jbuf_vvvo))
-                     call lsmpi_wait(req_ccsd(jbuf_ccsd))
-                     call lsmpi_wait(req_vvoo(ijbuf))
-                     call lsmpi_wait(req_vvoo(jibuf))
-
-                  else
-
-                     if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
-                     if(ccsd_doubles%lock_set(j)) call tensor_unlock_win(ccsd_doubles,j)
-                     if(vvoo%lock_set(ij)) call tensor_unlock_win(vvoo,ij)
-                     if(vvoo%lock_set(ji)) call tensor_unlock_win(vvoo,ji)
-
-                  endif
-
-                  call time_start_phase(PHASE_WORK)
 
 #ifdef VAR_OPENACC
                   call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
@@ -1062,25 +1149,6 @@ contains
 ! if we can use ccsd_doubles(:,:,:,j), ccsd_doubles_portions_j, vvvo_pdm_j, and ccsdpt_doubles_2(:,:,:,j),
 ! then there is no need for this (although we need ccsd_doubles(:,:,:,j)
 
-                     ! get the i'th v^3 tile
-                     call time_start_phase(PHASE_COMM)
-
-                     if( alloc_in_dummy )then
-
-                        call lsmpi_wait(req_vvvo(ibuf_vvvo))
-                        call lsmpi_wait(req_ccsd(ibuf_ccsd))
-                        call lsmpi_wait(req_vvoo(ijbuf))
-
-                     else
-
-                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
-                        if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
-                        if(vvoo%lock_set(ij)) call tensor_unlock_win(vvoo,ij)
-
-                     endif
-
-                     call time_start_phase(PHASE_WORK)
-
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
@@ -1101,27 +1169,6 @@ contains
 !$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
 
                   else ! i .gt. j
-
-                     ! get the i'th v^3 tile only
-                     call time_start_phase(PHASE_COMM)
-
-                     if( alloc_in_dummy )then
-
-                        call lsmpi_wait(req_vvvo(ibuf_vvvo))
-                        call lsmpi_wait(req_ccsd(ibuf_ccsd))
-                        call lsmpi_wait(req_vvoo(ijbuf))
-                        call lsmpi_wait(req_vvoo(jibuf))
-
-                     else
-
-                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
-                        if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
-                        if(vvoo%lock_set(ij)) call tensor_unlock_win(vvoo,ij)
-                        if(vvoo%lock_set(ji)) call tensor_unlock_win(vvoo,ji)
-
-                     endif
-
-                     call time_start_phase(PHASE_WORK)
 
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
@@ -1154,25 +1201,6 @@ contains
 ! if we can use ccsd_doubles(:,:,:,j), ccsd_doubles_portions_j, vvvo_pdm_j, and ccsdpt_doubles_2(:,:,:,j),
 ! then these should be used here instead of the ones for 'i'
 
-                     ! get the i'th v^3 tile
-                     call time_start_phase(PHASE_COMM)
-
-                     if( alloc_in_dummy )then
-
-                        call lsmpi_wait(req_vvvo(ibuf_vvvo))
-                        call lsmpi_wait(req_ccsd(ibuf_ccsd))
-                        call lsmpi_wait(req_vvoo(ijbuf))
-
-                     else
-
-                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
-                        if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
-                        if(vvoo%lock_set(ij)) call tensor_unlock_win(vvoo,ij)
-
-                     endif
-
-                     call time_start_phase(PHASE_WORK)
-
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
@@ -1193,31 +1221,6 @@ contains
 !$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
 
                   else ! i .gt. j
-
-                     ! get the i'th and j'th v^3 tiles
-                     call time_start_phase(PHASE_COMM)
-
-                     if( alloc_in_dummy )then
-
-                        call lsmpi_wait(req_vvvo(ibuf_vvvo))
-                        call lsmpi_wait(req_vvvo(jbuf_vvvo))
-                        call lsmpi_wait(req_ccsd(ibuf_ccsd))
-                        call lsmpi_wait(req_ccsd(jbuf_ccsd))
-                        call lsmpi_wait(req_vvoo(ijbuf))
-                        call lsmpi_wait(req_vvoo(jibuf))
-
-                     else
-
-                        if(vvvo%lock_set(i)) call tensor_unlock_win(vvvo,i)
-                        if(vvvo%lock_set(j)) call tensor_unlock_win(vvvo,j)
-                        if(ccsd_doubles%lock_set(i)) call tensor_unlock_win(ccsd_doubles,i)
-                        if(ccsd_doubles%lock_set(j)) call tensor_unlock_win(ccsd_doubles,j)
-                        if(vvoo%lock_set(ij)) call tensor_unlock_win(vvoo,ij)
-                        if(vvoo%lock_set(ji)) call tensor_unlock_win(vvoo,ji)
-
-                     endif
-
-                     call time_start_phase(PHASE_WORK)
 
 #ifdef VAR_OPENACC
                      call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
@@ -1249,10 +1252,6 @@ contains
                   j_old = j
 
                end select TypeOf_ij_combi
-
-               needed_vvvo(ibuf_vvvo) = .true.; needed_vvvo(jbuf_vvvo) = .true.
-               needed_ccsd(ibuf_ccsd) = .true.; needed_ccsd(jbuf_ccsd) = .true.
-               needed_vvoo(ijbuf)     = .true.; needed_vvoo(jibuf)     = .true.
 
         krun_par: do k=1,j
 
@@ -1405,11 +1404,14 @@ contains
 
                      call time_start_phase(PHASE_WORK, twall = time_preload )
                      call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nvirt,nocc,i,j,k,ij_count,3*nbuffs,&
-                                                 & needed_vvvo,tiles_in_buf_vvvo,vvvo_pdm_buff,req_vvvo)
+                                                 & needed_vvvo,tiles_in_buf_vvvo,vvvo_pdm_buff,req_vvvo,&
+                                                 & .true.,1,nocc)
                      call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nvirt,nocc,i,j,k,ij_count,3*nbuffs,&
-                                                 & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd)
+                                                 & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd,&
+                                                 & .true.,1,nocc)
                      call preload_tiles_in_bg_buf(vvoo,jobs,b_size,nvirt,nocc,i,j,k,ij_count,6*nbuffs,&
-                                                 & needed_vvoo,tiles_in_buf_vvoo,vvoo_pdm_buff,req_vvoo,vovo_array=.true.)
+                                                 & needed_vvoo,tiles_in_buf_vvoo,vvoo_pdm_buff,req_vvoo,&
+                                                 & .true.,1,nocc,vovo_array=.true.)
                      call time_start_phase(PHASE_WORK, ttot = time_preload )
                      time_preload_tot = time_preload_tot + time_preload
 
@@ -1872,7 +1874,7 @@ contains
 
 
   subroutine preload_tiles_in_bg_buf(array,jobs,b_size,nvirt,nocc,current_i,current_j,current_k,current_ij_count,nbuffs,needed,&
-        &tiles_in_buf,array_pdm_buff,req,vovo_array)
+        &tiles_in_buf,array_pdm_buff,req,scheme,tdim,t1dim,vovo_array)
      implicit none
      type(tensor), intent(inout) :: array
      integer, intent(in) :: b_size, current_i, current_j, current_k, current_ij_count, nbuffs, nvirt, nocc
@@ -1881,6 +1883,8 @@ contains
      integer, intent(inout) :: tiles_in_buf(nbuffs)
      real(realk), pointer, intent(inout) :: array_pdm_buff(:,:)
      integer(kind=ls_mpik),intent(inout) :: req(nbuffs)
+     integer, intent(in) :: tdim,t1dim
+     logical :: scheme ! if scheme == .true., then ijk, if .false., then abc
      logical, optional, intent(in) :: vovo_array
      integer :: i_test,j_test,k_test,i_search_buf
      integer :: ij_test,ji_test,ik_test,ki_test,jk_test,kj_test
@@ -1889,12 +1893,15 @@ contains
      logical :: keep_looping,ij_done, new_i_needed, new_j_needed, new_k_needed
      logical :: found,found_ij,found_ji,found_ik,found_ki,found_jk,found_kj
      logical :: new_ij_needed,new_ji_needed,new_ik_needed,new_ki_needed,new_jk_needed,new_kj_needed
-     integer :: ts,ts_vovo
+     integer :: ts1,ts2
      integer(kind=ls_mpik) :: mode
      logical :: vovo
      integer :: tuple_type
 #ifdef VAR_MPI
      mode = MPI_MODE_NOCHECK
+
+     ! this routine is designed for the ijk scehem.
+     ! however, by replacing i, j, k with a, b, and c, respectively, it also works for the abc scheme.
 
      vovo = .false.
      if (present(vovo_array)) vovo = vovo_array
@@ -1912,7 +1919,11 @@ contains
      new_ik_needed = .false.; new_ki_needed = .false.
      new_jk_needed = .false.; new_kj_needed = .false.
 
-     ts_vovo = nvirt**2
+     if (scheme) then
+        ts2 = nvirt**2*tdim**2 ! vovo ts
+     else
+        ts2 = nocc**2*tdim**2 ! vovo ts
+     endif
 
      !load next bunch of tiles needed
      fill_buffer: do while(keep_looping)
@@ -1924,7 +1935,7 @@ contains
 
         else
 
-           keep_looping = (.not. (ij_done .and. (k_test .ge. j_test)) .and. count(needed) .lt. nocc)
+           keep_looping = (.not. (ij_done .and. (k_test .ge. j_test)) .and. count(needed) .lt. t1dim)
 
         endif
 
@@ -1939,7 +1950,7 @@ contains
 
               if ((i_test .eq. j_test) .and. (j_test .gt. k_test)) then
 
-                 ik_test = (k_test-1)*nocc+i_test; ki_test = (i_test-1)*nocc+k_test
+                 ik_test = (k_test-1)*t1dim+i_test; ki_test = (i_test-1)*t1dim+k_test
                  !Load the next ik tile
                  call check_if_new_instance_needed(ik_test,tiles_in_buf,nbuffs,new_ik_needed,set_needed=needed)
                  !Load the next ki tile
@@ -1953,7 +1964,7 @@ contains
 
               elseif ((i_test .gt. j_test) .and. (j_test .eq. k_test)) then
 
-                 jk_test = (k_test-1)*nocc+j_test
+                 jk_test = (k_test-1)*t1dim+j_test
                  !Load the next jk tile
                  call check_if_new_instance_needed(jk_test,tiles_in_buf,nbuffs,new_jk_needed,set_needed=needed)
 
@@ -1961,8 +1972,8 @@ contains
 
               elseif ((i_test .gt. j_test) .and. (j_test .gt. k_test)) then
 
-                 ik_test = (k_test-1)*nocc+i_test; ki_test = (i_test-1)*nocc+k_test
-                 jk_test = (k_test-1)*nocc+j_test; kj_test = (j_test-1)*nocc+k_test
+                 ik_test = (k_test-1)*t1dim+i_test; ki_test = (i_test-1)*t1dim+k_test
+                 jk_test = (k_test-1)*t1dim+j_test; kj_test = (j_test-1)*t1dim+k_test
                  !Load the next ik tile
                  call check_if_new_instance_needed(ik_test,tiles_in_buf,nbuffs,new_ik_needed,set_needed=needed)
                  !Load the next ki tile
@@ -2096,14 +2107,14 @@ contains
                        endif
 
                        if( alloc_in_dummy )then
-                          if (found_ik) call tensor_get_tile(array,ik_test,array_pdm_buff(:,ikbuf_test),ts_vovo,&
+                          if (found_ik) call tensor_get_tile(array,ik_test,array_pdm_buff(:,ikbuf_test),ts2,&
                              &lock_set=.true.,req=req(ikbuf_test))
-                          if (found_ki) call tensor_get_tile(array,ki_test,array_pdm_buff(:,kibuf_test),ts_vovo,&
+                          if (found_ki) call tensor_get_tile(array,ki_test,array_pdm_buff(:,kibuf_test),ts2,&
                              &lock_set=.true.,req=req(kibuf_test))
                        else
-                          if (found_ik) call tensor_get_tile(array,ik_test,array_pdm_buff(:,ikbuf_test),ts_vovo,&
+                          if (found_ik) call tensor_get_tile(array,ik_test,array_pdm_buff(:,ikbuf_test),ts2,&
                              &lock_set=.true.,flush_it=.true.)
-                          if (found_ki) call tensor_get_tile(array,ki_test,array_pdm_buff(:,kibuf_test),ts_vovo,&
+                          if (found_ki) call tensor_get_tile(array,ki_test,array_pdm_buff(:,kibuf_test),ts2,&
                              &lock_set=.true.,flush_it=.true.)
                        endif
 
@@ -2112,10 +2123,10 @@ contains
                        if (.not. alloc_in_dummy) call tensor_lock_win(array,jk_test,'s',assert=mode)
 
                        if( alloc_in_dummy )then
-                          call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts_vovo,&
+                          call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts2,&
                              &lock_set=.true.,req=req(jkbuf_test))
                        else
-                          call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts_vovo,&
+                          call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts2,&
                              &lock_set=.true.,flush_it=.true.)
                        endif
 
@@ -2129,22 +2140,22 @@ contains
                        endif
 
                        if( alloc_in_dummy )then
-                          if (found_ik) call tensor_get_tile(array,ik_test,array_pdm_buff(:,ikbuf_test),ts_vovo,&
+                          if (found_ik) call tensor_get_tile(array,ik_test,array_pdm_buff(:,ikbuf_test),ts2,&
                              &lock_set=.true.,req=req(ikbuf_test))
-                          if (found_ki) call tensor_get_tile(array,ki_test,array_pdm_buff(:,kibuf_test),ts_vovo,&
+                          if (found_ki) call tensor_get_tile(array,ki_test,array_pdm_buff(:,kibuf_test),ts2,&
                              &lock_set=.true.,req=req(kibuf_test))
-                          if (found_jk) call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts_vovo,&
+                          if (found_jk) call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts2,&
                              &lock_set=.true.,req=req(jkbuf_test))
-                          if (found_kj) call tensor_get_tile(array,kj_test,array_pdm_buff(:,kjbuf_test),ts_vovo,&
+                          if (found_kj) call tensor_get_tile(array,kj_test,array_pdm_buff(:,kjbuf_test),ts2,&
                              &lock_set=.true.,req=req(kjbuf_test))
                        else
-                          if (found_ik) call tensor_get_tile(array,ik_test,array_pdm_buff(:,ikbuf_test),ts_vovo,&
+                          if (found_ik) call tensor_get_tile(array,ik_test,array_pdm_buff(:,ikbuf_test),ts2,&
                              &lock_set=.true.,flush_it=.true.)
-                          if (found_ki) call tensor_get_tile(array,ki_test,array_pdm_buff(:,kibuf_test),ts_vovo,&
+                          if (found_ki) call tensor_get_tile(array,ki_test,array_pdm_buff(:,kibuf_test),ts2,&
                              &lock_set=.true.,flush_it=.true.)
-                          if (found_jk) call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts_vovo,&
+                          if (found_jk) call tensor_get_tile(array,jk_test,array_pdm_buff(:,jkbuf_test),ts2,&
                              &lock_set=.true.,flush_it=.true.)
-                          if (found_kj) call tensor_get_tile(array,kj_test,array_pdm_buff(:,kjbuf_test),ts_vovo,&
+                          if (found_kj) call tensor_get_tile(array,kj_test,array_pdm_buff(:,kjbuf_test),ts2,&
                              &lock_set=.true.,flush_it=.true.)
                        endif
 
@@ -2153,12 +2164,12 @@ contains
                  else
 
                     if( .not.alloc_in_dummy ) call tensor_lock_win(array,k_test,'s',assert=mode)
-                    call get_tile_dim(ts,array,k_test)
+                    call get_tile_dim(ts1,array,k_test)
                     if( alloc_in_dummy )then
-                       call tensor_get_tile(array,k_test,array_pdm_buff(:,kbuf_test),ts,&
+                       call tensor_get_tile(array,k_test,array_pdm_buff(:,kbuf_test),ts1,&
                           &lock_set=.true.,req=req(kbuf_test))
                     else
-                       call tensor_get_tile(array,k_test,array_pdm_buff(:,kbuf_test),ts,&
+                       call tensor_get_tile(array,k_test,array_pdm_buff(:,kbuf_test),ts1,&
                           &lock_set=.true.,flush_it=.true.)
                     endif
 
@@ -2185,7 +2196,7 @@ contains
 
               ij_new = jobs(ij_count_test)
 
-              call calc_i_leq_j(ij_new,nocc,i_test,j_test)
+              call calc_i_leq_j(ij_new,t1dim,i_test,j_test)
 
               call check_if_new_instance_needed(j_test,tiles_in_buf,nbuffs,new_j_needed,set_needed=needed)
 
@@ -2196,7 +2207,7 @@ contains
 
                     if (i_test .eq. j_test) then
 
-                       ij_test = (j_test-1)*nocc+i_test
+                       ij_test = (j_test-1)*t1dim+i_test
                        !Load the next ij tile
                        call check_if_new_instance_needed(ij_test,tiles_in_buf,nbuffs,new_ij_needed,set_needed=needed)
 
@@ -2214,7 +2225,7 @@ contains
 
                     else
 
-                       ij_test = (j_test-1)*nocc+i_test; ji_test = (i_test-1)*nocc+j_test
+                       ij_test = (j_test-1)*t1dim+i_test; ji_test = (i_test-1)*t1dim+j_test
                        !Load the next ij tile
                        call check_if_new_instance_needed(ij_test,tiles_in_buf,nbuffs,new_ij_needed,set_needed=needed)
                        !Load the next ji tile
@@ -2264,26 +2275,26 @@ contains
                           if (found_ji) call tensor_lock_win(array,ji_test,'s',assert=mode)
                        endif
                        if( alloc_in_dummy )then
-                          if (found_ij) call tensor_get_tile(array,ij_test,array_pdm_buff(:,ijbuf_test),ts_vovo,&
+                          if (found_ij) call tensor_get_tile(array,ij_test,array_pdm_buff(:,ijbuf_test),ts2,&
                              &lock_set=.true.,req=req(ijbuf_test))
                           if (found_ji) call tensor_get_tile(array,ji_test,&
-                             &array_pdm_buff(:,jibuf_test),ts_vovo,lock_set=.true.,req=req(jibuf_test))
+                             &array_pdm_buff(:,jibuf_test),ts2,lock_set=.true.,req=req(jibuf_test))
                        else
-                          if (found_ij) call tensor_get_tile(array,ij_test,array_pdm_buff(:,ijbuf_test),ts_vovo,&
+                          if (found_ij) call tensor_get_tile(array,ij_test,array_pdm_buff(:,ijbuf_test),ts2,&
                              &lock_set=.true.,flush_it=.true.)
                           if (found_ji) call tensor_get_tile(array,ji_test,&
-                             &array_pdm_buff(:,jibuf_test),ts_vovo,lock_set=.true.,flush_it=.true.)
+                             &array_pdm_buff(:,jibuf_test),ts2,lock_set=.true.,flush_it=.true.)
                        endif
    
                     else
 
                        if( .not. alloc_in_dummy ) call tensor_lock_win(array,j_test,'s',assert=mode)
-                       call get_tile_dim(ts,array,j_test)
+                       call get_tile_dim(ts1,array,j_test)
                        if(alloc_in_dummy)then
-                          call tensor_get_tile(array,j_test,array_pdm_buff(:,jbuf_test),ts,&
+                          call tensor_get_tile(array,j_test,array_pdm_buff(:,jbuf_test),ts1,&
                              &lock_set=.true.,req=req(jbuf_test))
                        else
-                          call tensor_get_tile(array,j_test,array_pdm_buff(:,jbuf_test),ts,&
+                          call tensor_get_tile(array,j_test,array_pdm_buff(:,jbuf_test),ts1,&
                              &lock_set=.true.,flush_it=.true.)
                        endif
    
@@ -2309,12 +2320,12 @@ contains
                     if(found)then
    
                        if( .not. alloc_in_dummy ) call tensor_lock_win(array,i_test,'s',assert=mode)
-                       call get_tile_dim(ts,array,i_test)
+                       call get_tile_dim(ts1,array,i_test)
                        if(alloc_in_dummy )then
-                          call tensor_get_tile(array,i_test,array_pdm_buff(:,ibuf_test),ts,&
+                          call tensor_get_tile(array,i_test,array_pdm_buff(:,ibuf_test),ts1,&
                              &lock_set=.true.,req=req(ibuf_test))
                        else
-                          call tensor_get_tile(array,i_test,array_pdm_buff(:,ibuf_test),ts,&
+                          call tensor_get_tile(array,i_test,array_pdm_buff(:,ibuf_test),ts1,&
                              &lock_set=.true.,flush_it=.true.)
                        endif
    
@@ -2905,7 +2916,9 @@ contains
     !> orbital energiesi
     real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt) 
     !> loop integers
-    integer :: a,b,c,tuple_type,counter
+    integer :: b_size,njobs,ab_comp,ab_count
+    integer, pointer :: ab_array(:),jobs(:)
+    integer :: a,b,c,tuple_type
     integer :: a_tile,b_tile,c_tile,a_pos,b_pos,c_pos,a_count,b_count,c_count
     integer :: a_buf_vovv,a_buf_ccsd,b_buf_vovv,b_buf_ccsd,c_buf_vovv,c_buf_ccsd
     integer :: abbuf,babuf,acbuf,cabuf,bcbuf,cbbuf
@@ -3044,7 +3057,27 @@ contains
     tile_size_tmp_b = 0
     tile_size_tmp_c = 0
 
-    counter = total_num_tiles - infpar%lg_mynum
+    ! create job distribution list
+    ! first, determine common batch size from number of tasks and nodes
+    ! in the ab matrix, njobs is the number of elements in the lower triangular matrix
+    ! always an even number [ n(n+1) is always an even number ]
+    njobs = int((ts_oovv**2 + ts_oovv)/2)
+    b_size = int(njobs/nodtotal)
+
+    ! ab_array stores all jobs for composite ab indices in descending order
+    call mem_alloc(ab_array,njobs)
+    ! init list (one more than b_size since mod(njobs,nodtotal) is not necessearily zero
+    call mem_alloc(jobs,b_size + 1)
+
+    ! create ab_array
+    call create_ab_tensor_ccsdpt(njobs,ts_oovv,ab_array)
+    ! fill the list
+    call job_distrib_ccsdpt(b_size,njobs,ab_array,jobs)
+
+    ! release ab_array
+    call mem_dealloc(ab_array)
+
+    ! now follows the main loop, which is collapsed like for the ijk scheme (cf. ijk_loop_par)
 
 !$acc wait
 
@@ -3058,96 +3091,72 @@ contains
 
 !$acc wait
 
-    do a_tile = total_num_tiles,1,-1
+ abrun_par: do ab_count = 1,b_size + 1
 
-       a_pos = (a_tile-1)*tile_size+1
+          ! get value of ab from job disttribution list
+          ab_comp = jobs(ab_count)
 
-       if (a_tile .ne. counter) then
+          ! no more jobs to be done? otherwise leave the loop
+          if (ab_comp .lt. 0) exit
 
-          cycle
+          ! calculate a and b from composite ab value
+          call calc_i_leq_j(ab_comp,ts_oovv,a_tile,b_tile)
 
-       else
-
-          counter = counter - nodtotal
-
-       endif
-
-       call get_tileinfo_nels_fromarr8(nelms,vovv,i8*a_tile)
-       tile_size_tmp_a = int(nelms/(nocc*nvirt**2))
-
-       !FIND a in buffer
-       call assoc_ptr_to_buf(a_tile,vovv,3*nbuffs,tiles_in_buf_vovv,needed_vovv,&
-                            & vovv_pdm_a,vovv_pdm_buff,a_buf_vovv,req_vovv)
-       call assoc_ptr_to_buf(a_tile,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
-                            & ccsd_pdm_a,ccsd_pdm_buff,a_buf_ccsd,req_ccsd)
-
-       call time_start_phase(PHASE_COMM)
-
-       if( alloc_in_dummy )then
-
-          call lsmpi_wait(req_vovv(a_buf_vovv))
-          call lsmpi_wait(req_ccsd(a_buf_ccsd))
-
-       else
-
-          if(vovv%lock_set(a_tile)) call tensor_unlock_win(vovv,a_tile)
-          if(ccsd_doubles%lock_set(a_tile)) call tensor_unlock_win(ccsd_doubles,a_tile)
-
-       endif
-
-       needed_vovv(a_buf_vovv) = .true.
-       needed_ccsd(a_buf_ccsd) = .true.
-
-       call time_start_phase(PHASE_WORK)
-
-!!$acc enter data copyin(ptr_pdm_a) async(async_id(2))
-!$acc enter data copyin(vovv_pdm_a) async(async_id(2))
-
-       do b_tile = 1,a_tile
-
+          a_pos = (a_tile-1)*tile_size+1
           b_pos = (b_tile-1)*tile_size+1
 
-          call get_tileinfo_nels_fromarr8(nelms,vovv,i8*b_tile) 
+          call get_tileinfo_nels_fromarr8(nelms,vovv,i8*a_tile)
+          tile_size_tmp_a = int(nelms/(nocc*nvirt**2))
+          call get_tileinfo_nels_fromarr8(nelms,vovv,i8*b_tile)
           tile_size_tmp_b = int(nelms/(nocc*nvirt**2))
 
-          !FIND b in buffer
+          !FIND a and b in buffer
+          call assoc_ptr_to_buf(a_tile,vovv,3*nbuffs,tiles_in_buf_vovv,needed_vovv,&
+                               & vovv_pdm_a,vovv_pdm_buff,a_buf_vovv,req_vovv)
           call assoc_ptr_to_buf(b_tile,vovv,3*nbuffs,tiles_in_buf_vovv,needed_vovv,&
                                & vovv_pdm_b,vovv_pdm_buff,b_buf_vovv,req_vovv)
+          call assoc_ptr_to_buf(a_tile,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+                               & ccsd_pdm_a,ccsd_pdm_buff,a_buf_ccsd,req_ccsd)
           call assoc_ptr_to_buf(b_tile,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
                                & ccsd_pdm_b,ccsd_pdm_buff,b_buf_ccsd,req_ccsd)
-
+   
           !FIND ab and ba in buffer
           ab = (b_tile-1)*ts_oovv+a_tile; ba = (a_tile-1)*ts_oovv+b_tile
           call assoc_ptr_to_buf(ab,oovv,6*nbuffs,tiles_in_buf_oovv,needed_oovv,&
                             & oovv_pdm_ab,oovv_pdm_buff,abbuf,req_oovv)
           call assoc_ptr_to_buf(ba,oovv,6*nbuffs,tiles_in_buf_oovv,needed_oovv,&
                             & oovv_pdm_ba,oovv_pdm_buff,babuf,req_oovv)
-
+   
           call time_start_phase(PHASE_COMM)
    
           if( alloc_in_dummy )then
    
+             call lsmpi_wait(req_vovv(a_buf_vovv))
              call lsmpi_wait(req_vovv(b_buf_vovv))
-             call lsmpi_wait(req_ccsd(b_buf_ccsd))  
+             call lsmpi_wait(req_ccsd(a_buf_ccsd))
+             call lsmpi_wait(req_ccsd(b_buf_ccsd))
              call lsmpi_wait(req_oovv(abbuf))
-             call lsmpi_wait(req_oovv(babuf)) 
-
+             call lsmpi_wait(req_oovv(babuf))
+   
           else
    
+             if(vovv%lock_set(a_tile)) call tensor_unlock_win(vovv,a_tile)
              if(vovv%lock_set(b_tile)) call tensor_unlock_win(vovv,b_tile)
+             if(ccsd_doubles%lock_set(a_tile)) call tensor_unlock_win(ccsd_doubles,a_tile)
              if(ccsd_doubles%lock_set(b_tile)) call tensor_unlock_win(ccsd_doubles,b_tile)
              if(oovv%lock_set(ab)) call tensor_unlock_win(oovv,ab)
              if(oovv%lock_set(ba)) call tensor_unlock_win(oovv,ba)
-
+   
           endif
-
-          needed_vovv(b_buf_vovv) = .true.
-          needed_ccsd(b_buf_ccsd) = .true.   
+   
+          needed_vovv(a_buf_vovv) = .true.; needed_vovv(b_buf_vovv) = .true.
+          needed_ccsd(a_buf_ccsd) = .true.; needed_ccsd(b_buf_ccsd) = .true.
           needed_oovv(abbuf) = .true.; needed_oovv(babuf) = .true.
-
+        
           call time_start_phase(PHASE_WORK)
 
-!!$acc enter data copyin(ptr_pdm_b) async(async_id(2))
+!!$acc enter data copyin(ptr_pdm_a) async(async_id(2))
+!$acc enter data copyin(vovv_pdm_a) async(async_id(2))
 !$acc enter data copyin(vovv_pdm_b) async(async_id(2)) if(b_tile .ne. a_tile) 
 
           do c_tile = 1,b_tile
@@ -3208,10 +3217,15 @@ contains
 !$acc enter data copyin(vovv_pdm_c) async(async_id(2)) if(c_tile .ne. b_tile)
 
              call time_start_phase(PHASE_WORK, twall = time_preload )
-             call preload_tiles_in_bg_buf_abc(vovv,a_tile,b_tile,c_tile,3*nbuffs,needed_vovv,&
-                                             & tiles_in_buf_vovv,vovv_pdm_buff,req_vovv)
-             call preload_tiles_in_bg_buf_abc(ccsd_doubles,a_tile,b_tile,c_tile,3*nbuffs,needed_ccsd,&
-                                             & tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd)
+             call preload_tiles_in_bg_buf(vovv,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,3*nbuffs,&
+                                         & needed_vovv,tiles_in_buf_vovv,vovv_pdm_buff,req_vovv,&
+                                         & .false.,tile_size,ts_oovv)
+             call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,3*nbuffs,&
+                                         & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd,&
+                                         & .false.,tile_size,ts_oovv)
+             call preload_tiles_in_bg_buf(oovv,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,3*nbuffs,&
+                                         & needed_oovv,tiles_in_buf_oovv,oovv_pdm_buff,req_oovv,&
+                                         & .false.,tile_size,ts_oovv,vovo_array=.true.)
              call time_start_phase(PHASE_WORK, ttot = time_preload )
              time_preload_tot = time_preload_tot + time_preload
 
@@ -3404,14 +3418,14 @@ contains
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
             
-                            call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ca,vovv,&
+                            call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv,vovv,&
                                                  & ooov(:,:,:,a),ooov(:,:,:,c),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,c),&
                                                  & ccsdpt_doubles(:,:,a,a),ccsdpt_doubles(:,:,a,c),&
                                                  & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles_2(:,:,:,a),&
                                                  & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & a_count,c_count,tile_size_tmp_a,tile_size_tmp_c,&
-                                                 & vovv_pdm_a,vovv_pdm_c)
+                                                 & vovv_pdm_a,vovv_pdm_c,oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ca)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
                             time_driv_tot = time_driv_tot + time_driv
 
@@ -3468,14 +3482,14 @@ contains
             
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
             
-                            call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_bc,vovv,&
+                            call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv,vovv,&
                                                  & ooov(:,:,:,a),ooov(:,:,:,b),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,b),&
                                                  & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
                                                  & ccsdpt_doubles(:,:,b,b),ccsdpt_doubles_2(:,:,:,a),&
                                                  & ccsdpt_doubles_2(:,:,:,b),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & a_count,b_count,tile_size_tmp_a,tile_size_tmp_b,&
-                                                 & vovv_pdm_a,vovv_pdm_b)
+                                                 & vovv_pdm_a,vovv_pdm_b,oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_bc)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
                             time_driv_tot = time_driv_tot + time_driv
 
@@ -3537,10 +3551,8 @@ contains
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))            
             
-                            call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,&
-                                                 & oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ba,&
-                                                 & oovv_pdm_bc,oovv_pdm_ca,oovv_pdm_cb,&
-                                                 & vovv,ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
+                            call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,oovv,vovv,&
+                                                 & ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
                                                  & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,a,c),&
                                                  & ccsdpt_doubles(:,:,b,a),ccsdpt_doubles(:,:,b,c),&
@@ -3548,7 +3560,9 @@ contains
                                                  & ccsdpt_doubles_2(:,:,:,a),ccsdpt_doubles_2(:,:,:,b),&
                                                  & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & a_count,b_count,c_count,tile_size_tmp_a,tile_size_tmp_b,tile_size_tmp_c,&
-                                                 & vovv_pdm_a,vovv_pdm_b,vovv_pdm_c)
+                                                 & vovv_pdm_a,vovv_pdm_b,vovv_pdm_c,&
+                                                 & oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ba,&
+                                                 & oovv_pdm_bc,oovv_pdm_ca,oovv_pdm_cb)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
                             time_driv_tot = time_driv_tot + time_driv
 
@@ -3658,19 +3672,14 @@ contains
 !!$acc exit data delete(ptr_pdm_b) async(async_id(2))
 !$acc exit data delete(vovv_pdm_b) async(async_id(2))
 
-       needed_vovv(b_buf_vovv) = .false.
-       needed_ccsd(b_buf_ccsd) = .false.
+       needed_vovv(a_buf_vovv) = .false.; needed_vovv(b_buf_vovv) = .false.
+       needed_ccsd(a_buf_ccsd) = .false.; needed_ccsd(b_buf_ccsd) = .false.
        needed_oovv(abbuf) = .false.; needed_oovv(babuf) = .false.
-
-       end do ! end b_tile loop
 
 !!$acc exit data delete(ptr_pdm_a) async(async_id(2))
 !$acc exit data delete(vovv_pdm_a) async(async_id(2))
 
-    needed_vovv(a_buf_vovv) = .false.
-    needed_ccsd(a_buf_ccsd) = .false.
-
-    end do ! end a_tile loop
+       enddo abrun_par
 
     call time_start_phase(PHASE_WORK)
 
@@ -3721,6 +3730,7 @@ contains
     call mem_dealloc(tiles_in_buf_vovv)
     call mem_dealloc(tiles_in_buf_ccsd)
     call mem_dealloc(tiles_in_buf_oovv)
+    call mem_dealloc(jobs)
 
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
@@ -4237,7 +4247,7 @@ contains
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-                   call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv%elm4(:,:,a,a),oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),vovv,&
+                   call ccsdpt_driver_abc_case1(a,c,nocc,nvirt,oovv,vovv,&
                                         & ooov(:,:,:,a),ooov(:,:,:,c),&
                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,c),&
                                         & ccsdpt_doubles(:,:,a,a),ccsdpt_doubles(:,:,a,c),&
@@ -4289,7 +4299,7 @@ contains
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-                   call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv%elm4(:,:,a,b),oovv%elm4(:,:,b,a),oovv%elm4(:,:,b,b),vovv,&
+                   call ccsdpt_driver_abc_case2(a,b,nocc,nvirt,oovv,vovv,&
                                         & ooov(:,:,:,a),ooov(:,:,:,b),&
                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,b),&
                                         & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
@@ -4345,8 +4355,7 @@ contains
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-                   call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,oovv%elm4(:,:,a,b),oovv%elm4(:,:,a,c),oovv%elm4(:,:,b,a),&
-                                        & oovv%elm4(:,:,b,c),oovv%elm4(:,:,c,a),oovv%elm4(:,:,c,b),vovv,&
+                   call ccsdpt_driver_abc_case3(a,b,c,nocc,nvirt,oovv,vovv,&
                                         & ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
                                         & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,a,c),&
@@ -4685,6 +4694,12 @@ contains
     real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
     !> ddot
     real(realk), external :: ddot
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(5)
 
@@ -4732,17 +4747,17 @@ contains
     e4_tmp = 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v1,v1,v3,nv,no,oovv_tile_12(:,:,a,a),oovv_tile_12(:,:,a,a),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v1,v1,v3,nv,no,oovv%elm4(:,:,a,a),oovv%elm4(:,:,a,a),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v1,v1,v3,nv,no,oovv_tile_12(:,:,a,a),oovv_tile_12(:,:,a,a),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v1,v1,v3,nv,no,oovv%elm4(:,:,a,a),oovv%elm4(:,:,a,a),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl,handle)
@@ -4814,17 +4829,17 @@ contains
     e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv_tile_12(:,:,a,a),oovv_tile_12(:,:,a,a),&
-                 & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
-                 & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv%elm4(:,:,a,a),oovv%elm4(:,:,a,a),&
-                 & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),&
-                 & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv_tile_12(:,:,a,a),oovv_tile_12(:,:,a,a),&
+                    & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
+                    & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv%elm4(:,:,a,a),oovv%elm4(:,:,a,a),&
+                    & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),&
+                    & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
+    endif
 
 #ifndef VAR_OPENACC
     e4 = e4 + e4_tmp
@@ -5037,6 +5052,12 @@ contains
     real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
     !> ddot
     real(realk), external :: ddot
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(5)
 
@@ -5084,17 +5105,17 @@ contains
     e4_tmp = 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv_tile_23(:,:,b,b),oovv_tile_23(:,:,b,b),&
-                 & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v1,v2,v2,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
-                 & ccsdpt_singles_2,trip_ampl,.true.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv%elm4(:,:,b,b),oovv%elm4(:,:,b,b),&
-                 & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v1,v2,v2,nv,no,oovv%elm4(:,:,b,a),oovv%elm4(:,:,a,b),&
-                 & ccsdpt_singles_2,trip_ampl,.true.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv_tile_23(:,:,b,b),oovv_tile_23(:,:,b,b),&
+                    & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v1,v2,v2,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
+                    & ccsdpt_singles_2,trip_ampl,.true.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv%elm4(:,:,b,b),oovv%elm4(:,:,b,b),&
+                    & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v1,v2,v2,nv,no,oovv%elm4(:,:,b,a),oovv%elm4(:,:,a,b),&
+                    & ccsdpt_singles_2,trip_ampl,.true.,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl,handle)
@@ -5131,17 +5152,17 @@ contains
     e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v2,v2,v1,nv,no,oovv_tile_23(:,:,b,b),oovv_tile_23(:,:,b,b),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv%elm4(:,:,b,a),oovv%elm4(:,:,a,b),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v2,v2,v1,nv,no,oovv%elm4(:,:,b,b),oovv%elm4(:,:,b,b),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v2,v2,v1,nv,no,oovv_tile_23(:,:,b,b),oovv_tile_23(:,:,b,b),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv%elm4(:,:,b,a),oovv%elm4(:,:,a,b),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v2,v2,v1,nv,no,oovv%elm4(:,:,b,b),oovv%elm4(:,:,b,b),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -5519,6 +5540,12 @@ contains
     real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
     !> ddot
     real(realk), external :: ddot
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(5)
 
@@ -5566,17 +5593,17 @@ contains
     e4_tmp = 4.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv_tile_23(:,:,b,c),oovv_tile_32(:,:,c,b),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v1,v2,v3,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv%elm4(:,:,b,c),oovv%elm4(:,:,c,b),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v1,v2,v3,nv,no,oovv%elm4(:,:,b,a),oovv%elm4(:,:,a,b),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv_tile_23(:,:,b,c),oovv_tile_32(:,:,c,b),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v1,v2,v3,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv%elm4(:,:,b,c),oovv%elm4(:,:,c,b),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v1,v2,v3,nv,no,oovv%elm4(:,:,b,a),oovv%elm4(:,:,a,b),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[2,3,1],0.0E0_realk,trip_ampl,handle)
@@ -5613,17 +5640,17 @@ contains
     e4_tmp = e4_tmp + ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv_tile_31(:,:,c,a),oovv_tile_13(:,:,a,c),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v2,v3,v1,nv,no,oovv_tile_32(:,:,c,b),oovv_tile_23(:,:,b,c),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv%elm4(:,:,c,a),oovv%elm4(:,:,a,c),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v2,v3,v1,nv,no,oovv%elm4(:,:,c,b),oovv%elm4(:,:,b,c),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv_tile_31(:,:,c,a),oovv_tile_13(:,:,a,c),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v2,v3,v1,nv,no,oovv_tile_32(:,:,c,b),oovv_tile_23(:,:,b,c),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv%elm4(:,:,c,a),oovv%elm4(:,:,a,c),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v2,v3,v1,nv,no,oovv%elm4(:,:,c,b),oovv%elm4(:,:,b,c),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -5660,17 +5687,17 @@ contains
     e4_tmp = e4_tmp + ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v3,v1,v2,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv%elm4(:,:,a,b),oovv%elm4(:,:,b,a),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v3,v1,v2,nv,no,oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v3,v1,v2,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv%elm4(:,:,a,b),oovv%elm4(:,:,b,a),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v3,v1,v2,nv,no,oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,2,1],0.0E0_realk,trip_ampl,handle)
@@ -5707,17 +5734,17 @@ contains
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v3,v2,v1,nv,no,oovv_tile_23(:,:,b,c),oovv_tile_32(:,:,c,b),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv%elm4(:,:,b,a),oovv%elm4(:,:,a,b),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v3,v2,v1,nv,no,oovv%elm4(:,:,b,c),oovv%elm4(:,:,c,b),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v3,v2,v1,nv,no,oovv_tile_23(:,:,b,c),oovv_tile_32(:,:,c,b),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv%elm4(:,:,b,a),oovv%elm4(:,:,a,b),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v3,v2,v1,nv,no,oovv%elm4(:,:,b,c),oovv%elm4(:,:,c,b),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[1,3,2],0.0E0_realk,trip_ampl,handle)
@@ -5754,17 +5781,17 @@ contains
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv_tile_32(:,:,c,b),oovv_tile_23(:,:,b,c),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v1,v3,v2,nv,no,oovv_tile_31(:,:,c,a),oovv_tile_13(:,:,a,c),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv%elm4(:,:,c,b),oovv%elm4(:,:,b,c),&
-                 & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v1,v3,v2,nv,no,oovv%elm4(:,:,c,a),oovv%elm4(:,:,a,c),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv_tile_32(:,:,c,b),oovv_tile_23(:,:,b,c),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v1,v3,v2,nv,no,oovv_tile_31(:,:,c,a),oovv_tile_13(:,:,a,c),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv%elm4(:,:,c,b),oovv%elm4(:,:,b,c),&
+                    & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v1,v3,v2,nv,no,oovv%elm4(:,:,c,a),oovv%elm4(:,:,a,c),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[2,1,3],0.0E0_realk,trip_ampl,handle)
@@ -5801,17 +5828,17 @@ contains
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_MPI
-    call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-#else
-    call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),&
-                 & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
-    call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv%elm4(:,:,a,b),oovv%elm4(:,:,b,a),&
-                 & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-#endif
+    if (par) then
+       call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+    else
+       call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv%elm4(:,:,a,c),oovv%elm4(:,:,c,a),&
+                    & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
+       call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv%elm4(:,:,a,b),oovv%elm4(:,:,b,a),&
+                    & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+    endif
 
 #ifndef VAR_OPENACC
     e4 = e4 + 2.0E0_realk * e4_tmp
@@ -5922,6 +5949,60 @@ contains
     end do
 
   end subroutine create_ij_tensor_ccsdpt
+
+
+  !> \brief: create ab_array for ccsd(t)
+  !> \author: Janus Juul Eriksen
+  !> \date: april 2015
+  subroutine create_ab_tensor_ccsdpt(njobs,ts,ab_array)
+
+    implicit none
+
+    !> njobs and nocc
+    integer, intent(in) :: njobs,ts
+    !> ij_array
+    integer, dimension(njobs), intent(inout) :: ab_array
+    !> integers
+    integer :: counter,offset,fill_1,fill_2
+
+    ! for explanation, cf. create_ij_tensor_ccsdpt
+
+    counter = 1
+
+    do fill_1 = 0,ts-1
+
+       ! zero the offset
+       offset = 0
+
+       if (fill_1 .eq. 0) then
+
+          ab_array(counter) = njobs
+          counter = counter + 1
+
+       else
+
+          do fill_2 = 0,fill_1
+
+             if (fill_2 .eq. 0) then
+
+                ab_array(counter) = njobs - fill_1
+                counter = counter + 1
+
+             else
+
+                offset = offset + (ts - fill_2)
+                ab_array(counter) = njobs - fill_1 - offset
+                counter = counter + 1
+
+             end if
+
+          end do
+
+       end if
+
+    end do
+
+  end subroutine create_ab_tensor_ccsdpt
 
 
   !> \brief: make job distribution list for ccsd(t)
@@ -6114,6 +6195,12 @@ contains
     integer :: async_idx(num_idxs), handle
 #endif
     type(c_ptr) :: cublas_handle
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(4)
 
@@ -6122,17 +6209,17 @@ contains
 #endif
 
     ! aac,aca
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_1(:,:,vindex1,a),&
-                            & ooov_tile_3,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_3(:,:,vindex1,c),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex1,vindex1,vindex3,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex1),&
-                            & ooov_tile_3,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_portions_1,&
-                            & vovv%elm4(:,:,vindex1,vindex3),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_1(:,:,vindex1,a),&
+                               & ooov_tile_3,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_portions_1,&
+                               & vovv_tile_3(:,:,vindex1,c),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex1,vindex1,vindex3,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex1),&
+                               & ooov_tile_3,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_portions_1,&
+                               & vovv%elm4(:,:,vindex1,vindex3),trip_tmp,handle,cublas_handle)
+    endif
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
@@ -6151,17 +6238,17 @@ contains
 #endif
 
     ! caa,aac
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_3(:,:,vindex1,c),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_1(:,:,vindex3,a),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex3,vindex1,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex3),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_portions_1,&
-                            & vovv%elm4(:,:,vindex3,vindex1),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_3(:,:,vindex1,c),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_portions_1,&
+                               & vovv_tile_1(:,:,vindex3,a),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex3,vindex1,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex3),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex1,vindex3,no,nv,ccsd_doubles_portions_1,&
+                               & vovv%elm4(:,:,vindex3,vindex1),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6176,17 +6263,17 @@ contains
 #endif
 
     ! aca.caa
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_1(:,:,vindex3,a),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_portions_3,&
-                            & vovv_tile_1(:,:,vindex1,a),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex1,vindex3,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex3,vindex1),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_portions_3,&
-                            & vovv%elm4(:,:,vindex1,vindex1),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex1,vindex3,vindex1,no,nv,ccsd_doubles_1(:,:,vindex3,a),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_portions_3,&
+                               & vovv_tile_1(:,:,vindex1,a),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex1,vindex3,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex3,vindex1),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex3,vindex1,vindex1,no,nv,ccsd_doubles_portions_3,&
+                               & vovv%elm4(:,:,vindex1,vindex1),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6344,6 +6431,12 @@ contains
     integer :: async_idx(num_idxs), handle
 #endif
     type(c_ptr) :: cublas_handle
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(4)
 
@@ -6352,17 +6445,17 @@ contains
 #endif
 
     ! abb.bba
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_1(:,:,vindex2,a),&
-                            & ooov_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_portions_2,&
-                            & vovv_tile_2(:,:,vindex1,b),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex1,vindex2,vindex2,no,nv,ccsd_doubles%elm4(:,:,vindex2,vindex1),&
-                            & ooov_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_portions_2,&
-                            & vovv%elm4(:,:,vindex1,vindex2),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_1(:,:,vindex2,a),&
+                               & ooov_tile_2,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_portions_2,&
+                               & vovv_tile_2(:,:,vindex1,b),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex1,vindex2,vindex2,no,nv,ccsd_doubles%elm4(:,:,vindex2,vindex1),&
+                               & ooov_tile_2,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_portions_2,&
+                               & vovv%elm4(:,:,vindex1,vindex2),trip_tmp,handle,cublas_handle)
+    endif
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
@@ -6381,17 +6474,17 @@ contains
 #endif
 
     ! bab,abb
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_2(:,:,vindex1,b),&
-                            & ooov_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_2(:,:,vindex2,b),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex2,vindex1,vindex2,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex2),&
-                            & ooov_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_portions_1,&
-                            & vovv%elm4(:,:,vindex2,vindex2),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_2(:,:,vindex1,b),&
+                               & ooov_tile_2,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_portions_1,&
+                               & vovv_tile_2(:,:,vindex2,b),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex2,vindex1,vindex2,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex2),&
+                               & ooov_tile_2,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex2,vindex2,no,nv,ccsd_doubles_portions_1,&
+                               & vovv%elm4(:,:,vindex2,vindex2),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6406,17 +6499,17 @@ contains
 #endif
 
     ! bba,bab
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_2(:,:,vindex2,b),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_portions_2,&
-                            & vovv_tile_1(:,:,vindex2,a),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex2,vindex2,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex2,vindex2),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_portions_2,&
-                            & vovv%elm4(:,:,vindex2,vindex1),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex2,vindex2,vindex1,no,nv,ccsd_doubles_2(:,:,vindex2,b),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_portions_2,&
+                               & vovv_tile_1(:,:,vindex2,a),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex2,vindex2,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex2,vindex2),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex2,vindex1,vindex2,no,nv,ccsd_doubles_portions_2,&
+                               & vovv%elm4(:,:,vindex2,vindex1),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6597,6 +6690,12 @@ contains
     integer :: async_idx(num_idxs), handle
 #endif
     type(c_ptr) :: cublas_handle
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(4)
 
@@ -6605,30 +6704,30 @@ contains
 #endif
 
     ! abc.bca
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_1(:,:,vindex2,a),&
-                            & ooov_tile_3,trip_ampl,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex2,vindex3,vindex1,no,nv,ccsd_doubles_portions_2,&
-                            & vovv_tile_3(:,:,vindex1,c),trip_ampl,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex1,vindex2,vindex3,no,nv,ccsd_doubles%elm4(:,:,vindex2,vindex1),&
-                            & ooov_tile_3,trip_ampl,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex2,vindex3,vindex1,no,nv,ccsd_doubles_portions_2,&
-                            & vovv%elm4(:,:,vindex1,vindex3),trip_ampl,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_1(:,:,vindex2,a),&
+                               & ooov_tile_3,trip_ampl,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex2,vindex3,vindex1,no,nv,ccsd_doubles_portions_2,&
+                               & vovv_tile_3(:,:,vindex1,c),trip_ampl,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex1,vindex2,vindex3,no,nv,ccsd_doubles%elm4(:,:,vindex2,vindex1),&
+                               & ooov_tile_3,trip_ampl,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex2,vindex3,vindex1,no,nv,ccsd_doubles_portions_2,&
+                               & vovv%elm4(:,:,vindex1,vindex3),trip_ampl,handle,cublas_handle)
+    endif
 
     ! cab,abc
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_3(:,:,vindex1,c),&
-                            & ooov_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_2(:,:,vindex3,b),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex3,vindex1,vindex2,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex3),&
-                            & ooov_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_portions_1,&
-                            & vovv%elm4(:,:,vindex3,vindex2),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_3(:,:,vindex1,c),&
+                               & ooov_tile_2,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_portions_1,&
+                               & vovv_tile_2(:,:,vindex3,b),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex3,vindex1,vindex2,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex3),&
+                               & ooov_tile_2,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,ccsd_doubles_portions_1,&
+                               & vovv%elm4(:,:,vindex3,vindex2),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6639,17 +6738,17 @@ contains
 #endif
 
     ! bca,cab
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex2,vindex3,vindex1,no,nv,ccsd_doubles_2(:,:,vindex3,b),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_portions_3,&
-                            & vovv_tile_1(:,:,vindex2,a),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex2,vindex3,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex3,vindex2),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_portions_3,&
-                            & vovv%elm4(:,:,vindex2,vindex1),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex2,vindex3,vindex1,no,nv,ccsd_doubles_2(:,:,vindex3,b),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_portions_3,&
+                               & vovv_tile_1(:,:,vindex2,a),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex2,vindex3,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex3,vindex2),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex3,vindex1,vindex2,no,nv,ccsd_doubles_portions_3,&
+                               & vovv%elm4(:,:,vindex2,vindex1),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6660,17 +6759,17 @@ contains
 #endif
 
     ! acb,cba
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_1(:,:,vindex3,a),&
-                            & ooov_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_portions_3,&
-                            & vovv_tile_2(:,:,vindex1,b),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex1,vindex3,vindex2,no,nv,ccsd_doubles%elm4(:,:,vindex3,vindex1),&
-                            & ooov_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_portions_3,&
-                            & vovv%elm4(:,:,vindex1,vindex2),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_1(:,:,vindex3,a),&
+                               & ooov_tile_2,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_portions_3,&
+                               & vovv_tile_2(:,:,vindex1,b),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex1,vindex3,vindex2,no,nv,ccsd_doubles%elm4(:,:,vindex3,vindex1),&
+                               & ooov_tile_2,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_portions_3,&
+                               & vovv%elm4(:,:,vindex1,vindex2),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6681,17 +6780,17 @@ contains
 #endif
 
     ! bac,acb
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_2(:,:,vindex1,b),&
-                            & ooov_tile_3,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_portions_1,&
-                            & vovv_tile_3(:,:,vindex2,c),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex2,vindex1,vindex3,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex2),&
-                            & ooov_tile_3,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_portions_1,&
-                            & vovv%elm4(:,:,vindex2,vindex3),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_2(:,:,vindex1,b),&
+                               & ooov_tile_3,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_portions_1,&
+                               & vovv_tile_3(:,:,vindex2,c),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex2,vindex1,vindex3,no,nv,ccsd_doubles%elm4(:,:,vindex1,vindex2),&
+                               & ooov_tile_3,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex1,vindex3,vindex2,no,nv,ccsd_doubles_portions_1,&
+                               & vovv%elm4(:,:,vindex2,vindex3),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6702,17 +6801,17 @@ contains
 #endif
 
     ! cba,bac
-#ifdef VAR_MPI
-    call trip_amplitudes_abc_occ(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_3(:,:,vindex2,c),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_portions_2,&
-                            & vovv_tile_1(:,:,vindex3,a),trip_tmp,handle,cublas_handle)
-#else
-    call trip_amplitudes_abc_occ(vindex3,vindex2,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex2,vindex3),&
-                            & ooov_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_abc_virt(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_portions_2,&
-                            & vovv%elm4(:,:,vindex3,vindex1),trip_tmp,handle,cublas_handle)
-#endif
+    if (par) then
+       call trip_amplitudes_abc_occ(vindex3,vindex2,vindex1,no,nv,ccsd_doubles_3(:,:,vindex2,c),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_portions_2,&
+                               & vovv_tile_1(:,:,vindex3,a),trip_tmp,handle,cublas_handle)
+    else
+       call trip_amplitudes_abc_occ(vindex3,vindex2,vindex1,no,nv,ccsd_doubles%elm4(:,:,vindex2,vindex3),&
+                               & ooov_tile_1,trip_tmp,handle,cublas_handle)
+       call trip_amplitudes_abc_virt(vindex2,vindex1,vindex3,no,nv,ccsd_doubles_portions_2,&
+                               & vovv%elm4(:,:,vindex3,vindex1),trip_tmp,handle,cublas_handle)
+    endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,&
@@ -6883,12 +6982,12 @@ contains
   !> \brief: driver routine for contractions in case(1) of ccsdpt_driver
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
-  subroutine ccsdpt_driver_abc_case1(vindex1,vindex3,no,nv,oovv_tile_12,oovv_tile_13,oovv_tile_31,vovv,&
+  subroutine ccsdpt_driver_abc_case1(vindex1,vindex3,no,nv,oovv,vovv,&
                             & ooov_tile_v1,ooov_tile_v3,&
                             & ccsdpt_singles_1,ccsdpt_singles_3,&
                             & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31,&
                             & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
-                            & a,c,tile_size_a,tile_size_c,vovv_tile_1,vovv_tile_3)
+                            & a,c,tile_size_a,tile_size_c,vovv_tile_1,vovv_tile_3,oovv_tile_12,oovv_tile_13,oovv_tile_31)
 
     implicit none
 
@@ -6904,8 +7003,12 @@ contains
     !> tiles of vovv integrals
     real(realk), dimension(nv,no,nv,tile_size_a), intent(inout), optional :: vovv_tile_1
     real(realk), dimension(nv,no,nv,tile_size_c), intent(inout), optional :: vovv_tile_3 
+    !> oovv integrals
+    type(tensor), intent(inout)  :: oovv
     !> tiles of oovv integrals
-    real(realk), dimension(no,no) :: oovv_tile_12, oovv_tile_13, oovv_tile_31
+    real(realk), dimension(no,no,tile_size_a,tile_size_a), intent(inout), optional :: oovv_tile_12
+    real(realk), dimension(no,no,tile_size_a,tile_size_c), intent(inout), optional :: oovv_tile_13
+    real(realk), dimension(no,no,tile_size_c,tile_size_a), intent(inout), optional :: oovv_tile_31
     !> tiles of ooov 2-el integrals determined by incomming vindex1,vindex3
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v1
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v3
@@ -6924,6 +7027,12 @@ contains
     integer :: async_idx(num_idxs), handle
 #endif
     type(c_ptr) :: cublas_handle
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(5)
 
@@ -6945,22 +7054,33 @@ contains
 
           ! calculate contribution to ccsdpt_singles:
 
-          call ccsdpt_contract_abc_11(vindex1,vindex1,vindex3,nv,no,oovv_tile_13,oovv_tile_31,&
-                       & ccsdpt_singles_1,&
-                       & trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex1,vindex1,vindex3,nv,no,oovv_tile_12,oovv_tile_12,&
-                       & ccsdpt_singles_3,&
-                       & trip,.false.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex1,vindex1,vindex3,nv,no,&
+                          & oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
+                          & ccsdpt_singles_1,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex1,vindex1,vindex3,nv,no,&
+                          & oovv_tile_12(:,:,a,a),oovv_tile_12(:,:,a,a),&
+                          & ccsdpt_singles_3,trip,.false.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex1,vindex1,vindex3,nv,no,&
+                          & oovv%elm4(:,:,vindex1,vindex3),oovv%elm4(:,:,vindex3,vindex1),&
+                          & ccsdpt_singles_1,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex1,vindex1,vindex3,nv,no,&
+                          & oovv%elm4(:,:,vindex1,vindex1),oovv%elm4(:,:,vindex1,vindex1),&
+                          & ccsdpt_singles_3,trip,.false.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex1,vindex3,vindex1,no,nv,vovv_tile_1(:,:,vindex3,a),vovv_tile_3(:,:,vindex1,c),&
-                           & ccsdpt_doubles_2_1,trip,.true.,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex1,vindex3,vindex1,no,nv,vovv%elm4(:,:,vindex3,vindex1),vovv%elm4(:,:,vindex1,vindex3),&
-                           & ccsdpt_doubles_2_1,trip,.true.,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex1,vindex3,vindex1,no,nv,&
+                              & vovv_tile_1(:,:,vindex3,a),vovv_tile_3(:,:,vindex1,c),&
+                              & ccsdpt_doubles_2_1,trip,.true.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex1,vindex3,vindex1,no,nv,&
+                              & vovv%elm4(:,:,vindex3,vindex1),vovv%elm4(:,:,vindex1,vindex3),&
+                              & ccsdpt_doubles_2_1,trip,.true.,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -6990,17 +7110,19 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex3,vindex1,vindex1,no,nv,vovv_tile_1(:,:,vindex1,a),vovv_tile_1(:,:,vindex1,a),&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex3,vindex1,vindex1,no,nv,vovv_tile_1(:,:,vindex3,a),&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex3,vindex1,vindex1,no,nv,vovv%elm4(:,:,vindex1,vindex1),vovv%elm4(:,:,vindex1,vindex1),&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex3,vindex1,vindex1,no,nv,vovv%elm4(:,:,vindex3,vindex1),&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex3,vindex1,vindex1,no,nv,&
+                              & vovv_tile_1(:,:,vindex1,a),vovv_tile_1(:,:,vindex1,a),&
+                              & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex3,vindex1,vindex1,no,nv,vovv_tile_1(:,:,vindex3,a),&
+                              & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex3,vindex1,vindex1,no,nv,&
+                              & vovv%elm4(:,:,vindex1,vindex1),vovv%elm4(:,:,vindex1,vindex1),&
+                              & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex3,vindex1,vindex1,no,nv,vovv%elm4(:,:,vindex3,vindex1),&
+                              & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7024,26 +7146,37 @@ contains
                            & no,[2,3,1],0.0E0_realk,trip)
 #endif
 
-          call ccsdpt_contract_abc_11(vindex3,vindex1,vindex1,nv,no,oovv_tile_12,oovv_tile_12,&
-                       & ccsdpt_singles_3,&
-                       & trip,.true.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex3,vindex1,vindex1,nv,no,oovv_tile_13,oovv_tile_31,&
-                       & ccsdpt_singles_1,&
-                       & trip,.true.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex3,vindex1,vindex1,nv,no,&
+                          & oovv_tile_12(:,:,a,a),oovv_tile_12(:,:,a,a),&
+                          & ccsdpt_singles_3,trip,.true.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex3,vindex1,vindex1,nv,no,&
+                          & oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
+                          & ccsdpt_singles_1,trip,.true.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex3,vindex1,vindex1,nv,no,&
+                          & oovv%elm4(:,:,vindex1,vindex1),oovv%elm4(:,:,vindex1,vindex1),&
+                          & ccsdpt_singles_3,trip,.true.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex3,vindex1,vindex1,nv,no,&
+                          & oovv%elm4(:,:,vindex1,vindex3),oovv%elm4(:,:,vindex3,vindex1),&
+                          & ccsdpt_singles_1,trip,.true.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex1,vindex1,vindex3,no,nv,vovv_tile_3(:,:,vindex1,c),vovv_tile_1(:,:,vindex3,a),&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex1,vindex1,vindex3,no,nv,vovv_tile_1(:,:,vindex1,a),&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex1,vindex1,vindex3,no,nv,vovv%elm4(:,:,vindex1,vindex3),vovv%elm4(:,:,vindex3,vindex1),&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex1,vindex1,vindex3,no,nv,vovv%elm4(:,:,vindex1,vindex1),&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex1,vindex1,vindex3,no,nv,&
+                              & vovv_tile_3(:,:,vindex1,c),vovv_tile_1(:,:,vindex3,a),&
+                              & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex1,vindex1,vindex3,no,nv,vovv_tile_1(:,:,vindex1,a),&
+                              & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex1,vindex1,vindex3,no,nv,&
+                              & vovv%elm4(:,:,vindex1,vindex3),vovv%elm4(:,:,vindex3,vindex1),&
+                              & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex1,vindex1,vindex3,no,nv,vovv%elm4(:,:,vindex1,vindex1),&
+                              & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7219,12 +7352,12 @@ contains
   !> \brief: driver routine for contractions in case(2) of ccsdpt_driver
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
-  subroutine ccsdpt_driver_abc_case2(vindex1,vindex2,no,nv,oovv_tile_12,oovv_tile_21,oovv_tile_23,vovv,&
+  subroutine ccsdpt_driver_abc_case2(vindex1,vindex2,no,nv,oovv,vovv,&
                             & ooov_tile_v1,ooov_tile_v2,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,&
                             & ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23,&
                             & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
-                            & a,b,tile_size_a,tile_size_b,vovv_tile_1,vovv_tile_2)
+                            & a,b,tile_size_a,tile_size_b,vovv_tile_1,vovv_tile_2,oovv_tile_12,oovv_tile_21,oovv_tile_23)
 
     implicit none
 
@@ -7240,8 +7373,12 @@ contains
     !> tiles of vovv integrals
     real(realk), dimension(nv,no,nv,tile_size_a), intent(inout), optional :: vovv_tile_1
     real(realk), dimension(nv,no,nv,tile_size_b), intent(inout), optional :: vovv_tile_2
+    !> oovv integrals
+    type(tensor), intent(inout)  :: oovv
     !> tiles of oovv integrals
-    real(realk), dimension(no,no) :: oovv_tile_12, oovv_tile_21, oovv_tile_23
+    real(realk), dimension(no,no,tile_size_a,tile_size_b), intent(inout), optional :: oovv_tile_12
+    real(realk), dimension(no,no,tile_size_b,tile_size_a), intent(inout), optional :: oovv_tile_21
+    real(realk), dimension(no,no,tile_size_b,tile_size_b), intent(inout), optional :: oovv_tile_23
     !> tiles of ooov 2-el integrals determined by incomming vindex1,vindex2
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v1
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v2
@@ -7260,6 +7397,12 @@ contains
     integer :: async_idx(num_idxs), handle
 #endif
     type(c_ptr) :: cublas_handle
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(5)
 
@@ -7282,26 +7425,37 @@ contains
   
           ! calculate contributions to ccsdpt_singles:
  
-          call ccsdpt_contract_abc_11(vindex1,vindex2,vindex2,nv,no,oovv_tile_23,oovv_tile_23,&
-                       & ccsdpt_singles_1,&
-                       & trip,.true.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex1,vindex2,vindex2,nv,no,oovv_tile_21,oovv_tile_12,&
-                       & ccsdpt_singles_2,&
-                       & trip,.true.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex1,vindex2,vindex2,nv,no,&
+                          & oovv_tile_23(:,:,b,b),oovv_tile_23(:,:,b,b),&
+                          & ccsdpt_singles_1,trip,.true.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex1,vindex2,vindex2,nv,no,&
+                          & oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
+                          & ccsdpt_singles_2,trip,.true.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex1,vindex2,vindex2,nv,no,&
+                          & oovv%elm4(:,:,vindex2,vindex2),oovv%elm4(:,:,vindex2,vindex2),&
+                          & ccsdpt_singles_1,trip,.true.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex1,vindex2,vindex2,nv,no,&
+                          & oovv%elm4(:,:,vindex2,vindex1),oovv%elm4(:,:,vindex1,vindex2),&
+                          & ccsdpt_singles_2,trip,.true.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex2,vindex2,vindex1,no,nv,vovv_tile_1(:,:,vindex2,a),vovv_tile_2(:,:,vindex1,b),&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex2,vindex2,vindex1,no,nv,vovv_tile_2(:,:,vindex2,b),&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex2,vindex2,vindex1,no,nv,vovv%elm4(:,:,vindex2,vindex1),vovv%elm4(:,:,vindex1,vindex2),&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex2,vindex2,vindex1,no,nv,vovv%elm4(:,:,vindex2,vindex2),&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex2,vindex2,vindex1,no,nv,&
+                              & vovv_tile_1(:,:,vindex2,a),vovv_tile_2(:,:,vindex1,b),&
+                              & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex2,vindex2,vindex1,no,nv,vovv_tile_2(:,:,vindex2,b),&
+                              & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex2,vindex2,vindex1,no,nv,&
+                              & vovv%elm4(:,:,vindex2,vindex1),vovv%elm4(:,:,vindex1,vindex2),&
+                              & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex2,vindex2,vindex1,no,nv,vovv%elm4(:,:,vindex2,vindex2),&
+                              & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7328,17 +7482,19 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex1,vindex2,vindex2,no,nv,vovv_tile_2(:,:,vindex2,b),vovv_tile_2(:,:,vindex2,b),&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex1,vindex2,vindex2,no,nv,vovv_tile_2(:,:,vindex1,b),&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex1,vindex2,vindex2,no,nv,vovv%elm4(:,:,vindex2,vindex2),vovv%elm4(:,:,vindex2,vindex2),&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex1,vindex2,vindex2,no,nv,vovv%elm4(:,:,vindex1,vindex2),&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex1,vindex2,vindex2,no,nv,&
+                              & vovv_tile_2(:,:,vindex2,b),vovv_tile_2(:,:,vindex2,b),&
+                              & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex1,vindex2,vindex2,no,nv,vovv_tile_2(:,:,vindex1,b),&
+                              & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex1,vindex2,vindex2,no,nv,&
+                              & vovv%elm4(:,:,vindex2,vindex2),vovv%elm4(:,:,vindex2,vindex2),&
+                              & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex1,vindex2,vindex2,no,nv,vovv%elm4(:,:,vindex1,vindex2),&
+                              & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7364,22 +7520,33 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
    
-          call ccsdpt_contract_abc_11(vindex2,vindex2,vindex1,nv,no,oovv_tile_21,oovv_tile_12,&
-                       & ccsdpt_singles_2,&
-                       & trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex2,vindex2,vindex1,nv,no,oovv_tile_23,oovv_tile_23,&
-                       & ccsdpt_singles_1,&
-                       & trip,.false.,handle,cublas_handle)
-   
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex2,vindex2,vindex1,nv,no,&
+                          & oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
+                          & ccsdpt_singles_2,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex2,vindex2,vindex1,nv,no,&
+                          & oovv_tile_23(:,:,b,b),oovv_tile_23(:,:,b,b),&
+                          & ccsdpt_singles_1,trip,.false.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex2,vindex2,vindex1,nv,no,&
+                          & oovv%elm4(:,:,vindex2,vindex1),oovv%elm4(:,:,vindex1,vindex2),&
+                          & ccsdpt_singles_2,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex2,vindex2,vindex1,nv,no,&
+                          & oovv%elm4(:,:,vindex2,vindex2),oovv%elm4(:,:,vindex2,vindex2),&
+                          & ccsdpt_singles_1,trip,.false.,handle,cublas_handle)
+          endif   
+
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex2,vindex1,vindex2,no,nv,vovv_tile_2(:,:,vindex1,b),vovv_tile_1(:,:,vindex2,a),&
-                           & ccsdpt_doubles_2_2,trip,.true.,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex2,vindex1,vindex2,no,nv,vovv%elm4(:,:,vindex1,vindex2),vovv%elm4(:,:,vindex2,vindex1),&
-                           & ccsdpt_doubles_2_2,trip,.true.,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex2,vindex1,vindex2,no,nv,&
+                              & vovv_tile_2(:,:,vindex1,b),vovv_tile_1(:,:,vindex2,a),&
+                              & ccsdpt_doubles_2_2,trip,.true.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex2,vindex1,vindex2,no,nv,&
+                              & vovv%elm4(:,:,vindex1,vindex2),vovv%elm4(:,:,vindex2,vindex1),&
+                              & ccsdpt_doubles_2_2,trip,.true.,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7693,9 +7860,7 @@ contains
   !> \brief: driver routine for contractions in case(3) of ccsdpt_driver
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
-  subroutine ccsdpt_driver_abc_case3(vindex1,vindex2,vindex3,no,nv,&
-                            & oovv_tile_12, oovv_tile_13, oovv_tile_21,&
-                            & oovv_tile_23, oovv_tile_31, oovv_tile_32,vovv,&
+  subroutine ccsdpt_driver_abc_case3(vindex1,vindex2,vindex3,no,nv,oovv,vovv,&
                             & ooov_tile_v1,ooov_tile_v2,ooov_tile_v3,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3,&
                             & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21,&
@@ -7703,7 +7868,9 @@ contains
                             & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3,&
                             & wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
                             & a,b,c,tile_size_a,tile_size_b,tile_size_c,&
-                            & vovv_tile_1, vovv_tile_2, vovv_tile_3)
+                            & vovv_tile_1,vovv_tile_2,vovv_tile_3,&
+                            & oovv_tile_12, oovv_tile_13, oovv_tile_21,&
+                            & oovv_tile_23, oovv_tile_31, oovv_tile_32)
 
     implicit none
 
@@ -7721,9 +7888,15 @@ contains
     real(realk), dimension(nv,no,nv,tile_size_a), intent(inout), optional :: vovv_tile_1
     real(realk), dimension(nv,no,nv,tile_size_b), intent(inout), optional :: vovv_tile_2
     real(realk), dimension(nv,no,nv,tile_size_c), intent(inout), optional :: vovv_tile_3
+    !> oovv integrals
+    type(tensor), intent(inout)  :: oovv
     !> tiles of oovv integrals
-    real(realk), dimension(no,no) :: oovv_tile_12, oovv_tile_13, oovv_tile_21
-    real(realk), dimension(no,no) :: oovv_tile_23, oovv_tile_31, oovv_tile_32
+    real(realk), dimension(no,no,tile_size_a,tile_size_b), intent(inout), optional :: oovv_tile_12
+    real(realk), dimension(no,no,tile_size_a,tile_size_c), intent(inout), optional :: oovv_tile_13
+    real(realk), dimension(no,no,tile_size_b,tile_size_a), intent(inout), optional :: oovv_tile_21
+    real(realk), dimension(no,no,tile_size_b,tile_size_c), intent(inout), optional :: oovv_tile_23
+    real(realk), dimension(no,no,tile_size_c,tile_size_a), intent(inout), optional :: oovv_tile_31
+    real(realk), dimension(no,no,tile_size_c,tile_size_b), intent(inout), optional :: oovv_tile_32
     !> tiles of ooov 2-el integrals determined by incomming vindex1,vindex2,vindex3
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v1
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v2
@@ -7743,6 +7916,12 @@ contains
     integer :: async_idx(num_idxs), handle
 #endif
     type(c_ptr) :: cublas_handle
+    logical :: par
+
+    par = .false.
+#ifdef VAR_MPI
+    if (infpar%lg_nodtot .gt. 1) par = .true.
+#endif
 
     handle = async_idx(5)
 
@@ -7767,26 +7946,37 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_abc_11(vindex1,vindex2,vindex3,nv,no,oovv_tile_23,oovv_tile_32,&
-                       & ccsdpt_singles_1,&
-                       & trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex1,vindex2,vindex3,nv,no,oovv_tile_21,oovv_tile_12,&
-                       & ccsdpt_singles_3,&
-                       & trip,.false.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex1,vindex2,vindex3,nv,no,&
+                          & oovv_tile_23(:,:,b,c),oovv_tile_32(:,:,c,b),&
+                          & ccsdpt_singles_1,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex1,vindex2,vindex3,nv,no,&
+                          & oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
+                          & ccsdpt_singles_3,trip,.false.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex1,vindex2,vindex3,nv,no,&
+                          & oovv%elm4(:,:,vindex2,vindex3),oovv%elm4(:,:,vindex3,vindex2),&
+                          & ccsdpt_singles_1,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex1,vindex2,vindex3,nv,no,&
+                          & oovv%elm4(:,:,vindex2,vindex1),oovv%elm4(:,:,vindex1,vindex2),&
+                          & ccsdpt_singles_3,trip,.false.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex2,vindex3,vindex1,no,nv,vovv_tile_1(:,:,vindex3,a),vovv_tile_3(:,:,vindex1,c),&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex2,vindex3,vindex1,no,nv,vovv_tile_3(:,:,vindex2,c),&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex2,vindex3,vindex1,no,nv,vovv%elm4(:,:,vindex3,vindex1),vovv%elm4(:,:,vindex1,vindex3),&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex2,vindex3,vindex1,no,nv,vovv%elm4(:,:,vindex2,vindex3),&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex2,vindex3,vindex1,no,nv,&
+                              & vovv_tile_1(:,:,vindex3,a),vovv_tile_3(:,:,vindex1,c),&
+                              & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex2,vindex3,vindex1,no,nv,vovv_tile_3(:,:,vindex2,c),&
+                              & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex2,vindex3,vindex1,no,nv,&
+                              & vovv%elm4(:,:,vindex3,vindex1),vovv%elm4(:,:,vindex1,vindex3),&
+                              & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex2,vindex3,vindex1,no,nv,vovv%elm4(:,:,vindex2,vindex3),&
+                              & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7812,26 +8002,37 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_abc_11(vindex2,vindex1,vindex3,nv,no,oovv_tile_13,oovv_tile_31,&
-                       & ccsdpt_singles_2,&
-                       & wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex2,vindex1,vindex3,nv,no,oovv_tile_12,oovv_tile_21,&
-                       & ccsdpt_singles_3,&
-                       & wrk_3d,.false.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex2,vindex1,vindex3,nv,no,&
+                          & oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
+                          & ccsdpt_singles_2,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex2,vindex1,vindex3,nv,no,&
+                          & oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
+                          & ccsdpt_singles_3,wrk_3d,.false.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex2,vindex1,vindex3,nv,no,&
+                          & oovv%elm4(:,:,vindex1,vindex3),oovv%elm4(:,:,vindex3,vindex1),&
+                          & ccsdpt_singles_2,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex2,vindex1,vindex3,nv,no,&
+                          & oovv%elm4(:,:,vindex1,vindex2),oovv%elm4(:,:,vindex2,vindex1),&
+                          & ccsdpt_singles_3,wrk_3d,.false.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex1,vindex3,vindex2,no,nv,vovv_tile_2(:,:,vindex3,b),vovv_tile_3(:,:,vindex2,c),&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex1,vindex3,vindex2,no,nv,vovv_tile_3(:,:,vindex1,c),&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex1,vindex3,vindex2,no,nv,vovv%elm4(:,:,vindex3,vindex2),vovv%elm4(:,:,vindex2,vindex3),&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex1,vindex3,vindex2,no,nv,vovv%elm4(:,:,vindex1,vindex3),&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex1,vindex3,vindex2,no,nv,&
+                              & vovv_tile_2(:,:,vindex3,b),vovv_tile_3(:,:,vindex2,c),&
+                              & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex1,vindex3,vindex2,no,nv,vovv_tile_3(:,:,vindex1,c),&
+                              & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex1,vindex3,vindex2,no,nv,&
+                              & vovv%elm4(:,:,vindex3,vindex2),vovv%elm4(:,:,vindex2,vindex3),&
+                              & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex1,vindex3,vindex2,no,nv,vovv%elm4(:,:,vindex1,vindex3),&
+                              & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7857,26 +8058,37 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_abc_11(vindex2,vindex3,vindex1,nv,no,oovv_tile_31,oovv_tile_13,&
-                       & ccsdpt_singles_2,&
-                       & trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex2,vindex3,vindex1,nv,no,oovv_tile_32,oovv_tile_23,&
-                       & ccsdpt_singles_1,&
-                       & trip,.false.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex2,vindex3,vindex1,nv,no,&
+                          & oovv_tile_31(:,:,c,a),oovv_tile_13(:,:,a,c),&
+                          & ccsdpt_singles_2,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex2,vindex3,vindex1,nv,no,&
+                          & oovv_tile_32(:,:,c,b),oovv_tile_23(:,:,b,c),&
+                          & ccsdpt_singles_1,trip,.false.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex2,vindex3,vindex1,nv,no,&
+                          & oovv%elm4(:,:,vindex3,vindex1),oovv%elm4(:,:,vindex1,vindex3),&
+                          & ccsdpt_singles_2,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex2,vindex3,vindex1,nv,no,&
+                          & oovv%elm4(:,:,vindex3,vindex2),oovv%elm4(:,:,vindex2,vindex3),&
+                          & ccsdpt_singles_1,trip,.false.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex3,vindex1,vindex2,no,nv,vovv_tile_2(:,:,vindex1,b),vovv_tile_1(:,:,vindex2,a),&
-                           & ccsdpt_doubles_2_3,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex3,vindex1,vindex2,no,nv,vovv_tile_1(:,:,vindex3,a),&
-                           & ccsdpt_doubles_2_2,trip,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex3,vindex1,vindex2,no,nv,vovv%elm4(:,:,vindex1,vindex2),vovv%elm4(:,:,vindex2,vindex1),&
-                           & ccsdpt_doubles_2_3,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex3,vindex1,vindex2,no,nv,vovv%elm4(:,:,vindex3,vindex1),&
-                           & ccsdpt_doubles_2_2,trip,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex3,vindex1,vindex2,no,nv,&
+                              & vovv_tile_2(:,:,vindex1,b),vovv_tile_1(:,:,vindex2,a),&
+                              & ccsdpt_doubles_2_3,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex3,vindex1,vindex2,no,nv,vovv_tile_1(:,:,vindex3,a),&
+                              & ccsdpt_doubles_2_2,trip,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex3,vindex1,vindex2,no,nv,&
+                              & vovv%elm4(:,:,vindex1,vindex2),vovv%elm4(:,:,vindex2,vindex1),&
+                              & ccsdpt_doubles_2_3,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex3,vindex1,vindex2,no,nv,vovv%elm4(:,:,vindex3,vindex1),&
+                              & ccsdpt_doubles_2_2,trip,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7902,26 +8114,37 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_abc_11(vindex1,vindex3,vindex2,nv,no,oovv_tile_32,oovv_tile_23,&
-                       & ccsdpt_singles_1,&
-                       & wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex1,vindex3,vindex2,nv,no,oovv_tile_31,oovv_tile_13,&
-                       & ccsdpt_singles_2,&
-                       & wrk_3d,.false.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex1,vindex3,vindex2,nv,no,&
+                          & oovv_tile_32(:,:,c,b),oovv_tile_23(:,:,b,c),&
+                          & ccsdpt_singles_1,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex1,vindex3,vindex2,nv,no,&
+                          & oovv_tile_31(:,:,c,a),oovv_tile_13(:,:,a,c),&
+                          & ccsdpt_singles_2,wrk_3d,.false.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex1,vindex3,vindex2,nv,no,&
+                          & oovv%elm4(:,:,vindex3,vindex2),oovv%elm4(:,:,vindex2,vindex3),&
+                          & ccsdpt_singles_1,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex1,vindex3,vindex2,nv,no,&
+                          & oovv%elm4(:,:,vindex3,vindex1),oovv%elm4(:,:,vindex1,vindex3),&
+                          & ccsdpt_singles_2,wrk_3d,.false.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex3,vindex2,vindex1,no,nv,vovv_tile_1(:,:,vindex2,a),vovv_tile_2(:,:,vindex1,b),&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex3,vindex2,vindex1,no,nv,vovv_tile_2(:,:,vindex3,b),&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex3,vindex2,vindex1,no,nv,vovv%elm4(:,:,vindex2,vindex1),vovv%elm4(:,:,vindex1,vindex2),&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex3,vindex2,vindex1,no,nv,vovv%elm4(:,:,vindex3,vindex2),&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex3,vindex2,vindex1,no,nv,&
+                              & vovv_tile_1(:,:,vindex2,a),vovv_tile_2(:,:,vindex1,b),&
+                              & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex3,vindex2,vindex1,no,nv,vovv_tile_2(:,:,vindex3,b),&
+                              & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex3,vindex2,vindex1,no,nv,&
+                              & vovv%elm4(:,:,vindex2,vindex1),vovv%elm4(:,:,vindex1,vindex2),&
+                              & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex3,vindex2,vindex1,no,nv,vovv%elm4(:,:,vindex3,vindex2),&
+                              & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7947,26 +8170,37 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_abc_11(vindex3,vindex1,vindex2,nv,no,oovv_tile_12,oovv_tile_21,&
-                       & ccsdpt_singles_3,&
-                       & trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex3,vindex1,vindex2,nv,no,oovv_tile_13,oovv_tile_31,&
-                       & ccsdpt_singles_2,&
-                       & trip,.false.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex3,vindex1,vindex2,nv,no,&
+                          & oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
+                          & ccsdpt_singles_3,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex3,vindex1,vindex2,nv,no,&
+                          & oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
+                          & ccsdpt_singles_2,trip,.false.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex3,vindex1,vindex2,nv,no,&
+                          & oovv%elm4(:,:,vindex1,vindex2),oovv%elm4(:,:,vindex2,vindex1),&
+                          & ccsdpt_singles_3,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex3,vindex1,vindex2,nv,no,&
+                          & oovv%elm4(:,:,vindex1,vindex3),oovv%elm4(:,:,vindex3,vindex1),&
+                          & ccsdpt_singles_2,trip,.false.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,vovv_tile_3(:,:,vindex2,c),vovv_tile_2(:,:,vindex3,b),&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,vovv_tile_2(:,:,vindex1,b),&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,vovv%elm4(:,:,vindex2,vindex3),vovv%elm4(:,:,vindex3,vindex2),&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,vovv%elm4(:,:,vindex1,vindex2),&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,&
+                              & vovv_tile_3(:,:,vindex2,c),vovv_tile_2(:,:,vindex3,b),&
+                              & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,vovv_tile_2(:,:,vindex1,b),&
+                              & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,&
+                              & vovv%elm4(:,:,vindex2,vindex3),vovv%elm4(:,:,vindex3,vindex2),&
+                              & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,vovv%elm4(:,:,vindex1,vindex2),&
+                              & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -7992,26 +8226,37 @@ contains
 
           ! calculate contributions to ccsdpt_singles:
 
-          call ccsdpt_contract_abc_11(vindex3,vindex2,vindex1,nv,no,oovv_tile_21,oovv_tile_12,&
-                       & ccsdpt_singles_3,&
-                       & wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_12(vindex3,vindex2,vindex1,nv,no,oovv_tile_23,oovv_tile_32,&
-                       & ccsdpt_singles_1,&
-                       & wrk_3d,.false.,handle,cublas_handle)
+          if (par) then
+             call ccsdpt_contract_abc_11(vindex3,vindex2,vindex1,nv,no,&
+                          & oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
+                          & ccsdpt_singles_3,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex3,vindex2,vindex1,nv,no,&
+                          & oovv_tile_23(:,:,b,c),oovv_tile_32(:,:,c,b),&
+                          & ccsdpt_singles_1,wrk_3d,.false.,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_11(vindex3,vindex2,vindex1,nv,no,&
+                          & oovv%elm4(:,:,vindex2,vindex1),oovv%elm4(:,:,vindex1,vindex2),&
+                          & ccsdpt_singles_3,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_12(vindex3,vindex2,vindex1,nv,no,&
+                          & oovv%elm4(:,:,vindex2,vindex3),oovv%elm4(:,:,vindex3,vindex2),&
+                          & ccsdpt_singles_1,wrk_3d,.false.,handle,cublas_handle)
+          endif
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-#ifdef VAR_MPI
-          call ccsdpt_contract_abc_211(vindex2,vindex1,vindex3,no,nv,vovv_tile_3(:,:,vindex1,c),vovv_tile_1(:,:,vindex3,a),&
-                           & ccsdpt_doubles_2_2,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex2,vindex1,vindex3,no,nv,vovv_tile_1(:,:,vindex2,a),&
-                           & ccsdpt_doubles_2_3,wrk_3d,handle,cublas_handle)
-#else
-          call ccsdpt_contract_abc_211(vindex2,vindex1,vindex3,no,nv,vovv%elm4(:,:,vindex1,vindex3),vovv%elm4(:,:,vindex3,vindex1),&
-                           & ccsdpt_doubles_2_2,wrk_3d,.false.,handle,cublas_handle)
-          call ccsdpt_contract_abc_212(vindex2,vindex1,vindex3,no,nv,vovv%elm4(:,:,vindex2,vindex1),&
-                           & ccsdpt_doubles_2_3,wrk_3d,handle,cublas_handle)
-#endif
+          if (par) then
+             call ccsdpt_contract_abc_211(vindex2,vindex1,vindex3,no,nv,&
+                              & vovv_tile_3(:,:,vindex1,c),vovv_tile_1(:,:,vindex3,a),&
+                              & ccsdpt_doubles_2_2,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex2,vindex1,vindex3,no,nv,vovv_tile_1(:,:,vindex2,a),&
+                              & ccsdpt_doubles_2_3,wrk_3d,handle,cublas_handle)
+          else
+             call ccsdpt_contract_abc_211(vindex2,vindex1,vindex3,no,nv,&
+                              & vovv%elm4(:,:,vindex1,vindex3),vovv%elm4(:,:,vindex3,vindex1),&
+                              & ccsdpt_doubles_2_2,wrk_3d,.false.,handle,cublas_handle)
+             call ccsdpt_contract_abc_212(vindex2,vindex1,vindex3,no,nv,vovv%elm4(:,:,vindex2,vindex1),&
+                              & ccsdpt_doubles_2_3,wrk_3d,handle,cublas_handle)
+          endif
 
           ! now do occ part:
 
@@ -10605,10 +10850,20 @@ contains
     ! Integrals (AB|IC) in the order (C,B,A,I)
     dims = [nvirt,nvirt,nvirt,nocc]
 #ifdef VAR_MPI
-    mode   = MPI_MODE_NOCHECK
 
-    call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
-    call tensor_zero_tiled_dist(vvvo)
+    if (infpar%lg_nodtot .gt. 1) then
+
+       mode   = MPI_MODE_NOCHECK
+   
+       call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
+       call tensor_zero_tiled_dist(vvvo)
+
+    else
+
+       call tensor_init(vvvo, dims,4)
+       call tensor_zero(vvvo)
+
+    endif
 
 #else
 
@@ -10761,28 +11016,32 @@ contains
 
 #ifdef VAR_MPI
 
-    ! alloc distribution array
-    nullify(distribution)
-    call mem_alloc(distribution,nbatchesGamma*nbatchesAlpha)
+    if (infpar%lg_nodtot .gt. 1) then
 
-    ! init distribution
-    distribution = 0
-    myload = 0
-    if (DECinfo%useichor) then
-       call mem_alloc(batchdimAlpha,nbatchesAlpha)
-       do idx=1,nbatchesAlpha
-          batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
-       enddo
-       call mem_alloc(batchdimGamma,nbatchesGamma)
-       do idx=1,nbatchesGamma
-          batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
-       enddo
-    endif
-    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
-    &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
-    if (DECinfo%useichor) then
-       call mem_dealloc(batchdimAlpha)
-       call mem_dealloc(batchdimGamma)
+       ! alloc distribution array
+       nullify(distribution)
+       call mem_alloc(distribution,nbatchesGamma*nbatchesAlpha)
+   
+       ! init distribution
+       distribution = 0
+       myload = 0
+       if (DECinfo%useichor) then
+          call mem_alloc(batchdimAlpha,nbatchesAlpha)
+          do idx=1,nbatchesAlpha
+             batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+          enddo
+          call mem_alloc(batchdimGamma,nbatchesGamma)
+          do idx=1,nbatchesGamma
+             batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+          enddo
+       endif
+       call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
+       &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+       if (DECinfo%useichor) then
+          call mem_dealloc(batchdimAlpha)
+          call mem_dealloc(batchdimGamma)
+       endif
+
     endif
 
 #endif
@@ -10818,15 +11077,19 @@ contains
 
 #ifdef VAR_MPI
 
-          ! distribute tasks
-          if (distribution((alphaB-1)*nbatchesGamma+gammaB) .ne. infpar%lg_mynum) then
+          if (infpar%lg_nodtot .gt. 1) then
 
-             cycle BatchAlpha
+             ! distribute tasks
+             if (distribution((alphaB-1)*nbatchesGamma+gammaB) .ne. infpar%lg_mynum) then
+   
+                cycle BatchAlpha
+   
+             end if
+   
+             if(DECinfo%PL>2)write (*, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
+                &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
-          end if
-
-          if(DECinfo%PL>2)write (*, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
-             &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+          endif
 
 #endif
 
@@ -10898,66 +11161,82 @@ contains
           k = dimAlpha
           n = 1
 #ifdef VAR_MPI
-          ! reorder tmp1 and do vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
-          do i=1,nocc
 
-             ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+          if (infpar%lg_nodtot .gt. 1) then
 
-             ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
-             ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
-             ! of dummy indices A=B, B=C, and C=A) as (BC|IA). In order to align with the vvvo order of
-             ! ccsd(t) driver routine, we reorder as:
-             ! (BC|IA) --> (CB|AI), i.e., tmp1(C,A,B,i) = ABCI(A,B,C,i) (norm. notat.) --> 
-             !                                            tmp1(C,B,A,i) (norm. notat.) = tmp1(B,A,C,i) (notat. herein)
-             ! 
-             ! next, we accumulate
-             ! vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
-
-             call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
-
-             call time_start_phase(PHASE_COMM)
+             ! reorder tmp1 and do vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
+             do i=1,nocc
+   
+                ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
+                call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+   
+                ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
+                ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
+                ! of dummy indices A=B, B=C, and C=A) as (BC|IA). In order to align with the vvvo order of
+                ! ccsd(t) driver routine, we reorder as:
+                ! (BC|IA) --> (CB|AI), i.e., tmp1(C,A,B,i) = ABCI(A,B,C,i) (norm. notat.) --> 
+                !                                            tmp1(C,B,A,i) (norm. notat.) = tmp1(B,A,C,i) (notat. herein)
+                ! 
+                ! next, we accumulate
+                ! vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
+   
+                call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
+   
+                call time_start_phase(PHASE_COMM)
 
 #ifdef VAR_HAVE_MPI3
-             call tensor_lock_win(vvvo,i,'s')
+                call tensor_lock_win(vvvo,i,'s')
 #endif
-             !call tensor_accumulate_tile(vvvo,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
-
-             call get_residence_of_tile(dest,i,vvvo,idx_on_node = pos)
-
-             if( alloc_in_dummy )then
-                wi_idx = 1
-                p      = pos - 1
-             else
-                wi_idx = i 
-                p      = 0
-             endif
-
-             do first_el_i_block=1,v3,MAX_SIZE_ONE_SIDED
+                !call tensor_accumulate_tile(vvvo,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
+   
+                call get_residence_of_tile(dest,i,vvvo,idx_on_node = pos)
+   
+                if( alloc_in_dummy )then
+                   wi_idx = 1
+                   p      = pos - 1
+                else
+                   wi_idx = i 
+                   p      = 0
+                endif
+   
+                do first_el_i_block=1,v3,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
-                call tensor_lock_win(vvvo,i,'s',assert=mode)
+                   call tensor_lock_win(vvvo,i,'s',assert=mode)
 #endif
-                nel2t=MAX_SIZE_ONE_SIDED
-                if(((v3-first_el_i_block)<MAX_SIZE_ONE_SIDED).and.&
-                   &(mod(v3-first_el_i_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
-                   &nel2t=int(mod(v3,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
-
-
-                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,p+first_el_i_block,dest,vvvo%wi(wi_idx))
+                   nel2t=MAX_SIZE_ONE_SIDED
+                   if(((v3-first_el_i_block)<MAX_SIZE_ONE_SIDED).and.&
+                      &(mod(v3-first_el_i_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
+                      &nel2t=int(mod(v3,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
+   
+   
+                   call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,p+first_el_i_block,dest,vvvo%wi(wi_idx))
 
 #ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(vvvo%wi(wi_idx),rank=dest,local=.true.)
+                   call lsmpi_win_flush(vvvo%wi(wi_idx),rank=dest,local=.true.)
 #else
+                   call tensor_unlock_win(vvvo,i)
+#endif
+                enddo
+
+#ifdef VAR_HAVE_MPI3
                 call tensor_unlock_win(vvvo,i)
 #endif
-             enddo
+                call time_start_phase(PHASE_WORK)
 
-#ifdef VAR_HAVE_MPI3
-             call tensor_unlock_win(vvvo,i)
-#endif
-             call time_start_phase(PHASE_WORK)
+             end do
 
-          end do
+          else
+
+             do i=1,nocc
+   
+                ! for description, see mpi section above
+                call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+   
+                call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,vvvo%elm4(:,:,:,i))
+   
+             end do
+
+          endif
 
 #else
 
@@ -10995,10 +11274,10 @@ contains
        call lsmpi_allreduce(dummy2,o3v,infpar%lg_comm) 
        call time_start_phase(PHASE_WORK)
 
-    end if
+       ! dealloc distribution array
+       call mem_dealloc(distribution)
 
-    ! dealloc distribution array
-    call mem_dealloc(distribution)
+    end if
 
 #endif
 
@@ -11148,14 +11427,23 @@ contains
 
 #ifdef VAR_MPI
 
-    mode   = MPI_MODE_NOCHECK
+    if (infpar%lg_nodtot .gt. 1) then
 
-    call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
-    call tensor_zero_tiled_dist(vovv)
+       mode   = MPI_MODE_NOCHECK
+   
+       call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
+       call tensor_zero_tiled_dist(vovv)
+
+    else
+
+       call tensor_init(vovv,dims,4)
+       call tensor_zero(vovv)
+
+    endif
 
 #else
 
-    call tensor_init(vovv, dims,4)
+    call tensor_init(vovv,dims,4)
     call tensor_zero(vovv)
 
 #endif
@@ -11304,28 +11592,32 @@ contains
 
 #ifdef VAR_MPI
 
-    ! alloc distribution array
-    nullify(distribution)
-    call mem_alloc(distribution,nbatchesGamma*nbatchesAlpha)
+    if (infpar%lg_nodtot .gt. 1) then
 
-    ! init distribution
-    distribution = 0
-    myload = 0
-    if (DECinfo%useichor) then
-       call mem_alloc(batchdimAlpha,nbatchesAlpha)
-       do idx=1,nbatchesAlpha
-          batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
-       enddo
-       call mem_alloc(batchdimGamma,nbatchesGamma)
-       do idx=1,nbatchesGamma
-          batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
-       enddo
-    endif
-    call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
-    &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
-    if (DECinfo%useichor) then
-       call mem_dealloc(batchdimAlpha)
-       call mem_dealloc(batchdimGamma)
+       ! alloc distribution array
+       nullify(distribution)
+       call mem_alloc(distribution,nbatchesGamma*nbatchesAlpha)
+   
+       ! init distribution
+       distribution = 0
+       myload = 0
+       if (DECinfo%useichor) then
+          call mem_alloc(batchdimAlpha,nbatchesAlpha)
+          do idx=1,nbatchesAlpha
+             batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+          enddo
+          call mem_alloc(batchdimGamma,nbatchesGamma)
+          do idx=1,nbatchesGamma
+             batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+          enddo
+       endif
+       call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
+       &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+       if (DECinfo%useichor) then
+          call mem_dealloc(batchdimAlpha)
+          call mem_dealloc(batchdimGamma)
+       endif
+
     endif
 
 #endif
@@ -11361,15 +11653,19 @@ contains
 
 #ifdef VAR_MPI
 
-          ! distribute tasks
-          if (distribution((alphaB-1)*nbatchesGamma+gammaB) .ne. infpar%lg_mynum) then
+          if (infpar%lg_nodtot .gt. 1) then
 
-             cycle BatchAlpha
+             ! distribute tasks
+             if (distribution((alphaB-1)*nbatchesGamma+gammaB) .ne. infpar%lg_mynum) then
+   
+                cycle BatchAlpha
+   
+             end if
+   
+             if(DECinfo%PL>2)write (*, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
+                &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
-          end if
-
-          if(DECinfo%PL>2)write (*, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
-             &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+          endif
 
 #endif
 
@@ -11438,67 +11734,78 @@ contains
 
 #ifdef VAR_MPI
 
-          ! mpi   : 1) tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
-          !         2) vovv(B,I,A,C) += sum_{tile in CB} tmp2(B,I,A,tile)
-          ! serial: vovv(B,I,A,C) += sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,C)
-          m = nocc*nvirt**2
-          k = dimAlpha
+          if (infpar%lg_nodtot .gt. 1) then
 
-          total_num_tiles = vovv%ntiles
-          tile = 0
-
-          do c=1,nvirt,tile_size
-
-             tile = tile + 1
-
-             call get_tileinfo_nels_fromarr8(nelms,vovv,i8*tile)
-             tile_size_tmp = nelms/(nocc*nvirt**2)
-
-             n = tile_size_tmp
-
-             ! tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,c),nbasis,0.0E0_realk,tmp2,m)
-
-             call time_start_phase(PHASE_COMM)
+             ! mpi   : 1) tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
+             !         2) vovv(B,I,A,C) += sum_{tile in CB} tmp2(B,I,A,tile)
+             ! serial: vovv(B,I,A,C) += sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,C)
+             m = nocc*nvirt**2
+             k = dimAlpha
+   
+             total_num_tiles = vovv%ntiles
+             tile = 0
+   
+             do c=1,nvirt,tile_size
+   
+                tile = tile + 1
+   
+                call get_tileinfo_nels_fromarr8(nelms,vovv,i8*tile)
+                tile_size_tmp = nelms/(nocc*nvirt**2)
+   
+                n = tile_size_tmp
+   
+                ! tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
+                call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,c),nbasis,0.0E0_realk,tmp2,m)
+   
+                call time_start_phase(PHASE_COMM)
 #ifdef VAR_HAVE_MPI3
-             call tensor_lock_win(vovv,tile,'s',assert=mode)
-#endif
-             call get_residence_of_tile(dest,tile,vovv, idx_on_node = pos)
-
-             if( alloc_in_dummy )then
-                wi_idx = 1
-                p      = pos - 1
-             else
-                wi_idx = tile
-                p      = 0
-             endif
-
-
-             do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
-#ifndef VAR_HAVE_MPI3
                 call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
+                call get_residence_of_tile(dest,tile,vovv, idx_on_node = pos)
+   
+                if( alloc_in_dummy )then
+                   wi_idx = 1
+                   p      = pos - 1
+                else
+                   wi_idx = tile
+                   p      = 0
+                endif
+   
+   
+                do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
+#ifndef VAR_HAVE_MPI3
+                   call tensor_lock_win(vovv,tile,'s',assert=mode)
+#endif
 
-                nel2t=MAX_SIZE_ONE_SIDED
-                if(((ov2*tile_size_tmp-first_el_c_block)<MAX_SIZE_ONE_SIDED).and.&
-                   &(mod(ov2*tile_size_tmp-first_el_c_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
-                   &nel2t=int(mod(ov2*tile_size_tmp,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
-
-                call lsmpi_acc(tmp2(first_el_c_block:first_el_c_block+nel2t-1),nel2t,p+first_el_c_block,dest,vovv%wi(wi_idx))
+                   nel2t=MAX_SIZE_ONE_SIDED
+                   if(((ov2*tile_size_tmp-first_el_c_block)<MAX_SIZE_ONE_SIDED).and.&
+                      &(mod(ov2*tile_size_tmp-first_el_c_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
+                      &nel2t=int(mod(ov2*tile_size_tmp,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
+   
+                   call lsmpi_acc(tmp2(first_el_c_block:first_el_c_block+nel2t-1),nel2t,p+first_el_c_block,dest,vovv%wi(wi_idx))
 
 #ifdef VAR_HAVE_MPI3
-                call lsmpi_win_flush(vovv%wi(wi_idx),rank=dest,local=.true.)
+                   call lsmpi_win_flush(vovv%wi(wi_idx),rank=dest,local=.true.)
 #else
+                   call tensor_unlock_win(vovv,tile)
+#endif
+                enddo
+
+#ifdef VAR_HAVE_MPI3
                 call tensor_unlock_win(vovv,tile)
 #endif
-             enddo
+                call time_start_phase(PHASE_WORK)
+   
+             end do
 
-#ifdef VAR_HAVE_MPI3
-             call tensor_unlock_win(vovv,tile)
-#endif
-             call time_start_phase(PHASE_WORK)
+          elseif (infpar%lg_nodtot .eq. 1) then 
 
-          end do
+             m = nocc*nvirt**2
+             k = dimAlpha
+             n = nvirt
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,1),nbasis,1.0E0_realk,vovv%elm1,m)
+
+          endif
 
 #else
 
@@ -11532,10 +11839,10 @@ contains
        call lsmpi_allreduce(dummy2,o3v,infpar%lg_comm) 
        call time_start_phase(PHASE_WORK)
 
-    end if
+       ! dealloc distribution array
+       call mem_dealloc(distribution)
 
-    ! dealloc distribution array
-    call mem_dealloc(distribution)
+    end if
 
 #endif
 

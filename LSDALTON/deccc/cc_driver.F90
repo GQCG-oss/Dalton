@@ -443,40 +443,16 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       natoms   = MyMolecule%natoms
       nfrags   = MyMolecule%nfrags
       nocc_tot = MyMolecule%nocc
-   
-      !FIXME: all the following should be implemented in PDM
-      !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
-      !one node is used
-      call tensor_init(VOVO_local,VOVO%dims,4)
-      call tensor_init(t2f_local,t2_final%dims,4 )
-      call tensor_cp_data( VOVO,     VOVO_local  )
-      call tensor_cp_data( t2_final, t2f_local   )
 
       if(ccmodel == MODEL_CCSDpT)then
  
          if (abc) then
 
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !FIXME: MAKE (T) independent of the tensor _reorder subroutines since each of
-            !these essentialliy allocates another V^2O^2 in local memory.
-            !Alternative: use parallel distributed tensors
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-   
             call tensor_init(ccsdpt_t1 , [nocc,nvirt],2)
             call tensor_init(ccsdpt_t2 , [nocc,nocc,nvirt,nvirt],4)
 
          else
  
-            call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-    
             call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
             call tensor_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
    
@@ -494,9 +470,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          if (abc) then
 
             call tensor_reorder(ccsdpt_t1,[2,1]) ! order (i,a) --> (a,i)
-            call tensor_reorder(VOVO_local,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
             call tensor_reorder(ccsdpt_t2,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
-            call tensor_reorder(t2f_local,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
      
          endif
  
@@ -506,13 +480,19 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwcomm = 'MASTER COMM pT: ',&
                &labeldwidle = 'MASTER IDLE pT: ') 
          endif
-      else
-   
-         call tensor_reorder(t2f_local,[1,3,2,4])
-         call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
    
       endif
-   
+  
+      !FIXME: all the following should be implemented in PDM
+      !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
+      !one node is used
+      call tensor_init(VOVO_local,VOVO%dims,4)
+      call tensor_init(t2f_local,t2_final%dims,4 )
+      call tensor_cp_data( VOVO,     VOVO_local  )
+      call tensor_cp_data( t2_final, t2f_local   )
+      call tensor_reorder(t2f_local,[1,3,2,4]) ! t2 in the order (a,b,i,j)
+      call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+
       ! as we want to  print out fragment and pair interaction fourth-order energy contributions,
       ! then for locality analysis purposes we need occ_orbitals and
       ! unocc_orbitals (adapted from fragment_energy.f90)
