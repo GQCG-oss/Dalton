@@ -1878,30 +1878,11 @@ LOGICAL  :: isassociated
 
 call LS_MPI_BUFFER(GGem%is_set,Master)
 IF (GGem%is_set) THEN
-  IF(SLAVE)THEN
-     isassociated = .FALSE.     
-  ELSE
-     isassociated = associated(GGem%expProd)
-  ENDIF
-  call LS_MPI_BUFFER(isassociated,Master)
   call LS_MPI_BUFFER(GGem%N,Master)
-  IF (SLAVE) THEN
-    NULLIFY(GGem%coeff)
-    NULLIFY(GGem%exponent)
-    NULLIFY(GGem%expProd)
-    IF (GGem%N.GT.0) THEN
-      call mem_alloc(GGem%coeff,GGem%N)
-      call mem_alloc(GGem%exponent,GGem%N)
-      IF(isassociated)call mem_alloc(GGem%expProd,GGem%N)
-    ENDIF
-  ENDIF
-
   IF (GGem%N.GT.0) THEN
     call LS_MPI_BUFFER(GGem%coeff,GGem%N,Master)
     call LS_MPI_BUFFER(GGem%exponent,GGem%N,Master)
-    IF(isassociated)THEN
-       call LS_MPI_BUFFER(GGem%expProd,GGem%N,Master)
-    ENDIF
+    call LS_MPI_BUFFER(GGem%expProd,GGem%N,Master)
   ENDIF
 ENDIF
 END SUBROUTINE mpicopy_GaussianGeminal

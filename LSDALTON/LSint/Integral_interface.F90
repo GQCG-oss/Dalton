@@ -2604,7 +2604,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in ',-1)
@@ -2686,7 +2686,7 @@ IF(oper.NE.CoulombOperator)THEN
    ELSE IF (oper .EQ. GGemGrdOperator) THEN !'D'
       ! The double commutator [[T,g],g]      
       call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-   ELSE IF (oper .EQ. GGemOperator) THEN !'2'
+   ELSE IF (oper .EQ. GGemQuaOperator) THEN !'2'
       ! The Gaussian geminal operator squared g^2      
       call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
    ELSE
@@ -2918,7 +2918,7 @@ LOGICAL :: IntegralTransformGC,CSintsave,PSintsave,FoundOnDisk
 LOGICAL :: FoundInMem,CS_INT,PS_INT
 INTEGER :: THR,I,ilst,J,K,dummy
 CHARACTER(len=10) :: INTTYPE(2)
-integer :: Oper(8)
+integer :: Oper(9)
 Character(80)       :: Filename
 Character(53)       :: identifier
 Character(22)       :: label1,label2
@@ -2927,7 +2927,7 @@ real(realk),pointer :: screenMat(:,:)
 Integer   :: natoms,n1,n2
 integer(kind=short) :: GABelm
 integer(kind=short),pointer :: MAT2(:,:)
-logical :: dofit
+logical :: dofit,doF12
 integer :: AO1,AO2,AO3,AO4
 dummy=1
 call time_II_operations1()
@@ -2936,6 +2936,7 @@ dofit = SETTING%SCHEME%DENSFIT .OR. SETTING%SCHEME%PARI_J .OR. &
      & SETTING%SCHEME%PARI_K .OR. SETTING%SCHEME%MOPARI_K .OR. &
      & SETTING%SCHEME%PreCalcDFscreening
 
+doF12 = SETTING%SCHEME%PreCalcF12screening
 IF(SETTING%SCHEME%saveGABtoMem)THEN
  IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN &
       & .OR.SETTING%SCHEME%MBIE_SCREEN)THEN
@@ -2950,51 +2951,31 @@ IF(SETTING%SCHEME%saveGABtoMem)THEN
     Oper(6)=GGemCouOperator
     Oper(7)=GGemGrdOperator
     Oper(8)=CoulombOperator !Density-fitting screening integrals
-!    Oper(9)=GGemGrdOperator
+    Oper(9)=GGemQuaOperator
     CS_INT = SETTING%SCHEME%CS_SCREEN
     PS_INT = SETTING%SCHEME%PS_SCREEN
     DO J=1,size(Oper)
        IF(J.EQ.3.AND.(.NOT.SETTING%SCHEME%SR_EXCHANGE) )CYCLE
        IF(J.EQ.4.AND.(.NOT.SETTING%SCHEME%CAM) )CYCLE
-!       IF(SETTING%SCHEME%PreCalcF12screening)THEN
-          !WARNING FIXME QQQQ 
-! The Gaussian geminal operator g and 
-! The Gaussian geminal operator squared g^2
-! has the same operator parameter - and therefore same filename
-! 
-!          IF(J.EQ.9)THEN
-!             double = 2
-!            call SetGGem(Oper(J),Setting,double)
-!          ELSE
-!             call SetGGem(Oper(J),Setting)
-!          ENDIF
-!       ELSE
-!          IF(J.EQ.5)CYCLE
-!          IF(J.EQ.6)CYCLE
-!          IF(J.EQ.7)CYCLE
-!          IF(J.EQ.9)CYCLE
-!       ENDIF
+       IF(doF12)THEN
+          IF((J.EQ.5.OR.J.EQ.6).OR.(J.EQ.7.OR.J.EQ.9))THEN
+             call SetGGem(Oper(J),Setting)
+          ENDIF
+       ELSE
+          IF(J.EQ.5)CYCLE
+          IF(J.EQ.6)CYCLE
+          IF(J.EQ.7)CYCLE
+          IF(J.EQ.9)CYCLE
+       ENDIF
        IF(J.EQ.5.AND.(.NOT.SETTING%GGEM%is_set) )CYCLE
        IF(J.EQ.6.AND.(.NOT.SETTING%GGEM%is_set) )CYCLE
        IF(J.EQ.7.AND.(.NOT.SETTING%GGEM%is_set) )CYCLE
        IF(J.EQ.8.AND.(.NOT.dofit) )CYCLE
+       IF(J.EQ.9.AND.(.NOT.SETTING%GGEM%is_set) )CYCLE
        nullify(GAB)
        THR = ABS(NINT(LOG10(SETTING%SCHEME%intTHRESHOLD)))
-       IF (ASSOCIATED(Setting%MOLECULE(1)%p)) THEN
-          label1 = Setting%MOLECULE(1)%p%label
-       ELSE
-          label1 = 'Empty_________________'
-       ENDIF
-       IF (ASSOCIATED(Setting%MOLECULE(2)%p)) THEN
-          label2 = Setting%MOLECULE(2)%p%label
-       ELSE
-          label2 = 'Empty_________________'
-       ENDIF
-       IF(THR.GT.9)THEN
-          write(identifier,'(A2,I2,A1,A22,A1,A22,A1,L1,L1)')'CS',THR,'_',label1,'_',label2,'_',CS_INT,PS_INT
-       ELSE
-          write(identifier,'(A3,I1,A1,A22,A1,A22,A1,L1,L1)')'CS0',THR,'_',label1,'_',label2,'_',CS_INT,PS_INT
-       ENDIF
+       call io_get_CSidentifier(identifier,THR,Setting%MOLECULE(1)%p,&
+            & Setting%MOLECULE(2)%p,CS_INT,PS_INT)
        IF(Oper(J).EQ.NucleiOperator) THEN
           AO1 = AONuclear
           AO2 = AOEmpty
@@ -3052,10 +3033,10 @@ call time_II_operations2(JOB_II_precalc_ScreenMat)
 
 END SUBROUTINE II_precalc_ScreenMat
 
-subroutine SetGGem(oper,Setting,double)
+subroutine SetGGem(oper,Setting)
 implicit none
-integer :: Oper,double
-TYPE(LSSETTING)       :: SETTING
+integer,intent(inout) :: Oper
+TYPE(LSSETTING),intent(inout) :: SETTING
 !local variables
 integer             :: i,j,k,l
 real(realk)         :: coeff(6),exponent(6),tmp,slater
@@ -3076,23 +3057,20 @@ DO I=1,nGaussian
    ENDDO
    coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
 ENDDO
-IF(double.EQ.2)THEN
+IF(oper .EQ. GGemOperator)THEN 
+   ! The Gaussian geminal operator g
+   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+ELSE IF (oper.EQ.GGemCouOperator)THEN 
+   ! The Gaussian geminal divided by the Coulomb operator g/r12
+   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+ELSE IF (oper.EQ.GGemGrdOperator)THEN 
+   ! The double commutator [[T,g],g]
+   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+ELSE IF (oper.EQ.GGemQuaOperator)THEN 
    ! The Gaussian geminal operator squared g^2
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-ELSE
-   IF(oper .EQ. GGemOperator)THEN 
-      ! The Gaussian geminal operator g
-      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-   ELSE IF (oper.EQ.GGemCouOperator)THEN 
-      ! The Gaussian geminal divided by the Coulomb operator g/r12
-      call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-   ELSE IF (oper.EQ.GGemGrdOperator)THEN 
-      ! The double commutator [[T,g],g]
-      call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-   ENDIF
 ENDIF
 end subroutine SetGGem
-
 
 #ifdef VAR_MPI
 subroutine II_bcast_screen(comm)
@@ -4217,7 +4195,7 @@ call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 call initIntegralOutputDims(setting%Output,nbast,nbast,nbast,nbast,1)
 call cpu_time(TS)
 CALL ls_getIntegrals(AORdefault,AORdefault,AORdefault,AORdefault,&
-     &               GGemOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+     &               GGemQuaOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 call cpu_time(TE)
 print*, ' cpu_time (GGemQua)', TE-TS
 CALL retrieve_Output(lupri,setting,GGem,setting%IntegralTransformGC)
