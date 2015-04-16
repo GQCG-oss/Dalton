@@ -99,6 +99,7 @@ INTEGER :: I
 
 write(lun)BASISSET%natomtypes
 write(lun)BASISSET%DunningsBasis
+write(lun)BASISSET%GeminalScalingFactor
 write(lun)BASISSET%GCbasis
 write(lun)BASISSET%Spherical
 write(lun)BASISSET%GCont
@@ -266,6 +267,7 @@ call nullifybasisset(BASISSET)
 read(lun)BASISSET%natomtypes
 IF(BASISSET%natomtypes.GT. 0)THEN
    read(lun)BASISSET%DunningsBasis
+   read(lun)BASISSET%GeminalScalingFactor
    read(lun)BASISSET%GCbasis
    read(lun)BASISSET%Spherical
    read(lun)BASISSET%GCont
@@ -415,6 +417,7 @@ SUBROUTINE alloc_and_take_subbasissetinfo(OLDBAS,itype,NEWBAS)
   nprimbast = 0
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
+  NEWBAS%GeminalScalingFactor = OLDBAS%GeminalScalingFactor
   NEWBAS%GCbasis = OLDBAS%GCbasis
   NEWBAS%Spherical = OLDBAS%Spherical
   NEWBAS%labelindex = OLDBAS%labelindex
@@ -474,6 +477,7 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
   NEWBAS%natomtypes = OLDBAS%natomtypes
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
+  NEWBAS%GeminalScalingFactor = OLDBAS%GeminalScalingFactor
   NEWBAS%Gcbasis = OLDBAS%GCbasis
   NEWBAS%Spherical = OLDBAS%Spherical
   NEWBAS%labelindex = OLDBAS%labelindex
@@ -560,6 +564,7 @@ SUBROUTINE add_basissetinfo(lupri,iprint,BAS1,BAS2,NEWBAS,NewLabelindex)
   NEWBAS%natomtypes = BAS1%natomtypes
   NEWBAS%Gcont = BAS1%Gcont .OR. BAS2%Gcont
   NEWBAS%DunningsBasis = BAS1%DunningsBasis .OR. BAS2%DunningsBasis
+  NEWBAS%GeminalScalingFactor = BAS1%GeminalScalingFactor
   NEWBAS%Gcbasis = BAS1%GCbasis
   NEWBAS%Spherical = BAS1%Spherical
   IF(BAS1%labelindex.EQ.0.AND.BAS2%labelindex.EQ.0)THEN
@@ -874,6 +879,7 @@ subroutine buildbasisfrombrakebasinf(BB,NATOMS,nBB,oldBAS,newBAS,labelindex)
   NEWBAS%natomtypes = nBB
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
+  NEWBAS%GeminalScalingFactor = OLDBAS%GeminalScalingFactor
   NEWBAS%Gcbasis = OLDBAS%GCbasis
   NEWBAS%Spherical = OLDBAS%Spherical
   !The labelindex cannot be 0 and nChargeindex must be zero

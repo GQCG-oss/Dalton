@@ -2337,7 +2337,7 @@ contains
        endif
 
        call get_max_batch_and_scheme_ccintegral(maxsize,MinAObatch,scheme,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-       & n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nbuffs,nbu,MyLsItem%setting,MemToUse)
+       & n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nbuffs,nbu,MyLsItem%setting,MemToUse,use_bg_buf)
 
 
        if(DECinfo%PL>2)then
@@ -3330,14 +3330,16 @@ contains
 
 
   subroutine get_max_batch_and_scheme_ccintegral(maxsize,MinAObatch,s,MaxADA,MaxADG,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,&
-        &nbuffs,nbu,set,MemToUse)
+        &nbuffs,nbu,set,MemToUse,use_bg_buf)
      implicit none
      type(lssetting),intent(inout) :: set
-     integer, intent(in)  :: MinAObatch,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nbu
+     integer, intent(in)  :: MinAObatch,n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs
+     integer(kind=8), intent(in) :: nbu
      real(realk), intent(in) :: MemToUse
      integer, intent(out) :: s,MaxADA,MaxADG
      integer, intent(inout) :: nbuffs
      integer(kind=long), intent(out) :: maxsize
+     logical,intent(in) :: use_bg_buf
      integer :: nba, nbg, inc, i, b, e, k, magic
      integer(kind=long) :: w1size,w2size
      integer(kind=ls_mpik) :: nnod
@@ -3363,22 +3365,22 @@ contains
 
      maxsize = w1size + w2size + (i8*n1*n2)*n3*n4
 
-     write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=0: ",g7.2," GB")')&
+     write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=0: ",g9.2," GB")')&
         &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
      check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-        & nbu < maxsize .or. &
+        & (nbu < maxsize.and. use_bg_buf) .or. &
         & DECinfo%test_fully_distributed_integrals
 
      if(check_next)then
 
         s = 1
         maxsize = w1size + w2size
-        write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=1: ",g7.2," GB")')&
+        write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=1: ",g9.2," GB")')&
            &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
         check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-           & nbu < maxsize .or. &
+           & (nbu < maxsize.and.use_bg_buf) .or. &
            & DECinfo%test_fully_distributed_integrals
 
         if( check_next )then
@@ -3389,11 +3391,11 @@ contains
 
            maxsize = w1size + w2size + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
-           write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=2: ",g7.2," GB")')&
+           write (*,'("INFO(get_mo_integral_par): minimal memory requirements for s=2: ",g9.2," GB")')&
               &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
            check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-              & nbu < maxsize .or. &
+              & (nbu < maxsize.and.use_bg_buf) .or. &
               & DECinfo%test_fully_distributed_integrals
 
            if(check_next)then
@@ -3483,10 +3485,13 @@ contains
         call lsquit("ERROR(get_mo_integral_par): the memory adaption is invalid, should not happen",-1)
      endif
 
-     if(maxsize > nbu)then
-        call lsquit("ERROR(get_mo_integral_par): the memory adaption to the bg_buffer is invalid",-1)
-     endif
-
+     IF(use_bg_buf)THEN
+        if(maxsize > nbu)then
+           print*,'nbu',nbu
+           print*,'maxsize',maxsize
+           call lsquit("ERROR(get_mo_integral_par): the memory adaption to the bg_buffer is invalid",-1)
+        endif
+     ENDIF
      MaxADG = nbg
      MaxADA = nba
   end subroutine get_max_batch_and_scheme_ccintegral
