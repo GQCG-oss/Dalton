@@ -1055,21 +1055,6 @@ contains
                ! calculate i and j from composite ij value
                call calc_i_leq_j(ij_comp,nocc,i,j)
 
-               ! has the i and j index changed?
-               if ((i .eq. i_old) .and. (j .ne. j_old)) then
-
-                  ij_type = 1
-
-               else if ((i .ne. i_old) .and. (j .eq. j_old)) then
-
-                  ij_type = 2
-
-               else ! (i .ne. i_old) .and. (j .ne. j_old))
-
-                  ij_type = 3
-
-               end if
-
                !FIND i and j in buffer
                call assoc_ptr_to_buf(i,vvvo,3*nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
                                      & vvvo_pdm_i,vvvo_pdm_buff,ibuf_vvvo,req_vvvo)
@@ -1115,17 +1100,16 @@ contains
 
                call time_start_phase(PHASE_WORK)
 
-               ! select ij combination
-               TypeOf_ij_combi: select case(ij_type)
-
-               case(1) ! i .gt. j
-
 #ifdef VAR_OPENACC
-                  call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
+               if (i .ne. i_old) call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                       & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
+               if ((i .gt. j) .and. (j .ne. j_old)) call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
+                       & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
 #else
-                  call array_reorder_3d(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+               if (i .ne. i_old) call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
+                       & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
+               if ((i .gt. j) .and. (j .ne. j_old)) call array_reorder_3d(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
+                       & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
@@ -1139,248 +1123,71 @@ contains
 !$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3)) if(.not. full_no_frags)
 
-                  ! store j index
-                  j_old = j
+               ! store i and j indices
+               i_old = i
+               j_old = j
 
-               case(2)
+     krun_par: do k=1,j
 
-                  if (i .eq. j) then
+                  ! select type of tuple
+                  tuple_type = -1
 
-! if we can use ccsd_doubles(:,:,:,j), ccsd_doubles_portions_j, vvvo_pdm_j, and ccsdpt_doubles_2(:,:,:,j),
-! then there is no need for this (although we need ccsd_doubles(:,:,:,j)
+                  if ((i .eq. j) .and. (j .eq. k)) cycle ! i == j == k always gives zero contribution
 
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
+                  !FIND k in buffer
+                  call assoc_ptr_to_buf(k,vvvo,3*nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
+                                        & vvvo_pdm_k,vvvo_pdm_buff,kbuf_vvvo,req_vvvo)
+                  call assoc_ptr_to_buf(k,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
+                                        & ccsd_pdm_k,ccsd_pdm_buff,kbuf_ccsd,req_ccsd)
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
+                  !FIND ik, ki, jk, and kj in buffer
+                  ik = (k-1)*nocc+i; ki = (i-1)*nocc+k
+                  jk = (k-1)*nocc+j; kj = (j-1)*nocc+k
+                  call assoc_ptr_to_buf(ik,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
+                                        & vvoo_pdm_ik,vvoo_pdm_buff,ikbuf,req_vvoo)
+                  call assoc_ptr_to_buf(ki,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
+                                        & vvoo_pdm_ki,vvoo_pdm_buff,kibuf,req_vvoo)
+                  call assoc_ptr_to_buf(jk,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
+                                        & vvoo_pdm_jk,vvoo_pdm_buff,jkbuf,req_vvoo)
+                  call assoc_ptr_to_buf(kj,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
+                                        & vvoo_pdm_kj,vvoo_pdm_buff,kjbuf,req_vvoo)
 
-!$acc enter data copyin(vvvo_pdm_i,&
-!$acc& ovoo(:,:,i,j)) async(async_id(2))
+                  ! get the k'th tile
+                  call time_start_phase(PHASE_COMM)
 
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),&
-!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
+                  if( alloc_in_dummy )then
 
-                  else ! i .gt. j
+                     call lsmpi_wait(req_vvvo(kbuf_vvvo))
+                     call lsmpi_wait(req_ccsd(kbuf_ccsd))
+                     call lsmpi_wait(req_vvoo(ikbuf))
+                     call lsmpi_wait(req_vvoo(kibuf))
+                     call lsmpi_wait(req_vvoo(jkbuf))
+                     call lsmpi_wait(req_vvoo(kjbuf))
 
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
+                  else
 
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
+                     if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
+                     if(ccsd_doubles%lock_set(k)) call tensor_unlock_win(ccsd_doubles,k)
+                     if(vvoo%lock_set(ik)) call tensor_unlock_win(vvoo,ik)
+                     if(vvoo%lock_set(ki)) call tensor_unlock_win(vvoo,ki)
+                     if(vvoo%lock_set(jk)) call tensor_unlock_win(vvoo,jk)
+                     if(vvoo%lock_set(kj)) call tensor_unlock_win(vvoo,kj)
 
-!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
+                  endif
 
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3)) if(.not. full_no_frags)
+                  needed_vvvo(kbuf_vvvo) = .true.
+                  needed_ccsd(kbuf_ccsd) = .true.
+                  needed_vvoo(ikbuf)     = .true.; needed_vvoo(kibuf)     = .true.
+                  needed_vvoo(jkbuf)     = .true.; needed_vvoo(kjbuf)     = .true.
 
-                  end if
-
-                  ! store i index
-                  i_old = i
-
-               case(3)
-
-                  if (i .eq. j) then
-
-! if we can use ccsd_doubles(:,:,:,j), ccsd_doubles_portions_j, vvvo_pdm_j, and ccsdpt_doubles_2(:,:,:,j),
-! then these should be used here instead of the ones for 'i'
+                  call time_start_phase(PHASE_WORK)
 
 #ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
+                  if (j .gt. k) call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
 #else
-                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
-
-!$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
-
-!$acc enter data copyin(vvvo_pdm_i,&
-!$acc& ovoo(:,:,i,j)) async(async_id(2))
-
-!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),&
-!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
-
-                  else ! i .gt. j
-
-#ifdef VAR_OPENACC
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-                     call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
-#else
-                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-                     call array_reorder_3d(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
-                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
-#endif
-
-!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
-
-!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
-!$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
-
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
-!$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3)) if(.not. full_no_frags)
-
-                  end if
-
-                  ! store i and j indices
-                  i_old = i
-                  j_old = j
-
-               end select TypeOf_ij_combi
-
-        krun_par: do k=1,j
-
-                     ! select type of tuple
-                     tuple_type = -1
-
-                     if ((i .eq. j) .and. (j .eq. k)) cycle ! i == j == k always gives zero contribution
-
-                     !FIND k in buffer
-                     call assoc_ptr_to_buf(k,vvvo,3*nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
-                                           & vvvo_pdm_k,vvvo_pdm_buff,kbuf_vvvo,req_vvvo)
-                     call assoc_ptr_to_buf(k,ccsd_doubles,3*nbuffs,tiles_in_buf_ccsd,needed_ccsd,&
-                                           & ccsd_pdm_k,ccsd_pdm_buff,kbuf_ccsd,req_ccsd)
-
-                     !FIND ik, ki, jk, and kj in buffer
-                     ik = (k-1)*nocc+i; ki = (i-1)*nocc+k
-                     jk = (k-1)*nocc+j; kj = (j-1)*nocc+k
-                     call assoc_ptr_to_buf(ik,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
-                                           & vvoo_pdm_ik,vvoo_pdm_buff,ikbuf,req_vvoo)
-                     call assoc_ptr_to_buf(ki,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
-                                           & vvoo_pdm_ki,vvoo_pdm_buff,kibuf,req_vvoo)
-                     call assoc_ptr_to_buf(jk,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
-                                           & vvoo_pdm_jk,vvoo_pdm_buff,jkbuf,req_vvoo)
-                     call assoc_ptr_to_buf(kj,vvoo,6*nbuffs,tiles_in_buf_vvoo,needed_vvoo,&
-                                           & vvoo_pdm_kj,vvoo_pdm_buff,kjbuf,req_vvoo)
-
-                     if ((i .eq. j) .and. (j .gt. k)) then
-
-                        ! i == j > k
-                        tuple_type = 1
-
-                        ! get the k'th tile
-                        call time_start_phase(PHASE_COMM)
-
-                        if( alloc_in_dummy )then
-
-                           call lsmpi_wait(req_vvvo(kbuf_vvvo))
-                           call lsmpi_wait(req_ccsd(kbuf_ccsd))
-                           call lsmpi_wait(req_vvoo(ikbuf))
-                           call lsmpi_wait(req_vvoo(kibuf))
-
-                        else
-
-                           if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
-                           if(ccsd_doubles%lock_set(k)) call tensor_unlock_win(ccsd_doubles,k)
-                           if(vvoo%lock_set(ik)) call tensor_unlock_win(vvoo,ik)
-                           if(vvoo%lock_set(ki)) call tensor_unlock_win(vvoo,ki)
-
-                        endif
-
-                        call time_start_phase(PHASE_WORK)
-
-#ifdef VAR_OPENACC
-                        call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
-#else
-                        call array_reorder_3d(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
-#endif
-
-!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
-
-!$acc enter data copyin(vvvo_pdm_k,&
-!$acc& ovoo(:,:,i,k),ovoo(:,:,k,i)) async(async_id(2))
-
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k),&
-!$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(3)) if(.not. full_no_frags)
-
-                     else if ((i .gt. j) .and. (j .eq. k)) then
-
-                        ! i > j == k
-                        tuple_type = 2
-
-!$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2))
-
-                        if( alloc_in_dummy )then
-
-                           call lsmpi_wait(req_vvoo(jkbuf))
-
-                        else
-
-                           if(vvoo%lock_set(jk)) call tensor_unlock_win(vvoo,jk)
-
-                        endif
-
-!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(vvoo(:,:,j,k),&
-!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
-
-                     else
-
-                        ! i > j > k
-                        tuple_type = 3
-
-                        ! get the k'th tile
-                        call time_start_phase(PHASE_COMM)
-
-                        if( alloc_in_dummy )then
-
-                           call lsmpi_wait(req_vvvo(kbuf_vvvo))
-                           call lsmpi_wait(req_ccsd(kbuf_ccsd))
-                           call lsmpi_wait(req_vvoo(ikbuf))
-                           call lsmpi_wait(req_vvoo(kibuf))
-                           call lsmpi_wait(req_vvoo(jkbuf))
-                           call lsmpi_wait(req_vvoo(kjbuf))
-
-                        else
-
-                           if(vvvo%lock_set(k)) call tensor_unlock_win(vvvo,k)
-                           if(ccsd_doubles%lock_set(k)) call tensor_unlock_win(ccsd_doubles,k)
-                           if(vvoo%lock_set(ik)) call tensor_unlock_win(vvoo,ik)
-                           if(vvoo%lock_set(ki)) call tensor_unlock_win(vvoo,ki)
-                           if(vvoo%lock_set(jk)) call tensor_unlock_win(vvoo,jk)
-                           if(vvoo%lock_set(kj)) call tensor_unlock_win(vvoo,kj)
-
-                        endif
-
-                        call time_start_phase(PHASE_WORK)
-
-#ifdef VAR_OPENACC
-                        call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
-#else
-                        call array_reorder_3d(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
-                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
+                  if (j .gt. k) call array_reorder_3d(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
+                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
@@ -1395,46 +1202,56 @@ contains
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
 !$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(3)) if(.not. full_no_frags)
 
-                     end if
+                  call time_start_phase(PHASE_WORK, twall = time_preload )
+                  call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nvirt,nocc,i,j,k,ij_count,3*nbuffs,&
+                                              & needed_vvvo,tiles_in_buf_vvvo,vvvo_pdm_buff,req_vvvo,&
+                                              & .true.,1,nocc)
+                  call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nvirt,nocc,i,j,k,ij_count,3*nbuffs,&
+                                              & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd,&
+                                              & .true.,1,nocc)
+                  call preload_tiles_in_bg_buf(vvoo,jobs,b_size,nvirt,nocc,i,j,k,ij_count,6*nbuffs,&
+                                              & needed_vvoo,tiles_in_buf_vvoo,vvoo_pdm_buff,req_vvoo,&
+                                              & .true.,1,nocc,vovo_array=.true.)
+                  call time_start_phase(PHASE_WORK, ttot = time_preload )
+                  time_preload_tot = time_preload_tot + time_preload
 
-                     needed_vvvo(kbuf_vvvo) = .true.
-                     needed_ccsd(kbuf_ccsd) = .true.
-                     needed_vvoo(ikbuf)     = .true.; needed_vvoo(kibuf)     = .true.
-                     needed_vvoo(jkbuf)     = .true.; needed_vvoo(kjbuf)     = .true.
+                  if ((i .eq. j) .and. (j .gt. k)) then
 
-                     call time_start_phase(PHASE_WORK, twall = time_preload )
-                     call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nvirt,nocc,i,j,k,ij_count,3*nbuffs,&
-                                                 & needed_vvvo,tiles_in_buf_vvvo,vvvo_pdm_buff,req_vvvo,&
-                                                 & .true.,1,nocc)
-                     call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nvirt,nocc,i,j,k,ij_count,3*nbuffs,&
-                                                 & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd,&
-                                                 & .true.,1,nocc)
-                     call preload_tiles_in_bg_buf(vvoo,jobs,b_size,nvirt,nocc,i,j,k,ij_count,6*nbuffs,&
-                                                 & needed_vvoo,tiles_in_buf_vvoo,vvoo_pdm_buff,req_vvoo,&
-                                                 & .true.,1,nocc,vovo_array=.true.)
-                     call time_start_phase(PHASE_WORK, ttot = time_preload )
-                     time_preload_tot = time_preload_tot + time_preload
+                     ! i == j > k
+                     tuple_type = 1
 
-                     ! generate tuple(s)
-                     TypeOfTuple_par_ijk: select case(tuple_type)
+                  else if ((i .gt. j) .and. (j .eq. k)) then
 
-                     case(1)
+                     ! i > j == k
+                     tuple_type = 2
+
+                  else
+
+                     ! i > j > k
+                     tuple_type = 3
+
+                  end if
+
+                  ! generate tuple(s)
+                  TypeOfTuple_par_ijk: select case(tuple_type)
+
+                  case(1)
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
-                        call time_start_phase(PHASE_WORK, twall = time_trip )
-                        call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_k,&
-                                                & ccsd_doubles_portions_i,ccsd_doubles_portions_k,&
-                                                & vvvo_pdm_i,vvvo_pdm_k,&
-                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
-                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
-                        call time_start_phase(PHASE_WORK, ttot = time_trip )
-                        time_trip_tot = time_trip_tot + time_trip
+                     call time_start_phase(PHASE_WORK, twall = time_trip )
+                     call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_k,&
+                                             & ccsd_doubles_portions_i,ccsd_doubles_portions_k,&
+                                             & vvvo_pdm_i,vvvo_pdm_k,&
+                                             & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+                                             & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                     call time_start_phase(PHASE_WORK, ttot = time_trip )
+                     time_trip_tot = time_trip_tot + time_trip
 
 !$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-                        if (full_no_frags) then
+                     if (full_no_frags) then
 
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
@@ -1442,38 +1259,38 @@ contains
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
-                           call time_start_phase(PHASE_WORK, twall = time_efull )
-                           call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                                & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ki,&
-                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
-                                                & e4,async_id,num_ids,cublas_handle)
-                           call time_start_phase(PHASE_WORK, ttot = time_efull )
-                           time_efull_tot = time_efull_tot + time_efull
+                        call time_start_phase(PHASE_WORK, twall = time_efull )
+                        call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                             & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ki,&
+                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
+                                             & e4,async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_efull )
+                        time_efull_tot = time_efull_tot + time_efull
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3))
  
-                        else
+                     else
 
-                           call time_start_phase(PHASE_WORK, twall = time_driv )
+                        call time_start_phase(PHASE_WORK, twall = time_driv )
 #ifdef VAR_OPENACC
-                           call trip_denom_ijk_acc(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+                        call trip_denom_ijk_acc(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
 #else
-                           call trip_denom_ijk_cpu(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+                        call trip_denom_ijk_cpu(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif   
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
  
-                           call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ki,&
-                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
-                                                & vvvo_pdm_i,vvvo_pdm_k,&
-                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
-                                                & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
-                                                & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
-                                                & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
-                                                & async_id,num_ids,cublas_handle)
-                           call time_start_phase(PHASE_WORK, ttot = time_driv )
-                           time_driv_tot = time_driv_tot + time_driv
+                        call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ki,&
+                                             & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
+                                             & vvvo_pdm_i,vvvo_pdm_k,&
+                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
+                                             & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
+                                             & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
+                                             & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
+                                             & async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_driv )
+                        time_driv_tot = time_driv_tot + time_driv
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
@@ -1484,60 +1301,60 @@ contains
 !$acc& copyout(ccsdpt_doubles_2(:,:,:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(3))
 
-                        endif
+                     endif
 
-                     case(2)
+                  case(2)
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
-                        call time_start_phase(PHASE_WORK, twall = time_trip )
-                        call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_j,&
-                                                & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
-                                                & vvvo_pdm_i,vvvo_pdm_j,&
-                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
-                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
-                        call time_start_phase(PHASE_WORK, ttot = time_trip )
-                        time_trip_tot = time_trip_tot + time_trip
+                     call time_start_phase(PHASE_WORK, twall = time_trip )
+                     call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_j,&
+                                             & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
+                                             & vvvo_pdm_i,vvvo_pdm_j,&
+                                             & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
+                                             & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                     call time_start_phase(PHASE_WORK, ttot = time_trip )
+                     time_trip_tot = time_trip_tot + time_trip
 
-                        if (full_no_frags) then
+                     if (full_no_frags) then
 
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(ovoo(:,:,j,k)) async(async_id(2))
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
-                           call time_start_phase(PHASE_WORK, twall = time_efull )
-                           call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                                & vvoo_pdm_ij,vvoo_pdm_ji,vvoo_pdm_jk,&
-                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-                                                & e4,async_id,num_ids,cublas_handle)
-                           call time_start_phase(PHASE_WORK, ttot = time_efull )
-                           time_efull_tot = time_efull_tot + time_efull
+                        call time_start_phase(PHASE_WORK, twall = time_efull )
+                        call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                             & vvoo_pdm_ij,vvoo_pdm_ji,vvoo_pdm_jk,&
+                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+                                             & e4,async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_efull )
+                        time_efull_tot = time_efull_tot + time_efull
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,j,k)) async(async_id(3))
 
-                        else
+                     else
 
-                           call time_start_phase(PHASE_WORK, twall = time_driv )   
+                        call time_start_phase(PHASE_WORK, twall = time_driv )   
 #ifdef VAR_OPENACC
-                           call trip_denom_ijk_acc(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+                        call trip_denom_ijk_acc(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
 #else
-                           call trip_denom_ijk_cpu(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+                        call trip_denom_ijk_cpu(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-                           call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo_pdm_ij,vvoo_pdm_ji,vvoo_pdm_jk,&
-                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
-                                                & vvvo_pdm_i,vvvo_pdm_j,&
-                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-                                                & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-                                                & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
-                                                & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,&
-                                                & async_id,num_ids,cublas_handle)
-                           call time_start_phase(PHASE_WORK, ttot = time_driv )
-                           time_driv_tot = time_driv_tot + time_driv
+                        call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo_pdm_ij,vvoo_pdm_ji,vvoo_pdm_jk,&
+                                             & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
+                                             & vvvo_pdm_i,vvvo_pdm_j,&
+                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+                                             & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
+                                             & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
+                                             & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,&
+                                             & async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_driv )
+                        time_driv_tot = time_driv_tot + time_driv
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(ovoo(:,:,j,k)) async(async_id(2))
@@ -1546,27 +1363,27 @@ contains
 !$acc exit data delete(vvoo(:,:,j,k))&
 !$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3))
 
-                        endif
+                     endif
 
-                     case(3)
+                  case(3)
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
-                        call time_start_phase(PHASE_WORK, twall = time_trip )
-                        call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
-                                                & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
-                                                & ccsd_doubles_portions_k,vvvo_pdm_i,&
-                                                & vvvo_pdm_j,vvvo_pdm_k,&
-                                                & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
-                                                & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
-                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
-                        call time_start_phase(PHASE_WORK, ttot = time_trip )
-                        time_trip_tot = time_trip_tot + time_trip
+                     call time_start_phase(PHASE_WORK, twall = time_trip )
+                     call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
+                                             & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
+                                             & ccsd_doubles_portions_k,vvvo_pdm_i,&
+                                             & vvvo_pdm_j,vvvo_pdm_k,&
+                                             & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
+                                             & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
+                                             & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                     call time_start_phase(PHASE_WORK, ttot = time_trip )
+                     time_trip_tot = time_trip_tot + time_trip
 
 !$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
-                        if (full_no_frags) then
+                     if (full_no_frags) then
 
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
@@ -1574,44 +1391,44 @@ contains
 
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
-                           call time_start_phase(PHASE_WORK, twall = time_efull )
-                           call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
-                                                & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,&
-                                                & vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
-                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
-                                                & e4,async_id,num_ids,cublas_handle)
-                           call time_start_phase(PHASE_WORK, ttot = time_efull )
-                           time_efull_tot = time_efull_tot + time_efull
+                        call time_start_phase(PHASE_WORK, twall = time_efull )
+                        call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                             & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,&
+                                             & vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
+                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
+                                             & e4,async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_efull )
+                        time_efull_tot = time_efull_tot + time_efull
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3))
 
-                        else
+                     else
 
-                           call time_start_phase(PHASE_WORK, twall = time_driv )
+                        call time_start_phase(PHASE_WORK, twall = time_driv )
 #ifdef VAR_OPENACC 
-                           call trip_denom_ijk_acc(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
+                        call trip_denom_ijk_acc(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(4))
 #else
-                           call trip_denom_ijk_cpu(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
+                        call trip_denom_ijk_cpu(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl)
 #endif
 
 !$acc wait(async_id(2),async_id(3),async_id(4)) async(async_id(5))
 
-                           call ccsdpt_driver_ijk_case3(i,j,k,nocc,nvirt,&
-                                                & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,&
-                                                & vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
-                                                & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
-                                                & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
-                                                & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
-                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
-                                                & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,i,k),&
-                                                & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
-                                                & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
-                                                & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
-                                                & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
-                                                & async_id,num_ids,cublas_handle)
-                           call time_start_phase(PHASE_WORK, ttot = time_driv )
-                           time_driv_tot = time_driv_tot + time_driv
+                        call ccsdpt_driver_ijk_case3(i,j,k,nocc,nvirt,&
+                                             & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,&
+                                             & vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
+                                             & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
+                                             & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
+                                             & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
+                                             & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
+                                             & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,i,k),&
+                                             & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
+                                             & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
+                                             & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
+                                             & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
+                                             & async_id,num_ids,cublas_handle)
+                        call time_start_phase(PHASE_WORK, ttot = time_driv )
+                        time_driv_tot = time_driv_tot + time_driv
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k,&
@@ -1623,27 +1440,27 @@ contains
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
 !$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(3))
 
-                        endif
+                     endif
 
-                     end select TypeOfTuple_par_ijk
+                  end select TypeOfTuple_par_ijk
 
-                     needed_vvvo(kbuf_vvvo) = .false.
-                     needed_ccsd(kbuf_ccsd) = .false.
-                     needed_vvoo(ikbuf)     = .false.; needed_vvoo(kibuf)     = .false.
-                     needed_vvoo(jkbuf)     = .false.; needed_vvoo(kjbuf)     = .false.
+                  needed_vvvo(kbuf_vvvo) = .false.
+                  needed_ccsd(kbuf_ccsd) = .false.
+                  needed_vvoo(ikbuf)     = .false.; needed_vvoo(kibuf)     = .false.
+                  needed_vvoo(jkbuf)     = .false.; needed_vvoo(kjbuf)     = .false.
 
-                  end do krun_par
+               end do krun_par
 
-               needed_vvvo(ibuf_vvvo) = .false.; needed_ccsd(ibuf_ccsd) = .false.
-               needed_vvvo(jbuf_vvvo) = .false.; needed_ccsd(jbuf_ccsd) = .false.
-               needed_vvoo(ijbuf)     = .false.; needed_vvoo(jibuf)     = .false.
+            needed_vvvo(ibuf_vvvo) = .false.; needed_ccsd(ibuf_ccsd) = .false.
+            needed_vvvo(jbuf_vvvo) = .false.; needed_ccsd(jbuf_ccsd) = .false.
+            needed_vvoo(ijbuf)     = .false.; needed_vvoo(jibuf)     = .false.
 
-               if (j .eq. i) then
+            if (j .eq. i) then
 
 !$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-                  if (full_no_frags) then
+               if (full_no_frags) then
 
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,&
@@ -1652,7 +1469,7 @@ contains
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j)) async(async_id(3))
 
-                  else
+               else
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,&
@@ -1663,14 +1480,14 @@ contains
 !$acc& copyout(ccsdpt_doubles_2(:,:,:,i),&
 !$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3))
 
-                  endif
+               endif
 
-               else ! i .gt. j
+            else ! i .gt. j
 
 !$acc wait(async_id(4)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-                  if (full_no_frags) then
+               if (full_no_frags) then
 
 !$acc wait(async_id(4)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j,&
@@ -1679,7 +1496,7 @@ contains
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3))
 
-                  else
+               else
 
 !$acc wait(async_id(5)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j,&
@@ -1690,11 +1507,11 @@ contains
 !$acc& copyout(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3))
 
-                  endif
+               endif
 
-               end if
+            end if
 
-            end do ijrun_par
+         end do ijrun_par
 
     call time_start_phase(PHASE_WORK)
 
@@ -3238,10 +3055,12 @@ contains
 !$acc enter data copyin(ccsd_doubles(:,:,:,a)) async(async_id(1))
 
 #ifdef VAR_OPENACC
-                call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_a((a_count-1)*nocc**2*nvirt+1:a_count*nocc**2*nvirt),&
+                call array_reorder_3d_acc(1.0E0_realk,&
+                        & ccsd_pdm_a((a_count-1)*nocc**2*nvirt+1:a_count*nocc**2*nvirt),&
                         & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a,async_id(1))
 #else
-                call array_reorder_3d(1.0E0_realk,ccsd_pdm_a((a_count-1)*nocc**2*nvirt+1:a_count*nocc**2*nvirt),&
+                call array_reorder_3d(1.0E0_realk,&
+                        & ccsd_pdm_a((a_count-1)*nocc**2*nvirt+1:a_count*nocc**2*nvirt),&
                         & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a)
 #endif
 
@@ -3260,23 +3079,14 @@ contains
 
                    endif
 
-                   if (b .eq. a) then
-
-!$acc enter data copyin(oovv(:,:,a,b)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(oovv(:,:,a,b),&
-!$acc& ccsdpt_doubles(:,:,a,b)) async(async_id(3)) if(.not. full_no_frags)
-
-                   else ! a .gt. b
-
-!$acc enter data copyin(ccsd_doubles(:,:,:,b)) async(async_id(1))
-
 #ifdef VAR_OPENACC
-                      call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_b((b_count-1)*nocc**2*nvirt+1:b_count*nocc**2*nvirt),&
-                              & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b,async_id(1))
+                   if (a .gt. b) call array_reorder_3d_acc(1.0E0_realk,&
+                           & ccsd_pdm_b((b_count-1)*nocc**2*nvirt+1:b_count*nocc**2*nvirt),&
+                           & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b,async_id(1))
 #else
-                      call array_reorder_3d(1.0E0_realk,ccsd_pdm_b((b_count-1)*nocc**2*nvirt+1:b_count*nocc**2*nvirt),&
-                              & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
+                   if (a .gt. b) call array_reorder_3d(1.0E0_realk,&
+                           & ccsd_pdm_b((b_count-1)*nocc**2*nvirt+1:b_count*nocc**2*nvirt),&
+                           & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
 #endif
 
 !$acc enter data copyin(ooov(:,:,:,b)) async(async_id(2))
@@ -3286,8 +3096,6 @@ contains
 !$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a),&
 !$acc& ccsdpt_doubles_2(:,:,:,b),&
 !$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3)) if(.not. full_no_frags)
-
-                   endif
 
                    do c = c_pos,c_pos+tile_size_tmp_c-1
 
@@ -3299,6 +3107,27 @@ contains
                          cycle
    
                       endif
+
+#ifdef VAR_OPENACC
+                      if (b .gt. c) call array_reorder_3d_acc(1.0E0_realk,&
+                              & ccsd_pdm_c((c_count-1)*nocc**2*nvirt+1:c_count*nocc**2*nvirt),&
+                              & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c,async_id(1))
+#else
+                      if (b .gt. c) call array_reorder_3d(1.0E0_realk,&
+                              & ccsd_pdm_c((c_count-1)*nocc**2*nvirt+1:c_count*nocc**2*nvirt),&
+                              & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c)
+#endif
+
+!$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
+
+!$acc enter data copyin(ooov(:,:,:,c)) async(async_id(2))
+
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
+!
+!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b),&
+!$acc& ccsdpt_doubles_2(:,:,:,c),&
+!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
+!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3)) if(.not. full_no_frags)
 
                       ! select type of tuple
                       tuple_type = -1
@@ -3317,54 +3146,16 @@ contains
          
                          ! a == b > c
                          tuple_type = 1
-
-!$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
-
-!$acc enter data copyin(ooov(:,:,:,c)) async(async_id(2))
-
-!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),&
-!$acc& ccsdpt_doubles_2(:,:,:,c),&
-!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3)) if(.not. full_no_frags)
          
                       else if ((a .gt. b) .and. (b .eq. c)) then
          
                          ! a > b == c
                          tuple_type = 2
 
-!$acc enter data copyin(oovv(:,:,b,c)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(oovv(:,:,b,c),&
-!$acc& ccsdpt_doubles(:,:,b,c)) async(async_id(3)) if(.not. full_no_frags)
-         
                       else
          
                          ! a > b > c 
                          tuple_type = 3
-
-!$acc enter data copyin(ccsd_doubles(:,:,:,c)) async(async_id(1))
-
-!$acc enter data copyin(ooov(:,:,:,c)) async(async_id(2))
-
-!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
-!
-!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b),&
-!$acc& ccsdpt_doubles_2(:,:,:,c),&
-!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
-!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3)) if(.not. full_no_frags)
-         
-                      end if
-         
-                      if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
-
-#ifdef VAR_OPENACC
-                         call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_c((c_count-1)*nocc**2*nvirt+1:c_count*nocc**2*nvirt),&
-                                 & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c,async_id(1))
-#else
-                         call array_reorder_3d(1.0E0_realk,ccsd_pdm_c((c_count-1)*nocc**2*nvirt+1:c_count*nocc**2*nvirt),&
-                                 & nocc,nocc,nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_c)
-#endif
          
                       end if
 
