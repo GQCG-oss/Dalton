@@ -832,7 +832,7 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
   INTEGER            :: LUPRI
   INTEGER            :: unique1(nBasisBasParam),unique2,uniqueCharge,IPRINT
   LOGICAL            :: PRINTATOMCOORD,pointcharge,phantom,DunningsBasis
-  LOGICAL            :: UniqueLabel
+  LOGICAL            :: UniqueLabel,PhantomLabel
   INTEGER :: basunique2(nBasisBasParam),basissetnumber2(nBasisBasParam)
   INTEGER :: basissetnumber(nBasisBasParam),basissetnumber1(nBasisBasParam)
   INTEGER :: nSubsystemLabels,iSubsystemLabels,iBas
@@ -841,6 +841,7 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
   atomnumber=0
   basissetnumber=0
   DunningsBasis = .TRUE.
+  PhantomLabel = .FALSE.
   nSubsystemLabels = 0 
   DO I=1,Atomtypes
    CALL READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,ATOMBASIS,&
@@ -849,9 +850,14 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
       Call DetermineUniqueLabel(UniqueLabel,SubsystemLabels,Atomtypes,SubsystemLabel,&
            & nSubsystemLabels,iSubsystemLabels)
       IF(UniqueLabel)THEN
-         nSubsystemLabels = nSubsystemLabels + 1 
-         iSubsystemLabels = nSubsystemLabels
-         SubsystemLabels(nSubsystemLabels) = SubsystemLabel
+         IF(SubsystemLabel(1:5).EQ.'     ')THEN
+            PhantomLabel = .TRUE.
+            iSubsystemLabels = -2
+         ELSE
+            nSubsystemLabels = nSubsystemLabels + 1 
+            iSubsystemLabels = nSubsystemLabels
+            SubsystemLabels(nSubsystemLabels) = SubsystemLabel
+         ENDIF
       ENDIF
    ELSE
       iSubsystemLabels = -1
@@ -1017,6 +1023,15 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
 ENDDO
 
   IF(Subsystems)THEN
+!     IF(PhantomLabel)THEN
+!        nSubsystemLabels = nSubsystemLabels + 1 
+!        SubsystemLabels(nSubsystemLabels) = ' '
+!        DO J=1,nAtoms             
+!           IF(MOLECULE%ATOM(J)%Phantom.AND.MOLECULE%ATOM(J)%SubSystemIndex.EQ.-2)THEN
+!              MOLECULE%ATOM(J)%SubSystemIndex = nSubsystemLabels
+!           ENDIF
+!        ENDDO
+!     ENDIF
      MOLECULE%nSubSystems = nSubsystemLabels
      call mem_alloc(MOLECULE%SubSystemLabel,nSubsystemLabels)
      DO I=1,nSubsystemLabels
@@ -1348,7 +1363,9 @@ ELSE
    ENDIF
 ENDIF
 
+
 IF (SubSystems) THEN
+   SubsystemLabel = ' '
    IPOS = INDEX(TEMPLINE,'SubSystem')
    IF (IPOS .NE. 0) THEN
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
