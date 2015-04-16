@@ -675,7 +675,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   integer                      :: natoms,icoor,jcoor,k,lupri,nbast,luerr,n_rhs
   Character(len=4),allocatable :: atomName(:)
   real(realk)                  :: TS,TE
-  type(Matrix)     :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1),Xk(1),GbJ(3), GbK(3),Gm(3),tf1,tf2, tempmx,GbDX(3)
+  type(Matrix)     :: Dx(3),NDX(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1),Xk(1),GbJ(3), GbK(3),Gm(3),tf1,tf2, tempmx,GbDX(3)
   type(Matrix),pointer ::  RHSk(:),  DXk(:),hk(:),hb(:),GkD(:),tempk(:),sdf(:),DXD(:), DX0(:)
   integer              :: ntrial,nrhs,nsol,nomega,nstart
   character(len=1)        :: CHRXYZ(-3:3)
@@ -721,7 +721,9 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
      call mat_mul(SX(icoor),D(1),'n','n',1E0_realk,0.E0_realk,tempm1)     !tempm1 = SX*D
  !   call mat_free(SX(icoor))                    
      call mat_init(DX(icoor),nbast,nbast)        
+     call mat_init(NDX(icoor),nbast,nbast)        
      call mat_mul(D(1),tempm1,'n','n',-1.0E0_realk,0.E0_realk,DX(icoor))  !DX = -D*SX*D
+     call mat_mul(D(1),tempm1,'n','n',-1.0E0_realk,0.E0_realk,NDX(icoor))  !NDX = -D*SX*D
   enddo
 
   do icoor = 1,3 
@@ -925,6 +927,11 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
       !We can use the RSP solver, since K([D,Xk]s) = sigma = -1/2 * E[2]Xk
       !
       !############################################################################
+     
+  do icoor=1,3*natoms
+        call mat_init(DXk(icoor),nbast,nbast)
+  enddo
+  
   do icoor = 1,3*natoms
      eivalk(1)=0.0E0_realk
      write(lupri,*)'Calling rsp solver for Xk  '
@@ -951,12 +958,12 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
 
      !Make D^k=[D_0,X^k]_s
   
-      call mat_init(DXk(icoor),nbast,nbast)
+  !    call mat_init(DXk(icoor),nbast,nbast)
       call ABCcommutator(nbast,D(1),Xk(1),S,DXk(icoor))       !Generate [D_0,X^k]_s 
       call mat_free(Xk(1)) 
   enddo
   do icoor = 1,3*natoms 
-     call mat_scal(-1.00d0,DXk(icoor))
+     call mat_scal(-4.0d0,DXk(icoor))
   enddo
   !############################################################################
   !    Make NMST = Tr D^b*h^k + Tr D*h^kb + Tr D^k*h^b +  Tr (D^k)*(G^b(D))
@@ -968,7 +975,6 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   write(lupri,*) '---------------------------------------------------------'
 
 
-  !NMST = Tr D*h^kb + Tr D^b*h^k +Tr (D^K)*G^b(D) +Tr D*h^bk
  
   !###########################################################################
   !    Additional Term for Shielding Tensor :   Tr (D^b)*(G(D^k)) = X6
@@ -995,7 +1001,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   call mem_dealloc(tempK)
   do icoor=1,3
      do jcoor=1,3*natoms
-       nmst3(icoor,jcoor)=mat_trAB(DX(icoor),GkD(jcoor))  ! nmst3 - Tr (D^b) * G(D^k)
+       nmst3(icoor,jcoor)=mat_trAB(NDX(icoor),GkD(jcoor))  ! nmst3 - Tr (D0^b) * G(D^k)
      enddo
   enddo
   ! Printing  (D^b)*(G(D^k)) in output file  over (icoor,jcoor) 
@@ -1011,7 +1017,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   call mem_dealloc(GkD)
   
   !#################################################################################
-  !      Debugging the term X6: Tr (D^b)*(G(D^k)) = X6 = Tr (D^K)*(G(D^b))
+  !      Debugging the term X6: Tr (D^k)*(G(D0^b)) 
   !
   !#################################################################################
 
@@ -1020,14 +1026,14 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   call mat_init(GbDX(3),nbast,nbast)                                  
   !Write (lupri,*)   "step 1 completed: debug X6 " 
 
-  call di_GET_GbDs(lupri,luerr,DX,GbDX,3,molcfg%setting)  ! G(D^B)
+  call di_GET_GbDs(lupri,luerr,NDX,GbDX,3,molcfg%setting)  ! G(D0^B)
 
   !Write (lupri,*)   "step 2 completed: debug X6 " 
   call mem_alloc(DSX6,3*natoms,3)
   do icoor=1,3
     do jcoor=1,3*natoms
       DSX6(jcoor,icoor)=mat_trAB(DXk(jcoor),GbDX(icoor))   ! (D^k)*G(D*B)
-  enddo
+    enddo
   enddo
  
   !Printing the array
@@ -1042,7 +1048,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
     call mat_free(GbDX(icoor))
   enddo
 
-  !Write (lupri,*)   "step 4 completed: debug X4 " 
+  !Write (lupri,*)   "step 4 completed: debug X6 " 
 
   !###########################################################################
   !    Additional Term for Shielding Tensor :   Tr (D^k)*(G^b(D)) = X5
@@ -1060,7 +1066,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   do icoor=1,3
      do jcoor=1,3*natoms
   
-     call mat_add(1.0E0_realk,GbJ(icoor),1.0E0_realk,GbK(icoor),Gm(icoor)) !Generate G^b= J^b+K^b
+        call mat_add(1.0E0_realk,GbJ(icoor),1.0E0_realk,GbK(icoor),Gm(icoor)) !Generate G^b= J^b+K^b
         nmst2(jcoor,icoor)= mat_trAB(DXk(jcoor),Gm(icoor))       !  (D^k)*(G^b(D))
      enddo
   enddo
@@ -1139,13 +1145,14 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
 
   !Write (lupri,*)   "step 1 completed: debug X4 " 
   do icoor=1,3
-     call mat_add(-1.0E0_realk,DX(icoor),1.0E0_realk,DX0(icoor),DXD(icoor)) !Generate DXD= -D^b + D0^b
+     call mat_add(1.0E0_realk,DX(icoor),-1.0E0_realk,DX0(icoor),DXD(icoor)) !Generate DXD= -D^b + D0^b
   enddo
   
   !Write (lupri,*)   "step 2 completed: debug X4 " 
   call mem_alloc(DSX4,3*NATOMS,3)
   !expval(3,NATOM,ndmat) X,Y,Z comp for each atom for each B derivate Density Matrix
-  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,DSX4,DXD,3,3*NATOMS,'PSO    ')  
+  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,DSX4,DXD,3,3*NATOMS,'PSO    ')  !h^K*DXD
+
 
   ! Printing  (D^k)*(h^b) in output file  over (icoor,jcoor) 
   WRITE(lupri,*)  'icoor', 'jcoor', 'DEBUGGING: |PURE (h^K)*(D0^b-D^b)|  DSX4:  - 2*factor*DSX4(jcoor,icoor)'
@@ -1156,7 +1163,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   enddo
   !Write (lupri,*)   "step 3 completed: debug X4 " 
   do icoor=1,3 
-     call mat_free(DX0(icoor))
+!     call mat_free(DX0(icoor))
      call mat_free(DXD(icoor))
   enddo
   ! do icoor=1,3
@@ -1164,11 +1171,11 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   !enddo
   call mat_free(tempmx)
   
-  call mem_dealloc(DX0)
+!  call mem_dealloc(DX0)
   call mem_dealloc(DXD)
   !Write (lupri,*)   "step 4 completed: debug X4 " 
   !#############################################################################
-  !     Pre-existing term: X3= Tr D^b*h^k
+  !     term: X3= Tr D0^b*h^k
   !
   !#############################################################################
 
@@ -1177,7 +1184,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
 
   call mem_alloc(NMST,3*NATOMS,3)
   !expval(3,NATOM,ndmat) X,Y,Z comp for each atom for each B derivate Density Matrix
-  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,NMST,Dx,3,3*NATOMS,'PSO    ')  
+  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,NMST,NDX,3,3*NATOMS,'PSO    ')  
   
   ! Printing  (D^b)*(h^k) in output file  over (icoor,jcoor) 
   WRITE(lupri,*)  'icoor', 'jcoor', 'X3, |PURE (D^b)*(h^k)|  NMST:  - 2*factor*NMST(jcoor,icoor)'
@@ -1188,8 +1195,12 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   enddo
   do icoor=1,3
      call mat_free(DX(icoor))
+     call mat_free(NDX(icoor))
   enddo
 
+  do icoor=1,3*natoms
+     call mat_free(DXk(icoor))
+  enddo
   !#############################################################################
   !     Pre-existing term: X1 = Tr D*h^kb 
   ! 
@@ -1226,7 +1237,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
   
   !Printing values of trace for X3
 
-  !WRITE(LUPRI,*) "      Debugging the terms   for X3"
+  !WRITE(LUPRI,*) "        for X3"
   WRITE(LUPRI,*) "      These are X3 Values"
   WRITE(LUPRI,'(A,I12)') "number of atoms:",natoms
   do jcoor=1,natoms  
@@ -1241,7 +1252,11 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
      do jcoor=1,3*natoms  ! magnetic moment koordinate
 !        WRITE(lupri,*)'NMST:',- 2*factor*NMST(jcoor,icoor), 2*factor*expval(icoor,jcoor),'=',&
 !             & 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor))
-      NMST(jcoor,icoor) = 2*factor*(-NMST(jcoor,icoor) +expval(icoor,jcoor)+ NMST1(jcoor,icoor) &
+!      NMST(jcoor,icoor) = 2*factor*(-NMST(jcoor,icoor) +expval(icoor,jcoor)+ NMST1(jcoor,icoor) &
+ !                    &  + NMST2(jcoor,icoor)  - NMST3(icoor,jcoor)) 
+  !      NMST(jcoor,icoor) = 2*factor*( expval(icoor,jcoor)+ NMST1(jcoor,icoor) &
+  !                   &  + NMST2(jcoor,icoor)) 
+      NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor) +expval(icoor,jcoor)+ NMST1(jcoor,icoor) &
                      &  + NMST2(jcoor,icoor)  - NMST3(icoor,jcoor)) 
      enddo
   enddo
@@ -1313,7 +1328,7 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
      WRITE (LUPRI,'(2X,A8,3F15.8)')  atomname(jcoor)//CHRXYZ(3),(NMST(3*jCOOR,K),K=1,3)
   enddo
 
-  !Printing values of trace for X1
+  !Printing values of trace for X3
 
   WRITE(LUPRI,*) "      These are X1 Values"
   WRITE(LUPRI,'(A,I12)') "number of atoms:",natoms
@@ -1357,8 +1372,8 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
    WRITE (LUPRI,'(2X,A8,f15.8,A8)')  atomname(jcoor), &
         & factor*2.0E0_realk/3.0E0_realk*(NMST3(1,3*jCOOR-2)+NMST3(2,3*jCOOR-1)+NMST3(3,3*jCOOR))
   enddo
+  
   !Printing values of trace for X6 debug equivalent term 
-
   ! WRITE(LUPRI,*) "      Debugging the terms   for X6"
   WRITE(LUPRI,*) "      These are corresponding debug term values for X6"
   WRITE(LUPRI,'(A,I12)') "number of atoms:",natoms
