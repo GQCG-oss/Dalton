@@ -3,6 +3,9 @@ $ H,He,Li,Be,B,C,N,O,F,Ne,Na,Mg,Al,Si,P,S,Cl,Ar,K,Ca,Sc,Ti,V,Cr,Mn,Fe,Co,Ni,Cu,Z
 $ Se,Br,Kr,Rb,Sr,Y,Zr,Nb,Mo,Tc,Ru,Rh,Pd,Ag,Cd,In,Sn,Sb,Te,I,Xe,Cs,Ba,La,Hf,Ta,W,Re,Os,Ir,
 $ Pt,Au,Hg,Tl,Pb,Bi,Po,At,Rn
 $
+$ "Hartree-Fock exchange fitting basis sets for H to Rn"
+$ Florian Weigend, J. Comput. Chem., 29, 167-175 (2008)
+$
 $ TURBOMOLE Basis Set Library
 $ JKBasis : def2-QZVPP in Dalton-Format
 $
