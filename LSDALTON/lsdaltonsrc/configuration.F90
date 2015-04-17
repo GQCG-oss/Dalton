@@ -153,6 +153,7 @@ implicit none
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
   config%InteractionEnergy = .false.
+  config%access_stream = .false.
   config%SameSubSystems = .false.
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
@@ -171,6 +172,7 @@ implicit none
   config%doRIMP2=.false.
   config%doTestMPIcopy = .false.
   config%skipscfloop = .false.
+  config%papitest=.false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
   print*,'config_set_default_config:',infpar%inputBLOCKSIZE
@@ -204,7 +206,7 @@ implicit none
    !read the MOLECULE.INP and set input
    call read_molfile_and_build_molecule(lupri,config%molecule,config%LIB,&
         & .FALSE.,0,config%integral%DoSpherical,config%integral%basis,&
-        & config%latt_config)
+        & config%latt_config,config%integral%atombasis)
    config%integral%nelectrons = config%molecule%nelectrons 
    config%integral%molcharge = INT(config%molecule%charge)
    !read the LSDALTON.INP and set input
@@ -637,6 +639,8 @@ DO
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
+      config%integral%PreCalcDFscreening =  config%doRIMP2
+      config%integral%PreCalcF12screening =  config%doF12
    END IF DECInput
 
    ! Input for full molecular CC calculation
@@ -645,6 +649,8 @@ DO
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
+      config%integral%PreCalcDFscreening =  config%doRIMP2
+      config%integral%PreCalcF12screening =  config%doF12
    END IF CCinput
 
 
@@ -1031,7 +1037,7 @@ subroutine DEC_meaningful_input(config)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
-
+  logical :: NotAcceptedModel
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
@@ -1129,10 +1135,11 @@ subroutine DEC_meaningful_input(config)
         endif
         ! For the release we only include DEC-MP2
 #ifndef MOD_UNRELEASED
-        if(DECinfo%ccmodel/=MODEL_MP2 .and. (.not. DECinfo%full_molecular_cc) ) then
+        NotAcceptedModel = DECinfo%ccmodel/=MODEL_MP2 .AND. DECinfo%ccmodel/=MODEL_RIMP2
+        if(NotAcceptedModel .and. (.not. DECinfo%full_molecular_cc) ) then
            print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
            print *, 'using the **CC section rather than the **DEC section.'
-           call lsquit('DEC is currently only available for the MP2 model!',-1)
+           call lsquit('DEC is currently only available for the MP2 and RI-MP2 model!',-1)
         end if
 #endif
      end if OrbLocCheck
@@ -1247,6 +1254,12 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            !Calculated the Interaction energy 
            !using Counter Poise Correction
            config%InteractionEnergy = .true.
+        CASE('.PAPITEST')
+           config%papitest=.true.
+        CASE('.ACCESS_STREAM')
+           ! Use stream access on all files open with lsopen
+           config%access_stream = .true.
+           access_stream = .true.
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
         CASE('.SUBSYSTEMDENSITY')
@@ -3681,10 +3694,17 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 
    CABS_BASIS_PRESENT = config%integral%basis(CABBasParam) .OR. config%integral%basis(CAPBasParam)
 
-   if(config%doF12 .AND. (.NOT. CABS_BASIS_PRESENT))then
-      WRITE(config%LUPRI,'(/A)') &
-           &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
-      CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+   if(config%doF12)THEN
+      if(.NOT. CABS_BASIS_PRESENT)then         
+         WRITE(config%LUPRI,'(/A)') &
+              &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+         CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+      endif
+      WRITE(config%LUPRI,'(A,F7.1)')'The F12 Geminal exponent for the Regular Basis = ',&
+           & ls%setting%basis(1)%p%BINFO(REGBASPARAM)%GeminalScalingFactor
+      IF(config%integral%ATOMBASIS)THEN
+         WRITE(config%LUPRI,'(A)') 'WARNING BASIS (NOT ATOMBASIS) is required to auto detect the Geminal exponent'
+      ENDIF
    endif
 !ADMM basis input
    if(config%integral%ADMM_EXCHANGE) THEN
@@ -3903,7 +3923,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('Compressed Sparse Row (CSR) not implemented for unrestricted!',config%lupri)
       else
 #ifdef VAR_MKL
-         CALL mat_select_type(mtype_csr,lupri)
+         CALL mat_select_type(mtype_csr,lupri)         
          call mat_inquire_cutoff(cutoff)
          write(config%lupri,*)
          write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d10.2)') cutoff

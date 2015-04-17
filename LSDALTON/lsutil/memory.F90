@@ -1,6 +1,7 @@
 MODULE memory_handling
-use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr
+use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr,c_loc
 use infpar_module
+use background_buffer_module
 use TYPEDEFTYPE, only : mpi_realk
 use AO_typetype
 use OD_typetype
@@ -36,6 +37,12 @@ public set_mem_xccalc,debug_mem_stats,print_maxmem
 public mem_InsideOMPsection
 public mem_alloc
 public mem_dealloc
+public mem_pseudo_alloc
+public mem_pseudo_dealloc
+public mem_init_background_alloc
+public mem_change_background_alloc
+public mem_free_background_alloc
+public mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
 public mem_allocated_mem_real, mem_deallocated_mem_real
 public mem_allocated_global,mem_allocated_type_matrix
 !parameters
@@ -387,6 +394,13 @@ INTERFACE mem_alloc
            & Mem2dimInGB,Mem2dimInGBint8,&
            & Mem1dimInGB,Mem1dimInGBint8
    END INTERFACE MemInGB
+   interface mem_pseudo_alloc
+      module procedure mem_pseudo_alloc_realk,mem_pseudo_alloc_mpirealk
+   end interface mem_pseudo_alloc
+   interface mem_pseudo_dealloc
+      module procedure mem_pseudo_dealloc_realk,mem_pseudo_dealloc_mpirealk
+   end interface mem_pseudo_dealloc
+
 
    CONTAINS
 
@@ -1897,70 +1911,313 @@ subroutine debug_mem_stats(lupri)
 
      IF (error_size.LT.0) THEN
         write(ERR,'(A8)') ' < zero '
-        ELSEIF (error_size.LT.1000) THEN
+     ELSEIF (error_size.LT.1000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E0_realk," B "
-        ELSEIF (error_size.LT.1000000) THEN
+     ELSEIF (error_size.LT.1000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-3_realk," kB"
-        ELSEIF (error_size.LT.1000000000) THEN
+     ELSEIF (error_size.LT.1000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-6_realk," MB"
 #ifdef VAR_INT64
-        ELSEIF (error_size.LT.1000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
-        ELSEIF (error_size.LT.1000000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-12_realk," TB"
-        ELSEIF (error_size.LT.1000000000000000000) THEN
+     ELSEIF (error_size.LT.1000000000000000000) THEN
         write(ERR,'(F5.1,A3)') error_size*1E-15_realk," PB"
      ELSE
         write(ERR,'(F5.1,A3)') error_size*1E-18_realk," EB"
      ENDIF
 #else
-  ELSE
-     write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
-  ENDIF
+     ELSE
+        write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
+     ENDIF
 #endif
 
-  IF (max_mem_used_global.LT.0) THEN
-     write(GLOB,'(A8)') ' < zero '
-     ELSEIF (max_mem_used_global.LT.1000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
-     ELSEIF (max_mem_used_global.LT.1000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
-     ELSEIF (max_mem_used_global.LT.1000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
+     IF (mem_allocated_global.LT.0) THEN
+        write(GLOB,'(A8)') ' < zero '
+     ELSEIF (mem_allocated_global.LT.1000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E0_realk," B "
+     ELSEIF (mem_allocated_global.LT.1000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-3_realk," kB"
+     ELSEIF (mem_allocated_global.LT.1000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-6_realk," MB"
 #ifdef VAR_INT64
-     ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
-     ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
-  ELSE
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
-  ENDIF
+     ELSEIF (mem_allocated_global.LT.1000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-9_realk," GB"
+     ELSEIF (mem_allocated_global.LT.1000000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-12_realk," TB"
+     ELSEIF (mem_allocated_global.LT.1000000000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-15_realk," PB"
+     ELSE
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-18_realk," EB"
+     ENDIF
 #else
-ELSE
-   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
-ENDIF
+     ELSE
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-9_realk," GB"
+     ENDIF
 #endif
 
-write(myoutput,*) 
-write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
-write(myoutput,*) 'The program was trying to allocate ',ERR,&
-   &' in addition to the ',GLOB,' already allocated.'
-write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
-write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
-write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'
-write(myoutput,*) 
-write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory statistics'
-write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as to what'
-write(myoutput,*) 'memory requirements are needed.'
-write(myoutput,*) 
-write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON...'
+     write(myoutput,*) 
+     write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
+     write(myoutput,*) 'The program was trying to allocate ',ERR,&
+        &' in addition to the ',GLOB,' already allocated.'
+     write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
+     write(myoutput,*) 'may try to distribute memory over more nodes (eg. by using ScaLapack/PBLAS). See the'
+     write(myoutput,*) 'LSDALTON manual or consult the Dalton Forum for details.'
+     write(myoutput,*) 
+     write(myoutput,*) 'LSDALTON provide no a priori estimate of the memory it needs, but the memory statistics'
+     write(myoutput,*) 'from similar calculations on smaller systems may hopefully give you some clues as to what'
+     write(myoutput,*) 'memory requirements are needed.'
+     write(myoutput,*) 
+     write(myoutput,*) 'Printing memory statistics for the current calculation before quitting LSDALTON...'
+     
+     call stats_mem(myoutput)
+     flush(myoutput)
 
-call stats_mem(myoutput)
+     ! Quit
+     call lsquit(mylabel,-1)
 
-! Quit
-call lsquit(mylabel,-1)
+   end subroutine memory_error_quit
 
-end subroutine memory_error_quit
+
+!----- Background buffer handling -----!
+subroutine mem_init_background_alloc(bytes)
+   implicit none
+   integer(kind=8), intent(in) :: bytes
+   integer(kind=8) :: nelms
+
+   if(buf_realk%init)then
+      call lsquit("ERROR(mem_free_background_alloc): background buffer already initialized",-1)
+   endif
+
+   nelms = bytes/8_long
+   call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+
+   buf_realk%init   = .true.
+   buf_realk%offset = 0
+   buf_realk%nmax   = nelms
+
+   buf_realk%n      = 1
+
+end subroutine mem_init_background_alloc
+subroutine mem_change_background_alloc(bytes,not_lazy)
+   implicit none
+   integer(kind=8), intent(in) :: bytes
+   logical, intent(in), optional :: not_lazy
+   integer :: i
+   integer(kind=8) :: nelms
+   logical :: change
+
+   nelms = bytes
+
+   !per default use lazy memory handling
+   change = (nelms>buf_realk%nmax)
+   if(present(not_lazy)) change = not_lazy
+
+   if(buf_realk%n/=1)then
+      do i = 1, buf_realk%n-1
+         print *,"address not freed",i
+      enddo
+      call lsquit("ERROR(mem_change_background_alloc): pointers is still associated, not possible",-1)
+   endif
+
+   if(.not.buf_realk%init)then
+      call lsquit("ERROR(mem_free_background_alloc): background buffer not initialized",-1)
+   endif
+
+
+   if( change )then
+      print *,"mem_change_bg_alloc: Allocating ",bytes/(1024.0_realk**3),"GB"
+
+      call mem_dealloc(buf_realk%p,buf_realk%c)
+
+      call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+
+      buf_realk%init   = .true.
+      buf_realk%offset = 0
+      buf_realk%nmax   = nelms
+
+      buf_realk%n      = 1
+   endif
+
+end subroutine mem_change_background_alloc
+subroutine mem_free_background_alloc()
+   implicit none
+   integer :: i
+
+   if(buf_realk%n/=1)then
+      do i = 1, buf_realk%n-1
+         print *,"address not freed",i
+      enddo
+      call lsquit("ERROR(mem_free_background_alloc): pointers is still associated",-1)
+   endif
+
+   if(.not.buf_realk%init)then
+      call lsquit("ERROR(mem_free_background_alloc): background buffer not initialized",-1)
+   endif
+
+   call mem_dealloc(buf_realk%p,buf_realk%c)
+
+   buf_realk%init   = .false.
+   buf_realk%offset = 0
+   buf_realk%nmax   = 0
+
+   buf_realk%n      = 1
+
+end subroutine mem_free_background_alloc
+
+!ATTENTION, WHEN USING THIS STRUCTURE YOU NEED TO MAKE SURE THAT YOU DEALLOCATE
+!IN THE OPPOSITE SEQUENCE OF ALLOCATING, OTHERWISE YOUR DATA WILL BE CORRUPTED
+subroutine mem_pseudo_alloc_realk(p,n)
+   implicit none
+   real(realk), pointer :: p(:)
+   integer(kind=8), intent(in) :: n
+
+   if (buf_realk%offset+n > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",n
+      call lsquit("ERROR(mem_pseudo_alloc_realk): more requested than available",-1)
+   endif
+
+   p => buf_realk%p(buf_realk%offset+1:buf_realk%offset+n)
+
+   buf_realk%offset = buf_realk%offset+n
+
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1))
+
+   buf_realk%n = buf_realk%n + 1
+
+   if(buf_realk%n > max_n_pointers)then
+      call lsquit("ERROR(mem_pseudo_alloc_realk): more pointers associated then currently supported, &
+         &please change max_n_pointers in background_buffer.F90",-1)
+   endif
+
+end subroutine mem_pseudo_alloc_realk
+subroutine mem_pseudo_dealloc_realk(p)
+   implicit none
+   real(realk), pointer :: p(:)
+   integer(kind=8) :: n
+
+   buf_realk%n = buf_realk%n - 1
+
+   if(buf_realk%n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk): programming error, more&
+      & pointers freed than associated",-1)
+   endif
+
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1))))then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk): wrong sequence of &
+      &deallocating, make sure you dealloc in the opposite seqence as allocating, &
+      &otherwise you will corrupt your data",-1)
+   endif
+
+   n = size(p,kind=8)
+
+   if (buf_realk%offset-n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk): more freed than allocated",-1)
+   endif
+
+   p => null()
+
+   buf_realk%offset = buf_realk%offset-n
+
+   buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+end subroutine mem_pseudo_dealloc_realk
+
+function mem_is_background_buf_init() result(init)
+   implicit none
+   logical :: init
+   init = buf_realk%init
+end function mem_is_background_buf_init
+
+function mem_get_bg_buf_n() result(n)
+   implicit none
+   integer(kind=8) :: n
+   n = buf_realk%nmax
+end function mem_get_bg_buf_n
+
+function mem_get_bg_buf_free() result(n)
+   implicit none
+   integer(kind=8) :: n
+   n = buf_realk%nmax-buf_realk%offset
+end function mem_get_bg_buf_free
+
+subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
+   implicit none
+   integer(kind=8),intent(in)          :: n
+   logical,intent(in),optional         :: local,simple
+   type(mpi_realk)                     :: A
+   integer(kind=ls_mpik),optional,intent(in)    ::comm
+   integer (kind=ls_mpik)              :: IERR,info
+   integer (kind=long)                 :: nsize
+   character(120)                      :: errmsg
+   logical                             :: loc,simp
+#ifdef VAR_MPI
+   integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
+#endif
+
+   simp = .false.
+   if(present(simple))simp = simple
+
+   if(present(comm).and..not.simp)then
+      call lsquit("ERROR(mem_pseudo_alloc_mpirealk): this feature is not available",-1)
+      !in principle a simple call to MPI_WIN_CREATE should do the trick here
+   else
+      !if no communicator is given and simple option is chosen, do a normal alloc
+      if(simp)then
+         call mem_pseudo_alloc(A%d,n)
+         A%c = c_null_ptr
+         A%n = n
+         A%w = 0
+         A%t = 0
+      else
+         !if no communicator is given the default is to use MPI_alloc_mem with mpi
+#ifdef VAR_MPI
+         call mem_pseudo_alloc(A%d,n)
+         A%c = c_loc(A%d(1))
+         A%n = n
+         A%w = 0
+         A%t = 1
+#else
+         call mem_pseudo_alloc(A%d,n)
+         A%c = c_null_ptr
+         A%n = n
+         A%w = 0
+         A%t = 0
+#endif
+      endif
+   endif
+end subroutine mem_pseudo_alloc_mpirealk
+subroutine mem_pseudo_dealloc_mpirealk(A)
+   implicit none
+   type(mpi_realk)                     :: A
+   integer(kind=ls_mpik)               :: IERR,info
+   integer (kind=long) :: nsize
+   character(120) :: errmsg
+#ifdef VAR_MPI
+   integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
+#endif
+   !check the allocation type. If 0 a normal allocation was used, normal
+   !deallocation will be used, if 1 MPI_ALLOC_MEM was used and it will be deallocd 
+   !accordingly,               if 2 MPI_ALLOC_WIN was used and freeing the window
+   !will deallocate the pointer
+   if(A%t==0)then
+      call mem_pseudo_dealloc(A%d)
+      A%n = 0
+   else if(A%t==1)then
+      call mem_pseudo_dealloc(A%d)
+      A%c = c_null_ptr
+      A%n = 0
+   else if(A%t==2)then
+      call lsquit("ERROR(mem_pseudo_dealloc_mpirealk): not yet implemented",-1)
+
+   else
+      call lsquit("ERROR(mem_pseudo_dealloc_mpirealk):wrong type",-1)
+   endif
+
+   !set back the default after deallocation
+   A%t = -1
+end subroutine mem_pseudo_dealloc_mpirealk
 
 !----- ALLOCATE REAL POINTERS -----!
 

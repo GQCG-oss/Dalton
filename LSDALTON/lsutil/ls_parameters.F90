@@ -131,9 +131,15 @@ MODULE lsparameters
   integer,parameter :: PDMMSLAVE                    = 64
   integer,parameter :: MATRIXTY2                    = 65
   integer,parameter :: SET_TENSOR_ALWAYS_SYNC_TRUE  = 66
+  integer,parameter :: INIT_BG_BUF                  = 67
+  integer,parameter :: FREE_BG_BUF                  = 68
+  integer,parameter :: CHANGE_BG_BUF                = 69
+  integer,parameter :: LSTHCRIMP2INAMP              = 70
+  integer,parameter :: LSTHCRIMP2FULL               = 71
 #ifdef MOD_UNRELEASED
-  integer,parameter :: CCSDPTSLAVE_WORK             = 67
+  integer,parameter :: CCSDPTSLAVE_WORK             = 72
 #endif
+
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2

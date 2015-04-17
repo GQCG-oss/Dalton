@@ -657,8 +657,10 @@ Integer              :: nAObuilds,nMAT,nAtoms,iMol
 Logical              :: Classical,buildGab,doscreen,primScreen,batchOnly
 Real(realk),pointer  :: derivativeIntegrals(:,:,:,:,:)
 integer :: ndim2(5),nAtoms1,nAtoms2,nAtoms3,nAtoms4,I,J,ndim25,CMorder
-logical :: sameAllFrag,MBIE_SCREENINT,dograd
+logical :: sameAllFrag,MBIE_SCREENINT,dograd,FullAlphaCD
 
+FullAlphaCD = setting%output%FullAlphaCD
+setting%output%FullAlphaCD = .FALSE.
 ndim2 = setting%output%ndim 
 IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)THEN
    MBIE_SCREENINT = Setting%scheme%MBIE_SCREEN.AND.&
@@ -756,8 +758,10 @@ IF (Spec.EQ.EcontribSpec) THEN
 ENDIF
 
 CALL ls_setDensityDimensions(INT_INPUT,SETTING,lupri)
-
+setting%output%FullAlphaCD = FullAlphaCD
 call MAIN_INTEGRAL_DRIVER(LUPRI,SETTING%SCHEME%INTPRINT,INT_INPUT,setting%OUTPUT)
+IF(FullAlphaCD)CAll mem_dealloc(setting%output%postprocess)
+
 CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
 IF(doscreen) CALL free_screening_matrices(INT_INPUT,SETTING,LUPRI,LUERR)
 setting%output%ndim = ndim2
@@ -3046,7 +3050,7 @@ logical             :: FoundInMem,recalcGab,MBIE_SCREENINT
 real(realk)         :: tstart,tend
 integer,pointer     :: postprocess(:)
 integer(kind=short),pointer :: MAT2(:,:)
-ndim2 = setting%output%ndim 
+ndim2 = setting%output%ndim
 ! Multipole Based Integral Estimate Screening   
 MBIE_SCREENINT = setting%scheme%MBIE_SCREEN.AND.(Oper.EQ.CoulombOperator.OR.Oper.EQ.ErfcOperator.OR.Oper.EQ.CAMOperator)
 LHS = integralSide.EQ.'LHS'
@@ -3101,7 +3105,6 @@ IF(attach_to_input)THEN
    IF(SETTING%batchindex(AOB).NE. 0)THEN
       s2=SETTING%batchindex(AOB)
    ENDIF
-
    IF(ASSOCIATED(Setting%FRAGMENT(AOA)%p)) THEN
       n1 = getNbasis(AO1,intType,SETTING%FRAGMENT(AOA)%p,LUPRI)
    ELSE

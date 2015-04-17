@@ -77,6 +77,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
     LSDALTON/deccc/rimp2.F90
+    LSDALTON/deccc/ls_thc_rimp2.F90
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
@@ -105,7 +106,9 @@ set(DEC_SOURCES
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
     LSDALTON/deccc/full_rimp2.F90
+    LSDALTON/deccc/full_rimp2f12.F90
     LSDALTON/deccc/full_mp2.F90
+    LSDALTON/deccc/full_ls_thc_rimp2.F90
     LSDALTON/deccc/snoop_main.F90
     LSDALTON/deccc/snoop_tools.F90
     LSDALTON/deccc/decmpi.F90
@@ -294,6 +297,8 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specR.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL3.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL4.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEriTools.F90
@@ -686,6 +691,8 @@ set(LSINT_SOURCES
     LSDALTON/LSint/BuildMolFile.F90
     LSDALTON/LSint/gridgeneration.F90
     LSDALTON/LSint/gridgeneration_boxify.F90
+    LSDALTON/LSint/THC_grid.F90
+    LSDALTON/LSint/THC_util.F90
     LSDALTON/LSint/II_XC_interface.F90
     LSDALTON/LSint/II_absval_int.F90
     LSDALTON/LSint/II_dft_int.F90
@@ -707,6 +714,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ThermiteDistributeDEC.F90
     LSDALTON/LSint/ThermiteDriver.F90
     LSDALTON/LSint/ThermiteIntegrals.F90
+    LSDALTON/LSint/ThermiteIntTransform.F90
     LSDALTON/LSint/ThermiteOverlapDistribution.F90
     LSDALTON/LSint/ThermiteProp.F90
     LSDALTON/LSint/ThermiteMem.F90
@@ -762,6 +770,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/f12.F90
     LSDALTON/lsutil/IntegralType.F90
     LSDALTON/lsutil/TYPE-DEF.F90
+    LSDALTON/lsutil/background_buffer.F90
     LSDALTON/lsutil/memory.F90
     LSDALTON/lsutil/MemoryLeakTool.F90
     LSDALTON/lsutil/gridgeneration_memory.F90
@@ -830,6 +839,7 @@ set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/ks-settings.F90
     LSDALTON/lsutil/lsmpi-operations.F90
     LSDALTON/lsutil/lsutilities.F90
+    LSDALTON/lsutil/pseudoinverse.F90
     LSDALTON/lsutil/LSoptType.F90
     LSDALTON/lsutil/ddynType.F90
     LSDALTON/lsutil/ProfileType.F90

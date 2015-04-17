@@ -49,20 +49,20 @@ MODULE matrix_operations
         & mat_read_info_from_disk,mat_extract_diagonal,&
         & no_of_matmuls, mat_tr, mat_trab, mat_dotproduct, mat_sqnorm2, &
         & mat_outdia_sqnorm2, info_memory, max_no_of_matrices, no_of_matrices,&
-        & mat_to_full3D
+        & mat_to_full3D, string11_mtype
 
 !> Matrices are symmetric and dense (not implemented)
-   integer, parameter :: mtype_symm_dense = 1
+   integer, parameter :: mtype_symm_dense  = 1
 !> Matrices are dense (default) 
-   integer, parameter :: mtype_dense = 2
+   integer, parameter :: mtype_dense       = 2
 !> Matrices are dense and have both alpha and beta part (default for open shell)
-   integer, parameter ::  mtype_unres_dense = 5
+   integer, parameter :: mtype_unres_dense = 5
 !> Matrices are compressed sparse row (CSR) 
-   integer, parameter ::  mtype_csr = 7
+   integer, parameter :: mtype_csr         = 7
 !> Matrices are MPI memory distributed using scalapack
-   integer, parameter ::  mtype_scalapack = 8
+   integer, parameter :: mtype_scalapack   = 8
 !> Matrices are MPI memory distributed using TK scheme
-   integer, parameter ::  mtype_pdmm = 9
+   integer, parameter :: mtype_pdmm        = 9
 !*****************
 !Possible matrix types - 
 !(Exploiting symmetry when operating sparse matrices is probably a vaste of effort - 
@@ -94,6 +94,28 @@ MODULE matrix_operations
    logical,save :: INFO_memory! = .false. !default no memory printout
 
    contains
+     subroutine string11_mtype(matrix_type_val,String)
+       implicit none
+       integer,intent(in) :: matrix_type_val
+       character(len=11) :: String
+       select case(matrix_type_val)
+       case(mtype_symm_dense)
+          String = 'symm_dense '
+       case(mtype_dense)
+          String = 'dense      '
+       case(mtype_unres_dense)
+          String = 'unres_dense'
+       case(mtype_csr)
+          String = 'csr        '
+       case(mtype_scalapack)
+          String = 'scalapack  '
+       case(mtype_pdmm)
+          String = 'pdmm       '
+       case default
+          call lsquit("Unknown type of matrix",-1)
+       end select
+     end subroutine string11_mtype
+
 !*** is called from LSDALTON.f90
 !> \brief Sets the global variables
 !> \author T. Kjaergaard

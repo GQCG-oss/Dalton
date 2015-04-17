@@ -113,7 +113,7 @@ contains
     integer,pointer :: V(:,:)
     integer(kind=long) :: dim1,dim2,dim3,dim4,idx,idx2,max1,max2,max3,maxdim,start,siz
     integer:: Astart, Aend,dimA, A,B,I,J,counter,arrsize
-    real(realk) :: flops
+    real(realk) :: flops,gpuflops
     integer,dimension(4) :: dimocc, dimvirt
     integer :: m,k,n, nvbatches, Abat, GammaStart, GammaEnd, AlphaStart, AlphaEnd,c,d,l
     real(realk) :: deltaEPS
@@ -281,9 +281,9 @@ contains
     nullify(mini1,mini2,mini3,mini4)
     nbasis = MyFragment%nbasis
     nocc = MyFragment%noccAOS   ! occupied AOS (only valence for frozen core)
-    nvirt = MyFragment%nunoccAOS   ! virtual AOS
+    nvirt = MyFragment%nvirtAOS   ! virtual AOS
     noccEOS = MyFragment%noccEOS  ! occupied EOS
-    nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
+    nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
     nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
     ncore = MyFragment%ncore   ! number of core orbitals
     ! For frozen core energy calculation, we never need core orbitals
@@ -718,7 +718,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
       if(master.AND.DECinfo%PL>0)then
          write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Allocate big array using   ',MemInGB(maxdim),' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
          FLUSH(DECinfo%output)
+#endif
       endif
       MemInGBCollected = MemInGBCollected + MemInGB(maxdim)
       MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -726,7 +728,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       if(master.AND.DECinfo%PL>0)then
          write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Global Memory statistics after big array'
          call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
          FLUSH(DECinfo%output)
+#endif
       endif
       ierr = 0
       if(ierr == 0) then
@@ -853,7 +857,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
               &MemInGB(bat%size1(2)),' GB Tot=',MemInGBCollected,' GB'
            write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp3%p using   ',&
               &MemInGB(bat%size1(3)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
            FLUSH(DECinfo%output)
+#endif
           endif
           MemInGBCollected = MemInGBCollected + MemInGB(max(bat%size1(1),dim1))
           MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -1073,7 +1079,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           if(master.and.DECinfo%PL>0)then
              write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate tmp4%p using   ',&
                 &MemInGB(bat%size2(4)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
              FLUSH(DECinfo%output)
+#endif
           endif
           MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(4))
           MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -1108,7 +1116,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                    &MemInGB(bat%size2(2)),' GB Tot=',MemInGBCollected,' GB'
                 write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b3(',j,')%p using   ',&
                    &MemInGB(bat%size2(3)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
                 FLUSH(DECinfo%output)
+#endif
              endif
              MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(1)) + MemInGB(bat%size2(2)) + MemInGB(bat%size2(3))
              MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -1139,7 +1149,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           if(master.AND.DECinfo%PL>0)then
              WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM: MemInGBCollected = ',MemInGBCollected,&
                 &' GB Before MP2 Workhorse OMP Loop'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
              flush(DECinfo%output)
+#endif
           endif
           call mem_TurnONThread_Memory()
           !$OMP PARALLEL DEFAULT(NONE) PRIVATE(Abat,Astart,Aend,dimA,m,n,siz,ts,&
@@ -1477,7 +1489,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
    ! effective time for slaves
     MyFragment%slavetime_work(MODEL_MP2) = tmpidiff
     ! FLOP count for integral loop for slaves
-    call end_flop_counter(flops)
+    call end_flop_counter(flops,gpuflops)
  end if
 
 
@@ -1566,7 +1578,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        &MemInGB(bat%size3(1)),' GB Tot=',MemInGBCollected,' GB'
     write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp2%p using   ',&
        &MemInGB(bat%size3(2)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     FLUSH(DECinfo%output)
+#endif
  endif 
  MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(1))
  MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
@@ -1654,7 +1668,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        if(master.AND.DECinfo%PL>0)then
           write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate gvirt2 using',&
              &MemInGB(nvirtEOS,nvirtEOS,nocc,nocctot),' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
           FLUSH(DECinfo%output)
+#endif
        endif
        call mem_alloc(gvirt2,nvirtEOS,nvirtEOS,nocc,nocctot)
        do I=1,ncore ! put core orbitals into right position
@@ -1845,7 +1861,9 @@ if(master.and.DECinfo%PL>0) then
    WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:  MaxMemInGBCollected = ',MaxMemInGBCollected,' GB'
    WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:  MemoryNeeded        = ',MemoryNeeded,' GB'
    call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
    FLUSH(DECinfo%output)
+#endif
 !   IF(ABS(MaxMemInGBCollected-MemoryNeeded).GT.1.0E-6_realk)THEN
 !      CALL LSQUIT('Memory Error: MP2 workhorse MemoryNeeded.NE.MaxMemInGBCollected',-1)
 !   ENDIF
@@ -1903,9 +1921,12 @@ endif
    ! FLOP counting
    if(master) then
       flops=0.0E0_realk  ! we want to count only flops from slaves (these were set above)
+      gpuflops=0.0E0_realk  ! we want to count only gpu flops from slaves (these were set above)
    end if
    call lsmpi_reduction(flops,infpar%master,infpar%lg_comm)
+   call lsmpi_reduction(gpuflops,infpar%master,infpar%lg_comm)
    if(master) MyFragment%flops_slaves = flops ! save flops for local slaves (not local master)
+   if(master) MyFragment%gpu_flops_slaves = gpuflops ! save flops for local slaves (not local master)
 
    ! Total time for all slaves (not local master itself)
    if(master) MyFragment%slavetime_work(MODEL_MP2)=0.0E0_realk
@@ -1923,7 +1944,9 @@ if(DECinfo%PL>0)THEN
    WRITE(DECinfo%output,'(1X,A)')'MP2MEM: MP2_integrals_and_amplitudes_workhorse:'
    WRITE(DECinfo%output,'(1X,A)')'MP2MEM: Memory Statistics at the end of the subroutine'
    call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
    FLUSH(DECinfo%output)
+#endif
 endif
 
 
@@ -1982,7 +2005,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
   !>     STARTING POINT FOR MORE ADVANCED ROUTINES!
   !> \author Kasper Kristensen
   !> \date March 2013
-  subroutine get_ijba_integrals(MySetting,nbasis,nocc,nunocc,Cocc,Cunocc,ijba)
+  subroutine get_ijba_integrals(MySetting,nbasis,nocc,nvirt,Cocc,Cvirt,ijba)
 
     implicit none
 
@@ -1992,16 +2015,16 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     integer,intent(in) :: nbasis
     !> Number of occupied orbitals
     integer,intent(in) :: nocc
-    !> Number of unoccupied orbitals
-    integer,intent(in) :: nunocc
+    !> Number of virtupied orbitals
+    integer,intent(in) :: nvirt
     !> Occupied MO coefficients
     real(realk),intent(in),dimension(nbasis,nocc) :: Cocc
     !> Unoccupied MO coefficients
-    real(realk),intent(in),dimension(nbasis,nunocc) :: Cunocc
+    real(realk),intent(in),dimension(nbasis,nvirt) :: Cvirt
     !>  (a i | b j) integrals stored in the order (i,j,b,a)
-    real(realk),intent(inout) :: ijba(nocc,nocc,nunocc,nunocc)
+    real(realk),intent(inout) :: ijba(nocc,nocc,nvirt,nvirt)
     integer :: alphaB,gammaB,dimAlpha,dimGamma,GammaStart, GammaEnd, AlphaStart, AlphaEnd
-    real(realk),pointer :: tmp1(:),tmp2(:),CoccT(:,:), CunoccT(:,:)
+    real(realk),pointer :: tmp1(:),tmp2(:),CoccT(:,:), CvirtT(:,:)
     integer(kind=long) :: dim1,dim2
     integer :: m,k,n,idx
     logical :: FullRHS,doscreen
@@ -2021,9 +2044,9 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! For efficiency when calling dgemm, save transposed matrices
     ! ***********************************************************
     call mem_alloc(CoccT,nocc,nbasis)
-    call mem_alloc(CunoccT,nunocc,nbasis)
+    call mem_alloc(CvirtT,nvirt,nbasis)
     call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
-    call mat_transpose(nbasis,nunocc,1.0E0_realk,Cunocc,0.0E0_realk,CunoccT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,Cvirt,0.0E0_realk,CvirtT)
 
 
 
@@ -2177,17 +2200,17 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call mem_dealloc(tmp1)
 
 
-       ! Transform beta to unoccupied index "b".
+       ! Transform beta to virtupied index "b".
        ! ***************************************
-       ! tmp1(b,alphaB,gammaB,j) = sum_{delta} CunoccT(b,delta) tmp2(delta,alphaB,gammaB,j)
-       ! Note: We have stored the transposed Cunocc matrix, so no need to transpose in
+       ! tmp1(b,alphaB,gammaB,j) = sum_{delta} CvirtT(b,delta) tmp2(delta,alphaB,gammaB,j)
+       ! Note: We have stored the transposed Cvirt matrix, so no need to transpose in
        ! the call to dgemm.
-       m = nunocc
+       m = nvirt
        k = nbasis
        n = dimAlpha*dimGamma*nocc
-       dim1 = i8*nocc*nunocc*dimAlpha*dimGamma  ! dimension of tmp2 array
+       dim1 = i8*nocc*nvirt*dimAlpha*dimGamma  ! dimension of tmp2 array
        call mem_alloc(tmp1,dim1)
-       call dec_simple_dgemm(m,k,n,CunoccT,tmp2,tmp1, 'n', 'n')
+       call dec_simple_dgemm(m,k,n,CvirtT,tmp2,tmp1, 'n', 'n')
        call mem_dealloc(tmp2)
 
 
@@ -2196,7 +2219,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        dim2=dim1
        call mem_alloc(tmp2,dim2)
        ! tmp2(gammaB,j,b,alphaB) = tmp1^T(b,alphaB;gammaB,j)
-       m = nunocc*dimAlpha    ! dimension of "row" in tmp1 array (to be "column" in tmp2)
+       m = nvirt*dimAlpha    ! dimension of "row" in tmp1 array (to be "column" in tmp2)
        n = nocc*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
        call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
        call mem_dealloc(tmp1)
@@ -2207,23 +2230,23 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        ! tmp1(i,j,b,alphaB) = sum_{gamma in gammaBatch} CoccT(i,gamma) tmp2(gamma,j,b,alphaB)
        m = nocc
        k = dimGamma
-       n = nocc*nunocc*dimAlpha
-       dim1 = i8*nocc*nocc*nunocc*dimAlpha
+       n = nocc*nvirt*dimAlpha
+       dim1 = i8*nocc*nocc*nvirt*dimAlpha
        call mem_alloc(tmp1,dim1)
        call dec_simple_dgemm(m,k,n,CoccT(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
        call mem_dealloc(tmp2)
 
 
-       ! Transform alpha batch index to unoccupied index and update output integral
+       ! Transform alpha batch index to virtupied index and update output integral
        ! **************************************************************************
-       ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  Cunocc(alpha,a)
-       m = nocc*nocc*nunocc
+       ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  Cvirt(alpha,a)
+       m = nocc*nocc*nvirt
        k = dimAlpha
-       n = nunocc
-       call dec_simple_dgemm_update(m,k,n,tmp1,CunoccT(:,AlphaStart:AlphaEnd),ijba, 'n', 't')
+       n = nvirt
+       call dec_simple_dgemm_update(m,k,n,tmp1,CvirtT(:,AlphaStart:AlphaEnd),ijba, 'n', 't')
        call mem_dealloc(tmp1)
-       ! Note: To have things consecutive in memory it is better to pass CunoccT to the dgemm
-       ! routine and then transpose (insted of passing Cunocc and not transpose).
+       ! Note: To have things consecutive in memory it is better to pass CvirtT to the dgemm
+       ! routine and then transpose (insted of passing Cvirt and not transpose).
 
     end do BatchAlpha
  end do BatchGamma
@@ -2270,7 +2293,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
 
 
  call mem_dealloc(CoccT)
- call mem_dealloc(CunoccT)
+ call mem_dealloc(CvirtT)
 
 end subroutine Get_ijba_integrals
 
@@ -2449,10 +2472,10 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
   ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
   nocc=MyFragment%noccAOS
-  nvirt=MyFragment%nunoccAOS
+  nvirt=MyFragment%nvirtAOS
 
   noccEOS=MyFragment%noccEOS
-  nvirtEOS=MyFragment%nunoccEOS
+  nvirtEOS=MyFragment%nvirtEOS
   nbasis = MyFragment%nbasis
 
 
@@ -2792,10 +2815,10 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
   ! Set the relevant dimensions for easy reference
   ! **********************************************
   nocc=MyFragment%noccAOS  ! occupied AOS (only valence for frozen core)
-  nvirt = MyFragment%nunoccAOS   ! virtual AOS
+  nvirt = MyFragment%nvirtAOS   ! virtual AOS
   nbasis = MyFragment%nbasis      ! number of basis functions in atomic extent
   noccEOS = MyFragment%noccEOS  ! occupied EOS
-  nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
+  nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
   if(DECinfo%frozencore .and. first_order_integrals) then
      nocctot = MyFragment%nocctot     ! core+valence
   else

@@ -1148,10 +1148,9 @@ C
 C     Local arrays
       PARAMETER ( LBUF = 600 )
       DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
-      DIMENSION ITMPMO(2*MXCORB)
-      EQUIVALENCE (BUF,DBUF,QBUF,ITMPMO)
-      INTEGER   IJ(NNBASX) ! automatic array, for INOAUX
+      EQUIVALENCE (BUF,DBUF,QBUF)
       LOGICAL   OPEND, FEXIST, ERRSTP
+      INTEGER, allocatable :: IJ(:), ITMPMO(:)
 C
       CALL QENTER('RDONEL')
       ERRSTP = FOUND
@@ -1181,6 +1180,8 @@ C
        END IF
       END IF
 C
+      IF (NOAUXB) allocate( IJ(NNBASX) )
+C
       IF     (KEY.EQ.'OPEN    ') THEN
 C        ... file is opened automatically first time RDONEL is called.
       ELSE IF(KEY.EQ.'CLOSE   ') THEN
@@ -1198,6 +1199,7 @@ C        ... file is opened automatically first time RDONEL is called.
          DO 120 I = NSYM+1,8
             NBAS(I) = 0
   120    CONTINUE
+         allocate( ITMPMO(NBAST*2) )
          CALL MOLLAB('SYMINPUT',LUONEL,LUPRI)
          READ (LUONEL) NBT,(ITMPMO(I),I=1,2*NBT)
 C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
@@ -1209,10 +1211,11 @@ C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
             CALL QUIT('RDONEL ERROR, two different NBAST on AOONEINT')
          END IF
          REWIND LUONEL
-         DO 130 I=1,NBAST
+         DO I = 1,NBAST
             WRITE(CENT(I),'(A4)') ITMPMO(I)
             WRITE(TYPE(I),'(A4)') ITMPMO(NBAST+I)
-  130    CONTINUE
+         END DO
+         deallocate( ITMPMO )
       ELSE IF(KEY.EQ.'OVERLAP ') THEN
 C        Read overlap, in symmetry blocked triangular form
          REWIND LUONEL
@@ -1344,6 +1347,7 @@ C        Read one electron part, in symmetry blocked triangular form
       END IF
       CALL GPCLOSE(LUONEL,'KEEP')
 C
+      if ( allocated(IJ) ) deallocate( IJ )
  9999 CALL QEXIT('RDONEL')
       RETURN
       END
