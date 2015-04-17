@@ -2908,6 +2908,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
 
+     if(DECinfo%hack2)then
+        OPEN(unit=337,file='full_t1fock_test.restart')
+        if(infpar%mynum==0)then
+           WRITE(337,*)t1fock
+        else
+           READ(337,*)t1fock
+        endif
+        CLOSE(337)
+     endif
 
 
      !Transform inactive Fock matrix into the different mo subspaces
@@ -5903,7 +5912,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     tdim=[vs,vs,os,os]
     d1  =[nv,nv,no,no]
-    if( vs>0 .and. os>0.and.nnod>0)then
+    if(vs>0.and.os>0.and.nnod>0)then
        call tensor_get_ntpm(d1,tdim,mode,ntpm,ntiles)
        nloctiles=ceiling(float(ntiles)/float(nnod))
        tsze = 1
