@@ -2810,8 +2810,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
            endif
 #endif
-#endif
         endif
+#endif
 
         call time_start_phase(PHASE_WORK, ttot = time_cndonly )
         time_Bcnd      = time_Bonly     + time_cndonly

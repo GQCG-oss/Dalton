@@ -96,7 +96,7 @@ MODULE lsparameters
   integer,parameter :: PDMA4SLV                     = 31
   integer,parameter :: LSMPI_IIDFTKSME              = 32
 #ifdef MOD_UNRELEASED
-  integer,parameter :: CCSDPTSLAVE                  = 33
+  integer,parameter :: CCSDPTSLAVE_INFO             = 33
 #endif
   integer,parameter :: CCSDSLV4E2                   = 34
   integer,parameter :: DFTADDFU                     = 35
@@ -136,6 +136,9 @@ MODULE lsparameters
   integer,parameter :: CHANGE_BG_BUF                = 69
   integer,parameter :: LSTHCRIMP2INAMP              = 70
   integer,parameter :: LSTHCRIMP2FULL               = 71
+#ifdef MOD_UNRELEASED
+  integer,parameter :: CCSDPTSLAVE_WORK             = 72
+#endif
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

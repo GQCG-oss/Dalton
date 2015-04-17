@@ -402,14 +402,6 @@ contains
        ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
        if(MyFragment%ccmodel==MODEL_CCSDpT) then
 
-          !FIXME: (T) DEPENDING ON MANY V^2O^2 ALLOCATIONS ON A LOCAL NODE
-          !THIS IS A WORKAROUND:
-          call tensor_init(VOVO_local,VOVO%dims,4)
-          call tensor_init(t2f_local,t2%dims,4)
-
-          call tensor_add(VOVO_local,1.0E0_realk, VOVO, a = 0.0E0_realk ) 
-          call tensor_add(t2f_local, 1.0E0_realk, t2,   a = 0.0E0_realk ) 
-
           call dec_fragment_time_init(times_pt)
 
           print_frags = DECinfo%print_frags
@@ -419,17 +411,11 @@ contains
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
           if (abc) then
 
-             call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-             call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-
              call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nvirtAOS],2)
              call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
                   &MyFragment%nvirtAOS,MyFragment%nvirtAOS],4)
 
           else
-
-             call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-             call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
              call tensor_init(ccsdpt_t1, [MyFragment%nvirtAOS,MyFragment%noccAOS],2)
              call tensor_init(ccsdpt_t2, [MyFragment%nvirtAOS,MyFragment%nvirtAOS,&
@@ -442,10 +428,16 @@ contains
                & MyFragment%nbasis,MyFragment%ppfock,&
                & MyFragment%qqfock,MyFragment%Co,&
                & MyFragment%Cv,MyFragment%mylsitem,&
-               & VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+               & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+
+!!! tmp solution...
+          call tensor_init(t2f_local,t2%dims,4)
+          call tensor_cp_data(t2,t2f_local)
+          call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+!!!
+
           if (abc) then
 
-             call tensor_reorder(t2f_local,[3,4,1,2]) ! ccsd_doubles in the order (a,b,i,j)
              call tensor_reorder(ccsdpt_t2,[3,4,1,2]) ! ccsdpt_doubles in the order (a,b,i,j)
              call tensor_reorder(ccsdpt_t1,[2,1]) ! ccsdpt_singles in the order (a,i)
 
@@ -470,7 +462,6 @@ contains
 
           call dec_fragment_time_get(times_pt)
 
-          call tensor_free(VOVO_local)
           call tensor_free(t2f_local)
        end if
 

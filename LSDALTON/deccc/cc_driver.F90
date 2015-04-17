@@ -415,8 +415,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    pT_4_v    = 6
    pT_5_o    = 7
    pT_5_v    = 8
+
+   print_frags = DECinfo%print_frags
+   abc = DECinfo%abc
    
-   if (DECinfo%print_frags) then ! should we print fragment energies?
+   if (print_frags) then ! should we print fragment energies?
 
       call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
          & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
@@ -440,59 +443,29 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       natoms   = MyMolecule%natoms
       nfrags   = MyMolecule%nfrags
       nocc_tot = MyMolecule%nocc
-   
-      !FIXME: all the following should be implemented in PDM
-      !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
-      !one node is used
-      call tensor_init(VOVO_local,VOVO%dims,4)
-      call tensor_init(t2f_local,t2_final%dims,4 )
-      call tensor_cp_data( VOVO,     VOVO_local  )
-      call tensor_cp_data( t2_final, t2f_local   )
 
       if(ccmodel == MODEL_CCSDpT)then
-
-
-         print_frags = DECinfo%print_frags
-         abc = DECinfo%abc
  
          if (abc) then
 
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !FIXME: MAKE (T) independent of the tensor _reorder subroutines since each of
-            !these essentialliy allocates another V^2O^2 in local memory.
-            !Alternative: use parallel distributed tensors
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-   
             call tensor_init(ccsdpt_t1 , [nocc,nvirt],2)
             call tensor_init(ccsdpt_t2 , [nocc,nocc,nvirt,nvirt],4)
 
          else
  
-            call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-    
             call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
             call tensor_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
    
          endif
 
-         call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO_local,t2f_local,&
+         call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,&
             & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
   
          ! now, reorder amplitude and integral arrays
          if (abc) then
 
             call tensor_reorder(ccsdpt_t1,[2,1]) ! order (i,a) --> (a,i)
-            call tensor_reorder(VOVO_local,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
             call tensor_reorder(ccsdpt_t2,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
-            call tensor_reorder(t2f_local,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
      
          endif
  
@@ -502,13 +475,19 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwcomm = 'MASTER COMM pT: ',&
                &labeldwidle = 'MASTER IDLE pT: ') 
          endif
-      else
-   
-         call tensor_reorder(t2f_local,[1,3,2,4])
-         call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
    
       endif
-   
+  
+      !FIXME: all the following should be implemented in PDM
+      !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
+      !one node is used
+      call tensor_init(VOVO_local,VOVO%dims,4)
+      call tensor_init(t2f_local,t2_final%dims,4 )
+      call tensor_cp_data( VOVO,     VOVO_local  )
+      call tensor_cp_data( t2_final, t2f_local   )
+      call tensor_reorder(t2f_local,[1,3,2,4]) ! t2 in the order (a,b,i,j)
+      call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+
       ! as we want to  print out fragment and pair interaction fourth-order energy contributions,
       ! then for locality analysis purposes we need occ_orbitals and
       ! virt_orbitals (adapted from fragment_energy.f90)
@@ -622,82 +601,62 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
    else ! we do not print fragment energies
 
-      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
-         & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
-         & m1f=m1_final, m2f=m2_final)
+      if (.not. DECinfo%pt_hack) then
 
-      if(DECinfo%CCSDmultipliers)then
-         call tensor_free(m2_final)
-         if(DECinfo%use_singles)then
-            call tensor_free(m1_final)
+         call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
+            & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
+            & m1f=m1_final, m2f=m2_final)
+
+         if(DECinfo%CCSDmultipliers)then
+            call tensor_free(m2_final)
+            if(DECinfo%use_singles)then
+               call tensor_free(m1_final)
+            endif
          endif
-      endif
-
-      if(DECinfo%PL>1)then
-         call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
-            &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
-            &labeldwwork = 'MASTER WORK CC solver: ',&
-            &labeldwcomm = 'MASTER COMM CC solver: ',&
-            &labeldwidle = 'MASTER IDLE CC solver: ')
-      endif
-
-      ! If there are two subsystems, calculate dispersion, charge transfer and subsystem energy contributions 
-      if(mylsitem%input%molecule%nSubSystems==2) then
-         !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
-         !one node is used  FIXME
-         if(VOVO%itype==TT_DENSE .and. t2_final%itype==TT_DENSE) then
-            call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
-         else
-            call tensor_init( VOVO_local, VOVO%dims,    4 )
-            call tensor_init( t2f_local, t2_final%dims, 4 )
-            call tensor_cp_data( VOVO,     VOVO_local )
-            call tensor_cp_data( t2_final, t2f_local  )
-            call SNOOP_partition_energy(VOVO_local,t1_final,t2f_local,mylsitem,MyMolecule)
-            call tensor_free(VOVO_local)
-            call tensor_free(t2f_local)
+   
+         if(DECinfo%PL>1)then
+            call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
+               &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
+               &labeldwwork = 'MASTER WORK CC solver: ',&
+               &labeldwcomm = 'MASTER COMM CC solver: ',&
+               &labeldwidle = 'MASTER IDLE CC solver: ')
+         endif
+   
+         ! If there are two subsystems, calculate dispersion, charge transfer and subsystem energy contributions 
+         if(mylsitem%input%molecule%nSubSystems==2) then
+            !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
+            !one node is used  FIXME
+            if(VOVO%itype==TT_DENSE .and. t2_final%itype==TT_DENSE) then
+               call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
+            else
+               call tensor_init( VOVO_local, VOVO%dims,    4 )
+               call tensor_init( t2f_local, t2_final%dims, 4 )
+               call tensor_cp_data( VOVO,     VOVO_local )
+               call tensor_cp_data( t2_final, t2f_local  )
+               call SNOOP_partition_energy(VOVO_local,t1_final,t2f_local,mylsitem,MyMolecule)
+               call tensor_free(VOVO_local)
+               call tensor_free(t2f_local)
+            end if
          end if
-      end if
+
+      else
+
+         call tensor_init(t1_final,[nvirt,nocc],2)
+         call tensor_random(t1_final)
+         call tensor_scale(t1_final,1.0E-1_realk)
+
+      endif
  
       if(ccmodel == MODEL_CCSDpT)then
-#ifdef VAR_MPI
-         !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
-         !one node is used  FIXME
-         call tensor_init( VOVO_local, VOVO%dims,    4 )
-         call tensor_init( t2f_local, t2_final%dims, 4 )
-         call tensor_cp_data( VOVO,     VOVO_local )
-         call tensor_cp_data( t2_final, t2f_local  )
-#endif
-
-         print_frags = DECinfo%print_frags
-         abc = DECinfo%abc
 
          if (abc) then
-#ifdef VAR_MPI
-            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-#else
-            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
-#endif
-            call tensor_init(ccsdpt_t1, [nocc,nvirt],2)
+            call tensor_init(ccsdpt_t1,[nocc,nvirt],2)
          else
-#ifdef VAR_MPI
-            call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-#else
-            call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-#endif
-            call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
+            call tensor_init(ccsdpt_t1,[nvirt,nocc],2)
          endif
 
-#ifdef VAR_MPI
-         call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1,print_frags,&
-            & abc,e4=ccenergies(pT_4_o))
-#else
          call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags, &
             & abc,e4=ccenergies(pT_4_o))
-#endif
 
          if (abc) call tensor_reorder(ccsdpt_t1,[2,1])
          call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5_o))
@@ -712,10 +671,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwidle = 'MASTER IDLE pT: ')
          endif
 
-#ifdef VAR_MPI
-         call tensor_free(t2f_local)
-         call tensor_free(VOVO_local)
-#endif
+!         ! free integrals
+!         call tensor_free(vovo)
+
       endif
 
       CorrEnergyString = 'correlation energy            '
@@ -754,9 +712,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,*)
 
    endif
-
-   ! free integrals
-   call tensor_free(VOVO)
 
    !MODIFY FOR NEW MODEL
    write(DECinfo%output,*)
@@ -804,7 +759,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call tensor_free(t1_final)
    endif
 
-   call tensor_free(t2_final)
+   if (DECinfo%print_frags) then
+      call tensor_free(t2_final)
+      call tensor_free(VOVO)
+   endif
    call mem_dealloc(ccenergies)
 
 !else mod unreleased
