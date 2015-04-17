@@ -63,6 +63,7 @@ if(ENABLE_XCINT)
     add_external(xcint)
 
     add_dependencies(dalton_xcint_interface xcint)
+    add_dependencies(dalton dalton_xcint_interface)
 
     set(EXTERNAL_LIBS
         ${EXTERNAL_LIBS}
