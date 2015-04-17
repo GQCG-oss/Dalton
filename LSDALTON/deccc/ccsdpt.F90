@@ -968,7 +968,7 @@ contains
     call mem_alloc(jobs,b_size + 1)
 
     ! create ij_array
-    call create_ij_tensor_ccsdpt(njobs,nocc,ij_array)
+    call create_comp_array_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
@@ -2887,7 +2887,7 @@ contains
     call mem_alloc(jobs,b_size + 1)
 
     ! create ab_array
-    call create_ab_tensor_ccsdpt(njobs,ts_oovv,ab_array)
+    call create_comp_array_ccsdpt(njobs,ts_oovv,ab_array)
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ab_array,jobs)
 
@@ -5659,16 +5659,18 @@ contains
   !> \brief: create ij_array for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine create_ij_tensor_ccsdpt(njobs,no,ij_array)
+  subroutine create_comp_array_ccsdpt(njobs,ts,array)
 
     implicit none
 
     !> njobs and nocc
-    integer, intent(in) :: njobs,no
+    integer, intent(in) :: njobs,ts
     !> ij_array
-    integer, dimension(njobs), intent(inout) :: ij_array
+    integer, dimension(njobs), intent(inout) :: array
     !> integers
     integer :: counter,offset,fill_1,fill_2
+
+    ! for ijk scheme, ts == nocc
 
     ! since i .ge. j, the composite ij indices will make up a lower triangular matrix.
     ! for each ij, k (where j .ge. k) jobs have to be carried out.
@@ -5696,7 +5698,7 @@ contains
     ! counter specifies the index of ij_array
     counter = 1
 
-    do fill_1 = 0,no-1
+    do fill_1 = 0,ts-1
 
        ! zero the offset
        offset = 0
@@ -5704,7 +5706,7 @@ contains
        if (fill_1 .eq. 0) then
 
           ! this is largest possible job, i.e., the (no,no)-th entry in the ij matrix
-          ij_array(counter) = njobs
+          array(counter) = njobs
           ! increment counter
           counter = counter + 1
 
@@ -5716,7 +5718,7 @@ contains
 
                 ! this is the largest i-value, for which we have to do k number of jobs, 
                 ! that is, we are at the no'th row essentially moving from right towards left.
-                ij_array(counter) = njobs - fill_1
+                array(counter) = njobs - fill_1
                 ! increment counter
                 counter = counter + 1
 
@@ -5724,10 +5726,10 @@ contains
 
                 ! we loop through the i-values keeping the j-value (and k-range) fixed
                 ! we thus loop from i == no up towards the diagonal of the lower triangular matrix
-                offset = offset + (no - fill_2)
+                offset = offset + (ts - fill_2)
                 ! 'njobs - fill_1' gives the current column, while 'offset' moves us up through the rows
                 ! while staying below or on the diagonal.(still row-major numbering)
-                ij_array(counter) = njobs - fill_1 - offset
+                array(counter) = njobs - fill_1 - offset
                 ! increment counter
                 counter = counter + 1
 
@@ -5739,61 +5741,7 @@ contains
 
     end do
 
-  end subroutine create_ij_tensor_ccsdpt
-
-
-  !> \brief: create ab_array for ccsd(t)
-  !> \author: Janus Juul Eriksen
-  !> \date: april 2015
-  subroutine create_ab_tensor_ccsdpt(njobs,ts,ab_array)
-
-    implicit none
-
-    !> njobs and nocc
-    integer, intent(in) :: njobs,ts
-    !> ij_array
-    integer, dimension(njobs), intent(inout) :: ab_array
-    !> integers
-    integer :: counter,offset,fill_1,fill_2
-
-    ! for explanation, cf. create_ij_tensor_ccsdpt
-
-    counter = 1
-
-    do fill_1 = 0,ts-1
-
-       ! zero the offset
-       offset = 0
-
-       if (fill_1 .eq. 0) then
-
-          ab_array(counter) = njobs
-          counter = counter + 1
-
-       else
-
-          do fill_2 = 0,fill_1
-
-             if (fill_2 .eq. 0) then
-
-                ab_array(counter) = njobs - fill_1
-                counter = counter + 1
-
-             else
-
-                offset = offset + (ts - fill_2)
-                ab_array(counter) = njobs - fill_1 - offset
-                counter = counter + 1
-
-             end if
-
-          end do
-
-       end if
-
-    end do
-
-  end subroutine create_ab_tensor_ccsdpt
+  end subroutine create_comp_array_ccsdpt
 
 
   !> \brief: make job distribution list for ccsd(t)
