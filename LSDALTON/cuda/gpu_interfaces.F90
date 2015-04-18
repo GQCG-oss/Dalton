@@ -69,6 +69,7 @@ contains
 #ifdef VAR_OPENACC
   subroutine ls_dgemm_acc(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc,acc_handle,cublas_handle)
 
+       use precision
        use openacc
        use iso_c_binding
 
@@ -81,35 +82,25 @@ contains
        integer(kind=acc_handle_kind), intent(inout), optional :: acc_handle
        type(c_ptr), intent(inout), optional :: cublas_handle
        logical :: async
-       integer(kind=acc_handle_kind) :: handle_2
        integer :: transa_2,transb_2
-#ifdef VAR_PGF90
-       integer*4, external :: acc_get_cuda_stream
-#endif
+!#ifdef VAR_PGF90
+!       integer*4, external :: acc_get_cuda_stream
+!#endif
 
        async = .false.
-
        if (present(acc_handle)) async = .true.
 
-       if (present(cublas_handle)) then
+       if ((transa .ne. 'n') .or. (transa .ne. 'N') .or. (transa .ne. 't') .or. (transa .ne. 'T')) then
 
-          handle_2 = acc_get_cuda_stream(cublas_handle)
+          call lsquit('wrong argument to transa in ls_dgemm_acc',-1)
 
-          if (handle_2 .ne. acc_async_sync) async = .true.
+       elseif ((transb .ne. 'n') .or. (transb .ne. 'N') .or. (transb .ne. 't') .or. (transb .ne. 'T')) then
 
-       endif
-
-       if ((transa .ne. 'n') .or. (transa .ne. 'N') .or. (transa .ne. 't') .or. (transa .ne. 'T') then
-
-          call lsquit('wrong argument to transa in ls_dgemm_acc',DECinfo%output)
-
-       elseif ((transb .ne. 'n') .or. (transb .ne. 'N') .or. (transb .ne. 't') .or. (transb .ne. 'T') then
-
-          call lsquit('wrong argument to transb in ls_dgemm_acc',DECinfo%output)
+          call lsquit('wrong argument to transb in ls_dgemm_acc',-1)
 
        endif
 
-#ifdef defined(VAR_CUBLAS)
+#ifdef VAR_CUBLAS
 
        if ((transa .eq. 'n') .or. (transa .eq. 'N')) then
 
