@@ -5,6 +5,8 @@
 !> \date: 2015, Aarhus
 module gpu_interfaces
 
+  use iso_c_binding
+
 #ifdef VAR_OPENACC
 #ifdef VAR_CUBLAS
 
@@ -53,11 +55,9 @@ module gpu_interfaces
   interface
 
     subroutine get_dev_mem( total , free ) bind(C, name="get_dev_mem")
-
        use iso_c_binding
-
+       implicit none
        integer (C_SIZE_T) :: total,free
-
     end subroutine get_dev_mem
 
   end interface
