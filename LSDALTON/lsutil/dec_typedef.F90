@@ -343,6 +343,8 @@ module dec_typedef_module
      logical :: RIMP2ForcePDMCalpha
      !> Force tiling in Step 5 of RIMP2 code
      logical :: RIMP2_tiling
+     !> Use lowdin decomposition
+     logical :: RIMP2_lowdin
      !> MPI group is split if #nodes > O*V/RIMPIsplit
      integer :: RIMPIsplit
 
