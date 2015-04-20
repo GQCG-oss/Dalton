@@ -596,7 +596,7 @@ subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
   real(realk) :: TMPR,TMPG1,TMPG2,TMP
   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
   TMP = 0E0_realk
-  !$OMP PARALLEL COLLAPSE(2) DO DEFAULT(none) PRIVATE(I,J,M,C,TMPR,&
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,M,C,TMPR,&
   !$OMP TMPG1,TMPG2) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
   !$OMP nba) REDUCTION(+:TMP)
   DO M=1,n3
