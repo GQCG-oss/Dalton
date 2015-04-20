@@ -36,19 +36,19 @@ contains
 !>    AND READS THE X,Y,Z COORDINATES OF THE INDIVIDUAL ATOMS
 !>
 SUBROUTINE READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,MOLECULE,&
-     &BASISSETLIBRARY,doprint,iprint,DoSpherical,basis,&
-	 &latt_config)
+     & BASISSETLIBRARY,doprint,iprint,DoSpherical,basis,&
+     & latt_config,ATOMBASIS)
 implicit none
 INTEGER,intent(in)               :: LUPRI,iprint
 TYPE(MOLECULEINFO),intent(inout) :: MOLECULE
-LOGICAL,intent(inout) :: BASIS(nBasisBasParam),DoSpherical
+LOGICAL,intent(inout) :: ATOMBASIS,BASIS(nBasisBasParam),DoSpherical
 LOGICAL,intent(in) :: doprint
 TYPE(BASISSETLIBRARYITEM),intent(inout) :: BASISSETLIBRARY(nBasisBasParam)
 TYPE(lvec_list_t),INTENT(INOUT) :: latt_config
 !
 integer            :: LUINFO
 logical            :: PRINTATOMCOORD,file_exist,Angstrom,Symmetry,dopbc
-logical            :: ATOMBASIS,Subsystems
+logical            :: Subsystems
 CHARACTER(len=80)  :: BASISSET(nBasisBasParam)
 integer            :: MolecularCharge,Atomtypes,Totalnatoms,I,IPOS
 
@@ -83,9 +83,26 @@ IF(.NOT.ATOMBASIS)THEN
    DO I=1,nBasisBasParam
       BASISSETLIBRARY(I)%nbasissets=1
       BASISSETLIBRARY(I)%BASISSETNAME(1)=BASISSET(I)
+      BASISSETLIBRARY(I)%GeminalScalingFactor = 1.0E0_realk
       IPOS = INDEX(BASISSET(I),'cc-pV')
       IF (IPOS .NE. 0) THEN 
          BASISSETLIBRARY(I)%DunningsBasis = .TRUE.
+         !Setting the F12 geminal scaling factor 
+         !see J. Chem. Phys 128, 084102         
+         IPOS = INDEX(BASISSET(I),'aug-cc-pVDZ')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.1E0_realk
+         IPOS = INDEX(BASISSET(I),'aug-cc-pVTZ')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.2E0_realk
+         IPOS = INDEX(BASISSET(I),'aug-cc-pVQZ')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.4E0_realk
+         IPOS = INDEX(BASISSET(I),'aug-cc-pV5Z')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.4E0_realk
+         IPOS = INDEX(BASISSET(I),'cc-pVDZ-F12')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 0.9E0_realk
+         IPOS = INDEX(BASISSET(I),'cc-pVTZ-F12')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.0E0_realk
+         IPOS = INDEX(BASISSET(I),'cc-pVQZ-F12')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.1E0_realk
       ENDIF
    ENDDO
 ELSE !ATOMBASIS
@@ -815,7 +832,7 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
   INTEGER            :: LUPRI
   INTEGER            :: unique1(nBasisBasParam),unique2,uniqueCharge,IPRINT
   LOGICAL            :: PRINTATOMCOORD,pointcharge,phantom,DunningsBasis
-  LOGICAL            :: UniqueLabel
+  LOGICAL            :: UniqueLabel,PhantomLabel
   INTEGER :: basunique2(nBasisBasParam),basissetnumber2(nBasisBasParam)
   INTEGER :: basissetnumber(nBasisBasParam),basissetnumber1(nBasisBasParam)
   INTEGER :: nSubsystemLabels,iSubsystemLabels,iBas
@@ -823,8 +840,8 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
   call StringInit80(SubsystemLabel)
   atomnumber=0
   basissetnumber=0
-
   DunningsBasis = .TRUE.
+  PhantomLabel = .FALSE.
   nSubsystemLabels = 0 
   DO I=1,Atomtypes
    CALL READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,ATOMBASIS,&
@@ -833,9 +850,14 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
       Call DetermineUniqueLabel(UniqueLabel,SubsystemLabels,Atomtypes,SubsystemLabel,&
            & nSubsystemLabels,iSubsystemLabels)
       IF(UniqueLabel)THEN
-         nSubsystemLabels = nSubsystemLabels + 1 
-         iSubsystemLabels = nSubsystemLabels
-         SubsystemLabels(nSubsystemLabels) = SubsystemLabel
+         IF(SubsystemLabel(1:5).EQ.'     ')THEN
+            PhantomLabel = .TRUE.
+            iSubsystemLabels = -2
+         ELSE
+            nSubsystemLabels = nSubsystemLabels + 1 
+            iSubsystemLabels = nSubsystemLabels
+            SubsystemLabels(nSubsystemLabels) = SubsystemLabel
+         ENDIF
       ENDIF
    ELSE
       iSubsystemLabels = -1
@@ -1001,6 +1023,15 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
 ENDDO
 
   IF(Subsystems)THEN
+!     IF(PhantomLabel)THEN
+!        nSubsystemLabels = nSubsystemLabels + 1 
+!        SubsystemLabels(nSubsystemLabels) = ' '
+!        DO J=1,nAtoms             
+!           IF(MOLECULE%ATOM(J)%Phantom.AND.MOLECULE%ATOM(J)%SubSystemIndex.EQ.-2)THEN
+!              MOLECULE%ATOM(J)%SubSystemIndex = nSubsystemLabels
+!           ENDIF
+!        ENDDO
+!     ENDIF
      MOLECULE%nSubSystems = nSubsystemLabels
      call mem_alloc(MOLECULE%SubSystemLabel,nSubsystemLabels)
      DO I=1,nSubsystemLabels
@@ -1036,13 +1067,16 @@ ENDDO
   ENDIF
 #endif
 
+
   IF(ATOMBASIS)THEN
+     BASISSETLIBRARY%GeminalScalingFactor = 1.0E0_realk
      IF(DunningsBasis)THEN
         !all basis sets used for all atoms are Dunnings
         BASISSETLIBRARY%DunningsBasis = .TRUE.
      ELSE
         BASISSETLIBRARY%DunningsBasis = .FALSE.
      ENDIF
+
      !ELSE
      !do nothing already set
   ENDIF
@@ -1329,7 +1363,9 @@ ELSE
    ENDIF
 ENDIF
 
+
 IF (SubSystems) THEN
+   SubsystemLabel = ' '
    IPOS = INDEX(TEMPLINE,'SubSystem')
    IF (IPOS .NE. 0) THEN
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
@@ -1347,9 +1383,11 @@ IF (SubSystems) THEN
          READ (TEMPLINE((IPOS + IPOS2):),StringFormat) SubsystemLabel
       ENDIF
    ELSE
-      WRITE (LUPRI,*) 'SubSystems selected, but no SubSystem Label specified for one atom type'
-      CALL LSQUIT( 'SubSystems selected, but no SubSystem Label &
-           &specified for one atom type',lupri)
+      if(.not. phantom) then
+         WRITE (LUPRI,*) 'SubSystems selected, but no SubSystem Label specified for one atom type'
+         CALL LSQUIT( 'SubSystems selected, but no SubSystem Label &
+              &specified for one atom type',lupri)
+      end if
    ENDIF
 ENDIF
 

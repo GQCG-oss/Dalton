@@ -170,7 +170,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      !for now atleast
      RETURN
   ENDIF
-
+  IF(config%papitest)THEN
+#ifdef VAR_PAPI
+     call papi_example(LUPRI)
+#endif
+  ENDIF
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
      CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)

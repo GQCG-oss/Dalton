@@ -363,7 +363,7 @@ contains
     call mem_dealloc(EpsVirt)
     IF(MASTER)THEN
        write(lupri,*)  'RIMP2 CORRELATION ENERGY = ', rimp2_energy
-       write(*,'(1X,a,f20.10)') 'RIMP2 CORRELATION ENERGY = ', rimp2_energy
+       print*,'RIMP2 CORRELATION ENERGY = ', rimp2_energy
     ENDIF
     write(lupri,*)  'LEAK TOOL STATISTICS IN full_canonical_rimp2'
     call LeakTools_stat_mem(lupri)

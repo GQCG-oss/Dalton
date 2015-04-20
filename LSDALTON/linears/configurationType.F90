@@ -149,6 +149,8 @@ type ConfigItem
    logical              :: doTestHodi
    !> skip SCF calculations
    logical              :: skipscfloop
+   !> test papi
+   logical              :: papitest
 end type ConfigItem
 
 type LowAccuracyStartType

@@ -204,7 +204,7 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ DALTONFILE',TIM1,TIM2,LUPRI)
 #endif  
   CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
        & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%basis,&
-       & latt_config)
+       & latt_config,intinp%dalton%atombasis)
 
 CALL Geometry_analysis(intinp%MOLECULE,LUPRI)  
 
@@ -399,14 +399,13 @@ integer            :: lupri
 !
 integer            :: LUINFO,IDUMMY,I,J,IPOS,IPOS2
 logical            :: file_exist,Angstrom,Symmetry,dopbc
-logical            :: ATOMBASIS,BASIS,ATOMDF,AUXBASIS
+logical            :: BASIS,ATOMDF,AUXBASIS
 CHARACTER(len=80)  :: WORD
 integer            :: Atomtypes,natoms,Molecularcharge,ios
 integer,ALLOCATABLE:: BasisSetCharge(:) !Charge of each type 
 real(realk)        :: Q
 logical            :: DoOwn,DoCartesian
 CHARACTER(len=1) :: KASYM(3,3),CRT
-CHARACTER(len=80),ALLOCATABLE  :: ATOMBASISSET(:)
 CHARACTER(len=2) :: SYMTXT,ID3
 
 WRITE(LUPRI,*) '                     '

@@ -21,6 +21,9 @@ f.add(string = 'Total RIMP2 energy',
 f.add(string = 'RIMP2 CORRELATION ENERGY',
       rel_tolerance = 1.0e-8)
 
+f.add(string = 'NAF:',rel_tolerance = 1.0e-4)
+
+
 f.add(string = 'Allocated memory (TOTAL)')
 f.add(string = 'Allocated MPI memory a cross all slaves')
 

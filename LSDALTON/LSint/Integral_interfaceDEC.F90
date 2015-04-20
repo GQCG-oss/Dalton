@@ -54,7 +54,7 @@ logical,pointer     :: OLDsameBAS(:,:)
 real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: nGaussian,nG2
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 dummy=1
 IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
    !set geminal
@@ -62,7 +62,8 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       nGaussian = 6
       nG2 = nGaussian*(nGaussian+1)/2
       GGem = 0E0_realk
-      call stgfit(1E0_realk,nGaussian,exponent,coeff)
+      slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+      call stgfit(slater,nGaussian,exponent,coeff)
       IJ=0
       DO I=1,nGaussian
          DO J=1,I
@@ -96,7 +97,7 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
    ELSE IF (intSpec(5).EQ.'2') THEN
       ! The Gaussian geminal operator squared g^2
-      oper = GGemOperator
+      oper = GGemQuaOperator
       call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
    ELSE
       call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -505,14 +506,15 @@ real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: iunit,k,l,IJ
 integer             :: nGaussian,nG2
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 type(lstensor),pointer :: tmpP
 !call time_II_operations1()
 IF (intSpec(5).NE.'C') THEN
    nGaussian = 6
    nG2 = nGaussian*(nGaussian+1)/2
    GGem = 0E0_realk
-   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+   call stgfit(slater,nGaussian,exponent,coeff)
    IJ=0
    DO I=1,nGaussian
       DO J=1,I
@@ -546,7 +548,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -691,14 +693,15 @@ real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: iunit,k,l,IJ
 integer             :: nGaussian,nG2
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 type(lstensor),pointer :: tmpP
 call time_II_operations1()
 IF (intSpec(5).NE.'C') THEN
    nGaussian = 6
    nG2 = nGaussian*(nGaussian+1)/2
    GGem = 0E0_realk
-   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+   call stgfit(slater,nGaussian,exponent,coeff)
    IJ=0
    DO I=1,nGaussian
       DO J=1,I
@@ -732,7 +735,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -886,14 +889,15 @@ real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: iunit,k,l,IJ
 integer             :: nGaussian,nG2
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 type(lstensor),pointer :: tmpP
 call time_II_operations1()
 IF (intSpec(5).NE.'C') THEN
    nGaussian = 6
    nG2 = nGaussian*(nGaussian+1)/2
    GGem = 0E0_realk
-   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+   call stgfit(slater,nGaussian,exponent,coeff)
    IJ=0
    DO I=1,nGaussian
       DO J=1,I
@@ -927,7 +931,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -1082,7 +1086,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
   real(realk)         :: coeff(6),exponent(6),tmp
   real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
   integer             :: nGaussian,nG2
-  real(realk)         :: GGem
+  real(realk)         :: GGem,slater
   call time_II_operations1()
   IF(FULLRHS)THEN
      !test
@@ -1099,7 +1103,8 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
         nGaussian = 6
         nG2 = nGaussian*(nGaussian+1)/2
         GGem = 0E0_realk
-        call stgfit(1E0_realk,nGaussian,exponent,coeff)
+        slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+        call stgfit(slater,nGaussian,exponent,coeff)
         IJ=0
         DO I=1,nGaussian
            DO J=1,I
@@ -1133,7 +1138,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
         call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
      ELSE IF (intSpec(5).EQ.'2') THEN
         ! The Gaussian geminal operator squared g^2
-        oper = GGemOperator
+        oper = GGemQuaOperator
         call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
      ELSE
         call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -1357,12 +1362,13 @@ END SUBROUTINE II_GET_ERI_INTEGRALBLOCK
 !!$  real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 !!$  integer             :: iunit,k,l,IJ
 !!$  integer             :: nGaussian,nG2
-!!$  real(realk)         :: GGem
+!!$  real(realk)         :: GGem,slater
 !!$     IF (intSpec(5).NE.'C') THEN
 !!$        nGaussian = 6
 !!$        nG2 = nGaussian*(nGaussian+1)/2
 !!$        GGem = 0E0_realk
-!!$        call stgfit(1E0_realk,nGaussian,exponent,coeff)
+!!$        slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+!!$        call stgfit(slater,nGaussian,exponent,coeff)
 !!$        IJ=0
 !!$        DO I=1,nGaussian
 !!$           DO J=1,I
@@ -1393,7 +1399,7 @@ END SUBROUTINE II_GET_ERI_INTEGRALBLOCK
 !!$        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 !!$     ELSE IF (intSpec(5).EQ.'2') THEN
 !!$        ! The Gaussian geminal operator squared g^2
-!!$        oper = GGemOperator
+!!$        oper = GGemQuaOperator
 !!$        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 !!$     ELSE
 !!$        call lsquit('Error in specification of operator in InitGaussianGeminal',-1)

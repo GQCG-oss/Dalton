@@ -115,7 +115,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk), pointer   :: work1(:),Etmp2222(:)
   real(realk)            :: RCOND
   integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
-  real(realk) :: TS,TE,TS2,TE2,TS3,TE3
+  real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPUTIME,WALLTIMESTART,WALLTIMEEND,WTIME
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate,memstep2
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
   integer :: MaxVirtSize,nTiles,offsetV,offset,MinAuxBatch
@@ -140,11 +140,21 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #else
   integer, pointer, dimension(:) :: async_id
 #endif
+#ifdef VAR_PAPI
+  integer(8) :: papiflops
+  integer :: eventset2
+#endif
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 1319
 #endif  
+
+#ifdef VAR_PAPI
+  CALL LS_GETTIM(CPUTIME,WALLTIMESTART)
+  call myPAPI_start(eventset2)
+#endif
+
 
   ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
   num_ids = 7
@@ -1473,6 +1483,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   write(*,'(A,g10.3,A)')"DECRIMP2 time WORK",time_w," seconds"
   write(*,'(A,g10.3,A)')"DECRIMP2 time COMM",time_c," seconds"
   write(*,'(A,g10.3,A)')"DECRIMP2 time IDLE",time_i," seconds"
+#ifdef VAR_PAPI
+  CALL LS_GETTIM(CPUTIME,WALLTIMEEND)
+  WTIME = WALLTIMEEND-WALLTIMESTART  
+  CALL ls_TIMTXT('>>>  WALL Time used in RIMP2_integrals_and_amp is ',WTIME,LUPRI)
+  papiflops=0 ! zero flops (this is probably redundant)
+  call myPAPI_stop(eventset2,papiflops)
+  write(LUPRI,*) 'FLOPS for RIMP2_integrals_and_amplitudes   = ', papiflops
+  write(LUPRI,*) 'FLOPS/s for RIMP2_integrals_and_amplitudes = ', papiflops/WTIME
+#endif
 #endif
 
 end subroutine RIMP2_integrals_and_amplitudes
@@ -1939,8 +1958,9 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   real(realk),pointer :: TMPAlphaBetaDecomp(:,:),AlphaCD3(:),NBAR(:,:)
   real(realk),pointer :: AlphaCD5(:),Calpha2(:),CalphaNAF(:)
   real(realk),pointer :: W(:,:),Wprime(:,:),NBARTMP(:,:)
-  real(realk) :: TS3,TE3,MemInGBCollected,MemInGBCollected2
+  real(realk) :: TS3,TE3,MemInGBCollected,MemInGBCollected2,TS,TE,SumSV,FullSumSV
   real(realk) :: MemForFullAOINT,MemForFullMOINT,maxsize,MemForPartialMOINT
+  real(realk) :: TS4,TE4
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
   integer(kind=long)    :: nSize,n8
   integer(kind=ls_mpik) :: node 
@@ -1953,6 +1973,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
+  CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
+  CALL LSTIMER('START ',TS3,TE3,LUPRI,ForcePrint)
   use_bg_buf = .FALSE.
   IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
   epsilon = DECinfo%NAFthreshold 
@@ -1995,7 +2017,6 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 #else
   nthreads = 1
 #endif
-  CALL LSTIMER('START ',TS3,TE3,LUPRI)
   
   IF(master)THEN
      !Memory requirement to have the full MO integral in memory 
@@ -2072,6 +2093,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   IF(PerformReduction.NE.0) MaxNaux = PerformReduction
   call time_start_phase( PHASE_WORK )
 #endif
+  CALL LSTIMER('DF_Calpha:Init ',TS3,TE3,LUPRI,ForcePrint)
 
   !=====================================================================================
   ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
@@ -2079,7 +2101,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 
   IF(AlphaBetaDecompCreate)THEN
      IF(master)THEN
-        call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
+!        call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
         IF(DECinfo%AuxAtomicExtent)THEN
            molecule1 => mylsitem%SETTING%MOLECULE(1)%p
            molecule2 => mylsitem%SETTING%MOLECULE(2)%p
@@ -2090,8 +2112,10 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
            mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
         ENDIF
+        CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
         call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-             & AlphaBeta,mylsitem%setting,nbasisAux,Oper)
+             & AlphaBetaDecomp,mylsitem%setting,nbasisAux,Oper)
+        CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
         IF(DECinfo%AuxAtomicExtent)THEN
            mylsitem%SETTING%MOLECULE(1)%p => molecule1
            mylsitem%SETTING%MOLECULE(2)%p => molecule2
@@ -2101,9 +2125,10 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         ! Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
         ! Warning the inverse is not unique so in order to make sure all slaves have the same
         ! inverse matrix we calculate it on the master a BCAST to slaves
-        call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBetaDecomp, lupri)
-        call mem_dealloc(AlphaBeta)
-        CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
+!        call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBetaDecomp,lupri)
+        call Get_InverseCholeskyFactor(nbasisAux,AlphaBetaDecomp,lupri)
+        CALL LSTIMER('DF_Calpha:AlphaBetaDecomp',TS4,TE4,LUPRI,ForcePrint)
+!        call mem_dealloc(AlphaBeta)
      ENDIF
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
@@ -2113,6 +2138,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      call time_start_phase(PHASE_WORK)   
 #endif
   ENDIF
+  CALL LSTIMER('DF_Calpha:AlphaBeta',TS3,TE3,LUPRI,ForcePrint)
 
   !==================================================================
   ! Determine:  
@@ -2209,6 +2235,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
        & nvirt,nocc,.TRUE.,Cvirt,Cocc,nthreads,dim1,GindexToLocal,DECinfo%PL,&
        & use_bg_buf)
 
+  CALL LSTIMER('DF_Calpha:3CenterInt',TS3,TE3,LUPRI,ForcePrint)
+
 !  call sleep(mynum*10)
 !  print*,'XXX AlphaCD3 dim1=',dim1,'mynum',mynum
 !  call ls_output(AlphaCD3,1,dim1,1,4,dim1,nvirt*nocc,1,6)
@@ -2247,7 +2275,14 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         IF(master)THEN
            call mem_alloc(W,nbasisAux,nbasisAux)
            call NAF_buildW(W,Wprime,AlphaBetaDecomp,nbasisAux)
-           call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED) 
+           call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED,SumSV,FullSumSV) 
+           IF(DECinfo%PL.GT.2)THEN
+              WRITE(DECinfo%output,*)'NAF: Auxiliary functions         = ',nbasisAux
+              WRITE(DECinfo%output,*)'NAF: Natural Auxiliary functions = ',NRED
+              WRITE(DECinfo%output,*)'NAF: Sum of included eigenvalues = ',SumSV
+              WRITE(DECinfo%output,*)'NAF: Sum of neglected eigenvalues= ',FullSumSV-SumSV
+              WRITE(DECinfo%output,*)'NAF: Sum of all eigenvalues      = ',FullSumSV
+           ENDIF
            call mem_dealloc(W)
         ENDIF
         call mem_dealloc(Wprime)
@@ -2327,6 +2362,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ENDIF
      !  print*,'MY RIMP2 INTEGRAL AlphaCD2(1:nA,1:4) NEW VERSION MYNUM',MYNUM
      !  call ls_output(AlphaCD3,1,size(AlphaCD3,1),1,4,size(AlphaCD3,1),nvirt*nocc,1,6)
+     CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
   ELSE
      !=====================================================================================
      ! MPI scheme:  Bcast Routine
@@ -2400,6 +2436,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ELSE
         call mem_dealloc(AlphaCD3)
      ENDIF
+     CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
      IF(DECinfo%NAF)THEN
 #ifdef VAR_MPI
         call time_start_phase( PHASE_IDLE )
@@ -2410,8 +2447,15 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 #endif
         IF(master)THEN
            call mem_alloc(W,nbasisAux,nbasisAux)
-           call NAF_buildW(W,Wprime,AlphaBetaDecomp,nbasisAux)
-           call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED) 
+           call NAF_buildW(W,Wprime,AlphaBetaDecomp,nbasisAux)           
+           call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED,SumSV,FullSumSV) 
+           IF(DECinfo%PL.GT.2)THEN
+              WRITE(DECinfo%output,*)'NAF: Auxiliary functions         = ',nbasisAux
+              WRITE(DECinfo%output,*)'NAF: Natural Auxiliary functions = ',NRED
+              WRITE(DECinfo%output,*)'NAF: Sum of included eigenvalues = ',SumSV
+              WRITE(DECinfo%output,*)'NAF: Sum of neglected eigenvalues= ',FullSumSV-SumSV
+              WRITE(DECinfo%output,*)'NAF: Sum of all eigenvalues      = ',FullSumSV
+           ENDIF
            call mem_dealloc(W)
         ENDIF
         call mem_dealloc(Wprime)
@@ -2500,6 +2544,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            call mem_dealloc(Calpha)
            Calpha => CalphaNAF           
         ENDIF
+        CALL LSTIMER('DF_Calpha:NAF',TS3,TE3,LUPRI,ForcePrint)
      ENDIF
      !allocated inside II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim
      IF(CollaborateWithSlaves.OR.DECinfo%RIMP2ForcePDMCalpha)THEN
@@ -2514,9 +2559,42 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 !  WRITE(6,*)'Build_CalphaMO2:Print Subset Final Calph(NBA=',NBA,',1:4)  MYNUM',MYNUM
 !  call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
 !
-  CALL LSTIMER('Build_CalphaMO2',TS3,TE3,LUPRI)
+  CALL LSTIMER('Build_CalphaMO2',TS,TE,LUPRI,ForcePrint)
 
 end subroutine Build_CalphaMO2
+
+!computes the Cholesky factorization of the inverse of 
+!a real symmetric positive definite matrix A = U^T * U 
+subroutine Get_InverseCholeskyFactor(n,A,lupri)
+  implicit none
+  integer, intent(in)          :: n,lupri
+  real(realk), intent(inout)   :: A(n,n)
+  !
+  integer                      :: i,j,np,k,info
+  real(realk) :: TS,TE
+  call LSTIMER('START ',TS,TE,lupri,.TRUE.)
+  call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor
+  IF(INFO.ne. 0) THEN
+     print *, 'DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',INFO
+     call lsquit('DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',-1)
+  ENDIF
+  call DPOTRI('U', N, A, N, INFO ) !U=inverse of a original U
+  IF(INFO.ne. 0) THEN
+     print *, 'DPOTRI Failed in Get_InverseCholeskyFactor',INFO
+     call lsquit('DPOTRI Failed in Get_InverseCholeskyFactor',-1)
+  ENDIF
+  call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor of inverse of a original U
+  IF(INFO.ne. 0) THEN
+     print *, 'DPOTRF NR 2 Failed in Get_InverseCholeskyFactor',INFO
+     call lsquit('DPOTRF NR 2 Failed in Get_InverseCholeskyFactor',-1)
+  ENDIF
+  do J=1,N
+     do I=J+1,N
+        A(I,J) = 0.0E0_realk
+     enddo
+  enddo
+  call LSTIMER('Get_CholeskyFactor',TS,TE,lupri,.TRUE.)
+end subroutine Get_InverseCholeskyFactor
 
 subroutine NAF_buildCalphaNAF(Calpha,nAux2,nvirt,nocc,&
      & CalphaNAF,NREDLOC,NBARTMP,nbasisAux,&
@@ -2625,22 +2703,24 @@ subroutine buildNBARTMP(NBARTMP,NBAR,NREDLOC,NRED,nbasisAux,mynum,ndimMax,numnod
   ENDIF
 end subroutine buildNBARTMP
 
-subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred)
+subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred,SumSV,FullSumSV)
   implicit none
   integer,intent(in)        :: N
   real(realk),intent(in)    :: W(N,N)
-  real(realk),intent(inout) :: TMP(N,N)
+  real(realk),intent(inout) :: TMP(N,N),SumSV,FullSumSV
   real(realk),pointer       :: NBAR(:,:)
   real(realk),intent(in)    :: epsilon
   integer,intent(inout)     :: nred
   !local variables
-  integer                :: lwork,INFO,I,K,J,infdiag
-  real(realk), pointer   :: work(:),SV(:),U(:,:),VT(:,:)
+  integer                :: lwork,INFO,I,K,J,infdiag,liwork
+  real(realk), pointer   :: work(:),U(:,:),VT(:,:)
   integer,pointer        :: IPVT(:)
-  real(realk)            :: RCOND, dummy(2),maxSV,SVm1
+  real(realk)            :: RCOND, dummy(2),maxSV,SVm1,idummy(2),SV(N)
 !
   real(realk),pointer :: W2(:,:)
+  logical :: doSVD
   infdiag = 0
+!  doSVD = .FALSE. ! do diagonalization instead (faster)
 
   !Perform a SVD  decomposition 
   ! W = U * SIGMA * transpose(V)
@@ -2648,44 +2728,63 @@ subroutine NAF_SVD_W(W,TMP,NBAR,N,epsilon,nred)
   ! its min(m,n) diagonal elements
   ! for efficient storage the SIGMA non zero elements are stored in 
   ! SV (non singular values)
-  call mem_alloc(SV,N)   !sigular values 
   !only the first min(m,n) columns of U (the left singular
   !vectors) are returned in the array U;
   !call mem_alloc(U,n,N)  Use TMP
   !only the first min(m,n) rows of V**T (the transposed right singular
   !vectors) are returned in the array V;
-  call mem_alloc(VT,N,N)
 !  call mem_alloc(U,N,N)
   !S(n,m) = U(n,N) SV(N) VT(N,m)
-  lwork = -1      !workspace query
-  call dgesvd('S','S',N,N,W,N,SV,TMP,N,VT,N,dummy,lwork,INFO)
-  lwork = dummy(1)
-  call mem_alloc(work,lwork)
-  call dgesvd('S','S',N,N,W,N,SV,TMP,N,VT,N,work,lwork,INFO)
-  call mem_dealloc(VT)
+!!$  IF(doSVD)THEN
+!!$     call mem_alloc(VT,N,N)
+!!$     lwork = -1      !workspace query
+!!$     call dgesvd('S','S',N,N,W,N,SV,TMP,N,VT,N,dummy,lwork,INFO)
+!!$     lwork = dummy(1)
+!!$     call mem_alloc(work,lwork)
+!!$     call dgesvd('S','S',N,N,W,N,SV,TMP,N,VT,N,work,lwork,INFO)
+!!$     call mem_dealloc(VT)
+!!$     !content of W destroyed
+!!$     IF(INFO.NE.0)THEN
+!!$        print*,'dgesvd in NAF_SVD_W failed  INFO=',INFO
+!!$     ENDIF
+!!$     call mem_dealloc(work)
+!!$  ELSE
+     call my_dsyev('V', 'U', N, W, SV)
+!!$  ENDIF
 
-  !content of W destroyed
-  IF(INFO.NE.0)THEN
-     print*,'dgesvd in NAF_SVD_W failed  INFO=',INFO
-  ENDIF
-  call mem_dealloc(work)
   nred = 0 
+  SumSV = 0.0E0_realk
+  FullSumSV = 0.0E0_realk
   DO I=1,N
      IF(DECinfo%PL.GT.2) print*,'W SV(I)',SV(I),'SV(I).GT.epsilon',SV(I).GT.epsilon
-     IF(SV(I).GT.epsilon) nred = nred + 1
+     IF(SV(I).GT.epsilon)THEN
+        nred = nred + 1
+        SumSV = SumSV + SV(I)
+     ENDIF
+     FullSumSV = FullSumSV + SV(I)
   ENDDO
   call mem_alloc(NBAR,nred,N)
   nred = 0
-  DO I=1,N
-     IF(ABS(SV(I)).GT.epsilon)THEN
-        nred = nred + 1
-        DO J=1,N
-           !NBAR(nred,J) = U(n,nmin)
-           NBAR(nred,J) = TMP(J,I)
-        ENDDO
-     ENDIF
-  ENDDO
-  call mem_dealloc(SV)
+!!$  IF(doSVD)THEN
+!!$     DO I=1,N
+!!$        IF(ABS(SV(I)).GT.epsilon)THEN
+!!$           nred = nred + 1
+!!$           DO J=1,N
+!!$              !NBAR(nred,J) = U(n,nmin)
+!!$              NBAR(nred,J) = TMP(J,I)
+!!$           ENDDO
+!!$        ENDIF
+!!$     ENDDO
+!!$  ELSE
+     DO I=1,N
+        IF(SV(I).GT.epsilon)THEN
+           nred = nred + 1
+           DO J=1,N
+              NBAR(nred,J) = W(J,I)
+           ENDDO
+        ENDIF
+     ENDDO
+!!$  ENDIF
 end subroutine NAF_SVD_W
 
 subroutine NAF_buildW(W,Wprime,AlphaBetaDecomp,N) 
@@ -2698,7 +2797,7 @@ subroutine NAF_buildW(W,Wprime,AlphaBetaDecomp,N)
   real(realk),pointer :: TMP(:,:)
   !W(A,B) = Decomp(A,C)*Wprime(C,D)*Decomp(D,B)
   call mem_alloc(TMP,N,N)
-  call dgemm('N','N',N,N,N,1.0E0_realk,Wprime,N,AlphaBetaDecomp,N,0.0E0_realk,TMP,N)
+  call dgemm('N','T',N,N,N,1.0E0_realk,Wprime,N,AlphaBetaDecomp,N,0.0E0_realk,TMP,N)
   call dgemm('N','N',N,N,N,1.0E0_realk,AlphaBetaDecomp,N,TMP,N,0.0E0_realk,W,N)
   call mem_dealloc(TMP)
 end subroutine NAF_buildW
