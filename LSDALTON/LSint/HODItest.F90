@@ -127,7 +127,7 @@ IF (geoderiv.EQ.1) THEN
 ELSE IF (geoderiv.EQ.2) THEN
   nGeoderivComp = 9*nAtoms*nAtoms
 ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms+1)*(3*nAtoms+2)*(3*nAtoms+3)/6
+  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
 ELSE
   write(lupri,'(X,A,I3)') 'Error in debugTestHODIcontract1 - unknown case geoderiv=',geoderiv
 ENDIF
@@ -189,7 +189,7 @@ IF (geoderiv.EQ.1) THEN
 ELSE IF (geoderiv.EQ.2) THEN
   nGeoderivComp = 9*nAtoms*nAtoms
 ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms+1)*(3*nAtoms+2)*(3*nAtoms+3)/6
+  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
 ELSE
   write(lupri,'(X,A,I3)') 'Error in debugTestHODIcontract2 - unknown case geoderiv=',geoderiv
 ENDIF
@@ -242,7 +242,7 @@ IF (geoderiv.EQ.1) THEN
 ELSE IF (geoderiv.EQ.2) THEN
   nGeoderivComp = 9*nAtoms*nAtoms
 ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms+1)*(3*nAtoms+2)*(3*nAtoms+3)/6
+  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
 ELSE
   write(lupri,'(X,A,I3)') 'Error in debugTestHODIone - unknown case geoderiv=',geoderiv
 ENDIF
@@ -309,7 +309,7 @@ IF (geoderiv.EQ.1) THEN
 ELSE IF (geoderiv.EQ.2) THEN
   nGeoderivComp = 9*nAtoms*nAtoms
 ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms+1)*(3*nAtoms+2)*(3*nAtoms+3)/6
+  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
 ELSE
   write(lupri,'(X,A,I3)') 'Error in debugTestHODIone - unknown case geoderiv=',geoderiv
 ENDIF
