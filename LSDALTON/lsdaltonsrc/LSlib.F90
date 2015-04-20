@@ -557,7 +557,7 @@ Character(*),intent(IN) :: oneElType
 IF (.NOT.state_set) CALL LSQUIT('LSlib_get_1el_geoderiv error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_1el_geoderiv. Basis-function mismatch',lupri)
 
-CALL II_get_1el_diff(lupri,luerr,ls%setting,oneEl,oneElType,nbast,nbast,nGeoComp,geoderiv=geoOrder)
+CALL II_get_hodi_1el(lupri,luerr,ls%setting,oneEl,oneElType,nbast,nbast,nGeoComp,geoderiv=geoOrder)
 
 END SUBROUTINE LSlib_get_1el_geoderiv
 

@@ -73,8 +73,8 @@ MODULE IntegralInterfaceMOD
        & II_get_prop_expval,II_get_integral,II_get_integral_full,&
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_2center_mixed_eri,II_get_4center_eri,&
-       & II_get_hodi_eri_4center,II_get_hodi_eri_contract1,&
-       & II_get_1el_diff,II_precalc_ScreenMat, &
+       & II_get_hodi_eri_4center,II_get_hodi_eri_contract1,II_get_hodi_eri_contract2,&
+       & II_get_hodi_1el,II_get_hodi_1el_mat,II_get_hodi_1el_contract,II_precalc_ScreenMat, &
 #ifdef VAR_MPI
        & II_bcast_screen, II_screeninit, II_screenfree,&
 #endif
@@ -2832,6 +2832,144 @@ ENDIF
 
 END SUBROUTINE II_get_hodi_eri_contract1
 
+!> \brief Calculates the contraction between differentiated 4 center eri tensor in (ab|cd) and contraction matrix pair (Dac,Dbd) or (Dab,Dcd)
+!> \author S. Reine
+!> \date 2015-04-20
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param results the resulting expectation values
+!> \param ContractMatA the LHS contraction matrices
+!> \param ContractMatB the RHS contraction matrices
+!> \param ncontract the number of contraction matrices
+!> \param contractA1 contraction AO index 1
+!> \param contractA2 contraction AO index 2
+!> \param contractB1 contraction AO index 1
+!> \param contractB2 contraction AO index 2
+!> \param DIM1 the dimension of orbital alpha
+!> \param DIM2 the dimension of orbital beta
+!> \param DIM3 the dimension of orbital delta
+!> \param DIM4 the dimension of orbital gamma
+!> \param DIM5 the number of differential components
+!> \param geoderiv Specifies the geoemetrical derivative order
+!> \param add Specifies if the ncontract should be added to the same output matrix (or not)
+SUBROUTINE II_get_hodi_eri_contract2(LUPRI,LUERR,SETTING,results,ContractMatA,ContractMatB,ncontract,&
+     &                               contractA1,contractA2,contractB1,contractB2,&
+     &                               dim1,dim2,dim3,dim4,dim5,geoderiv,add)
+IMPLICIT NONE
+TYPE(LSSETTING)       :: SETTING
+real(realk)           :: results(:)
+TYPE(Matrix)          :: ContractMatA(ncontract),ContractMatB(ncontract)
+INTEGER               :: LUPRI,LUERR,ncontract,contractA1,contractA2,contractB1,contractB2,dim1,dim2,dim3,dim4,dim5
+Integer,optional      :: geoderiv
+Logical,optional      :: add
+!
+Logical               :: dogeoderiv,nofamily,doadd,contract1234,contract1324
+REAL(REALK),pointer   :: integrals(:,:,:,:,:)
+integer               :: i,j,k,l,m,n,mn,intSpec,geoOrder,n1,n2,n3,n4,nc,jj,kk
+real(realk),pointer   :: contractFullA(:,:,:),contractFullB(:,:,:)
+real(realk),parameter :: D1 = 1.0E0_realk
+
+IF (setting%IntegralTransformGC) call &
+     &lsquit('Error in II_get_hodi_eri_contract2 - IntegralTransformGC not implemented',lupri)
+
+doadd = .FALSE. !Specifices whether all contractions should combine to one matrix (or one for each contraction)
+IF (present(add)) doadd=add
+
+contract1234 = contractA1.EQ.1.AND.contractA2.EQ.2.AND.contractB1.EQ.3.AND.contractB2.EQ.4
+contract1324 = contractA1.EQ.1.AND.contractA2.EQ.3.AND.contractB1.EQ.2.AND.contractB2.EQ.4
+IF (contract1234) THEN !Coulomb-type
+  n1=dim1
+  n2=dim2
+  n3=dim3
+  n4=dim4
+ELSE IF (contract1324) THEN !Exchange type
+  n1=dim1
+  n2=dim3
+  n3=dim2
+  n4=dim4
+ELSE
+  call lsquit('Error in II_get_hodi_eri_contract2 - contraction scheme not implemented',lupri)
+ENDIF
+
+!Set full contraction matrices
+call mem_alloc(contractFullA,n1,n2,ncontract)
+call mem_alloc(contractFullB,n3,n4,ncontract)
+DO n=1,ncontract
+  call mat_to_full(ContractMatA(n),D1,contractFullA(:,:,n))
+  call mat_to_full(ContractMatB(n),D1,contractFullB(:,:,n))
+ENDDO
+
+!Set full contraction matrices
+nc=ncontract
+IF (doadd) nc=1
+
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+
+!Specify geometrical derivative order if any
+dogeoderiv = .FALSE.
+geoOrder   = 0
+IF (present(geoderiv)) THEN
+  dogeoderiv = geoderiv.NE.0
+  geoOrder   = geoderiv
+ENDIF
+
+IF (dogeoderiv) THEN
+  IF (geoderiv.GE.1) THEN
+    intSpec = GeoDerivSpec
+  ELSE
+     call lsquit('Error in II_get_hodi_eri_contract2 - only geometrical derivative integrals implemented',lupri)
+  ENDIF
+
+  IF (.NOT.setting%scheme%nofamily) CALL LSQUIT('II_get_hodi_eri_contract2 only working with .NOFAMILY keyword option',-1)
+ELSE
+  intSpec = RegularSpec
+ENDIF
+
+call initIntegralOutputDims(setting%output,dim1,dim2,dim3,dim4,dim5)
+call mem_alloc(integrals,dim1,dim2,dim3,dim4,dim5)
+call ls_dzero(integrals,dim1*dim2*dim3*dim4*dim5)
+ 
+CALL ls_getIntegrals(AORdefault,AORdefault,AORdefault,AORdefault,&
+     &CoulombOperator,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
+
+IF(setting%IntegralTransformGC)THEN
+  call lsquit('Error in II_get_hodi_eri_contract2 - IntegralTransformGC not implemented',lupri)
+ELSE
+  CALL retrieve_Output(lupri,setting,integrals,setting%IntegralTransformGC)
+
+  
+  mn=0
+  DO n=1,nc
+   DO m=1,dim5
+    mn=mn+1
+    IF (doadd) mn=m
+    DO l=1,n4
+     DO k=1,n3
+      DO j=1,n2
+       IF (contract1234) THEN
+         jj=j
+         kk=k
+       ELSE IF (contract1324) THEN
+         jj=k
+         kk=j
+       ENDIF
+       DO i=1,n1
+         results(mn) = results(mn) + contractFullA(i,jj,n)*integrals(i,j,k,l,m)*contractFullB(kk,l,n)
+       ENDDO
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+  call mem_dealloc(contractFullA)
+  call mem_dealloc(contractFullB)
+  call mem_dealloc(integrals)
+ENDIF
+
+END SUBROUTINE II_get_hodi_eri_contract2
+
 !> \brief Calculates the differentiated 4 center eri tensor in Mulliken (ab|cd) or Dirac noation <a(1)c(2)|r_12^-1|b(1)d(2)>
 !> \author S. Reine
 !> \date 2013-02-05
@@ -2949,7 +3087,43 @@ ENDIF
 
 END SUBROUTINE II_get_hodi_eri_4center
 
-!> \brief Calculates the differentiated nuclear-electron attraction integral tensor: d/dR_e sum_C (ab|C)Z_C 
+!> \brief Calculates the differentiated nuclear-electron attraction, overlap or kinetic operator integral matrix
+!> \author S. Reine
+!> \date 2015-04-20
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param oneElMat the differentiated 1-electron integral - for nucel the
+!>        nuclei are summed over according to  d/dR_e sum_C (ab|C)Z_C
+!> \param DIM1 the dimension of orbital 1
+!> \param DIM2 the dimension of orbital 2
+!> \param DIM5 the number of differential components
+!> \param geoderiv Specifies the geoemetrical derivative order
+SUBROUTINE II_get_hodi_1el_mat(LUPRI,LUERR,SETTING,oneElMat,oneElType,dim1,dim2,dim5,geoderiv)
+IMPLICIT NONE
+TYPE(LSSETTING)          :: SETTING
+INTEGER                  :: LUPRI,LUERR,dim1,dim2,dim5
+TYPE(Matrix),intent(out) :: oneElMat(:)
+Character(*),intent(IN)  :: oneElType
+Integer,optional         :: geoderiv
+!
+real(realk),pointer     :: outputintegral(:,:,:,:,:)
+real(realk),parameter   :: D1 = 1.E0_realk
+integer                 :: m
+
+call mem_alloc(outputintegral,dim1,dim2,1,1,dim5)
+call ls_dzero(outputintegral,dim1*dim2*dim5)
+call II_get_hodi_1el(LUPRI,LUERR,SETTING,outputintegral,oneElType,dim1,dim2,dim5,geoderiv)
+DO m=1,dim5
+  call mat_set_from_full(outputintegral(:,:,:,:,m),D1,oneElMat(m))
+ENDDO
+
+call mem_dealloc(outputintegral)
+
+END SUBROUTINE II_get_hodi_1el_mat
+
+
+!> \brief Calculates the differentiated nuclear-electron attraction, overlap or kinetic operator integral matrix
 !> \author S. Reine
 !> \date 2013-02-05
 !> \param lupri Default print unit
@@ -2961,7 +3135,7 @@ END SUBROUTINE II_get_hodi_eri_4center
 !> \param DIM2 the dimension of orbital beta
 !> \param DIM5 the number of differential components
 !> \param geoderiv Specifies the geoemetrical derivative order
-SUBROUTINE II_get_1el_diff(LUPRI,LUERR,SETTING,outputintegral,oneElType,dim1,dim2,dim5,geoderiv)
+SUBROUTINE II_get_hodi_1el(LUPRI,LUERR,SETTING,outputintegral,oneElType,dim1,dim2,dim5,geoderiv)
 IMPLICIT NONE
 TYPE(LSSETTING)         :: SETTING
 INTEGER                 :: LUPRI,LUERR,dim1,dim2,dim5
@@ -2974,7 +3148,7 @@ integer             :: i,j,k,l,n,intSpec,geoOrder
 integer             :: AO1,AO2,AO3,AO4,Oper,n1,n2,n3,n4,n5
 
 !set threshold 
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 
 !Specify geometrical derivative order if any
 dogeoderiv = .FALSE.
@@ -3019,7 +3193,7 @@ case ('kinetic')
   AO3  = AORdefault
   Oper = KineticOperator
 case default
-  call lsquit('Error in II_get_1el_diff - Unknown 1-electron case',lupri)
+  call lsquit('Error in II_get_hodi_1el - Unknown 1-electron case',lupri)
 end select
 
 call initIntegralOutputDims(setting%output,n1,n2,n3,n4,n5)
@@ -3028,7 +3202,7 @@ call ls_dzero(outputintegral,n1*n2*n3*n4*n5)
 CALL ls_getIntegrals(AO1,AO2,AO3,AO4,Oper,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
 
 IF(setting%IntegralTransformGC)THEN
-  call lsquit('Error in II_get_1el_diff - IntegralTransformGC not implemented',lupri)
+  call lsquit('Error in II_get_hodi_1el - IntegralTransformGC not implemented',lupri)
 ELSE
   CALL retrieve_Output(lupri,setting,outputintegral,setting%IntegralTransformGC)
   IF (dogeoderiv) THEN
@@ -3036,7 +3210,140 @@ ELSE
   ENDIF
 ENDIF
 
-END SUBROUTINE II_get_1el_diff
+END SUBROUTINE II_get_hodi_1el
+
+!> \brief Calculates the differentiated nuclear-electron attraction, overlap or kinetic operator expectation value
+!> \author S. Reine
+!> \date 2015-04-20
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param expectation the differentiated 1-electron expectation (dimension dim5 = #geoderiv comp * nc), nc=1 if (add) else nc=ncontract)
+!> \param ContractMat the contraction matrices
+!> \param ncontract the nunber of contractions
+!> \param oneElType the type of one-electron contribution
+!> \param dim1 the dimension of orbital 1
+!> \param dim2 the dimension of orbital 2
+!> \param dim5 the number of differential components * nc (IF(add) nc=1;ELSE nc=ncontract)
+!> \param geoderiv Specifies the geoemetrical derivative order
+!> \param add specifies whether the contractions should be added to one output or not
+SUBROUTINE II_get_hodi_1el_contract(LUPRI,LUERR,SETTING,expectation,ContractMat,ncontract,oneElType,dim1,dim2,dim5,geoderiv,add)
+IMPLICIT NONE
+TYPE(LSSETTING),intent(inout)    :: SETTING
+INTEGER,intent(IN)               :: LUPRI,LUERR,dim1,dim2,dim5,ncontract
+REAL(REALK),target,intent(inout) :: expectation(:)
+TYPE(Matrix),intent(in)          :: ContractMat(ncontract)
+Character(*),intent(IN)          :: oneElType
+Integer,optional                 :: geoderiv
+Logical,optional                 :: add
+!
+Logical               :: dogeoderiv,nofamily,case13,doadd
+integer               :: i,j,k,l,n,m,mn,intSpec,geoOrder,jj,kk
+integer               :: AO1,AO2,AO3,AO4,Oper,n1,n2,n3,n4,n5,m1,m2
+real(realk),pointer   :: integrals(:,:,:,:,:)
+real(realk),pointer   :: contractFull(:,:,:)
+real(realk),parameter :: D1 = 1.E0_realk
+
+doadd = .FALSE.
+IF (present(add)) doadd = add
+
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+
+!Specify geometrical derivative order if any
+dogeoderiv = .FALSE.
+geoOrder   = 0
+IF (present(geoderiv)) THEN
+  dogeoderiv = geoderiv.NE.0
+  geoOrder   = geoderiv
+ENDIF
+
+IF (dogeoderiv) THEN
+  IF (geoderiv.GE.1) THEN
+    intSpec = GeoDerivSpec
+  ENDIF
+
+  !Simen Hack - GeoDerivSpec currently not working with family-type basis sets
+  nofamily = setting%scheme%nofamily
+  setting%scheme%nofamily = .TRUE.
+ELSE
+  intSpec = RegularSpec
+ENDIF
+
+case13 = .FALSE.
+n1   = dim1
+n2   = dim2
+n3   = 1
+n4   = 1
+n5   = dim5
+AO1  = AORdefault
+AO2  = AORdefault
+AO3  = AOEmpty
+AO4  = AOEmpty
+select case(oneElType)
+case ('nucel')
+  AO3  = AONuclear
+  Oper = NucpotOperator
+case ('overlap')
+  Oper = OverlapOperator
+! intSpec = GeoDerivLHSSpec
+case ('kinetic')
+  n2   = 1
+  n3   = dim2
+  AO2  = AOEmpty
+  AO3  = AORdefault
+  Oper = KineticOperator
+  case13 = .TRUE.
+case default
+  call lsquit('Error in II_get_hodi_1el_contract - Unknown 1-electron case',lupri)
+end select
+
+m1 = n1
+m2 = n2
+IF (case13) m2=n3
+call mem_alloc(contractfull,m1,m2,ncontract)
+DO n=1,ncontract
+  call mat_to_full(contractMat(n),D1,contractfull(:,:,n))
+ENDDO
+ 
+call initIntegralOutputDims(setting%output,n1,n2,n3,n4,n5)
+call mem_alloc(integrals,n1,n2,n3,n4,n5)
+call ls_dzero(integrals,n1*n2*n3*n4*n5)
+
+CALL ls_getIntegrals(AO1,AO2,AO3,AO4,Oper,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
+
+IF(setting%IntegralTransformGC)THEN
+  call lsquit('Error in II_get_hodi_1el_contract - IntegralTransformGC not implemented',lupri)
+ELSE
+  CALL retrieve_Output(lupri,setting,integrals,setting%IntegralTransformGC)
+  IF (dogeoderiv) THEN
+    setting%scheme%nofamily = nofamily
+  ENDIF
+ENDIF
+
+mn =0 
+DO n=1,ncontract
+ DO m=1,n5
+  mn = mn + 1
+  IF (doadd) mn = m
+  DO l=1,n4
+   DO k=1,n3
+    DO j=1,n2
+     jj = j
+     IF (case13) jj = k
+     DO i=1,n1
+       expectation(mn) = expectation(mn) + integrals(i,j,k,l,m) * contractFull(i,jj,n)
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+ ENDDO
+ENDDO
+
+call mem_dealloc(integrals)
+call mem_dealloc(contractFull)
+
+END SUBROUTINE II_get_hodi_1el_contract
 
 !> \brief Calculates and stores the screening integrals
 !> \author T. Kjaergaard
