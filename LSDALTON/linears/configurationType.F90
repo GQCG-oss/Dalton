@@ -145,8 +145,12 @@ type ConfigItem
 #endif
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
+   !> do testing of the high-order derivative integrals (HODI)
+   logical              :: doTestHodi
    !> skip SCF calculations
    logical              :: skipscfloop
+   !> test papi
+   logical              :: papitest
 end type ConfigItem
 
 type LowAccuracyStartType

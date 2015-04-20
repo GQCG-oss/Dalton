@@ -4727,7 +4727,7 @@ contains
     ! see the ccsdpt_driver_abc_case3 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -8948,13 +8948,13 @@ contains
     ! ccsd and ccsd(t) singles amplitudes
     type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
-    logical :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
-    integer :: noccAOS,nunoccAOS,i,a
+    logical :: SEC_occ(MyFragment%noccAOS), SEC_virt(MyFragment%nvirtAOS)
+    integer :: noccAOS,nvirtAOS,i,a
     !> which partitioning schemes?
     logical :: do_occ, do_virt
 
     noccAOS = MyFragment%noccAOS
-    nunoccAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
 
     ! Sanity check
     if(MyFragment%nEOSatoms/=1) then
@@ -8962,9 +8962,9 @@ contains
        call lsquit('ccsdpt_decnp_e5_frag called with wrong number of EOS atoms!',-1)
     end if
 
-    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! Determine which occ and virt orbitals to include in energy contributions
     ! based on SECONDARY assignment.
-    call secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+    call secondary_assigning(MyFragment,SEC_occ,SEC_virt)
 
 
     ! ***********************
@@ -8998,7 +8998,7 @@ contains
        iloop: do i=1,noccAOS
           ! Only include contribution if consistent with secondary assignment
           if(.not. SEC_occ(i)) cycle iloop
-          do a=1,nunoccAOS
+          do a=1,nvirtAOS
 
              energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
              ccsdpt_e5 = ccsdpt_e5 + energy_tmp
@@ -9013,7 +9013,7 @@ contains
     end if
 
     ! *********************************
-    ! do unoccupied partitioning scheme
+    ! do virtupied partitioning scheme
     ! *********************************
 
     if (do_virt) then 
@@ -9021,8 +9021,8 @@ contains
        ccsdpt_e5 = 0.0E0_realk
 
        do i=1,noccAOS
-          aloop: do a=1,nunoccAOS
-             if(.not. SEC_unocc(a)) cycle aloop
+          aloop: do a=1,nvirtAOS
+             if(.not. SEC_virt(a)) cycle aloop
 
              energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
              ccsdpt_e5 = ccsdpt_e5 + energy_tmp
@@ -9051,11 +9051,11 @@ contains
     ! ccsd and ccsd(t) singles amplitudes
     type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
-    logical :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
-    integer :: noccAOS,nunoccAOS,i,a
+    logical :: SEC_occ(MyFragment%noccAOS), SEC_virt(MyFragment%nvirtAOS)
+    integer :: noccAOS,nvirtAOS,i,a
 
     noccAOS = MyFragment%noccAOS
-    nunoccAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
 
     ! Sanity check
     if(MyFragment%nEOSatoms/=1) then
@@ -9063,9 +9063,9 @@ contains
        call lsquit('ccsdpt_energy_e5_frag called with wrong number of EOS atoms!',-1)
     end if
 
-    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! Determine which occ and virt orbitals to include in energy contributions
     ! based on SECONDARY assignment.
-    call secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+    call secondary_assigning(MyFragment,SEC_occ,SEC_virt)
 
 
     ! ***********************
@@ -9083,8 +9083,8 @@ contains
     iloop: do i=1,noccAOS
        ! Only include contribution if consistent with secondary assignment
        if(.not. SEC_occ(i)) cycle iloop
-       aloop: do a=1,nunoccAOS
-          if(.not. SEC_unocc(a)) cycle aloop
+       aloop: do a=1,nvirtAOS
+          if(.not. SEC_virt(a)) cycle aloop
 
           energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
           ccsdpt_e5 = ccsdpt_e5 + energy_tmp
@@ -9100,7 +9100,7 @@ contains
 
 
     ! *********************************
-    ! do unoccupied partitioning scheme
+    ! do virtupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
@@ -9125,11 +9125,11 @@ contains
     ! ccsd and ccsd(t) singles amplitudes
     type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
-    logical :: SEC_occ(PairFragment%noccAOS), SEC_unocc(PairFragment%nunoccAOS)
-    integer :: noccAOS,nunoccAOS,i,a,atomi,atoma
+    logical :: SEC_occ(PairFragment%noccAOS), SEC_virt(PairFragment%nvirtAOS)
+    integer :: noccAOS,nvirtAOS,i,a,atomi,atoma
 
     noccAOS = PairFragment%noccAOS
-    nunoccAOS = PairFragment%nunoccAOS
+    nvirtAOS = PairFragment%nvirtAOS
 
     ! Sanity check
     if(PairFragment%nEOSatoms/=2) then
@@ -9137,9 +9137,9 @@ contains
        call lsquit('ccsdpt_energy_e5_pair called with wrong number of EOS atoms!',-1)
     end if
 
-    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! Determine which occ and virt orbitals to include in energy contributions
     ! based on SECONDARY assignment.
-    call secondary_assigning(PairFragment,SEC_occ,SEC_unocc)
+    call secondary_assigning(PairFragment,SEC_occ,SEC_virt)
 
 
     ! ***********************
@@ -9158,9 +9158,9 @@ contains
        ! Only include contribution if consistent with secondary assignment
        if(.not. SEC_occ(i)) cycle iloop
        atomi = PairFragment%occAOSorb(i)%secondaryatom
-       aloop: do a=1,nunoccAOS
-          if(.not. SEC_unocc(a)) cycle aloop
-          atoma = PairFragment%unoccAOSorb(a)%secondaryatom
+       aloop: do a=1,nvirtAOS
+          if(.not. SEC_virt(a)) cycle aloop
+          atoma = PairFragment%virtAOSorb(a)%secondaryatom
 
           ! Only include if atomi/=atoma
           ! (the atomi=atoma contributions were included for atomic fragments)
@@ -9178,7 +9178,7 @@ contains
          & + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
-    ! do unoccupied partitioning scheme
+    ! do virtupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
@@ -9208,7 +9208,7 @@ contains
     !> is this called from inside the ccsd(t) fragment optimization routine?
     logical, optional, intent(in) :: fragopt_pT
     !> incomming orbital contribution vectors
-    real(realk), intent(inout) :: occ_contribs(MyFragment%noccAOS), virt_contribs(MyFragment%nunoccAOS)
+    real(realk), intent(inout) :: occ_contribs(MyFragment%noccAOS), virt_contribs(MyFragment%nvirtAOS)
     !> integers
     integer :: nocc_eos, nocc_aos, nvirt_eos, nvirt_aos, i,j,a,b, i_eos, j_eos, a_eos, b_eos
     !> energy reals
@@ -9218,9 +9218,9 @@ contains
 
     ! init dimensions
     nocc_eos = MyFragment%noccEOS
-    nvirt_eos = MyFragment%nunoccEOS
+    nvirt_eos = MyFragment%nvirtEOS
     nocc_aos = MyFragment%noccAOS
-    nvirt_aos = MyFragment%nunoccAOS
+    nvirt_aos = MyFragment%nvirtAOS
 
     ! **************************************************************
     ! ************** do energy for single fragment *****************
@@ -9336,7 +9336,7 @@ contains
     end if
 
     ! *********************************
-    ! do unoccupied partitioning scheme
+    ! do virtupied partitioning scheme
     ! *********************************
 
     if (do_virt) then
@@ -9484,7 +9484,7 @@ contains
     !> is this called from inside the ccsd(t) fragment optimization routine?
     logical, optional, intent(in) :: fragopt_pT
     !> incomming orbital contribution vectors
-    real(realk), intent(inout) :: occ_contribs(MyFragment%noccAOS), virt_contribs(MyFragment%nunoccAOS)
+    real(realk), intent(inout) :: occ_contribs(MyFragment%noccAOS), virt_contribs(MyFragment%nvirtAOS)
     !> integers
     integer :: nocc_eos, nocc_aos, nvirt_eos, nvirt_aos, i,j,a,b, i_eos, j_eos, a_eos, b_eos
     !> energy reals
@@ -9494,9 +9494,9 @@ contains
 
     ! init dimensions
     nocc_eos = MyFragment%noccEOS
-    nvirt_eos = MyFragment%nunoccEOS
+    nvirt_eos = MyFragment%nvirtEOS
     nocc_aos = MyFragment%noccAOS
-    nvirt_aos = MyFragment%nunoccAOS
+    nvirt_aos = MyFragment%nvirtAOS
 
     ! **************************************************************
     ! ************** do energy for single fragment *****************
@@ -9610,7 +9610,7 @@ contains
     end if
 
     ! *********************************
-    ! do unoccupied partitioning scheme
+    ! do virtupied partitioning scheme
     ! *********************************
 
     if (do_virt) then
@@ -9769,9 +9769,9 @@ contains
 
     ! init dimensions
     nocc_eos = PairFragment%noccEOS
-    nvirt_eos = PairFragment%nunoccEOS
+    nvirt_eos = PairFragment%nvirtEOS
     nocc_aos = PairFragment%noccAOS
-    nvirt_aos = PairFragment%nunoccAOS
+    nvirt_aos = PairFragment%nvirtAOS
 
     do_occ = .false.
     do_virt = .false.
@@ -9783,7 +9783,7 @@ contains
        call mem_alloc(dopair_occ,nocc_eos,nocc_eos)
        call mem_alloc(dopair_virt,nvirt_eos,nvirt_eos)
        call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
-       call which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair_virt)
+       call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
     else if (DECinfo%OnlyOccPart .and. (.not. DECinfo%OnlyVirtPart)) then
 
@@ -9795,7 +9795,7 @@ contains
 
        do_virt = .true.
        call mem_alloc(dopair_virt,nvirt_eos,nvirt_eos)
-       call which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair_virt)
+       call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
     end if
 
@@ -9886,7 +9886,7 @@ contains
     end if
 
     ! *********************************
-    ! do unoccupied partitioning scheme
+    ! do virtupied partitioning scheme
     ! *********************************
 
     if (do_virt) then

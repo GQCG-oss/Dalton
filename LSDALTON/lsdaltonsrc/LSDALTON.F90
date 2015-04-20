@@ -91,6 +91,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
+  use HODItest_module, only: debugTestHODI
 #ifdef VAR_PAPI
   use papi_module
 #endif
@@ -169,7 +170,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      !for now atleast
      RETURN
   ENDIF
-
+  IF(config%papitest)THEN
+#ifdef VAR_PAPI
+     call papi_example(LUPRI)
+#endif
+  ENDIF
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
      CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
@@ -317,6 +322,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mem_alloc(GGem,nbast,nbast,nbast,nbast,1) 
            call II_get_GaussianGeminalFourCenter(lupri,luerr,ls%setting,GGem,nbast,.true.) 
            call mem_dealloc(GGem) 
+        ENDIF
+
+        IF (config%doTestHodi) THEN
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
         ENDIF
 
         CALL mat_init(D(1),nbast,nbast)
@@ -794,7 +804,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
   logical, intent(inout)     :: OnMaster
@@ -815,7 +827,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call lstmem_init
   call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
+#ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
+#endif
   call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
   ! MPI initialization
@@ -844,7 +858,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
 #ifdef VAR_SCALAPACK
   use matrix_operations_scalapack
 #endif
@@ -862,7 +878,9 @@ implicit none
      call free_AO2GCAO_GCAO2AO()
   ENDIF
   call lstmem_free
+#ifdef VAR_ICHOR
   if(OnMaster)call FreeIchorSaveGabModule()
+#endif
   
 
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL

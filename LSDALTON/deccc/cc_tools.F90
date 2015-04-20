@@ -132,8 +132,13 @@ module cc_tools_module
 
       integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
       integer :: otmi(2),otpl(2),ot2(4)
+#ifdef VAR_PTR_RESHAPE
       real(realk), pointer, contiguous :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
       real(realk), pointer, contiguous :: buf1(:),buf2(:)
+#else
+      real(realk), pointer :: tt1(:,:,:,:),tt2(:,:,:,:),tpm(:,:)
+      real(realk), pointer :: buf1(:),buf2(:)
+#endif
       integer :: dcged,dilej,ccged,cilej,gcged,gilej
       real(realk) :: sol
       integer :: nor,no,nvr,nv,k,c,d
@@ -520,12 +525,16 @@ module cc_tools_module
 
       !get the combined reduced virtual dimension
       crvd = dims(1) * (dims(1)+1) / 2
-      !OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl,dims) DEFAULT(NONE)
-      !OMP DO
+      !$OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl,dims) DEFAULT(NONE)
+      !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
       do j=1,dims(3)
-         do i=1,j
+         do i=1,dims(3)
+
+            if(i>j)cycle
+
             cged=1
             ilej = i + (j-1) * j / 2
+
             do d=1,dims(2)
                !copy the elements c>d into tpl and tmi
                call dcopy(dims(2)-d+1,t2(d,d,i,j),1,tpl(cged+(ilej-1)*crvd),1)
@@ -543,8 +552,8 @@ module cc_tools_module
             enddo
          enddo
       enddo
-      !OMP END DO
-      !OMP END PARALLEL
+      !$OMP END DO
+      !$OMP END PARALLEL
    end subroutine get_tpl_and_tmi_fort
 
    !> \brief calculate a and b terms in a kobayashi fashion

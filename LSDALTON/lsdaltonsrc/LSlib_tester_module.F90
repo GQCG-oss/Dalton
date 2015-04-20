@@ -681,7 +681,7 @@ write(lupri,'(A80,2F18.10)') 'Coulomb gradient from diff-eri (Dirac): RMS and in
      &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
 #endif
 
-#if 0
+#if 1
 !*****************************************************************************
 !******                             Coulomb Hessian from differentiated 4-center ERI (Mulliken)
 !*****************************************************************************
@@ -707,9 +707,9 @@ DO n=1,nAtoms
          DO k=1,nbast
           DO j=1,nbast
            DO i=1,nbast
-!           TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + &
-!    &         2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)*Dmat(k,l,1)
-            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 0.25_realk*eri(i,j,k,l,iHess)
+            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + &
+     &         2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)*Dmat(k,l,1)
+!           TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 0.25_realk*eri(i,j,k,l,iHess)
            ENDDO
           ENDDO
          ENDDO
@@ -739,7 +739,7 @@ write(lupri,'(A80,2F18.10)') 'Coulomb Hessian from diff-eri (Mulliken): RMS and 
 deallocate(TempHess)
 
 #endif
-#if 0
+#if 1
 !*****************************************************************************
 !******                             Coulomb third derivative from differentiated 4-center ERI (Mulliken)
 !*****************************************************************************
@@ -765,9 +765,9 @@ DO n=1,3*nAtoms
        DO k=1,nbast
         DO j=1,nbast
          DO i=1,nbast
-!         TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
-!    &       2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
-          TempCubic(o,m,n,1) = TempCubic(o,m,n,1) + 0.25_realk*eri(i,j,k,l,iCubic)
+          TempCubic(o,m,n,1) = TempCubic(o,m,n,1) + &
+     &       2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
+!         TempCubic(o,m,n,1) = TempCubic(o,m,n,1) + 0.25_realk*eri(i,j,k,l,iCubic)
          ENDDO
         ENDDO
        ENDDO

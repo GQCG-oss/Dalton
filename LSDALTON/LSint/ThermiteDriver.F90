@@ -3028,7 +3028,8 @@ integer :: i
 !Dimensions according to nPrimitives
 coulomb = ((PQ%Operator.EQ.CoulombOperator).OR.(PQ%Operator.EQ.ErfOperator)).OR.&
      & ((PQ%Operator.EQ.GGemOperator).OR.(PQ%Operator.EQ.CAMOperator)).OR.&
-     & (PQ%Operator.EQ.ErfcOperator).OR.(PQ%Operator.EQ.GGemCouOperator).OR.(PQ%Operator.EQ.GGemGrdOperator)
+     & (PQ%Operator.EQ.ErfcOperator).OR.(PQ%Operator.EQ.GGemCouOperator).OR.&
+     & (PQ%Operator.EQ.GGemGrdOperator).OR.(PQ%Operator.EQ.GGemQuaOperator)
 nucpotLHS = (PQ%Operator.EQ.NucpotOperator).AND.PQ%P%p%TYPE_Nucleus
 nucpotRHS = (PQ%Operator.EQ.NucpotOperator).AND.PQ%Q%p%TYPE_Nucleus
 !CALL SetIntegrand(PQ%iprimP,PQ%iprimQ,PQ%distance,PQ%squaredDistance,&
@@ -6694,6 +6695,9 @@ CASE (ErfOperator)
 CASE (NucpotOperator)
    CALL buildNuclearRJ000(Integral%IN,PQ,nPrim,JMAX,LUPRI,IPRINT,integral,INPUT%HIGH_RJ000_ACCURACY)
 CASE (GGemOperator)
+   CALL buildGJ000(Integral%IN,nPrim,JMAX,PQ%integralPrefactor,PQ%reducedExponents,PQ%squaredDistance,&
+     &             INPUT%GGem%coeff,INPUT%GGem%exponent,input%GGem%n)
+CASE (GGemQuaOperator)
    CALL buildGJ000(Integral%IN,nPrim,JMAX,PQ%integralPrefactor,PQ%reducedExponents,PQ%squaredDistance,&
      &             INPUT%GGem%coeff,INPUT%GGem%exponent,input%GGem%n)
 CASE (GGemCouOperator)

@@ -1214,13 +1214,13 @@ end function max_batch_dimension
   !> \brief Subroutine that creates initial fragment
   !> \date august 2011
   !> \author Ida-Marie Hoyvik
-  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
+  subroutine InitialFragment(natoms,nocc_per_atom,nvirt_per_atom,DistMyatom,&
        & init_Occradius,init_Virtradius,Occ,Virt)
     implicit none
     !> number of atoms in MOLECULE
     Integer, intent(in)    :: natoms
-    !> Number of occupied / unoccupied orbitals per atom
-    integer,intent(in), dimension(natoms) :: nocc_per_atom, nunocc_per_atom
+    !> Number of occupied / virtupied orbitals per atom
+    integer,intent(in), dimension(natoms) :: nocc_per_atom, nvirt_per_atom
     !> Distances from central atom to other atoms
     real(realk),intent(in) :: DistMyAtom(natoms)
     !> Include Occ orbitals assigned to atoms within this distance of central atom
@@ -1248,7 +1248,7 @@ end function max_batch_dimension
        if (DistMyAtom(i) .le. init_Occradius .and. (nocc_per_atom(i)/=0)) then
           Occ(i) = .true.
        end if
-       if (DistMyAtom(i) .le. init_Virtradius .and. (nunocc_per_atom(i)/=0)) then
+       if (DistMyAtom(i) .le. init_Virtradius .and. (nvirt_per_atom(i)/=0)) then
           Virt(i) = .true.
        end if
 
@@ -1474,7 +1474,7 @@ end function max_batch_dimension
     ! Number of occupied (O), Virtual (V), atomic basis functions (A)
     ! ***************************************************************
     O = MyFragment%noccAOS
-    V = MyFragment%nunoccAOS
+    V = MyFragment%nvirtAOS
     A = MyFragment%nbasis
     GB = 1.000E9_realk ! 1 GB
 
@@ -1660,12 +1660,12 @@ end function max_batch_dimension
        write(DECinfo%output,'(1X,a,f12.2)') 'Pair distance = ', MyFragment%pairdist
     end if
     write(DECinfo%output,'(1X,a,i8)') 'Size occ EOS   =', MyFragment%noccEOS
-    write(DECinfo%output,'(1X,a,i8)') 'Size virt EOS  =', MyFragment%nunoccEOS
+    write(DECinfo%output,'(1X,a,i8)') 'Size virt EOS  =', MyFragment%nvirtEOS
     write(DECinfo%output,'(1X,a,i8)') 'Size occ AOS   =', MyFragment%noccAOS
-    write(DECinfo%output,'(1X,a,i8)') 'Size virt AOS  =', MyFragment%nunoccAOS
+    write(DECinfo%output,'(1X,a,i8)') 'Size virt AOS  =', MyFragment%nvirtAOS
     write(DECinfo%output,'(1X,a,i8)') '#core orbitals =', MyFragment%ncore
     write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size occ AOS  =', MyFragment%noccAOS
-    write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size virt AOS =', MyFragment%nunoccAOS
+    write(DECinfo%output,'(1X,a,i8)') 'Red Frag: Size virt AOS =', MyFragment%nvirtAOS
     write(DECinfo%output,'(1X,a,i8)') 'Atoms in atomic extent =', MyFragment%natoms
     write(DECinfo%output,'(1X,a,i8)') 'Number of basis functions =', MyFragment%nbasis
     do i=1,ndecenergies
@@ -1676,7 +1676,7 @@ end function max_batch_dimension
     write(DECinfo%output,*) 'Fragment-adapted orbital (FO) information:'
     write(DECinfo%output,*) 'Using FOs: ', MyFragment%fragmentadapted
     write(DECinfo%output,'(1X,a,i8)') 'Size occ FOs   = ', MyFragment%noccFA
-    write(DECinfo%output,'(1X,a,i8)') 'Size unocc FOs = ', MyFragment%nunoccFA
+    write(DECinfo%output,'(1X,a,i8)') 'Size virt FOs = ', MyFragment%nvirtFA
     write(DECinfo%output,'(1X,a,g12.2)') 'Occ rejection thr   ', MyFragment%RejectThr(2)
     write(DECinfo%output,'(1X,a,g12.2)') 'Unocc rejection thr ', MyFragment%RejectThr(1)
     write(DECinfo%output,*)
@@ -1699,8 +1699,8 @@ end function max_batch_dimension
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Virt EOS indices (frag,full)'
-       do i=1,MyFragment%nunoccEOS
-          write(DECinfo%output,*) i, MyFragment%unoccEOSidx(i)
+       do i=1,MyFragment%nvirtEOS
+          write(DECinfo%output,*) i, MyFragment%virtEOSidx(i)
        end do
        write(DECinfo%output,*)
 
@@ -1711,8 +1711,8 @@ end function max_batch_dimension
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Virt AOS indices (frag,full)'
-       do i=1,MyFragment%nunoccAOS
-          write(DECinfo%output,*) i, MyFragment%unoccAOSidx(i)
+       do i=1,MyFragment%nvirtAOS
+          write(DECinfo%output,*) i, MyFragment%virtAOSidx(i)
        end do
        write(DECinfo%output,*)
 
@@ -1733,7 +1733,7 @@ end function max_batch_dimension
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Virt MO coefficients (column, elements in column)'
-       do i=1,MyFragment%nunoccAOS
+       do i=1,MyFragment%nvirtAOS
           write(DECinfo%output,*) i, MyFragment%Cv(:,i)
        end do
        write(DECinfo%output,*)
@@ -1751,7 +1751,7 @@ end function max_batch_dimension
        write(DECinfo%output,*)
 
        write(DECinfo%output,*) 'Virt-virt fock matrix (column, elements in column)'
-       do i=1,MyFragment%nunoccAOS
+       do i=1,MyFragment%nvirtAOS
           write(DECinfo%output,*) i, MyFragment%qqfock(:,i)
        end do
        write(DECinfo%output,*)
@@ -1772,7 +1772,7 @@ end function max_batch_dimension
           write(DECinfo%output,*)
 
           write(DECinfo%output,*) 'Virt correlation density (column, elements in column)'
-          do i=1,MyFragment%nunoccAOS
+          do i=1,MyFragment%nvirtAOS
              write(DECinfo%output,*) i, MyFragment%VirtMat(:,i)
           end do
           write(DECinfo%output,*)
@@ -1786,7 +1786,7 @@ end function max_batch_dimension
           write(DECinfo%output,*)
 
           write(DECinfo%output,*) 'Virtual FO coefficients (column, elements in column)'
-          do i=1,MyFragment%nunoccFA
+          do i=1,MyFragment%nvirtFA
              write(DECinfo%output,*) i, MyFragment%CvFA(:,i)
           end do
           write(DECinfo%output,*)
@@ -1799,8 +1799,8 @@ end function max_batch_dimension
              write(DECinfo%output,*)
 
              write(DECinfo%output,*) 'Unoccupied corrdens eigenvalues'
-             do i=1,MyFragment%nunoccFA
-                write(DECinfo%output,*) i, MyFragment%CDunocceival(i)
+             do i=1,MyFragment%nvirtFA
+                write(DECinfo%output,*) i, MyFragment%CDvirteival(i)
              end do
              write(DECinfo%output,*)
 
@@ -1844,15 +1844,15 @@ end function max_batch_dimension
     integer :: i
 
     deallocate(fragment%noccLOC)
-    deallocate(fragment%nunoccLOC)
+    deallocate(fragment%nvirtLOC)
     deallocate(fragment%noccFA)
-    deallocate(fragment%nunoccFA)
+    deallocate(fragment%nvirtFA)
     nullify(fragment%noccLOC)
-    nullify(fragment%nunoccLOC)
+    nullify(fragment%nvirtLOC)
     nullify(fragment%noccFA)
-    nullify(fragment%nunoccFA)
+    nullify(fragment%nvirtFA)
     nullify(fragment%noccAOS)
-    nullify(fragment%nunoccAOS)
+    nullify(fragment%nvirtAOS)
 
     if(associated(fragment%occEOSidx)) then
        call mem_dealloc(fragment%occEOSidx)
@@ -1864,14 +1864,14 @@ end function max_batch_dimension
        fragment%occAOSidx => null()
     end if
 
-    if(associated(fragment%unoccEOSidx)) then
-       call mem_dealloc(fragment%unoccEOSidx)
-       fragment%unoccEOSidx => null()
+    if(associated(fragment%virtEOSidx)) then
+       call mem_dealloc(fragment%virtEOSidx)
+       fragment%virtEOSidx => null()
     end if
 
-    if(associated(fragment%unoccAOSidx)) then
-       call mem_dealloc(fragment%unoccAOSidx)
-       fragment%unoccAOSidx => null()
+    if(associated(fragment%virtAOSidx)) then
+       call mem_dealloc(fragment%virtAOSidx)
+       fragment%virtAOSidx => null()
     end if
 
 
@@ -1929,7 +1929,7 @@ end function max_batch_dimension
 
        if(.not. fragment%pairfrag) then
           call mem_dealloc(fragment%CDocceival)
-          call mem_dealloc(fragment%CDunocceival)
+          call mem_dealloc(fragment%CDvirteival)
        end if
        fragment%FAset=.false.
     end if
@@ -1954,11 +1954,11 @@ end function max_batch_dimension
        call mem_dealloc(fragment%occAOSorb)
     end if
 
-    if(associated(fragment%unoccAOSorb)) then
-       do i=1,size(fragment%unoccAOSorb)
-          call orbital_free(fragment%unoccAOSorb(i))
+    if(associated(fragment%virtAOSorb)) then
+       do i=1,size(fragment%virtAOSorb)
+          call orbital_free(fragment%virtAOSorb(i))
        end do
-       call mem_dealloc(fragment%unoccAOSorb)
+       call mem_dealloc(fragment%virtAOSorb)
     end if
 
     ! Reduced fragment info
@@ -2053,8 +2053,8 @@ end function max_batch_dimension
     if(associated(MyFragmentAOS%occAOSidx)) then
        call mem_dealloc(MyFragmentAOS%occAOSidx)
     end if
-    if(associated(MyFragmentAOS%unoccAOSidx)) then
-       call mem_dealloc(MyFragmentAOS%unoccAOSidx)
+    if(associated(MyFragmentAOS%virtAOSidx)) then
+       call mem_dealloc(MyFragmentAOS%virtAOSidx)
     end if
 
   end subroutine fragmentAOS_type_free
@@ -2787,6 +2787,15 @@ end function max_batch_dimension
     !> get E_DFT
     type(matrix) :: F,h
     real(realk)  :: exchangeFactor,enuc,edft(1)
+    real(realk), pointer :: fock(:,:)
+
+    if(DECinfo%noaofock) then
+       write(DECinfo%output,*) 'Warning: NOFOCKAO keyword is set and HF energy is &
+            & set to zero'
+       Ehf = 0.0_realk
+       return
+    end if
+
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
 
@@ -2813,7 +2822,20 @@ end function max_batch_dimension
 
       call mat_free(h)
     else
-      call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
+
+       if( MyMolecule%mem_distributed )then
+          call mem_alloc(fock,MyMolecule%nbasis,MyMolecule%nbasis)
+          call tensor_gather(1.0E0_realk,MyMolecule%fock,0.0E0_realk,fock,MyMolecule%nbasis**2*i8)
+       else
+          fock => MyMolecule%fock%elm2
+       endif
+
+       call mat_set_from_full(fock, 1E0_realk, F)
+
+       if( MyMolecule%mem_distributed )then
+          call mem_dealloc( fock )
+       endif
+
     endif
 
     ! Get HF energy
@@ -3099,7 +3121,7 @@ end function max_batch_dimension
 
     ! Init dimensions
     nocc = MyFragment%noccAOS   ! occupied AOS dimension
-    nvirt = MyFragment%nunoccAOS   ! virtual AOS dimension
+    nvirt = MyFragment%nvirtAOS   ! virtual AOS dimension
 
     ! Sanity check
     !if( (nvirt/=t1%dims(1)) .or. (nocc/=t1%dims(2)) ) then
@@ -3120,7 +3142,7 @@ end function max_batch_dimension
     call mem_alloc(MyFragment%t1_virtidx,nvirt)
     call mem_alloc(MyFragment%t1,nvirt,nocc)
     MyFragment%t1_occidx = MyFragment%occAOSidx ! occupied AOS indices
-    MyFragment%t1_virtidx = MyFragment%unoccAOSidx ! virtual AOS indices
+    MyFragment%t1_virtidx = MyFragment%virtAOSidx ! virtual AOS indices
 
 
     ! Save amplitudes and indices
@@ -3300,12 +3322,12 @@ end function max_batch_dimension
 
 
 
-  !> \brief Construct logical array telling which unoccupied orbital pair combinations should be
+  !> \brief Construct logical array telling which virtupied orbital pair combinations should be
   !> included when calculating pair interaction energies and other pair interaction
   !> properties - to avoid double counting.
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair)
+  subroutine which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair)
 
     implicit none
     ! Fragment 1 in pair
@@ -3314,42 +3336,42 @@ end function max_batch_dimension
     type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
     type(decfrag),intent(in) :: PairFragment
-    !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
-    logical,dimension(PairFragment%nunoccEOS,PairFragment%nunoccEOS),&
+    !> Do pair or not - dimension: (nvirtEOS,nvirtEOS) for PAIR
+    logical,dimension(PairFragment%nvirtEOS,PairFragment%nvirtEOS),&
          & intent(inout) :: dopair
     integer :: a,b,ax,bx,p1,p2,i
 
-    ! This is the same as which_pairs_occ, but for the unoccupied space.
-    ! See example in which_pairs_occ with "occ" replaced by "unocc".
+    ! This is the same as which_pairs_occ, but for the virtupied space.
+    ! See example in which_pairs_occ with "occ" replaced by "virt".
 
     ! Set which atoms to consider for pair
     dopair=.false.
 
     ! Skip this when only occupied part. is requested
     DoCheck: if(.not. DECinfo%onlyoccpart) then
-       do a=1,fragment1%nunoccEOS   ! Unoccupied EOS for fragment 1
-          do b=1,fragment2%nunoccEOS ! Unoccupied EOS for fragment 2
+       do a=1,fragment1%nvirtEOS   ! Unoccupied EOS for fragment 1
+          do b=1,fragment2%nvirtEOS ! Unoccupied EOS for fragment 2
 
-             ax=fragment1%unoccEOSidx(a)  ! index in full list orbitals
-             bx=fragment2%unoccEOSidx(b)  ! index in full list orbitals
+             ax=fragment1%virtEOSidx(a)  ! index in full list orbitals
+             bx=fragment2%virtEOSidx(b)  ! index in full list orbitals
              p1=0
              p2=0
 
              ! Index for fragment 1 in pair fragment list
-             do i=1,PairFragment%nunoccEOS
+             do i=1,PairFragment%nvirtEOS
 
-                ! "ax" index in PairFragment%unoccEOSidx list
-                if(PairFragment%unoccEOSidx(i) == ax) p1 = i
+                ! "ax" index in PairFragment%virtEOSidx list
+                if(PairFragment%virtEOSidx(i) == ax) p1 = i
 
-                ! "bx" index in PairFragment%unoccEOSidx list
-                if(PairFragment%unoccEOSidx(i) == bx) p2 = i
+                ! "bx" index in PairFragment%virtEOSidx list
+                if(PairFragment%virtEOSidx(i) == bx) p2 = i
 
              end do
 
              ! Sanity check
              if(p1==p2 .or. p1==0 .or. p2==0 ) then
                 write(DECinfo%output,'(1X,a,4i6)') 'ax,bx,p1,p2', ax,bx,p1,p2
-                call lsquit('which_pairs_unocc: &
+                call lsquit('which_pairs_virt: &
                      & Something wrong with indices in pair',DECinfo%output)
              end if
 
@@ -3363,14 +3385,14 @@ end function max_batch_dimension
 
     end if DoCheck
 
-  end subroutine which_pairs_unocc
+  end subroutine which_pairs_virt
 
-  !> \brief Construct logical array telling which unoccupied/occupied combinations should be
+  !> \brief Construct logical array telling which virtupied/occupied combinations should be
   !> included when calculating pair interaction energies and other pair interaction
   !> properties - to avoid double counting.
   !> \author Dmytro Bykov
   !> \date October 2014
-  subroutine which_pairs_occ_unocc(Fragment1,Fragment2,PairFragment,dopair)
+  subroutine which_pairs_occ_virt(Fragment1,Fragment2,PairFragment,dopair)
 
     implicit none
     ! Fragment 1 in pair
@@ -3379,31 +3401,31 @@ end function max_batch_dimension
     type(decfrag),intent(in) :: Fragment2
     !> Pair fragment
     type(decfrag),intent(inout) :: PairFragment
-    !> Do pair or not - dimension: (nunoccEOS,nunoccEOS) for PAIR
-    logical,dimension(PairFragment%nunoccEOS,PairFragment%noccEOS),&
+    !> Do pair or not - dimension: (nvirtEOS,nvirtEOS) for PAIR
+    logical,dimension(PairFragment%nvirtEOS,PairFragment%noccEOS),&
          & intent(inout) :: dopair
     integer :: a,b,ax,bx,p1,p2,i,ix,pox,pux
 
-    ! This is the same as which_pairs_unocc, but for the case where one needs 
-    ! unoccupied/occupied combination.
+    ! This is the same as which_pairs_virt, but for the case where one needs 
+    ! virtupied/occupied combination.
 
     ! Set which atoms to consider for pair
     dopair=.false.
 
-    ! occ fragment1 - unocc fragment2 part:
-    do a=1,fragment1%nunoccEOS   ! Unoccupied EOS for fragment 1
+    ! occ fragment1 - virt fragment2 part:
+    do a=1,fragment1%nvirtEOS   ! Unoccupied EOS for fragment 1
       do i=1,fragment2%noccEOS   ! Occupied   EOS for fragment 2
 
-        ax=fragment1%unoccEOSidx(a)  ! index in full list orbitals
+        ax=fragment1%virtEOSidx(a)  ! index in full list orbitals
         ix=fragment2%occEOSidx(i)    ! index in full list orbitals
-        p1=0                     ! pair unocc full list index
+        p1=0                     ! pair virt full list index
         p2=0                     ! pair occ   full list index
 
         ! loop to find pair indices  
-        do pux=1,PairFragment%nunoccEOS
+        do pux=1,PairFragment%nvirtEOS
           do pox=1,PairFragment%noccEOS
 
-            if(PairFragment%unoccEOSidx(pux) == ax) p1 = pux
+            if(PairFragment%virtEOSidx(pux) == ax) p1 = pux
             if(PairFragment%occEOSidx(pox)   == ix) p2 = pox
 
           end do
@@ -3412,7 +3434,7 @@ end function max_batch_dimension
         ! Sanity check
 !        if(p1==p2 .or. p1==0 .or. p2==0 ) then
 !          write(DECinfo%output,'(1X,a,4i6)') 'ax,ix,p1,p2', ax,ix,p1,p2
-!          call lsquit('which_pairs_occ_unocc: &
+!          call lsquit('which_pairs_occ_virt: &
 !                     & Something wrong with indices in pair',DECinfo%output)
 !        end if
 
@@ -3422,20 +3444,20 @@ end function max_batch_dimension
       end do
     end do
 
-    ! occ fragment2 - unocc fragment1 part:
-    do a=1,fragment2%nunoccEOS   ! Unoccupied EOS for fragment 1
+    ! occ fragment2 - virt fragment1 part:
+    do a=1,fragment2%nvirtEOS   ! Unoccupied EOS for fragment 1
       do i=1,fragment1%noccEOS   ! Occupied   EOS for fragment 2
 
-        ax=fragment2%unoccEOSidx(a)  ! index in full list orbitals
+        ax=fragment2%virtEOSidx(a)  ! index in full list orbitals
         ix=fragment1%occEOSidx(i)    ! index in full list orbitals
-        p1=0                     ! pair unocc full list index
+        p1=0                     ! pair virt full list index
         p2=0                     ! pair occ   full list index
 
         ! loop to find pair indices  
-        do pux=1,PairFragment%nunoccEOS
+        do pux=1,PairFragment%nvirtEOS
           do pox=1,PairFragment%noccEOS
             
-            if(PairFragment%unoccEOSidx(pux) == ax) p1 = pux
+            if(PairFragment%virtEOSidx(pux) == ax) p1 = pux
             if(PairFragment%occEOSidx(pox)   == ix) p2 = pox
             
           end do
@@ -3444,7 +3466,7 @@ end function max_batch_dimension
         ! Sanity check
 !        if(p1==p2 .or. p1==0 .or. p2==0 ) then
 !          write(DECinfo%output,'(1X,a,4i6)') 'ax,ix,p1,p2', ax,ix,p1,p2
-!          call lsquit('which_pairs_occ_unocc: &
+!          call lsquit('which_pairs_occ_virt: &
 !                     & Something wrong with indices in pair',DECinfo%output)
 !        end if
         
@@ -3454,7 +3476,7 @@ end function max_batch_dimension
       end do
     end do
 
-  end subroutine which_pairs_occ_unocc
+  end subroutine which_pairs_occ_virt
 
 
   !> Write fragment job list to file.
@@ -3493,7 +3515,7 @@ end function max_batch_dimension
     ! MPI fragment statistics
     write(funit) int(jobs%nslaves,kind=8)
     write(funit) int(jobs%nocc,kind=8)
-    write(funit) int(jobs%nunocc,kind=8)
+    write(funit) int(jobs%nvirt,kind=8)
     write(funit) int(jobs%nbasis,kind=8)
     write(funit) int(jobs%ntasks,kind=8)
     write(funit) jobs%flops
@@ -3544,7 +3566,7 @@ end function max_batch_dimension
     call read_64bit_to_int(funit,njobs,jobs%esti)
     call read_64bit_to_int(funit,njobs,jobs%nslaves)
     call read_64bit_to_int(funit,njobs,jobs%nocc)
-    call read_64bit_to_int(funit,njobs,jobs%nunocc)
+    call read_64bit_to_int(funit,njobs,jobs%nvirt)
     call read_64bit_to_int(funit,njobs,jobs%nbasis)
     call read_64bit_to_int(funit,njobs,jobs%ntasks)
 
@@ -3598,7 +3620,7 @@ end function max_batch_dimension
        ! MPI fragment statistics
        call mem_alloc(jobs%nslaves,njobs)
        call mem_alloc(jobs%nocc,njobs)
-       call mem_alloc(jobs%nunocc,njobs)
+       call mem_alloc(jobs%nvirt,njobs)
        call mem_alloc(jobs%nbasis,njobs)
        call mem_alloc(jobs%ntasks,njobs)
        call mem_alloc(jobs%flops,njobs)
@@ -3609,7 +3631,7 @@ end function max_batch_dimension
        call mem_alloc(jobs%gpu_flops,njobs)
        jobs%nslaves = 0
        jobs%nocc    = 0
-       jobs%nunocc  = 0
+       jobs%nvirt  = 0
        jobs%nbasis  = 0
        jobs%ntasks  = 0
        jobs%flops   = 0.0E0_realk
@@ -3674,9 +3696,9 @@ end function max_batch_dimension
        nullify(jobs%nocc)
     end if
 
-    if(associated(jobs%nunocc)) then
-       call mem_dealloc(jobs%nunocc)
-       nullify(jobs%nunocc)
+    if(associated(jobs%nvirt)) then
+       call mem_dealloc(jobs%nvirt)
+       nullify(jobs%nvirt)
     end if
 
     if(associated(jobs%nbasis)) then
@@ -3756,7 +3778,7 @@ end function max_batch_dimension
     jobs%esti(position)      = singlejob%esti(1)
     jobs%nslaves(position)   = singlejob%nslaves(1)
     jobs%nocc(position)      = singlejob%nocc(1)
-    jobs%nunocc(position)    = singlejob%nunocc(1)
+    jobs%nvirt(position)    = singlejob%nvirt(1)
     jobs%nbasis(position)    = singlejob%nbasis(1)
     jobs%ntasks(position)    = singlejob%ntasks(1)
     jobs%flops(position)     = singlejob%flops(1)
@@ -4319,56 +4341,58 @@ end function max_batch_dimension
     write(lupri,*)
     if(DECinfo%first_order) then
        IF(.NOT.DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy      :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'G: HF energy (KS orb)  :', Ehf
-          write(lupri,'(15X,a,f20.10)') 'G: DFT energy          :', Edft
+          write(lupri,'(15X,a,f20.10)') 'G: HF energy (KS orb)       :', Ehf
+          write(lupri,'(15X,a,f20.10)') 'G: DFT energy               :', Edft
        ENDIF
-       write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
+       write(lupri,'(15X,a,f20.10)')    'G: Correlation energy       :', Ecorr
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc)then  
           if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
-             write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 1 :', dE_est1
+             write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 1      :', dE_est1
           endif
-          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 2 :', dE_est2
-          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 3 :', dE_est3
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 2      :', dE_est2
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 3      :', dE_est3
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
           else          
-             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy         :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==MODEL_RIMP2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy  :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy       :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
+          write(lupri,'(15X,a,f20.10)') 'G: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy         :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy     :', Ehf+Ecorr
           else    
-             write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy    :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy         :', Ehf+Ecorr
           endif
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-          write(lupri,'(15X,a,f20.10)')  'G: Total CCSD(T) energy:', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy     :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_SOSEX) then
-         write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy   :', Ehf+Ecorr
+         write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy        :', Ehf+Ecorr
          IF(DECinfo%DFTreference) then
-           write(lupri,'(15X,a,f20.10)') 'G: KS + SOSEX energy   :',&
+           write(lupri,'(15X,a,f20.10)')'G: KS + SOSEX energy        :',&
              & Edft+Ecorr
          endif
        elseif(DECinfo%ccmodel==MODEL_RPA) then
          if(.not. SOS) then
-           write(lupri,'(15X,a,f20.10)') 'G: HF + dRPA energy    :', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)')  'G: HF + dRPA energy         :', Ehf+Ecorr
            IF(DECinfo%DFTreference) then
-             write(lupri,'(15X,a,f20.10)') 'G: KS + dRPA energy    :',&
+             write(lupri,'(15X,a,f20.10)')'G: KS + dRPA energy         :',&
               & Edft+Ecorr
            endif
          else
-           write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy   :', Ehf+Ecorr
+           write(lupri,'(15X,a,f20.10)')  'G: HF + SOSEX energy        :', Ehf+Ecorr
            IF(DECinfo%DFTreference) then
-             write(lupri,'(15X,a,f20.10)') 'G: KS + SOSEX energy   :',&
+             write(lupri,'(15X,a,f20.10)')'G: KS + SOSEX energy        :',&
               & Edft+Ecorr
            endif
          endif
@@ -4377,38 +4401,40 @@ end function max_batch_dimension
        end if
     else
        IF(.NOT.DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy      :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)  :', Ehf
-          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Edft
+          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)       :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: DFT energy               :', Edft
        ENDIF
        if(SOS) then
-         write(lupri,'(15X,a,f20.10)')       'E: SOSEX energy        :', Ecorr
+         write(lupri,'(15X,a,f20.10)')     'E: SOSEX energy             :', Ecorr
        else
-         write(lupri,'(15X,a,f20.10)')       'E: Correlation energy  :', Ecorr
+         write(lupri,'(15X,a,f20.10)')     'E: Correlation energy       :', Ecorr
        endif
 
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc)then  
           if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
-             write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 1 :', dE_est1
+             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC err 1      :', dE_est1
           endif
-          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2 :', dE_est2
-          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3 :', dE_est3
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2      :', dE_est2
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3      :', dE_est3
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
           else          
-             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2 energy         :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==MODEL_RIMP2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy  :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'E: Total RIMP2 energy       :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
-          write(lupri,'(15X,a,f20.10)')    'E: Total MP2-F12 energy:', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
-          write(lupri,'(15X,a,f20.10)')    'E: Total CC2 energy    :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy         :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
           if (DECinfo%F12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
@@ -4838,7 +4864,47 @@ end function max_batch_dimension
                &'RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGRIMP2)
        end if
        write(DECinfo%output,*)
+    case(MODEL_LSTHCRIMP2)
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCLSTHCRIMP2),dofrag,&
+               & 'LS-THC-RI-MP2 occupied single energies','AF_RI_MP2_OCC')
+       endif
+       if(.not. DECinfo%onlyoccpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTLSTHCRIMP2),dofrag,&
+               & 'LS-THC-RI-MP2 virtual single energies','AF_RI_MP2_VIR')
+       endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGLSTHCRIMP2),dofrag,&
+               & 'LS-THC-RI-MP2 Lagrangian single energies','AF_RI_MP2_LAG')
+       end if
 
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCLSTHCRIMP2),dofrag,&
+               & DistanceTable, 'LS-THC-RI-MP2 occupied pair energies','PF_RI_MP2_OCC')
+       endif
+       if((.not. DECinfo%onlyoccpart).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTLSTHCRIMP2),dofrag,&
+               & DistanceTable, 'LS-THC-RI-MP2 virtual pair energies','PF_RI_MP2_VIR')          
+       endif
+       if((.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)).and.print_pair) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGLSTHCRIMP2),dofrag,&
+               & DistanceTable, 'LS-THC-RI-MP2 Lagrangian pair energies','PF_RI_MP2_LAG')
+       end if
+
+       write(DECinfo%output,*)
+       if(.not.DECinfo%onlyvirtpart) then  
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') &
+               & 'LS-THC-RI-MP2 occupied   ',CorrEnergyString(1:iCorrLen),' : ',energies(FRAGMODEL_OCCLSTHCRIMP2)
+       endif
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') &
+               & 'LS-THC-RI-MP2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_VIRTLSTHCRIMP2)
+       endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') &
+               &'LS-THC-RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGLSTHCRIMP2)
+       end if
+       write(DECinfo%output,*)
     case default
        ! MODIFY FOR NEW MODEL
        ! If you implement new model, please print the fragment energies here,
@@ -5455,6 +5521,8 @@ end function max_batch_dimension
 
     case(MODEL_RIMP2)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCRIMP2)
+    case(MODEL_LSTHCRIMP2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_OCCLSTHCRIMP2)
 
     case default
        print *, 'Model is: ', ccmodel
@@ -5504,6 +5572,9 @@ end function max_batch_dimension
 
     case(MODEL_RIMP2)
        FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTRIMP2)
+
+    case(MODEL_LSTHCRIMP2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTLSTHCRIMP2)
 
     case default
        print *, 'Model is: ', ccmodel
@@ -5565,6 +5636,12 @@ end function max_batch_dimension
        ! Energy error = difference between occ and virt energies
        dE_est1 = max(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2)) &
             & - min(energies(FRAGMODEL_LAGRIMP2),energies(FRAGMODEL_OCCRIMP2),energies(FRAGMODEL_VIRTRIMP2))
+
+    case(MODEL_LSTHCRIMP2)
+       ! Energy error = difference between occ and virt energies
+       dE_est1 = max(energies(FRAGMODEL_LAGLSTHCRIMP2),energies(FRAGMODEL_OCCLSTHCRIMP2),energies(FRAGMODEL_VIRTLSTHCRIMP2)) &
+            & - min(energies(FRAGMODEL_LAGLSTHCRIMP2),energies(FRAGMODEL_OCCLSTHCRIMP2),energies(FRAGMODEL_VIRTLSTHCRIMP2))
+
     case default
        print *, 'Model is: ', DECinfo%ccmodel
        call lsquit('get_estimated_energy_error: Model needs implementation!',-1)
@@ -5669,7 +5746,7 @@ end function max_batch_dimension
 
     ! Dimensions for fragment-adapted orbitals
     MyFragment%noccAOS => MyFragment%noccFA
-    MyFragment%nunoccAOS => MyFragment%nunoccFA
+    MyFragment%nvirtAOS => MyFragment%nvirtFA
 
     ! Total number of occupied orbitals
     if(DECinfo%frozencore) then
@@ -5708,7 +5785,7 @@ end function max_batch_dimension
 
     ! Dimensions for fragment-adapted orbitals
     MyFragment%noccAOS => MyFragment%noccLOC
-    MyFragment%nunoccAOS => MyFragment%nunoccLOC
+    MyFragment%nvirtAOS => MyFragment%nvirtLOC
 
     ! Total number of occupied orbitals
     if(DECinfo%frozencore) then
@@ -5743,15 +5820,15 @@ end function max_batch_dimension
     type(decfrag),intent(inout) :: fragment
 
     nullify(fragment%noccAOS)
-    nullify(fragment%nunoccAOS)
+    nullify(fragment%nvirtAOS)
     nullify(fragment%noccLOC)
-    nullify(fragment%nunoccLOC)
+    nullify(fragment%nvirtLOC)
     nullify(fragment%noccFA)
-    nullify(fragment%nunoccFA)
+    nullify(fragment%nvirtFA)
     allocate(fragment%noccLOC)
-    allocate(fragment%nunoccLOC)
+    allocate(fragment%nvirtLOC)
     allocate(fragment%noccFA)
-    allocate(fragment%nunoccFA)
+    allocate(fragment%nvirtFA)
 
   end subroutine fragment_init_dimension_pointers
 
@@ -5974,22 +6051,22 @@ end function max_batch_dimension
  !>
  !> if the secondary atom of occ orbital "i" is identical to the central atom
  !> defining the atomic fragments (or to one of the central atoms for pair fragments).
- !> Otherwise SEC_occ=.false.  (and similarly for SEC_unocc).
- subroutine secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+ !> Otherwise SEC_occ=.false.  (and similarly for SEC_virt).
+ subroutine secondary_assigning(MyFragment,SEC_occ,SEC_virt)
 
    implicit none
 
    !> fragment info
    type(decfrag), intent(inout) :: MyFragment
    !> Logical arrays defined as described above
-   logical,intent(inout) :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
-   integer :: noccAOS,nunoccAOS,i,P
+   logical,intent(inout) :: SEC_occ(MyFragment%noccAOS), SEC_virt(MyFragment%nvirtAOS)
+   integer :: noccAOS,nvirtAOS,i,P
 
 
    noccAOS = MyFragment%noccAOS
-   nunoccAOS = MyFragment%nunoccAOS
+   nvirtAOS = MyFragment%nvirtAOS
    SEC_occ=.false.
-   SEC_unocc=.false.
+   SEC_virt=.false.
    do i=1,noccAOS
       ! Set SEC_occ(i) to true if secondary atom equals (one of the) atom(s) 
       ! defining atomic (pair) fragment
@@ -6000,11 +6077,11 @@ end function max_batch_dimension
       end do
    end do
 
-   ! Same for unocc orbitals
-   do i=1,nunoccAOS
+   ! Same for virt orbitals
+   do i=1,nvirtAOS
       do P=1,MyFragment%nEOSatoms
-         if(MyFragment%unoccAOSorb(i)%secondaryatom == MyFragment%EOSatoms(P)) then
-            SEC_unocc(i)=.true.
+         if(MyFragment%virtAOSorb(i)%secondaryatom == MyFragment%EOSatoms(P)) then
+            SEC_virt(i)=.true.
          end if
       end do
    end do
@@ -6035,5 +6112,31 @@ end function max_batch_dimension
  end subroutine general_distance_table
 
 
+ !> \brief Get distance between atoms and orbitals.
+ subroutine GetOrbAtomDistances(norb,natoms,&
+      & Carmom,AtomCenters,DistanceTableOrbAtom)
+   implicit none
+   !> Number of orbitals and atoms
+   integer,intent(in) :: norb,natoms
+   !> Position of atoms
+   real(realk),intent(in) :: AtomCenters(3,nAtoms)
+   !> Positions of orbitals
+   real(realk),intent(in) :: Carmom(3,norb)
+   !> Distances between orbitals and atoms
+   real(realk),intent(inout) :: DistanceTableOrbAtom(norb,natoms)
+   integer :: iatom,i
+   real(realk) :: Xa,Ya,Za
+
+   do iatom=1,nAtoms
+      Xa = -AtomCenters(1,iatom)
+      Ya = -AtomCenters(2,iatom)
+      Za = -AtomCenters(3,iatom)
+      do i=1,norb
+         DistanceTableOrbAtom(i,iatom)= sqrt( (Xa+Carmom(1,i))*(Xa+Carmom(1,i))  &
+              & + (Ya+Carmom(2,i))*(Ya+Carmom(2,i)) + (Za+Carmom(3,i))*(Za+Carmom(3,i)) )
+      end do
+   end do
+
+ end subroutine GetOrbAtomDistances
 
 end module dec_fragment_utils
