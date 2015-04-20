@@ -143,7 +143,7 @@ contains
          & [Dmat],Econt,1,GGemCouOperator)
     ExchangeF12 = Econt(1)       
     E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E0_realk)
-    WRITE(DECINFO%OUTPUT,*)'E(Fijkl,LS) = ',E21
+    WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,LS) = ',E21
     mp2f12_energy = E21
     use_bg_buf = .FALSE.
     IF(RIF12)THEN       !Use RI 
@@ -163,9 +163,9 @@ contains
        call ContractOne4CenterF12IntegralsRI(NBA,nocc,CalphaF,CoulombF12,ExchangeF12)
        E21 = -0.5E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12-ExchangeF12*0.5E0_realk)
        mp2f12_energy = mp2f12_energy  + E21
-       WRITE(DECINFO%OUTPUT,*)'E(Fijkl,RI) = ',E21       
-       WRITE(DECINFO%OUTPUT,*)'E(Fijkl,RI,Coulomb) = ',CoulombF12
-       WRITE(DECINFO%OUTPUT,*)'E(Fijkl,RI,Exchange) = ',ExchangeF12
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI) = ',E21       
+!       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Coulomb) = ',CoulombF12
+!       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Exchange) = ',ExchangeF12
        call mem_dealloc(CalphaF)
        call mem_dealloc(ABdecompF)
     ENDIF
@@ -193,7 +193,7 @@ contains
        E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
-       WRITE(DECINFO%OUTPUT,*)'E(Fijkl,FullIntegral) = ',E21
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,FullIntegral) = ',E21
     ENDIF
     !==========================================================
     !=                                                        =
@@ -229,9 +229,9 @@ contains
             & CoulombF12,ExchangeF12)
        E21 = 0.5E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12-ExchangeF12*0.5E0_realk)
        mp2f12_energy = mp2f12_energy  + E21
-       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI) = ',E21       
-       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
-       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Exchange) = ',ExchangeF12
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gjpiq,RI) = ',E21       
+!       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
+!       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Exchange) = ',ExchangeF12
        call mem_dealloc(CalphaR)
        call mem_dealloc(CalphaG)
        call mem_dealloc(Cfull)
@@ -277,7 +277,7 @@ contains
        call mem_dealloc(Gipjq)
        
        E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
-       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral) = ',E21
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gipjq,FullIntegral) = ',E21
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
     ENDIF
@@ -333,12 +333,9 @@ contains
        call mem_dealloc(ABdecompG)
 
        call ContractTwo4CenterF12IntegralsRI2(NBA,nocc,noccfull,ncabsMO,CalphaR,CalphaG,&
-            & CalphaRocc,CalphaGocc,CoulombF12,ExchangeF12)
-       E21 = 0.5E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12-ExchangeF12*0.5E0_realk)
+            & CalphaRocc,CalphaGocc,E21)
        mp2f12_energy = mp2f12_energy  + E21
-       WRITE(DECINFO%OUTPUT,*)'E(Rimjc*Gjmic,RI) = ',E21       
-       WRITE(DECINFO%OUTPUT,*)'E(Rimjc*Gjmic,RI,Coulomb) = ',CoulombF12
-       WRITE(DECINFO%OUTPUT,*)'E(Rimjc*Gjmic,RI,Exchange) = ',ExchangeF12
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Rimjc*Gjmic,RI) = ',E21       
        call mem_dealloc(CalphaRocc)
        call mem_dealloc(CalphaGocc)
        call mem_dealloc(CalphaR)
@@ -351,9 +348,11 @@ contains
        call mem_alloc(Vijij,nocc,nocc)
        call mem_alloc(Vjiij,nocc,nocc)
        call mem_alloc(gao,nbasis,nbasis,nbasis,ncabsAO)
+       gao = 0.0E0_realk
        call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCC')
        call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
             & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imic',gAO,Rimjc)
+       gao = 0.0E0_realk
        call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCG')
        call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
             & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imic',gAO,Gimjc)
@@ -383,29 +382,15 @@ contains
        enddo
        
        E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
-       WRITE(DECINFO%OUTPUT,*)'E(Rimjc*Gimjc,FullIntegral) = ',E21
-
-
-!!$       print*,'Rimjc(1,1,1,1)=',Rimjc(1,1,1,1)
-!!$       print*,'Rimjc(nocc,1,1,1)=',Rimjc(nocc,1,1,1)
-!!$       print*,'Rimjc(1,noccfull,1,1)=',Rimjc(1,noccfull,1,1)
-!!$       print*,'Rimjc(1,1,nocc,1)=',Rimjc(1,1,nocc,1)
-!!$       print*,'Rimjc(1,1,1,ncabsMO)=',Rimjc(1,1,1,ncabsMO)
-!!$       print*,'Rimjc(nocc,1,nocc,1)=',Rimjc(nocc,1,nocc,1)
-!!$       print*,'Gimjc(1,1,1,1)=',Gimjc(1,1,1,1)
-!!$       print*,'Gimjc(nocc,1,1,1)=',Gimjc(nocc,1,1,1)
-!!$       print*,'Gimjc(1,noccfull,1,1)=',Gimjc(1,noccfull,1,1)
-!!$       print*,'Gimjc(1,1,nocc,1)=',Gimjc(1,1,nocc,1)
-!!$       print*,'Gimjc(1,1,1,ncabsMO)=',Gimjc(1,1,1,ncabsMO)
-!!$       print*,'Gimjc(nocc,1,nocc,1)=',Gimjc(nocc,1,nocc,1)
-
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Rimjc*Gimjc,FullIntegral) = ',E21
        call mem_dealloc(Rimjc)
        call mem_dealloc(Gimjc)
 
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
     ENDIF
-
+    call mat_free(CMO_CABS)
+    call mat_free(CMO_RI)
   end subroutine full_canonical_rimp2_f12
 
   !> Function for finding the E21 energy  
@@ -600,122 +585,51 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJ,EK)
 end subroutine ContractTwo4CenterF12IntegralsRI
 
 subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
-     & CalphaRocc,CalphaGocc,EJ,EK)
+     & CalphaRocc,CalphaGocc,EJK)
   implicit none
   integer,intent(in)        :: nBA,n1,n2,n3
   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
   real(realk),intent(in)    :: CalphaRocc(nBA,n1,n3),CalphaGocc(nBA,n1,n3)
-  real(realk),intent(inout) :: EJ,EK
+  real(realk),intent(inout) :: EJK
   !local variables
   integer :: M,C,I,J,ALPHA,BETA
-  real(realk) :: TMPR,TMPG
+  real(realk) :: TMPR,TMPG1,TMPG2,TMP
   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
-  EK = 0.0E0_realk
-  EJ = 0.0E0_realk
-  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(I,J,M,C,TMPR,&
-  !$OMP TMPG) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
-  !$OMP nba) REDUCTION(+:EK,EJ)
+  TMP = 0E0_realk
+  !$OMP PARALLEL COLLAPSE(2) DO DEFAULT(none) PRIVATE(I,J,M,C,TMPR,&
+  !$OMP TMPG1,TMPG2) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
+  !$OMP nba) REDUCTION(+:TMP)
   DO M=1,n3
      DO C=1,n2
-        DO I=1,n1
-           DO J=1,n1
+        !Diagonal
+        DO j=1,n1
+           TMPR = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              TMPR = TMPR + CalphaRocc(ALPHA,J,M)*CalphaR(ALPHA,J,C)
+           ENDDO
+           TMPG1 = 0.0E0_realk
+           DO BETA = 1,NBA
+              TMPG1 = TMPG1 + CalphaGocc(BETA,J,M)*CalphaG(BETA,J,C)
+           ENDDO
+           TMP = TMP + 2.0E0_realk*TMPR*TMPG1
+           DO i=j+1,n1
               TMPR = 0.0E0_realk
               DO ALPHA = 1,NBA
                  TMPR = TMPR + CalphaRocc(ALPHA,I,M)*CalphaR(ALPHA,J,C)
               ENDDO
-              TMPG = 0.0E0_realk
+              TMPG1 = 0.0E0_realk
+              TMPG2 = 0.0E0_realk
               DO BETA = 1,NBA
-                 TMPG = TMPG + CalphaGocc(BETA,J,M)*CalphaG(BETA,I,C)
+                 TMPG1 = TMPG1 + CalphaGocc(BETA,I,M)*CalphaG(BETA,J,C)
+                 TMPG2 = TMPG2 + CalphaGocc(BETA,J,M)*CalphaG(BETA,I,C)
               ENDDO
-              EK = EK + TMPR*TMPG
-!              TMPR = 0.0E0_realk
-!              DO ALPHA = 1,NBA
-!                 TMPR = TMPR + CalphaRocc(ALPHA,I,M)*CalphaR(ALPHA,J,C)
-!              ENDDO
-              TMPG = 0.0E0_realk
-              DO BETA = 1,NBA
-                 TMPG = TMPG + CalphaGocc(BETA,I,M)*CalphaG(BETA,J,C)
-              ENDDO
-              EJ = EJ + TMPR*TMPG
+              tmp = tmp + 5.0E0_realk*TMPR*TMPG1 - 1.0E0_realk*TMPR*TMPG2
            ENDDO
         ENDDO
      ENDDO
   ENDDO
   !$OMP END PARALLEL DO
-
-!!$  print*,'n1',n1,'n2',n2
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaRocc(ALPHA,1,1)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Rimjc(1,1,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaRocc(ALPHA,n1,1)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Rimjc(n1,1,1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaRocc(ALPHA,1,n3)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Rimjc(1,n3,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaRocc(ALPHA,1,1)*CalphaR(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Rimjc(1,1,n1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaRocc(ALPHA,1,1)*CalphaR(ALPHA,1,n2)
-!!$  ENDDO
-!!$  print*,'Rimjc(1,1,1,n2)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaRocc(ALPHA,n1,1)*CalphaR(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Rimjc(n1,1,n1,1)=',TMPR
-!!$
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaGocc(ALPHA,1,1)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gimjc(1,1,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaGocc(ALPHA,n1,1)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gimjc(n1,1,1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaGocc(ALPHA,1,n3)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gimjc(1,n3,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaGocc(ALPHA,1,1)*CalphaG(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Gimjc(1,1,n1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaGocc(ALPHA,1,1)*CalphaG(ALPHA,1,n2)
-!!$  ENDDO
-!!$  print*,'Gimjc(1,1,1,n2)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaGocc(ALPHA,n1,1)*CalphaG(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Gimjc(n1,1,n1,1)=',TMPR
+  EJK = 0.5E0_realk*TMP
 
 end subroutine ContractTwo4CenterF12IntegralsRI2
 
@@ -968,82 +882,6 @@ end subroutine ContractTwo4CenterF12IntegralsRI2
 !!$    ls%setting%SCHEME%NOFAMILY = NOFAMILY
 !!$
 !!$  end subroutine ContractTwo4CenterF12IntegralsExchange
-
-!!$  print*,'n1',n1,'n2',n2
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,1,1)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(1,1,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,n1,1)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(n1,1,1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,1,n2)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(1,n2,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,1,1)*CalphaR(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(1,1,n1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,1,1)*CalphaR(ALPHA,1,n2)
-!!$  ENDDO
-!!$  print*,'Ripjq(1,1,1,n2)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,n1,1)*CalphaR(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(n1,1,n1,1)=',TMPR
-!!$
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,1,1)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(1,1,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,n1,1)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(n1,1,1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,1,n2)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(1,n2,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,1,1)*CalphaG(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(1,1,n1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,1,1)*CalphaG(ALPHA,1,n2)
-!!$  ENDDO
-!!$  print*,'Gipjq(1,1,1,n2)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,n1,1)*CalphaG(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(n1,1,n1,1)=',TMPR
-
-
 
 end module fullrimp2f12
 
