@@ -2101,7 +2101,9 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 
   IF(AlphaBetaDecompCreate)THEN
      IF(master)THEN
-!        call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
+        IF(DECinfo%RIMP2_lowdin)THEN
+           call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
+        ENDIF
         IF(DECinfo%AuxAtomicExtent)THEN
            molecule1 => mylsitem%SETTING%MOLECULE(1)%p
            molecule2 => mylsitem%SETTING%MOLECULE(2)%p
@@ -2113,8 +2115,13 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
         ENDIF
         CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
-        call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-             & AlphaBetaDecomp,mylsitem%setting,nbasisAux,Oper)
+        IF(DECinfo%RIMP2_lowdin)THEN
+           call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+                & AlphaBeta,mylsitem%setting,nbasisAux,Oper)
+        ELSE
+           call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+                & AlphaBetaDecomp,mylsitem%setting,nbasisAux,Oper)
+        ENDIF
         CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
         IF(DECinfo%AuxAtomicExtent)THEN
            mylsitem%SETTING%MOLECULE(1)%p => molecule1
@@ -2125,10 +2132,13 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         ! Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
         ! Warning the inverse is not unique so in order to make sure all slaves have the same
         ! inverse matrix we calculate it on the master a BCAST to slaves
-!        call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBetaDecomp,lupri)
-        call Get_InverseCholeskyFactor(nbasisAux,AlphaBetaDecomp,lupri)
+        IF(DECinfo%RIMP2_lowdin)THEN
+           call lowdin_diag_S_minus_sqrt(nbasisAux,AlphaBeta,AlphaBetaDecomp,lupri)
+           call mem_dealloc(AlphaBeta)
+        ELSE
+           call Get_InverseCholeskyFactor(nbasisAux,AlphaBetaDecomp,lupri)
+        ENDIF
         CALL LSTIMER('DF_Calpha:AlphaBetaDecomp',TS4,TE4,LUPRI,ForcePrint)
-!        call mem_dealloc(AlphaBeta)
      ENDIF
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
