@@ -946,8 +946,6 @@ contains
      ! ****************************
      call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
       
-     ! Set energies used by fragment optimization
-     call get_occ_virt_lag_energies_fragopt(MyFragment)
       
      ! Print out contributions
      ! ***********************
@@ -1297,9 +1295,6 @@ contains
     else
       call put_fragment_energy_contribs_main(Eocc,Evirt,MyFragment)
     endif
-
-    ! Set energies used by fragment optimization
-    !call get_occ_virt_lag_energies_fragopt(MyFragment)
 
     ! Print out contributions
     ! ***********************
@@ -2419,7 +2414,7 @@ contains
       !> number of core orbitals
       integer :: nc
       integer :: idx,i,a,expit,redit
-      real(realk) :: ELag_exp, Eocc_exp, Evir_exp
+      type(EnergyFOP) :: EFOP, Eexp
       logical :: add_MP2_opt
 
 
@@ -2431,6 +2426,9 @@ contains
       times_fragopt => null()
       call dec_fragment_time_init(times_fragopt)
       add_MP2_opt = .false.
+      Eexp%lag = 0E0_realk
+      Eexp%occ = 0E0_realk
+      Eexp%vir = 0E0_realk
 
       expit=0
       redit=0
@@ -2450,9 +2448,9 @@ contains
       ! Only do fragment optimization if there are orbitals assigned to central atom.
       if( (nocc_per_atom(MyAtom) == 0) .and. (nvir_per_atom(MyAtom) == 0) ) then
          write(DECinfo%output,*) 'FOP Skipping optimization of fragment ', MyAtom
-         AtomicFragment%LagFOP   = 0E0_realk
-         AtomicFragment%EoccFOP  = 0E0_realk
-         AtomicFragment%EvirtFOP = 0E0_realk
+         EFOP%lag = 0E0_realk
+         EFOP%occ = 0E0_realk
+         EFOP%vir = 0E0_realk
          AtomicFragment%energies = 0E0_realk
          AtomicFragment%ccmodel  = DECinfo%ccmodel
 
@@ -2558,10 +2556,10 @@ contains
       ! Get Energy for the initialized fragment
       call fragment_energy_and_prop(AtomicFragment,add_mp2_opt=add_mp2_opt) 
       ! Set energies used by fragment optimization
-      call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+      call get_occ_virt_lag_energies_fragopt(AtomicFragment,EFOP)
       ! Print initial fragment information
       if (full_mol) write(DECinfo%output,*) 'FOP Expansion Include Full Molecule !!!'
-      call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
+      call fragopt_print_info(AtomicFragment,EFOP,Eexp,0)
 
 
 
@@ -2571,7 +2569,7 @@ contains
       !
       ! Do expansion only if the initial fragment does not include the full molecule:
       if (.not.full_mol) then
-         call fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
+         call fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,EFOP,no,nv, &
             & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
             & OccOrbitals,VirOrbitals,expit,add_MP2_opt,mylsitem)
       end if
@@ -2609,18 +2607,16 @@ contains
       if(DECinfo%fragopt_exp_model /= DECinfo%fragopt_red_model) then
          call fragment_energy_and_prop(AtomicFragment,add_mp2_opt=add_mp2_opt)
          ! Set energies used by fragment optimization
-         call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+         call get_occ_virt_lag_energies_fragopt(AtomicFragment,EFOP)
          if( DECinfo%print_small_calc )then
             write(DECinfo%output,'(2a)') ' FOP Calculated ref atomic fragment energy for relevant CC model: ', &
                & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
-            call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
+            call fragopt_print_info(AtomicFragment,EFOP,Eexp,0)
          endif
       end if
 
       !Store the energies of the expanded fragment
-      ELag_exp = AtomicFragment%LagFOP   
-      Eocc_exp = AtomicFragment%EoccFOP  
-      Evir_exp = AtomicFragment%EvirtFOP 
+      Eexp = EFOP
 
       ! Get information on how the reduction should be performed:
       call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
@@ -2636,7 +2632,7 @@ contains
       ! Perform reduction:
       if (dored) then
          call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
-               & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+               & red_list_vir,Occ_AOS,Vir_AOS,EFOP,MyAtom,MyMolecule,OccOrbitals, &
                & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT,redit,add_MP2_opt)
       end if
 
@@ -2645,9 +2641,9 @@ contains
       !==================================================================================!
 
       !Store the error estimates for the fragments
-      AtomicFragment%Elag_err = ( ELag_exp - AtomicFragment%LagFOP   )
-      AtomicFragment%Eocc_err = ( Eocc_exp - AtomicFragment%EoccFOP  )
-      AtomicFragment%Evir_err = ( Evir_exp - AtomicFragment%EvirtFOP )
+      AtomicFragment%Elag_err = (Eexp%lag - EFOP%lag)
+      AtomicFragment%Eocc_err = (Eexp%occ - EFOP%occ)
+      AtomicFragment%Evir_err = (Eexp%vir - EFOP%vir)
 
       ! Deallocation:
       call mem_dealloc(red_list_occ)
@@ -2660,7 +2656,7 @@ contains
       end if
 
       ! Ensure that energies in fragment are set consistently
-      call set_energies_decfrag_structure_fragopt(AtomicFragment)
+      call set_energies_decfrag_structure_fragopt(AtomicFragment,EFOP)
 
       ! Get final Timings:
       call dec_fragment_time_get(times_fragopt)
@@ -2689,7 +2685,7 @@ contains
    !
    ! Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
    ! Date:    July 2014
-   subroutine fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
+   subroutine fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,EFOP,no,nv, &
             & occ_priority_list,vir_priority_list,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
             & OccOrbitals,VirOrbitals,iter,add_MP2_opt,mylsitem)
 
@@ -2700,7 +2696,9 @@ contains
       !> Number of virtual orbitals in molecule
       integer, intent(in) :: nv
       !> Atomic fragment to be optimized
-      type(decfrag),intent(inout)        :: AtomicFragment
+      type(decfrag),intent(inout) :: AtomicFragment
+      !> FOP energies:
+      type(EnergyFOP), intent(inout) :: EFOP
       !> Priority list of orbitals:
       integer, intent(in) :: occ_priority_list(no)
       integer, intent(in) :: vir_priority_list(nv)
@@ -2724,16 +2722,13 @@ contains
       type(lsitem), intent(inout)       :: mylsitem
       
       logical :: full_mol, expansion_converged
-      real(realk) :: LagEnergy_old, OccEnergy_old, VirEnergy_old
-      real(realk) :: LagEnergy_dif, OccEnergy_dif, VirEnergy_dif
+      type(EnergyFOP) :: Eold, Edif
 
 
       EXPANSION_LOOP: do iter=1,DECinfo%maxiter
 
          ! Save current fragment energies
-         LagEnergy_old = AtomicFragment%LagFOP
-         OccEnergy_old = AtomicFragment%EoccFOP
-         VirEnergy_old = AtomicFragment%EvirtFOP
+         Eold = EFOP
 
          ! Expand fragment:
          call expand_fragment(no,nv,occ_priority_list,vir_priority_list,nexp_occ,nexp_vir, &
@@ -2747,20 +2742,19 @@ contains
          ! Get new fragment energy:
          call fragment_energy_and_prop(AtomicFragment,add_mp2_opt=add_mp2_opt)
          ! Set energies used by fragment optimization
-         call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+         call get_occ_virt_lag_energies_fragopt(AtomicFragment,EFOP)
 
          ! Energy differences
-         LagEnergy_dif = abs(LagEnergy_old - AtomicFragment%LagFOP)
-         OccEnergy_dif = abs(OccEnergy_old - AtomicFragment%EoccFOP)
-         VirEnergy_dif = abs(VirEnergy_old - AtomicFragment%EvirtFOP)
-                                                                                                                 
+         Edif%lag = abs(Eold%lag - EFOP%lag)
+         Edif%occ = abs(Eold%occ - EFOP%occ)
+         Edif%vir = abs(Eold%vir - EFOP%vir)
+
          ! print expanded fragment information:
          if (full_mol) write(DECinfo%output,*) 'FOP Expansion Include Full Molecule !!!'
-         call fragopt_print_info(AtomicFragment,LagEnergy_dif,OccEnergy_dif,VirEnergy_dif,iter)    
+         call fragopt_print_info(AtomicFragment,EFOP,Edif,iter)    
 
          ! Test if fragment energy (or energies) are converged to FOT precision
-         call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
-            & DECinfo%FOT,expansion_converged)
+         call fragopt_check_convergence(Edif,DECinfo%FOT,expansion_converged)
 
          ! Set the expansion to be converged if the current fragment include the full molecule:
          if (full_mol) expansion_converged = .true.
@@ -2791,7 +2785,7 @@ contains
    !> \author Kasper Kristensen
    !> \date November 2014
    subroutine fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,occ_priority_list, &
-        & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+        & vir_priority_list,Occ_AOS,Vir_AOS,EFOP,MyAtom,MyMolecule,OccOrbitals, &
         & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter,add_MP2_opt)
 
      implicit none
@@ -2807,6 +2801,8 @@ contains
      integer, intent(in) :: vir_priority_list(nv)
      !> Logical vector telling which orbital is include in the fragment
      logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv)
+     ! FOP energies:
+     type(EnergyFOP) :: EFOP
      !> Central Atom of the current fragment
      integer, intent(in) :: MyAtom
      !> Full molecule information
@@ -2829,7 +2825,8 @@ contains
 
      !> MP2 amplitudes and integrals for fragment adapted reduction:
      type(tensor) :: g, t2
-     real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
+     type(EnergyFOP) :: Eexp
+     real(realk) :: FOTincreased
      type(decfrag) :: ReducedFragment
      integer :: i,noccAOSprev, nvirtAOSprev
      integer,pointer :: occAOSidxprev(:),virtAOSidxprev(:)
@@ -2856,7 +2853,7 @@ contains
         ! Reduce using fragment-adapted orbitals
         print *,"before",t2%initialized
         iter=15 ! IN: maximum number of iteration in reduction procedure
-        call fragopt_reduce_FOs(MyAtom,AtomicFragment,OccOrbitals,no,VirOrbitals,nv, &
+        call fragopt_reduce_FOs(MyAtom,AtomicFragment,EFOP,OccOrbitals,no,VirOrbitals,nv, &
            & MyMolecule,mylsitem,t2,iter)
         print *,"freeing tesn",t2%initialized
         call tensor_free(t2)
@@ -2867,14 +2864,12 @@ contains
 
      ! At this point AtomicFragment correspondings to the expanded fragment
      ! We store the atomic fragment energies of the expanded fragment
-     LagEnergy_exp = AtomicFragment%LagFOP
-     OccEnergy_exp = AtomicFragment%EoccFOP
-     VirEnergy_exp = AtomicFragment%EvirtFOP
+     Eexp = EFOP
 
      iter=0
      ! Determine AtomicFragment according to main FOT
      call fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
-          & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+          & vir_priority_list,Occ_AOS,Vir_AOS,EFOP,MyAtom,MyMolecule,OccOrbitals, &
           & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter,add_MP2_opt)
 
      if(DECinfo%print_small_calc)then
@@ -2903,16 +2898,14 @@ contains
              & OccOrbitals,VirOrbitals,MyMolecule,mylsitem,ReducedFragment,.true.,.false.)
 
         ! Set initial energies for ReducedFragment equal to the ones for the expanded fragment
-        ReducedFragment%LagFOP   = LagEnergy_exp
-        ReducedFragment%EoccFOP  = OccEnergy_exp
-        ReducedFragment%EvirtFOP = VirEnergy_exp
+        EFOP = Eexp
 
         ! Increase FOT by scaling factor
         FOTincreased = FOTincreased*DECinfo%FOTscaling
 
         ! Determine ReducedFragment according to the scaled FOT
         call fragment_reduction_procedure(ReducedFragment,no,nv,occ_priority_list, &
-             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+             & vir_priority_list,Occ_AOS,Vir_AOS,EFOP,MyAtom,MyMolecule,OccOrbitals, &
              & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased,iter,add_MP2_opt)
         
         ! Save information about ReducedFragment AOS in AtomicFragment structure
@@ -2964,7 +2957,7 @@ contains
    ! Author:  Pablo Baudin
    ! Date:    July 2014
    subroutine fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
-            & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
+            & vir_priority_list,Occ_AOS,Vir_AOS,EFOP,MyAtom,MyMolecule,OccOrbitals, &
             & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,totit,add_MP2_opt)
 
       implicit none
@@ -2980,6 +2973,8 @@ contains
       integer, intent(in) :: vir_priority_list(nv)
       !> Logical vector telling which orbital is include in the fragment
       logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv)
+      !> FOP energies
+      type(EnergyFOP) :: EFOP
       !> Central Atom of the current fragment
       integer, intent(in) :: MyAtom
       !> Full molecule information
@@ -3006,9 +3001,7 @@ contains
       integer :: no_old, nv_old, no_new, nv_new, iter
       logical :: redocc, redvir, step_accepted, reduction_converged, occ_red_conv, vir_red_conv
       logical, pointer :: OccAOS_old(:), VirAOS_old(:)
-      real(realk) :: LagEnergy_exp, OccEnergy_exp, VirEnergy_exp
-      real(realk) :: LagEnergy_old, OccEnergy_old, VirEnergy_old
-      real(realk) :: LagEnergy_dif, OccEnergy_dif, VirEnergy_dif
+      type(EnergyFOP) :: Eexp, Eold, Edif
 
 
       ! INITIALIZATION:
@@ -3018,9 +3011,7 @@ contains
 
       no_exp = AtomicFragment%noccAOS
       nv_exp = AtomicFragment%nvirtAOS
-      LagEnergy_exp = AtomicFragment%LagFOP
-      OccEnergy_exp = AtomicFragment%EoccFOP
-      VirEnergy_exp = AtomicFragment%EvirtFOP
+      Eexp = EFOP
 
       ! Set boundaries of the list (min = EOS, max = Expanded fragment AOS)
       ! note: if frozen core then core orbitals are already excluded from those numbers
@@ -3034,10 +3025,7 @@ contains
       nv_old = nv_exp
       OccAOS_old = Occ_AOS
       VirAOS_old = Vir_AOS
-      LagEnergy_old = LagEnergy_exp
-      OccEnergy_old = OccEnergy_exp
-      VirEnergy_old = VirEnergy_exp
-
+      Eold = Eexp
 
       ! Define specific reduction parameters:
       ! -------------------------------------
@@ -3128,36 +3116,31 @@ contains
          ! Get new fragment energy:
          call fragment_energy_and_prop(AtomicFragment,add_mp2_opt=add_mp2_opt)
          ! Set energies used by fragment optimization
-         call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+         call get_occ_virt_lag_energies_fragopt(AtomicFragment,EFOP)
 
          ! Energy differences
-         LagEnergy_dif = abs(LagEnergy_exp - AtomicFragment%LagFOP)
-         OccEnergy_dif = abs(OccEnergy_exp - AtomicFragment%EoccFOP)
-         VirEnergy_dif = abs(VirEnergy_exp - AtomicFragment%EvirtFOP)
+         Edif%lag = abs(Eexp%lag - EFOP%lag)
+         Edif%occ = abs(Eexp%occ - EFOP%occ)
+         Edif%vir = abs(Eexp%vir - EFOP%vir)
 
          ! print reduced fragment information:
-         call fragopt_print_info(AtomicFragment,LagEnergy_dif,OccEnergy_dif,VirEnergy_dif,iter)
+         call fragopt_print_info(AtomicFragment,EFOP,Edif,iter)
 
 
          ! CHECK CONVERGENCES:
          ! *******************
          ! Check if reduction step is accepted (Energy criterion):
          if (redocc.and.(.not.redvir)) then
-            call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
-               & dE_occ,step_accepted)
+            call fragopt_check_convergence(Edif,dE_occ,step_accepted)
          else if (redvir.and.(.not.redocc)) then
-            call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
-               & dE_vir,step_accepted)
+            call fragopt_check_convergence(Edif,dE_vir,step_accepted)
          else if (redocc.and.redvir) then
-            call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
-               & FOT,step_accepted)
+            call fragopt_check_convergence(Edif,FOT,step_accepted)
          end if
 
          ! If the step is accepted we need to save the frag info:
          if (step_accepted) then
-            LagEnergy_old = AtomicFragment%LagFOP
-            OccEnergy_old = AtomicFragment%EoccFOP
-            VirEnergy_old = AtomicFragment%EvirtFOP
+            Eold = EFOP
             OccAOS_old = Occ_AOS
             VirAOS_old = Vir_AOS
          end if
@@ -3187,9 +3170,7 @@ contains
                call atomic_fragment_free(AtomicFragment)
                call atomic_fragment_init_orbital_specific(MyAtom,nv,no,VirAOS_old,OccAOS_old, &
                     & OccOrbitals,VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-               AtomicFragment%LagFOP   = LagEnergy_old
-               AtomicFragment%EoccFOP  = OccEnergy_old
-               AtomicFragment%EvirtFOP = VirEnergy_old
+               EFOP = Eold
                Occ_AOS = OccAOS_old
                Vir_AOS = VirAOS_old
             end if
@@ -3269,16 +3250,13 @@ contains
          write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
             & AtomicFragment%nbasis
          if(.not. DECinfo%onlyvirtpart) then
-            write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
-               & AtomicFragment%EoccFOP
+            write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :',EFOP%occ
          endif
          if(.not. DECinfo%onlyoccpart) then
-            write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
-               & AtomicFragment%EvirtFOP
+            write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :',EFOP%vir
          endif
          if(.NOT.(DECinfo%onlyoccpart.OR. DECinfo%onlyvirtpart))then
-            write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
-               & AtomicFragment%LagFOP
+            write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :',EFOP%lag
          end if
          write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Occupied reduction removed ', &
             & no_exp-AtomicFragment%noccAOS, ' of ', no_exp, ' orbitals ( ', &
@@ -4366,9 +4344,8 @@ contains
   !> below the FOT.
   !> \date September 2013
   !> \author Kasper Kristensen
-  subroutine fragopt_reduce_FOs(MyAtom,AtomicFragment, &
-       &OccOrbitals,nOcc,virtOrbitals,nvirt, &
-       &MyMolecule,mylsitem,t2tens,max_iter_red)
+  subroutine fragopt_reduce_FOs(MyAtom,AtomicFragment,EFOP,OccOrbitals,nOcc, &
+           & virtOrbitals,nvirt,MyMolecule,mylsitem,t2tens,max_iter_red)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
@@ -4378,6 +4355,8 @@ contains
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
     type(decfrag),intent(inout)        :: AtomicFragment
+    !> FOP energies
+    type(EnergyFOP), intent(inout) :: EFOP
     !> All occupied orbitals
     type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
     !> All virtupied orbitals
@@ -4393,8 +4372,8 @@ contains
     integer,intent(inout) :: max_iter_red
     integer :: ov,iter,Nold,Nnew,nocc_exp,nvirt_exp
     logical :: reduction_converged,ReductionPossible(2)
-    real(realk) :: FOT,LagEnergyOld,OccEnergyOld,VirtEnergyOld
-    real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
+    type(EnergyFOP) :: Eold, Edif
+    real(realk) :: FOT
     type(array4)  :: t2
     character(4) :: stens_atype
     integer :: os,vs
@@ -4403,9 +4382,7 @@ contains
     ! **********
     FOT = DECinfo%FOT
     ! Reference energies for converged fragment
-    LagEnergyOld = AtomicFragment%LagFOP
-    OccEnergyOld = AtomicFragment%EoccFOP
-    VirtEnergyOld = AtomicFragment%EvirtFOP
+    Eold = EFOP
     ! Dimensions for converged fragment
     nocc_exp = AtomicFragment%noccAOS
     nvirt_exp = AtomicFragment%nvirtAOS
@@ -4527,17 +4504,16 @@ contains
           ! ******************************************
           call fragment_energy_and_prop(AtomicFragment)
           ! Set energies used by fragment optimization
-          call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+          call get_occ_virt_lag_energies_fragopt(AtomicFragment,EFOP)
 
 
           ! Test if fragment energy (or energies) are converged to FOT precision
           ! ********************************************************************
-          LagEnergyDiff=abs(AtomicFragment%LagFOP-LagEnergyOld)
-          OccEnergyDiff=abs(AtomicFragment%EoccFOP-OccEnergyOld)
-          VirtEnergyDiff=abs(AtomicFragment%EvirtFOP-VirtEnergyOld)
-          call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
-          call fragopt_check_convergence(LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,&
-               &FOT,reduction_converged)
+          Edif%lag = abs(EFOP%lag - Eold%lag)
+          Edif%occ = abs(EFOP%occ - Eold%occ)
+          Edif%vir = abs(EFOP%vir - Eold%vir)
+          call fragopt_print_info(AtomicFragment,EFOP,Edif,iter)
+          call fragopt_check_convergence(Edif,FOT,reduction_converged)
 
 
           ! Quit if fragment reduction is converged
@@ -4587,16 +4563,13 @@ contains
     write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
          & AtomicFragment%nbasis
     if(.not. DECinfo%onlyvirtpart) then
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
-            & AtomicFragment%EoccFOP
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :',EFOP%occ
     endif
     if(.not. DECinfo%onlyoccpart) then
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
-            & AtomicFragment%EvirtFOP
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :',EFOP%vir
     endif
     if(.NOT.(DECinfo%onlyoccpart.OR. DECinfo%onlyvirtpart))then
-       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
-            & AtomicFragment%LagFOP
+       write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :',EFOP%lag
     end if
     write(DECinfo%output,'(1X,a,g14.2)')  'FOP Done: Occupied reduction threshold     :', &
          & AtomicFragment%RejectThr(1)
@@ -5367,20 +5340,16 @@ contains
   !> \brief Check if fragment energy (or energies) is converged to FOT precision
   !> \author Kasper Kristensen
   !> \date September 2013
-  subroutine fragopt_check_convergence(LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,FOT,converged)
+  subroutine fragopt_check_convergence(Edif,FOT,converged)
     implicit none
     !> ABSOLUTE Energy differences for Lagrangian, occupied, and virtual partitioning schemes
     !> (difference between current and previous iteration)
-    real(realk),intent(in) :: LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff
+    type(EnergyFOP), intent(in) :: Edif
     !> Fragment optimization threshold
     real(realk),intent(in) :: FOT
     !> Is fragment energy (or energies) converged?
     logical,intent(inout) :: converged
     logical :: lag_converged, occ_converged, virt_converged
-
-    ! Default: Test convergence for both Lagrangian, occupied, and virtual energies
-    ! If DECinfo%onlyoccpart: Only test for energy using occupied partitioning scheme
-    ! If DECinfo%onlyvirtpart: Only test for energy using virtual partitioning scheme
 
 
     ! Lagrangian
@@ -5393,10 +5362,10 @@ contains
        ! --> just set Lagrangian to be converged always
        lag_converged=.true.
     else
-       if  (LagEnergyDiff < FOT) then
+       if  (Edif%lag < FOT) then
           if( DECinfo%print_small_calc )then
              write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Lagrangian energy converged, energydiff =', &
-                & LagEnergyDiff
+                & Edif%lag
           endif
           lag_converged=.true.
        else
@@ -5411,9 +5380,9 @@ contains
     TEST_CONVERGENCE_OCC: if(DECinfo%OnlyVirtPart) then
        occ_converged=.true.
     else
-       if  (OccEnergyDiff < FOT) then
+       if  (Edif%occ < FOT) then
           if( DECinfo%print_small_calc )then
-             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Occupied energy converged, energydiff   =', OccEnergyDiff
+             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Occupied energy converged, energydiff   =', Edif%occ
           endif
           occ_converged=.true.
        else
@@ -5428,9 +5397,9 @@ contains
     TEST_CONVERGENCE_VIRT: if(DECinfo%OnlyOccPart) then
        virt_converged=.true.
     else
-       if  (VirtEnergyDiff < FOT) then
+       if  (Edif%vir < FOT) then
           if( DECinfo%print_small_calc )then
-             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Virtual energy converged, energydiff    =', VirtEnergyDiff
+             write(DECinfo%output,'(1X,a,F14.9)') 'FOP: Virtual energy converged, energydiff    =', Edif%vir
           endif
           virt_converged=.true.
        else
@@ -5529,16 +5498,12 @@ contains
   !> using the Lagrangian partitioning scheme.
   !> \date: august-2011
   !> \author: Ida-Marie Hoeyvik
-  subroutine fragopt_print_info(Fragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+  subroutine fragopt_print_info(Fragment,EFOP,Edif,iter)
     implicit none
     !> Atomic fragment
     type(decfrag),intent(inout) :: Fragment
-    !> Lagrangian energy difference since last loop in fragment optimization
-    real(realk),intent(in) :: LagEnergyDiff
-    !> Occupied energy difference since last loop in fragment optimization
-    real(realk),intent(in) :: VirtEnergyDiff
-    !> Virtual energy difference since last loop in fragment optimization
-    real(realk),intent(in) :: OccEnergyDiff
+    !> FOP energies and differences
+    type(EnergyFOP), intent(in) :: EFOP, Edif
     !> Iteration number
     integer,intent(in) :: iter
 
@@ -5556,30 +5521,24 @@ contains
        write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of basis functions        :', &
           & Fragment%nbasis
        if(.not. DECinfo%OnlyVirtPart) then
-          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :', &
-             & Fragment%EoccFOP
+          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :',EFOP%occ
        endif
        if(.not. DECinfo%OnlyOccPart) then
-          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual Fragment energy          :', &
-             & Fragment%EvirtFOP
+          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual Fragment energy          :',EFOP%vir
        endif
        if(.not. (DECinfo%OnlyOccPart.or.DECinfo%OnlyVirtPart)) then
-          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian Fragment energy       :', &
-             & Fragment%LagFOP
+          write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian Fragment energy       :',EFOP%lag
        end if
 
        PrintDiff: if(iter/=0) then ! no point in printing energy differences for initial energy
           if(.not. DECinfo%OnlyVirtPart) then
-             write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied energy diff             :', &
-                & OccEnergyDiff
+             write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied energy diff             :',Edif%occ
           endif
           if(.not. DECinfo%OnlyOccPart) then
-             write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual energy diff              :', &
-                & VirtEnergyDiff
+             write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual energy diff              :',Edif%vir
           endif
           if(.not. (DECinfo%OnlyOccPart.or.DECinfo%OnlyVirtPart)) then
-             write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian energy diff           :', &
-                & LagEnergyDiff
+             write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian energy diff           :',Edif%lag
           end if
        end if PrintDiff
 
@@ -5922,107 +5881,91 @@ contains
 
   !> \brief For a given model, get the occupied, virtual and Lagragian fragment energies
   !> to use for fragment optimization, i.e. simply copy the relevant energies from
-  !> "fragment%energies" to fragment%EoccFOP, fragment%EvirtFOP, and fragment%LagFOP.
-  !> (See description of EoccFOP, EvirtFOP, and LagFOP in decfrag type definition).
+  !> "fragment%energies" to EFOP%lag, EFOP%occ and EFOP%vir
   !> \author Kasper Kristensen
   !> \date March 2013
-  subroutine get_occ_virt_lag_energies_fragopt(Fragment)
+  subroutine get_occ_virt_lag_energies_fragopt(Fragment,EFOP,ccmodel)
     implicit none
-    type(decfrag),intent(inout) :: fragment
+    type(decfrag), intent(inout) :: fragment
+    type(EnergyFOP), intent(inout) :: EFOP 
+    integer, intent(in), optional :: ccmodel
+    integer :: model
     ! MODIFY FOR NEW MODEL
     ! If you implement a new model, please copy fragment%energies(?) for your model,
     ! see decfrag type def to determine the "?".
 
-    fragment%EoccFOP = 0.0_realk
-    fragment%EoccFOP_Corr = 0.0_realk
-    fragment%EvirtFOP = 0.0_realk
-    fragment%LagFOP = 0.0_realk
+    EFOP%occ = 0.0_realk
+    EFOP%vir = 0.0_realk
+    EFOP%lag = 0.0_realk
 
-    select case(fragment%ccmodel)
+    model = fragment%ccmodel
+    if (present(ccmodel)) model = ccmodel
+
+    select case(model)
     case(MODEL_MP2)
        ! MP2
-       fragment%LagFOP = fragment%energies(FRAGMODEL_LAGMP2)
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCMP2)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTMP2)
-
-#ifdef MOD_UNRELEASED         
-       if(Decinfo%F12) then
-          ! MP2-F12: F12-correction
-          ! fragment%EoccFOP_Corr = fragment%energies(FRAGMODEL_MP2f12)      
-       endif
-#endif
-
+       EFOP%lag = fragment%energies(FRAGMODEL_LAGMP2)
+       EFOP%occ = fragment%energies(FRAGMODEL_OCCMP2)
+       EFOP%vir = fragment%energies(FRAGMODEL_VIRTMP2)
     case(MODEL_CC2)
        ! CC2
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCC2)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCC2)
+       EFOP%occ = fragment%energies(FRAGMODEL_OCCCC2)
+       EFOP%vir = fragment%energies(FRAGMODEL_VIRTCC2)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
-       fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
+       EFOP%lag =  0.5_realk*(EFOP%occ+EFOP%vir)   
     case(MODEL_RPA)
        ! RPA
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRPA)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRPA)
-       !print *,"JOHANNES: CURRENTLY LAGRANGIAN ENERGY IS NOT CONSIDERED; PLEASE IMPLEMENT"
+       EFOP%occ = fragment%energies(FRAGMODEL_OCCRPA)
+       EFOP%vir = fragment%energies(FRAGMODEL_VIRTRPA)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
-       fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
-       !fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRPA)
+       EFOP%lag =  0.5_realk*(EFOP%occ+EFOP%vir)   
     case(MODEL_SOSEX)
        ! RPA
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCSOS)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTSOS)
+       EFOP%occ = fragment%energies(FRAGMODEL_OCCSOS)
+       EFOP%vir = fragment%energies(FRAGMODEL_VIRTSOS)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
-       fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)   
+       EFOP%lag =  0.5_realk*(EFOP%occ+EFOP%vir)   
     case(MODEL_CCSD)
        ! CCSD
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCCSD)
+       EFOP%occ = fragment%energies(FRAGMODEL_OCCCCSD)
+       EFOP%vir = fragment%energies(FRAGMODEL_VIRTCCSD)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
-       fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
-
-#ifdef MOD_UNRELEASED         
-       if(Decinfo%F12) then
-          ! CCSD-F12: F12-correction
-          fragment%EoccFOP_Corr = fragment%energies(FRAGMODEL_CCSDf12)      
-       endif
-#endif
-
+       EFOP%lag =  0.5_realk*(EFOP%occ+EFOP%vir)
 #ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
        ! CCSD(T): CCSD contribution + (T) contribution
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCCCSD) + fragment%energies(FRAGMODEL_OCCpT)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTCCSD) + fragment%energies(FRAGMODEL_VIRTpT)
+       EFOP%occ = fragment%energies(FRAGMODEL_OCCCCSD) + fragment%energies(FRAGMODEL_OCCpT)
+       EFOP%vir = fragment%energies(FRAGMODEL_VIRTCCSD) + fragment%energies(FRAGMODEL_VIRTpT)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
-       fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
-       !endif mod_unreleased
+       EFOP%lag =  0.5_realk*(EFOP%occ+EFOP%vir)
 #endif
     case(MODEL_RIMP2)
        ! RI-MP2
-       fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRIMP2)
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRIMP2)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRIMP2)
+       EFOP%lag = fragment%energies(FRAGMODEL_LAGRIMP2)
+       EFOP%occ = fragment%energies(FRAGMODEL_OCCRIMP2)
+       EFOP%vir = fragment%energies(FRAGMODEL_VIRTRIMP2)
     case(MODEL_LSTHCRIMP2)
        ! LS-THC-RI-MP2
-       fragment%LagFOP = fragment%energies(FRAGMODEL_LAGLSTHCRIMP2)
-       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCLSTHCRIMP2)
-       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTLSTHCRIMP2)
+       EFOP%lag = fragment%energies(FRAGMODEL_LAGLSTHCRIMP2)
+       EFOP%occ = fragment%energies(FRAGMODEL_OCCLSTHCRIMP2)
+       EFOP%vir = fragment%energies(FRAGMODEL_VIRTLSTHCRIMP2)
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
-            & for model:', fragment%ccmodel
+            & for model:', ccmodel
     end select
 
   end subroutine get_occ_virt_lag_energies_fragopt
 
 
   !> \brief After the fragment optimization, make sure that the energies stored
-  !> in fragment%LagFOP, fragment%EoccFOP, and fragment%EvirtFOP are copied correctly 
-  !> to the general fragment%energies arrays.
+  !> in EFOP are copied correctly to the general fragment%energies arrays.
   !> This is effectively the inverse routine of get_occ_virt_lag_energies_fragopt.
-  !> (See description of energies, EoccFOP, EvirtFOP, and LagFOP in decfrag type definition).
   !> \author Kasper Kristensen
   !> \date March 2013
-  subroutine set_energies_decfrag_structure_fragopt(Fragment)
+  subroutine set_energies_decfrag_structure_fragopt(Fragment,EFOP)
     implicit none
     type(decfrag),intent(inout) :: fragment
+    type(EnergyFOP), intent(in) :: EFOP
     ! MODIFY FOR NEW MODEL 
     ! If you implement a new model, please set fragment%energies(?) for your model,
     ! see FRAGMODEL_* definitions in dec_typedef.F90 to determine the "?".
@@ -6030,58 +5973,41 @@ contains
     select case(fragment%ccmodel)
     case(MODEL_MP2)
        ! MP2
-       fragment%energies(FRAGMODEL_LAGMP2) = fragment%LagFOP 
-       fragment%energies(FRAGMODEL_OCCMP2) = fragment%EoccFOP
-       fragment%energies(FRAGMODEL_VIRTMP2) = fragment%EvirtFOP 
-
-#ifdef MOD_UNRELEASED 
-       if(DECinfo%F12) then
-          ! F12: F12-correction or the Single Fragments
-          fragment%energies(FRAGMODEL_MP2f12) = fragment%EoccFOP_Corr
-       endif
-#endif
-
+       fragment%energies(FRAGMODEL_LAGMP2)  = EFOP%lag 
+       fragment%energies(FRAGMODEL_OCCMP2)  = EFOP%occ
+       fragment%energies(FRAGMODEL_VIRTMP2) = EFOP%vir 
     case(MODEL_CC2)
        ! CC2
-       fragment%energies(FRAGMODEL_OCCCC2) = fragment%EoccFOP
-       fragment%energies(FRAGMODEL_VIRTCC2) = fragment%EvirtFOP
+       fragment%energies(FRAGMODEL_OCCCC2)  = EFOP%occ
+       fragment%energies(FRAGMODEL_VIRTCC2) = EFOP%vir
     case(MODEL_RPA)
        ! RPA
-       fragment%energies(FRAGMODEL_OCCRPA) = fragment%EoccFOP
-       fragment%energies(FRAGMODEL_VIRTRPA) = fragment%EvirtFOP
+       fragment%energies(FRAGMODEL_OCCRPA)  = EFOP%occ
+       fragment%energies(FRAGMODEL_VIRTRPA) = EFOP%vir
     case(MODEL_SOSEX)
        ! SOSEX
-       fragment%energies(FRAGMODEL_OCCSOS) = fragment%EoccFOP
-       fragment%energies(FRAGMODEL_VIRTSOS) = fragment%EvirtFOP
+       fragment%energies(FRAGMODEL_OCCSOS)  = EFOP%occ
+       fragment%energies(FRAGMODEL_VIRTSOS) = EFOP%vir
     case(MODEL_CCSD)
        ! CCSD
-       fragment%energies(FRAGMODEL_OCCCCSD) = fragment%EoccFOP 
-       fragment%energies(FRAGMODEL_VIRTCCSD) = fragment%EvirtFOP
-
-#ifdef MOD_UNRELEASED 
-       if(DECinfo%F12) then
-          ! F12: F12-correction or the Single Fragments
-          fragment%energies(FRAGMODEL_CCSDf12) = fragment%EoccFOP_Corr
-       endif
-#endif
-
+       fragment%energies(FRAGMODEL_OCCCCSD)  = EFOP%occ 
+       fragment%energies(FRAGMODEL_VIRTCCSD) = EFOP%vir
 #ifdef MOD_UNRELEASED 
     case(MODEL_CCSDpT)
        ! (T) contribution =  CCSD(T) contribution minus CCSD contribution
-       fragment%energies(FRAGMODEL_OCCpT) = fragment%EoccFOP - fragment%energies(FRAGMODEL_OCCCCSD)
-       fragment%energies(FRAGMODEL_VIRTpT) = fragment%EvirtFOP - fragment%energies(FRAGMODEL_VIRTCCSD)
-!endif mod_unreleased
+       fragment%energies(FRAGMODEL_OCCpT)  = EFOP%occ - fragment%energies(FRAGMODEL_OCCCCSD)
+       fragment%energies(FRAGMODEL_VIRTpT) = EFOP%vir - fragment%energies(FRAGMODEL_VIRTCCSD)
 #endif
     case(MODEL_RIMP2)
        ! RI-MP2
-       fragment%energies(FRAGMODEL_LAGRIMP2) = fragment%LagFOP 
-       fragment%energies(FRAGMODEL_OCCRIMP2) = fragment%EoccFOP
-       fragment%energies(FRAGMODEL_VIRTRIMP2) = fragment%EvirtFOP 
+       fragment%energies(FRAGMODEL_LAGRIMP2)  = EFOP%lag 
+       fragment%energies(FRAGMODEL_OCCRIMP2)  = EFOP%occ
+       fragment%energies(FRAGMODEL_VIRTRIMP2) = EFOP%vir 
     case(MODEL_LSTHCRIMP2)
        ! LS-THC-RI-MP2
-       fragment%energies(FRAGMODEL_LAGLSTHCRIMP2) = fragment%LagFOP 
-       fragment%energies(FRAGMODEL_OCCLSTHCRIMP2) = fragment%EoccFOP
-       fragment%energies(FRAGMODEL_VIRTLSTHCRIMP2) = fragment%EvirtFOP 
+       fragment%energies(FRAGMODEL_LAGLSTHCRIMP2)  = EFOP%lag 
+       fragment%energies(FRAGMODEL_OCCLSTHCRIMP2)  = EFOP%occ
+       fragment%energies(FRAGMODEL_VIRTLSTHCRIMP2) = EFOP%vir 
 
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &

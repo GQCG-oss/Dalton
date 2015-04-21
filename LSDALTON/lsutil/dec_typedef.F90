@@ -835,20 +835,6 @@ module dec_typedef_module
      !         at the top of this file if you add new models!!!
      real(realk),dimension(ndecenergies) :: energies
 
-
-     !> The energy definitions below are only used for fragment optimization (FOP)
-     !> These are (in general) identical to the corresponding energies saved in "energies".
-     !> However, for fragment optimization it is very convenient to have direct access to the energies
-     !> without thinking about which CC model we are using...
-     !> Energy using occupied partitioning scheme
-     real(realk) :: EoccFOP
-     !> Energy using occupied partitioning scheme with the F12 Correction
-     real(realk) :: EoccFOP_Corr
-     !> Energy using virtual partitioning scheme
-     real(realk) :: EvirtFOP
-     !> Lagrangian energy 
-     !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
-     real(realk) :: LagFOP
      !> energy error estimates
      real(realk) :: Eocc_err
      real(realk) :: Evir_err
@@ -1026,8 +1012,6 @@ module dec_typedef_module
      integer,pointer :: nvirtLOC
 
 
-
-
      !> Information used only for the CC2 and CCSD models to describe
      !> long-range effects described by singles amplitudes properly.
      !> *************************************************************
@@ -1061,6 +1045,21 @@ module dec_typedef_module
 
 
   end type decfrag
+
+
+  !> The energy definitions below are only used for fragment optimization (FOP)
+  !> These are (in general) identical to the corresponding energies saved in "energies".
+  !> However, for fragment optimization it is very convenient to have direct access to the energies
+  !> without thinking about which CC model we are using...
+  type EnergyFOP
+     !> Energy using occupied partitioning scheme
+     real(realk) :: occ
+     !> Energy using virtual partitioning scheme
+     real(realk) :: vir
+     !> Lagrangian energy 
+     !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
+     real(realk) :: lag
+  end type EnergyFOP
 
 
   !> MP2 gradient matrices for full molecule.

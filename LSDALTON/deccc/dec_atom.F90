@@ -407,9 +407,6 @@ contains
     fragment%OccContribs  = 0.0E0_realk
     fragment%VirtContribs = 0.0E0_realk
     fragment%energies     = 0.0E0_realk
-    fragment%EoccFOP      = 0.0E0_realk
-    fragment%EvirtFOP     = 0.0E0_realk
-    fragment%LagFOP       = 0.0E0_realk
     fragment%Eocc_err     = 0.0E0_realk
     fragment%Evir_err     = 0.0E0_realk
     fragment%Elag_err     = 0.0E0_realk
