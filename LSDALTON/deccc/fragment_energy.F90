@@ -1137,9 +1137,9 @@ contains
                 Eocc = Eocc + tmp
 
                 ! Update contribution from orbital a
-                virt_tmp(a) = virt_tmp(a) + abs(tmp)
+                virt_tmp(a) = virt_tmp(a) + tmp
                 ! Update contribution from orbital b (only if different from a to avoid double counting)
-                if(a/=b) virt_tmp(b) = virt_tmp(b) + abs(tmp)
+                if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
 
 
                 ! Contribution 2
@@ -1160,11 +1160,11 @@ contains
                       lag_occ = lag_occ + tmp
 
                       ! Update contribution from orbital a
-                      virt_tmp(a) = virt_tmp(a) + abs(tmp)
+                      virt_tmp(a) = virt_tmp(a) + tmp
                       ! Update contribution from orbital b (only if different from a to avoid double counting)
-                      if(a/=b) virt_tmp(b) = virt_tmp(b) + abs(tmp)
+                      if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
                       ! Update contribution from orbital c (only if different from a and b)
-                      if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + abs(tmp)
+                      if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + tmp
 
                    end do
 
@@ -1180,7 +1180,7 @@ contains
     ! Update total virtual contributions to fragment energy
     !$OMP CRITICAL
     do a=1,nvirtAOS
-       MyFragment%VirtContribs(a) = max(MyFragment%VirtContribs(a), virt_tmp(a))
+       MyFragment%VirtContribs(a) = MyFragment%VirtContribs(a) + virt_tmp(a)
     end do
     !$OMP END CRITICAL
 
@@ -1228,9 +1228,9 @@ contains
                 Evirt = Evirt + tmp
 
                 ! Update contribution from orbital i
-                occ_tmp(i) = occ_tmp(i) + abs(tmp)
+                occ_tmp(i) = occ_tmp(i) + tmp
                 ! Update contribution from orbital j (only if different from i to avoid double counting)
-                if(i/=j) occ_tmp(j) = occ_tmp(j) + abs(tmp)
+                if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
 
                 ! Contribution 4
                 ! --------------
@@ -1247,11 +1247,11 @@ contains
                       lag_virt = lag_virt + tmp
 
                       ! Update contribution from orbital i
-                      occ_tmp(i) = occ_tmp(i) + abs(tmp)
+                      occ_tmp(i) = occ_tmp(i) + tmp
                       ! Update contribution from orbital j (only if different from i to avoid double counting)
-                      if(i/=j) occ_tmp(j) = occ_tmp(j) + abs(tmp)
+                      if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
                       ! Update contribution from orbital k (only if different from i and j)
-                      if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + abs(tmp)
+                      if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + tmp
 
                    end do
 
@@ -1266,7 +1266,7 @@ contains
     !$OMP CRITICAL
     ! Update total occupied contributions to fragment energy
     do i=1,noccAOS
-       MyFragment%OccContribs(i) = max(MyFragment%OccContribs(i), occ_tmp(i))
+       MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
     end do
     !$OMP END CRITICAL
 

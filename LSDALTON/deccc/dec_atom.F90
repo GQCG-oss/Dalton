@@ -1173,7 +1173,7 @@ contains
       if (DECinfo%Frag_RedOcc_Scheme == 1) then
          ! The priority list for scheme one is based on energy contribution:
          ! Get contribution from local occupied orbitals:
-         print *, "Occupied priority list", MyAtom
+         !print *, "Occupied priority list", MyAtom
          call mem_alloc(occ_priority_list,no_full)
          call get_energy_priority_list(MyFragment,no_full,.true., &
             & track_occ_priority_list,occ_priority_list)
@@ -1219,7 +1219,7 @@ contains
       ! SCHEME 1:
       if (DECinfo%Frag_RedVir_Scheme == 1) then
          ! Get contribution from local virtual orbitals:
-         print *, "Virtual priority list", MyAtom
+         !print *, "Virtual priority list", MyAtom
          call mem_alloc(vir_priority_list,nv_full)
          call get_energy_priority_list(MyFragment,nv_full,.false., &
             & track_vir_priority_list,vir_priority_list)
@@ -1476,9 +1476,9 @@ contains
         track_priority_list(i) = i
       end do
       call real_inv_sort_with_tracking(priority_list,track_priority_list,Nfull)
-      do i=1,Nfull
-         print *, track_priority_list(i), priority_list(i)
-      end do
+      !do i=1,Nfull
+      !   print *, track_priority_list(i), priority_list(i)
+      !end do
 
    end subroutine get_energy_priority_list
  
