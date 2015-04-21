@@ -456,8 +456,6 @@ module dec_typedef_module
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
-     !> Temporary keyword to use clean version of the frag opt
-     logical :: no_orb_based_fragopt
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Only consider virtual partitioning

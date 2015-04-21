@@ -2483,484 +2483,481 @@ contains
 !!$
 !!$     stop 'KK/Wangy HACK'
 
-     if (.not.DECinfo%no_orb_based_fragopt) then
-       call optimize_atomic_fragment_CLEAN(MyAtom,AtomicFragment,nAtoms, &
-            & OccOrbitals,nOcc,virtOrbitals,nvirt,&
-            & MyMolecule,mylsitem,freebasisinfo)
-       return
-     end if
-
-     !Number of core occupied orbitals in molecule
-     ncore = MyMolecule%ncore
-     times_fragopt => null()
-     call dec_fragment_time_init(times_fragopt)
-     
-     write(DECinfo%output,'(a)')    ' FOP'
-     write(DECinfo%output,'(a)')    ' FOP ==============================================='
-     write(DECinfo%output,'(a,i4)') ' FOP  Site fragment generator for fragment,',MyAtom
-     write(DECinfo%output,'(a)')    ' FOP ==============================================='
-     write(DECinfo%output,'(a)')    ' FOP'
-
-     BinarySearch       = .FALSE. !Use Binary Search in Reduction Scheme
-     SeperateExpansion  = .FALSE. !Expansion for Occ and Virt is done seperately 
-     OrbDistanceSpec    = .FALSE. !Orbital Specific expansion
-     DistanceRemoval    = .FALSE. !Use Distance to remove orbitals when no Energy Contribs 
-     TestOcc            = .FALSE. !converge Occ first 
-     BruteForce         = .FALSE. !BruteForce 
-     FockMatrixOrdering = .FALSE. !Fock BruteForce 
-     write(DECinfo%output,'(a)') ' FOP  Fragment optimization scheme '
-     IF(DECinfo%Frag_Exp_Scheme.EQ.1)THEN
-        write(DECinfo%output,'(a)') ' FOP  Standard Fragment optimization scheme is used'
-     ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.2)THEN
-        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
-        BinarySearch = .TRUE.
-     ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.3)THEN
-        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
-        write(DECinfo%output,'(a)') ' FOP Expansion for Occ and Virt is done seperately'        
-        BinarySearch = .TRUE.
-        SeperateExpansion = .TRUE.        
-     ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.4)THEN
-        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
-        write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
-        BinarySearch = .TRUE.
-        OrbDistanceSpec = .TRUE. 
-     ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.5)THEN
-        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
-        write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
-        IF(DECInfo%OnlyOccPart)THEN
-           write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Virtual Orbitals in Reduction Scheme'
-           write(DECinfo%output,'(a)') ' Distance is used to remove Occupied Orbitals in  Reduction Scheme'        
-           DistanceRemoval = .TRUE. 
-        ELSEIF(DECInfo%OnlyVirtPart)THEN
-           write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Occupied Orbitals in Reduction Scheme'
-           write(DECinfo%output,'(a)') ' Distance is used to remove Virtual Orbitals in  Reduction Scheme'        
-           DistanceRemoval = .TRUE. 
-        ELSE
-           write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
-           write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
-        ENDIF
-        BinarySearch = .TRUE.
-        OrbDistanceSpec = .TRUE. 
-     ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.6)THEN
-        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
-        write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
-        IF(DECInfo%OnlyOccPart)THEN
-           write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Virtual Orbitals in Reduction Scheme'
-           write(DECinfo%output,'(a)') ' Distance is used to remove Occupied Orbitals in  Reduction Scheme'        
-           DistanceRemoval = .TRUE. 
-        ELSEIF(DECInfo%OnlyVirtPart)THEN
-           write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Occupied Orbitals in Reduction Scheme'
-           write(DECinfo%output,'(a)') ' Distance is used to remove Virtual Orbitals in  Reduction Scheme'        
-           DistanceRemoval = .TRUE. 
-        ELSE
-           write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
-           write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
-        ENDIF
-        write(DECinfo%output,'(a)') ' This scheme is identical to Scheme = 5 but first converges the Occ - then Virt'
-        BinarySearch = .TRUE.
-        OrbDistanceSpec = .TRUE. 
-        TestOcc = .TRUE.
-     ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.7)THEN
-        write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '
-        IF(DECInfo%OnlyOccPart)THEN
-           write(DECinfo%output,'(a)') ' FOP Brute Force Energy Contribution is used to Remove Occupied Orbitals'
-        ELSEIF(DECInfo%OnlyVirtPart)THEN
-           write(DECinfo%output,'(a)') ' FOP Brute Force Energy Contribution is used to Remove Virtual Orbitals'
-        ELSE
-!           write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
-!           write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
-        ENDIF
-        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
-        BinarySearch = .TRUE.
-        OrbDistanceSpec = .TRUE. 
-        BruteForce = .TRUE.
-     ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.8)THEN
-        write(DECinfo%output,'(a)') ' FOP Orbital Fock Matrix Ordering specific expansion is used in Fragment expansion scheme '
-        IF(DECInfo%OnlyOccPart)THEN
-           write(DECinfo%output,'(a)') ' FOP Fock Matrix Ordering is used to Remove Occupied Orbitals'
-        ELSEIF(DECInfo%OnlyVirtPart)THEN
-           write(DECinfo%output,'(a)') ' FOP Fock Matrix Ordering is used to Remove Virtual Orbitals'
-        ELSE
- !          write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
- !          write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
-        ENDIF
-        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
-        BinarySearch = .TRUE.
-        OrbDistanceSpec = .TRUE. 
-        FockMatrixOrdering = .TRUE.
-        call mem_alloc(OrbOccFockTrackMyAtom,nocc)
-        call mem_alloc(OrbVirtFockTrackMyAtom,nvirt)
-        call GetSortedFockMaxElements(FmaxOcc,FmaxVirt,nocc,nvirt,MyMolecule,ncore,OccOrbitals,&
-             & virtOrbitals,MyAtom,OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom)
-     ELSE
-        call lsquit('Frag_Opt_Scheme unknown',-1)
-     ENDIF
-
-     ! Sanity check for singles polarization
-     if(DECinfo%SinglesPolari) then
-        if(.not. present(t1full)) then
-           call lsquit('optimize_atomic_fragment: Full singles polarization is requrested &
-              & but t1 argument is not present!',DECinfo%output)
-        end if
-     end if
-
-
-     ! ======================================================================
-     !                    Initialization of various things...
-     ! ======================================================================
-
-     iter=0
-     LagEnergyDiff  = 0.0_realk
-     OccEnergyDiff  = 0.0_realk
-     VirtEnergyDiff = 0.0_realk
-     expansion_converged=.false.
-     max_iter_red=15   ! set to 100 for binary search where more steps might be needed
-     if (BinarySearch) max_iter_red=100
-
-     FOT = DECinfo%FOT
-     DistMyAtom = mymolecule%DistanceTable(:,MyAtom)   ! distance vector for central atom
-     ! Sort atoms according to distance from central atom
-     call GetSortedList(SortedDistMyAtom,DistTrackMyAtom,mymolecule%DistanceTable,natoms,natoms,MyAtom)
-
-     nocc_per_atom   = get_number_of_orbitals_per_atom( OccOrbitals,   nocc,   natoms, .true.)
-     nvirt_per_atom = get_number_of_orbitals_per_atom( virtOrbitals, nvirt, natoms, .true.)
-
-     ! Only do fragment optimization if there are orbitals assigned to central atom.
-     if( (nocc_per_atom(MyAtom) == 0) .and. (nvirt_per_atom(MyAtom) == 0) ) then
-        write(DECinfo%output,*) 'FOP Skipping optimization of fragment ', MyAtom
-        AtomicFragment%LagFOP   = 0E0_realk
-        AtomicFragment%EoccFOP  = 0E0_realk
-        AtomicFragment%EvirtFOP = 0E0_realk
-        AtomicFragment%Elag_err = 0E0_realk
-        AtomicFragment%Eocc_err = 0E0_realk
-        AtomicFragment%Evir_err = 0E0_realk
-        AtomicFragment%energies = 0E0_realk
-        AtomicFragment%ccmodel = DECinfo%ccmodel
-        call dec_fragment_time_get(times_fragopt)
-        call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
-           &AtomicFragment%ccmodel,'Fragment optmization')
-        return
-     end if
-
-     ! Debug case: Full molecule included in fragment
-     ! --> we then skip energy calculation here and just init fragment
-     if(DECinfo%InclFullMolecule .or.  DECinfo%simulate_full.or.DECinfo%all_init_radius>0.0E0_realk) then
-        call fragopt_include_fullmolecule(MyAtom,AtomicFragment, &
-           &OccOrbitals,nOcc,virtOrbitals,nvirt, &
-           &MyMolecule,mylsitem,freebasisinfo,t1full)
-        call dec_fragment_time_get(times_fragopt)
-        call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
-           &AtomicFragment%ccmodel,'Fragment optmization')
-        return
-     end if
-
-     IF(OrbDistanceSpec)THEN
-        ! Occupied
-        call mem_alloc(SortedDistanceTableOrbAtomOcc,nocc)
-        call mem_alloc(OrbOccDistTrackMyAtom,nocc)
-        call mem_alloc(DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms)
-        call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
-             & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistanceTableOrbAtomOcc)
-        call GetSortedList(SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
-             & DistanceTableOrbAtomOcc,nocc,natoms,MyAtom)
-        call mem_dealloc(DistanceTableOrbAtomOcc)
-
-        ! Virtual
-        call mem_alloc(SortedDistanceTableOrbAtomVirt,nvirt)
-        call mem_alloc(OrbVirtDistTrackMyAtom,nvirt)
-        call mem_alloc(DistanceTableOrbAtomVirt,MyMolecule%nvirt,MyMolecule%natoms)
-        call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
-             & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
-        call GetSortedList(SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
-             & DistanceTableOrbAtomVirt,nvirt,natoms,MyAtom)
-        call mem_dealloc(DistanceTableOrbAtomVirt)
-     ENDIF
-
-     ! Do fragment expansion at different level than target model?
-     if(DECinfo%fragopt_exp_model /= DECinfo%ccmodel) then
-        MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_exp_model
-     end if
-
-     ! ======================================================================
-     !                            Initial fragment
-     ! ======================================================================
-     ! Start fragment optimization by calculating initial fragment 
-     IF(DECinfo%onlyoccpart) then
-        !All Occupied orbitals assigned to atoms within 1.0 Angstrom of central atom are included
-        init_Occradius = 1.0_realk/bohr_to_angstrom
-     ELSE
-        !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        IF(FOT.GT.2.0E-5_realk)THEN 
-           init_Occradius = 3.0_realk/bohr_to_angstrom
-        ELSE
-           init_Occradius = 3.0_realk/bohr_to_angstrom
-        ENDIF
-     ENDIF
-     IF(DECinfo%onlyvirtpart) then
-        !All Virtual orbitals assigned to atoms within 1.0 Angstrom of central atom are included
-        init_Virtradius = 1.0_realk/bohr_to_angstrom
-     ELSE
-        !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        IF(FOT.GT.2.0E-5_realk)THEN 
-           init_Virtradius = 3.0_realk/bohr_to_angstrom
-        ELSE
-           init_Virtradius = 3.0_realk/bohr_to_angstrom
-        ENDIF
-     ENDIF
-
-     IF(FockMatrixOrdering)THEN
-        call mem_alloc(OccAOS,nocc)
-        call mem_alloc(VirtAOS,nvirt)
-        call mem_alloc(OldOccAOS,nocc)
-        call mem_alloc(OldVirtAOS,nvirt)
-        call InitialFragmentFockSpec(natoms,nocc,nvirt,&
-             & FmaxOcc,OrbOccFockTrackMyAtom,&
-             & FmaxVirt,OrbVirtFockTrackMyAtom,&
-             & OccAOS,VirtAOS,OccOrbitals,virtOrbitals,MyAtom)
-        call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS, &
-             & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-        call fragment_energy_and_prop(AtomicFragment)
-     ELSEIF(OrbDistanceSpec)THEN
-        call mem_alloc(OccAOS,nocc)
-        call mem_alloc(VirtAOS,nvirt)
-        call mem_alloc(OldOccAOS,nocc)
-        call mem_alloc(OldVirtAOS,nvirt)
-        call InitialFragmentOrbitalSpec(natoms,nocc,nvirt,&
-             & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
-             & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
-             & init_Occradius,init_Virtradius,OccAOS,VirtAOS,&
-             & OccOrbitals,virtOrbitals,MyAtom)
-        call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS, &
-             & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-        call fragment_energy_and_prop(AtomicFragment)
-     ELSE
-        call InitialFragment(natoms,nocc_per_atom,nvirt_per_atom,DistMyatom,&
-             & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
-        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-             & MyMolecule,MyLsitem,nocc,nvirt,OccOrbitals,virtOrbitals,&
-             & AtomicFragment)
-     ENDIF
-     ! Print initial fragment information
-     call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
-
-     call GetnAtomsWithOrb(natoms,nocc_per_atom,&
-          & nvirt_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
-
-     StepsizeLoop2 = DECinfo%Frag_Exp_Size
-     ExpandVirt = .TRUE.    !Expand both Occupied and Virtual Space untill convergence
-     ExpandOcc  = .TRUE. 
-     call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
+     call optimize_atomic_fragment_CLEAN(MyAtom,AtomicFragment,nAtoms, &
           & OccOrbitals,nOcc,virtOrbitals,nvirt,&
-          & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
-          & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
-          & DistTrackMyAtom, nocc_per_atom,nvirt_per_atom,&
-          & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
-          & nAtomsWithOccOrb,nAtomsWithVirtOrb,&
-          & OrbDistanceSpec,OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,&
-          & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
-          & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
-          & OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom,&
-          & FockMatrixOrdering)
+          & MyMolecule,mylsitem,freebasisinfo)
 
-     ! ======================================================================
-     !             Transition from expansion to reduction loop
-     ! ======================================================================
-
-     ! Save contributions from individual local orbitals for current fragment
-     ! **********************************************************************
-     ! Note 1: The current fragment is larger than the converged fragment
-     ! Note 2: This information is only used for local reduction procedure below (not fragment-adapted)
-     call mem_alloc(OccContribs,nocc)
-     call mem_alloc(VirtContribs,nvirt)
-     OccContribs=0.0E0_realk
-     VirtContribs=0.0E0_realk
-
-     ! Contributions from local occupied orbitals 
-     do i=1,AtomicFragment%noccAOS
-        ! index of occupied AOS orbital "i" in list of ALL occupied orbitals in the molecule
-        idx=AtomicFragment%occAOSidx(i)
-        OccContribs(idx) = AtomicFragment%OccContribs(i)
-     end do
-
-     ! Contributions from local virtual orbitals
-     do i=1,AtomicFragment%nvirtAOS
-        ! index of virtual AOS orbital "i" in list of ALL virtual orbitals in the molecule
-        idx=AtomicFragment%virtAOSidx(i)
-        VirtContribs(idx) = AtomicFragment%VirtContribs(i)
-     end do
-
-      !Store the energies of the expanded fragment
-      ELag_exp = AtomicFragment%LagFOP   
-      Eocc_exp = AtomicFragment%EoccFOP  
-      Evir_exp = AtomicFragment%EvirtFOP 
-
-     ! Set AtomicFragment to be the converged fragment                                        
-     ! ***********************************************
-     ! Delete current fragment (which was too large)
-     IF(OrbDistanceSpec)THEN
-        IF(DECinfo%fragopt_exp_model .NE. DECinfo%fragopt_red_model)THEN
-!           LagEnergyOldFull = AtomicFragment%LagFOP
-!           OccEnergyOldFull = AtomicFragment%EoccFOP
-!           VirtEnergyOldFull = AtomicFragment%EvirtFOP
-           call atomic_fragment_free(AtomicFragment)
-           call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc,VirtAOS,&
-                & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-        ELSE
-           LagEnergyOld = AtomicFragment%LagFOP
-           OccEnergyOld = AtomicFragment%EoccFOP
-           VirtEnergyOld = AtomicFragment%EvirtFOP
-        ENDIF
-     ELSE
-        call atomic_fragment_free(AtomicFragment)
-        ! Init fragment with converged size
-        call atomic_fragment_init_atom_specific(MyAtom,natoms,Virt_Atoms, &
-             & Occ_Atoms,nocc,nvirt,OccOrbitals,virtOrbitals, &
-             & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-     ENDIF
-     ! Information for fragment-adapted orbitals
-     ! *****************************************
-     ! For practical reasons we now simply repeat the MP2 calculation to get all AOS amplitudes
-     ! When properly tested, this might be fixed such that we do not need to repeat calcs.
-     FragAdapt: if(DECinfo%fragadapt) then
-
-        ! Get MP2 amplitudes for fragment
-        ! *******************************
-        ! Integrals (ai|bj)
-        !call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
-        !   & AtomicFragment%noccAOS,AtomicFragment%nvirtAOS,&
-        !   & AtomicFragment%Cv, AtomicFragment%Co, g)
-        !! Amplitudes
-        call mp2_solver(AtomicFragment,g,t2,.false.)
-        !call array4_free(g)
-
-        call tensor_free(g)
-        ! Get correlation density matrix for atomic fragment
-        call calculate_MP2corrdens_frag(t2,AtomicFragment)
-     end if FragAdapt
-
-
-     ! Which model for reduction loop?
-     ! *******************************
-     MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
-
-     ! Save energies in converged space of local orbitals
-     ! **************************************************
-     if(DECinfo%fragopt_exp_model .eq. DECinfo%fragopt_red_model) then
-        ! If the same model is used for expansion and reduction
-        ! (e.g. using MP2 for expansion AND reduction  
-        !   - or - using CCSD for expansion and reduction)
-        ! then we can simply copy reference energy from expansion calculation
-        AtomicFragment%LagFOP = LagEnergyOld
-        AtomicFragment%EoccFOP = OccEnergyOld
-        AtomicFragment%EvirtFOP = VirtEnergyOld
-
-     else
-        ! Different model in expansion and reduction steps - Calculate new reference energy
-        ! for converged fragment from expansion loop.
-        AtomicFragment%ccmodel = MyMolecule%ccmodel(MyAtom,Myatom)
-        call fragment_energy_and_prop(AtomicFragment)
-        LagEnergyDiff=0.0_realk
-        OccEnergyDiff=0.0_realk
-        VirtEnergyDiff=0.0_realk
-        iter=0
-        write(DECinfo%output,'(2a)') 'FOP Calculated ref atomic fragment energy for relevant CC model: ', &
-           & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
-        call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
-        LagEnergyOld = AtomicFragment%LagFOP
-        OccEnergyOld= AtomicFragment%EoccFOP
-        VirtEnergyOld = AtomicFragment%EvirtFOP
-     end if
-
-     ! ======================================================================
-     !                             Reduction loop
-     ! ======================================================================
-
-
-     write(DECinfo%output,*) ' FOP'
-     write(DECinfo%output,*) ' FOP *************************************************'
-     write(DECinfo%output,*) ' FOP ** Expansion has converged. We start reduction **'
-     write(DECinfo%output,*) ' FOP *************************************************'
-     write(DECinfo%output,*) ' FOP'
-
-
-     WhichReductionScheme: if(DECinfo%fragadapt) then
-        ! Reduce using fragment-adapted orbitals
-        print *,"before",t2%initialized
-        call fragopt_reduce_FOs(MyAtom,AtomicFragment, &
-           &OccOrbitals,nOcc,virtOrbitals,nvirt, &
-           &MyMolecule,mylsitem,t2,max_iter_red)
-        print *,"freeing tesn",t2%initialized
-        call tensor_free(t2)
-     else
-        ! Reduce using local orbitals
-        if(present(t1full)) then
-           call fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
-                & OccOrbitals,nOcc,virtOrbitals,nvirt,ncore,BinarySearch, &
-                & MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,&
-                & VirtContribs,&
-                & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
-                & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
-                & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval,&
-                & TestOcc,BruteForce,FockMatrixOrdering,&
-                & FmaxOcc,OrbOccFockTrackMyAtom,FmaxVirt,OrbVirtFockTrackMyAtom,&
-                & t1full=t1full)
-        else
-           call fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
-              & OccOrbitals,nOcc,virtOrbitals,nvirt,ncore,BinarySearch, &
-              & MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,VirtContribs,&
-              & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
-              & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
-              & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval,&
-              & TestOcc,BruteForce,FockMatrixOrdering,&
-              & FmaxOcc,OrbOccFockTrackMyAtom,FmaxVirt,OrbVirtFockTrackMyAtom)
-        end if
-
-     end if WhichReductionScheme
-
-     if(freebasisinfo) then
-        call atomic_fragment_free_basis_info(AtomicFragment)
-     end if
-     call mem_dealloc(OccContribs)
-     call mem_dealloc(VirtContribs)
-     IF(OrbDistanceSpec)THEN
-        call mem_dealloc(SortedDistanceTableOrbAtomOcc)
-        call mem_dealloc(SortedDistanceTableOrbAtomVirt)
-        call mem_dealloc(OrbOccDistTrackMyAtom)
-        call mem_dealloc(OrbVirtDistTrackMyAtom)
-        call mem_dealloc(OccAOS)
-        call mem_dealloc(VirtAOS)
-        call mem_dealloc(OldOccAOS)
-        call mem_dealloc(OldVirtAOS)
-     ENDIF
-     IF(FockMatrixOrdering)THEN
-        call mem_dealloc(OrbOccFockTrackMyAtom)
-        call mem_dealloc(OrbVirtFockTrackMyAtom)
-     ENDIF
-     !IF((DECinfo%fragopt_exp_model.eq.DECinfo%fragopt_red_model).AND.(.NOT.DECinfo%fragadapt))THEN
-     !   !the most correct energies - calculated for the biggest fragments used in expansion
-     !   AtomicFragment%LagFOP = LagEnergyOldFull
-     !   AtomicFragment%EoccFOP = OccEnergyOldFull 
-     !   AtomicFragment%EvirtFOP = VirtEnergyOldFull
+     !!Number of core occupied orbitals in molecule
+     !ncore = MyMolecule%ncore
+     !times_fragopt => null()
+     !call dec_fragment_time_init(times_fragopt)
+     !
+     !write(DECinfo%output,'(a)')    ' FOP'
+     !write(DECinfo%output,'(a)')    ' FOP ==============================================='
+     !write(DECinfo%output,'(a,i4)') ' FOP  Site fragment generator for fragment,',MyAtom
+     !write(DECinfo%output,'(a)')    ' FOP ==============================================='
+     !write(DECinfo%output,'(a)')    ' FOP'
+       
+     !BinarySearch       = .FALSE. !Use Binary Search in Reduction Scheme
+     !SeperateExpansion  = .FALSE. !Expansion for Occ and Virt is done seperately 
+     !OrbDistanceSpec    = .FALSE. !Orbital Specific expansion
+     !DistanceRemoval    = .FALSE. !Use Distance to remove orbitals when no Energy Contribs 
+     !TestOcc            = .FALSE. !converge Occ first 
+     !BruteForce         = .FALSE. !BruteForce 
+     !FockMatrixOrdering = .FALSE. !Fock BruteForce 
+     !write(DECinfo%output,'(a)') ' FOP  Fragment optimization scheme '
+     !IF(DECinfo%Frag_Exp_Scheme.EQ.1)THEN
+     !   write(DECinfo%output,'(a)') ' FOP  Standard Fragment optimization scheme is used'
+     !ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.2)THEN
+     !   write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
+     !   BinarySearch = .TRUE.
+     !ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.3)THEN
+     !   write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
+     !   write(DECinfo%output,'(a)') ' FOP Expansion for Occ and Virt is done seperately'        
+     !   BinarySearch = .TRUE.
+     !   SeperateExpansion = .TRUE.        
+     !ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.4)THEN
+     !   write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
+     !   write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
+     !   BinarySearch = .TRUE.
+     !   OrbDistanceSpec = .TRUE. 
+     !ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.5)THEN
+     !   write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
+     !   write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
+     !   IF(DECInfo%OnlyOccPart)THEN
+     !      write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Virtual Orbitals in Reduction Scheme'
+     !      write(DECinfo%output,'(a)') ' Distance is used to remove Occupied Orbitals in  Reduction Scheme'        
+     !      DistanceRemoval = .TRUE. 
+     !   ELSEIF(DECInfo%OnlyVirtPart)THEN
+     !      write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Occupied Orbitals in Reduction Scheme'
+     !      write(DECinfo%output,'(a)') ' Distance is used to remove Virtual Orbitals in  Reduction Scheme'        
+     !      DistanceRemoval = .TRUE. 
+     !   ELSE
+     !      write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
+     !      write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
+     !   ENDIF
+     !   BinarySearch = .TRUE.
+     !   OrbDistanceSpec = .TRUE. 
+     !ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.6)THEN
+     !   write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
+     !   write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
+     !   IF(DECInfo%OnlyOccPart)THEN
+     !      write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Virtual Orbitals in Reduction Scheme'
+     !      write(DECinfo%output,'(a)') ' Distance is used to remove Occupied Orbitals in  Reduction Scheme'        
+     !      DistanceRemoval = .TRUE. 
+     !   ELSEIF(DECInfo%OnlyVirtPart)THEN
+     !      write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Occupied Orbitals in Reduction Scheme'
+     !      write(DECinfo%output,'(a)') ' Distance is used to remove Virtual Orbitals in  Reduction Scheme'        
+     !      DistanceRemoval = .TRUE. 
+     !   ELSE
+     !      write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
+     !      write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
+     !   ENDIF
+     !   write(DECinfo%output,'(a)') ' This scheme is identical to Scheme = 5 but first converges the Occ - then Virt'
+     !   BinarySearch = .TRUE.
+     !   OrbDistanceSpec = .TRUE. 
+     !   TestOcc = .TRUE.
+     !ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.7)THEN
+     !   write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '
+     !   IF(DECInfo%OnlyOccPart)THEN
+     !      write(DECinfo%output,'(a)') ' FOP Brute Force Energy Contribution is used to Remove Occupied Orbitals'
+     !   ELSEIF(DECInfo%OnlyVirtPart)THEN
+     !      write(DECinfo%output,'(a)') ' FOP Brute Force Energy Contribution is used to Remove Virtual Orbitals'
+     !   ELSE
+!    !       write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
+!    !       write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
+     !   ENDIF
+     !   write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
+     !   BinarySearch = .TRUE.
+     !   OrbDistanceSpec = .TRUE. 
+     !   BruteForce = .TRUE.
+     !ELSEIF(DECinfo%Frag_Exp_Scheme.EQ.8)THEN
+     !   write(DECinfo%output,'(a)') ' FOP Orbital Fock Matrix Ordering specific expansion is used in Fragment expansion scheme '
+     !   IF(DECInfo%OnlyOccPart)THEN
+     !      write(DECinfo%output,'(a)') ' FOP Fock Matrix Ordering is used to Remove Occupied Orbitals'
+     !   ELSEIF(DECInfo%OnlyVirtPart)THEN
+     !      write(DECinfo%output,'(a)') ' FOP Fock Matrix Ordering is used to Remove Virtual Orbitals'
+     !   ELSE
+ !   !       write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
+ !   !       write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
+     !   ENDIF
+     !   write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
+     !   BinarySearch = .TRUE.
+     !   OrbDistanceSpec = .TRUE. 
+     !   FockMatrixOrdering = .TRUE.
+     !   call mem_alloc(OrbOccFockTrackMyAtom,nocc)
+     !   call mem_alloc(OrbVirtFockTrackMyAtom,nvirt)
+     !   call GetSortedFockMaxElements(FmaxOcc,FmaxVirt,nocc,nvirt,MyMolecule,ncore,OccOrbitals,&
+     !        & virtOrbitals,MyAtom,OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom)
+     !ELSE
+     !   call lsquit('Frag_Opt_Scheme unknown',-1)
      !ENDIF
-     ! Ensure that energies in fragment are set consistently
-     call set_energies_decfrag_structure_fragopt(AtomicFragment)
-
-     call dec_fragment_time_get(times_fragopt)
-     call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,AtomicFragment%ccmodel,'Fragment optmization')
-
-
-     ! Restore the original CC model 
-     ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
-     MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
-     ! call lsquit('TEST DONE',-1)
-
-      ! Fragment has been optimized
-      AtomicFragment%isopt = .true.
-
-      !Store the energies of the expanded fragment in the final fragment for the estimate on master
-      AtomicFragment%Elag_err = ( ELag_exp - AtomicFragment%LagFOP   )
-      AtomicFragment%Eocc_err = ( Eocc_exp - AtomicFragment%EoccFOP  )
-      AtomicFragment%Evir_err = ( Evir_exp - AtomicFragment%EvirtFOP )
+       
+     !! Sanity check for singles polarization
+     !if(DECinfo%SinglesPolari) then
+     !   if(.not. present(t1full)) then
+     !      call lsquit('optimize_atomic_fragment: Full singles polarization is requrested &
+     !         & but t1 argument is not present!',DECinfo%output)
+     !   end if
+     !end if
+       
+       
+     !! ======================================================================
+     !!                    Initialization of various things...
+     !! ======================================================================
+       
+     !iter=0
+     !LagEnergyDiff  = 0.0_realk
+     !OccEnergyDiff  = 0.0_realk
+     !VirtEnergyDiff = 0.0_realk
+     !expansion_converged=.false.
+     !max_iter_red=15   ! set to 100 for binary search where more steps might be needed
+     !if (BinarySearch) max_iter_red=100
+       
+     !FOT = DECinfo%FOT
+     !DistMyAtom = mymolecule%DistanceTable(:,MyAtom)   ! distance vector for central atom
+     !! Sort atoms according to distance from central atom
+     !call GetSortedList(SortedDistMyAtom,DistTrackMyAtom,mymolecule%DistanceTable,natoms,natoms,MyAtom)
+       
+     !nocc_per_atom   = get_number_of_orbitals_per_atom( OccOrbitals,   nocc,   natoms, .true.)
+     !nvirt_per_atom = get_number_of_orbitals_per_atom( virtOrbitals, nvirt, natoms, .true.)
+       
+     !! Only do fragment optimization if there are orbitals assigned to central atom.
+     !if( (nocc_per_atom(MyAtom) == 0) .and. (nvirt_per_atom(MyAtom) == 0) ) then
+     !   write(DECinfo%output,*) 'FOP Skipping optimization of fragment ', MyAtom
+     !   AtomicFragment%LagFOP   = 0E0_realk
+     !   AtomicFragment%EoccFOP  = 0E0_realk
+     !   AtomicFragment%EvirtFOP = 0E0_realk
+     !   AtomicFragment%Elag_err = 0E0_realk
+     !   AtomicFragment%Eocc_err = 0E0_realk
+     !   AtomicFragment%Evir_err = 0E0_realk
+     !   AtomicFragment%energies = 0E0_realk
+     !   AtomicFragment%ccmodel = DECinfo%ccmodel
+     !   call dec_fragment_time_get(times_fragopt)
+     !   call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
+     !      &AtomicFragment%ccmodel,'Fragment optmization')
+     !   return
+     !end if
+       
+     !! Debug case: Full molecule included in fragment
+     !! --> we then skip energy calculation here and just init fragment
+     !if(DECinfo%InclFullMolecule .or.  DECinfo%simulate_full.or.DECinfo%all_init_radius>0.0E0_realk) then
+     !   call fragopt_include_fullmolecule(MyAtom,AtomicFragment, &
+     !      &OccOrbitals,nOcc,virtOrbitals,nvirt, &
+     !      &MyMolecule,mylsitem,freebasisinfo,t1full)
+     !   call dec_fragment_time_get(times_fragopt)
+     !   call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
+     !      &AtomicFragment%ccmodel,'Fragment optmization')
+     !   return
+     !end if
+       
+     !IF(OrbDistanceSpec)THEN
+     !   ! Occupied
+     !   call mem_alloc(SortedDistanceTableOrbAtomOcc,nocc)
+     !   call mem_alloc(OrbOccDistTrackMyAtom,nocc)
+     !   call mem_alloc(DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms)
+     !   call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
+     !        & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistanceTableOrbAtomOcc)
+     !   call GetSortedList(SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
+     !        & DistanceTableOrbAtomOcc,nocc,natoms,MyAtom)
+     !   call mem_dealloc(DistanceTableOrbAtomOcc)
+       
+     !   ! Virtual
+     !   call mem_alloc(SortedDistanceTableOrbAtomVirt,nvirt)
+     !   call mem_alloc(OrbVirtDistTrackMyAtom,nvirt)
+     !   call mem_alloc(DistanceTableOrbAtomVirt,MyMolecule%nvirt,MyMolecule%natoms)
+     !   call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
+     !        & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
+     !   call GetSortedList(SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
+     !        & DistanceTableOrbAtomVirt,nvirt,natoms,MyAtom)
+     !   call mem_dealloc(DistanceTableOrbAtomVirt)
+     !ENDIF
+       
+     !! Do fragment expansion at different level than target model?
+     !if(DECinfo%fragopt_exp_model /= DECinfo%ccmodel) then
+     !   MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_exp_model
+     !end if
+       
+     !! ======================================================================
+     !!                            Initial fragment
+     !! ======================================================================
+     !! Start fragment optimization by calculating initial fragment 
+     !IF(DECinfo%onlyoccpart) then
+     !   !All Occupied orbitals assigned to atoms within 1.0 Angstrom of central atom are included
+     !   init_Occradius = 1.0_realk/bohr_to_angstrom
+     !ELSE
+     !   !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
+     !   IF(FOT.GT.2.0E-5_realk)THEN 
+     !      init_Occradius = 3.0_realk/bohr_to_angstrom
+     !   ELSE
+     !      init_Occradius = 3.0_realk/bohr_to_angstrom
+     !   ENDIF
+     !ENDIF
+     !IF(DECinfo%onlyvirtpart) then
+     !   !All Virtual orbitals assigned to atoms within 1.0 Angstrom of central atom are included
+     !   init_Virtradius = 1.0_realk/bohr_to_angstrom
+     !ELSE
+     !   !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
+     !   IF(FOT.GT.2.0E-5_realk)THEN 
+     !      init_Virtradius = 3.0_realk/bohr_to_angstrom
+     !   ELSE
+     !      init_Virtradius = 3.0_realk/bohr_to_angstrom
+     !   ENDIF
+     !ENDIF
+       
+     !IF(FockMatrixOrdering)THEN
+     !   call mem_alloc(OccAOS,nocc)
+     !   call mem_alloc(VirtAOS,nvirt)
+     !   call mem_alloc(OldOccAOS,nocc)
+     !   call mem_alloc(OldVirtAOS,nvirt)
+     !   call InitialFragmentFockSpec(natoms,nocc,nvirt,&
+     !        & FmaxOcc,OrbOccFockTrackMyAtom,&
+     !        & FmaxVirt,OrbVirtFockTrackMyAtom,&
+     !        & OccAOS,VirtAOS,OccOrbitals,virtOrbitals,MyAtom)
+     !   call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS, &
+     !        & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+     !   call fragment_energy_and_prop(AtomicFragment)
+     !ELSEIF(OrbDistanceSpec)THEN
+     !   call mem_alloc(OccAOS,nocc)
+     !   call mem_alloc(VirtAOS,nvirt)
+     !   call mem_alloc(OldOccAOS,nocc)
+     !   call mem_alloc(OldVirtAOS,nvirt)
+     !   call InitialFragmentOrbitalSpec(natoms,nocc,nvirt,&
+     !        & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
+     !        & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
+     !        & init_Occradius,init_Virtradius,OccAOS,VirtAOS,&
+     !        & OccOrbitals,virtOrbitals,MyAtom)
+     !   call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS, &
+     !        & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+     !   call fragment_energy_and_prop(AtomicFragment)
+     !ELSE
+     !   call InitialFragment(natoms,nocc_per_atom,nvirt_per_atom,DistMyatom,&
+     !        & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
+     !   call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+     !        & MyMolecule,MyLsitem,nocc,nvirt,OccOrbitals,virtOrbitals,&
+     !        & AtomicFragment)
+     !ENDIF
+     !! Print initial fragment information
+     !call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+       
+     !call GetnAtomsWithOrb(natoms,nocc_per_atom,&
+     !     & nvirt_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
+       
+     !StepsizeLoop2 = DECinfo%Frag_Exp_Size
+     !ExpandVirt = .TRUE.    !Expand both Occupied and Virtual Space untill convergence
+     !ExpandOcc  = .TRUE. 
+     !call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
+     !     & OccOrbitals,nOcc,virtOrbitals,nvirt,&
+     !     & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
+     !     & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
+     !     & DistTrackMyAtom, nocc_per_atom,nvirt_per_atom,&
+     !     & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
+     !     & nAtomsWithOccOrb,nAtomsWithVirtOrb,&
+     !     & OrbDistanceSpec,OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,&
+     !     & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
+     !     & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
+     !     & OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom,&
+     !     & FockMatrixOrdering)
+       
+     !! ======================================================================
+     !!             Transition from expansion to reduction loop
+     !! ======================================================================
+       
+     !! Save contributions from individual local orbitals for current fragment
+     !! **********************************************************************
+     !! Note 1: The current fragment is larger than the converged fragment
+     !! Note 2: This information is only used for local reduction procedure below (not fragment-adapted)
+     !call mem_alloc(OccContribs,nocc)
+     !call mem_alloc(VirtContribs,nvirt)
+     !OccContribs=0.0E0_realk
+     !VirtContribs=0.0E0_realk
+       
+     !! Contributions from local occupied orbitals 
+     !do i=1,AtomicFragment%noccAOS
+     !   ! index of occupied AOS orbital "i" in list of ALL occupied orbitals in the molecule
+     !   idx=AtomicFragment%occAOSidx(i)
+     !   OccContribs(idx) = AtomicFragment%OccContribs(i)
+     !end do
+       
+     !! Contributions from local virtual orbitals
+     !do i=1,AtomicFragment%nvirtAOS
+     !   ! index of virtual AOS orbital "i" in list of ALL virtual orbitals in the molecule
+     !   idx=AtomicFragment%virtAOSidx(i)
+     !   VirtContribs(idx) = AtomicFragment%VirtContribs(i)
+     !end do
+       
+     ! !Store the energies of the expanded fragment
+     ! ELag_exp = AtomicFragment%LagFOP   
+     ! Eocc_exp = AtomicFragment%EoccFOP  
+     ! Evir_exp = AtomicFragment%EvirtFOP 
+       
+     !! Set AtomicFragment to be the converged fragment                                        
+     !! ***********************************************
+     !! Delete current fragment (which was too large)
+     !IF(OrbDistanceSpec)THEN
+     !   IF(DECinfo%fragopt_exp_model .NE. DECinfo%fragopt_red_model)THEN
+!    !       LagEnergyOldFull = AtomicFragment%LagFOP
+!    !       OccEnergyOldFull = AtomicFragment%EoccFOP
+!    !       VirtEnergyOldFull = AtomicFragment%EvirtFOP
+     !      call atomic_fragment_free(AtomicFragment)
+     !      call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc,VirtAOS,&
+     !           & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+     !   ELSE
+     !      LagEnergyOld = AtomicFragment%LagFOP
+     !      OccEnergyOld = AtomicFragment%EoccFOP
+     !      VirtEnergyOld = AtomicFragment%EvirtFOP
+     !   ENDIF
+     !ELSE
+     !   call atomic_fragment_free(AtomicFragment)
+     !   ! Init fragment with converged size
+     !   call atomic_fragment_init_atom_specific(MyAtom,natoms,Virt_Atoms, &
+     !        & Occ_Atoms,nocc,nvirt,OccOrbitals,virtOrbitals, &
+     !        & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+     !ENDIF
+     !! Information for fragment-adapted orbitals
+     !! *****************************************
+     !! For practical reasons we now simply repeat the MP2 calculation to get all AOS amplitudes
+     !! When properly tested, this might be fixed such that we do not need to repeat calcs.
+     !FragAdapt: if(DECinfo%fragadapt) then
+       
+     !   ! Get MP2 amplitudes for fragment
+     !   ! *******************************
+     !   ! Integrals (ai|bj)
+     !   !call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
+     !   !   & AtomicFragment%noccAOS,AtomicFragment%nvirtAOS,&
+     !   !   & AtomicFragment%Cv, AtomicFragment%Co, g)
+     !   !! Amplitudes
+     !   call mp2_solver(AtomicFragment,g,t2,.false.)
+     !   !call array4_free(g)
+       
+     !   call tensor_free(g)
+     !   ! Get correlation density matrix for atomic fragment
+     !   call calculate_MP2corrdens_frag(t2,AtomicFragment)
+     !end if FragAdapt
+       
+       
+     !! Which model for reduction loop?
+     !! *******************************
+     !MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
+       
+     !! Save energies in converged space of local orbitals
+     !! **************************************************
+     !if(DECinfo%fragopt_exp_model .eq. DECinfo%fragopt_red_model) then
+     !   ! If the same model is used for expansion and reduction
+     !   ! (e.g. using MP2 for expansion AND reduction  
+     !   !   - or - using CCSD for expansion and reduction)
+     !   ! then we can simply copy reference energy from expansion calculation
+     !   AtomicFragment%LagFOP = LagEnergyOld
+     !   AtomicFragment%EoccFOP = OccEnergyOld
+     !   AtomicFragment%EvirtFOP = VirtEnergyOld
+       
+     !else
+     !   ! Different model in expansion and reduction steps - Calculate new reference energy
+     !   ! for converged fragment from expansion loop.
+     !   AtomicFragment%ccmodel = MyMolecule%ccmodel(MyAtom,Myatom)
+     !   call fragment_energy_and_prop(AtomicFragment)
+     !   LagEnergyDiff=0.0_realk
+     !   OccEnergyDiff=0.0_realk
+     !   VirtEnergyDiff=0.0_realk
+     !   iter=0
+     !   write(DECinfo%output,'(2a)') 'FOP Calculated ref atomic fragment energy for relevant CC model: ', &
+     !      & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
+     !   call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+     !   LagEnergyOld = AtomicFragment%LagFOP
+     !   OccEnergyOld= AtomicFragment%EoccFOP
+     !   VirtEnergyOld = AtomicFragment%EvirtFOP
+     !end if
+       
+     !! ======================================================================
+     !!                             Reduction loop
+     !! ======================================================================
+       
+       
+     !write(DECinfo%output,*) ' FOP'
+     !write(DECinfo%output,*) ' FOP *************************************************'
+     !write(DECinfo%output,*) ' FOP ** Expansion has converged. We start reduction **'
+     !write(DECinfo%output,*) ' FOP *************************************************'
+     !write(DECinfo%output,*) ' FOP'
+       
+       
+     !WhichReductionScheme: if(DECinfo%fragadapt) then
+     !   ! Reduce using fragment-adapted orbitals
+     !   print *,"before",t2%initialized
+     !   call fragopt_reduce_FOs(MyAtom,AtomicFragment, &
+     !      &OccOrbitals,nOcc,virtOrbitals,nvirt, &
+     !      &MyMolecule,mylsitem,t2,max_iter_red)
+     !   print *,"freeing tesn",t2%initialized
+     !   call tensor_free(t2)
+     !else
+     !   ! Reduce using local orbitals
+     !   if(present(t1full)) then
+     !      call fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
+     !           & OccOrbitals,nOcc,virtOrbitals,nvirt,ncore,BinarySearch, &
+     !           & MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,&
+     !           & VirtContribs,&
+     !           & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
+     !           & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
+     !           & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval,&
+     !           & TestOcc,BruteForce,FockMatrixOrdering,&
+     !           & FmaxOcc,OrbOccFockTrackMyAtom,FmaxVirt,OrbVirtFockTrackMyAtom,&
+     !           & t1full=t1full)
+     !   else
+     !      call fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
+     !         & OccOrbitals,nOcc,virtOrbitals,nvirt,ncore,BinarySearch, &
+     !         & MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,VirtContribs,&
+     !         & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
+     !         & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
+     !         & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval,&
+     !         & TestOcc,BruteForce,FockMatrixOrdering,&
+     !         & FmaxOcc,OrbOccFockTrackMyAtom,FmaxVirt,OrbVirtFockTrackMyAtom)
+     !   end if
+       
+     !end if WhichReductionScheme
+       
+     !if(freebasisinfo) then
+     !   call atomic_fragment_free_basis_info(AtomicFragment)
+     !end if
+     !call mem_dealloc(OccContribs)
+     !call mem_dealloc(VirtContribs)
+     !IF(OrbDistanceSpec)THEN
+     !   call mem_dealloc(SortedDistanceTableOrbAtomOcc)
+     !   call mem_dealloc(SortedDistanceTableOrbAtomVirt)
+     !   call mem_dealloc(OrbOccDistTrackMyAtom)
+     !   call mem_dealloc(OrbVirtDistTrackMyAtom)
+     !   call mem_dealloc(OccAOS)
+     !   call mem_dealloc(VirtAOS)
+     !   call mem_dealloc(OldOccAOS)
+     !   call mem_dealloc(OldVirtAOS)
+     !ENDIF
+     !IF(FockMatrixOrdering)THEN
+     !   call mem_dealloc(OrbOccFockTrackMyAtom)
+     !   call mem_dealloc(OrbVirtFockTrackMyAtom)
+     !ENDIF
+     !!IF((DECinfo%fragopt_exp_model.eq.DECinfo%fragopt_red_model).AND.(.NOT.DECinfo%fragadapt))THEN
+     !!   !the most correct energies - calculated for the biggest fragments used in expansion
+     !!   AtomicFragment%LagFOP = LagEnergyOldFull
+     !!   AtomicFragment%EoccFOP = OccEnergyOldFull 
+     !!   AtomicFragment%EvirtFOP = VirtEnergyOldFull
+     !!ENDIF
+     !! Ensure that energies in fragment are set consistently
+     !call set_energies_decfrag_structure_fragopt(AtomicFragment)
+       
+     !call dec_fragment_time_get(times_fragopt)
+     !call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,AtomicFragment%ccmodel,'Fragment optmization')
+       
+       
+     !! Restore the original CC model 
+     !! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
+     !MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
+     !! call lsquit('TEST DONE',-1)
+       
+     ! ! Fragment has been optimized
+     ! AtomicFragment%isopt = .true.
+       
+     ! !Store the energies of the expanded fragment in the final fragment for the estimate on master
+     ! AtomicFragment%Elag_err = ( ELag_exp - AtomicFragment%LagFOP   )
+     ! AtomicFragment%Eocc_err = ( Eocc_exp - AtomicFragment%EoccFOP  )
+     ! AtomicFragment%Evir_err = ( Evir_exp - AtomicFragment%EvirtFOP )
 
   end subroutine optimize_atomic_fragment
 

@@ -180,7 +180,6 @@ contains
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
-    DECinfo%no_orb_based_fragopt   = .false.
     DECinfo%OnlyOccPart            = .false.
     DECinfo%OnlyVirtPart           = .false.
     ! Repeat atomic fragment calcs after fragment optimization
@@ -683,10 +682,6 @@ contains
           ! Threshold for convergence of second reduced space (occ or virt)
           ! should be a number between 0 and 1 which is then multiplied to the FOT
           read(input,*) DECinfo%frag_red2_thr
-
-       case('.NO_ORB_BASED_FRAGOPT')
-          ! Use old Fragment optimization routines
-          DECinfo%no_orb_based_fragopt = .true.
 
        case('.FRAGMENTADAPTED')
           ! Fragment adapted orbital instead of reduction (??)
@@ -1480,7 +1475,6 @@ contains
     write(lupri,*) 'Frag_Red_Virt ', DECinfo%frag_red_virt
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
-    write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
     write(lupri,*) 'No_Pairs ', DECitem%no_pairs
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
