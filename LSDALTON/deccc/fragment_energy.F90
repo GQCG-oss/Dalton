@@ -582,15 +582,6 @@ contains
           endif
        else
           ! Atomic fragment
-          call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
-          !For sosex contribution, as the residual
-          !is the same for sosex and drpa
-          !the energies can be calculated in one step
-          if(MyFragment%ccmodel == MODEL_RPA) then
-            call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
-               & t2virt,MyFragment,doSOS=.true.)
-          endif
-          ! Get also MP2 contribution
           if (get_mp2) then
              ccmodel = MyFragment%ccmodel
              MyFragment%ccmodel = MODEL_MP2
@@ -599,6 +590,14 @@ contains
              call tensor_free(t2MP2v)
              MyFragment%ccmodel = ccmodel
           end if
+          call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+            call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
+               & t2virt,MyFragment,doSOS=.true.)
+          endif
        end if
        call tensor_free(VOVOvirtTMP)
      
@@ -623,16 +622,6 @@ contains
           endif
        else
           ! Atomic fragment
-          call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
-          !For sosex contribution, as the residual
-          !is the same for sosex and drpa
-          !the energies can be calculated in one step
-          if(MyFragment%ccmodel == MODEL_RPA) then
-             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
-                & t2occ,t2virt,MyFragment,doSOS=.true.)
-          endif
-
-          ! Get also MP2 contribution
           if (get_mp2) then
              ccmodel = MyFragment%ccmodel
              MyFragment%ccmodel = MODEL_MP2
@@ -641,6 +630,14 @@ contains
              call tensor_free(t2MP2v)
              MyFragment%ccmodel = ccmodel
           end if
+          call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
+          !For sosex contribution, as the residual
+          !is the same for sosex and drpa
+          !the energies can be calculated in one step
+          if(MyFragment%ccmodel == MODEL_RPA) then
+             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
+                & t2occ,t2virt,MyFragment,doSOS=.true.)
+          endif
        end if
      
     end if
@@ -1180,7 +1177,8 @@ contains
     ! Update total virtual contributions to fragment energy
     !$OMP CRITICAL
     do a=1,nvirtAOS
-       MyFragment%VirtContribs(a) = MyFragment%VirtContribs(a) + virt_tmp(a)
+       !MyFragment%VirtContribs(a) = max(MyFragment%VirtContribs(a),virt_tmp(a))
+       MyFragment%VirtContribs(a) = virt_tmp(a)
     end do
     !$OMP END CRITICAL
 
@@ -1266,7 +1264,8 @@ contains
     !$OMP CRITICAL
     ! Update total occupied contributions to fragment energy
     do i=1,noccAOS
-       MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
+       !MyFragment%OccContribs(i) = max(MyFragment%OccContribs(i), occ_tmp(i))
+       MyFragment%OccContribs(i) = occ_tmp(i)
     end do
     !$OMP END CRITICAL
 
