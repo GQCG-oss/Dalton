@@ -139,7 +139,7 @@ contains
     logical(kind=ls_mpik) :: TransferCompleted
     logical :: NotMatSet,file_exists
     real(realk),pointer :: Amat(:,:),Bmat(:,:)
-    character :: intspec(4)
+    character :: intspec(5)
 
     if(MyMolecule%mem_distributed)then
        call lsquit("ERROR(full_canonical_rimp2): does not work with distributed&
@@ -235,6 +235,7 @@ contains
     intspec(2) = 'R' !Regular AO basis function on center 3
     intspec(3) = 'R' !Regular AO basis function on center 4
     intspec(4) = 'C' !Coulomb Operator
+    intspec(5) = 'C' !Coulomb Operator
     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
          & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,&
          & MyMolecule%Co%elm2(:,offset+1:offset+nocc),nocc,mynum,numnodes,&
