@@ -2888,7 +2888,7 @@ contains
         print *,"before",t2%initialized
         call fragopt_reduce_FOs(MyAtom,AtomicFragment, &
            &OccOrbitals,nOcc,virtOrbitals,nvirt, &
-           &MyMolecule,mylsitem,freebasisinfo,t2,max_iter_red)
+           &MyMolecule,mylsitem,t2,max_iter_red)
         print *,"freeing tesn",t2%initialized
         call tensor_free(t2)
      else
@@ -3389,7 +3389,7 @@ contains
   !> \author Kasper Kristensen
   subroutine fragopt_reduce_FOs(MyAtom,AtomicFragment, &
        &OccOrbitals,nOcc,virtOrbitals,nvirt, &
-       &MyMolecule,mylsitem,freebasisinfo,t2tens,max_iter_red)
+       &MyMolecule,mylsitem,t2tens,max_iter_red)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
@@ -3407,13 +3407,11 @@ contains
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
     type(lsitem), intent(inout)       :: mylsitem
-    !> Delete fragment basis information ("expensive box in decfrag type") at exit?
-    logical,intent(in) :: freebasisinfo
     !> Doubles amplitudes for converged fragment (local orbital basis, index order: a,i,b,j)
     !> At output, the virtual indices will have been transformed to the (smaller) FO orbital space
     type(tensor),intent(inout) :: t2tens
     !> Maximum number of reduction steps
-    integer,intent(in) :: max_iter_red
+    integer,intent(inout) :: max_iter_red
     integer :: ov,iter,Nold,Nnew,nocc_exp,nvirt_exp
     logical :: reduction_converged,ReductionPossible(2)
     real(realk) :: FOT,LagEnergyOld,OccEnergyOld,VirtEnergyOld
@@ -3511,10 +3509,10 @@ contains
              AtomicFragment%RejectThr(ov) = AtomicFragment%RejectThr(ov)/10.0_realk
           end if
           if(ov==1) then
-             write(DECinfo%output,'(a,ES13.5)') 'FOP occ rejection threshold  : ',&
+             write(DECinfo%output,'(a,ES13.5)') ' FOP occ rejection threshold  : ',&
                   & AtomicFragment%RejectThr(ov)
           else
-             write(DECinfo%output,'(a,ES13.5)') 'FOP virt rejection threshold  : ',&
+             write(DECinfo%output,'(a,ES13.5)') ' FOP virt rejection threshold  : ',&
                   & AtomicFragment%RejectThr(ov)
           end if
 
@@ -3549,6 +3547,8 @@ contains
           ! Get fragment energy for fragment using FOs
           ! ******************************************
           call fragment_energy_and_prop(AtomicFragment)
+          ! Set energies used by fragment optimization
+          call get_occ_virt_lag_energies_fragopt(AtomicFragment)
 
 
           ! Test if fragment energy (or energies) are converged to FOT precision
@@ -3589,6 +3589,9 @@ contains
        end do REDUCTION_LOOP
 
     end do OCC_OR_VIRT
+    
+    ! set number of iteration in output:
+    max_iter_red = iter
 
 
     ! Print out info
@@ -5685,6 +5688,9 @@ contains
      integer, intent(out) :: iter
      !> Get MP2 info on top of actual cc model:
      logical, intent(in) :: add_MP2_opt
+
+     !> MP2 amplitudes and integrals for fragment adapted reduction:
+     type(tensor) :: g, t2
      real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
      type(decfrag) :: ReducedFragment
      integer :: i,noccAOSprev, nvirtAOSprev
@@ -5693,9 +5699,33 @@ contains
      ! Sanity check
      if(DECinfo%FOTscaling<1.0_realk) then
         print *, 'Scaling factor ',DECinfo%FOTscaling
-        call lsquit('fragment_reduction_procedure_wrapper: Requires scaling factor larger than one! ',-1)
+        call lsquit('fragment_reduction_procedure_wrapper: Requires scaling factor &
+           & larger than one! ',-1)
      end if
 
+
+     ! Reduce fragment space using fragment adapted orbital:
+     ! =====================================================
+     FragAdapt: if(DECinfo%fragadapt) then
+
+        ! Get MP2 amplitudes and energy for fragment
+        call mp2_solver(AtomicFragment,g,t2,.false.)
+        call tensor_free(g)
+
+        ! Get correlation density matrix for atomic fragment
+        call calculate_MP2corrdens_frag(t2,AtomicFragment)
+
+        ! Reduce using fragment-adapted orbitals
+        print *,"before",t2%initialized
+        iter=15 ! IN: maximum number of iteration in reduction procedure
+        call fragopt_reduce_FOs(MyAtom,AtomicFragment,OccOrbitals,no,VirOrbitals,nv, &
+           & MyMolecule,mylsitem,t2,iter)
+        print *,"freeing tesn",t2%initialized
+        call tensor_free(t2)
+
+        return
+     end if FragAdapt
+     
 
      ! At this point AtomicFragment correspondings to the expanded fragment
      ! We store the atomic fragment energies of the expanded fragment

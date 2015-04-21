@@ -691,7 +691,6 @@ contains
        case('.FRAGMENTADAPTED')
           ! Fragment adapted orbital instead of reduction (??)
           DECinfo%fragadapt = .true.
-          DECinfo%no_orb_based_fragopt = .true.
 
        case('.CORRDENS')  
           !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
