@@ -256,7 +256,7 @@ contains
   !> \brief Driver for calculating atomic fragment energy for a given fragment using the Lagrangian approach.
   !> If requested, first order properties (MP2 density or gradient) are also calculated and saved.
   !> \author Kasper Kristensen
-  subroutine fragment_energy_and_prop(MyFragment,Fragment1,Fragment2,grad)
+  subroutine fragment_energy_and_prop(MyFragment,Fragment1,Fragment2,grad,add_MP2_opt)
 
     implicit none
     !> Atomic or pair fragment
@@ -265,9 +265,12 @@ contains
     type(decfrag), intent(in),optional :: Fragment1, Fragment2
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
+    !> Get MP2 info on top of actual CC model:
+    logical, intent(in), optional :: add_mp2_opt
+    logical :: get_mp2
     type(tensor) :: t1, ccsdpt_t1, m1, eta
     type(tensor) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
-    type(tensor) :: t2occp,t2virtp
+    type(tensor) :: t2occp,t2virtp,t2MP2,t2MP2o,t2MP2v
     type(tensor) :: m2occ,m2virt
     type(tensor) :: t2_occEOS
     real(realk) :: tcpu, twall,debugenergy
@@ -275,7 +278,10 @@ contains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc,pair
     type(tensor) :: t2f_local, VOVO_local
-    integer :: a,b,i,j,k,l
+    integer :: a,b,i,j,k,l, ccmodel
+
+    get_mp2 = .false.
+    if (present(add_mp2_opt)) get_mp2 = add_mp2_opt
 
     ! Pairfragment?
     pair = MyFragment%pairfrag
@@ -288,6 +294,7 @@ contains
           call lsquit("ERROR(fragment_energy_and_prop): DECNP inconsistent input",DECinfo%output)
        end if
     end if
+
 
     times_ccsd => null()
     times_pt   => null()
@@ -382,6 +389,11 @@ contains
        else
 #endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+          if (get_mp2) then
+             print *, "ON Y VA"
+             write(DECinfo%output,*) "ON Y VA"
+             call mp2_solver(MyFragment,VOVO,t2MP2,.true.)
+          end if
 #ifdef MOD_UNRELEASED
        endif
 
@@ -516,6 +528,12 @@ contains
           call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
           call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc, &
              & tensor_virtEOS=VOVOvirt)
+
+          ! Extract also EOS indices from MP2 amplitudes:
+          if (get_mp2) then
+             call tensor_extract_eos_indices(t2MP2,MyFragment,tensor_occEOS=t2MP2o,tensor_virtEOS=t2MP2v)
+             call tensor_free(t2MP2)
+          end if
            
        end if
 
@@ -574,6 +592,15 @@ contains
             call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,&
                & t2virt,MyFragment,doSOS=.true.)
           endif
+          ! Get also MP2 contribution
+          if (get_mp2) then
+             ccmodel = MyFragment%ccmodel
+             MyFragment%ccmodel = MODEL_MP2
+             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2MP2o,t2MP2v,MyFragment)
+             call tensor_free(t2MP2o)
+             call tensor_free(t2MP2v)
+             MyFragment%ccmodel = ccmodel
+          end if
        end if
        call tensor_free(VOVOvirtTMP)
      
@@ -606,6 +633,16 @@ contains
              call get_atomic_fragment_energy(VOVOocc,VOVOvirt,&
                 & t2occ,t2virt,MyFragment,doSOS=.true.)
           endif
+
+          ! Get also MP2 contribution
+          if (get_mp2) then
+             ccmodel = MyFragment%ccmodel
+             MyFragment%ccmodel = MODEL_MP2
+             call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2MP2o,t2MP2v,MyFragment)
+             call tensor_free(t2MP2o)
+             call tensor_free(t2MP2v)
+             MyFragment%ccmodel = ccmodel
+          end if
        end if
      
     end if
@@ -1014,8 +1051,6 @@ contains
     Evirt    = 0E0_realk
     lag_virt = 0E0_realk
     ! Just in case, zero individual orbital contributions for fragment
-    MyFragment%OccContribs=0E0_realk
-    MyFragment%VirtContribs=0E0_realk
     SOS = .false.
     if(present(doSOS)) SOS = doSOS
 
@@ -1104,9 +1139,9 @@ contains
                 Eocc = Eocc + tmp
 
                 ! Update contribution from orbital a
-                virt_tmp(a) = virt_tmp(a) + tmp
+                virt_tmp(a) = virt_tmp(a) + abs(tmp)
                 ! Update contribution from orbital b (only if different from a to avoid double counting)
-                if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+                if(a/=b) virt_tmp(b) = virt_tmp(b) + abs(tmp)
 
 
                 ! Contribution 2
@@ -1127,11 +1162,11 @@ contains
                       lag_occ = lag_occ + tmp
 
                       ! Update contribution from orbital a
-                      virt_tmp(a) = virt_tmp(a) + tmp
+                      virt_tmp(a) = virt_tmp(a) + abs(tmp)
                       ! Update contribution from orbital b (only if different from a to avoid double counting)
-                      if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+                      if(a/=b) virt_tmp(b) = virt_tmp(b) + abs(tmp)
                       ! Update contribution from orbital c (only if different from a and b)
-                      if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + tmp
+                      if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + abs(tmp)
 
                    end do
 
@@ -1147,7 +1182,7 @@ contains
     ! Update total virtual contributions to fragment energy
     !$OMP CRITICAL
     do a=1,nvirtAOS
-       MyFragment%VirtContribs(a) =MyFragment%VirtContribs(a) + virt_tmp(a)
+       MyFragment%VirtContribs(a) = max(MyFragment%VirtContribs(a), virt_tmp(a))
     end do
     !$OMP END CRITICAL
 
@@ -1195,9 +1230,9 @@ contains
                 Evirt = Evirt + tmp
 
                 ! Update contribution from orbital i
-                occ_tmp(i) = occ_tmp(i) + tmp
+                occ_tmp(i) = occ_tmp(i) + abs(tmp)
                 ! Update contribution from orbital j (only if different from i to avoid double counting)
-                if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                if(i/=j) occ_tmp(j) = occ_tmp(j) + abs(tmp)
 
                 ! Contribution 4
                 ! --------------
@@ -1214,11 +1249,11 @@ contains
                       lag_virt = lag_virt + tmp
 
                       ! Update contribution from orbital i
-                      occ_tmp(i) = occ_tmp(i) + tmp
+                      occ_tmp(i) = occ_tmp(i) + abs(tmp)
                       ! Update contribution from orbital j (only if different from i to avoid double counting)
-                      if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                      if(i/=j) occ_tmp(j) = occ_tmp(j) + abs(tmp)
                       ! Update contribution from orbital k (only if different from i and j)
-                      if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + tmp
+                      if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + abs(tmp)
 
                    end do
 
@@ -1233,7 +1268,7 @@ contains
     !$OMP CRITICAL
     ! Update total occupied contributions to fragment energy
     do i=1,noccAOS
-       MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
+       MyFragment%OccContribs(i) = max(MyFragment%OccContribs(i), occ_tmp(i))
     end do
     !$OMP END CRITICAL
 
@@ -1267,7 +1302,7 @@ contains
     endif
 
     ! Set energies used by fragment optimization
-    call get_occ_virt_lag_energies_fragopt(MyFragment)
+    !call get_occ_virt_lag_energies_fragopt(MyFragment)
 
     ! Print out contributions
     ! ***********************
@@ -5244,6 +5279,7 @@ contains
       integer :: nc
       integer :: idx,i,a,expit,redit
       real(realk) :: ELag_exp, Eocc_exp, Evir_exp
+      logical :: add_MP2_opt
 
 
       !==================================================================================!
@@ -5253,6 +5289,7 @@ contains
       ! Start timings:
       times_fragopt => null()
       call dec_fragment_time_init(times_fragopt)
+      add_MP2_opt = .false.
 
       expit=0
       redit=0
@@ -5300,6 +5337,11 @@ contains
 
       ! Overwrite ccmodel for myatom with the expansion required ccmodel
       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_exp_model
+      select case(DECinfo%fragopt_exp_model)
+      case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
+         add_MP2_opt = .true.
+      end select
+
 
       ! Get information on how the expansion should be performed:
       call mem_alloc(exp_list_occ,no)
@@ -5373,7 +5415,9 @@ contains
       call atomic_fragment_init_orbital_specific(MyAtom,nv,no,Vir_AOS,Occ_AOS,OccOrbitals, &
          & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.) 
       ! Get Energy for the initialized fragment
-      call fragment_energy_and_prop(AtomicFragment) 
+      call fragment_energy_and_prop(AtomicFragment,add_mp2_opt=add_mp2_opt) 
+      ! Set energies used by fragment optimization
+      call get_occ_virt_lag_energies_fragopt(AtomicFragment)
       ! Print initial fragment information
       if (full_mol) write(DECinfo%output,*) 'FOP Expansion Include Full Molecule !!!'
       call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
@@ -5388,7 +5432,7 @@ contains
       if (.not.full_mol) then
          call fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
             & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
-            & OccOrbitals,VirOrbitals,expit,mylsitem)
+            & OccOrbitals,VirOrbitals,expit,add_MP2_opt,mylsitem)
       end if
 
 
@@ -5414,11 +5458,17 @@ contains
       ! Overwrite ccmodel for myatom with the reduction required ccmodel
       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
       AtomicFragment%ccmodel = DECinfo%fragopt_red_model
+      select case(DECinfo%fragopt_red_model)
+      case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
+         add_MP2_opt = .true.
+      end select
 
       ! if expansion and reduction ccmodels are different, we need to calculate
       ! the energy of the expanded fragment using the new model:
       if(DECinfo%fragopt_exp_model /= DECinfo%fragopt_red_model) then
-         call fragment_energy_and_prop(AtomicFragment)
+         call fragment_energy_and_prop(AtomicFragment,add_mp2_opt=add_mp2_opt)
+         ! Set energies used by fragment optimization
+         call get_occ_virt_lag_energies_fragopt(AtomicFragment)
          if( DECinfo%print_small_calc )then
             write(DECinfo%output,'(2a)') ' FOP Calculated ref atomic fragment energy for relevant CC model: ', &
                & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
@@ -5446,7 +5496,7 @@ contains
       if (dored) then
          call fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,red_list_occ, &
                & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-               & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT,redit)
+               & VirOrbitals,mylsitem,nred_occ,nred_vir,DECinfo%FOT,redit,add_MP2_opt)
       end if
 
       !==================================================================================!
@@ -5500,7 +5550,7 @@ contains
    ! Date:    July 2014
    subroutine fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
             & occ_priority_list,vir_priority_list,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
-            & OccOrbitals,VirOrbitals,iter,mylsitem)
+            & OccOrbitals,VirOrbitals,iter,add_MP2_opt,mylsitem)
 
       implicit none
 
@@ -5527,6 +5577,8 @@ contains
       logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv)
       !> Out: number of iteration used in the expansion
       integer, intent(out) :: iter
+      !> Get MP2 information on top of actual ccmodel:
+      logical, intent(in) :: add_MP2_opt
       !> Integral information
       type(lsitem), intent(inout)       :: mylsitem
       
@@ -5552,7 +5604,9 @@ contains
             & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
          ! Get new fragment energy:
-         call fragment_energy_and_prop(AtomicFragment)
+         call fragment_energy_and_prop(AtomicFragment,add_mp2_opt=add_mp2_opt)
+         ! Set energies used by fragment optimization
+         call get_occ_virt_lag_energies_fragopt(AtomicFragment)
 
          ! Energy differences
          LagEnergy_dif = abs(LagEnergy_old - AtomicFragment%LagFOP)
@@ -5597,7 +5651,7 @@ contains
    !> \date November 2014
    subroutine fragment_reduction_procedure_wrapper(AtomicFragment,no,nv,occ_priority_list, &
         & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-        & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter)
+        & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter,add_MP2_opt)
 
      implicit none
 
@@ -5627,8 +5681,10 @@ contains
      integer,intent(in) :: no_gap, nv_gap
      !> Fragment optimization threshold to use in reduction
      real(realk),intent(in) :: FOT
-      !> Out: number of iteration used in the reduction
-      integer, intent(out) :: iter
+     !> Out: number of iteration used in the reduction
+     integer, intent(out) :: iter
+     !> Get MP2 info on top of actual cc model:
+     logical, intent(in) :: add_MP2_opt
      real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
      type(decfrag) :: ReducedFragment
      integer :: i,noccAOSprev, nvirtAOSprev
@@ -5651,7 +5707,7 @@ contains
      ! Determine AtomicFragment according to main FOT
      call fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
           & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-          & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter)
+          & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,iter,add_MP2_opt)
 
      if(DECinfo%print_small_calc)then
         write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
@@ -5689,7 +5745,7 @@ contains
         ! Determine ReducedFragment according to the scaled FOT
         call fragment_reduction_procedure(ReducedFragment,no,nv,occ_priority_list, &
              & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-             & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased,iter)
+             & VirOrbitals,mylsitem,no_gap,nv_gap,FOTincreased,iter,add_MP2_opt)
         
         ! Save information about ReducedFragment AOS in AtomicFragment structure
         AtomicFragment%REDfrags(i)%noccAOS   = ReducedFragment%noccAOS
@@ -5741,7 +5797,7 @@ contains
    ! Date:    July 2014
    subroutine fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
-            & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,totit)
+            & VirOrbitals,mylsitem,no_gap,nv_gap,FOT,totit,add_MP2_opt)
 
       implicit none
 
@@ -5773,6 +5829,8 @@ contains
       real(realk),intent(in) :: FOT
       !> Total number of iteration used in the reduction
       integer, intent(inout) :: totit
+      !> Get MP2 info on top of actual cc model:
+      logical, intent(in) :: add_MP2_opt
 
       !> energy error acceptance in reduction steps:
       real(realk) :: dE_occ, dE_vir
@@ -5900,7 +5958,9 @@ contains
             & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
          ! Get new fragment energy:
-         call fragment_energy_and_prop(AtomicFragment)
+         call fragment_energy_and_prop(AtomicFragment,add_mp2_opt=add_mp2_opt)
+         ! Set energies used by fragment optimization
+         call get_occ_virt_lag_energies_fragopt(AtomicFragment)
 
          ! Energy differences
          LagEnergy_dif = abs(LagEnergy_exp - AtomicFragment%LagFOP)
