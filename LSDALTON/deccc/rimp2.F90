@@ -2193,6 +2193,15 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
              & MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
              & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
         IF(MemForPartialMOINT.GE.maxsize)THEN !Error 
+           print*,'MemForPartialMOINT',MemForPartialMOINT
+           print*,'maxsize',maxsize
+           print*,'==================================='
+           print*,'MinAuxBatch',MinAuxBatch
+           print*,'nAuxMPI(mynum+1)',nAuxMPI(mynum+1)
+           print*,'nvirt*nocc',nvirt*nocc,'nvirt,nocc',nvirt,nocc
+           print*,'nthreads',nthreads
+           print*,'nbasis1',nbasis1
+           print*,'nbasis2',nbasis2
            CALL lsquit('Not enough memory in build_calpha bcast schem',-1)
         ELSE
            MaxNaux = MIN(nAuxMPI(mynum+1),&
