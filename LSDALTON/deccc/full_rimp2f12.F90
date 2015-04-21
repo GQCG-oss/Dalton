@@ -225,9 +225,7 @@ contains
             & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,&
             & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
        ABdecompCreateG = .FALSE.
-       call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,&
-            & CoulombF12,ExchangeF12)
-       E21 = 0.5E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12-ExchangeF12*0.5E0_realk)
+       call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,E21)
        mp2f12_energy = mp2f12_energy  + E21
        WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gjpiq,RI) = ',E21       
 !       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
@@ -533,55 +531,52 @@ subroutine ContractOne4CenterF12IntegralsRI(nBA,n,Calpha,EJ,EK)
   !$OMP END PARALLEL DO
 end subroutine ContractOne4CenterF12IntegralsRI
 
-subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJ,EK)
+subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK)
   implicit none
   integer,intent(in)        :: nBA,n1,n2
   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
-  real(realk),intent(inout) :: EJ,EK
+  real(realk),intent(inout) :: EJK
   !local variables
   integer :: Q,P,I,J,ALPHA,BETA
-  real(realk) :: TMPR,TMPG,TMP1(NBA,NBA),TMP2(NBA,NBA)
+  real(realk) :: TMPR,TMPG1,TMPG2,TMP
+
   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
-  EK = 0.0E0_realk
-  EJ = 0.0E0_realk
-  !$OMP PARALLEL DEFAULT(none) PRIVATE(I,J,P,Q,TMPR,TMPG) SHARED(CalphaR,CalphaG,n2,n1,nba) REDUCTION(+:EK,EJ)
-  !$OMP DO COLLAPSE(3)
+  TMP = 0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,P,Q,TMPR,&
+  !$OMP TMPG1,TMPG2) SHARED(CalphaR,CalphaG,n2,n1,&
+  !$OMP nba) REDUCTION(+:TMP)
   DO Q=1,n2
      DO P=1,n2
-        DO I=1,n1
-           DO J=1,n1
+        DO j=1,n1
+           !Diagonal
+           TMPR = 0.0E0_realk
+           DO ALPHA = 1,NBA
+              TMPR = TMPR + CalphaR(ALPHA,J,P)*CalphaR(ALPHA,J,Q)
+           ENDDO
+           TMPG1 = 0.0E0_realk
+           DO BETA = 1,NBA
+              TMPG1 = TMPG1 + CalphaG(BETA,J,P)*CalphaG(BETA,J,Q)
+           ENDDO
+           TMP = TMP + 2.0E0_realk*TMPR*TMPG1
+           !Non Diagonal
+           DO i=j+1,n1
               TMPR = 0.0E0_realk
               DO ALPHA = 1,NBA
                  TMPR = TMPR + CalphaR(ALPHA,I,P)*CalphaR(ALPHA,J,Q)
               ENDDO
-              TMPG = 0.0E0_realk
+              TMPG1 = 0.0E0_realk
+              TMPG2 = 0.0E0_realk
               DO BETA = 1,NBA
-                 TMPG = TMPG + CalphaG(BETA,J,P)*CalphaG(BETA,I,Q)
+                 TMPG1 = TMPG1 + CalphaG(BETA,I,P)*CalphaG(BETA,J,Q)
+                 TMPG2 = TMPG2 + CalphaG(BETA,J,P)*CalphaG(BETA,I,Q)
               ENDDO
-              EK = EK + TMPR*TMPG
+              tmp = tmp + 5.0E0_realk*TMPR*TMPG1 - 1.0E0_realk*TMPR*TMPG2
            ENDDO
         ENDDO
      ENDDO
   ENDDO
-  !$OMP END DO NOWAIT
-  !Coulomb Ripjq*Gipjq Scaling(N*O*Naux**2)
-  !FIXME THIS IS NOT OPTIMAL - NON UNIT STRIDE 
-  !$OMP DO COLLAPSE(2)
-  DO BETA = 1,NBA
-     DO ALPHA = 1,NBA
-        TMPR = 0.0E0_realk                    
-        DO P=1,n2
-           DO I=1,n1
-              TMPR = TMPR + CalphaR(ALPHA,I,P)*CalphaG(BETA,I,P)
-           ENDDO
-        ENDDO
-        EJ = EJ + TMPR*TMPR
-     ENDDO
-  ENDDO
-  !$OMP END DO
-  !$OMP END PARALLEL
-
-
+  !$OMP END PARALLEL DO
+  EJK = 0.5E0_realk*TMP
 end subroutine ContractTwo4CenterF12IntegralsRI
 
 subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
@@ -601,8 +596,8 @@ subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
   !$OMP nba) REDUCTION(+:TMP)
   DO M=1,n3
      DO C=1,n2
-        !Diagonal
         DO j=1,n1
+           !Diagonal
            TMPR = 0.0E0_realk
            DO ALPHA = 1,NBA
               TMPR = TMPR + CalphaRocc(ALPHA,J,M)*CalphaR(ALPHA,J,C)
@@ -612,6 +607,7 @@ subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
               TMPG1 = TMPG1 + CalphaGocc(BETA,J,M)*CalphaG(BETA,J,C)
            ENDDO
            TMP = TMP + 2.0E0_realk*TMPR*TMPG1
+           !Non Diagonal
            DO i=j+1,n1
               TMPR = 0.0E0_realk
               DO ALPHA = 1,NBA
