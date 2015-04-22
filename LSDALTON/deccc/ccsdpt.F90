@@ -206,24 +206,16 @@ contains
 
          call random_seed()
          call random_number(C_can_occ%val)
-         if (abc) then
-            C_can_occ%val = 5.0E-2_realk*C_can_occ%val
-         else
-            C_can_occ%val = 1.0E-1_realk*C_can_occ%val
-         endif
+         call dscal(nbasis*nocc,1.0E-2_realk,C_can_occ%val,1)
          call random_seed()
          call random_number(C_can_virt%val)
-         if (abc) then
-            C_can_virt%val = 5.0E-2_realk*C_can_virt%val
-         else
-            C_can_virt%val = 1.0E-1_realk*C_can_virt%val
-         endif
+         call dscal(nbasis*nvirt,1.0E-2_realk,C_can_virt%val,1)
          call random_seed()
          call random_number(eivalocc)
-         eivalocc = -1.0E0_realk*eivalocc
+         call dscal(nocc,-1.0E-2_realk,eivalocc,1)
          call random_seed()
          call random_number(eivalvirt)
-         eivalvirt = 1.0E0_realk*eivalvirt
+         call dscal(nvirt,1.0E-2_realk,eivalvirt,1)
 
       endif
 
@@ -281,8 +273,8 @@ contains
 
           call tensor_random(ccsd_doubles)
           call tensor_random(vovo)
-          call tensor_scale(ccsd_doubles,1.0E-1_realk)
-          call tensor_scale(vovo,1.0E-1_realk)
+          call tensor_scale(ccsd_doubles,1.0E-2_realk)
+          call tensor_scale(vovo,1.0E-2_realk)
 
        elseif (nodtotal .eq. 1) then
 
@@ -300,6 +292,8 @@ contains
    
           call tensor_random(ccsd_doubles)
           call tensor_random(vovo)
+          call dscal(nocc**2*nvirt**2,1.0E-2_realk,ccsd_doubles%elm1,1)
+          call dscal(nocc**2*nvirt**2,1.0E-2_realk,vovo%elm1,1)
 
        endif
 #else
@@ -317,6 +311,9 @@ contains
 
        call tensor_random(ccsd_doubles)
        call tensor_random(vovo)
+       call dscal(nocc**2*nvirt**2,1.0E-2_realk,ccsd_doubles%elm1,1)
+       call dscal(nocc**2*nvirt**2,1.0E-2_realk,vovo%elm1,1)
+
 #endif
 
     else
