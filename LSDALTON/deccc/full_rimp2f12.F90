@@ -44,22 +44,27 @@ contains
     !local variables
     integer :: nbasis,nocc,nvirt,ncabsAO,ncabsMO,noccfull
     real(realk) :: E21,Econt(1),ExchangeF12,CoulombF12,E23
-!    real(realk) :: CMO_cabs(:,:)        
-!    type(matrix) :: mCMO_cabs
+    real(realk) :: EV1,EV2,EV3,EV4,EX1,EX2,EX3,EX4
+    real(realk) :: EB1,EB2,EB3,EB4,EB5,EB6,EB7,EB8,EB9
+    !    real(realk) :: CMO_cabs(:,:)        
+    !    type(matrix) :: mCMO_cabs
     !========================================================
     !WARNING THESE SHOULD NOT BE HERE - ONLY FOR TESTING
     !========================================================
-    Real(realk),pointer  :: Vijij(:,:)
-    Real(realk),pointer  :: Vjiij(:,:)
-    Real(realk),pointer  :: Bijij(:,:)
-    Real(realk),pointer  :: Bjiij(:,:)
-    Real(realk),pointer  :: Ripjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
-    Real(realk),pointer  :: Gipjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
-    Real(realk),pointer  :: Rimjc(:,:,:,:) !nocc,noccfull,nocc,ncabsMO
-    Real(realk),pointer  :: Gimjc(:,:,:,:) !nocc,noccfull,nocc,ncabsMO
-    Real(realk),pointer  :: Fijkl(:,:,:,:) !nocc,nocc,nocc,nocc
-    Real(realk),pointer  :: Dijkl(:,:,:,:) !nocc,nocc,nocc,nocc
-    Real(realk),pointer  :: gao(:,:,:,:) !nbasis,nbasis,nbasis,nbasis
+    real(realk),pointer  :: Vijij(:,:)
+    real(realk),pointer  :: Vjiij(:,:)
+    real(realk),pointer  :: Xijij(:,:)
+    real(realk),pointer  :: Xjiij(:,:)
+    real(realk),pointer  :: Bijij(:,:)
+    real(realk),pointer  :: Bjiij(:,:)
+    real(realk),pointer  :: Ripjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
+    real(realk),pointer  :: Gipjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
+    real(realk),pointer  :: Rimjc(:,:,:,:) !nocc,noccfull,nocc,ncabsMO
+    real(realk),pointer  :: Gimjc(:,:,:,:) !nocc,noccfull,nocc,ncabsMO
+    real(realk),pointer  :: Fijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+    real(realk),pointer  :: Tijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+    real(realk),pointer  :: Dijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+    real(realk),pointer  :: gao(:,:,:,:) !nbasis,nbasis,nbasis,nbasis
     integer :: i,j,p,q,c,m,mynum,numnodes,nAtoms,lupri
     !========================================================
     ! RI variables
@@ -147,8 +152,9 @@ contains
     ExchangeF12 = Econt(1)       
     E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E0_realk)
     WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,LS) = ',E21
-    mp2f12_energy = E21
+    !WRITE(*,'(A30,F20.13)')'E(Fijkl,LS) = ',E21
     use_bg_buf = .FALSE.
+    mp2f12_energy = 0.0E0_realk 
     IF(RIF12)THEN       !Use RI 
        call mem_alloc(ABdecompF,nAux,nAux)
        ABdecompCreateF = .TRUE.
@@ -166,15 +172,15 @@ contains
        ABdecompCreateF = .FALSE.
        call ContractOne4CenterF12IntegralsRI(NBA,nocc,CalphaF,CoulombF12,ExchangeF12)
        !The minus is due to the Valeev factor
-       E21 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12-ExchangeF12*0.25E0_realk)
-       mp2f12_energy = mp2f12_energy  + E21
-       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI) = ',E21       
+       EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12-ExchangeF12*0.25E0_realk)
+       mp2f12_energy = mp2f12_energy  + EV1
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI) = ',EV1
+       WRITE(*,'(A30,F20.13)')'E(Fijkl,RI) = ',EV1
 !       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Coulomb) = ',CoulombF12
 !       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Exchange) = ',ExchangeF12
        call mem_dealloc(CalphaF)
        call mem_dealloc(ABdecompF)
     ENDIF
-
 
     IF(Test)THEN
        call mem_alloc(Vijij,nocc,nocc)
@@ -198,7 +204,9 @@ contains
        E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
-       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,FullIntegral) = ',E21
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,FullIntegral) = ',EV1
+       WRITE(*,'(A30,F20.13)')'E(Fijkl,FullIntegral) = ',EV1
+
     ENDIF
     !==========================================================
     !=                                                        =
@@ -232,9 +240,10 @@ contains
             & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,&
             & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
        ABdecompCreateG = .FALSE.
-       call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,E21)
-       mp2f12_energy = mp2f12_energy  + E21
-       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gjpiq,RI) = ',E21       
+       call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,EV2)
+       mp2f12_energy = mp2f12_energy  + EV2
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gjpiq,RI) = ',EV2       
+       WRITE(*,'(A30,F20.13)')'E(Ripjq*Gjpiq,RI) = ',EV2
 !       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
 !       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Exchange) = ',ExchangeF12
        call mem_dealloc(CalphaR)
@@ -282,7 +291,8 @@ contains
        call mem_dealloc(Gipjq)
        
        E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
-       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gipjq,FullIntegral) = ',E21
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gipjq,FullIntegral) = ',EV2
+       WRITE(*,'(A30,F20.13)')'E(Ripjq*Gipjq,FullIntegral) = ',EV2
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
     ENDIF
@@ -290,6 +300,7 @@ contains
     !==========================================================
     !=                                                        =
     !=             Step 3  Rimjc*Gimjc                        =
+    !=             Step 4  Rjmic*Gjmic                        =
     != The Coulomb Operator Int multiplied with               =
     != The Gaussian geminal operator g                        =
     != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
@@ -301,7 +312,7 @@ contains
        !CalphaRocc(NBA,nocc,nocc)
        intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
        intspec(2) = 'R' !Regular AO basis function on center 3
-       intspec(3) = 'R' !CABS AO basis function on center 4
+       intspec(3) = 'R' !Regular AO basis function on center 4
        intspec(4) = 'C' !The Coulomb Operator
        intspec(5) = 'C' !The Coulomb Operator
        call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
@@ -343,9 +354,13 @@ contains
        call mem_dealloc(ABdecompG)
 
        call ContractTwo4CenterF12IntegralsRI2(NBA,nocc,noccfull,ncabsMO,CalphaR,CalphaG,&
-            & CalphaRocc,CalphaGocc,E21)
-       mp2f12_energy = mp2f12_energy  + E21
-       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Rimjc*Gjmic,RI) = ',E21       
+            & CalphaRocc,CalphaGocc,EV3,EV4)
+       
+       mp2f12_energy = mp2f12_energy  + EV3 + EV4
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V3,RI) = ',EV3       
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V4,RI) = ',EV4       
+       WRITE(*,'(A30,F20.13)')'E(V3,RI) = ',EV3       
+       WRITE(*,'(A30,F20.13)')'E(V4,RI) = ',EV4       
        call mem_dealloc(CalphaRocc)
        call mem_dealloc(CalphaGocc)
        call mem_dealloc(CalphaR)
@@ -390,14 +405,143 @@ contains
              enddo
           enddo
        enddo
-       
-       E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
-       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Rimjc*Gimjc,FullIntegral) = ',E21
+       EV3 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V3,FullIntegral) = ', EV3
+       WRITE(*,'(A30,F20.13)')'E(V3,FullIntegral) = ',EV3
+      
+       !V-term 4
+       Vijij = 0.0E0_realk
+       Vjiij = 0.0E0_realk
+       do c=1,ncabsMO
+          do j=1,nocc
+             do m=1,noccfull
+                do i=1,nocc
+                   Vijij(i,j) = Vijij(i,j) - Rimjc(j,m,i,c)*Gimjc(j,m,i,c)
+                enddo
+             enddo
+          enddo
+       enddo
+       do c=1,ncabsMO
+          do j=1,nocc
+             do m=1,noccfull
+                do i=1,nocc
+                   Vjiij(i,j) = Vjiij(i,j) - Rimjc(j,m,i,c)*Gimjc(i,m,j,c)
+                enddo
+             enddo
+          enddo
+       enddo
+
+       EV4 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V4,FullIntegral) = ', EV4
+       WRITE(*,'(A30,F20.13)')'E(V4,FullIntegral) = ',EV4
+
        call mem_dealloc(Rimjc)
        call mem_dealloc(Gimjc)
 
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
+    ENDIF
+
+    !==============================================================
+    !=                                                            =
+    != X1:       Xijkl                                            =
+    != The Gaussian geminal squared g^2                           =     
+    !=                                                            =
+    !==============================================================
+    use_bg_buf = .FALSE.
+    IF(RIF12)THEN       !Use RI 
+       call mem_alloc(ABdecompF,nAux,nAux)
+       ABdecompCreateF = .TRUE.
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
+       intspec(5) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
+            & mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
+       ABdecompCreateF = .FALSE.
+       call ContractOne4CenterF12IntegralsRI(NBA,nocc,CalphaF,CoulombF12,ExchangeF12)
+       !The minus is due to the Valeev factor
+       EX1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12-ExchangeF12*0.25E0_realk)
+       mp2f12_energy = mp2f12_energy  + EX1
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X1,RI) = ',EX1
+       WRITE(*,'(A30,F20.13)')'E(X1,RI) = ',EX1
+       call mem_dealloc(CalphaF)
+       call mem_dealloc(ABdecompF)
+    ENDIF
+
+    IF(Test)THEN
+       call mem_alloc(Xijij,nocc,nocc)
+       call mem_alloc(Xjiij,nocc,nocc)
+       call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRR2')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Tijkl)
+       call mem_dealloc(gao)
+       do j=1,nocc
+          do i=1,nocc
+            Xijij(i,j) = Tijkl(i,i,j,j)
+          enddo
+       enddo
+       do j=1,nocc
+          do i=1,nocc
+             Xjiij(i,j) = Tijkl(i,j,j,i)
+          enddo
+       enddo
+       call mem_dealloc(Tijkl)
+       EX1 = 2.0E0_REALK*mp2f12_E21(Xijij,Xjiij,nocc)
+       call mem_dealloc(Xijij)
+       call mem_dealloc(Xjiij)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X1,FullIntegral) = ',EX1
+       WRITE(*,'(A30,F20.13)')'E(X1,FullIntegral) = ',EX1
+
+    ENDIF
+
+    !==========================================================
+    !=                                                        =
+    != X2: Gipjq*Gipjq                                        =
+    != The Gaussian geminal operator Int multiplied with       =
+    != The Gaussian geminal operator g                        =
+    != Dim(nocc,nbasis,nocc,nbasis)                           =
+    !=                                                        =
+    !==========================================================
+    IF(Test)THEN
+       call mem_alloc(Xijij,nocc,nocc)
+       call mem_alloc(Xjiij,nocc,nocc)
+       call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Gipjq)
+       call mem_dealloc(gao)
+       Xijij = 0.0E0_realk
+       Xjiij = 0.0E0_realk
+       do q=1,nbasis
+          do j=1,nocc
+             do p=1,nbasis
+                do i=1,nocc
+                   Xijij(i,j) = Xijij(i,j) - Gipjq(i,p,j,q)*Gipjq(i,p,j,q)
+                enddo
+             enddo
+          enddo
+       enddo
+       
+       do q=1,nbasis
+          do j=1,nocc
+             do p=1,nbasis
+                do i=1,nocc
+                   Xjiij(i,j) = Xjiij(i,j) - Gipjq(i,p,j,q)*Gipjq(j,p,i,q)
+                enddo
+             enddo
+          enddo
+       enddo
+       call mem_dealloc(Gipjq)
+       
+       EX2 = 2.0E0_REALK*mp2f12_E21(Xijij,Xjiij,nocc)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X2,FullIntegral) = ',EX2
+       WRITE(*,'(A30,F20.13)')'E(X2,FullIntegral) = ',EX2
+       call mem_dealloc(Xijij)
+       call mem_dealloc(Xjiij)
     ENDIF
 
     !==============================================================
@@ -752,6 +896,7 @@ subroutine ContractOne4CenterF12IntegralsRI(nBA,n,Calpha,EJ,EK)
      ENDDO
   ENDDO
   !$OMP END PARALLEL DO
+
 end subroutine ContractOne4CenterF12IntegralsRI
 
 subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK)
@@ -759,101 +904,128 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK)
   integer,intent(in)        :: nBA,n1,n2
   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
   real(realk),intent(inout) :: EJK
+  real(realk)               :: ED, EJ,EK
   !local variables
-  integer :: Q,P,I,J,ALPHA,BETA
-  real(realk) :: TMPR,TMPG1,TMPG2,TMP
+  integer :: q,p,i,j,alpha,beta
+  real(realk) :: tmpR,tmpG1,tmpG2,tmp
 
   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
-  TMP = 0E0_realk
-  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,P,Q,TMPR,&
-  !$OMP TMPG1,TMPG2) SHARED(CalphaR,CalphaG,n2,n1,&
-  !$OMP nba) REDUCTION(+:TMP)
+  tmp = 0.0E0_realk
+  ED =  0.0E0_realk
+  EJ =  0.0E0_realk
+  EK =  0.0E0_realk
+  EJK = 0.0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,p,q,tmpR,&
+  !$OMP tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
+  !$OMP nba) REDUCTION(+:EJ,EK)
   DO q=1,n2
      DO p=1,n2
         DO j=1,n1
+         
            !Diagonal
-           TMPR = 0.0E0_realk
-           DO ALPHA = 1,NBA
-              TMPR = TMPR + CalphaR(ALPHA,j,p)*CalphaR(ALPHA,j,q)
+           tmpR = 0.0E0_realk
+           DO alpha = 1,NBA
+              tmpR = tmpR + CalphaR(alpha,j,p)*CalphaR(alpha,j,q)
            ENDDO
-           TMPG1 = 0.0E0_realk
-           DO BETA = 1,NBA
-              TMPG1 = TMPG1 + CalphaG(BETA,j,p)*CalphaG(BETA,j,q)
+           tmpG1 = 0.0E0_realk
+           DO beta = 1,NBA
+              tmpG1 = tmpG1 + CalphaG(beta,j,p)*CalphaG(beta,j,q)
            ENDDO
-           TMP = TMP + 2.0E0_realk*TMPR*TMPG1
+           ED = ED + tmpR*tmpG1
            !Non Diagonal
            DO i=j+1,n1
-              TMPR = 0.0E0_realk
-              DO ALPHA = 1,NBA
-                 TMPR = TMPR + CalphaR(ALPHA,i,p)*CalphaR(ALPHA,j,q)
+              tmpR = 0.0E0_realk
+              DO alpha = 1,NBA
+                 tmpR = tmpR + CalphaR(alpha,i,p)*CalphaR(alpha,j,q)
               ENDDO
-              TMPG1 = 0.0E0_realk
-              TMPG2 = 0.0E0_realk
-              DO BETA = 1,NBA
-                 TMPG1 = TMPG1 + CalphaG(BETA,i,p)*CalphaG(BETA,j,q)
-                 TMPG2 = TMPG2 + CalphaG(BETA,j,p)*CalphaG(BETA,i,q)
+              tmpG1 = 0.0E0_realk
+              tmpG2 = 0.0E0_realk
+              DO beta = 1,NBA
+                 tmpG1 = tmpG1 + CalphaG(beta,i,p)*CalphaG(beta,j,q)
+                 tmpG2 = tmpG2 + CalphaG(beta,j,p)*CalphaG(beta,i,q)
               ENDDO
-              tmp = tmp + 5.0E0_realk*TMPR*TMPG1 - 1.0E0_realk*TMPR*TMPG2
+              EJ = EJ + tmpR*tmpG1 
+              EK = EK + tmpR*tmpG2
            ENDDO
         ENDDO
      ENDDO
   ENDDO
   !$OMP END PARALLEL DO
-  EJK = 0.5E0_realk*TMP
+  EJK = ED + 2.5E0_realk*EJ - 0.50_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRI
 
 subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
-     & CalphaRocc,CalphaGocc,EJK)
+     & CalphaRocc,CalphaGocc,EJK3,EJK4)
   implicit none
   integer,intent(in)        :: nBA,n1,n2,n3
   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
   real(realk),intent(in)    :: CalphaRocc(nBA,n1,n3),CalphaGocc(nBA,n1,n3)
-  real(realk),intent(inout) :: EJK
+  real(realk),intent(inout) :: EJK3,EJK4
+  real(realk)               :: EJ3, EJ4, EK3, EK4, ED
   !local variables
-  integer :: M,C,I,J,ALPHA,BETA
-  real(realk) :: TMPR,TMPG1,TMPG2,TMP
+  integer :: m,c,i,j,alpha,beta
+  real(realk) :: tmpR3,tmpG13,tmpG23
+  real(realk) :: tmpR4,tmpG14,tmpG24
   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
-  TMP = 0E0_realk
-  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,M,C,TMPR,&
-  !$OMP TMPG1,TMPG2) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
-  !$OMP nba) REDUCTION(+:TMP)
-  DO M=1,n3
-     DO C=1,n2
+  ED =  0.0E0_realk
+  EJ3 =  0.0E0_realk
+  EK3 =  0.0E0_realk
+  EJK3 = 0.0E0_realk
+  EJ4 =  0.0E0_realk
+  EK4 =  0.0E0_realk
+  EJK4 = 0.0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4 &
+  !$OMP tmpG13,tmpG23,tmpG14,tmpG24) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
+  !$OMP nba) REDUCTION(+:EJ3,EK3,EJ4,EK4)
+  DO m=1,n3
+     DO c=1,n2
         DO j=1,n1
            !Diagonal
-           TMPR = 0.0E0_realk
-           DO ALPHA = 1,NBA
-              TMPR = TMPR + CalphaRocc(ALPHA,J,M)*CalphaR(ALPHA,J,C)
+           tmpR3 = 0.0E0_realk
+           DO alpha = 1,NBA
+              tmpR3 = tmpR3 + CalphaRocc(alpha,j,m)*CalphaR(alpha,j,c)
            ENDDO
-           TMPG1 = 0.0E0_realk
-           DO BETA = 1,NBA
-              TMPG1 = TMPG1 + CalphaGocc(BETA,J,M)*CalphaG(BETA,J,C)
+           tmpG13 = 0.0E0_realk
+           DO beta = 1,NBA
+              tmpG13 = tmpG13 + CalphaGocc(beta,j,m)*CalphaG(beta,j,c)
            ENDDO
-           TMP = TMP + 2.0E0_realk*TMPR*TMPG1
+           ED = ED + tmpR3*tmpG13
            !Non Diagonal
            DO i=j+1,n1
-              TMPR = 0.0E0_realk
-              DO ALPHA = 1,NBA
-                 TMPR = TMPR + CalphaRocc(ALPHA,I,M)*CalphaR(ALPHA,J,C)
+              tmpR3 = 0.0E0_realk
+              tmpR4 = 0.0E0_realk
+              DO alpha = 1,NBA
+                 tmpR3 = tmpR3 + CalphaRocc(alpha,i,m)*CalphaR(alpha,j,c)
+                 tmpR4 = tmpR4 + CalphaRocc(alpha,j,m)*CalphaR(alpha,i,c)
+              ENDDO              
+              tmpG13 = 0.0E0_realk
+              tmpG23 = 0.0E0_realk
+              tmpG14 = 0.0E0_realk
+              tmpG24 = 0.0E0_realk
+              DO beta = 1,NBA
+                 tmpG13 = tmpG13 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+                 tmpG23 = tmpG23 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+
+                 tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+                 tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
               ENDDO
-              TMPG1 = 0.0E0_realk
-              TMPG2 = 0.0E0_realk
-              DO BETA = 1,NBA
-                 TMPG1 = TMPG1 + CalphaGocc(BETA,I,M)*CalphaG(BETA,J,C)
-                 TMPG2 = TMPG2 + CalphaGocc(BETA,J,M)*CalphaG(BETA,I,C)
-              ENDDO
-              tmp = tmp + 5.0E0_realk*TMPR*TMPG1 - 1.0E0_realk*TMPR*TMPG2
+              EJ3 = EJ3 + tmpR3*tmpG13 
+              EK3 = EK3 + tmpR3*tmpG23
+
+              EJ4 = EJ4 + tmpR4*tmpG14 
+              EK4 = EK4 + tmpR4*tmpG24
            ENDDO
         ENDDO
      ENDDO
   ENDDO
   !$OMP END PARALLEL DO
-  EJK = 0.5E0_realk*TMP
+  EJK3 = ED + 2.5E0_realk*EJ3-0.5E0_realk*EK3
+  EJK4 = ED + 2.5E0_realk*EJ4-0.5E0_realk*EK4
 
 end subroutine ContractTwo4CenterF12IntegralsRI2
 
-  !Exchange Ripjq*Gjpiq
-  !Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
+!Exchange Ripjq*Gjpiq
+!Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
 !!$  subroutine ContractTwo4CenterF12IntegralsExchange(OperR,OperG,nocc,nbasis,SETTING,INTSPEC)
 !!$    implicit none
 !!$    integer,intent(in) :: OperR,OperG,nocc,nbasis
