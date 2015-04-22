@@ -5088,5 +5088,10 @@
         return
         end subroutine dil_test
 !DIL_ACTIVE (assumes Fortran-2003/2008, MPI-3):
+#else
+       contains
+        subroutine tensor_alg_dil_dummy()
+        end subroutine tensor_alg_dil_dummy
+!DIL_ACTIVE (assumes Fortran-2003/2008, MPI-3):
 #endif
        end module tensor_algebra_dil
