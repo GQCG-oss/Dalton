@@ -161,7 +161,8 @@ contains
             & mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
        ABdecompCreateF = .FALSE.
        call ContractOne4CenterF12IntegralsRI(NBA,nocc,CalphaF,CoulombF12,ExchangeF12)
-       E21 = -0.5E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12-ExchangeF12*0.5E0_realk)
+       !The minus is due to the Valeev factor
+       E21 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12-ExchangeF12*0.25E0_realk)
        mp2f12_energy = mp2f12_energy  + E21
        WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI) = ',E21       
 !       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Coulomb) = ',CoulombF12
@@ -285,7 +286,7 @@ contains
     !=             Step 3  Rimjc*Gimjc                        =
     != The Coulomb Operator Int multiplied with               =
     != The Gaussian geminal operator g                        =
-    != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas        =
+    != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
     !=                                                        =
     !==========================================================
     IF(RIF12)THEN !Use RI 
@@ -545,30 +546,30 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK)
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,P,Q,TMPR,&
   !$OMP TMPG1,TMPG2) SHARED(CalphaR,CalphaG,n2,n1,&
   !$OMP nba) REDUCTION(+:TMP)
-  DO Q=1,n2
-     DO P=1,n2
+  DO q=1,n2
+     DO p=1,n2
         DO j=1,n1
            !Diagonal
            TMPR = 0.0E0_realk
            DO ALPHA = 1,NBA
-              TMPR = TMPR + CalphaR(ALPHA,J,P)*CalphaR(ALPHA,J,Q)
+              TMPR = TMPR + CalphaR(ALPHA,j,p)*CalphaR(ALPHA,j,q)
            ENDDO
            TMPG1 = 0.0E0_realk
            DO BETA = 1,NBA
-              TMPG1 = TMPG1 + CalphaG(BETA,J,P)*CalphaG(BETA,J,Q)
+              TMPG1 = TMPG1 + CalphaG(BETA,j,p)*CalphaG(BETA,j,q)
            ENDDO
            TMP = TMP + 2.0E0_realk*TMPR*TMPG1
            !Non Diagonal
            DO i=j+1,n1
               TMPR = 0.0E0_realk
               DO ALPHA = 1,NBA
-                 TMPR = TMPR + CalphaR(ALPHA,I,P)*CalphaR(ALPHA,J,Q)
+                 TMPR = TMPR + CalphaR(ALPHA,i,p)*CalphaR(ALPHA,j,q)
               ENDDO
               TMPG1 = 0.0E0_realk
               TMPG2 = 0.0E0_realk
               DO BETA = 1,NBA
-                 TMPG1 = TMPG1 + CalphaG(BETA,I,P)*CalphaG(BETA,J,Q)
-                 TMPG2 = TMPG2 + CalphaG(BETA,J,P)*CalphaG(BETA,I,Q)
+                 TMPG1 = TMPG1 + CalphaG(BETA,i,p)*CalphaG(BETA,j,q)
+                 TMPG2 = TMPG2 + CalphaG(BETA,j,p)*CalphaG(BETA,i,q)
               ENDDO
               tmp = tmp + 5.0E0_realk*TMPR*TMPG1 - 1.0E0_realk*TMPR*TMPG2
            ENDDO
