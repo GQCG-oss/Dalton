@@ -353,7 +353,7 @@ contains
              call tensor_init(tmp_tensor_2,ccsd_doubles_in%dims,4)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2)
              if (.not. print_frags) call tensor_free(ccsd_doubles_in)
-             call tensor_reorder(tmp_tensor_2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+             call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_2%elm1)
              call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,nocc,1],atype='TDAR')
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
@@ -381,7 +381,7 @@ contains
              if (.not. print_frags) call tensor_free(vovo_in)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
              call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
-             call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,ccsd_doubles%elm1)
+             call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
              if (.not. print_frags) call tensor_free(ccsd_doubles_in)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
    
@@ -851,8 +851,6 @@ contains
     type(tensor), intent(inout) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     !> ccsd doubles amplitudes
     type(tensor), intent(inout) :: ccsd_doubles
-    ! o*v^2 portions of ccsd_doubles
-    real(realk), pointer, dimension(:,:,:) :: ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k
     !> triples amplitudes and 3d work array
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates 
@@ -941,11 +939,6 @@ contains
        call tensor_lock_wins(vvoo,'s',all_nodes=.true.)
        call tensor_lock_wins(ccsd_doubles,'s',all_nodes=.true.)
     endif
-
-    ! init ccsd_doubles_help_arrays
-    call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
-    call mem_alloc(ccsd_doubles_portions_j,nocc,nvirt,nvirt)
-    call mem_alloc(ccsd_doubles_portions_k,nocc,nvirt,nvirt)
 
     ! init triples tuples structure
     call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
@@ -1097,18 +1090,6 @@ contains
 
                call time_start_phase(PHASE_WORK)
 
-#ifdef VAR_OPENACC
-               if (i .ne. i_old) call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                       & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-               if ((i .gt. j) .and. (j .ne. j_old)) call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
-                       & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
-#else
-               if (i .ne. i_old) call array_reorder_3d(1.0E0_realk,ccsd_pdm_i,nvirt,nvirt,&
-                       & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-               if ((i .gt. j) .and. (j .ne. j_old)) call array_reorder_3d(1.0E0_realk,ccsd_pdm_j,nvirt,nvirt,&
-                       & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
-#endif
-
 !!$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 !
 !!$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -1179,14 +1160,6 @@ contains
 
                   call time_start_phase(PHASE_WORK)
 
-#ifdef VAR_OPENACC
-                  if (j .gt. k) call array_reorder_3d_acc(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
-#else
-                  if (j .gt. k) call array_reorder_3d(1.0E0_realk,ccsd_pdm_k,nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
-#endif
-
 !!$acc enter data copyin(ccsd_doubles(:,:,:,k)) async(async_id(1))
 !
 !!$acc enter data copyin(vvvo_pdm_k,&
@@ -1238,7 +1211,6 @@ contains
 
                      call time_start_phase(PHASE_WORK, twall = time_trip )
                      call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_k,&
-                                             & ccsd_doubles_portions_i,ccsd_doubles_portions_k,&
                                              & vvvo_pdm_i,vvvo_pdm_k,&
                                              & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                              & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -1306,7 +1278,6 @@ contains
 
                      call time_start_phase(PHASE_WORK, twall = time_trip )
                      call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_j,&
-                                             & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                              & vvvo_pdm_i,vvvo_pdm_j,&
                                              & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                              & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -1368,9 +1339,7 @@ contains
 
                      call time_start_phase(PHASE_WORK, twall = time_trip )
                      call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
-                                             & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
-                                             & ccsd_doubles_portions_k,vvvo_pdm_i,&
-                                             & vvvo_pdm_j,vvvo_pdm_k,&
+                                             & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                                              & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
                                              & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                              & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -1540,11 +1509,6 @@ contains
 
     ! release async handles array
     call mem_dealloc(async_id)
-
-    ! release ccsd_doubles_help_arrays
-    call mem_dealloc(ccsd_doubles_portions_i)
-    call mem_dealloc(ccsd_doubles_portions_j)
-    call mem_dealloc(ccsd_doubles_portions_k)
 
     ! release pdm work arrays and job list
     call mem_dealloc(vvvo_pdm_buff)
