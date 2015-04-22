@@ -25,7 +25,7 @@ module fullrimp2
   use array4_simple_operations
   use array3_simple_operations
   use array2_simple_operations
-  use rimp2_module
+  use ri_util_module
   !  use orbital_operations
   use full_molecule
 !  use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
