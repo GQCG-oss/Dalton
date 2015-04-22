@@ -1175,8 +1175,7 @@ contains
     ! Update total virtual contributions to fragment energy
     !$OMP CRITICAL
     do a=1,nvirtAOS
-       !MyFragment%VirtContribs(a) = max(MyFragment%VirtContribs(a),virt_tmp(a))
-       MyFragment%VirtContribs(a) = virt_tmp(a)
+       MyFragment%VirtContribs(a) = MyFragment%VirtContribs(a) + virt_tmp(a)
     end do
     !$OMP END CRITICAL
 
@@ -1262,8 +1261,7 @@ contains
     !$OMP CRITICAL
     ! Update total occupied contributions to fragment energy
     do i=1,noccAOS
-       !MyFragment%OccContribs(i) = max(MyFragment%OccContribs(i), occ_tmp(i))
-       MyFragment%OccContribs(i) = occ_tmp(i)
+       MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
     end do
     !$OMP END CRITICAL
 
