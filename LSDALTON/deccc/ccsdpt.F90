@@ -407,7 +407,7 @@ contains
           if (.not. print_frags) call tensor_free(vovo_in) 
           call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
           call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
-          call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,ccsd_doubles%elm1)
+          call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
           if (.not. print_frags) call tensor_free(ccsd_doubles_in)
           call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
  
@@ -2185,8 +2185,6 @@ contains
     real(realk), dimension(nvirt,nvirt,nvirt,nocc) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     !> ccsd doubles amplitudes
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
-    ! o*v^2 portions of ccsd_doubles
-    real(realk), pointer, dimension(:,:,:) :: ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k
     !> triples amplitudes and 3d work array
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates
@@ -2216,11 +2214,6 @@ contains
     full_no_frags = .false.
 
     if (present(e4)) full_no_frags = .true.
-
-    ! init ccsd_doubles_help_arrays
-    call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
-    call mem_alloc(ccsd_doubles_portions_j,nocc,nvirt,nvirt)
-    call mem_alloc(ccsd_doubles_portions_k,nocc,nvirt,nvirt)
 
     ! init triples tuples structure
     call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
@@ -2281,14 +2274,6 @@ contains
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
-#ifdef VAR_OPENACC
-             call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-#else
-             call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
-#endif
-
 !$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2))
 
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
@@ -2307,14 +2292,6 @@ contains
                  else ! i .gt. j
 
 !$acc enter data copyin(ccsd_doubles(:,:,:,j)) async(async_id(1))
-
-#ifdef VAR_OPENACC
-                    call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
-#else
-                    call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
-#endif
 
 !$acc enter data copyin(vvvo(:,:,:,j),&
 !$acc& ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(2))
@@ -2387,14 +2364,6 @@ contains
 
                     if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
 
-#ifdef VAR_OPENACC
-                       call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
-#else
-                       call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
-#endif
-
                     end if
     
                     ! generate tuple(s)
@@ -2405,7 +2374,6 @@ contains
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
                        call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,k),&
-                                               & ccsd_doubles_portions_i,ccsd_doubles_portions_k,&
                                                & vvvo(:,:,:,i),vvvo(:,:,:,k),&
                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -2464,7 +2432,6 @@ contains
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
                        call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
-                                               & ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
                                                & vvvo(:,:,:,i),vvvo(:,:,:,j),&
                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -2516,10 +2483,9 @@ contains
 
 !$acc wait(async_id(1),async_id(2),async_id(5)) async(async_id(4))
 
-                       call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),&
-                                               & ccsd_doubles(:,:,:,k),ccsd_doubles_portions_i,ccsd_doubles_portions_j,&
-                                               & ccsd_doubles_portions_k,vvvo(:,:,:,i),&
-                                               & vvvo(:,:,:,j),vvvo(:,:,:,k),&
+                       call trip_generator_ijk_case3(i,j,k,nocc,nvirt,&
+                                               & ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j),ccsd_doubles(:,:,:,k),&
+                                               & vvvo(:,:,:,i),vvvo(:,:,:,j),vvvo(:,:,:,k),&
                                                & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
                                                & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -2676,11 +2642,6 @@ contains
 
     ! release async handles array
     call mem_dealloc(async_id)
-
-    ! release ccsd_doubles_help_arrays
-    call mem_dealloc(ccsd_doubles_portions_i)
-    call mem_dealloc(ccsd_doubles_portions_j)
-    call mem_dealloc(ccsd_doubles_portions_k)
 
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
@@ -5789,7 +5750,6 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: february 2014
   subroutine trip_generator_ijk_case1(oindex1,oindex3,no,nv,ccsd_doubles_1,ccsd_doubles_3,&
-                                & ccsd_doubles_portions_1,ccsd_doubles_portions_3,&
                                 & vvvo_tile_1,vvvo_tile_3,ovoo_tile_11,&
                                 & ovoo_tile_13,ovoo_tile_31,trip_tmp,trip_ampl,async_idx,num_idxs,cublas_handle)
 
@@ -5799,8 +5759,6 @@ contains
     integer, intent(in) :: oindex1,oindex3,no,nv
     !> nv**2 tiles of ccsd_doubles
     real(realk), dimension(nv,nv,no) :: ccsd_doubles_1, ccsd_doubles_3
-    !> no*nv**2 tiles of ccsd_doubles
-    real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_3
     !> tiles of ovoo 2-el integrals
     real(realk), dimension(no,nv) :: ovoo_tile_11, ovoo_tile_13, ovoo_tile_31
     !> tiles of vvvo 2-el integrals
@@ -5828,7 +5786,7 @@ contains
     ! iik,iki
     call trip_amplitudes_ijk_virt(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_1(:,:,oindex1),&
                             & vvvo_tile_3,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_portions_1,&
+    call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_1,&
                             & ovoo_tile_13,trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
@@ -5850,7 +5808,7 @@ contains
     ! kii,iik
     call trip_amplitudes_ijk_virt(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_3(:,:,oindex1),&
                             & vvvo_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_portions_1,&
+    call trip_amplitudes_ijk_occ(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_1,&
                             & ovoo_tile_31,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -5868,7 +5826,7 @@ contains
     ! iki.kii
     call trip_amplitudes_ijk_virt(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_1(:,:,oindex3),&
                             & vvvo_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_portions_3,&
+    call trip_amplitudes_ijk_occ(oindex3,oindex1,oindex1,no,nv,ccsd_doubles_3,&
                             & ovoo_tile_11,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -6026,7 +5984,6 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: february 2014
   subroutine trip_generator_ijk_case2(oindex1,oindex2,no,nv,ccsd_doubles_1,ccsd_doubles_2,&
-                                & ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
                                 & vvvo_tile_1,vvvo_tile_2,ovoo_tile_12,&
                                 & ovoo_tile_21,ovoo_tile_22,trip_tmp,trip_ampl,async_idx,num_idxs,cublas_handle)
 
@@ -6036,8 +5993,6 @@ contains
     integer, intent(in) :: oindex1,oindex2,no,nv
     !> nv**2 tiles of ccsd_doubles
     real(realk), dimension(nv,nv,no) :: ccsd_doubles_1, ccsd_doubles_2
-    !> no*nv**2 tiles of ccsd_doubles
-    real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_2
     !> tiles of ovoo 2-el integrals
     real(realk), dimension(no,nv) :: ovoo_tile_12, ovoo_tile_21, ovoo_tile_22
     !> tiles of vvvo 2-el integrals
@@ -6065,7 +6020,7 @@ contains
     ! ijj.jji
     call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_1(:,:,oindex2),&
                             & vvvo_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_portions_2,&
+    call trip_amplitudes_ijk_occ(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_2,&
                             & ovoo_tile_12,trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
@@ -6087,7 +6042,7 @@ contains
     ! jij,ijj
     call trip_amplitudes_ijk_virt(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_2(:,:,oindex1),&
                             & vvvo_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_portions_1,&
+    call trip_amplitudes_ijk_occ(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_1,&
                             & ovoo_tile_22,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -6105,7 +6060,7 @@ contains
     ! jji,jij
     call trip_amplitudes_ijk_virt(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_2(:,:,oindex2),&
                             & vvvo_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_portions_2,&
+    call trip_amplitudes_ijk_occ(oindex2,oindex1,oindex2,no,nv,ccsd_doubles_2,&
                             & ovoo_tile_21,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -6261,9 +6216,8 @@ contains
   !> \brief: generator for triples amplitudes, case(3)
   !> \author: Janus Juul Eriksen
   !> \date: february 2014
-  subroutine trip_generator_ijk_case3(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_1,ccsd_doubles_2,&
-                                & ccsd_doubles_3,ccsd_doubles_portions_1,ccsd_doubles_portions_2,&
-                                & ccsd_doubles_portions_3,vvvo_tile_1,vvvo_tile_2,vvvo_tile_3,&
+  subroutine trip_generator_ijk_case3(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_1,ccsd_doubles_2,ccsd_doubles_3,&
+                                & vvvo_tile_1,vvvo_tile_2,vvvo_tile_3,&
                                 & ovoo_tile_12,ovoo_tile_13,ovoo_tile_21,ovoo_tile_23,ovoo_tile_31,&
                                 & ovoo_tile_32,trip_tmp,trip_ampl,async_idx,num_idxs,cublas_handle)
 
@@ -6273,8 +6227,6 @@ contains
     integer, intent(in) :: oindex1,oindex2,oindex3,no,nv
     !> nv**2 tiles of ccsd_doubles
     real(realk), dimension(nv,nv,no) :: ccsd_doubles_1, ccsd_doubles_2, ccsd_doubles_3
-    !> no*nv**2 tiles of ccsd_doubles
-    real(realk), dimension(no,nv,nv) :: ccsd_doubles_portions_1,ccsd_doubles_portions_2,ccsd_doubles_portions_3
     !> tiles of ovoo 2-el integrals
     real(realk), dimension(no,nv) :: ovoo_tile_12, ovoo_tile_13, ovoo_tile_21
     real(realk), dimension(no,nv) :: ovoo_tile_23, ovoo_tile_31, ovoo_tile_32
@@ -6303,13 +6255,13 @@ contains
     ! ijk.jki
     call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_1(:,:,oindex2),&
                             & vvvo_tile_3,trip_ampl,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_portions_2,&
+    call trip_amplitudes_ijk_occ(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_2,&
                             & ovoo_tile_13,trip_ampl,handle,cublas_handle)
 
     ! jik,ikj
     call trip_amplitudes_ijk_virt(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_2(:,:,oindex1),&
                             & vvvo_tile_3,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_portions_1,&
+    call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_1,&
                             & ovoo_tile_23,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -6323,7 +6275,7 @@ contains
     ! kij,ijk
     call trip_amplitudes_ijk_virt(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_3(:,:,oindex1),&
                             & vvvo_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_portions_1,&
+    call trip_amplitudes_ijk_occ(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_1,&
                             & ovoo_tile_32,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -6337,7 +6289,7 @@ contains
     ! jki,kij
     call trip_amplitudes_ijk_virt(oindex2,oindex3,oindex1,no,nv,ccsd_doubles_2(:,:,oindex3),&
                             & vvvo_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_portions_3,&
+    call trip_amplitudes_ijk_occ(oindex3,oindex1,oindex2,no,nv,ccsd_doubles_3,&
                             & ovoo_tile_21,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -6351,7 +6303,7 @@ contains
     ! ikj,kji
     call trip_amplitudes_ijk_virt(oindex1,oindex3,oindex2,no,nv,ccsd_doubles_1(:,:,oindex3),&
                             & vvvo_tile_2,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_portions_3,&
+    call trip_amplitudes_ijk_occ(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_3,&
                             & ovoo_tile_12,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -6365,7 +6317,7 @@ contains
     ! kji,jik
     call trip_amplitudes_ijk_virt(oindex3,oindex2,oindex1,no,nv,ccsd_doubles_3(:,:,oindex2),&
                             & vvvo_tile_1,trip_tmp,handle,cublas_handle)
-    call trip_amplitudes_ijk_occ(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_portions_2,&
+    call trip_amplitudes_ijk_occ(oindex2,oindex1,oindex3,no,nv,ccsd_doubles_2,&
                             & ovoo_tile_31,trip_tmp,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
@@ -8226,14 +8178,14 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+    call dgemm_acc_openacc_async(async_idx,'n','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
 !    call dgemm_acc('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                       & 0.0E0_realk,trip,nv)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                           & 1.0E0_realk,c_loc(doub_ampl_v2),int(nv,kind=4),c_loc(int_virt_tile),int(nv,kind=4),&
                           & 0.0E0_realk,c_loc(trip),int(nv,kind=4))
 !$acc end host_data
@@ -8245,7 +8197,7 @@ contains
 
 #endif
 #else
-    call dgemm('t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+    call dgemm('n','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                    & 0.0E0_realk,trip,nv)
 #endif
 
@@ -8315,7 +8267,7 @@ contains
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
     real(realk), dimension(no,nv), target, intent(in) :: int_occ_portion
-    real(realk), dimension(no,nv,nv), target, intent(in) :: doub_ampl_ov2
+    real(realk), dimension(nv,nv,no), target, intent(in) :: doub_ampl_ov2
     real(realk), dimension(nv,nv,nv), target, intent(inout) :: trip
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
@@ -8328,15 +8280,15 @@ contains
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+    call dgemm_acc_openacc_async(async_idx,'t','t',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,nv**2,&
 !    call dgemm_acc('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                       & 1.0E0_realk,trip,nv)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(no,kind=4),&
-                          & -1.0E0_realk,c_loc(int_occ_portion),int(no,kind=4),c_loc(doub_ampl_ov2),int(no,kind=4),&
+    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(1,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(no,kind=4),&
+                          & -1.0E0_realk,c_loc(int_occ_portion),int(no,kind=4),c_loc(doub_ampl_ov2),int(nv**2,kind=4),&
                           & 1.0E0_realk,c_loc(trip),int(nv,kind=4))
 !$acc end host_data
 
@@ -8347,7 +8299,7 @@ contains
 
 #endif
 #else
-    call dgemm('t','n',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+    call dgemm('t','t',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,nv**2,&
                    & 1.0E0_realk,trip,nv)
 #endif
 
