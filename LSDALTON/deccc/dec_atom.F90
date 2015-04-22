@@ -5405,7 +5405,7 @@ contains
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
          &'FRAGANALYSIS: Max/Ave/Min occ         : ', maxocc,avocc,minocc
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
-         &'FRAGANALYSIS: Max/Ave/Min virt       : ', maxvirt,avvirt,minvirt
+         &'FRAGANALYSIS: Max/Ave/Min virt        : ', maxvirt,avvirt,minvirt
     write(DECinfo%output,'(1X,a,i8,7X,"/",g15.5,"/",i8)')&
          &'FRAGANALYSIS: Max/Ave/Min basis       : ', maxbasis,avbasis,minbasis
     write(DECinfo%output,'(1X,a,g15.5,"/",g15.5,"/",g15.5)')&
