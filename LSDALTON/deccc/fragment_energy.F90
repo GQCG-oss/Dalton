@@ -2561,6 +2561,7 @@ contains
 
 
 
+
       !==================================================================================!
       !                             Enter Fragment Expansion                             !
       !==================================================================================!
@@ -2626,6 +2627,7 @@ contains
       dored = .true.
       if (DECinfo%DECNP) dored = ( (DECinfo%ccmodel/=DECinfo%fragopt_exp_model) .and. &
          & (DECinfo%ccmodel/=DECinfo%fragopt_red_model) )
+
 
       ! Perform reduction:
       if (dored) then
@@ -2719,14 +2721,20 @@ contains
       !> Integral information
       type(lsitem), intent(inout)       :: mylsitem
       
-      logical :: full_mol, expansion_converged
-      type(EnergyFOP) :: Eold, Edif
+      logical :: full_mol, expansion_converged, MP2_converged
+      type(EnergyFOP) :: Eold, Edif, EMP2_FOP, EMP2_dif, EMP2_old
+
+
+      ! Get MP2 energies on top of current (higher level) cc energies:
+      if (add_mp2_opt) call get_occ_virt_lag_energies_fragopt(AtomicFragment, &
+         & EMP2_FOP,MODEL_MP2)
 
 
       EXPANSION_LOOP: do iter=1,DECinfo%maxiter
 
          ! Save current fragment energies
          Eold = EFOP
+         if (add_mp2_opt) EMP2_old = EMP2_FOP
 
          ! Expand fragment:
          call expand_fragment(no,nv,occ_priority_list,vir_priority_list,nexp_occ,nexp_vir, &
@@ -2753,6 +2761,25 @@ contains
 
          ! Test if fragment energy (or energies) are converged to FOT precision
          call fragopt_check_convergence(Edif,DECinfo%FOT,expansion_converged)
+
+
+         ! Test if fragment MP2 energies are also converged
+         if (add_mp2_opt .and. expansion_converged) then
+            call get_occ_virt_lag_energies_fragopt(AtomicFragment, &
+               & EMP2_FOP,MODEL_MP2)
+
+            ! Energy differences
+            EMP2_dif%lag = abs(EMP2_old%lag - EMP2_FOP%lag)
+            EMP2_dif%occ = abs(EMP2_old%occ - EMP2_FOP%occ)
+            EMP2_dif%vir = abs(EMP2_old%vir - EMP2_FOP%vir)
+
+            call fragopt_check_convergence(EMP2_dif,DECinfo%FOT,MP2_converged)
+
+            call fragopt_print_info(AtomicFragment,EMP2_FOP,EMP2_dif,iter)    
+
+            ! require both MP2 and CC energy to be converged
+            if (.not.MP2_converged) expansion_converged = .false.
+         end if
 
          ! Set the expansion to be converged if the current fragment include the full molecule:
          if (full_mol) expansion_converged = .true.
@@ -2997,9 +3024,10 @@ contains
       real(realk) :: dE_occ, dE_vir
       integer :: no_exp, nv_exp, no_min, nv_min, no_max, nv_max
       integer :: no_old, nv_old, no_new, nv_new, iter
-      logical :: redocc, redvir, step_accepted, reduction_converged, occ_red_conv, vir_red_conv
+      logical :: redocc, redvir, step_accepted, MP2_accepted
+      logical :: reduction_converged, occ_red_conv, vir_red_conv
       logical, pointer :: OccAOS_old(:), VirAOS_old(:)
-      type(EnergyFOP) :: Eexp, Eold, Edif
+      type(EnergyFOP) :: Eexp, Eold, Edif, EMP2_exp, EMP2_old, EMP2_dif, EMP2_FOP
 
 
       ! INITIALIZATION:
@@ -3024,6 +3052,12 @@ contains
       OccAOS_old = Occ_AOS
       VirAOS_old = Vir_AOS
       Eold = Eexp
+
+      if (add_mp2_opt) then
+         call get_occ_virt_lag_energies_fragopt(AtomicFragment,EMP2_FOP,MODEL_MP2)
+         EMP2_exp = EMP2_FOP
+         EMP2_old = EMP2_exp
+      end if
 
       ! Define specific reduction parameters:
       ! -------------------------------------
@@ -3136,12 +3170,37 @@ contains
             call fragopt_check_convergence(Edif,FOT,step_accepted)
          end if
 
+
+         ! Test if fragment MP2 energies are also converged
+         if (add_mp2_opt .and. step_accepted) then
+            call get_occ_virt_lag_energies_fragopt(AtomicFragment, &
+               & EMP2_FOP,MODEL_MP2)
+
+            ! Energy differences
+            EMP2_dif%lag = abs(EMP2_exp%lag - EMP2_FOP%lag)
+            EMP2_dif%occ = abs(EMP2_exp%occ - EMP2_FOP%occ)
+            EMP2_dif%vir = abs(EMP2_exp%vir - EMP2_FOP%vir)
+
+            call fragopt_check_convergence(EMP2_dif,FOT,MP2_accepted)
+
+            call fragopt_print_info(AtomicFragment,EMP2_FOP,EMP2_dif,iter)    
+
+            ! require both MP2 and CC energy to be converged
+            if (.not.MP2_accepted) then
+               step_accepted = .false.
+            else ! save frag MP2 energies
+               EMP2_old = EMP2_FOP
+            end if
+         end if
+
+
          ! If the step is accepted we need to save the frag info:
          if (step_accepted) then
             Eold = EFOP
             OccAOS_old = Occ_AOS
             VirAOS_old = Vir_AOS
          end if
+
 
          ! Check convergence of spaces:
          SpaceConvergence: if (redocc.and.(.not.redvir)) then
@@ -3171,6 +3230,7 @@ contains
                EFOP = Eold
                Occ_AOS = OccAOS_old
                Vir_AOS = VirAOS_old
+               if (add_mp2_opt) EMP2_FOP = EMP2_old
             end if
             exit REDUCTION_LOOP
          end if FullConvergence
