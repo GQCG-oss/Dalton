@@ -124,7 +124,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases),bytes_to_alloc,MinMem
   integer(kind=long) :: nSize,nsize1,nsize2,nsize3
-  character :: intspec(4)
+  character :: intspec(5)
   TYPE(MoleculeInfo),pointer :: molecule1,molecule2,molecule3,molecule4
   ! cublas stuff
   type(c_ptr) :: cublas_handle
@@ -444,6 +444,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      intspec(2) = 'R' !Regular AO basis function on center 3
      intspec(3) = 'R' !Regular AO basis function on center 4
      intspec(4) = 'C' !Coulomb Operator
+     intspec(5) = 'C' !Coulomb Operator
      call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
           & FORCEPRINT,CollaborateWithSlaves,CDIAGvirt%val,nvirt,CDIAGoccALL,nocctot,&
           & mynum,numnodes,Calpha,NBA,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
@@ -456,6 +457,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      intspec(2) = 'R' !Regular AO basis function on center 3
      intspec(3) = 'R' !Regular AO basis function on center 4
      intspec(4) = 'C' !Coulomb Operator
+     intspec(5) = 'C' !Coulomb Operator
      call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
           & FORCEPRINT,CollaborateWithSlaves,CDIAGvirt%val,nvirt,CDIAGocc%val,nocc,&
           & mynum,numnodes,Calpha,NBA,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
@@ -1165,6 +1167,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            intspec(2) = 'R' !Regular AO basis function on center 3
            intspec(3) = 'R' !Regular AO basis function on center 4
            intspec(4) = 'C' !Coulomb Operator
+           intspec(5) = 'C' !Coulomb Operator
            call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
                 & FORCEPRINT,CollaborateWithSlaves,CDIAGocc%val,nocc,CDIAGoccALL,nocctot,&
                 & mynum,numnodes,CalphaOcc,NBA,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
@@ -1177,6 +1180,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            intspec(2) = 'R' !Regular AO basis function on center 3
            intspec(3) = 'R' !Regular AO basis function on center 4
            intspec(4) = 'C' !Coulomb Operator
+           intspec(5) = 'C' !Coulomb Operator
            call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
                 & FORCEPRINT,CollaborateWithSlaves,CDIAGocc%val,nocc,CDIAGocc%val,nocc,&
                 & mynum,numnodes,CalphaOcc,NBA,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
@@ -1313,6 +1317,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         intspec(2) = 'R' !Regular AO basis function on center 3
         intspec(3) = 'R' !Regular AO basis function on center 4
         intspec(4) = 'C' !Coulomb Operator
+        intspec(5) = 'C' !Coulomb Operator
         call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
              & FORCEPRINT,CollaborateWithSlaves,CDIAGvirt%val,nvirt,CDIAGvirt%val,nvirt,&
              & mynum,numnodes,CalphaVV,NBA,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
@@ -1950,7 +1955,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   real(realk),intent(inout) :: AlphaBetaDecomp(nbasisAux,nbasisAux)
   real(realk),intent(in) :: Cvirt(nbasis1,nvirt),Cocc(nbasis2,nocc)
   real(realk),pointer :: Calpha(:)
-  character,intent(in) :: intspec(4) 
+  character,intent(in) :: intspec(5) 
   logical,optional :: use_bg_bufInput
   !
   integer,pointer :: IndexToGlobal(:,:)
@@ -1968,6 +1973,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   integer :: nthreads,PerformReduction,Oper,nAuxMPI(numnodes),MaxnAuxMPI,I
   integer :: J,offset,offset2,inode,nbuf1,nbuf2,nbuf3,dim1,MinAuxBatch,ndimMax2
   integer :: GindexToLocal(nbasisAux),nbasisAuxMPI3(numnodes),NREDLOC,NRED
+  integer :: MetricOper
   real(realk) :: epsilon
   logical :: use_bg_buf
 #ifdef VAR_OMP
@@ -1989,14 +1995,13 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   NBA = 0
   MynbasisAuxMPI2 = 0 
   MaxNaux = 0
-  print*,'use_bg_buf',use_bg_buf
   IF(use_bg_buf)THEN
      maxsize = mem_get_bg_buf_free()*8.0E-9_realk
   ELSE
      call get_currently_available_memory(MemInGBCollected)
      maxsize = MemInGBCollected*0.65E0_realk
   ENDIF
-  call GetOperatorFromCharacter(Oper,intspec(4),mylsitem%Setting)
+  call GetOperatorFromCharacter(MetricOper,intspec(5),mylsitem%Setting)
 
   IF(DECinfo%AuxAtomicExtent)THEN
      molecule1 => mylsitem%SETTING%MOLECULE(1)%p
@@ -2117,10 +2122,10 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
         IF(DECinfo%RIMP2_lowdin)THEN
            call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-                & AlphaBeta,mylsitem%setting,nbasisAux,Oper)
+                & AlphaBeta,mylsitem%setting,nbasisAux,MetricOper)
         ELSE
            call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-                & AlphaBetaDecomp,mylsitem%setting,nbasisAux,Oper)
+                & AlphaBetaDecomp,mylsitem%setting,nbasisAux,MetricOper)
         ENDIF
         CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
         IF(DECinfo%AuxAtomicExtent)THEN
@@ -2149,6 +2154,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 #endif
   ENDIF
   CALL LSTIMER('DF_Calpha:AlphaBeta',TS3,TE3,LUPRI,ForcePrint)
+  call GetOperatorFromCharacter(Oper,intspec(4),mylsitem%Setting)
 
   !==================================================================
   ! Determine:  
@@ -2250,7 +2256,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   ENDIF
   !Output: AlphaCD3(dim1,nvirt,nocc) 
   call II_get_RI_AlphaCD_3CenterIntFullOnAllNN(DECinfo%output,DECinfo%output,&
-       & AlphaCD3,mylsitem%setting,nbasisAux,nbasis1,nbasis2,intspec,MaxNaux,&
+       & AlphaCD3,mylsitem%setting,nbasisAux,nbasis1,nbasis2,intspec(1:4),MaxNaux,&
        & nvirt,nocc,.TRUE.,Cvirt,Cocc,nthreads,dim1,GindexToLocal,DECinfo%PL,&
        & use_bg_buf)
 
@@ -2581,6 +2587,75 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   CALL LSTIMER('Build_CalphaMO2',TS,TE,LUPRI,ForcePrint)
 
 end subroutine Build_CalphaMO2
+
+!This should be call my master and slaves
+subroutine Build_RobustERImatU(myLSitem,master,nbasis1,nbasis2,nbasisAux,&
+     & LUPRI,FORCEPRINT,&
+     & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,&
+     & AlphaBetaDecomp,intspec,Umat)
+  implicit none
+  type(lsitem), intent(inout) :: mylsitem
+  integer,intent(in) :: nocc,nvirt
+  integer,intent(in) :: nbasisAux,LUPRI,nbasis1,nbasis2,mynum,numnodes
+  logical,intent(in) :: master,FORCEPRINT,CollaborateWithSlaves
+  real(realk),intent(in) :: AlphaBetaDecomp(nbasisAux,nbasisAux)
+  real(realk),intent(inout) :: Umat(nbasisAux,nbasisAux)
+  real(realk),intent(in) :: Cvirt(nbasis1,nvirt),Cocc(nbasis2,nocc)
+  character,intent(in) :: intspec
+  !
+  real(realk),pointer :: AlphaBeta(:,:),TMP(:,:)
+  real(realk) :: TS3,TE3,MemInGBCollected,MemInGBCollected2,TS,TE
+  real(realk) :: MemForFullAOINT,MemForFullMOINT,maxsize,MemForPartialMOINT
+  real(realk) :: TS4,TE4
+  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
+  integer(kind=long)    :: nSize,n8
+  integer(kind=ls_mpik) :: node 
+  integer :: M,N,K,MetricOper
+  integer :: J,offset
+  CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
+  print*,'Build_RobustERImatU intspec=',intspec
+  call GetOperatorFromCharacter(MetricOper,intspec,mylsitem%Setting)
+
+  !=====================================================================================
+  ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
+  !=====================================================================================
+  IF(master)THEN
+     IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => mylsitem%SETTING%MOLECULE(2)%p
+        molecule3 => mylsitem%SETTING%MOLECULE(3)%p
+        molecule4 => mylsitem%SETTING%MOLECULE(4)%p
+        mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
+        mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
+        mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
+        mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
+     ENDIF
+     CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
+     call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+          & Umat,mylsitem%setting,nbasisAux,MetricOper)
+     CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        mylsitem%SETTING%MOLECULE(2)%p => molecule2
+        mylsitem%SETTING%MOLECULE(3)%p => molecule3
+        mylsitem%SETTING%MOLECULE(4)%p => molecule4
+     ENDIF
+     N = nbasisAux
+     call mem_alloc(TMP,N,N)
+     call dgemm('N','T',N,N,N,1.0E0_realk,Umat,N,AlphaBetaDecomp,N,0.0E0_realk,TMP,N)
+     call dgemm('N','N',N,N,N,1.0E0_realk,AlphaBetaDecomp,N,TMP,N,0.0E0_realk,Umat,N)
+     call mem_dealloc(TMP)
+  ENDIF
+#ifdef VAR_MPI
+  call time_start_phase( PHASE_IDLE )
+  call lsmpi_barrier(infpar%lg_comm)
+  call time_start_phase( PHASE_COMM )
+  call ls_mpibcast(Umat,nbasisAux,nbasisAux,infpar%master,infpar%lg_comm)
+  call time_start_phase(PHASE_WORK)   
+#endif
+  CALL LSTIMER('Build_RobustERImatU',TS,TE,LUPRI,ForcePrint)
+
+end subroutine Build_RobustERImatU
 
 !computes the Cholesky factorization of the inverse of 
 !a real symmetric positive definite matrix A = U^T * U 
