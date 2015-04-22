@@ -569,7 +569,7 @@ contains
 
     type(moleculeinfo),pointer :: molecule
     Character(80) :: Filename
-    Character(54) :: identifier
+    Character(53) :: identifier
     Logical       :: FoundInMem
     Integer       :: molID,THR,THR2
     Integer       :: i
