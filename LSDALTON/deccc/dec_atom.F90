@@ -5965,7 +5965,7 @@ contains
     !> Read estimated fragment energies for restart?
     logical,intent(in) :: esti
     character(len=40) :: FileName
-    integer :: funit
+    integer :: funit,i,j
     logical :: file_exist
 
     ! Init stuff
@@ -5985,7 +5985,11 @@ contains
 
     ! Read job list and fragment energies from file
     call read_fragment_joblist_from_file(jobs,funit)
-    read(funit) FragEnergies
+    do j=1,ndecenergies
+       do i=1,nfrags
+          read(funit) FragEnergies(:,i,j)
+       end do
+    end do
     call lsclose(funit,'KEEP')
 
   end subroutine read_fragment_energies_for_restart
