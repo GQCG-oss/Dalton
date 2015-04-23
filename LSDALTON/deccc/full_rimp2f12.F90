@@ -254,7 +254,9 @@ contains
     ELSE
        !Something else that is fast????? and small memory
     ENDIF
-    
+
+
+
     IF(Test)THEN
        call mem_alloc(Vijij,nocc,nocc)
        call mem_alloc(Vjiij,nocc,nocc)
@@ -1006,14 +1008,14 @@ subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
                  tmpG13 = tmpG13 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
                  tmpG23 = tmpG23 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
 
-                 tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
-                 tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+                ! tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+                ! tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
               ENDDO
               EJ3 = EJ3 + tmpR3*tmpG13 
               EK3 = EK3 + tmpR3*tmpG23
 
-              EJ4 = EJ4 + tmpR4*tmpG14 
-              EK4 = EK4 + tmpR4*tmpG24
+              EJ4 = EJ4 + tmpR4*tmpG23
+              EK4 = EK4 + tmpR4*tmpG13
            ENDDO
         ENDDO
      ENDDO
