@@ -1,11 +1,11 @@
 !SIMPLE TEST PROGRAM FOR TESTING POINTER RESHAPES                                                                  
 module typedefmod
 type vec
-   real,pointer :: t(:)
+   real,pointer,contiguous :: t(:)
 end type vec
 
 type tile
-   real,pointer   :: t(:) => null()
+   real,pointer,contiguous :: t(:) => null()
 end type tile
 
 end module typedefmod

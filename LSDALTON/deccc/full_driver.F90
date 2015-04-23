@@ -38,7 +38,7 @@ module full
   use fullrimp2 !,only: full_canonical_rimp2
   use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
-  !  use fragment_energy_module,only : Full_DECMP2_calculation
+  use full_ls_thc_rimp2Mod
 
   public :: full_driver
   private
@@ -100,6 +100,8 @@ contains
        elseif(DECinfo%ccModel==MODEL_RIMP2)then
           !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
+       elseif(DECinfo%ccModel==MODEL_LSTHCRIMP2)then
+          call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
        else
           if(DECinfo%ccModel==MODEL_MP2) then
              if(DECinfo%use_canonical ) then
@@ -114,7 +116,6 @@ contains
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
                 !works both for canonical and local orbitals
-                !call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
                 call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
              end if
           else

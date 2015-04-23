@@ -2404,7 +2404,7 @@ contains
        nbg                    = nb
 
        alp: do i = MinAObatch, nb, inc
-          print *,"LOOPPING",i,MinAObatch,nb,inc
+!          print *,"LOOPPING",i,MinAObatch,nb,inc
           if(completely_distributed)then
              b = max(i/2,MinAObatch)
              e = b

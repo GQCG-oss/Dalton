@@ -181,7 +181,6 @@ contains
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
-    DECinfo%no_orb_based_fragopt   = .false.
     DECinfo%OnlyOccPart            = .false.
     DECinfo%OnlyVirtPart           = .false.
     ! Repeat atomic fragment calcs after fragment optimization
@@ -238,6 +237,7 @@ contains
     DECinfo%RIMP2PDMTENSOR           = .false.
     DECinfo%RIMP2ForcePDMCalpha      = .false.
     DECinfo%RIMP2_tiling             = .false.
+    DECinfo%RIMP2_lowdin             = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -293,7 +293,7 @@ contains
     implicit none
     !> The DEC item
     type(decsettings),intent(inout) :: DECitem
-
+    ! MODIFY FOR NEW MODEL
     DECitem%cc_models(MODEL_MP2)   ='MP2     '
     DECitem%cc_models(MODEL_CC2)   ='CC2     '
     DECitem%cc_models(MODEL_CCSD)  ='CCSD    '
@@ -301,7 +301,7 @@ contains
     DECitem%cc_models(MODEL_RPA)   ='RPA     '
     DECitem%cc_models(MODEL_SOSEX) ='SOSEX   '
     DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
-
+    DECitem%cc_models(MODEL_LSTHCRIMP2) ='THCRIMP2'
   end subroutine dec_set_model_names
 
 
@@ -449,6 +449,11 @@ contains
           DECinfo%use_singles = .false.  
           DECinfo%NO_MO_CCSD  = .true.
           doRIMP2 = .TRUE.
+       case('.LSTHCRIMP2') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles = .false.  
+          DECinfo%NO_MO_CCSD  = .true.
+          doRIMP2 = .TRUE. !we need an Aux basis 
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -680,14 +685,9 @@ contains
           ! should be a number between 0 and 1 which is then multiplied to the FOT
           read(input,*) DECinfo%frag_red2_thr
 
-       case('.NO_ORB_BASED_FRAGOPT')
-          ! Use old Fragment optimization routines
-          DECinfo%no_orb_based_fragopt = .true.
-
        case('.FRAGMENTADAPTED')
           ! Fragment adapted orbital instead of reduction (??)
           DECinfo%fragadapt = .true.
-          DECinfo%no_orb_based_fragopt = .true.
 
        case('.CORRDENS')  
           !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
@@ -748,6 +748,8 @@ contains
           DECinfo%RIMP2ForcePDMCalpha = .true.
        case('.RIMP2_TILING')
           DECinfo%RIMP2_tiling        = .true.
+       case('.RIMP2_LOWDIN')
+          DECinfo%RIMP2_lowdin        = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -972,7 +974,7 @@ contains
        DECinfo%PairEstimate=.false.
        DECinfo%PairEstimateIgnore = .true.
        DECinfo%no_pairs = .true.
-
+       ! MODIFY FOR NEW MODEL
        ! Some models are not compatible with DECNP
        select case(DECinfo%ccmodel) 
        case (MODEL_RPA)
@@ -981,6 +983,8 @@ contains
           call lsquit("SOSEX model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_RIMP2)
           call lsquit("RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
+       case (MODEL_LSTHCRIMP2)
+          call lsquit("LS-THC-RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        end select
 
        if (DECinfo%first_order) then
@@ -1474,7 +1478,6 @@ contains
     write(lupri,*) 'Frag_Red_Virt ', DECinfo%frag_red_virt
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
-    write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
     write(lupri,*) 'No_Pairs ', DECitem%no_pairs
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
@@ -1549,6 +1552,7 @@ contains
     case('.RPA');     modelnumber = MODEL_RPA
     case('.SOSEX');   modelnumber = MODEL_SOSEX
     case('.RIMP2');   modelnumber = MODEL_RIMP2
+    case('.LSTHCRIMP2'); modelnumber = MODEL_LSTHCRIMP2
     case default
        print *, 'Model not found: ', myword
        write(DECinfo%output,*)'Model not found: ', myword
@@ -1561,6 +1565,7 @@ contains
        write(DECinfo%output,*)'.RPA'
        write(DECinfo%output,*)'.SOSEX'
        write(DECinfo%output,*)'.RIMP2'
+       write(DECinfo%output,*)'.LS-THC-RIMP2'       
        call lsquit('Requested model not found!',-1)
     end SELECT
 

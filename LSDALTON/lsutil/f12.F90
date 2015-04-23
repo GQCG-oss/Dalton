@@ -4,9 +4,9 @@ use precision
 TYPE GaussianGeminal
 Logical :: is_set
 Integer :: N
-Real(realk),pointer :: coeff(:)
-Real(realk),pointer :: exponent(:)
-Real(realk),pointer :: expProd(:)
+Real(realk) :: coeff(21)
+Real(realk) :: exponent(21)
+Real(realk) :: expProd(21)
 END TYPE GaussianGeminal
 
 INTERFACE set_GGem
@@ -27,9 +27,8 @@ REAL(realk),target,intent(in)       :: coeff(n)
 REAL(realk),target,intent(in)       :: exponent(n)
 GGem%is_set = .TRUE.
 GGem%N = N
-GGem%coeff => coeff
-GGem%exponent => exponent
-nullify(GGem%expProd)
+GGem%coeff(1:N) = coeff
+GGem%exponent(1:N) = exponent
 END SUBROUTINE set_GGem_1
 
 SUBROUTINE set_GGem_2(GGem,coeff,exponent,expProd,n)
@@ -40,9 +39,9 @@ REAL(realk),target,intent(in)       :: exponent(n)
 REAL(realk),target,intent(in)       :: expProd(n)
 GGem%is_set = .TRUE.
 GGem%N = N
-GGem%coeff => coeff
-GGem%exponent => exponent
-GGem%expProd => expProd
+GGem%coeff(1:N) = coeff
+GGem%exponent(1:N) = exponent
+GGem%expProd(1:N) = expProd
 END SUBROUTINE set_GGem_2
 
 
@@ -94,7 +93,6 @@ implicit none
    & /
 
 ! code:
-
 
   if ((nlcg.ge. 1).and.(nlcg.le. 6)) then
      do k=1,nlcg

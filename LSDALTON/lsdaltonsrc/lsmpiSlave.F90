@@ -171,8 +171,12 @@ subroutine lsmpi_slave(comm)
          call MP2_integrals_and_amplitudes_workhorse_slave
       case(RIMP2INAMP);
          call RIMP2_integrals_and_amplitudes_slave
+      case(LSTHCRIMP2INAMP);
+         call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(LSTHCRIMP2FULL);
+!         call full_canonical_ls_thc_rimp2_slave
       case(CANONMP2FULL);
          call full_canonical_mp2_slave
       case(DEC_SETTING_TO_SLAVES);

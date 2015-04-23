@@ -23,7 +23,7 @@ f.add(from_string = 'Doubles amplitudes norm',
       rel_tolerance = 1.0e-8)
 
 f.add(from_string = 'E: Hartree-Fock energy',
-      to_string   = 'G: Total MP2 energy',
+      to_string   = 'E: Total MP2 energy',
       rel_tolerance = 1.0e-8)
 
 

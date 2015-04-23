@@ -20,6 +20,7 @@ F90_OBJS = dec_settings.o \
 	fullmolecule.o \
 	mp2.o \
 	rimp2.o \
+	ri_util.o \
 	ccsdpt.o \
 	ccorbital.o \
 	cc_integrals.o \

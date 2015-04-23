@@ -45,6 +45,7 @@ MODULE lsparameters
   integer,parameter :: LONMOMOperator = 28
   integer,parameter :: DCM1Operator = 29
   integer,parameter :: DCM2Operator = 30
+  integer,parameter :: GGemQuaOperator = 31
 ! THESE ARE STRING SPECIFIERS FOR THE integralType
   integer,parameter :: ContractedInttype = 1
   integer,parameter :: PrimitiveInttype = 2
@@ -134,6 +135,8 @@ MODULE lsparameters
   integer,parameter :: INIT_BG_BUF                  = 67
   integer,parameter :: FREE_BG_BUF                  = 68
   integer,parameter :: CHANGE_BG_BUF                = 69
+  integer,parameter :: LSTHCRIMP2INAMP              = 70
+  integer,parameter :: LSTHCRIMP2FULL               = 71
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
@@ -219,6 +222,8 @@ subroutine param_oper_paramfromString(Oper,Operparam)
      operparam = GGemCouOperator
   CASE('GGemGrd') 
      operparam = GGemGrdOperator
+  CASE('GGemQua') 
+     operparam = GGemQuaOperator
   CASE('MAGMOM ') 
      operparam = MAGMOMOperator
   CASE('NST    ') 
@@ -290,6 +295,8 @@ subroutine param_oper_Stringfromparam(Oper,Operparam)
      oper = 'GGemCou'
   CASE(GGemGrdOperator) 
      oper = 'GGemGrd'
+  CASE(GGemQuaOperator) 
+     oper = 'GGemQua'
   CASE(MAGMOMOperator) 
      oper = 'MAGMOM '
   CASE(NSTOperator) 
