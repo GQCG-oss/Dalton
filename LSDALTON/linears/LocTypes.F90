@@ -90,6 +90,12 @@ logical :: orb_debug
 
 END TYPE PMitem
 
+contains
+
+subroutine loc_types_dummy()
+
+end subroutine loc_types_dummy
+
 end module loc_types
 
 

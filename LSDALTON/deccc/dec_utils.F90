@@ -4401,16 +4401,16 @@ end function max_batch_dimension
        end if
     else
        IF(.NOT.DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy      :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)       :', Ehf
-          write(lupri,'(15X,a,f20.10)')    'E: DFT energy               :', Edft
+          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)  :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Edft
        ENDIF
        if(SOS) then
-         write(lupri,'(15X,a,f20.10)')     'E: SOSEX energy             :', Ecorr
+         write(lupri,'(15X,a,f20.10)')     'E: SOSEX energy        :', Ecorr
        else
-         write(lupri,'(15X,a,f20.10)')     'E: Correlation energy       :', Ecorr
+         write(lupri,'(15X,a,f20.10)')     'E: Correlation energy  :', Ecorr
        endif
 
        ! skip error print for full calculation (0 by definition)
