@@ -2826,7 +2826,7 @@ call dft_setIntegralSchemeFromInput(scheme%DFT,dalton_inp%DFT)
 scheme%INCREMENTAL  = .FALSE.
 scheme%DO_PROP      = .FALSE.
 scheme%PropOper     = -1
-
+scheme%AONuclearSpecID =0
 END SUBROUTINE typedef_setIntegralSchemeFromInput
 
 !> \brief print the lsint scheme
@@ -2952,6 +2952,7 @@ WRITE(IUNIT,'(3X,A22,L7)')'INCREMENTAL           ', scheme%INCREMENTAL
 WRITE(IUNIT,'(3X,A22,L7)')'DO_PROP               ', scheme%DO_PROP
 WRITE(IUNIT,'(3X,A22,I7)')'PropOper              ', scheme%PropOper
 WRITE(IUNIT,'(3X,A22,I7)')'ForceRIMP2memReduced  ', scheme%ForceRIMP2memReduced
+WRITE(IUNIT,'(3X,A22,I7)')'AONuclearSpecID       ', scheme%AONuclearSpecID
 
 END SUBROUTINE typedef_printScheme
 

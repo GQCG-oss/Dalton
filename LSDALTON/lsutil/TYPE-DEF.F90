@@ -377,6 +377,7 @@ LOGICAL :: INCREMENTAL !Use incremental scheme (density-difference KS-matrix bui
 logical   :: DO_PROP
 integer   :: PropOper
 logical   :: ForceRIMP2memReduced
+integer   :: AONuclearSpecID
 END TYPE LSINTSCHEME
 
 !*****************************************

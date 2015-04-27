@@ -3780,7 +3780,7 @@ CASE (AONuclear)
 CASE (AONuclearSpec)
    !specific nuclei 
    emptyAO = .true.
-   IATOM = 1 !FIXME
+   IATOM = scheme%AONuclearSpecID 
    CALL BUILD_EMPTY_SINGLE_NUCLEAR_AO(AObatch,Molecule,LUPRI,IATOM)
    nDim = 1
 CASE (AOpCharge)

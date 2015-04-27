@@ -1555,6 +1555,7 @@ call LS_MPI_BUFFER(scheme%DO_PROP,Master)
 call LS_MPI_BUFFER(scheme%PropOper,Master)
 
 call LS_MPI_BUFFER(scheme%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(scheme%AONuclearSpecID,Master)
 
 END SUBROUTINE mpicopy_scheme
 

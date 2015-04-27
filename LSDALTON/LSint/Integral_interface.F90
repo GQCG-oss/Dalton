@@ -2071,7 +2071,7 @@ call param_oper_paramfromString('PSO    ',Operparam)
 setting%scheme%do_prop = .TRUE.
 setting%scheme%propoper = Operparam
 nbast = MatArray(1)%nrow
-!PROVIDE IATOM
+setting%scheme%AONuclearSpecID = iAtom
 call initIntegralOutputDims(setting%output,nbast,nbast,1,1,3)
 CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
      & Operparam,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
@@ -2169,9 +2169,9 @@ END SUBROUTINE II_get_prop_expval
 !> \param Dmat the matrices the should be contracted with the property integral
 !> \param nOperatorComp the number of matrices 
 !> \param Oper the label of property integral
-recursive SUBROUTINE II_get_pso_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,ndmat)
+recursive SUBROUTINE II_get_pso_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,ndmat,iAtom)
 IMPLICIT NONE
-INTEGER              :: LUPRI,LUERR
+INTEGER              :: LUPRI,LUERR,iAtom
 TYPE(LSSETTING)      :: SETTING
 TYPE(MATRIX)         :: DMat(ndmat)
 real(realk)          :: expval(3*ndmat)
@@ -2198,6 +2198,7 @@ IF(setting%IntegralTransformGC)THEN
 ELSE
    CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
 ENDIF
+setting%scheme%AONuclearSpecID = iAtom
 call initIntegralOutputDims(setting%output,1,1,1,1,3*ndmat)
 CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
      & Operparam,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
@@ -2213,6 +2214,72 @@ CALL LSTIMER('PSOSpecExpVal:',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_prop_expval)
 
 END SUBROUTINE II_get_pso_spec_expval
+
+!> \brief routine for calculation of expectation value of Specific nuclei PSO integrals
+!> So in Other words does dotproduct(PSOIntegral,D)
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param expval the matrices of property integrals
+!> \param Dmat the matrices the should be contracted with the property integral
+!> \param nOperatorComp the number of matrices 
+!> \param Oper the label of property integral
+recursive SUBROUTINE II_get_nst_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,iAtom)
+IMPLICIT NONE
+INTEGER              :: LUPRI,LUERR,iAtom
+TYPE(LSSETTING)      :: SETTING
+TYPE(MATRIX)         :: DMat(1)
+real(realk)          :: expval(9)
+!
+TYPE(MATRIX)         :: DMat_AO(1)
+integer :: I,ndmat,J,operparam
+real(realk) :: TS,TE
+logical :: CS_screenSAVE, PS_screenSAVE
+real(realk) :: TMPexpval(9)
+call time_II_operations1()
+CALL LSTIMER('START ',TS,TE,LUPRI)
+
+IF(setting%IntegralTransformGC)THEN
+   CALL mat_init(Dmat_AO(1),Dmat(1)%nrow,Dmat(1)%ncol)
+   call GCAO2AO_transform_matrixD2(Dmat(1),Dmat_AO(1),setting,lupri)
+   CALL ls_attachDmatToSetting(Dmat_AO,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+ELSE
+   CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+ENDIF
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+
+!set threshold 
+call param_oper_paramfromString('NSTLON ',Operparam)
+setting%scheme%do_prop = .TRUE.
+setting%scheme%propoper = Operparam
+setting%scheme%AONuclearSpecID = iAtom
+call initIntegralOutputDims(setting%output,1,1,1,1,9)
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
+     & Operparam,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,TMPexpval,setting%IntegralTransformGC)   
+
+call param_oper_paramfromString('NSTNOL ',Operparam)
+setting%scheme%do_prop = .TRUE.
+setting%scheme%propoper = Operparam
+setting%scheme%AONuclearSpecID = iAtom
+call initIntegralOutputDims(setting%output,1,1,1,1,9)
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
+     & Operparam,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,expval,setting%IntegralTransformGC)   
+do I=1,9
+   expval(I) = expval(I) + TMPexpval(I) 
+enddo
+CALL ls_freeDmatFromSetting(setting)
+IF(setting%IntegralTransformGC)THEN   
+   CALL mat_free(Dmat_AO(1))
+ENDIF
+setting%scheme%do_prop = .FALSE.
+CALL LSTIMER('NSTSpecExpVal:',TS,TE,LUPRI)
+call time_II_operations2(JOB_II_get_prop_expval)
+
+END SUBROUTINE II_get_nst_spec_expval
 
 !> \brief Calculates property integrals
 !> \author T. Kjaergaard
