@@ -84,7 +84,7 @@ subroutine lsdalton_response_noOpenRSP(ls,config,F,D,S)
         call LSTIMER('START',t1,t2,config%LUPRI)     
 !        call NMRshieldresponse_IANS(molcfg,F,D,S)
         WRITE(config%LUPRI,*)'NMRshieldresponse_IANS_TK'
-        call NMRshieldresponse_IANS_TK(molcfg,F,D,S)
+        call NMRshieldresponse_IANS_TK(ls,molcfg,F,D,S)
         call LSTIMER('NMRshield',t1,t2,config%LUPRI)
      endif
      if(config%response%tasks%doALPHA)then
@@ -1760,8 +1760,9 @@ end subroutine NMRshieldresponse_IANS
   !#####################################################
 
 
-subroutine NMRshieldresponse_IANS_TK(molcfg,F,D,S)
+subroutine NMRshieldresponse_IANS_TK(ls,molcfg,F,D,S)
   implicit none
+  TYPE(lsitem),target     :: ls
   type(rsp_molcfg), intent(inout) :: molcfg
   type(Matrix),intent(in) :: F(1),D(1),S
   !
@@ -1776,8 +1777,10 @@ subroutine NMRshieldresponse_IANS_TK(molcfg,F,D,S)
   type(Matrix) :: GbXc(3)
   type(Matrix),pointer ::  RHSk(:),  DXk(:),hk(:),hb(:),GkD(:),tempk(:),sdf(:),DXD(:), DX0(:), DXk2np1A(:,:), DXk2np1B(:,:)
   type(matrix) :: Prod,Prod1
-  integer              :: ntrial,nrhs,nsol,nomega,nstart
+  integer              :: ntrial,nrhs,nsol,nomega,nstart,nAtomsSelected
+  integer,pointer :: AtomList(:)
   character(len=1)        :: CHRXYZ(-3:3)
+  logical :: FoundNMRLabel
   DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
   Factor=53.2513539566280 !1e6*alpha^2 
 
@@ -1790,6 +1793,49 @@ subroutine NMRshieldresponse_IANS_TK(molcfg,F,D,S)
   WRITE(LUPRI,*) '=========================================================='
   WRITE(LUPRI,*) '  NUCLEAR MAGNETIC SHIELDING(NMS) TENSOR RESULTS  (IANS)  '
   WRITE(LUPRI,*) '=========================================================='
+
+  !#############################################################################
+  !##                                                                         ## 
+  !##   Input analysis                                                        ##
+  !##                                                                         ## 
+  !#############################################################################
+
+  IF(ls%input%MOLECULE%nSubSystems.NE.0)THEN
+     WRITE(LUPRI,'(2X,A38,2X,I7)')'number of Subsystem Labels         :',ls%input%MOLECULE%nSubSystems
+     FoundNMRLabel=.FALSE.
+     DO Icoor=1,ls%input%MOLECULE%nSubSystems
+        WRITE(LUPRI,'(2X,A,I3,A,A)')'Subsystem Label(',Icoor,'):',TRIM(ls%input%MOLECULE%SubsystemLabel(Icoor))
+        IF(TRIM(ls%input%MOLECULE%SubsystemLabel(Icoor)).EQ.'NMR')THEN
+           FoundNMRLabel=.TRUE.
+           nAtomsSelected = 0 
+           DO Jcoor=1,ls%input%MOLECULE%nAtoms
+              IF(ls%input%MOLECULE%ATOM(Jcoor)%SubSystemIndex.EQ.Icoor)THEN
+                 nAtomsSelected = nAtomsSelected + 1 
+              ENDIF
+           ENDDO
+           call mem_alloc(AtomList,nAtomsSelected)
+           nAtomsSelected = 0 
+           DO Jcoor=1,ls%input%MOLECULE%nAtoms
+              IF(ls%input%MOLECULE%ATOM(Jcoor)%SubSystemIndex.EQ.Icoor)THEN
+                 nAtomsSelected = nAtomsSelected + 1 
+                 AtomList(nAtomsSelected) = Jcoor
+              ENDIF
+           ENDDO
+        ENDIF
+     ENDDO
+     IF(FoundNMRLabel)THEN
+        WRITE(LUPRI,'(2X,A,2X,I7)')'number of Atoms selected:',nAtomsSelected
+        WRITE(LUPRI,'(2X,A,2X,I7)')'List of selected Atoms  :'
+        DO Icoor=1,nAtomsSelected,10
+           write(LUPRI,'(1X,10i7)') AtomList(Icoor:MIN(Icoor+9,nAtomsSelected))
+        ENDDO
+     ELSE
+        CALL LSQUIT('IANS NUCLEAR MAGNETIC SHIELDING(NMS) TENSOR Requires SubSystem=NMR specified',-1)
+     ENDIF
+  ELSE
+     CALL LSQUIT('IANS NUCLEAR MAGNETIC SHIELDING(NMS) TENSOR Requires SubSystems specified',-1)
+  ENDIF
+
 
   !icoor is to be used for the 3 magnetic coordinates
   !jcoor is to be used for the 3*natoms magnetic moment coordinates
@@ -2121,6 +2167,8 @@ subroutine NMRshieldresponse_IANS_TK(molcfg,F,D,S)
  deallocate(DXk)
  deallocate(atomname)
  WRITE(LUPRI,*) " Done with shielding tensor calculation"
+
+ call mem_dealloc(AtomList)
 
 end subroutine NMRshieldresponse_IANS_TK
 
