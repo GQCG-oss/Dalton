@@ -530,8 +530,8 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
      eival(1)=0.0E0_realk
      write(lupri,*)'Calling rsp solver for Xa  '
      call mat_init(Xx(1),nbast,nbast)                            !# Matrices Allocated 7 (DX,RHS,Xx)
+     call util_scriptPx('T',D(1),S,RHS(icoor))
      if ( mat_dotproduct(RHS(icoor),RHS(icoor))>1.0d-10) then 
-        call util_scriptPx('T',D(1),S,RHS(icoor))
 
         ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
         nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
@@ -958,8 +958,8 @@ subroutine GetXfromRHS(molcfg,RHS,Dx,D,S,F,lupri)
      eival(1)=0.0E0_realk
      write(lupri,*)'Calling rsp solver for Xa  '
      call mat_init(Xx(1),nbast,nbast)                            !# Matrices Allocated 7 (DX,RHS,Xx)
+     call util_scriptPx('T',D(1),S,RHS(icoor))
      if ( mat_dotproduct(RHS(icoor),RHS(icoor))>1.0d-10) then 
-        call util_scriptPx('T',D(1),S,RHS(icoor))
         ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
         nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
         nsol = 1   !# of solution (output) vectors
@@ -1172,8 +1172,8 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
      eival(1)=0.0E0_realk
      write(lupri,*)'Calling rsp solver for Xa  '
      call mat_init(Xx(1),nbast,nbast)                            
+     call util_scriptPx('T',D(1),S,RHS(icoor))
      if ( mat_dotproduct(RHS(icoor),RHS(icoor))>1.0d-10) then 
-        call util_scriptPx('T',D(1),S,RHS(icoor))
 
         ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
         nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
@@ -1274,8 +1274,8 @@ subroutine NMRshieldresponse_IANS(molcfg,F,D,S)
      eivalk(1)=0.0E0_realk
      write(lupri,*)'Calling rsp solver for Xk  '
      call mat_init(Xk(1),nbast,nbast)                           
+     call util_scriptPx('T',D(1),S,RHSk(icoor))
      if ( mat_dotproduct(RHSk(icoor),RHSk(icoor))>1.0d-10) then
-        call util_scriptPx('T',D(1),S,RHSk(icoor))
 
         ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
         nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
@@ -1832,8 +1832,8 @@ subroutine NMRshieldresponse_IANS_TK(molcfg,F,D,S)
   do jcoor=1,3*natoms
      eivalk(1)=0.0E0_realk
      write(lupri,*)'Calling rsp solver for Xk  '
+     call util_scriptPx('T',D(1),S,RHSk(jcoor))
      if ( mat_dotproduct(RHSk(jcoor),RHSk(jcoor))>1.0d-10) then
-        call util_scriptPx('T',D(1),S,RHSk(jcoor))
 
         ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
         nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
