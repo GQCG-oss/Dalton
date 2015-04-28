@@ -2208,12 +2208,12 @@ contains
            & DECinfo%FOT,expansion_converged)
 
 
-        ! Test if fragment MP2 energies are also converged
-        if (add_mp2_opt .and. expansion_converged) then
+        ! Test if fragment MP2 energies are converged
+        if (add_mp2_opt) then
 
            call get_fragopt_energy_error(AtomicFragment,MODEL_MP2,Eold)
            call fragopt_check_convergence(MODEL_MP2,AtomicFragment,DECinfo%FOT,MP2_converged)
-           call fragopt_print_info(AtomicFragment,MODEL_MP2,iter)
+           call fragopt_print_info(AtomicFragment,MODEL_MP2,iter,add_mp2_opt)
 
            ! require both MP2 and CC energy to be converged
            if (.not.MP2_converged) expansion_converged = .false.
@@ -2590,8 +2590,8 @@ contains
         end if
 
 
-        ! Test if fragment MP2 energies are also converged
-        if (add_mp2_opt .and. step_accepted) then
+        ! Test if fragment MP2 energies are converged
+        if (add_mp2_opt) then
 
            call get_fragopt_energy_error(AtomicFragment,MODEL_MP2,Eexp)
 
@@ -2603,7 +2603,7 @@ contains
               call fragopt_check_convergence(MODEL_MP2,AtomicFragment,FOT,MP2_accepted)
            end if
 
-           call fragopt_print_info(AtomicFragment,MODEL_MP2,iter)
+           call fragopt_print_info(AtomicFragment,MODEL_MP2,iter,add_mp2_opt)
 
            ! require both MP2 and CC energy to be converged
            if (.not.MP2_accepted) then
@@ -3205,17 +3205,24 @@ contains
   !> using the Lagrangian partitioning scheme.
   !> \date: august-2011
   !> \author: Ida-Marie Hoeyvik
-  subroutine fragopt_print_info(frag,ccmodel,iter)
+  subroutine fragopt_print_info(frag,ccmodel,iter,add_mp2_opt)
     implicit none
     !> Atomic fragment to be optimized
     type(decfrag),intent(in) :: frag
     !> CC model
     integer, intent(in) :: ccmodel
+    !> extra mp2?
+    logical, intent(in), optional :: add_mp2_opt
     !> Iteration number
     integer,intent(in) :: iter
+    logical :: mp2
 
+    mp2 = .false.
+    if (present(add_mp2_opt)) mp2 = add_mp2_opt
 
     if(DECinfo%print_small_calc)then
+       write(DECinfo%output,*)'FOP'
+       if (mp2) write(DECinfo%output,*) 'FOP              MP2 INFORMATION (also requested):'
        write(DECinfo%output,*)'FOP'
        write(DECinfo%output,'(1X,a)') 'FOP========================================================='
        write(DECinfo%output,'(1X,a,i4)') 'FOP              Fragment information, loop', iter
