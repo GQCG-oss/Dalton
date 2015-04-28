@@ -1889,11 +1889,13 @@ contains
     allocate(E2(2*ndim_red,2*ndim_red), S2(2*ndim_red,2*ndim_red))
     allocate(RHS(2*ndim_red), IPIV(2*ndim_red))
 
-    !Setup reduced E2, S2, and right hand side with proper dimension
-    E2 = red_E(1:2*ndim_red,1:2*ndim_red)
-    S2 = red_S(1:2*ndim_red,1:2*ndim_red)
 
     do igd = 1, ngd
+       !Setup reduced E2, S2, and right hand side with proper dimension
+       !This must be done inside the igd loop because DGESV destroys it. TK
+       E2 = red_E(1:2*ndim_red,1:2*ndim_red)
+       S2 = red_S(1:2*ndim_red,1:2*ndim_red)
+
        RHS = red_GD(1:2*ndim_red,igd)
 
        if (MOLCFG%SOLVER%INFO_RSP_REDSPACE) then
