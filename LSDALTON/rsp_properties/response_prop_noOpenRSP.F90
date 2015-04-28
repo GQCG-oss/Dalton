@@ -83,8 +83,8 @@ subroutine lsdalton_response_noOpenRSP(ls,config,F,D,S)
 !        WRITE(config%LUPRI,*)'NMRshieldresponse_IANS'
         call LSTIMER('START',t1,t2,config%LUPRI)     
 !        call NMRshieldresponse_IANS(molcfg,F,D,S)
-!        WRITE(config%LUPRI,*)'NMRshieldresponse_IANS_TK'
-!        call NMRshieldresponse_IANS_TK(ls,molcfg,F,D,S)
+        WRITE(config%LUPRI,*)'NMRshieldresponse_IANS_TK'
+        call NMRshieldresponse_IANS_TK(ls,molcfg,F,D,S)
         WRITE(config%LUPRI,*)'NMRshieldresponse_NS'
         call NMRshieldresponse_NS(ls,molcfg,F,D,S)
         call LSTIMER('NMRshield',t1,t2,config%LUPRI)
@@ -2170,7 +2170,8 @@ subroutine NMRshieldresponse_NS(ls,molcfg,F,D,S)
   type(Matrix) :: GbXc(3)
   type(Matrix),pointer ::  RHSk(:),  DXk(:),hk(:),hb(:),GkD(:),tempk(:),sdf(:),DXD(:), DX0(:), DXk2np1A(:,:), DXk2np1B(:,:)
   type(matrix) :: Prod,Prod1
-  integer              :: ntrial,nrhs,nsol,nomega,nstart,nAtomsSelected,istart,iend
+  integer              :: ntrial,nrhs,nsol,nomega,nstart,nAtomsSelected
+  integer              :: istart,iend,iAtom,kcoor,offset
   integer,pointer :: AtomList(:)
   character(len=1)        :: CHRXYZ(-3:3)
   logical :: FoundNMRLabel
@@ -2254,8 +2255,9 @@ subroutine NMRshieldresponse_NS(ls,molcfg,F,D,S)
   do jcoor=1,nAtomsSelected
     istart=3*jcoor-2
     iend=istart+2
-    call II_get_PSO_spec(LUPRI,LUERR,molcfg%SETTING,hk(istart:iend),jcoor)
-  !call II_get_prop(LUPRI,LUERR,molcfg%SETTING,hk,3*NATOMS,'PSO    ')   !Generation of h^k  
+    iAtom = AtomList(jcoor)
+    call II_get_PSO_spec(LUPRI,LUERR,molcfg%SETTING,hk(istart:iend),iAtom)
+    !call II_get_prop(LUPRI,LUERR,molcfg%SETTING,hk,3*NATOMS,'PSO    ')   !Generation of h^k  
   enddo
 
   print *, 'test 3'
@@ -2358,18 +2360,18 @@ subroutine NMRshieldresponse_NS(ls,molcfg,F,D,S)
   !#############################################################################
 
   !expval(3,3*NATOM) (magnetic X,Y,Z, atomic moment X,Y,Z, for each Atom)
-  call mem_alloc(expval,3,3*nAtomsSelected)
-  
+  call mem_alloc(expval,3,3)  
   do jcoor=1,nAtomsSelected
-      call II_get_nst_spec_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,jcoor)
-  enddo   
-  !call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,1,9*NATOMS,'NST    ')
-  ! Printing  (D^*(h^kb) in output file  over (icoor,jcoor) 
-  WRITE(lupri,*)  'icoor', 'jcoor', 'X1, |PURE (D)*(h^kb)|  :  2*factor*expval(jcoor,icoor)'  
-  do icoor=1,3
-     do jcoor=1,3*nAtomsSelected  ! magnetic moment koordinate
-        WRITE(lupri,*) 'icoor', icoor, 'jcoor', jcoor, 'expval1:',   2*factor*expval(icoor,jcoor)
-        NucSpecNMSTtotal(icoor,jcoor) = 2*factor*expval(icoor,jcoor)
+     offset = (jcoor-1)*3
+     iAtom = AtomList(jcoor)
+     call II_get_nst_spec_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,iAtom)
+     ! Printing  (D^*(h^kb) in output file  over (icoor,jcoor) 
+     WRITE(lupri,*)  'icoor', 'jcoor', 'X1, |PURE (D)*(h^kb)|  :  2*factor*expval(jcoor,icoor)'  
+     do icoor=1,3     ! magnetic koordinate
+        do kcoor=1,3  ! magnetic moment koordinate
+           WRITE(lupri,*) 'icoor', icoor, 'jcoor', kcoor, 'expval1:',   2*factor*expval(icoor,kcoor)
+           NucSpecNMSTtotal(icoor,offset+kcoor) = 2*factor*expval(icoor,kcoor)
+        enddo
      enddo
   enddo
   call mem_dealloc(expval)
@@ -2430,23 +2432,22 @@ subroutine NMRshieldresponse_NS(ls,molcfg,F,D,S)
      call mat_free(Gm(icoor))
   enddo
 
-  if(molcfg%setting%do_dft)then
-  
-  do icoor=1,3 
-     call mat_init(GbXc(icoor),nbast,nbast)
-  enddo
-  call II_get_xc_magderiv_kohnsham_mat(LUPRI,LUERR,molcfg%SETTING,nbast,D(1),GbXc)
-  ! Printing  (D^k)*(G^b(D)) in output file  over (icoor,jcoor) 
-  WRITE(lupri,*)  'icoor', 'jcoor', ' X5 |PURE (D^K)*(G^bxc(D))|  '
-  do icoor=1,3
-     do jcoor=1,3*nAtomsSelected
-        WRITE(lupri,*) 'icoor', icoor, 'jcoor', jcoor, 'NMST2K:', factor*mat_trAB(DXk(jcoor),GbXc(icoor)) 
-       
-        NucSpecNMSTtotal(icoor,jcoor) = NucSpecNMSTtotal(icoor,jcoor) &
-             & + factor*mat_trAB(DXk(jcoor),GbXc(icoor)) 
+  if(molcfg%setting%do_dft)then  
+     do icoor=1,3 
+        call mat_init(GbXc(icoor),nbast,nbast)
      enddo
-     call mat_free(GbXc(icoor))
-  enddo
+     call II_get_xc_magderiv_kohnsham_mat(LUPRI,LUERR,molcfg%SETTING,nbast,D(1),GbXc)
+     ! Printing  (D^k)*(G^b(D)) in output file  over (icoor,jcoor) 
+     WRITE(lupri,*)  'icoor', 'jcoor', ' X5 |PURE (D^K)*(G^bxc(D))|  '
+     do icoor=1,3
+        do jcoor=1,3*nAtomsSelected
+           WRITE(lupri,*) 'icoor', icoor, 'jcoor', jcoor, 'NMST2K:', factor*mat_trAB(DXk(jcoor),GbXc(icoor)) 
+           
+           NucSpecNMSTtotal(icoor,jcoor) = NucSpecNMSTtotal(icoor,jcoor) &
+                & + factor*mat_trAB(DXk(jcoor),GbXc(icoor)) 
+        enddo
+        call mat_free(GbXc(icoor))
+     enddo
   endif
   print *, 'test 8'
   !#################################################################################
@@ -2515,7 +2516,14 @@ subroutine NMRshieldresponse_NS(ls,molcfg,F,D,S)
  do jcoor = 1,3*nAtomsSelected
     call mat_init(hk(jcoor),nbast,nbast)
  enddo
- call II_get_prop(LUPRI,LUERR,molcfg%SETTING,hk,3*NATOMS,'PSO    ')   !Generation of h^k  
+ print *, 'test 2'
+ do jcoor=1,nAtomsSelected
+    istart=3*jcoor-2
+    iend=istart+2
+    iAtom = AtomList(jcoor)
+    call II_get_PSO_spec(LUPRI,LUERR,molcfg%SETTING,hk(istart:iend),iAtom)
+    !call II_get_prop(LUPRI,LUERR,molcfg%SETTING,hk,3*NATOMS,'PSO    ')   !Generation of h^k  
+ enddo 
  do icoor=1,3     ! magnetic
     do jcoor=1,3*NATOMSselected ! magnetic moment koordinate
        WRITE(lupri,*) 'icoor', icoor, 'jcoor', jcoor, 'DSX4A:',-2.0E0_realk*factor*mat_dotproduct(hk(jcoor),NDX(icoor))
@@ -2554,12 +2562,14 @@ subroutine NMRshieldresponse_NS(ls,molcfg,F,D,S)
  ! start  printing numbers 
  allocate(atomname(natoms))
  do jcoor=1,natomsselected  
-    atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(jcoor)%Name
+    iAtom = AtomList(jcoor)
+    atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(iAtom)%Name
  enddo
  
  ! Prinitng for individual term X3 
  Write (lupri,*)   "Preexist term  - X3 :: NMST " 
- do jcoor=1,natoms  
+ do jcoor=1,natomsselected  
+    WRITE (LUPRI,'(2X,A,I7)') 'Atom Identity:',AtomList(jcoor)
     WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
     WRITE (LUPRI,'(2X,A8,3F15.8)')  atomname(jcoor)//CHRXYZ(1),(NucSpecNMSTtotal(K,3*jCOOR-2),K=1,3)
     WRITE (LUPRI,'(2X,A8,3F15.8)')  atomname(jcoor)//CHRXYZ(2),(NucSpecNMSTtotal(K,3*jCOOR-1),K=1,3)
