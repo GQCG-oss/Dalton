@@ -2310,6 +2310,11 @@ DO iPassQ = 1,nPass
    IF(Q%orbital1%TYPE_Nucleus.AND.(.NOT.add))then
       atomC  = Q%orb1atom(1)
       startOP = (atomC-1)*nOperatorComp2
+      IF(nFullOperatorComp.EQ.nOperatorComp2.AND.(atomC.GT.1))THEN
+         !for setting%scheme%AONuclearSpecID .NE. 0 we only calculate the 
+         !property integral for a specific atom (therefor the nFullOperatorComp=nOperatorComp)
+         startOP=0
+      ENDIF
    ENDIF
    IF (antipermuteAB) THEN
       CALL intAB(AB,n1,n2,sA,sB,nA,nB,QPmat2,add,nOperatorComp2,nPass,iPassQ,nFullOperatorComp,startOP,lupri)
