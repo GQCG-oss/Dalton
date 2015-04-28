@@ -2937,7 +2937,7 @@ contains
              call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,3*nbuffs,&
                                          & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd,&
                                          & .false.,tile_size,ts_oovv)
-             call preload_tiles_in_bg_buf(oovv,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,3*nbuffs,&
+             call preload_tiles_in_bg_buf(oovv,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,6*nbuffs,&
                                          & needed_oovv,tiles_in_buf_oovv,oovv_pdm_buff,req_oovv,&
                                          & .false.,tile_size,ts_oovv,vovo_array=.true.)
              call time_start_phase(PHASE_WORK, ttot = time_preload )
