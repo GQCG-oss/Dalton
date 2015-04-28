@@ -94,7 +94,7 @@ MODULE IntegralInterfaceMOD
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
        & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2,&
-       & ii_get_2int_batchscreenmat
+       & ii_get_2int_batchscreenmat, II_get_nst_spec_expval
   private
 
 INTERFACE II_get_coulomb_mat
@@ -2050,7 +2050,14 @@ call time_II_operations2(JOB_II_get_prop)
 
 END SUBROUTINE II_get_prop
 
-!Get specific nuclei moment derivative 
+!> \brief specific nuclei moment derivative 
+!> \author T. Kjaergaard
+!> \date 2015
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param matArray the matrices of property integrals
+!> \param iAtom chosen atom to calculate the 3 PSO X,Y,Z components
 recursive SUBROUTINE II_get_PSO_spec(LUPRI,LUERR,SETTING,MatArray,iAtom)
 IMPLICIT NONE
 INTEGER              :: LUPRI,LUERR,IATOM
@@ -2161,20 +2168,20 @@ END SUBROUTINE II_get_prop_expval
 !> \brief routine for calculation of expectation value of Specific nuclei PSO integrals
 !> So in Other words does dotproduct(PSOIntegral,D)
 !> \author T. Kjaergaard
-!> \date 2010
+!> \date 2015
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-!> \param expval the matrices of property integrals
+!> \param expval the matrices of property integrals Order: (3 PSO components, ndmat)
 !> \param Dmat the matrices the should be contracted with the property integral
-!> \param nOperatorComp the number of matrices 
-!> \param Oper the label of property integral
+!> \param nDmat
+!> \param iAtom Chosen atom to calculate the PSO integral for 
 recursive SUBROUTINE II_get_pso_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,ndmat,iAtom)
 IMPLICIT NONE
 INTEGER              :: LUPRI,LUERR,iAtom
 TYPE(LSSETTING)      :: SETTING
 TYPE(MATRIX)         :: DMat(ndmat)
-real(realk)          :: expval(3*ndmat)
+real(realk)          :: expval(3*ndmat) !Order: 3,ndmat
 !
 TYPE(MATRIX)         :: DMat_AO(ndmat)
 integer :: I,ndmat,J,operparam
@@ -2222,10 +2229,9 @@ END SUBROUTINE II_get_pso_spec_expval
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-!> \param expval the matrices of property integrals
+!> \param expval the matrices of property integrals (3,3) order: Magnetic comp, Magnetic Moment comp
 !> \param Dmat the matrices the should be contracted with the property integral
-!> \param nOperatorComp the number of matrices 
-!> \param Oper the label of property integral
+!> \param iAtom the chosen atom for which this should be calculated
 recursive SUBROUTINE II_get_nst_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,iAtom)
 IMPLICIT NONE
 INTEGER              :: LUPRI,LUERR,iAtom
@@ -2240,7 +2246,7 @@ logical :: CS_screenSAVE, PS_screenSAVE
 real(realk) :: TMPexpval(9)
 call time_II_operations1()
 CALL LSTIMER('START ',TS,TE,LUPRI)
-
+ndmat = 1
 IF(setting%IntegralTransformGC)THEN
    CALL mat_init(Dmat_AO(1),Dmat(1)%nrow,Dmat(1)%ncol)
    call GCAO2AO_transform_matrixD2(Dmat(1),Dmat_AO(1),setting,lupri)
