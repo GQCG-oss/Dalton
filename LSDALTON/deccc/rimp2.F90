@@ -69,12 +69,15 @@ subroutine decnp_RIMP2_integrals_and_amplitudes(frag,VOVO,t2)
   type(tensor),intent(inout) :: t2
   !> dummy tensors should not be allocated in RIMP2 routine
   type(tensor) :: tdum, gdum
+  !integer :: dims(4)
+
+  !dims = [frag%nvirtAOS,frag%noccAOS,frag%nvirtAOS,frag%noccAOS]   ! Output order
+  !call tensor_ainit(VOVO,dims,4)
+  !call tensor_ainit(t2,dims,4)
+  !call tensor_zero(VOVO)
+  !call tensor_zero(t2)
 
   call RIMP2_integrals_and_amplitudes(frag,VOVO,t2,tdum,gdum)
-
-  !FIXME: avoid allocation of dummy tensors in rimp2
-  call tensor_free(tdum)
-  call tensor_free(gdum)
 
 end subroutine decnp_RIMP2_integrals_and_amplitudes
 
@@ -752,93 +755,99 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
 
   nvirtOut = nvirtEOS
-  if (DECinfo%DECNP) nvirtOut = nvirt
-
   dimvirt = [nvirtOut,nocc,nvirtOut,nocc]   ! Output order
-  IF(NBA.GT.0)THEN
-     !Calculate and partial transform to local basis - transform occupied indices
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-     nsize1 = nocc*nocc*(nvirtOut*i8)*nvirt
-     nsize2 = nocc*nocc*(nvirtOut*i8)*nvirtOut
-     IF(use_bg_buf)THEN
-        call mem_pseudo_alloc(tvirt2,nsize2)
-        call mem_pseudo_alloc(tvirt,nsize1) !IDIAG,JDIAG,ALOC,BDIAG        
-     ELSE
-        call mem_alloc(tvirt2,nsize2)
-        call mem_alloc(tvirt,nsize1) !IDIAG,JDIAG,ALOC,BDIAG
-     ENDIF
+  ! For DECNP, the amplitudes are return in the full AOS space
+  ! this mean that virtual and occupied partitioning are equivalent
+  ! at this stage. Therefore we return only the occupied amplitudes
+  not_DECNP_1: if (.not.DECinfo%DECNP) then
+     IF(NBA.GT.0)THEN
+        !Calculate and partial transform to local basis - transform occupied indices
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        nsize1 = nocc*nocc*(nvirtOut*i8)*nvirt
+        nsize2 = nocc*nocc*(nvirtOut*i8)*nvirtOut
+        IF(use_bg_buf)THEN
+           call mem_pseudo_alloc(tvirt2,nsize2)
+           call mem_pseudo_alloc(tvirt,nsize1) !IDIAG,JDIAG,ALOC,BDIAG        
+        ELSE
+           call mem_alloc(tvirt2,nsize2)
+           call mem_alloc(tvirt,nsize1) !IDIAG,JDIAG,ALOC,BDIAG
+        ENDIF
 !$acc enter data create(tvirt)
-     IF(DECinfo%DECNP)THEN
-        call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtT)
-     ELSE
-        call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
-     ENDIF
+        IF(DECinfo%DECNP)THEN
+           call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtT)
+        ELSE
+           call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
+        ENDIF
 !$acc exit data delete(EVocc,EVvirt)
-     call mem_dealloc(EVocc)
-     call mem_dealloc(EVvirt)
-
-     !Transform first Virtual index (IDIAG,JDIAG,ALOC,BDIAG) => (IDIAG,JDIAG,ALOC,BLOC)
-     M = nocc*nocc*nvirtOut     !rows of Output Matrix
-     N = nvirtOut               !columns of Output Matrix
-     K = nvirt                  !summation dimension
+        call mem_dealloc(EVocc)
+        call mem_dealloc(EVvirt)
+   
+        !Transform first Virtual index (IDIAG,JDIAG,ALOC,BDIAG) => (IDIAG,JDIAG,ALOC,BLOC)
+        M = nocc*nocc*nvirtOut     !rows of Output Matrix
+        N = nvirtOut               !columns of Output Matrix
+        K = nvirt                  !summation dimension
 !$acc enter data create(tvirt2)
-     IF(DECinfo%DECNP)THEN
-        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M)
-     ELSE
-        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
-     ENDIF
+        IF(DECinfo%DECNP)THEN
+           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M)
+        ELSE
+           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
+        ENDIF
 !$acc exit data delete(tvirt)
-     nsize = nocc*nocc*(nvirtOut*i8)*nvirtOut
-     IF(use_bg_buf)THEN
-        call mem_pseudo_dealloc(tvirt)
-        call mem_pseudo_alloc(tvirt3,nsize)
-     ELSE
-        call mem_dealloc(tvirt)
-        call mem_alloc(tvirt3,nsize)
-     ENDIF
-     !Transform first occupied index (IDIAG,JDIAG,ALOC,BLOC) => (ILOC,JDIAG,ALOC,BLOC)
-     M = nocc                    !rows of Output Matrix
-     N = nocc*nvirtOut*nvirtOut  !columns of Output Matrix
-     K = nocc                    !summation dimension
+        nsize = nocc*nocc*(nvirtOut*i8)*nvirtOut
+        IF(use_bg_buf)THEN
+           call mem_pseudo_dealloc(tvirt)
+           call mem_pseudo_alloc(tvirt3,nsize)
+        ELSE
+           call mem_dealloc(tvirt)
+           call mem_alloc(tvirt3,nsize)
+        ENDIF
+        !Transform first occupied index (IDIAG,JDIAG,ALOC,BLOC) => (ILOC,JDIAG,ALOC,BLOC)
+        M = nocc                    !rows of Output Matrix
+        N = nocc*nvirtOut*nvirtOut  !columns of Output Matrix
+        K = nocc                    !summation dimension
 !$acc enter data create(tvirt3)
-     call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
+        call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
 !$acc exit data delete(tvirt2)
-
-     !transform last occ index to local basis and reorder 
-     call tensor_ainit(tvirtEOS,dimvirt,4)
+   
+        !transform last occ index to local basis and reorder 
+        call tensor_ainit(tvirtEOS,dimvirt,4)
 !$acc enter data create(tvirtEOS%elm1)
-     call RIMP2_calc_tvirtB(nvirtOut,nocc,tvirt3,UoccT,tvirtEOS%elm1)
+        call RIMP2_calc_tvirtB(nvirtOut,nocc,tvirt3,UoccT,tvirtEOS%elm1)
 !$acc exit data copyout(tvirtEOS%elm1) async(async_id(3))
 !$acc exit data delete(tvirt3)
-     IF(use_bg_buf)THEN
-        call mem_pseudo_dealloc(tvirt3)
-        call mem_pseudo_dealloc(tvirt2)
+        IF(use_bg_buf)THEN
+           call mem_pseudo_dealloc(tvirt3)
+           call mem_pseudo_dealloc(tvirt2)
+        ELSE
+           call mem_dealloc(tvirt3)
+           call mem_dealloc(tvirt2)
+        ENDIF
+        CALL LSTIMER('RIMP2: tvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
      ELSE
-        call mem_dealloc(tvirt3)
-        call mem_dealloc(tvirt2)
+        call tensor_ainit(tvirtEOS,dimvirt,4)
+        call mem_dealloc(EVocc)
+        call mem_dealloc(EVvirt)
+        nSize = nvirtOut*nocc*nvirtOut*nocc
+        call ls_dzero8(tvirtEOS%elm1,nSize)
      ENDIF
-     CALL LSTIMER('RIMP2: tvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
-  ELSE
-     call tensor_ainit(tvirtEOS,dimvirt,4)
+   
+#if defined(VAR_OPENACC) && defined(VAR_CUDA)
+     call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
+     if(DECinfo%PL>2)then
+        WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 7)     ',free_gpu*1.0E0_realk,' Bytes'
+        WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Additional memory requirement in Step 7 ',&
+             & (nba*nvirt*noccEOS*2)*8.0E0_realk,' Bytes'     
+     endif
+     IF((nba*nvirt*noccEOS*2)*8.0E0_realk.GT.free_gpu*1.0E0_realk)THEN
+        print*,'DECRIMP2: Memory available on device (step 7)     ',free_gpu*1.0E0_realk,' Bytes'
+        print*,'DECRIMP2: Additional memory requirement in Step 7 ',(nba*nvirt*noccEOS*2)*8.0E0_realk,' Bytes'     
+        call lsquit('DECRIMP2: Not enough memory on the device for step 6')
+     ENDIF
+#endif
+  else ! DECNP: dealloc stuff
      call mem_dealloc(EVocc)
      call mem_dealloc(EVvirt)
-     nSize = nvirtOut*nocc*nvirtOut*nocc
-     call ls_dzero8(tvirtEOS%elm1,nSize)
-  ENDIF
-
-#if defined(VAR_OPENACC) && defined(VAR_CUDA)
-  call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
-  if(DECinfo%PL>2)then
-     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 7)     ',free_gpu*1.0E0_realk,' Bytes'
-     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Additional memory requirement in Step 7 ',&
-          & (nba*nvirt*noccEOS*2)*8.0E0_realk,' Bytes'     
-  endif
-  IF((nba*nvirt*noccEOS*2)*8.0E0_realk.GT.free_gpu*1.0E0_realk)THEN
-     print*,'DECRIMP2: Memory available on device (step 7)     ',free_gpu*1.0E0_realk,' Bytes'
-     print*,'DECRIMP2: Additional memory requirement in Step 7 ',(nba*nvirt*noccEOS*2)*8.0E0_realk,' Bytes'     
-     call lsquit('DECRIMP2: Not enough memory on the device for step 6')
-  ENDIF
-#endif
+  end if not_DECNP_1
 
   !=====================================================================================
   !  Major Step 7: Generate goccEOS(nvirt,noccEOS,nvirt,noccEOS)
@@ -912,117 +921,135 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   !  Major Step 8: Generate gvirtEOS(nvirtEOS,nocc,nvirtEOS,nocctot)
   !=====================================================================================
+  not_DECNP_2: if (.not. DECinfo%DECNP) then
 #if defined(VAR_OPENACC) && defined(VAR_CUDA)
-  call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
-  if(DECinfo%PL>2)then
-     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 8)     ',free_gpu*1.0E0_realk,' Bytes'
-     WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Additional memory requirement in Step 8 ',&
-          & (nba*nvirt*nocctot*2)*8.0E0_realk,' Bytes'     
-  endif
-  IF((nba*nvirt*nocctot*2)*8.0E0_realk.GT.free_gpu*1.0E0_realk)THEN
-     print*,'DECRIMP2: Memory available on device (step 8)     ',free_gpu*1.0E0_realk,' Bytes'
-     print*,'DECRIMP2: Additional memory requirement in Step 8 ',(nba*nvirt*nocctot*2)*8.0E0_realk,' Bytes'     
-     call lsquit('DECRIMP2: Not enough memory on the device for step 6')
-  ENDIF
+     call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
+     if(DECinfo%PL>2)then
+        WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 8)     ',free_gpu*1.0E0_realk,' Bytes'
+        WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Additional memory requirement in Step 8 ',&
+             & (nba*nvirt*nocctot*2)*8.0E0_realk,' Bytes'     
+     endif
+     IF((nba*nvirt*nocctot*2)*8.0E0_realk.GT.free_gpu*1.0E0_realk)THEN
+        print*,'DECRIMP2: Memory available on device (step 8)     ',free_gpu*1.0E0_realk,' Bytes'
+        print*,'DECRIMP2: Additional memory requirement in Step 8 ',(nba*nvirt*nocctot*2)*8.0E0_realk,' Bytes'     
+        call lsquit('DECRIMP2: Not enough memory on the device for step 6')
+     ENDIF
 #endif
-
-  dimvirt = [nvirtOut,nocc,nvirtOut,nocctot]   ! Output order
-  IF(NBA.GT.0)THEN
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-     IF(fc)THEN
-        nsize2 = nba*nvirt*nocctot
-        nsize3 = nba*nvirt*nocctot
-        IF(use_bg_buf)THEN
-           call mem_pseudo_alloc(Calpha2,nsize2)
-           call mem_pseudo_alloc(Calpha3,nsize3)
-        ELSE
-           call mem_alloc(Calpha2,nsize2)
-           call mem_alloc(Calpha3,nsize3)
-        ENDIF
-        !Look at the MP2 code for discussion on frozen core and first_order_integrals
-        !and the order of core and valence in nocctot
+   
+     dimvirt = [nvirtOut,nocc,nvirtOut,nocctot]   ! Output order
+     IF(NBA.GT.0)THEN
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        IF(fc)THEN
+           nsize2 = nba*nvirt*nocctot
+           nsize3 = nba*nvirt*nocctot
+           IF(use_bg_buf)THEN
+              call mem_pseudo_alloc(Calpha2,nsize2)
+              call mem_pseudo_alloc(Calpha3,nsize3)
+           ELSE
+              call mem_alloc(Calpha2,nsize2)
+              call mem_alloc(Calpha3,nsize3)
+           ENDIF
+           !Look at the MP2 code for discussion on frozen core and first_order_integrals
+           !and the order of core and valence in nocctot
 !$acc enter data create(Calpha3)
-        call PlaceCoreOrbFirst(Calpha,NBA,nvirt,nocctot,ncore,nocc,Calpha3)
+           call PlaceCoreOrbFirst(Calpha,NBA,nvirt,nocctot,ncore,nocc,Calpha3)
 !$acc exit data delete(Calpha) if(fc .and. (.not. first_order))
-        ! Transform index delta to local occupied index 
-        !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)    
-        M = nba*nvirt        !rows of Output Matrix
-        N = nocctot          !columns of Output Matrix
-        K = nocctot          !summation dimension
+           ! Transform index delta to local occupied index 
+           !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)    
+           M = nba*nvirt        !rows of Output Matrix
+           N = nocctot          !columns of Output Matrix
+           K = nocctot          !summation dimension
 !$acc enter data create(Calpha2)
-        call RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M)
+           call RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M)
 !$acc exit data delete(UoccallT,Calpha3) if(fc .and. (.not. first_order))
 !$acc exit data delete(Calpha3) if(fc .and. first_order)
-        IF(use_bg_buf)THEN
-           call mem_pseudo_dealloc(Calpha3)
+           IF(use_bg_buf)THEN
+              call mem_pseudo_dealloc(Calpha3)
+           ELSE
+              call mem_dealloc(Calpha3)
+           ENDIF
+           IF(.NOT.first_order)call mem_dealloc(UoccallT)
         ELSE
-           call mem_dealloc(Calpha3)
-        ENDIF
-        IF(.NOT.first_order)call mem_dealloc(UoccallT)
-     ELSE
-        nsize = nba*nvirt*nocc
-        IF(use_bg_buf)THEN
-           call mem_pseudo_alloc(Calpha2,nsize)
-        ELSE
-           call mem_alloc(Calpha2,nsize)
-        ENDIF
-        ! Transform index delta to local occupied index 
-        !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
-        M = nba*nvirt        !rows of Output Matrix
-        N = nocc             !columns of Output Matrix
-        K = nocc             !summation dimension
+           nsize = nba*nvirt*nocc
+           IF(use_bg_buf)THEN
+              call mem_pseudo_alloc(Calpha2,nsize)
+           ELSE
+              call mem_alloc(Calpha2,nsize)
+           ENDIF
+           ! Transform index delta to local occupied index 
+           !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
+           M = nba*nvirt        !rows of Output Matrix
+           N = nocc             !columns of Output Matrix
+           K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
-        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
 !$acc exit data delete(UoccT,Calpha) if(.not. first_order)
-     ENDIF
-     IF(.NOT.first_order)call mem_dealloc(UoccT)
-     nsize = nba*nvirtOut*nocctot
-     IF(use_bg_buf)THEN
-        call mem_pseudo_alloc(Calpha3,nsize)
-     ELSE
-        call mem_alloc(Calpha3,nsize)
-     ENDIF
+        ENDIF
+        IF(.NOT.first_order)call mem_dealloc(UoccT)
+        nsize = nba*nvirtOut*nocctot
+        IF(use_bg_buf)THEN
+           call mem_pseudo_alloc(Calpha3,nsize)
+        ELSE
+           call mem_alloc(Calpha3,nsize)
+        ENDIF
 !$acc enter data create(Calpha3)
-     IF(DECinfo%DECNP)THEN
-        call RIMP2_TransAlpha2(nocctot,nvirt,nvirtOut,nba,UvirtT,Calpha2,Calpha3)
+        IF(DECinfo%DECNP)THEN
+           call RIMP2_TransAlpha2(nocctot,nvirt,nvirtOut,nba,UvirtT,Calpha2,Calpha3)
 !$acc exit data delete(UvirtT) if(.NOT.first_order)
-        IF(.NOT.first_order)call mem_dealloc(UvirtT)     
-     ELSE
-        call RIMP2_TransAlpha2(nocctot,nvirt,nvirtOut,nba,UvirtEOST,Calpha2,Calpha3)
-     ENDIF
+           IF(.NOT.first_order)call mem_dealloc(UvirtT)     
+           IF(.NOT.first_order)call mem_dealloc(UoccEOST)     
+        ELSE
+           call RIMP2_TransAlpha2(nocctot,nvirt,nvirtOut,nba,UvirtEOST,Calpha2,Calpha3)
+        ENDIF
 !$acc exit data delete(Calpha2,UvirtEOST) if(.not. first_order)
 !$acc exit data delete(Calpha2) if(first_order)
-     IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
-
-     call tensor_ainit(gvirtEOS,dimvirt,4)
+        IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
+   
+        call tensor_ainit(gvirtEOS,dimvirt,4)
 !$acc enter data create(gvirtEOS%elm1)
-     call RIMP2_calc_gvirt(nvirtOut,nocctot,NBA,nocc,Calpha3,gvirtEOS%elm1,offset)
+        call RIMP2_calc_gvirt(nvirtOut,nocctot,NBA,nocc,Calpha3,gvirtEOS%elm1,offset)
 !$acc exit data copyout(gvirtEOS%elm1) async(async_id(5))
 !$acc exit data delete(Calpha3)
-
-     IF(use_bg_buf)THEN
-        call mem_pseudo_dealloc(Calpha3)
-        call mem_pseudo_dealloc(Calpha2)
-     ELSE
-        call mem_dealloc(Calpha3)
-        call mem_dealloc(Calpha2)
-     ENDIF
-     IF(.NOT.first_order)THEN
+   
         IF(use_bg_buf)THEN
-           call mem_pseudo_dealloc(Calpha)
+           call mem_pseudo_dealloc(Calpha3)
+           call mem_pseudo_dealloc(Calpha2)
         ELSE
-           call mem_dealloc(Calpha)
+           call mem_dealloc(Calpha3)
+           call mem_dealloc(Calpha2)
         ENDIF
+        IF(.NOT.first_order)THEN
+           IF(use_bg_buf)THEN
+              call mem_pseudo_dealloc(Calpha)
+           ELSE
+              call mem_dealloc(Calpha)
+           ENDIF
+        ENDIF
+   
+        CALL LSTIMER('RIMP2: gvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
+     ELSE
+        IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
+        IF(.NOT.first_order)call mem_dealloc(UoccT)
+        call tensor_ainit(gvirtEOS,dimvirt,4)
+        nSize = nvirtOut*nocc*nvirtOut*nocctot
+        call ls_dzero8(gvirtEOS%elm1,nsize)
      ENDIF
-
-     CALL LSTIMER('RIMP2: gvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
-  ELSE
-     IF(.NOT.first_order)call mem_dealloc(UvirtEOST)
-     IF(.NOT.first_order)call mem_dealloc(UoccT)
-     call tensor_ainit(gvirtEOS,dimvirt,4)
-     nSize = nvirtOut*nocc*nvirtOut*nocctot
-     call ls_dzero8(gvirtEOS%elm1,nsize)
-  ENDIF
+  else ! DECNP: dealloc stuff
+     if (.not.first_order) then
+        call mem_dealloc(UvirtEOST)
+        call mem_dealloc(UoccEOST)
+        call mem_dealloc(UvirtT)
+        call mem_dealloc(UoccT)
+        if (fc) call mem_dealloc(UoccallT)
+        if (NBA > 0) then
+           if(use_bg_buf)then
+              call mem_pseudo_dealloc(Calpha)
+           else
+              call mem_dealloc(Calpha)
+           endif
+        endif
+     end if
+  end if not_DECNP_2
 
   !=====================================================================================
   !  Major Step 9: Collect toccEOS, tvirtEOS, goccEOS, and gvirtEOS
@@ -1036,20 +1063,26 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call time_start_phase( PHASE_IDLE )
      call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_COMM )
+     ! occupied part
      nSize = nvirt*noccEOS*nvirt*noccEOS
      call lsmpi_reduction(toccEOS%elm1,nsize,infpar%master,infpar%lg_comm)
-     nSize = nvirtEOS*nocc*nvirtEOS*nocc
-     call lsmpi_reduction(tvirtEOS%elm1,nSize,infpar%master,infpar%lg_comm)
      nSize = nvirt*noccEOS*nvirt*noccEOS
      call lsmpi_reduction(goccEOS%elm1,nSize,infpar%master,infpar%lg_comm)
-     nSize = nvirtEOS*nocc*nvirtEOS*nocctot
-     call lsmpi_reduction(gvirtEOS%elm1,nsize,infpar%master,infpar%lg_comm)
+     ! virtual part
+     if (.not. DECinfo%DECNP) then
+        nSize = nvirtEOS*nocc*nvirtEOS*nocc
+        call lsmpi_reduction(tvirtEOS%elm1,nSize,infpar%master,infpar%lg_comm)
+        nSize = nvirtEOS*nocc*nvirtEOS*nocctot
+        call lsmpi_reduction(gvirtEOS%elm1,nsize,infpar%master,infpar%lg_comm)
+     end if
      call time_start_phase(PHASE_WORK)
      if (.not. Master) then
         call tensor_free(toccEOS)
-        call tensor_free(tvirtEOS)
         call tensor_free(goccEOS)
-        call tensor_free(gvirtEOS)
+        if (.not. DECinfo%DECNP) then
+           call tensor_free(tvirtEOS)
+           call tensor_free(gvirtEOS)
+        end if
      endif
   ENDIF
 #endif
