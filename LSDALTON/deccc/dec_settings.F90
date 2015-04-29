@@ -981,8 +981,6 @@ contains
           call lsquit("RPA model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_SOSEX)
           call lsquit("SOSEX model is not compatible with DECNP yet",DECinfo%output)
-       case (MODEL_RIMP2)
-          call lsquit("RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_LSTHCRIMP2)
           call lsquit("LS-THC-RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        end select

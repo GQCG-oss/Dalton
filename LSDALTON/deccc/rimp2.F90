@@ -55,6 +55,29 @@ module rimp2_module
 #endif
 
 contains
+!> Purpose: Wrapper routine to get RI-MP2 amplitudes and integrals
+!           in comnnection with DECNP
+!> Author:  Pablo Baudin
+!> Date:    April 2015
+subroutine decnp_RIMP2_integrals_and_amplitudes(frag,VOVO,t2)
+   implicit none
+  !> Atomic fragment
+  type(decfrag), intent(inout) :: frag
+  !> full AOS integrals
+  type(tensor),intent(inout) :: VOVO
+  !> full AOS amplitudes
+  type(tensor),intent(inout) :: t2
+  !> dummy tensors should not be allocated in RIMP2 routine
+  type(tensor) :: tdum, gdum
+
+  call RIMP2_integrals_and_amplitudes(frag,VOVO,t2,tdum,gdum)
+
+  !FIXME: avoid allocation of dummy tensors in rimp2
+  call tensor_free(tdum)
+  call tensor_free(gdum)
+
+end subroutine decnp_RIMP2_integrals_and_amplitudes
+
 !> \brief Calculate EOS integrals and EOS amplitudes for RI-MP2 calculation -
 !> both for occupied and virtual partitioning schemes.
 !> \author Thomas Kjaergaard

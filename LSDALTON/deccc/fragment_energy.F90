@@ -252,8 +252,22 @@ contains
        if(DECinfo%first_order .and. (.not. DECinfo%unrelaxed) ) then  
           ! calculate also RIMP2 density integrals
           call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
+       else if (DECinfo%DECNP) then
+          ! calculate also RIMP2 integrals (full AOS)
+          call decnp_RIMP2_integrals_and_amplitudes(MyFragment,VOVO,t2)
+           
+          ! Extract EOS indices for amplitudes and integrals
+          ! ************************************************
+          ! Note: EOS space is different for DECNP !!
+          call tensor_extract_decnp_indices(t2,MyFragment,t2occ,t2virt)
+          call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
+          
+          ! free stuff
+          ! **********
+          call tensor_free(VOVO)
+          call tensor_free(t2)
        else
-          ! calculate also RIMP2 density integrals
+          ! calculate also RIMP2 integrals
           call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        endif
     case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation

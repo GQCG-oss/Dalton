@@ -86,10 +86,9 @@ contains
          & OccOrbitals, virtOrbitals)
 
     if (DECinfo%only_generate_DECorbs) then
-       print*,' '
-       print*, 'Quitting after DEC orbitals have been written to file'
+       print*, 'Quits after DEC orbitals have been written to file'
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a)') 'Quitting after DEC orbitals have been written to file'
+       write(DECinfo%output,'(1X,a)') 'Quits after DEC orbitals have been written to file'
        call lsquit('Quitting after DEC orbitals have been written to file',DECinfo%output)
     end if
 
