@@ -2374,6 +2374,7 @@ contains
     call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%print_frags,Master)
     call ls_mpi_buffer(DECitem%abc,Master)
+    call ls_mpi_buffer(DECitem%ijk_tile_size,Master)
     call ls_mpi_buffer(DECitem%abc_tile_size,Master)
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
