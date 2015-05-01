@@ -4546,49 +4546,52 @@ real(realk) :: TS,TE
 type(matrix),pointer  :: Jx2(:)
 type(matrix) :: D2(1)
 call time_II_operations1()
-CALL LSTIMER('START ',TS,TE,LUPRI)
-
-ndmat = 1
-ISYM = mat_get_isym(Dmat(1))
-IF(ISYM.EQ.1)THEN !sym
-   !we can use the jengine where we only differentiate on the LHS
-   !as the magderiv on the RHS is zero for sym D mat
-   call II_get_magderivJ1(LUPRI,LUERR,SETTING,nbast,Dmat,Jx,ndmat)
-   DO idmat=1,3
-      call mat_scal(0.5E0_realk,Jx(Idmat))
-   ENDDO   
-ELSEIF(ISYM.EQ.2)THEN !antisym
-   call II_get_magderivJ1asym(LUPRI,LUERR,SETTING,nbast,Dmat(1),Jx,ndmat)
-ELSEIF(ISYM.EQ.3)THEN !nonsym
-   !we split up into sym and anti sym part
-   !SYM PART
-   call mat_init(D2(1),Dmat(1)%nrow,Dmat(1)%ncol)
-   call mat_assign(D2(1),Dmat(1))
-   call util_get_symm_part(D2(1))
-   call II_get_magderivJ1(LUPRI,LUERR,SETTING,nbast,D2,Jx,ndmat)
-   DO idmat=1,3
-      call mat_scal(0.5E0_realk,Jx(Idmat))
-   ENDDO   
-   !ASYM PART
-   call util_get_antisymm_part(Dmat(1),D2(1))
-   call mem_alloc(Jx2,3)
-   do idmat=1,3
-      call mat_init(Jx2(idmat),Jx(1)%nrow,Jx(1)%ncol)
-   enddo
-   call II_get_magderivJ1asym(LUPRI,LUERR,SETTING,nbast,D2,Jx2,ndmat)
-   call mat_free(D2(1))
-   DO idmat=1,3
-      call mat_daxpy(-1.0E0_realk,Jx2(Idmat),Jx(idmat))
-      call mat_free(Jx2(idmat))
-   ENDDO
-   call mem_dealloc(Jx2)
+IF (setting%scheme%densfit) THEN
+   CALL II_get_df_magderivJ(LUPRI,LUERR,SETTING,nbast,Dmat,Jx)
 ELSE
-   !zero Dmat
-   call mat_zero(Jx(1))
-   call mat_zero(Jx(2))
-   call mat_zero(Jx(3))
+   CALL LSTIMER('START ',TS,TE,LUPRI)
+   ndmat = 1
+   ISYM = mat_get_isym(Dmat(1))
+   IF(ISYM.EQ.1)THEN !sym
+      !we can use the jengine where we only differentiate on the LHS
+      !as the magderiv on the RHS is zero for sym D mat
+      call II_get_magderivJ1(LUPRI,LUERR,SETTING,nbast,Dmat,Jx,ndmat)
+      DO idmat=1,3
+         call mat_scal(0.5E0_realk,Jx(Idmat))
+      ENDDO
+   ELSEIF(ISYM.EQ.2)THEN !antisym
+      call II_get_magderivJ1asym(LUPRI,LUERR,SETTING,nbast,Dmat(1),Jx,ndmat)
+   ELSEIF(ISYM.EQ.3)THEN !nonsym
+      !we split up into sym and anti sym part
+      !SYM PART
+      call mat_init(D2(1),Dmat(1)%nrow,Dmat(1)%ncol)
+      call mat_assign(D2(1),Dmat(1))
+      call util_get_symm_part(D2(1))
+      call II_get_magderivJ1(LUPRI,LUERR,SETTING,nbast,D2,Jx,ndmat)
+      DO idmat=1,3
+         call mat_scal(0.5E0_realk,Jx(Idmat))
+      ENDDO
+      !ASYM PART
+      call util_get_antisymm_part(Dmat(1),D2(1))
+      call mem_alloc(Jx2,3)
+      do idmat=1,3
+         call mat_init(Jx2(idmat),Jx(1)%nrow,Jx(1)%ncol)
+      enddo
+      call II_get_magderivJ1asym(LUPRI,LUERR,SETTING,nbast,D2,Jx2,ndmat)
+      call mat_free(D2(1))
+      DO idmat=1,3
+         call mat_daxpy(-1.0E0_realk,Jx2(Idmat),Jx(idmat))
+         call mat_free(Jx2(idmat))
+      ENDDO
+      call mem_dealloc(Jx2)
+   ELSE
+      !zero Dmat
+      call mat_zero(Jx(1))
+      call mat_zero(Jx(2))
+      call mat_zero(Jx(3))
+   ENDIF
+   CALL LSTIMER('magJengin',TS,TE,LUPRI)
 ENDIF
-CALL LSTIMER('magJengin',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_magderivJ_4center_eri)
 end SUBROUTINE II_get_magderivJ
 
