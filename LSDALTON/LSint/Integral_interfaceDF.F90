@@ -2780,11 +2780,11 @@ IF(setting%IntegralTransformGC)THEN
       call AO2GCAO_transform_matrixF(Jx(ideriv),setting,lupri)
    enddo   
 ENDIF
-do ideriv=1,nderiv
-   WRITE(lupri,*)'DF: Jx(',ideriv,')'
-   call mat_scal(0.5E0_realk,Jx(Ideriv))
-   call mat_print(Jx(ideriv),1,Jx(ideriv)%nrow,1,Jx(ideriv)%ncol,lupri)
-enddo
+!do ideriv=1,nderiv
+!   WRITE(lupri,*)'DF: Jx(',ideriv,')'
+!   call mat_scal(0.5E0_realk,Jx(Ideriv))
+!   call mat_print(Jx(ideriv),1,Jx(ideriv)%nrow,1,Jx(ideriv)%ncol,lupri)
+!enddo
 end SUBROUTINE II_get_df_magderivJ
 
 SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&
