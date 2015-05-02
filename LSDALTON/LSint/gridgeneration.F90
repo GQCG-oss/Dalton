@@ -1236,76 +1236,75 @@ Subroutine SSFPartitioning(N,NATOMS,atomcenterX,atomcenterY,&
 !  This is grid point driven 
 !  seems to be the most efficient one, 
 !  due to very efficient "screening" \Andreas Krapp
-  GRIDLOOP: DO I2=1,N
-     DO IATOM1_REL=1,nRELEVANT_ATOMS
-        P(IATOM1_REL) = D1
-        zero(IATOM1_REL) = .FALSE.
-     ENDDO
+GRIDLOOP: DO I2=1,N
+  DO IATOM1_REL=1,nRELEVANT_ATOMS
+     P(IATOM1_REL) = D1
+     zero(IATOM1_REL) = .FALSE.
+  ENDDO
 
-     !we first sort out all values with zero weight
-     !first until IATOM (not including IATOM)
-     DO IATOM1_REL=1,ATOMINDEX-1
-        IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
-        dist = inverseDistance12(IATOM1,IATOM)
-        MUA = (RADIUS - TMP(I2,IATOM1_REL))*dist
-        IF(MUA .GE. SSF_CUTOFF)THEN
-           WG(idx+I2)=D0
-           CYCLE GRIDLOOP !GO TO I2
-        ENDIF
-     ENDDO
-     !then from IATOM (not including IATOM)
-     DO IATOM1_REL=ATOMINDEX+1,nRELEVANT_ATOMS
-        IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
-        dist = inverseDistance12(IATOM1,IATOM)
-        MUA = (RADIUS - TMP(I2,IATOM1_REL))*dist
-        IF(MUA .GE. SSF_CUTOFF)THEN
-           WG(idx+I2)=D0
-           CYCLE GRIDLOOP !GO TO I2
-        ENDIF
-     ENDDO
-
-     !now for the rest of points
-     DO IATOM1_REL=1,nRELEVANT_ATOMS
-        IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
-        Ria1 = TMP(I2,IATOM1_REL)
-        DO IATOM2_REL=1,IATOM1_REL-1
-           IF (zero(IATOM1_REL).AND.zero(IATOM2_REL)) CYCLE
-           IATOM2 = RELEVANT_ATOMS(IATOM2_REL)
-           dist = inverseDistance12(IATOM2,IATOM1)
-           MUA = (Ria1 - TMP(I2,IATOM2_REL))*dist
-           IF(MUA.LE.-SSF_CUTOFF)THEN
-              P(IATOM2_REL) = D0
-              zero(IATOM2_REL) = .TRUE.
-           ELSEIF(MUA.GE.SSF_CUTOFF)THEN
-              P(IATOM1_REL) = D0
-              zero(IATOM1_REL) = .TRUE.
-           ELSE
-              MUA2= MUA*MUA
-              GMU=MUA*(fac1+MUA2*(fac2+MUA2*(fac3+fac4*MUA2)));
-              P(IATOM1_REL) = P(IATOM1_REL) * (D05-GMU)
-              P(IATOM2_REL) = P(IATOM2_REL) * (D05+GMU)
-           ENDIF
-        ENDDO
-     ENDDO
-     IF(ABS(P(ATOMINDEX)).LT. 1.0E-30_realk)THEN
-        WG(idx+I2) = D0
-        W = D0
-     ELSE
-        !compute weight normalization factors
-        V = D0
-        DO IATOM2_REL=1,nRELEVANT_ATOMS
-           V = V + P(IATOM2_REL)
-        ENDDO
-        W = P(ATOMINDEX)/V
-        WG(I2+idx) = WG(I2+idx)*W
+  !we first sort out all values with zero weight
+  !first until IATOM (not including IATOM)
+  DO IATOM1_REL=1,ATOMINDEX-1
+     IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
+     dist = inverseDistance12(IATOM1,IATOM)
+     MUA = (RADIUS - TMP(I2,IATOM1_REL))*dist
+     IF(MUA .GE. SSF_CUTOFF)THEN
+        WG(idx+I2)=D0
+        CYCLE GRIDLOOP !GO TO I2
      ENDIF
-  ENDDO GRIDLOOP
-  
-  call mem_grid_dealloc(TMP)
-  call mem_grid_dealloc(P)
-  call mem_grid_dealloc(RELEVANT_ATOMS)
-  call mem_grid_dealloc(zero)
+  ENDDO
+  !then from IATOM (not including IATOM)
+  DO IATOM1_REL=ATOMINDEX+1,nRELEVANT_ATOMS
+     IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
+     dist = inverseDistance12(IATOM1,IATOM)
+     MUA = (RADIUS - TMP(I2,IATOM1_REL))*dist
+     IF(MUA .GE. SSF_CUTOFF)THEN
+        WG(idx+I2)=D0
+        CYCLE GRIDLOOP !GO TO I2
+     ENDIF
+  ENDDO
 
+  !now for the rest of points
+  DO IATOM1_REL=1,nRELEVANT_ATOMS
+     IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
+     Ria1 = TMP(I2,IATOM1_REL)
+     DO IATOM2_REL=1,IATOM1_REL-1
+        IF (zero(IATOM1_REL).AND.zero(IATOM2_REL)) CYCLE
+        IATOM2 = RELEVANT_ATOMS(IATOM2_REL)
+        dist = inverseDistance12(IATOM2,IATOM1)
+        MUA = (Ria1 - TMP(I2,IATOM2_REL))*dist
+        IF(MUA.LE.-SSF_CUTOFF)THEN
+           P(IATOM2_REL) = D0
+           zero(IATOM2_REL) = .TRUE.
+        ELSEIF(MUA.GE.SSF_CUTOFF)THEN
+           P(IATOM1_REL) = D0
+           zero(IATOM1_REL) = .TRUE.
+        ELSE
+           MUA2= MUA*MUA
+           GMU=MUA*(fac1+MUA2*(fac2+MUA2*(fac3+fac4*MUA2)));
+           P(IATOM1_REL) = P(IATOM1_REL) * (D05-GMU)
+           P(IATOM2_REL) = P(IATOM2_REL) * (D05+GMU)
+        ENDIF
+     ENDDO
+  ENDDO
+  IF(ABS(P(ATOMINDEX)).LT. 1.0E-30_realk)THEN
+     WG(idx+I2) = D0
+     W = D0
+  ELSE
+     !compute weight normalization factors
+     V = D0
+     DO IATOM2_REL=1,nRELEVANT_ATOMS
+        V = V + P(IATOM2_REL)
+     ENDDO
+     W = P(ATOMINDEX)/V
+     WG(I2+idx) = WG(I2+idx)*W
+  ENDIF
+ENDDO GRIDLOOP
+
+call mem_grid_dealloc(TMP)
+call mem_grid_dealloc(P)
+call mem_grid_dealloc(RELEVANT_ATOMS)
+call mem_grid_dealloc(zero)
 END Subroutine SSFPARTITIONING
 
 !based on jcp vol 171, page 2915 (2004)
