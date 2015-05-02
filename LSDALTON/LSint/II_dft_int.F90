@@ -198,7 +198,7 @@ IF (GridObject%NOPRUN) IPRUNE = 0
 CALL LSTIMER('START',TS,TE,LUPRI)
 GridObject%NBUFLEN= 1024
 BoxMemRequirement = 160000
-CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
+CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angint,&
      & GridObject%HRDNES,iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,&
      & BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,&

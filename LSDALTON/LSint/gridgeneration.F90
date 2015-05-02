@@ -58,7 +58,7 @@ CONTAINS
 !> \brief wrapper exchange-correlation integral routine that build basinf.
 !> \author T. Kjaergaard
 !> \date 2010
-SUBROUTINE GenerateGrid(NBAST,radint,angmin,angint,ihardness,iprune,natoms,& 
+SUBROUTINE GenerateGrid(NBAST,radint,angint,ihardness,iprune,natoms,& 
      & X,Y,Z,Charge,GRIDDONE,SHELL2ATOM,SHELLANGMOM,SHELLNPRIM,MAXANGMOM,&
      & MAXNSHELL,MXPRIM,PRIEXP,PRIEXPSTART,RSHEL,ITERATIONS,TURBO,MaxNbuflen,&
      & RADIALGRID,ZdependenMaxAng,PARTITIONING,nstart,MaxNactBast,LUPRI,&
@@ -105,8 +105,6 @@ REAL(REALK),intent(in):: RSHEL(MAXNSHELL)
 !> some grid generation specification
 REAL(REALK) :: radint
 !> some grid generation specification
-INTEGER :: angmin
-!> some grid generation specification
 INTEGER :: angint
 !> some grid generation specification
 INTEGER :: IHARDNESS
@@ -139,6 +137,7 @@ REAL(REALK),pointer :: RADIALPOINTS(:,:),RADIALWEIGHT(:,:)
 integer :: totalpoints
 integer :: angularpoints ,I,leb_gen_from_point,iang1
 !max number of radial points
+integer,parameter :: MIN_RAD_PT = 20
 
 IF(GRIDDONE.EQ. 1)RETURN  !Grid already calculated and the grid points are in DALTON.QUAD
 !initialise memory counters
@@ -147,7 +146,7 @@ iang1 = leb_get_from_order(angint)
 angularpoints = leb_gen_points(iang1)
 
 IF(iprint.gt. 1)THEN
-   WRITE(lupri,'(A,I4,A,I4,A,I6)')'Angular integration order range: [',angmin,',',angint,'] Angular points ',angularpoints
+   WRITE(lupri,'(A,I4,A,I6)')'Angular integration order ',angint,' Angular points ',angularpoints
 ENDIF
 
 !mem alloc RADIALPOINTS,RADIALWEIGHT,nRadialPoints = RadialGridPoints,RadialWeights,NumberOfGridPoints 
@@ -156,12 +155,12 @@ call mem_grid_alloc(RADIALWEIGHT,NRADPT,NATOMS)
 call mem_grid_alloc(nRadialPoints,NATOMS)   
 !Build RADIALPOINTS,RADIALWEIGHT,nRadialPoints = RadialGridPoints,RadialWeights,NumberOfGridPoints 
 CALL SET_RADIAL(RADIALPOINTS,RADIALWEIGHT,nRadialPoints,NRADPT,SHELL2ATOM,SHELLANGMOM,SHELLNPRIM,MAXANGMOM,NATOMS,MAXNSHELL,&
-        & MXPRIM,PRIEXP,PRIEXPSTART,IPRINT,LUPRI,RADINT,Charge,RADIALGRID)
+        & MXPRIM,PRIEXP,PRIEXPSTART,IPRINT,LUPRI,RADINT,Charge,RADIALGRID,MIN_RAD_PT)
 ! Computes the angular points for a set of radial points 
 ! obtained from radial integration scheme.
 ! 
 call mem_grid_alloc(GRIDANG,NRADPT,NATOMS)
-CALL SET_ANGULAR(gridang,radint,angmin,angint,CHARGE,natoms,NRADPT,nRadialPoints,RADIALPOINTS,RADIALWEIGHT,&
+CALL SET_ANGULAR(gridang,radint,angint,CHARGE,natoms,NRADPT,nRadialPoints,RADIALPOINTS,RADIALWEIGHT,&
      &           iprune,angularpoints,ZdependenMaxAng)
 ! Build Atomic and Molecular grids + partitioning
 CALL ComputeCoords(totalpoints,nRadialPoints,natoms,RADIALPOINTS,RADIALWEIGHT,NRADPT,GRIDANG,&
@@ -1237,75 +1236,75 @@ Subroutine SSFPartitioning(N,NATOMS,atomcenterX,atomcenterY,&
 !  This is grid point driven 
 !  seems to be the most efficient one, 
 !  due to very efficient "screening" \Andreas Krapp
-GRIDLOOP: DO I2=1,N
-  DO IATOM1_REL=1,nRELEVANT_ATOMS
-     P(IATOM1_REL) = D1
-     zero(IATOM1_REL) = .FALSE.
-  ENDDO
+  GRIDLOOP: DO I2=1,N
+     DO IATOM1_REL=1,nRELEVANT_ATOMS
+        P(IATOM1_REL) = D1
+        zero(IATOM1_REL) = .FALSE.
+     ENDDO
 
-  !we first sort out all values with zero weight
-  !first until IATOM (not including IATOM)
-  DO IATOM1_REL=1,ATOMINDEX-1
-     IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
-     dist = inverseDistance12(IATOM1,IATOM)
-     MUA = (RADIUS - TMP(I2,IATOM1_REL))*dist
-     IF(MUA .GE. SSF_CUTOFF)THEN
-        WG(idx+I2)=D0
-        CYCLE GRIDLOOP !GO TO I2
-     ENDIF
-  ENDDO
-  !then from IATOM (not including IATOM)
-  DO IATOM1_REL=ATOMINDEX+1,nRELEVANT_ATOMS
-     IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
-     dist = inverseDistance12(IATOM1,IATOM)
-     MUA = (RADIUS - TMP(I2,IATOM1_REL))*dist
-     IF(MUA .GE. SSF_CUTOFF)THEN
-        WG(idx+I2)=D0
-        CYCLE GRIDLOOP !GO TO I2
-     ENDIF
-  ENDDO
-
-  !now for the rest of points
-  DO IATOM1_REL=1,nRELEVANT_ATOMS
-     IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
-     Ria1 = TMP(I2,IATOM1_REL)
-     DO IATOM2_REL=1,IATOM1_REL-1
-        IF (zero(IATOM1_REL).AND.zero(IATOM2_REL)) CYCLE
-        IATOM2 = RELEVANT_ATOMS(IATOM2_REL)
-        dist = inverseDistance12(IATOM2,IATOM1)
-        MUA = (Ria1 - TMP(I2,IATOM2_REL))*dist
-        IF(MUA.LE.-SSF_CUTOFF)THEN
-           P(IATOM2_REL) = D0
-           zero(IATOM2_REL) = .TRUE.
-        ELSEIF(MUA.GE.SSF_CUTOFF)THEN
-           P(IATOM1_REL) = D0
-           zero(IATOM1_REL) = .TRUE.
-        ELSE
-           MUA2= MUA*MUA
-           GMU=MUA*(fac1+MUA2*(fac2+MUA2*(fac3+fac4*MUA2)));
-           P(IATOM1_REL) = P(IATOM1_REL) * (D05-GMU)
-           P(IATOM2_REL) = P(IATOM2_REL) * (D05+GMU)
+     !we first sort out all values with zero weight
+     !first until IATOM (not including IATOM)
+     DO IATOM1_REL=1,ATOMINDEX-1
+        IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
+        dist = inverseDistance12(IATOM1,IATOM)
+        MUA = (RADIUS - TMP(I2,IATOM1_REL))*dist
+        IF(MUA .GE. SSF_CUTOFF)THEN
+           WG(idx+I2)=D0
+           CYCLE GRIDLOOP !GO TO I2
         ENDIF
      ENDDO
-  ENDDO
-  IF(ABS(P(ATOMINDEX)).LT. 1.0E-30_realk)THEN
-     WG(idx+I2) = D0
-     W = D0
-  ELSE
-     !compute weight normalization factors
-     V = D0
-     DO IATOM2_REL=1,nRELEVANT_ATOMS
-        V = V + P(IATOM2_REL)
+     !then from IATOM (not including IATOM)
+     DO IATOM1_REL=ATOMINDEX+1,nRELEVANT_ATOMS
+        IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
+        dist = inverseDistance12(IATOM1,IATOM)
+        MUA = (RADIUS - TMP(I2,IATOM1_REL))*dist
+        IF(MUA .GE. SSF_CUTOFF)THEN
+           WG(idx+I2)=D0
+           CYCLE GRIDLOOP !GO TO I2
+        ENDIF
      ENDDO
-     W = P(ATOMINDEX)/V
-     WG(I2+idx) = WG(I2+idx)*W
-  ENDIF
-ENDDO GRIDLOOP
 
-call mem_grid_dealloc(TMP)
-call mem_grid_dealloc(P)
-call mem_grid_dealloc(RELEVANT_ATOMS)
-call mem_grid_dealloc(zero)
+     !now for the rest of points
+     DO IATOM1_REL=1,nRELEVANT_ATOMS
+        IATOM1 = RELEVANT_ATOMS(IATOM1_REL)
+        Ria1 = TMP(I2,IATOM1_REL)
+        DO IATOM2_REL=1,IATOM1_REL-1
+           IF (zero(IATOM1_REL).AND.zero(IATOM2_REL)) CYCLE
+           IATOM2 = RELEVANT_ATOMS(IATOM2_REL)
+           dist = inverseDistance12(IATOM2,IATOM1)
+           MUA = (Ria1 - TMP(I2,IATOM2_REL))*dist
+           IF(MUA.LE.-SSF_CUTOFF)THEN
+              P(IATOM2_REL) = D0
+              zero(IATOM2_REL) = .TRUE.
+           ELSEIF(MUA.GE.SSF_CUTOFF)THEN
+              P(IATOM1_REL) = D0
+              zero(IATOM1_REL) = .TRUE.
+           ELSE
+              MUA2= MUA*MUA
+              GMU=MUA*(fac1+MUA2*(fac2+MUA2*(fac3+fac4*MUA2)));
+              P(IATOM1_REL) = P(IATOM1_REL) * (D05-GMU)
+              P(IATOM2_REL) = P(IATOM2_REL) * (D05+GMU)
+           ENDIF
+        ENDDO
+     ENDDO
+     IF(ABS(P(ATOMINDEX)).LT. 1.0E-30_realk)THEN
+        WG(idx+I2) = D0
+        W = D0
+     ELSE
+        !compute weight normalization factors
+        V = D0
+        DO IATOM2_REL=1,nRELEVANT_ATOMS
+           V = V + P(IATOM2_REL)
+        ENDDO
+        W = P(ATOMINDEX)/V
+        WG(I2+idx) = WG(I2+idx)*W
+     ENDIF
+  ENDDO GRIDLOOP
+  
+  call mem_grid_dealloc(TMP)
+  call mem_grid_dealloc(P)
+  call mem_grid_dealloc(RELEVANT_ATOMS)
+  call mem_grid_dealloc(zero)
 
 END Subroutine SSFPARTITIONING
 
@@ -2019,10 +2018,10 @@ ENDDO
 
 END SUBROUTINE DETERMINE_BRAGGFAC
 
-SUBROUTINE SET_ANGULAR(GRIDANG,radint,angmin,angint,charge,natoms,NRADPT,nRadialPoints,RADIALPOINTS,RADIALWEIGHT,&
+SUBROUTINE SET_ANGULAR(GRIDANG,radint,angint,charge,natoms,NRADPT,nRadialPoints,RADIALPOINTS,RADIALWEIGHT,&
      &                 iprune,angularpoints,ZdependentMaxAng)
 implicit none
-integer,intent(in)  :: angmin,angint,natoms,iprune,NRADPT,angularpoints
+integer,intent(in)  :: angint,natoms,iprune,NRADPT,angularpoints
 !> charge for each atom used in grid-generation
 INTEGER,intent(in)  :: CHARGE(natoms),nRadialPoints(natoms)
 LOGICAL,intent(in)  :: ZdependentMaxAng
@@ -2068,11 +2067,12 @@ END SUBROUTINE SET_ANGULAR
    
 INTEGER FUNCTION leb_get_from_order(angint)
 integer,intent(in) :: angint
+! I am unsure about leb_gen_poly_order(1) and leb_gen_poly_order(2)  and leb_gen_poly_order(3) 
 integer,parameter :: leb_gen_poly_order(18) = (/  5, 9,11,15, 17, 19, 21, 23, 25, 27, 29, 31, 35, 41, 47, 53,  59,  64 /)
-integer,parameter :: leb_gen_point(18)      = (/ 14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
+integer,parameter :: leb_gen_point(18)      = (/  14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
 integer :: I
 leb_get_from_order = 0
-DO I=1,18 !size of leb_gen_poly_order
+DO I=1,21 !size of leb_gen_poly_order
    if(leb_gen_poly_order(I).GE.angint)THEN
       leb_get_from_order = I
       RETURN
@@ -2083,11 +2083,12 @@ END FUNCTION LEB_GET_FROM_ORDER
 
 INTEGER FUNCTION leb_get_from_point(point)
 integer,intent(in) :: point
+! I am unsure about leb_gen_poly_order(1) and leb_gen_poly_order(2)  and leb_gen_poly_order(3) 
 integer,parameter :: leb_gen_poly_order(18) = (/  5, 9,11,15, 17, 19, 21, 23, 25, 27, 29, 31, 35, 41, 47, 53,  59,  64 /)
-integer,parameter :: leb_gen_point(18)      = (/ 14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
+integer,parameter :: leb_gen_point(18)      = (/  14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
 integer :: I
 leb_get_from_point = 1
-DO I=18,1,-1 !size of leb_gen_point
+DO I=21,1,-1 !size of leb_gen_point
    if(point.GE.leb_gen_point(I))THEN
       leb_get_from_point = I
       RETURN
@@ -2097,14 +2098,14 @@ END FUNCTION LEB_GET_FROM_POINT
 
 INTEGER FUNCTION  leb_gen_points(I)
 integer,intent(in) :: I
-integer,parameter :: leb_gen_point(18)     = (/ 14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
+integer,parameter :: leb_gen_point(18)      = (/  14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
 
 leb_gen_points = leb_gen_point(I)
 
 END FUNCTION LEB_GEN_POINTS
 
 SUBROUTINE SET_RADIAL(RADIALPOINTS,RADIALWEIGHT,nRadialPoints,NRADPT,SHELL2ATOM,SHELLANGMOM,SHELLNPRIM,MAXANGMOM,NATOMS,MAXNSHELL,&
-        & MXPRIM,PRIEXP,PRIEXPSTART,IPRINT,LUPRI,RADINT,Charge,RADIALGRID)
+        & MXPRIM,PRIEXP,PRIEXPSTART,IPRINT,LUPRI,RADINT,Charge,RADIALGRID,MIN_RAD_PT)
 implicit none
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2134,6 +2135,8 @@ REAL(REALK),intent(in) :: radint
 INTEGER,intent(in)  :: CHARGE(natoms)
 !> which radial grid should be used?
 INTEGER,intent(in) :: RADIALGRID
+!> minimum radial grid points 
+INTEGER,intent(in) :: MIN_RAD_PT
 !> 
 INTEGER :: NRADPT
 !>
@@ -2172,7 +2175,7 @@ CASE(2) !LMG
 CASE(3) !TURBO
    DO IATOM=1,NATOMS
       CALL GRID_RADTURBO(CHARGE(IATOM),RADIALPOINTS(:,IATOM),RADIALWEIGHT(:,IATOM),nRadialPoints(IATOM),&
-           & RADINT,NRADPT,MAXANGMOM,IPRINT,LUPRI)
+           & RADINT,NRADPT,MAXANGMOM,IPRINT,LUPRI,MIN_RAD_PT)
    ENDDO
 END SELECT
 !VERIFY THAT RADIALPOINTS HAS THE LARGEST VALUE FIRST
@@ -2291,10 +2294,10 @@ SUBROUTINE GRID_RADLMG(RADIALPOINTS,RADIALWEIGHT,nRadialPoints,RADINT,NRADPT,NUC
   ENDDO
 END SUBROUTINE GRID_RADLMG
 
-SUBROUTINE GRID_RADTURBO(CHARGE,RADIALPOINTS,RADIALWEIGHT,nRadialPoints,RADINT,NRADPT,MAXANGMOM,IPRINT,LUPRI)
+SUBROUTINE GRID_RADTURBO(CHARGE,RADIALPOINTS,RADIALWEIGHT,nRadialPoints,RADINT,NRADPT,MAXANGMOM,IPRINT,LUPRI,MIN_RAD_PT)
   use precision
   IMPLICIT NONE
-  INTEGER,intent(in) :: NRADPT,IPRINT,MAXANGMOM,LUPRI,CHARGE
+  INTEGER,intent(in) :: NRADPT,IPRINT,MAXANGMOM,LUPRI,CHARGE,MIN_RAD_PT
   REAL(REALK),intent(in) :: RADINT
   INTEGER,intent(inout) :: nRadialPoints
   REAL(REALK),intent(inout) :: RADIALPOINTS(NRADPT),RADIALWEIGHT(NRADPT)
@@ -2319,7 +2322,7 @@ SUBROUTINE GRID_RADTURBO(CHARGE,RADIALPOINTS,RADIALWEIGHT,nRadialPoints,RADINT,N
   ENDIF
   rfac = zeta/LOG(D2)
 
-  call GRID_TURBO_RADIALPOINTS(charge,RADINT,nRadialPoints)
+  call GRID_TURBO_RADIALPOINTS(charge,RADINT,nRadialPoints,MIN_RAD_PT)
   IF(nRadialPoints.GT.NRADPT)CALL LSQUIT('something wrong in GRID_RADTURBO, nRadialPoints gt than allowed',lupri)
   PiOverN = PI/nRadialPoints
   !Radial points
@@ -2338,15 +2341,14 @@ SUBROUTINE GRID_RADTURBO(CHARGE,RADIALPOINTS,RADIALWEIGHT,nRadialPoints,RADINT,N
 
 END SUBROUTINE GRID_RADTURBO
 
-subroutine GRID_TURBO_RADIALPOINTS(Z,thrl,nRadialPoints)
+subroutine GRID_TURBO_RADIALPOINTS(Z,thrl,nRadialPoints,MIN_RAD_PT)
   implicit none
   integer,intent(out)     :: nRadialPoints
-  integer,intent(in)     :: Z
+  integer,intent(in)     :: Z,MIN_RAD_PT
   real(realk),intent(in) :: thrl
   !
   integer :: ta,accuracy_correction,z_correction
   real(realk),parameter :: D5=5E0_realk,D3=3E0_realk,D05=0.5E0_realk
-  integer,parameter :: MIN_RAD_PT = 20
   real(realk) :: TMP
   
   IF(Z.LE. 2)THEN
@@ -2470,8 +2472,7 @@ INTEGER,intent(in)  :: nRadialPoints(NATOMS),GRIDANG(NRADPT,NATOMS)
 INTEGER,intent(in)  :: tid,nthreads
 !
 INTEGER :: IATOM,AtomicGridpoints,IPOINT,iang,N
-INTEGER,parameter :: Npoints(18) = (/ 14,38,50,86,110,146,170,&
-     &194,230,266,302,350,434,590,770,974,1202,1454/)
+integer,parameter :: Npoints(18) = (/  14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
 maxAtomicGridpoints = 0
 maxGridpoints = 0
 maxN = 0

@@ -27,10 +27,11 @@ CONTAINS
 !> \brief wrapper exchange-correlation integral routine that build basinf.
 !> \author T. Kjaergaard
 !> \date 2010
-  SUBROUTINE THCGenerateGrid(NBAST,radint,angmin,angint,ihardness,iprune,natoms,& 
+  SUBROUTINE THCGenerateGrid(NBAST,radint,angint,ihardness,iprune,natoms,& 
        & X,Y,Z,Charge,SHELL2ATOM,SHELLANGMOM,SHELLNPRIM,MAXANGMOM,&
        & MAXNSHELL,MXPRIM,PRIEXP,PRIEXPSTART,RSHEL,TURBO,&
-       & RADIALGRID,ZdependenMaxAng,PARTITIONING,LUPRI,IPRINT,NGRID)
+       & RADIALGRID,ZdependenMaxAng,PARTITIONING,LUPRI,IPRINT,MIN_RAD_PT,&
+       & NGRID)
     IMPLICIT NONE
     !> number of gridpoints
     INTEGER,intent(inout) :: NGRID    
@@ -71,8 +72,6 @@ CONTAINS
     !> some grid generation specification
     REAL(REALK),intent(in) :: radint
     !> some grid generation specification
-    INTEGER,intent(in) :: angmin
-    !> some grid generation specification
     INTEGER,intent(in) :: angint
     !> some grid generation specification
     INTEGER,intent(in) :: IHARDNESS
@@ -86,6 +85,8 @@ CONTAINS
     LOGICAL,intent(in) :: ZdependenMaxAng
     !> which partitioning should be used
     INTEGER,intent(in) :: PARTITIONING !(1=SSF,2=BECKE,3=BECKEORIG,4=BLOCK,...)
+    !> minimum number of radial points
+    INTEGER,intent(in) :: MIN_RAD_PT 
     !
     INTEGER,pointer     :: nRadialPoints(:),GRIDANG(:,:)
     REAL(REALK),pointer :: RADIALPOINTS(:,:),RADIALWEIGHT(:,:)
@@ -102,11 +103,11 @@ CONTAINS
     !Build RADIALPOINTS,RADIALWEIGHT,nRadialPoints = RadialGridPoints,RadialWeights,NumberOfGridPoints 
     CALL SET_RADIAL(RADIALPOINTS,RADIALWEIGHT,nRadialPoints,NRADPT,SHELL2ATOM,SHELLANGMOM,&
          & SHELLNPRIM,MAXANGMOM,NATOMS,MAXNSHELL,MXPRIM,PRIEXP,PRIEXPSTART,IPRINT,LUPRI,RADINT,&
-         & Charge,RADIALGRID)
+         & Charge,RADIALGRID,MIN_RAD_PT)
     ! Computes the angular points for a set of radial points 
     ! obtained from radial integration scheme.
     call mem_alloc(GRIDANG,NRADPT,NATOMS)
-    CALL SET_ANGULAR(gridang,radint,angmin,angint,CHARGE,natoms,NRADPT,nRadialPoints,RADIALPOINTS,&
+    CALL SET_ANGULAR(gridang,radint,angint,CHARGE,natoms,NRADPT,nRadialPoints,RADIALPOINTS,&
          & RADIALWEIGHT,iprune,angularpoints,ZdependenMaxAng)
     ! Build Atomic and Molecular grids + partitioning
     CALL ComputeCoordsTHC(NGRID,totalpoints,nRadialPoints,natoms,RADIALPOINTS,RADIALWEIGHT,NRADPT,GRIDANG,&
@@ -221,57 +222,66 @@ CONTAINS
 !          print*,'THC: pim4*weight',pim4*weight
 
           IF(iang.EQ. 1)THEN
+             N=6
+             call ld0006(locR(1:6),locR(7:12),locR(13:18),locR(19:24),dummy)
+          ELSEIF(iang.EQ. 2)THEN
+             N=8
+             call ld0008(locR(1:8),locR(9:16),locR(17:24),locR(25:32),dummy)
+          ELSEIF(iang.EQ. 3)THEN
+             N=12
+             call ld0012(locR(1:12),locR(13:24),locR(25:36),locR(37:48),dummy)
+          ELSEIF(iang.EQ. 4)THEN
              N=14
              call ld0014(locR(1:14),locR(15:28),locR(29:42),locR(43:56),dummy)
-          ELSEIF(iang.EQ. 2)THEN
+          ELSEIF(iang.EQ. 5)THEN
              N=38
              call ld0038(locR(1:38),locR(39:76),locR(77:114),locR(115:152),dummy)
-          ELSEIF(iang.EQ. 3)THEN
+          ELSEIF(iang.EQ. 6)THEN
              N=50
              call ld0050(locR(1:50),locR(51:100),locR(101:150),locR(151:200),dummy)
-          ELSEIF(iang.EQ. 4)THEN
+          ELSEIF(iang.EQ. 7)THEN
              N=86
              call ld0086(locR(1:86),locR(87:172),locR(173:258),locR(259:344),dummy)
-          ELSEIF(iang.EQ. 5)THEN
+          ELSEIF(iang.EQ. 8)THEN
              N=110
              call ld0110(locR(1:110),locR(111:220),locR(221:330),locR(331:440),dummy)
-          ELSEIF(iang.EQ. 6)THEN
+          ELSEIF(iang.EQ. 9)THEN
              N=146
              call ld0146(locR(1:146),locR(147:292),locR(293:438),locR(439:584),dummy)
-          ELSEIF(iang.EQ. 7)THEN
+          ELSEIF(iang.EQ. 10)THEN
              N=170
              call ld0170(locR(1:170),locR(171:340),locR(341:510),locR(511:680),dummy)
-          ELSEIF(iang.EQ. 8)THEN
+          ELSEIF(iang.EQ. 11)THEN
              N=194
              call ld0194(locR(1:194),locR(195:388),locR(389:582),locR(583:776),dummy)
-          ELSEIF(iang.EQ. 9)THEN
+          ELSEIF(iang.EQ. 12)THEN
              N=230
              call ld0230(locR(1:230),locR(231:460),locR(461:690),locR(691:920),dummy)
-          ELSEIF(iang.EQ. 10)THEN
+          ELSEIF(iang.EQ. 13)THEN
              N=266
              call ld0266(locR(1:266),locR(267:532),locR(533:798),locR(799:1064),dummy)
-          ELSEIF(iang.EQ. 11)THEN
+          ELSEIF(iang.EQ. 14)THEN
              N=302
              call ld0302(locR(1:302),locR(303:604),locR(605:906),locR(907:1208),dummy)
-          ELSEIF(iang.EQ. 12)THEN
+          ELSEIF(iang.EQ. 15)THEN
              N=350
              call ld0350(locR(1:350),locR(351:700),locR(701:1050),locR(1051:1400),dummy)
-          ELSEIF(iang.EQ. 13)THEN
+          ELSEIF(iang.EQ. 16)THEN
              N=434
              call ld0434(locR(1:434),locR(435:868),locR(869:1302),locR(1303:1736),dummy)
-          ELSEIF(iang.EQ. 14)THEN
+          ELSEIF(iang.EQ. 17)THEN
              N=590
              call ld0590(locR(1:590),locR(591:1180),locR(1181:1770),locR(1771:2360),dummy)
-          ELSEIF(iang.EQ. 15)THEN
+          ELSEIF(iang.EQ. 18)THEN
              N=770
              call ld0770(locR(1:770),locR(771:1540),locR(1541:2310),locR(2311:3080),dummy)
-          ELSEIF(iang.EQ. 16)THEN
+          ELSEIF(iang.EQ. 19)THEN
              N=974
              call ld0974(locR(1:974),locR(975:1948),locR(1949:2922),locR(2923:3896),dummy)
-          ELSEIF(iang.EQ. 17)THEN
+          ELSEIF(iang.EQ. 20)THEN
              N=1202
              call ld1202(locR(1:1202),locR(1203:2404),locR(2405:3606),locR(3607:4808),dummy)
-          ELSEIF(iang.EQ. 18)THEN
+          ELSEIF(iang.EQ. 21)THEN
              N=1454
              call ld1454(locR(1:1454),locR(1455:2908),locR(2909:4362),locR(4363:5816),dummy)
           ELSE
@@ -394,7 +404,7 @@ INTEGER,intent(in)  :: NATOMS,NRADPT
 INTEGER,intent(in)  :: nRadialPoints(NATOMS),GRIDANG(NRADPT,NATOMS)
 !
 INTEGER :: IATOM,AtomicGridpoints,IPOINT,iang,N
-INTEGER,parameter :: Npoints(18) = (/ 14,38,50,86,110,146,170,&
+INTEGER,parameter :: Npoints(21) = (/ 6,8,12,14,38,50,86,110,146,170,&
      &194,230,266,302,350,434,590,770,974,1202,1454/)
 maxAtomicGridpoints = 0
 maxGridpoints = 0
@@ -419,7 +429,7 @@ INTEGER,intent(in)  :: NATOMS,NRADPT
 INTEGER,intent(in)  :: nRadialPoints(NATOMS),GRIDANG(NRADPT,NATOMS)
 !
 INTEGER :: IATOM,AtomicGridpoints,IPOINT,iang
-INTEGER,parameter :: Npoints(18) = (/ 14,38,50,86,110,146,170,&
+INTEGER,parameter :: Npoints(21) = (/ 6,8,12,14,38,50,86,110,146,170,&
      & 194,230,266,302,350,434,590,770,974,1202,1454/)
 maxGridpoints = 0
 DO IATOM=1,NATOMS
