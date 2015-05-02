@@ -2071,7 +2071,7 @@ integer,parameter :: leb_gen_poly_order(18) = (/  5, 9,11,15, 17, 19, 21, 23, 25
 integer,parameter :: leb_gen_point(18)      = (/  14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
 integer :: I
 leb_get_from_order = 0
-DO I=1,21 !size of leb_gen_poly_order
+DO I=1,18 !size of leb_gen_poly_order
    if(leb_gen_poly_order(I).GE.angint)THEN
       leb_get_from_order = I
       RETURN
@@ -2087,7 +2087,7 @@ integer,parameter :: leb_gen_poly_order(18) = (/  5, 9,11,15, 17, 19, 21, 23, 25
 integer,parameter :: leb_gen_point(18)      = (/  14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
 integer :: I
 leb_get_from_point = 1
-DO I=21,1,-1 !size of leb_gen_point
+DO I=18,1,-1 !size of leb_gen_point
    if(point.GE.leb_gen_point(I))THEN
       leb_get_from_point = I
       RETURN
