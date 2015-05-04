@@ -690,6 +690,7 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 ! Currently turned off when calculating integrals only for a specific batch
 doscreen = ((((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucleiOperator)).OR.((Oper.EQ.NucpotOperator).OR.(Oper.EQ.ErfcOperator)))&
      & .OR.(Oper.EQ.CAMOperator)).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemGrdOperator) &
+     & .OR. (Oper.EQ.GGemQuaOperator) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
@@ -759,7 +760,9 @@ ENDIF
 
 CALL ls_setDensityDimensions(INT_INPUT,SETTING,lupri)
 setting%output%FullAlphaCD = FullAlphaCD
+
 call MAIN_INTEGRAL_DRIVER(LUPRI,SETTING%SCHEME%INTPRINT,INT_INPUT,setting%OUTPUT)
+
 IF(FullAlphaCD)CAll mem_dealloc(setting%output%postprocess)
 
 CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
@@ -3373,6 +3376,7 @@ logical :: MBIE_INT
 ndim2 = setting%output%ndim 
 !CALL ls_setDefaultFragments(setting)
 CALL init_integral_input(INT_INPUT,SETTING)
+
 INT_INPUT%operator = Oper
 INT_INPUT%CS_int=.TRUE.
 INT_INPUT%OD_SCREEN = SETTING%SCHEME%OD_SCREEN
@@ -5408,7 +5412,7 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 doscreen = ((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucpotOperator)) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 doscreen = doscreen.OR.(((Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemGrdOperator).OR.&
-     &(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
+     &(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator).OR.(Oper.EQ.GGemQuaOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
 IF(SETTING%SCHEME%CS_INT.OR.SETTING%SCHEME%PS_INT)doscreen=.FALSE.
@@ -5813,7 +5817,8 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 doscreen = ((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucpotOperator)) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 doscreen = doscreen.OR.(((Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemGrdOperator)&
-     &.OR.(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
+     &.OR.(Oper.EQ.ErfcOperator).OR.(Oper.EQ.GGemQuaOperator).OR.(Oper.EQ.CAMOperator))&
+     & .AND.SETTING%SCHEME%MBIE_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
 IF(SETTING%SCHEME%CS_INT.OR.SETTING%SCHEME%PS_INT)doscreen=.FALSE.

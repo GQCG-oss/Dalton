@@ -753,33 +753,22 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       endif
    endif
 
-   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
-     &.and. ccmodel /= MODEL_SOSEX ) then
-      ! free amplitude arrays
-      call tensor_free(t1_final)
-   endif
-
-   if (DECinfo%print_frags) then
-      call tensor_free(t2_final)
-      call tensor_free(VOVO)
-   endif
    call mem_dealloc(ccenergies)
-
 !else mod unreleased
 #else
 
    call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergy,&
       & VOVO,.false.,local,t1_final,t2_final)
+!endif mod unreleased
+#endif
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
-     & .and. ccmodel /= MODEL_SOSEX) then
+     &.and. ccmodel /= MODEL_SOSEX ) then
+      ! free amplitude arrays
       call tensor_free(t1_final)
    endif
    call tensor_free(t2_final)
    call tensor_free(VOVO)
-
-!endif mod unreleased
-#endif
 end function ccsolver_justenergy
 
 !> \brief For a given fragment, calculate singles and doubles amplitudes and

@@ -109,7 +109,7 @@ Level 3
 pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals
 
 Level 2 
-fullmolecule, mp2, cc_integrals, crop_tools
+fullmolecule, mp2, cc_integrals, crop_tools, rimp2, ri_util
 
 Level 1
 ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple,  decmpi, dec_utils

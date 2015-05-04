@@ -39,7 +39,6 @@ module full
   use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
   use full_ls_thc_rimp2Mod
-  !  use fragment_energy_module,only : Full_DECMP2_calculation
 
   public :: full_driver
   private
@@ -117,7 +116,6 @@ contains
                 !Call routine which calculates individual fragment 
                 !contributions and prints them,
                 !works both for canonical and local orbitals
-                !call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
                 call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
              end if
           else
