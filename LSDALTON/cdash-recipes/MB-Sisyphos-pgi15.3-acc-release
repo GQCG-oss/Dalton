@@ -4,7 +4,8 @@ rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
 export PATH=/opt/pgi/linux86-64/2014/mpi/mpich/bin:$PATH
-export PATH=/opt/pgi/linux86-64/14.9/bin:$PATH
+#export PATH=/opt/pgi/linux86-64/14.9/bin:$PATH
+export PATH=/opt/pgi/linux86-64/15.3/bin:$PATH
 export LM_LICENSE_FILE=/opt/pgi/linux86-64/14.3/license.dat
 
 git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
@@ -19,10 +20,10 @@ export CTEST_PROJECT_NAME=LSDALTON
 #./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp -D BUILDNAME="MB-Sisyphos-pgi-release" -D ENABLE_EFS=OFF build
 
 #Janus this setup should be used (I think) when the async stuff from pgi works
-./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --gpu --cublas --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi14.9-acc-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF build
+./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --gpu --cublas --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi15.3-acc-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF build
 
 # POSSIBLE MPI STUFF
-#./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --openacc --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi14.9-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF build
+#./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --openacc --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi15.3-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF build
 
 cd build
 ctest -D Nightly -L linsca
