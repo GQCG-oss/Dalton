@@ -97,7 +97,7 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
    ELSE IF (intSpec(5).EQ.'2') THEN
       ! The Gaussian geminal operator squared g^2
-      oper = GGemOperator
+      oper = GGemQuaOperator
       call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
    ELSE
       call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -548,7 +548,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -735,7 +735,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -931,7 +931,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -1138,7 +1138,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
         call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
      ELSE IF (intSpec(5).EQ.'2') THEN
         ! The Gaussian geminal operator squared g^2
-        oper = GGemOperator
+        oper = GGemQuaOperator
         call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
      ELSE
         call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -1399,7 +1399,7 @@ END SUBROUTINE II_GET_ERI_INTEGRALBLOCK
 !!$        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 !!$     ELSE IF (intSpec(5).EQ.'2') THEN
 !!$        ! The Gaussian geminal operator squared g^2
-!!$        oper = GGemOperator
+!!$        oper = GGemQuaOperator
 !!$        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 !!$     ELSE
 !!$        call lsquit('Error in specification of operator in InitGaussianGeminal',-1)

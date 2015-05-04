@@ -91,6 +91,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
+  use HODItest_module, only: debugTestHODI
 #ifdef VAR_PAPI
   use papi_module
 #endif
@@ -321,6 +322,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mem_alloc(GGem,nbast,nbast,nbast,nbast,1) 
            call II_get_GaussianGeminalFourCenter(lupri,luerr,ls%setting,GGem,nbast,.true.) 
            call mem_dealloc(GGem) 
+        ENDIF
+
+        IF (config%doTestHodi) THEN
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
         ENDIF
 
         CALL mat_init(D(1),nbast,nbast)
