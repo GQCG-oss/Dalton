@@ -1153,7 +1153,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         ! Get free memory and determine maximum batch sizes
         ! -------------------------------------------------
-        print *,"MASTER GETTING MIN"
         IF(DECinfo%useIchor)THEN
            !Determine the minimum allowed AObatch size MinAObatch
            !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
@@ -5531,7 +5530,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     logical :: checkbg
     integer(kind=8) :: locally_stored_v2o2, locally_stored_tiles
 
-    print *,"MASTER IN GET MAX"
     !minimum recommended buffer size
     nbuffs = 5
     frac_of_total_mem=0.80E0_realk
@@ -5562,24 +5560,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
 
     mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-    print *,"MASTER MEM 4",MemFree,mem_used
+    !print *,"MASTER MEM 4",MemFree,mem_used
     if (mem_used>MemFree)then
 #ifdef VAR_MPI
        !test for scheme with medium requirements
        scheme=3
        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-       print *,"MASTER MEM 3",MemFree,mem_used,"elms",3*v2o2,bg_buf_size
+       !print *,"MASTER MEM 3",MemFree,mem_used,"elms",3*v2o2,bg_buf_size
        if (mem_used>MemFree.or.(3*v2o2>bg_buf_size))then
           !test for scheme with low requirements
           scheme=2
           mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-          print *,"MASTER MEM 2",MemFree,mem_used
+          !print *,"MASTER MEM 2",MemFree,mem_used
           if (mem_used>MemFree)then
              scheme=0
-             print *,"MASTER check 0"
+             !print *,"MASTER check 0"
              mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-             print *,"MASTER MEM 0",MemFree,mem_used
-             print *,"mem",MemFree
+             !print *,"MASTER MEM 0",MemFree,mem_used
+             !print *,"mem",MemFree
              if (mem_used>MemFree)then
                 write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
                 write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')MemFree
@@ -5595,7 +5593,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        endif
 #endif
     endif
-    print *,"MASTER SCHEME",scheme
+    !print *,"MASTER SCHEME",scheme
 
     if(DECinfo%force_scheme)then
       scheme=DECinfo%en_mem
@@ -5784,7 +5782,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !if much more slaves than jobs are available, split the jobs to get at least
       !one for all the slaves
       !print *,"JOB SPLITTING WITH THE NUMBER OF NODES HAS BEEN DEACTIVATED"
-      print *,"MASTER SPLITTING"
+      !print *,"MASTER SPLITTING"
       if(.not.manual)then
         if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
           nba=(nb/(magic*nnod))
@@ -5793,14 +5791,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        
         if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==minbsize).and.nnod>1)then
           do while((nb/nba)*(nb/nbg)<magic*nnod)
-            print *,"splitting gammas",nbg
+            !print *,"splitting gammas",nbg
             nbg=nbg-1
             if(nbg<=Minbsize)exit
           enddo
           if(nbg<minbsize)nbg=minbsize
         endif
       endif
-      print *,"MASTER SPLIT",nba,nbg
+      !print *,"MASTER SPLIT",nba,nbg
     end if
 
     if(scheme==2.and..false.)then
