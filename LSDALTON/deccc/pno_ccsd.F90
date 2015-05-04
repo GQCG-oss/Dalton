@@ -2092,6 +2092,9 @@ module pno_ccsd_module
 
      call get_currently_available_memory(MemFree)
 
+     call mem_alloc(dummy1,1)
+     call mem_alloc(dummy2,1,1)
+
 #ifdef VAR_MPI
      !call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
 #endif
@@ -2119,8 +2122,8 @@ module pno_ccsd_module
 
            query%size_array = 0
 
-           call pno_residual_integral_direct_loop(mylsitem,dummy1,0_long,dummy1,0_long,dummy1,0_long,dummy1,0_long,&
-              &dummy1,0_long,no,nv,nb,maxocc,maxvirt,nspaces,a_batch,g_batch,sio4,pno_cv,pno_t2,pno_o2,dummy2,dummy2,dummy2,dummy2,&
+           call pno_residual_integral_direct_loop(mylsitem,dummy1,1_long,dummy1,1_long,dummy1,1_long,dummy1,1_long,&
+              &dummy1,1_long,no,nv,nb,maxocc,maxvirt,nspaces,a_batch,g_batch,sio4,pno_cv,pno_t2,pno_o2,dummy2,dummy2,dummy2,dummy2,&
               & dummy1,dummy1,dummy1,dummy1,dummy2, query = query )
 
            !analyze query information
@@ -2156,6 +2159,9 @@ module pno_ccsd_module
         endif
 
      enddo
+
+     call mem_dealloc(dummy1)
+     call mem_dealloc(dummy2)
 
      !do narray = 1, query%n_arrays
      !   print*,"Array",narray," of size:",query%size_array(narray)
@@ -2224,6 +2230,7 @@ module pno_ccsd_module
            enddo
         enddo
      enddo
+
 
      if(DECinfo%PL>2)write(*,'("INFO: allocating ",g10.3," GB in PNO integral &
         &direct loop with #a:",I6," and #g:",I6)')used_mem,a_batch%nbatches,g_batch%nbatches
