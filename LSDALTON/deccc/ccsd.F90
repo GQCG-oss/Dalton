@@ -3674,7 +3674,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, twall = time_uigcj )
         call tensor_ainit( uigcj, [no,lg,nv,no], 4, local=local, atype='TDAR', tdims=[os,gs,vs,os] )
         order4 = [3,1,2,4]
-        call tensor_contract( 1.0E0_realk, yv_fg, u2, [2],[1],1,0.0E0_realk,uigcj, order4,wrk=w1%d,iwrk=w1%n)
+        call tensor_contract( 1.0E0_realk, yv_fg, u2, [2],[1],1,0.0E0_realk,uigcj, order4,wrk=w1%d,iwrk=w1%n,force_sync=.true.)
         call time_start_phase(PHASE_WORK, ttot = time_uigcj )
         time_uigcj_tot = time_uigcj_tot + time_uigcj
 
@@ -3729,7 +3729,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call time_start_phase(PHASE_WORK, twall = time_cont1 )
            order4 = [3,4,1,2]
-           call tensor_contract( 1.0E0_realk, uigcj, xo_fa, [4],[2],1,0.0E0_realk, int1, order4,wrk=w1%d,iwrk=w1%n)
+           call tensor_contract( 1.0E0_realk, uigcj, xo_fa, [4],[2],1,0.0E0_realk, int1, order4,&
+               &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont1 )
            time_cont1_tot = time_cont1_tot + time_cont1
 
@@ -3767,7 +3768,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            ! I [beta delta alpha gamma] * Lambda^p [beta l] = I [alpha l gamma delta]
            order4 = [2,4,3,1]
            call tensor_contract( 1.0E0_realk, Cint, xo, [2],[1],1,0.0E0_realk, int2, order4,&
-              & wrk=w1%d,iwrk=w1%n)
+              & wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont2 )
            time_cont2_tot = time_cont2_tot + time_cont2
 
@@ -3780,7 +3781,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont3 )
            order2 = [1,2]
            call tensor_contract( 1.0E0_realk, int1, int2, [2,3,4],[1,2,3],3,1.0E0_realk, Had, order2,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont3 )
            time_cont3_tot = time_cont3_tot + time_cont3
 
@@ -3798,7 +3799,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call time_start_phase(PHASE_WORK, twall = time_cont4 )
               order4 = [1,2,4,3]
               call tensor_contract( 1.0E0_realk, int2, yo   , [4],[1],1, 0.0E0_realk, int3, order4,&
-                 &wrk=w1%d,iwrk=w1%n)
+                 &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
               call time_start_phase(PHASE_WORK, ttot = time_cont4 )
               time_cont4_tot = time_cont4_tot + time_cont4
 
@@ -3808,7 +3809,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call time_start_phase(PHASE_WORK, twall = time_cont5 )
               order4 = [1,2,3,4]
               call tensor_contract( 1.0E0_realk, int3, yv_fg, [4],[1],1, 0.0E0_realk, int4, order4,&
-                 & wrk=w1%d,iwrk=w1%n)
+                 & wrk=w1%d,iwrk=w1%n,force_sync=.true.)
               call time_start_phase(PHASE_WORK, ttot = time_cont5 )
               time_cont5_tot = time_cont5_tot + time_cont5
 
@@ -3822,7 +3823,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
               call time_start_phase(PHASE_WORK, twall = time_cont6 )
               call tensor_contract( 1.0E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, gvvoo, order4,&
-                 &wrk=w1%d,iwrk=w1%n)
+                 &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
               call time_start_phase(PHASE_WORK, ttot = time_cont6 )
               time_cont6_tot = time_cont6_tot + time_cont6
 
@@ -3835,7 +3836,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont7 )
            order4 = [1,2,3,4]
            call tensor_contract( 1.0E0_realk, int2, yv, [4],[1],1, 0.0E0_realk, int1, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont7 )
            time_cont7_tot = time_cont7_tot + time_cont7
 
@@ -3846,7 +3847,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont8 )
            order2 = [1,2]
            call tensor_contract( 1.0E0_realk, int1, uigcj, [2,3,4],[1,2,3],3, 0.0E0_realk, int3, order2,&
-              & wrk=w1%d,iwrk=w1%n)
+              & wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont8 )
            time_cont8_tot = time_cont8_tot + time_cont8
 
@@ -3884,7 +3885,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               order4 = [1,2,3,4]
               !Reorder I [alpha j gamma b]  * Lambda^h [gamma i]          = I [alpha j b i]
               call tensor_contract( 1.0E0_realk, int1, yo_fg, [3],[1],1, 0.0E0_realk, int3, order4,&
-                 & wrk=w1%d,iwrk=w1%n)
+                 & wrk=w1%d,iwrk=w1%n,force_sync=.true.)
               call time_start_phase(PHASE_WORK, ttot = time_cont9 )
               time_cont9_tot = time_cont9_tot + time_cont9
 
@@ -3896,7 +3897,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
               call time_start_phase(PHASE_WORK, twall = time_cont10 )
               call tensor_contract( 1.0E0_realk, xv_fa, int3, [1],[1],1, 1.0E0_realk, gvoov, order4,&
-                 &wrk=w1%d,iwrk=w1%n)
+                 &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
               call time_start_phase(PHASE_WORK, ttot = time_cont10 )
               time_cont10_tot = time_cont10_tot + time_cont10
 
@@ -3941,7 +3942,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont11 )
            order4=[2,1,4,3]
            call tensor_contract( 1.0E0_realk, Cint, yv, [2],[1],1, 0.0E0_realk, int1, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont11 )
            time_cont11_tot = time_cont11_tot + time_cont11
 
@@ -3951,7 +3952,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont12 )
            order4=[1,2,3,4]
            call tensor_contract( 1.0E0_realk, int1, yv, [4],[1],1, 0.0E0_realk, int2, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont12 )
            time_cont12_tot = time_cont12_tot + time_cont12
 
@@ -3962,7 +3963,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont13 )
            order4=[1,2,3,4]
            call tensor_contract( 1.0E0_realk, int2, t2, [3,4],[1,2],2, 0.0E0_realk, int3, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont13 )
            time_cont13_tot = time_cont13_tot + time_cont13
 
@@ -3973,7 +3974,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont14 )
            order4=[2,1,3,4]
            call tensor_contract( 1.0E0_realk, xv_fg, int3, [1],[1],1, 0.0E0_realk, int4, order4,&
-              & wrk=w1%d,iwrk=w1%n)
+              & wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont14 )
            time_cont14_tot = time_cont14_tot + time_cont14
 
@@ -3986,7 +3987,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont15 )
            order4=[1,2,3,4]
            call tensor_contract( 0.5E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, omega2, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont15 )
            time_cont15_tot = time_cont15_tot + time_cont15
 
@@ -3997,7 +3998,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont16 )
            order4=[2,1,4,3]
            call tensor_contract( 1.0E0_realk, Cint, yo, [2],[1],1, 0.0E0_realk, int2, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont16 )
            time_cont16_tot = time_cont16_tot + time_cont16
 
@@ -4011,7 +4012,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont17 )
            order4=[1,2,3,4]
            call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 1.0E0_realk, int3, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont17 )
            time_cont17_tot = time_cont17_tot + time_cont17
 
@@ -4022,7 +4023,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont18 )
 
            call tensor_contract( 1.0E0_realk, t2, xo_fa, [3],[2],1, 0.0E0_realk, int4, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont18 )
            time_cont18_tot = time_cont18_tot + time_cont18
 
@@ -4030,7 +4031,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call time_start_phase(PHASE_WORK, twall = time_cont19 )
            call tensor_contract( 1.0E0_realk, int4, xo_fg, [3],[2],1, 0.0E0_realk, int1, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont19 )
            time_cont19_tot = time_cont19_tot + time_cont19
 
@@ -4045,7 +4046,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            order4=[1,2,3,4]
            call time_start_phase(PHASE_WORK, twall = time_cont20 )
            call tensor_contract( 0.5E0_realk, int1, int3, [3,4],[2,1],2, 1.0E0_realk, omega2, order4,&
-              & wrk=w1%d,iwrk=w1%n)
+              & wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont20 )
            time_cont20_tot = time_cont20_tot + time_cont20
 
@@ -4110,7 +4111,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont21 )
            order4=[1,2,3,4]
            call tensor_contract( 1.0E0_realk, int2, yo, [4],[1],1, 0.0E0_realk, int3, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont21 )
            time_cont21_tot = time_cont21_tot + time_cont21
 
@@ -4123,7 +4124,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont22 )
            order4=[2,1,3,4]
            call tensor_contract( 1.0E0_realk, xv_fg, int3, [1],[1],1, 0.0E0_realk, int4, order4,&
-              &wrk=w1%d,iwrk=w1%n)
+              &wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont22 )
            time_cont22_tot = time_cont22_tot + time_cont22
 
@@ -4135,7 +4136,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, twall = time_cont23 )
            order4=[1,2,3,4]
            call tensor_contract( 0.5E0_realk, xv_fa, int4, [1],[1],1, 1.0E0_realk, omega2, order4,&
-              & wrk=w1%d,iwrk=w1%n)
+              & wrk=w1%d,iwrk=w1%n,force_sync=.true.)
            call time_start_phase(PHASE_WORK, ttot = time_cont23 )
            time_cont23_tot = time_cont23_tot + time_cont23
 
@@ -5687,6 +5688,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          locally_stored_tiles = locally_stored_tiles * 2
          locally_stored_v2o2  = locally_stored_v2o2  * 1
       case(2)
+         locally_stored_tiles = locally_stored_tiles * 3
+         locally_stored_v2o2  = 0
+      case(0)
+         print *,"WARNING(ccsd_residual_integral_driven): this is a hack to use scheme 0"
          locally_stored_tiles = locally_stored_tiles * 3
          locally_stored_v2o2  = 0
       case default
