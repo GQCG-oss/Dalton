@@ -2714,7 +2714,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, twall = time_Bcnd )
 
         !get B2.2 contributions
-        !**********************
+        !********************** 
+        call print_norm(sio4,"sio4 norm")
+        call print_norm(t2,  "t2   norm")
+        call print_norm(omega2,  "o2   norm")
         call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,time_Bcnd_work,time_Bcnd_comm)
 
         call tensor_free(sio4)
@@ -5083,7 +5086,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ord = [2,3,1,4]
      call tensor_add(Coovv,1.0E0_realk,gvvoo, a = 0.0E0_realk, order = ord)
      ord = [3,2,1,4]
-     call tensor_contract(-0.5E0_realk,t2,govov,[2,3],[2,3],2,1.0E0_realk,Coovv,ord)
+     call tensor_contract(-0.5E0_realk,t2,govov,[2,3],[2,3],2,1.0E0_realk,Coovv,ord,force_sync=.true.)
 
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
@@ -5095,7 +5098,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call tensor_unlock_local_wins(Coovv)
 
      ord = [4,1,2,3]
-     call tensor_contract(-1.0E0_realk,t2,Coovv,[2,3],[4,1],2,0.0E0_realk,O_pre,ord)
+     call tensor_contract(-1.0E0_realk,t2,Coovv,[2,3],[4,1],2,0.0E0_realk,O_pre,ord,force_sync=.true.)
      
      !synchronize
      call tensor_free(Coovv)
@@ -5134,7 +5137,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !u2 is saved as (baij) 
      ord = [1,2,3,4]
-     call tensor_contract(0.5E0_realk,u2,Lovov,[4,1],[1,2],2,1.0E0_realk,Dvoov,ord)
+     call tensor_contract(0.5E0_realk,u2,Lovov,[4,1],[1,2],2,1.0E0_realk,Dvoov,ord,force_sync=.true.)
 
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
@@ -5149,7 +5152,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !u2 is saved as (baij) 
      ord = [3,1,4,2]
-     call tensor_contract(0.5E0_realk,u2,Dvoov,[1,4],[4,3],2,0.0E0_realk,O_pre,ord)
+     call tensor_contract(0.5E0_realk,u2,Dvoov,[1,4],[4,3],2,0.0E0_realk,O_pre,ord,force_sync=.true.)
 
      !synchronization point
      call tensor_free(Dvoov)
