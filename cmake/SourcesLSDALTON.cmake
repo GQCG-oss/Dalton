@@ -77,6 +77,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
     LSDALTON/deccc/rimp2.F90
+    LSDALTON/deccc/ri_util.F90
     LSDALTON/deccc/ls_thc_rimp2.F90
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
@@ -723,6 +724,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ls_IntegralInterface.F90
     LSDALTON/LSint/pari.F90
     LSDALTON/LSint/lsmpi.F90
+    LSDALTON/LSint/HODItest.F90
     LSDALTON/LSint/II_dft_dftd.F90
     )
 #####################################################

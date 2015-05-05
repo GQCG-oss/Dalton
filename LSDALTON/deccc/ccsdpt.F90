@@ -324,7 +324,7 @@ contains
 
              call tensor_init(tmp_tensor_1,vovo_in%dims,4)
              call tensor_cp_data(vovo_in,tmp_tensor_1)
-             if (.not. print_frags) call tensor_free(vovo_in)
+             !if (.not. print_frags) call tensor_free(vovo_in)
              call tensor_reorder(tmp_tensor_1,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_1%elm1)
              call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR')
@@ -332,7 +332,7 @@ contains
              call tensor_free(tmp_tensor_1)
              call tensor_init(tmp_tensor_2,ccsd_doubles_in%dims,4)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2)
-             if (.not. print_frags) call tensor_free(ccsd_doubles_in)
+             !if (.not. print_frags) call tensor_free(ccsd_doubles_in)
              call tensor_reorder(tmp_tensor_2,[2,4,3,1]) ! ccsd_doubles in the order (i,j,b,a)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_2%elm1)
              call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR')
@@ -343,7 +343,7 @@ contains
 
              call tensor_init(tmp_tensor_1,vovo_in%dims,4)
              call tensor_cp_data(vovo_in,tmp_tensor_1)
-             if (.not. print_frags) call tensor_free(vovo_in)
+             !if (.not. print_frags) call tensor_free(vovo_in)
              call tensor_reorder(tmp_tensor_1,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_1%elm1)
              call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR')
@@ -351,7 +351,7 @@ contains
              call tensor_free(tmp_tensor_1)
              call tensor_init(tmp_tensor_2,ccsd_doubles_in%dims,4)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2)
-             if (.not. print_frags) call tensor_free(ccsd_doubles_in)
+             !if (.not. print_frags) call tensor_free(ccsd_doubles_in)
              call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_2%elm1)
              call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,tdims=[nvirt,nvirt,nocc,ijk_tile_size],atype='TDAR')
@@ -366,22 +366,22 @@ contains
 
              call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
              call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
-             if (.not. print_frags) call tensor_free(vovo_in)
+             !if (.not. print_frags) call tensor_free(vovo_in)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
              call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4)
              call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
-             if (.not. print_frags) call tensor_free(ccsd_doubles_in)
+             !if (.not. print_frags) call tensor_free(ccsd_doubles_in)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
 
           else
    
              call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
              call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
-             if (.not. print_frags) call tensor_free(vovo_in)
+             !if (.not. print_frags) call tensor_free(vovo_in)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
              call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
              call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
-             if (.not. print_frags) call tensor_free(ccsd_doubles_in)
+             !if (.not. print_frags) call tensor_free(ccsd_doubles_in)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
    
           endif
@@ -392,22 +392,22 @@ contains
 
           call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
           call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
-          if (.not. print_frags) call tensor_free(vovo_in)
+          !if (.not. print_frags) call tensor_free(vovo_in)
           call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
           call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4)
           call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
-          if (.not. print_frags) call tensor_free(ccsd_doubles_in)
+          !if (.not. print_frags) call tensor_free(ccsd_doubles_in)
           call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
  
        else
 
           call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
           call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
-          if (.not. print_frags) call tensor_free(vovo_in) 
+          !if (.not. print_frags) call tensor_free(vovo_in) 
           call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
           call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
           call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
-          if (.not. print_frags) call tensor_free(ccsd_doubles_in)
+          !if (.not. print_frags) call tensor_free(ccsd_doubles_in)
           call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
  
        endif

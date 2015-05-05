@@ -10,21 +10,21 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Full system     --- HF   energy',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-6)
 f.add(string = 'Subsystem:     1 --- HF   energy',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-6)
 f.add(string = 'Subsystem:     2 --- HF   energy',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-6)
 f.add(string = 'Full system     --- corr energy',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 f.add(string = 'Subsystem:     1 --- corr energy',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 f.add(string = 'Subsystem:     2 --- corr energy',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 f.add(string = 'HF Interaction energy',
-      rel_tolerance = 1.0e-7)
-f.add(string = 'Corr Interaction energy',
       rel_tolerance = 1.0e-5)
+f.add(string = 'Corr Interaction energy',
+      rel_tolerance = 1.0e-3)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

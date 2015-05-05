@@ -156,6 +156,8 @@ module dec_typedef_module
      logical :: HFrestart
      !> Restart DEC calculation using fragment info files (requires HFrestart to be true)
      logical :: DECrestart
+     !> Enforce restart in spite of inconsistencies in restart file - only for advanced users!
+     logical :: EnforceRestart
      !> Creating files for restart: Time (in seconds) passing before backing up restart files
      real(realk) :: TimeBackup
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
@@ -462,8 +464,6 @@ module dec_typedef_module
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
-     !> Temporary keyword to use clean version of the frag opt
-     logical :: no_orb_based_fragopt
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Only consider virtual partitioning
@@ -843,20 +843,6 @@ module dec_typedef_module
      !         at the top of this file if you add new models!!!
      real(realk),dimension(ndecenergies) :: energies
 
-
-     !> The energy definitions below are only used for fragment optimization (FOP)
-     !> These are (in general) identical to the corresponding energies saved in "energies".
-     !> However, for fragment optimization it is very convenient to have direct access to the energies
-     !> without thinking about which CC model we are using...
-     !> Energy using occupied partitioning scheme
-     real(realk) :: EoccFOP
-     !> Energy using occupied partitioning scheme with the F12 Correction
-     real(realk) :: EoccFOP_Corr
-     !> Energy using virtual partitioning scheme
-     real(realk) :: EvirtFOP
-     !> Lagrangian energy 
-     !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
-     real(realk) :: LagFOP
      !> energy error estimates
      real(realk) :: Eocc_err
      real(realk) :: Evir_err
@@ -1032,8 +1018,6 @@ module dec_typedef_module
      integer,pointer :: noccLOC
      !> Number of local virtupied orbitals in fragment
      integer,pointer :: nvirtLOC
-
-
 
 
      !> Information used only for the CC2 and CCSD models to describe

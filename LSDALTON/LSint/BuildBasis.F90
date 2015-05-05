@@ -1282,7 +1282,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     !WRITE(LUPRI,*) 'INSIDE UNCONTRACTED'
                     !uncontracted basis set are forced uncontracted with .UNCONT
                     IF(NUMBER_OF_LINES.EQ.1)THEN
-                       READ (STRING, '(F16.9)') Exp
+                       READ (STRING, *) Exp
                        BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%Exponents(1) = Exp
                        BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%elms(1)= &
                             &(4*Exp)**(0.5E0_realk*nang+0.25E0_realk)*PIPPI 

@@ -475,6 +475,9 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   call mat_free(tempm1)
 
   !  Calculate the two electron Magnetic derivative Exchange matrix contribution to RHS
+  call mat_zero(GbDs(1))
+  call mat_zero(GbDs(2))
+  call mat_zero(GbDs(3))
   call II_get_magderivK(LUPRI,LUERR,molcfg%SETTING,nbast,D,GbDs)
   ! [KX,S]_D) 
   call mat_init(tempm1,nbast,nbast)
