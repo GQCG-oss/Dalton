@@ -2352,6 +2352,7 @@ contains
     call ls_mpi_buffer(DECitem%gcbasis,Master)
     call ls_mpi_buffer(DECitem%HFrestart,Master)
     call ls_mpi_buffer(DECitem%DECrestart,Master)
+    call ls_mpi_buffer(DECitem%EnforceRestart,Master)
     call ls_mpi_buffer(DECitem%TimeBackup,Master)
     call ls_mpi_buffer(DECitem%read_dec_orbitals,Master)
     call ls_mpi_buffer(DECitem%only_generate_DECorbs,Master)

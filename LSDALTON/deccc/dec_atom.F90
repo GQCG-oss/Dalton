@@ -3716,6 +3716,7 @@ contains
     type(decfrag),intent(inout) :: fragment
     logical(8) :: CDset64,FAset64
     integer :: i
+    integer(8) :: ndecenergies_file
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
@@ -3738,6 +3739,8 @@ contains
     end do
 
     ! Energies, and reference energies
+    ndecenergies_file = ndecenergies
+    write(wunit) ndecenergies_file
     write(wunit) fragment%energies
     write(wunit) fragment%Eocc_err
     write(wunit) fragment%Evir_err
@@ -3922,6 +3925,7 @@ contains
     integer :: noccAOS,nvirtAOS
     integer,pointer :: occAOSidx(:), virtAOSidx(:)
     integer(8) :: noccFA64, nvirtFA64
+    integer(8) :: ndecenergies_file
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
@@ -3971,7 +3975,14 @@ contains
          & virt_list,occ_list,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
     ! Fragment energies, and fragment approximate errors for the estimate
-    read(runit) fragment%energies
+    read(runit) ndecenergies_file
+    ! Sanity check
+    if(ndecenergies_file /= ndecenergies) then
+       call restart_sanity_check(ndecenergies_file)
+       fragment%energies=0.0_realk
+    end if
+
+    read(runit) fragment%energies(1:ndecenergies_file)
     read(runit) fragment%Eocc_err
     read(runit) fragment%Evir_err
     read(runit) fragment%Elag_err
@@ -5901,7 +5912,7 @@ contains
   !> file fragenergies.info (or estimate_fragenergies.info for estimated energies).
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine write_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
+  subroutine write_fragment_energies_for_restart_driver(nfrags,FragEnergies,jobs,esti)
 
     implicit none
     !> Number of fragments
@@ -5931,24 +5942,19 @@ contains
     call lsopen(funit,FileName,'NEW','UNFORMATTED')
 
     ! Write job list info and fragment energies
-    call write_fragment_joblist_to_file(jobs,funit)
-    do j=1,ndecenergies
-       do i=1,nfrags
-          write(funit) FragEnergies(:,i,j)
-          flush(funit)
-       end do
-    end do
+    call basic_write_jobs_and_fragment_energies_for_restart(nfrags,FragEnergies,jobs,funit,filename)
 
     call lsclose(funit,'KEEP')
 
-  end subroutine write_fragment_energies_for_restart
+  end subroutine write_fragment_energies_for_restart_driver
 
 
 
-  !> \brief Read fragment energies for fragment from file fragenergies.info.
+
+  !> \brief Driver for reading fragment energies for fragment from file fragenergies.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine read_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
+  subroutine read_fragment_energies_for_restart_driver(nfrags,FragEnergies,jobs,esti)
 
     implicit none
     !> Number of fragments
@@ -5960,7 +5966,7 @@ contains
     !> Read estimated fragment energies for restart?
     logical,intent(in) :: esti
     character(len=40) :: FileName
-    integer :: funit,i,j
+    integer :: funit
     logical :: file_exist
 
     ! Init stuff
@@ -5978,16 +5984,12 @@ contains
     ! Create a new file fragenergies.info
     call lsopen(funit,FileName,'OLD','UNFORMATTED')
 
-    ! Read job list and fragment energies from file
-    call read_fragment_joblist_from_file(jobs,funit)
-    do j=1,ndecenergies
-       do i=1,nfrags
-          read(funit) FragEnergies(:,i,j)
-       end do
-    end do
+    ! Read info
+    call basic_read_jobs_and_fragment_energies_for_restart(nfrags,FragEnergies,jobs,funit,FileName)
     call lsclose(funit,'KEEP')
 
-  end subroutine read_fragment_energies_for_restart
+  end subroutine read_fragment_energies_for_restart_driver
+
 
 
 
