@@ -2715,9 +2715,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !get B2.2 contributions
         !********************** 
-        call print_norm(sio4,"sio4 norm")
-        call print_norm(t2,  "t2   norm")
-        call print_norm(omega2,  "o2   norm")
         call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,time_Bcnd_work,time_Bcnd_comm)
 
         call tensor_free(sio4)
