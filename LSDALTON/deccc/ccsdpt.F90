@@ -107,7 +107,6 @@ contains
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
     logical :: master
-    type(tensor) :: ccsdpt_doubles_2
 #ifdef VAR_OPENACC
     !> device type
     integer(acc_device_kind) :: acc_device_type
@@ -487,33 +486,11 @@ contains
     ! 1) calculate triples amplitudes, collect in array3 structures, trip_*** [canonical basis]
     ! 2) calculate ^{*}T^{a}_{i} and ^{*}T^{ab}_{ij} amplitudes in array2 and array4 structures, 
     !    ccsdpt_singles and ccsdpt_doubles [canonical basis]
-    !    here: ccsdpt_doubles_2 is a temp array towards the generation of ccsdpt_doubles
     ! 3) transform ccsd_doubles, ccsdpt_singles and ccsdpt_doubles into local basis [local basis]
 
     ! *****************************************************
     ! ***************** trip generation *******************
     ! *****************************************************
-
-    ! init ccsdpt_doubles_2 array structure.
-    ! we merge ccsdpt_doubles and ccsdpt_doubles_2 at the end into ccsdpt_doubles. 
-    ! we have dimensioned ccsdpt_doubles as dims_aaii and ccsdpt_doubles_2 as dims_iaai 
-    ! in order to load in data consecutive in memory inside ccsdpt_contract_21 
-    ! and ccsdpt_contract_22, respectively.
-    if (print_frags) then
-
-       if (abc) then
-
-          call tensor_init(ccsdpt_doubles_2,[nvirt,nocc,nocc,nvirt],4)
-
-       else
-
-          call tensor_init(ccsdpt_doubles_2,[nocc,nvirt,nvirt,nocc],4)
- 
-       endif
-
-       call tensor_zero(ccsdpt_doubles_2)
-
-    endif
 
     !************************************************************!
     ! here: the main (t) loop: this is where the magic happens! !
@@ -534,13 +511,12 @@ contains
 
                 call abc_loop_par(nocc,nvirt,ooov%elm1,vovo,vovv,ccsd_doubles,&
                                 & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
-                                & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                                & ccsdpt_singles%elm1,ccsdpt_doubles%elm1)
 
              else
 
                 call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv%elm1,ccsd_doubles%elm1,&
-                                & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
-                                & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                                & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1)
 
              endif
 
@@ -548,7 +524,7 @@ contains
 
              call abc_loop_par(nocc,nvirt,ooov%elm1,vovo_in,vovv,ccsd_doubles_in,&
                              & eivalocc,eivalvirt,nodtotal,abc_nbuffs,abc_tile_size,&
-                             & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                             & ccsdpt_singles%elm1,ccsdpt_doubles%elm1)
 
           endif
 
@@ -590,13 +566,12 @@ contains
 
                 call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo,vvvo,ccsd_doubles,&
                                 & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,ijk_tile_size,&
-                                & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                                & ccsdpt_singles%elm1,ccsdpt_doubles%elm1)
 
              else
 
                 call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
-                                & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
-                                & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                                & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1)
 
              endif
 
@@ -604,7 +579,7 @@ contains
 
              call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo_in,vvvo,ccsd_doubles_in,&
                              & eivalocc,eivalvirt,nodtotal,ijk_nbuffs,ijk_tile_size,&
-                             & ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                             & ccsdpt_singles%elm1,ccsdpt_doubles%elm1)
 
           endif   
 
@@ -647,8 +622,7 @@ contains
        if (print_frags) then
 
           call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv%elm1,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
-                          & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1)
 
        else
 
@@ -663,8 +637,7 @@ contains
        if (print_frags) then
    
           call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
-                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,&
-                          & ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1)
    
        else
 
@@ -697,7 +670,6 @@ contains
        if (print_frags) then
 
           call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master)
-          call lsmpi_local_reduction(ccsdpt_doubles_2%elm1,ccsdpt_doubles_2%nelms,infpar%master)
 
        else
 
@@ -715,7 +687,6 @@ contains
        call time_start_phase(PHASE_WORK)
 
        ! release stuff initialized herein
-       if (print_frags) call tensor_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
 
@@ -749,20 +720,6 @@ contains
 #endif
 
     ! now everything resides on the master...
-
-    if (print_frags) then
-
-       ! collect ccsdpt_doubles and ccsdpt_doubles_2 into ccsdpt_doubles array structure
-       ! ccsdpt_doubles(a,b,i,j) = ccsdpt_doubles(a,b,i,j) + ccsdpt_doubles_2(j,a,b,i) (*)
-       ! (*) here, ccsdpt_doubles_2 is simultaneously reordered as (j,a,b,i) --> (a,b,i,j)
-       call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_2%elm1,ccsdpt_doubles_2%dims(1),&
-                                  &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
-                                  &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%elm1)
-   
-       ! release ccsdpt_doubles_2 array structure
-       call tensor_free(ccsdpt_doubles_2)
-
-    endif
 
     ! release o^3v and v^3o integrals
     if (abc) then
@@ -840,7 +797,7 @@ contains
   !> \date: january 2014
   subroutine ijk_loop_par(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
                         & eivalocc,eivalvirt,nodtotal,nbuffs,tile_size,ccsdpt_singles,&
-                        & ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & ccsdpt_doubles,e4)
 
     implicit none
 
@@ -865,7 +822,6 @@ contains
     !> ccsd(t) intermediates
     real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
     real(realk), dimension(nvirt,nvirt,nocc,nocc), optional :: ccsdpt_doubles
-    real(realk), dimension(nocc,nvirt,nvirt,nocc), optional :: ccsdpt_doubles_2
     real(realk),optional :: e4
     logical :: full_no_frags
     !> orbital energiesi
@@ -957,7 +913,7 @@ contains
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles
     ! handle 2: vvvo and ovoo integrals
-    ! handle 3: vvoo integrals and ccsdpt_doubles / ccsdpt_doubles_2 intermediates
+    ! handle 3: vvoo integrals and ccsdpt_doubles intermediate
     ! handle 4: triples amplitudes
     ! handle 5: energy evaluation
     num_ids = 5
@@ -1187,8 +1143,6 @@ contains
 
 !!$acc enter data copyin(ooov(:,:,:,a)) async(async_id(2))
 
-!!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,a)) async(async_id(3)) if(.not. full_no_frags)
-
                 do j = j_pos,j_pos+tile_size_tmp_j-1
          
                    j_count = j_count+1
@@ -1205,7 +1159,6 @@ contains
 !!$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3)) if(full_no_frags)
 !!
 !!$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a),&
-!!$acc& ccsdpt_doubles_2(:,:,:,b),&
 !!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3)) if(.not. full_no_frags)
 
                    do k = k_pos,k_pos+tile_size_tmp_k-1
@@ -1226,7 +1179,6 @@ contains
 !!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
 !!
 !!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b),&
-!!$acc& ccsdpt_doubles_2(:,:,:,c),&
 !!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
 !!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3)) if(.not. full_no_frags)
 
@@ -1314,10 +1266,8 @@ contains
                                                  & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                  & vvvo_pdm_i,vvvo_pdm_k,&
                                                  & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
-                                                 & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
-                                                 & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
-                                                 & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
-                                                 & async_id,num_ids,cublas_handle,&
+                                                 & ccsdpt_doubles(:,:,:,i),ccsdpt_doubles(:,:,:,k),&
+                                                 & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & i_count,k_count,tile_size_tmp_i,tile_size_tmp_k)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
                             time_driv_tot = time_driv_tot + time_driv
@@ -1327,7 +1277,6 @@ contains
 
 !!$acc wait(async_id(5)) async(async_id(3))
 !!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a))&
-!!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
 !!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3))
 
                          endif
@@ -1379,10 +1328,8 @@ contains
                                                  & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,k),&
                                                  & vvvo_pdm_i,vvvo_pdm_j,&
                                                  & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-                                                 & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-                                                 & ccsdpt_doubles(:,:,j,k),ccsdpt_doubles_2(:,:,:,i),&
-                                                 & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,&
-                                                 & async_id,num_ids,cublas_handle,&
+                                                 & ccsdpt_doubles(:,:,:,i),ccsdpt_doubles(:,:,:,j),&
+                                                 & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & i_count,j_count,tile_size_tmp_i,tile_size_tmp_j)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
                             time_driv_tot = time_driv_tot + time_driv
@@ -1450,9 +1397,7 @@ contains
                                                  & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                                  & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                                                  & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
-                                                 & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,j,i),&
-                                                 & ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
-                                                 & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),ccsdpt_doubles_2(:,:,:,k),&
+                                                 & ccsdpt_doubles(:,:,:,i),ccsdpt_doubles(:,:,:,j),ccsdpt_doubles(:,:,:,k),&
                                                  & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & i_count,j_count,k_count,tile_size_tmp_i,tile_size_tmp_j,tile_size_tmp_k)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
@@ -1463,7 +1408,6 @@ contains
 
 !!$acc wait(async_id(5)) async(async_id(3))
 !!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b))&
-!!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
 !!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
 !!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3))
          
@@ -1518,7 +1462,6 @@ contains
 
 !!$acc wait(async_id(5)) async(async_id(3))
 !!$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a))&
-!!$acc& copyout(ccsdpt_doubles_2(:,:,:,b),&
 !!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3))
 
                       endif
@@ -1541,9 +1484,6 @@ contains
 
 !!$acc wait(async_id(5)) async(async_id(2))
 !!$acc exit data delete(ooov(:,:,:,a)) async(async_id(2))
-
-!!$acc wait(async_id(5)) async(async_id(3))
-!!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,a)) async(async_id(3))
 
                 endif
 
@@ -2228,7 +2168,7 @@ contains
   !> \date: january 2014
   subroutine ijk_loop_ser(nocc,nvirt,ovoo,vvoo,vvvo,ccsd_doubles,&
                         & eivalocc,eivalvirt,ccsdpt_singles,&
-                        & ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & ccsdpt_doubles,e4)
 
     implicit none
 
@@ -2245,7 +2185,6 @@ contains
     !> ccsd(t) intermediates
     real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
     real(realk), dimension(nvirt,nvirt,nocc,nocc),optional :: ccsdpt_doubles
-    real(realk), dimension(nocc,nvirt,nvirt,nocc),optional :: ccsdpt_doubles_2
     real(realk),optional :: e4
     logical :: full_no_frags
     !> orbital energiesi
@@ -2277,7 +2216,7 @@ contains
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles and vvvo / ovoo integrals
-    ! handle 3: vvoo integrals and ccsdpt_doubles / ccsdpt_doubles_2 intermediates
+    ! handle 3: vvoo integrals and ccsdpt_doubles intermediate
     ! handle 4: triples amplitudes
     ! handle 5: energy evaluation 
     num_ids = 5
@@ -2327,8 +2266,6 @@ contains
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),&
 !$acc& vvvo(:,:,:,i)) async(async_id(1))
 
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
-
     jrun_ser: do j=1,i
 
                  if (j .eq. i) then 
@@ -2349,7 +2286,6 @@ contains
 !$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3)) if(.not. full_no_frags)
 
                  end if
@@ -2377,7 +2313,6 @@ contains
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(3)) if(.not. full_no_frags)
 
                     else if ((i .gt. j) .and. (j .eq. k)) then
@@ -2404,7 +2339,6 @@ contains
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
 !$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(3)) if(.not. full_no_frags)
 
@@ -2455,10 +2389,8 @@ contains
                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                & vvvo(:,:,:,i),vvvo(:,:,:,k),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
-                                               & ccsdpt_doubles(:,:,i,i),ccsdpt_doubles(:,:,i,k),&
-                                               & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles_2(:,:,:,i),&
-                                               & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
-                                               & async_id,num_ids,cublas_handle)
+                                               & ccsdpt_doubles(:,:,:,i),ccsdpt_doubles(:,:,:,k),&
+                                               & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
 !$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(vvvo(:,:,:,k),&
@@ -2466,7 +2398,6 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
-!$acc& copyout(ccsdpt_doubles_2(:,:,:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(3))
 
                        endif
@@ -2509,10 +2440,8 @@ contains
                                                & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                                & vvvo(:,:,:,i),vvvo(:,:,:,j),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
-                                               & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-                                               & ccsdpt_doubles(:,:,j,j),ccsdpt_doubles_2(:,:,:,i),&
-                                               & ccsdpt_doubles_2(:,:,:,j),trip_tmp,trip_ampl,&
-                                               & async_id,num_ids,cublas_handle)
+                                               & ccsdpt_doubles(:,:,:,i),ccsdpt_doubles(:,:,:,j),&
+                                               & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
 !$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(ovoo(:,:,j,k)) async(async_id(1))
@@ -2569,12 +2498,8 @@ contains
                                                & ovoo(:,:,i,k),ovoo(:,:,j,i),ovoo(:,:,j,k),ovoo(:,:,k,i),&
                                                & ovoo(:,:,k,j),vvvo(:,:,:,i),vvvo(:,:,:,j),vvvo(:,:,:,k),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
-                                               & ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,i,k),&
-                                               & ccsdpt_doubles(:,:,j,i),ccsdpt_doubles(:,:,j,k),&
-                                               & ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,k,j),&
-                                               & ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j),&
-                                               & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,&
-                                               & async_id,num_ids,cublas_handle)
+                                               & ccsdpt_doubles(:,:,:,i),ccsdpt_doubles(:,:,:,j),ccsdpt_doubles(:,:,:,k),&
+                                               & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
 !$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(vvvo(:,:,:,k),&
@@ -2582,7 +2507,6 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
-!$acc& copyout(ccsdpt_doubles_2(:,:,:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
 !$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(3))
 
@@ -2634,7 +2558,6 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
-!$acc& copyout(ccsdpt_doubles_2(:,:,:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(3))
 
                     endif
@@ -2654,9 +2577,6 @@ contains
 !$acc wait(async_id(4),async_id(5)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i),&
 !$acc& vvvo(:,:,:,i)) async(async_id(1))
-
-!$acc wait(async_id(5)) async(async_id(3))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,i)) async(async_id(3))
 
               endif
 
@@ -2697,7 +2617,7 @@ contains
   !> \date: april 2014
   subroutine abc_loop_par(nocc,nvirt,ooov,oovv,vovv,ccsd_doubles,&
                         & eivalocc,eivalvirt,nodtotal,nbuffs,tile_size,ccsdpt_singles,&
-                        & ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & ccsdpt_doubles,e4)
 
     implicit none
 
@@ -2718,11 +2638,10 @@ contains
     real(realk), pointer, dimension(:) :: ccsd_pdm_a,ccsd_pdm_b,ccsd_pdm_c ! vo^2*tile_size tiles from ccsd_doubles
     real(realk), pointer, dimension(:,:) :: ccsd_pdm_buff ! buffers to prefetch ccsd_doubles tiles
     !> triples amplitudes and 3d work array
-    real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
+    real(realk), pointer, dimension(:,:,:) :: trip_tmp,trip_ampl
     !> ccsd(t) intermediates
     real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
     real(realk), dimension(nocc,nocc,nvirt,nvirt), optional :: ccsdpt_doubles
-    real(realk), dimension(nvirt,nocc,nocc,nvirt), optional :: ccsdpt_doubles_2
     real(realk),optional :: e4
     logical :: full_no_frags
     !> orbital energiesi
@@ -2807,14 +2726,14 @@ contains
     tiles_in_buf_oovv = -1
 
     ! init triples tuples structure
-    call mem_alloc(trip_ampl,nocc,nocc,nocc)
+    call mem_alloc(trip_ampl,nvirt,nocc,nocc)
     ! init 3d wrk array
-    call mem_alloc(trip_tmp,nocc,nocc,nocc)
+    call mem_alloc(trip_tmp,nvirt,nocc,nocc)
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles
     ! handle 2: vovv and ooov integrals
-    ! handle 3: oovv integrals and ccsdpt_doubles / ccsdpt_doubles_2 intermediates
+    ! handle 3: oovv integrals and ccsdpt_doubles intermediate
     ! handle 4: triples amplitudes
     ! handle 5: energy evaluation
     num_ids = 5
@@ -3044,8 +2963,6 @@ contains
 
 !!$acc enter data copyin(ooov(:,:,:,a)) async(async_id(2))
 
-!!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,a)) async(async_id(3)) if(.not. full_no_frags)
-
                 do b = b_pos,b_pos+tile_size_tmp_b-1
          
                    b_count = b_count+1
@@ -3062,7 +2979,6 @@ contains
 !!$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3)) if(full_no_frags)
 !!
 !!$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a),&
-!!$acc& ccsdpt_doubles_2(:,:,:,b),&
 !!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3)) if(.not. full_no_frags)
 
                    do c = c_pos,c_pos+tile_size_tmp_c-1
@@ -3083,7 +2999,6 @@ contains
 !!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b)) async(async_id(3)) if(full_no_frags)
 !!
 !!$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b),&
-!!$acc& ccsdpt_doubles_2(:,:,:,c),&
 !!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
 !!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3)) if(.not. full_no_frags)
 
@@ -3172,9 +3087,8 @@ contains
                                                  & oovv_pdm_ab,oovv_pdm_ac,oovv_pdm_ca,&
                                                  & ooov(:,:,:,a),ooov(:,:,:,c),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,c),&
-                                                 & ccsdpt_doubles(:,:,a,a),ccsdpt_doubles(:,:,a,c),&
-                                                 & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles_2(:,:,:,a),&
-                                                 & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
+                                                 & ccsdpt_doubles(:,:,:,a),ccsdpt_doubles(:,:,:,c),&
+                                                 & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & a_count,c_count,tile_size_tmp_a,tile_size_tmp_c)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
                             time_driv_tot = time_driv_tot + time_driv
@@ -3184,7 +3098,6 @@ contains
 
 !!$acc wait(async_id(5)) async(async_id(3))
 !!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a))&
-!!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
 !!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3))
 
                          endif
@@ -3237,9 +3150,8 @@ contains
                                                  & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_bc,&
                                                  & ooov(:,:,:,a),ooov(:,:,:,b),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,b),&
-                                                 & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
-                                                 & ccsdpt_doubles(:,:,b,b),ccsdpt_doubles_2(:,:,:,a),&
-                                                 & ccsdpt_doubles_2(:,:,:,b),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
+                                                 & ccsdpt_doubles(:,:,:,a),ccsdpt_doubles(:,:,:,b),&
+                                                 & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & a_count,b_count,tile_size_tmp_a,tile_size_tmp_b)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
                             time_driv_tot = time_driv_tot + time_driv
@@ -3307,11 +3219,8 @@ contains
                                                  & oovv_pdm_bc,oovv_pdm_ca,oovv_pdm_cb,&
                                                  & ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
                                                  & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
-                                                 & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,a,c),&
-                                                 & ccsdpt_doubles(:,:,b,a),ccsdpt_doubles(:,:,b,c),&
-                                                 & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles(:,:,c,b),&
-                                                 & ccsdpt_doubles_2(:,:,:,a),ccsdpt_doubles_2(:,:,:,b),&
-                                                 & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
+                                                 & ccsdpt_doubles(:,:,:,a),ccsdpt_doubles(:,:,:,b),ccsdpt_doubles(:,:,:,c),&
+                                                 & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle,&
                                                  & a_count,b_count,c_count,tile_size_tmp_a,tile_size_tmp_b,tile_size_tmp_c)
                             call time_start_phase(PHASE_WORK, ttot = time_driv )
                             time_driv_tot = time_driv_tot + time_driv
@@ -3321,7 +3230,6 @@ contains
 
 !!$acc wait(async_id(5)) async(async_id(3))
 !!$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b))&
-!!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
 !!$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
 !!$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3))
          
@@ -3376,7 +3284,6 @@ contains
 
 !!$acc wait(async_id(5)) async(async_id(3))
 !!$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a))&
-!!$acc& copyout(ccsdpt_doubles_2(:,:,:,b),&
 !!$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3))
 
                       endif
@@ -3399,9 +3306,6 @@ contains
 
 !!$acc wait(async_id(5)) async(async_id(2))
 !!$acc exit data delete(ooov(:,:,:,a)) async(async_id(2))
-
-!!$acc wait(async_id(5)) async(async_id(3))
-!!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,a)) async(async_id(3))
 
                 endif
 
@@ -3477,7 +3381,7 @@ contains
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
-
+    
     call time_phases_get_diff(current_wt=phase_cntrs)
     call time_start_phase( PHASE_WORK, ttot = time_pt_abc )
 
@@ -3605,7 +3509,7 @@ contains
   !> \date: april 2014
   subroutine abc_loop_ser(nocc,nvirt,ooov,oovv,vovv,ccsd_doubles,&
                         & eivalocc,eivalvirt,ccsdpt_singles,&
-                        & ccsdpt_doubles,ccsdpt_doubles_2,e4)
+                        & ccsdpt_doubles,e4)
 
     implicit none
 
@@ -3618,11 +3522,10 @@ contains
     !> ccsd doubles amplitudes
     real(realk), dimension(nocc,nocc,nvirt,nvirt), intent(inout) :: ccsd_doubles
     !> triples amplitudes and 3d work array
-    real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
+    real(realk), pointer, dimension(:,:,:) :: trip_tmp,trip_ampl
     !> ccsd(t) intermediates
     real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
     real(realk), dimension(nocc,nocc,nvirt,nvirt), optional :: ccsdpt_doubles
-    real(realk), dimension(nvirt,nocc,nocc,nvirt), optional :: ccsdpt_doubles_2
     real(realk),optional :: e4
     logical :: full_no_frags
     !> orbital energiesi
@@ -3648,13 +3551,13 @@ contains
     if (present(e4)) full_no_frags = .true.
 
     ! init triples tuples structure
-    call mem_alloc(trip_ampl,nocc,nocc,nocc)
+    call mem_alloc(trip_ampl,nvirt,nocc,nocc)
     ! init 3d wrk array
-    call mem_alloc(trip_tmp,nocc,nocc,nocc)
+    call mem_alloc(trip_tmp,nvirt,nocc,nocc)
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles and vovv / ooov integrals
-    ! handle 3: oovv integrals and ccsdpt_doubles / ccsdpt_doubles_2 intermediates
+    ! handle 3: oovv integrals and ccsdpt_doubles intermediate
     ! handle 4: triples amplitudes
     ! handle 5: energy evaluation
     num_ids = 5
@@ -3704,8 +3607,6 @@ contains
 !$acc enter data copyin(ccsd_doubles(:,:,:,a),&
 !$acc& ooov(:,:,:,a)) async(async_id(1))
 
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,a)) async(async_id(3)) if(.not. full_no_frags)
-
        do b=1,a
 
           if (b .eq. a) then
@@ -3726,7 +3627,6 @@ contains
 !$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(oovv(:,:,a,b),oovv(:,:,b,a),&
-!$acc& ccsdpt_doubles_2(:,:,:,b),&
 !$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3)) if(.not. full_no_frags)
 
           endif
@@ -3754,7 +3654,6 @@ contains
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a)) async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),&
-!$acc& ccsdpt_doubles_2(:,:,:,c),&
 !$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3)) if(.not. full_no_frags)
 
              else if ((a .gt. b) .and. (b .eq. c)) then
@@ -3782,7 +3681,6 @@ contains
 !$acc& async(async_id(3)) if(full_no_frags)
 !
 !$acc enter data copyin(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b),&
-!$acc& ccsdpt_doubles_2(:,:,:,c),&
 !$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
 !$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3)) if(.not. full_no_frags)
 
@@ -3829,9 +3727,8 @@ contains
                    call ccsdpt_driver_abc_case1_ser(a,c,nocc,nvirt,oovv,vovv,&
                                         & ooov(:,:,:,a),ooov(:,:,:,c),&
                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,c),&
-                                        & ccsdpt_doubles(:,:,a,a),ccsdpt_doubles(:,:,a,c),&
-                                        & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles_2(:,:,:,a),&
-                                        & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                                        & ccsdpt_doubles(:,:,:,a),ccsdpt_doubles(:,:,:,c),&
+                                        & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
 !$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(ooov(:,:,:,c),&
@@ -3839,7 +3736,6 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a))&
-!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
 !$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a)) async(async_id(3))
 
                 endif
@@ -3878,9 +3774,8 @@ contains
                    call ccsdpt_driver_abc_case2_ser(a,b,nocc,nvirt,oovv,vovv,&
                                         & ooov(:,:,:,a),ooov(:,:,:,b),&
                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,b),&
-                                        & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a),&
-                                        & ccsdpt_doubles(:,:,b,b),ccsdpt_doubles_2(:,:,:,a),&
-                                        & ccsdpt_doubles_2(:,:,:,b),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                                        & ccsdpt_doubles(:,:,:,a),ccsdpt_doubles(:,:,:,b),&
+                                        & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
 !$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(vovv(:,:,b,c)) async(async_id(1))
@@ -3930,11 +3825,8 @@ contains
                    call ccsdpt_driver_abc_case3_ser(a,b,c,nocc,nvirt,oovv,vovv,&
                                         & ooov(:,:,:,a),ooov(:,:,:,b),ooov(:,:,:,c),&
                                         & ccsdpt_singles(:,a),ccsdpt_singles(:,b),ccsdpt_singles(:,c),&
-                                        & ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,a,c),&
-                                        & ccsdpt_doubles(:,:,b,a),ccsdpt_doubles(:,:,b,c),&
-                                        & ccsdpt_doubles(:,:,c,a),ccsdpt_doubles(:,:,c,b),&
-                                        & ccsdpt_doubles_2(:,:,:,a),ccsdpt_doubles_2(:,:,:,b),&
-                                        & ccsdpt_doubles_2(:,:,:,c),trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
+                                        & ccsdpt_doubles(:,:,:,a),ccsdpt_doubles(:,:,:,b),ccsdpt_doubles(:,:,:,c),&
+                                        & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
 
 !$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(ooov(:,:,:,c),&
@@ -3942,7 +3834,6 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,c),oovv(:,:,c,a),oovv(:,:,b,c),oovv(:,:,c,b))&
-!$acc& copyout(ccsdpt_doubles_2(:,:,:,c),&
 !$acc& ccsdpt_doubles(:,:,a,c),ccsdpt_doubles(:,:,c,a),&
 !$acc& ccsdpt_doubles(:,:,b,c),ccsdpt_doubles(:,:,c,b)) async(async_id(3))
 
@@ -3994,7 +3885,6 @@ contains
 
 !$acc wait(async_id(5)) async(async_id(3))
 !$acc exit data delete(oovv(:,:,a,b),oovv(:,:,b,a))&
-!$acc& copyout(ccsdpt_doubles_2(:,:,:,b),&
 !$acc& ccsdpt_doubles(:,:,a,b),ccsdpt_doubles(:,:,b,a)) async(async_id(3))
 
              endif
@@ -4014,9 +3904,6 @@ contains
 !$acc wait(async_id(4),async_id(5)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,a),&
 !$acc& ooov(:,:,:,a)) async(async_id(1))
-
-!$acc wait(async_id(5)) async(async_id(3))
-!$acc exit data copyout(ccsdpt_doubles_2(:,:,:,a)) async(async_id(3))
 
        endif
 
@@ -8023,8 +7910,7 @@ contains
                             & ovoo_tile_12,ovoo_tile_13,ovoo_tile_31,&
                             & vvvo_tile_o1,vvvo_tile_o3,&
                             & ccsdpt_singles_1,ccsdpt_singles_3,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
+                            & ccsdpt_doubles_1,ccsdpt_doubles_3,wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
                             & i,k,tile_size_i,tile_size_k)
 
     implicit none
@@ -8033,8 +7919,7 @@ contains
     integer, intent(in) :: oindex1,oindex3,no,nv
     integer, intent(in) :: i,k,tile_size_i,tile_size_k
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(nv,nv) :: ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31
-    real(realk), dimension(no,nv,nv) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_3
+    real(realk), dimension(nv,nv,no) :: ccsdpt_doubles_1,ccsdpt_doubles_3
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_3
     !> tiles of ovoo integrals
     real(realk), dimension(no,nv) :: ovoo_tile_12, ovoo_tile_13, ovoo_tile_31
@@ -8091,16 +7976,16 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex1,oindex1,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,oindex3),&
                            & wrk_3d,trip,vvvo_tile_o1(:,:,:,i),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex1,oindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_1(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o3(:,:,:,k),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex3,oindex1,no,nv,ovoo_tile_31,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_1,trip,.true.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.true.,handle,cublas_handle)
 
        else if (idx .eq. 2) then ! kii
 
@@ -8122,18 +8007,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_1(:,:,oindex1),&
                            & trip,wrk_3d,vvvo_tile_o3(:,:,:,k),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,oindex3),&
                            & trip,wrk_3d,vvvo_tile_o1(:,:,:,i),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex1,oindex1,no,nv,ovoo_tile_12,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex1,oindex1,no,nv,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,handle,cublas_handle)
 
        else if (idx .eq. 3) then ! iki
 
@@ -8158,15 +8043,15 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o1(:,:,:,i),.true.,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex1,oindex3,no,nv,ovoo_tile_13,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex1,oindex3,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,handle,cublas_handle)
 
        end if
 
@@ -8182,16 +8067,14 @@ contains
                             & ovoo_tile_12,ovoo_tile_13,ovoo_tile_31,&
                             & vvvo_tile_o1,vvvo_tile_o3,&
                             & ccsdpt_singles_1,ccsdpt_singles_3,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx,num_idxs,cublas_handle)
+                            & ccsdpt_doubles_1,ccsdpt_doubles_3,wrk_3d,trip,async_idx,num_idxs,cublas_handle)
 
     implicit none
 
     !> i, j, k, nocc, and nvirt
     integer, intent(in) :: oindex1,oindex3,no,nv
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(nv,nv) :: ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31
-    real(realk), dimension(no,nv,nv) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_3
+    real(realk), dimension(nv,nv,no) :: ccsdpt_doubles_1,ccsdpt_doubles_3
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_3
     !> tiles of ovoo integrals
     real(realk), dimension(no,nv) :: ovoo_tile_12, ovoo_tile_13, ovoo_tile_31
@@ -8246,16 +8129,16 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex1,oindex1,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,oindex3),&
                            & wrk_3d,trip,vvvo_tile_o1,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex1,oindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_1(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o3,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex3,oindex1,no,nv,ovoo_tile_31,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_1,trip,.true.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.true.,handle,cublas_handle)
 
        else if (idx .eq. 2) then ! kii
 
@@ -8277,18 +8160,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_1(:,:,oindex1),&
                            & trip,wrk_3d,vvvo_tile_o3,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,oindex3),&
                            & trip,wrk_3d,vvvo_tile_o1,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex1,oindex1,no,nv,ovoo_tile_12,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex1,oindex1,no,nv,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,handle,cublas_handle)
 
        else if (idx .eq. 3) then ! iki
 
@@ -8313,15 +8196,15 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o1,.true.,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex1,oindex3,no,nv,ovoo_tile_13,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex1,oindex3,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,handle,cublas_handle)
 
        end if
 
@@ -8337,8 +8220,8 @@ contains
                             & oovv_tile_12,oovv_tile_13,oovv_tile_31,&
                             & ooov_tile_v1,ooov_tile_v3,&
                             & ccsdpt_singles_1,ccsdpt_singles_3,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
+                            & ccsdpt_doubles_1,ccsdpt_doubles_3,&
+                            & wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
                             & a,c,tile_size_a,tile_size_c)
 
     implicit none
@@ -8347,8 +8230,7 @@ contains
     integer, intent(in) :: vindex1,vindex3,no,nv
     integer, intent(in) :: a,c,tile_size_a,tile_size_c
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(no,no) :: ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31
-    real(realk), dimension(nv,no,no) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_3
+    real(realk), dimension(no,no,nv) :: ccsdpt_doubles_1,ccsdpt_doubles_3
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_3
     !> tiles of vovv integrals
     real(realk), dimension(nv,no,nv,tile_size_a), intent(inout) :: vovv_tile_1
@@ -8361,7 +8243,7 @@ contains
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v1
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v3
     !> triples amplitude and work array
-    real(realk), dimension(no,no,no) :: trip, wrk_3d
+    real(realk), dimension(nv,no,no) :: trip, wrk_3d
     !> loop integer
     integer :: idx
     integer, intent(in) :: num_idxs
@@ -8407,15 +8289,15 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex3,vindex1,no,nv,&
                            & vovv_tile_1(:,:,vindex3,a),vovv_tile_3(:,:,vindex1,c),&
-                           & ccsdpt_doubles_2_1,trip,.true.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.true.,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex1,vindex1,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,vindex3),&
                            & wrk_3d,trip,ooov_tile_v1,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex1,vindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_1(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v3,handle,cublas_handle)
 
        else if (idx .eq. 2) then ! caa
@@ -8439,17 +8321,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex3,vindex1,vindex1,no,nv,&
                            & vovv_tile_1(:,:,vindex1,a),vovv_tile_1(:,:,vindex1,a),&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex1,vindex1,no,nv,vovv_tile_1(:,:,vindex3,a),&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex1,vindex3,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_1(:,:,vindex1),&
                            & trip,wrk_3d,ooov_tile_v3,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex1,vindex3,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,vindex3),&
                            & trip,wrk_3d,ooov_tile_v1,handle,cublas_handle)
 
        else if (idx .eq. 3) then ! aca
@@ -8476,14 +8358,14 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex1,vindex3,no,nv,&
                            & vovv_tile_3(:,:,vindex1,c),vovv_tile_1(:,:,vindex3,a),&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex1,vindex3,no,nv,vovv_tile_1(:,:,vindex1,a),&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex3,vindex1,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v1,.true.,handle,cublas_handle)
 
        end if
@@ -8499,16 +8381,15 @@ contains
   subroutine ccsdpt_driver_abc_case1_ser(vindex1,vindex3,no,nv,oovv,vovv,&
                             & ooov_tile_v1,ooov_tile_v3,&
                             & ccsdpt_singles_1,ccsdpt_singles_3,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_3,wrk_3d,trip,async_idx,num_idxs,cublas_handle)
+                            & ccsdpt_doubles_1,ccsdpt_doubles_3,&
+                            & wrk_3d,trip,async_idx,num_idxs,cublas_handle)
 
     implicit none
 
     !> a, b, c, nocc, and nvirt
     integer, intent(in) :: vindex1,vindex3,no,nv
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(no,no) :: ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_31
-    real(realk), dimension(nv,no,no) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_3
+    real(realk), dimension(no,no,nv) :: ccsdpt_doubles_1,ccsdpt_doubles_3
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_3
     !> vovv integrals
     real(realk), dimension(nv,no,nv,nv), intent(inout)  :: vovv
@@ -8518,7 +8399,7 @@ contains
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v1
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v3
     !> triples amplitude and work array
-    real(realk), dimension(no,no,no) :: trip, wrk_3d
+    real(realk), dimension(nv,no,no) :: trip, wrk_3d
     !> loop integer
     integer :: idx
     integer, intent(in) :: num_idxs
@@ -8564,15 +8445,15 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex3,vindex1,no,nv,&
                            & vovv(:,:,vindex3,vindex1),vovv(:,:,vindex1,vindex3),&
-                           & ccsdpt_doubles_2_1,trip,.true.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.true.,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex1,vindex1,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,vindex3),&
                            & wrk_3d,trip,ooov_tile_v1,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex1,vindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_1(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v3,handle,cublas_handle)
 
        else if (idx .eq. 2) then ! caa
@@ -8596,17 +8477,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex3,vindex1,vindex1,no,nv,&
                            & vovv(:,:,vindex1,vindex1),vovv(:,:,vindex1,vindex1),&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex1,vindex1,no,nv,vovv(:,:,vindex3,vindex1),&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex1,vindex3,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_1(:,:,vindex1),&
                            & trip,wrk_3d,ooov_tile_v3,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex1,vindex3,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,vindex3),&
                            & trip,wrk_3d,ooov_tile_v1,handle,cublas_handle)
 
        else if (idx .eq. 3) then ! aca
@@ -8633,14 +8514,14 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex1,vindex3,no,nv,&
                            & vovv(:,:,vindex1,vindex3),vovv(:,:,vindex3,vindex1),&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex1,vindex3,no,nv,vovv(:,:,vindex1,vindex1),&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex3,vindex1,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v1,.true.,handle,cublas_handle)
 
        end if
@@ -8657,8 +8538,7 @@ contains
                             & ovoo_tile_12,ovoo_tile_21,ovoo_tile_23,&
                             & vvvo_tile_o1,vvvo_tile_o2,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
+                            & ccsdpt_doubles_1,ccsdpt_doubles_2,wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
                             & i,j,tile_size_i,tile_size_j)
 
     implicit none
@@ -8667,8 +8547,7 @@ contains
     integer, intent(in) :: oindex1,oindex2,no,nv
     integer, intent(in) :: i,j,tile_size_i,tile_size_j
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(nv,nv) :: ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23
-    real(realk), dimension(no,nv,nv) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_2
+    real(realk), dimension(nv,nv,no) :: ccsdpt_doubles_1,ccsdpt_doubles_2
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_2
     !> tiles of ovoo integrals
     real(realk), dimension(no,nv) :: ovoo_tile_12, ovoo_tile_21, ovoo_tile_23
@@ -8726,15 +8605,15 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex1,oindex2,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,oindex2),&
                            & wrk_3d,trip,vvvo_tile_o2(:,:,:,j),.true.,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex2,oindex1,no,nv,ovoo_tile_21,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex2,oindex1,no,nv,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,handle,cublas_handle)
 
        else if (idx .eq. 2) then
    
@@ -8756,18 +8635,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_2(:,:,oindex2),&
                            & trip,wrk_3d,vvvo_tile_o1(:,:,:,i),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,oindex1),&
                            & trip,wrk_3d,vvvo_tile_o2(:,:,:,j),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex2,oindex2,no,nv,ovoo_tile_23,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex2,oindex2,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,handle,cublas_handle)
 
        else if (idx .eq. 3) then
 
@@ -8794,16 +8673,16 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex2,oindex2,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o2(:,:,:,j),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex2,oindex2,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_2(:,:,oindex2),&
                            & wrk_3d,trip,vvvo_tile_o1(:,:,:,i),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex1,oindex2,no,nv,ovoo_tile_12,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_2,trip,.true.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.true.,handle,cublas_handle)
 
        end if
 
@@ -8819,16 +8698,14 @@ contains
                             & ovoo_tile_12,ovoo_tile_21,ovoo_tile_23,&
                             & vvvo_tile_o1,vvvo_tile_o2,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx,num_idxs,cublas_handle)
+                            & ccsdpt_doubles_1,ccsdpt_doubles_2,wrk_3d,trip,async_idx,num_idxs,cublas_handle)
 
     implicit none
 
     !> i, j, k, nocc, and nvirt
     integer, intent(in) :: oindex1,oindex2,no,nv
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(nv,nv) :: ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23
-    real(realk), dimension(no,nv,nv) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_2
+    real(realk), dimension(nv,nv,no) :: ccsdpt_doubles_1,ccsdpt_doubles_2
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_2
     !> tiles of ovoo integrals
     real(realk), dimension(no,nv) :: ovoo_tile_12, ovoo_tile_21, ovoo_tile_23
@@ -8884,15 +8761,15 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex1,oindex2,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,oindex2),&
                            & wrk_3d,trip,vvvo_tile_o2,.true.,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex2,oindex1,no,nv,ovoo_tile_21,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex2,oindex1,no,nv,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,handle,cublas_handle)
 
        else if (idx .eq. 2) then
    
@@ -8914,18 +8791,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_2(:,:,oindex2),&
                            & trip,wrk_3d,vvvo_tile_o1,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,oindex1),&
                            & trip,wrk_3d,vvvo_tile_o2,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex2,oindex2,no,nv,ovoo_tile_23,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex2,oindex2,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,handle,cublas_handle)
 
        else if (idx .eq. 3) then
 
@@ -8952,16 +8829,16 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex2,oindex2,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o2,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex2,oindex2,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_2(:,:,oindex2),&
                            & wrk_3d,trip,vvvo_tile_o1,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex1,oindex2,no,nv,ovoo_tile_12,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_2,trip,.true.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.true.,handle,cublas_handle)
 
        end if
 
@@ -8977,8 +8854,8 @@ contains
                             & oovv_tile_12,oovv_tile_21,oovv_tile_23,&
                             & ooov_tile_v1,ooov_tile_v2,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
+                            & ccsdpt_doubles_1,ccsdpt_doubles_2,&
+                            & wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
                             & a,b,tile_size_a,tile_size_b)
 
     implicit none
@@ -8987,8 +8864,7 @@ contains
     integer, intent(in) :: vindex1,vindex2,no,nv
     integer, intent(in) :: a,b,tile_size_a,tile_size_b
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(no,no) :: ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23
-    real(realk), dimension(nv,no,no) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_2
+    real(realk), dimension(no,no,nv) :: ccsdpt_doubles_1,ccsdpt_doubles_2
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_2
     !> tiles of vovv integrals
     real(realk), dimension(nv,no,nv,tile_size_a), intent(inout) :: vovv_tile_1
@@ -9001,7 +8877,7 @@ contains
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v1
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v2
     !> triples amplitude and work array
-    real(realk), dimension(no,no,no) :: trip, wrk_3d
+    real(realk), dimension(nv,no,no) :: trip, wrk_3d
     !> loop integer
     integer :: idx
     integer, intent(in) :: num_idxs
@@ -9048,14 +8924,14 @@ contains
 
           call ccsdpt_contract_abc_211(vindex2,vindex2,vindex1,no,nv,&
                            & vovv_tile_1(:,:,vindex2,a),vovv_tile_2(:,:,vindex1,b),&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex2,vindex1,no,nv,vovv_tile_2(:,:,vindex2,b),&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex1,vindex2,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,vindex2),&
                            & wrk_3d,trip,ooov_tile_v2,.true.,handle,cublas_handle)
 
        else if (idx .eq. 2) then
@@ -9079,17 +8955,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex2,vindex2,no,nv,&
                            & vovv_tile_2(:,:,vindex2,b),vovv_tile_2(:,:,vindex2,b),&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex2,vindex2,no,nv,vovv_tile_2(:,:,vindex1,b),&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex2,vindex1,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_2(:,:,vindex2),&
                            & trip,wrk_3d,ooov_tile_v1,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex2,vindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,vindex1),&
                            & trip,wrk_3d,ooov_tile_v2,handle,cublas_handle)
 
        else if (idx .eq. 3) then
@@ -9118,15 +8994,15 @@ contains
 
           call ccsdpt_contract_abc_211(vindex2,vindex1,vindex2,no,nv,&
                            & vovv_tile_2(:,:,vindex1,b),vovv_tile_1(:,:,vindex2,a),&
-                           & ccsdpt_doubles_2_2,trip,.true.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.true.,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex2,vindex2,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v2,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex2,vindex2,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_2(:,:,vindex2),&
                            & wrk_3d,trip,ooov_tile_v1,handle,cublas_handle)
 
        end if
@@ -9142,16 +9018,15 @@ contains
   subroutine ccsdpt_driver_abc_case2_ser(vindex1,vindex2,no,nv,oovv,vovv,&
                             & ooov_tile_v1,ooov_tile_v2,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,wrk_3d,trip,async_idx,num_idxs,cublas_handle)
+                            & ccsdpt_doubles_1,ccsdpt_doubles_2,&
+                            & wrk_3d,trip,async_idx,num_idxs,cublas_handle)
 
     implicit none
 
     !> i, j, k, nocc, and nvirt
     integer, intent(in) :: vindex1,vindex2,no,nv
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(no,no) :: ccsdpt_doubles_12,ccsdpt_doubles_21,ccsdpt_doubles_23
-    real(realk), dimension(nv,no,no) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_2
+    real(realk), dimension(no,no,nv) :: ccsdpt_doubles_1,ccsdpt_doubles_2
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_2
     !> vovv integrals
     real(realk), dimension(nv,no,nv,nv), intent(inout)  :: vovv
@@ -9161,7 +9036,7 @@ contains
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v1
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v2
     !> triples amplitude and work array
-    real(realk), dimension(no,no,no) :: trip, wrk_3d
+    real(realk), dimension(nv,no,no) :: trip, wrk_3d
     !> loop integer
     integer :: idx
     integer, intent(in) :: num_idxs
@@ -9208,14 +9083,14 @@ contains
 
           call ccsdpt_contract_abc_211(vindex2,vindex2,vindex1,no,nv,&
                            & vovv(:,:,vindex2,vindex1),vovv(:,:,vindex1,vindex2),&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex2,vindex1,no,nv,vovv(:,:,vindex2,vindex2),&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex1,vindex2,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,vindex2),&
                            & wrk_3d,trip,ooov_tile_v2,.true.,handle,cublas_handle)
 
        else if (idx .eq. 2) then
@@ -9239,17 +9114,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex2,vindex2,no,nv,&
                            & vovv(:,:,vindex2,vindex2),vovv(:,:,vindex2,vindex2),&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex2,vindex2,no,nv,vovv(:,:,vindex1,vindex2),&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex2,vindex1,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_2(:,:,vindex2),&
                            & trip,wrk_3d,ooov_tile_v1,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex2,vindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,vindex1),&
                            & trip,wrk_3d,ooov_tile_v2,handle,cublas_handle)
 
        else if (idx .eq. 3) then
@@ -9278,15 +9153,15 @@ contains
 
           call ccsdpt_contract_abc_211(vindex2,vindex1,vindex2,no,nv,&
                            & vovv(:,:,vindex1,vindex2),vovv(:,:,vindex2,vindex1),&
-                           & ccsdpt_doubles_2_2,trip,.true.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.true.,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex2,vindex2,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v2,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex2,vindex2,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_2(:,:,vindex2),&
                            & wrk_3d,trip,ooov_tile_v1,handle,cublas_handle)
 
        end if
@@ -9306,9 +9181,7 @@ contains
                             & ovoo_tile_23, ovoo_tile_31, ovoo_tile_32,&
                             & vvvo_tile_o1,vvvo_tile_o2,vvvo_tile_o3,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21,&
-                            & ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3,&
+                            & ccsdpt_doubles_1,ccsdpt_doubles_2,ccsdpt_doubles_3,&
                             & wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
                             & i,j,k,tile_size_i,tile_size_j,tile_size_k)
 
@@ -9318,9 +9191,7 @@ contains
     integer, intent(in) :: oindex1,oindex2,oindex3,no,nv
     integer, intent(in) :: i,j,k,tile_size_i,tile_size_j,tile_size_k
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(nv,nv) :: ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21
-    real(realk), dimension(nv,nv) :: ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32
-    real(realk), dimension(no,nv,nv) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3
+    real(realk), dimension(nv,nv,no) :: ccsdpt_doubles_1,ccsdpt_doubles_2,ccsdpt_doubles_3
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3
     !> tiles of ovoo integrals
     real(realk), dimension(no,nv) :: ovoo_tile_12, ovoo_tile_13, ovoo_tile_21
@@ -9385,18 +9256,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex1,oindex2,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,oindex3),&
                            & wrk_3d,trip,vvvo_tile_o2(:,:,:,j),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex1,oindex2,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,oindex2),&
                            & wrk_3d,trip,vvvo_tile_o3(:,:,:,k),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex3,oindex1,no,nv,ovoo_tile_31,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex3,oindex1,no,nv,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,handle,cublas_handle)
 
        else if (idx .eq. 2) then ! kij
 
@@ -9423,18 +9294,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles_32,&
+                           & ccsdpt_doubles_2(:,:,oindex3),&
                            & trip,wrk_3d,vvvo_tile_o1(:,:,:,i),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,oindex1),&
                            & trip,wrk_3d,vvvo_tile_o3(:,:,:,k),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex3,oindex2,no,nv,ovoo_tile_32,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex3,oindex2,no,nv,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,handle,cublas_handle)
 
        else if (idx .eq. 3) then ! jki
 
@@ -9461,18 +9332,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex2,oindex3,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o3(:,:,:,k),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex2,oindex3,nv,no,&
-                           & ccsdpt_doubles_32,&
+                           & ccsdpt_doubles_2(:,:,oindex3),&
                            & wrk_3d,trip,vvvo_tile_o1(:,:,:,i),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex1,oindex2,no,nv,ovoo_tile_12,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_3,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex1,oindex2,no,nv,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_2,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,handle,cublas_handle)
 
        else if (idx .eq. 4) then ! kji
 
@@ -9499,18 +9370,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,oindex2),&
                            & trip,wrk_3d,vvvo_tile_o3(:,:,:,k),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,oindex3),&
                            & trip,wrk_3d,vvvo_tile_o2(:,:,:,j),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex2,oindex1,no,nv,ovoo_tile_21,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex2,oindex1,no,nv,ovoo_tile_32,&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,handle,cublas_handle)
 
        else if (idx .eq. 5) then ! ikj
 
@@ -9537,18 +9408,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_3(:,:,oindex2),&
                            & wrk_3d,trip,vvvo_tile_o1(:,:,:,i),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o2(:,:,:,j),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex2,oindex3,no,nv,ovoo_tile_23,ovoo_tile_32,&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex2,oindex3,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,handle,cublas_handle)
 
        else if (idx .eq. 6) then ! jik
 
@@ -9575,18 +9446,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex3,oindex2,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,oindex1),&
                            & trip,wrk_3d,vvvo_tile_o2(:,:,:,j),.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex3,oindex2,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_3(:,:,oindex2),&
                            & trip,wrk_3d,vvvo_tile_o1(:,:,:,i),handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex1,oindex3,no,nv,ovoo_tile_13,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_2,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex1,oindex3,no,nv,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_3,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,handle,cublas_handle)
 
        end if
 
@@ -9605,9 +9476,7 @@ contains
                             & ovoo_tile_23, ovoo_tile_31, ovoo_tile_32,&
                             & vvvo_tile_o1,vvvo_tile_o2,vvvo_tile_o3,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21,&
-                            & ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3,&
+                            & ccsdpt_doubles_1,ccsdpt_doubles_2,ccsdpt_doubles_3,&
                             & wrk_3d,trip,async_idx,num_idxs,cublas_handle)
 
     implicit none
@@ -9615,9 +9484,7 @@ contains
     !> i, j, k, nocc, and nvirt
     integer, intent(in) :: oindex1,oindex2,oindex3,no,nv
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(nv,nv) :: ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21
-    real(realk), dimension(nv,nv) :: ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32
-    real(realk), dimension(no,nv,nv) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3
+    real(realk), dimension(nv,nv,no) :: ccsdpt_doubles_1,ccsdpt_doubles_2,ccsdpt_doubles_3
     real(realk), dimension(nv) :: ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3
     !> tiles of ovoo integrals
     real(realk), dimension(no,nv) :: ovoo_tile_12, ovoo_tile_13, ovoo_tile_21
@@ -9678,18 +9545,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex1,oindex2,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,oindex3),&
                            & wrk_3d,trip,vvvo_tile_o2,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex1,oindex2,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,oindex2),&
                            & wrk_3d,trip,vvvo_tile_o3,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex3,oindex1,no,nv,ovoo_tile_31,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex3,oindex1,no,nv,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,handle,cublas_handle)
 
        else if (idx .eq. 2) then ! kij
 
@@ -9716,18 +9583,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex3,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles_32,&
+                           & ccsdpt_doubles_2(:,:,oindex3),&
                            & trip,wrk_3d,vvvo_tile_o1,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex3,oindex2,oindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,oindex1),&
                            & trip,wrk_3d,vvvo_tile_o3,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex3,oindex2,no,nv,ovoo_tile_32,ovoo_tile_23,&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex3,oindex2,no,nv,ovoo_tile_13,&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,handle,cublas_handle)
 
        else if (idx .eq. 3) then ! jki
 
@@ -9754,18 +9621,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex2,oindex3,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o3,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex2,oindex3,nv,no,&
-                           & ccsdpt_doubles_32,&
+                           & ccsdpt_doubles_2(:,:,oindex3),&
                            & wrk_3d,trip,vvvo_tile_o1,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex1,oindex2,no,nv,ovoo_tile_12,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_3,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex1,oindex2,no,nv,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_2,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,handle,cublas_handle)
 
        else if (idx .eq. 4) then ! kji
 
@@ -9792,18 +9659,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,oindex2),&
                            & trip,wrk_3d,vvvo_tile_o3,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex1,oindex3,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,oindex3),&
                            & trip,wrk_3d,vvvo_tile_o2,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex3,oindex2,oindex1,no,nv,ovoo_tile_21,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex3,oindex2,oindex1,no,nv,ovoo_tile_32,&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,handle,cublas_handle)
 
        else if (idx .eq. 5) then ! ikj
 
@@ -9830,18 +9697,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex2,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_3(:,:,oindex2),&
                            & wrk_3d,trip,vvvo_tile_o1,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex2,oindex3,oindex1,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,oindex1),&
                            & wrk_3d,trip,vvvo_tile_o2,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex1,oindex2,oindex3,no,nv,ovoo_tile_23,ovoo_tile_32,&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex1,oindex2,oindex3,no,nv,ovoo_tile_12,&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,handle,cublas_handle)
 
        else if (idx .eq. 6) then ! jik
 
@@ -9868,18 +9735,18 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_ijk_211(oindex1,oindex3,oindex2,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,oindex1),&
                            & trip,wrk_3d,vvvo_tile_o2,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_212(oindex1,oindex3,oindex2,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_3(:,:,oindex2),&
                            & trip,wrk_3d,vvvo_tile_o1,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_ijk_221(oindex2,oindex1,oindex3,no,nv,ovoo_tile_13,ovoo_tile_31,&
-                           & ccsdpt_doubles_2_2,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_ijk_222(oindex2,oindex1,oindex3,no,nv,ovoo_tile_21,&
-                           & ccsdpt_doubles_2_3,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,handle,cublas_handle)
 
        end if
 
@@ -9897,9 +9764,7 @@ contains
                             & oovv_tile_23, oovv_tile_31, oovv_tile_32,&
                             & ooov_tile_v1,ooov_tile_v2,ooov_tile_v3,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21,&
-                            & ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3,&
+                            & ccsdpt_doubles_1,ccsdpt_doubles_2,ccsdpt_doubles_3,&
                             & wrk_3d,trip,async_idx,num_idxs,cublas_handle,&
                             & a,b,c,tile_size_a,tile_size_b,tile_size_c)
 
@@ -9909,9 +9774,7 @@ contains
     integer, intent(in) :: vindex1,vindex2,vindex3,no,nv
     integer, intent(in) :: a,b,c,tile_size_a,tile_size_b,tile_size_c
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(no,no) :: ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21
-    real(realk), dimension(no,no) :: ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32
-    real(realk), dimension(nv,no,no) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3
+    real(realk), dimension(no,no,nv) :: ccsdpt_doubles_1,ccsdpt_doubles_2,ccsdpt_doubles_3
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3
     !> tiles of vovv integrals
     real(realk), dimension(nv,no,nv,tile_size_a), intent(inout) :: vovv_tile_1
@@ -9929,7 +9792,7 @@ contains
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v2
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v3
     !> triples amplitude and work array
-    real(realk), dimension(no,no,no) :: trip, wrk_3d
+    real(realk), dimension(nv,no,no) :: trip, wrk_3d
     !> loop integer
     integer :: idx
     integer, intent(in) :: num_idxs
@@ -9978,17 +9841,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex2,vindex3,vindex1,no,nv,&
                            & vovv_tile_1(:,:,vindex3,a),vovv_tile_3(:,:,vindex1,c),&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex3,vindex1,no,nv,vovv_tile_3(:,:,vindex2,c),&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex1,vindex2,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,vindex3),&
                            & wrk_3d,trip,ooov_tile_v2,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex1,vindex2,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,vindex2),&
                            & wrk_3d,trip,ooov_tile_v3,handle,cublas_handle)
 
        else if (idx .eq. 2) then ! cab
@@ -10017,17 +9880,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex3,vindex2,no,nv,&
                            & vovv_tile_2(:,:,vindex3,b),vovv_tile_3(:,:,vindex2,c),&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex3,vindex2,no,nv,vovv_tile_3(:,:,vindex1,c),&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex2,vindex1,nv,no,&
-                           & ccsdpt_doubles_32,&
+                           & ccsdpt_doubles_2(:,:,vindex3),&
                            & trip,wrk_3d,ooov_tile_v1,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex2,vindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,vindex1),&
                            & trip,wrk_3d,ooov_tile_v3,handle,cublas_handle)
 
        else if (idx .eq. 3) then ! bca
@@ -10056,17 +9919,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex3,vindex1,vindex2,no,nv,&
                            & vovv_tile_2(:,:,vindex1,b),vovv_tile_1(:,:,vindex2,a),&
-                           & ccsdpt_doubles_2_3,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex1,vindex2,no,nv,vovv_tile_1(:,:,vindex3,a),&
-                           & ccsdpt_doubles_2_2,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex2,vindex3,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v3,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex2,vindex3,nv,no,&
-                           & ccsdpt_doubles_32,&
+                           & ccsdpt_doubles_2(:,:,vindex3),&
                            & wrk_3d,trip,ooov_tile_v1,handle,cublas_handle)
 
        else if (idx .eq. 4) then ! cba
@@ -10095,17 +9958,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex3,vindex2,vindex1,no,nv,&
                            & vovv_tile_1(:,:,vindex2,a),vovv_tile_2(:,:,vindex1,b),&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex2,vindex1,no,nv,vovv_tile_2(:,:,vindex3,b),&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex1,vindex3,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,vindex2),&
                            & trip,wrk_3d,ooov_tile_v3,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex1,vindex3,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,vindex3),&
                            & trip,wrk_3d,ooov_tile_v2,handle,cublas_handle)
 
        else if (idx .eq. 5) then ! acb
@@ -10134,17 +9997,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,&
                            & vovv_tile_3(:,:,vindex2,c),vovv_tile_2(:,:,vindex3,b),&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,vovv_tile_2(:,:,vindex1,b),&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex3,vindex1,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_3(:,:,vindex2),&
                            & wrk_3d,trip,ooov_tile_v1,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex3,vindex1,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v2,handle,cublas_handle)
 
        else if (idx .eq. 6) then ! bac
@@ -10173,17 +10036,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex2,vindex1,vindex3,no,nv,&
                            & vovv_tile_3(:,:,vindex1,c),vovv_tile_1(:,:,vindex3,a),&
-                           & ccsdpt_doubles_2_2,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex1,vindex3,no,nv,vovv_tile_1(:,:,vindex2,a),&
-                           & ccsdpt_doubles_2_3,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex3,vindex2,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,vindex1),&
                            & trip,wrk_3d,ooov_tile_v2,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex3,vindex2,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_3(:,:,vindex2),&
                            & trip,wrk_3d,ooov_tile_v1,handle,cublas_handle)
 
        end if
@@ -10199,9 +10062,7 @@ contains
   subroutine ccsdpt_driver_abc_case3_ser(vindex1,vindex2,vindex3,no,nv,oovv,vovv,&
                             & ooov_tile_v1,ooov_tile_v2,ooov_tile_v3,&
                             & ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3,&
-                            & ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21,&
-                            & ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32,&
-                            & ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3,&
+                            & ccsdpt_doubles_1,ccsdpt_doubles_2,ccsdpt_doubles_3,&
                             & wrk_3d,trip,async_idx,num_idxs,cublas_handle)
 
     implicit none
@@ -10209,9 +10070,7 @@ contains
     !> i, j, k, nocc, and nvirt
     integer, intent(in) :: vindex1,vindex2,vindex3,no,nv
     !> ccsd(t) singles and doubles amplitudes
-    real(realk), dimension(no,no) :: ccsdpt_doubles_12,ccsdpt_doubles_13,ccsdpt_doubles_21
-    real(realk), dimension(no,no) :: ccsdpt_doubles_23,ccsdpt_doubles_31,ccsdpt_doubles_32
-    real(realk), dimension(nv,no,no) :: ccsdpt_doubles_2_1,ccsdpt_doubles_2_2,ccsdpt_doubles_2_3
+    real(realk), dimension(no,no,nv) :: ccsdpt_doubles_1,ccsdpt_doubles_2,ccsdpt_doubles_3
     real(realk), dimension(no) :: ccsdpt_singles_1,ccsdpt_singles_2,ccsdpt_singles_3
     !> vovv integrals
     real(realk), dimension(nv,no,nv,nv), intent(inout)  :: vovv
@@ -10222,7 +10081,7 @@ contains
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v2
     real(realk), dimension(no,no,no), intent(inout) :: ooov_tile_v3
     !> triples amplitude and work array
-    real(realk), dimension(no,no,no) :: trip, wrk_3d
+    real(realk), dimension(nv,no,no) :: trip, wrk_3d
     !> loop integer
     integer :: idx
     integer, intent(in) :: num_idxs
@@ -10271,17 +10130,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex2,vindex3,vindex1,no,nv,&
                            & vovv(:,:,vindex3,vindex1),vovv(:,:,vindex1,vindex3),&
-                           & ccsdpt_doubles_2_2,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex3,vindex1,no,nv,vovv(:,:,vindex2,vindex3),&
-                           & ccsdpt_doubles_2_1,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex1,vindex2,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,vindex3),&
                            & wrk_3d,trip,ooov_tile_v2,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex1,vindex2,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,vindex2),&
                            & wrk_3d,trip,ooov_tile_v3,handle,cublas_handle)
 
        else if (idx .eq. 2) then ! cab
@@ -10310,17 +10169,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex3,vindex2,no,nv,&
                            & vovv(:,:,vindex3,vindex2),vovv(:,:,vindex2,vindex3),&
-                           & ccsdpt_doubles_2_1,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex3,vindex2,no,nv,vovv(:,:,vindex1,vindex3),&
-                           & ccsdpt_doubles_2_2,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex3,vindex2,vindex1,nv,no,&
-                           & ccsdpt_doubles_32,&
+                           & ccsdpt_doubles_2(:,:,vindex3),&
                            & trip,wrk_3d,ooov_tile_v1,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex3,vindex2,vindex1,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,vindex1),&
                            & trip,wrk_3d,ooov_tile_v3,handle,cublas_handle)
 
        else if (idx .eq. 3) then ! bca
@@ -10349,17 +10208,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex3,vindex1,vindex2,no,nv,&
                            & vovv(:,:,vindex1,vindex2),vovv(:,:,vindex2,vindex1),&
-                           & ccsdpt_doubles_2_3,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex1,vindex2,no,nv,vovv(:,:,vindex3,vindex1),&
-                           & ccsdpt_doubles_2_2,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_2,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex2,vindex3,nv,no,&
-                           & ccsdpt_doubles_12,&
+                           & ccsdpt_doubles_2(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v3,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex2,vindex3,nv,no,&
-                           & ccsdpt_doubles_32,&
+                           & ccsdpt_doubles_2(:,:,vindex3),&
                            & wrk_3d,trip,ooov_tile_v1,handle,cublas_handle)
 
        else if (idx .eq. 4) then ! cba
@@ -10388,17 +10247,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex3,vindex2,vindex1,no,nv,&
                            & vovv(:,:,vindex2,vindex1),vovv(:,:,vindex1,vindex2),&
-                           & ccsdpt_doubles_2_3,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex3,vindex2,vindex1,no,nv,vovv(:,:,vindex3,vindex2),&
-                           & ccsdpt_doubles_2_1,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_1,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex1,vindex3,nv,no,&
-                           & ccsdpt_doubles_21,&
+                           & ccsdpt_doubles_1(:,:,vindex2),&
                            & trip,wrk_3d,ooov_tile_v3,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex1,vindex3,nv,no,&
-                           & ccsdpt_doubles_31,&
+                           & ccsdpt_doubles_1(:,:,vindex3),&
                            & trip,wrk_3d,ooov_tile_v2,handle,cublas_handle)
 
        else if (idx .eq. 5) then ! acb
@@ -10427,17 +10286,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,&
                            & vovv(:,:,vindex2,vindex3),vovv(:,:,vindex3,vindex2),&
-                           & ccsdpt_doubles_2_1,trip,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_1,trip,wrk_3d,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,vovv(:,:,vindex1,vindex2),&
-                           & ccsdpt_doubles_2_3,trip,handle,cublas_handle)
+                           & ccsdpt_doubles_3,trip,wrk_3d,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex2,vindex3,vindex1,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_3(:,:,vindex2),&
                            & wrk_3d,trip,ooov_tile_v1,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex2,vindex3,vindex1,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,vindex1),&
                            & wrk_3d,trip,ooov_tile_v2,handle,cublas_handle)
 
        else if (idx .eq. 6) then ! bac
@@ -10466,17 +10325,17 @@ contains
 
           call ccsdpt_contract_abc_211(vindex2,vindex1,vindex3,no,nv,&
                            & vovv(:,:,vindex1,vindex3),vovv(:,:,vindex3,vindex1),&
-                           & ccsdpt_doubles_2_2,wrk_3d,.false.,handle,cublas_handle)
+                           & ccsdpt_doubles_2,wrk_3d,trip,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_212(vindex2,vindex1,vindex3,no,nv,vovv(:,:,vindex2,vindex1),&
-                           & ccsdpt_doubles_2_3,wrk_3d,handle,cublas_handle)
+                           & ccsdpt_doubles_3,wrk_3d,trip,handle,cublas_handle)
 
           ! now do occ part:
 
           call ccsdpt_contract_abc_221(vindex1,vindex3,vindex2,nv,no,&
-                           & ccsdpt_doubles_13,&
+                           & ccsdpt_doubles_3(:,:,vindex1),&
                            & trip,wrk_3d,ooov_tile_v2,.false.,handle,cublas_handle)
           call ccsdpt_contract_abc_222(vindex1,vindex3,vindex2,nv,no,&
-                           & ccsdpt_doubles_23,&
+                           & ccsdpt_doubles_3(:,:,vindex2),&
                            & trip,wrk_3d,ooov_tile_v1,handle,cublas_handle)
 
        end if
@@ -11664,14 +11523,15 @@ contains
   !> author: Janus Juul Eriksen
   !> date: april 2014
   subroutine ccsdpt_contract_abc_211(vindex1,vindex2,vindex3,no,nv,&
-                               & int_virt_23,int_virt_32,T_star_v1,trip_ampl,special,async_idx,cublas_handle)
+                               & int_virt_23,int_virt_32,T_star_v1,trip_ampl,wrk_3d,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(nv,no,no), target :: T_star_v1 ! T_star(:,:,:,vindex1)
+    real(realk), dimension(no,no,nv), target :: T_star_v1 ! T_star(:,:,:,vindex1)
     real(realk), dimension(nv,no), target :: int_virt_23, int_virt_32
-    real(realk), dimension(no,no,no), target :: trip_ampl
+    real(realk), dimension(nv,no,no), target :: trip_ampl
+    real(realk), dimension(nv,no,no) :: wrk_3d
     logical, intent(in) :: special
     !> temporary quantities
     integer :: contraction_type
@@ -11723,9 +11583,9 @@ contains
 #endif
 #else
        call dgemm('n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,&
-                      & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
+                      & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
        call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
-                      & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
+                      & trip_ampl,no,1.0E0_realk,wrk_3d,nv)
 #endif
 
     case(1)
@@ -11758,12 +11618,14 @@ contains
 #endif
 #else
        call dgemm('n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,&
-                      & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
+                      & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
        call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
-                      & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
+                      & trip_ampl,no,1.0E0_realk,wrk_3d,nv)
 #endif
 
     end select TypeofContraction_abc_211
+
+    call array_reorder_3d(1.0E0_realk,wrk_3d,nv,no,no,[3,2,1],1.0E0_realk,T_star_v1)
 
   end subroutine ccsdpt_contract_abc_211
 
@@ -11834,14 +11696,15 @@ contains
   !         in eq. (14.6.64) of MEST
   !> author: Janus Juul Eriksen
   !> date: april 2014
-  subroutine ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,int_virt_12,T_star_v3,trip_ampl,async_idx,cublas_handle)
+  subroutine ccsdpt_contract_abc_212(vindex1,vindex2,vindex3,no,nv,int_virt_12,T_star_v3,trip_ampl,wrk_3d,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: vindex1, vindex2, vindex3, no, nv
-    real(realk), dimension(nv,no,no), target :: T_star_v3 ! T_star(:,:,:,vindex3)
+    real(realk), dimension(no,no,nv), target :: T_star_v3 ! T_star(:,:,:,vindex3)
     real(realk), dimension(nv,no), target :: int_virt_12
-    real(realk), dimension(no,no,no), target :: trip_ampl
+    real(realk), dimension(nv,no,no), target :: trip_ampl
+    real(realk), dimension(nv,no,no) :: wrk_3d
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -11872,8 +11735,10 @@ contains
 #endif
 #else
     call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,&
-                   & trip_ampl,no,1.0E0_realk,T_star_v3,nv)
+                   & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
 #endif
+
+    call array_reorder_3d(1.0E0_realk,wrk_3d,nv,no,no,[3,2,1],1.0E0_realk,T_star_v3)
 
   end subroutine ccsdpt_contract_abc_212
 
@@ -11885,14 +11750,14 @@ contains
   !> param: oindex1-oindex3 are outside loop indices of driver routine.
   !> nv is nvirt and T_star is T_ast_2 of driver. trip_ampl is the triples amplitud array.
   subroutine ccsdpt_contract_ijk_221(oindex1,oindex2,oindex3,no,nv,&
-                               & int_occ_23,int_occ_32,T_star_o1,trip_ampl,special,async_idx,cublas_handle)
+                               & int_occ_23,int_occ_32,T_star_o1,trip_ampl,wrk_3d,special,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(no,nv,nv), target :: T_star_o1 ! T_star(:,:,:,oindex1)
+    real(realk), dimension(nv,nv,no), target :: T_star_o1 ! T_star(:,:,:,oindex1)
     real(realk), dimension(no,nv), target :: int_occ_23, int_occ_32
-    real(realk), dimension(nv,nv,nv), target :: trip_ampl
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl,wrk_3d
     logical, intent(in) :: special
     !> temporary quantities
     integer :: contraction_type
@@ -11946,9 +11811,9 @@ contains
 #endif
 #else
        call dgemm('n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,&
-                      & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
+                      & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
        call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
-                      & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
+                      & trip_ampl,nv,1.0E0_realk,wrk_3d,no)
 #endif
 
     case(1)
@@ -11983,12 +11848,14 @@ contains
 #endif
 #else
        call dgemm('n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,&
-                      & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
+                      & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
        call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
-                      & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
+                      & trip_ampl,nv,1.0E0_realk,wrk_3d,no)
 #endif
 
     end select TypeofContraction_221
+
+    call array_reorder_3d(1.0E0_realk,wrk_3d,no,nv,nv,[3,2,1],1.0E0_realk,T_star_o1) 
 
   end subroutine ccsdpt_contract_ijk_221
 
@@ -12169,14 +12036,14 @@ contains
   !> date: august 2012
   !> param: oindex1-oindex3 are outside loop indices of driver routine.
   !> nv is nvirt and T_star is T_ast_2 of driver. trip_ampl is the triples amplitud array.
-  subroutine ccsdpt_contract_ijk_222(oindex1,oindex2,oindex3,no,nv,int_occ_12,T_star_o3,trip_ampl,async_idx,cublas_handle)
+  subroutine ccsdpt_contract_ijk_222(oindex1,oindex2,oindex3,no,nv,int_occ_12,T_star_o3,trip_ampl,wrk_3d,async_idx,cublas_handle)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
-    real(realk), dimension(no,nv,nv), target :: T_star_o3 ! T_star(:,:,:,oindex3)
+    real(realk), dimension(nv,nv,no), target :: T_star_o3 ! T_star(:,:,:,oindex3)
     real(realk), dimension(no,nv), target :: int_occ_12
-    real(realk), dimension(nv,nv,nv), target :: trip_ampl
+    real(realk), dimension(nv,nv,nv), target :: trip_ampl,wrk_3d
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind) :: async_idx
 #else
@@ -12209,8 +12076,10 @@ contains
 #endif
 #else
     call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,&
-                   & trip_ampl,nv,1.0E0_realk,T_star_o3,no)
+                   & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
 #endif
+
+    call array_reorder_3d(1.0E0_realk,wrk_3d,no,nv,nv,[3,2,1],1.0E0_realk,T_star_o3)
 
   end subroutine ccsdpt_contract_ijk_222
 
