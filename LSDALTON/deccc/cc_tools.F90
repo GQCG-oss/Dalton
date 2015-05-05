@@ -1856,7 +1856,7 @@ module cc_tools_module
 
 #ifdef VAR_MPI
          o = [1,2,3,4]
-         call tensor_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o)
+         call tensor_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o,force_sync=.true.)
 #endif
 
       endif
