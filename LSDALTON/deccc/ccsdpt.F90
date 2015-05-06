@@ -904,6 +904,7 @@ contains
     real(realk) :: time_w_min, time_w_max
     real(realk) :: time_c_min, time_c_max
     real(realk) :: time_i_min, time_i_max
+    logical :: use_bg_buf
 
     ! init timings
     unlock_time   = time_lsmpi_win_unlock
@@ -915,6 +916,7 @@ contains
     if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     full_no_frags = .false.
+    use_bg_buf    = mem_is_background_buf_init()
 
     if (present(e4)) full_no_frags = .true.
 
@@ -922,9 +924,15 @@ contains
 
     call time_start_phase(PHASE_WORK)
 
-    call mem_alloc(vvvo_pdm_buff,nvirt**3,3*nbuffs)
-    call mem_alloc(vvoo_pdm_buff,nvirt**2,6*nbuffs)
-    call mem_alloc(ccsd_pdm_buff,nocc*nvirt**2,3*nbuffs)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(vvvo_pdm_buff,nvirt**3,3*nbuffs)
+       call mem_pseudo_alloc(vvoo_pdm_buff,nvirt**2,6*nbuffs)
+       call mem_pseudo_alloc(ccsd_pdm_buff,nocc*nvirt**2,3*nbuffs)
+    else
+       call mem_alloc(vvvo_pdm_buff,nvirt**3,3*nbuffs)
+       call mem_alloc(vvoo_pdm_buff,nvirt**2,6*nbuffs)
+       call mem_alloc(ccsd_pdm_buff,nocc*nvirt**2,3*nbuffs)
+    endif
     call mem_alloc(needed_vvvo,3*nbuffs)
     call mem_alloc(needed_vvoo,6*nbuffs)
     call mem_alloc(needed_ccsd,3*nbuffs)
@@ -1511,9 +1519,15 @@ contains
     call mem_dealloc(async_id)
 
     ! release pdm work arrays and job list
-    call mem_dealloc(vvvo_pdm_buff)
-    call mem_dealloc(vvoo_pdm_buff)
-    call mem_dealloc(ccsd_pdm_buff)
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc(ccsd_pdm_buff)
+       call mem_pseudo_dealloc(vvoo_pdm_buff)
+       call mem_pseudo_dealloc(vvvo_pdm_buff)
+    else
+       call mem_dealloc(ccsd_pdm_buff)
+       call mem_dealloc(vvoo_pdm_buff)
+       call mem_dealloc(vvvo_pdm_buff)
+    endif
     call mem_dealloc(needed_vvvo)
     call mem_dealloc(needed_vvoo)
     call mem_dealloc(needed_ccsd)
@@ -2674,6 +2688,7 @@ contains
     real(realk) :: time_w_min, time_w_max
     real(realk) :: time_c_min, time_c_max
     real(realk) :: time_i_min, time_i_max
+    logical     :: use_bg_buf
 
     ! init timings
     unlock_time   = time_lsmpi_win_unlock
@@ -2685,15 +2700,22 @@ contains
     if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     full_no_frags = .false.
+    use_bg_buf    = mem_is_background_buf_init()
 
     if (present(e4)) full_no_frags = .true.
 
     call time_start_phase(PHASE_WORK)
 
     ! alloc and init stuff for preloading
-    call mem_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
-    call mem_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,3*nbuffs)
-    call mem_alloc(oovv_pdm_buff,nocc**2*tile_size**2,6*nbuffs)
+    if( use_bg_buf )then
+       call mem_pseudo_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
+       call mem_pseudo_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,3*nbuffs)
+       call mem_pseudo_alloc(oovv_pdm_buff,nocc**2*tile_size**2,6*nbuffs)
+    else
+       call mem_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
+       call mem_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,3*nbuffs)
+       call mem_alloc(oovv_pdm_buff,nocc**2*tile_size**2,6*nbuffs)
+    endif
     call mem_alloc(needed_vovv,3*nbuffs)
     call mem_alloc(needed_ccsd,3*nbuffs)
     call mem_alloc(needed_oovv,6*nbuffs)
@@ -3369,9 +3391,15 @@ contains
     call mem_dealloc(async_id)
 
     ! release preloading stuff
-    call mem_dealloc(vovv_pdm_buff)
-    call mem_dealloc(ccsd_pdm_buff)
-    call mem_dealloc(oovv_pdm_buff)
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc(oovv_pdm_buff)
+       call mem_pseudo_dealloc(ccsd_pdm_buff)
+       call mem_pseudo_dealloc(vovv_pdm_buff)
+    else
+       call mem_dealloc(oovv_pdm_buff)
+       call mem_dealloc(ccsd_pdm_buff)
+       call mem_dealloc(vovv_pdm_buff)
+    endif
     call mem_dealloc(needed_vovv)
     call mem_dealloc(needed_ccsd)
     call mem_dealloc(needed_oovv)
@@ -11551,6 +11579,7 @@ contains
     do_occ = .false.
     do_virt = .false.
 
+
     if ((.not. DECinfo%OnlyOccPart) .and. (.not. DECinfo%OnlyVirtPart)) then
 
        do_occ = .true.
@@ -11827,10 +11856,13 @@ contains
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
     integer :: p,pos
+    !> use background buffering to avoid memory fragmentation problems?
+    logical :: use_bg_buf
     call time_start_phase(PHASE_WORK)
 
-    o3v           = nocc*nocc*nocc*nvirt
-    v3            = nvirt**3
+    o3v        = nocc*nocc*nocc*nvirt
+    v3         = nvirt**3
+    use_bg_buf = mem_is_background_buf_init()
 
 #ifdef VAR_MPI
 
@@ -11900,8 +11932,13 @@ contains
 #endif
 
     ! For efficiency when calling dgemm, save transposed matrices
-    call mem_alloc(CoccT,nocc,nbasis)
-    call mem_alloc(CvirtT,nvirt,nbasis)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(CoccT,nocc,nbasis)
+       call mem_pseudo_alloc(CvirtT,nvirt,nbasis)
+    else
+       call mem_alloc(CoccT,nocc,nbasis)
+       call mem_alloc(CvirtT,nvirt,nbasis)
+    endif
     call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
     call mat_transpose(nbasis,nvirt,1.0E0_realk,Cvirt,0.0E0_realk,CvirtT)
 
@@ -12037,9 +12074,15 @@ contains
 
     ! Allocate array for AO integrals
     ! *******************************
-    call mem_alloc(tmp1,size1)
-    call mem_alloc(tmp2,size2)
-    call mem_alloc(tmp3,size3)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(tmp1,size1)
+       call mem_pseudo_alloc(tmp2,size2)
+       call mem_pseudo_alloc(tmp3,size3)
+    else
+       call mem_alloc(tmp1,size1)
+       call mem_alloc(tmp2,size2)
+       call mem_alloc(tmp3,size3)
+    endif
 
 #ifdef VAR_MPI
 
@@ -12310,11 +12353,19 @@ contains
 
     ! free stuff
     ! **********
-    call mem_dealloc(tmp1)
-    call mem_dealloc(tmp2)
-    call mem_dealloc(tmp3)
-    call mem_dealloc(CoccT)
-    call mem_dealloc(CvirtT)
+    if( use_bg_buf)then
+       call mem_pseudo_dealloc(tmp3)
+       call mem_pseudo_dealloc(tmp2)
+       call mem_pseudo_dealloc(tmp1)
+       call mem_pseudo_dealloc(CvirtT)
+       call mem_pseudo_dealloc(CoccT)
+    else
+       call mem_dealloc(tmp3)
+       call mem_dealloc(tmp2)
+       call mem_dealloc(tmp1)
+       call mem_dealloc(CvirtT)
+       call mem_dealloc(CoccT)
+    endif
     if (DECinfo%useichor) then
        call FREE_SCREEN_ICHORERI()
        call mem_dealloc(AOGammabatchinfo)
@@ -12400,11 +12451,14 @@ contains
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
     integer :: p,pos
+    !> use background buffering to avoid memory fragmentation problems?
+    logical :: use_bg_buf
     call time_start_phase(PHASE_WORK)
 
-    o3v           = nocc*nocc*nocc*nvirt
-    v3            = nvirt**3
-    ov2           = nocc*nvirt**2
+    o3v        = nocc*nocc*nocc*nvirt
+    v3         = nvirt**3
+    ov2        = nocc*nvirt**2
+    use_bg_buf = mem_is_background_buf_init()
 
 #ifdef VAR_MPI
 
@@ -12476,8 +12530,13 @@ contains
 #endif
 
     ! For efficiency when calling dgemm, save transposed matrices
-    call mem_alloc(CoccT,nocc,nbasis)
-    call mem_alloc(CvirtT,nvirt,nbasis)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(CoccT,nocc,nbasis)
+       call mem_pseudo_alloc(CvirtT,nvirt,nbasis)
+    else
+       call mem_alloc(CoccT,nocc,nbasis)
+       call mem_alloc(CvirtT,nvirt,nbasis)
+    endif
     call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
     call mat_transpose(nbasis,nvirt,1.0E0_realk,Cvirt,0.0E0_realk,CvirtT)
 
@@ -12613,9 +12672,15 @@ contains
 
     ! Allocate array for AO integrals
     ! *******************************
-    call mem_alloc(tmp1,size1)
-    call mem_alloc(tmp2,size2)
-    call mem_alloc(tmp3,size3)
+    if( use_bg_buf )then
+       call mem_pseudo_alloc(tmp1,size1)
+       call mem_pseudo_alloc(tmp2,size2)
+       call mem_pseudo_alloc(tmp3,size3)
+    else
+       call mem_alloc(tmp1,size1)
+       call mem_alloc(tmp2,size2)
+       call mem_alloc(tmp3,size3)
+    endif
 
 #ifdef VAR_MPI
 
@@ -12875,9 +12940,19 @@ contains
 
     ! free stuff
     ! **********
-    call mem_dealloc(tmp1)
-    call mem_dealloc(tmp2)
-    call mem_dealloc(tmp3)
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc(tmp3)
+       call mem_pseudo_dealloc(tmp2)
+       call mem_pseudo_dealloc(tmp1)
+       call mem_pseudo_dealloc(CvirtT)
+       call mem_pseudo_dealloc(CoccT)
+    else
+       call mem_dealloc(tmp3)
+       call mem_dealloc(tmp2)
+       call mem_dealloc(tmp1)
+       call mem_dealloc(CvirtT)
+       call mem_dealloc(CoccT)
+    endif
 
     if (DECinfo%useichor) then
        call FREE_SCREEN_ICHORERI()
@@ -12905,8 +12980,6 @@ contains
        nullify(mylsitem%setting%LST_GAB_LHS)
        nullify(mylsitem%setting%LST_GAB_RHS)
     endif
-    call mem_dealloc(CoccT)
-    call mem_dealloc(CvirtT)
 
     ! finally, reorder ooov(K,I,J,A) --> ooov(I,J,K,A)
     call tensor_reorder(ooov,[2,3,1,4])
