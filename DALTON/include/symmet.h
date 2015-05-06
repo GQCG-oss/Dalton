@@ -59,7 +59,7 @@
      &                NPARSU, NAOS,  NPARNU, IPTSYM, IPTCNT, NCRREP,    &
      &                IPTCOR, NAXREP, IPTAX, IPTXYZ, IPTNUC,            &
      &                NROTS,  NINVC,  NREFL, IXVAL,  ICLASS, ICNTAO,    &
-     &                IPAR,   JSOP,   NCOS,  ICOS,   I2COSX, PCM_IGEN,  &
+     &                IPAR,   JSOP,   NCOS,  ICOS,   I2COSX, PCM_IGEN , &
      &                I2_SYMMTI
 !     OBS! ALWAYS add new variables BEFORE the end tag: I2_SYMMTI
 

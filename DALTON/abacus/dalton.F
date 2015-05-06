@@ -194,10 +194,10 @@ C         "DALTON.OUT.n<slave no>" in GPOPEN
      &            IDUMMY,.FALSE.)
       REWIND(LUNMPF)
       END IF
+C
       CALL MEMINI(LUPRI,LUERR)
-
-C Added masterif note to ease keeping track of this convoluted if-statement
-      masterif: IF (MYNUM .EQ. MASTER) THEN
+C
+      IF (MYNUM .EQ. MASTER) THEN
 C         
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
@@ -255,7 +255,7 @@ C
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release DALTON2014.0 (2014), see http://daltonprogram.org'
+     &'   Release DALTON2015.alpha (2015), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -536,16 +536,17 @@ C
          CALL DALTON_GNRLINP
 
 #if !defined (VAR_MPI)
-      END IF masterif!  mynum .eq. master ! This is the end of masterif in case MPI is not set.
+      END IF ! mynum .eq. master
 #else /* VAR_MPI */
          CALL RECVNAMES
 
          CALL MOLDEN_HEAD
 !
-!        call main DALTON driver routine
+!        call main driver routine
          call dalton_exedrv(lmwork,wrkdlm)
 
          CALL MOLDEN_TAIL
+
          CALL FLSHFO(LUPRI)
 
          LABEL1 = 'ALL_DONE'
@@ -569,13 +570,13 @@ C
          CALL GPCLOSE(LUSTAT,'KEEP')
          LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
          CALL GPCLOSE(LUPRI,'KEEP')
-      ELSE !If not equal to master 
+      ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: DALTON2014.0'
+           WRITE(LUPRI,'(/A)') ' * Release: DALTON2015.alpha'
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
@@ -591,7 +592,7 @@ C ahs only print if number of cores are less than 16
            END IF
            CALL FLSHFO(LUPRI)
          END IF
-         pariotest: IF (PARIO) THEN
+         IF (PARIO) THEN
             CALL DALTON_GNRLINP
 
             CALL MOLDEN_HEAD
@@ -622,16 +623,13 @@ C
             CALL GPCLOSE(LUSTAT,'KEEP')
             LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
             CALL GPCLOSE(LUPRI,'KEEP')
-         ELSE !If PARIO=.FALSE.
+         ELSE
             CALL SENDNAME(MASTER,MYNUM)
 
 !           call main co-workers driver routine
-!           Slaves are suspended, looping continuously, waiting for 
-!           IPRTYP to be set. Once set the slaves are redirected to 
-!           the appropriate subroutine.
             call dalton_nodedriver(lmwork,wrkdlm)
-         END IF pariotest
-      END IF masterif
+         END IF
+      END IF
 
 #if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, May 13, 2012

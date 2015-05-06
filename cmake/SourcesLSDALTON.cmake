@@ -79,6 +79,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
+    LSDALTON/deccc/ccsd_lhtr.F90
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/pno_ccsd.F90
     LSDALTON/deccc/rpa.F90
@@ -809,6 +810,7 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/tensor_basic.F90
     LSDALTON/lsutil/lspdm_tensor_operations.F90
     LSDALTON/lsutil/dec_workarounds.F90
+    LSDALTON/lsutil/tensor_algebra_dil.F90
     )
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90

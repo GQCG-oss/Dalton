@@ -20,7 +20,7 @@ f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-8)
 
 # Relativistic corrections
-f.add(from_string = 'Relativistic corrections',
+f.add(from_string = 'Breit-Pauli relativistic corrections',
       num_lines = 5,
       rel_tolerance = 1.0e-8)
 

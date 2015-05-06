@@ -47,7 +47,6 @@ C
       !   to get the number of bytes needed to transfer the common block.
       !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
 
-
       INTEGER LBASDIR
       PARAMETER (LBASDIR = 600)
       CHARACTER*(LBASDIR) BASDIR

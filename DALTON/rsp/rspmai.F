@@ -69,9 +69,6 @@ C  /* Deck rspdrv */
 C
 C Driver for RESPONSE.
 C
-C We assume that either the SIRIUS module or the SETSIR
-C subroutine has been called before RSPDRV.
-C
 #include "implicit.h"
 C
       DIMENSION WRK(LWRK)
@@ -132,10 +129,15 @@ C     *************************
 C     ***** INPUT SECTION *****
 C     *************************
 C
+C Define wave function variables, also if SIRIUS has not been called
 C
-C DEFINE VARIABLES THAT ARE COMMON FOR ALL SYMMETRIES
+      CALL SETSIR(WRK,LWRK)
+C
+C Define variables that are common for all perturbation symmetries
 C
       CALL RSPSET
+C
+C Read **RESPONS input
 C
       CALL RSPREA
 C
@@ -883,10 +885,10 @@ C
                WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
      *            '" NOT RECOGNIZED IN RSPINP.'
                CALL QUIT(' ILLEGAL KEYWORD IN RSPINP ')
-    1          CONTINUE
+    1          CONTINUE ! .INPTEST
                   INPTES = .TRUE.
                GO TO 100
-    2          CONTINUE
+    2          CONTINUE ! .NOAVDIA
                   AVDIA  = .FALSE.
                GO TO 100
     3          CONTINUE ! .SOPPA
@@ -901,32 +903,32 @@ cjje: change this if full solvent soppa is ever implemented
                GO TO 100
     4          CONTINUE
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE ! .NOITRA
                   NOITRA = .TRUE.
                GO TO 100
-    6          CONTINUE
+    6          CONTINUE ! .ORBSFT
                   READ (LUCMD,*) ORBSFT
                GO TO 100
     7          CONTINUE ! .ORBSPC
                   ORBSPC = .TRUE.
                GO TO 100
-    8          CONTINUE
+    8          CONTINUE ! TRPFLG
                   TRPLET = .TRUE.
                   TRPFLG = .TRUE.
                GO TO 100
-    9          CONTINUE
+    9          CONTINUE ! .S0MIX
                   NOS0MX = .FALSE.
                GO TO 100
    10          CONTINUE ! .OPTORB
                   OPTORB = .TRUE.
                GO TO 100
-   11          CONTINUE
+   11          CONTINUE ! .MAXPHP
                   READ (LUCMD,*) MAXPHP
                GO TO 100
-   12          CONTINUE
+   12          CONTINUE ! .PHPRES
                   PHPRES = .TRUE.
                GO TO 100
-   13          CONTINUE
+   13          CONTINUE ! .MAXRM
                   READ (LUCMD,*) MAXRM
                GO TO 100
    14          CONTINUE
@@ -943,21 +945,21 @@ cjje: change this if full solvent soppa is ever implemented
                   END IF
                   READ(LUCMD,'(A)') LBL1AV(N1AVTOT)
                GO TO 100
-   16          CONTINUE
+   16          CONTINUE ! .HIRPA
                   HIRPA = .TRUE.
                   SOPPA = .TRUE.
                GO TO 100
-   17          CONTINUE
+   17          CONTINUE ! .SOPW4
                   SOPW4 = .TRUE.
                GO TO 100
    18          CONTINUE ! .SOPPA(CCSD)
                   SOPPA = .TRUE.
                   CCPPA = .TRUE.
                GO TO 100
-   19          CONTINUE
+   19          CONTINUE ! .NODOIT
                   DIROIT = .FALSE.
                GO TO 100
- 20            CONTINUE
+ 20            CONTINUE ! .DFT-SO
 c              compute DFT_SO integrals
                   DFT_SO = .TRUE.
                GO TO 100
@@ -972,10 +974,10 @@ C              .PROP2Average
                   END IF
                   READ(LUCMD,'(A)')LBL2AV(1,N2AVTOT),LBL2AV(2,N2AVTOT)
                GO TO 100
- 22            CONTINUE
+ 22            CONTINUE ! .TDA
                   TDA = .TRUE.
                GO TO 100
- 23            CONTINUE
+ 23            CONTINUE ! .CIS
                   CISRPA = .TRUE.
                GO TO 100
  24            CONTINUE ! .SOPRPA
@@ -996,18 +998,19 @@ C              .PROP2Average
                   CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
                  END IF
                GO TO 100
- 25            CONTINUE
+ 25            CONTINUE ! .TRDQF
                  IF(.NOT. QFIT) THEN
-                   CALL QUIT('RSPINP: Charge fitting requires .QFIT')
+                   CALL QUIT(
+     &             'RSPINP: Charge fitting with .TRDQF requires .QFIT')
                  ENDIF
                  TRDQF = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') '@PROMPT "',WORD,
-     &            '" NOT RECOGNIZED IN RSPINP.'
-               CALL QUIT(' ILLEGAL PROMPT IN RSPINP ')
+               WRITE (LUPRI,'(/,3A,/)') '@ Prompt "',WORD,
+     &            '" not recognized in RSPINP.'
+               CALL QUIT('Illegal keyword prompt in RSPINP ')
             END IF
       END IF
   300 CONTINUE
@@ -2912,14 +2915,12 @@ C
       NTRLBL = 0
       NEXLBL = 0
       DO 100 ISYM = 1,NSYM
-         IF ( NPPCNV(ISYM) .GT. 0 ) THEN
-            NPPSIM(ISYM) = MAX(NPPSIM(ISYM),NPPCNV(ISYM))
-            NPPSTV(ISYM) = MAX(NPPSTV(ISYM),NPPSIM(ISYM))
-         ENDIF
-         NGPPP(ISYM) = 0
-         NGPLR(ISYM) = 0
-         NGPC6(ISYM) = 0
-         NGPS0(ISYM) = 0
+         NPPSIM(ISYM) = MAX(NPPSIM(ISYM),NPPCNV(ISYM))
+         NPPSTV(ISYM) = MAX(NPPSTV(ISYM),NPPSIM(ISYM))
+         NGPPP(ISYM)  = 0
+         NGPLR(ISYM)  = 0
+         NGPC6(ISYM)  = 0
+         NGPS0(ISYM)  = 0
          NAQROP(ISYM) = 0
          NBQROP(ISYM) = 0
          NCQROP(ISYM) = 0
@@ -3866,10 +3867,10 @@ C
             KZYCON = 0
          ENDIF
       ELSE
-         CALL SETCI2(NDETX,KSYMST,TRPFLG,0)
+         CALL SETCI2(NCONFX,KSYMST,TRPFLG,0)
 C...     TRPFLG and not TRPLET because we must use determinants
 C        in qr and cr if any operator is triplet ! /hjaaj-may2000
-         KZCONF = NDETX
+         KZCONF = NCONFX
          KZYCON = 2*KZCONF
       END IF
 C
@@ -3920,9 +3921,16 @@ Chj  *    ( DETERM .OR. .NOT.TRPLET) .AND. (.NOT.SOPPA)) THEN
 C
 C DEFINE NUMBER OF START ,SIMULTANEOUS AND CONVERGED VECTORS
 C
+      IF (NPPCNV(KSYMOP) .GT. KZVAR-KOFFTY) THEN
+         WRITE (LUPRI,91) NPPCNV(KSYMOP),KZVAR-KOFFTY
+ 91      FORMAT(/' ** RSPVAR ** Number of PP start vectors',I5,
+     &   /'   exceeds the maximum number of variables',I5,
+     &   /'   Number of start vectors reset to number of variables')
+         NPPCNV(KSYMOP) = KZVAR-KOFFTY
+      END IF
       KEXCNV = NPPCNV(KSYMOP)
-      KEXSIM = NPPSIM(KSYMOP)
-      KEXSTV = NPPSTV(KSYMOP)
+      KEXSIM = MIN(NPPSIM(KSYMOP), KZVAR)
+      KEXSTV = MIN(NPPSTV(KSYMOP), KZVAR)
 C
 C CALCULATE DIAGONAL CONFIGURATION PART OF E[2]
 C
@@ -4069,6 +4077,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
+      LOGICAL   HSFOCK
 C
 C Used from common blocks:
 C SCBRHF : IOPRHF
@@ -4108,7 +4117,13 @@ C      subroutine has been called before RSPMC).
 C
 C     Find out if TDHF or not :
 C
+      HSFOCK = HSROHF .OR. (DODFT .AND. NASHT .GT. 0)
+      ! Open-shell DFT response only works with HSROHF code
       TDHF = NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1) .OR. HSROHF
+      ! Closed-shell HF or DFT, or one open shell (.OPEN SHELL keyword in SIRIUS)
+      ! or high-spin ROHF (.SINGLY OCCUPIED keyword in SIRIUS)
+      HSFOCK = HSFOCK .OR. (DIRFCK .AND. TDHF .AND. NASHT .GT. 0)
+      ! Some of the open-shell direct response only works with HSROHF code
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
@@ -4120,6 +4135,8 @@ C
 C        ... call setsir to reset Sirius common blocks to determinants
          CALL SETSIR(WRK,LWRK)
       END IF
+      NCONRF = MAX(1,NCONRF) ! SETSIR(abaset.F) sets NCONRF=0 for Hartree-Fock
+                             ! in RSP - especially for RSPESR - we want NCREF=1 for HSROHF
 C
 C     ====================================================
 C     Read and check information on LUSIFC
@@ -4130,11 +4147,19 @@ C
       ELSE
          CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
       END IF
-      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF
+      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
+     &              ISTATE,ISPIN,NACTEL,LSYM,MS2
+      NDUM = 1 + 64 + 6*8 + 4
       READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
-     *            NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT
+     &              NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
+     &              (IDUM,I=1,NDUM),MCTYPE_IFC
+      HSROHF = MCTYPE_IFC .EQ. -1
 C     READ (LUSIFC) NISHT,NASHT, NOCCT, NORBT, NBAST, NCONF,NWOPT,NWOPH,
-C    *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+C    &              NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+C    &              NSYM,MULD2H, NRHF,NFRO,
+C    &              NISH,NASH,NORB,NBAS,
+C    &              NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE_IFC,
+C    &              NAS1, NAS2, NAS3
 C
 C     Transfer information
 C
@@ -4231,15 +4256,13 @@ C
      *   '@ TOTAL NUMBER OF ATOMIC ORBITALS FROM SIRINP:',NBAST,
      *   '@ FROM SIRIFC ',MBAST
       END IF
-      IF ( MCONRF .NE. MCONF .OR. (TDHF .AND. MCONF .GT. 1)) THEN
-      IF (.NOT.TDHF .OR. MCONF .GT. 1 .OR. MCONRF .GT. 1) THEN
-C     ... abacus sets NCONRF=0 when "ABAHF" true.
+      IF ( MCONRF .NE. MCONF .AND. MCONF .GT. 1 .AND. MCONRF .GT. 1 )
+     &   THEN
          NUMERR = NUMERR + 1
          WRITE(LUPRI,'(A/A,I5/A,I5,A,L5)')
      *  '@ *** FATAL ERROR IN RSPMC ***',
      *  '@ TOTAL NUMBER OF REFERENCE CONFIGURATIONS FROM SIRINP:',
      *  MCONRF,'@ AND FROM SIRIFC',MCONF,';  TDHF flag is',TDHF
-      END IF
       END IF
 C     NWOPT test disabled because RSPMC may be called from ABACUS
 C     with NCONF,NWOPT not of symmetry 1 /25-Nov-1992 PJ+HJAaJ
@@ -4274,10 +4297,12 @@ C READ IN MATRICES NEEDED IN RESPONSE CALCULATION
 C
       CALL READT (LUSIFC,NCMOT,CMO)
       READ (LUSIFC)
+      KDV   = 1 + N2BASX ! DV matrix may be needed later
+      KFREE = KDV + NNASHX
       IF (NASHT .GT. 0) THEN
 C        read and unpack DV
-         CALL READT (LUSIFC,NNASHX,WRK)
-         CALL DSPTSI(NASHT,WRK,UDV)
+         CALL READT (LUSIFC,NNASHX,WRK(KDV))
+         CALL DSPTSI(NASHT,WRK(KDV),UDV)
          IF (.NOT.RSPCI) THEN
             CALL READT (LUSIFC,N2ORBT,FOCK)
             IF (HSROHF) THEN
@@ -4296,13 +4321,6 @@ C        read and unpack DV
          READ (LUSIFC)
          CALL READT (LUSIFC,NNORBT,FC)
          CALL DZERO(FV,NNORBT)
-      END IF
-C
-      IF ( IPRRSP.GT.110 .AND. .NOT. TDHF) THEN
-         CALL GETREF(WRK,NCONRF)
-         WRITE(LUPRI,'(/A)')
-     &        ' **** RSPMC **** REFERENCE CONFIGURATION'
-         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,-1,LUPRI)
       END IF
 C
 C     If a solvent-response calculation:
@@ -4375,7 +4393,8 @@ C
             CALL OUTPUT(PV,1,1,1,LPVMAT,1,LPVMAT,-1,LUPRI)
          END IF
 C
-         IF (TRPFLG) CALL TRPKAP(PV(1),PV(LPVMAT+1),XINDX(KIADR1),WRK)
+         IF (TRPFLG)
+     &      CALL TRPKAP(PV(1),PV(LPVMAT+1),XINDX(KIADR1),WRK(KFREE))
 C
          IF (IPRRSP.GT.20 .AND. TRPFLG) THEN
             IF (CCPPA) THEN
@@ -4405,13 +4424,31 @@ C
          CALL SOPUDV(UDV)
       END IF
 C
+      IF (HSFOCK .AND. .NOT.HSROHF) THEN
+         ! We want to use HSROHF in response, but SIRIUS did not use HSROHF
+         ! FC, FV are then FC, FV; and not FC+FV+FV(exch), -FV(exch) as expected for HSROHF
+         HSROHF = .TRUE.
+         WRITE(LUPRI,'(/A)')
+     &   'INFO: switching to HSROHF Fock matrices for RESPONS'
+         CALL FCKMAT((NASHT.EQ.0),WRK(KDV),CMO,EMY,FC,FV,
+     &      WRK(KFREE),LWRK-KFREE)
+         CALL DAXPY(NNORBT,-1.0D0,FV,1,FC,1)
+      END IF
+C
       IF (IPRRSP.GT.20) THEN
          DO 60 ISYM = 1,NSYM
-            WRITE(LUPRI,'(/A,I5,A)')' MO. COEFFICIENTS FOR SYMMETRY',
-     &                                ISYM
+            WRITE(LUPRI,'(/A,I5)') ' **** RSPMC **** '//
+     &      'MO coefficients read from SIRIFC for symmetry',ISYM
             CALL OUTPUT(CMO(ICMO(ISYM)+1),1,NBAS(ISYM),1,NORB(ISYM),
-     $                  NBAS(ISYM),NORB(ISYM),-1,LUPRI)
+     &                  NBAS(ISYM),NORB(ISYM),-1,LUPRI)
  60      CONTINUE
+      END IF
+C
+      IF ( IPRRSP.GT.110 .AND. .NOT. TDHF) THEN
+         CALL GETREF(WRK,NCONRF)
+         WRITE(LUPRI,'(/A)')
+     &      ' **** RSPMC **** Reference configuration coefficients'
+         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
       END IF
 C
 C *** End of RSPMC

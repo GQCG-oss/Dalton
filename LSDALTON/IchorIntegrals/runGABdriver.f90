@@ -250,7 +250,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)'
      WRITE(ILUMOD,'(A)')'!   Local variables '  
      !  WRITE(ILUMOD,'(A)')'    real(realk),pointer :: squaredDistance(:)'!,Rpq(:)'!,Rqc(:),Rpa(:)
-     WRITE(ILUMOD,'(A)')'    integer :: AngmomP,I,J,nContQP,la,lb,lc,ld,nsize,angmomid,IatomAPass(1),IatomBPass(1)'
+     WRITE(ILUMOD,'(A)')'    integer :: AngmomP,I,J,la,lb,lc,ld,nsize,angmomid,IatomAPass(1),IatomBPass(1)'
      WRITE(ILUMOD,'(A)')'    '
      WRITE(ILUMOD,'(A)')'    !Setup combined Angmom info'
      WRITE(ILUMOD,'(A)')'    AngmomP = AngmomA+AngmomB'
@@ -1088,9 +1088,6 @@ contains
        ENDIF
     ENDIF
     !================= DONE WITH VERTICAL AND TRANSFER ================================================================
-!    IF(Gen)THEN
-!       WRITE(LUMOD3,'(A)')'        nContQP = nContP*nContP'
-!    ENDIF
     IF(Contracted)THEN
        WRITE(LUMOD3,'(A)')'        !Primitive Contraction have already been done'
     ELSE
@@ -1194,9 +1191,9 @@ contains
        call AddToString(AngmomB)
        call AddToString(SPEC)
        IF(Gen)THEN
-          call AddToString('(nContP,1,')
+          call AddToString('(nContP,1,1,')
        ELSE
-          call AddToString('(1,1,')
+          call AddToString('(1,1,1,')
        ENDIF
        call AddToString(nTUVP)
        call AddToString(',Pdistance12,1,1,1,IatomApass,IatomBpass,')
@@ -1248,9 +1245,9 @@ contains
        call AddToString('(')
        call AddToString(nTUVP)
        IF(Gen)THEN
-          call AddToString(',nContP,')
+          call AddToString(',1,nContP,1,')
        ELSE
-          call AddToString(',1,')
+          call AddToString(',1,1,1,')
        ENDIF
        call AddToString(STRINGIN)
 !       IF(Gen)THEN
@@ -1310,9 +1307,9 @@ contains
        call AddToString(AngmomB)
        call AddToString(SPEC)
        IF(Gen)THEN
-          call AddToString('(nContP,1,')
+          call AddToString('(nContP,1,1,')
        ELSE
-          call AddToString('(1,1,')
+          call AddToString('(1,1,1,')
        ENDIF
        call AddToString(nlmA*nlmB)
        call AddToString(',Pdistance12,')
@@ -1364,9 +1361,9 @@ contains
        call AddToString('(')
        call AddToString(nlmA*nlmB)
        IF(Gen)THEN
-          call AddToString(',nContP,')
+          call AddToString(',1,nContP,1,')
        ELSE
-          call AddToString(',1,')
+          call AddToString(',1,1,1,')
        ENDIF
        call AddToString(STRINGIN)
  !      IF(Gen)THEN

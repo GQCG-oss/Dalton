@@ -242,7 +242,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
     !IatomAPass,iatomBPass changes and 
     !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
     call ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-         & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+         & nPrimQ,nPasses,MaxPasses,intprint,lupri,&
          & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
          & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
          & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -553,7 +553,7 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
 
      call ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-          & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+          & nPrimQ,nPasses,MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
           & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&

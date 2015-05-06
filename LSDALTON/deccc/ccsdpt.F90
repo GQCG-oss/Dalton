@@ -2492,7 +2492,7 @@ contains
           call time_start_phase(PHASE_WORK)
 
 !!$acc enter data copyin(ptr_pdm_b) async(async_id(2))
-!$acc enter data copyin(vovv_pdm_b) async(async_id(2))
+!$acc enter data copyin(vovv_pdm_b) async(async_id(2)) if(b_tile .ne. a_tile) 
 
           do c_tile = 1,b_tile
 
@@ -2521,7 +2521,7 @@ contains
              call time_start_phase(PHASE_WORK)
 
 !!$acc enter data copyin(ptr_pdm_c) async(async_id(2))
-!$acc enter data copyin(vovv_pdm_c) async(async_id(2))
+!$acc enter data copyin(vovv_pdm_c) async(async_id(2)) if(c_tile .ne. b_tile)
 
              call time_start_phase(PHASE_WORK, twall = time_preload )
              call preload_tiles_in_bg_buf_abc(vovv,a_tile,b_tile,c_tile,nbuffs,needed,tiles_in_buf,vovv_pdm_buff,req)
@@ -9720,13 +9720,16 @@ contains
     ccsdpt_e4 = 4.0E0_realk * energy_res_cou - 2.0E0_realk * energy_res_exc
 
     ! for the e4 pair fragment energy matrix,
-    ! we only consider pairs IJ where J>I; thus, move contributions
+    ! we put the pair energy Delta E_IJ into both entry (I,J) and (J,I)
 
     do AtomJ=1,nfrags
        do AtomI=AtomJ+1,nfrags
 
           eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                               & + eccsdpt_matrix_cou(AtomJ,AtomI)
+          eccsdpt_matrix_cou(AtomJ,AtomI) =  eccsdpt_matrix_cou(AtomI,AtomJ)
+                                           
+
        end do
     end do
 
@@ -9853,6 +9856,8 @@ contains
 
            energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
            e5_matrix(AtomA,AtomI) = e5_matrix(AtomA,AtomI) + energy_tmp
+           ! Important to update both (AtomI,AtomA) and (AtomA,AtomI) 
+           e5_matrix(AtomI,AtomA) = e5_matrix(AtomA,AtomI)
            ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
        end do
@@ -9862,6 +9867,8 @@ contains
     ! get total fifth-order energy correction
     e5_matrix = 2.0E0_realk * e5_matrix
     ccsdpt_e5 = 2.0E0_realk * ccsdpt_e5
+
+
 
     ! ******************************
     !   done with E[5] energy part

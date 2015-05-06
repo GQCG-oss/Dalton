@@ -171,6 +171,7 @@ set(LSDALTON_EXTERNAL_LIBS
 
 add_dependencies(ls-matrix-defop matrixmlib)
 add_dependencies(ls-matrix-defop matrixolib)
+add_dependencies(ls-matrix-defop matrixulib)
 endif()
 
 add_library(
@@ -216,6 +217,7 @@ if(ENABLE_XCFUN)
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/include
         -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
         -DPARENT_DEFINITIONS="-DVAR_LSDALTON"
         )
     add_external(xcfun)
@@ -297,14 +299,6 @@ add_library(
 target_link_libraries(ddynamlib lsintlib)
 
 add_library(
-    declib
-    ${DEC_SOURCES}
-    ${DEC_C_SOURCES}
-    )
-
-target_link_libraries(declib lsintlib)
-
-add_library(
     solverutillib
     ${SOLVERUTIL_SOURCES}
     )
@@ -347,6 +341,15 @@ if(ENABLE_RSP)
 add_dependencies(linearslib ls-openrsp)
 add_dependencies(linearslib ls-matrix-defop)
 endif()
+
+add_library(
+    declib
+    ${DEC_SOURCES}
+    ${DEC_C_SOURCES}
+    )
+
+target_link_libraries(declib lsintlib)
+target_link_libraries(declib linearslib)
 
 add_library(
     rsp_propertieslib
@@ -518,11 +521,18 @@ MERGE_STATIC_LIBS(
     ${LIBS_TO_MERGE}
     )
 
+#DO NOT ALWAYS USE stdc++ SINCE THIS IS ONLY!!!! THE GNU STDC++ LIB
+if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
+   set(USE_GNU_STDCXX_LIB "")
+else()
+   set(USE_GNU_STDCXX_LIB "stdc++")
+endif()
+
 target_link_libraries(
     lsdalton
     ${EXTERNAL_LIBS}
     ${LSDALTON_EXTERNAL_LIBS}
-    stdc++
+    ${USE_GNU_STDCXX_LIB}
     )
 
 if(NOT ENABLE_CHEMSHELL)

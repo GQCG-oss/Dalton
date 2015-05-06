@@ -5,7 +5,7 @@ use precision
 use matrix_module
 use matrix_operations
 use direct_dens_util
-use matrix_operations_unres_dense
+use matrix_op_unres_dense
 use queue_module
 use rspPrecond
 !use queue_ops

@@ -159,7 +159,8 @@ contains
     real(realk) :: TS2,TE2
     logical :: ts,fc,memfound,ForcePrint
     Character            :: intSpec(5)
-
+    real(realk) :: CPU1,CPU2,WALL1,WALL2,CPU_INT,WALL_INT,CPU_AOTOMO,WALL_AOTOMO
+    integer(kind=short) :: CS_THRLOG
 #ifdef VAR_TIME
     FORCEPRINT = .TRUE.
 #else
@@ -168,8 +169,11 @@ contains
     call time_start_phase( PHASE_WORK, swwork=time_mp2work , swcomm=time_mp2comm , swidle=time_mp2idle )
 
     myload = 0
-
-
+    CPU_INT = 0.0E0_realk
+    WALL_INT = 0.0E0_realk
+    CPU_AOTOMO = 0.0E0_realk
+    WALL_AOTOMO = 0.0E0_realk
+    call Obtain_CS_THRLOG(CS_THRLOG,DECinfo%IntegralThreshold)
 ! If MPI is not used, consider the single node to be "master"
     master=.true.
 #ifdef VAR_MPI
@@ -875,7 +879,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           ! Step 1 is the calculation of AO integrals and transformation of three
           ! AO indices to MO indices. For the first-order property integrals
           ! all four indices are transformed in step 1.
-
+          CALL LS_GETTIM(CPU1,WALL1)
           call LSTIMER('START',tcpu1,twall1,DECinfo%output)
           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
           ! ************************************************************************************
@@ -886,14 +890,30 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                   & 1,nAObatches,AOAlphaStart,AOAlphaEnd,AOGammaStart,AOGammaEnd,&
                   & MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
           ELSE
-             IF(doscreen) MyFragment%mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-             IF(doscreen) MyFragment%mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+             IF(doscreen)THEN 
+                MyFragment%mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+                MyFragment%mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+                IF(DECSCREEN%masterGabLHS%maxgabelm+DECSCREEN%batchGab(alphaB,gammaB)%p%maxgabelm .LE. CS_THRLOG)THEN
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+                   call mem_dealloc(tmp1%p)
+                   call mem_dealloc(tmp2%p)
+                   call mem_dealloc(tmp3%p)
+#endif
+                   !The integral block is zero (or less than integral threshold) so
+                   !there is no reason to do the AO to MO transformation and the
+                   !calculation of amplitudes and integrals. 
+                   CYCLE BatchAlpha
+                ENDIF
+             ENDIF
              
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & MyFragment%mylsitem%setting, tmp1%p(1:dim1),batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,FullRHS,&
                   & INTSPEC,DECinfo%IntegralThreshold)
           ENDIF
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_INT = CPU_INT + (CPU2-CPU1)
+          WALL_INT = WALL_INT + (WALL2-WALL1)
 
           call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
@@ -925,6 +945,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              call dec_simple_dgemm(nvirt,nbasis, nocc, CvirtT,mini3,mini2, 'n', 'n')
 
           end do
+          CALL LS_GETTIM(CPU1,WALL1)
+          CPU_AOTOMO = CPU_AOTOMO + (CPU1-CPU2)
+          WALL_AOTOMO = WALL_AOTOMO + (WALL1-WALL2)
 
 
           ! Integrals used for first-order MP2 properties
@@ -1023,6 +1046,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           !       then we only pass elements which are stored consecutively in memory to dgemm.
           !       Note: For frozen core "J" is only valence, while "I" is core+valence
           !
+          CALL LS_GETTIM(CPU1,WALL1)
           m = nvirt*nocc*dimAlpha
           dim3 = i8*nvirt*nocc*dimAlpha*nocctot  ! New dimension for tmp3
           if(fc) then
@@ -1032,6 +1056,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              call dec_simple_dgemm(m,dimGamma, nocctot, tmp2%p(1:dim2), &
                 & CoccT(1:nocctot,GammaStart:GammaEnd), tmp3%p(1:dim3), 'n', 't')
           end if
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
+          WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
 
           ! Transition from step 1 to step 2 in integral loop
           ! =================================================
@@ -1052,6 +1079,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           tmp4%N     = bat%size2(4)
           tmp4%end   = tmp4%N
 #endif
+          CALL LS_GETTIM(CPU1,WALL1)
           ! Reorder: tmp3(B,J,alphaB,I) --> tmp4(alphaB,B,J,I)
           dim4=i8*dimAlpha*nvirt*nocc*nocctot
           do counter=1,nocctot
@@ -1062,6 +1090,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              mini4 => tmp4%p(idx:idx+siz-1)
              call mat_transpose(nvirt*nocc,dimAlpha,1.0E0_realk,mini3,0.0E0_realk,mini4)
           end do
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
+          WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           MemInGBCollected = MemInGBCollected - size(tmp3%p,kind=long)*8.0E-9_realk
@@ -1897,6 +1928,10 @@ if(master) then
    call LSTIMER('MP2-INT FIN',tcpu,twall,DECinfo%output)
    call LSTIMER('MP2-INT TOTAL',tcpuTOT,twallTOT,DECinfo%output)
    call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
+   CALL ls_TIMTXT('>>>  WALL Time used in MP2 Integral Calculation',WALL_INT,DECinfo%output)
+   CALL ls_TIMTXT('>>>  CPU Time used in MP2 Integral Calculation',CPU_INT,DECinfo%output)
+   CALL ls_TIMTXT('>>>  WALL Time used in AO to MO transformation',WALL_AOTOMO,DECinfo%output)
+   CALL ls_TIMTXT('>>>  CPU Time used in AO to MO transformation',CPU_AOTOMO,DECinfo%output)
 end if
 CALL LSTIMER('MP2workhorse Finalize: ',TS2,TE2,DECinfo%output,ForcePrint)
 
@@ -1929,7 +1964,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk), pointer :: EVocc(:), EVvirt(:)
   integer :: nbasis,nocc,nvirt, noccEOS, nvirtEOS,nocctot,ncore
   integer :: alpha,gamma,beta,delta,info,mynum,numnodes,MynbasisAuxMPI,nb
-  integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2
+  integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2,natomsAux
   integer :: ILOC,JLOC,ALOC,BLOC,M,N,K,nAtoms,nbasis2,nbasisAux
   logical :: fc,ForcePrint,first_order_integrals,master,wakeslave,MessageRecieved
   logical :: CollaborateWithSlaves
@@ -1966,21 +2001,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases)
   integer(kind=long) :: nSize
+  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
   TAG = 131124879
 #endif  
 
-  call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
-  LUPRI = DECinfo%output
-  CALL LSTIMER('START ',TS2,TE2,LUPRI)
-  ChangedDefault = .FALSE.
 #ifdef VAR_TIME
   ForcePrint = .TRUE.
 #else
   ForcePrint = .FALSE.
 #endif
+
+  call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
+  LUPRI = DECinfo%output
+  CALL LSTIMER('START ',TS2,TE2,LUPRI)
+  ChangedDefault = .FALSE.
   !The 3 Options 
 !  call time_start_phase(PHASE_WORK)   
 !  call time_start_phase( PHASE_COMM )
@@ -2003,6 +2040,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      call start_flop_counter()
   end if
   ! Initialize stuff
+
+  natoms = MyFragment%natoms
   nbasis = MyFragment%nbasis
   nocc = MyFragment%noccAOS        ! occupied AOS (only valence for frozen core)
   nvirt = MyFragment%nunoccAOS     ! virtual AOS
@@ -2010,13 +2049,22 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
-  call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+  IF(DECinfo%AuxAtomicExtent)THEN
+     call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
+  ELSE
+     call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,nBasis2,nBasisAux)
+     if(natoms.NE.natomsAux)call lsquit('Error in RIMP2 natoms dim mismatch',-1)
+  ENDIF
   IF(nBasisAux.EQ.0)THEN
      WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Warning no Aux basis have been chosen for RIMP2, Using Regular'
      ChangedDefault = .TRUE.
      call get_default_AOs(oldAORegular,oldAOdfAux) !the current values for Regular and Aux Basis 
      call set_default_AOs(oldAORegular,oldAORegular) !change to use Regular for Aux 
      call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+     if(master) then
+        WRITE(*,'(A,7I5)')'RIMP2: DIM(nocc,noccEOS,nvirt,nvirtEOS,nbasis,nBasisAux,natoms)=',&
+             & nocc,noccEOS,nvirt,nvirtEOS,nbasis,nBasisAux,natoms
+     endif
   ENDIF
 
 !#ifndef VAR_MPI
@@ -2120,9 +2168,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   call array2_free(Uvirt)
 
   CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
-  !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt)
-  !             : UoccEOST(nocc,noccEOS),Cocc(nbasis,nocc),Cvirt(nbasis,nvirt) 
-  !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + nbasis*(nvirt+nocc)
 
   ! *************************************************************
   ! *                    Start up MPI slaves                    *
@@ -2182,13 +2227,19 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   IF(CollaborateWithSlaves)then 
      !all nodes have info about all nodes 
-     call mem_alloc(nbasisAuxMPI,numnodes)        !number of Aux basis func assigned to rank
-     call mem_alloc(nAtomsMPI,numnodes)           !atoms assign to rank
-     call mem_alloc(startAuxMPI,nAtoms,numnodes)  !startindex in full (nbasisAux)
-     call mem_alloc(AtomsMPI,nAtoms,numnodes)     !identity of atoms in full molecule
-     call mem_alloc(nAuxMPI,nAtoms,numnodes)      !nauxBasis functions for each of the nAtomsMPI
-     call getRIbasisMPI(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,numnodes,&
-          & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     call mem_alloc(nbasisAuxMPI,numnodes)           !number of Aux basis func assigned to rank
+     call mem_alloc(nAtomsMPI,numnodes)              !atoms assign to rank
+     call mem_alloc(startAuxMPI,nAtomsAux,numnodes)  !startindex in full (nbasisAux)
+     call mem_alloc(AtomsMPI,nAtomsAux,numnodes)     !identity of atoms in full molecule
+     call mem_alloc(nAuxMPI,nAtomsAux,numnodes)      !nauxBasis functions for each of the nAtomsMPI
+
+     IF(DECinfo%AuxAtomicExtent)THEN   
+        call getRIbasisMPI(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,numnodes,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ELSE
+        call getRIbasisMPI(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,numnodes,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ENDIF
      MynAtomsMPI = nAtomsMPI(mynum+1)
      MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
      call mem_dealloc(AtomsMPI) !not used in this subroutine 
@@ -2199,14 +2250,31 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   IF(master)THEN
      !=====================================================================================
-     ! Major Step 1: Master Obtains Overlap (alpha|beta) in Auxiliary Basis 
+     ! Major Step 1: Master Obtains (alpha|beta) ERI in Auxiliary Basis 
      !=====================================================================================
-     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full overlap
+     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full 2 center ERI
      !this should naturally be changed      
      call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => MyFragment%mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => MyFragment%mylsitem%SETTING%MOLECULE(2)%p
+        molecule3 => MyFragment%mylsitem%SETTING%MOLECULE(3)%p
+        molecule4 => MyFragment%mylsitem%SETTING%MOLECULE(4)%p
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(3)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(4)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+     ENDIF
      call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
           & AlphaBeta,MyFragment%mylsitem%setting,nbasisAux)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => molecule2
+        MyFragment%mylsitem%SETTING%MOLECULE(3)%p => molecule3
+        MyFragment%mylsitem%SETTING%MOLECULE(4)%p => molecule4
+     ENDIF
+
      CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
      !=====================================================================================
      ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
@@ -2240,17 +2308,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(MynbasisAuxMPI.GT.0)THEN
         call mem_alloc(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux)
         call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_minus_sqrt,MynbasisAuxMPI,nbasisAux,&
-             & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,numnodes,natoms)
+             & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_minus_sqrt,numnodes,natomsAux)
         call mem_dealloc(AlphaBeta_minus_sqrt)
      ENDIF
   ENDIF
   CALL LSTIMER('DECRIMP2: MPI AlphaBetaTmp ',TS2,TE2,LUPRI,FORCEPRINT)
-
-  !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt),UoccEOST(nocc,noccEOS)
-  !             : nbasisAuxMPI(numnodes),nAtomsMPI(numnodes),startAuxMPI(nAtoms,numnodes)
-  !             : nAuxMPI(nAtoms,numnodes), TMPAlphaBeta_minus_sqrt(MynbasisAuxMPI,nbasisAux),Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
-  !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + 2*nAtoms*numnodes + 2*numnodes +
-  !               MynbasisAuxMPI*nbasisAux+ nbasis*(nvirt+nocc)
 
   !=====================================================================================
   ! Major Step 3: Obtain 3 center RI integrals (alpha,a,i) 
@@ -2266,20 +2328,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !will have the dimensions (MynbasisAuxMPI,nvirt,nocc) 
      !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly 
      !nbasisAuxMPI = nbasisAux/numnodes
+     IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => MyFragment%mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => MyFragment%mylsitem%SETTING%MOLECULE(2)%p
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => MyFragment%mylsitem%INPUT%AUXMOLECULE
+     ENDIF
      call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
           & AlphaCD3,MyFragment%mylsitem%setting,nbasisAux,nbasis,&
           & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
+     IF(DECinfo%AuxAtomicExtent)THEN
+        MyFragment%mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        MyFragment%mylsitem%SETTING%MOLECULE(2)%p => molecule2
+     ENDIF
   ENDIF
   CALL LSTIMER('DECRIMP2: AlphaCD ',TS2,TE2,LUPRI,FORCEPRINT)
   call mem_dealloc(Cocc)
   call mem_dealloc(Cvirt)
-
-  !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt),UoccEOST(nocc,noccEOS)
-  !             : nbasisAuxMPI(numnodes),nAtomsMPI(numnodes),startAuxMPI(nAtoms,numnodes)
-  !             : nAuxMPI(nAtoms,numnodes), TMPAlphaBeta_minus_sqrt(MynbasisAuxMPI,nbasisAux)
-  !             : AlphaCD3(MynbasisAuxMPI,nvirt,nocc) 
-  !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + 2*nAtoms*numnodes + 2*numnodes +
-  !               MynbasisAuxMPI*nbasisAux + MynbasisAuxMPI*nvirt*nocc
 
 #ifdef VAR_MPI
   if(CollaborateWithSlaves) then !START BY SENDING MY OWN PACKAGE alphaCD3
@@ -2314,7 +2379,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
         !Use own AlphaCD3 to obtain part of Calpha
         CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-        call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
+        call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natomsAux,&
              & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
         CALL LSTIMER('OwnCalpha ',TS3,TE3,LUPRI,FORCEPRINT)
      ENDIF
@@ -2389,11 +2454,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               !Step 2: Obtain part of Calpha from this contribution
               CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
               IF(useAlphaCD5)THEN
-                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
                       & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
                       & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
               ELSEIF(useAlphaCD6)THEN
-                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natomsAux,&
                       & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD6,&
                       & Calpha,TMPAlphaBeta_minus_sqrt,nbasisAux)
               ENDIF
@@ -2744,7 +2809,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   end if MPIcollect
 
   ! Number of MPI tasks (Could change to nAuxBasis)
-  MyFragment%ntasks = nAtoms
+  MyFragment%ntasks = nAtomsAux
 #endif
 
   if(DECinfo%PL>0)THEN

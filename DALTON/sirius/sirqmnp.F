@@ -1,10 +1,18 @@
 !
+<<<<<<< HEAD
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
+=======
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
+>>>>>>> dde462b19835236011598b56c7b68cf25f0d1ea6
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
+<<<<<<< HEAD
 !...    Release DALTON2011 (2011), see http://daltonprogram.org"
+=======
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+>>>>>>> dde462b19835236011598b56c7b68cf25f0d1ea6
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that

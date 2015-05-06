@@ -106,10 +106,7 @@ C
       ACALL = .FALSE.
       DATA HSOLBL/'X SPNORB','Y SPNORB','Z SPNORB'/
 
-      write (lupri,*) 'Hello from X2HSO, IPRRSP, IPRHSO',IPRRSP,IPRHSO
       IPRHSO = MAX(IPRRSP, IPRHSO)
-      write (lupri,*) 'Final IPRHSO:',IPRHSO
-      write (lupri,*) 'OPLBL = ',OPLBL
 C
 C If expicit one-electron part go normal way
 C

@@ -130,7 +130,7 @@ f.add(from_string = 'Nuclear shielding tensor second derivatives for:',
 
 f.add(from_string = 'Polarizability second derivatives:',
       num_lines = 11,
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 2.0e-4)
 
 ###############################################
 # Vibrationally averaged molecular properties #

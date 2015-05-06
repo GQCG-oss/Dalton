@@ -38,6 +38,8 @@ contains
     DECinfo%SNOOPthr=1e-7_realk
     DECinfo%SNOOPdebug=.false.
     DECinfo%SNOOPort=.false.
+    DECinfo%SNOOPsamespace=.true.
+    DECinfo%SNOOPlocalize=.false.
 
 
     DECinfo%doDEC                  = .false.
@@ -51,22 +53,22 @@ contains
     DECinfo%use_system_memory_info = .false.
 
     ! -- Type of calculation
-    DECinfo%full_molecular_cc = .false. ! full molecular cc
-    DECinfo%print_frags = .false.
-    DECinfo%simulate_full     = .false.
-    DECinfo%simulate_natoms   = 1
-    DECinfo%SkipReadIn        = .false.
-    DECinfo%SinglesPolari     = .false.
-    DECinfo%SinglesThr        = 0.2E0_realk   ! this is completely random, currently under investigation
-    DECinfo%convert64to32     = .false.
-    DECinfo%convert32to64     = .false.
-    DECinfo%HFrestart         = .false.
-    DECinfo%DECrestart        = .false.
-    DECinfo%TimeBackup        = 300.0E0_realk   ! backup every 5th minute
-    DECinfo%read_dec_orbitals = .false.
-    DECinfo%CheckPairs        = .false.
-    DECinfo%frozencore        = .false.
-    DECinfo%ncalc             = 0
+    DECinfo%full_molecular_cc  = .false. ! full molecular cc
+    DECinfo%print_frags        = .false.
+    DECinfo%simulate_full      = .false.
+    DECinfo%simulate_natoms    = 1
+    DECinfo%SkipReadIn         = .false.
+    DECinfo%SinglesPolari      = .false.
+    DECinfo%SinglesThr         = 0.2E0_realk   ! this is completely random, currently under investigation
+    DECinfo%convert64to32      = .false.
+    DECinfo%convert32to64      = .false.
+    DECinfo%HFrestart          = .false.
+    DECinfo%DECrestart         = .false.
+    DECinfo%TimeBackup         = 300.0E0_realk   ! backup every 5th minute
+    DECinfo%read_dec_orbitals  = .false.
+    DECinfo%CheckPairs         = .false.
+    DECinfo%frozencore         = .false.
+    DECinfo%ncalc              = 0
     call dec_set_model_names(DECinfo)
 
 
@@ -78,6 +80,9 @@ contains
     DECinfo%manual_batchsizes    = .false.
     DECinfo%ccsdAbatch           = 0
     DECinfo%ccsdGbatch           = 0
+    DECinfo%manual_occbatchsizes = .false.
+    DECinfo%batchOccI            = 0
+    DECinfo%batchOccJ            = 0 
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
@@ -161,9 +166,13 @@ contains
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
     DECinfo%CorrDensScheme         = 1
     ! Number of reduced fragments to consider
-    DECinfo%nFRAGSred = 0
+    DECinfo%nFRAGSred              = 0
     ! Factor to scale FOT by for reduced fragments
-    DECinfo%FOTscaling = 10.0_realk
+    DECinfo%FOTscaling             = 10.0_realk
+    ! Fraction of biggest extent of fragment to reduce to  in the fragment reduction in %
+    DECinfo%FracOfOrbSpace_red     = 5.0E0_realk
+    ! If this is set larger than 0. atomic fragments are initialized with this,
+    DECinfo%all_init_radius        = -1.0E0_realk/bohr_to_angstrom 
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
@@ -190,8 +199,10 @@ contains
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
+    DECinfo%AtomicExtent             = .false.
+    DECinfo%AuxAtomicExtent          = .false.
     DECinfo%DFTreference             = .false.
-    DECinfo%ccConvergenceThreshold   = 1e-5_realk
+    DECinfo%ccConvergenceThreshold   = 1e-9_realk
     DECinfo%CCthrSpecified           = .false.
     DECinfo%use_singles              = .false.
     DECinfo%use_preconditioner       = .true.
@@ -362,6 +373,10 @@ contains
        case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
           ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
        case('.SNOOPORT'); DECinfo%SNOOPort=.true.
+          !> Do not use full orbital spaces for monomer calculation as defined by natural connection,
+          !> rather simply do independent DEC fragment optimization for monomers.
+       case('.SNOOPNOTSAMESPACE'); DECinfo%SNOOPsamespace=.false.
+       case('.SNOOPLOCALIZE'); DECinfo%SNOOPlocalize=.true.
 
 
           ! GENERAL INFO
@@ -400,6 +415,7 @@ contains
        case('.RPA')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.
+          DECinfo%solver_par=.true.
 
 
           ! CC SOLVER INFO
@@ -522,6 +538,9 @@ contains
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
+       case('.MANUAL_OCCBATCHSIZES') 
+          DECinfo%manual_occbatchsizes=.true.
+          read(input,*) DECinfo%batchOccI, DECinfo%batchOccJ
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
@@ -546,9 +565,24 @@ contains
        case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
        case('.FRAG_INIT_SIZE');     read(input,*) DECinfo%Frag_Init_Size
        case('.FRAG_EXP_SIZE');      read(input,*) DECinfo%Frag_Exp_Size
+
+       case('.ATOMICEXTENT')
+          !Include all atomic orbitals on atoms in the fragment 
+          DECinfo%AtomicExtent  = .true.
+       case('.AUXATOMICEXTENT')
+          !Include all atomic orbitals on all atoms in the molecule (not just fragment) 
+          !maybe need to have a procedure to optimize this set of atoms
+          DECinfo%AuxAtomicExtent  = .true.
        case('.PRINTFRAGS')
           ! Print fragment energies for full molecular cc calculation
-          DECinfo%print_frags = .true.
+          DECinfo%print_frags   = .true.
+
+          ! set the fraction of the fully extended orbital space that is used as tolerance in an incomplete binary search
+       case('.FRACOFORBSPACE_RED'); read(input,*) DECinfo%FracOfOrbSpace_red
+          ! include all orbitals for a fragment within a given radius and calculate the fragment energies in Angstrom
+       case('.FRAG_INIT_RADIUS_NO_OPT')
+          read(input,*) DECinfo%all_init_radius
+          DECinfo%all_init_radius = DECinfo%all_init_radius/bohr_to_angstrom
 
 
        !KEYWORDS FOR INTEGRAL INFO
@@ -741,18 +775,43 @@ contains
        end if
     end if
 
-    
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then
+
+       ! For DEC, we currently include all pairs for SNOOP
+       write(DECinfo%output,*) 'WARNING: SNOOP currently requires all pairs to be calculated!'
+       write(DECinfo%output,*) '--> ignoring pair estimates and setting pair distance threshold to be huge!'
+       DECinfo%pair_distance_threshold = huge(1.0_realk)
+       DECinfo%PairEstimate=.false.
+       DECinfo%PairEstimateIgnore = .true.
        
-       ! Only for full calculation
-       if(.not. DECinfo%full_molecular_cc) then
-          call lsquit('Currently SNOOP is only implemented for **CC and not for **DEC!',-1)
+
+       if(DECinfo%SNOOPlocalize .and. DECinfo%SNOOPsamespace) then
+          call lsquit('SNOOP: Monomer orbitals cannot localized when subsystems &
+               & use same orbital spaces as full system!',-1)
+       end if
+       
+       ! SNOOP restart not implemented
+       if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
+          call lsquit('SNOOP restart is not implemented!',-1)
        end if
 
        ! Only for dense matrices for now
        if(matrix_type/=mtype_dense) then
           call lsquit('SNOOP is only implemented for dense matrices!',-1)
+       end if
+
+       ! SNOOP only tested for occupied partitioning scheme
+       if(.not. DECinfo%OnlyOccPart) then
+          write(DECinfo%output,*) 'WARNING: SNOOP ONLY TESTED FOR OCCUPIED PART. SCHEME'
+          write(DECinfo%output,*) 'WARNING: I TURN ON OCCUPIED PART. SCHEME'
+          DECinfo%onlyoccpart=.true.
+       end if
+
+
+       ! Not hydrogen debug
+       if(decinfo%PureHydrogendebug) then
+          call lsquit('SNOOP not implemented for hydrogen debug',-1)
        end if
        
        ! SimulateFull will destroy subsystem assignment and thus render SNOOP meaningless
@@ -822,6 +881,14 @@ contains
 
     end if ArraysOnFile
 
+
+    IF(DECinfo%full_molecular_cc)THEN
+       IF(DECinfo%print_frags.AND.DECinfo%ccModel .EQ. MODEL_RIMP2)THEN
+          call lsquit('A full molecular RIMP2 calculation do not construct the amplitudes and integrals. &
+               & It is therefore not possible to print the fragment energies. &
+               & Suggestion: Remove .PRINTFRAGS keyword!', DECinfo%output)
+       ENDIF
+    ENDIF
 
     FirstOrderModel: if(DECinfo%ccModel /= MODEL_MP2.and.DECinfo%ccModel /= MODEL_CCSD) then
 
@@ -1017,6 +1084,8 @@ contains
     write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
     write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
+    write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
+    write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc

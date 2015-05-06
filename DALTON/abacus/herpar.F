@@ -2685,7 +2685,7 @@ C  /* Deck prlinp */
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "infpar.h"
       SAVE FIRST
-      DATA TABLE /'.NODES ','.DEGREE','.PRINT ','.ENCODE','.DBG ',
+      DATA TABLE /'.NODES ','.DEGREE','.PRINT ','.ENCODE','.DEBUG ',
      &            '.RMA-MD'/
       DATA FIRST /.TRUE./
 C
@@ -2709,7 +2709,7 @@ C     For infpar.h
 C
       SLAVE  = .FALSE.
 C     ... this is the master in a parallel run
-      DBG  = .FALSE.
+      DEBUG  = .FALSE.
       NTASK  = 1
       IPRPAR = 0
       NDEGDI = 5
@@ -2785,7 +2785,7 @@ C
 #endif
                GO TO 100
     5          CONTINUE
-                  DBG = .TRUE.
+                  DEBUG = .TRUE.
                GO TO 100
     6          CONTINUE
                   rma_model = .true.

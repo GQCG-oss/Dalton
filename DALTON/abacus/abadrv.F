@@ -860,8 +860,13 @@ C
       MOLGFA = .FALSE.
       SPINRO = .FALSE.
       NUMHES = .FALSE.
-      MASSVE = .TRUE.
-      DARWIN = .TRUE.
+      IF (DKTRAN) THEN ! no mass-velocity/Darwin correction for DKH2 !
+         MASSVE = .FALSE.
+         DARWIN = .FALSE.
+      ELSE
+         MASSVE = .TRUE.
+         DARWIN = .TRUE.
+      END IF
       NOCMC  = .FALSE.
       RAMAN  = .FALSE.
       NQCC   = .FALSE.
@@ -1435,6 +1440,9 @@ cs
          IF (DIPDER) POLAR = .TRUE.
       END IF
       IF (ABASOP) THEN
+CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
+         IF (PARCAL) CALL PARQUIT('ABASOP')
+CKeinSPASmehr
          IF (CCPPA) THEN
             WRITE(LUPRI,'(A/A/A)')
      &          '@ SOPPA(CCSD) :    '//
@@ -1587,10 +1595,15 @@ cLig <<
       IF (SPINRO) WRITE(LUPRI,'(5X,A)') ' Spin-rotation constants'
       IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular rotational g-factor'
       IF (EXPGRD) WRITE(LUPRI,'(5X,A)') ' Orbital-exponent gradient'
-      IF (.NOT. MASSVE) WRITE(LUPRI,'(5X,A)')
-     &     ' No mass-velocity correction calculated'
-      IF (.NOT. DARWIN) WRITE(LUPRI,'(5X,A)')
-     &     ' No Darwin correction calculated'
+      IF (DKTRAN) THEN
+         WRITE(LUPRI,'(5X,A)') ' Scalar relativistic corrections'//
+     &   ' with DKH2 1-electron integrals'
+      ELSE
+         IF (.NOT. MASSVE) WRITE(LUPRI,'(5X,A)')
+     &     ' No mass-velocity energy correction calculated'
+         IF (.NOT. DARWIN) WRITE(LUPRI,'(5X,A)')
+     &     ' No Darwin energy correction calculated'
+      END IF
       IF (NODIFC) THEN
          WRITE(LUPRI,'(6X,A)')
      &   'Differentiatied creation operators not used (.NODIFC),',
@@ -2191,6 +2204,7 @@ C
      &          RMLEN(*), RQLEN(*), RLEN(*),
      &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
       LOGICAL OD, FIRST
+#include "gnrinf.h"
 #include "abainf.h"
 #include "nuclei.h"
 #include "inftap.h"
@@ -2206,6 +2220,7 @@ C
 #include "expopt.h"
 #include "primit.h"
 #include "soppinf.h"
+#include "pgroup.h"
 C
 #include "trkoor.h"
 #include "taymol.h"
@@ -2231,7 +2246,7 @@ C
       REWIND LUSIFC
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
       READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,
-     *            LSYM
+     *            LSYM,MS2
       READ (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT
 C
       allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
@@ -2255,32 +2270,43 @@ C     Energy
 C
          CALL HEADER('Molecular wave function and energy',-1)
          CALL MOLCHR(ICHRGE)
-         WRITE (LUPRI,'(3(5X,A,I3))')
-     *        'Spin multiplicity',ISPIN,
-     *        'State number     ',ISTATE,
-     *        'Total charge     ',ICHRGE
-         WRITE (LUPRI,'(/T6,A,F17.10,A/T6,A,F17.8,A/T6,A,F17.4,A)')
-     *        'Total energy     ',       EMCSCF,' au (Hartrees)',
-     *        '                 ',  XTEV*EMCSCF,' eV',
-     *        '                 ',XKJMOL*EMCSCF,' kJ/mol'
+         WRITE (LUPRI,'(5X,A,I3,3A,4(/5X,A,I3))')
+     &        'Spatial symmetry ',LSYM,' ( ',REP(LSYM-1),' )',
+     &        'Spin multiplicity',ISPIN,
+     &        '2 * M_S          ',MS2,
+     &        'State number     ',ISTATE,
+     &        'Total charge     ',ICHRGE
+         WRITE (LUPRI,'(/T6,A,F17.10,A/T6,A,F17.8,A,2(/T6,A,F17.4,A))')
+     &        'Total energy     ',       EMCSCF,' au (Hartrees)',
+     &        '                 ',  XTEV*EMCSCF,' eV',
+     &        '                 ',XKJMOL*EMCSCF,' kJ/mol',
+     &        '                 ',XKCMOL*EMCSCF,' kcal/mol'
 csonia 04/10/95
          IF (LUCME.GT.0) THEN
             WRITE (LUCME,'(A)') 'Molecular wave function and energy'
-            WRITE (LUCME,'(3(5X,A,I3))')
-     *        'Spin multiplicity',ISPIN,
-     *        'State number     ',ISTATE,
-     *        'Total charge     ',ICHRGE
-            WRITE (LUCME,'(/T6,A,D24.15,A/T6,A,F17.8,A/T6,A,F17.4,A/)')
-     *        'Total energy     ',       EMCSCF,' au (Hartrees)',
-     *        '                 ',  XTEV*EMCSCF,' eV',
-     *        '                 ',XKJMOL*EMCSCF,' kJ/mol'
+            WRITE (LUCME,'(5X,A,I3,3A,4(/5X,A,I3))')
+     &        'Spatial symmetry ',LSYM,' ( ',REP(LSYM-1),' )',
+     &        'Spin multiplicity',ISPIN,
+     &        '2 * M_S          ',MS2,
+     &        'State number     ',ISTATE,
+     &        'Total charge     ',ICHRGE
+            WRITE (LUCME,
+     &         '(/T6,A,D24.15,A/T6,A,F17.8,A,2(/T6,A,F17.4,A))')
+     &        'Total energy     ',       EMCSCF,' au (Hartrees)',
+     &        '                 ',  XTEV*EMCSCF,' eV',
+     &        '                 ',XKJMOL*EMCSCF,' kJ/mol',
+     &        '                 ',XKCMOL*EMCSCF,' kcal/mol'
          END IF
 csonia 04/10/95
 C
 C     Relativistic corrections, K.Ruud, Dec.-93
 C
-         IF (DARWIN .OR. MASSVE) THEN
-            CALL HEADER('Relativistic corrections',-1)
+         IF (DKTRAN) THEN
+            WRITE(LUPRI,'(/A)') ' This total energy is calculated with'
+     &      //' the DKH2 scalar relativistice one-electron Hamiltonian.'
+         ELSE IF (DARWIN .OR. MASSVE) THEN
+            CALL HEADER(
+     &         'Scalar Breit-Pauli relativistic corrections',-1)
             IF (DARWIN) WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
      &           'Darwin correction:            ',       DARWN,' au'
             IF (MASSVE) WRITE (LUPRI,'(5X,A,9X,F17.10,A)')
@@ -2294,6 +2320,8 @@ C
      &              'Non-relativistic + relativistic energy:',
      &              EMCSCF + RELTOT,' au'
             END IF
+            WRITE (LUPRI,'(/5X,A)') ' (Note that these corrections'//
+     &      ' are NOT included in the results below.)'
          END IF
 C
 C     Orbital exponent gradient or molecular gradient

@@ -167,6 +167,8 @@ subroutine lsmpi_slave(comm)
          call RIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(CANONMP2FULL);
+         call full_canonical_mp2_slave
       case(DEC_SETTING_TO_SLAVES);
          call set_dec_settings_on_slaves
       case(CCSDDATA);

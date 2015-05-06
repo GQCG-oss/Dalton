@@ -441,7 +441,7 @@ c        END DO
          CALL DZERO(GX,NT1AMX)
       ENDIF
 C
-C     !Compute SUM_i ( i p' | i k )
+C     Compute SUM_i ( i p' | i k )
 C
 celena
       IF (R12PRP) THEN
@@ -4421,7 +4421,7 @@ C
          REWIND LUSIRG
          CALL MOLLAB('SIR IPH ',LUSIRG,LUPRI)
          READ (LUSIRG) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,
-     *              NACTEL,LSYM
+     *              NACTEL,LSYM,MS2
          ESCF = EMCSCF
          CALL MOLLAB(LABEL,LUSIRG,LUPRI)
          READ (LUSIRG)

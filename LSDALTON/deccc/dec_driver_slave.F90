@@ -468,7 +468,7 @@ contains
           if(jobs%dofragopt(job)) divide=.false.
 
           DoDivide: do while(divide)
-             if( (ntasks < infpar%lg_nodtot*DECinfo%MPIsplit) .and. (infpar%lg_nodtot>1)  ) then
+             if( (ntasks .LE. infpar%lg_nodtot*DECinfo%MPIsplit) .and. (infpar%lg_nodtot>1)  ) then
 
                 print '(a,4i8)', 'DIVIDE! Job, tasks, mynode, #nodes: ', &
                      & job,ntasks,infpar%mynum,infpar%lg_nodtot
@@ -699,7 +699,16 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   end if
 
   if(MyFragment%ccmodel==MODEL_RIMP2) then ! RIMP2
-     ntasks = MyFragment%natoms
+     !the number of MPI nodes that can be used effectively is the number of atoms
+     !However in the rest of the code they use that there should be a greater number of 
+     !integral tasks than number of nodes. They use      
+     !ntasks .LE. infpar%lg_nodtot*DECinfo%MPIsplit  
+     !to determine if the MPI group should be reduced.  
+     !so here we set ntasks to  
+     ntasks = MyFragment%natoms*DECinfo%MPIsplit  
+     !FIXME: This should in case of DECinfo%AuxiliaryAtomExtent be nAtomsAux
+     !to obtain:
+     !MyFragment%natoms .LE. infpar%lg_nodtot
   else
      ! Get number of gamma batches
      call mem_alloc(orb2batchGamma,MyFragment%nbasis)

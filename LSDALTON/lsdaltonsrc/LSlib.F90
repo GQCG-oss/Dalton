@@ -1460,10 +1460,14 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   do I=1,80
      BasisString2(I:I) = ' '
   enddo
+  NULLIFY(input%AUXMOLECULE)
   NULLIFY(input%MOLECULE)
   NULLIFY(input%BASIS)
+  ALLOCATE(input%AUXMOLECULE)
   ALLOCATE(input%MOLECULE)
   ALLOCATE(input%BASIS)
+  input%AUXMOLECULE%nAtoms=0
+  input%AUXMOLECULE%nSubSystems=0
   CALL io_init(input%IO)
   call build_Molecule_From_coordList(input%MOLECULE,coord,natoms,charge,lupri)
   SELECT CASE(BasisString)

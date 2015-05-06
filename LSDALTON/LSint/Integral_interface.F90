@@ -164,6 +164,7 @@ CALL retrieve_Output(lupri,setting,S,setting%IntegralTransformGC)
 IF(sameMolecule)THEN
    call util_get_symm_part(S)
 ENDIF
+IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Overlap-matrix dot product:',mat_dotproduct(S,S)
 CALL LSTIMER('OVERLAP',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_overlap)
 END SUBROUTINE II_get_overlap
@@ -252,12 +253,12 @@ TYPE(MATRIX),target :: tmp
 Real(realk)         :: OLDTHRESH
 
 CALL II_get_nucel_mat(LUPRI,LUERR,SETTING,h)
-!write(lupri,*) 'QQQ New  h:',mat_dotproduct(h,h)
+IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Nuclear-electron-attraction-matrix dot product::',mat_dotproduct(h,h)
 
 nbast = h%nrow
 CALL mat_init(tmp,nbast,nbast)
 CALL II_get_kinetic(LUPRI,LUERR,SETTING,tmp)
-!write(lupri,*) 'QQQ New  K:',mat_dotproduct(tmp,tmp)
+IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Kinetic-energy-matrix dot product:',mat_dotproduct(tmp,tmp)
 
 call mat_daxpy(1E0_realk,tmp,h)
 CALL mat_free(tmp)

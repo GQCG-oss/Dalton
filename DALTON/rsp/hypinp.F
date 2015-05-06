@@ -1477,7 +1477,8 @@ C
                   IF (DOESA .AND. ICSYM.EQ.IBSYM .AND. IC.EQ.1) GOTO 900
                   IF (DOESA) THEN
                      IBE = 1
-                  ELSE IF ( EXMTES .OR. ICSYM.NE.IBSYM ) THEN
+                  ELSE IF ( EXMTES .OR. ICSYM.NE.IBSYM .OR. 
+     *               ISPINB .NE. ISPINC) THEN
                      IBE = NPPCNV(IBSYM)
                   ELSE
                      IBE = IC

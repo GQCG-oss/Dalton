@@ -47,7 +47,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 22
+  integer, parameter :: ndecenergies = 23
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -67,11 +67,12 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
   integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
-  integer,parameter :: FRAGMODEL_OCCRIMP2 = 19  ! RI-MP2 occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTRIMP2= 20  ! RI-MP2 virtual partitioning scheme
-  integer,parameter :: FRAGMODEL_OCCSOS   = 21   ! SOSEX occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTSOS  = 22   ! SOSEX virtual partitioning scheme
-
+  integer,parameter :: FRAGMODEL_LAGRIMP2 = 19  ! RI-MP2 Lagrangian partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCRIMP2 = 20  ! RI-MP2 occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTRIMP2= 21  ! RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_OCCSOS   = 22  ! SOSEX occupied partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTSOS  = 23  ! SOSEX virtual partitioning scheme
+  
   !> \author Kasper Kristensen
   !> \date June 2010
   !> \brief Contains settings for DEC calculation, see default settings in dec_set_default_config.
@@ -100,6 +101,11 @@ module dec_typedef_module
      logical :: SNOOPdebug
      !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
      logical :: SNOOPort
+     !> Use "same" orbital spaces for monomer calculation as for full calculation,
+     !> as defined by natural connection
+     logical :: SNOOPsamespace
+     !> Localize SNOOP subsystem orbitals (cannot be used in connection with SNOOPsamespace)
+     logical :: SNOOPlocalize
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
@@ -297,6 +303,11 @@ module dec_typedef_module
      !> Kohn-Sham Reference
      logical :: DFTreference
 
+     !> Atomic Extent - include all atomic orbitals of atoms included
+     logical :: AtomicExtent
+     !> Auxiliary Atomic Extent - for now include ALL atomic orbitals in RI
+     logical :: AuxAtomicExtent
+
      !> MPI settings
      !> ************
      !> Factor determining when MPI groups should split
@@ -313,6 +324,12 @@ module dec_typedef_module
      !> test integral scheme, fully distributed, get_mo_integrals
      logical :: test_fully_distributed_integrals
 
+     !> MP2 occupied batching
+     !> *****************
+     !> Set batch sizes manually
+     logical :: manual_occbatchsizes
+     !> Sizes of I and J occupied batches defined manually
+     integer :: batchOccI,batchOccJ
 
      !> General debug and simple tests
      !> ******************************
@@ -335,6 +352,8 @@ module dec_typedef_module
      integer :: PL
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
+     !> set fraction of extended orbital space to reduce to in the binary search
+     real(realk) :: FracOfOrbSpace_red
      ! --
 
      !> Output options 
@@ -404,6 +423,8 @@ module dec_typedef_module
      logical :: OnlyOccPart
      !> Only consider virtual partitioning
      logical :: OnlyVirtPart
+     !> Fragment initialization radius WITHOUT OPTIMIZING THE FRAGMENT AFTERWARDS
+     real(realk) :: all_init_radius
      !> Repeat atomic fragment calculations after fragment optimization?
      ! (this is necessary e.g. for gradient calculations).
      logical :: RepeatAF
@@ -595,6 +616,8 @@ module dec_typedef_module
      integer :: natoms
      !> Number of basis functions
      integer :: nbasis
+     !> Number of MOs (usually equal to nbasis but can be different for subsystems in SNOOP)
+     integer :: nMO
      !> Number of auxiliary basis functions
      integer :: nauxbasis
      !> Number of occupied orbitals (core + valence)
