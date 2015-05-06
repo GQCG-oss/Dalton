@@ -905,10 +905,21 @@ contains
     tiles_in_buf_ccsd = -1
     tiles_in_buf_vvoo = -1
 
-    ! init triples tuples structure
-    call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
-    ! init 3d wrk array
-    call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
+    if (nocc .gt. nvirt) then
+
+       ! init triples tuples structure
+       call mem_alloc(trip_ampl,nocc,nocc,nocc)
+       ! init 3d wrk array
+       call mem_alloc(trip_tmp,nocc,nocc,nocc)
+
+    else
+
+       ! init triples tuples structure
+       call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
+       ! init 3d wrk array
+       call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
+
+    endif
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles
