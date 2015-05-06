@@ -80,6 +80,7 @@ contains
     DECinfo%convert32to64      = .false.
     DECinfo%HFrestart          = .false.
     DECinfo%DECrestart         = .false.
+    DECinfo%EnforceRestart     = .false.
     DECinfo%TimeBackup         = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals  = .false.
     DECinfo%CheckPairs         = .false.
@@ -252,6 +253,7 @@ contains
 
     ! ccsd(t) settings
     DECinfo%abc               = .false.
+    DECinfo%ijk_tile_size     = 1000000
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
@@ -502,6 +504,7 @@ contains
        ! CCSD(T) INFO
        ! ==============
        case('.PT_ABC'); DECinfo%abc = .true.
+       case('.IJK_TILE'); read(input,*) DECinfo%ijk_tile_size
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
@@ -519,6 +522,12 @@ contains
           !> Use HF info generated from previous calculation but run DEC calculation from scratch
           DECinfo%HFrestart=.true.           
           DECinfo%DECrestart=.false.           
+
+       case('.ENFORCERESTART') 
+          !> Enforce restart
+          DECinfo%HFrestart=.true.           
+          DECinfo%DECrestart=.true.           
+          DECinfo%EnforceRestart=.true.           
 
        case('.NOTABSORBH')
           !> Do not absorb H atoms when assigning orbitals

@@ -322,6 +322,9 @@ contains
 !!! this should be decided based on the amount of memory available !!!
           abc = DECinfo%abc
 
+          ! the abc scheme only works for nvirt .ge. nocc
+          if (MyFragment%noccAOS .gt. MyFragment%nvirtAOS) abc = .false.
+
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
           if (abc) then
 

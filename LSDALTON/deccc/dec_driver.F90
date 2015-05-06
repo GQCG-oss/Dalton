@@ -455,7 +455,7 @@ contains
              call read_gradient_and_energies_for_restart(nfrags,FragEnergies,jobs,fullgrad)
           else
              write(DECinfo%output,*) 'Restarting pair fragments - energy...'
-             call read_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
+             call read_fragment_energies_for_restart_driver(nfrags,FragEnergies,jobs,esti)
           end if
        end if
        if(DECinfo%only_n_frag_jobs > 0)then
@@ -1282,13 +1282,13 @@ subroutine print_dec_info()
 
              if(esti) then
                 ! Save info for estimated pair fragments restart
-                call write_fragment_energies_for_restart(nfrags,FragEnergies,estijobs,esti)
+                call write_fragment_energies_for_restart_driver(nfrags,FragEnergies,estijobs,esti)
              else
                 ! Standard fragments, save info for restart
                 if(DECinfo%first_order) then  ! density and/or gradient 
                    call write_gradient_and_energies_for_restart(nfrags,FragEnergies,jobs,fullgrad)
                 else ! just energy
-                   call write_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
+                   call write_fragment_energies_for_restart_driver(nfrags,FragEnergies,jobs,esti)
                 end if
 
              end if
@@ -1439,7 +1439,7 @@ subroutine print_dec_info()
 
        if(DECinfo%DECrestart) then
           write(DECinfo%output,*) 'Restarting pair fragment estimate calculations...'
-          call read_fragment_energies_for_restart(nfrags,FragEnergies,estijobs,esti)
+          call read_fragment_energies_for_restart_driver(nfrags,FragEnergies,estijobs,esti)
        end if
 
        ! Merge job list of atomic fragment optimization and estimated fragments (in this order)
