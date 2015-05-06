@@ -45,11 +45,7 @@ C
       RETURN
       END
 C
-<<<<<<< HEAD
-      SUBROUTINE QFITCALC(FDENS, LFDENS)
-=======
       SUBROUTINE QFITCALC(FDENS)
->>>>>>> dde462b19835236011598b56c7b68cf25f0d1ea6
 #if defined (BUILD_QFITLIB)
       use qfit
 #endif
@@ -65,24 +61,15 @@ C
 #include "magone.h"
 #include "orgcom.h"
 C
-<<<<<<< HEAD
-      DIMENSION FDENS(LFDENS)
-=======
       DIMENSION FDENS(N2BASX)
->>>>>>> dde462b19835236011598b56c7b68cf25f0d1ea6
       integer :: icharg
 C
 #if defined (BUILD_QFITLIB)
       call molchr(icharg)
       call qfit_initialize(cord(1:3,1:nucdep), charge(1:nucdep),
-<<<<<<< HEAD
-     *                     icharg, dip0, diporg)
-      call qfit_fit(FDENS)
-=======
      *                     icharg, dip0, cmxyz)
       call qfit_fit(FDENS)
       call qfitres
->>>>>>> dde462b19835236011598b56c7b68cf25f0d1ea6
 #endif
 C
       END
@@ -111,17 +98,10 @@ C
       write(lupri,*)
 
       do m = 1, size(charges)
-<<<<<<< HEAD
-          write(lupri,'(a,a4,f9.4)') '@ ',namdep(m), charges(m)
-      enddo
-      write(lupri,*)
-      write(lupri,'(a,f9.4)') '  Sum = total charge:', sum(charges)
-=======
           write(lupri,'(a,a4,f12.6)') '@ ',namdep(m), charges(m)
       enddo
       write(lupri,*)
       write(lupri,'(a,f12.6)') '  Sum = total charge:', sum(charges)
->>>>>>> dde462b19835236011598b56c7b68cf25f0d1ea6
 
       !call qfit_finalize
       deallocate( charges )
@@ -235,11 +215,7 @@ C     ELECTRONIC CONTRIBUTION
       ENDIF
 
 C     CALCULATE FITTED CHARGES.
-<<<<<<< HEAD
-      CALL QFITCALC(WRK(KDENS), NNBASX)
-=======
       CALL QFITCALC(WRK(KDENC))
->>>>>>> dde462b19835236011598b56c7b68cf25f0d1ea6
 
       CALL MEMREL('QFITGSCALC',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('QFITGSCALC')
