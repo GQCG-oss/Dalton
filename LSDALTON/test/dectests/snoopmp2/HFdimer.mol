@@ -1,0 +1,13 @@
+BASIS
+3-21G
+Hydrogen flouride, MP2/TZVP geometry (see http://cccbdb.nist.gov)
+                                          
+Atomtypes=4 Nosymmetry Angstrom SubSystems
+Charge=9.0 Atoms=1 SubSystem=1
+F    0.0352	   1.4502	0.0000
+Charge=1.0 Atoms=1 SubSystem=1
+H    0.1490	   0.5304	0.0000
+Charge=9.0 Atoms=1 SubSystem=2
+F    0.0352	   -1.3150	0.0000
+Charge=1.0 Atoms=1 SubSystem=2
+H    -0.7821	   -1.7476	0.0000

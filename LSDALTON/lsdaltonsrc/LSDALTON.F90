@@ -45,18 +45,17 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use matrix_operations, only: set_matrix_default,max_no_of_matrices, no_of_matrices, &
        & no_of_matmuls, mat_init, mat_free, mat_assign,mat_scal, &
        & mat_mul, mat_no_of_matmuls, mat_write_to_disk, mat_read_from_disk, mat_diag_f,&
-       & mat_TrAB, mat_print
+       & mat_TrAB, mat_print, mat_tr
   use configuration, only: config_shutdown, config_free
   use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
-  use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem
+  use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem,finalize_lsdalton_driver_and_free
   use initial_guess, only: get_initial_dens
   use scfloop_module, only: scfloop, scf_afterplay
   use lstiming, only: lstimer, init_timers, print_timers
   use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
   use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2,read_fock_matrix_from_file
-  use daltoninfo, only: ls_free 
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
   use extra_output, only: print_orbital_info2
@@ -92,12 +91,15 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
+  use HODItest_module, only: debugTestHODI
 #ifdef VAR_PAPI
   use papi_module
 #endif
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter,&
        & II_get_Fock_mat
+  use II_XC_interfaceModule, only: II_get_AbsoluteValue_overlap, &
+       & II_get_AbsoluteValue_overlapSame
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
@@ -134,6 +136,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #ifdef MOD_UNRELEASED
   Real(realk),pointer   ::      geomHessian(:,:)
 #endif
+  type(matrix) :: tempm1,tempm2
 
   type(LowAccuracyStartType)  :: LAStype
 
@@ -143,10 +146,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   write (LUERR,*)"THIS IS A DEBUG BUILD"
 #endif
 
-  ! Init LSdalton calculation and get lsitem and config structures
+  ! Init LSdalton calculation and get lsitem and config structures, and perform
+  ! basic tests
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
-   
-  call Test_if_64bit_integer_required(nbast,nbast)
 
 #ifdef HAS_PCMSOLVER
         !
@@ -168,7 +170,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      !for now atleast
      RETURN
   ENDIF
-
+  IF(config%papitest)THEN
+#ifdef VAR_PAPI
+     call papi_example(LUPRI)
+#endif
+  ENDIF
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
      CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
@@ -318,6 +324,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mem_dealloc(GGem) 
         ENDIF
 
+        IF (config%doTestHodi) THEN
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
+        ENDIF
+
         CALL mat_init(D(1),nbast,nbast)
         CALL mat_init(F(1),nbast,nbast)
         CALL mat_init(H1,nbast,nbast)
@@ -427,15 +438,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
         !END SOEO
 
-        !debug
-!        call mat_init(Cmo,nbast,nbast)
-!        allocate(eival(nbast))
-!        call mat_diag_f(F,S,eival,Cmo)
-!        deallocate(eival)
-!        call II_get_AbsoluteValue_overlap(LUPRI,LUERR,ls%SETTING,nbast,CMO,S)
-!        call mat_print(S,1,S%nrow,1,S%ncol,lupri)
-!        call lsquit('test done',-1)
-
         IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
            ! get orbitals
            call mat_init(Cmo,nbast,nbast)
@@ -448,6 +450,30 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            CALL LSOPEN(lun,'cmo_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
+
+           IF(config%decomp%debugAbsOverlap)THEN
+              call mat_init(tempm1,nbast,nbast)
+              call mat_init(tempm2,nbast,nbast)
+!              This only works for NOGCBASIS               
+!              call mat_mul(S,CMO,'n','n',1E0_realk,0E0_realk,tempm1)
+!              call mat_mul(CMO,tempm1,'t','n',1E0_realk,0E0_realk,tempm2)
+!              WRITE(lupri,*)'Overlap in MO basis '
+!              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              call mat_free(tempm1)
+              call II_get_AbsoluteValue_overlapSame(LUPRI,LUERR,ls%SETTING,nbast,nbast,CMO%elms,tempm2%elms)
+!              WRITE(lupri,*)'absolute Overlap in MO basis'
+!              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              WRITE(lupri,'(A,F16.8)')'Trace of Absolute nummerical overlap:',mat_tr(tempm2)
+              WRITE(lupri,'(A,F16.8)')'Trace of Absolute nummerical overlap with CMO:',mat_trAB(CMO,tempm2)
+              WRITE(lupri,'(A,F16.8)')'Trace of Absolute nummerical overlap with S:',mat_trAB(S,tempm2)
+              call II_get_AbsoluteValue_overlap(LUPRI,LUERR,ls%SETTING,nbast,nbast,nbast,CMO%elms,CMO%elms,tempm2%elms)
+!              WRITE(lupri,*)'absolute Overlap in MO basis(test2)  '
+!              call mat_print(tempm2,1,nbast,1,nbast,lupri)
+              WRITE(lupri,'(A,F16.8)')'Trace of Absolute nummerical overlap(test2):',mat_tr(tempm2)
+              WRITE(lupri,'(A,F16.8)')'Trace of Absolute nummerical overlap(test2) with CMO:',mat_trAB(CMO,tempm2)
+              WRITE(lupri,'(A,F16.8)')'Trace of Absolute nummerical overlap(test2) with S:',mat_trAB(S,tempm2)
+              call mat_free(tempm2)
+           ENDIF
         endif
 
         !lcm basis: localize orbitals
@@ -496,7 +522,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
            ! Single point DEC calculation using current HF files
            DECcalculation: IF(DECinfo%doDEC) then
-              call dec_main_prog_input(ls,config,F(1),D(1),S,CMO,E(1))
+              call dec_main_prog_input(ls,config,F(1),D(1),CMO,E(1))
            endif DECcalculation
            ! free Cmo
            IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
@@ -756,10 +782,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   end if
 #endif
 
-  call ls_free(ls)
-  
-  meminfo_slaves = config%mpi_mem_monitor
-  CALL Print_Memory_info(lupri,'End of LSDALTON_DRIVER')
+  ! Free all higher structures used in LSALTON_DRIVER, and which could not be
+  ! initialized before the config was read
+  call finalize_lsdalton_driver_and_free(lupri,luerr,ls,config,meminfo_slaves)
 
 END SUBROUTINE LSDALTON_DRIVER
 
@@ -779,7 +804,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
   logical, intent(inout)     :: OnMaster
@@ -800,7 +827,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call lstmem_init
   call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
+#ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
+#endif
   call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
   ! MPI initialization
@@ -829,10 +858,13 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
-#ifdef VAR_SCALAPACK
-use matrix_operations_scalapack
 #endif
+#ifdef VAR_SCALAPACK
+  use matrix_operations_scalapack
+#endif
+  use matrix_operations_pdmm
 implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
@@ -846,7 +878,9 @@ implicit none
      call free_AO2GCAO_GCAO2AO()
   ENDIF
   call lstmem_free
+#ifdef VAR_ICHOR
   if(OnMaster)call FreeIchorSaveGabModule()
+#endif
   
 
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL
@@ -874,6 +908,10 @@ implicit none
      call LSMPI_COMM_FREE(scalapack_comm)
   ENDIF
 #endif
+  IF(pdmm_mpi_set)THEN
+     !free communicator 
+     call LSMPI_COMM_FREE(pdmm_comm)
+  ENDIF
 
   call lsmpi_finalize(lupri,.false.)
 #else

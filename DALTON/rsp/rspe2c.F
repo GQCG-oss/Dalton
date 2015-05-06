@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1153,6 +1153,7 @@ C          IF NTYPE.EQ.1 USE OLD TRIAL VECTORS
 C
 #include "implicit.h"
 #include "dummy.h"
+      CHARACTER*72 FNAME
       CHARACTER*8 LAB1, LAB2
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GD(*),REDGD(*)
       DIMENSION REDS(*),REDE(*),UDV(*),FCAC(*),H2AC(*),XINDX(*),WRK(*)
@@ -1176,6 +1177,7 @@ C
       LOGICAL BINMEM
       LOGICAL FNDLAB, FOUND, CONV
 C
+      CALL QENTER('LRST')
       KZRED = 0
       IF ( RESTLR ) THEN
 C
@@ -1423,8 +1425,8 @@ C
                GO TO 160
             END IF
             IF (KZCONF.GT.0 .AND. .NOT.SOPPA) THEN
-               TXNRM = DNORM2(KZCONF,GD,1)
-               TYNRM = DNORM2(KZCONF,GD(KZVAR+1),1)
+               TXNRM = DNRM2(KZCONF,GD,1)
+               TYNRM = DNRM2(KZCONF,GD(KZVAR+1),1)
                IF (TXNRM .GT. TYNRM) THEN
                   KGDC = 1
                ELSE
@@ -1547,6 +1549,7 @@ C
 C
 C     END OF LRST.
 C
+      CALL QEXIT('LRST')
       RETURN
       END
 C  /* Deck lrsopr */
@@ -2962,6 +2965,572 @@ C
       RETURN
       END
 C  /* Deck rspdia */
+C     Temporary try out for CRLRV3
+      SUBROUTINE RSPCT2(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+     *                  LINEQ,LAB1,LAB2,GD,REDGD,REDE,REDS,
+     *                  IBTYP,EIVAL,RESID,EIVEC,XINDX,WRK,LWRK)
+C
+C Written 6-Nov-1984 by Poul Joergensen
+C Revisions:
+C  7-Nov-1984 hjaaj
+C
+C PURPOSE:
+C  LINEQ.EQ.FALSE  DIRECT THE SOLUTION THE GENERALIZED RSP
+C                  EIGENVALUE PROBLEM
+C
+C                  ( E(2)-W(I)S(2))X(I) = 0
+C
+C  LINEQ.EQ.TRUE  DIRECT THE SOLUTION THE GENERALIZED RSP
+C                  LINEAR EQUATIONS
+C
+C                  ( E(2)-W(I)S(2))X(I) - GD = 0
+C
+C THE PAIRED STRUCTURE OF THE EIGENVECTORS
+C (Z(I),Y(I)) AND (Y(I),Z(I)) IS USED
+C TO SET UP THE REDUCED GENERALIZED RSP EIGENVALUE
+C AND LINEAR EQUATIONS
+C
+C TRIAL VECTORS ARE SPLIT SUCH THAT THEY ONLY CONTAIN EITHER
+C NON-VANISHING ORBITAL OR CSF COMPONENTS
+C
+C KEXSTV: NUMBER OF START VECTORS
+C KEXSIM: DESIRED NUMBER OF SIMULTANEOUS ROOTS IN A
+C         MICROITERATION
+C JEXSIM: THE NUMBER OF TRIAL VECTORS IN A MACROITERATION
+C  ( TRIAL VECTORS ARE ONLY ADDED FOR THE NON CONVERGED VECTORS AND
+C    LINEAR DEPENDENCE IS REMOVED)
+C
+C MAXRIT: MAXIMUM NUMBER OF MICROITERATIONS
+C
+#include "implicit.h"
+#include "dummy.h"
+C
+      PARAMETER ( MAXVEC = 12, DM1 = -1.0D0 )
+      DIMENSION CMO(*),UDV(NASHDI,*),PV(*),FC(*),FV(*)
+      DIMENSION FCAC(*), H2AC(*), GD(*),REDGD(*)
+      DIMENSION REDE(*),REDS(*),IBTYP(*),EIVAL(*),RESID(*),EIVEC(*)
+      DIMENSION XINDX(*),WRK(*)
+C
+#include "ibndxdef.h"
+C
+C Used from common blocks:
+C  /WRKRSP/: ??
+C  /INFPRI/: LUERR
+C
+#include "priunit.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infsop.h"
+#include "qm3.h"
+C
+      LOGICAL BINMEM, LINEQ, OPTSAV, LMAXIT
+      CHARACTER*8 LAB123(3),RESTAR, LAB1, LAB2
+      DATA LAB123/'********','********','RESPONPP'/
+      DATA RESTAR/'RESTART '/
+C
+      CALL QENTER('RSPCT2')
+      IF (MMPCM) CALL MMPCMINIT()
+      IF (IPRRSP .GE. 2) THEN
+         IF (LINEQ) THEN
+            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
+     *   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
+     *   'FOR LINEAR RESPONSE PROPERTIES >>>',
+     &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
+         ELSE
+            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
+     *   ' <<< EXCITATION ENERGIES',
+     *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
+     &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
+         END IF
+      END IF
+C
+C  DEFINE MAXIMUM NUMBER OF TRIAL VECTORS IN RSPLIN AND RSPNEX
+C
+C  WORK SPACE REQUIREMENT IN RSPLIN
+C
+C  SPECIAL REQUIREMENT FOR AN ORBITAL TRIAL VECTOR
+C
+C  FROM RSPELI + TRIAL VECTORS
+C
+      KORB   =  KZYWOP + KZYVAR + 3*NORBT*NORBT + 2*NASHT*NORBT
+C
+C  FROM RSPOLI
+C
+      KORB   = KORB + 2*NORBT*NASHT + N2ASHX*NNASHX + 2*NORBT*NORBT
+      IF (RSPCI) KORB = 0
+C
+C  SPECIAL REQUIREMENT FOR A CONFIGURATION TRIAL VECTOR
+C
+C  FROM RSPELI + TRIAL VECTORS
+C
+      KCSF   =  KZCONF + KZYVAR + NORBT*NORBT + 2*NORBT*NASHT
+C
+C  FROM RSPOLI
+C
+      IF (.NOT.RSPCI) KCSF = KCSF + N2ASHX + N2ASHX*N2ASHX
+C
+C  MAXIMUM SPACE FOR ONE TRIAL VECTOR
+C
+      KMAXVE = MAX(KORB,KCSF)
+C
+C  WORK SPACE REQUIREMENT FOR EACH RSPLIN CALL
+C
+      KUSE   = 2*NORBT*NORBT + 2*LBINTM
+C
+C  FROM RSPOLI
+C
+      KUSE   = KUSE + 2*N2ASHX
+C                     2 :TO ASSURE SPACE FOR ALL PVCD MATRICES
+C
+C  WORK SPACE USED EACH TIME A CSF LINEAR TRANSFORMATION
+C  OR A DENSITY MATRIX IS CONSTRUCTED
+C
+      KLIDEN = N2ASHX  + LACIMX
+C  REFERENCE VECTOR ONLY NEEDED FOR MCSCF CALCULATION
+      IF (.NOT.RSPCI) KLIDEN = KLIDEN + MAX(KZCONF,NCREF)
+C
+      KTOUSE = LWRK - KUSE - KLIDEN
+C     SOPCLI reads 2p-2h diagonal (D(0) matrix)
+      IF (SOPPA) KTOUSE = KTOUSE - KZCONF
+      MAXSIM = MIN(MAXVEC,(KTOUSE-100)/KMAXVE)
+      IF (IPRRSP.GT.37 .OR. MAXSIM.LE.0) THEN
+         WRITE(LUPRI,*)
+     *     ' KLIDEN,KUSE,KMAXVE,LBINTM,NORBT,NASHT,KZYVAR,LWRK '
+         WRITE(LUPRI,*)
+     *       KLIDEN,KUSE,KMAXVE,LBINTM,NORBT,NASHT,KZYVAR,LWRK
+         WRITE(LUPRI,*)' LACIMX',LACIMX
+      END IF
+      IF (IPRRSP.GE.10) WRITE(LUPRI,'(/A,I8)')
+     *     ' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS:',MAXSIM
+C
+      IF (MAXSIM.LE.0) THEN
+         WRITE (LUPRI,8000) LWRK,(100+KMAXVE-KTOUSE)
+         WRITE (LUERR,8000) LWRK,(100+KMAXVE-KTOUSE)
+         CALL QTRACE(LUERR)
+         CALL QUIT('RSPCTL: INSUFFICIENT MEMORY ALLOCATION')
+      ENDIF
+ 8000 FORMAT(/' RSPCTL, not enough memory for one trial vector',
+     *       /'         LWRK =',I10,
+     *       /'         need >',I10,' additional work memory space.')
+C
+C Space for RSPNEX:
+C
+      MAXNEX = 30
+      MAXORP = 100
+C
+C REQUIREMENT FOR EACH TRIAL VECTOR
+C
+      KNEX   = KZYVAR + KZYWOP
+C
+C REQUIREMENT FOR EACH CALL TO RSPNEX
+C
+      KUSE   = KZYVAR + NORBT*NORBT + 2*N2ASHX
+      IF (.NOT.RSPCI) KUSE = KUSE + MAX(NCREF,KZCONF) + LACIMX
+      IF (OPTORB) THEN
+         KOPT = 2*MAXORP*(MAXORP+1)/2 + 2*MAXORP + 3*KZYWOP*MAXORP
+         KOPT = KOPT + KZYWOP
+C
+C  MAXIMUM FOR ORPLIN AND ORPSVE
+C
+         KTOT = KORB - KZYCON  -N2ASHX*NNASHX
+         KOPT = KOPT + MAX(KZYVAR,KTOT)
+      ELSE
+         KOPT = 0
+      END IF
+C REQUIREMENT FOR EACH CALL TO RSPNEX
+      IF ( KOPT .GT. KUSE ) KUSE = KOPT
+      KLEFT  = LWRK - KUSE
+C RSPNEX reads SOPPA 2p-2h diagonal of length KZCONF
+      IF (SOPPA) KLEFT = KLEFT - KZCONF
+      NSIM3 = MIN(MAXNEX,(KLEFT-100)/KNEX)
+      IF(IPRRSP.GE.10 .OR. NSIM3 .LE. 0)  WRITE(LUPRI,'(/A,I8)')
+     *' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:',NSIM3
+      IF (NSIM3.LE.0) THEN
+         WRITE (LUPRI,8000) LWRK,(100+KLEFT+KNEX)
+         WRITE (LUERR,8000) LWRK,(100+KLEFT+KNEX)
+         CALL QTRACE(LUERR)
+         CALL QUIT('RSPCTL: INSUFFICIENT SPACE')
+      ENDIF
+      KVECS = 1
+C
+C CONSTRUCT E2 AND S2 EXPLICITLY USING UNIT TRIAL VECTORS
+C
+      IF (ABCHK ) THEN
+         CALL RSPES2(GD,REDGD,REDE,REDS,EIVAL,EIVEC,
+     *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
+     *               XINDX,WRK,LWRK)
+C        CALL RSPES2(GD,REDGD,REDE,REDS,EIVAL,EIVEC,
+C    *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
+C    *               XINDX,WRK,LWRK)
+         WRITE(LUPRI,'(/A)')' .ABCHK E2 AND S2 CONSTUCTED : STOP'
+         CALL QUIT('RSPCTL: ABCHK FINISHED')
+      END IF
+C
+C     Initialize micro iteration counter
+C
+      ITMIC = 0
+C
+C     SET UP INITIAL TRIAL VECTORS
+C
+      IF (IPRRSP.GT.15) THEN
+         WRITE(LUPRI,*)' LINEQ,RESTPP,ORBSPC',LINEQ,RESTPP,ORBSPC
+         IF (LINEQ) WRITE(LUPRI,*) ' FREQ =',(EIVAL(I),I=1,MAXSIM)
+      END IF
+C
+      IF (LINEQ) THEN
+         CALL LRST(BINMEM,MAXSIM,IBTYP,EIVAL,EIVEC,GD,
+     *             REDGD,REDS,REDE,UDV,FCAC,H2AC,XINDX,
+     *             LAB1,LAB2,WRK,LWRK)
+         IF ((KZRED.GT.0) .AND. (KEXSTV.LE.0)) THEN
+            ICTL = 2
+            KBCVEC = 1
+            KBOVEC = 1
+            KEVECS = 1
+            KWRK2  = 1
+            LWRK2  = LWRK
+            NSIM   = 0
+            GO TO 1000
+         END IF
+         IF (ORBSPC) THEN
+            DO 313 II = 1,KZWOPT
+               GD(II) = GD(KZCONF+II)
+ 313        CONTINUE
+C           CALL DCOPY(KZWOPT,GD(1+KZCONF),1,GD,1)
+            DO 314 II = 1,KZWOPT
+               GD(KZWOPT+II) = GD(KZVAR+KZCONF+II)
+ 314        CONTINUE
+C           CALL DCOPY(KZWOPT,GD(1+KZVAR+KZCONF),1,
+C    *                 GD(1+KZWOPT),1)
+            CALL OROPTI(EIVAL,IBTYP,GD,CMO,UDV,PV,FC,FV,FCAC,XINDX,
+     *                  WRK,LWRK)
+            WRITE(LUPRI,'(/A)')
+     * ' STOP: CHECK OF ORBITAL BLOCK OF E(2) AND S(2) FINISHED'
+            CALL QUIT(' END OF ORBSPC CHECK')
+         END IF
+      ELSE
+         IF (RESTPP) THEN
+C           Restart in PP is only possible in first call
+C           (in any later call of RSPCTL the restart vectors will be of
+C            another symmetry).
+            RESTPP = .FALSE.
+            CALL  PPRST(IBTYP,REDS,REDE,UDV,XINDX,WRK,LWRK)
+C           CALL  PPRST(IBTYP,REDS,REDE,UDV,XINDX,WRK,LWRK)
+            IF (KZRED .LT. KEXSIM) THEN
+               WRITE (LUPRI,'(//A,/A,I5,/A,I5)')
+     *         ' RSPCTL: ".RESTPP" impossible, too few trial vectors.',
+     *         '     number of trial vectors on file :',KZRED,
+     *         '     number of roots (".ROOTS")     :',KEXSIM
+               CALL QUIT('RESTART PP impossible,too few trial vectors.')
+            END IF
+            ICTL = 2
+            KBCVEC = 1
+            KBOVEC = 1
+            KEVECS = 1
+            KWRK2  = 1
+            LWRK2  = LWRK
+            NSIM   = 0
+            GO TO 1000
+         ELSE
+            CALL PPST(IBTYP,XINDX,FCAC,H2AC,WRK,MAXSIM,BINMEM,LWRK)
+         END IF
+      ENDIF
+C
+      IF (IPRRSP.GT.5) WRITE(LUPRI,*)'AFTER START ROUTINE BINMEM',BINMEM
+      JEXSIM = KEXSTV
+C     ... JEXSIM is redefined in RSPNEX
+C
+C     --- START OF MICROITERATION LOOP ---
+C
+ 100  CONTINUE
+         CALL FLSHFO(LUPRI)
+         ITMIC = ITMIC + 1
+         IF (IPRRSP.GE.3)
+     *   WRITE(LUPRI,'(/A,I5)') ' ** RSPCTL MICROITERATION NUMBER',ITMIC
+C
+C        CHECK IF ALL B VECTORS IN MEMORY
+C        IF NOT POSITION LURSP3
+C
+ 200     CONTINUE
+         NSIM = MIN(MAXSIM,JEXSIM)
+         IF (IPRRSP.GT.15) WRITE(LUPRI,'(A,3I5)')' NSIM,MAXSIM,JEXSIM',
+     *      NSIM,MAXSIM,JEXSIM
+         NCSIM = 0
+         NOSIM = 0
+         DO 105 I=1,NSIM
+            IF (IBTYP(KZRED+I+KOFFTY).EQ.JBCNDX) THEN
+               NCSIM = NCSIM + 1
+            ELSE
+               NOSIM = NOSIM +1
+            ENDIF
+ 105     CONTINUE
+         IF (IPRRSP.GE.15) WRITE(LUPRI,*)' NCSIM,NOSIM',NCSIM,NOSIM
+         KBCVEC= KVECS
+         KBOVEC= KBCVEC + KZCONF*NCSIM
+         KWRK1 = KBOVEC + KZYWOP*NOSIM
+         LWRK1 = LWRK   - KWRK1
+         IF (LWRK1.LT.0) CALL ERRWRK('RSPCTL 1',KWRK1-1,LWRK)
+         IF (.NOT.BINMEM) THEN
+            CALL REWSPL(LURSP3)
+#if !defined (VAR_SPLITFILES)
+            IF (KOFFTY.EQ.1) READ (LURSP3)
+#else
+            JRSP3 = 0
+            IF (KOFFTY.EQ.1)
+     &           CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
+#endif
+            DO 210 I=1,KZRED
+#if defined (VAR_SPLITFILES)
+ 210           CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
+#else
+ 210           READ (LURSP3)
+#endif
+            ISTBC = KBCVEC
+            ISTBO = KBOVEC
+            DO 400 ISIM=1,NSIM
+               IF (IBTYP(KZRED+ISIM+KOFFTY).EQ.JBCNDX) THEN
+#if defined (VAR_SPLITFILES)
+                  CALL READST(LURSP3,LRSP3,WRK(ISTBC),JRSP3,.TRUE.)
+                  IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent '//
+     &                 'record length on unit LURSP3 in RSPCTL')
+#else
+                  CALL READT(LURSP3,KZCONF,WRK(ISTBC))
+#endif
+                  ISTBC = ISTBC + KZCONF
+               ELSE
+#if defined (VAR_SPLITFILES)
+                  CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
+                  IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent '//
+     &                 'record length on unit LURSP3 in RSPCTL')
+#else
+                  CALL READT(LURSP3,KZYWOP,WRK(ISTBO))
+#endif
+                  ISTBO = ISTBO + KZYWOP
+               ENDIF
+ 400        CONTINUE
+         END IF
+C
+         IF (IPRRSP.GT.110) THEN
+            WRITE(LUPRI,'(/A)')' BEFORE RSPLIN'
+            IF (NOSIM .GT. 0) THEN
+               WRITE(LUPRI,'(/I5,A)')NOSIM,' ORBITAL TRIAL VECTORS'
+               CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,NOSIM,
+     *                     KZYWOP,NOSIM,1,LUPRI)
+            ENDIF
+            IF (NCSIM .GT. 0) THEN
+               WRITE(LUPRI,'(/I5,A)')NCSIM,' CONFIG. TRIAL VECTORS'
+               CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,
+     *                     KZCONF,NCSIM,1,LUPRI)
+            ENDIF
+         END IF
+         CALL FLSHFO(LUPRI)
+
+         CALL RSPELI(NCSIM,NOSIM,WRK(KBCVEC),WRK(KBOVEC),
+     *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
+     *               XINDX,WRK(KWRK1),LWRK1)
+         CALL FLSHFO(LUPRI)
+C
+C        CALL RSPELI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
+C    *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
+C    *               XINDX,WRK,LWRK)
+C
+         KEVECS = KWRK1
+         KSOP1  = KEVECS + (NCSIM+NOSIM)*KZYVAR
+         IF (SOPPA) THEN
+            KWRK2 = KSOP1 + KZYWOP
+         ELSE
+            KWRK2 = KSOP1
+         ENDIF
+         LWRK2  = LWRK   - KWRK2
+         IF (LWRK2.LT.0) CALL ERRWRK('RSPCTL 2',KWRK2-1,LWRK)
+C
+C        WRITE E(2)*X ON LURSP5
+C
+         CALL REWSPL(LURSP5)
+         JRSP5 = 0
+         IF (KOFFTY.EQ.1) THEN
+#if defined (VAR_SPLITFILES)
+            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
+#else
+            READ (LURSP5)
+#endif
+         ENDIF
+         DO 215 I=1,KZRED
+#if defined (VAR_SPLITFILES)
+            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
+#else
+            READ (LURSP5)
+#endif
+ 215     CONTINUE
+         ISTEC = KEVECS
+         ISTEO = ISTEC + NCSIM*KZYVAR
+         DO 216 ISIM=1,NSIM
+            IF (IBTYP(KZRED+ISIM+KOFFTY).EQ.JBCNDX) THEN
+C
+C   If SOPPA only write p-h part of transformed vector to disk
+C   and construct 2p-2h part when necessary
+C
+               IF (SOPPA) THEN
+                  CALL DCOPY(KZWOPT,WRK(ISTEC+KZCONF),1,
+     *                       WRK(KSOP1),1)
+                  CALL DCOPY(KZWOPT,WRK(ISTEC+KZVAR+KZCONF),1,
+     *                       WRK(KSOP1+KZWOPT),1)
+#if defined (VAR_SPLITFILES)
+                  CALL WRITST(LURSP5,KZYWOP,WRK(KSOP1),JRSP5)
+               ELSE
+                  CALL WRITST(LURSP5,KZYVAR,WRK(ISTEC),JRSP5)
+#else
+                  CALL WRITT(LURSP5,KZYWOP,WRK(KSOP1))
+               ELSE
+                  CALL WRITT(LURSP5,KZYVAR,WRK(ISTEC))
+#endif
+               ENDIF
+               ISTEC = ISTEC + KZYVAR
+            ELSE
+#if defined (VAR_SPLITFILES)
+               CALL WRITST(LURSP5,KZYVAR,WRK(ISTEO),JRSP5)
+#else
+               CALL WRITT(LURSP5,KZYVAR,WRK(ISTEO))
+#endif
+               ISTEO = ISTEO + KZYVAR
+            ENDIF
+ 216     CONTINUE
+         KZRED =KZRED+NSIM
+         KZYRED=2*KZRED
+C
+C PREPARE FOR RESTART
+C
+         IF (IPRRSP.GT.30) THEN
+            WRITE(LUPRI,*)' BEFORE WRITING IBTYP ON LURSP1 LINEQ:',LINEQ
+         END IF
+         KTOT = KZRED + KOFFTY
+         IF (IPRRSP.GT.7)
+     *      WRITE(LUPRI,'(/A,I5)')' TRIAL VECTORS FOR RESTART:',KTOT
+         LURSP1 = -1
+         CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND (LURSP1)
+         WRITE(LURSP1)LAB123,RESTAR
+         WRITE(LURSP1)KSYMOP,KTOT,(IBTYP(I),I=1,KTOT)
+C        flush any output buffers
+         REWIND (LURSP1)
+         CALL GPCLOSE(LURSP1,'KEEP')
+C
+         IF (IPRRSP.GT.110) THEN
+            IF (NOSIM .GT. 0) THEN
+               WRITE(LUPRI,'(/I5,A)')NOSIM,' ORBITAL TRIAL VECTORS'
+               CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,NOSIM,
+     *                     KZYWOP,NOSIM,1,LUPRI)
+            ENDIF
+            IF (NCSIM .GT. 0) THEN
+               WRITE(LUPRI,'(/I5,A)')NCSIM,' CONFIG. TRIAL VECTORS'
+               CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,
+     *                     KZCONF,NCSIM,1,LUPRI)
+            ENDIF
+            WRITE(LUPRI,'(/I5,A)')NSIM, ' E(2) LINEAR TRANSF. VECTORS'
+            CALL OUTPUT(WRK(KEVECS),1,KZYVAR,1,NSIM,
+     *                     KZYVAR,NSIM,1,LUPRI)
+         ENDIF
+         JEXSIM =JEXSIM-NSIM
+         IF (JEXSIM.GT.0) THEN
+C
+C           CALL RSPRED(1,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
+C
+            CALL RSPRED(1,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
+     *                  EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
+     *                  UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
+C           CALL RSPRED (ICTL,LINEQ,N,IBTYP,GD,REDGD,REDE,REDS,
+C    *                 EIVAL,EIVEC,BCVEC,BOVEC,UDV,EVECS,
+C    *                 XINDX,WRK,LWRK)
+            GO TO 200
+C       ^-----------
+         END IF
+         ICTL = 3
+ 1000    CONTINUE
+C
+C        CALL RSPRED(,3,..) INCREASE DIMENSION OF REDUCED RSP EQUATION
+C        AND SOLVE FOR EIGENVALUES AND EIGENVECTORS
+C
+         CALL RSPRED(ICTL,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
+     *               EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
+     *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
+C
+C        CALCULATE TRANSITION MOMENT
+C
+C        CALL RSPMOM(IBTYP,EIVAL,EIVEC,BVECS,SVECS,PRVEC,NSIM)
+C
+C SET UP REDUCED MATRIX EXPLICLY AND CHECK BLOCK STRUCTURE IN E2 AND S2
+C
+         IF (ABSYM) THEN
+            CALL E2SYM(IBTYP,CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
+     &                 WRK,LWRK)
+         END IF
+C        CREATE KEXSIM NEW LINEAR INDEPENDENT TRIAL VECTORS IN NEXT()
+C        FROM THE EIGENVECTORS OF THE REDUCED  RSP EQUATION
+C
+         IF (KEXSIM.LE.MAXSIM) THEN
+            BINMEM=.TRUE.
+         ELSE
+            BINMEM=.FALSE.
+         ENDIF
+         OPTSAV = OPTORB
+         ITCIN = 0
+         DO 510 IIB = 1,(KOFFTY+KZRED)
+            IF (IBTYP(IIB).EQ.JBCNDX) ITCIN = ITCIN + 1
+ 510     CONTINUE
+         ITCIN = ITCIN - KOFFTY
+         IF (.NOT.LINEQ .AND. ITCIN.LE.2) OPTORB = .FALSE.
+C        880226, PJ+HJAAJ: big problems with optorb for
+C        RSPPP if no previous orbital trial vectors.
+         LMAXIT = (ITMIC .GE. MAXIT)
+         CALL RSPNEX(LINEQ,LMAXIT,NSIM3,IBTYP,EIVAL,RESID,EIVEC,GD,
+     *               CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
+C        CALL RSPNEX(LINEQ,LMAXIT,NSIM,IBTYP,EIVAL,RESID,EIVEC,GD,
+C    *               CMO,UDV,PVX,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
+         OPTORB = OPTSAV
+         IF (KCONV.EQ.-2) THEN
+C           (MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED)
+            NWARN = NWARN + 1
+            WRITE (LUPRI,'(/A/A)')
+     *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
+     *          '     MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED.'
+         ELSE IF (KCONV.LT.0) THEN
+C           (LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTOR )
+            NWARN = NWARN + 1
+            WRITE (LUPRI,'(/A/A)')
+     *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
+     *          '     OF LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTORS'
+         ELSE IF(KCONV.GT.0)THEN
+C           (CONVERGED)
+            IF (IPRRSP .GE. 0)
+     &      WRITE(LUPRI,'(/A)')' *** RSPCTL MICROITERATIONS CONVERGED'
+         ELSE
+C           (NOT CONVERGED)
+            IF (ITMIC.GE.MAXIT) THEN
+C              (MAX NO OF MICROITERATIONS REACHED)
+               NWARN = NWARN + 1
+               WRITE(LUPRI,'(/A,I4,A)')
+     *         ' *** RSPCTL WARNING-MAXIMUM NUMBER OF MICROITERATIONS,',
+     *         ITMIC,', REACHED'
+            ELSE
+               GO TO 100
+C     ^-----------------
+            END IF
+         END IF
+C
+C     --- END OF MICROITERATION LOOP ---
+C
+C
+C     END OF RSPCTL
+C
+      CALL QEXIT('RSPCTL2')
+      RETURN
+      END
+
+C
       SUBROUTINE RSPDIA(A,SHIFT)
 C
 C CONSTRUCT DIAGONAL OF E(2) + SHIFT* S(2)
@@ -3543,8 +4112,8 @@ C ---------------------------- not non-adiabatic coupling:
      *          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
      *      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
-              TXNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
-              TYNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
+              TXNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
+              TYNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
               T2P2HN = D100*(TXNRM*TXNRM + TYNRM*TYNRM)
               TPHNRM = D100 - T2P2HN
               WRITE(LUPRI,'(2(/A,F8.2,A))')
@@ -4077,12 +4646,12 @@ C
      &  ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &               WRK(KGD),LWRK1)
-         DNORM = DNRM2(KZYVAR,WRK(KGD),1)
+         DNORM_GD = DNRM2(KZYVAR,WRK(KGD),1)
          write(lupri,*) 'FREQ 2 ',FREQ(1:NFREQ)
          IF (IPRRSP .GT. 30) THEN
             CALL HEADER('Gradient vectors in RSPLR for operator '//
      &                  LBLLR(KSYMOP,IOP)//':',-1)
-            WRITE (LUPRI,'(/A,1P,D12.4)') ' Norm : ', DNORM
+            WRITE (LUPRI,'(/A,1P,D12.4)') ' Norm : ', DNORM_GD
             CALL OUTPUT(WRK(KGD),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
          END IF
          JFREQ  = 0
@@ -4112,10 +4681,10 @@ C              ! Remove duplicates, they will cause linear dependency
             GOTO 600
          END IF
 C
-         IF (DNORM .LT. THRNRM) THEN
+         IF (DNORM_GD .LT. THRNRM) THEN
             WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
             WRITE (LUPRI,*) '     property vector '//LBLLR(KSYMOP,IOP)//
-     &                      ' is only',DNORM
+     &                      ' is only',DNORM_GD
             CALL DZERO(WRK(KBVECS),KZYVAR)
             DO 450 IFREQ = 1,JFREQ
                CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LBLLR(KSYMOP,IOP),
@@ -4168,8 +4737,8 @@ C                 CALL RSPPRC(WRK(KBVECS+(IVEC-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                   CALL HEADER('Solution vectors in RSPLR for operator '
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-                  DNORM = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM
+                  DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
+                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM_BV
                END IF
   750       CONTINUE
             CALL RSPRES(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
@@ -4185,10 +4754,10 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
                   CALL HEADER('Residual vectors in RSPLR for operator '
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-                  DNORM = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM
+                  DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
+                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM_BV
                END IF
- 760        CONTINUE
+  760       CONTINUE
   700    CONTINUE
   600 CONTINUE
       IF (LWRK1.LT.0) CALL ERRWRK('RSPLR 2',KWRK1-1,LWRK)
@@ -4568,6 +5137,7 @@ C
 C
 C  ALLOCATE WORK SPACE
 C
+      CALL QENTER('RSPES2')
       KE2   = 1
       KS2   = KE2    + KZYVAR*KZYVAR
       KBVEC = KS2    + KZYVAR*KZYVAR
@@ -4855,6 +5425,7 @@ C
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
+      CALL QEXIT('RPES2')
       RETURN
       END
 C  /* Deck oropti */

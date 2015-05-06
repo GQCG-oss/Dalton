@@ -26,7 +26,7 @@ type orbspread_data
  type(Matrix), pointer :: G
  type(Matrix), pointer :: P
  type(Matrix) :: propint(10)
- type(Matrix) :: tmpM(4)
+! type(Matrix) :: tmpM(4)
 end type orbspread_data
 
 !> \brief Contains settings for decomposition and OAO decomposed overlap.
@@ -148,6 +148,7 @@ type DecompItem
    !DEBUG VARIABLES:
    !================
       logical      :: debug_rsp_linsca
+      logical      :: debugAbsOverlap
    !INFO VARIABLES:
    !===============
       !> Print info from orbital energy / Hessian eigenvalue solvers
@@ -240,6 +241,8 @@ contains
       !DEBUG VARIABLES:
       !================
          decomp%debug_rsp_linsca     = .false.
+         decomp%debugAbsOverlap      = .false.
+
       !INFO VARIABLES:
       !===============
          decomp%info_stability         = .false.

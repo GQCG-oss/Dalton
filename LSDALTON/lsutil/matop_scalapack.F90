@@ -633,12 +633,13 @@ module matrix_operations_scalapack
      CALL PDM_DSCINIT(DESC_A,A)
      !    DESC_AF(CTXT_) = SLGrid%Masterictxt
      ! Master Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
-     IF(.TRUE.)THEN
+     IF(.NOT.infpar%ScalapackWorkAround)THEN
         CALL PDGEMR2D(A%nrow,A%ncol,AFull,1,1,DESC_AF,&
              & A%p,1,1,DESC_A,SLGrid%ictxt)
      ELSE
-        shift=infpar%nodtot/SLGrid%nprow
+        shift=scalapack_nodtot/SLGrid%nprow
         J=0
+        localnrow = 0
         localncol = 0
         jloop : do
            preProc = 0
@@ -648,7 +649,7 @@ module matrix_operations_scalapack
                  IF(J.GT.A%ncol)EXIT jloop
                  Iproc = 0
                  Ploop : DO
-                    IF(preProc+Iproc*shift.GT.infpar%nodtot-1)EXIT Ploop
+                    IF(preProc+Iproc*shift.GT.scalapack_nodtot-1)EXIT Ploop
                     localncol(preProc+Iproc*shift) = localncol(preProc+Iproc*shift)+1 
                     Iproc = Iproc+1
                  ENDDO Ploop
@@ -681,15 +682,16 @@ module matrix_operations_scalapack
            enddo
         enddo jloop
 
-        allocate(localA(0:infpar%nodtot-1))
-        do I=0,infpar%nodtot-1
+        allocate(localA(0:scalapack_nodtot-1))
+        do I=0,scalapack_nodtot-1
            localA(I)%nrow = localnrow(I)
            localA(I)%ncol = localncol(I)
            allocate(localA(I)%p(localnrow(I),localncol(I)))
         enddo
 
-        shift=infpar%nodtot/SLGrid%nprow
+        shift=scalapack_nodtot/SLGrid%nprow
         J=0
+        localnrow = 0
         localncol = 0
         jloop2 : do
            preProc = 0
@@ -699,7 +701,7 @@ module matrix_operations_scalapack
                  IF(J.GT.A%ncol)EXIT jloop2
                  Iproc = 0
                  Ploop2 : DO
-                    IF(preProc+Iproc*shift.GT.infpar%nodtot-1)EXIT Ploop2
+                    IF(preProc+Iproc*shift.GT.scalapack_nodtot-1)EXIT Ploop2
                     localncol(preProc+Iproc*shift) = localncol(preProc+Iproc*shift)+1 
                     Iproc = Iproc+1
                  ENDDO Ploop2
@@ -729,12 +731,12 @@ module matrix_operations_scalapack
               A%p(NBI,NBJ) = localA(0)%p(NBI,NBJ)
            enddo
         enddo
-        DO Iproc = 1,infpar%nodtot-1
+        DO Iproc = 1,scalapack_nodtot-1
            IF(localA(Iproc)%nrow*localA(Iproc)%ncol.GT. 0)THEN
               call ls_mpisendrecv(localA(Iproc)%p,localA(Iproc)%nrow,localA(Iproc)%ncol,scalapack_comm,infpar%master,Iproc)
            ENDIF
         ENDDO
-        do I=0,infpar%nodtot-1
+        do I=0,scalapack_nodtot-1
            deallocate(localA(I)%p)
         enddo
      ENDIF
@@ -751,15 +753,120 @@ module matrix_operations_scalapack
     INTEGER      :: DESC_AF(9), DESC_A(9), I,nsize,n1,n2,shift
     INTEGER :: J,IP,IQ,P,Q,ip2,iq2,NBJ,NBI,iproc,preproc,nprow,npcol
 #ifdef VAR_SCALAPACK
-!    integer :: localnrow(0:infpar%nodtot-1)
-!    integer :: localncol(0:infpar%nodtot-1)
-!    TYPE(matrix),pointer :: localA(:)
+    integer :: localnrow(0:infpar%nodtot-1)
+    integer :: localncol(0:infpar%nodtot-1)
+    TYPE(matrix),pointer :: localA(:)
     CALL PDM_SYNC(Job_to_full,A)
     CALL PDM_DSCINIT(DESC_AF,A,A%nrow,A%ncol)
     CALL PDM_DSCINIT(DESC_A, A)
-    ! Master Part: Collects full matrix AFull (on master) from SCALAPACK distributed matrix A
-    CALL PDGEMR2D(A%nrow,A%ncol,A%p,1,1,DESC_A,&
-         &AFull,1,1,DESC_AF,SLGrid%ictxt)
+    IF(.NOT.infpar%ScalapackWorkAround)THEN
+       ! Master Part: Collects full matrix AFull (on master) from SCALAPACK distributed matrix A
+       CALL PDGEMR2D(A%nrow,A%ncol,A%p,1,1,DESC_A,&
+            &AFull,1,1,DESC_AF,SLGrid%ictxt)
+    ELSE
+       shift=scalapack_nodtot/SLGrid%nprow
+       J=0
+       localnrow = 0
+       localncol = 0
+       jloop : do
+          preProc = 0
+          do npcol=1,SLGrid%npcol
+             do NBJ=1,BLOCK_SIZE
+                J=J+1
+                IF(J.GT.A%ncol)EXIT jloop
+                Iproc = 0
+                Ploop : DO
+                   IF(preProc+Iproc*shift.GT.scalapack_nodtot-1)EXIT Ploop
+                   localncol(preProc+Iproc*shift) = localncol(preProc+Iproc*shift)+1 
+                   Iproc = Iproc+1
+                ENDDO Ploop
+                I=0
+                iloop3 : do
+                   Iproc=preProc
+                   do nprow=1,SLGrid%nprow
+                      localnrow(Iproc) = 0
+                      do NBI=1,BLOCK_SIZE
+                         I=I+1
+                         IF(I.GT.A%nrow)EXIT iloop3               
+                      enddo
+                      Iproc=Iproc+shift
+                   enddo
+                enddo iloop3
+                I=0
+                iloop : do
+                   Iproc=preProc
+                   do nprow=1,SLGrid%nprow
+                      do NBI=1,BLOCK_SIZE
+                         I=I+1
+                         IF(I.GT.A%nrow)EXIT iloop               
+                         localnrow(Iproc) = localnrow(Iproc)+1 
+                      enddo
+                      Iproc=Iproc+shift
+                   enddo
+                enddo iloop
+             enddo
+             preProc = preProc+1
+          enddo
+       enddo jloop
+       
+       allocate(localA(0:scalapack_nodtot-1))
+       do I=0,scalapack_nodtot-1
+          localA(I)%nrow = localnrow(I)
+          localA(I)%ncol = localncol(I)
+          allocate(localA(I)%p(localnrow(I),localncol(I)))
+       enddo
+       DO Iproc = 1,scalapack_nodtot-1
+          IF(localA(Iproc)%nrow*localA(Iproc)%ncol.GT. 0)THEN
+             call ls_mpisendrecv(localA(Iproc)%p,localA(Iproc)%nrow,localA(Iproc)%ncol,scalapack_comm,Iproc,infpar%master)
+          ENDIF
+       ENDDO       
+       do NBJ=1,A%localncol
+          do NBI=1,A%localnrow
+             localA(0)%p(NBI,NBJ) = A%p(NBI,NBJ)
+          enddo
+       enddo
+
+       shift=scalapack_nodtot/SLGrid%nprow
+       J=0
+       localnrow = 0
+       localncol = 0
+       jloop2 : do
+          preProc = 0
+          do npcol=1,SLGrid%npcol
+             do NBJ=1,BLOCK_SIZE
+                J=J+1
+                IF(J.GT.A%ncol)EXIT jloop2
+                Iproc = 0
+                Ploop2 : DO
+                   IF(preProc+Iproc*shift.GT.scalapack_nodtot-1)EXIT Ploop2
+                   localncol(preProc+Iproc*shift) = localncol(preProc+Iproc*shift)+1 
+                   Iproc = Iproc+1
+                ENDDO Ploop2
+                I=0
+                localnrow = 0
+                iloop2 : do
+                   Iproc=preProc
+                   do nprow=1,SLGrid%nprow
+                      do NBI=1,BLOCK_SIZE
+                         I=I+1
+                         IF(I.GT.A%nrow)EXIT iloop2               
+                         localnrow(Iproc) = localnrow(Iproc)+1 
+                         AFULL(I+(J-1)*A%nrow) = localA(Iproc)%p(localnrow(Iproc),localncol(Iproc))
+!                         write(6,'(A,I2,A,I2,A,I2,A,I2,A,I2,A,F16.8)')'Ap(',localnrow(Iproc),',',localncol(Iproc),',',iproc,') = AFULL(',&
+!                              & I,',',J,')=',AFULL(I+(J-1)*A%nrow) 
+                      enddo
+                      Iproc=Iproc+shift
+                   enddo
+                enddo iloop2
+             enddo
+             preProc = preProc+1
+          enddo
+       enddo jloop2
+
+       do I=0,scalapack_nodtot-1
+          deallocate(localA(I)%p)
+       enddo
+    ENDIF
     nsize = a%nrow*a%ncol
     if (alpha.ne. 1.0E0_realk) call dscal(nsize,alpha,afull,1)
 #endif
@@ -932,24 +1039,40 @@ module matrix_operations_scalapack
     real(Realk),target :: Afullblock(fullrow,fullcol)
     type(Matrix) :: A  !, intent(inout)
     INTEGER      :: DESC_A(9), DESC_AF(9)
-    INTEGER      :: LLD, INFO, TMP(4)
+    INTEGER      :: LLD, INFO, TMP(4),i,j
     integer, external :: NUMROC
+    real(realk), pointer :: ABigfull(:,:)
 #ifdef VAR_SCALAPACK
 
-    CALL PDM_SYNC(Job_retrieve_block,A)
-    CALL PDM_DSCINIT(DESC_A, A)
-    TMP(1) = fullrow
-    TMP(2) = fullcol
-    TMP(3) = insertrow
-    TMP(4) = insertcol
-    call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
-
-    LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
-    CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
-
-    CALL PDGEMR2D(fullrow,fullcol,A%p,insertrow,insertcol,DESC_A, &
-                 &Afullblock,1,1,DESC_AF,SLGrid%ictxt)
-
+    IF(.NOT.infpar%ScalapackWorkAround)THEN
+       CALL PDM_SYNC(Job_retrieve_block,A)
+       CALL PDM_DSCINIT(DESC_A, A)
+       TMP(1) = fullrow
+       TMP(2) = fullcol
+       TMP(3) = insertrow
+       TMP(4) = insertcol
+       call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
+       
+       LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
+       CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
+       
+       CALL PDGEMR2D(fullrow,fullcol,A%p,insertrow,insertcol,DESC_A, &
+            &Afullblock,1,1,DESC_AF,SLGrid%ictxt)
+    ELSE
+       !Work around for PDGEMR2D issue 
+       call mem_alloc(ABigfull,A%nrow,A%ncol)
+       call mat_scalapack_to_full(A,1.0E0_realk,aBigfull)
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,j) SHARED(ABigfull,&
+       !$OMP fullrow,fullcol,insertrow,insertcol,Afullblock)
+       do j = insertcol, insertcol+fullcol-1
+          do i = insertrow, insertrow+fullrow-1
+             Afullblock(i-insertrow+1,j-insertcol+1) = ABigfull(i,j)
+          enddo
+       enddo
+       !$OMP END PARALLEL DO
+       call mat_scalapack_set_from_full(aBigfull,1.0E0_realk,A)
+       call mem_dealloc(ABigfull)
+    ENDIF
 
 #endif
   end subroutine mat_scalapack_retrieve_block
@@ -960,28 +1083,42 @@ module matrix_operations_scalapack
     real(Realk),target :: Afull(fullrow,fullcol)
     type(Matrix) :: A  !, intent(inout)
     INTEGER      :: DESC_A(9), DESC_AF(9)
-    INTEGER      :: LLD, INFO, TMP(4)
+    INTEGER      :: LLD, INFO, TMP(4),i,j
     integer, external :: NUMROC
+    real(realk), pointer :: ABigfull(:,:)
 #ifdef VAR_SCALAPACK
 
-    CALL PDM_SYNC(Job_create_block,A)
-    CALL PDM_DSCINIT(DESC_A, A)
-    TMP(1) = fullrow
-    TMP(2) = fullcol
-    TMP(3) = insertrow
-    TMP(4) = insertcol
-    call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
-
-    LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
-    CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
-
-    CALL PDGEMR2D(fullrow,fullcol,Afull,1,1,DESC_AF, &
+    IF(.NOT.infpar%ScalapackWorkAround)THEN
+       CALL PDM_SYNC(Job_create_block,A)
+       CALL PDM_DSCINIT(DESC_A, A)
+       TMP(1) = fullrow
+       TMP(2) = fullcol
+       TMP(3) = insertrow
+       TMP(4) = insertcol
+       call ls_mpibcast(TMP,4,infpar%master,scalapack_comm)
+       
+       LLD =  MAX(1,NUMROC(fullrow, fullrow, SLGrid%myrow,0,SLGrid%nprow))
+       CALL DESCINIT(DESC_AF,fullrow,fullcol,fullrow,fullcol,0,0,SLGrid%ictxt,LLD,INFO)
+       
+       CALL PDGEMR2D(fullrow,fullcol,Afull,1,1,DESC_AF, &
                  &A%p,insertrow,insertcol,DESC_A,SLGrid%ictxt)
-
+    ELSE
+       !Work around for PDGEMR2D issue 
+       call mem_alloc(ABigfull,A%nrow,A%ncol)
+       call mat_scalapack_to_full(A,1.0E0_realk,aBigfull)
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,j) SHARED(ABigfull,&
+       !$OMP fullrow,fullcol,insertrow,insertcol,Afull)
+       do j = insertcol, insertcol+fullcol-1
+          do i = insertrow, insertrow+fullrow-1
+             ABigfull(i,j) = Afull(i-insertrow+1,j-insertcol+1)
+          enddo
+       enddo
+       !$OMP END PARALLEL DO
+       call mat_scalapack_set_from_full(aBigfull,1.0E0_realk,A)
+       call mem_dealloc(ABigfull)
+    ENDIF
 #endif
   end subroutine  
-
-
 
   subroutine scalapack_transform_aux(A,Afullblock,fulldim1,fulldim2,fullrow,fullcol,insertrow,insertcol,&
        & CommunicationNodes,localnrow2,localncol,Abuffer,nbuffer,bufferoffset,debug,bufferproc,nodes,funccall)
@@ -2019,18 +2156,19 @@ module matrix_operations_scalapack
      REAL(REALK)  :: AB(2)
      EXTERNAL NUMROC
 #ifdef VAR_SCALAPACK
-     CALL PDM_SYNC(Job_dger,A) 
-     AB(1)=alpha
-     AB(2)=0.0E0_realk
-     call PDM_DSCINIT(DESC_A,A)
-     CALL DGEBS2D(SLGrid%ictxt,'A','I',2,1,AB,2)
-     LLD=MAX(1,NUMROC(A%nrow,A%nrow,0,0,1))
-     CALL DESCINIT(DESC_X,A%nrow,1,A%nrow,1,0,0,SLGrid%ictxt,LLD,ierr)
-     LLD=MAX(1,NUMROC(A%ncol,A%ncol,0,0,1))
-     CALL DESCINIT(DESC_Y,A%ncol,1,A%ncol,1,0,0,SLGrid%ictxt,LLD,ierr)
-     CALL IGEBS2D(SLGrid%ictxt,'A','I',9,1,DESC_X,9)
-     CALL IGEBS2D(SLGrid%ictxt,'A','I',9,1,DESC_Y,9)
-     call pdger(A%nrow,A%ncol,AB(1),x,1,1,DESC_X,1,y,1,1,DESC_Y,1,A%p,1,1,DESC_A,ierr)
+call lsquit('TKTKTKTKTKTKTKTKTKTK',-1)
+!     CALL PDM_SYNC(Job_dger,A) 
+!     AB(1)=alpha
+!     AB(2)=0.0E0_realk
+!     call PDM_DSCINIT(DESC_A,A)
+!     CALL DGEBS2D(SLGrid%ictxt,'A','I',2,1,AB,2)
+!     LLD=MAX(1,NUMROC(A%nrow,A%nrow,0,0,1))
+!     CALL DESCINIT(DESC_X,A%nrow,1,A%nrow,1,0,0,SLGrid%ictxt,LLD,ierr)
+!     LLD=MAX(1,NUMROC(A%ncol,A%ncol,0,0,1))
+!     CALL DESCINIT(DESC_Y,A%ncol,1,A%ncol,1,0,0,SLGrid%ictxt,LLD,ierr)
+!     CALL IGEBS2D(SLGrid%ictxt,'A','I',9,1,DESC_X,9)
+!     CALL IGEBS2D(SLGrid%ictxt,'A','I',9,1,DESC_Y,9)
+!     call pdger(A%nrow,A%ncol,AB(1),x,1,1,DESC_X,1,y,1,1,DESC_Y,1,A%p,1,1,DESC_A,ierr)
 #endif     
    end subroutine mat_scalapack_dger
    
@@ -3135,7 +3273,7 @@ module matrix_operations_scalapack
    ! MPI_COMM_WORLD and SL_INIT should not be called directly
    SLGrid%ictxt = scalapack_comm
    ! Set up the process grid - sets ictxt to a BLACS handle
-   CALL BLACS_GRIDINIT(SLGrid%ictxt, 'Row-major', TMP(1), TMP(2))
+   CALL BLACS_GRIDINIT(SLGrid%ictxt, 'R', TMP(1), TMP(2))
    ! Again, do not call blacs_get. The BLACS system context
    ! and corresponding communicator are simply MPI communicators.
    SLGrid%Masterictxt = scalapack_comm
@@ -3240,12 +3378,12 @@ module matrix_operations_scalapack
 !      DESC_AF(2)=-1
       CALL PDM_DSCINIT(DESC_A,A)
       ! Slave Part: Distributes a full matrix AFull (on master) to SCALAPACK distributed matrix A
-      IF(.TRUE.)THEN
+      IF(.NOT.infpar%ScalapackWorkAround)THEN
          CALL PDGEMR2D(A%nrow,A%ncol,AF,1,1,DESC_AF,&
               &A%p,1,1,DESC_A,SLGrid%ictxt)
       ELSE
          IF(A%localnrow*A%localncol.GT. 0)THEN
-            call ls_mpisendrecv(A%p,A%localnrow,A%localncol,scalapack_comm,infpar%master,infpar%mynum)
+            call ls_mpisendrecv(A%p,A%localnrow,A%localncol,scalapack_comm,infpar%master,scalapack_mynum)
          ENDIF
       ENDIF
    CASE(Job_to_full3D)
@@ -3258,8 +3396,14 @@ module matrix_operations_scalapack
       CALL PDM_DSCINIT(DESC_AF,A,A%nrow,A%ncol)
       CALL PDM_DSCINIT(DESC_A,A)
       ! Slave Part: Collects full matrix AFull (on master) from SCALAPACK distributed matrix A
-      CALL PDGEMR2D(A%nrow,A%ncol,A%p,1,1,DESC_A,&
-           &AF,1,1,DESC_AF,SLGrid%ictxt)
+      IF(.NOT.infpar%ScalapackWorkAround)THEN
+         CALL PDGEMR2D(A%nrow,A%ncol,A%p,1,1,DESC_A,&
+              &AF,1,1,DESC_AF,SLGrid%ictxt)
+      ELSE
+         IF(A%localnrow*A%localncol.GT. 0)THEN
+            call ls_mpisendrecv(A%p,A%localnrow,A%localncol,scalapack_comm,scalapack_mynum,infpar%master)
+         ENDIF
+      ENDIF
    CASE(Job_scal)
       CALL DGEBR2D(SLGrid%ictxt,'A','I',1,1,AF,1,&
            &SLGrid%myrow,SLGrid%mycol)
@@ -3316,18 +3460,20 @@ module matrix_operations_scalapack
       CALL PDGEMM(T(1),T(2),m,n,k,AB(1),A%p,1,1,DESC_A,&
            &B%p,1,1,DESC_B,AB(2),C%p,1,1,DESC_C)
    CASE(Job_dger)
-      call PDM_DSCINIT(DESC_A,A)
-      CALL DGEBR2D(SLGrid%ictxt,'A','I',2,1,AB,2,&
-           &SLGrid%myrow,SLGrid%mycol)
-      CALL IGEBR2D(SLGrid%ictxt,'A','I',9,1,DESC_B,9,&
-           &SLGrid%myrow,SLGrid%mycol)
-      CALL IGEBR2D(SLGrid%ictxt,'A','I',9,1,DESC_C,9,&
-           &SLGrid%myrow,SLGrid%mycol)
-      !allocate(diag(A%nrow))
-      !allocate(diag2(A%ncol))
-      call pdger(A%nrow,A%ncol,AB(1),diag,1,1,DESC_B&
-            ,1,diag2,1,1,DESC_C,1,A%p,1,1,DESC_A,ierr)
-      !deallocate(diag,diag2)
+call lsquit('TKTKTKTKTKTKTKTKTKTK',-1)
+! This is wrong diag is not allocated!!!!!
+!      call PDM_DSCINIT(DESC_A,A)
+!      CALL DGEBR2D(SLGrid%ictxt,'A','I',2,1,AB,2,&
+!           &SLGrid%myrow,SLGrid%mycol)
+!      CALL IGEBR2D(SLGrid%ictxt,'A','I',9,1,DESC_B,9,&
+!           &SLGrid%myrow,SLGrid%mycol)
+!      CALL IGEBR2D(SLGrid%ictxt,'A','I',9,1,DESC_C,9,&
+!           &SLGrid%myrow,SLGrid%mycol)
+!      !allocate(diag(A%nrow))
+!      !allocate(diag2(A%ncol))
+!      call pdger(A%nrow,A%ncol,AB(1),diag,1,1,DESC_B&
+!            ,1,diag2,1,1,DESC_C,1,A%p,1,1,DESC_A,ierr)
+!      !deallocate(diag,diag2)
    CASE(Job_hmul)
       CALL DGEBR2D(SLGrid%ictxt,'A','I',2,1,AB,2,&
            &SLGrid%myrow,SLGrid%mycol)
@@ -3543,8 +3689,6 @@ module matrix_operations_scalapack
 
       CALL PDGEMR2D(fullrow,fullcol,AF,1,1,DESC_AF, &
                    &A%p,insertrow,insertcol,DESC_A,SLGrid%ictxt)
-
-
 
    CASE(Job_print_global)
       call sleep(scalapack_mynum*5) !so first slave wait 5 sec, second slave wait for 10 sec

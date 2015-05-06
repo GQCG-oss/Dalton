@@ -3,8 +3,8 @@
 # LSDALTON_FREE_FORTRAN_SOURCES  
 # at the end of the file
 
-set(DEC_C_SOURCES
-    LSDALTON/deccc/crayio.c
+set(CUDA_GPU_INTERFACE_SOURCES
+    LSDALTON/cuda/gpu_interfaces.F90
     )
 set(DFTFUNC_SOURCES
     LSDALTON/dft/fun-example.c
@@ -76,6 +76,9 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccarray3_simple.F90
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
+    LSDALTON/deccc/rimp2.F90
+    LSDALTON/deccc/ri_util.F90
+    LSDALTON/deccc/ls_thc_rimp2.F90
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
@@ -86,7 +89,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
     LSDALTON/deccc/cc_driver.F90
-    LSDALTON/deccc/cc_debug_routines.F90
     LSDALTON/deccc/cc_integrals.F90
     LSDALTON/deccc/ccarray2_simple.F90
     LSDALTON/deccc/ccarray4_simple.F90
@@ -101,8 +103,13 @@ set(DEC_SOURCES
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
+    LSDALTON/deccc/ccsd_gradient.F90
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
+    LSDALTON/deccc/full_rimp2.F90
+    LSDALTON/deccc/full_rimp2f12.F90
+    LSDALTON/deccc/full_mp2.F90
+    LSDALTON/deccc/full_ls_thc_rimp2.F90
     LSDALTON/deccc/snoop_main.F90
     LSDALTON/deccc/snoop_tools.F90
     LSDALTON/deccc/decmpi.F90
@@ -291,6 +298,8 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specR.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL3.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_specL4.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_Ecoeff_general.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEriTools.F90
@@ -683,6 +692,8 @@ set(LSINT_SOURCES
     LSDALTON/LSint/BuildMolFile.F90
     LSDALTON/LSint/gridgeneration.F90
     LSDALTON/LSint/gridgeneration_boxify.F90
+    LSDALTON/LSint/THC_grid.F90
+    LSDALTON/LSint/THC_util.F90
     LSDALTON/LSint/II_XC_interface.F90
     LSDALTON/LSint/II_absval_int.F90
     LSDALTON/LSint/II_dft_int.F90
@@ -704,6 +715,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ThermiteDistributeDEC.F90
     LSDALTON/LSint/ThermiteDriver.F90
     LSDALTON/LSint/ThermiteIntegrals.F90
+    LSDALTON/LSint/ThermiteIntTransform.F90
     LSDALTON/LSint/ThermiteOverlapDistribution.F90
     LSDALTON/LSint/ThermiteProp.F90
     LSDALTON/LSint/ThermiteMem.F90
@@ -712,6 +724,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ls_IntegralInterface.F90
     LSDALTON/LSint/pari.F90
     LSDALTON/LSint/lsmpi.F90
+    LSDALTON/LSint/HODItest.F90
     LSDALTON/LSint/II_dft_dftd.F90
     )
 #####################################################
@@ -733,13 +746,17 @@ set(LSINT_SOURCES
 ############################################################
 set(LSUTIL_PRECISION_SOURCES
     LSDALTON/lsutil/ls_precision.F90
-    LSDALTON/lsutil/ptr_assoc.F90
     LSDALTON/lsutil/lsmpi_mod.F90
     )
 set(LSUTIL_MATRIXM_SOURCES
-    LSDALTON/lsutil/matrix_module.F90    LSDALTON/
+    LSDALTON/lsutil/matrix_module.F90
+    )
+set(LSUTIL_COMMON_C_SOURCES
+    LSDALTON/lsutil/myPAPI_set_inherit.c
+    LSDALTON/lsutil/crayio.c
     )
 set(LSUTIL_COMMON_SOURCES
+    LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
     LSDALTON/lsutil/tensor_type_def.F90
     LSDALTON/lsutil/response_prop_type.F90
@@ -755,6 +772,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/f12.F90
     LSDALTON/lsutil/IntegralType.F90
     LSDALTON/lsutil/TYPE-DEF.F90
+    LSDALTON/lsutil/background_buffer.F90
     LSDALTON/lsutil/memory.F90
     LSDALTON/lsutil/MemoryLeakTool.F90
     LSDALTON/lsutil/gridgeneration_memory.F90
@@ -775,11 +793,20 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/OverlapDistributionType.F90
     LSDALTON/lsutil/pbc_lattice_type.F90
     )
+set(LSUTIL_TENSOR_SOURCES
+    LSDALTON/lsutil/dec_workarounds.F90
+    LSDALTON/lsutil/tensor_interface.F90
+    LSDALTON/lsutil/lspdm_tensor_operations.F90
+    LSDALTON/lsutil/tensor_algebra_dil.F90
+    LSDALTON/lsutil/tensor_basic.F90
+    LSDALTON/lsutil/lspdm_basic.F90
+    )
 set(LSUTIL_MATRIXO_SOURCES
     LSDALTON/lsutil/matop_csr.F90
     LSDALTON/lsutil/matop_dense.F90
     LSDALTON/lsutil/matop_dense_unrest.F90
-    LSDALTON/lsutil/matop_scalapack.F90    LSDALTON/
+    LSDALTON/lsutil/matop_scalapack.F90
+    LSDALTON/lsutil/matop_pdm.F90
     )
 set(LSUTIL_MATRIXO_C_SOURCES
     LSDALTON/lsutil/matop_csr_aux.c
@@ -806,11 +833,6 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/TYPE-OP.F90
     LSDALTON/lsutil/GCtrans.F90
     LSDALTON/lsutil/Build_AOBATCH.F90
-    LSDALTON/lsutil/lspdm_basic.F90
-    LSDALTON/lsutil/tensor_basic.F90
-    LSDALTON/lsutil/lspdm_tensor_operations.F90
-    LSDALTON/lsutil/dec_workarounds.F90
-    LSDALTON/lsutil/tensor_algebra_dil.F90
     )
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90
@@ -819,11 +841,11 @@ set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/ks-settings.F90
     LSDALTON/lsutil/lsmpi-operations.F90
     LSDALTON/lsutil/lsutilities.F90
+    LSDALTON/lsutil/pseudoinverse.F90
     LSDALTON/lsutil/LSoptType.F90
     LSDALTON/lsutil/ddynType.F90
     LSDALTON/lsutil/ProfileType.F90
     LSDALTON/lsutil/pbc_lattice_vectors.F90
-    LSDALTON/lsutil/tensor_interface.F90
     LSDALTON/lsutil/lspdm_slave.F90
     )
 set(LSLIB_SOURCES
@@ -863,6 +885,7 @@ if(ENABLE_QMATRIX)
 endif()
 # collect all free fortran sources
 set(LSDALTON_FREE_FORTRAN_SOURCES
+    ${CUDA_GPU_INTERFACE_SOURCES}
     ${DFTFUNC_F_SOURCES}
     ${LSDALTONMAIN_FORTRAN_SOURCES}
     ${DDYNAM_SOURCES}

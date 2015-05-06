@@ -314,9 +314,9 @@ integer :: i,j,tmp
  
 end subroutine leastchange_rowsort_diag
 
-subroutine leastchange_rowsort_occup(uindex,CMO,nocc,n)
+subroutine leastchange_rowsort_occup(uindex,CMO,ncore,nocc,n)
 implicit none
-integer :: n,nocc, uindex(n)
+integer :: n,ncore,nocc, uindex(n)
 real(realk) :: CMO(n,n)
 real(realk),pointer :: occnum(:)
 integer, external     :: idamax
@@ -325,11 +325,14 @@ integer :: i,j,tmp
 real(realk) :: rtmp
 
 
+
+ ! 1. Order orbitals according to occupied/virtual occupation
+ ! --> "occupied" OAOs before "virtual" OAOs
  call mem_alloc(occnum,n)
  do i=1,n
-   occnum(i) = ddot(nocc,CMO(i,1),n,CMO(i,1),n)
+   occnum(i) = ddot(nocc,CMO(i,1),n,CMO(i,1),n) 
  enddo
- 
+
  do i=1,nocc
        j=idamax(n-i+1,occnum(i),1)
        j=j+i-1
@@ -339,7 +342,25 @@ real(realk) :: rtmp
         rtmp=occnum(i); occnum(i)=occnum(j); occnum(j)=rtmp
        endif
  enddo
+ call mem_dealloc(occnum)
 
+
+ ! 2. Order orbitals according to core/valence occupation
+ ! --> "core" OAOs before "valence" OAOs
+ call mem_alloc(occnum,nocc)
+ do i=1,nocc
+   occnum(i) = ddot(ncore,CMO(i,1),n,CMO(i,1),n) 
+ enddo
+
+ do i=1,ncore
+       j=idamax(nocc-i+1,occnum(i),1)
+       j=j+i-1
+       if (j.gt.i) then
+        call dswap(n, CMO(j,1),n,CMO(i,1),n)   
+        tmp=uindex(i); uindex(i)=uindex(j); uindex(j)=tmp
+        rtmp=occnum(i); occnum(i)=occnum(j); occnum(j)=rtmp
+       endif
+ enddo
  call mem_dealloc(occnum)
  
 end subroutine leastchange_rowsort_occup
@@ -616,6 +637,7 @@ real(realk),pointer :: CMOf(:,:), Tf(:,:)
   n = CMO%nrow
   call mat_init(tmp,n,n)
   call mat_mul(decomp%U,CMO,'n','n',1E0_realk,0E0_realk,tmp)
+
   call mem_alloc(CMOf,n,n)
   call mat_to_full(tmp,1E0_realk,CMOf)
   call mat_free(tmp)
@@ -629,7 +651,7 @@ real(realk),pointer :: CMOf(:,:), Tf(:,:)
   enddo
 
   !occupation sorting
-  call leastchange_rowsort_occup(uindex,CMOf,nocc,n)
+  call leastchange_rowsort_occup(uindex,CMOf,ncore,nocc,n)
 
   !brute force sorting
   call mem_alloc(Tf,n,n)

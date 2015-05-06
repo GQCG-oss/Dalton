@@ -61,7 +61,6 @@ INTEGER FUNCTION getNbasis(AOtype,intType,MOLECULE,LUPRI)
 implicit none
 integer           :: AOtype,intType
 Integer           :: LUPRI
-!Type(DaltonInput) :: DALTON
 TYPE(MOLECULEINFO):: MOLECULE
 !
 integer :: np,nc
@@ -155,6 +154,7 @@ DALTON%ADMM_separateX= .FALSE.
 DALTON%ADMM_2ERI     = .FALSE.
 DALTON%PRINT_EK3     = .FALSE.
 DALTON%ADMMBASISFILE = .FALSE. !we do not produce ADMMmin.dat file 
+DALTON%ADMMexchangeMetric = .FALSE.
 DALTON%NOFAMILY = .FALSE.
 DALTON%Hermiteecoeff = .TRUE.
 DALTON%JENGINE = .TRUE.
@@ -213,11 +213,13 @@ DALTON%DEBUGLSlib = .FALSE.
 DALTON%DEBUGUncontAObatch = .FALSE.
 DALTON%DEBUGDECPACKED = .FALSE.
 DALTON%DO4CENTERERI = .FALSE.
+DALTON%DUMP4CENTERERI = .FALSE.
 DALTON%DO3CENTEROVL = .FALSE.
 DALTON%DO2CENTERERI = .FALSE.
 DALTON%OVERLAP_DF_J = .FALSE.
 DALTON%PARI_J = .FALSE.
 DALTON%PARI_K = .FALSE.
+DALTON%MOPARI_K = .FALSE.
 DALTON%SIMPLE_PARI = .FALSE.
 DALTON%NON_ROBUST_PARI = .FALSE.
 DALTON%PARI_CHARGE = .FALSE.
@@ -287,6 +289,14 @@ CALL DFT_set_default_config(DALTON%DFT)
 ! DEC TEST PARAMETERS
 DALTON%run_dec_gradient_test=.false.
 DALTON%ForceRIMP2memReduced = .FALSE.
+DALTON%PreCalcDFscreening = .FALSE.
+DALTON%PreCalcF12screening = .FALSE.
+
+dalton%LU_LUINTM=0
+dalton%LU_LUINTR=0
+dalton%LU_LUINDM=0
+dalton%LU_LUINDR=0
+
 END SUBROUTINE integral_set_default_config
 
 !!$!> \brief attach dmat to integral input structure
@@ -928,11 +938,13 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGUncontAObatch', DALTON%DEBUGUncontAObatch
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGDECPACKED', DALTON%DEBUGDECPACKED
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PARI_J',DALTON%PARI_J
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PARI_K',DALTON%PARI_K
+WRITE(LUPRI,'(2X,A35,7X,L1)')'MOPARI_K',DALTON%MOPARI_K
 WRITE(LUPRI,'(2X,A35,7X,L1)')'SIMPLE_PARI',DALTON%SIMPLE_PARI
 WRITE(LUPRI,'(2X,A35,7X,L1)')'NON_ROBUST_PARI',DALTON%NON_ROBUST_PARI
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PARI_CHARGE',DALTON%PARI_CHARGE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PARI_DIPOLE',DALTON%PARI_DIPOLE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DO4CENTERERI',DALTON%DO4CENTERERI
+WRITE(LUPRI,'(2X,A35,7X,L1)')'DUMP4CENTERERI',DALTON%DUMP4CENTERERI
 WRITE(LUPRI,'(2X,A35,7X,L1)')'OVERLAP_DF_J',DALTON%OVERLAP_DF_J
 WRITE(LUPRI,'(2X,A35,7X,L1)')'TIMINGS',DALTON%TIMINGS
 WRITE(LUPRI,'(2X,A35,7X,L1)')'nonSphericalETUV',DALTON%nonSphericalETUV
@@ -982,6 +994,7 @@ WRITE(LUPRI,'(2X,A35,7X,A30)')'ADMM_FUNC',DALTON%ADMM_FUNC
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_separateX',DALTON%ADMM_separateX
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PRINT_EK3',DALTON%PRINT_EK3
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMBASISFILE',DALTON%ADMMBASISFILE
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMexchangeMetric',DALTON%ADMMexchangeMetric
 WRITE(LUPRI,'(2X,A35,7X,L1)')'SR_EXCHANGE',DALTON%SR_EXCHANGE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'CAM',DALTON%CAM
 WRITE(LUPRI,'(2X,A35,F16.8)') 'CAMalpha',DALTON%CAMalpha
@@ -993,6 +1006,8 @@ call WRITE_FORMATTET_DFT_param(LUPRI,DALTON%DFT)
 !EXCHANGE FACTOR
 WRITE(LUPRI,'(2X,A35,F16.8)') 'exchangeFactor',DALTON%exchangeFactor
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ForceRIMP2memReduced ',DALTON%ForceRIMP2memReduced
+WRITE(LUPRI,'(2X,A35,7X,L1)')'PreCalcDFscreening   ',DALTON%PreCalcDFscreening
+WRITE(LUPRI,'(2X,A35,7X,L1)')'PreCalcF12screening  ',DALTON%PreCalcF12screening
 
 END SUBROUTINE PRINT_DALTONITEM
 
@@ -2716,7 +2731,7 @@ scheme%LSDASCREEN            = dalton_inp%LSDASCREEN
 scheme%LSDAJENGINE           = dalton_inp%LSDAJENGINE
 scheme%LSDACOULOMB           = dalton_inp%LSDACOULOMB
 scheme%LSDALINK              = dalton_inp%LSDALINK
-scheme%LSDASCREEN_THRLOG       = dalton_inp%LSDASCREEN_THRLOG
+scheme%LSDASCREEN_THRLOG     = dalton_inp%LSDASCREEN_THRLOG
 scheme%DAJENGINE             = dalton_inp%DAJENGINE
 scheme%DACOULOMB             = dalton_inp%DACOULOMB
 scheme%DALINK                = dalton_inp%DALINK
@@ -2729,6 +2744,7 @@ scheme%DEBUGKINETIC          = dalton_inp%DEBUGKINETIC
 scheme%DEBUGNUCPOT           = dalton_inp%DEBUGNUCPOT
 scheme%PARI_J                = dalton_inp%PARI_J
 scheme%PARI_K                = dalton_inp%PARI_K
+scheme%MOPARI_K              = dalton_inp%MOPARI_K
 scheme%SIMPLE_PARI           = dalton_inp%SIMPLE_PARI
 scheme%NON_ROBUST_PARI       = dalton_inp%NON_ROBUST_PARI
 scheme%PARI_CHARGE           = dalton_inp%PARI_CHARGE
@@ -2766,6 +2782,7 @@ scheme%ADMMQ                 = dalton_inp%ADMMQ
 scheme%ADMMS                 = dalton_inp%ADMMS
 scheme%ADMMP                 = dalton_inp%ADMMP
 scheme%ADMM_separateX        = dalton_inp%ADMM_separateX
+scheme%ADMMexchangeMetric    = dalton_inp%ADMMexchangeMetric
 scheme%ADMM_2ERI             = dalton_inp%ADMM_2ERI 
 scheme%PRINT_EK3             = dalton_inp%PRINT_EK3
 scheme%THRESHOLD             = dalton_inp%THRESHOLD
@@ -2805,6 +2822,8 @@ scheme%CAMbeta               = dalton_inp%CAMbeta
 scheme%CAMmu                 = dalton_inp%CAMmu
 scheme%exchangeFactor        = dalton_inp%exchangeFactor
 scheme%ForceRIMP2memReduced  = dalton_inp%ForceRIMP2memReduced
+scheme%PreCalcDFscreening    = dalton_inp%PreCalcDFscreening
+scheme%PreCalcF12screening    = dalton_inp%PreCalcF12screening
 
 !DFT parameters 
 call dft_setIntegralSchemeFromInput(scheme%DFT,dalton_inp%DFT)
@@ -2863,7 +2882,8 @@ WRITE(IUNIT,'(3X,A22,L7)') 'DEBUGNUCPOT           ', scheme%DEBUGNUCPOT
 WRITE(IUNIT,'(3X,A22,L7)') 'DO4CENTERERI          ', scheme%DO4CENTERERI
 WRITE(IUNIT,'(3X,A22,L7)') 'OVERLAP_DF_J          ', scheme%OVERLAP_DF_J
 WRITE(IUNIT,'(3X,A22,L7)') 'PARI_J                ', scheme%PARI_J          
-WRITE(IUNIT,'(3X,A22,L7)') 'PARI_K                ', scheme%PARI_K          
+WRITE(IUNIT,'(3X,A22,L7)') 'PARI_K                ', scheme%PARI_K 
+WRITE(IUNIT,'(3X,A22,L7)') 'MOPARI_K              ', scheme%MOPARI_K          
 WRITE(IUNIT,'(3X,A22,L7)') 'SIMPLE_PARI           ', scheme%SIMPLE_PARI
 WRITE(IUNIT,'(3X,A22,L7)') 'NON_ROBUST_PARI       ', scheme%NON_ROBUST_PARI
 WRITE(IUNIT,'(3X,A22,L7)') 'PARI_CHARGE           ', scheme%PARI_CHARGE     
@@ -2899,6 +2919,7 @@ WRITE(IUNIT,'(3X,A22,L7)') 'ADMMQ                 ', scheme%ADMMQ
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMS                 ', scheme%ADMMS
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMP                 ', scheme%ADMMP
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_separateX        ', scheme%ADMM_separateX
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMMexchangeMetric    ', scheme%ADMMexchangeMetric
 WRITE(IUNIT,'(3X,A22,L7)') 'PRINT_EK3             ', scheme%PRINT_EK3
 WRITE(IUNIT,'(3X,A22,G14.2)') 'THRESHOLD             ', scheme%THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'CS_THRESHOLD          ', scheme%CS_THRESHOLD
@@ -2936,6 +2957,8 @@ WRITE(IUNIT,'(3X,A22,L7)')'INCREMENTAL           ', scheme%INCREMENTAL
 WRITE(IUNIT,'(3X,A22,L7)')'DO_PROP               ', scheme%DO_PROP
 WRITE(IUNIT,'(3X,A22,I7)')'PropOper              ', scheme%PropOper
 WRITE(IUNIT,'(3X,A22,I7)')'ForceRIMP2memReduced  ', scheme%ForceRIMP2memReduced
+WRITE(IUNIT,'(3X,A22,I7)')'PreCalcDFscreening    ', scheme%PreCalcDFscreening
+WRITE(IUNIT,'(3X,A22,I7)')'PreCalcF12screening   ', scheme%PreCalcF12screening
 
 END SUBROUTINE typedef_printScheme
 
@@ -3373,8 +3396,8 @@ integer :: ncore, i, icharge,nAtoms
     icharge = INT(ls%setting%MOLECULE(1)%p%ATOM(i)%charge)
   
     if (icharge.gt. 2)  ncore = ncore + 1
-    if (icharge.gt. 10) ncore = ncore + 4
-    if (icharge.gt. 18) ncore = ncore + 4
+    if (icharge.gt. 12) ncore = ncore + 4
+    if (icharge.gt. 20) ncore = ncore + 4
     if (icharge.gt. 30) ncore = ncore + 6
 
   enddo

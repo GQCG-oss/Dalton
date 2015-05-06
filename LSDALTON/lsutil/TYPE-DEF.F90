@@ -113,9 +113,11 @@ LOGICAL  :: DEBUGLSlib
 LOGICAL  :: DEBUGUncontAObatch
 LOGICAL  :: DEBUGDECPACKED
 LOGICAL  :: DO4CENTERERI
+LOGICAL  :: DUMP4CENTERERI
 LOGICAL  :: OVERLAP_DF_J
 LOGICAL  :: PARI_J
 LOGICAL  :: PARI_K
+LOGICAL  :: MOPARI_K
 LOGICAL  :: SIMPLE_PARI
 LOGICAL  :: NON_ROBUST_PARI
 LOGICAL  :: PARI_CHARGE
@@ -196,6 +198,7 @@ LOGICAL       :: ADMM_separateX
 LOGICAL       :: ADMM_2ERI
 LOGICAL       :: PRINT_EK3
 LOGICAL       :: ADMMBASISFILE
+LOGICAL       :: ADMMexchangeMetric
 
 LOGICAL       :: SR_EXCHANGE
 !Coulomb attenuated method CAM parameters
@@ -214,6 +217,8 @@ INTEGER     :: molcharge
 ! TESTING FUNCTIONALITIES FOR DEC
 LOGICAL     :: run_dec_gradient_test
 LOGICAL     :: ForceRIMP2memReduced
+LOGICAL     :: PreCalcDFscreening
+LOGICAL     :: PreCalcF12screening
 END TYPE integralconfig
 
 ! WARNING WARNING  WARNING WARNING 
@@ -264,6 +269,7 @@ LOGICAL  :: DO4CENTERERI
 LOGICAL  :: OVERLAP_DF_J
 LOGICAL  :: PARI_J
 LOGICAL  :: PARI_K
+LOGICAL  :: MOPARI_K
 LOGICAL  :: SIMPLE_PARI
 LOGICAL  :: NON_ROBUST_PARI
 LOGICAL  :: PARI_CHARGE
@@ -357,6 +363,7 @@ LOGICAL     :: PRINT_EK3
 ! to avoid redundant recalculation in the gradient
 real(realk) :: ADMM_CONSTRAIN_FACTOR
 real(realk) :: ADMM_LARGE_LAMBDA
+LOGICAL     :: ADMMexchangeMetric
 !
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
@@ -372,6 +379,8 @@ LOGICAL :: INCREMENTAL !Use incremental scheme (density-difference KS-matrix bui
 logical   :: DO_PROP
 integer   :: PropOper
 logical   :: ForceRIMP2memReduced
+logical   :: PreCalcDFscreening
+logical   :: PreCalcF12screening
 END TYPE LSINTSCHEME
 
 !*****************************************
@@ -388,6 +397,7 @@ real(realk)               :: Charges(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: pointcharges(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: phantom(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: DunningsBasis
+real(realk)               :: GeminalScalingFactor
 END TYPE BASISSETLIBRARYITEM
 
 TYPE BLOCK

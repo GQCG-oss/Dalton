@@ -113,8 +113,10 @@ implicit none
            config%davidOrbLoc%precond=.false.
            config%davidSCF%precond=.false.
            config%davidOrbLoc%PM_input%precond=.false.
-        CASE('.MACRO IT')
+       CASE('.MACRO IT')
            READ(input,*)  config%davidOrbLoc%max_macroit
+       CASE('.NOT_QUIT_AFTER_10IT')
+           config%davidOrbLoc%quit_after_10it = .false.
        CASE('.LOOSE MICRO THRESH')
            config%davidOrbLoc%conv_thresh= 0.1_realk
            config%davidOrbLoc%global_conv_thresh= 0.1_realk

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2168,7 +2168,7 @@ C
  2350       JTURN = JTURN + 1
             OVLPI = D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
             IF (IPRRSP .GE. 22) THEN
-               X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+               X1 = DNRM2(LBZY,BVECS(IBVEC),1)
                WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
      *         ' RSPORT, norm and <ZY/YZ> overlap before S-1/2',X1,OVLPI
             END IF
@@ -2194,7 +2194,7 @@ C           ...930712-hjaaj: an output with LBZY only = 480 showed
 C              that OVLPI ca. 1.0D-14 after first S-1/2;
 C              but ca. 1.0D-16 after second S-1/2
                IF (IPRRSP .GE. 22) THEN
-                  X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+                  X1 = DNRM2(LBZY,BVECS(IBVEC),1)
                   OVLPI= D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
                   WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
      *            ' RSPORT, norm and <ZY/YZ> overlap after  S-1/2',

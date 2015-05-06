@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1646,7 +1646,7 @@ C     Orthogonalize against trial vectors (Y,Z)
 C
 C     Check linear dependence.
 C
-         BNORM = DNORM2(KZYVAR,WRK(KBVEC),1)
+         BNORM = DNRM2(KZYVAR,WRK(KBVEC),1)
          IF (BNORM.LT.1.0D-6) THEN
             IF (IPRABS.GE.0) WRITE(LUPRI,'(A)')
      &           ' INFO: vector not used as trial vector'//

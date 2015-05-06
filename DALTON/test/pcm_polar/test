@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+# surf
+f.add(re = 'Surface area .* \(A\^',
+      rel_tolerance = 1.0e-7)
+
+# enehf
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-9)
+
+# tes
+f.add(string = 'Total number of tesserae',
+      rel_tolerance = 1.0e-1)
+
+# nuc
+f.add(string = 'Nuclear repulsion energy',
+      rel_tolerance = 1.0e-10)
+
+# nucchg
+f.add(string = 'NUCLEAR APPARENT CHARGE',
+      rel_tolerance = 1.0e-4)
+
+# diplen
+# OVERRIDE thr 1.0e-4
+f.add(string = 'DIPLEN  ;',
+      rel_tolerance = 1.0e-4)
+
+test.run(['polar.dal'], ['CH2Op2_STO-3G_sym.mol'], f={'out': f})
+
+sys.exit(test.return_code)

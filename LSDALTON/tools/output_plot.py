@@ -204,3 +204,7 @@ def plot_SF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy er
 
 def show_plots():
    plt.show()
+
+def save_plots(name):
+       plt.savefig(name)
+

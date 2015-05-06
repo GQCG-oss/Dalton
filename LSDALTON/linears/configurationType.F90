@@ -76,6 +76,8 @@ type ConfigItem
    logical              :: PrintMemory
    !> Perform interaction energy calculation using Counter Poise Correction
    logical              :: InteractionEnergy
+   ! Use stream access on all files open with lsopen
+   logical              :: access_stream
    !> Same SubSystems in Interaction energies
    logical              :: SameSubSystems
    !> Construct SubSystems Density matrix in Interaction energies
@@ -143,8 +145,12 @@ type ConfigItem
 #endif
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
+   !> do testing of the high-order derivative integrals (HODI)
+   logical              :: doTestHodi
    !> skip SCF calculations
    logical              :: skipscfloop
+   !> test papi
+   logical              :: papitest
 end type ConfigItem
 
 type LowAccuracyStartType

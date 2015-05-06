@@ -1,6 +1,7 @@
 module files
 
     logical, save :: first = .true.
+    logical, save :: access_stream = .false.
     integer, save :: IUNTAB(99)
 
 contains 
@@ -29,187 +30,202 @@ contains
 !>  FILEIN   Suggested name for the file (OPTIONAL, but strongly recommended)
 !>  STATIN   Suggested status of the file (OPTIONAL and maybe not recommended)
 !>  FORMIN   Formatted or unformatted file format. Default is 'UNFORMATTED'
+!>  POSIN    File positioning (OPTIONAL, default is 'ASIS')
 !>
 !> Output:
 !>  LUNIT    Assigned file unit number
 !>
-subroutine lsopen(lunit,filein,statin,formin)
-implicit none
-        !> Suggested unit number
-        integer, intent(inout)  :: lunit
-        !> Filename
-        character(len=*), intent(in) :: filein
-        !> Status of the file ('NEW','OLD','SCRATCH','UNKNOWN'(default))
-        character(len=*), intent(in) :: statin 
-        !> Formatted or unformatted file format ('FORMATTED','UNFORMATTED'(default))
-        character(len=*), intent(in) :: formin 
-        integer       :: FILELEN, STATLEN, FORMLEN, iunit
-        integer       :: LENOUT,LENWRK,IOS,i
-        character(len=200) :: filename, filestatus, fileformat 
-        character(len=20) :: outfil
-        character(len=200) :: wrkdir
-        logical :: fileexists
-        do I=1,200
-           filestatus(I:I) = ' '
-           filename(I:I) = ' '
-           fileformat(I:I) = ' '
-        enddo
+subroutine lsopen(lunit,filein,statin,formin,posin)
+   implicit none
+   !> Suggested unit number
+   integer, intent(inout)  :: lunit
+   !> Filename
+   character(len=*), intent(in) :: filein
+   !> Status of the file ('NEW','OLD','SCRATCH','UNKNOWN'(default))
+   character(len=*), intent(in) :: statin 
+   !> Formatted or unformatted file format ('FORMATTED','UNFORMATTED'(default))
+   character(len=*), intent(in) :: formin 
+   !> Optional file positioning ('ASIS'(default),'REWIND','APPEND')
+   character(len=*), optional, intent(in) :: posin
+   integer       :: FILELEN, STATLEN, FORMLEN, iunit
+   integer       :: LENOUT,LENWRK,IOS,i
+   character(len=200) :: filename, filestatus, fileformat 
+   character(len=20) :: outfil,acc_type,pos
+   character(len=200) :: wrkdir
+   logical :: fileexists
+
+   ! default position is 'ASIS'
+   pos='ASIS'
+   if (present(posin)) pos = posin
+
+   ! set access type
+   if (access_stream) then
+      acc_type='STREAM'
+   else
+      acc_type='SEQUENTIAL'
+   end if
+
+   do I=1,200
+      filestatus(I:I) = ' '
+      filename(I:I) = ' '
+      fileformat(I:I) = ' '
+   enddo
    if (first) then
       call ls_izero(IUNTAB,99)
 #if defined(SYS_HPUX)
-!
-!     This avoids us writing to unit 7 of HP-systems (which corresponds to
-!     standard error on this machine)
-!
+      !
+      !     This avoids us writing to unit 7 of HP-systems (which corresponds to
+      !     standard error on this machine)
+      !
       IUNTAB(7) = 1
 #endif
       first = .false.
    endif
+   !
+   !     We first deal with the unit number
+   !
+   FILELEN = LEN(FILEIN)
+   STATLEN = LEN(STATIN)
+   FORMLEN = LEN(FORMIN)
+   filename(1:FILELEN) = FILEIN(1:FILELEN)
+   filestatus(1:STATLEN) = STATIN(1:STATLEN)
+   fileformat(1:FORMLEN) = FORMIN(1:FORMLEN)
 
-!
-!     We first deal with the unit number
-!
-      FILELEN = LEN(FILEIN)
-      STATLEN = LEN(STATIN)
-      FORMLEN = LEN(FORMIN)
-      filename(1:FILELEN) = FILEIN(1:FILELEN)
-      filestatus(1:STATLEN) = STATIN(1:STATLEN)
-      fileformat(1:FORMLEN) = FORMIN(1:FORMLEN)
-
-      if ((LUNIT < 1) .or. (LUNIT > 99)) then
-!
-!     Unit number left unassigned, we get to decide!
-!
-         !Quickfix: Start at unit number 50, since some of the first numbers
-         !are used by "old" dalton. Not really pretty, but can be removed
-         !once we are completely free of the old code.
-         iunit = 50
-         do
-            iunit = iunit + 1
-            IF (iunit > 99) call error_open(9001,lunit,filename,filelen)
-            IF ((iunit == 5) .or. (iunit == 6)) then
-               cycle
-            endif
-            IF (IUNTAB(iunit) /= 0) then
-               cycle
-            endif
-            LUNIT = iunit
-            exit
-         enddo
-      else
-!
-!     The user has requested a specific unit number. We don't 
-!     quite trust the user, so we check that
-!     1) It is not unit 5, or 6
-!     2) The file either has been closed with status='KEEP' or is
-!        not currently in use
-!
-         IF ((LUNIT == 5) .or. (LUNIT == 6)) call error_open(9002,lunit,filename,filelen)
-         IF (IUNTAB(LUNIT) == 1) call error_open(9003,lunit,filename,filelen)
-      END IF
-
-      IF (filename(1:FILELEN) == 'LSDALTON.OUT') THEN
-         OUTFIL = '                    '
-#if defined(SYS_T3D)||defined(SYS_T90)
-         CALL PXFGETENV ('OUTFIL',6,OUTFIL,LOUTFL,IERR)
-#else 
-         CALL GETENV ('OUTFIL',OUTFIL)
-#endif
-         IF (OUTFIL(1:1) /= ' ') THEN
-            LENOUT = 0
-            DO I = 1, 20
-               IF (OUTFIL(I:I) .EQ. ' ') exit
-               LENOUT = LENOUT + 1
-            END DO
-
-#if defined(SYS_T3D)||defined(SYS_T90)
-            CALL PXFGETENV ('WRKDIR',6,WRKDIR,LWRKDR,IERR)
-#else 
-            CALL GETENV ('WRKDIR',WRKDIR)
-#endif
-            LENWRK = 0
-            DO I = 1, 200
-               IF (WRKDIR(I:I) .EQ. ' ') exit
-               LENWRK = LENWRK + 1
-            END DO
-
-            FILELEN = LENWRK + LENOUT + 1
-            filename(1:FILELEN) = WRKDIR(1:LENWRK)//'/'//OUTFIL(1:LENOUT)
-         END IF
-      END IF
-      IF (STATLEN .EQ. 1) THEN
-         STATLEN = 7
-         filestatus(1:7) = 'UNKNOWN'
-      END IF
-
-!
-!     We've got a file number now
-!
-      IF (filestatus(1:3) == 'OLD' .and. IUNTAB(LUNIT) == 0) THEN
-!
-!        This better be a file with a name, and it better exist
-!
-         IF (FILELEN == 1) call error_open(9005,lunit,filename,filelen)
-
-         INQUIRE(FILE=filename(1:FILELEN),EXIST=fileexists,IOSTAT=IOS)
-
-         IF (.NOT. fileexists) call error_open(9007,lunit,filename,filelen)
-
-         IF (FORMLEN == 1) THEN
-            FORMLEN = 11
-            fileformat(1:FORMLEN)='UNFORMATTED'
-         END IF
-
-         OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS='OLD', &
-     &     FORM=fileformat(1:FORMLEN),IOSTAT=IOS)
-
-         if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
-
-      ELSE
-         IF (filestatus(1:3) == 'NEW' .AND. IUNTAB(LUNIT) /= 0) call error_open(9006,lunit,filename,filelen)
-
-         if (filename == ' ') then
-            call lsquit('LSOPEN: file must have a name!',-1)
+   if ((LUNIT < 1) .or. (LUNIT > 99)) then
+      !
+      !     Unit number left unassigned, we get to decide!
+      !
+      !Quickfix: Start at unit number 50, since some of the first numbers
+      !are used by "old" dalton. Not really pretty, but can be removed
+      !once we are completely free of the old code.
+      iunit = 50
+      do
+         iunit = iunit + 1
+         IF (iunit > 99) call error_open(9001,lunit,filename,filelen)
+         IF ((iunit == 5) .or. (iunit == 6)) then
+            cycle
          endif
-!         IF (FILELEN == 1) THEN
-!            FILELEN = 6
-!            FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
-!     &               CHRNOS(MOD(LUNIT,10))
-!         END IF
+         IF (IUNTAB(iunit) /= 0) then
+            cycle
+         endif
+         LUNIT = iunit
+         exit
+      enddo
+   else
+      !
+      !     The user has requested a specific unit number. We don't 
+      !     quite trust the user, so we check that
+      !     1) It is not unit 5, or 6
+      !     2) The file either has been closed with status='KEEP' or is
+      !        not currently in use
+      !
+      IF ((LUNIT == 5) .or. (LUNIT == 6)) call error_open(9002,lunit,filename,filelen)
+      IF (IUNTAB(LUNIT) == 1) call error_open(9003,lunit,filename,filelen)
+   END IF
 
-         IF (FORMLEN == 1) THEN
-            FORMLEN = 11
-            fileformat(1:11)='UNFORMATTED'
-         END IF
+   IF (filename(1:FILELEN) == 'LSDALTON.OUT') THEN
+      OUTFIL = '                    '
+#if defined(SYS_T3D)||defined(SYS_T90)
+      CALL PXFGETENV ('OUTFIL',6,OUTFIL,LOUTFL,IERR)
+#else 
+      CALL GETENV ('OUTFIL',OUTFIL)
+#endif
+      IF (OUTFIL(1:1) /= ' ') THEN
+         LENOUT = 0
+         DO I = 1, 20
+            IF (OUTFIL(I:I) .EQ. ' ') exit
+            LENOUT = LENOUT + 1
+         END DO
 
-         IF (filestatus(1:7) == 'SCRATCH') THEN 
-            OPEN(UNIT=LUNIT,STATUS='SCRATCH',FORM=fileformat(1:FORMLEN),IOSTAT=IOS)
-            if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
-         ELSE
+#if defined(SYS_T3D)||defined(SYS_T90)
+         CALL PXFGETENV ('WRKDIR',6,WRKDIR,LWRKDR,IERR)
+#else 
+         CALL GETENV ('WRKDIR',WRKDIR)
+#endif
+         LENWRK = 0
+         DO I = 1, 200
+            IF (WRKDIR(I:I) .EQ. ' ') exit
+            LENWRK = LENWRK + 1
+         END DO
 
-            IF(filestatus(1:STATLEN) == 'NEW') THEN
-               !hjaaj/may2000:... if filename already exists the program will abort
-               !                  thus we inquire first and delete if necessary.
-               !                  This will often be the case if we restart a
-               !                  calculation.
+         FILELEN = LENWRK + LENOUT + 1
+         filename(1:FILELEN) = WRKDIR(1:LENWRK)//'/'//OUTFIL(1:LENOUT)
+      END IF
+   END IF
+   IF (STATLEN .EQ. 1) THEN
+      STATLEN = 7
+      filestatus(1:7) = 'UNKNOWN'
+   END IF
 
-               INQUIRE(FILE=filename(1:FILELEN),EXIST=fileexists,IOSTAT=IOS)
+   !
+   !     We've got a file number now
+   !
+   IF (filestatus(1:3) == 'OLD' .and. IUNTAB(LUNIT) == 0) THEN
+      !
+      !        This better be a file with a name, and it better exist
+      !
+      IF (FILELEN == 1) call error_open(9005,lunit,filename,filelen)
 
-               IF (fileexists) THEN
-                  OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS='OLD', &
-                     & FORM=fileformat(1:FORMLEN),IOSTAT=IOS)
-                  if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
-                  CLOSE(UNIT=LUNIT,STATUS='DELETE')
-               END IF
+      INQUIRE(FILE=filename(1:FILELEN),EXIST=fileexists,IOSTAT=IOS)
+
+      IF (.NOT. fileexists) call error_open(9007,lunit,filename,filelen)
+
+      IF (FORMLEN == 1) THEN
+         FORMLEN = 11
+         fileformat(1:FORMLEN)='UNFORMATTED'
+      END IF
+
+      OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS='OLD', &
+         &     FORM=fileformat(1:FORMLEN),IOSTAT=IOS,ACCESS=ACC_TYPE,POSITION=POS)
+
+      if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
+
+   ELSE
+      IF (filestatus(1:3) == 'NEW' .AND. IUNTAB(LUNIT) /= 0) call error_open(9006,lunit,filename,filelen)
+
+      if (filename == ' ') then
+         call lsquit('LSOPEN: file must have a name!',-1)
+      endif
+      !         IF (FILELEN == 1) THEN
+      !            FILELEN = 6
+      !            FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
+      !     &               CHRNOS(MOD(LUNIT,10))
+      !         END IF
+
+      IF (FORMLEN == 1) THEN
+         FORMLEN = 11
+         fileformat(1:11)='UNFORMATTED'
+      END IF
+
+      IF (filestatus(1:7) == 'SCRATCH') THEN 
+         OPEN(UNIT=LUNIT,STATUS='SCRATCH',FORM=fileformat(1:FORMLEN),IOSTAT=IOS, &
+            & ACCESS=ACC_TYPE, POSITION=POS)
+         if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
+      ELSE
+
+         IF(filestatus(1:STATLEN) == 'NEW') THEN
+            !hjaaj/may2000:... if filename already exists the program will abort
+            !                  thus we inquire first and delete if necessary.
+            !                  This will often be the case if we restart a
+            !                  calculation.
+
+            INQUIRE(FILE=filename(1:FILELEN),EXIST=fileexists,IOSTAT=IOS)
+
+            IF (fileexists) THEN
+               OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS='OLD', &
+                  & FORM=fileformat(1:FORMLEN),IOSTAT=IOS,ACCESS=ACC_TYPE,POSITION=POS)
+               if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
+               CLOSE(UNIT=LUNIT,STATUS='DELETE')
             END IF
-
-            OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS=filestatus(1:STATLEN), &
-               & FORM=fileformat(1:FORMLEN),IOSTAT=IOS)
-            if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
          END IF
-      ENDIF
 
-      IUNTAB(LUNIT) = 1
+         OPEN(UNIT=LUNIT,FILE=filename(1:FILELEN),STATUS=filestatus(1:STATLEN), &
+            & FORM=fileformat(1:FORMLEN),IOSTAT=IOS,ACCESS=ACC_TYPE,POSITION=POS)
+         if (ios /= 0) call error_open(9004,lunit,filename,filelen,ios)
+      END IF
+   ENDIF
+
+   IUNTAB(LUNIT) = 1
 
 end subroutine lsopen
 

@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Removing all parameters on site',
+      rel_tolerance = 1.0e-12)
+
+test.run(['remove_1.dal', 'remove_2.dal'], ['chromophore.mol'], ['protein.pot'], f={'out': f})
+
+g = Filter()
+g.add(from_string = 'Redistributing multipoles',
+      num_lines = 3,
+      rel_tolerance = 1.0e-12)
+g.add(from_string = 'Resulting',
+      num_lines = 6,
+      rel_tolerance = 1.0e-12)
+
+test.run(['redist_1.dal', 'redist_2.dal', 'redist_3.dal', 'redist_4.dal'], ['chromophore.mol'], ['protein.pot'], f={'out': g})
+
+sys.exit(test.return_code)

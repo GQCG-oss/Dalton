@@ -13,14 +13,14 @@ f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-3)
 
 f.add(string = 'Total RIMP2 energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-3)
 
 f.add(from_string = 'RI-MP2 occupied single energies',
       to_string   = 'RI-MP2 Lagrangian correlation energy',
-      rel_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-3)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

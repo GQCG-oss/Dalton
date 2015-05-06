@@ -18,10 +18,6 @@
        end subroutine
      end interface
 
-!     procedure(mult_real),pointer :: mp => null()
-!     procedure(add_real),pointer  :: ap => null()
-
-
      contains
 
      subroutine my_test
@@ -29,7 +25,10 @@
        type(c_ptr)  :: cptr
        real,pointer :: fptr1(:)
        real,pointer :: fptr2(:)
+       real,pointer :: fptr3(:,:,:)
+       real,pointer :: fptr4(:,:,:,:)
        logical      :: success
+       integer      :: a,b,c
        procedure(testroutine), pointer :: funcptr => null()
       
        allocate(fptr1(8))
@@ -47,26 +46,55 @@
          fptr2(3) = fptr2(1) + fptr2(2)
          fptr2(6) = fptr2(4) * fptr2(5)
        endif
-!       mp => mult_real
-!       ap => add_real
       
        success = .true.
      
-!       funcptr => ap
-      funcptr => add_real	 
+       funcptr => add_real
 
        call funcptr(fptr1(1),fptr1(2),fptr1(7))
       
-!       funcptr => mp
        funcptr => mult_real
        
        call funcptr(fptr1(4),fptr1(5),fptr1(8))
       
        if(fptr1(3)/=fptr1(7).or.fptr1(6)/=fptr1(8)) success = .false.
        if(c_associated(cptr)) success = .false.
-       deallocate(fptr1)
        fptr2 => null()
+
+       !Test pointer reshape I
+       call c_f_pointer(c_loc(fptr1(1)),fptr3,[2,2,2])
+
+       do a=1,2
+          do b=1,2
+             do c=1,2
+                if(fptr3(a,b,c) /= fptr1(a+(b-1)*2+(c-1)*4))then
+                   success = .false.
+                endif
+             enddo
+          enddo
+       enddo
+
+       !Test pointer reshape II
+       !fptr4(1:2,1:1,1:2,1:2) => fptr1
+
+       !do a=1,2
+       !   do b=1,2
+       !      do c=1,2
+       !         if(fptr4(a,1,b,c) /= fptr1(a+(b-1)*2+(c-1)*4))then
+       !            success = .false.
+       !         endif
+       !      enddo
+       !   enddo
+       !enddo
+
+       deallocate(fptr1)
+
+       fptr1 => null()
+       fptr3 => null()
+       fptr4 => null()
+
        print *,success
+       flush(6)
      end subroutine my_test
 
      subroutine mult_real(a,b,c)

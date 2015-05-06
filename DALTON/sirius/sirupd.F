@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -255,7 +255,7 @@ C
       PARAMETER ( D1=1.0D0 )
 C
       CALL DAXPY(NTVAR,D1,CREF,1,C,1)
-      XNOR = D1/DNORM2(NTVAR,C,1)
+      XNOR = D1/DNRM2(NTVAR,C,1)
       CALL DSCAL(NTVAR,XNOR,C,1)
       RETURN
       END
@@ -374,7 +374,7 @@ C DETERMINE INITIAL MAXIMUM ALLOWED STEP IN UPDATE
 C (= norm of step squared because iteration 1 was a second order step
 C    provided gradient also has gone down).
 C
-      XSTP = DNORM2(NVAR,REF1,1) ** 2
+      XSTP = DNRM2(NVAR,REF1,1) ** 2
       XSTP = MAX(XSTP,GNORM(3))
       XSTP = XRSTP * XSTP
       XMAX = XSTP
@@ -392,11 +392,11 @@ C     TEST IF STEP IS SMALLER THAN XSTP
 C
       IF (NCONF .GT. 1) THEN
          DP1EC = GSCAL * DDOT(NCONF,GRD,1,WRK(KVECT),1)
-         XCUPD = DNORM2(NCONF,WRK(KVECT),1)
+         XCUPD = DNRM2(NCONF,WRK(KVECT),1)
       END IF
       IF (NWOPT .GT. 0) THEN
          DP1EO = DDOT(NWOPT,GRD(1+NCONF),1,WRK(KVECT+NCONF),1)
-         XOUPD = DNORM2(NWOPT,WRK(KVECT+NCONF),1)
+         XOUPD = DNRM2(NWOPT,WRK(KVECT+NCONF),1)
       END IF
       DP1EMC = DP1EC + DP1EO
       XUPD  = SQRT(XCUPD**2 + XOUPD**2)

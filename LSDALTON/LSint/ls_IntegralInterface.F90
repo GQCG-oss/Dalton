@@ -11,7 +11,7 @@ MODULE ls_Integral_Interface
        & mtype_scalapack, mat_to_full, mat_free, mat_retrieve_block,&
        & mat_init, mat_trans, mat_daxpy, mat_scal_dia, &
        & mat_setlowertriangular_zero, mat_assign, mat_print,&
-       & mat_write_to_disk
+       & mat_write_to_disk, mtype_pdmm
   use matrix_operations_scalapack, only: PDM_MATRIXSYNC,&
        & free_in_darray
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
@@ -354,7 +354,7 @@ CALL LSTIMER('START',TS,TE,6)
 !IF(Oper .EQ. 'Nucpot' .AND. SETTING%SCHEME%FMM)THEN
 !   CALL LSTIMER('START',TS,TE,LUPRI)
 !ENDIF
-IF(matrix_type.EQ.mtype_scalapack)THEN
+IF(matrix_type.EQ.mtype_scalapack.or.matrix_type.EQ.mtype_pdmm)THEN
    IF (setting%node.EQ.0) THEN
       !change into full format on master 
       call SetScalapackDmatToFull(setting,.TRUE.,.TRUE.)
@@ -657,8 +657,10 @@ Integer              :: nAObuilds,nMAT,nAtoms,iMol
 Logical              :: Classical,buildGab,doscreen,primScreen,batchOnly
 Real(realk),pointer  :: derivativeIntegrals(:,:,:,:,:)
 integer :: ndim2(5),nAtoms1,nAtoms2,nAtoms3,nAtoms4,I,J,ndim25,CMorder
-logical :: sameAllFrag,MBIE_SCREENINT,dograd
+logical :: sameAllFrag,MBIE_SCREENINT,dograd,FullAlphaCD
 
+FullAlphaCD = setting%output%FullAlphaCD
+setting%output%FullAlphaCD = .FALSE.
 ndim2 = setting%output%ndim 
 IF(Setting%scheme%cs_int.OR.Setting%scheme%ps_int)THEN
    MBIE_SCREENINT = Setting%scheme%MBIE_SCREEN.AND.&
@@ -688,6 +690,7 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 ! Currently turned off when calculating integrals only for a specific batch
 doscreen = ((((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucleiOperator)).OR.((Oper.EQ.NucpotOperator).OR.(Oper.EQ.ErfcOperator)))&
      & .OR.(Oper.EQ.CAMOperator)).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemGrdOperator) &
+     & .OR. (Oper.EQ.GGemQuaOperator) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
@@ -756,8 +759,12 @@ IF (Spec.EQ.EcontribSpec) THEN
 ENDIF
 
 CALL ls_setDensityDimensions(INT_INPUT,SETTING,lupri)
+setting%output%FullAlphaCD = FullAlphaCD
 
 call MAIN_INTEGRAL_DRIVER(LUPRI,SETTING%SCHEME%INTPRINT,INT_INPUT,setting%OUTPUT)
+
+IF(FullAlphaCD)CAll mem_dealloc(setting%output%postprocess)
+
 CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
 IF(doscreen) CALL free_screening_matrices(INT_INPUT,SETTING,LUPRI,LUERR)
 setting%output%ndim = ndim2
@@ -990,6 +997,12 @@ integer(kind=ls_mpik)      :: Snode,SNumnodes,SComm
 IF(.NOT.setting%scheme%doMPI)THEN
  call deactivateIntegralMPI(Setting,Snode,SNumnodes,SComm,SMasterWakeSlaves)
 ENDIF
+IF(matrix_type.EQ.mtype_pdmm)THEN
+   IF (setting%node.EQ.infpar%master) THEN
+      !change into full format on master so that it can be bcast
+      call SetScalapackDmatToFull(setting,.TRUE.,.TRUE.)
+   ENDIF
+ENDIF
 #endif
 #ifdef VAR_SCALAPACK
 IF(matrix_type.EQ.mtype_scalapack)THEN
@@ -1128,7 +1141,7 @@ END SUBROUTINE ls_get_exchange_mat
 !!$#endif
 !!$
 !!$#ifdef VAR_SCALAPACK
-!!$   IF(matrix_type.EQ.mtype_scalapack)THEN
+!!$   IF(matrix_type.EQ.mtype_scalapack.or.matrix_type.EQ.mtype_pdmm)THEN
 !!$      IF (setting%node.EQ.infpar%master) THEN
 !!$         !change into full format on master 
 !!$         call SetScalapackDmatToFull(setting,.TRUE.,.TRUE.)
@@ -1835,6 +1848,14 @@ IF(setting%scheme%memdist.AND.matrix_type.EQ.mtype_scalapack)THEN
    !Tempory fix for gradients and stuff 
    CALL ls_jengine_memdist(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
 ELSE
+#ifdef VAR_MPI
+   IF(matrix_type.EQ.mtype_pdmm)THEN
+      IF (setting%node.EQ.infpar%master) THEN
+         !change into full format on master 
+         call SetScalapackDmatToFull(setting,.TRUE.,.TRUE.)
+      ENDIF
+   ENDIF
+#endif
 #ifdef VAR_SCALAPACK
    IF(matrix_type.EQ.mtype_scalapack)THEN
       IF (setting%node.EQ.infpar%master) THEN
@@ -3032,7 +3053,7 @@ logical             :: FoundInMem,recalcGab,MBIE_SCREENINT
 real(realk)         :: tstart,tend
 integer,pointer     :: postprocess(:)
 integer(kind=short),pointer :: MAT2(:,:)
-ndim2 = setting%output%ndim 
+ndim2 = setting%output%ndim
 ! Multipole Based Integral Estimate Screening   
 MBIE_SCREENINT = setting%scheme%MBIE_SCREEN.AND.(Oper.EQ.CoulombOperator.OR.Oper.EQ.ErfcOperator.OR.Oper.EQ.CAMOperator)
 LHS = integralSide.EQ.'LHS'
@@ -3087,7 +3108,6 @@ IF(attach_to_input)THEN
    IF(SETTING%batchindex(AOB).NE. 0)THEN
       s2=SETTING%batchindex(AOB)
    ENDIF
-
    IF(ASSOCIATED(Setting%FRAGMENT(AOA)%p)) THEN
       n1 = getNbasis(AO1,intType,SETTING%FRAGMENT(AOA)%p,LUPRI)
    ELSE
@@ -3356,6 +3376,7 @@ logical :: MBIE_INT
 ndim2 = setting%output%ndim 
 !CALL ls_setDefaultFragments(setting)
 CALL init_integral_input(INT_INPUT,SETTING)
+
 INT_INPUT%operator = Oper
 INT_INPUT%CS_int=.TRUE.
 INT_INPUT%OD_SCREEN = SETTING%SCHEME%OD_SCREEN
@@ -4551,7 +4572,7 @@ CASE('LHS')
   call mem_alloc(setting%DfullLHS,dim1,dim2,ndmat)
   call dcopy(dim1*dim2*ndmat,Dmat,1,setting%DfullLHS,1)
 #else
-  IF(matrix_type .EQ. mtype_unres_dense)THEN
+  IF(matrix_type .EQ. mtype_unres_dense.OR.matrix_type .EQ. mtype_pdmm)THEN
      setting%LHSdAlloc=.TRUE.
      call mem_alloc(setting%DfullLHS,dim1,dim2,ndmat)
      call dcopy(dim1*dim2*ndmat,Dmat,1,setting%DfullLHS,1)
@@ -4576,7 +4597,7 @@ CASE('RHS')
   call mem_alloc(setting%DfullRHS,dim1,dim2,ndmat)
   call dcopy(dim1*dim2*ndmat,Dmat,1,setting%DfullRHS,1)
 #else
-  IF(matrix_type .EQ. mtype_unres_dense)THEN
+  IF(matrix_type .EQ. mtype_unres_dense.OR.matrix_type .EQ. mtype_pdmm)THEN
      setting%RHSdAlloc=.TRUE.
      call mem_alloc(setting%DfullRHS,dim1,dim2,ndmat)
      call dcopy(dim1*dim2*ndmat,Dmat,1,setting%DfullRHS,1)
@@ -5391,7 +5412,7 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 doscreen = ((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucpotOperator)) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 doscreen = doscreen.OR.(((Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemGrdOperator).OR.&
-     &(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
+     &(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator).OR.(Oper.EQ.GGemQuaOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
 IF(SETTING%SCHEME%CS_INT.OR.SETTING%SCHEME%PS_INT)doscreen=.FALSE.
@@ -5796,7 +5817,8 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 doscreen = ((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucpotOperator)) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 doscreen = doscreen.OR.(((Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemGrdOperator)&
-     &.OR.(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
+     &.OR.(Oper.EQ.ErfcOperator).OR.(Oper.EQ.GGemQuaOperator).OR.(Oper.EQ.CAMOperator))&
+     & .AND.SETTING%SCHEME%MBIE_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
 IF(SETTING%SCHEME%CS_INT.OR.SETTING%SCHEME%PS_INT)doscreen=.FALSE.
@@ -6929,8 +6951,8 @@ Dummyatomlist1(1) = 1
 Dummyatomlist2(1) = 1
 atoms1(1) = iatom1
 atoms2(1) = iatom2
-nullify(GABsub)
-allocate(GABsub)
+!nullify(GABsub)
+!allocate(GABsub)
 call LSTENSOR_nullify(GABsub)
 call build_sublstensor_from_full_lstensor(GABsub,GABfull,1,1,1,1,&
      & atoms1,atoms2,Dummyatomlist1,Dummyatomlist2,nbast1,nbast2,1,1,sameFrag)

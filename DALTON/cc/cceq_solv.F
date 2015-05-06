@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -916,7 +916,7 @@ C           ----------------------------------------------------------
 
             DO IBVEC = 1, NBVEC
                WRK(KTST+JR-1+IBVEC-1) = 
-     *         DNORM2(NCCVAR,WRK(KB+(IBVEC-1)*NCCVAR),1)
+     *         DNRM2(NCCVAR,WRK(KB+(IBVEC-1)*NCCVAR),1)
                IVEC = ISIMC - 1 + JR -1 + IBVEC   
                CALL CC_SAVE(WRK(KB+(IBVEC-1)*NCCVAR),IVEC+ISTRVE-1,
      *                      LIST,WRK(KWRK2),LWRK2)
@@ -1012,7 +1012,7 @@ C        ------------------------------------------
          IF (IPRLE .GT. 1) WRITE(LUPRI,*) ' '
          DO 2000 JR = 1,NBX
             JROOTJ = ISIMC - 1 + JR
-            QNORM = DNORM2(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),1)
+            QNORM = DNRM2(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),1)
      *             /MAX(WRK(KTST+JR-1),1.0D-14)
             RMXNORM = MAX(RMXNORM,QNORM)
 C
