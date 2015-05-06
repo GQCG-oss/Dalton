@@ -3589,7 +3589,7 @@ C
      *              WORK(KEND21),LEND21,ISYMC,1,1)
 C
 C----------------------------------------------
-C     Calculate 2Cai Hartree-Fock contribution.
+C     Calculate 2Cia (stored ia) Hartree-Fock contribution.
 C----------------------------------------------
 C
       CALL DZERO(ETAC,NT1AM(ISYRES))

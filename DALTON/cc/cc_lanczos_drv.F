@@ -763,6 +763,7 @@ C
 C Diagonalize T matrix and find both R and L
 C
       !husk dgesv
+      IERR=0
       CALL DGEEV('V','V',jkaede,WORK(KTTRI),jkaede,
      &           WORK(KEIVAL),WORK(KWI),WORK(KEIVEL), jkaede, 
      &           WORK(KEIVER),jkaede,
