@@ -34,7 +34,7 @@
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,                   &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,             &
      &        USE_LSLIB
-C
+!
       COMMON /GNRINF/ GNRINFLAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 
