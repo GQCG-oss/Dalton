@@ -2339,7 +2339,6 @@ contains
        call get_max_batch_and_scheme_ccintegral(maxsize,MinAObatch,scheme,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
        & n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nbuffs,nbu,MyLsItem%setting,MemToUse,use_bg_buf)
 
-
        if(DECinfo%PL>2)then
           print *,"INFO(get_mo_integral_par): Requesting scheme:",scheme
           print *,"INFO(get_mo_integral_par): with Alpha:",MaxAllowedDimAlpha," Gamma:",MaxAllowedDimGamma

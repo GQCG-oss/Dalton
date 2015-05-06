@@ -870,7 +870,7 @@ Number of CC iterations  =   15
 
 Print frag. energies   =    T
 IJK partitioning       =    T
-# IJK buffers          =    6
+# IJK buffers          =    2
 ABC partitioning       =    F
 Free CPU memory (GB)   =  0.9332    
 Are we using GPUs?     =    F

@@ -573,7 +573,6 @@ contains
     Logical       :: FoundInMem
     Integer       :: molID,THR,THR2
     Integer       :: i
-
     THR = ABS(NINT(LOG10(SETTING%SCHEME%intTHRESHOLD)))
        molecule => SETTING%MOLECULE(1)%p
        molID = SETTING%molID(1)
@@ -3095,11 +3094,6 @@ implicit none
 TYPE(LSSETTING)       :: SETTING
 character,intent(in)  :: intspec
 integer,intent(inout)  :: Oper
-!local variables
-integer             :: i,j,k,l
-real(realk)         :: coeff(6),exponent(6),tmp
-real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
-integer             :: IJ,nGaussian,nG2,ao(4),dummy
 
 IF (intSpec.EQ.'C') THEN
    ! Regular Coulomb operator 1/r12
@@ -3109,43 +3103,65 @@ ELSE
       ! Long-Range operator erf/r12
       oper = ErfOperator
    ELSE
-      
-      nGaussian = 6
-      nG2 = nGaussian*(nGaussian+1)/2
-      call stgfit(1E0_realk,nGaussian,exponent,coeff)
-      IJ=0
-      DO I=1,nGaussian
-         DO J=1,I
-            IJ = IJ + 1
-            coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
-            prodexponent(IJ) = exponent(I) * exponent(J)
-            sumexponent(IJ) = exponent(I) + exponent(J)
-         ENDDO
-         coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
-      ENDDO
       IF (intSpec.EQ.'G') THEN
-         ! The Gaussian geminal operator g
          oper = GGemOperator
-         call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
       ELSE IF (intSpec.EQ.'F') THEN
-         ! The Gaussian geminal divided by the Coulomb operator g/r12
          oper = GGemCouOperator
-         call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
       ELSE IF (intSpec.EQ.'D') THEN
-         ! The double commutator [[T,g],g]
          oper = GGemGrdOperator
-         call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
       ELSE IF (intSpec.EQ.'2') THEN
-         ! The Gaussian geminal operator squared g^2
-         oper = GGemOperator
-         call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+         oper = GGemQuaOperator
       ELSE
          print*,'intspec:',intspec
-         call lsquit('Error in specification of operator in ',-1)
+         call lsquit('Error in specification of operator in GetOperatorFromCharacter',-1)
       ENDIF
+      call setF12Operator(Oper,Setting) 
    ENDIF
 ENDIF
 end subroutine GetOperatorFromCharacter
+
+subroutine setF12Operator(Oper,Setting) 
+  implicit none
+  TYPE(LSSETTING)       :: SETTING
+  integer,intent(in)  :: Oper
+!
+  integer             :: i,j,k,l
+  real(realk)         :: coeff(6),exponent(6),tmp
+  real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
+  integer             :: IJ,nGaussian,nG2,ao(4),dummy
+        
+  IF ((oper.EQ.GGemOperator.OR.oper .EQ. GGemCouOperator).OR.&
+       & (oper .EQ. GGemGrdOperator.OR.oper .EQ. GGemQuaOperator))THEN
+     nGaussian = 6
+     nG2 = nGaussian*(nGaussian+1)/2
+     call stgfit(1E0_realk,nGaussian,exponent,coeff)
+     IJ=0
+     DO I=1,nGaussian
+        DO J=1,I
+           IJ = IJ + 1
+           coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+           prodexponent(IJ) = exponent(I) * exponent(J)
+           sumexponent(IJ) = exponent(I) + exponent(J)
+        ENDDO
+        coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+     ENDDO
+     IF (oper.EQ.GGemOperator) THEN
+        ! The Gaussian geminal operatorg 
+        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+     ELSE IF (oper .EQ. GGemCouOperator) THEN
+        ! The Gaussian geminal divided by the Coulomb operator g/r12
+        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+     ELSE IF (oper .EQ. GGemGrdOperator) THEN
+        ! The double commutator [[T,g],g]
+        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+     ELSE IF (oper .EQ. GGemQuaOperator) THEN
+        ! The Gaussian geminal operator squared g^2
+        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+     ELSE
+        call lsquit('Error in specification of operator in setF12Operator',-1)
+     ENDIF
+  ENDIF
+end subroutine setF12Operator
 
 subroutine DF3centerTrans(nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
   implicit none
@@ -3254,6 +3270,7 @@ SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAu
   ELSE
      Oper = CoulombOperator
   ENDIF
+  call setF12Operator(Oper,Setting) 
   call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
        & Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
   SETTING%SCHEME%doMPI = doMPI

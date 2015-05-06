@@ -50,7 +50,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   real(realk),pointer :: XV(:,:),TZpq(:,:),IntTHC(:,:,:,:),IntRI(:,:,:,:)
   real(realk),pointer :: SC(:,:)
   logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate
-  character :: intspec(4)
+  character :: intspec(5)
 
   CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
   mp2_energy = 0.0E0_realk
@@ -119,6 +119,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   intspec(2) = 'R' !Regular AO basis function on center 3
   intspec(3) = 'R' !Regular AO basis function on center 4
   intspec(4) = 'C' !Coulomb Operator
+  intspec(5) = 'C' !Coulomb Operator
   call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
   ABdecompCreate = .TRUE.
   call Build_CalphaMO2(Mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&

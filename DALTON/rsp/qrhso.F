@@ -973,7 +973,7 @@ C
                IPDA = IPDENS(IGRSPI,1)
                IPDB = IPDENS(0,MULSP(IGRSPI,1))
             END IF
-            CALL EXTRAC(H2,WRK(KH2XAC))
+            CALL GETAC1(H2,WRK(KH2XAC))
             CALL FQDIS1(INTSYM,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                  FI,FA,QA,QB,H2,WRK(KH2XAC),H2AX,
      *                  DEN1,DEN2(IPDA),DEN2(IPDB),ISYMDN,PVDEN,
@@ -1014,7 +1014,7 @@ C
                IPDA = IPDENS(MULSP(IGRSPI,ISPINV),1)
                IPDB = IPDENS(ISPINV,MULSP(IGRSPI,1))
             END IF
-            CALL EXTRAC(H2X,WRK(KH2XAC))
+            CALL GETAC1(H2X,WRK(KH2XAC))
 C
 C  (~|^)e(~+,-)
 C
@@ -1044,7 +1044,7 @@ C
                IPDA = IPDENS(IGRSPI,MULSP(ISPINV,1))
                IPDB = IPDENS(0,0)
             END IF
-            CALL EXTRAC(H2,WRK(KH2XAC))
+            CALL GETAC1(H2,WRK(KH2XAC))
 C
 C ( |~^)e(+,~-)
 C

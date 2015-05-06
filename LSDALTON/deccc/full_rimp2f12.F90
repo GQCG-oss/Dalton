@@ -43,30 +43,41 @@ contains
     real(realk) :: mp2_energy
     !local variables
     integer :: nbasis,nocc,nvirt,ncabsAO,ncabsMO,noccfull
-    real(realk) :: E21,Econt(1),ExchangeF12,CoulombF12
-!    real(realk) :: CMO_cabs(:,:)        
-!    type(matrix) :: mCMO_cabs
+    real(realk) :: E21,Econt(1),ExchangeF12,CoulombF12,E23
+    real(realk) :: EV1,EV2,EV3,EV4,EX1,EX2,EX3,EX4
+    real(realk) :: EB1,EB2,EB3,EB4,EB5,EB6,EB7,EB8,EB9
+    !    real(realk) :: CMO_cabs(:,:)        
+    !    type(matrix) :: mCMO_cabs
     !========================================================
     !WARNING THESE SHOULD NOT BE HERE - ONLY FOR TESTING
     !========================================================
-    Real(realk),pointer  :: Vijij(:,:)
-    Real(realk),pointer  :: Vjiij(:,:)
-    Real(realk),pointer  :: Ripjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
-    Real(realk),pointer  :: Gipjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
-    Real(realk),pointer  :: Fijkl(:,:,:,:) !nocc,nocc,nocc,nocc
-    Real(realk),pointer  :: gao(:,:,:,:) !nbasis,nbasis,nbasis,nbasis
-    integer :: i,j,p,q,mynum,numnodes,nAtoms,lupri
+    real(realk),pointer  :: Vijij(:,:)
+    real(realk),pointer  :: Vjiij(:,:)
+    real(realk),pointer  :: Xijij(:,:)
+    real(realk),pointer  :: Xjiij(:,:)
+    real(realk),pointer  :: Bijij(:,:)
+    real(realk),pointer  :: Bjiij(:,:)
+    real(realk),pointer  :: Ripjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
+    real(realk),pointer  :: Gipjq(:,:,:,:) !nocc,nbasis,nocc,nbasis
+    real(realk),pointer  :: Rimjc(:,:,:,:) !nocc,noccfull,nocc,ncabsMO
+    real(realk),pointer  :: Gimjc(:,:,:,:) !nocc,noccfull,nocc,ncabsMO
+    real(realk),pointer  :: Fijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+    real(realk),pointer  :: Tijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+    real(realk),pointer  :: Dijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+    real(realk),pointer  :: gao(:,:,:,:) !nbasis,nbasis,nbasis,nbasis
+    integer :: i,j,p,q,c,m,mynum,numnodes,nAtoms,lupri
     !========================================================
     ! RI variables
-    integer :: nAux,NBA
-    real(realk),pointer :: CalphaR(:,:,:)
-    real(realk),pointer :: CalphaG(:,:,:)
+    integer :: nAux,NBA,N,K
+    real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:)
+    real(realk),pointer :: CalphaRocc(:),CalphaGocc(:)
     real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:)
+    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:)
     logical :: Test 
-    !MPI variables
-    logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG
-    logical :: RIF12,FORCEPRINT
-
+    logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF
+    logical :: RIF12,FORCEPRINT,use_bg_buf
+    character :: intspec(5)
+    type(matrix) :: CMO_CABS,CMO_RI
     if(MyMolecule%mem_distributed)then
        call lsquit("ERROR(full_canonical_rimp2_f12): does not work with PDM type fullmolecule",-1)
     endif
@@ -100,15 +111,14 @@ contains
     nvirt  = MyMolecule%nvirt
     naux   = MyMolecule%nauxbasis
     nAtoms = MyMolecule%nAtoms
+    call determine_CABS_nbast(ncabsAO,ncabsMO,mylsitem%setting,DECinfo%output)
+
+    call mat_init(CMO_CABS,nCabsAO,ncabsMO)
+    call build_CABS_MO(CMO_CABS,nCabsAO,mylsitem%SETTING,lupri)    
+    call mat_init(CMO_RI,nCabsAO,nCabsAO)
+    call build_RI_MO(CMO_RI,nCabsAO,mylsitem%SETTING,lupri)
 
     IF(naux.EQ.0)call lsquit('Error no Aux functions in full_canonical_rimp2_f12',-1)
-!    call determine_CABS_nbast(ncabsAO,ncabsMO,mylsitem%setting,DECinfo%output)
-
-!    call mat_init(mCMO_cabs,nCabsAO,nCabsMO)
-!    call build_CABS_MO(mCMO_cabs,nCabsAO,mylsitem%SETTING,lupri)
-!    call mem_alloc(CMO_cabs,nCabsAO,nCabsMO)
-!    call mat_to_full(mCMO_cabs,1.0E0_realk,CMO_cabs)
-!    call mat_free(mCMO_cabs)
 
     noccfull = nocc
     IF(DECinfo%frozencore)call lsquit('RI-MP2-F12 frozen core not implemented',-1)
@@ -141,8 +151,36 @@ contains
          & [Dmat],Econt,1,GGemCouOperator)
     ExchangeF12 = Econt(1)       
     E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E0_realk)
-    WRITE(DECINFO%OUTPUT,*)'E(Fijkl,LS) = ',E21
-    mp2f12_energy = E21
+    WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,LS) = ',E21
+    !WRITE(*,'(A30,F20.13)')'E(Fijkl,LS) = ',E21
+    use_bg_buf = .FALSE.
+    mp2f12_energy = 0.0E0_realk 
+    IF(RIF12)THEN       !Use RI 
+       call mem_alloc(ABdecompF,nAux,nAux)
+       ABdecompCreateF = .TRUE.
+!       call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
+!            & wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,mynum,numnodes,nAtoms,&
+!            & CalphaF,NBA,ABdecompF,ABdecompCreateF,GGemCouOperator)
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
+       intspec(5) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
+            & mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
+       ABdecompCreateF = .FALSE.
+       call ContractOne4CenterF12IntegralsRI(NBA,nocc,CalphaF,CoulombF12,ExchangeF12)
+       !The minus is due to the Valeev factor
+       EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12-ExchangeF12*0.25E0_realk)
+       mp2f12_energy = mp2f12_energy  + EV1
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI) = ',EV1
+       WRITE(*,'(A30,F20.13)')'E(Fijkl,RI) = ',EV1
+!       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Coulomb) = ',CoulombF12
+!       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Exchange) = ',ExchangeF12
+       call mem_dealloc(CalphaF)
+       call mem_dealloc(ABdecompF)
+    ENDIF
 
     IF(Test)THEN
        call mem_alloc(Vijij,nocc,nocc)
@@ -166,7 +204,9 @@ contains
        E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
-       WRITE(DECINFO%OUTPUT,*)'E(Fijkl,FullIntegral) = ',E21
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,FullIntegral) = ',EV1
+       WRITE(*,'(A30,F20.13)')'E(Fijkl,FullIntegral) = ',EV1
+
     ENDIF
     !==========================================================
     !=                                                        =
@@ -180,31 +220,43 @@ contains
     IF(RIF12)THEN       !Use RI 
        call mem_alloc(ABdecompR,nAux,nAux)
        ABdecompCreateR = .TRUE.
-       call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-            & wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,mynum,numnodes,nAtoms,&
-            & CalphaR,NBA,ABdecompR,ABdecompCreateR,CoulombOperator)
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = 'C' !The Coulomb Operator
+       intspec(5) = 'C' !The Coulomb Operator
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,&
+            & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
        ABdecompCreateR = .FALSE.
-       print*,'size(CalphaR)',size(CalphaR,1),size(CalphaR,2),size(CalphaR,3)
        call mem_alloc(ABdecompG,nAux,nAux)
        ABdecompCreateG = .TRUE.
-       call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-            & wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,mynum,numnodes,nAtoms,&
-            & CalphaG,NBA,ABdecompG,ABdecompCreateG,GGemOperator)
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = 'G' !The Gaussian geminal operator g
+       intspec(5) = 'G' !The Gaussian geminal operator g
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,&
+            & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
        ABdecompCreateG = .FALSE.
-       call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,&
-            & CoulombF12,ExchangeF12)
-       E21 = 0.5E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12-ExchangeF12*0.5E0_realk)
-       mp2f12_energy = mp2f12_energy  + E21
-       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI) = ',E21       
-       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
-       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Exchange) = ',ExchangeF12
+       call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,EV2)
+       mp2f12_energy = mp2f12_energy  + EV2
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gjpiq,RI) = ',EV2       
+       WRITE(*,'(A30,F20.13)')'E(Ripjq*Gjpiq,RI) = ',EV2
+!       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
+!       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Exchange) = ',ExchangeF12
        call mem_dealloc(CalphaR)
        call mem_dealloc(CalphaG)
        call mem_dealloc(Cfull)
+       call mem_dealloc(ABdecompR)
+       call mem_dealloc(ABdecompG)
     ELSE
        !Something else that is fast????? and small memory
     ENDIF
-    
+
+
+
     IF(Test)THEN
        call mem_alloc(Vijij,nocc,nocc)
        call mem_alloc(Vjiij,nocc,nocc)
@@ -216,7 +268,8 @@ contains
        call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
             &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Gipjq)
        call mem_dealloc(gao)
-
+       Vijij = 0.0E0_realk
+       Vjiij = 0.0E0_realk
        do q=1,nbasis
           do j=1,nocc
              do p=1,nbasis
@@ -240,7 +293,8 @@ contains
        call mem_dealloc(Gipjq)
        
        E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
-       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral) = ',E21
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Ripjq*Gipjq,FullIntegral) = ',EV2
+       WRITE(*,'(A30,F20.13)')'E(Ripjq*Gipjq,FullIntegral) = ',EV2
        call mem_dealloc(Vijij)
        call mem_dealloc(Vjiij)
     ENDIF
@@ -248,108 +302,420 @@ contains
     !==========================================================
     !=                                                        =
     !=             Step 3  Rimjc*Gimjc                        =
+    !=             Step 4  Rjmic*Gjmic                        =
     != The Coulomb Operator Int multiplied with               =
     != The Gaussian geminal operator g                        =
-    != Dim: (nocc,noccfull,nocc,ncabs)  need 4 Calphas        =
+    != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
     !=                                                        =
     !==========================================================
-!!$    IF(RIF12)THEN       !Use RI 
-!!$       ABdecompCreateR = .FALSE.
-!!$       call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-!!$            & wakeslaves,MyMolecule%Co,nocc,MyMolecule%Co,nocc,mynum,&
-!!$            & numnodes,nAtoms,&
-!!$            & CalphaR1,NBA,ABdecompR,ABdecompCreateR,CoulombOperator)
-!!$       print*,'size(CalphaR1)',size(CalphaR1,1),size(CalphaR1,2),size(CalphaR1,3)
-!!$       call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-!!$            & wakeslaves,MyMolecule%Co,nocc,CMO_cabs,ncabsMO,mynum,&
-!!$            & numnodes,nAtoms,&
-!!$            & CalphaR2,NBA,ABdecompR,ABdecompCreateR,CoulombOperator)
-!!$       print*,'size(CalphaR2)',size(CalphaR2,1),size(CalphaR2,2),size(CalphaR2,3)
-!!$!QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ
-!!$       !Created Calpha(NBA,nocc,nbasis)
-!!$       ABdecompCreateG = .FALSE.
-!!$       call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-!!$            & wakeslaves,MyMolecule%Co,nocc,Cfull,nbasis,mynum,numnodes,nAtoms,&
-!!$            & CalphaG,NBA,ABdecompG,ABdecompCreateG,GGemOperator)
-!!$       call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,&
-!!$            & CoulombF12,ExchangeF12)
-!!$       E21 = 0.5E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12-ExchangeF12*0.5E0_realk)
-!!$       mp2f12_energy = mp2f12_energy  + E21
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI) = ',E21       
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Exchange) = ',ExchangeF12
-!!$       call mem_dealloc(CalphaR)
-!!$       call mem_dealloc(CalphaG)
-!!$       call mem_dealloc(Cfull)
-!!$    ELSE
-!!$       !Something else that is fast????? and small memory
-!!$    ENDIF
-    
-!!$    IF(Test)THEN
-!!$       call mem_alloc(Vijij,nocc,nocc)
-!!$       call mem_alloc(Vjiij,nocc,nocc)
-!!$       call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
-!!$       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
-!!$       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-!!$            &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Ripjq)
-!!$       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
-!!$       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-!!$            &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Gipjq)
-!!$       call mem_dealloc(gao)
-!!$
-!!$       print*,'Ripjq(1,1,1,1)=',Ripjq(1,1,1,1)
-!!$       print*,'Ripjq(nocc,1,1,1)=',Ripjq(nocc,1,1,1)
-!!$       print*,'Ripjq(1,nbasis,1,1)=',Ripjq(1,nbasis,1,1)
-!!$       print*,'Ripjq(1,1,nocc,1)=',Ripjq(1,1,nocc,1)
-!!$       print*,'Ripjq(1,1,1,nbasis)=',Ripjq(1,1,1,nbasis)
-!!$       print*,'Ripjq(nocc,1,nocc,1)=',Ripjq(nocc,1,nocc,1)
-!!$
-!!$       print*,'Gipjq(1,1,1,1)=',Gipjq(1,1,1,1)
-!!$       print*,'Gipjq(nocc,1,1,1)=',Gipjq(nocc,1,1,1)
-!!$       print*,'Gipjq(1,nbasis,1,1)=',Gipjq(1,nbasis,1,1)
-!!$       print*,'Gipjq(1,1,nocc,1)=',Gipjq(1,1,nocc,1)
-!!$       print*,'Gipjq(1,1,1,nbasis)=',Gipjq(1,1,1,nbasis)
-!!$       print*,'Gipjq(nocc,1,nocc,1)=',Gipjq(nocc,1,nocc,1)
-!!$
-!!$       do q=1,nbasis
-!!$          do j=1,nocc
-!!$             do p=1,nbasis
-!!$                do i=1,nocc
-!!$                   Vijij(i,j) = Vijij(i,j) - Ripjq(i,p,j,q)*Gipjq(i,p,j,q)
-!!$                enddo
-!!$             enddo
-!!$          enddo
-!!$       enddo
-!!$       
-!!$       do q=1,nbasis
-!!$          do j=1,nocc
-!!$             do p=1,nbasis
-!!$                do i=1,nocc
-!!$                   Vjiij(i,j) = Vjiij(i,j) - Ripjq(i,p,j,q)*Gipjq(j,p,i,q)
-!!$                enddo
-!!$             enddo
-!!$          enddo
-!!$       enddo
-!!$       call mem_dealloc(Ripjq)
-!!$       call mem_dealloc(Gipjq)
-!!$       
-!!$       E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral) = ',E21
-!!$       E21 = 2.0E0_REALK*mp2f12_E21A(Vijij,Vjiij,nocc)
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral,A) = ',E21
-!!$       E21 = 2.0E0_REALK*mp2f12_E21B(Vijij,Vjiij,nocc)
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral,B) = ',E21
-!!$       E21 = 2.0E0_REALK*mp2f12_E21C(Vijij,Vjiij,nocc)
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral,C) = ',E21
-!!$       E21 = 2.0E0_REALK*mp2f12_E21B2(Vijij,Vjiij,nocc)
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral,B2) = ',E21
-!!$       E21 = 2.0E0_REALK*mp2f12_E21C2(Vijij,Vjiij,nocc)
-!!$       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gipjq,FullIntegral,C2) = ',E21
-!!$       call mem_dealloc(Vijij)
-!!$       call mem_dealloc(Vjiij)
-!!$    ENDIF
+    IF(RIF12)THEN !Use RI 
+       call mem_alloc(ABdecompR,nAux,nAux)
+       ABdecompCreateR = .TRUE.
+       !CalphaRocc(NBA,nocc,nocc)
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = 'C' !The Coulomb Operator
+       intspec(5) = 'C' !The Coulomb Operator
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
+            & mynum,numnodes,CalphaRocc,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
 
+       !CalphaR(NBA,nocc,ncabsMO)
+       ABdecompCreateR = .FALSE.
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'C' !CABS AO basis function on center 4
+       intspec(4) = 'C' !The Coulomb Operator
+       intspec(5) = 'C' !The Coulomb Operator
+       call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_CABS%elms,ncabsMO,&
+            & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
+       call mem_dealloc(ABdecompR)
+       !CalphaGocc(NBA,nocc,nocc)
+       call mem_alloc(ABdecompG,nAux,nAux)
+       ABdecompCreateG = .TRUE.
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = 'G' !The Gaussian geminal operator g
+       intspec(5) = 'G' !The Gaussian geminal operator g
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
+            & mynum,numnodes,CalphaGocc,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
+       !CalphaG(NBA,nocc,ncabsMO)
+       ABdecompCreateG = .FALSE.
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'C' !CABS AO basis function on center 4
+       intspec(4) = 'G' !The Gaussian geminal operator g
+       intspec(5) = 'G' !The Gaussian geminal operator g
+       call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_CABS%elms,ncabsMO,&
+            & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
+       call mem_dealloc(ABdecompG)
+
+       call ContractTwo4CenterF12IntegralsRI2(NBA,nocc,noccfull,ncabsMO,CalphaR,CalphaG,&
+            & CalphaRocc,CalphaGocc,EV3,EV4)
+       
+       mp2f12_energy = mp2f12_energy  + EV3 + EV4
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V3,RI) = ',EV3       
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V4,RI) = ',EV4       
+       WRITE(*,'(A30,F20.13)')'E(V3,RI) = ',EV3       
+       WRITE(*,'(A30,F20.13)')'E(V4,RI) = ',EV4       
+       call mem_dealloc(CalphaRocc)
+       call mem_dealloc(CalphaGocc)
+       call mem_dealloc(CalphaR)
+       call mem_dealloc(CalphaG)
+    ELSE
+       !Something else that is fast????? and small memory
+    ENDIF
+
+    IF(Test)THEN
+       call mem_alloc(Vijij,nocc,nocc)
+       call mem_alloc(Vjiij,nocc,nocc)
+       call mem_alloc(gao,nbasis,nbasis,nbasis,ncabsAO)
+       gao = 0.0E0_realk
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCC')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imic',gAO,Rimjc)
+       gao = 0.0E0_realk
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCG')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imic',gAO,Gimjc)
+       call mem_dealloc(gao)
+
+       call mem_alloc(Vijij,nocc,nocc)
+       call mem_alloc(Vjiij,nocc,nocc)
+       Vijij = 0.0E0_realk
+       Vjiij = 0.0E0_realk
+       do c=1,ncabsMO
+          do j=1,nocc
+             do m=1,noccfull
+                do i=1,nocc
+                   Vijij(i,j) = Vijij(i,j) - Rimjc(i,m,j,c)*Gimjc(i,m,j,c)
+                enddo
+             enddo
+          enddo
+       enddo
+       do c=1,ncabsMO
+          do j=1,nocc
+             do m=1,noccfull
+                do i=1,nocc
+                   Vjiij(i,j) = Vjiij(i,j) - Rimjc(i,m,j,c)*Gimjc(j,m,i,c)
+                enddo
+             enddo
+          enddo
+       enddo
+       EV3 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V3,FullIntegral) = ', EV3
+       WRITE(*,'(A30,F20.13)')'E(V3,FullIntegral) = ',EV3
+      
+       !V-term 4
+       Vijij = 0.0E0_realk
+       Vjiij = 0.0E0_realk
+       do c=1,ncabsMO
+          do j=1,nocc
+             do m=1,noccfull
+                do i=1,nocc
+                   Vijij(i,j) = Vijij(i,j) - Rimjc(j,m,i,c)*Gimjc(j,m,i,c)
+                enddo
+             enddo
+          enddo
+       enddo
+       do c=1,ncabsMO
+          do j=1,nocc
+             do m=1,noccfull
+                do i=1,nocc
+                   Vjiij(i,j) = Vjiij(i,j) - Rimjc(j,m,i,c)*Gimjc(i,m,j,c)
+                enddo
+             enddo
+          enddo
+       enddo
+
+       EV4 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V4,FullIntegral) = ', EV4
+       WRITE(*,'(A30,F20.13)')'E(V4,FullIntegral) = ',EV4
+
+       call mem_dealloc(Rimjc)
+       call mem_dealloc(Gimjc)
+
+       call mem_dealloc(Vijij)
+       call mem_dealloc(Vjiij)
+    ENDIF
+
+    !==============================================================
+    !=                                                            =
+    != X1:       Xijkl                                            =
+    != The Gaussian geminal squared g^2                           =     
+    !=                                                            =
+    !==============================================================
+    use_bg_buf = .FALSE.
+    IF(RIF12)THEN       !Use RI 
+       call mem_alloc(ABdecompF,nAux,nAux)
+       ABdecompCreateF = .TRUE.
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
+       intspec(5) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
+            & mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
+       ABdecompCreateF = .FALSE.
+       call ContractOne4CenterF12IntegralsRI(NBA,nocc,CalphaF,CoulombF12,ExchangeF12)
+       !The minus is due to the Valeev factor
+       EX1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12-ExchangeF12*0.25E0_realk)
+       mp2f12_energy = mp2f12_energy  + EX1
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X1,RI) = ',EX1
+       WRITE(*,'(A30,F20.13)')'E(X1,RI) = ',EX1
+       call mem_dealloc(CalphaF)
+       call mem_dealloc(ABdecompF)
+    ENDIF
+
+    IF(Test)THEN
+       call mem_alloc(Xijij,nocc,nocc)
+       call mem_alloc(Xjiij,nocc,nocc)
+       call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRR2')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Tijkl)
+       call mem_dealloc(gao)
+       do j=1,nocc
+          do i=1,nocc
+            Xijij(i,j) = Tijkl(i,i,j,j)
+          enddo
+       enddo
+       do j=1,nocc
+          do i=1,nocc
+             Xjiij(i,j) = Tijkl(i,j,j,i)
+          enddo
+       enddo
+       call mem_dealloc(Tijkl)
+       EX1 = 2.0E0_REALK*mp2f12_E21(Xijij,Xjiij,nocc)
+       call mem_dealloc(Xijij)
+       call mem_dealloc(Xjiij)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X1,FullIntegral) = ',EX1
+       WRITE(*,'(A30,F20.13)')'E(X1,FullIntegral) = ',EX1
+
+    ENDIF
+
+    !==========================================================
+    !=                                                        =
+    != X2: Gipjq*Gipjq                                        =
+    != The Gaussian geminal operator Int multiplied with       =
+    != The Gaussian geminal operator g                        =
+    != Dim(nocc,nbasis,nocc,nbasis)                           =
+    !=                                                        =
+    !==========================================================
+    IF(Test)THEN
+       call mem_alloc(Xijij,nocc,nocc)
+       call mem_alloc(Xjiij,nocc,nocc)
+       call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Gipjq)
+       call mem_dealloc(gao)
+       Xijij = 0.0E0_realk
+       Xjiij = 0.0E0_realk
+       do q=1,nbasis
+          do j=1,nocc
+             do p=1,nbasis
+                do i=1,nocc
+                   Xijij(i,j) = Xijij(i,j) - Gipjq(i,p,j,q)*Gipjq(i,p,j,q)
+                enddo
+             enddo
+          enddo
+       enddo
+       
+       do q=1,nbasis
+          do j=1,nocc
+             do p=1,nbasis
+                do i=1,nocc
+                   Xjiij(i,j) = Xjiij(i,j) - Gipjq(i,p,j,q)*Gipjq(j,p,i,q)
+                enddo
+             enddo
+          enddo
+       enddo
+       call mem_dealloc(Gipjq)
+       
+       EX2 = 2.0E0_REALK*mp2f12_E21(Xijij,Xjiij,nocc)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X2,FullIntegral) = ',EX2
+       WRITE(*,'(A30,F20.13)')'E(X2,FullIntegral) = ',EX2
+       call mem_dealloc(Xijij)
+       call mem_dealloc(Xjiij)
+    ENDIF
+
+    !==============================================================
+    !=                                                            =
+    != Step Unknown:  Dijkl                                       =
+    != The double commutator [[T,g],g] with g = Gaussian geminal  =
+    != Since the integral (alpha|[[T,g],g]|beta) is not positive  =
+    != definite this term is done using robust density fitting    =
+    != Done according to Eq. 87 of                                =
+    != J Comput Chem 32: 2492–2513, 2011                          =
+    !==============================================================
+
+    IF(RIF12)THEN
+       call mem_alloc(ABdecompR,nAux,nAux)
+       ABdecompCreateR = .TRUE.
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = 'D' !The double commutator [[T,g],g] 
+       intspec(5) = 'C' !The metric operator = Regular Coulomb operator 1/r12
+       !Build the R coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
+            & mynum,numnodes,CalphaD,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
+       ABdecompCreateR = .FALSE.
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = 'C' !Regular Coulomb operator 1/r12
+       intspec(5) = 'C' !The metric operator = Regular Coulomb operator 1/r12
+       !Build the G coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
+       !This is the standard fitting coefficient that have been calculated before
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
+            & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
+       !Build the U matrix in Eq. 88 of J Comput Chem 32: 2492–2513, 2011
+       call mem_alloc(Umat,nAux,nAux)
+       call Build_RobustERImatU(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
+            & mynum,numnodes,ABdecompR,'D',Umat)
+       call mem_dealloc(ABdecompR)
+       !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
+       M = NBA          !rows of Output Matrix
+       N = nocc*nocc    !columns of Output Matrix
+       K = NBA          !summation dimension
+       call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR,K,-0.5E0_realk,CalphaD,M)
+       call mem_dealloc(Umat)
+       !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
+       call ContractOne4CenterF12IntegralsRobustRI(nAux,nocc,CalphaD,CalphaR,E23)
+       mp2f12_energy = mp2f12_energy  + E23
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Dijkl,RI) = ',E23
+       call mem_dealloc(CalphaD)
+       call mem_dealloc(CalphaR)
+    ENDIF
+
+
+    IF(Test)THEN
+       call mem_alloc(Bijij,nocc,nocc)
+       call mem_alloc(Bjiij,nocc,nocc)
+       call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRD')
+       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+            &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Dijkl)
+       call mem_dealloc(gao)
+       do j=1,nocc
+          do i=1,nocc
+             Bijij(i,j) = Dijkl(i,i,j,j)
+          enddo
+       enddo
+       do j=1,nocc
+          do i=1,nocc
+             Bjiij(i,j) = Dijkl(i,j,j,i)
+          enddo
+       enddo
+       E21 = mp2f12_E23(Bijij,Bjiij,nocc)
+       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Dijkl,FullIntegral) = ',E21
+       call mem_dealloc(Dijkl)
+       call mem_dealloc(Bijij)
+       call mem_dealloc(Bjiij)
+    ENDIF
+
+    call mat_free(CMO_CABS)
+    call mat_free(CMO_RI)
   end subroutine full_canonical_rimp2_f12
+
+  !> Function for finding the E23 energy for the B-matrix
+  function mp2f12_E23(Bijij,Bjiij,nocc) result(energy)
+    implicit none
+    integer,intent(IN)  :: nocc
+    !>
+    real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
+    real(realk) :: energy
+    !
+    integer     :: i,j
+    real(realk) :: tmp
+
+    tmp = 0E0_realk
+    DO i=1,nocc
+       tmp = tmp + Bijij(i,i)
+    ENDDO
+
+    energy = 0.25E0_realk*tmp
+    tmp = 0E0_realk
+
+    DO j=1,nocc
+       DO i=j+1,nocc
+          tmp = tmp + 7.0E0_realk * Bijij(i,j) + Bjiij(i,j)
+       ENDDO
+    ENDDO
+    energy = energy + 0.0625E0_realk*tmp !1/16
+  end function mp2f12_E23
+
+  !> Function for finding the E23 energy for the B-matrix
+  function mp2f12_E23A(Bijij,Bjiij,nocc) result(energy)
+    implicit none
+    integer,intent(IN)  :: nocc
+    !>
+    real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
+    real(realk) :: energy
+    !
+    integer     :: i,j
+    real(realk) :: tmp
+
+    tmp = 0E0_realk
+    DO i=1,nocc
+       tmp = tmp + Bijij(i,i)
+    ENDDO
+
+    energy = 0.25E0_realk*tmp
+  end function mp2f12_E23A
+
+  !> Function for finding the E23 energy for the B-matrix
+  function mp2f12_E23B(Bijij,Bjiij,nocc) result(energy)
+    implicit none
+    integer,intent(IN)  :: nocc
+    !>
+    real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
+    real(realk) :: energy
+    !
+    integer     :: i,j
+    real(realk) :: tmp
+
+    tmp = 0E0_realk
+
+    DO j=1,nocc
+       DO i=j+1,nocc
+          tmp = tmp + 7.0E0_realk * Bijij(i,j)
+       ENDDO
+    ENDDO
+    energy = 0.0625E0_realk*tmp !1/16
+  end function mp2f12_E23B
+
+  !> Function for finding the E23 energy for the B-matrix
+  function mp2f12_E23C(Bijij,Bjiij,nocc) result(energy)
+    implicit none
+    integer,intent(IN)  :: nocc
+    !>
+    real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
+    real(realk) :: energy
+    !
+    integer     :: i,j
+    real(realk) :: tmp
+
+    tmp = 0E0_realk
+
+    DO j=1,nocc
+       DO i=j+1,nocc
+          tmp = tmp + Bjiij(i,j)
+       ENDDO
+    ENDDO
+    energy = 0.0625E0_realk*tmp !1/16
+  end function mp2f12_E23C
 
   !> Function for finding the E21 energy  
   function mp2f12_E21(Vijij,Vjiij,nocc) result(energy)
@@ -466,8 +832,202 @@ contains
     energy = - 0.25E0_realk*tmp
   end function mp2f12_E21C2
   
-  !Exchange Ripjq*Gjpiq
-  !Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
+subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,n,Rtilde,CalphaR,EJK)
+  implicit none
+  integer,intent(in)        :: nBA,n
+  real(realk),intent(in)    :: Rtilde(nBA,n,n)
+  real(realk),intent(in)    :: CalphaR(nBA,n,n)
+  real(realk),intent(inout) :: EJK
+  !local variables
+  integer :: I,ALPHA,J
+  real(realk) :: TMP,TMP_IJIJ,TMP_JIIJ,TMPD
+  TMPD = 0.0E0_realk
+  TMP = 0.0E0_realk
+  EJK = 0.0E0_realk
+!  EJK1 = 0.0E0_realk
+!  EJK2 = 0.0E0_realk
+  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J,ALPHA,TMP_IJIJ,TMP_JIIJ) SHARED(CalphaR,Rtilde,n,&
+  !$OMP nba) REDUCTION(+:TMP,TMPD)
+  DO J=1,n
+     !Diagonal
+     TMP_IJIJ = 0.0E0_realk
+     DO ALPHA = 1,NBA
+        TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,J,J)*Rtilde(ALPHA,J,J) + Rtilde(ALPHA,J,J)*CalphaR(ALPHA,J,J)
+     ENDDO
+     TMPD = TMPD + TMP_IJIJ
+     !Non Diagonal
+     DO I=j+1,n
+        TMP_IJIJ = 0.0E0_realk
+        TMP_JIIJ = 0.0E0_realk
+        DO ALPHA = 1,NBA
+           TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,I,I)*Rtilde(ALPHA,J,J) + Rtilde(ALPHA,I,I)*CalphaR(ALPHA,J,J)
+           TMP_JIIJ = TMP_JIIJ + CalphaR(ALPHA,I,J)*Rtilde(ALPHA,J,I) + Rtilde(ALPHA,I,J)*CalphaR(ALPHA,J,I)
+        ENDDO
+        TMP = TMP + 7.0E0_realk * TMP_IJIJ + TMP_JIIJ
+!        EJK1 = EJK1 + 7.0E0_realk * TMP_IJIJ
+!        EJK2 = EJK2 + TMP_JIIJ
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+  EJK = 0.25E0_realk*tmpD + 0.0625E0_realk*TMP
+!  print*,'A',0.25E0_realk*tmpD
+!  print*,'B',0.0625E0_realk*EJK1
+!  print*,'C',0.0625E0_realk*EJK2
+end subroutine ContractOne4CenterF12IntegralsRobustRI
+
+!Perform on GPU 
+subroutine ContractOne4CenterF12IntegralsRI(nBA,n,Calpha,EJ,EK)
+  implicit none
+  integer,intent(in)        :: nBA,n
+  real(realk),intent(in)    :: Calpha(nBA,n,n)
+  real(realk),intent(inout) :: EJ,EK
+  !local variables
+  integer :: I,ALPHA,J
+  real(realk) :: TMP,TMPV(n),TMPI
+  !Exchange Fiijj
+  EK = 0.0E0_realk
+  EJ = 0.0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,&
+  !$OMP ALPHA) SHARED(Calpha,n,nba) REDUCTION(+:EK,EJ)
+  DO I=1,n
+     DO J=1,n
+        DO ALPHA = 1,NBA
+           EJ = EJ + Calpha(ALPHA,I,I)*Calpha(ALPHA,J,J)
+           EK = EK + Calpha(ALPHA,I,J)*Calpha(ALPHA,J,I)
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+
+end subroutine ContractOne4CenterF12IntegralsRI
+
+subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK)
+  implicit none
+  integer,intent(in)        :: nBA,n1,n2
+  real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
+  real(realk),intent(inout) :: EJK
+  real(realk)               :: ED, EJ,EK
+  !local variables
+  integer :: q,p,i,j,alpha,beta
+  real(realk) :: tmpR,tmpG1,tmpG2,tmp
+
+  !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+  tmp = 0.0E0_realk
+  ED =  0.0E0_realk
+  EJ =  0.0E0_realk
+  EK =  0.0E0_realk
+  EJK = 0.0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,p,q,tmpR,&
+  !$OMP tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
+  !$OMP nba) REDUCTION(+:EJ,EK,ED)
+  DO q=1,n2
+     DO p=1,n2
+        DO j=1,n1
+         
+           !Diagonal
+           tmpR = 0.0E0_realk
+           DO alpha = 1,NBA
+              tmpR = tmpR + CalphaR(alpha,j,p)*CalphaR(alpha,j,q)
+           ENDDO
+           tmpG1 = 0.0E0_realk
+           DO beta = 1,NBA
+              tmpG1 = tmpG1 + CalphaG(beta,j,p)*CalphaG(beta,j,q)
+           ENDDO
+           ED = ED + tmpR*tmpG1
+           !Non Diagonal
+           DO i=j+1,n1
+              tmpR = 0.0E0_realk
+              DO alpha = 1,NBA
+                 tmpR = tmpR + CalphaR(alpha,i,p)*CalphaR(alpha,j,q)
+              ENDDO
+              tmpG1 = 0.0E0_realk
+              tmpG2 = 0.0E0_realk
+              DO beta = 1,NBA
+                 tmpG1 = tmpG1 + CalphaG(beta,i,p)*CalphaG(beta,j,q)
+                 tmpG2 = tmpG2 + CalphaG(beta,j,p)*CalphaG(beta,i,q)
+              ENDDO
+              EJ = EJ + tmpR*tmpG1 
+              EK = EK + tmpR*tmpG2
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+  EJK = ED + 2.5E0_realk*EJ - 0.50_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRI
+
+subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
+     & CalphaRocc,CalphaGocc,EJK3,EJK4)
+  implicit none
+  integer,intent(in)        :: nBA,n1,n2,n3
+  real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
+  real(realk),intent(in)    :: CalphaRocc(nBA,n1,n3),CalphaGocc(nBA,n1,n3)
+  real(realk),intent(inout) :: EJK3,EJK4
+  real(realk)               :: EJ3, EJ4, EK3, EK4, ED
+  !local variables
+  integer :: m,c,i,j,alpha,beta
+  real(realk) :: tmpR3,tmpG13,tmpG23
+  real(realk) :: tmpR4,tmpG14,tmpG24
+  !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+  ED =  0.0E0_realk
+  EJ3 =  0.0E0_realk
+  EK3 =  0.0E0_realk
+  EJK3 = 0.0E0_realk
+  EJ4 =  0.0E0_realk
+  EK4 =  0.0E0_realk
+  EJK4 = 0.0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
+  !$OMP tmpG13,tmpG23,tmpG14,tmpG24) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
+  !$OMP nba) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+  DO m=1,n3
+     DO c=1,n2
+        DO j=1,n1
+           !Diagonal
+           tmpR3 = 0.0E0_realk
+           DO alpha = 1,NBA
+              tmpR3 = tmpR3 + CalphaRocc(alpha,j,m)*CalphaR(alpha,j,c)
+           ENDDO
+           tmpG13 = 0.0E0_realk
+           DO beta = 1,NBA
+              tmpG13 = tmpG13 + CalphaGocc(beta,j,m)*CalphaG(beta,j,c)
+           ENDDO
+           ED = ED + tmpR3*tmpG13
+           !Non Diagonal
+           DO i=j+1,n1
+              tmpR3 = 0.0E0_realk
+              tmpR4 = 0.0E0_realk
+              DO alpha = 1,NBA
+                 tmpR3 = tmpR3 + CalphaRocc(alpha,i,m)*CalphaR(alpha,j,c)
+                 tmpR4 = tmpR4 + CalphaRocc(alpha,j,m)*CalphaR(alpha,i,c)
+              ENDDO              
+              tmpG13 = 0.0E0_realk
+              tmpG23 = 0.0E0_realk
+              tmpG14 = 0.0E0_realk
+              tmpG24 = 0.0E0_realk
+              DO beta = 1,NBA
+                 tmpG13 = tmpG13 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+                 tmpG23 = tmpG23 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+
+                ! tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+                ! tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+              ENDDO
+              EJ3 = EJ3 + tmpR3*tmpG13 
+              EK3 = EK3 + tmpR3*tmpG23
+
+              EJ4 = EJ4 + tmpR4*tmpG23
+              EK4 = EK4 + tmpR4*tmpG13
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+  EJK3 = ED + 2.5E0_realk*EJ3-0.5E0_realk*EK3
+  EJK4 = ED + 2.5E0_realk*EJ4-0.5E0_realk*EK4
+
+end subroutine ContractTwo4CenterF12IntegralsRI2
+
+!Exchange Ripjq*Gjpiq
+!Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
 !!$  subroutine ContractTwo4CenterF12IntegralsExchange(OperR,OperG,nocc,nbasis,SETTING,INTSPEC)
 !!$    implicit none
 !!$    integer,intent(in) :: OperR,OperG,nocc,nbasis
@@ -715,133 +1275,6 @@ contains
 !!$    ls%setting%SCHEME%NOFAMILY = NOFAMILY
 !!$
 !!$  end subroutine ContractTwo4CenterF12IntegralsExchange
-
-!Perform on GPU 
-subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJ,EK)
-  implicit none
-  integer,intent(in)        :: nBA,n1,n2
-  real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
-  real(realk),intent(inout) :: EJ,EK
-  !local variables
-  integer :: Q,P,I,J,ALPHA,BETA
-  real(realk) :: TMPR,TMPG,TMP1(NBA,NBA),TMP2(NBA,NBA)
-  !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
-  EK = 0.0E0_realk
-  EJ = 0.0E0_realk
-  !$OMP PARALLEL DEFAULT(none) PRIVATE(I,J,P,Q,TMPR,TMPG) SHARED(CalphaR,CalphaG,n2,n1,nba) REDUCTION(+:EK,EJ)
-  !$OMP DO COLLAPSE(3)
-  DO Q=1,n2
-     DO P=1,n2
-        DO I=1,n1
-           DO J=1,n1
-              TMPR = 0.0E0_realk
-              DO ALPHA = 1,NBA
-                 TMPR = TMPR + CalphaR(ALPHA,I,P)*CalphaR(ALPHA,J,Q)
-              ENDDO
-              TMPG = 0.0E0_realk
-              DO BETA = 1,NBA
-                 TMPG = TMPG + CalphaG(BETA,J,P)*CalphaG(BETA,I,Q)
-              ENDDO
-              EK = EK + TMPR*TMPG
-           ENDDO
-        ENDDO
-     ENDDO
-  ENDDO
-  !$OMP END DO NOWAIT
-  !Coulomb Ripjq*Gipjq Scaling(N*O*Naux**2)
-  !FIXME THIS IS NOT OPTIMAL - NON UNIT STRIDE 
-  !$OMP DO COLLAPSE(2)
-  DO BETA = 1,NBA
-     DO ALPHA = 1,NBA
-        TMPR = 0.0E0_realk                    
-        DO P=1,n2
-           DO I=1,n1
-              TMPR = TMPR + CalphaR(ALPHA,I,P)*CalphaG(BETA,I,P)
-           ENDDO
-        ENDDO
-        EJ = EJ + TMPR*TMPR
-     ENDDO
-  ENDDO
-  !$OMP END DO
-  !$OMP END PARALLEL
-
-
-!!$  print*,'n1',n1,'n2',n2
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,1,1)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(1,1,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,n1,1)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(n1,1,1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,1,n2)*CalphaR(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(1,n2,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,1,1)*CalphaR(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(1,1,n1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,1,1)*CalphaR(ALPHA,1,n2)
-!!$  ENDDO
-!!$  print*,'Ripjq(1,1,1,n2)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaR(ALPHA,n1,1)*CalphaR(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Ripjq(n1,1,n1,1)=',TMPR
-!!$
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,1,1)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(1,1,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,n1,1)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(n1,1,1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,1,n2)*CalphaG(ALPHA,1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(1,n2,1,1)=',TMPR
-!!$  
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,1,1)*CalphaG(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(1,1,n1,1)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,1,1)*CalphaG(ALPHA,1,n2)
-!!$  ENDDO
-!!$  print*,'Gipjq(1,1,1,n2)=',TMPR
-!!$
-!!$  TMPR = 0.0E0_realk
-!!$  DO ALPHA = 1,NBA                    
-!!$     TMPR = TMPR +  CalphaG(ALPHA,n1,1)*CalphaG(ALPHA,n1,1)
-!!$  ENDDO
-!!$  print*,'Gipjq(n1,1,n1,1)=',TMPR
-
-
-end subroutine ContractTwo4CenterF12IntegralsRI
 
 end module fullrimp2f12
 

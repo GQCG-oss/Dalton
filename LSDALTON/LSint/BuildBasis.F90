@@ -93,6 +93,7 @@ ALLOCATE(STRING(NBASDIR))
 
 BASINFO%GCbasis = .FALSE.
 BASINFO%SPHERICAL = DOSPHERICAL
+BASINFO%GeminalScalingFactor = 1.0E0_realk
 IF(present(BASISSETNAME))THEN
  BASINFO%Labelindex = 0
 ! call mem_alloc(BINDEXES,1)
@@ -108,9 +109,27 @@ IF(present(BASISSETNAME))THEN
 ! J=1
 ! BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
 ! IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
+
+ !Setting the F12 geminal scaling factor 
+ !see J. Chem. Phys 128, 084102
+ IPOS = INDEX(BASISSETNAME,'aug-cc-pVDZ')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.1E0_realk
+ IPOS = INDEX(BASISSETNAME,'aug-cc-pVTZ')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.2E0_realk
+ IPOS = INDEX(BASISSETNAME,'aug-cc-pVQZ')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.4E0_realk
+ IPOS = INDEX(BASISSETNAME,'aug-cc-pV5Z')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.4E0_realk
+ IPOS = INDEX(BASISSETNAME,'cc-pVDZ-F12')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 0.9E0_realk
+ IPOS = INDEX(BASISSETNAME,'cc-pVTZ-F12')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.0E0_realk
+ IPOS = INDEX(BASISSETNAME,'cc-pVQZ-F12')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.1E0_realk
 ELSE
 ! call mem_alloc(BINDEXES,BASISSETLIBRARY(iBas)%nbasissets)
  BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
+ BASINFO%GeminalScalingFactor = BASISSETLIBRARY(iBas)%GeminalScalingFactor
  SELECT CASE(BASISLABEL)
  CASE('REGULAR  ') !identical to BasParamLABEL(RegBasParam)
     BASINFO%Labelindex = RegBasParam
@@ -1263,7 +1282,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     !WRITE(LUPRI,*) 'INSIDE UNCONTRACTED'
                     !uncontracted basis set are forced uncontracted with .UNCONT
                     IF(NUMBER_OF_LINES.EQ.1)THEN
-                       READ (STRING, '(F16.9)') Exp
+                       READ (STRING, *) Exp
                        BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%Exponents(1) = Exp
                        BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%elms(1)= &
                             &(4*Exp)**(0.5E0_realk*nang+0.25E0_realk)*PIPPI 
