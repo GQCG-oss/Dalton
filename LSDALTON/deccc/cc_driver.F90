@@ -2856,13 +2856,13 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
          if(DECinfo%PL>2)then
             write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Found scheme :",I2)')sch
-            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g7.2," GB")')&
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g9.2," GB")')&
                &Freebytes/1024.0E0_realk**3
-            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4     : ",g7.2," GB")')&
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4     : ",g9.2," GB")')&
                &mem41/1024.0E0_realk**3
-            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3     : ",g7.2," GB")')&
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3     : ",g9.2," GB")')&
                &mem31/1024.0E0_realk**3
-            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2     : ",g7.2," GB")')&
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2     : ",g9.2," GB")')&
                &mem21/1024.0E0_realk**3
          endif
 
