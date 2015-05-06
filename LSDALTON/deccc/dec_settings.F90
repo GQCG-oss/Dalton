@@ -80,6 +80,7 @@ contains
     DECinfo%convert32to64      = .false.
     DECinfo%HFrestart          = .false.
     DECinfo%DECrestart         = .false.
+    DECinfo%EnforceRestart     = .false.
     DECinfo%TimeBackup         = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals  = .false.
     DECinfo%CheckPairs         = .false.
@@ -519,6 +520,12 @@ contains
           !> Use HF info generated from previous calculation but run DEC calculation from scratch
           DECinfo%HFrestart=.true.           
           DECinfo%DECrestart=.false.           
+
+       case('.ENFORCERESTART') 
+          !> Enforce restart
+          DECinfo%HFrestart=.true.           
+          DECinfo%DECrestart=.true.           
+          DECinfo%EnforceRestart=.true.           
 
        case('.NOTABSORBH')
           !> Do not absorb H atoms when assigning orbitals

@@ -156,6 +156,8 @@ module dec_typedef_module
      logical :: HFrestart
      !> Restart DEC calculation using fragment info files (requires HFrestart to be true)
      logical :: DECrestart
+     !> Enforce restart in spite of inconsistencies in restart file - only for advanced users!
+     logical :: EnforceRestart
      !> Creating files for restart: Time (in seconds) passing before backing up restart files
      real(realk) :: TimeBackup
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
