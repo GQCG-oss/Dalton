@@ -11582,19 +11582,19 @@ contains
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
        call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,&
-                      & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
+                      & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
        call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
-                      & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
+                      & trip_ampl,no,1.0E0_realk,wrk_3d,nv)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                              & 1.0E0_realk,c_loc(int_virt_32),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
+                             & 0.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                              & -1.0E0_realk,c_loc(int_virt_23),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
+                             & 1.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
 !$acc end host_data
 
 !       if (stat .ne. 0 ) then
@@ -11617,19 +11617,19 @@ contains
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
        call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,&
-                      & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
+                      & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
        call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
-                      & trip_ampl,no,1.0E0_realk,T_star_v1,nv)
+                      & trip_ampl,no,1.0E0_realk,wrk_3d,nv)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                              & 2.0E0_realk,c_loc(int_virt_32),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
+                             & 0.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                              & -1.0E0_realk,c_loc(int_virt_23),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1),int(nv,kind=4))
+                             & 1.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
 !$acc end host_data
 
 !       if (stat .ne. 0 ) then
@@ -11647,7 +11647,11 @@ contains
 
     end select TypeofContraction_abc_211
 
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,no,no,[3,2,1],1.0E0_realk,T_star_v1,async_idx)
+#else
     call array_reorder_3d(1.0E0_realk,wrk_3d,nv,no,no,[3,2,1],1.0E0_realk,T_star_v1)
+#endif
 
   end subroutine ccsdpt_contract_abc_211
 
@@ -11739,14 +11743,14 @@ contains
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
 !$acc host_data use_device(int_virt_12,trip_ampl,T_star_v3)
     call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,&
-                   & trip_ampl,no,1.0E0_realk,T_star_v3,nv)
+                   & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_virt_12,trip_ampl,T_star_v3)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
                           & -1.0E0_realk,c_loc(int_virt_12),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                          & 1.0E0_realk,c_loc(T_star_v3),int(nv,kind=4))
+                          & 0.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
 !$acc end host_data
 
 !    if (stat .ne. 0 ) then
@@ -11760,7 +11764,11 @@ contains
                    & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
 #endif
 
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,no,no,[3,2,1],1.0E0_realk,T_star_v3,async_idx)
+#else
     call array_reorder_3d(1.0E0_realk,wrk_3d,nv,no,no,[3,2,1],1.0E0_realk,T_star_v3)
+#endif
 
   end subroutine ccsdpt_contract_abc_212
 
@@ -11809,20 +11817,20 @@ contains
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
        call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,&
 !       call dgemm_acc('n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
-                      & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
+                      & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
        call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
 !       call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
-                      & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
+                      & trip_ampl,nv,1.0E0_realk,wrk_3d,no)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                              & -1.0E0_realk,c_loc(int_occ_32),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
+                             & 0.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                              & 1.0E0_realk,c_loc(int_occ_23),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
+                             & 1.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
 !$acc end host_data
 
 !       if (stat .ne. 0 ) then
@@ -11846,20 +11854,20 @@ contains
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
        call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,&
 !       call dgemm_acc('n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
-                      & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
+                      & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
        call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
 !       call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
-                      & trip_ampl,nv,1.0E0_realk,T_star_o1,no)
+                      & trip_ampl,nv,1.0E0_realk,wrk_3d,no)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                              & -2.0E0_realk,c_loc(int_occ_32),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
+                             & 0.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
        stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                              & 1.0E0_realk,c_loc(int_occ_23),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1),int(no,kind=4))
+                             & 1.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
 !$acc end host_data
 
 !       if (stat .ne. 0 ) then
@@ -11877,7 +11885,11 @@ contains
 
     end select TypeofContraction_221
 
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,wrk_3d,no,nv,nv,[3,2,1],1.0E0_realk,T_star_o1,async_idx)
+#else
     call array_reorder_3d(1.0E0_realk,wrk_3d,no,nv,nv,[3,2,1],1.0E0_realk,T_star_o1) 
+#endif
 
   end subroutine ccsdpt_contract_ijk_221
 
@@ -12080,14 +12092,14 @@ contains
 !$acc host_data use_device(int_occ_12,trip_ampl,T_star_o3)
     call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,&
 !    call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
-                   & trip_ampl,nv,1.0E0_realk,T_star_o3,no)
+                   & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
 !$acc end host_data
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(int_occ_12,trip_ampl,T_star_o3)
     stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
                           & 1.0E0_realk,c_loc(int_occ_12),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                          & 1.0E0_realk,c_loc(T_star_o3),int(no,kind=4))
+                          & 0.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
 !$acc end host_data
 
 !    if (stat .ne. 0 ) then
@@ -12101,7 +12113,11 @@ contains
                    & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
 #endif
 
+#ifdef VAR_OPENACC
+    call array_reorder_3d_acc(1.0E0_realk,wrk_3d,no,nv,nv,[3,2,1],1.0E0_realk,T_star_o3,async_idx)
+#else
     call array_reorder_3d(1.0E0_realk,wrk_3d,no,nv,nv,[3,2,1],1.0E0_realk,T_star_o3)
+#endif
 
   end subroutine ccsdpt_contract_ijk_222
 
