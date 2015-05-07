@@ -13754,7 +13754,7 @@ contains
     if (infpar%lg_nodtot .gt. 1) then
 
 #ifdef VAR_PTR_RESHAPE
-       dummy2(1:(i8*nocc*nvirt)*nocc*nocc) => ovoo%elm1
+       dummy2(1:(i8*nocc*nvirt)*nocc*nocc) => ovoo%elm1(:)
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
        call c_f_pointer(c_loc(ovoo%elm1(1)),dummy2,[(i8*nocc*nvirt)*nocc*nocc])      
 #else
@@ -14318,7 +14318,7 @@ contains
     if (infpar%lg_nodtot .gt. 1) then
 
 #ifdef VAR_PTR_RESHAPE
-       dummy2(1:(i8*nocc*nocc)*nocc*nvirt) => ooov%elm1
+       dummy2(1:(i8*nocc*nocc)*nocc*nvirt) => ooov%elm1(:)
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
        call c_f_pointer(c_loc(ooov%elm1(1)),dummy2,[(i8*nocc*nocc)*nocc*nvirt])
 #else
