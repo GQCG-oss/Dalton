@@ -164,12 +164,14 @@ contains
     Character            :: intSpec(5)
     real(realk) :: CPU1,CPU2,WALL1,WALL2,CPU_INT,WALL_INT,CPU_AOTOMO,WALL_AOTOMO
     integer(kind=short) :: CS_THRLOG
+    logical :: use_bg_buf
 #ifdef VAR_TIME
     FORCEPRINT = .TRUE.
 #else
     FORCEPRINT = .FALSE.
 #endif
     call time_start_phase( PHASE_WORK, swwork=time_mp2work , swcomm=time_mp2comm , swidle=time_mp2idle )
+    use_bg_buf = mem_is_background_buf_init()
 
     myload = 0
     CPU_INT = 0.0E0_realk
@@ -724,7 +726,11 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       endif
       MemInGBCollected = MemInGBCollected + MemInGB(maxdim)
       MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
-      call mem_alloc(arr,maxdim)
+      if( use_bg_buf )then
+         call mem_pseudo_alloc(arr,maxdim)
+      else
+         call mem_alloc(arr,maxdim)
+      endif
       if(master.AND.DECinfo%PL>0)then
          write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Global Memory statistics after big array'
          call stats_globalmem(DECinfo%output)
@@ -861,26 +867,39 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
            FLUSH(DECinfo%output)
 #endif
           endif
-          MemInGBCollected = MemInGBCollected + MemInGB(max(bat%size1(1),dim1))
+          MemInGBCollected = MemInGBCollected + MemInGB(bat%size1(3))
           MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
-          call mem_alloc(tmp1%p,max(bat%size1(1),dim1))
-          tmp1%start = 1
-          tmp1%N     = max(bat%size1(1),dim1)
-          tmp1%end   = tmp1%N
+          if( use_bg_buf )then
+             call mem_pseudo_alloc(tmp3%p,bat%size1(3))
+          else
+             call mem_alloc(tmp3%p,bat%size1(3))
+          endif
+          tmp3%start = 1
+          tmp3%N     = bat%size1(3)
+          tmp3%end   = tmp3%N
 
           MemInGBCollected = MemInGBCollected + MemInGB(bat%size1(2))
           MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
-          call mem_alloc(tmp2%p,bat%size1(2))
+          if( use_bg_buf )then
+             call mem_pseudo_alloc(tmp2%p,bat%size1(2))
+          else
+             call mem_alloc(tmp2%p,bat%size1(2))
+          endif
           tmp2%start = 1
           tmp2%N     = bat%size1(2)
           tmp2%end   = tmp2%N 
           
-          MemInGBCollected = MemInGBCollected + MemInGB(bat%size1(3))
+          MemInGBCollected = MemInGBCollected + MemInGB(max(bat%size1(1),dim1))
           MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
-          call mem_alloc(tmp3%p,bat%size1(3))
-          tmp3%start = 1
-          tmp3%N     = bat%size1(3)
-          tmp3%end   = tmp3%N
+          if( use_bg_buf )then
+             call mem_pseudo_alloc(tmp1%p,max(bat%size1(1),dim1))
+          else
+             call mem_alloc(tmp1%p,max(bat%size1(1),dim1))
+          endif
+          tmp1%start = 1
+          tmp1%N     = max(bat%size1(1),dim1)
+          tmp1%end   = tmp1%N
+
 #endif
           ! *********************************************************************
           ! *                      STEP 1 IN INTEGRAL LOOP                      *
@@ -904,9 +923,15 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                 MyFragment%mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
                 IF(DECSCREEN%masterGabLHS%maxgabelm+DECSCREEN%batchGab(alphaB,gammaB)%p%maxgabelm .LE. CS_THRLOG)THEN
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-                   call mem_dealloc(tmp1%p)
-                   call mem_dealloc(tmp2%p)
-                   call mem_dealloc(tmp3%p)
+                   if( use_bg_buf )then
+                      call mem_pseudo_dealloc(tmp1%p)
+                      call mem_pseudo_dealloc(tmp2%p)
+                      call mem_pseudo_dealloc(tmp3%p)
+                   else
+                      call mem_dealloc(tmp1%p)
+                      call mem_dealloc(tmp2%p)
+                      call mem_dealloc(tmp3%p)
+                   endif
 #endif
                    !The integral block is zero (or less than integral threshold) so
                    !there is no reason to do the AO to MO transformation and the
@@ -1074,8 +1099,13 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           MemInGBCollected = MemInGBCollected - size(tmp1%p,kind=long)*8.0E-9_realk - size(tmp2%p,kind=long)*8.0E-9_realk
-          call mem_dealloc(tmp1%p)
-          call mem_dealloc(tmp2%p)
+          if( use_bg_buf )then
+             call mem_pseudo_dealloc(tmp1%p)
+             call mem_pseudo_dealloc(tmp2%p)
+          else
+             call mem_dealloc(tmp1%p)
+             call mem_dealloc(tmp2%p)
+          endif
           if(master.and.DECinfo%PL>0)then
              write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate tmp4%p using   ',&
                 &MemInGB(bat%size2(4)),' GB Tot=',MemInGBCollected,' GB'
@@ -1107,7 +1137,11 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           MemInGBCollected = MemInGBCollected - size(tmp3%p,kind=long)*8.0E-9_realk
-          call mem_dealloc(tmp3%p)
+          if( use_bg_buf )then
+             call mem_pseudo_dealloc(tmp3%p)
+          else
+             call mem_dealloc(tmp3%p)
+          endif
           do j=1,nthreads
              if(master.AND.DECinfo%PL>0)then
                 write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b1(',j,')%p using   ',&
@@ -1122,15 +1156,27 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              endif
              MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(1)) + MemInGB(bat%size2(2)) + MemInGB(bat%size2(3))
              MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
-             call mem_alloc(b1(j)%p,bat%size2(1))
+             if( use_bg_buf )then
+                call mem_pseudo_alloc(b1(j)%p,bat%size2(1))
+             else
+                call mem_alloc(b1(j)%p,bat%size2(1))
+             endif
              b1(j)%start = 1
              b1(j)%N     = bat%size2(1)
              b1(j)%end   = b1(j)%N
-             call mem_alloc(b2(j)%p,bat%size2(2))
+             if( use_bg_buf )then
+                call mem_pseudo_alloc(b2(j)%p,bat%size2(2))
+             else
+                call mem_alloc(b2(j)%p,bat%size2(2))
+             endif
              b2(j)%start = 1
              b2(j)%N     = bat%size2(2)
              b2(j)%end   = b2(j)%N
-             call mem_alloc(b3(j)%p,bat%size2(3))
+             if( use_bg_buf )then
+                call mem_pseudo_alloc(b3(j)%p,bat%size2(3))
+             else
+                call mem_alloc(b3(j)%p,bat%size2(3))
+             endif
              b3(j)%start = 1
              b3(j)%N     = bat%size2(3)
              b3(j)%end   = b3(j)%N
@@ -1462,12 +1508,18 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           MemInGBCollected = MemInGBCollected - size(tmp4%p,kind=long)*8.0E-9_realk
           call mem_dealloc(tmp4%p)
-          do j=1,nthreads
+          do j=nthreads,1,-1
              MemInGBCollected = MemInGBCollected-size(b1(j)%p,kind=long)*8.0E-9_realk-size(b2(j)%p,kind=long)&
                 &*8.0E-9_realk-size(b3(j)%p,kind=long)*8.0E-9_realk
-             call mem_dealloc(b1(j)%p)
-             call mem_dealloc(b2(j)%p)
-             call mem_dealloc(b3(j)%p)
+             if(use_bg_buf)then
+                call mem_pseudo_dealloc(b3(j)%p)
+                call mem_pseudo_dealloc(b2(j)%p)
+                call mem_pseudo_dealloc(b1(j)%p)
+             else
+                call mem_dealloc(b3(j)%p)
+                call mem_dealloc(b2(j)%p)
+                call mem_dealloc(b1(j)%p)
+             endif
           end do
 #endif
 
@@ -1584,14 +1636,22 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
  endif 
  MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(1))
  MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
- call mem_alloc(tmp1%p,bat%size3(1))
+ if(use_bg_buf)then
+    call mem_pseudo_alloc(tmp1%p,bat%size3(1))
+ else
+    call mem_alloc(tmp1%p,bat%size3(1))
+ endif
  tmp1%start = 1
  tmp1%N     = bat%size3(1)
  tmp1%end   = tmp1%N 
  
  MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(2))
  MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
- call mem_alloc(tmp2%p,bat%size3(2))
+ if(use_bg_buf)then
+    call mem_pseudo_alloc(tmp2%p,bat%size3(2))
+ else
+    call mem_alloc(tmp2%p,bat%size3(2))
+ endif
  tmp2%start = 1
  tmp2%N     = bat%size3(1)
  tmp2%end   = tmp1%N
@@ -1811,8 +1871,13 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
  MemInGBCollected = MemInGBCollected - size(tmp1%p,kind=long)*8.0E-9_realk - size(tmp2%p,kind=long)*8.0E-9_realk
- call mem_dealloc(tmp1%p)
- call mem_dealloc(tmp2%p)
+ if( use_bg_buf )then
+    call mem_pseudo_dealloc(tmp2%p)
+    call mem_pseudo_dealloc(tmp1%p)
+ else
+    call mem_dealloc(tmp2%p)
+    call mem_dealloc(tmp1%p)
+ endif
 #endif
  ! Free stuff
  nullify(mini1,mini2,mini3,mini4)
@@ -1828,7 +1893,11 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
  !deallocate(arr)
 #ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
  MemInGBCollected = MemInGBCollected - size(arr,kind=long)*8.0E-9_realk
- call mem_dealloc(arr)
+ if( use_bg_buf )then
+    call mem_pseudo_dealloc(arr)
+ else
+    call mem_dealloc(arr)
+ endif
 #endif
  call mem_dealloc(b1)
  call mem_dealloc(b2)
@@ -2447,6 +2516,7 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   integer :: max_alpha, max_gamma, MaxActualDimAlpha, MaxActualDimGamma
   integer :: iAO, nbatchesAlpha, nbatchesGamma
   integer(kind=ls_mpik) :: nnod
+  logical :: use_bg_buf
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
@@ -2457,6 +2527,8 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   if(infpar%lg_mynum/=0) doprint=.false.
   nnod = infpar%lg_nodtot
 #endif
+
+  use_bg_buf = mem_is_background_buf_init()
 
 #ifdef VAR_OMP
   nthreads=OMP_GET_MAX_THREADS()
@@ -2482,9 +2554,13 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
 
   ! Memory currently available
   ! **************************
-  call get_currently_available_memory(MemoryAvailable)
-  ! Note: We multiply by 85 % to be on the safe side!
-  MemoryAvailable = 0.85*MemoryAvailable
+  if( use_bg_buf )then
+     MemoryAvailable = (mem_get_bg_buf_free() * 8.0E0_realk)/(1024.0E0_realk**3)
+  else
+     call get_currently_available_memory(MemoryAvailable)
+     ! Note: We multiply by 85 % to be on the safe side!
+     MemoryAvailable = 0.85*MemoryAvailable
+  endif
 
 
   ! Maximum and minimum possible batch sizes

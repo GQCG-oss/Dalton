@@ -880,7 +880,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(tensor) :: u2, sio4
      type(tensor) :: gvoova,gvvooa
      !special arrays for scheme=1
-     type(tensor) :: t2jabi,u2kcjb
+     type(tensor) :: t2jabi,u2kcjb, o2ilej
      integer,pointer       :: tasks(:)
      type(c_ptr)           :: tasksc
      integer(kind=ls_mpik) :: tasksw,taskslw
@@ -1566,24 +1566,36 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os], bg=use_bg_buf )
         call tensor_zero(gvvooa)
         call tensor_zero(gvoova)
-!        call mem_alloc(sio4,int(i8*nor*no2,kind=long))
-!#ifdef VAR_MPI
-!        call lsmpi_win_create(sio4%d,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
-!#endif
-        if(scheme == 4 .or. scheme == 3)then
 
+        if(scheme == 1)then
+           !Maybe we should use the bg buffer here as well
+           call tensor_ainit(o2ilej, [nv,nv,nor],3, local=local, atype='TDAR', tdims=[vs,vs,nor])
+           call tensor_zero(o2ilej)
+        endif
+
+
+
+        select case (scheme)
+        case(4,3)
            sio4_mode = 3
            sio4_dims(1:sio4_mode) = [no,no,nor]
            sio4_tdim(1:sio4_mode) = [os,os,nor]
            write(def_atype,'(A4)')'LDAR'
-
-        else
-
+        case(2)
            sio4_mode = 4
            sio4_dims(1:sio4_mode) = [no,no,no,no]
            sio4_tdim(1:sio4_mode) = [os,os,os,os]
            write(def_atype,'(A4)')'TDAR'
-        endif
+        case(1)
+           print *,"We need to decide what we do with this tensor. it is used&
+              & after the integral direct loop"
+           stop 0
+           !sio4_mode = 3
+           !sio4_dims(1:sio4_mode) = [no,no,nor]
+           !sio4_tdim(1:sio4_mode) = [os,os,nor]
+           !write(def_atype,'(A4)')'TDAR'
+        end select
+
 
         call tensor_ainit(sio4,sio4_dims(1:sio4_mode),sio4_mode,local=local,atype=def_atype,tdims = sio4_tdim(1:sio4_mode))
         call tensor_zero(sio4)
@@ -2220,7 +2232,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               else !`DIL: Scheme 1: TPL and TMI are distributed tensors
 #ifdef DIL_ACTIVE
                  call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpld,tmid,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
-                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,.false.,&
+                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],o2ilej,lock_outside,.false.,&
                     &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
 #else
                  call lsquit('ERROR(ccsd_residual_integral_driven): This part (6) of Scheme 1 requires DIL backend!',-1)
@@ -2477,7 +2489,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      else
       call tensor_free(tpld)
       call tensor_free(tmid)
+      print*,"BEFORE FREEING o2ilej we need to update the vull residual o2"
+      call tensor_free(o2ilej)
+      stop 0
      endif
+        if(scheme == 1)then
+        endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -3477,7 +3494,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
               &MaxActualDimGamma,nbuffs,4,0,.true.,mylsitem%setting,intspec)
 
-        print *,"Getting batchs sizes took",time_get_batch_sizes
         if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
         
      endif
@@ -5688,7 +5704,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         allsize = 0
         if( vs>0.and. os>0)then
-           locally_stored_tiles = (vs**2*i8*os**2*ceiling(float( ceiling(float(nv**2*i8*no**2)/float(vs**2*i8*os**2)) )/float(nnod)))
+           locally_stored_tiles = (vs**2*i8*os**2*ceiling(float(ceiling(float(nv**2*i8*no**2)/float(vs**2*i8*os**2)))/float(nnod)))
         else
            locally_stored_tiles = 0
         endif
