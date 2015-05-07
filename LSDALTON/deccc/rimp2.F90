@@ -1438,32 +1438,32 @@ subroutine RI_DGEMM(Ta,Tb,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC)
   real(realk) :: A(LDA,*)
   real(realk) :: B(LDB,*)
   real(realk) :: C(LDC,*)
-#ifdef VAR_OPENACC
-  !$acc host_data use_device(A,B,C)
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-  call dgemm_acc(Ta,Tb,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC)
-#elif defined(VAR_CUBLAS)
-  IF(Ta.EQ.'T')THEN
-     cubTa = 1
-  ELSE
-     cubTa = 0
-  ENDIF
-  IF(Tb.EQ.'T')THEN
-     cubTb = 1
-  ELSE
-     cubTb = 0
-  ENDIF
-  stat = cublasDgemm_v2(cublas_handle,int(cubTa,kind=4),int(cubTb,kind=4),&
-       & int(M,kind=4),int(N,kind=4),int(K,kind=4),&
-       & alpha,c_loc(A),int(LDA,kind=4),c_loc(B),int(LDB,kind=4),&
-       & beta,c_loc(C),int(LDC,kind=4))
-#endif
-  !$acc end host_data
-  call addDGEMM_FLOPonGPUaccouting(M,N,K,beta)
-#else
+!#ifdef VAR_OPENACC
+!  !$acc host_data use_device(A,B,C)
+!#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!  call dgemm_acc(Ta,Tb,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC)
+!#elif defined(VAR_CUBLAS)
+!  IF(Ta.EQ.'T')THEN
+!     cubTa = 1
+!  ELSE
+!     cubTa = 0
+!  ENDIF
+!  IF(Tb.EQ.'T')THEN
+!     cubTb = 1
+!  ELSE
+!     cubTb = 0
+!  ENDIF
+!  stat = cublasDgemm_v2(cublas_handle,int(cubTa,kind=4),int(cubTb,kind=4),&
+!       & int(M,kind=4),int(N,kind=4),int(K,kind=4),&
+!       & alpha,c_loc(A),int(LDA,kind=4),c_loc(B),int(LDB,kind=4),&
+!       & beta,c_loc(C),int(LDC,kind=4))
+!#endif
+!  !$acc end host_data
+!  call addDGEMM_FLOPonGPUaccouting(M,N,K,beta)
+!#else
   print*,'Ta,Tb,M,N,K,alpha',Ta,Tb,M,N,K,alpha,LDA,LDB,beta,LDC
   call dgemm(Ta,Tb,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC)
-#endif
+!#endif
 end subroutine RI_DGEMM
 
 subroutine PlaceCoreOrbFirst(Calpha,NBA,nvirtEOS,nocctot,ncore,nocc,Calpha3)
@@ -1596,8 +1596,8 @@ subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,Uocc
   enddo
 #ifdef VAR_OPENACC
   !$ACC END PARALLEL LOOP
-  gpuflops = NBA*nocc*nocc*nvirt*nvirt + nocc*nocc*nvirt*nvirt*noccEOS
-  call AddFLOP_FLOPonGPUaccouting(gpuflops)
+!  gpuflops = NBA*nocc*nocc*nvirt*nvirt + nocc*nocc*nvirt*nvirt*noccEOS
+!  call AddFLOP_FLOPonGPUaccouting(gpuflops)
 #else
   !$OMP END PARALLEL DO
 #endif
@@ -1658,8 +1658,8 @@ subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,U
   enddo
 #ifdef VAR_OPENACC
   !$ACC END PARALLEL LOOP
-  gpuflops = NBA*nocc*nocc*nvirt*nvirt + nocc*nocc*nvirt*nvirt*nvirtEOS
-  call AddFLOP_FLOPonGPUaccouting(gpuflops)
+!  gpuflops = NBA*nocc*nocc*nvirt*nvirt + nocc*nocc*nvirt*nvirt*nvirtEOS
+!  call AddFLOP_FLOPonGPUaccouting(gpuflops)
 #else
   !$OMP END PARALLEL DO
 #endif
@@ -1706,8 +1706,8 @@ subroutine RIMP2_calc_toccB(nvirt,noccEOS,tocc,UvirtT,toccEOS)
   enddo
 #ifdef VAR_OPENACC
   !$ACC END PARALLEL LOOP
-  gpuflops = noccEOS*noccEOS*nvirt*nvirt*nvirt
-  call AddFLOP_FLOPonGPUaccouting(gpuflops)
+!  gpuflops = noccEOS*noccEOS*nvirt*nvirt*nvirt
+!  call AddFLOP_FLOPonGPUaccouting(gpuflops)
 #else
   !$OMP END PARALLEL DO
 #endif
@@ -1753,8 +1753,8 @@ subroutine RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt,UoccT,tvirtEOS)
   enddo
 #ifdef VAR_OPENACC
   !$ACC END PARALLEL LOOP
-  gpuflops = nvirtEOS*nocc*nvirtEOS*nocc*nvirt
-  call AddFLOP_FLOPonGPUaccouting(gpuflops)
+!  gpuflops = nvirtEOS*nocc*nvirtEOS*nocc*nvirt
+!  call AddFLOP_FLOPonGPUaccouting(gpuflops)
 #else
   !$OMP END PARALLEL DO
 #endif
@@ -1794,8 +1794,8 @@ subroutine RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,AlphaCD4,AlphaCD5)
   enddo
 #ifdef VAR_OPENACC
   !$ACC END PARALLEL LOOP
-  gpuflops = NBA*nvirt*nvirt*noccEOS
-  call AddFLOP_FLOPonGPUaccouting(gpuflops)
+!  gpuflops = NBA*nvirt*nvirt*noccEOS
+!  call AddFLOP_FLOPonGPUaccouting(gpuflops)
 #else
   !$OMP END PARALLEL DO
 #endif
@@ -1837,8 +1837,8 @@ subroutine RIMP2_TransAlpha2(n2,n1,n3,nba,UvirtEOST,AlphaCD4,AlphaCD5)
   enddo
 #ifdef VAR_OPENACC
   !$ACC END PARALLEL LOOP
-  gpuflops = NBA*nvirtEOS*nocctot*nvirt
-  call AddFLOP_FLOPonGPUaccouting(gpuflops)
+!  gpuflops = NBA*nvirtEOS*nocctot*nvirt
+!  call AddFLOP_FLOPonGPUaccouting(gpuflops)
 #else
   !$OMP END PARALLEL DO
 #endif
