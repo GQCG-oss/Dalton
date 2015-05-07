@@ -23,6 +23,7 @@ module full_ls_thc_rimp2Mod
   use rimp2_module
   use full_molecule
   use THC_util
+  use files
   public :: full_canonical_ls_thc_rimp2
   private
 
@@ -49,13 +50,13 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   real(realk),pointer :: Calpha(:),ABdecomp(:,:),Mmat(:,:),Epq(:,:),XO(:,:)
   real(realk),pointer :: XV(:,:),TZpq(:,:),IntTHC(:,:,:,:),IntRI(:,:,:,:)
   real(realk),pointer :: SC(:,:)
-  logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate
+  logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate,WriteToDisk
   character :: intspec(5)
 
   CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
   CALL LSTIMER('START ',TS2,TE2,DECINFO%OUTPUT)
   mp2_energy = 0.0E0_realk
-  
+  WriteToDisk = .TRUE.  
   !sanity check
   if(.NOT.DECinfo%use_canonical) then
      call lsquit('Error: full_canonical_ls_thc_rimp2 require canonical Orbitals',-1)
@@ -186,6 +187,8 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   call mem_dealloc(TZpq)
   call mem_dealloc(S_inv)
 
+  IF(WriteToDisk)call DumpTHCmatrices(nbasis,nocc,nvirt,ngrid,XO,XV,Zpq)
+
   offset = 0
   call mem_alloc(EpsOcc,nocc)
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
@@ -249,6 +252,29 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
 
   CALL LSTIMER('LS_THC_RIMP2 ',TS,TE,DECINFO%OUTPUT)
 end subroutine full_canonical_ls_thc_rimp2
+
+subroutine DumpTHCmatrices(nbasis,nocc,nvirt,ngrid,XO,XV,Zpq)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,ngrid,nbasis
+  real(realk),intent(in) :: XO(ngrid,nocc),XV(ngrid,nvirt)
+  real(realk),intent(in) :: Zpq(ngrid,ngrid)
+  !local variables
+  integer :: LU
+  logical :: save_access_stream
+  LU = -1
+  save_access_stream = access_stream
+  access_stream = .TRUE.
+  call lsopen(LU,'THC.restart','UNKNOWN','UNFORMATTED')
+  WRITE(LU) ngrid
+  WRITE(LU) nbasis
+  WRITE(LU) nocc
+  WRITE(LU) nvirt
+  WRITE(LU) XO
+  WRITE(LU) XV
+  WRITE(LU) Zpq
+  call lsclose(LU,'KEEP')
+  access_stream = save_access_stream
+end subroutine DumpTHCmatrices
 
 subroutine LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,Ecorr)
   implicit none
@@ -330,6 +356,8 @@ subroutine build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,M)
   !
   integer :: I,A,ALPHA,K
   real(realk) :: TI,TMP
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(2) PRIVATE(I,A,ALPHA,K,&
+!$OMP TI,TMP) SHARED(NBA,nvirt,nocc,ngrid,M,XV,XO,Calpha)
   DO ALPHA=1,NBA
      DO K=1,ngrid
         TMP = 0.0E0_realk
@@ -342,6 +370,7 @@ subroutine build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,M)
         M(K,ALPHA) = TMP
      ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 end subroutine build_THC_MalphaP
 
 end module full_ls_thc_rimp2Mod
