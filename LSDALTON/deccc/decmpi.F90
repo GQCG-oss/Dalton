@@ -2523,6 +2523,15 @@ contains
     call ls_mpi_buffer(DECitem%UseIchor,Master)
     call ls_mpi_buffer(DECitem%IntegralThreshold,Master)
     call ls_mpi_buffer(DECitem%noaofock,Master)
+    call ls_mpi_buffer(DECitem%THCNOPRUN,Master)
+    call ls_mpi_buffer(DECitem%THCradint,Master)
+    call ls_mpi_buffer(DECitem%THC_MIN_RAD_PT,Master)
+    call ls_mpi_buffer(DECitem%THCangint,Master)
+    call ls_mpi_buffer(DECitem%THCHRDNES,Master)
+    call ls_mpi_buffer(DECitem%THCTURBO,Master)
+    call ls_mpi_buffer(DECitem%THCRADIALGRID,Master)
+    call ls_mpi_buffer(DECitem%THCZdependenMaxAng,Master)
+    call ls_mpi_buffer(DECitem%THCPARTITIONING,Master)
 
   end subroutine mpicopy_dec_settings
 

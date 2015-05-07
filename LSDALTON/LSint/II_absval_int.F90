@@ -135,7 +135,7 @@ call SET_ABSVAL_MXBLLEN(128)
 !GridObject%NBUFLEN=NBAST
 BoxMemRequirement = 5*NBAST*NBAST
 CALL LSTIMER('START',TS,TE,LUPRI)
-CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,GridObject%HRDNES,iprune,BAS%natoms,& 
+CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angint,GridObject%HRDNES,iprune,BAS%natoms,& 
      & BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,GridObject%nbuflen,&
      & GridObject%RADIALGRID,GridObject%ZdependenMaxAng,GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
