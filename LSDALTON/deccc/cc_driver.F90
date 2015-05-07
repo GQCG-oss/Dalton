@@ -2927,10 +2927,10 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
       if( bg_was_init )then
          if( local )then
-            call mem_change_background_alloc(bytes_to_alloc)
+            !call mem_change_background_alloc(bytes_to_alloc)
 #ifdef VAR_MPI
          else
-            call mem_change_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
+            !call mem_change_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
             call lspdm_init_global_buffer(.true.)
 #endif
          endif
