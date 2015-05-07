@@ -884,9 +884,9 @@ contains
 
     ! alloc and init stuff for preloading
     if(use_bg_buf)then
-       call mem_pseudo_alloc(vvvo_pdm_buff,nvirt**3*tile_size,3*nbuffs)
-       call mem_pseudo_alloc(ccsd_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
-       call mem_pseudo_alloc(vvoo_pdm_buff,nvirt**2*tile_size**2,6*nbuffs)
+       call mem_pseudo_alloc(vvvo_pdm_buff,int(i8*nvirt**3*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
+       call mem_pseudo_alloc(ccsd_pdm_buff,int(i8*nocc*nvirt**2*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
+       call mem_pseudo_alloc(vvoo_pdm_buff,int(i8*nvirt**2*tile_size**2,kind=8),int(i8*6*nbuffs,kind=8))
     else
        call mem_alloc(vvvo_pdm_buff,nvirt**3*tile_size,3*nbuffs)
        call mem_alloc(ccsd_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
@@ -2732,9 +2732,9 @@ contains
 
     ! alloc and init stuff for preloading
     if( use_bg_buf )then
-       call mem_pseudo_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
-       call mem_pseudo_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,3*nbuffs)
-       call mem_pseudo_alloc(oovv_pdm_buff,nocc**2*tile_size**2,6*nbuffs)
+       call mem_pseudo_alloc(vovv_pdm_buff,int(i8*nocc*nvirt**2*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
+       call mem_pseudo_alloc(ccsd_pdm_buff,int(i8*nvirt*nocc**2*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
+       call mem_pseudo_alloc(oovv_pdm_buff,int(i8*nocc**2*tile_size**2,kind=8),int(i8*6*nbuffs,kind=8))
     else
        call mem_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
        call mem_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,3*nbuffs)
@@ -13385,8 +13385,8 @@ contains
 
     ! For efficiency when calling dgemm, save transposed matrices
     if(use_bg_buf)then
-       call mem_pseudo_alloc(CoccT,nocc,nbasis)
-       call mem_pseudo_alloc(CvirtT,nvirt,nbasis)
+       call mem_pseudo_alloc(CoccT,int(i8*nocc,kind=8),int(i8*nbasis,kind=8))
+       call mem_pseudo_alloc(CvirtT,int(i8*nvirt,kind=8),int(i8*nbasis,kind=8))
     else
        call mem_alloc(CoccT,nocc,nbasis)
        call mem_alloc(CvirtT,nvirt,nbasis)
@@ -13999,8 +13999,8 @@ contains
 
     ! For efficiency when calling dgemm, save transposed matrices
     if(use_bg_buf)then
-       call mem_pseudo_alloc(CoccT,nocc,nbasis)
-       call mem_pseudo_alloc(CvirtT,nvirt,nbasis)
+       call mem_pseudo_alloc(CoccT,int(i8*nocc,kind=8),int(i8*nbasis,kind=8))
+       call mem_pseudo_alloc(CvirtT,int(i8*nvirt,kind=8),int(i8*nbasis,kind=8))
     else
        call mem_alloc(CoccT,nocc,nbasis)
        call mem_alloc(CvirtT,nvirt,nbasis)
