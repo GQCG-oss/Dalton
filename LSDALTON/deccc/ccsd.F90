@@ -2929,15 +2929,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
 
-     if(DECinfo%hack2)then
-        OPEN(unit=337,file='full_t1fock_test.restart')
-        if(infpar%mynum==0)then
-           WRITE(337,*)t1fock
-        else
-           READ(337,*)t1fock
-        endif
-        CLOSE(337)
-     endif
+     !if(DECinfo%hack2)then
+     !   OPEN(unit=337,file='full_t1fock_test.restart')
+     !   if(infpar%mynum==0)then
+     !      WRITE(337,*)t1fock
+     !   else
+     !      READ(337,*)t1fock
+     !   endif
+     !   CLOSE(337)
+     !endif
 
 
      !Transform inactive Fock matrix into the different mo subspaces
