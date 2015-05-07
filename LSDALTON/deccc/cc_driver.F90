@@ -753,33 +753,22 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       endif
    endif
 
-   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
-     &.and. ccmodel /= MODEL_SOSEX ) then
-      ! free amplitude arrays
-      call tensor_free(t1_final)
-   endif
-
-   if (DECinfo%print_frags) then
-      call tensor_free(t2_final)
-      call tensor_free(VOVO)
-   endif
    call mem_dealloc(ccenergies)
-
 !else mod unreleased
 #else
 
    call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergy,&
       & VOVO,.false.,local,t1_final,t2_final)
+!endif mod unreleased
+#endif
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
-     & .and. ccmodel /= MODEL_SOSEX) then
+     &.and. ccmodel /= MODEL_SOSEX ) then
+      ! free amplitude arrays
       call tensor_free(t1_final)
    endif
    call tensor_free(t2_final)
    call tensor_free(VOVO)
-
-!endif mod unreleased
-#endif
 end function ccsolver_justenergy
 
 !> \brief For a given fragment, calculate singles and doubles amplitudes and
@@ -2867,13 +2856,13 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
          if(DECinfo%PL>2)then
             write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Found scheme :",I2)')sch
-            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g7.2," GB")')&
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g9.2," GB")')&
                &Freebytes/1024.0E0_realk**3
-            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4     : ",g7.2," GB")')&
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4     : ",g9.2," GB")')&
                &mem41/1024.0E0_realk**3
-            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3     : ",g7.2," GB")')&
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3     : ",g9.2," GB")')&
                &mem31/1024.0E0_realk**3
-            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2     : ",g7.2," GB")')&
+            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2     : ",g9.2," GB")')&
                &mem21/1024.0E0_realk**3
          endif
 
@@ -2938,10 +2927,10 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
       if( bg_was_init )then
          if( local )then
-            call mem_change_background_alloc(bytes_to_alloc)
+            !call mem_change_background_alloc(bytes_to_alloc)
 #ifdef VAR_MPI
          else
-            call mem_change_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
+            !call mem_change_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
             call lspdm_init_global_buffer(.true.)
 #endif
          endif

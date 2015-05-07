@@ -28,9 +28,6 @@ module fullmp2
   use mp2_module
   !  use orbital_operations
   use full_molecule
-!  use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
-!  use ccdriver!,only: ccsolver_justenergy, ccsolver
-  !  use fragment_energy_module,only : Full_DECMP2_calculation
 
   public :: full_canonical_mp2, &
        & full_canonical_mpmp2, canonical_mpmp2_memreq_test
