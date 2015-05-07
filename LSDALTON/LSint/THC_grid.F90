@@ -94,8 +94,8 @@ CONTAINS
     integer :: angularpoints ,I,leb_gen_from_point,iang1
 
     call init_gridmemvar()
-    iang1 = leb_get_from_order(angint)
-    angularpoints = leb_gen_points(iang1)
+    iang1 = leb_get_from_orderTHC(angint)
+    angularpoints = leb_gen_pointsTHC(iang1)
     !mem alloc RADIALPOINTS,RADIALWEIGHT,nRadialPoints=RadialGridPoints,RadialWeights,NumberOfGridPoints 
     call mem_alloc(RADIALPOINTS,NRADPT,NATOMS)
     call mem_alloc(RADIALWEIGHT,NRADPT,NATOMS)
@@ -220,6 +220,8 @@ CONTAINS
 !          print*,'THC: RADIALPOINTS(IPOINT,IATOM)',RADIALPOINTS(IPOINT,IATOM)
 !          print*,'THC: RADIALWEIGHT(IPOINT,IATOM)',RADIALWEIGHT(IPOINT,IATOM)
 !          print*,'THC: pim4*weight',pim4*weight
+
+!WARNING RIGHT NOW THC and NON THC grid do not match - THEREFOR you cannot call routine which expect other Ns 
 
           IF(iang.EQ. 1)THEN
              N=6
@@ -441,5 +443,44 @@ DO IATOM=1,NATOMS
    maxGridpoints = maxGridpoints+AtomicGridpoints
 ENDDO
 END SUBROUTINE DETERMINEMAXGRIDPOINTSA
+
+INTEGER FUNCTION leb_get_from_orderTHC(angint)
+integer,intent(in) :: angint
+! I am unsure about leb_gen_poly_order(1) and leb_gen_poly_order(2)  and leb_gen_poly_order(3) 
+integer,parameter :: leb_gen_poly_order(21) = (/  2,3, 4, 5, 9,11,15, 17, 19, 21, 23, 25, 27, 29, 31, 35, 41, 47, 53,  59,  64 /)
+integer,parameter :: leb_gen_point(21)      = (/  6,8,12,14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
+integer :: I
+leb_get_from_orderTHC = 0
+DO I=1,21 !size of leb_gen_poly_order
+   if(leb_gen_poly_order(I).GE.angint)THEN
+      leb_get_from_orderTHC = I
+      RETURN
+   ENDIF
+ENDDO
+CALL LSQUIT('leb_get_from_order error ',-1)
+END FUNCTION LEB_GET_FROM_ORDERTHC
+
+INTEGER FUNCTION leb_get_from_pointTHC(point)
+integer,intent(in) :: point
+! I am unsure about leb_gen_poly_order(1) and leb_gen_poly_order(2)  and leb_gen_poly_order(3) 
+integer,parameter :: leb_gen_poly_order(21) = (/  2,3, 4, 5, 9,11,15, 17, 19, 21, 23, 25, 27, 29, 31, 35, 41, 47, 53,  59,  64 /)
+integer,parameter :: leb_gen_point(21)      = (/  6,8,12,14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
+integer :: I
+leb_get_from_pointTHC = 1
+DO I=21,1,-1 !size of leb_gen_point
+   if(point.GE.leb_gen_point(I))THEN
+      leb_get_from_pointTHC = I
+      RETURN
+   ENDIF
+ENDDO
+END FUNCTION LEB_GET_FROM_POINTTHC
+
+INTEGER FUNCTION  leb_gen_pointsTHC(I)
+integer,intent(in) :: I
+integer,parameter :: leb_gen_point(21)      = (/  6,8,12,14,38,50,86,110,146,170,194,230,266,302,350,434,590,770,974,1202,1454 /)
+
+leb_gen_pointsTHC = leb_gen_point(I)
+
+END FUNCTION LEB_GEN_POINTSTHC
 
 END MODULE THCGRIDGENERATIONMODULE

@@ -1179,7 +1179,7 @@ Subroutine SSFPartitioning(N,NATOMS,atomcenterX,atomcenterY,&
 ! Testing 1
   Logical,pointer     :: zero(:)
   call mem_grid_alloc(TMP,N,NATOMS)
-  call mem_grid_alloc(P,N)
+  call mem_grid_alloc(P,MAX(N,NATOMS))
   call mem_grid_alloc(RELEVANT_ATOMS,NATOMS)
   call mem_grid_alloc(zero,NATOMS)
 
