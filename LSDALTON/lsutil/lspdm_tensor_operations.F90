@@ -5993,6 +5993,7 @@ module lspdm_tensor_operations_module
     logical, optional, intent(in) :: lock_set,flush_it
     integer(kind=ls_mpik),intent(inout),optional :: req
     integer(kind=ls_mpik) :: source
+    integer(kind=ls_mpik) :: r
     real(realk) :: sta,sto
     logical :: ls
 #ifdef VAR_MPI

@@ -880,7 +880,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(tensor) :: u2, sio4
      type(tensor) :: gvoova,gvvooa
      !special arrays for scheme=1
-     type(tensor) :: t2jabi,u2kcjb, o2ilej
+     type(tensor) :: t2jabi,u2kcjb,o2ilej
      integer,pointer       :: tasks(:)
      type(c_ptr)           :: tasksc
      integer(kind=ls_mpik) :: tasksw,taskslw
@@ -1566,13 +1566,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os], bg=use_bg_buf )
         call tensor_zero(gvvooa)
         call tensor_zero(gvoova)
-
+#ifdef DIL_ACTIVE
+        scheme=scheme_tmp !```DIL: remove
+#endif
         if(scheme == 1)then
            !Maybe we should use the bg buffer here as well
            call tensor_ainit(o2ilej, [nv,nv,nor],3, local=local, atype='TDAR', tdims=[vs,vs,nor])
            call tensor_zero(o2ilej)
         endif
-
+#ifdef DIL_ACTIVE
+        scheme=2 !``DIL: remove
+#endif
 
 
         select case (scheme)
@@ -2489,12 +2493,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      else
       call tensor_free(tpld)
       call tensor_free(tmid)
-      print*,"BEFORE FREEING o2ilej we need to update the vull residual o2"
+      print *,"BEFORE FREEING o2ilej we need to update the vull residual o2"
       call tensor_free(o2ilej)
       stop 0
      endif
-        if(scheme == 1)then
-        endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
