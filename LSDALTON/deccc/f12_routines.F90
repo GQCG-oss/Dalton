@@ -26,7 +26,10 @@ module f12_routines_module
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
        & get_4Center_MO_integrals, get_4Center_F12_integrals, free_4Center_F12_integrals, &
-       & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM
+       & mp2f12_Xijij_term3, mp2f12_Xjiij_term3, mp2f12_Xijij_term4, mp2f12_Xjiij_term4, &
+       & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM, &
+       & mp2f12_Bijij_term2, mp2f12_Bijij_term3, mp2f12_Bijij_term4, mp2f12_Bijij_term5, mp2f12_Bijij_term6, mp2f12_Bijij_term7, &
+       & mp2f12_Bijij_term8, mp2f12_Bijij_term9
 
   private
 

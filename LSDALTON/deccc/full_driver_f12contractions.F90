@@ -1146,11 +1146,12 @@ contains
           DO j=1,nocc
              DO a=1,ncabs
                 DO i=1,nocc
+
                    Bijij(i,j) = Bijij(i,j) - D2*(Gipja(i,p,j,b)*Fcp(a,p)*Gciaj(a,i,b,j) &
                         & + Gipja(j,p,i,b)*Fcp(a,p)*Gciaj(a,j,b,i))
                    Bjiij(i,j) = Bjiij(i,j) - D2*(Gipja(j,p,i,b)*Fcp(a,p)*Gciaj(a,i,b,j) &
                         & + Gipja(i,p,j,b)*Fcp(a,p)*Gciaj(a,j,b,i))
-                ENDDO
+                  ENDDO
              ENDDO
           ENDDO
        ENDDO
