@@ -544,7 +544,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          enddo
       enddo
       call mem_dealloc(Tijkl)
-      EX1 = mp2f12_E22X_ri(Xijij,Xjiij,Fii%elms,nocc)
+      EX1 = mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
       call mem_dealloc(Xijij)
       call mem_dealloc(Xjiij)
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X1,Full) = ',EX1
@@ -1815,8 +1815,6 @@ subroutine ContractOne4CenterF12IntegralsRI2(nBA,n,Calpha,Fii,EJ,EK)
    !Exchange Fiijj
    EK = 0.0E0_realk
    EJ = 0.0E0_realk
-   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,&
-   !$OMP ALPHA) SHARED(Calpha,n,nba) REDUCTION(+:EK,EJ,tmp1,tmp2)
    DO i=1,n
       DO j=1,n
          tmp1 = 0.0E0_realk
@@ -1832,7 +1830,6 @@ subroutine ContractOne4CenterF12IntegralsRI2(nBA,n,Calpha,Fii,EJ,EK)
          EK = EK + tmp2*(Fii(i,i)+Fii(j,j))
       ENDDO
    ENDDO
-   !$OMP END PARALLEL DO
 
    !print *, "Fij-matrix:"
    !DO i=1,n
@@ -1969,9 +1966,6 @@ subroutine ContractTwo4CenterF12IntegralsRIX(nBA,n1,n2,CalphaR,CalphaG,Fii,EJK)
    EJ =  0.0E0_realk
    EK =  0.0E0_realk
    EJK = 0.0E0_realk
-   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,p,q,tmpR,&
-   !$OMP tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
-   !$OMP nba) REDUCTION(+:EJ,EK,ED)
    DO q=1,n2
       DO p=1,n2
          DO j=1,n1
@@ -2005,7 +1999,6 @@ subroutine ContractTwo4CenterF12IntegralsRIX(nBA,n1,n2,CalphaR,CalphaG,Fii,EJK)
          ENDDO
       ENDDO
    ENDDO
-   !$OMP END PARALLEL DO
    EJK = (ED*(0.5E0_realk) + (7.0/16.0*EJ + 1.0/16.0*EK)) 
 end subroutine ContractTwo4CenterF12IntegralsRIX
 
@@ -2482,8 +2475,8 @@ subroutine ContractTwo4CenterF12IntegralsRI2X(nBA,n1,n3,n2,CalphaR,CalphaG,&
    EK4 =  0.0E0_realk
    EJK4 = 0.0E0_realk
    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
-   !$OMP tmpG13,tmpG23,tmpG14,tmpG24) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
-   !$OMP nba) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   !$OMP tmpG13,tmpG23,tmp) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
+   !$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
    DO m=1,n3
       DO c=1,n2
          DO j=1,n1
