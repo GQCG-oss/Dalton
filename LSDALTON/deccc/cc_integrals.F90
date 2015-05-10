@@ -864,6 +864,7 @@ contains
 
     ! MPI variables:
     logical :: master, local, gdi_lk, gup_lk, use_bg_buf
+    integer(kind=8) :: nbu
     integer :: myload, win
     integer(kind=ls_mpik) :: ierr, myrank, nnod, dest
     integer, pointer      :: tasks(:)
@@ -875,6 +876,11 @@ contains
     call time_start_phase(PHASE_WORK)
     ntot = no + nv
     use_bg_buf = mem_is_background_buf_init()
+    if(use_bg_buf)then
+       nbu = mem_get_bg_buf_free()
+    else
+       nbu = 0
+    endif
 
     ! Set integral info
     ! *****************
@@ -1127,7 +1133,10 @@ contains
     tmp_size2 = int(i8*ntot*ntot*tmp_size2, kind=long)
 
     if(use_bg_buf)then
-       call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
+       if(tmp_size1+tmp_size2 > nbu) then
+          print *, "Warning(get_t1_free_gmo):  This should not happen, if the memory counting is correct"
+          !call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
+       endif
 
        call mem_pseudo_alloc(tmp1, tmp_size1)
        call mem_pseudo_alloc(tmp2, tmp_size2)
@@ -2339,7 +2348,6 @@ contains
        call get_max_batch_and_scheme_ccintegral(maxsize,MinAObatch,scheme,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
        & n1,n2,n3,n4,n1s,n2s,n3s,n4s,nb,bs,nbuffs,nbu,MyLsItem%setting,MemToUse,use_bg_buf)
 
-
        if(DECinfo%PL>2)then
           print *,"INFO(get_mo_integral_par): Requesting scheme:",scheme
           print *,"INFO(get_mo_integral_par): with Alpha:",MaxAllowedDimAlpha," Gamma:",MaxAllowedDimGamma
@@ -2528,7 +2536,7 @@ contains
     if( use_bg_buf ) then
        if(maxsize > nbu) then
           print *, "Warning(get_mo_integral_par):  This should not happen, if the memory counting is correct"
-          call mem_change_background_alloc(maxsize*8_long)
+          !call mem_change_background_alloc(maxsize*8_long)
        endif
 
        call mem_pseudo_alloc( w1, w1size )
@@ -3345,7 +3353,7 @@ contains
      integer(kind=ls_mpik) :: nnod
      logical :: check_next
      nnod  = 1
-     magic = 3
+     magic = 1
 #ifdef VAR_MPI
      nnod  = infpar%lg_nodtot
 #endif

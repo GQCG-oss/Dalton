@@ -13,38 +13,38 @@ f.add(string = 'Hartree-Fock energy',
       rel_tolerance = 1.0e-8)
 
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-5)
 
 f.add(string = 'Total MP2 energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-5)
 
 f.add(from_string = 'contribution to gradient',
       num_lines   = 5,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'Nuclear repulsion gradient',
       num_lines   = 5,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'One-electron integral gradient',
       num_lines   = 5,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'Reorthonormalization gradient',
       num_lines   = 5,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'Fock matrix derivative contribution',
       num_lines   = 5,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'Ltheta contribution',
       num_lines   = 5,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'TOTAL MP2 MOLECULAR GRADIENT',
       num_lines   = 5,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

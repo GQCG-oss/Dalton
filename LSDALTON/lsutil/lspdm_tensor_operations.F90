@@ -1074,7 +1074,7 @@ module lspdm_tensor_operations_module
           ebuf = cbuf
        endif
 
-#ifdef VAR_PTR_RESHAPE
+#if defined(VAR_PTR_RESHAPE) && !defined(VAR_PGF90)
        gmo_ctile(1:gmo_ctdim(1),1:gmo_ctdim(2),1:gmo_ctdim(3),1:gmo_ctdim(4)) => gmo_tile_buf(1:,cbuf)
        gmo_etile(1:gmo_etdim(1),1:gmo_etdim(2),1:gmo_etdim(3),1:gmo_etdim(4)) => gmo_tile_buf(1:,ebuf)
        t2tile(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
@@ -6013,7 +6013,13 @@ module lspdm_tensor_operations_module
        call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
        !call lsmpi_win_flush(arr%wi(widx),source,local = .false.)
     else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),r)
+       call lsmpi_wait(r)
+       call lsmpi_win_flush(arr%wi(widx), rank=source, local=.false.)
+#else
        call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
+#endif
     endif
     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(widx))
 

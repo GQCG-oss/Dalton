@@ -2963,8 +2963,6 @@ contains
 
     !> Setting the MP2-F12 correction
     Myfragment%energies(FRAGMODEL_MP2f12) = E_F12
-    !> Need to be set for the single_fragments
-    Myfragment%EoccFOP_Corr = E_F12
     
     ! Which model? CCSD 
     WhichCCmodel: select case(case) 
@@ -3139,8 +3137,6 @@ contains
 
    !> Setting the CCSD-F12 correction (Needs to be changed)
     Myfragment%energies(FRAGMODEL_CCSDf12) = E_F12
-    !> Need to be set for the single_fragments
-    Myfragment%EoccFOP_Corr = E_F12      
 
     end select WhichCCmodel
 

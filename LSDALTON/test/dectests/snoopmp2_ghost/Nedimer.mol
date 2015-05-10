@@ -1,0 +1,12 @@
+BASIS
+3-21G
+
+
+Atomtypes=3 Nosymmetry SubSystems
+Charge=10.0 Atoms=1 SubSystem=1
+Ne    0.00000000    0.00000000  0.00000000
+Charge=8.0 Atoms=1 phantom
+X    2.80000000    0.00000000  0.00000000
+Charge=10.0 Atoms=1 SubSystem=2
+Ne    5.60000000    0.00000000  0.00000000
+

@@ -80,6 +80,7 @@ contains
     DECinfo%convert32to64      = .false.
     DECinfo%HFrestart          = .false.
     DECinfo%DECrestart         = .false.
+    DECinfo%EnforceRestart     = .false.
     DECinfo%TimeBackup         = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals  = .false.
     DECinfo%CheckPairs         = .false.
@@ -181,7 +182,6 @@ contains
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
-    DECinfo%no_orb_based_fragopt   = .false.
     DECinfo%OnlyOccPart            = .false.
     DECinfo%OnlyVirtPart           = .false.
     ! Repeat atomic fragment calcs after fragment optimization
@@ -253,6 +253,7 @@ contains
 
     ! ccsd(t) settings
     DECinfo%abc               = .false.
+    DECinfo%ijk_tile_size     = 1000000
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
@@ -503,6 +504,7 @@ contains
        ! CCSD(T) INFO
        ! ==============
        case('.PT_ABC'); DECinfo%abc = .true.
+       case('.IJK_TILE'); read(input,*) DECinfo%ijk_tile_size
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
@@ -520,6 +522,12 @@ contains
           !> Use HF info generated from previous calculation but run DEC calculation from scratch
           DECinfo%HFrestart=.true.           
           DECinfo%DECrestart=.false.           
+
+       case('.ENFORCERESTART') 
+          !> Enforce restart
+          DECinfo%HFrestart=.true.           
+          DECinfo%DECrestart=.true.           
+          DECinfo%EnforceRestart=.true.           
 
        case('.NOTABSORBH')
           !> Do not absorb H atoms when assigning orbitals
@@ -687,14 +695,9 @@ contains
           ! should be a number between 0 and 1 which is then multiplied to the FOT
           read(input,*) DECinfo%frag_red2_thr
 
-       case('.NO_ORB_BASED_FRAGOPT')
-          ! Use old Fragment optimization routines
-          DECinfo%no_orb_based_fragopt = .true.
-
        case('.FRAGMENTADAPTED')
           ! Fragment adapted orbital instead of reduction (??)
           DECinfo%fragadapt = .true.
-          DECinfo%no_orb_based_fragopt = .true.
 
        case('.CORRDENS')  
           !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
@@ -988,8 +991,6 @@ contains
           call lsquit("RPA model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_SOSEX)
           call lsquit("SOSEX model is not compatible with DECNP yet",DECinfo%output)
-       case (MODEL_RIMP2)
-          call lsquit("RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_LSTHCRIMP2)
           call lsquit("LS-THC-RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        end select
@@ -1485,7 +1486,6 @@ contains
     write(lupri,*) 'Frag_Red_Virt ', DECinfo%frag_red_virt
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
-    write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
     write(lupri,*) 'No_Pairs ', DECitem%no_pairs
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
