@@ -66,7 +66,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk),pointer :: Rimjc(:,:,:,:) !nocc,noccfull,nocc,ncabsMO
    real(realk),pointer :: Gimjc(:,:,:,:) !nocc,noccfull,nocc,ncabsMO
    real(realk),pointer :: Fijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+   
    real(realk),pointer :: Tijkl(:,:,:,:) !nocc,nocc,nocc,nocc
+   
    real(realk),pointer :: Dijkl(:,:,:,:) !nocc,nocc,nocc,nocc
    real(realk),pointer :: Tirjk(:,:,:,:) !nocc,ncabsAO,nocc,nocc
    
@@ -132,7 +134,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call lsquit("ERROR(full_canonical_rimp2_f12): does not work with PDM type fullmolecule",-1)
    endif
 
-   Test =.TRUE.
+   TEST =.FAlSE.
    RIF12 = .TRUE.
    lupri = DECinfo%output
 #ifdef VAR_TIME
@@ -628,7 +630,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       enddo
       call mem_dealloc(Gipjq)
 
-      EX2 = mp2f12_E22X_ri(Xijij,Xjiij,Fii%elms,nocc)
+      EX2 = mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X2,Full) = ',EX2
       WRITE(*,'(A30,F20.13)')'E(X2,Full) = ',EX2
       call mem_dealloc(Xijij)
@@ -746,14 +748,27 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !X-term 4
       Xijij = 0.0E0_realk
       Xjiij = 0.0E0_realk
-      
-      call mp2f12_Xjiij_term4(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabsMO)
+     
+      call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+      gao = 0.0E0_realk
+      call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRR2')
+      call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt, &
+      & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Tijkl)
+ 
+      gao = 0.0E0_realk
+      call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
+      call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Gipjq)
+      call mem_dealloc(gao)
+      call mp2f12_Xijij_term4(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabsMO)
       call mp2f12_Xjiij_term4(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabsMO)
 
       EX4 = mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X4,Full) = ', EX4
       WRITE(*,'(A30,F20.13)')'E(X4,Full) = ',EX4
 
+      call mem_dealloc(Tijkl)
+      call mem_dealloc(Gipjq)
       call mem_dealloc(Gimjc)
       call mem_dealloc(Xijij)
       call mem_dealloc(Xjiij)
@@ -901,6 +916,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       WRITE(*,'(A30,F20.13)')'E(B2,Full) = ', EB2
 
       call mem_alloc(gao,nbasis,nbasis,nbasis,ncabsAO)
+      call mem_alloc(Tijkr,nocc,nocc,noccfull,ncabsAO)
       gao = 0.0E0_realk
       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
@@ -982,6 +998,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       
       call mp2f12_Bijij_term4(Bijij,Bjiij,nocc,noccfull,ncabsAO,Girjs,Krr%elms)
       call mem_dealloc(Girjs)
+
       EB4 = mp2f12_E23(Bijij,Bjiij,nocc)
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B4,Full) = ',EB4
       WRITE(*,'(A30,F20.13)')'E(B4,Full) = ', EB4
@@ -1059,6 +1076,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
       call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
          &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rimi',gAO,Grimj) 
+    
+       call  mem_dealloc(gao)
 
       call mp2f12_Bijij_term5(Bijij,Bjiij,nocc,noccfull,ncabsAO,Girjm,Grimj,Frr%elms)
 
@@ -1087,7 +1106,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,&
          & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
       ABdecompCreateR = .FALSE.
-      
+      call mem_dealloc(ABdecompR)
+
       call mem_alloc(ABdecompG,nAux,nAux)
       ABdecompCreateG = .TRUE.
       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
@@ -1244,17 +1264,17 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !==============================================================
    IF(RIF12)THEN       !Use R12
       call mem_alloc(ABdecompR,nAux,nAux)
-      ABdecompCreateR = .TRUE.
+     ! ABdecompCreateR = .TRUE.
       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
       intspec(2) = 'R' !Regular AO basis function on center 3
       intspec(3) = 'C' !CABS RI basis function on center 4
       intspec(4) = 'G' !
       intspec(5) = 'G' !
-      !Build the R coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
+     ! Build the R coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
       call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
          & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_RI%elms,ncabsAO,&
          & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
-      call mem_dealloc(ABdecompR)
+     call mem_dealloc(ABdecompR)
       ABdecompCreateR = .FALSE.
 
       !> Dgemm 
@@ -1266,7 +1286,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
       !NB! Changed T to N, dont think it will matter but...
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Frm%elms,k,0.0E0_realk,CalphaD,m)
-
+      
+      call mem_dealloc(CalphaR)
       call mem_alloc(ABdecompG,nAux,nAux)
       ABdecompCreateG = .TRUE.
       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
@@ -1366,6 +1387,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       n =  nbasis
 
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Fcp%elms,k,0.0E0_realk,CalphaD,m)
+      call mem_dealloc(CalphaR)
 
       call mem_alloc(ABdecompG,nAux,nAux)
       ABdecompCreateG = .TRUE.
@@ -1414,8 +1436,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    IF(Test)THEN
       call mem_alloc(Bijij,nocc,nocc)
       call mem_alloc(Bjiij,nocc,nocc)
-      call mem_alloc(Gicjm,nocc,ncabsMO,nocc,noccfull)
-      call mem_alloc(Gcirj,ncabsMO,nocc,ncabsAO,nocc)
+      call mem_alloc(Gciaj,ncabsMO,nocc,nvirt,nocc)
+      call mem_alloc(Gipja,nocc,nbasis,nocc,nvirt)
     
       call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
       gao = 0.0E0_realk
@@ -1852,7 +1874,8 @@ subroutine ContractOne4CenterF12IntegralsRIB23(nBA,n1,n2,CalphaR,CalphaG,HJir,Co
    !local variables
    integer :: c,i,j,alpha,beta
    real(realk) :: tmpR2,tmpR21,tmpR22,tmpR31,tmpR32,tmp,tmpR
-
+  
+   ED2 = 0.0E0_realk
    EJ2 = 0.0E0_realk
    EK2 = 0.0E0_realk
    EJ3 = 0.0E0_realk
@@ -2088,7 +2111,9 @@ subroutine ContractTwo4CenterF12IntegralsRIB4(nBA,n1,n2,CalphaR,CalphaG,CalphaD,
    real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
 
    ED = 0.0E0_realk
-
+   EJ = 0.0E0_realk
+   EK = 0.0E0_realk
+  
       DO q=1,n2 !ncabsAO
          DO r=1,n2 !ncabsAO
             DO j=1,n1 !nocc
@@ -2158,6 +2183,8 @@ subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,CalphaR,CalphaG,CalphaD,
    real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
 
    ED = 0.0E0_realk
+   EJ = 0.0E0_realk
+   EK = 0.0E0_realk
 
       DO q=1,n2 !ncabsAO
          DO m=1,n1 !nocc
@@ -2220,6 +2247,8 @@ subroutine ContractTwo4CenterF12IntegralsRIB6(nBA,n1,n2,n3,CalphaR,CalphaG,Calph
    real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
 
    ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
 
       DO q=1,n3 !nbasis
          DO a=1,n2 !nvirt
@@ -2282,6 +2311,8 @@ subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,CalphaR,CalphaG,CalphaD,
    real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
 
    ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
 
       DO p=1,n2 !ncabs
          DO n=1,n1 !nocc
@@ -2345,6 +2376,8 @@ subroutine ContractTwo4CenterF12IntegralsRIB8(nBA,n1,n2,CalphaR,CalphaG,CalphaD,
    real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
 
    ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
 
       DO p=1,n2 !ncabs
          DO m=1,n1 !noccfull
@@ -2407,6 +2440,8 @@ subroutine ContractTwo4CenterF12IntegralsRIB9(nBA,n1,n2,n3,CalphaR,CalphaG,Calph
    real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
 
    ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
 
       DO p=1,n3 !ncabs
          DO a=1,n2 !noccfull
