@@ -359,18 +359,17 @@ module f12_routines_module
   subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
     implicit none
-    type(matrix) :: HJir
-    type(matrix) :: Krr
-    type(matrix) :: Frr
-    type(matrix) :: Frc
-    type(matrix) :: Frm
-    type(matrix) :: Fcp
-    type(matrix) :: Fpp
-    type(matrix) :: Fmm
-    type(matrix) :: Fii
-    type(matrix) :: Fac
-    type(matrix) :: Fic
-    type(matrix) :: Fcd
+    type(matrix),intent(inout) :: HJir
+    type(matrix),intent(inout) :: Krr
+    type(matrix),intent(inout) :: Frr
+    type(matrix),intent(inout) :: Fac
+    type(matrix),intent(inout) :: Frm
+    type(matrix),intent(inout) :: Fcp
+    type(matrix),intent(inout) :: Fpp
+    type(matrix),intent(inout) :: Fmm
+    type(matrix),intent(inout) :: Fii
+    type(matrix),intent(inout) :: Fic
+    type(matrix),intent(inout) :: Fcd
 
     call mat_free(HJir)
     call mat_free(Krr)

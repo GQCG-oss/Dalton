@@ -176,6 +176,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call mat_init(CMO_RI,nCabsAO,nCabsAO)
    call build_RI_MO(CMO_RI,nCabsAO,mylsitem%SETTING,lupri)
 
+   !NB Remember to have this!! Else memory leak!
+   call free_cabs()
+
    IF(naux.EQ.0)call lsquit('Error no Aux functions in full_canonical_rimp2_f12',-1)
 
    noccfull = nocc
