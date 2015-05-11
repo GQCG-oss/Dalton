@@ -3,6 +3,8 @@
 
 module fullrimp2f12 
 
+#ifdef MOD_UNRELEASED 
+
 use precision
 use typedeftype!,only:lsitem
 use typedef
@@ -28,7 +30,11 @@ public :: full_canonical_rimp2_f12
 
 private
 
+#endif
+
 contains
+#ifdef MOD_UNRELEASED 
+
 !> \brief Calculate canonical MP2 energy for full molecular system
 !> keeping full AO integrals in memory. Only for testing.
 !> \author Thomas Kjaergaard
@@ -2808,6 +2814,14 @@ end subroutine ContractTwo4CenterF12IntegralsRI2X
 !!$    ls%setting%SCHEME%NOFAMILY = NOFAMILY
 !!$
 !!$  end subroutine ContractTwo4CenterF12IntegralsExchange
+
+#else
+
+  subroutine wangy_dummy_sub12()
+      implicit none
+  end subroutine wangy_dummy_sub12
+
+#endif
 
 end module fullrimp2f12
 
