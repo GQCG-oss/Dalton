@@ -111,8 +111,8 @@ contains
 
     ! Determine DEC orbital structures
     call mem_alloc(OccOrbitals,MyMoleculeFULL%nocc)
-    call mem_alloc(VirtOrbitals,MyMoleculeFULL%nunocc)
-    call GenerateOrbitals_driver(MyMoleculeFULL,lsfull,MyMoleculeFULL%nocc,MyMoleculeFULL%nunocc,&
+    call mem_alloc(VirtOrbitals,MyMoleculeFULL%nvirt)
+    call GenerateOrbitals_driver(MyMoleculeFULL,lsfull,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
          & MyMoleculeFULL%natoms, OccOrbitals, VirtOrbitals)
     call mem_alloc(FragEnergiesOcc,MyMoleculeFULL%nfrags,MyMoleculeFULL%nfrags) ! init frag energy array
     call mem_alloc(AFfull,MyMoleculeFULL%nfrags)
@@ -129,7 +129,7 @@ contains
        ! DEC calculation
        write(DECinfo%output,*) 'SNOOP: Starting full system calculation using DEC driver'
        call main_fragment_driver(MyMoleculeFULL,lsfull,D,&
-            & OccOrbitals,VirtOrbitals,MyMoleculeFULL%natoms,MyMoleculeFULL%nocc,MyMoleculeFULL%nunocc,&
+            & OccOrbitals,VirtOrbitals,MyMoleculeFULL%natoms,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
             & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc,AFfull,.false.)
     end if
 
@@ -147,7 +147,7 @@ contains
 
     ! Number of basis functions and virt orbitals for full system
     nbasis = MyMoleculeFULL%nbasis
-    nvirtfull = MyMoleculeFULL%nunocc
+    nvirtfull = MyMoleculeFULL%nvirt
     noccfull = MyMoleculeFULL%nocc
 
     write(DECinfo%output,'(1X,a,i6,a)') 'Starting SNOOP subsystem calculations for ', nsub, &
@@ -328,7 +328,7 @@ contains
     do i=1,MyMoleculeFULL%nocc
        call orbital_free(OccOrbitals(i))
     end do
-    do i=1,MyMoleculeFULL%nunocc
+    do i=1,MyMoleculeFULL%nvirt
        call orbital_free(VirtOrbitals(i))
     end do
     call mem_dealloc(OccOrbitals)
@@ -388,7 +388,7 @@ contains
 
     ! Number of basis functions and virt orbitals for full system
     nbasis = MyMoleculeFULL%nbasis
-    nvirtfull = MyMoleculeFULL%nunocc
+    nvirtfull = MyMoleculeFULL%nvirt
     noccfull = MyMoleculeFULL%nocc
 
     write(DECinfo%output,'(1X,a,i6,a)') 'Starting SNOOP-ORTHO subsystem calculations for ', nsub, &
@@ -1073,7 +1073,7 @@ contains
     !> Occ orbitals for full molecule
     type(decorbital),intent(in) :: OccOrbitalsFULL(MyMoleculeFULL%nocc)
     !> Virt orbitals for full molecule
-    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nunocc)
+    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nvirt)
     !> Atomic fragments for full molecule
     type(decfrag),intent(in) :: AFfull(MyMoleculeFULL%nfrags)
     !> Occupied and virtual MO coefficients for subsystem
@@ -1130,7 +1130,7 @@ contains
 
 
     call mat_free(D)
-    call molecule_finalize(MySubsystem)
+    call molecule_finalize(MySubsystem,.true.)
 
   end subroutine subsystem_correlation_energy
 
@@ -1149,7 +1149,7 @@ contains
     !> Occ orbitals for full molecule
     type(decorbital),intent(in) :: OccOrbitalsFULL(MyMoleculeFULL%nocc)
     !> Virt orbitals for full molecule
-    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nunocc)
+    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nvirt)
     !> Atomic fragments for full molecule
     type(decfrag),intent(in) :: AFfull(MyMoleculeFULL%nfrags)
     !> Occupied and virtual MO coefficients for subsystem
@@ -1191,8 +1191,8 @@ contains
 
        ! Determine DEC orbital structures
        call mem_alloc(OccOrbitalsSUB,MySubsystem%nocc)
-       call mem_alloc(VirtOrbitalsSUB,MySubsystem%nunocc)
-       call GenerateOrbitals_driver(MySubsystem,lssub,MySubsystem%nocc,MySubsystem%nunocc,&
+       call mem_alloc(VirtOrbitalsSUB,MySubsystem%nvirt)
+       call GenerateOrbitals_driver(MySubsystem,lssub,MySubsystem%nocc,MySubsystem%nvirt,&
             & MySubsystem%natoms, OccOrbitalsSUB, VirtOrbitalsSUB)
 
        ! Check that orbital assignment for subsystem is consistent with that for full system
@@ -1200,12 +1200,12 @@ contains
             & OccOrbitalsFULL,VirtOrbitalsFULL,OccOrbitalsSUB,VirtOrbitalsSUB)
 
        !  List of which fragments to consider for subsystem
-       call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
+       call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nvirt,&
             & MySubsystem%nfrags,OccOrbitalsSUB,VirtOrbitalsSUB,dofragSUB,MySubsystem%PhantomAtom)
 
        !  List of which fragments to consider for full system
        call which_fragments_to_consider(MyMoleculeFULL%ncore,MyMoleculeFULL%nocc,&
-            & MyMoleculeFULL%nunocc,MyMoleculeFULL%nfrags,OccOrbitalsFULL,VirtOrbitalsFULL,&
+            & MyMoleculeFULL%nvirt,MyMoleculeFULL%nfrags,OccOrbitalsFULL,VirtOrbitalsFULL,&
             & dofragFULL,MyMoleculeFULL%PhantomAtom)
 
        ! Get atomic fragments for subsystem with one-to-one correspondence to
@@ -1221,14 +1221,14 @@ contains
        ! Run DEC fragment calculations with atomic fragment defined above
         call main_fragment_driver(MySubsystem,lssub,D,OccOrbitalsSUB,&
             & VirtOrbitalsSUB,MySubsystem%natoms,MySubsystem%nocc,&
-            & MySubsystem%nunocc,EHF,Ecorr,dummy,Eerr,FragEnergiesOcc,AFsub,.true.)
+            & MySubsystem%nvirt,EHF,Ecorr,dummy,Eerr,FragEnergiesOcc,AFsub,.true.)
 
 
        ! Free stuff
        do i=1,MySubsystem%nocc
           call orbital_free(OccOrbitalsSUB(i))
        end do
-       do i=1,MySubsystem%nunocc
+       do i=1,MySubsystem%nvirt
           call orbital_free(VirtOrbitalsSUB(i))
        end do
        call mem_dealloc(OccOrbitalsSUB)
@@ -1250,7 +1250,7 @@ contains
     end if
 
     call mem_dealloc(dummy)
-    call molecule_finalize(MySubsystem)
+    call molecule_finalize(MySubsystem,.true.)
 
   end subroutine DECsubsystem_correlation_energy
 

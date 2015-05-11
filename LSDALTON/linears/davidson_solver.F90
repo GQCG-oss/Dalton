@@ -44,9 +44,6 @@ CONTAINS
     stepsize = CFG%stepsize
     coldim = grad%ncol
     rowdim = grad%nrow
-    call mat_init(b_current,rowdim,coldim)
-    call mat_init(res,rowdim,coldim)
-    call mat_init(sigma_temp,rowdim,coldim)
 
     initial_stepsize=CFG%stepsize 
     ! Find lowest hessian diagonal, use extra start vector if negative 
@@ -68,6 +65,8 @@ CONTAINS
        call mat_init(CFG%Allb(i),grad%nrow,grad%ncol)
        call mat_init(CFG%AllSigma(i),grad%nrow,grad%ncol)
     end do
+    call mat_init(b_current,rowdim,coldim)
+    call mat_init(sigma_temp,rowdim,coldim)
     call FirstTrialVec(grad,CFG,b_current,sigma_temp)
     call InitializeCFG(grad,CFG,b_current,sigma_temp)
     if (CFG%start_it .gt. 2) then 
@@ -85,10 +84,13 @@ CONTAINS
           endif
        end if
     endif
+    call mat_free(b_current)
+    call mat_free(sigma_temp)
     !************************************************************
     !*             Start Reduced Space Loop                     *
     !************************************************************
     converged =.false.
+    call mat_init(res,rowdim,coldim)
     do MoreRed=1,5
        resnorm_2D =0_realk
        ReducedSpaceLoop: do iter=CFG%start_it,CFG%max_it-1
@@ -141,6 +143,7 @@ CONTAINS
           end if
 
 
+          call mat_init(b_current,rowdim,coldim)
           !b_current=res
           if (CFG%precond) then
              call Precondition(CFG,res,b_current,grad)
@@ -148,13 +151,15 @@ CONTAINS
              call mat_assign(b_current,res)
           end if
           call orthonormalize(b_current,iter-1,CFG)
+          call mat_init(sigma_temp,rowdim,coldim)
           call LinearTransformations(CFG,b_current,sigma_temp,grad)
-
           !Save matrices 
-          call mat_assign(CFG%Allb(iter),b_current)
           call mat_assign(CFG%AllSigma(iter),sigma_temp)
+          call mat_free(sigma_temp)
+          call mat_assign(CFG%Allb(iter),b_current)
           !Increase dimension
           call IncreaseDimRedSpace(grad,CFG,b_current,iter)
+          call mat_free(b_current)
 
           call mem_dealloc(xred)
           CFG%it = iter
@@ -184,6 +189,7 @@ CONTAINS
           exit
        end if
     end do
+    call mat_free(res)
     ! ********************************
     !    END OF REDUCED SPACE LOOP   *
     ! ********************************
@@ -198,9 +204,6 @@ CONTAINS
     call mem_dealloc(CFG%Ared)
     call mem_dealloc(CFG%Gred)
     call mem_dealloc(CFG%xred)
-    call mat_free(res)
-    call mat_free(b_current)
-    call mat_free(sigma_temp)
 
     do i=1,CFG%it
        call mat_free(CFG%Allb(i))
@@ -837,10 +840,8 @@ CONTAINS
     real(realk)         :: resnorm_2D
     IERR=0
 
-    call mat_init(residual_2D,grad%nrow,grad%ncol)
-
-    do i=1,ndim
-       do j=1,ndim
+    do j=1,ndim
+       do i=1,ndim
           A(i,j) = CFG%Ared(i+1,j+1)
        end do
     end do
@@ -862,6 +863,7 @@ CONTAINS
 
 
     !Compute residual
+    call mat_init(residual_2D,grad%nrow,grad%ncol)
     call mat_zero(residual_2D)
     do i=1,2
        !obtain residual
