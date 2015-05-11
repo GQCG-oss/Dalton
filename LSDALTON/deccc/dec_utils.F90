@@ -3550,7 +3550,16 @@ end function max_batch_dimension
 
     ! Pair cutoff
     read(funit) DECinfo%pair_distance_threshold
-    write(DECinfo%output,'(1X,a,g20.8)') 'Pair cutoff read from file:', DECinfo%pair_distance_threshold
+    ! Sanity check:
+    write(DECinfo%output,'(1X,a,g20.8)') 'Pair cutoff read from file:', &
+      & DECinfo%pair_distance_threshold
+    if (abs(DECinfo%pair_distance_threshold-pair_cutoff)>1.0E-8) then
+       print *, 'Pair cutoff read from file different from input pair cutoff.'
+       print *, 'Start calculation with .HFRESTART keyword instead.'
+       print *, 'Or use .PAIRTHR/.PAIRTHRANGSTROM keyword to specify cutoff.'
+       call lsquit("read_fragment_joblist_from_file: Inconsistency in reading pair cutoff")
+    end if
+
 
     call read_64bit_to_int(funit,njobs)
     if(njobs/=jobs%njobs) then
