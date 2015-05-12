@@ -5577,7 +5577,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
      chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-     !print *,"MASTER MEM 4",MemFree,mem_used
+     print *,"MASTER MEM 4",MemFree,mem_used," ELM ",bg_buf_size,chksze
      if (mem_used>MemFree.or.chksze>bg_buf_size)then
 #ifdef VAR_MPI
         !test for scheme with medium requirements
@@ -5585,14 +5585,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
         chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
            &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-        !print *,"MASTER MEM 3",MemFree,mem_used,"elms",3*v2o2,bg_buf_size
+        print *,"MASTER MEM 3",MemFree,mem_used," ELM ",bg_buf_size,chksze
         if (mem_used>MemFree.or.chksze>bg_buf_size)then
            !test for scheme with low requirements
            scheme=2
            mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
            chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
               &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-           !print *,"MASTER MEM 2",MemFree,mem_used
+           print *,"MASTER MEM 2",MemFree,mem_used," ELM ",bg_buf_size,chksze
            if (mem_used>MemFree.or.chksze>bg_buf_size)then
               scheme=0
               !print *,"MASTER check 0"

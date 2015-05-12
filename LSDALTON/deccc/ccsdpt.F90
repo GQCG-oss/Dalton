@@ -14493,10 +14493,15 @@ contains
      real(realk) :: MemoryNeeded, MemoryAvailable
      integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma,iAO
      integer(kind=ls_mpik) :: nnod,me
-     logical :: master
+     logical :: master, use_bg_buf
      ! Memory currently available
      ! **************************
-     call get_currently_available_memory(MemoryAvailable)
+     use_bg_buf = mem_is_background_buf_init()
+     if(use_bg_buf)then
+        MemoryAvailable = (mem_get_bg_buf_free()*8.0E0_realk)/1024.0E0_realk**3
+     else
+        call get_currently_available_memory(MemoryAvailable)
+     endif
      ! Note: We multiply by 95 % to be on the safe side!
      MemoryAvailable = 0.95*MemoryAvailable
 
@@ -14815,6 +14820,7 @@ contains
       integer(c_size_t) :: total_gpu,free_gpu ! in bytes
       real(realk), parameter :: gb =  1073741824.0E0_realk ! 1 GB
       integer, parameter :: ijk_default = 1000000, abc_default = 1000000
+      logical :: use_bg_buf
 
       ijk_nbuffs = 0
       abc_nbuffs = 0
@@ -14831,7 +14837,12 @@ contains
 
       if (DECinfo%acc_sync) acc_async = .false.
 
-      call get_currently_available_memory(free_cpu)
+      use_bg_buf = mem_is_background_buf_init()
+      if(use_bg_buf)then
+         free_cpu = (mem_get_bg_buf_free()*8.0E0_realk)/1024.0E0_realk**3
+      else
+         call get_currently_available_memory(free_cpu)
+      endif
 
       me   = 0
 #ifdef VAR_MPI
