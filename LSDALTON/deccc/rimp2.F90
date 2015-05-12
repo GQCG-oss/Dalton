@@ -50,9 +50,7 @@ module rimp2_module
 #ifdef VAR_OPENACC
   use openacc
 #endif
-#if defined(VAR_CUDA) || defined(VAR_OPENACC)
   use gpu_interfaces
-#endif
 
 contains
 !> Purpose: Wrapper routine to get RI-MP2 amplitudes and integrals
@@ -651,9 +649,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            N = noccOut*nvirt*MaxVirtSize  !columns of Output Matrix
            K = nocc                 !summation dimension
            IF(DECinfo%DECNP)THEN
-              call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+!              call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+              call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
+                               & int((i8*nocc)*nocc,kind=8),int(nocc*(noccOut*i8)*nvirt*(MaxVirtSize*i8),kind=8),&
+                               & int(noccOut*noccOut*(nvirt*MaxVirtSize*i8),kind=8),async_id(1),cublas_handle)
            ELSE
-              call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+!              call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+              call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
+                               & int((i8*nocc)*noccEOS,kind=8),int(nocc*(noccOut*i8)*nvirt*(MaxVirtSize*i8),kind=8),&
+                               & int(noccOut*noccOut*(nvirt*MaxVirtSize*i8),kind=8),async_id(1),cublas_handle)
            ENDIF
            call PlugInTotocc2(tocc2,noccOut,nvirt,tocc2TMP,MaxVirtSize,offsetV)
         ENDDO
@@ -672,9 +676,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            N = noccOut*nvirt*MaxVirtSize  !columns of Output Matrix
            K = nocc                       !summation dimension
            IF(DECinfo%DECNP)THEN
-              call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+!              call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+              call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
+                               & int((i8*nocc)*nocc,kind=8),int(nocc*(noccOut*i8)*nvirt*(MaxVirtSize*i8),kind=8),&
+                               & int(noccOut*noccOut*(nvirt*MaxVirtSize*i8),kind=8),async_id(1),cublas_handle)
            ELSE
-              call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+!              call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M)
+              call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
+                               & int((i8*nocc)*noccEOS,kind=8),int(nocc*(noccOut*i8)*nvirt*(MaxVirtSize*i8),kind=8),&
+                               & int(noccOut*noccOut*(nvirt*MaxVirtSize*i8),kind=8),async_id(1),cublas_handle)
            ENDIF
            call PlugInTotocc2(tocc2,noccOut,nvirt,tocc2TMP,MaxVirtSize,offsetV)
         ENDIF
@@ -712,9 +722,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         K = nocc                 !summation dimension
 !$acc enter data create(tocc2)
         IF(DECinfo%DECNP)THEN
-           call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2,M)
+!           call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2,M)
+             call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2,M,&
+                              & int((i8*nocc)*nocc,kind=8),int(nocc*(noccOut*i8)*nvirt*(nvirt*i8),kind=8),&
+                              & int(noccOut*(noccOut*i8)*nvirt*(nvirt*i8),kind=8),async_id(1),cublas_handle)
         ELSE
-           call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
+!           call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M)
+             call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M,&
+                              & int((i8*nocc)*noccEOS,kind=8),int(nocc*(noccOut*i8)*nvirt*(nvirt*i8),kind=8),&
+                              & int(noccOut*(noccOut*i8)*nvirt*(nvirt*i8),kind=8),async_id(1),cublas_handle)
         ENDIF
 !$acc exit data delete(tocc)
         IF(use_bg_buf)THEN
@@ -734,7 +750,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_alloc(tocc3,nsize)
      ENDIF
 !$acc enter data create(tocc3)
-     CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
+!     CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M)
+     call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M,&
+                      & int(noccOut*(noccOut*i8)*nvirt*(nvirt*i8),kind=8),int((i8*nvirt)*nvirt,kind=8),&
+                      & int(nvirt*(nvirt*i8)*noccOut*(i8*noccOut),kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(tocc2)
      !Final virtual transformation and reorder to dimocc
      IF(.NOT.use_bg_buf)call tensor_ainit(toccEOS,dimocc,4)
@@ -811,9 +830,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         K = nvirt                  !summation dimension
 !$acc enter data create(tvirt2)
         IF(DECinfo%DECNP)THEN
-           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M)
+!           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M)
+           call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M,&
+                            & int(nocc*nocc*(nvirtOut*i8)*nvirt,kind=8),int((i8*nvirt)*nvirt,kind=8),&
+                            & int(nocc*nocc*(nvirtOut*i8)*nvirtOut,kind=8),async_id(1),cublas_handle)
         ELSE
-           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
+!           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M)
+           call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M,&
+                            & int(nocc*nocc*(nvirtOut*i8)*nvirt,kind=8),int((i8*nvirt)*nvirtEOS,kind=8),&
+                            & int(nocc*nocc*(nvirtOut*i8)*nvirtOut,kind=8),async_id(1),cublas_handle)
         ENDIF
 !$acc exit data delete(tvirt)
         nsize = nocc*nocc*(nvirtOut*i8)*nvirtOut
@@ -829,7 +854,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = nocc*nvirtOut*nvirtOut  !columns of Output Matrix
         K = nocc                    !summation dimension
 !$acc enter data create(tvirt3)
-        call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
+!        call RI_DGEMM('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M)
+        call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M,&
+                         & int((i8*nocc)*nocc,kind=8),int(nocc*nocc*(nvirtOut*i8)*nvirtOut,kind=8),&
+                         & int(nocc*nocc*(nvirtOut*i8)*nvirtOut,kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(tvirt2)
         !transform last occ index to local basis and reorder 
         IF(.NOT.use_bg_buf)call tensor_ainit(tvirtEOS,dimvirt,4)
@@ -892,10 +920,16 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
      IF(DECinfo%DECNP)THEN
-        call RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+!        call RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+        call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
+                         & int(nba*(i8*nvirt)*nocc,kind=8),int((i8*nocc)*nocc,kind=8),&
+                         & int(nba*(i8*nvirt)*noccOut,kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(UoccT) if(.not. first_order)
      ELSE
-        call RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
+!        call RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
+        call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M,&
+                         & int(nba*(i8*nvirt)*nocc,kind=8),int((i8*nocc)*noccEOS,kind=8),&
+                         & int(nba*(i8*nvirt)*noccOut,kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(UoccEOST) if(.not. first_order)
         IF(.NOT.first_order)call mem_dealloc(UoccEOST)
      ENDIF
@@ -981,7 +1015,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            N = nocctot          !columns of Output Matrix
            K = nocctot          !summation dimension
 !$acc enter data create(Calpha2)
-           call RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M)
+!           call RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M)
+           call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M,&
+                            & int(nba*(i8*nvirt)*nocctot,kind=8),int((i8*nocctot)*nocctot,kind=8),&
+                            & int(nba*(i8*nvirt)*nocctot,kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(UoccallT,Calpha3) if(fc .and. (.not. first_order))
 !$acc exit data delete(Calpha3) if(fc .and. first_order)
            IF(use_bg_buf)THEN
@@ -1003,7 +1040,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            N = nocc             !columns of Output Matrix
            K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
-           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+!           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+           call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
+                            & int(nba*(i8*nvirt)*nocc,kind=8),int((i8*nocc)*nocc,kind=8),&
+                            & int(nba*(i8*nvirt)*nocc,kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(UoccT,Calpha) if(.not. first_order)
         ENDIF
         IF(.NOT.first_order)call mem_dealloc(UoccT)
@@ -1130,7 +1170,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = noccEOS          !columns of Output Matrix
         K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
-        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
+!        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M)
+        call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M,&
+                         & int(nba*(i8*nvirt)*nocc,kind=8),int((i8*nocc)*noccEOS,kind=8),&
+                         & int(i8*nsize2,kind=8),async_id(1),cublas_handle)
         !(alphaAux,nvirtAOS,noccEOS) = (alphaAux;nvirt,noccEOS)*Uvirt(nvirt,nvirtAOS)
 !$acc enter data create(Calpha3)
         call RIMP2_TransAlpha2(noccEOS,nvirt,nvirt,nba,UvirtT,Calpha2,Calpha3)
@@ -1172,11 +1215,17 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         K = nocctot          !summation dimension
 !$acc enter data copyin(CalphaOcc)
         IF(DECinfo%frozencore)THEN
-           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccallT,K,0.0E0_realk,Calpha2,M)
+!           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccallT,K,0.0E0_realk,Calpha2,M)
+           call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccallT,K,0.0E0_realk,Calpha2,M,&
+                            & int(nba*(i8*nocc)*nocctot,kind=8),int((i8*nocctot)*nocctot,kind=8),&
+                            & int(i8*nsize2,kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(UoccallT)
            call mem_dealloc(UoccallT)
         ELSE
-           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccT,K,0.0E0_realk,Calpha2,M)
+!           CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccT,K,0.0E0_realk,Calpha2,M)
+           call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,CalphaOcc,M,UoccT,K,0.0E0_realk,Calpha2,M,&
+                            & int(nba*(i8*nocc)*nocctot,kind=8),int((i8*nocc)*nocc,kind=8),&
+                            & int(i8*nsize2,kind=8),async_id(1),cublas_handle)
         ENDIF
 !$acc exit data delete(CalphaOcc)
         nsize = nba*noccEOS*nocctot
@@ -1235,7 +1284,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         N = nocc             !columns of Output Matrix
         K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
-        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+!        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M)
+        call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
+                         & int(nba*(i8*nvirt)*nocc,kind=8),int((i8*nocc)*nocc,kind=8),&
+                         & int(i8*nsize,kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(UoccT) 
         call mem_dealloc(UoccT)
         
@@ -1266,7 +1318,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         CALL LSTIMER('DECRIMP2: CalphaVV',TS2,TE2,LUPRI,FORCEPRINT)
         call array2_free(CDIAGvirt)
 !$acc enter data copyin(CalphaVV)
-        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,CalphaVV,M,UvirtT,K,0.0E0_realk,Calpha2,M)
+!        CALL RI_DGEMM('N','N',M,N,K,1.0E0_realk,CalphaVV,M,UvirtT,K,0.0E0_realk,Calpha2,M)
+        call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,CalphaVV,M,UvirtT,K,0.0E0_realk,Calpha2,M,&
+                         & int(nba*(i8*nvirt)*nvirt,kind=8),int((i8*nvirt)*nvirt,kind=8),&
+                         & int(i8*nsize,kind=8),async_id(1),cublas_handle)
 !$acc exit data delete(CalphaVV,UvirtT,Calpha)
         nsize = nba*nvirtEOS*nvirt
         IF(use_bg_buf)THEN
@@ -1428,43 +1483,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
 
 end subroutine RIMP2_integrals_and_amplitudes
-
-subroutine RI_DGEMM(Ta,Tb,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC)
-  implicit none
-  character :: Ta,Tb
-  integer :: M,N,K,LDA,LDB,LDC
-  integer(kind=4) :: cubTa,cubTb
-  real(realk) :: alpha,beta
-  real(realk) :: A(LDA,*)
-  real(realk) :: B(LDB,*)
-  real(realk) :: C(LDC,*)
-!#ifdef VAR_OPENACC
-!  !$acc host_data use_device(A,B,C)
-!#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!  call dgemm_acc(Ta,Tb,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC)
-!#elif defined(VAR_CUBLAS)
-!  IF(Ta.EQ.'T')THEN
-!     cubTa = 1
-!  ELSE
-!     cubTa = 0
-!  ENDIF
-!  IF(Tb.EQ.'T')THEN
-!     cubTb = 1
-!  ELSE
-!     cubTb = 0
-!  ENDIF
-!  stat = cublasDgemm_v2(cublas_handle,int(cubTa,kind=4),int(cubTb,kind=4),&
-!       & int(M,kind=4),int(N,kind=4),int(K,kind=4),&
-!       & alpha,c_loc(A),int(LDA,kind=4),c_loc(B),int(LDB,kind=4),&
-!       & beta,c_loc(C),int(LDC,kind=4))
-!#endif
-!  !$acc end host_data
-!  call addDGEMM_FLOPonGPUaccouting(M,N,K,beta)
-!#else
-  print*,'Ta,Tb,M,N,K,alpha',Ta,Tb,M,N,K,alpha,LDA,LDB,beta,LDC
-  call dgemm(Ta,Tb,M,N,K,alpha,A,LDA,B,LDB,beta,C,LDC)
-!#endif
-end subroutine RI_DGEMM
 
 subroutine PlaceCoreOrbFirst(Calpha,NBA,nvirtEOS,nocctot,ncore,nocc,Calpha3)
   implicit none

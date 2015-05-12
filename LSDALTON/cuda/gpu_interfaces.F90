@@ -6,6 +6,10 @@
 module gpu_interfaces
 
   use iso_c_binding
+  use precision
+
+  !> module variable to count the FLOPs done on the GPU
+  real(realk), save :: FLOPonGPU
 
 #ifdef VAR_OPENACC
 #ifdef VAR_CUBLAS
@@ -66,76 +70,50 @@ module gpu_interfaces
 
 contains
 
-#ifdef VAR_OPENACC
   subroutine ls_dgemm_acc(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc,na,nb,nc,acc_handle,cublas_handle)
 
        use precision
-       use openacc
        use iso_c_binding
+#ifdef VAR_OPENACC
+       use openacc
+#endif
 
        character(len=1) :: transa,transb
-       integer :: m,n,k,lda,ldb,ldc,na,nb,nc
+       integer :: m,n,k,lda,ldb,ldc
+       integer(kind=8) :: na,nb,nc
        real(realk), dimension(na)  :: a
        real(realk), dimension(nb)  :: b
        real(realk), dimension(nc)  :: c
        real(realk)  :: alpha,beta
-       integer(kind=acc_handle_kind), optional :: acc_handle
-       type(c_ptr), optional :: cublas_handle
+#ifdef VAR_OPENACC
+       integer(kind=acc_handle_kind) :: acc_handle
+#else
+       integer :: acc_handle
+#endif
+       type(c_ptr) :: cublas_handle ! NOTE: To use cublas, make sure you've called cublasCreate_v2 beforehand!!!
        logical :: async,false_arg1,false_arg2
        integer :: transa_2,transb_2
 
+#ifdef VAR_OPENACC
+
        async = .false.
 
-       if (present(acc_handle)) then
-
-          if (acc_handle .eq. acc_async_sync) then
-
-             if (.not. present(cublas_handle)) call lsquit('synchronous acc_dgemm with acc_async_sync only works with cublas',-1)
-
-          else
-
-             async = .true.
-
-          endif
-
-       endif
+       if (acc_handle .ne. acc_async_sync) async = .true.
 
        false_arg1 = .true.; false_arg2 = .true.
 
-       if ((transa .eq. 'n') .or. (transa .eq. 'N') .or. (transa .eq. 't') .or. (transa .eq. 'T')) then
-
-          false_arg1 = .false.
-
-       endif
-       if ((transb .eq. 'n') .or. (transb .eq. 'N') .or. (transb .eq. 't') .or. (transb .eq. 'T')) then
-
-          false_arg2 = .false.
-
-       endif
+       if ((transa .eq. 'n') .or. (transa .eq. 'N') .or. (transa .eq. 't') .or. (transa .eq. 'T')) false_arg1 = .false.
+       if ((transb .eq. 'n') .or. (transb .eq. 'N') .or. (transb .eq. 't') .or. (transb .eq. 'T')) false_arg2 = .false.
 
        if (false_arg1) call lsquit('wrong argument to transa in ls_dgemm_acc',-1)
        if (false_arg2) call lsquit('wrong argument to transb in ls_dgemm_acc',-1)
 
 #ifdef VAR_CUBLAS
 
-       if ((transa .eq. 'n') .or. (transa .eq. 'N')) then
+       transa_2 = 0; transb_2 = 0
 
-          transa_2 = 0 
-
-       else
-
-          transa_2 = 1
-
-       endif
-       if ((transb .eq. 'n') .or. (transb .eq. 'N')) then
-
-          transb_2 = 0
-
-       else
-
-          transb_2 = 1
-
-       endif
+       if ((transa .eq. 't') .or. (transa .eq. 'T')) transa_2 = 1
+       if ((transb .eq. 't') .or. (transb .eq. 'T')) transb_2 = 1
 
 #endif
 
@@ -157,8 +135,6 @@ contains
 
 #elif defined(VAR_CUBLAS)
 
-       if (.not. present(cublas_handle)) call lsquit('defined(VAR_CUBLAS), but no cublas handle.',-1) 
-
 !$acc host_data use_device(a,b,c)
        stat = cublasDgemm_v2(cublas_handle,int(transa_2,kind=4),int(transb_2,kind=4),int(m,kind=4),int(n,kind=4),int(k,kind=4),&
                              & alpha,c_loc(a),int(lda,kind=4),c_loc(b),int(ldb,kind=4),&
@@ -167,11 +143,58 @@ contains
 
 #endif
 
-  end subroutine ls_dgemm_acc
+       ! calculate the gpu flop count
+       call addDGEMM_FLOPonGPUaccouting(m,n,k,beta)
+
+#else
+
+       ! call ordinary cpu dgemm
+       call dgemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+
 #endif
 
-  subroutine gpu_interfaces_dummy_routine()
+  end subroutine ls_dgemm_acc
 
-  end subroutine gpu_interfaces_dummy_routine
+  subroutine AddFLOP_FLOPonGPUaccouting(inputFLOPonGPU)
 
+    implicit none
+
+    real(realk), intent(in) :: inputFLOPonGPU
+
+    FLOPonGPU = FLOPonGPU + inputFLOPonGPU
+
+  end subroutine AddFLOP_FLOPonGPUaccouting
+
+  subroutine addDGEMM_FLOPonGPUaccouting(M,N,K,beta)
+
+    implicit none
+
+    integer, intent(in) :: M,N,K
+    real(realk), intent(in) :: beta
+
+    IF(ABS(beta).GT.1.0E-10_realk)THEN
+       FLOPonGPU = FLOPonGPU + 2*M*N*K
+    ELSE
+       FLOPonGPU = FLOPonGPU + M*N*(2*K-1)
+    ENDIF
+
+  end subroutine AddDGEMM_FLOPonGPUaccouting
+
+  subroutine init_FLOPonGPUaccouting()
+
+    implicit none
+
+    FLOPonGPU = 0.0E0_realk
+
+  end subroutine Init_FLOPonGPUaccouting
+
+  subroutine extract_FLOPonGPUaccouting(outFLOPonGPU)
+
+    implicit none
+    real(realk), intent(inout) :: outFLOPonGPU
+
+    outFLOPonGPU = FLOPonGPU
+
+  end subroutine Extract_FLOPonGPUaccouting
+ 
 end module gpu_interfaces
