@@ -1111,11 +1111,12 @@ contains
           EXIT
        ENDIF
        IF(I.EQ.1)THEN
-          print*,'Not enough Memory in MP2(canonical_mpmp2) '
-          print*,'(nbasis,nocc,nvirt,MinAObatch,numnodes):',nbasis,nocc,nvirt,MinAObatch,numnodes
-          print*,'With nOccBatchDimImax=1 the code will require'
-          print*,'maxsize = ',maxsize,' Which is less than MemoryAvailable=',MemoryAvailable
-          call lsquit('get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatches not enough',-1)
+!          print*,'Not enough Memory in MP2(canonical_mpmp2) '
+!          print*,'(nbasis,nocc,nvirt,MinAObatch,numnodes):',nbasis,nocc,nvirt,MinAObatch,numnodes
+!          print*,'With nOccBatchDimImax=1 the code will require'
+!          print*,'maxsize = ',maxsize,' Which is less than MemoryAvailable=',MemoryAvailable
+!          call lsquit('get_optimal_batch_sizes_for_canonical_mpmp2 Error MinAoBatches not enough',-1)
+          nOccBatchDimImax = I
        ENDIF
     enddo
 
