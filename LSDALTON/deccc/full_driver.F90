@@ -84,6 +84,7 @@ contains
        ! run cc program
        if(DECinfo%F12) then ! F12 correction
 #ifdef MOD_UNRELEASED
+          !When the code is a production code it should be released! TK
           if(DECinfo%ccModel==MODEL_MP2) then
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
@@ -92,9 +93,6 @@ contains
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
 #else
-          if(DECinfo%ccModel==MODEL_RIMP2) then
-             call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr)
-          endif
           call lsquit('f12 not released',-1)
 #endif
        elseif(DECinfo%ccModel==MODEL_RIMP2)then
