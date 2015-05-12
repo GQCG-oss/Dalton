@@ -12,6 +12,7 @@ git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/S
 export OMP_NUM_THREADS=1
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
+export CTEST_PROJECT_NAME=DALTON
 
 ./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ -D BUILDNAME="MB-Grendel-linux-PGI-debug" --type=debug --check -D ENABLE_EFS=OFF  
 cd $TMP_DIR/build
