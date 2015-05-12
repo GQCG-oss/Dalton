@@ -35,25 +35,23 @@ module ccsd_module
     ! *****************************************
   use cc_tools_module
   use dec_workarounds_module
-#ifdef VAR_MPI
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
-#endif
 
-    use dec_fragment_utils
-    use array2_simple_operations!, only: array2_init, array2_add,&
-!         & array2_transpose, array2_free, array2_add_to
-    use array3_simple_operations!, only: array_reorder_3d
-    use array4_simple_operations!, only: array4_init, operator(*),&
-!         & array_reorder_4d, mat_transpose, array4_contract1,&
-!         & array4_reorder, array4_free, array4_contract2_middle,&
-!         & array4_read, array4_contract2, mat_transpose_p,mat_transpose_pl,&
-!         & array4_alloc, array4_add_to, array4_scale, array4_contract3,&
-!         & array4_read_file_type2, array4_write_file_type2,&
-!         & array4_open_file, array4_read_file, array4_close_file,&
-!         & array4_write_file
-!         & tensor_change_atype_to_d,print_norm
-    use ccintegrals!, only: get_gmo_simple,getL,dec_fock_transformation
-    use pno_ccsd_module
+  use dec_fragment_utils
+  use array2_simple_operations!, only: array2_init, array2_add,&
+  !         & array2_transpose, array2_free, array2_add_to
+  use array3_simple_operations!, only: array_reorder_3d
+  use array4_simple_operations!, only: array4_init, operator(*),&
+  !         & array_reorder_4d, mat_transpose, array4_contract1,&
+  !         & array4_reorder, array4_free, array4_contract2_middle,&
+  !         & array4_read, array4_contract2, mat_transpose_p,mat_transpose_pl,&
+  !         & array4_alloc, array4_add_to, array4_scale, array4_contract3,&
+  !         & array4_read_file_type2, array4_write_file_type2,&
+  !         & array4_open_file, array4_read_file, array4_close_file,&
+  !         & array4_write_file
+  !         & tensor_change_atype_to_d,print_norm
+  use ccintegrals!, only: get_gmo_simple,getL,dec_fock_transformation
+  use pno_ccsd_module
 
 
     public :: getDoublesResidualMP2_simple,&
@@ -1737,7 +1735,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         myload = 0
         tasks  = 0
 
-        IF(DECinfo%useIchor)THEN
+        if(DECinfo%useIchor)then
            call mem_alloc(batchdimAlpha,nbatchesAlpha)
            do idx=1,nbatchesAlpha
               batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
@@ -1758,9 +1756,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               batch2orbGamma(idx)%orbindex(1) = AOGammabatchinfo(idx)%orbstart
               batch2orbGamma(idx)%norbindex = 1
            end do
-           call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,&
-                & batchdimAlpha,batchdimGamma,myload,lg_nnod,lg_me,scheme,&
-                & no,nv,nb,batch2orbAlpha,batch2orbGamma)
+        endif
+
+        call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+           &batchdimGamma,myload,lg_nnod,lg_me,scheme,no,nv,nb,batch2orbAlpha,&
+           &batch2orbGamma)
+
+        if(DECinfo%useIchor)then
            call mem_dealloc(batchdimAlpha)
            call mem_dealloc(batchdimGamma)
            do idx=1,nbatchesAlpha
@@ -1771,11 +1773,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call mem_dealloc(batch2orbGamma(idx)%orbindex)
            end do
            call mem_dealloc(batch2orbGamma)
-        ELSE
-           call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
-                &batchdimGamma,myload,lg_nnod,lg_me,scheme,no,nv,nb,batch2orbAlpha,&
-                &batch2orbGamma)
-        ENDIF
+        endif
+
      else
 
         lenI2 = 1
@@ -2929,15 +2928,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
 
-     if(DECinfo%hack2)then
-        OPEN(unit=337,file='full_t1fock_test.restart')
-        if(infpar%mynum==0)then
-           WRITE(337,*)t1fock
-        else
-           READ(337,*)t1fock
-        endif
-        CLOSE(337)
-     endif
+     !if(DECinfo%hack2)then
+     !   OPEN(unit=337,file='full_t1fock_test.restart')
+     !   if(infpar%mynum==0)then
+     !      WRITE(337,*)t1fock
+     !   else
+     !      READ(337,*)t1fock
+     !   endif
+     !   CLOSE(337)
+     !endif
 
 
      !Transform inactive Fock matrix into the different mo subspaces
@@ -4967,87 +4966,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine calculate_E2_and_permute
 
 
-  subroutine check_job(batch,fr,dyn,a,g,nA,nG,static,win,prnt)
-     implicit none
-     integer, intent(inout) :: batch
-     logical, intent(inout) :: fr
-     logical,intent(in) :: dyn,prnt
-     integer,intent(in) :: nA,nG
-     integer,intent(inout) :: a,g
-     integer :: static(:)
-     integer(kind=ls_mpik) :: win
-     real(realk) :: mpi_buf
-     integer :: GammaAlpha(2)
-     integer :: one
-#ifdef VAR_MPI
-     one  = 1
-
-     !GET MPI batch number
-     if(.not.dyn)then
-
-        batch=batch+1
-        FindJobLoop: do while(batch<=nA*nG)
-
-           call get_midx(batch,GammaAlpha,[nA,nG],2)
-
-           a = GammaAlpha(1)
-           g = GammaAlpha(2)
-
-           !check whether this job has been assigned to me
-           if(static((a-1)*nG+g)/=infpar%lg_mynum)then
-              batch=batch+1
-           else
-
-              exit FindJobLoop
-
-           endif
-
-        enddo FindJobLoop
-
-     else
-
-        if(fr)then
-
-           fr   = .false.
-           batch = infpar%lg_mynum + 1
-
-        else
-           call time_start_phase( PHASE_COMM )
-#ifdef VAR_HAVE_MPI3
-           call lsmpi_get_acc(one,batch,infpar%master,1,win)
-           call lsmpi_win_flush(win,rank = infpar%master, local=.true.)
-#else
-           call lsmpi_win_lock(infpar%master,win,'e')
-           call lsmpi_get_acc(one,batch,infpar%master,1,win)
-           call lsmpi_win_unlock(infpar%master,win)
-#endif
-           call time_start_phase( PHASE_WORK )
-        endif
-     endif
-
-#else
-     !Non--MPI job countin
-     batch = batch + 1
-#endif
-
-     ! No more jobs to be done exit
-     if(batch > nG*nA )return
-
-     call get_midx(batch,GammaAlpha,[nA,nG],2)
-
-     a = GammaAlpha(1)
-     g = GammaAlpha(2)
-
-#ifdef VAR_MPI
-     if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
-        &a,na,g,ng
-#else
-     if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
-        &na,g,ng
-#endif
-     call lsmpi_poke()
-
-  end subroutine check_job
 
   !> \brief Routine to get the c and the d terms from t1 tranformed integrals
   !using a simple mpi-parallelization
