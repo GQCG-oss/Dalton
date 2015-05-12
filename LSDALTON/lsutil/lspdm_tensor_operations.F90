@@ -6014,8 +6014,8 @@ module lspdm_tensor_operations_module
        !call lsmpi_win_flush(arr%wi(widx),source,local = .false.)
     else
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),r)
-       call lsmpi_wait(r)
+       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
+       call lsmpi_wait(req)
        call lsmpi_win_flush(arr%wi(widx), rank=source, local=.false.)
 #else
        call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
