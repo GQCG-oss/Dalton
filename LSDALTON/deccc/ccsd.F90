@@ -35,25 +35,23 @@ module ccsd_module
     ! *****************************************
   use cc_tools_module
   use dec_workarounds_module
-#ifdef VAR_MPI
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
-#endif
 
-    use dec_fragment_utils
-    use array2_simple_operations!, only: array2_init, array2_add,&
-!         & array2_transpose, array2_free, array2_add_to
-    use array3_simple_operations!, only: array_reorder_3d
-    use array4_simple_operations!, only: array4_init, operator(*),&
-!         & array_reorder_4d, mat_transpose, array4_contract1,&
-!         & array4_reorder, array4_free, array4_contract2_middle,&
-!         & array4_read, array4_contract2, mat_transpose_p,mat_transpose_pl,&
-!         & array4_alloc, array4_add_to, array4_scale, array4_contract3,&
-!         & array4_read_file_type2, array4_write_file_type2,&
-!         & array4_open_file, array4_read_file, array4_close_file,&
-!         & array4_write_file
-!         & tensor_change_atype_to_d,print_norm
-    use ccintegrals!, only: get_gmo_simple,getL,dec_fock_transformation
-    use pno_ccsd_module
+  use dec_fragment_utils
+  use array2_simple_operations!, only: array2_init, array2_add,&
+  !         & array2_transpose, array2_free, array2_add_to
+  use array3_simple_operations!, only: array_reorder_3d
+  use array4_simple_operations!, only: array4_init, operator(*),&
+  !         & array_reorder_4d, mat_transpose, array4_contract1,&
+  !         & array4_reorder, array4_free, array4_contract2_middle,&
+  !         & array4_read, array4_contract2, mat_transpose_p,mat_transpose_pl,&
+  !         & array4_alloc, array4_add_to, array4_scale, array4_contract3,&
+  !         & array4_read_file_type2, array4_write_file_type2,&
+  !         & array4_open_file, array4_read_file, array4_close_file,&
+  !         & array4_write_file
+  !         & tensor_change_atype_to_d,print_norm
+  use ccintegrals!, only: get_gmo_simple,getL,dec_fock_transformation
+  use pno_ccsd_module
 
 
     public :: getDoublesResidualMP2_simple,&
@@ -880,7 +878,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(tensor) :: u2, sio4
      type(tensor) :: gvoova,gvvooa
      !special arrays for scheme=1
-     type(tensor) :: t2jabi,u2kcjb
+     type(tensor) :: t2jabi,u2kcjb, o2ilej
      integer,pointer       :: tasks(:)
      type(c_ptr)           :: tasksc
      integer(kind=ls_mpik) :: tasksw,taskslw
@@ -1566,24 +1564,36 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os], bg=use_bg_buf )
         call tensor_zero(gvvooa)
         call tensor_zero(gvoova)
-!        call mem_alloc(sio4,int(i8*nor*no2,kind=long))
-!#ifdef VAR_MPI
-!        call lsmpi_win_create(sio4%d,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
-!#endif
-        if(scheme == 4 .or. scheme == 3)then
 
+        if(scheme == 1)then
+           !Maybe we should use the bg buffer here as well
+           call tensor_ainit(o2ilej, [nv,nv,nor],3, local=local, atype='TDAR', tdims=[vs,vs,nor])
+           call tensor_zero(o2ilej)
+        endif
+
+
+
+        select case (scheme)
+        case(4,3)
            sio4_mode = 3
            sio4_dims(1:sio4_mode) = [no,no,nor]
            sio4_tdim(1:sio4_mode) = [os,os,nor]
            write(def_atype,'(A4)')'LDAR'
-
-        else
-
+        case(2)
            sio4_mode = 4
            sio4_dims(1:sio4_mode) = [no,no,no,no]
            sio4_tdim(1:sio4_mode) = [os,os,os,os]
            write(def_atype,'(A4)')'TDAR'
-        endif
+        case(1)
+           print *,"We need to decide what we do with this tensor. it is used&
+              & after the integral direct loop"
+           stop 0
+           !sio4_mode = 3
+           !sio4_dims(1:sio4_mode) = [no,no,nor]
+           !sio4_tdim(1:sio4_mode) = [os,os,nor]
+           !write(def_atype,'(A4)')'TDAR'
+        end select
+
 
         call tensor_ainit(sio4,sio4_dims(1:sio4_mode),sio4_mode,local=local,atype=def_atype,tdims = sio4_tdim(1:sio4_mode))
         call tensor_zero(sio4)
@@ -1725,7 +1735,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         myload = 0
         tasks  = 0
 
-        IF(DECinfo%useIchor)THEN
+        if(DECinfo%useIchor)then
            call mem_alloc(batchdimAlpha,nbatchesAlpha)
            do idx=1,nbatchesAlpha
               batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
@@ -1746,9 +1756,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               batch2orbGamma(idx)%orbindex(1) = AOGammabatchinfo(idx)%orbstart
               batch2orbGamma(idx)%norbindex = 1
            end do
-           call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,&
-                & batchdimAlpha,batchdimGamma,myload,lg_nnod,lg_me,scheme,&
-                & no,nv,nb,batch2orbAlpha,batch2orbGamma)
+        endif
+
+        call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
+           &batchdimGamma,myload,lg_nnod,lg_me,scheme,no,nv,nb,batch2orbAlpha,&
+           &batch2orbGamma)
+
+        if(DECinfo%useIchor)then
            call mem_dealloc(batchdimAlpha)
            call mem_dealloc(batchdimGamma)
            do idx=1,nbatchesAlpha
@@ -1759,11 +1773,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call mem_dealloc(batch2orbGamma(idx)%orbindex)
            end do
            call mem_dealloc(batch2orbGamma)
-        ELSE
-           call distribute_mpi_jobs(tasks,nbatchesAlpha,nbatchesGamma,batchdimAlpha,&
-                &batchdimGamma,myload,lg_nnod,lg_me,scheme,no,nv,nb,batch2orbAlpha,&
-                &batch2orbGamma)
-        ENDIF
+        endif
+
      else
 
         lenI2 = 1
@@ -2225,7 +2236,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               else !`DIL: Scheme 1: TPL and TMI are distributed tensors
 #ifdef DIL_ACTIVE
                  call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpld,tmid,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
-                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,.false.,&
+                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],o2ilej,lock_outside,.false.,&
                     &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
 #else
                  call lsquit('ERROR(ccsd_residual_integral_driven): This part (6) of Scheme 1 requires DIL backend!',-1)
@@ -2482,7 +2493,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      else
       call tensor_free(tpld)
       call tensor_free(tmid)
+      print*,"BEFORE FREEING o2ilej we need to update the vull residual o2"
+      call tensor_free(o2ilej)
+      stop 0
      endif
+        if(scheme == 1)then
+        endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -2912,15 +2928,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
 
-     if(DECinfo%hack2)then
-        OPEN(unit=337,file='full_t1fock_test.restart')
-        if(infpar%mynum==0)then
-           WRITE(337,*)t1fock
-        else
-           READ(337,*)t1fock
-        endif
-        CLOSE(337)
-     endif
+     !if(DECinfo%hack2)then
+     !   OPEN(unit=337,file='full_t1fock_test.restart')
+     !   if(infpar%mynum==0)then
+     !      WRITE(337,*)t1fock
+     !   else
+     !      READ(337,*)t1fock
+     !   endif
+     !   CLOSE(337)
+     !endif
 
 
      !Transform inactive Fock matrix into the different mo subspaces
@@ -3482,7 +3498,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
               &MaxActualDimGamma,nbuffs,4,0,.true.,mylsitem%setting,intspec)
 
-        print *,"Getting batchs sizes took",time_get_batch_sizes
         if(scheme /= 0 ) call lsquit("ERROR(yet_another_ccsd_residual): for the collective memory only scheme 0 possible",-1)
         
      endif
@@ -4951,87 +4966,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine calculate_E2_and_permute
 
 
-  subroutine check_job(batch,fr,dyn,a,g,nA,nG,static,win,prnt)
-     implicit none
-     integer, intent(inout) :: batch
-     logical, intent(inout) :: fr
-     logical,intent(in) :: dyn,prnt
-     integer,intent(in) :: nA,nG
-     integer,intent(inout) :: a,g
-     integer :: static(:)
-     integer(kind=ls_mpik) :: win
-     real(realk) :: mpi_buf
-     integer :: GammaAlpha(2)
-     integer :: one
-#ifdef VAR_MPI
-     one  = 1
-
-     !GET MPI batch number
-     if(.not.dyn)then
-
-        batch=batch+1
-        FindJobLoop: do while(batch<=nA*nG)
-
-           call get_midx(batch,GammaAlpha,[nA,nG],2)
-
-           a = GammaAlpha(1)
-           g = GammaAlpha(2)
-
-           !check whether this job has been assigned to me
-           if(static((a-1)*nG+g)/=infpar%lg_mynum)then
-              batch=batch+1
-           else
-
-              exit FindJobLoop
-
-           endif
-
-        enddo FindJobLoop
-
-     else
-
-        if(fr)then
-
-           fr   = .false.
-           batch = infpar%lg_mynum + 1
-
-        else
-           call time_start_phase( PHASE_COMM )
-#ifdef VAR_HAVE_MPI3
-           call lsmpi_get_acc(one,batch,infpar%master,1,win)
-           call lsmpi_win_flush(win,rank = infpar%master, local=.true.)
-#else
-           call lsmpi_win_lock(infpar%master,win,'e')
-           call lsmpi_get_acc(one,batch,infpar%master,1,win)
-           call lsmpi_win_unlock(infpar%master,win)
-#endif
-           call time_start_phase( PHASE_WORK )
-        endif
-     endif
-
-#else
-     !Non--MPI job countin
-     batch = batch + 1
-#endif
-
-     ! No more jobs to be done exit
-     if(batch > nG*nA )return
-
-     call get_midx(batch,GammaAlpha,[nA,nG],2)
-
-     a = GammaAlpha(1)
-     g = GammaAlpha(2)
-
-#ifdef VAR_MPI
-     if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
-        &a,na,g,ng
-#else
-     if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
-        &na,g,ng
-#endif
-     call lsmpi_poke()
-
-  end subroutine check_job
 
   !> \brief Routine to get the c and the d terms from t1 tranformed integrals
   !using a simple mpi-parallelization

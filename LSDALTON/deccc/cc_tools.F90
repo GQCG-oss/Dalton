@@ -687,7 +687,7 @@ module cc_tools_module
    !> \author Patrick Ettenhuber, Dmitry I. Lyakh (`DIL)
    !> \date December 2012
    subroutine get_a22_and_prepb22_terms_exd(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
-         &xo,yo,xv,yv,om2,sio4,s,wszes,lo,dil_lock_out,twork,tcomm,order,rest_occ_om2,scal)
+         &xo,yo,xv,yv,om2,sio4,s,wszes,o2ilej,lo,dil_lock_out,twork,tcomm,order,rest_occ_om2,scal)
       implicit none
       !> workspace with exchange integrals
       real(realk),intent(inout) :: w1(:)
@@ -695,7 +695,7 @@ module cc_tools_module
       real(realk),intent(inout) :: w0(:),w2(:),w3(:)
       !> the t+ and t- combinations with a value of the amplitudes with the
       !diagonal elements divided by two
-      type(tensor),intent(inout) :: tpl,tmi !tpl[nor,nvr],tmi[nor,nvr]
+      type(tensor),intent(inout) :: tpl,tmi,o2ilej !tpl[nor,nvr],tmi[nor,nvr]
       !> number of occupied, virutal and ao indices
       integer, intent(in) :: no,nv,nb
       !> first alpha and first gamma indices of the current loop
@@ -868,7 +868,8 @@ module cc_tools_module
       s2 = wszes(3)
       s3 = wszes(4)
       call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej=(s/=2.and.s/=1))
+         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,&
+         &sio4_ilej=(s/=2.and.s/=1),o2tens=o2ilej)
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_exd
@@ -878,7 +879,7 @@ module cc_tools_module
    !> \author Patrick Ettenhuber
    !> \date October 2012
    subroutine combine_and_transform_sigma(omega,w0,w2,w3,s0,s2,s3,xvirt,xocc,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,lock_outside,twork,tcomm,order,rest_occ_om2,scal,act_no,sio4_ilej,query)
+         &no,nv,nb,goffs,aoffs,s,lock_outside,twork,tcomm,order,rest_occ_om2,scal,act_no,sio4_ilej,query,o2tens)
       implicit none
       !> size of w0
       integer(kind=8),intent(inout)   :: s0,s2,s3
@@ -921,6 +922,7 @@ module cc_tools_module
       !restricted i<=j in the omega2 and or sio4
       logical,optional, intent(in) :: rest_occ_om2, sio4_ilej, query
       real(realk), optional, intent(in) :: scal
+      type(tensor), optional, intent(inout) :: o2tens
       !timing information
       real(realk) :: twork,tcomm
       !> the doubles amplitudes
@@ -939,6 +941,10 @@ module cc_tools_module
       logical               :: rest_o2_occ, rest_sio4,qu
       real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
+
+      if( s == 1 .and. .not. present(o2tens))then
+         call lsquit("ERROR(combine_and_transform_sigma): for scheme 1 we need the o2tens argument",-1)
+      endif
 
       rest_o2_occ = .false.
       if(present(rest_occ_om2 ))rest_o2_occ = rest_occ_om2
@@ -1253,48 +1259,49 @@ module cc_tools_module
          !transform gamma -> b
          call dgemm('t','n',nv,nor*full1,full2,1.0E0_realk,xvirt(fg+goffs),nb,w2,full2,0.0E0_realk,w3,nv)
          !transform alpha -> a , order is now sigma [ a b i j]
-         call dgemm('t','t',nv,nv*nor,full1,1.0E0_realk,xvirt(fa),nb,w3,nor*nv,0.0E0_realk,w2,nv)
+         if( s == 1)then
+            print *,"Dmitry, do your magic here! update o2tens the following dgemm is to be carried out"
+         else
+            call dgemm('t','t',nv,nv*nor,full1,1.0E0_realk,xvirt(fa),nb,w3,nor*nv,0.0E0_realk,w2,nv)
+
+            if(.not.rest_o2_occ)then
+               !square up the contributions if the residual itself has no restricions
+               !in the indices i and j
+               call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
 
 
-         if(.not.rest_o2_occ)then
-            !square up the contributions if the residual itself has no restricions
-            !in the indices i and j
-            call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
-
-
-            if(s==4.or.s==3)then
-               if( present(order) )then
-                  call array_reorder_4d(scaleitby,w2,nv,nv,no,no,order,1.0E0_realk,omega%elm1)
-               else
+               if(s==4.or.s==3)then
+                  if( present(order) )then
+                     call array_reorder_4d(scaleitby,w2,nv,nv,no,no,order,1.0E0_realk,omega%elm1)
+                  else
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-                  call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
+                     call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
 #else
-                  !OMP WORKSHARE
-                  omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
-                  !OMP END WORKSHARE
+                     !OMP WORKSHARE
+                     omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
+                     !OMP END WORKSHARE
+#endif
+                  endif
+               else if(s==2.or.s==1)then
+#ifdef VAR_MPI
+                  if( .not.alloc_in_dummy.and.lock_outside )call tensor_lock_wins(omega,'s',mode)
+                  !$OMP WORKSHARE
+                  w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
+                  !$OMP END WORKSHARE
+                  call time_start_phase(PHASE_COMM, at=twork)
+                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
+                  call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
                endif
-            else if(s==2.or.s==1)then
-#ifdef VAR_MPI
-               if( .not.alloc_in_dummy.and.lock_outside )call tensor_lock_wins(omega,'s',mode)
-               !$OMP WORKSHARE
-               w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
-               !$OMP END WORKSHARE
-               call time_start_phase(PHASE_COMM, at=twork)
-               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
-               call time_start_phase(PHASE_WORK, at=tcomm)
-#endif
-            endif
-         else
+            else
 #ifdef VAR_LSDEBUG
-            if(s/=4)call lsquit("ERROR(combine_and_transform_sigma)not implemented&
-               & for other schemes than 4",-1)
-            if(s/=4)call lsquit("ERROR(combine_and_transform_sigma)only implemented&
-               & for pairs for now",-1)
+               if(s/=4)call lsquit("ERROR(combine_and_transform_sigma)not implemented for other schemes than 4",-1)
+               if(s/=4)call lsquit("ERROR(combine_and_transform_sigma)only implemented for pairs for now",-1)
 #endif
-            pos1 = 1
-            call array_reorder_2d(scaleitby,w2(pos1:nv*nv+pos1-1),nv,nv,[2,1],1.0E0_realk,omega%elm1)
+               pos1 = 1
+               call array_reorder_2d(scaleitby,w2(pos1:nv*nv+pos1-1),nv,nv,[2,1],1.0E0_realk,omega%elm1)
 
+            endif
          endif
 
          !If the contributions are split in terms of the sigma matrix this adds the
@@ -1309,8 +1316,7 @@ module cc_tools_module
                l1=fa
                l2=fg+goffs+tlen
             endif
-            call mat_transpose(full1T,full2T*nor,1.0E0_realk,&
-               &w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
+            call mat_transpose(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
 
 #ifdef  VAR_MPI
             if( lock_outside .and. (s==2.or.s==1) )then
@@ -1327,43 +1333,47 @@ module cc_tools_module
             !transform gamma -> a
             call dgemm('t','n',nv,nor*full1T,full2T,1.0E0_realk,xvirt(l1),nb,w2,full2T,0.0E0_realk,w3,nv)
             !transform alpha -> , order is now sigma[b a i j]
-            call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
-
-            if(.not.rest_o2_occ)then
-               call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
-               if(s==4.or.s==3)then
-                  if( present(order) )then
-                     call array_reorder_4d(scaleitby,w2,nv,nv,no,no,order,1.0E0_realk,omega%elm1)
-                  else
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-                     call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
-#else
-                     !OMP WORKSHARE
-                     omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
-                     !OMP END WORKSHARE
-#endif
-                  endif
-               else if(s==2.or.s==1)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-                  call assign_in_subblocks(w2,'=',w2,o2v2,scal2=scaleitby)
-#else
-                  !$OMP WORKSHARE
-                  w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
-                  !$OMP END WORKSHARE
-#endif
-                  call time_start_phase(PHASE_COMM, at=twork)
-                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
-                  call time_start_phase(PHASE_WORK, at=tcomm)
-               endif
+            if( s == 1)then
+               print *,"Dmitry, do your magic here! update o2tens "
             else
-#ifdef VAR_LSDEBUG
-               if(s/=4)call lsquit("ERROR(combine_and_transform_sigma)not implemented&
-                  & for other schemes than 4",-1)
-               if(s/=4)call lsquit("ERROR(combine_and_transform_sigma)only implemented&
-                  & for pairs for now",-1)
+               call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
+
+               if(.not.rest_o2_occ)then
+                  call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
+                  if(s==4.or.s==3)then
+                     if( present(order) )then
+                        call array_reorder_4d(scaleitby,w2,nv,nv,no,no,order,1.0E0_realk,omega%elm1)
+                     else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+                        call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
+#else
+                        !OMP WORKSHARE
+                        omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
+                        !OMP END WORKSHARE
 #endif
-               pos1 = 1
-               call array_reorder_2d(scaleitby,w2(pos1:nv*nv+pos1-1),nv,nv,[2,1],1.0E0_realk,omega%elm1)
+                     endif
+                  else if(s==2.or.s==1)then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+                     call assign_in_subblocks(w2,'=',w2,o2v2,scal2=scaleitby)
+#else
+                     !$OMP WORKSHARE
+                     w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
+                     !$OMP END WORKSHARE
+#endif
+                     call time_start_phase(PHASE_COMM, at=twork)
+                     call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
+                     call time_start_phase(PHASE_WORK, at=tcomm)
+                  endif
+               else
+#ifdef VAR_LSDEBUG
+                  if(s/=4)call lsquit("ERROR(combine_and_transform_sigma)not implemented&
+                     & for other schemes than 4",-1)
+                  if(s/=4)call lsquit("ERROR(combine_and_transform_sigma)only implemented&
+                     & for pairs for now",-1)
+#endif
+                  pos1 = 1
+                  call array_reorder_2d(scaleitby,w2(pos1:nv*nv+pos1-1),nv,nv,[2,1],1.0E0_realk,omega%elm1)
+               endif
             endif
          endif
 
@@ -1391,9 +1401,13 @@ module cc_tools_module
          if( rest_sio4 )then
             call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4%elm1,no2)
          else
-            call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 
-            if(s==2.or.s==1)then
+            select case(s)
+            case(1)
+               print *,"Dmitry, do your magic here! update sio4"
+            case(2)
+               call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
+
                call squareup_block_triangular_squarematrix(w2,no,no,do_block_transpose = .true.)
 #ifdef VAR_MPI
                if( lock_outside .and..not. alloc_in_dummy )call tensor_lock_wins(sio4,'s',mode)
@@ -1406,7 +1420,8 @@ module cc_tools_module
                endif
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
-            else
+            case(3,4)
+               call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 #ifdef VAR_PTR_RESHAPE
                t1(1:no2,1:no2,1:nor)     => w2
                h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
@@ -1424,7 +1439,7 @@ module cc_tools_module
                      endif
                   enddo
                enddo
-            endif
+            endselect
          endif
 
 
@@ -1443,16 +1458,19 @@ module cc_tools_module
                l1=fa
                l2=fg+goffs+tlen
             endif
-            call mat_transpose(full1T,full2T*nor,1.0E0_realk,&
-               &w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
+            call mat_transpose(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
             !transform gamma -> l
             call dgemm('t','n',no2,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no2)
+
             !transform alpha -> k, order is now sigma[k l i j]
             if( rest_sio4 )then
                call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4%elm1,no2)
             else
-               call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
-               if(s==2.or.s==1)then
+               select case(s)
+               case(1)
+                  print *,"Dmitry, do your magic here! update sio4"
+               case(2)
+                  call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
                   call squareup_block_triangular_squarematrix(w2,no,no,do_block_transpose = .true.)
 #ifdef VAR_MPI
                   call time_start_phase(PHASE_COMM, at=twork)
@@ -1465,8 +1483,8 @@ module cc_tools_module
                   endif
                   call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
-               else
-
+               case(3,4)
+                  call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 #ifdef VAR_PTR_RESHAPE
                   t1(1:no2,1:no2,1:nor)     => w2
                   h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
@@ -1484,9 +1502,8 @@ module cc_tools_module
                         endif
                      enddo
                   enddo
-               endif
+               endselect
             endif
-
          endif
       endif
 
