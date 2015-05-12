@@ -34,9 +34,7 @@ module ccsdpt_module
 
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
-#ifdef VAR_MPI
   use decmpi_module
-#endif
   use dec_workarounds_module
   use crop_tools_module
   use cc_tools_module
@@ -13300,30 +13298,35 @@ contains
     type(batchtoorb), pointer :: batch2orbGamma(:)
     integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
     ! distribution stuff needed for mpi parallelization
-    integer, pointer :: distribution(:)
+    integer, pointer      :: distribution(:)
+    type(c_ptr)           :: distributionc
+    integer(kind=ls_mpik) :: distributionw
     Character            :: intSpec(5)
     integer :: myload,first_el_i_block,nelms,tile_size_tmp,total_num_tiles,tile
     logical :: master
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
-    integer :: p,pos
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, lg_me
+    integer :: p,pos, batch, old_gammaB
     !> use background buffering to avoid memory fragmentation problems?
-    logical :: use_bg_buf
+    logical :: use_bg_buf, first_round, dynamic_load
     call time_start_phase(PHASE_WORK)
 
-    o3v        = nocc*nocc*nocc*nvirt
-    v3         = nvirt**3
-    use_bg_buf = mem_is_background_buf_init()
+    o3v          = nocc*nocc*nocc*nvirt
+    v3           = nvirt**3
+    use_bg_buf   = mem_is_background_buf_init()
+    dynamic_load = DECinfo%dyn_load
 
 #ifdef VAR_MPI
 
     master = (infpar%lg_mynum .eq. infpar%master)
+    lg_me  = infpar%lg_mynum
     if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 #else
 
     master = .true.
+    lg_me  = 0
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 #endif
@@ -13510,14 +13513,14 @@ contains
        call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
     else
        call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
-               & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
+          & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
        if (doscreen) then
-   
+
           call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-               & nbasis,nbatchesAlpha,nbatchesGamma,&
-               & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-               & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-   
+             & nbasis,nbatchesAlpha,nbatchesGamma,&
+             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+
        end if
     endif
 
@@ -13537,33 +13540,47 @@ contains
     endif
 
 #ifdef VAR_MPI
+    if(dynamic_load) then
+       call mem_alloc( distribution, distributionc, 1)
 
-    if (infpar%lg_nodtot .gt. 1) then
+       distribution = 0
+       if(infpar%lg_mynum == 0) distribution(1) = infpar%lg_nodtot+1
+
+       call lsmpi_win_create(distribution,distributionw,1,infpar%lg_comm)
+#ifdef VAR_HAVE_MPI3
+       call lsmpi_win_lock_all(distributionw,ass=MPI_MODE_NOCHECK)
+#endif
+
+    else
+
 
        ! alloc distribution array
        nullify(distribution)
        call mem_alloc(distribution,nbatchesGamma*nbatchesAlpha)
-   
        ! init distribution
        distribution = 0
        myload = 0
-       if (DECinfo%useichor) then
-          call mem_alloc(batchdimAlpha,nbatchesAlpha)
-          do idx=1,nbatchesAlpha
-             batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
-          enddo
-          call mem_alloc(batchdimGamma,nbatchesGamma)
-          do idx=1,nbatchesGamma
-             batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
-          enddo
-       endif
-       call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
-       &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
-       if (DECinfo%useichor) then
-          call mem_dealloc(batchdimAlpha)
-          call mem_dealloc(batchdimGamma)
-       endif
 
+       if (infpar%lg_nodtot .gt. 1) then
+
+          if (DECinfo%useichor) then
+             call mem_alloc(batchdimAlpha,nbatchesAlpha)
+             do idx=1,nbatchesAlpha
+                batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+             enddo
+             call mem_alloc(batchdimGamma,nbatchesGamma)
+             do idx=1,nbatchesGamma
+                batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+             enddo
+          endif
+          call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
+             &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+          if (DECinfo%useichor) then
+             call mem_dealloc(batchdimAlpha)
+             call mem_dealloc(batchdimGamma)
+          endif
+
+       endif
     endif
 
 #endif
@@ -13571,210 +13588,200 @@ contains
     ! Start looping over gamma and alpha batches and calculate integrals
     ! ******************************************************************
 
-    BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+    old_gammaB = -1
+    batch      =  0
+
+    first_round=.false.
+    if(dynamic_load)then
+       first_round = .true.
+       batch       = lg_me + 1
+    endif
+
+
+    BatchLoop: do while(batch <= nbatchesGamma*nbatchesAlpha) ! AO batches
+
+
+       !check if the current job is to be done by current node
+       call check_job(batch,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
+          &nbatchesGamma,distribution, distributionw, DECinfo%PL>2)
+
+       !exit the loop
+       if(batch > nbatchesGamma*nbatchesAlpha ) exit BatchLoop
+
+
+       ! If the new gamma is different form the old gamma batch
+       NewGammaBatch: if( gammaB /= old_gammaB )then
+          if (DECinfo%useichor) then
+             dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+             GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+             GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+             AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+             AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+          else
+             dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+             GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+             GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+          endif
+       endif NewGammaBatch
+
        if (DECinfo%useichor) then
-          dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
-          GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
-          GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
-          AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
-          AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
        else
-          dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
-          GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-          GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
        endif
 
-       BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
-          if (DECinfo%useichor) then
-             dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
-             AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
-             AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
-             AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
-             AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
-          else
-             dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
-             AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-             AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-          endif
+
+       ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
+       ! ************************************************************************************
+
+       if (DECinfo%useichor) then
+          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
+             & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+             & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
+       else
+          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+
+
+          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+             & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
+             & FullRHS,INTSPEC,DECinfo%IntegralThreshold)
+       endif
+
+       ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
+       m = nbasis*dimGamma*dimAlpha
+       k = nbasis
+       n = nvirt
+       call dgemm('T','N',m,n,k,1.0E0_realk,tmp1,k,Cvirt,k,0.0E0_realk,tmp2,m)
+
+       ! tmp3(B;alphaB,gammaB,A) = sum_{delta} CvirtT(B,delta) tmp2(delta;alphaB,gammaB,A)
+       m = nvirt
+       k = nbasis
+       n = dimAlpha*dimGamma*nvirt
+       call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT,m,tmp2,k,0.0E0_realk,tmp3,m)
+
+       ! tmp1(I;,alphaB,gammaB,A) = sum_{delta} CoccT(I,delta) tmp2(delta,alphaB,gammaB,A)
+       m = nocc
+       k = nbasis
+       n = dimAlpha*dimGamma*nvirt
+       call dgemm('N','N',m,n,k,1.0E0_realk,CoccT,m,tmp2,k,0.0E0_realk,tmp1,m)
+
+       ! Reorder: tmp1(I,alphaB;gammaB,A) --> tmp2(gammaB,A;I,alphaB)
+       m = nocc*dimAlpha
+       n = dimGamma*nvirt
+       call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
+
+       ! tmp1(J;A,I,alphaB) = sum_{gamma in gammaB} CoccT(J,gamma) tmp2(gamma,A,I,alphaB)
+       m = nocc
+       k = dimGamma
+       n = nvirt*nocc*dimAlpha
+       call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1,GammaStart),nocc,tmp2,k,0.0E0_realk,tmp1,m)
+
+       ! ovoo(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cocc(alpha,K)
+       m = nvirt*nocc**2
+       k = dimAlpha
+       n = nocc
+       call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart,1),nbasis,1.0E0_realk,ovoo%elm1,m)
+
+       ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
+       m = nvirt*dimAlpha
+       n = dimGamma*nvirt
+       call mat_transpose(m,n,1.0E0_realk,tmp3,0.0E0_realk,tmp1)
+
+       ! tmp3(C;A,B,alphaB) = sum_{gamma in gammaB} CvirtT(C,gamma) tmp1(gamma,A,B,alphaB)
+       m = nvirt
+       k = dimGamma
+       n = dimAlpha*nvirt**2
+       call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(1,GammaStart),nvirt,tmp1,k,0.0E0_realk,tmp3,m)
 
 #ifdef VAR_MPI
 
-          if (infpar%lg_nodtot .gt. 1) then
+       if (infpar%lg_nodtot .gt. 1) then
 
-             ! distribute tasks
-             if (distribution((alphaB-1)*nbatchesGamma+gammaB) .ne. infpar%lg_mynum) then
-   
-                cycle BatchAlpha
-   
-             end if
-   
-             if(DECinfo%PL>2)write (*, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
-                &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
-
-          endif
-
-#endif
-
-          ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
-          ! ************************************************************************************
-
-          if (DECinfo%useichor) then
-             call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
-                  & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-                  & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
-          else
-             if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
-             if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-   
-   
-             call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-                  & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-                  & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
-                  & FullRHS,INTSPEC,DECinfo%IntegralThreshold)
-          endif
-
-          ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
-          m = nbasis*dimGamma*dimAlpha
-          k = nbasis
-          n = nvirt
-          call dgemm('T','N',m,n,k,1.0E0_realk,tmp1,k,Cvirt,k,0.0E0_realk,tmp2,m)
-
-          ! tmp3(B;alphaB,gammaB,A) = sum_{delta} CvirtT(B,delta) tmp2(delta;alphaB,gammaB,A)
-          m = nvirt
-          k = nbasis
-          n = dimAlpha*dimGamma*nvirt
-          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT,m,tmp2,k,0.0E0_realk,tmp3,m)
-
-          ! tmp1(I;,alphaB,gammaB,A) = sum_{delta} CoccT(I,delta) tmp2(delta,alphaB,gammaB,A)
-          m = nocc
-          k = nbasis
-          n = dimAlpha*dimGamma*nvirt
-          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT,m,tmp2,k,0.0E0_realk,tmp1,m)
-
-          ! Reorder: tmp1(I,alphaB;gammaB,A) --> tmp2(gammaB,A;I,alphaB)
-          m = nocc*dimAlpha
-          n = dimGamma*nvirt
-          call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
-
-          ! tmp1(J;A,I,alphaB) = sum_{gamma in gammaB} CoccT(J,gamma) tmp2(gamma,A,I,alphaB)
-          m = nocc
-          k = dimGamma
-          n = nvirt*nocc*dimAlpha
-          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1,GammaStart),nocc,tmp2,k,0.0E0_realk,tmp1,m)
-
-          ! ovoo(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cocc(alpha,K)
-          m = nvirt*nocc**2
+          m = nvirt**3
           k = dimAlpha
-          n = nocc
-          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart,1),nbasis,1.0E0_realk,ovoo%elm1,m)
+          total_num_tiles = vvvo%ntiles
+          tile = 0
 
-          ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
-          m = nvirt*dimAlpha
-          n = dimGamma*nvirt
-          call mat_transpose(m,n,1.0E0_realk,tmp3,0.0E0_realk,tmp1)
+          ! adapt comment to IJK scheme!!!
+          ! mpi   : 1) tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
+          !         2) vovv(B,I,A,C) += sum_{tile in CB} tmp2(B,I,A,tile)
+          ! serial: vovv(B,I,A,C) += sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,C)
 
-          ! tmp3(C;A,B,alphaB) = sum_{gamma in gammaB} CvirtT(C,gamma) tmp1(gamma,A,B,alphaB)
-          m = nvirt
-          k = dimGamma
-          n = dimAlpha*nvirt**2
-          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(1,GammaStart),nvirt,tmp1,k,0.0E0_realk,tmp3,m)
+          ! reorder tmp1 and do vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
+          do i=1,nocc,tile_size
 
-#ifdef VAR_MPI
+             tile = tile + 1
 
-          if (infpar%lg_nodtot .gt. 1) then
+             call get_tileinfo_nels_fromarr8(nelms,vvvo,i8*tile)
+             tile_size_tmp = nelms/(i8*nvirt**3)
 
-             m = nvirt**3
-             k = dimAlpha
-             total_num_tiles = vvvo%ntiles
-             tile = 0
+             n = tile_size_tmp
 
-              ! adapt comment to IJK scheme!!!
-             ! mpi   : 1) tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
-             !         2) vovv(B,I,A,C) += sum_{tile in CB} tmp2(B,I,A,tile)
-             ! serial: vovv(B,I,A,C) += sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,C)
+             ! tmp1(C,A,B,tile) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,tile)
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
 
-             ! reorder tmp1 and do vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
-             do i=1,nocc,tile_size
+             ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
+             ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
+             ! of dummy indices A=B, B=C, and C=A) as (BC|IA). In order to align with the vvvo order of
+             ! ccsd(t) driver routine, we reorder as:
+             ! (BC|IA) --> (CB|AI), i.e., tmp1(C,A,B,tile) = ABCI(A,B,C,tile) (norm. notat.) --> 
+             !                                            tmp1(C,B,A,tile) (norm. notat.) = tmp1(B,A,C,tile) (notat. herein)
+             ! 
+             ! next, we accumulate
+             ! vvvo(B,A,C,I) += sum_{tile in IB} tmp1(B,A,C,tile)
 
-                tile = tile + 1
+             call array_reorder_4d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,tile_size_tmp,[3,2,1,4],0.0E0_realk,tmp2)
 
-                call get_tileinfo_nels_fromarr8(nelms,vvvo,i8*tile)
-                tile_size_tmp = nelms/(i8*nvirt**3)
-
-                n = tile_size_tmp
-
-                ! tmp1(C,A,B,tile) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,tile)
-                call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
-   
-                ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
-                ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
-                ! of dummy indices A=B, B=C, and C=A) as (BC|IA). In order to align with the vvvo order of
-                ! ccsd(t) driver routine, we reorder as:
-                ! (BC|IA) --> (CB|AI), i.e., tmp1(C,A,B,tile) = ABCI(A,B,C,tile) (norm. notat.) --> 
-                !                                            tmp1(C,B,A,tile) (norm. notat.) = tmp1(B,A,C,tile) (notat. herein)
-                ! 
-                ! next, we accumulate
-                ! vvvo(B,A,C,I) += sum_{tile in IB} tmp1(B,A,C,tile)
-   
-                call array_reorder_4d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,tile_size_tmp,[3,2,1,4],0.0E0_realk,tmp2)
-   
-                call time_start_phase(PHASE_COMM)
+             call time_start_phase(PHASE_COMM)
 #ifdef VAR_HAVE_MPI3
-                call tensor_lock_win(vvvo,tile,'s')
+             call tensor_lock_win(vvvo,tile,'s')
 #endif
 
-                call get_residence_of_tile(dest,tile,vvvo,idx_on_node = pos)
-   
-                if( alloc_in_dummy )then
-                   wi_idx = 1
-                   p      = pos - 1
-                else
-                   wi_idx = tile 
-                   p      = 0
-                endif
+             call get_residence_of_tile(dest,tile,vvvo,idx_on_node = pos)
 
-                do first_el_i_block=1,v3*tile_size_tmp,MAX_SIZE_ONE_SIDED
+             if( alloc_in_dummy )then
+                wi_idx = 1
+                p      = pos - 1
+             else
+                wi_idx = tile 
+                p      = 0
+             endif
+
+             do first_el_i_block=1,v3*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
-                   call tensor_lock_win(vvvo,tile,'s',assert=mode)
+                call tensor_lock_win(vvvo,tile,'s',assert=mode)
 #endif
-                   nel2t=MAX_SIZE_ONE_SIDED
-                   if(((v3*tile_size_tmp-first_el_i_block)<MAX_SIZE_ONE_SIDED).and.&
-                      &(mod(v3*tile_size_tmp-first_el_i_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
-                      &nel2t=int(mod(v3*tile_size_tmp,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
-   
-   
-                   call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,p+first_el_i_block,dest,vvvo%wi(wi_idx))
+                nel2t=MAX_SIZE_ONE_SIDED
+                if(((v3*tile_size_tmp-first_el_i_block)<MAX_SIZE_ONE_SIDED).and.&
+                   &(mod(v3*tile_size_tmp-first_el_i_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
+                   &nel2t=int(mod(v3*tile_size_tmp,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
+
+
+                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,p+first_el_i_block,dest,vvvo%wi(wi_idx))
 
 #ifdef VAR_HAVE_MPI3
-                   call lsmpi_win_flush(vvvo%wi(wi_idx),rank=dest,local=.true.)
+                call lsmpi_win_flush(vvvo%wi(wi_idx),rank=dest,local=.true.)
 #else
-                   call tensor_unlock_win(vvvo,tile)
-#endif
-                enddo
-
-#ifdef VAR_HAVE_MPI3
                 call tensor_unlock_win(vvvo,tile)
 #endif
-                call time_start_phase(PHASE_WORK)
+             enddo
 
-             end do
+#ifdef VAR_HAVE_MPI3
+             call tensor_unlock_win(vvvo,tile)
+#endif
+             call time_start_phase(PHASE_WORK)
 
-          else
+          end do
 
-             do i=1,nocc
-
-                m = nvirt**3
-                k = dimAlpha
-                ! for description, see mpi section above
-                call dgemv('N',m,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),1,0.0E0_realk,tmp1,1)
-   
-                call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,vvvo%elm4(:,:,:,i))
-   
-             end do
-
-          endif
-
-#else
+       else
 
           do i=1,nocc
 
@@ -13787,10 +13794,24 @@ contains
 
           end do
 
+       endif
+
+#else
+
+       do i=1,nocc
+
+          m = nvirt**3
+          k = dimAlpha
+          ! for description, see mpi section above
+          call dgemv('N',m,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),1,0.0E0_realk,tmp1,1)
+
+          call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,vvvo%elm4(:,:,:,i))
+
+       end do
+
 #endif
 
-       end do BatchAlpha
-    end do BatchGamma
+    end do BatchLoop
 
 #ifdef VAR_MPI
 
@@ -13812,10 +13833,19 @@ contains
        call lsmpi_allreduce(dummy2,o3v,infpar%lg_comm) 
        call time_start_phase(PHASE_WORK)
 
-       ! dealloc distribution array
-       call mem_dealloc(distribution)
 
     end if
+
+    ! dealloc distribution array
+    if(dynamic_load)then
+#ifdef VAR_HAVE_MPI3
+       call lsmpi_win_unlock_all(distributionw)
+#endif
+       call lsmpi_win_free(distributionw)
+       call mem_dealloc(distribution,distributionc)
+    else
+       call mem_dealloc(distribution)
+    endif
 
 #endif
 
@@ -14493,10 +14523,15 @@ contains
      real(realk) :: MemoryNeeded, MemoryAvailable
      integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma,iAO
      integer(kind=ls_mpik) :: nnod,me
-     logical :: master
+     logical :: master, use_bg_buf
      ! Memory currently available
      ! **************************
-     call get_currently_available_memory(MemoryAvailable)
+     use_bg_buf = mem_is_background_buf_init()
+     if(use_bg_buf)then
+        MemoryAvailable = (mem_get_bg_buf_free()*8.0E0_realk)/1024.0E0_realk**3
+     else
+        call get_currently_available_memory(MemoryAvailable)
+     endif
      ! Note: We multiply by 95 % to be on the safe side!
      MemoryAvailable = 0.95*MemoryAvailable
 
@@ -14815,6 +14850,7 @@ contains
       integer(c_size_t) :: total_gpu,free_gpu ! in bytes
       real(realk), parameter :: gb =  1073741824.0E0_realk ! 1 GB
       integer, parameter :: ijk_default = 1000000, abc_default = 1000000
+      logical :: use_bg_buf
 
       ijk_nbuffs = 0
       abc_nbuffs = 0
@@ -14831,7 +14867,12 @@ contains
 
       if (DECinfo%acc_sync) acc_async = .false.
 
-      call get_currently_available_memory(free_cpu)
+      use_bg_buf = mem_is_background_buf_init()
+      if(use_bg_buf)then
+         free_cpu = (mem_get_bg_buf_free()*8.0E0_realk)/1024.0E0_realk**3
+      else
+         call get_currently_available_memory(free_cpu)
+      endif
 
       me   = 0
 #ifdef VAR_MPI

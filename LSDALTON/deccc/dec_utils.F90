@@ -27,7 +27,7 @@ module dec_fragment_utils
   use lsmpi_op
 #endif
   use papi_module
-  
+  use gpu_interfaces  
 
   ! F12 DEPENDENCIES 
   ! *****************************************
