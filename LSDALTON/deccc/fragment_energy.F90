@@ -790,9 +790,9 @@ contains
                 Eocc = Eocc + tmp
 
                 ! Update contribution from orbital a
-                virt_tmp(a) = virt_tmp(a) + tmp
+                virt_tmp(a) = virt_tmp(a) + abs(tmp)
                 ! Update contribution from orbital b (only if different from a to avoid double counting)
-                if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+                if(a/=b) virt_tmp(b) = virt_tmp(b) + abs(tmp)
 
 
                 ! Contribution 2
@@ -813,11 +813,11 @@ contains
                       lag_occ = lag_occ + tmp
 
                       ! Update contribution from orbital a
-                      virt_tmp(a) = virt_tmp(a) + tmp
+                      !virt_tmp(a) = virt_tmp(a) + tmp
                       ! Update contribution from orbital b (only if different from a to avoid double counting)
-                      if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+                      !if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
                       ! Update contribution from orbital c (only if different from a and b)
-                      if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + tmp
+                      !if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + tmp
 
                    end do
 
@@ -881,9 +881,9 @@ contains
                 Evirt = Evirt + tmp
 
                 ! Update contribution from orbital i
-                occ_tmp(i) = occ_tmp(i) + tmp
+                occ_tmp(i) = occ_tmp(i) + abs(tmp)
                 ! Update contribution from orbital j (only if different from i to avoid double counting)
-                if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                if(i/=j) occ_tmp(j) = occ_tmp(j) + abs(tmp)
 
                 ! Contribution 4
                 ! --------------
@@ -902,9 +902,9 @@ contains
                       ! Update contribution from orbital i
                       occ_tmp(i) = occ_tmp(i) + tmp
                       ! Update contribution from orbital j (only if different from i to avoid double counting)
-                      if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                      !if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
                       ! Update contribution from orbital k (only if different from i and j)
-                      if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + tmp
+                      !if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + tmp
 
                    end do
 

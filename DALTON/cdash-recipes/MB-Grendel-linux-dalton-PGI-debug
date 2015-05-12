@@ -1,0 +1,21 @@
+#!/bin/bash
+TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonDALTONPGIDebug
+SCRATCH_DIR=/tmp/tkjaer/DaltonDALTONPGIDebug
+rm -rf $TMP_DIR 
+rm -rf $SCRATCH_DIR
+export PATH=/usr/local/torque/bin:/com/pgi/linux86-64/14.7/bin:/com/bin:/usr/local/bin:/bin:/usr/bin:$PATH
+export LD_LIBRARY_PATH=/com/pgi/linux86-64/14.7/bin:$LD_LIBRARY_PATH
+git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+cd $TMP_DIR
+
+git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
+export OMP_NUM_THREADS=1
+export DALTON_TMPDIR=$SCRATCH_DIR
+export DALTON_NUM_MPI_PROCS=1
+export CTEST_PROJECT_NAME=DALTON
+
+./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ -D BUILDNAME="MB-Grendel-linux-PGI-debug" --type=debug --check -D ENABLE_EFS=OFF  
+cd $TMP_DIR/build
+ctest --track PortlandGroupCompiler -D Nightly -L dalton -j4
+exit 0
+

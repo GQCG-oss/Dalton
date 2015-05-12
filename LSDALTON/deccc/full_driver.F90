@@ -40,8 +40,8 @@ module full
   use fullmp2 
   use full_ls_thc_rimp2Mod
 
-  public :: full_driver
-  private
+  public  :: full_driver
+  private :: mp2f12_E22X
 
 contains
 
@@ -84,6 +84,7 @@ contains
        ! run cc program
        if(DECinfo%F12) then ! F12 correction
 #ifdef MOD_UNRELEASED
+          !When the code is a production code it should be released! TK
           if(DECinfo%ccModel==MODEL_MP2) then
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
@@ -92,9 +93,6 @@ contains
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
 #else
-          if(DECinfo%ccModel==MODEL_RIMP2) then
-             call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr)
-          endif
           call lsquit('f12 not released',-1)
 #endif
        elseif(DECinfo%ccModel==MODEL_RIMP2)then
@@ -603,7 +601,6 @@ contains
        call mp2f12_Bijij_term2(Bijij_term2,Bjiij_term2,nocc,ncabsAO,Tirjk,hJir%elms)
        call mp2f12_Bijij_term3(Bijij_term3,Bjiij_term3,nocc,ncabsAO,Tijkr,hJir%elms)    
        call mp2f12_Bijij_term4(Bijij_term4,Bjiij_term4,nocc,noccfull,ncabsAO,Girjs,Krr%elms)
-
        call mp2f12_Bijij_term5(Bijij_term5,Bjiij_term5,nocc,noccfull,ncabsAO,Girjm,Grimj,Frr%elms)
        call mp2f12_Bijij_term6(Bijij_term6,Bjiij_term6,nocc,noccfull,ncabsAO,nvirt,nbasis,Gipja,Gpiaj,Fpp%elms)
        call mp2f12_Bijij_term7(Bijij_term7,Bjiij_term7,nocc,noccfull,ncabs,Gicjm,Gcimj,Fmm%elms)
@@ -646,6 +643,13 @@ contains
 
     if(DECinfo%use_canonical) then
 
+  !DO j=1,nocc
+  !     DO i=1,nocc
+  !        print *, "i j Fij(i,j): ", i,j, Fii%elms(i+(j-1)*nocc)
+  !     ENDDO
+  !  ENDDO
+
+
        if(DECinfo%F12DEBUG) then
           !> Setting Bmatrix = 0
           Bijij_debug = 0.0E0_realk
@@ -657,6 +661,9 @@ contains
           call submp2f12_EBX(E22,Bijij,Bjiij,Xijij,Xjiij,Fii%elms,nocc)
 
        endif
+
+
+
 
        if(DECinfo%F12DEBUG) then
           print *, '----------------------------------------'
