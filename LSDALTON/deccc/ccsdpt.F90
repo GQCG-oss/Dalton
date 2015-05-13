@@ -113,16 +113,6 @@ contains
 
     call time_start_phase(PHASE_WORK)
 
-!#ifdef VAR_OPENACC
-!
-!    ! probe for device type
-!    acc_device_type = acc_get_device_type()
-!
-!    ! initialize the device
-!    call acc_init(acc_device_type)
-!
-!#endif
-
     if (print_frags .and. DECinfo%pt_hack) call lsquit('print_frags .and. .PT_HACK is not allowed...',DECinfo%output) 
 
     master = .true.
@@ -776,13 +766,6 @@ contains
     ! clean up
     call mem_dealloc(eivalocc)
     call mem_dealloc(eivalvirt)
-
-!#ifdef VAR_OPENACC
-!
-!    ! shut down the device
-!    call acc_shutdown(acc_device_type)
-!
-!#endif
 
     if (master) call LSTIMER('CCSDPT_DRIVER (TOTAL)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
