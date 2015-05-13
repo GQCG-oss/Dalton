@@ -10824,7 +10824,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(tensor), intent(in) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
     logical :: SEC_occ(MyFragment%noccAOS), SEC_virt(MyFragment%nvirtAOS)
     integer :: noccAOS,nvirtAOS,i,a
@@ -10898,7 +10898,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(tensor), intent(in) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
     logical :: SEC_occ(PairFragment%noccAOS), SEC_virt(PairFragment%nvirtAOS)
     integer :: noccAOS,nvirtAOS,i,a,atomi,atoma
