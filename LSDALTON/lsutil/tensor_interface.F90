@@ -111,6 +111,7 @@ module tensor_interface_module
   public tensor_set_always_sync_true
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
   public assoc_ptr_to_buf, lspdm_init_global_buffer, lspdm_free_global_buffer
+  public tensor_flush_win
 
   private
 
@@ -221,16 +222,20 @@ contains
    tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
   end subroutine tensor_set_dil_backend
 
-  subroutine tensor_allocate_dense(T,bg)
+  subroutine tensor_allocate_dense(T,bg,change)
      implicit none
      type(tensor), intent(inout) :: T
-     logical, optional, intent(in) :: bg
-     logical :: bg_int
+     logical, optional, intent(in) :: bg, change
+     logical :: bg_int, change_int
 
      bg_int = .false.
      if(present(bg))bg_int = bg
+     change_int = .false.
+     if(present(change))change_int = change
 
      call memory_allocate_tensor_dense(T, bg_int)
+
+     if(change_int)T%itype=TT_DENSE
 
   end subroutine tensor_allocate_dense
 

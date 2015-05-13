@@ -5409,7 +5409,7 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
 
-     if(arr%itype/=TT_DENSE)then
+     if(arr%itype/=TT_DENSE.or.arr%atype=="TDAR".or.arr%atype=="TDPD")then
 
         if(an)then
            !UNLOCK ALL WINDOWS ON ALL NODES
@@ -5467,19 +5467,30 @@ module lspdm_tensor_operations_module
     call time_start_phase( PHASE_WORK )
   end subroutine
 
-  subroutine tensor_deallocate_dense(arr)
+  subroutine tensor_deallocate_dense(arr, change)
     implicit none
-    type(tensor) :: arr
+    type(tensor), intent(inout) :: arr
+    logical, intent(in), optional :: change
     integer :: a
+    logical :: change_int
     call time_start_phase( PHASE_WORK )
     call memory_deallocate_tensor_dense(arr)
     a = 1
+    change_int = .true.
+    if(present(change)) change_int = change
 #ifdef VAR_MPI
     a = infpar%lg_mynum + 1
 #endif
     if(associated(p_arr%a(arr%addr_p_arr(a))%elm1))then
       p_arr%a(arr%addr_p_arr(a))%elm1 => null()
     endif
+
+    !this is a simple solution, but will not work if itype is changed to be a
+    !pointer, which it should
+    if(change_int)then
+       arr%itype = p_arr%a(arr%addr_p_arr(a))%itype
+    endif
+
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_deallocate_dense
 
