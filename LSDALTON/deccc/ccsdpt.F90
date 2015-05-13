@@ -853,9 +853,9 @@ contains
 
     ! alloc and init stuff for preloading
     if(use_bg_buf)then
-       call mem_pseudo_alloc(vvvo_pdm_buff,int(i8*nvirt**3*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
-       call mem_pseudo_alloc(ccsd_pdm_buff,int(i8*nocc*nvirt**2*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
-       call mem_pseudo_alloc(vvoo_pdm_buff,int(i8*nvirt**2*tile_size**2,kind=8),int(i8*6*nbuffs,kind=8))
+       call mem_pseudo_alloc(vvvo_pdm_buff,int((i8*nvirt)*(i8*nvirt**2)*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
+       call mem_pseudo_alloc(ccsd_pdm_buff,int(i8*nocc*(i8*nvirt**2)*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
+       call mem_pseudo_alloc(vvoo_pdm_buff,int((i8*nvirt**2)*tile_size**2,kind=8),int(i8*6*nbuffs,kind=8))
     else
        call mem_alloc(vvvo_pdm_buff,nvirt**3*tile_size,3*nbuffs)
        call mem_alloc(ccsd_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
@@ -1057,7 +1057,7 @@ contains
              k_pos = (k_tile-1)*tile_size+1
 
              call get_tileinfo_nels_fromarr8(nelms,vvvo,i8*k_tile)
-             tile_size_tmp_k = int(nelms/((i8*nvirt)*nvirt**2))
+             tile_size_tmp_k = int(nelms/((i8*nvirt)*(i8*nvirt**2)))
 
              !FIND k in buffer
              call assoc_ptr_to_buf(k_tile,vvvo,3*nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
@@ -2701,9 +2701,9 @@ contains
 
     ! alloc and init stuff for preloading
     if( use_bg_buf )then
-       call mem_pseudo_alloc(vovv_pdm_buff,int(i8*nocc*nvirt**2*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
-       call mem_pseudo_alloc(ccsd_pdm_buff,int(i8*nvirt*nocc**2*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
-       call mem_pseudo_alloc(oovv_pdm_buff,int(i8*nocc**2*tile_size**2,kind=8),int(i8*6*nbuffs,kind=8))
+       call mem_pseudo_alloc(vovv_pdm_buff,int((i8*nocc)*(i8*nvirt**2)*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
+       call mem_pseudo_alloc(ccsd_pdm_buff,int((i8*nvirt)*nocc**2*tile_size,kind=8),int(i8*3*nbuffs,kind=8))
+       call mem_pseudo_alloc(oovv_pdm_buff,int((i8*nocc**2)*tile_size**2,kind=8),int(i8*6*nbuffs,kind=8))
     else
        call mem_alloc(vovv_pdm_buff,nocc*nvirt**2*tile_size,3*nbuffs)
        call mem_alloc(ccsd_pdm_buff,nvirt*nocc**2*tile_size,3*nbuffs)
@@ -3989,7 +3989,7 @@ contains
     ! see the ccsdpt_driver_ijk_case1 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -4156,7 +4156,7 @@ contains
     ! see the ccsdpt_driver_ijk_case1 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -4327,7 +4327,7 @@ contains
     ! see the ccsdpt_driver_abc_case1 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -4493,7 +4493,7 @@ contains
     ! see the ccsdpt_driver_abc_case1 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -4664,7 +4664,7 @@ contains
     ! see the ccsdpt_driver_ijk_case2 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -4831,7 +4831,7 @@ contains
     ! see the ccsdpt_driver_ijk_case2 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -5002,7 +5002,7 @@ contains
     ! see the ccsdpt_driver_abc_case2 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -5168,7 +5168,7 @@ contains
     ! see the ccsdpt_driver_abc_case2 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -5342,7 +5342,7 @@ contains
     ! see the ccsdpt_driver_ijk_case3 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -5635,7 +5635,7 @@ contains
     ! see the ccsdpt_driver_ijk_case3 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*nv**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -5934,7 +5934,7 @@ contains
     ! see the ccsdpt_driver_abc_case3 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -6225,7 +6225,7 @@ contains
     ! see the ccsdpt_driver_abc_case3 routine 
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_tmp,'=',trip_ampl,i8*no**3)
+    call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_tmp = trip_ampl
@@ -6675,7 +6675,7 @@ contains
                             & ovoo_tile_13,trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_ampl = trip_tmp
@@ -6773,7 +6773,7 @@ contains
                             & ovoo_tile_13,trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_ampl = trip_tmp
@@ -6875,7 +6875,7 @@ contains
                             & vovv_tile_3(:,:,vindex1,c),trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_ampl = trip_tmp
@@ -6973,7 +6973,7 @@ contains
                             & vovv(:,:,vindex1,vindex3),trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_ampl = trip_tmp
@@ -7075,7 +7075,7 @@ contains
                             & ovoo_tile_12,trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_ampl = trip_tmp
@@ -7173,7 +7173,7 @@ contains
                             & ovoo_tile_12,trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_ampl = trip_tmp
@@ -7275,7 +7275,7 @@ contains
                             & vovv_tile_2(:,:,vindex1,b),trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_ampl = trip_tmp
@@ -7372,7 +7372,7 @@ contains
                             & vovv(:,:,vindex1,vindex2),trip_tmp,handle,cublas_handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*no**3)
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*no)*no**2)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
     trip_ampl = trip_tmp
@@ -13692,7 +13692,7 @@ contains
              tile = tile + 1
 
              call get_tileinfo_nels_fromarr8(nelms,vvvo,i8*tile)
-             tile_size_tmp = nelms/(i8*nvirt**3)
+             tile_size_tmp = nelms/((i8*nvirt)*(i8*nvirt**2))
 
              n = tile_size_tmp
 
@@ -14311,7 +14311,7 @@ contains
                 tile = tile + 1
    
                 call get_tileinfo_nels_fromarr8(nelms,vovv,i8*tile)
-                tile_size_tmp = nelms/(i8*nocc*nvirt**2)
+                tile_size_tmp = nelms/(nocc*(i8*nvirt**2))
    
                 n = tile_size_tmp
    
@@ -14720,27 +14720,27 @@ contains
     ! Tmp array 1
     if (abc) then
 
-       size1 = i8*alphadim*gammadim*nbasis*nbasis
-       tmpI = i8*alphadim*gammadim*nocc*nvirt
+       size1 = (i8*alphadim*gammadim)*(i8*nbasis**2)
+       tmpI = (i8*alphadim*gammadim)*(i8*nocc*nvirt)
        size1 = max(size1,tmpI)
 ! this one is big
-       tmpI = i8*alphadim*nocc*nvirt**2
+       tmpI = (i8*alphadim*nocc)*(i8*nvirt**2)
        size1 = max(size1,tmpI)
 
     else
 
-       size1 = i8*alphadim*gammadim*nbasis*nbasis
-       tmpI = i8*nvirt**2*gammadim*alphadim
+       size1 = (i8*alphadim*gammadim)*(i8*nbasis**2)
+       tmpI = (i8*nvirt**2)*(i8*gammadim*alphadim)
        size1 = max(size1,tmpI)
-       tmpI = i8*nvirt*nocc*gammadim*alphadim
+       tmpI = (i8*nvirt*nocc)*(i8*gammadim*alphadim)
        size1 = max(size1,tmpI)
-       tmpI = i8*nvirt*nocc**2*alphadim
+       tmpI = (i8*nvirt)*(i8*nocc**2*alphadim)
        size1 = max(size1,tmpI)
 #ifdef VAR_MPI
-       tmpI = i8*nvirt**3*tile_size
+       tmpI = (i8*nvirt)*(i8*nvirt**2)*tile_size
        size1 = max(size1,tmpI)
 #else
-       tmpI = i8*nvirt**3
+       tmpI = (i8*nvirt)*(i8*nvirt**2)
        size1 = max(size1,tmpI)
 #endif
 
@@ -14749,26 +14749,26 @@ contains
     ! tmp array 2
     if (abc) then
 
-       size2 = i8*alphadim*gammadim*nbasis*nocc
-       tmpI = i8*alphadim*gammadim*nocc**2
+       size2 = (i8*alphadim*gammadim)*(i8*nbasis*nocc)
+       tmpI = (i8*alphadim*gammadim)*(i8*nocc**2)
        size2 = max(size2,tmpI)
-       tmpI = i8*alphadim*gammadim*nocc*nvirt
+       tmpI = (i8*alphadim*gammadim)*(i8*nocc*nvirt)
        size2 = max(size2,tmpI)
 #ifdef VAR_MPI
-       tmpI = i8*nocc*nvirt**2*tile_size
+       tmpI = (i8*nvirt**2)*(i8*nocc*tile_size)
        size2 = max(size2,tmpI)
 #endif
 
     else
 
-       size2 = i8*alphadim*gammadim*nbasis*nvirt
-       tmpI = i8*alphadim*gammadim*nvirt*nocc
+       size2 = (i8*alphadim*gammadim)*(i8*nbasis*nvirt)
+       tmpI = (i8*alphadim*gammadim)*(i8*nvirt*nocc)
        size2 = max(size2,tmpI)
 #ifdef VAR_MPI
-       tmpI = i8*nvirt**3*tile_size
+       tmpI = (i8*nvirt)*(i8*nvirt**2)*tile_size
        size2 = max(size2,tmpI)
 #else
-       tmpI = i8*nvirt**3
+       tmpI = (i8*nvirt)*(i8*nvirt**2)
        size2 = max(size2,tmpI)
 #endif
 
@@ -14777,15 +14777,15 @@ contains
     ! Tmp array3
     if (abc) then
 
-       size3 = i8*alphadim*gammadim*nocc**2
-       tmpI = i8*alphadim*nocc**3
+       size3 = (i8*alphadim*gammadim)*nocc**2
+       tmpI = alphadim*(i8*nocc**3)
        size3 = max(size3,tmpI)
  
     else
 
-       size3 = i8*alphadim*gammadim*nvirt**2
+       size3 = (i8*alphadim*gammadim)*(i8*nvirt**2)
 ! this one is big
-       tmpI = i8*alphadim*nvirt**3
+       tmpI = (i8*alphadim*nvirt)*(i8*nvirt**2)
        size3 = max(size3,tmpI)
 
     endif
@@ -15016,25 +15016,25 @@ contains
       mem_avail_start = 0.95 * free_cpu
 
       ! total distributed ccsd doubles ampls
-      ccsd_total = i8*nocc**2*nvirt**2
+      ccsd_total = (i8*nocc**2)*(i8*nvirt**2)
 
       ! total distributed integrals
-      vvvo_total = i8*nocc*nvirt**3
-      vvoo_total = i8*nocc**2*nvirt**2
+      vvvo_total = (i8*nocc*nvirt)*(i8*nvirt**2)
+      vvoo_total = (i8*nocc**2)*(i8*nvirt**2)
 
       ! local integrals
-      ovoo = i8*nocc**3*nvirt
+      ovoo = (i8*nocc**2)*(i8*nocc*nvirt)
 
       ! orbital energies
       eivalocc = i8*nocc
       eivalvirt = i8*nvirt
 
       ! triples amplitudes and temp array
-      trip_ampls = i8*2*nvirt**3
+      trip_ampls = 2*(i8*nvirt)*(i8*nvirt**2)
 
       ! ccsdpt intermediates
       ccsdpt_singles = i8*nocc*nvirt
-      ccsdpt_doubles = i8*2*nocc**2*nvirt**2
+      ccsdpt_doubles = (i8*nocc**2)*(i8*nvirt**2)
 
       ! temp sum of integer elements
       mem_int_tmp = ovoo + &
@@ -15075,19 +15075,19 @@ contains
          if (remainder_2 .gt. 0) num_tiles_node = num_tiles_node + 1
 
          ! calculate the PDM memory requirements for the given tile_size
-         vvvo_pdm = i8*num_tiles_node*(nvirt**3*ts)
+         vvvo_pdm = num_tiles_node*(i8*nvirt)*(i8*nvirt**2)*ts
          mem_vvvo_pdm = realk*vvvo_pdm / GB
-         vvoo_pdm = i8*num_tiles_node*(nvirt**2*ts**2)
+         vvoo_pdm = num_tiles_node*(i8*nvirt**2)*ts**2
          mem_vvoo_pdm = realk*vvoo_pdm / GB
-         ccsd_pdm = i8*num_tiles_node*(nocc*nvirt**2*ts)
+         ccsd_pdm = num_tiles_node*nocc*(i8*nvirt**2)*ts
          mem_ccsd_pdm = realk*ccsd_pdm / GB
 
          ! calculate the local memory requirements for the given tile_size and the given number of tiles
-         vvvo_local = i8*3*ijk_nbuffs*(nvirt**3*ts)
+         vvvo_local = 3*ijk_nbuffs*(i8*nvirt)*(i8*nvirt**2)*ts
          mem_vvvo_local = realk*vvvo_local / GB
-         vvoo_local = i8*6*ijk_nbuffs*(nvirt**2*ts**2)
+         vvoo_local = 6*ijk_nbuffs*(i8*nvirt**2)*ts**2
          mem_vvoo_local = realk*vvoo_local / GB
-         ccsd_local = i8*3*ijk_nbuffs*(nocc*nvirt**2*ts)
+         ccsd_local = 3*ijk_nbuffs*nocc*(i8*nvirt**2)*ts
          mem_ccsd_local = realk*ccsd_local / GB
 
          ! estimate available memory AFTER pdm allocation
@@ -15154,25 +15154,25 @@ contains
       mem_avail_start = 0.95 * free_cpu
 
       ! total distributed ccsd doubles ampls
-      ccsd_total = i8*nocc**2*nvirt**2
+      ccsd_total = (i8*nocc**2)*(i8*nvirt**2)
 
       ! total distributed integrals
-      vovv_total = i8*nocc*nvirt**3
-      oovv_total = i8*nocc**2*nvirt**2
+      vovv_total = (i8*nocc*nvirt)*(i8*nvirt**2)
+      oovv_total = (i8*nocc**2)*(i8*nvirt**2)
 
       ! local integrals
-      ooov = i8*nocc**3*nvirt
+      ooov = (i8*nocc**3)*nvirt
 
       ! orbital energies
       eivalocc = i8*nocc
       eivalvirt = i8*nvirt
 
       ! triples amplitudes and temp array
-      trip_ampls = i8*2*nocc**3
+      trip_ampls = 2*(i8*nocc**3)
 
       ! ccsdpt intermediates
       ccsdpt_singles = i8*nocc*nvirt
-      ccsdpt_doubles = i8*2*nocc**2*nvirt**2
+      ccsdpt_doubles = (i8*nocc**2)*(i8*nvirt**2)
 
       ! temp sum of integer elements
       mem_int_tmp = ooov + &
@@ -15213,19 +15213,19 @@ contains
          if (remainder_2 .gt. 0) num_tiles_node = num_tiles_node + 1
    
          ! calculate the PDM memory requirements for the given tile_size
-         vovv_pdm = i8*num_tiles_node*(nocc*nvirt**2*ts)
+         vovv_pdm = num_tiles_node*nocc*(i8*nvirt**2)*ts
          mem_vovv_pdm = realk*vovv_pdm / GB
-         oovv_pdm = i8*num_tiles_node*(nocc**2*ts**2)
+         oovv_pdm = num_tiles_node*(i8*nocc**2)*ts**2
          mem_oovv_pdm = realk*oovv_pdm / GB
-         ccsd_pdm = i8*num_tiles_node*(nvirt*nocc**2*ts)
+         ccsd_pdm = num_tiles_node*(i8*nvirt*nocc**2)*ts
          mem_ccsd_pdm = realk*ccsd_pdm / GB
 
          ! calculate the local memory requirements for the given tile_size and the given number of tiles
-         vovv_local = i8*3*abc_nbuffs*(nocc*nvirt**2*ts)
+         vovv_local = 3*abc_nbuffs*nocc*(i8*nvirt**2)*ts
          mem_vovv_local = realk*vovv_local / GB
-         oovv_local = i8*6*abc_nbuffs*(nocc**2*ts**2)
+         oovv_local = 6*abc_nbuffs*(i8*nocc**2)*ts**2
          mem_oovv_local = realk*oovv_local / GB
-         ccsd_local = i8*3*abc_nbuffs*(nvirt*nocc**2*ts)
+         ccsd_local = 3*abc_nbuffs*(i8*nvirt*nocc**2)*ts
          mem_ccsd_local = realk*ccsd_local / GB
 
          ! estimate available memory AFTER pdm allocation
