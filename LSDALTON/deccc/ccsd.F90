@@ -1100,6 +1100,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      master                   = lg_master.and.parent
 
      call get_int_dist_info(o2v2,fintel,nintel)
+    
+     print *,"WS"
 
      StartUpSlaves: if(master .and. lg_nnod>1) then
         call time_start_phase(PHASE_COMM)
@@ -1111,6 +1113,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
 #endif
+     print *," ccsd 2"
 
      !print*,"HACK:random t"
      !if(master)call random_number(t2%elm1)
@@ -1122,6 +1125,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(yv,int(nb*nv,kind=8)," NORM(yv)    :")
      endif
 
+     print *," ccsd 3"
      ! Initialize stuff
      IF(DECinfo%useIchor)THEN
         nullify(AOGammabatchinfo)
@@ -1196,6 +1200,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
      endif
 #endif
+     print *," ccsd 4"
 #ifdef VAR_MPI
      if(.not.local) then
         t2%access_type = AT_ALL_ACCESS
@@ -1217,6 +1222,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         endif
      endif
+     print *," ccsd 5"
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -1339,6 +1345,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
               & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
         ENDIF
+     print *," ccsd 6"
 
         if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
            &, 'with maximum size',MaxActualDimAlpha
@@ -1364,6 +1371,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! *  Allocate matrices used in the batched loop  *
         ! ************************************************
 
+     print *," ccsd 7"
 
         ! PRINT some information about the calculation
         ! --------------------------------------------
@@ -1416,6 +1424,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
         endif
+     print *," ccsd 8"
 
         ! Use the dense amplitudes
         ! ------------------------
@@ -5468,14 +5477,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: iter
      integer, intent(inout) :: nba,nbg,minbsize
      real(realk),intent(in) :: MemIn
-     real(realk)            :: mem_used,frac_of_total_mem,m,MemFree
+     real(realk)            :: mem_used,mem_used4,mem_used3,mem_used2,frac_of_total_mem,m,MemFree
      logical,intent(in)     :: manual,first
      type(lssetting),intent(inout) :: se
      Character,intent(in) :: is(5)
      integer(kind=8), intent(inout) :: e2a
      logical, intent(in)    :: local, mpi_split
      integer, intent(out),optional :: nbuf
-     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize,chksze
+     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize,chksze,chksze4,chksze3,chksze2
      integer :: nnod,magic,nbuffs,choice
      logical :: checkbg
      integer(kind=8) :: locally_stored_v2o2, locally_stored_tiles
@@ -5509,38 +5518,44 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         MemFree = MemIn*frac_of_total_mem
      endif
 
-     mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-     chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-     print *,"MASTER MEM 4",MemFree,mem_used," ELM ",bg_buf_size,chksze
+     mem_used4 = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+     chksze4  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
+     mem_used = mem_used4
+     chksze   = chksze4
      if (mem_used>MemFree.or.chksze>bg_buf_size)then
 #ifdef VAR_MPI
         !test for scheme with medium requirements
         scheme=3
-        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-        chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
+        mem_used3=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+        chksze3  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
            &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-        print *,"MASTER MEM 3",MemFree,mem_used," ELM ",bg_buf_size,chksze
+        mem_used = mem_used3
+        chksze   = chksze3
         if (mem_used>MemFree.or.chksze>bg_buf_size)then
            !test for scheme with low requirements
            scheme=2
-           mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-           chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
+           mem_used2=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+           chksze2  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
               &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-           print *,"MASTER MEM 2",MemFree,mem_used," ELM ",bg_buf_size,chksze
+           mem_used = mem_used2
+           chksze   = chksze2
            if (mem_used>MemFree.or.chksze>bg_buf_size)then
-              scheme=0
+              !scheme=0
               !print *,"MASTER check 0"
-              mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-              !print *,"MASTER MEM 0",MemFree,mem_used
-              !print *,"mem",MemFree
+              !mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
               if (mem_used>MemFree)then
                  write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
-                 write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')MemFree
-                 write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-                 mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,4,3,.false.,se,is)
-                 write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-                 mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,4,4,.false.,se,is)
-                 write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
+                 if( checkbg )then
+                    write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB, free buffer: ",I)')MemFree,bg_buf_size
+                    write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB, buff: ",I)')mem_used4,chksze4
+                    write(DECinfo%output,'(" Memory required in scheme 3    : ",f8.3," GB, buff: ",I)')mem_used3,chksze3
+                    write(DECinfo%output,'(" Memory required in scheme 2    : ",f8.3," GB, buff: ",I)')mem_used2,chksze2
+                 else
+                    write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB")')MemFree
+                    write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB")')mem_used4
+                    write(DECinfo%output,'(" Memory required in scheme 3    : ",f8.3," GB")')mem_used3
+                    write(DECinfo%output,'(" Memory required in scheme 2    : ",f8.3," GB")')mem_used2
+                 endif
                  call lsquit("ERROR(CCSD): there is just not enough memory&
                     & available",DECinfo%output)
               endif
