@@ -1446,9 +1446,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
      endif
 
-     if(scheme==2)then
-        call tensor_lock_wins(tpl,'s',all_nodes = .true.)
-        call tensor_lock_wins(tmi,'s',all_nodes = .true.)
+     if(scheme==2 .and. alloc_in_dummy)then
+        call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
+        call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
      endif
 
 #ifdef DIL_ACTIVE
@@ -2472,9 +2472,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      scheme=scheme_tmp !```DIL: remove
 #endif
 
-     if(scheme == 2)then
-        call tensor_unlock_wins(tpl, all_nodes = .true.)
-        call tensor_unlock_wins(tmi, all_nodes = .true.)
+
+     if(scheme == 2 .and. alloc_in_dummy)then
+        call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+        call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
      endif
 
      if(scheme==1) then
@@ -2975,9 +2976,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 
+
      !CCD can be achieved by not using singles residual updates here
      if(.not. DECinfo%CCDhack)then
-
 #ifdef VAR_MPI
         if(scheme==2)then
            call tensor_lock_wins(u2,'s', mode, all_nodes = alloc_in_dummy )
@@ -3026,6 +3027,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call dgemm('n','n',nv,no,nb,-1.0E0_realk,Had,nv,yo,nb,1.0E0_realk,omega1,nv)
 
      endif
+
 
 
      !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY

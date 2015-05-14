@@ -594,6 +594,7 @@ module cc_tools_module
       real(realk),optional :: scal
       integer :: goffs,aoffs,tlen,tred,nor,nvr
       integer(kind=8) :: s0, s2, s3
+      character(80) :: msg
 
       call time_start_phase(PHASE_WORK)
 
@@ -678,7 +679,7 @@ module cc_tools_module
          call get_I_cged(w2,w0,tred,nv)
          !(w2.2)tpl
          call tensor_gather(1.0E0_realk,tpl,0.0E0_realk,w2(tred*nvr+1:),(i8*nor)*nvr,oo=[2,1],wrk=w0,iwrk=wszes(1))
-         call tensor_flush_win(tpl)
+         if(.not.lo) call tensor_flush_win(tpl)
          !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w2):t+ [c>=d i>=j]
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3,tred)
 
@@ -693,7 +694,7 @@ module cc_tools_module
          call get_I_cged(w2,w0,tred,nv)
          !(w2.2)tmi
          call tensor_gather(1.0E0_realk,tmi,0.0E0_realk,w2(tred*nvr+1:),(i8*nor)*nvr,oo=[2,1],wrk=w0,iwrk=wszes(1))
-         call tensor_flush_win(tmi)
+         if(.not.lo) call tensor_flush_win(tmi)
          !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w2):t- [c>=d i>=j]
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3(tred*nor+1),tred)
       case default
