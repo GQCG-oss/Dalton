@@ -570,7 +570,7 @@ module cc_tools_module
       real(realk),intent(inout) :: w0(wszes(1)),w2(wszes(3)),w3(wszes(4))
       !> the t+ and t- combinations with a value of the amplitudes with the
       !diagonal elements divided by two
-      real(realk),intent(inout) :: tpl(:),tmi(:)
+      type(tensor),intent(inout) :: tpl,tmi
       !> number of occupied, virutal and ao indices
       integer, intent(in) :: no,nv,nb
       !> first alpha and first gamma indices of the current loop
@@ -642,7 +642,7 @@ module cc_tools_module
       endif
 
       select case(s)
-      case(4,3,2)
+      case(4,3)
          !!SYMMETRIC COMBINATION
          !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
          call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
@@ -652,8 +652,8 @@ module cc_tools_module
          call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
          !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
          call get_I_cged(w2,w0,tred,nv)
-         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
-         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred)
+         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl%elm1,nvr,0.0E0_realk,w3,tred)
 
          !!ANTI-SYMMETRIC COMBINATION
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
@@ -664,8 +664,38 @@ module cc_tools_module
          call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
          !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
          call get_I_cged(w2,w0,tred,nv)
-         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
-         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred)
+         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * t- [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+1),tred)
+      case(2)
+         !!SYMMETRIC COMBINATION
+         !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
+         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+         !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
+         call get_I_cged(w2,w0,tred,nv)
+         !(w2.2)tpl
+         call tensor_gather(1.0E0_realk,tpl,0.0E0_realk,w2(tred*nvr+1:),(i8*nor)*nvr,oo=[2,1],wrk=w0,iwrk=wszes(1))
+         call tensor_flush_win(tpl)
+         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w2):t+ [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3,tred)
+
+         !!ANTI-SYMMETRIC COMBINATION
+         !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
+         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
+         call get_I_cged(w2,w0,tred,nv)
+         !(w2.2)tmi
+         call tensor_gather(1.0E0_realk,tmi,0.0E0_realk,w2(tred*nvr+1:),(i8*nor)*nvr,oo=[2,1],wrk=w0,iwrk=wszes(1))
+         call tensor_flush_win(tmi)
+         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w2):t- [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3(tred*nor+1),tred)
       case default
          call lsquit("ERROR(get_a22_and_prepb22_terms_ex): wrong scheme on input",-1)
       end select
