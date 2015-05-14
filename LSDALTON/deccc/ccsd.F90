@@ -2577,8 +2577,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call lsmpi_barrier(infpar%lg_comm)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#endif
      call tensor_free(tpl)
      call tensor_free(tmi)
+#ifdef VAR_MPI
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
 
