@@ -1449,10 +1449,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
      endif
 
+#ifdef VAR_MPI
      if(scheme==2 .and. alloc_in_dummy)then
         call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
         call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
      endif
+#endif
 
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
@@ -2476,10 +2478,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
+#ifdef VAR_MPI
      if(scheme == 2 .and. alloc_in_dummy)then
         call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
      endif
+#endif
 
 
      if(scheme==1) then
