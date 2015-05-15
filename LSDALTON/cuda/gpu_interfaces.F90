@@ -92,9 +92,9 @@ contains
        character(len=1), intent(in) :: transa,transb
        integer, intent(in) :: m,n,k,lda,ldb,ldc
        integer(kind=8), intent(in) :: na,nb,nc
-       real(realk), dimension(na), intent(in)  :: a
-       real(realk), dimension(nb), intent(in)  :: b
-       real(realk), dimension(nc), intent(inout)  :: c
+       real(realk), dimension(na), intent(in), target :: a
+       real(realk), dimension(nb), intent(in), target :: b
+       real(realk), dimension(nc), intent(inout), target :: c
        real(realk), intent(in)  :: alpha,beta
 #ifdef VAR_OPENACC
        integer(kind=acc_handle_kind), intent(in) :: acc_handle
@@ -158,7 +158,7 @@ contains
 #endif
 
        ! calculate the gpu flop count
-       call addGEMM_FLOPonGPUaccouting(m,n,k,beta)
+       call addGEMM_FLOPonGPUaccouting(int(m,kind=8),int(n,kind=8),int(k,kind=8),beta)
 
 #else
 
@@ -181,9 +181,9 @@ contains
        character(len=1), intent(in) :: transa,transb
        integer, intent(in) :: m,n,k,lda,ldb,ldc
        integer(kind=8), intent(in) :: na,nb,nc
-       real(realk), dimension(na), intent(in)  :: a
-       real(realk), dimension(nb), intent(in)  :: b
-       real(kind=4), dimension(nc), intent(inout) :: c
+       real(realk), dimension(na), intent(in), target :: a
+       real(realk), dimension(nb), intent(in), target :: b
+       real(kind=4), dimension(nc), intent(inout), target :: c
        real(realk), intent(in)  :: alpha,beta
 #ifdef VAR_OPENACC
        integer(kind=acc_handle_kind), intent(in) :: acc_handle
@@ -249,7 +249,7 @@ contains
 #endif
 
        ! calculate the gpu flop count
-       call addGEMM_FLOPonGPUaccouting(m,n,k,beta)
+       call addGEMM_FLOPonGPUaccouting(int(m,kind=8),int(n,kind=8),int(k,kind=8),beta)
 
 #else
 
@@ -272,8 +272,8 @@ contains
 
        integer(kind=8), intent(in) :: n
        integer, intent(in) :: inca,incb
-       real(realk), dimension(n), intent(in)  :: a,b
-       real(realk), intent(inout) :: c
+       real(realk), dimension(n), intent(in), target :: a,b
+       real(realk), intent(inout), target :: c
        real(realk), intent(in)  :: alpha
 #ifdef VAR_OPENACC
        integer(kind=acc_handle_kind), intent(in) :: acc_handle
@@ -349,7 +349,7 @@ contains
 
     implicit none
 
-    integer, intent(in) :: M,N,K
+    integer(kind=8), intent(in) :: M,N,K
     real(realk), intent(in) :: beta
 
     IF(ABS(beta).GT.1.0E-10_realk)THEN
@@ -364,7 +364,7 @@ contains
 
     implicit none
 
-    integer, intent(in) :: K
+    integer(kind=8), intent(in) :: K
 
     ! (2*K - 1) operations [K multiplications + (K - 1) additions] + 1 final multiplication + 1 final addition
     FLOPonGPU = FLOPonGPU + (2*K + 1)
