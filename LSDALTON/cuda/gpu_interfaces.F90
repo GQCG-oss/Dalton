@@ -240,11 +240,11 @@ contains
 
 #elif defined(VAR_CUBLAS)
 
-!$acc host_data use_device(a,b,c)
-       stat = cublasSgemm_v2(cublas_handle,int(transa_2,kind=4),int(transb_2,kind=4),int(m,kind=4),int(n,kind=4),int(k,kind=4),&
-                             & real(alpha,kind=4),c_loc(real(a,kind=4)),int(lda,kind=4),c_loc(real(b,kind=4)),int(ldb,kind=4),&
-                             & real(beta,kind=4),c_loc(real(c,kind=4)),int(ldc,kind=4))
-!$acc end host_data
+!!$acc host_data use_device(a,b,c)
+!       stat = cublasSgemm_v2(cublas_handle,int(transa_2,kind=4),int(transb_2,kind=4),int(m,kind=4),int(n,kind=4),int(k,kind=4),&
+!                             & real(alpha,kind=4),c_loc(real(a,kind=4)),int(lda,kind=4),c_loc(real(b,kind=4)),int(ldb,kind=4),&
+!                             & real(beta,kind=4),c_loc(real(c,kind=4)),int(ldc,kind=4))
+!!$acc end host_data
 
 #endif
 
