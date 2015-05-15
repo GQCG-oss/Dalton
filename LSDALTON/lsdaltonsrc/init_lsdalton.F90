@@ -270,6 +270,7 @@ SUBROUTINE print_intro(lupri)
        &  ' ----------------------------------------------------------------------------',&
        &  ' Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)',&
        &  ' Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)',&
+       &  ' Pablo Baudin,            Aarhus University,         Denmark   (DEC)',&
        &  ' Sonia Coriani,           University of Trieste,     Italy     (Response)',&
        &  ' Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)',&
        &  ' Trygve Helgaker,         University of Oslo,        Norway    (Supervision)',&

@@ -158,6 +158,24 @@ module matrix_op_unres_dense
 
   end subroutine mat_unres_dense_set_from_full2
 
+!> \brief See mat_set_from_full2 in mat-operations.f90
+  subroutine mat_unres_dense_add_to_fullunres(a,alpha,afull,spin)
+     implicit none
+     real(realk), INTENT(IN) :: afull(*)
+     real(realk), intent(in) :: alpha
+     TYPE(Matrix)            :: a 
+     integer                 :: i, ndim2,spin
+
+     ndim2=a%nrow*a%ncol
+     IF(spin.EQ.1)THEN
+        CALL DAXPY(ndim2,alpha,a%elms,1,Afull,1)
+     ELSEIF(spin.EQ.2)THEN
+        CALL DAXPY(ndim2,alpha,a%elmsb,1,Afull,1)
+     ELSE
+        call lsquit('unknown spin in mat_unres_dense_to_full2',-1)
+     ENDIF
+   end subroutine mat_unres_dense_add_to_fullunres
+
 !> \brief See mat_to_full in mat-operations.f90
 !>
 !> This routine works only for square matrices -
