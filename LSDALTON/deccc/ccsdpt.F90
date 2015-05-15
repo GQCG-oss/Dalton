@@ -2178,8 +2178,8 @@ contains
     real(realk), pointer, dimension(:,:,:) :: trip_tmp, trip_ampl
     !> ccsd(t) intermediates
     real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
-    real(realk), dimension(nvirt,nvirt,nocc,nocc),optional :: ccsdpt_doubles
-    real(realk),optional :: e4
+    real(realk), dimension(nvirt,nvirt,nocc,nocc), optional :: ccsdpt_doubles
+    real(realk), optional :: e4
     logical :: full_no_frags
     !> orbital energiesi
     real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
@@ -4002,28 +4002,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o1,o3,nv,no,vvoo_tile_13(:,:,i,k),vvoo_tile_31(:,:,k,i),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4042,28 +4021,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -4077,37 +4035,12 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o1,o1,nv,no,vvoo_tile_12(:,:,i,i),vvoo_tile_12(:,:,i,i),&
                  & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
     call ccsdpt_contract_ijk_12(o3,o1,o1,nv,no,vvoo_tile_13(:,:,i,k),vvoo_tile_31(:,:,k,i),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
-
-#ifndef VAR_OPENACC
-    e4 = e4 + e4_tmp
-#endif
 
   end subroutine ccsdpt_energy_full_ijk_case1_par
 
@@ -4169,28 +4102,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4209,28 +4121,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -4244,37 +4135,12 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case1 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o1,o1,nv,no,vvoo_tile_12,vvoo_tile_12,&
                  & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
     call ccsdpt_contract_ijk_12(o3,o1,o1,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
-
-#ifndef VAR_OPENACC
-    e4 = e4 + e4_tmp
-#endif
 
   end subroutine ccsdpt_energy_full_ijk_case1_ser
 
@@ -4340,28 +4206,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case1 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4380,28 +4225,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case1 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -4415,37 +4239,12 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case1 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv_tile_12(:,:,a,a),oovv_tile_12(:,:,a,a),&
                  & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
     call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
-
-#ifndef VAR_OPENACC
-    e4 = e4 + e4_tmp
-#endif
 
   end subroutine ccsdpt_energy_full_abc_case1_par
 
@@ -4506,28 +4305,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case1 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv(:,:,v1,v3),oovv(:,:,v3,v1),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4546,28 +4324,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case1 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -4581,37 +4338,12 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case1 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv(:,:,v1,v1),oovv(:,:,v1,v1),&
                  & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
     call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv(:,:,v1,v3),oovv(:,:,v3,v1),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
-
-#ifndef VAR_OPENACC
-    e4 = e4 + e4_tmp
-#endif
 
   end subroutine ccsdpt_energy_full_abc_case1_ser
 
@@ -4677,28 +4409,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o2,o2,nv,no,vvoo_tile_23(:,:,j,j),vvoo_tile_23(:,:,j,j),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
@@ -4717,28 +4428,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o2,o1,nv,no,vvoo_tile_21(:,:,j,i),vvoo_tile_12(:,:,i,j),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -4757,32 +4447,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
-
-#ifndef VAR_OPENACC
-    e4 = e4 + e4_tmp
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
   end subroutine ccsdpt_energy_full_ijk_case2_par
 
@@ -4844,28 +4509,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o2,o2,nv,no,vvoo_tile_23,vvoo_tile_23,&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
@@ -4884,28 +4528,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -4924,32 +4547,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case2 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
-
-#ifndef VAR_OPENACC
-    e4 = e4 + e4_tmp
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
   end subroutine ccsdpt_energy_full_ijk_case2_ser
 
@@ -5015,28 +4613,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case2 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv_tile_23(:,:,b,b),oovv_tile_23(:,:,b,b),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
@@ -5055,28 +4632,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case2 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -5095,32 +4651,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case2 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
-
-#ifndef VAR_OPENACC
-    e4 = e4 + e4_tmp
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
   end subroutine ccsdpt_energy_full_abc_case2_par
 
@@ -5181,28 +4712,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case2 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv(:,:,v2,v2),oovv(:,:,v2,v2),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
@@ -5221,28 +4731,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case2 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv(:,:,v2,v1),oovv(:,:,v1,v2),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -5261,32 +4750,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-1.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case2 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
-
-#ifndef VAR_OPENACC
-    e4 = e4 + e4_tmp
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
 
   end subroutine ccsdpt_energy_full_abc_case2_ser
 
@@ -5355,28 +4819,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,8.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 8.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 4.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,8.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o2,o3,nv,no,vvoo_tile_23(:,:,j,k),vvoo_tile_32(:,:,k,j),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5395,28 +4838,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o3,o1,nv,no,vvoo_tile_31(:,:,k,i),vvoo_tile_13(:,:,i,k),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -5435,28 +4857,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o1,o2,nv,no,vvoo_tile_12(:,:,i,j),vvoo_tile_21(:,:,j,i),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5475,28 +4876,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 4) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o2,o1,nv,no,vvoo_tile_21(:,:,j,i),vvoo_tile_12(:,:,i,j),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5515,28 +4895,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 5) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o3,o2,nv,no,vvoo_tile_32(:,:,k,j),vvoo_tile_23(:,:,j,k),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5555,37 +4914,12 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 6) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o1,o3,nv,no,vvoo_tile_13(:,:,i,k),vvoo_tile_31(:,:,k,i),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
     call ccsdpt_contract_ijk_12(o2,o1,o3,nv,no,vvoo_tile_12(:,:,i,j),vvoo_tile_21(:,:,j,i),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-
-#ifndef VAR_OPENACC
-    e4 = e4 + 2.0E0_realk * e4_tmp
-#endif
 
   end subroutine ccsdpt_energy_full_ijk_case3_par
 
@@ -5648,28 +4982,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,8.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 8.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 4.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,8.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o2,o3,nv,no,vvoo_tile_23,vvoo_tile_32,&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5688,28 +5001,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o3,o1,nv,no,vvoo_tile_31,vvoo_tile_13,&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -5728,28 +5020,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o1,o2,nv,no,vvoo_tile_12,vvoo_tile_21,&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5768,28 +5039,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 4) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5808,28 +5058,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 5) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o3,o2,nv,no,vvoo_tile_32,vvoo_tile_23,&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5848,37 +5077,12 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_ijk_case3 - 6) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
     call ccsdpt_contract_ijk_12(o2,o1,o3,nv,no,vvoo_tile_12,vvoo_tile_21,&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-
-#ifndef VAR_OPENACC
-    e4 = e4 + 2.0E0_realk * e4_tmp
-#endif
 
   end subroutine ccsdpt_energy_full_ijk_case3_ser
 
@@ -5947,28 +5151,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,8.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 8.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 4.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,8.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv_tile_23(:,:,b,c),oovv_tile_32(:,:,c,b),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5987,28 +5170,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp + ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv_tile_31(:,:,c,a),oovv_tile_13(:,:,a,c),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -6027,28 +5189,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp + ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -6067,28 +5208,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 4) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -6107,28 +5227,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 5) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv_tile_32(:,:,c,b),oovv_tile_23(:,:,b,c),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -6147,37 +5246,12 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 6) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
     call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-
-#ifndef VAR_OPENACC
-    e4 = e4 + 2.0E0_realk * e4_tmp
-#endif
 
   end subroutine ccsdpt_energy_full_abc_case3_par
 
@@ -6238,28 +5312,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,8.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 8.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 1) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = 4.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,8.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv(:,:,v2,v3),oovv(:,:,v3,v2),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -6278,28 +5331,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 2) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp + ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv(:,:,v3,v1),oovv(:,:,v1,v3),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -6318,28 +5350,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,2.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 3) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp + ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv(:,:,v1,v2),oovv(:,:,v2,v1),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -6358,28 +5369,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 4) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv(:,:,v2,v1),oovv(:,:,v1,v2),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -6398,28 +5388,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 5) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv(:,:,v3,v2),oovv(:,:,v2,v3),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -6438,37 +5407,12 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    call dgemm_acc_openacc_async(handle,'n','n',1,1,no**3,-4.0E0_realk,trip_tmp,1,trip_ampl,no**3,1.0E0_realk,e4,1)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_tmp,trip_ampl,e4)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(no**3,kind=4),&
-                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(no**3,kind=4),&
-                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_energy_full_abc_case3 - 6) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(no**3,trip_tmp,1,trip_ampl,1)
-#endif
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv(:,:,v1,v3),oovv(:,:,v3,v1),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
     call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv(:,:,v1,v2),oovv(:,:,v2,v1),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
-
-#ifndef VAR_OPENACC
-    e4 = e4 + 2.0E0_realk * e4_tmp
-#endif
 
   end subroutine ccsdpt_energy_full_abc_case3_ser
 
@@ -10541,14 +9485,8 @@ contains
 
 
   !> \brief: create VIRTUAL part of a triples amplitude ([a,b,c] tuple) for a fixed [i,j,k] tuple, that is, t^{***}_{ijk}
-  !          saved as an array3 structure (amplitudes)
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
-  !> \param: oindex1, oindex2, and oindex3 are the three occupied indices of the outer loop in the ccsd(t) driver
-  !> \param: no and nv are nocc and nvirt, respectively
-  !> \param: doub_ampl are ccsd ampltidues, t^{ab}_{ij}
-  !> \param: int_virt is a v^3 part of cbai of driver routine
-  !> \param: trip holds the triples tuple [a,b,c], that is, of the size (virt)³ kept in memory
   subroutine trip_amplitudes_ijk_virt(oindex1,oindex2,oindex3,no,nv,doub_ampl_v2,int_virt_tile,trip,async_idx,cublas_handle)
 
     implicit none
@@ -10565,37 +9503,14 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
-    call dgemm_acc_openacc_async(async_idx,'n','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
-!    call dgemm_acc('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
-                      & 0.0E0_realk,trip,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(doub_ampl_v2,int_virt_tile,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
-                          & 1.0E0_realk,c_loc(doub_ampl_v2),int(nv,kind=4),c_loc(int_virt_tile),int(nv,kind=4),&
-                          & 0.0E0_realk,c_loc(trip),int(nv,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (trip_amplitudes_ijk_virt) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    call dgemm('n','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
-                   & 0.0E0_realk,trip,nv)
-#endif
+    call ls_dgemm_acc('n','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,0.0E0_realk,trip,nv,&
+                    & int(i8*nv**2,kind=8),int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),&
+                    & async_idx,cublas_handle)
 
   end subroutine trip_amplitudes_ijk_virt
 
 
   !> \brief: create OCCUPIED part of a triples amplitude ([i,j,k] tuple) for a fixed [a,b,c] tuple, that is, t^{***}_{abc}
-  !          saved as an array3 structure (amplitudes)
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
   subroutine trip_amplitudes_abc_occ(vindex1,vindex2,vindex3,no,nv,doub_ampl_o2,int_occ_tile,trip,async_idx,cublas_handle)
@@ -10614,43 +9529,16 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(doub_ampl_o2,int_occ_tile,trip)
-    call dgemm_acc_openacc_async(async_idx,'n','n',no,no**2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
-                   & 0.0E0_realk,trip,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(doub_ampl_o2,int_occ_tile,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(no**2,kind=4),int(no,kind=4),&
-                          & -1.0E0_realk,c_loc(doub_ampl_o2),int(no,kind=4),c_loc(int_occ_tile),int(no,kind=4),&
-                          & 0.0E0_realk,c_loc(trip),int(no,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (trip_amplitudes_abc_occ) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    call dgemm('n','n',no,no**2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,&
-                   & 0.0E0_realk,trip,no)
-#endif
+    call ls_dgemm_acc('n','n',no,no**2,no,-1.0E0_realk,doub_ampl_o2,no,int_occ_tile,no,0.0E0_realk,trip,no,&
+                    & int(i8*no**2,kind=8),int((i8*no**2)*no,kind=8),int((i8*no**2)*no,kind=8),&
+                    & async_idx,cublas_handle)
 
   end subroutine trip_amplitudes_abc_occ
 
 
   !> \brief: create OCCUPIED part of a triples amplitude ([a,b,c] tuple) for a fixed [i,j,k] tuple, that is, t^{***}_{ijk}
-  !          saved as an array3 structure (amplitudes)
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
-  !> \param: oindex1, oindex2, and oindex3 are the three occupied indices of the outer loop in the ccsd(t) driver
-  !> \param: no and nv are nocc and nvirt, respectively
-  !> \param: doub_ampl are ccsd ampltidues, t^{ab}_{ij}
-  !> \param: int_occ is a ov part of jaik of driver routine
-  !> \param: trip holds the triples tuple [c,a,b], that is, of the size (virt)³ kept in memory
   subroutine trip_amplitudes_ijk_occ(oindex1,oindex2,oindex3,no,nv,doub_ampl_ov2,int_occ_portion,trip,async_idx,cublas_handle)
 
     implicit none
@@ -10667,37 +9555,14 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','t',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,nv**2,&
-!    call dgemm_acc('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
-                      & 1.0E0_realk,trip,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(int_occ_portion,doub_ampl_ov2,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(1,kind=4),int(nv,kind=4),int(nv**2,kind=4),int(no,kind=4),&
-                          & -1.0E0_realk,c_loc(int_occ_portion),int(no,kind=4),c_loc(doub_ampl_ov2),int(nv**2,kind=4),&
-                          & 1.0E0_realk,c_loc(trip),int(nv,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (trip_amplitudes_ijk_occ) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    call dgemm('t','t',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,nv**2,&
-                   & 1.0E0_realk,trip,nv)
-#endif
+    call ls_dgemm_acc('t','t',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,nv**2,1.0E0_realk,trip,nv,&
+                    & int(i8*nv*no,kind=8),int((i8*nv**2)*no,kind=8),int((i8*nv**2)*nv,kind=8),&
+                    & async_idx,cublas_handle)
 
   end subroutine trip_amplitudes_ijk_occ
 
 
   !> \brief: create VIRTUAL part of a triples amplitude ([i,j,k] tuple) for a fixed [a,b,c] tuple, that is, t^{***}_{abc}
-  !          saved as an array3 structure (amplitudes)
   !> \author: Janus Juul Eriksen
   !> \date: april 2014
   subroutine trip_amplitudes_abc_virt(vindex1,vindex2,vindex3,no,nv,doub_ampl_vo2,int_virt_portion,trip,async_idx,cublas_handle)
@@ -10716,30 +9581,9 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(int_virt_portion,doub_ampl_vo2,trip)
-    call dgemm_acc_openacc_async(async_idx,'t','t',no,no**2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,no**2,&
-                   & 1.0E0_realk,trip,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(int_virt_portion,doub_ampl_vo2,trip)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(1,kind=4),int(no,kind=4),int(no**2,kind=4),int(nv,kind=4),&
-                          & 1.0E0_realk,c_loc(int_virt_portion),int(nv,kind=4),c_loc(doub_ampl_vo2),int(no**2,kind=4),&
-                          & 1.0E0_realk,c_loc(trip),int(no,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (trip_amplitudes_abc_virt) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    call dgemm('t','t',no,no**2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,no**2,&
-                   & 1.0E0_realk,trip,no)
-#endif
+    call ls_dgemm_acc('t','t',no,no**2,nv,1.0E0_realk,int_virt_portion,nv,doub_ampl_vo2,no**2,1.0E0_realk,trip,no,&
+                    & int(i8*nv*no,kind=8),int((i8*no**2)*nv,kind=8),int((i8*no**2)*no,kind=8),&
+                    & async_idx,cublas_handle)
 
   end subroutine trip_amplitudes_abc_virt
 
@@ -10950,71 +9794,19 @@ contains
     case(0)
 
        ! here, the coulumb and exchange parts will be equal and we thus only need to contract with the coulumb part. 
-
-       ! now contract coulumb term over both indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,int_normal_23,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
-!       call dgemm_acc('n','n',nv,1,nv2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,int_normal_23,T_star_o1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_23),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_11 - case 0) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',nv,1,nv**2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
-#endif
+       call ls_dgemm_acc('n','n',nv,1,nv**2,1.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),int(i8*nv,kind=8),&
+                       & async_idx,cublas_handle)
 
     case(1)
 
        ! now contract coulumb term over both indices, then contract exchange term over both indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
-!       call dgemm_acc('n','n',nv,1,nv2,&
-                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
-!       call dgemm_acc('n','n',nv,1,nv2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv**2,1.0E0_realk,T_star_o1,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_o1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
-                             & 2.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_23),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_32),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_11 - case 1) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',nv,1,nv**2,&
-                & 2.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv)
-       call dgemm('n','n',nv,1,nv**2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_32,nv**2,1.0E0_realk,T_star_o1,nv)
-#endif
-
+       call ls_dgemm_acc('n','n',nv,1,nv**2,2.0E0_realk,trip_ampl,nv,int_normal_23,nv**2,1.0E0_realk,T_star_o1,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),int(i8*nv,kind=8),&
+                       & async_idx,cublas_handle)
+       call ls_dgemm_acc('n','n',nv,1,nv**2,-1.0E0_realk,trip_ampl,nv,int_normal_32,nv**2,1.0E0_realk,T_star_o1,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),int(i8*nv,kind=8),&
+                       & async_idx,cublas_handle)
 
     end select TypeofContraction_ijk_11
 
@@ -11057,65 +9849,19 @@ contains
     case(0)
 
        ! here, the coulumb and exchange parts will be equal and we thus only need to contract with the coulumb part. 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,int_normal_23,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,int_normal_23,T_star_v1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_23),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_11 (case 0)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',no,1,no**2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
-#endif
+       call ls_dgemm_acc('n','n',no,1,no**2,1.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no,&
+                       & int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),int(i8*no,kind=8),&
+                       & async_idx,cublas_handle)
 
     case(1)
 
        ! now contract coulumb term over both indices, then contract exchange term over both indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
-                & 2.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_32,no**2,1.0E0_realk,T_star_v1,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,int_normal_23,int_normal_32,T_star_v1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
-                             & 2.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_23),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_32),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_11 (case 1)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',no,1,no**2,&
-                & 2.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no)
-       call dgemm('n','n',no,1,no**2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_32,no**2,1.0E0_realk,T_star_v1,no)
-#endif
+       call ls_dgemm_acc('n','n',no,1,no**2,2.0E0_realk,trip_ampl,no,int_normal_23,no**2,1.0E0_realk,T_star_v1,no,&
+                       & int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),int(i8*no,kind=8),&
+                       & async_idx,cublas_handle)
+       call ls_dgemm_acc('n','n',no,1,no**2,-1.0E0_realk,trip_ampl,no,int_normal_32,no**2,1.0E0_realk,T_star_v1,no,&
+                       & int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),int(i8*no,kind=8),&
+                       & async_idx,cublas_handle)
 
     end select TypeofContraction_abc_11
 
@@ -11163,68 +9909,19 @@ contains
        ! and we thus only need to contract with (-1)*coulumb part. 
 
        ! now contract coulumb term over both indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,int_normal_21,T_star_o3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
-!       call dgemm_acc('n','n',nv,1,nv2,&
-             & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,int_normal_21,T_star_o3)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_21),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_12 - case 0) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',nv,1,nv**2,&
-                & -1.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
-#endif
+       call ls_dgemm_acc('n','n',nv,1,nv**2,-1.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),int(i8*nv,kind=8),&
+                       & async_idx,cublas_handle)
 
     case(1)
 
        ! now contract coulumb term over both indices, then contract exchange term over both indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_o3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
-!       call dgemm_acc('n','n',nv,1,nv2,&
-             & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,1,nv**2,&
-!       call dgemm_acc('n','n',nv,1,nv2,&
-             & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv**2,1.0E0_realk,T_star_o3,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_o3)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
-                             & -2.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_21),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(1,kind=4),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(nv,kind=4),c_loc(int_normal_12),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o3),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_12 - case 1) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',nv,1,nv**2,&
-                & -2.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv)
-       call dgemm('n','n',nv,1,nv**2,&
-                & 1.0E0_realk,trip_ampl,nv,int_normal_12,nv**2,1.0E0_realk,T_star_o3,nv)
-#endif
+       call ls_dgemm_acc('n','n',nv,1,nv**2,-2.0E0_realk,trip_ampl,nv,int_normal_21,nv**2,1.0E0_realk,T_star_o3,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),int(i8*nv,kind=8),&
+                       & async_idx,cublas_handle)
+       call ls_dgemm_acc('n','n',nv,1,nv**2,1.0E0_realk,trip_ampl,nv,int_normal_12,nv**2,1.0E0_realk,T_star_o3,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),int(i8*nv,kind=8),&
+                       & async_idx,cublas_handle)
 
     end select TypeofContraction_ijk_12
 
@@ -11270,65 +9967,19 @@ contains
        ! and we thus only need to contract with (-1)*coulumb part. 
 
        ! now contract coulumb term over both indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,int_normal_21,T_star_v3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,int_normal_21,T_star_v3)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_12 (case 0)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',no,1,no**2,&
-                & -1.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
-#endif
+       call ls_dgemm_acc('n','n',no,1,no**2,-1.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no,&
+                       & int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),int(i8*no,kind=8),&
+                       & async_idx,cublas_handle)
 
     case(1)
 
        ! now contract coulumb term over both indices, then contract exchange term over both indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_v3)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
-                & -2.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,1,no**2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_12,no**2,1.0E0_realk,T_star_v3,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,int_normal_21,int_normal_12,T_star_v3)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
-                             & -2.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_21),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(1,kind=4),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(no,kind=4),c_loc(int_normal_12),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v3),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_12 (case 1)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',no,1,no**2,&
-                & -2.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no)
-       call dgemm('n','n',no,1,no**2,&
-                & 1.0E0_realk,trip_ampl,no,int_normal_12,no**2,1.0E0_realk,T_star_v3,no)
-#endif
+       call ls_dgemm_acc('n','n',no,1,no**2,-2.0E0_realk,trip_ampl,no,int_normal_21,no**2,1.0E0_realk,T_star_v3,no,&
+                       & int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),int(i8*no,kind=8),&
+                       & async_idx,cublas_handle)
+       call ls_dgemm_acc('n','n',no,1,no**2,1.0E0_realk,trip_ampl,no,int_normal_12,no**2,1.0E0_realk,T_star_v3,no,&
+                       & int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),int(i8*no,kind=8),&
+                       & async_idx,cublas_handle)
 
     end select TypeofContraction_abc_12
 
@@ -11384,31 +10035,9 @@ contains
 #endif
 
        ! now contract coulumb term over 2 first indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
-!       call dgemm_acc('t','n',nv,nv,nv2,&
-            & 1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_211 - case 0-1) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('t','n',nv,nv,nv**2,&
-            & 1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
-#endif
+       call ls_dgemm_acc('t','n',nv,nv,nv**2,1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),&
+                       & async_idx,cublas_handle)
 
        ! reorder to obtain exchange term
 #ifdef VAR_OPENACC
@@ -11418,31 +10047,9 @@ contains
 #endif
 
        ! now contract exchange term over 2 first indices2
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
-!       call dgemm_acc('t','n',nv,nv,nv2,&
-            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_211 - case 0-2) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('t','n',nv,nv,nv**2,&
-            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
-#endif
+       call ls_dgemm_acc('t','n',nv,nv,nv**2,-1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),&
+                       & async_idx,cublas_handle)
 
     case(1)
 
@@ -11456,31 +10063,9 @@ contains
 #endif
 
        ! now contract coulumb term over 2 first indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
-!       call dgemm_acc('t','n',nv,nv,nv2,&
-            2.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
-                             & 2.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_211 - case 1-1) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('t','n',nv,nv,nv**2,&
-            2.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
-#endif
+       call ls_dgemm_acc('t','n',nv,nv,nv**2,2.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),&
+                       & async_idx,cublas_handle)
 
        ! reorder to obtain exchange term
 #ifdef VAR_OPENACC
@@ -11490,31 +10075,9 @@ contains
 #endif
 
        ! now contract exchange term over 2 first indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
-!       call dgemm_acc('t','n',nv,nv,nv2,&
-            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o1o2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_o1o2),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_211 - case 1-2) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('t','n',nv,nv,nv**2,&
-            -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv)
-#endif
+       call ls_dgemm_acc('t','n',nv,nv,nv**2,-1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o1o2,nv,&
+                       & int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),&
+                       & async_idx,cublas_handle)
 
     end select TypeofContraction_211
 
@@ -11559,72 +10122,22 @@ contains
 
        ! now contract coulumb term over first index, then contract exchange term over first index 
        ! for this special case, we only have to subtract one coulumb term
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,&
-                      & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
-                      & trip_ampl,no,1.0E0_realk,wrk_3d,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
-                             & 1.0E0_realk,c_loc(int_virt_32),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                             & 0.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
-                             & -1.0E0_realk,c_loc(int_virt_23),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                             & 1.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_211 (case 0)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,&
-                      & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
-       call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
-                      & trip_ampl,no,1.0E0_realk,wrk_3d,nv)
-#endif
+       call ls_dgemm_acc('n','n',nv,no**2,no,1.0E0_realk,int_virt_32,nv,trip_ampl,no,0.0E0_realk,wrk_3d,nv,&
+                       & int(i8*nv*no,kind=8),int((i8*no**2)*nv,kind=8),int((i8*no**2)*nv,kind=8),&
+                       & async_idx,cublas_handle)
+       call ls_dgemm_acc('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,trip_ampl,no,1.0E0_realk,wrk_3d,nv,&
+                       & int(i8*nv*no,kind=8),int((i8*no**2)*nv,kind=8),int((i8*no**2)*nv,kind=8),&
+                       & async_idx,cublas_handle)
 
     case(1)
  
        ! now contract coulumb term over first index, next contract exchange term over first index
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,&
-                      & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
-       call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
-                      & trip_ampl,no,1.0E0_realk,wrk_3d,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(int_virt_32,int_virt_23,trip_ampl,T_star_v1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
-                             & 2.0E0_realk,c_loc(int_virt_32),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                             & 0.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
-                             & -1.0E0_realk,c_loc(int_virt_23),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                             & 1.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_211 (case 1)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,&
-                      & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
-       call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,&
-                      & trip_ampl,no,1.0E0_realk,wrk_3d,nv)
-#endif
+       call ls_dgemm_acc('n','n',nv,no**2,no,2.0E0_realk,int_virt_32,nv,trip_ampl,no,0.0E0_realk,wrk_3d,nv,&
+                       & int(i8*nv*no,kind=8),int((i8*no**2)*nv,kind=8),int((i8*no**2)*nv,kind=8),&
+                       & async_idx,cublas_handle)
+       call ls_dgemm_acc('n','n',nv,no**2,no,-1.0E0_realk,int_virt_23,nv,trip_ampl,no,1.0E0_realk,wrk_3d,nv,&
+                       & int(i8*nv*no,kind=8),int((i8*no**2)*nv,kind=8),int((i8*no**2)*nv,kind=8),&
+                       & async_idx,cublas_handle)
 
     end select TypeofContraction_abc_211
 
@@ -11670,31 +10183,9 @@ contains
 #endif
 
     ! now contract coulumb term over 2 first indices
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o3o2)
-    call dgemm_acc_openacc_async(async_idx,'t','n',nv,nv,nv**2,&
-!    call dgemm_acc('t','n',nv,nv,nv2,&
-         & -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o3o2,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_o3o2)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(nv,kind=4),int(nv,kind=4),int(nv**2,kind=4),&
-                          & -1.0E0_realk,c_loc(trip_ampl),int(nv**2,kind=4),c_loc(tmp_g),int(nv**2,kind=4),&
-                          & 1.0E0_realk,c_loc(T_star_o3o2),int(nv,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_contract_ijk_212) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    call dgemm('t','n',nv,nv,nv**2,&
-         & -1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o3o2,nv)
-#endif
+    call ls_dgemm_acc('t','n',nv,nv,nv**2,-1.0E0_realk,trip_ampl,nv**2,tmp_g,nv**2,1.0E0_realk,T_star_o3o2,nv,&
+                    & int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),int(i8*nv**2,kind=8),&
+                    & async_idx,cublas_handle)
 
   end subroutine ccsdpt_contract_ijk_212
 
@@ -11720,30 +10211,9 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(int_virt_12,trip_ampl,T_star_v3)
-    call dgemm_acc_openacc_async(async_idx,'n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,&
-                   & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(int_virt_12,trip_ampl,T_star_v3)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(nv,kind=4),int(no**2,kind=4),int(no,kind=4),&
-                          & -1.0E0_realk,c_loc(int_virt_12),int(nv,kind=4),c_loc(trip_ampl),int(no,kind=4),&
-                          & 0.0E0_realk,c_loc(wrk_3d),int(nv,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_contract_abc_212) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    call dgemm('n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,&
-                   & trip_ampl,no,0.0E0_realk,wrk_3d,nv)
-#endif
+    call ls_dgemm_acc('n','n',nv,no**2,no,-1.0E0_realk,int_virt_12,nv,trip_ampl,no,0.0E0_realk,wrk_3d,nv,&
+                    & int(i8*no*nv,kind=8),int((i8*no**2)*nv,kind=8),int((i8*no**2)*nv,kind=8),&
+                    & async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,wrk_3d,nv,no,no,[3,2,1],1.0E0_realk,T_star_v3,async_idx)
@@ -11793,76 +10263,22 @@ contains
 
        ! now contract coulumb term over first index, then contract exchange term over first index 
        ! for this special case, we only have to subtract one coulumb term
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,&
-!       call dgemm_acc('n','n',no,nv2,nv,-1.0E0_realk,int_occ_32,no,&
-                      & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
-!       call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
-                      & trip_ampl,nv,1.0E0_realk,wrk_3d,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
-                             & -1.0E0_realk,c_loc(int_occ_32),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                             & 0.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
-                             & 1.0E0_realk,c_loc(int_occ_23),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                             & 1.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_221 - case 0) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,&
-                      & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
-       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
-                      & trip_ampl,nv,1.0E0_realk,wrk_3d,no)
-#endif
+       call ls_dgemm_acc('n','n',no,nv**2,nv,-1.0E0_realk,int_occ_32,no,trip_ampl,nv,0.0E0_realk,wrk_3d,no,&
+                       & int(i8*no*nv,kind=8),int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),&
+                       & async_idx,cublas_handle)
+       call ls_dgemm_acc('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,trip_ampl,nv,1.0E0_realk,wrk_3d,no,&
+                       & int(i8*no*nv,kind=8),int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),&
+                       & async_idx,cublas_handle)
 
     case(1)
  
        ! now contract coulumb term over first index, next contract exchange term over first index
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,&
-!       call dgemm_acc('n','n',no,nv2,nv,-2.0E0_realk,int_occ_32,no,&
-                      & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
-       call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
-!       call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_23,no,&
-                      & trip_ampl,nv,1.0E0_realk,wrk_3d,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(int_occ_32,int_occ_23,trip_ampl,T_star_o1)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
-                             & -2.0E0_realk,c_loc(int_occ_32),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                             & 0.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
-                             & 1.0E0_realk,c_loc(int_occ_23),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                             & 1.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_ijk_221 - case 1) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,&
-                      & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
-       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,&
-                      & trip_ampl,nv,1.0E0_realk,wrk_3d,no)
-#endif
+       call ls_dgemm_acc('n','n',no,nv**2,nv,-2.0E0_realk,int_occ_32,no,trip_ampl,nv,0.0E0_realk,wrk_3d,no,&
+                       & int(i8*no*nv,kind=8),int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),&
+                       & async_idx,cublas_handle)
+       call ls_dgemm_acc('n','n',no,nv**2,nv,1.0E0_realk,int_occ_23,no,trip_ampl,nv,1.0E0_realk,wrk_3d,no,&
+                       & int(i8*no*nv,kind=8),int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),&
+                       & async_idx,cublas_handle)
 
     end select TypeofContraction_221
 
@@ -11917,30 +10333,9 @@ contains
        call array_reorder_3d(1.0E0_realk,int_occ_tile,no,no,no,[1,3,2],0.0E0_realk,tmp_g)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
-            & -1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
-                             & -1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_221 (case 0-1)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('t','n',no,no,no**2, &
-            & -1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
-#endif
+       call ls_dgemm_acc('t','n',no,no,no**2,-1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no,&
+                       & int((i8*no**2)*no,kind=8),int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),&
+                       & async_idx,cublas_handle)
 
        ! reorder to obtain exchange term
 #ifdef VAR_OPENACC
@@ -11949,30 +10344,9 @@ contains
        call array_reorder_3d(1.0E0_realk,int_occ_tile,no,no,no,[3,1,2],0.0E0_realk,tmp_g)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2, &
-            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_221 (case 0-2)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('t','n',no,no,no**2,&
-            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
-#endif
+       call ls_dgemm_acc('t','n',no,no,no**2,1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no,&
+                       & int((i8*no**2)*no,kind=8),int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),&
+                       & async_idx,cublas_handle)
 
     case(1)
 
@@ -11983,30 +10357,9 @@ contains
        call array_reorder_3d(1.0E0_realk,int_occ_tile,no,no,no,[1,3,2],0.0E0_realk,tmp_g)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
-            -2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
-                             & -2.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_221 (case 1-1)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('t','n',no,no,no**2,&
-            -2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
-#endif
+       call ls_dgemm_acc('t','n',no,no,no**2,-2.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no,&
+                       & int((i8*no**2)*no,kind=8),int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),&
+                       & async_idx,cublas_handle)
 
        ! reorder to obtain exchange term
 #ifdef VAR_OPENACC
@@ -12015,30 +10368,9 @@ contains
        call array_reorder_3d(1.0E0_realk,int_occ_tile,no,no,no,[3,1,2],0.0E0_realk,tmp_g)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
-            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v1v2)
-       stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
-                             & 1.0E0_realk,c_loc(T_star_v1v2),int(no,kind=4))
-!$acc end host_data
-
-!       if (stat .ne. 0 ) then
-!          print *, "stat (ccsdpt_contract_abc_221 (case 1-2)) = ",stat
-!          stop
-!       end if
-
-#endif
-#else
-       call dgemm('t','n',no,no,no**2, &
-            1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no)
-#endif
+       call ls_dgemm_acc('t','n',no,no,no**2,1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v1v2,no,&
+                       & int((i8*no**2)*no,kind=8),int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),&
+                       & async_idx,cublas_handle)
 
     end select TypeofContraction_abc_221
 
@@ -12068,31 +10400,9 @@ contains
     integer*4 :: stat
 
     ! contract coulumb term over first index
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(int_occ_12,trip_ampl,T_star_o3)
-    call dgemm_acc_openacc_async(async_idx,'n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,&
-!    call dgemm_acc('n','n',no,nv2,nv,1.0E0_realk,int_occ_12,no,&
-                   & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(int_occ_12,trip_ampl,T_star_o3)
-    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(no,kind=4),int(nv**2,kind=4),int(nv,kind=4),&
-                          & 1.0E0_realk,c_loc(int_occ_12),int(no,kind=4),c_loc(trip_ampl),int(nv,kind=4),&
-                          & 0.0E0_realk,c_loc(wrk_3d),int(no,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_contract_ijk_222) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,&
-                   & trip_ampl,nv,0.0E0_realk,wrk_3d,no)
-#endif
+    call ls_dgemm_acc('n','n',no,nv**2,nv,1.0E0_realk,int_occ_12,no,trip_ampl,nv,0.0E0_realk,wrk_3d,no,&
+                    & int(i8*nv*no,kind=8),int((i8*nv**2)*nv,kind=8),int((i8*nv**2)*nv,kind=8),&
+                    & async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,wrk_3d,no,nv,nv,[3,2,1],1.0E0_realk,T_star_o3,async_idx)
@@ -12131,30 +10441,9 @@ contains
     call array_reorder_3d(1.0E0_realk,int_occ_tile,no,no,no,[1,3,2],0.0E0_realk,tmp_g)
 #endif
 
-#ifdef VAR_OPENACC
-#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v3v2)
-    call dgemm_acc_openacc_async(async_idx,'t','n',no,no,no**2,&
-         & 1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v3v2,no)
-!$acc end host_data
-#elif defined(VAR_CUBLAS)
-
-!$acc host_data use_device(trip_ampl,tmp_g,T_star_v3v2)
-    stat = cublasDgemm_v2(cublas_handle,int(1,kind=4),int(0,kind=4),int(no,kind=4),int(no,kind=4),int(no**2,kind=4),&
-                          & 1.0E0_realk,c_loc(trip_ampl),int(no**2,kind=4),c_loc(tmp_g),int(no**2,kind=4),&
-                          & 1.0E0_realk,c_loc(T_star_v3v2),int(no,kind=4))
-!$acc end host_data
-
-!    if (stat .ne. 0 ) then
-!       print *, "stat (ccsdpt_contract_abc_222) = ",stat
-!       stop
-!    end if
-
-#endif
-#else
-    call dgemm('t','n',no,no,no**2,&
-         & 1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v3v2,no)
-#endif
+    call ls_dgemm_acc('t','n',no,no,no**2,1.0E0_realk,trip_ampl,no**2,tmp_g,no**2,1.0E0_realk,T_star_v3v2,no,&
+                    & int((i8*no**2)*no,kind=8),int((i8*no**2)*no,kind=8),int(i8*no**2,kind=8),&
+                    & async_idx,cublas_handle)
 
   end subroutine ccsdpt_contract_abc_222
 
