@@ -343,10 +343,8 @@ c    2  icons,igu,ircru,is,isf,itl,itu,jc,jcons,jgu,jrcru,js,jsf,jtl,
 c    3  jtu,lit,ljt,nblt1,nc2,nc1,nop,ntij1,ntij2,esf,esfc,igueq1,jgueq1
 c     common /ccali / crda(4,3),crdb(4,3),xka,yka,zka,ca,xkb,ykb,zkb,
 c    1   cb,tai,taj,aa,taa,aarr1,aarr2,xk,yk,zk,fctr2,ltot1,kcrs,lcru
-c*    common/qstore/q(7,7),alpha,rk,t
       common/qstore/q(9,9),alpha,rk,t
 c     dimension ccr(2), gout(2), ncr(2), nkcrl(6,2), nkcru(6,2), zcr(2)
-c*    dimension ang(7,7), qsum(7,7), xab(7), yab(7), zab(7)
       dimension ang(9,9), qsum(9,9), xab(9), yab(9), zab(9)
       dimension nap(35), lap(35), map(35)
       data nap /0,1,0,0,2,0,0,1,1,0,3,0,0,2,2,1,0,1,0,1,
@@ -1079,12 +1077,8 @@ c*    dimension abess(20,7), bbess(20,7), ptpow(20,7), w(35), z(35)
 c     ----- partially asymptotic form for q(n,la1,lb1) -----
 c     ----- scaled by exp(-xkb*xkb/(4*alpha)) to prevent overflows
       implicit double precision (a-h,o-z)
-c*    common/qstore/dum1(49),alpha,xk,t
-      common/qstore/dum1(81),alpha,xk,t
+      common/qstore/q(9,9),alpha,xk,t
       common /dfac/ dfac(29)
-c*    common /dfac/ dfac(23)
-c*    dimension qsum(7,7,2)
-c*    dimension fctr(7), sum(7), term(7)
       dimension qsum(9,9,9)
       dimension fctr(9), sum(9), term(9)
       data a0,accrcy,a1s4,a1s2,a1 /0.0d0,1.0d-13,0.25d0,0.5d0,1.0d0/
@@ -1192,7 +1186,6 @@ c     ----- increment j for next term -----
 c     ----- controls computation of q(n,l) by recurrence -----
       implicit double precision (a-h,o-z)
       common /pifac/ pi, sqpi2
-c*    common/qstore/q(7,7),alpha,xk,t
       common/qstore/q(9,9),alpha,xk,t
       data a0, a1s2, a1, a2, a3 /0.0d0, 0.5d0, 1.0d0, 2.0d0, 3.0d0/
       np1l=mod(npi,2)+1
@@ -1310,9 +1303,7 @@ c     ----- increase dfac array to raise n, l restrictions -----
       implicit double precision (a-h,o-z)
       common /pifac/ pi, sqpi2
       common /dfac/ dfac(29)
-c*    common /dfac/ dfac(23)
-c*    common/qstore/dum1(49),alpha,xk,t
-      common/qstore/dum1(81),alpha,xk,t
+      common/qstore/q(9,9),alpha,xk,t
       dimension tmin(9)
       data tmin/31.0d0,28.0d0,25.0d0,23.0d0,22.0d0,20.0d0,19.0d0,
      1   18.0d0,15.0d0/
