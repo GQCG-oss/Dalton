@@ -567,7 +567,8 @@ module cc_tools_module
       !> workspace with exchange integrals
       real(realk),intent(inout) :: w1(wszes(2))
       !> empty workspace of correct sizes
-      real(realk),intent(inout) :: w0(wszes(1)),w2(wszes(3)),w3(wszes(4))
+      real(realk),intent(inout),target :: w0(wszes(1)),w2(wszes(3))
+      real(realk),intent(inout) :: w3(wszes(4))
       !> the t+ and t- combinations with a value of the amplitudes with the
       !diagonal elements divided by two
       type(tensor),intent(inout) :: tpl,tmi
@@ -595,8 +596,14 @@ module cc_tools_module
       integer :: goffs,aoffs,tlen,tred,nor,nvr
       integer(kind=8) :: s0, s2, s3
       character(80) :: msg
+      real(realk), pointer :: buf(:)
+      integer(kind=8) :: nbuf
 
       call time_start_phase(PHASE_WORK)
+
+      s0 = wszes(1)
+      s2 = wszes(3)
+      s3 = wszes(4)
 
       nor=(no*(no+1))/2
       nvr=(nv*(nv+1))/2
@@ -647,64 +654,71 @@ module cc_tools_module
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I+ [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] + (w2):I[beta delta alpha gamma]
-         call get_I_plusminus_le(w0,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
-         !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
-         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
-         !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-         !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
-         call get_I_cged(w2,w0,tred,nv)
+         !(w0):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
+         call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
+         !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
+         call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
+         !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*tred)
+         !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
+         call get_I_cged(w0,w2,tred,nv)
          !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
-         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl%elm1,nvr,0.0E0_realk,w3,tred)
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,tpl%elm1,nvr,0.0E0_realk,w3,tred)
 
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I- [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] - (w2):I[beta delta alpha gamma]
-         call get_I_plusminus_le(w0,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
-         !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
-         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
-         !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
-         call get_I_cged(w2,w0,tred,nv)
-         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * t- [c>=d i>=j]
-         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+1),tred)
+         !(w0):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
+         call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
+         !(w0):I- [delta alpha<=gamma c] = (w2):I- [beta delta alpha<=gamma] * Lambda^h[beta c]
+         call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
+         !(w2):I- [alpha<=gamma c d] = (w0):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*tred)
+         !(w0):I- [alpha<=gamma c<=d] <= (w2):I- [alpha<=gamma c d]
+         call get_I_cged(w0,w2,tred,nv)
+         !(w3.2):sigma- [alpha<=gamma i<=j] = (w0):I- [alpha<=gamma c>=d] * t- [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+1),tred)
       case(2)
+
+         if( s0 - tred*nvr > s2 - nor*nvr)then
+            buf  => w0(tred*nvr+1:)
+            nbuf = s0 - tred*nvr
+         else
+            buf  => w2(nor*nvr+1:)
+            nbuf = s2 - nor*nvr
+         endif
+
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          !(w0):I+ [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] + (w2):I[beta delta alpha gamma]
-         call get_I_plusminus_le(w0,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
-         !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
-         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
+         !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
+         call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
          !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-         !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
-         call get_I_cged(w2,w0,tred,nv)
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*tred)
+         !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
+         call get_I_cged(w0,w2,tred,nv)
          !(w2.2)tpl
-         call tensor_gather(1.0E0_realk,tpl,0.0E0_realk,w2(tred*nvr+1:),(i8*nor)*nvr,oo=[2,1],wrk=w0,iwrk=wszes(1))
-         if(.not.lo) call tensor_flush_win(tpl)
+         call tensor_gather(1.0E0_realk,tpl,0.0E0_realk,w2,(i8*nor)*nvr,oo=[2,1],wrk=buf,iwrk=nbuf)
          !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w2):t+ [c>=d i>=j]
-         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3,tred)
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,w2,nvr,0.0E0_realk,w3,tred)
 
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          !(w0):I- [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] - (w2):I[beta delta alpha gamma]
-         call get_I_plusminus_le(w0,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
-         !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
-         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
-         !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
-         call get_I_cged(w2,w0,tred,nv)
-         !(w2.2)tmi
-         call tensor_gather(1.0E0_realk,tmi,0.0E0_realk,w2(tred*nvr+1:),(i8*nor)*nvr,oo=[2,1],wrk=w0,iwrk=wszes(1))
-         if(.not.lo) call tensor_flush_win(tmi)
+         call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
+         !(w0):I- [delta alpha<=gamma c] = (w2):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
+         !(w2):I- [alpha<=gamma c d] = (w0):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*tred)
+         !(w0):I- [alpha<=gamma c<=d] <= (w2):I- [alpha<=gamma c d]
+         call get_I_cged(w0,w2,tred,nv)
+         !(w2)tmi
+         call tensor_gather(1.0E0_realk,tmi,0.0E0_realk,w2,(i8*nor)*nvr,oo=[2,1],wrk=buf,iwrk=nbuf)
          !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w2):t- [c>=d i>=j]
-         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3(tred*nor+1),tred)
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,w2,nvr,0.0E0_realk,w3(tred*nor+1),tred)
       case default
          call lsquit("ERROR(get_a22_and_prepb22_terms_ex): wrong scheme on input",-1)
       end select
@@ -712,9 +726,6 @@ module cc_tools_module
       !COMBINE THE TWO SIGMAS OF W3 IN W2
       !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
-      s0 = wszes(1)
-      s2 = wszes(3)
-      s3 = wszes(4)
       call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
          &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))
 
@@ -773,6 +784,10 @@ module cc_tools_module
 
       call time_start_phase(PHASE_WORK)
 
+      s0 = wszes(1)
+      s2 = wszes(3)
+      s3 = wszes(4)
+
       nor=(no*(no+1))/2
       nvr=(nv*(nv+1))/2
 
@@ -823,15 +838,15 @@ module cc_tools_module
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
-         !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
-         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
-         !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-         !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
-         call get_I_cged(w2,w0,tred,nv)
-         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
-!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred) !`DIL: replace
+         call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
+         !(w0):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
+         !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*tred)
+         !(w0):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
+         call get_I_cged(w0,w2,tred,nv)
+         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w0):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
+!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,tpl,nvr,0.0E0_realk,w3,tred) !`DIL: replace
          if(DIL_DEBUG) then !`DIL: Tensor contraction 6
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 6:",3(1x,i7))')&
           &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
@@ -844,7 +859,7 @@ module cc_tools_module
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: DA: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Destination arg set failed!',-1)
          tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nvr,INTD)/)
-         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,w2)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,w0)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: LA: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Left arg set failed!',-1)
          call dil_set_tens_contr_args(tch,'r',errc,tens_distr=tpl)
@@ -864,15 +879,15 @@ module cc_tools_module
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
-         !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
-         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
-         !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
-         call get_I_cged(w2,w0,tred,nv)
-         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
-!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred) !`DIL replace
+         call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
+         !(w0):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
+         !(w2):I- [alpha<=gamma c d] = (w0):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*tred)
+         !(w0):I- [alpha<=gamma c<=d] <= (w2):I- [alpha<=gamma c d]
+         call get_I_cged(w0,w2,tred,nv)
+         !(w3.2):sigma- [alpha<=gamma i<=j] = (w0):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
+!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred) !`DIL replace
          if(DIL_DEBUG) then !`DIL: Tensor contraction 7
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 7:",3(1x,i7))')&
           &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
@@ -885,7 +900,7 @@ module cc_tools_module
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: DA: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Destination arg set failed!',-1)
          tens_rank=2; tens_dims(1:tens_rank)=(/int(tred,INTD),int(nvr,INTD)/)
-         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,w2)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_rank,tens_dims,w0)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: LA: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Left arg set failed!',-1)
          call dil_set_tens_contr_args(tch,'r',errc,tens_distr=tmi)
@@ -907,9 +922,6 @@ module cc_tools_module
       !COMBINE THE TWO SIGMAS OF W3 IN W2
       !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
-      s0 = wszes(1)
-      s2 = wszes(3)
-      s3 = wszes(4)
       call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
          &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,&
          &sio4_ilej=(s/=2.and.s/=1),o2tens=o2ilej)
@@ -1620,11 +1632,10 @@ module cc_tools_module
    !> \brief Construct symmetric and antisymmentric combinations of an itegral matrix 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine get_I_plusminus_le(w0,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,s0,s2,qu,quarry)
+   subroutine get_I_plusminus_le(w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,s2)
       implicit none
-      integer(kind=8), intent(in) :: s0,s2
+      integer(kind=8), intent(in) :: s2
       !> blank workspace
-      real(realk),intent(inout) :: w0(s0)
       real(realk),intent(inout),target :: w2(s2)
       !> integer specifying the first element in alpha and gamma batch
       integer,intent(in) :: fa,fg
@@ -1640,15 +1651,12 @@ module cc_tools_module
       integer,intent(in) :: goffs
       !> character specifying which operation to use
       character, intent(in) :: op
-      !> query the array sizes
-      logical, intent(in), optional :: qu
-      integer(kind=8), intent(inout), optional :: quarry(3)
       integer :: i,alpha,beta,gamm,delta,cagc,cagi,bs,bctr
       integer :: alpha_b,beta_b,gamm_b,delta_b,elements,aleg
       integer :: globg, globa, loca,eldiag,elsqre,nbnb,nrnb
       real(realk) ::chk,chk2,el
       real(realk),pointer :: trick(:,:,:)
-      logical :: modb,query
+      logical :: modb
       procedure(ab_eq_c), pointer :: a_op_b => null()
 
       select case(op)
@@ -1660,9 +1668,6 @@ module cc_tools_module
          call lsquit("ERROR(get_I_plusminus_le): wrong op on input",-1)
       end select
 
-      query = .false.
-      if(present(qu).and.present(quarry)) query = qu
-
       bs=int(sqrt(((8.0E6_realk)/1.6E1_realk)))
       !bs=5
       !print *,"block size",bs,(bs*bs*8)/1024.0E0_realk
@@ -1671,101 +1676,90 @@ module cc_tools_module
       bctr = bs-1
       cagi=tred
 
-      if(query)then
-         !IMPORTANT:
-         !Make sure these sizes are up to date
-         quarry(1) = max(quarry(1),(i8*la*nb)*lg*nb)
-         quarry(2) = max(quarry(2),(i8*la*nb)*lg*nb)
-         quarry(3) = max(quarry(3),(i8*nb*nb)*cagi)
-      else
 #ifdef VAR_PTR_RESHAPE
-         trick(1:nb,1:nb,1:cagi) => w2
+      trick(1:nb,1:nb,1:cagi) => w2
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
-         call c_f_pointer(c_loc(w2(1)),trick,[nb,nb,cagi])
+      call c_f_pointer(c_loc(w2(1)),trick,[nb,nb,cagi])
 #else
-         call lsquit('ERROR(get_I_plusminus_le): unable to reshape pointers!',-1)
+      call lsquit('ERROR(get_I_plusminus_le): unable to reshape pointers!',-1)
 #endif
-         aleg=0
+      aleg=0
 
-         do gamm=0,lg-1
-            do alpha=0,la-1
-               if(fa+alpha<=fg+gamm)then
-                  !aleg = (alpha+(gamm*(gamm+1))/2) 
-                  eldiag = aleg*nb*nb
-                  elsqre = alpha*nb*nb+gamm*nb*nb*la
-                  !print *,alpha,gamm,1+eldiag,nb*nb+eldiag,1+elsqre,nb*nb+elsqre,aleg,cagi,nb*nb
-                  if(fa+alpha==fg+gamm) call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
-                  call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
-                  !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-                  !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb,a_op_b)&
-                  !$OMP DEFAULT(NONE)
-                  if(nbnb>0)then
-                     !$OMP DO
-                     do delta_b=1,nbnb,bs
-                        do beta_b=delta_b+bs,nbnb,bs
-                           do delta=0,bctr
-                              do beta=0,bctr
-                                 el=trick(beta+beta_b,delta_b+delta,aleg+1)
-                                 trick(beta+beta_b,delta_b+delta,aleg+1)=&
-                                    &a_op_b(trick(delta_b+delta,beta+beta_b,aleg+1),trick(beta+beta_b,delta_b+delta,aleg+1))
-                                 trick(delta_b+delta,beta+beta_b,aleg+1)=a_op_b(el,trick(delta_b+delta,beta+beta_b,aleg+1))
-                              enddo
-                           enddo
-                        enddo
-                     enddo
-                     !$OMP END DO NOWAIT
-                  endif
-                  if(nbnb>0.and.modb)then
-                     !$OMP DO
-                     do delta_b=1,nbnb,bs
+      do gamm=0,lg-1
+         do alpha=0,la-1
+            if(fa+alpha<=fg+gamm)then
+               !aleg = (alpha+(gamm*(gamm+1))/2) 
+               eldiag = aleg*nb*nb
+               elsqre = alpha*nb*nb+gamm*nb*nb*la
+               !print *,alpha,gamm,1+eldiag,nb*nb+eldiag,1+elsqre,nb*nb+elsqre,aleg,cagi,nb*nb
+               if(fa+alpha==fg+gamm) call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
+               call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
+               !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
+               !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb,a_op_b)&
+               !$OMP DEFAULT(NONE)
+               if(nbnb>0)then
+                  !$OMP DO
+                  do delta_b=1,nbnb,bs
+                     do beta_b=delta_b+bs,nbnb,bs
                         do delta=0,bctr
-                           do beta=nbnb+1,nb
-                              el=trick(beta,delta_b+delta,aleg+1)
-                              trick(beta,delta_b+delta,aleg+1)=&
-                                 &a_op_b(trick(delta_b+delta,beta,aleg+1),trick(beta,delta_b+delta,aleg+1))
-                              trick(delta_b+delta,beta,aleg+1)=a_op_b(el,trick(delta_b+delta,beta,aleg+1))
+                           do beta=0,bctr
+                              el=trick(beta+beta_b,delta_b+delta,aleg+1)
+                              trick(beta+beta_b,delta_b+delta,aleg+1)=&
+                                 &a_op_b(trick(delta_b+delta,beta+beta_b,aleg+1),trick(beta+beta_b,delta_b+delta,aleg+1))
+                              trick(delta_b+delta,beta+beta_b,aleg+1)=a_op_b(el,trick(delta_b+delta,beta+beta_b,aleg+1))
                            enddo
                         enddo
                      enddo
-                     !$OMP END DO NOWAIT
-                  endif
-                  if(nbnb>0)then
-                     !$OMP DO
-                     do delta_b=1,nbnb,bs
-                        do delta=0,bctr
-                           do beta=delta+1,bctr
-                              el=trick(beta+delta_b,delta_b+delta,aleg+1)
-                              trick(beta+delta_b,delta_b+delta,aleg+1)=&
-                                 &a_op_b(trick(delta_b+delta,beta+delta_b,aleg+1),trick(beta+delta_b,delta_b+delta,aleg+1))
-                              trick(delta_b+delta,beta+delta_b,aleg+1)=a_op_b(el,trick(delta_b+delta,beta+delta_b,aleg+1))
-                           enddo
-                           trick(delta+delta_b,delta_b+delta,aleg+1)=&
-                              &a_op_b(trick(delta_b+delta,delta+delta_b,aleg+1),trick(delta+delta_b,delta_b+delta,aleg+1))
-                        enddo
-                     enddo
-                     !$OMP END DO NOWAIT
-                  endif
-                  !$OMP END PARALLEL 
-                  if(modb)then
-                     do delta=nbnb+1,nb
-                        do beta=delta+1,nb
-                           el=trick(beta,delta,aleg+1)
-                           trick(beta,delta,aleg+1)=a_op_b(trick(delta,beta,aleg+1),trick(beta,delta,aleg+1))
-                           trick(delta,beta,aleg+1)=a_op_b(el,trick(delta,beta,aleg+1))
-                        enddo
-                        trick(delta,delta,aleg+1)=a_op_b(trick(delta,delta,aleg+1),trick(delta,delta,aleg+1))
-                     enddo
-                  endif
-                  aleg=aleg+1
+                  enddo
+                  !$OMP END DO NOWAIT
                endif
-            enddo
+               if(nbnb>0.and.modb)then
+                  !$OMP DO
+                  do delta_b=1,nbnb,bs
+                     do delta=0,bctr
+                        do beta=nbnb+1,nb
+                           el=trick(beta,delta_b+delta,aleg+1)
+                           trick(beta,delta_b+delta,aleg+1)=&
+                              &a_op_b(trick(delta_b+delta,beta,aleg+1),trick(beta,delta_b+delta,aleg+1))
+                           trick(delta_b+delta,beta,aleg+1)=a_op_b(el,trick(delta_b+delta,beta,aleg+1))
+                        enddo
+                     enddo
+                  enddo
+                  !$OMP END DO NOWAIT
+               endif
+               if(nbnb>0)then
+                  !$OMP DO
+                  do delta_b=1,nbnb,bs
+                     do delta=0,bctr
+                        do beta=delta+1,bctr
+                           el=trick(beta+delta_b,delta_b+delta,aleg+1)
+                           trick(beta+delta_b,delta_b+delta,aleg+1)=&
+                              &a_op_b(trick(delta_b+delta,beta+delta_b,aleg+1),trick(beta+delta_b,delta_b+delta,aleg+1))
+                           trick(delta_b+delta,beta+delta_b,aleg+1)=a_op_b(el,trick(delta_b+delta,beta+delta_b,aleg+1))
+                        enddo
+                        trick(delta+delta_b,delta_b+delta,aleg+1)=&
+                           &a_op_b(trick(delta_b+delta,delta+delta_b,aleg+1),trick(delta+delta_b,delta_b+delta,aleg+1))
+                     enddo
+                  enddo
+                  !$OMP END DO NOWAIT
+               endif
+               !$OMP END PARALLEL 
+               if(modb)then
+                  do delta=nbnb+1,nb
+                     do beta=delta+1,nb
+                        el=trick(beta,delta,aleg+1)
+                        trick(beta,delta,aleg+1)=a_op_b(trick(delta,beta,aleg+1),trick(beta,delta,aleg+1))
+                        trick(delta,beta,aleg+1)=a_op_b(el,trick(delta,beta,aleg+1))
+                     enddo
+                     trick(delta,delta,aleg+1)=a_op_b(trick(delta,delta,aleg+1),trick(delta,delta,aleg+1))
+                  enddo
+               endif
+               aleg=aleg+1
+            endif
          enddo
+      enddo
 
-         call array_reorder_3d(1.0E0_realk,w2,nb,nb,cagi,[2,3,1],0.0E0_realk,w0)
-         trick => null()
-
-      endif
-
+      trick => null()
 
 
    end subroutine get_I_plusminus_le

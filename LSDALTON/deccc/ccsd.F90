@@ -8294,7 +8294,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==2)then
            maxsize64 = max(maxsize64,int((no*no*no)*no,kind=8))
            maxsize64 = max(maxsize64,int((no*no*no)*nbg,kind=8))
-           maxsize64 = max(maxsize64,int((nba*nbg)*nvr+nor*nvr,kind=8))
+           maxsize64 = max(maxsize64,int((nba*nbg)*nvr,kind=8))
         endif
         if(s==0)then
            maxsize64 = 0
