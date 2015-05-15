@@ -860,7 +860,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      logical, optional, intent(inout) :: rest
 
      ! elementary types needed for the calculation
-     type(mpi_realk)      :: gvvoo,gvoov,tpl,tmi,w0,w1,w2,w3,uigcj
+     type(mpi_realk)      :: gvvoo,gvoov,w0,w1,w2,w3,uigcj
      real(realk), pointer :: Had(:), t2_d(:,:,:,:), Gbi(:)
      type(c_ptr) :: Hadc,t2_dc, Gbic
      integer(kind=ls_mpik) :: Hadw,t2_dw,Gbiw,gvvoow,gvoovw
@@ -968,7 +968,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer, parameter :: bs = 1
      !{`DIL:
      integer:: nors,nvrs
-     type(tensor):: tpld,tmid
+     type(tensor):: tpl,tmi
 #ifdef DIL_ACTIVE
      logical:: DIL_LOCK_OUTSIDE,bool0
      character(256):: tcs
@@ -1042,10 +1042,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      vs                       = t2%tdim(1)
      os                       = t2%tdim(3)
      residual_nr              = RN_RESIDUAL_INT_DRIVEN
-#ifdef DIL_ACTIVE
      nors                     = get_split_scheme_0(nor)
      nvrs                     = get_split_scheme_0(nvr)
-#endif
 
      ! Memory info
      ! ***********
@@ -1197,26 +1195,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 #ifdef VAR_MPI
-     if(.not.local) then
-        t2%access_type = AT_ALL_ACCESS
-        if(scheme/=1) then
-           call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
-           call tensor_allocate_dense( t2, bg = use_bg_buf )
-           buf_size =3_long*t2%tsize
-           if( use_bg_buf )then
-              call mem_pseudo_alloc(buf1,buf_size)
-           else
-              call mem_alloc(buf1,buf_size)
-           endif
-           call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
-           if( use_bg_buf )then
-              call mem_pseudo_dealloc(buf1)
-           else
-              call mem_dealloc(buf1)
-           endif
-           call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
-        endif
-     endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -1235,6 +1213,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call ls_mpi_buffer(lock_outside,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
+     if(.not.local) then
+        t2%access_type = AT_ALL_ACCESS
+        if(scheme==4.or.scheme==3) then
+
+           call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
+
+           call tensor_allocate_dense( t2, bg = use_bg_buf, change=scheme/=2)
+           buf_size =3_long*t2%tsize
+           if( use_bg_buf )then
+              call mem_pseudo_alloc(buf1,buf_size)
+           else
+              call mem_alloc(buf1,buf_size)
+           endif
+           call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
+           if( use_bg_buf )then
+              call mem_pseudo_dealloc(buf1)
+           else
+              call mem_dealloc(buf1)
+           endif
+
+           call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+        endif
+     endif
      call time_start_phase(PHASE_WORK, at = time_init_comm)
 
      hstatus = 80
@@ -1417,6 +1418,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         endif
 
+
         ! Use the dense amplitudes
         ! ------------------------
 
@@ -1424,49 +1426,36 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
         scheme=scheme_tmp !```DIL: remove
 #endif
-        if(scheme==1) then !`DIL: Create distributed TPL & TMI
-#ifdef DIL_ACTIVE
-           call tensor_ainit(tpld,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype='TDAR')
-           call tensor_ainit(tmid,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype='TDAR')
-#else
-           call lsquit('ERROR(ccsd_residual_integral_driven): This part (1) of Scheme 1 requires DIL backend!',-1)
-#endif
+        if(scheme==1.or.scheme==2) then !`DIL: Create distributed TPL & TMI
+           write(def_atype,'(A4)')'TDAR'
         else
-      call mem_alloc( tpl, int(i8*nor*nvr,kind=long), simple = .true. )
-      call mem_alloc( tmi, int(i8*nor*nvr,kind=long), simple = .true. )
-     endif
-#ifdef DIL_ACTIVE
-     scheme=2 !``DIL: remove
-#endif
+           write(def_atype,'(A4)')'LDAR'
+        endif
+        call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype)
+        call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype)
 
-!#ifdef VAR_MPI
-!     call tensor_unlock_wins(t2,.true.)
-!#endif
+#ifdef DIL_ACTIVE
+        scheme=2 !``DIL: remove
+#endif
 
      !if I am the working process, then
 #ifdef DIL_ACTIVE
      scheme=scheme_tmp !```DIL: remove
 #endif
-     if(scheme==1) then !`DIL: Define TPL & TMI
-#ifdef DIL_ACTIVE
-        call get_tpl_and_tmi(t2,tpld,tmid)
-        if(DIL_DEBUG)then
-           call print_norm(tpld," NORM(tpld)   :",print_on_rank=0)
-           call print_norm(tmid," NORM(tmid)   :",print_on_rank=0)
-        endif
-#else
-        call lsquit('ERROR(ccsd_residual_integral_driven): This part (2) of Scheme 1 requires DIL backend!',-1)
-#endif
-     else
-        call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
-        if(master.and.print_debug)then
-           call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
-           call print_norm(tmi%d,int(nor*nvr,kind=8)," NORM(tmi)   :")
-        endif
 
-        if(scheme==2) call tensor_deallocate_dense(t2)
-
+     call get_tpl_and_tmi(t2,tpl,tmi)
+     if(print_debug)then
+        call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
+        call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
      endif
+
+#ifdef VAR_MPI
+     if(scheme==2 .and. alloc_in_dummy)then
+        call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
+        call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
+     endif
+#endif
+
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -2230,12 +2219,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               scheme=scheme_tmp !```DIL: remove
 #endif
               if(scheme /= 1) then
-                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
+                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
                     &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
                     &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
               else !`DIL: Scheme 1: TPL and TMI are distributed tensors
 #ifdef DIL_ACTIVE
-                 call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpld,tmid,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
+                 call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpl,tmi,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
                     &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],o2ilej,lock_outside,.false.,&
                     &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
 #else
@@ -2487,18 +2476,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=scheme_tmp !```DIL: remove
 #endif
-     if(scheme/=1) then
-      call mem_dealloc(tpl)
-      call mem_dealloc(tmi)
-     else
-      call tensor_free(tpld)
-      call tensor_free(tmid)
-      print*,"BEFORE FREEING o2ilej we need to update the vull residual o2"
-      call tensor_free(o2ilej)
-      stop 0
+
+
+#ifdef VAR_MPI
+     if(scheme == 2 .and. alloc_in_dummy)then
+        call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+        call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
      endif
-        if(scheme == 1)then
-        endif
+#endif
+
+
+     if(scheme==1) then
+        print*,"BEFORE FREEING o2ilej we need to update the vull residual o2"
+        call tensor_free(o2ilej)
+        stop 0
+     endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -2584,6 +2576,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      call lsmpi_barrier(infpar%lg_comm)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#endif
+     call tensor_free(tpl)
+     call tensor_free(tmi)
+#ifdef VAR_MPI
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
 
@@ -2989,9 +2986,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 
+
      !CCD can be achieved by not using singles residual updates here
      if(.not. DECinfo%CCDhack)then
-
 #ifdef VAR_MPI
         if(scheme==2)then
            call tensor_lock_wins(u2,'s', mode, all_nodes = alloc_in_dummy )
@@ -3040,6 +3037,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call dgemm('n','n',nv,no,nb,-1.0E0_realk,Had,nv,yo,nb,1.0E0_realk,omega1,nv)
 
      endif
+
 
 
      !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
@@ -5511,7 +5509,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
      chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-     !print *,"MASTER MEM 4",MemFree,mem_used
+     print *,"MASTER MEM 4",MemFree,mem_used," ELM ",bg_buf_size,chksze
      if (mem_used>MemFree.or.chksze>bg_buf_size)then
 #ifdef VAR_MPI
         !test for scheme with medium requirements
@@ -5519,14 +5517,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
         chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
            &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-        !print *,"MASTER MEM 3",MemFree,mem_used,"elms",3*v2o2,bg_buf_size
+        print *,"MASTER MEM 3",MemFree,mem_used," ELM ",bg_buf_size,chksze
         if (mem_used>MemFree.or.chksze>bg_buf_size)then
            !test for scheme with low requirements
            scheme=2
            mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
            chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
               &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-           !print *,"MASTER MEM 2",MemFree,mem_used
+           print *,"MASTER MEM 2",MemFree,mem_used," ELM ",bg_buf_size,chksze
            if (mem_used>MemFree.or.chksze>bg_buf_size)then
               scheme=0
               !print *,"MASTER check 0"
@@ -5770,16 +5768,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer, intent(in) :: s
      type(lssetting),intent(inout) :: se
      Character,intent(in) :: is(5)
-     integer :: nor, nvr, fe, ne , nnod, me, i
-     integer :: d1(4),ntpm(4),tdim(4),mode,splt,ntiles,tsze,tszeoo,tszevv
+     integer :: nor, nvr, fe, ne , nnod, me, i, nors, nvrs
+     integer :: d1(4),ntpm(4),tdim(4),dtpm(2),mode,splt,ntiles,tsze,tszeoo,tszevv,tszetpm
      integer(kind=ls_mpik) :: master
      integer :: l1,ml1,fai1,tl1
      integer :: l2,ml2,fai2,tl2
-     integer :: nloctiles,nloctilesoo,nloctilesvv
+     integer :: nloctiles,nloctilesoo,nloctilesvv,nloctilestpm
      integer :: cd , e2
      integer(kind=long) :: w0size, w1size, w2size, w3size
-     nor = no*(no+1)/2
-     nvr = nv*(nv+1)/2
+     nor  = no*(no+1)/2
+     nvr  = nv*(nv+1)/2
      master = 0
      mode=4
      d1(1)=nv;d1(2)=nv;d1(3)=no;d1(4)=no
@@ -5836,6 +5834,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            tszeoo = tszeoo * tdim(i)
         enddo
         tsze = tszevv * tszeoo
+
+        nors = get_split_scheme_0(nor)
+        nvrs = get_split_scheme_0(nvr)
+        call tensor_get_ntpm([nvr,nor],[nvrs,nors],2,dtpm,ntiles)
+        nloctilestpm=ceiling(float(ntiles)/float(nnod))
+        tszetpm = nvrs*nors
      else
         tsze=no*no*nv*nv
      endif
@@ -5887,7 +5891,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi
-           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           memin = memin + (i8*nors)*nvrs*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
@@ -6009,7 +6013,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi
-           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           memin = memin + nloctilestpm*tszetpm*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
@@ -8290,6 +8294,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==2)then
            maxsize64 = max(maxsize64,int((no*no*no)*no,kind=8))
            maxsize64 = max(maxsize64,int((no*no*no)*nbg,kind=8))
+           maxsize64 = max(maxsize64,int((nba*nbg)*nvr,kind=8))
         endif
         if(s==0)then
            maxsize64 = 0
