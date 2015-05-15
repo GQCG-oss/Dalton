@@ -1446,10 +1446,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
      endif
 
+#ifdef VAR_MPI
      if(scheme==2 .and. alloc_in_dummy)then
         call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
         call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
      endif
+#endif
 
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
@@ -2473,10 +2475,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
+#ifdef VAR_MPI
      if(scheme == 2 .and. alloc_in_dummy)then
         call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
      endif
+#endif
 
      if(scheme==1) then
         print*,"BEFORE FREEING o2ilej we need to update the vull residual o2"
@@ -2569,8 +2573,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call lsmpi_barrier(infpar%lg_comm)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#endif
      call tensor_free(tpl)
      call tensor_free(tmi)
+#ifdef VAR_MPI
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
 
@@ -8293,7 +8299,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==2)then
            maxsize64 = max(maxsize64,int((no*no*no)*no,kind=8))
            maxsize64 = max(maxsize64,int((no*no*no)*nbg,kind=8))
-           maxsize64 = max(maxsize64,int((nba*nbg)*nvr+nor*nvr,kind=8))
+           maxsize64 = max(maxsize64,int((nba*nbg)*nvr,kind=8))
         endif
         if(s==0)then
            maxsize64 = 0

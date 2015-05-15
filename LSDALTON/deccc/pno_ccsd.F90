@@ -2804,24 +2804,29 @@ module pno_ccsd_module
               if(.not.I_PLUS_MINUS_DONE)then
 
                  if(this_is_query)then
-                    query%size_array(1) = max(query%size_array(1),(i8*nb*lg)*la*nb)
+                    query%size_array(w1_tag) = max(query%size_array(w1_tag),var_inp(2))
                     var_inp = 0
+
+                    !note that the mem requirements for w4 and w5 are the same
+                    query%size_array(w1_tag) = max(query%size_array(w1_tag),(i8*nb*nb)*la*lg)
+                    query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*nb*nb)*tred)
+                    query%size_array(w4_tag) = max(query%size_array(w4_tag),(i8*la*nb)*lg*nb)
+                    query%size_array(w5_tag) = max(query%size_array(w5_tag),(i8*la*nb)*lg*nb)
                  else
                     call array_reorder_4d(p10,w3,nb,lg,la,nb,[3,4,2,1],nul,w1)
-                 endif
+                    ! (w3): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+                    call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w3)
 
-                 call get_I_plusminus_le(w4,w1,w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s4,s1,s3,&
-                    &qu = this_is_query, quarry = var_inp(1:3))
-                 call get_I_plusminus_le(w5,w1,w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s5,s1,s3,&
-                    &qu = this_is_query, quarry = var_inp(1:3))
+                    call get_I_plusminus_le(w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s3)
+                    !(w4): I+ [delta alpha<=gamma beta] <= (w3): I+ [beta delta alpha<=gamma]
+                    call array_reorder_3d(1.0E0_realk,w3,nb,nb,tred,[2,3,1],0.0E0_realk,w4)
+                    ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+                    call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w3)
 
+                    call get_I_plusminus_le(w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s3)
 
-                 if(this_is_query)then
-                    !note that the mem requirements for w4 and w5 are the same
-                    query%size_array(w1_tag) = max(query%size_array(w1_tag),var_inp(2))
-                    query%size_array(w3_tag) = max(query%size_array(w3_tag),var_inp(3))
-                    query%size_array(w4_tag) = max(query%size_array(w4_tag),var_inp(1))
-                    query%size_array(w5_tag) = max(query%size_array(w5_tag),var_inp(1))
+                    !(w5): I- [delta alpha<=gamma beta] <= (w3): I+ [beta delta alpha<=gamma]
+                    call array_reorder_3d(1.0E0_realk,w3,nb,nb,tred,[2,3,1],0.0E0_realk,w5)
                  endif
 
                  I_PLUS_MINUS_DONE = .true.
