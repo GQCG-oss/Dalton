@@ -861,10 +861,11 @@ module ccsd_lhtr_module
        logical, optional, intent(inout) :: rest
 
        ! elementary types needed for the calculation
-       type(mpi_realk)      :: gvvoo,gvoov,tpl,tmi,w0,w1,w2,w3,uigcj
+       type(mpi_realk)      :: gvvoo,gvoov,w0,w1,w2,w3,uigcj
        real(realk), pointer :: Had(:), t2_d(:,:,:,:), Gbi(:)
        type(c_ptr) :: Hadc,t2_dc, Gbic
        integer(kind=ls_mpik) :: Hadw,t2_dw,Gbiw,gvvoow,gvoovw
+       type(tensor) :: tpl, tmi
 
        integer(kind=8) :: w0size,w1size,w2size,w3size,neloc
 
@@ -1198,16 +1199,16 @@ module ccsd_lhtr_module
        ! ------------------------
 
        !get the t+ and t- for the Kobayshi-like B2 term
-       call mem_alloc( tpl, int(i8*nor*nvr,kind=long), simple = .true. )
-       call mem_alloc( tmi, int(i8*nor*nvr,kind=long), simple = .true. )
+       call tensor_ainit(tpl,[nor,nvr],2,atype=def_atype)                                                
+       call tensor_ainit(tmi,[nor,nvr],2,atype=def_atype)
 
 
        !if I am the working process, then
-       call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
+       call get_tpl_and_tmi(t2,tpl,tmi)
 
        if(master.and.print_debug)then
-          call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
-          call print_norm(tmi%d,int(nor*nvr,kind=8)," NORM(tmi)    :")
+          call print_norm(tpl," NORM(tpl)   :")
+          call print_norm(tmi," NORM(tmi)    :")
        endif
 
 
@@ -1461,7 +1462,7 @@ module ccsd_lhtr_module
                    !the gamma batch, chose the trafolength as minimum of alpha batch-length
                    !and the difference between first element of alpha batch and last element
                    !of gamma batch
-                   call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
+                   call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
                       &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
                       &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
 

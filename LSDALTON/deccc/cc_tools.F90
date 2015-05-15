@@ -570,7 +570,7 @@ module cc_tools_module
       real(realk),intent(inout) :: w0(wszes(1)),w2(wszes(3)),w3(wszes(4))
       !> the t+ and t- combinations with a value of the amplitudes with the
       !diagonal elements divided by two
-      real(realk),intent(inout) :: tpl(:),tmi(:)
+      type(tensor),intent(inout) :: tpl,tmi
       !> number of occupied, virutal and ao indices
       integer, intent(in) :: no,nv,nb
       !> first alpha and first gamma indices of the current loop
@@ -594,6 +594,7 @@ module cc_tools_module
       real(realk),optional :: scal
       integer :: goffs,aoffs,tlen,tred,nor,nvr
       integer(kind=8) :: s0, s2, s3
+      character(80) :: msg
 
       call time_start_phase(PHASE_WORK)
 
@@ -642,7 +643,7 @@ module cc_tools_module
       endif
 
       select case(s)
-      case(4,3,2)
+      case(4,3)
          !!SYMMETRIC COMBINATION
          !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
          call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
@@ -652,8 +653,8 @@ module cc_tools_module
          call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
          !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
          call get_I_cged(w2,w0,tred,nv)
-         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
-         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred)
+         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl%elm1,nvr,0.0E0_realk,w3,tred)
 
          !!ANTI-SYMMETRIC COMBINATION
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
@@ -664,8 +665,38 @@ module cc_tools_module
          call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
          !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
          call get_I_cged(w2,w0,tred,nv)
-         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
-         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred)
+         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * t- [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+1),tred)
+      case(2)
+         !!SYMMETRIC COMBINATION
+         !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
+         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+         !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
+         call get_I_cged(w2,w0,tred,nv)
+         !(w2.2)tpl
+         call tensor_gather(1.0E0_realk,tpl,0.0E0_realk,w2(tred*nvr+1:),(i8*nor)*nvr,oo=[2,1],wrk=w0,iwrk=wszes(1))
+         if(.not.lo) call tensor_flush_win(tpl)
+         !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w2):t+ [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3,tred)
+
+         !!ANTI-SYMMETRIC COMBINATION
+         !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
+         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
+         call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+         !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+         call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+         !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d]
+         call get_I_cged(w2,w0,tred,nv)
+         !(w2.2)tmi
+         call tensor_gather(1.0E0_realk,tmi,0.0E0_realk,w2(tred*nvr+1:),(i8*nor)*nvr,oo=[2,1],wrk=w0,iwrk=wszes(1))
+         if(.not.lo) call tensor_flush_win(tmi)
+         !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w2):t- [c>=d i>=j]
+         call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3(tred*nor+1),tred)
       case default
          call lsquit("ERROR(get_a22_and_prepb22_terms_ex): wrong scheme on input",-1)
       end select
@@ -1300,7 +1331,7 @@ module cc_tools_module
           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: TC: ',infpar%lg_mynum,errc
           if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Tens contr failed!',-1)
 #else
-          call lsquit('ERROR(combine_and_transform_sigma): This part (9) of Scheme 1 requires DIL backend!',-1)
+          call lsquit('ERROR(combine_and_transform_sigma): This part (7) of Scheme 1 requires DIL backend!',-1)
 #endif
          else
             call dgemm('t','t',nv,nv*nor,full1,1.0E0_realk,xvirt(fa),nb,w3,nor*nv,0.0E0_realk,w2,nv)
@@ -1405,7 +1436,7 @@ module cc_tools_module
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: TC: ',infpar%lg_mynum,errc
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Tens contr failed!',-1)
 #else
-             call lsquit('ERROR(combine_and_transform_sigma): This part (10) of Scheme 1 requires DIL backend!',-1)
+             call lsquit('ERROR(combine_and_transform_sigma): This part (8) of Scheme 1 requires DIL backend!',-1)
 #endif
             else
                call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
@@ -1506,7 +1537,7 @@ module cc_tools_module
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: TC: ',infpar%lg_mynum,errc
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Tens contr failed!',-1)
 #else
-             call lsquit('ERROR(combine_and_transform_sigma): This part (11) of Scheme 1 requires DIL backend!',-1)
+             call lsquit('ERROR(combine_and_transform_sigma): This part (9) of Scheme 1 requires DIL backend!',-1)
 #endif
             case(2)
                call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)

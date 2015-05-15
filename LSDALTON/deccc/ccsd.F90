@@ -808,7 +808,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 #endif
 !`DIL: temporary:
-!#undef DIL_ACTIVE
+#undef DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -860,7 +860,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      logical, optional, intent(inout) :: rest
 
      ! elementary types needed for the calculation
-     type(mpi_realk)      :: gvvoo,gvoov,tpl,tmi,w0,w1,w2,w3,uigcj
+     type(mpi_realk)      :: gvvoo,gvoov,w0,w1,w2,w3,uigcj
      real(realk), pointer :: Had(:), t2_d(:,:,:,:), Gbi(:)
      type(c_ptr) :: Hadc,t2_dc, Gbic
      integer(kind=ls_mpik) :: Hadw,t2_dw,Gbiw,gvvoow,gvoovw
@@ -966,23 +966,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      character(4) :: def_atype
      integer, parameter :: bs = 1
-     !{`DIL:
      integer:: nors,nvrs
-     type(tensor):: tpld,tmid
+     type(tensor):: tpl,tmi
+     logical:: DIL_LOCK_OUTSIDE
 #ifdef DIL_ACTIVE
-     logical:: DIL_LOCK_OUTSIDE,bool0
      character(256):: tcs
      type(dil_tens_contr_t):: tch0,tch1,tch2,tch3,tch4 !tensor contraction handles for Scheme 1 (DIL)
-     integer(INTL):: dil_mem,l0
+     integer(INTL):: dil_mem
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
-     real(realk):: r0
      integer:: scheme_tmp=1
 #else
      integer:: scheme_tmp=2
 #endif
-     !}
 
      !init timing variables
      call time_start_phase(PHASE_WORK, twall = twall)
@@ -1042,10 +1039,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      vs                       = t2%tdim(1)
      os                       = t2%tdim(3)
      residual_nr              = RN_RESIDUAL_INT_DRIVEN
-#ifdef DIL_ACTIVE
      nors                     = get_split_scheme_0(nor)
      nvrs                     = get_split_scheme_0(nvr)
-#endif
 
      ! Memory info
      ! ***********
@@ -1189,38 +1184,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef DIL_ACTIVE
      scheme=scheme_tmp !```DIL: remove
+#endif
      if(scheme==1) then
         if(.not.alloc_in_dummy) call lsquit('ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3!',-1)
         DIL_LOCK_OUTSIDE=.true. !.TRUE. locks wins, flushes when needed, unlocks wins; .FALSE. locks/unlocks every time
      else
         DIL_LOCK_OUTSIDE=.true. !`DIL: meaningless for scheme/=1
      endif
-#endif
-#ifdef VAR_MPI
-     if(.not.local) then
-        t2%access_type = AT_ALL_ACCESS
-        if(scheme/=1) then
-           call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
-           call tensor_allocate_dense( t2, bg = use_bg_buf )
-           buf_size =3_long*t2%tsize
-           if( use_bg_buf )then
-              call mem_pseudo_alloc(buf1,buf_size)
-           else
-              call mem_alloc(buf1,buf_size)
-           endif
-           call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
-           if( use_bg_buf )then
-              call mem_pseudo_dealloc(buf1)
-           else
-              call mem_dealloc(buf1)
-           endif
-           call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
-        endif
-     endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
 
+#ifdef VAR_MPI
      !all communication for MPI prior to the loop
      call time_start_phase(PHASE_COMM, at = time_init_work )
 
@@ -1235,6 +1210,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call ls_mpi_buffer(lock_outside,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
+     if(.not.local) then
+        t2%access_type = AT_ALL_ACCESS
+        if(scheme==4.or.scheme==3) then
+
+           call tensor_lock_wins( t2, 's', mode , all_nodes = alloc_in_dummy )
+
+           call tensor_allocate_dense( t2, bg = use_bg_buf, change=scheme/=2)
+           buf_size =3_long*t2%tsize
+           if( use_bg_buf )then
+              call mem_pseudo_alloc(buf1,buf_size)
+           else
+              call mem_alloc(buf1,buf_size)
+           endif
+           call tensor_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
+           if( use_bg_buf )then
+              call mem_pseudo_dealloc(buf1)
+           else
+              call mem_dealloc(buf1)
+           endif
+
+           call tensor_unlock_wins( t2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+        endif
+     endif
      call time_start_phase(PHASE_WORK, at = time_init_comm)
 
      hstatus = 80
@@ -1250,13 +1248,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      govov%access_type  = AT_ALL_ACCESS
      omega2%access_type = AT_ALL_ACCESS
-#ifdef DIL_ACTIVE
+
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
-#else
-        if(alloc_in_dummy.and.(scheme==2.or.scheme==1)) then
-#endif
-           call tensor_lock_wins(omega2,'s',all_nodes = .true.)
-        endif
+        call tensor_lock_wins(omega2,'s',all_nodes = .true.)
+     endif
 #endif
 
         !if the residual is handeled as dense, allocate and zero it, adjust the
@@ -1417,6 +1412,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         endif
 
+
         ! Use the dense amplitudes
         ! ------------------------
 
@@ -1424,49 +1420,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
         scheme=scheme_tmp !```DIL: remove
 #endif
-        if(scheme==1) then !`DIL: Create distributed TPL & TMI
-#ifdef DIL_ACTIVE
-           call tensor_ainit(tpld,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype='TDAR')
-           call tensor_ainit(tmid,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype='TDAR')
-#else
-           call lsquit('ERROR(ccsd_residual_integral_driven): This part (1) of Scheme 1 requires DIL backend!',-1)
-#endif
+        if(scheme==1.or.scheme==2) then
+           write(def_atype,'(A4)')'TDAR'
         else
-      call mem_alloc( tpl, int(i8*nor*nvr,kind=long), simple = .true. )
-      call mem_alloc( tmi, int(i8*nor*nvr,kind=long), simple = .true. )
-     endif
-#ifdef DIL_ACTIVE
-     scheme=2 !``DIL: remove
-#endif
-
-!#ifdef VAR_MPI
-!     call tensor_unlock_wins(t2,.true.)
-!#endif
-
-     !if I am the working process, then
-#ifdef DIL_ACTIVE
-     scheme=scheme_tmp !```DIL: remove
-#endif
-     if(scheme==1) then !`DIL: Define TPL & TMI
-#ifdef DIL_ACTIVE
-        call get_tpl_and_tmi(t2,tpld,tmid)
-        if(DIL_DEBUG)then
-           call print_norm(tpld," NORM(tpld)   :",print_on_rank=0)
-           call print_norm(tmid," NORM(tmid)   :",print_on_rank=0)
+           write(def_atype,'(A4)')'LDAR'
         endif
-#else
-        call lsquit('ERROR(ccsd_residual_integral_driven): This part (2) of Scheme 1 requires DIL backend!',-1)
-#endif
-     else
-        call get_tpl_and_tmi_fort(t2%elm1,nv,no,tpl%d,tmi%d)
-        if(master.and.print_debug)then
-           call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
-           call print_norm(tmi%d,int(nor*nvr,kind=8)," NORM(tmi)   :")
+        call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype)
+        call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype)
+
+        call get_tpl_and_tmi(t2,tpl,tmi)
+        if(print_debug)then
+           call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
+           call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
         endif
 
-        if(scheme==2) call tensor_deallocate_dense(t2)
-
-     endif
+        if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
+           call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
+           call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
+        endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -1504,8 +1475,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         case(2)
            locally_stored_tiles = locally_stored_tiles * 3
            locally_stored_v2o2  = 0
+        case(1)
+           locally_stored_tiles = locally_stored_tiles * 3
+           locally_stored_v2o2  = 0
+           !`DIL: I can also use some small BG buffer
         case default
-           call lsquit("ERROR(ccsd_residual_integral_driven): bg buffering only imlemented for schemes 4-2",-1)
+           call lsquit("ERROR(ccsd_residual_integral_driven): bg buffering only imlemented for schemes 4-1",-1)
         end select
         local_nel_in_bg = w0size+w1size+w2size+w3size+locally_stored_tiles+locally_stored_v2o2
         min_size_bg     = local_nel_in_bg * 8_long
@@ -1518,19 +1493,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      scheme=scheme_tmp !```DIL: remove
 #endif
      if(scheme==2.or.scheme==1)then
-#ifdef VAR_MPI
 
+#ifdef VAR_MPI
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
         call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=use_bg_buf )
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
-#ifdef DIL_ACTIVE
         if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then
-#else
-        if(alloc_in_dummy.and.scheme/=1) then
-#endif
          call tensor_lock_wins(u2,'s',all_nodes = .true.)
         endif
 
@@ -1555,6 +1526,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      if( CCmodel > MODEL_CC2 )then
 
+#ifdef DIL_ACTIVE
+        scheme=scheme_tmp !```DIL: remove
+#endif
         if(scheme==4)then
            write(def_atype,'(A4)')'LDAR'
         else
@@ -1564,18 +1538,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os], bg=use_bg_buf )
         call tensor_zero(gvvooa)
         call tensor_zero(gvoova)
-#ifdef DIL_ACTIVE
-        scheme=scheme_tmp !```DIL: remove
-#endif
+
         if(scheme == 1)then
            !Maybe we should use the bg buffer here as well
-           call tensor_ainit(o2ilej, [nv,nv,nor],3, local=local, atype='TDAR', tdims=[vs,vs,nor])
+           call tensor_ainit(o2ilej, [nv,nv,nor], 3, local=local, atype='TDAR', tdims=[vs,vs,nor])
            call tensor_zero(o2ilej)
         endif
-#ifdef DIL_ACTIVE
-        scheme=2 !``DIL: remove
-#endif
-
 
         select case (scheme)
         case(4,3)
@@ -1589,35 +1557,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            sio4_tdim(1:sio4_mode) = [os,os,os,os]
            write(def_atype,'(A4)')'TDAR'
         case(1)
-           print *,"We need to decide what we do with this tensor. it is used&
-              & after the integral direct loop"
-           stop 0
-           !sio4_mode = 3
-           !sio4_dims(1:sio4_mode) = [no,no,nor]
-           !sio4_tdim(1:sio4_mode) = [os,os,nor]
-           !write(def_atype,'(A4)')'TDAR'
+!           print *,"We need to decide what we do with this tensor. It is used after the integral direct loop."
+!           stop 0
+           sio4_mode = 3
+           sio4_dims(1:sio4_mode) = [no,no,nor]
+           sio4_tdim(1:sio4_mode) = [os,os,nor]
+           write(def_atype,'(A4)')'TDAR'
         end select
-
 
         call tensor_ainit(sio4,sio4_dims(1:sio4_mode),sio4_mode,local=local,atype=def_atype,tdims = sio4_tdim(1:sio4_mode))
         call tensor_zero(sio4)
+#ifdef DIL_ACTIVE
+        scheme=2 !``DIL: remove
+#endif
 
 
 #ifdef VAR_MPI
         if(alloc_in_dummy)then
-#ifdef DIL_ACTIVE
            if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
-#else
-           if(scheme==3.or.scheme==2.or.scheme==1) then
-#endif
               call tensor_lock_wins(gvvooa,'s',all_nodes = .true.)
               call tensor_lock_wins(gvoova,'s',all_nodes = .true.)
            endif
-#ifdef DIL_ACTIVE
            if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
-#else
-           if(scheme==2.or.scheme==1) then
-#endif
               call tensor_lock_wins(sio4,  's',all_nodes = .true.)
            endif
         endif
@@ -1636,27 +1597,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
 
 
-#ifdef DIL_ACTIVE
-#ifdef DIL_DEBUG_ON
-      if(DIL_DEBUG) then !`DIL: debug
-       bool0=dil_will_malloc_succeed(int((w0size+w1size+w2size+w3size)*realk,INTL))
-       write(DIL_CONS_OUT,'("#DEBUG(DIL): Probable success of malloc(w0+w1+w2+w3): ",l1)') bool0
-      endif
-#endif
-#endif
-
-
      if(use_bg_buf)then
         !if the needed space is smaller than the allocated space, reduce the buffer size
         reduce_bg_size = ((w0size+w1size+w2size+w3size)*8 < mem_get_bg_buf_free()*8/10)
         !if(iter==1)call mem_change_background_alloc(i8*(w0size+w1size+w2size+w3size)*8,reduce_bg_size)
         call mem_pseudo_alloc(w0, w0size, simple = .false. )
-        call mem_pseudo_alloc(w1, w1size, simple = .false.)
+        call mem_pseudo_alloc(w1, w1size, simple = .false. )
         call mem_pseudo_alloc(w2, w2size, simple = .false. )
         call mem_pseudo_alloc(w3, w3size, simple = .false. )
      else
         call mem_alloc(w0, w0size, simple = .false. )
-        call mem_alloc(w1, w1size, simple = .false.)
+        call mem_alloc(w1, w1size, simple = .false. )
         call mem_alloc(w2, w2size, simple = .false. )
         call mem_alloc(w3, w3size, simple = .false. )
      endif
@@ -1908,9 +1859,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: TC: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
 #else
-              call lsquit('ERROR(ccsd_residual_integral_driven): This part (3) of Scheme 1 requires DIL backend!',-1)
+              call lsquit('ERROR(ccsd_residual_integral_driven): This part (1) of Scheme 1 requires DIL backend!',-1)
 #endif
-              elseif(scheme==2) then
+           elseif(scheme==2) then
 #ifdef VAR_MPI
               call time_start_phase(PHASE_COMM, at = time_intloop_work )
               !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
@@ -1969,7 +1920,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
         if(DIL_DEBUG) then
-           write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration started: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !`DIL: remove
+           write(DIL_CONS_OUT,'("#DEBUG(DIL)[",i5,"]: Alpha-Gamma iteration started: ",i5,1x,i5,3x,i5,1x,i5)')&
+           &infpar%my_num,fa,la,fg,lg !`DIL: remove
         endif
 #endif
 #endif
@@ -2016,11 +1968,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
         !AS LONG AS THE INTEGRALS ARE WRITTEN IN W1 we might unlock here
         if( alloc_in_dummy )then
-#ifdef DIL_ACTIVE
            if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) call lsmpi_win_flush(omega2%wi(1),local=.true.)
-#else
-           if(scheme==2.or.scheme==1) call lsmpi_win_flush(omega2%wi(1),local=.true.)
-#endif
         else
            if(lock_outside.and.scheme==2) call tensor_unlock_wins(omega2,.true.)
         endif
@@ -2058,7 +2006,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
            if(scheme==4)then
               call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
-              elseif(scheme==3.or.scheme==2)then
+           elseif(scheme==3.or.scheme==2)then
 #if VAR_MPI
               if(.not. alloc_in_dummy .and. lock_outside) call tensor_lock_wins(gvvooa,'s',mode)
               call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,0.0E0_realk,w2%d,nv)
@@ -2066,7 +2014,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call tensor_add(gvvooa,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
               call time_start_phase(PHASE_WORK, at = time_intloop_comm)
 #endif
-              elseif(scheme==1) then !`DIL: Tensor contraction 2
+           elseif(scheme==1) then !`DIL: Tensor contraction 2
 #ifdef DIL_ACTIVE
               if(DIL_DEBUG) then
                  write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 2:")')&
@@ -2098,7 +2046,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: TC: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Tens contr failed!',-1)
 #else
-              call lsquit('ERROR(ccsd_residual_integral_driven): This part (4) of Scheme 1 requires DIL backend!',-1)
+              call lsquit('ERROR(ccsd_residual_integral_driven): This part (2) of Scheme 1 requires DIL backend!',-1)
 #endif
            endif
            if(scheme/=1) call lsmpi_poke()
@@ -2128,9 +2076,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            scheme=scheme_tmp !``DIL: remove
 #endif
            if(scheme==4)then
-
               call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
-
            else if(scheme==3.or.scheme==2)then
 #ifdef VAR_MPI
               call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,0.0E0_realk,w2%d,nv)
@@ -2170,7 +2116,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: TC: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Tens contr failed!',-1)
 #else
-              call lsquit('ERROR(ccsd_residual_integral_driven): This part (5) of Scheme 1 requires DIL backend!',-1)
+              call lsquit('ERROR(ccsd_residual_integral_driven): This part (3) of Scheme 1 requires DIL backend!',-1)
 #endif
            endif
            if(scheme/=1) call lsmpi_poke()
@@ -2200,11 +2146,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
         if( Ccmodel>MODEL_CC2 )then
            if( alloc_in_dummy )then
-#ifdef DIL_ACTIVE
-              if(scheme==2.or.scheme==3.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
-#else
-              if(scheme==2.or.scheme==3.or.scheme==1)then
-#endif
+              if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
                  call lsmpi_win_flush(gvvooa%wi(1),local=.true.)
                  call lsmpi_win_flush(gvoova%wi(1),local=.true.)
               endif
@@ -2229,16 +2171,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               scheme=scheme_tmp !```DIL: remove
 #endif
               if(scheme /= 1) then
-                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
+                 call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
                     &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
                     &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
-              else !`DIL: Scheme 1: TPL and TMI are distributed tensors
+              else
 #ifdef DIL_ACTIVE
-                 call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpld,tmid,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
-                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],o2ilej,lock_outside,.false.,&
+                 call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpl,tmi,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
+                    &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],o2ilej,lock_outside,DIL_LOCK_OUTSIDE,&
                     &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
 #else
-                 call lsquit('ERROR(ccsd_residual_integral_driven): This part (6) of Scheme 1 requires DIL backend!',-1)
+                 call lsquit('ERROR(ccsd_residual_integral_driven): This part (4) of Scheme 1 requires DIL backend!',-1)
 #endif
               endif
 #ifdef DIL_ACTIVE
@@ -2320,14 +2262,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: TC: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Tens contr failed!',-1)
 #else
-              call lsquit('ERROR(ccsd_residual_integral_driven): This part (7) of Scheme 1 requires DIL backend!',-1)
+              call lsquit('ERROR(ccsd_residual_integral_driven): This part (5) of Scheme 1 requires DIL backend!',-1)
 #endif
            end select
 #ifdef DIL_ACTIVE
            scheme=2 !``DIL: remove
 #endif
+           if(scheme/=1) call lsmpi_poke()
+
         endif
-        if(scheme/=1) call lsmpi_poke()
 
 
         ! (w2%d):I[gamma i j alpha] <- (w0%d):I[i gamma alpha j]
@@ -2351,7 +2294,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_add(omega2,1.0E0_realk,w2%d,wrk=w0%d,iwrk=w0%n)
            call time_start_phase(PHASE_WORK, at = time_intloop_comm )
 #endif
-           elseif(scheme==1)then !`DIL: Tensor contraction 5
+        elseif(scheme==1)then !`DIL: Tensor contraction 5
 #ifdef DIL_ACTIVE
            if(DIL_DEBUG) then
               write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 5:")')&
@@ -2383,17 +2326,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: TC: ',infpar%lg_mynum,errc
            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Tens contr failed!',-1)
 #else
-           call lsquit('ERROR(ccsd_residual_integral_driven): This part (8) of Scheme 1 requires DIL backend!',-1)
+           call lsquit('ERROR(ccsd_residual_integral_driven): This part (6) of Scheme 1 requires DIL backend!',-1)
 #endif
         else !scheme 3,4,0
            call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3%d,o2v,1.0E0_realk,omega2%elm1,nv)
-        end if
+        endif
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
         if(DIL_DEBUG) then
-           write(DIL_CONS_OUT,'("#DEBUG(DIL): Alpha-Gamma iteration finished: ",i5,1x,i5,3x,i5,1x,i5)') fa,la,fg,lg !`DIL: remove
+           write(DIL_CONS_OUT,'("#DEBUG(DIL)[",i5,"]: Alpha-Gamma iteration finished: ",i5,1x,i5,3x,i5,1x,i5)')&
+           &infpar%my_num,fa,la,fg,lg !`DIL: remove
            flush(DIL_CONS_OUT) !`DIL: remove
-        end if
+        endif
 #endif
         scheme=2 !``DIL: remove
 #endif
@@ -2448,29 +2392,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! free arrays only needed in the batched loops
 #ifdef VAR_MPI
      call time_start_phase(PHASE_COMM, at = time_intloop_work )
-#ifdef DIL_ACTIVE
      if(lock_outside.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
-#else
-     if(lock_outside.and.(scheme==2.or.scheme==1))then
-#endif
         call tensor_unlock_wins(omega2, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
      endif
 
      if(alloc_in_dummy)then
-#ifdef DIL_ACTIVE
         if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
-#else
-        if(scheme==3.or.scheme==2.or.scheme==1)then
-#endif
            !SWITCH ONE SIDED EPOCH FROM ACCUMULATES TO GETS
            call tensor_unlock_wins(gvvooa, all_nodes = .true.)
            call tensor_unlock_wins(gvoova, all_nodes = .true.)
         endif
-#ifdef DIL_ACTIVE
         if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))then
-#else
-        if(scheme==2.or.scheme==1)then
-#endif
            call tensor_unlock_wins(sio4, all_nodes = .true.)
         endif
      endif
@@ -2484,17 +2416,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(uigcj)
      endif
 #ifdef DIL_ACTIVE
-     scheme=scheme_tmp !```DIL: remove
+     scheme=2 !```DIL: remove
 #endif
-     if(scheme/=1) then
-      call mem_dealloc(tpl)
-      call mem_dealloc(tmi)
-     else
-      call tensor_free(tpld)
-      call tensor_free(tmid)
-      print *,"BEFORE FREEING o2ilej we need to update the vull residual o2"
-      call tensor_free(o2ilej)
-      stop 0
+     if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
+        call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+        call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+     endif
+     if(scheme==1) then
+        print *,"BEFORE FREEING o2ilej we need to update the full residual o2"
+        call tensor_free(o2ilej)
+        stop 0
      endif
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
@@ -2520,7 +2451,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      else
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
-
 
 
 #ifdef VAR_MPI
@@ -2582,13 +2512,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call lsmpi_barrier(infpar%lg_comm)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+     call tensor_free(tpl)
+     call tensor_free(tmi)
+
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
 
-#ifdef DIL_ACTIVE
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
-#else
-     if(alloc_in_dummy.and.(scheme==2.or.scheme==1))then
-#endif
         call tensor_lock_wins(omega2,'s',all_nodes=.true.)
      endif
 
@@ -2788,7 +2717,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==4.or.scheme==3)then
            call get_cnd_terms_mo_3n4(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
               &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
-        else if(scheme==2)then
+        else if(scheme==2.or.scheme==1)then
            call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
               &scheme,lock_outside,local)
         endif
@@ -2826,14 +2755,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call tensor_unlock_wins(u2,all_nodes=.true.)
            endif
         else if(scheme==1)then
-#ifdef DIL_ACTIVE
            if(DIL_LOCK_OUTSIDE)then
-#endif
               call tensor_unlock_wins(omega2,all_nodes=.true.)
               call tensor_unlock_wins(u2,all_nodes=.true.)
-#ifdef DIL_ACTIVE
            endif
-#endif
         endif
 #endif
 
@@ -2986,9 +2911,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 
+
      !CCD can be achieved by not using singles residual updates here
      if(.not. DECinfo%CCDhack)then
-
 #ifdef VAR_MPI
         if(scheme==2)then
            call tensor_lock_wins(u2,'s', mode, all_nodes = alloc_in_dummy )
@@ -3037,6 +2962,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call dgemm('n','n',nv,no,nb,-1.0E0_realk,Had,nv,yo,nb,1.0E0_realk,omega1,nv)
 
      endif
+
 
 
      !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
@@ -5767,16 +5693,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer, intent(in) :: s
      type(lssetting),intent(inout) :: se
      Character,intent(in) :: is(5)
-     integer :: nor, nvr, fe, ne , nnod, me, i
-     integer :: d1(4),ntpm(4),tdim(4),mode,splt,ntiles,tsze,tszeoo,tszevv
+     integer :: nor, nvr, fe, ne , nnod, me, i, nors, nvrs
+     integer :: d1(4),ntpm(4),tdim(4),dtpm(2),mode,splt,ntiles,tsze,tszeoo,tszevv,tszetpm
      integer(kind=ls_mpik) :: master
      integer :: l1,ml1,fai1,tl1
      integer :: l2,ml2,fai2,tl2
-     integer :: nloctiles,nloctilesoo,nloctilesvv
+     integer :: nloctiles,nloctilesoo,nloctilesvv,nloctilestpm
      integer :: cd , e2
      integer(kind=long) :: w0size, w1size, w2size, w3size
-     nor = no*(no+1)/2
-     nvr = nv*(nv+1)/2
+     nor  = no*(no+1)/2
+     nvr  = nv*(nv+1)/2
      master = 0
      mode=4
      d1(1)=nv;d1(2)=nv;d1(3)=no;d1(4)=no
@@ -5833,6 +5759,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            tszeoo = tszeoo * tdim(i)
         enddo
         tsze = tszevv * tszeoo
+
+        nors = get_split_scheme_0(nor)
+        nvrs = get_split_scheme_0(nvr)
+        call tensor_get_ntpm([nvr,nor],[nvrs,nors],2,dtpm,ntiles)
+        nloctilestpm=ceiling(float(ntiles)/float(nnod))
+        tszetpm = nvrs*nors
      else
         tsze=no*no*nv*nv
      endif
@@ -5884,7 +5816,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi
-           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           memin = memin + (i8*nors)*nvrs*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
@@ -6006,7 +5938,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi
-           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           memin = memin + nloctilestpm*tszetpm*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
@@ -8287,6 +8219,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==2)then
            maxsize64 = max(maxsize64,int((no*no*no)*no,kind=8))
            maxsize64 = max(maxsize64,int((no*no*no)*nbg,kind=8))
+           maxsize64 = max(maxsize64,int((nba*nbg)*nvr+nor*nvr,kind=8))
         endif
         if(s==0)then
            maxsize64 = 0
