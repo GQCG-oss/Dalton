@@ -645,8 +645,10 @@ module cc_tools_module
       select case(s)
       case(4,3)
          !!SYMMETRIC COMBINATION
-         !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
+         !(w0):I+ [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] + (w2):I[beta delta alpha gamma]
+         call get_I_plusminus_le(w0,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
          !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -657,8 +659,10 @@ module cc_tools_module
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl%elm1,nvr,0.0E0_realk,w3,tred)
 
          !!ANTI-SYMMETRIC COMBINATION
-         !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
+         !(w0):I- [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] - (w2):I[beta delta alpha gamma]
+         call get_I_plusminus_le(w0,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
          !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -669,8 +673,10 @@ module cc_tools_module
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+1),tred)
       case(2)
          !!SYMMETRIC COMBINATION
-         !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
+         !(w0):I+ [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] + (w2):I[beta delta alpha gamma]
+         call get_I_plusminus_le(w0,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
          !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -684,8 +690,10 @@ module cc_tools_module
          call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2(1),tred,w2(tred*nvr+1),nvr,0.0E0_realk,w3,tred)
 
          !!ANTI-SYMMETRIC COMBINATION
-         !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
+         !(w0):I- [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] - (w2):I[beta delta alpha gamma]
+         call get_I_plusminus_le(w0,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
          !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -812,8 +820,10 @@ module cc_tools_module
       select case(s)
       case(1) !`DIL: Scheme 1 only
          !!SYMMETRIC COMBINATION:
+         ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         call get_I_plusminus_le(w0,w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
          !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -851,8 +861,10 @@ module cc_tools_module
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Tens contr failed!',-1)
 
          !!ANTI-SYMMETRIC COMBINATION:
+         ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-         call get_I_plusminus_le(w0,w1,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(2),wszes(3))
+         call get_I_plusminus_le(w0,w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,wszes(1),wszes(3))
          !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
          !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
@@ -1608,14 +1620,12 @@ module cc_tools_module
    !> \brief Construct symmetric and antisymmentric combinations of an itegral matrix 
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,s0,s1,s2,qu,quarry)
+   subroutine get_I_plusminus_le(w0,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs,s0,s2,qu,quarry)
       implicit none
-      integer(kind=8), intent(in) :: s0,s1,s2
+      integer(kind=8), intent(in) :: s0,s2
       !> blank workspace
       real(realk),intent(inout) :: w0(s0)
       real(realk),intent(inout),target :: w2(s2)
-      !> workspace containing the integrals
-      real(realk),intent(in) :: w1(s1)
       !> integer specifying the first element in alpha and gamma batch
       integer,intent(in) :: fa,fg
       !> integer specifying the length of alpha and gamma batches
@@ -1675,7 +1685,6 @@ module cc_tools_module
 #else
          call lsquit('ERROR(get_I_plusminus_le): unable to reshape pointers!',-1)
 #endif
-         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          aleg=0
 
          do gamm=0,lg-1
@@ -1685,7 +1694,7 @@ module cc_tools_module
                   eldiag = aleg*nb*nb
                   elsqre = alpha*nb*nb+gamm*nb*nb*la
                   !print *,alpha,gamm,1+eldiag,nb*nb+eldiag,1+elsqre,nb*nb+elsqre,aleg,cagi,nb*nb
-                  if(fa+alpha==fg+gamm)   call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
+                  if(fa+alpha==fg+gamm) call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
                   call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
                   !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
                   !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb,a_op_b)&

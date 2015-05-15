@@ -2808,11 +2808,15 @@ module pno_ccsd_module
                     var_inp = 0
                  else
                     call array_reorder_4d(p10,w3,nb,lg,la,nb,[3,4,2,1],nul,w1)
+                    ! (w3): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+                    call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w3)
                  endif
 
-                 call get_I_plusminus_le(w4,w1,w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s4,s1,s3,&
+                 call get_I_plusminus_le(w4,w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s4,s3,&
                     &qu = this_is_query, quarry = var_inp(1:3))
-                 call get_I_plusminus_le(w5,w1,w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s5,s1,s3,&
+                    ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+                 if(.not.this_is_query)call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w3)
+                 call get_I_plusminus_le(w5,w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s5,s3,&
                     &qu = this_is_query, quarry = var_inp(1:3))
 
 
