@@ -323,7 +323,7 @@ contains
 #endif
 
        ! calculate the gpu flop count
-       call addDOT_FLOPonGPUaccouting(m,n,k,beta)
+       call addDOT_FLOPonGPUaccouting(n)
 
 #else
 
