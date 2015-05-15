@@ -1527,7 +1527,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if( CCmodel > MODEL_CC2 )then
 
 #ifdef DIL_ACTIVE
-        scheme=scheme_tmp !```DIL: remove
+        scheme=2 !```DIL: remove
 #endif
         if(scheme==4)then
            write(def_atype,'(A4)')'LDAR'
@@ -1921,7 +1921,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_DEBUG_ON
         if(DIL_DEBUG) then
            write(DIL_CONS_OUT,'("#DEBUG(DIL)[",i5,"]: Alpha-Gamma iteration started: ",i5,1x,i5,3x,i5,1x,i5)')&
-           &infpar%my_num,fa,la,fg,lg !`DIL: remove
+           &infpar%mynum,fa,la,fg,lg !`DIL: remove
         endif
 #endif
 #endif
@@ -2335,7 +2335,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_DEBUG_ON
         if(DIL_DEBUG) then
            write(DIL_CONS_OUT,'("#DEBUG(DIL)[",i5,"]: Alpha-Gamma iteration finished: ",i5,1x,i5,3x,i5,1x,i5)')&
-           &infpar%my_num,fa,la,fg,lg !`DIL: remove
+           &infpar%mynum,fa,la,fg,lg !`DIL: remove
            flush(DIL_CONS_OUT) !`DIL: remove
         endif
 #endif

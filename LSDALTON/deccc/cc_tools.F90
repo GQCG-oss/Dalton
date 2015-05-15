@@ -753,7 +753,7 @@ module cc_tools_module
       integer :: goffs,aoffs,tlen,tred,nor,nvr
       integer(kind=8) :: s0, s2, s3
 !{`DIL:
-     integer:: nors,nvrs
+     integer:: nors,nvrs,scheme
      character(256):: tcs
      type(dil_tens_contr_t):: tch
      integer(INTL):: dil_mem,l0
@@ -898,8 +898,9 @@ module cc_tools_module
       s0 = wszes(1)
       s2 = wszes(3)
       s3 = wszes(4)
+      if(s==1) then; scheme=2; else; scheme=s; endif  !```DIL: remove
       call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,&
+         &no,nv,nb,goffs,aoffs,scheme,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,& !`DIL: scheme --> s
          &sio4_ilej=(s/=2.and.s/=1),o2tens=o2ilej)
 
       call time_start_phase(PHASE_WORK, at=twork)
