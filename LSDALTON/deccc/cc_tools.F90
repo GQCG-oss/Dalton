@@ -654,7 +654,7 @@ module cc_tools_module
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
+         !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
          call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
          !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
          call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
@@ -668,7 +668,7 @@ module cc_tools_module
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
+         !(w2):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
          call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
          !(w0):I- [delta alpha<=gamma c] = (w2):I- [beta delta alpha<=gamma] * Lambda^h[beta c]
          call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
@@ -691,7 +691,7 @@ module cc_tools_module
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I+ [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] + (w2):I[beta delta alpha gamma]
+         !(w2):I+ [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] + (w2):I[beta delta alpha gamma]
          call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
          !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
          call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
@@ -707,7 +707,7 @@ module cc_tools_module
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I- [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] - (w2):I[beta delta alpha gamma]
+         !(w2):I- [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] - (w2):I[beta delta alpha gamma]
          call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
          !(w0):I- [delta alpha<=gamma c] = (w2):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
@@ -745,7 +745,7 @@ module cc_tools_module
       real(realk),intent(inout) :: w0(:),w2(:),w3(:)
       !> the t+ and t- combinations with a value of the amplitudes with the
       !diagonal elements divided by two
-      type(tensor),intent(inout) :: tpl,tmi,o2ilej !tpl[nor,nvr],tmi[nor,nvr]
+      type(tensor),intent(inout) :: tpl,tmi,o2ilej !tpl[nor,nvr],tmi[nor,nvr],o2ilej[nv,nv,nor]
       !> number of occupied, virutal and ao indices
       integer, intent(in) :: no,nv,nb
       !> first alpha and first gamma indices of the current loop
@@ -772,7 +772,7 @@ module cc_tools_module
       integer :: goffs,aoffs,tlen,tred,nor,nvr
       integer(kind=8) :: s0, s2, s3
 !{`DIL:
-     integer:: nors,nvrs
+     integer:: nors,nvrs,scheme
      character(256):: tcs
      type(dil_tens_contr_t):: tch
      integer(INTL):: dil_mem,l0
@@ -922,8 +922,12 @@ module cc_tools_module
       !COMBINE THE TWO SIGMAS OF W3 IN W2
       !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
+      s0 = wszes(1)
+      s2 = wszes(3)
+      s3 = wszes(4)
+      if(s==1) then; scheme=2; else; scheme=s; endif  !```DIL: remove
       call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,&
+         &no,nv,nb,goffs,aoffs,scheme,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,& !`DIL: scheme --> s
          &sio4_ilej=(s/=2.and.s/=1),o2tens=o2ilej)
 
       call time_start_phase(PHASE_WORK, at=twork)
@@ -996,8 +1000,19 @@ module cc_tools_module
       logical               :: rest_o2_occ, rest_sio4,qu
       real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
+#ifdef DIL_ACTIVE
+!{`DIL:
+     character(256):: tcs
+     type(dil_tens_contr_t):: tch0
+     integer(INTL):: dil_mem,l0
+     integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
+     integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
+     integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+#endif
+     real(realk):: r0
+!}
 
-      if( s == 1 .and. .not. present(o2tens))then
+      if(s == 1 .and. .not. present(o2tens))then
          call lsquit("ERROR(combine_and_transform_sigma): for scheme 1 we need the o2tens argument",-1)
       endif
 
@@ -1314,8 +1329,40 @@ module cc_tools_module
          !transform gamma -> b
          call dgemm('t','n',nv,nor*full1,full2,1.0E0_realk,xvirt(fg+goffs),nb,w2,full2,0.0E0_realk,w3,nv)
          !transform alpha -> a , order is now sigma [ a b i j]
-         if( s == 1)then
-            print *,"Dmitry, do your magic here! update o2tens the following dgemm is to be carried out"
+         if(s == 1) then !`DIL: Tensor contraction 8
+#ifdef DIL_ACTIVE
+          if(DIL_DEBUG) then
+           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 8:")')&
+            &infpar%lg_mynum,infpar%mynum
+          endif
+          tcs='D(a,b,i)+=L(u,a)*R(b,i,u)'
+          call dil_clean_tens_contr(tch0)
+          call dil_set_tens_contr_args(tch0,'d',errc,tens_distr=o2tens)
+          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: DA: ',infpar%lg_mynum,errc
+          if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Destination arg set failed!',-1)
+          tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+          call dil_set_tens_contr_args(tch0,'l',errc,tens_rank,tens_dims,xvirt)
+          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: LA: ',infpar%lg_mynum,errc
+          if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Left arg set failed!',-1)
+          tens_rank=3; tens_dims(1:tens_rank)=(/nv,nor,full1/); tens_bases(1:tens_rank)=(/0,0,fa-1_INTD/)
+          call dil_set_tens_contr_args(tch0,'r',errc,tens_rank,tens_dims,w3,tens_bases)
+          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: RA: ',infpar%lg_mynum,errc
+          if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Right arg set failed!',-1)
+          call dil_set_tens_contr_spec(tch0,tcs,errc,&
+               &ldims=(/int(full1,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
+               &rdims=(/int(nv,INTD),int(nor,INTD),int(full1,INTD)/),rbase=(/0_INTD,0_INTD,int(fa-1,INTD)/),&
+               &alpha=1E0_realk)
+          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: CC: ',infpar%lg_mynum,errc
+          if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Contr spec set failed!',-1)
+          dil_mem=dil_get_min_buf_size(tch0,errc)
+          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: BS: ',infpar%lg_mynum,errc,dil_mem
+          if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Buf size set failed!',-1)
+          call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=.false.)
+          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: TC: ',infpar%lg_mynum,errc
+          if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Tens contr failed!',-1)
+#else
+          call lsquit('ERROR(combine_and_transform_sigma): This part (7) of Scheme 1 requires DIL backend!',-1)
+#endif
          else
             call dgemm('t','t',nv,nv*nor,full1,1.0E0_realk,xvirt(fa),nb,w3,nor*nv,0.0E0_realk,w2,nv)
 
@@ -1324,7 +1371,6 @@ module cc_tools_module
                !in the indices i and j
                call squareup_block_triangular_squarematrix(w2,nv,no,do_block_transpose = .true.)
 
-
                if(s==4.or.s==3)then
                   if( present(order) )then
                      call array_reorder_4d(scaleitby,w2,nv,nv,no,no,order,1.0E0_realk,omega%elm1)
@@ -1332,9 +1378,9 @@ module cc_tools_module
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
                      call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
 #else
-                     !OMP WORKSHARE
+                     !$OMP WORKSHARE
                      omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
-                     !OMP END WORKSHARE
+                     !$OMP END WORKSHARE
 #endif
                   endif
                else if(s==2.or.s==1)then
@@ -1388,8 +1434,40 @@ module cc_tools_module
             !transform gamma -> a
             call dgemm('t','n',nv,nor*full1T,full2T,1.0E0_realk,xvirt(l1),nb,w2,full2T,0.0E0_realk,w3,nv)
             !transform alpha -> , order is now sigma[b a i j]
-            if( s == 1)then
-               print *,"Dmitry, do your magic here! update o2tens "
+            if(s == 1)then !`DIL: Tensor contraction 9
+#ifdef DIL_ACTIVE
+             if(DIL_DEBUG) then
+              write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 9:")')&
+               &infpar%lg_mynum,infpar%mynum
+             endif
+             tcs='D(a,b,i)+=L(u,a)*R(b,i,u)'
+             call dil_clean_tens_contr(tch0)
+             call dil_set_tens_contr_args(tch0,'d',errc,tens_distr=o2tens)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: DA: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Destination arg set failed!',-1)
+             tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+             call dil_set_tens_contr_args(tch0,'l',errc,tens_rank,tens_dims,xvirt)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: LA: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Left arg set failed!',-1)
+             tens_rank=3; tens_dims(1:tens_rank)=(/nv,nor,full1T/); tens_bases(1:tens_rank)=(/0,0,l2-1_INTD/)
+             call dil_set_tens_contr_args(tch0,'r',errc,tens_rank,tens_dims,w3,tens_bases)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: RA: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Right arg set failed!',-1)
+             call dil_set_tens_contr_spec(tch0,tcs,errc,&
+                  &ldims=(/int(full1T,INTD),int(nv,INTD)/),lbase=(/int(l2-1,INTD),0_INTD/),&
+                  &rdims=(/int(nv,INTD),int(nor,INTD),int(full1T,INTD)/),rbase=(/0_INTD,0_INTD,int(l2-1,INTD)/),&
+                  &alpha=1E0_realk)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: CC: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Contr spec set failed!',-1)
+             dil_mem=dil_get_min_buf_size(tch0,errc)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: BS: ',infpar%lg_mynum,errc,dil_mem
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Buf size set failed!',-1)
+             call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=.false.)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: TC: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Tens contr failed!',-1)
+#else
+             call lsquit('ERROR(combine_and_transform_sigma): This part (8) of Scheme 1 requires DIL backend!',-1)
+#endif
             else
                call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
 
@@ -1402,9 +1480,9 @@ module cc_tools_module
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
                         call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
 #else
-                        !OMP WORKSHARE
+                        !$OMP WORKSHARE
                         omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
-                        !OMP END WORKSHARE
+                        !$OMP END WORKSHARE
 #endif
                      endif
                   else if(s==2.or.s==1)then
@@ -1456,10 +1534,41 @@ module cc_tools_module
          if( rest_sio4 )then
             call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4%elm1,no2)
          else
-
             select case(s)
             case(1)
-               print *,"Dmitry, do your magic here! update sio4"
+#ifdef DIL_ACTIVE
+             if(DIL_DEBUG) then !`DIL: Tensor contraction 10
+              write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 10:")')&
+               &infpar%lg_mynum,infpar%mynum
+             endif
+             tcs='D(a,b,i)+=L(u,a)*R(b,i,u)'
+             call dil_clean_tens_contr(tch0)
+             call dil_set_tens_contr_args(tch0,'d',errc,tens_distr=sio4)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: DA: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Destination arg set failed!',-1)
+             tens_rank=2; tens_dims(1:tens_rank)=(/nb,nv/)
+             call dil_set_tens_contr_args(tch0,'l',errc,tens_rank,tens_dims,xvirt)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: LA: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Left arg set failed!',-1)
+             tens_rank=3; tens_dims(1:tens_rank)=(/nv,nor,full1T/); tens_bases(1:tens_rank)=(/0,0,l2-1_INTD/)
+             call dil_set_tens_contr_args(tch0,'r',errc,tens_rank,tens_dims,w3,tens_bases)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: RA: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Right arg set failed!',-1)
+             call dil_set_tens_contr_spec(tch0,tcs,errc,&
+                  &ldims=(/int(full1T,INTD),int(nv,INTD)/),lbase=(/int(l2-1,INTD),0_INTD/),&
+                  &rdims=(/int(nv,INTD),int(nor,INTD),int(full1T,INTD)/),rbase=(/0_INTD,0_INTD,int(l2-1,INTD)/),&
+                  &alpha=1E0_realk)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: CC: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Contr spec set failed!',-1)
+             dil_mem=dil_get_min_buf_size(tch0,errc)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: BS: ',infpar%lg_mynum,errc,dil_mem
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Buf size set failed!',-1)
+             call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=.false.)
+             if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: TC: ',infpar%lg_mynum,errc
+             if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Tens contr failed!',-1)
+#else
+             call lsquit('ERROR(combine_and_transform_sigma): This part (9) of Scheme 1 requires DIL backend!',-1)
+#endif
             case(2)
                call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 

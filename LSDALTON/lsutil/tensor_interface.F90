@@ -29,35 +29,39 @@ module tensor_interface_module
   public MAX_TENSOR_RANK   !max allowed tensor rank for DIL tensor algebra
   public DIL_TC_EACH       !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
   public DIL_TC_ALL        !parameter for <tensor_contract>: All MPI processes work on the same tensor contraction
-  public DIL_ALLOC_BASIC   !Fortran allocate will be used for buffer allocation in <tensor_algebra_dil>
-  public DIL_ALLOC_PINNED  !cudaMallocHost will be used for buffer allocation in <tensor_algebra_dil>
-  public DIL_ALLOC_MPI     !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
+  public DIL_ALLOC_NOT     !status "NOT ALLOCATED"
+  public DIL_ALLOC_BASIC   !Fortran allocate() will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_PINNED  !cudaMallocHost() will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_MPI     !MPI_ALLOC_MEM() will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
+  public DIL_ALLOC_EXT     !external buffer will be used in <tensor_algebra_dil>
   public DIL_CONS_OUT      !output for DIL messages
   public DIL_DEBUG         !DIL debugging switch
-  public dil_tens_contr_t  !tensor contraction specification
-  public subtens_t         !subtensor specification for Janus
-  public dil_subtensor_set !subtensor setting method for Janus
-  public dil_set_alloc_type
-  public dil_clean_tens_contr
-  public dil_set_tens_contr_args
-  public dil_get_min_buf_size
-  public dil_set_tens_contr_spec
-  public dil_tensor_contract
-  public dil_debug_to_file_start
-  public dil_debug_to_file_finish
-  public thread_wtime
-  public process_wtime
-  public dil_array_print
-  public dil_array_init
-  public dil_tensor_init
-  public dil_array_norm1
-  public dil_tensor_norm1
-  public dil_tens_fetch_start        !tensor slice fetching for Janus
-  public dil_tens_fetch_finish_prep  !tensor slice fetching for Janus
-!  public dil_tens_upload_start       !tensor slice uploading for Janus
-!  public dil_tens_upload_finish_prep !tensor slice uploading for Janus
-  public dil_will_malloc_succeed     !tells whether a given malloc() request can succeed if issued
-  public int2str !converts integers to strings
+  public dil_tens_contr_t             !tensor contraction specification
+  public subtens_t                    !subtensor (tensor slice) specification for Janus
+  public dil_subtensor_set            !subtensor (tensor slice) setting method for Janus
+  public dil_set_alloc_type           !set default memory allocation flags (BASIC,MPI_ALLOC,PINNED,etc.)
+  public dil_clean_tens_contr         !clean the tensor contraction handle
+  public dil_set_tens_contr_args      !set up an argument for a tensor contraction
+  public dil_set_tens_contr_spec      !define the tensor contraction specification
+  public dil_get_min_buf_size         !get the minimal buffer size needed to perform the tensor contraction
+  public dil_prepare_buffer           !prepare a work buffer for a tensor contraction
+  public dil_tensor_contract          !contract tensors (pipelined)
+  public dil_tensor_contract_finalize !finalize a non-blocking tensor contraction
+  public dil_debug_to_file_start      !start redirecting debugging information to a file
+  public dil_debug_to_file_finish     !finish redirecting debugging information to a file
+  public thread_wtime                 !OMP thread wall time
+  public process_wtime                !MPI process wall time
+  public dil_array_print              !print a whole (local) array or its part
+  public dil_array_init               !initialize a local array
+  public dil_tensor_init              !initialize a distributed tensor
+  public dil_array_norm1              !compute the 1-norm of a local array
+  public dil_tensor_norm1             !compute the 1-norm of a distributed tensor (blocking)
+  public dil_tens_fetch_start         !tensor slice fetching for Janus (start)
+  public dil_tens_fetch_finish_prep   !tensor slice fetching for Janus (finish)
+  public dil_tens_prep_upload_start   !tensor slice uploading for Janus (start)
+  public dil_tens_upload_finish       !tensor slice uploading for Janus  (finish)
+  public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued
+  public int2str                      !converts integers to strings
 #endif
 
   !This defines the public interface to the tensors
@@ -489,7 +493,7 @@ contains
      call time_start_phase( PHASE_WORK )
   end subroutine tensor_dmul
 
-  subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens)
+  subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens,bg)
      implicit none
      !> specify the number of thensors that should be transformed
      integer, intent(in) :: ntens,nus,maxtensmode
@@ -501,6 +505,8 @@ contains
      type(tensor), intent(in) :: U(nus)
      !this contains the tensors
      type(tensor), intent(in) :: tens(ntens)
+     !use bg buf for temp alloc
+     logical, intent(in), optional :: bg
 
      !internal variables
      integer :: itens, imode, it_mode, isort
@@ -520,7 +526,8 @@ contains
            & pdm         = tens(itens)%access_type, &
            & tensor_type = tens(itens)%itype, &
            & tdims       = tens(itens)%tdim, &
-           & fo          = tens(itens)%offset ) 
+           & fo          = tens(itens)%offset, &
+           & bg          = bg ) 
 
         do imode = 1, it_mode
 
@@ -1652,6 +1659,8 @@ contains
      integer :: order_type,m,n
      real(realk) :: tcpu1,twall1,tcpu2,twall2
      integer(kind=long) :: nelms
+     logical :: bg
+
 
      call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
@@ -1660,6 +1669,7 @@ contains
      do i=1,arr%mode
         new_dims(i) = arr%dims(order(i))
      end do
+     bg=(mem_is_background_buf_init().and.nelms<=mem_get_bg_buf_free())
 
      if( arr%itype == TT_DENSE )then
 
@@ -1667,7 +1677,11 @@ contains
 
         call deassoc_ptr_arr(arr)
 
-        call mem_alloc( new_data,nelms )
+        if(bg)then
+           call mem_pseudo_alloc( new_data,nelms )
+        else
+           call mem_alloc( new_data,nelms )
+        endif
 
         select case(arr%mode)
         case(2)
@@ -1693,7 +1707,11 @@ contains
         !$OMP END WORKSHARE
 #endif
 
-        call mem_dealloc(new_data)
+        if(bg)then
+           call mem_pseudo_dealloc(new_data)
+        else
+           call mem_dealloc(new_data)
+        endif
 
         call assoc_ptr_arr(arr)
 
