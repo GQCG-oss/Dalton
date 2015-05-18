@@ -2151,9 +2151,11 @@ module f12_routines_module
       
     MemAvailable = 0.0E0_realk   
     call get_currently_available_memory(MemAvailable)
+    print *,"non-scaled MemAvailable: ", MemAvailable
     MemAvailable = MemAvailable*1.0E9_realk !In bytes
+    print *,"scaled MemAvailable: ", MemAvailable
   
-    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+ !   call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
  
     if(DECinfo%F12DEBUG) then
 !!$       print *, "----------------------------------"
@@ -2209,6 +2211,10 @@ module f12_routines_module
 !!$             print *, "dimAlpha:", dimAlpha
 !!$          endif
           exit alpha   
+       endif
+       
+       if(k==n11) then
+          dimAlpha = n11
        endif
 
     enddo alpha
