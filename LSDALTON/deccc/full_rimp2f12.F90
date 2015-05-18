@@ -133,7 +133,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:)
    logical :: Test 
    logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF
-   logical :: RIF12,FORCEPRINT,use_bg_buf
+   logical :: RIF12,FORCEPRINT,use_bg_buf,LS
    character :: intspec(5)
    type(matrix) :: CMO_CABS,CMO_RI
    if(MyMolecule%mem_distributed)then
@@ -207,17 +207,30 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    != The Gaussian geminal divided by the Coulomb operator g/r12 =     
    !=                                                            =
    !==============================================================
-   call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
-      & [Dmat],Econt,1,GGemCouOperator)
-   CoulombF12 = Econt(1) 
-   Econt(1) = 0.0E0_realk
-   call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
-      & [Dmat],Econt,1,GGemCouOperator)
-   ExchangeF12 = Econt(1)       
-   E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E0_realk)
-   WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V1,LS) = ',E21
-   WRITE(*,'(A30,F20.13)')'E(V1,LS) = ', E21
+
+   write(DECinfo%output,'(/,a)') ' ================================================ '
+   write(DECinfo%output,'(a)')   '            DEC-RI-MP2F12 ENERGY TERMS            '
+   write(DECinfo%output,'(a,/)') ' ================================================ '
+   write(*,'(/,a)') ' ================================================ '
+   write(*,'(a)')   '           DEC-RI-MP2F12 ENERGY TERMS             '
+   write(*,'(a,/)') ' ================================================ '
+
+   LS = .FALSE.
+   if (LS) THEN
+      call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+           & [Dmat],Econt,1,GGemCouOperator)
+      CoulombF12 = Econt(1) 
+      Econt(1) = 0.0E0_realk
+      call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+           & [Dmat],Econt,1,GGemCouOperator)
+      ExchangeF12 = Econt(1)       
+      E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E0_realk)
+      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V1,LS) = ',E21
+      WRITE(*,'(A30,F20.13)')'E(V1,LS) = ', E21
+   ENDIF
+   
    !WRITE(*,'(A30,F20.13)')'E(Fijkl,LS) = ',E21
+
    use_bg_buf = .FALSE.
    mp2f12_energy = 0.0E0_realk 
    IF(RIF12)THEN       !Use RI 
@@ -900,6 +913,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
       mp2f12_energy = mp2f12_energy  + EB2
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B2,RI) = ',EB2
+      mp2f12_energy = mp2f12_energy  + EB3
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B3,RI) = ',EB3
       WRITE(*,'(A30,F20.13)')'E(B2,RI) = ',EB2
       WRITE(*,'(A30,F20.13)')'E(B3,RI) = ',EB3
@@ -982,7 +996,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !NB! Changed T to N, dont think it will matter but...
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Krr%elms,k,0.0E0_realk,CalphaD,m)
       call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaR,CalphaG,CalphaD,EB4)
-     
+
+      mp2f12_energy = mp2f12_energy  + EB4
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B4,RI) = ',EB4
       WRITE(*,'(A30,F20.13)')'E(B4,RI) = ', EB4
       
@@ -1057,7 +1072,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !NB! Changed T to N, dont think it will matter but...
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
       call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,CalphaR,CalphaG,CalphaD,EB5)
-     
+
+      mp2f12_energy = mp2f12_energy  + EB5
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B5,RI) = ',EB5
       WRITE(*,'(A30,F20.13)')'E(B5,RI) = ', EB5
       
@@ -1141,7 +1157,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)
       
       call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaR,CalphaG,CalphaD,EB6)
-      
+
+      mp2f12_energy = mp2f12_energy  + EB6
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B6,RI) = ',EB6
       WRITE(*,'(A30,F20.13)')'E(B6,RI) = ', EB6
       
@@ -1174,9 +1191,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Gipja)
       call mem_dealloc(Gpiaj)   
       EB5 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B6,Full) = ',EB5
-      WRITE(*,'(A30,F20.13)')'E(B6,Full) = ', EB5
-
+      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B6,Full) = ',EB6
+      WRITE(*,'(A30,F20.13)')'E(B6,Full) = ', EB6
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
    ENDIF
@@ -1223,7 +1239,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fii%elms,k,0.0E0_realk,CalphaD,m)
       
       call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,CalphaR,CalphaG,CalphaD,EB7)
-      
+
+      mp2f12_energy = mp2f12_energy  + EB7
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B7,RI) = ',EB7
       WRITE(*,'(A30,F20.13)')'E(B7,RI) = ', EB7
       
@@ -1325,7 +1342,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       ABdecompCreateR = .FALSE.
 
       call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,CalphaR,CalphaG,CalphaD,EB8)
-      
+
+      mp2f12_energy = mp2f12_energy  + EB8
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B8,RI) = ', EB8
       WRITE(*,'(A30,F20.13)')'E(B8,RI) = ', EB8
       
@@ -1425,12 +1443,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(ABdecompR)
       ABdecompCreateR = .FALSE.
 
-      !print *, "norm(CalphaR)", norm2(CalphaR)
-      !print *, "norm(CalphaD)", norm2(CalphaD)
-      !print *, "norm(CalphaG)", norm2(CalphaG)
-
       call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaR,CalphaG,CalphaD,EB9)
-      
+
+      mp2f12_energy = mp2f12_energy  + EB9
       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B9,RI) = ', EB9
       WRITE(*,'(A30,F20.13)')'E(B9,RI) = ', EB9
       
@@ -1474,14 +1489,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
    ENDIF
-
-
-
-
-
-
-
-
 
 
    call mem_dealloc(Cfull)

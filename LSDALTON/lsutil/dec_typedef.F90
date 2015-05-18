@@ -78,6 +78,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_LAGLSTHCRIMP2  = 24 ! LS-THC-RI-MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCLSTHCRIMP2  = 25 ! LS-THC-RI-MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTLSTHCRIMP2 = 26 ! LS-THC-RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_RIMP2f12 = 27  ! RI-MP2F12 energy correction
 
   !> \author Kasper Kristensen
   !> \date June 2010

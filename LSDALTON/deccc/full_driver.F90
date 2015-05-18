@@ -61,6 +61,7 @@ contains
     real(realk),intent(inout) :: Ecorr
     !local variables
     real(realk) :: Eerr,Edft
+    real(realk) :: Ecorr_rimp2, Ecorr_rimp2f12
     logical :: Success
     write(DECinfo%output,'(/,a)') ' ================================================ '
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
@@ -88,7 +89,19 @@ contains
           if(DECinfo%ccModel==MODEL_MP2) then
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
-             call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr)
+             call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr_rimp2)       
+             call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr_rimp2f12)
+             Ecorr = Ecorr_rimp2 + Ecorr_rimp2f12
+             write(DECinfo%output,'(/,a)') ' ================================================ '
+             write(DECinfo%output,'(a)')   '                 Energy Summary                   '
+             write(DECinfo%output,'(a,/)') ' ================================================ '
+             write(*,'(/,a)') ' ================================================ '
+             write(*,'(a)')   '                 Energy Summary                   '
+             write(*,'(a,/)') ' ================================================ '
+             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2 CORRECTION TO ENERGY =  ', Ecorr_rimp2
+             write(DECinfo%output,*)  'TOYCODE: RI-MP2 CORRECTION TO ENERGY =  ', Ecorr_rimp2
+             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =  ', Ecorr_rimp2f12
+             write(DECinfo%output,*)  'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =  ', Ecorr_rimp2f12
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
@@ -508,12 +521,12 @@ contains
        print *, ' E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
        print *, ' E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
        print *, ' E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
-       print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
+       !print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
 
        E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
-            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
+            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc))  ! &
+           ! & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
 
        print *, ' E21_Vsum: ', E21_debug
        !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
