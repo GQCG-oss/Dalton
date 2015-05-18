@@ -35,8 +35,8 @@ end subroutine InitIchorSaveGabModule
 
 subroutine AddGabToIchorSaveGabModule(nBatch1,nBatch2,GabIdentifier,BATCHGAB)
 implicit none
-integer :: nBatch1,nBatch2,GabIdentifier
-real(realk) :: BATCHGAB(nBatch1*nBatch2) 
+integer,intent(in) :: nBatch1,nBatch2,GabIdentifier
+real(realk),intent(in) :: BATCHGAB(nBatch1*nBatch2) 
 ! local variables
 integer :: I,J,K,n
 real(realk),pointer :: elms(:)
@@ -101,8 +101,8 @@ end subroutine AddGabToIchorSaveGabModule
 
 subroutine RetrieveGabFromIchorSaveGabModule(nBatch1,nBatch2,GabIdentifier,BATCHGAB)
 implicit none
-integer :: nBatch1,nBatch2,GabIdentifier
-real(realk) :: BATCHGAB(nBatch1*nBatch2) 
+integer,intent(in) :: nBatch1,nBatch2,GabIdentifier
+real(realk),intent(inout) :: BATCHGAB(nBatch1*nBatch2) 
 ! local variables
 integer :: I,J,K
 real(realk),pointer :: elms(:)
@@ -127,7 +127,8 @@ end subroutine RetrieveGabFromIchorSaveGabModule
 
 subroutine RetrieveGabDimFromIchorSaveGabModule(nBatch1,nBatch2,GabIdentifier)
 implicit none
-integer :: nBatch1,nBatch2,GabIdentifier
+integer,intent(in) :: GabIdentifier
+integer,intent(inout) :: nBatch1,nBatch2
 ! local variables
 integer :: I,J,K
 real(realk),pointer :: elms(:)
