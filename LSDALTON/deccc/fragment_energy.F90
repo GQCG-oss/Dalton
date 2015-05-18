@@ -168,7 +168,7 @@ contains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc,pair, use_bg
     type(tensor) :: t2f_local, VOVO_local
-    integer :: a,b,i,j,k,l, ccmodel
+    integer :: a,b,i,j,k,l, ccmodel, nvA,noA,nvE,noE
 
     get_mp2 = .false.
     if (present(add_mp2_opt)) get_mp2 = add_mp2_opt
@@ -191,6 +191,11 @@ contains
     times_pt   => null()
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    nvA = MyFragment%nvirtAOS
+    noA = MyFragment%noccAOS
+
+    nvE = MyFragment%nvirtEOS
+    noE = MyFragment%noccEOS
 
     ! Which model? MP2,CC2, CCSD etc.
     ! *******************************
@@ -329,15 +334,13 @@ contains
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
           if (abc) then
 
-             call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nvirtAOS],2,bg=use_bg)
-             call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
-                  &MyFragment%nvirtAOS,MyFragment%nvirtAOS],4,bg=use_bg)
+             call tensor_init(ccsdpt_t1,[noA,nvA],2,bg=use_bg)
+             call tensor_init(ccsdpt_t2,[noA,noA,nvA,nvA],4,bg=use_bg)
 
           else
 
-             call tensor_init(ccsdpt_t1, [MyFragment%nvirtAOS,MyFragment%noccAOS],2,bg=use_bg)
-             call tensor_init(ccsdpt_t2, [MyFragment%nvirtAOS,MyFragment%nvirtAOS,&
-                  &MyFragment%noccAOS,MyFragment%noccAOS],4,bg=use_bg)
+             call tensor_init(ccsdpt_t1, [nvA,noA],2,bg=use_bg)
+             call tensor_init(ccsdpt_t2, [nvA,nvA,noA,noA],4,bg=use_bg)
 
           endif
 
@@ -349,7 +352,7 @@ contains
                & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
 
 !!! tmp solution...
-          call tensor_init(t2f_local,t2%dims,4,bg=use_bg)
+          call tensor_init(t2f_local,[nvA,nvA,noA,noA],4,bg=use_bg)
           call tensor_cp_data(t2,t2f_local,order=[1,3,2,4])
           !call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 !!!

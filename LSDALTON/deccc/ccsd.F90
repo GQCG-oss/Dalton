@@ -1431,10 +1431,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
         endif
 
+#ifdef VAR_MPI
         if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
            call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
            call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
         endif
+#endif
+
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -2415,10 +2418,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=2 !```DIL: remove
 #endif
+
+#ifdef VAR_MPI
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
         call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
      endif
+#endif
 
      if(scheme==1) then
         print *,"BEFORE FREEING o2ilej we need to update the full residual o2"

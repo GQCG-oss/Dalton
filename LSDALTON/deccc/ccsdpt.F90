@@ -4,6 +4,7 @@
 !> \author: Janus Juul Eriksen
 !> \date: 2012-2014, Aarhus
 module ccsdpt_module
+  use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer, c_size_t
 
 #ifdef VAR_MPI
   use infpar_module
@@ -24,7 +25,6 @@ module ccsdpt_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use lspdm_tensor_operations_module
-  use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer, c_size_t
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -316,14 +316,14 @@ contains
 
           if (abc) then
 
-             call tensor_init(tmp_tensor_1,vovo_in%dims,4)
+             call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4)
              call tensor_cp_data(vovo_in,tmp_tensor_1,order=[2,4,1,3])
              !call tensor_reorder(tmp_tensor_1,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_1%elm1)
              call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR',bg=use_bg)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
-             call tensor_init(tmp_tensor_2,ccsd_doubles_in%dims,4)
+             call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[2,4,3,1])
              !call tensor_reorder(tmp_tensor_2,[2,4,3,1]) ! ccsd_doubles in the order (i,j,b,a)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_2%elm1)
@@ -333,7 +333,7 @@ contains
 
           else
 
-             call tensor_init(tmp_tensor_1,vovo_in%dims,4)
+             call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4)
              call tensor_cp_data(vovo_in,tmp_tensor_1,order=[1,3,2,4])
              !call tensor_reorder(tmp_tensor_1,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_1%elm1)
@@ -341,7 +341,7 @@ contains
                 &tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR',bg=use_bg)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
-             call tensor_init(tmp_tensor_2,ccsd_doubles_in%dims,4)
+             call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[1,3,4,2])
              !call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_2%elm1)

@@ -1000,6 +1000,7 @@ module cc_tools_module
       logical               :: rest_o2_occ, rest_sio4,qu
       real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
+#ifdef DIL_ACTIVE
 !{`DIL:
      character(256):: tcs
      type(dil_tens_contr_t):: tch0
@@ -1007,6 +1008,7 @@ module cc_tools_module
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+#endif
      real(realk):: r0
 !}
 
