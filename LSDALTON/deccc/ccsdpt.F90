@@ -115,6 +115,8 @@ contains
     
     use_bg = mem_is_background_buf_init()
 
+    ! some quit statements
+    if (nocc .gt. nvirt) call lsquit('CCSD(T) with nocc .gt. nvirt has not been implemented...',DECinfo%output)
     if (print_frags .and. DECinfo%pt_hack) call lsquit('print_frags .and. .PT_HACK is not allowed...',DECinfo%output) 
 
     master = .true.
@@ -891,34 +893,16 @@ contains
     tiles_in_buf_ccsd = -1
     tiles_in_buf_vvoo = -1
 
-    if (nocc .gt. nvirt) then
-
-       if(use_bg_buf)then
-          ! init triples tuples structure
-          call mem_pseudo_alloc(trip_ampl,i8*nocc,i8*nocc,i8*nocc)
-          ! init 3d wrk array
-          call mem_pseudo_alloc(trip_tmp,i8*nocc,i8*nocc,i8*nocc)
-       else
-          ! init triples tuples structure
-          call mem_alloc(trip_ampl,nocc,nocc,nocc)
-          ! init 3d wrk array
-          call mem_alloc(trip_tmp,nocc,nocc,nocc)
-       endif
-
+    if(use_bg_buf)then
+       ! init triples tuples structure
+       call mem_pseudo_alloc(trip_ampl,i8*nvirt,i8*nvirt,i8*nvirt)
+       ! init 3d wrk array
+       call mem_pseudo_alloc(trip_tmp,i8*nvirt,i8*nvirt,i8*nvirt)
     else
-
-       if(use_bg_buf)then
-          ! init triples tuples structure
-          call mem_pseudo_alloc(trip_ampl,i8*nvirt,i8*nvirt,i8*nvirt)
-          ! init 3d wrk array
-          call mem_pseudo_alloc(trip_tmp,i8*nvirt,i8*nvirt,i8*nvirt)
-       else
-          ! init triples tuples structure
-          call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
-          ! init 3d wrk array
-          call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
-       endif
-
+       ! init triples tuples structure
+       call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
+       ! init 3d wrk array
+       call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
     endif
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
@@ -2228,21 +2212,10 @@ contains
 
     if (present(e4)) full_no_frags = .true.
 
-    if (nocc .gt. nvirt) then
-
-       ! init triples tuples structure
-       call mem_alloc(trip_ampl,nocc,nocc,nocc)
-       ! init 3d wrk array
-       call mem_alloc(trip_tmp,nocc,nocc,nocc)
-
-    else
-
-       ! init triples tuples structure
-       call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
-       ! init 3d wrk array
-       call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
-
-    endif
+    ! init triples tuples structure
+    call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
+    ! init 3d wrk array
+    call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles and vvvo / ovoo integrals
