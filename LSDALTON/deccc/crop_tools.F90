@@ -645,7 +645,7 @@ module crop_tools_module
       bg = (mem_is_background_buf_init().and.mem_get_bg_buf_free()>=wrksize)
 
       if(bg)then
-         call mem_pseudo_alloc(tmp,wrksize)
+         call mem_pseudo_alloc(tmp,i8*wrksize)
       else
          call mem_alloc(tmp,wrksize)
       endif
@@ -743,7 +743,7 @@ module crop_tools_module
       bg = (mem_is_background_buf_init().and.mem_get_bg_buf_free()>=wrksize)
 
       if(bg)then
-         call mem_pseudo_alloc(tmp,wrksize)
+         call mem_pseudo_alloc(tmp,i8*wrksize)
       else
          call mem_alloc(tmp,wrksize)
       endif

@@ -2865,11 +2865,15 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 
             !simple increase buffer size
             BufferAdaption: do buf = MinAO, nb
-               mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,5,sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-               mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,8,sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+               mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,5,sch,.false.,&
+                  &MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+               mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,8,sch,.false.,&
+                  &MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
                if( mem_o + mem_i > Freebytes)then
-                  mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,5,sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-                  mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,8,sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+                  mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,5,&
+                     &sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+                  mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,8,&
+                     &sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
 
                   exit BufferAdaption
 

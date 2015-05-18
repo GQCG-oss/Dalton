@@ -5460,10 +5460,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               if (mem_used>MemFree)then
                  write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
                  if( checkbg )then
-                    write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB, free buffer: ",I)')MemFree,bg_buf_size
-                    write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB, buff: ",I)')mem_used4,chksze4
-                    write(DECinfo%output,'(" Memory required in scheme 3    : ",f8.3," GB, buff: ",I)')mem_used3,chksze3
-                    write(DECinfo%output,'(" Memory required in scheme 2    : ",f8.3," GB, buff: ",I)')mem_used2,chksze2
+                    write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB, free buffer: ",I10)')MemFree,bg_buf_size
+                    write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB, buff: ",I10)')mem_used4,chksze4
+                    write(DECinfo%output,'(" Memory required in scheme 3    : ",f8.3," GB, buff: ",I10)')mem_used3,chksze3
+                    write(DECinfo%output,'(" Memory required in scheme 2    : ",f8.3," GB, buff: ",I10)')mem_used2,chksze2
                  else
                     write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB")')MemFree
                     write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB")')mem_used4

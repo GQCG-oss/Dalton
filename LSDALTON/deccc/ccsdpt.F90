@@ -665,12 +665,6 @@ contains
 
     end if reducing_to_master
 
-    if (nodtotal .gt. 1) then
-
-       ccsd_doubles%access_type = AT_MASTER_ACCESS
-       vovo%access_type = AT_MASTER_ACCESS
-
-    endif
 
     ! release stuff located on slaves
     releasing_the_slaves: if ((nodtotal .gt. 1) .and. .not. master) then
@@ -699,6 +693,12 @@ contains
 
     end if releasing_the_slaves
 
+    if (nodtotal .gt. 1 .and. master) then
+
+       ccsd_doubles%access_type = AT_MASTER_ACCESS
+       vovo%access_type = AT_MASTER_ACCESS
+
+    endif
 
     call time_start_phase(PHASE_WORK)
 

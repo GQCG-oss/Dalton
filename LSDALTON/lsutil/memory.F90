@@ -2232,7 +2232,7 @@ subroutine mem_pseudo_dealloc_realk3(p)
       & pointers freed than associated",-1)
    endif
 
-   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1))))then
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1,1))))then
       call lsquit("ERROR(mem_pseudo_dealloc_realk3): wrong sequence of &
       &deallocating, make sure you dealloc in the opposite seqence as allocating, &
       &otherwise you will corrupt your data",-1)
