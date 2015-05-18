@@ -499,13 +499,13 @@ contains
       real(8) :: work(lwork)
       integer, allocatable :: ipiv(:)
 
-      integer :: idim, ierror
+      integer :: idimension, ierror
 !
 !     Initialize arrays
-      CALL GETDIM_RELMAT(IDIM,.TRUE.)
+      CALL GETDIM_RELMAT(idimension,.TRUE.)
       fmat = 0.0d0
 !     Reset matrix dimension parameter
-      CALL GETDIM_RELMAT(IDIM,.FALSE.)
+      CALL GETDIM_RELMAT(idimension,.FALSE.)
       IF (.NOT.MQITER) THEN
 
 !        compute polarizabilty dependent terms
@@ -527,17 +527,17 @@ contains
 !     Print Relay matrix
       IF ((IPRTLVL.GE.15).AND.(.NOT.MQITER)) THEN
             WRITE(LUPRI,'(/,2X,A)') '*** Computed Relay matrix ***'
-            CALL OUTPUT(FMAT,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
+            CALL OUTPUT(FMAT,1,idimension,1,idimension,idimension,idimension,1,LUPRI)
       END IF
 !     Invert Relay matrix
       !todo adapt to complex case and invert that one
       IF (.NOT.MQITER) THEN
-         allocate(ipiv(idim))
-         CALL DGETRF(IDIM,IDIM,FMAT,IDIM,IPIV,IERROR)
+         allocate(ipiv(idimension))
+         CALL DGETRF(idimension,idimension,FMAT,idimension,IPIV,IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('LU factorization failed in COMP_RELMAT')
          END IF
-         CALL DGETRI(IDIM,FMAT,IDIM,IPIV,WORK,lwork,             &
+         CALL DGETRI(idimension,FMAT,idimension,IPIV,WORK,lwork,             &
                 IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('Inversion failed in COMP_RELMAT')
@@ -545,7 +545,7 @@ contains
          deallocate(ipiv)
          IF (IPRTLVL.GE.15) THEN
             WRITE(LUPRI,'(/,2X,A)') '*** Inverted Relay matrix ***'
-            CALL OUTPUT(FMAT,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
+            CALL OUTPUT(FMAT,1,idimension,1,idimension,idimension,idimension,1,LUPRI)
          END IF
       END IF
 !
@@ -576,32 +576,32 @@ contains
 !
       real(8) :: FMAT(*), WORK(LWORK)
       integer, allocatable :: ipiv(:)
-      integer :: idim, ierror, lwork
+      integer :: idimension, ierror, lwork
 !
 !     Initialize arrays
-      CALL GETDIM_MMMAT(IDIM,.TRUE.)
-      CALL DZERO(FMAT,IDIM)
+      CALL GETDIM_MMMAT(idimension,.TRUE.)
+      CALL DZERO(FMAT,idimension)
 !     Reset matrix dimension parameter
-      CALL GETDIM_MMMAT(IDIM,.FALSE.)
+      CALL GETDIM_MMMAT(idimension,.FALSE.)
       IF (.NOT.MQITER) THEN
 !        Compute polarizabilty dependent terms
-         CALL GET_MM_AMAT(FMAT,IDIM)
+         CALL GET_MM_AMAT(FMAT,idimension)
       ELSE
 !       Conjugated gradient method via paradiso solver
       END IF
 !     Print Relay matrix
       IF ((IPRTLVL.GE.15).AND.(.NOT.MQITER)) THEN
             WRITE(LUPRI,'(/,2X,A)') '*** Computed Relay (MM) matrix ***'
-            CALL OUTPUT(FMAT,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
+            CALL OUTPUT(FMAT,1,idimension,1,idimension,idimension,idimension,1,LUPRI)
       END IF
 !     Invert Relay matrix
       IF (.NOT.MQITER) THEN
-         allocate(ipiv(idim))
-         CALL DGETRF(IDIM,IDIM,FMAT,IDIM,IPIV,IERROR)
+         allocate(ipiv(idimension))
+         CALL DGETRF(idimension,idimension,FMAT,idimension,IPIV,IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('LU factorization failed in COMP_MMRELMAT')
          END IF
-         CALL DGETRI(IDIM,FMAT,IDIM,IPIV,WORK,lwork,             &
+         CALL DGETRI(idimension,FMAT,idimension,IPIV,WORK,lwork,             &
                 IERROR)
          IF (IERROR.NE.0) THEN
             CALL QUIT('Inversion failed in COMP_MMRELMAT')
@@ -609,7 +609,7 @@ contains
          deallocate(ipiv)
          IF (IPRTLVL.GE.15) THEN
             WRITE(LUPRI,'(/,2X,A)') '*** Inverted Relay(MM) matrix ***'
-            CALL OUTPUT(FMAT,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
+            CALL OUTPUT(FMAT,1,idimension,1,idimension,idimension,idimension,1,LUPRI)
          END IF
       END IF
 !
@@ -996,17 +996,17 @@ contains
 #include "inftap.h"
 !
       real(8) :: fmat(*)
-      integer :: idim
+      integer :: idimension
       integer :: luqmnp
 
 !     determine dimensions
-      CALL GETDIM_RELMAT(IDIM,.TRUE.)
+      CALL GETDIM_RELMAT(idimension,.TRUE.)
 !     write inverted Relay matrix
       LUQMNP = -1
       CALL GPOPEN(LUQMNP,'QMMMNP','UNKNOWN','SEQUENTIAL','UNFORMATTED', &
              IDUMMY,.FALSE.)
       REWIND(LUQMNP)
-      CALL WRTIEF(FMAT, IDIM, 'QQMNPMAT', LUQMNP)
+      CALL WRTIEF(FMAT, idimension, 'QQMNPMAT', LUQMNP)
       CALL GPCLOSE(LUQMNP,'KEEP')
 !
       end subroutine
@@ -1027,12 +1027,12 @@ contains
 #include "inftap.h"
 !
       real(8) :: fmat(*)
-      integer :: idim
+      integer :: idimension
       integer :: luqmnp
       logical :: fndlab
 
 !     determine dimensions
-      CALL GETDIM_RELMAT(IDIM,.TRUE.)
+      CALL GETDIM_RELMAT(idimension,.TRUE.)
 
 !     read inverted Relay matrix
       LUQMNP=-1
@@ -1040,7 +1040,7 @@ contains
              IDUMMY,.FALSE.)
       REWIND(LUQMNP)
       IF (FNDLAB('QQMNPMAT',LUQMNP)) THEN
-        CALL READT(LUQMNP,IDIM,FMAT)
+        CALL READT(LUQMNP,idimension,FMAT)
       ELSE
         CALL QUIT('Problem reading the matrix from the QMMMNP file.')
       ENDIF
