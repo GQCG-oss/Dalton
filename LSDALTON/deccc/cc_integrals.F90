@@ -2371,6 +2371,7 @@ contains
 #endif
     endif
 
+
     select case(scheme)
     case(0)
        collective             = .true.
@@ -2528,7 +2529,7 @@ contains
     if( mem_saving ) addsize = nbuffs*(i8*n1s)*n2s*n3s*n4s
     maxsize = maxsize + addsize
     
-    if(.not.master)then
+    if(master)then
        print *,"INFO(get_mo_integral_par): Getting Alpha:",MaxActualDimGamma," Gamma:",MaxActualDimGamma
        print *,"INFO(get_mo_integral_par): with elements:",maxsize,"in buffer",nbu
     endif

@@ -1395,7 +1395,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part C on master")')&
                     &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
                  ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,8,scheme,.true.,mylsitem%setting,intspec)
+                    &MaxActualDimGamma,0,5,scheme,.true.,mylsitem%setting,intspec)
               else
                  ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
                     &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
@@ -5187,12 +5187,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            lead = no * nv
            w2size = o2v2
            w3size = o2v2
-        else if(s==3.or.s==2)then
+        else if(s==3)then
            faif = 1
            lead = tl
            !use w3 as buffer which is allocated largest possible
            w2size  = tlov
-           w3size  = min(o2v2,tlov + els2add)
+           w3size  = min(o2v2,tlov)
         else
            call lsquit("ERROR(get_cnd_terms_mo_3n4):no valid scheme",-1)
         endif
@@ -5988,13 +5988,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !after the main loop
         !-------------------
-
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
            ! w1/Fock
            memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
            ! w2 w3
            memout = memout + 1.0E0_realk*max(i8*nb*nb,max(2_long*tl1,i8*tl2))
+           ! gvoov-local gvvoo-local
+           memout = memout + 2.0E0_realk*(i8*nv*nv)*no*no
         endif
 
         ! not in bg buf

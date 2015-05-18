@@ -1880,8 +1880,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ampl4_dims = [nv,nv,no,no]
    ampl2_dims = [nv,no]
 
-   print *,"identify 1"
-
    ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
    if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA&
      &.and. ccmodel /= MODEL_SOSEX) then
@@ -1891,7 +1889,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_minit(yv, virt_dims,2, local=local, atype='LDAR' )
    end if
 
-   print *,"identify 2"
    ! allocate things
    if(use_singles) then
       call mem_alloc( t1,     DECinfo%ccMaxIter )
@@ -1911,7 +1908,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call tensor_minit( t1fock, ao2_dims, 2, local=local, atype=atype )
 
-   print *,"identify 3"
    !set job related
    select case(JOB)
    case(SOLVE_AMPLITUDES)
@@ -2032,7 +2028,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       trafo_vovo = .true.
 
    endif
-   print *,"identify 4"
 
    ! go to a (pseudo) canonical basis
    ! --------------------------------
@@ -2060,7 +2055,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    Cv_b1 => null()
    Cv_b2 => null()
-   print *,"identify 5"
 
    use_pseudo_diag_basis = .not.(DECinfo%CCSDpreventcanonical)
 
@@ -2101,7 +2095,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          Uv%elm2(aa,aa) = 1.0E0_realk
       enddo
    endif
-   print *,"identify 6"
 
    call tensor_free(oo_fock)
    call tensor_free(vv_fock)
@@ -2135,8 +2128,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call mem_dealloc( Co_d )
    call mem_dealloc( Cv_d )
-
-   print *,"identify 7"
 
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_fock_mat, &
       &twall = time_prec1 , labelttot = 'CCSOL: AO FOCK MATRIX :', output = DECinfo%output)
@@ -2192,8 +2183,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_change_atype_to_d( vvfock_prec )
    endif
 
-   print *,"identify 8"
-
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_prec1,&
       &labelttot = 'CCSOL: PRECOND. INIT. :', output = DECinfo%output)
 
@@ -2211,7 +2200,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
       call tensor_free(VOVO)
    endif
-   print *,"identify 9"
 
    call mem_alloc( B, DECinfo%ccMaxDIIS, DECinfo%ccMaxDIIS )
    call mem_alloc( c, DECinfo%ccMaxDIIS                    )
@@ -2235,7 +2223,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
-   print *,"identify 10"
    call tensor_free(vofock_prec)
    if( JOB == SOLVE_MULTIPLIERS )then
       call tensor_free(ovfock_prec)
@@ -2249,7 +2236,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,&
       &(JOB==SOLVE_MULTIPLIERS),nb,no,nv,DECinfo%ccMaxDIIS,restart,restart_from_converged,old_iter)
 
-   print *,"identify 11"
 
    If_not_converged: if(.not.restart_from_converged)then
 
@@ -2273,7 +2259,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          next     = get_iter_idx(iter + 1)
          nSS      = min(iter,DECinfo%ccMaxDIIS)
 
-   print *,"identify 12"
          ! Initialize residual vectors
          ! ---------------------------
          if(use_singles)then
@@ -2284,7 +2269,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             & atype='TDAR', tdims=[vs,vs,os,os] )
          call tensor_zero(omega2(iter_idx))
 
-   print *,"identify 13"
 
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
 
@@ -2302,13 +2286,11 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_t1_trafo, &
             &labelttot= 'CCIT: T1 TRAFO        :', output = DECinfo%output, twall = time_residual ) 
 
-   print *,"identify 14"
          !Get the residual r = Ax - b for any of the implemented models
          !-------------------------------------------------------------
          call ccsolver_get_residual(ccmodel,JOB,omega2,t2,fock,t1fock,iajb,no,nv,oofock_prec,vvfock_prec,xo,xv,yo,yv,nb,MyLsItem,&
             &omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
 
-   print *,"identify 15"
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
             &labelttot= 'CCIT: RESIDUAL        :', output = DECinfo%output, twall = time_crop_mat ) 
@@ -2619,7 +2601,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
-         call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
+         call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", bg=bg_was_init)
          call tensor_cp_data(t2(iter_idx), p4, order = [1,3,2,4] )
 
          if(use_singles) then
@@ -2670,7 +2652,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used
    ! RHS or restore the old rhs
-   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
+   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR", bg=bg_was_init )
    call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
    
    call ccdriver_dealloc_workspace(saferun,local,bg_was_init)
@@ -2714,7 +2696,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !transform back to original basis!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   call tensor_transform_basis( [Uo,Uv], 2, [p4,VOVO], [[2,1,2,1],[2,1,2,1]], [[2,2,2,2],[2,2,2,2]], 4, 2)
+   call tensor_transform_basis( [Uo,Uv], 2, [p4,VOVO], [[2,1,2,1],[2,1,2,1]], [[2,2,2,2],[2,2,2,2]], 4, 2,bg=bg_was_init)
 
    if(use_singles)then
       !FIXME: all can local trans and local can trans should be replaced by
@@ -2723,7 +2705,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    endif
 
    if(trafo_m2) call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=m2%elm1 )
-   if(trafo_m4) call tensor_transform_basis([Uo,Uv],2, [m4], [[2,1,2,1]], [[2,2,2,2]], 4, 1)
+   if(trafo_m4) call tensor_transform_basis([Uo,Uv],2, [m4], [[2,1,2,1]], [[2,2,2,2]], 4, 1, bg=bg_was_init)
 
    if(fragment_job.and.use_pnos)then
       call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,oo=frag%OccMat,vv=frag%VirtMat)
