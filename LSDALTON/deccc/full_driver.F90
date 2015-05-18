@@ -451,6 +451,23 @@ contains
              end do
           end do
        end do
+       IF(DECinfo%F12Ccoupling)THEN
+          !overwrite the amplitudes with F12 modified amplitudes which includes the C coupling. TK
+          do J=1,nocc
+             do B=1,nvirt
+                do I=1,nocc
+                   do A=1,nvirt
+                      ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+                      eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                           & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
+                      eps = (gmo(A,I,B,J) + 3.0E0_realk/8.0E0_realk*Ciajb(I,A,J,B) + 1.0E0_realk/8.0E0_realk*Ciajb(J,A,I,B))/eps
+                      Taibj(a,i,b,j) = eps
+                   enddo
+                enddo
+             enddo
+          enddo
+       ENDIF
+
 
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS
@@ -521,12 +538,12 @@ contains
        print *, ' E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
        print *, ' E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
        print *, ' E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
-       !print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
+!       print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
 
        E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
             & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc))  ! &
-           ! & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
+!            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
 
        print *, ' E21_Vsum: ', E21_debug
        !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
@@ -1375,7 +1392,6 @@ contains
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
 
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
-    call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
 
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
    
@@ -1809,7 +1825,6 @@ contains
     endif
     
     call mem_dealloc(Ciajb)
-    call mem_dealloc(Cjaib)
 
     ! Add contributions
     ECCSD_F12 = ECCSD + EF12
