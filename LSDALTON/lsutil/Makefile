@@ -60,6 +60,7 @@ F90_OBJS = \
 	dft_operations.o\
 	dftMem.o\
 	ddynType.o\
+	background_buffer.o\
 	BasisinfoType.o\
 	Basisinfo_operations.o\
         common_utilities.o \
@@ -112,6 +113,7 @@ F90_OBJS = \
 	lstensor_Mem.o\
 	LSoptType.o\
 	par_mod.o\
+	pseudoinverse.o\
 	ProfileType.o\
 	lsmpiType.o\
 	lsmpi-operations.o\

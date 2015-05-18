@@ -3501,9 +3501,6 @@ end function max_batch_dimension
     dofragopt64 = jobs%dofragopt
     esti64      = jobs%esti
 
-    ! Pair cutoff
-    write(funit) DECinfo%pair_distance_threshold
-
     write(funit) int(jobs%njobs,kind=8)
     write(funit) int(jobs%atom1,kind=8)
     write(funit) int(jobs%atom2,kind=8)
@@ -3546,11 +3543,6 @@ end function max_batch_dimension
     ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-
-    ! Pair cutoff
-    read(funit) DECinfo%pair_distance_threshold
-    write(DECinfo%output,'(1X,a,g20.8)') 'Pair cutoff read from file:', DECinfo%pair_distance_threshold
 
     call read_64bit_to_int(funit,njobs)
     if(njobs/=jobs%njobs) then

@@ -110,6 +110,7 @@ C     control print in BASLIB, usually IPRBAS = IPREAD = IPRUSR + 1 = 1
 C     from calling routine
       IPRINT = IPRBAS
       IF (BASNAM(1:1).eq.' ') IPRINT = 5
+      INTQ   = NINT(Q)
       IF (IPRINT .GE. 5) THEN
          WRITE (lupri,*) 'BASLIB: Q, QEFF, INTQ',Q,QEFF,INTQ
          WRITE (lupri,*) 'BASLIB: BASNAM ',BASNAM
@@ -121,7 +122,6 @@ C     from calling routine
 
       BASTMP = ' '
       BASSAV = BASNAM
-      INTQ   = NINT(Q)
       LUBAS  = -1
       NBLOCK = 0
       IAUG   = 0
