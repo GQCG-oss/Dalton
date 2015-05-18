@@ -1421,7 +1421,7 @@
           deallocate(arr,STAT=ierr)
           if(ierr.ne.0) ierr=2
          case(DIL_ALLOC_PINNED)
-          caddr=c_loc(arr);
+          caddr=c_loc(arr(1));
           !`Write (call C wrapper for cudaMallocHost)
           if(ierr.ne.0) ierr=3
           nullify(arr)
