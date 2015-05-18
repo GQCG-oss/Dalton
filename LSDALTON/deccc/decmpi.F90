@@ -21,9 +21,8 @@ module decmpi_module
   use array2_simple_operations
 
 contains
+
 #ifdef VAR_MPI
-
-
 
   !> \brief Send three fragment energies (for occupied, virtual, and Lagrangian schemes)
   !> from given sender (typically a slave) to given receiver (typically the master).
@@ -2372,6 +2371,7 @@ contains
     call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%print_frags,Master)
     call ls_mpi_buffer(DECitem%abc,Master)
+    call ls_mpi_buffer(DECitem%ijk_tile_size,Master)
     call ls_mpi_buffer(DECitem%abc_tile_size,Master)
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
@@ -2834,12 +2834,110 @@ contains
 
   end subroutine get_slaves_to_simple_par_mp2_res
 
+#endif
+
+  !> \brief this routine is used to decide wheter a job has to be carried out on
+  !a given node and enables a dynamic load balance for the nodes in an integral
+  !direct loop
+  !> \author Patrick Ettenhuber
+  !> \date unknown
+  subroutine check_job(batch,fr,dyn,a,g,nA,nG,static,win,prnt)
+     implicit none
+     !> combined index in the alpha-gamma counter regime
+     integer, intent(inout) :: batch
+     !> logical to check whether this routine is called for the first time-this
+     !is important for the dynamic load balancing
+     logical, intent(inout) :: fr
+     !> is dynamic load balancing requested, is print requested
+     logical,intent(in) :: dyn,prnt
+     !> number of alpha and gamma batches
+     integer,intent(in) :: nA,nG
+     !> current alpha and gamma counters
+     integer,intent(inout) :: a,g
+     ! if not dynamic lload balancing this array contains the ranks of the nodes
+     ! that have to do a particular job, with gamma as the fast counter!!
+     integer, pointer, intent(inout) :: static(:)
+     ! this is the window handle used in the dynamic load balancing scheme
+     integer(kind=ls_mpik) :: win
+     !> internal variables
+     real(realk) :: mpi_buf
+     integer :: GammaAlpha(2)
+     integer :: one
+#ifdef VAR_MPI
+     one  = 1
+
+     !GET MPI batch number
+     if(.not.dyn)then
+
+        !Check the static array for my_rank and return
+        batch=batch+1
+        FindJobLoop: do while(batch<=nA*nG)
+
+           call get_midx(batch,GammaAlpha,[nA,nG],2)
+
+           a = GammaAlpha(1)
+           g = GammaAlpha(2)
+
+           !check whether this job has been assigned to me
+           if(static((a-1)*nG+g)/=infpar%lg_mynum)then
+              batch=batch+1
+           else
+
+              exit FindJobLoop
+
+           endif
+
+        enddo FindJobLoop
+
+     else
+
+        if(fr)then
+
+           !in the first call we just take the rank as the job to be carried out
+           fr   = .false.
+           batch = infpar%lg_mynum + 1
+
+        else
+
+           ! in all subsequent calls we use lsmpi_get_acc to get the new job
+           ! identifier
+           call time_start_phase( PHASE_COMM )
+#ifdef VAR_HAVE_MPI3
+           call lsmpi_get_acc(one,batch,infpar%master,1,win)
+           call lsmpi_win_flush(win,rank = infpar%master, local=.true.)
+#else
+           call lsmpi_win_lock(infpar%master,win,'e')
+           call lsmpi_get_acc(one,batch,infpar%master,1,win)
+           call lsmpi_win_unlock(infpar%master,win)
+#endif
+           call time_start_phase( PHASE_WORK )
+        endif
+     endif
 
 #else
-  !Added to avoid "has no symbols" linking warning
-  subroutine decmpi_module_void()
-  end subroutine decmpi_module_void
+     !Non--MPI job counting, only increment
+     batch = batch + 1
 #endif
+
+     ! No more jobs to be done exit
+     if(batch > nG*nA )return
+
+     call get_midx(batch,GammaAlpha,[nA,nG],2)
+
+     a = GammaAlpha(1)
+     g = GammaAlpha(2)
+
+#ifdef VAR_MPI
+     if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
+        &a,na,g,ng
+#else
+     if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
+        &na,g,ng
+#endif
+     call lsmpi_poke()
+
+  end subroutine check_job
+
 end module decmpi_module
 
 

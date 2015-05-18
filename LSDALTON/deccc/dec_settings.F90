@@ -253,6 +253,7 @@ contains
 
     ! ccsd(t) settings
     DECinfo%abc               = .false.
+    DECinfo%ijk_tile_size     = 1000000
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
@@ -511,6 +512,7 @@ contains
        ! CCSD(T) INFO
        ! ==============
        case('.PT_ABC'); DECinfo%abc = .true.
+       case('.IJK_TILE'); read(input,*) DECinfo%ijk_tile_size
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs

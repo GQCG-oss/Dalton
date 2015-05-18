@@ -1974,6 +1974,7 @@ END SUBROUTINE mpicopy_reduced_screen_info
      integer(kind=ls_mpik),intent(in) :: comm
      integer(kind=ls_mpik) :: nnod,me
      integer(kind=8) :: bytes_int
+
      call time_start_phase(PHASE_WORK)
      
      bytes_int  = bytes

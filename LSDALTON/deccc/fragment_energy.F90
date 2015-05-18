@@ -169,11 +169,12 @@ contains
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
-    logical :: print_frags,abc,pair,get_mp2
-    integer :: a,b,i,j,k,l, ccmodel
+    logical :: print_frags,abc,pair,get_mp2, use_bg
+    integer :: a,b,i,j,k,l, ccmodel, nvA,noA,nvE,noE
 
     get_mp2 = .false.
     if (present(add_mp2_opt)) get_mp2 = add_mp2_opt
+    use_bg  = mem_is_background_buf_init()
 
     ! Pairfragment?
     pair = MyFragment%pairfrag
@@ -192,6 +193,11 @@ contains
     times_pt   => null()
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    nvA = MyFragment%nvirtAOS
+    noA = MyFragment%noccAOS
+
+    nvE = MyFragment%nvirtEOS
+    noE = MyFragment%noccEOS
 
     ! Which model? MP2,CC2, CCSD etc.
     ! *******************************
@@ -315,11 +321,13 @@ contains
        ! ***********************************
        if(MyFragment%ccmodel==MODEL_CCSDpT) then
           call dec_fragment_time_init(times_pt)
+
           if (pair) then
              call get_ccsdpt_fragment_energies(MyFragment,VOVO,t2,t1,pair,fragment1,fragment2)
           else
              call get_ccsdpt_fragment_energies(MyFragment,VOVO,t2,t1,pair)
           end if
+
           call dec_fragment_time_get(times_pt)
        end if
 
@@ -592,7 +600,9 @@ contains
 
      type(tensor) :: ccsdpt_t1, ccsdpt_t2
      type(tensor) :: ccsdpt_t2occ, ccsdpt_t2virt, t2occ, t2virt
-     logical :: abc
+     logical :: abc,bg
+#ifdef MOD_UNRELEASED
+     bg  = mem_is_background_buf_init()
 
      ! Get (T) singles and doubles intermediates:
      ! ******************************************
@@ -602,13 +612,13 @@ contains
 
      ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
      if (abc) then
-        call tensor_init(ccsdpt_t1,[frag%noccAOS,frag%nvirtAOS],2)
+        call tensor_init(ccsdpt_t1,[frag%noccAOS,frag%nvirtAOS],2,bg=bg)
         call tensor_init(ccsdpt_t2,[frag%noccAOS,frag%noccAOS,&
-             &frag%nvirtAOS,frag%nvirtAOS],4)
+             &frag%nvirtAOS,frag%nvirtAOS],4,bg=bg)
      else
         call tensor_init(ccsdpt_t1, [frag%nvirtAOS,frag%noccAOS],2)
         call tensor_init(ccsdpt_t2, [frag%nvirtAOS,frag%nvirtAOS,&
-             &frag%noccAOS,frag%noccAOS],4)
+             &frag%noccAOS,frag%noccAOS],4,bg=bg)
      endif
 
      ! call ccsd(t) driver and single fragment evaluation
@@ -656,6 +666,9 @@ contains
      call tensor_free(ccsdpt_t2virt)
      call tensor_free(t2occ)
      call tensor_free(t2virt)
+#else
+     call lsquit("ERROR(get_ccsdpt_fragment_energies): not implemented in this version",-1)
+#endif
 
   end subroutine get_ccsdpt_fragment_energies
 
