@@ -402,7 +402,7 @@ contains
    end subroutine
 
 
-   pure subroutine getdim_relmat(imatdim, sqflag)
+   pure function getdim_relmat(sqflag)
 !
 ! Purpose:
 !     determines Relay matrix dimensions.
@@ -415,29 +415,29 @@ contains
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
 
-      integer, intent(out) :: imatdim
       logical, intent(in)  :: sqflag
+      integer              :: getdim_relmat
 
 #include "qmnpmm.h"
-!
-      IMATDIM = 0
+
+      getdim_relmat = 0
 !     Add nanoparticle contribution
       IF (DONPSUB) THEN
-         IMATDIM = IMATDIM + 3*TNPATM
+         getdim_relmat = getdim_relmat + 3*TNPATM
          IF (DONPCAP) THEN
-            IMATDIM = IMATDIM + TNPATM
+            getdim_relmat = getdim_relmat + TNPATM
          END IF
       END IF
 !     Add Lagrangian term
       IF (DONPCAP.OR.DOMMCAP) THEN
-         IMATDIM = IMATDIM + 1
+         getdim_relmat = getdim_relmat + 1
       END IF
 !     Get requested dimmension
       IF ((.NOT.MQITER).AND.SQFLAG) THEN
-         IMATDIM = IMATDIM*IMATDIM
+         getdim_relmat = getdim_relmat*getdim_relmat
       END IF
-!
-   end subroutine
+
+   end function
 
 
    pure subroutine getdim_mmmat(imatdim, sqflag)
@@ -502,10 +502,10 @@ contains
       integer :: idimension, ierror
 !
 !     Initialize arrays
-      CALL GETDIM_RELMAT(idimension,.TRUE.)
+      idimension = getdim_relmat(.true.)
       fmat = 0.0d0
 !     Reset matrix dimension parameter
-      CALL GETDIM_RELMAT(idimension,.FALSE.)
+      idimension = getdim_relmat(.false.)
       IF (.NOT.MQITER) THEN
 
 !        compute polarizabilty dependent terms
@@ -579,10 +579,10 @@ contains
       integer :: idimension, ierror, lwork
 !
 !     Initialize arrays
-      CALL GETDIM_MMMAT(idimension,.TRUE.)
+      idimension = getdim_relmat(.true.)
       CALL DZERO(FMAT,idimension)
 !     Reset matrix dimension parameter
-      CALL GETDIM_MMMAT(idimension,.FALSE.)
+      idimension = getdim_relmat(.false.)
       IF (.NOT.MQITER) THEN
 !        Compute polarizabilty dependent terms
          CALL GET_MM_AMAT(FMAT,idimension)
@@ -1000,7 +1000,7 @@ contains
       integer :: luqmnp
 
 !     determine dimensions
-      CALL GETDIM_RELMAT(idimension,.TRUE.)
+      idimension = getdim_relmat(.true.)
 !     write inverted Relay matrix
       LUQMNP = -1
       CALL GPOPEN(LUQMNP,'QMMMNP','UNKNOWN','SEQUENTIAL','UNFORMATTED', &
@@ -1032,7 +1032,7 @@ contains
       logical :: fndlab
 
 !     determine dimensions
-      CALL GETDIM_RELMAT(idimension,.TRUE.)
+      idimension = getdim_relmat(.true.)
 
 !     read inverted Relay matrix
       LUQMNP=-1
@@ -1075,7 +1075,7 @@ contains
       integer              :: idimension, i
       integer              :: iprint
 
-      call getdim_relmat(idimension, .false.)
+      idimension = getdim_relmat(.false.)
 
       ! allocate and set gaussian broadening paramenters
 
