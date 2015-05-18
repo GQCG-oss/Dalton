@@ -654,7 +654,7 @@ module cc_tools_module
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
+         !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
          call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
          !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
          call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
@@ -668,7 +668,7 @@ module cc_tools_module
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
+         !(w2):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
          call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
          !(w0):I- [delta alpha<=gamma c] = (w2):I- [beta delta alpha<=gamma] * Lambda^h[beta c]
          call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
@@ -691,7 +691,7 @@ module cc_tools_module
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I+ [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] + (w2):I[beta delta alpha gamma]
+         !(w2):I+ [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] + (w2):I[beta delta alpha gamma]
          call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
          !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
          call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
@@ -707,7 +707,7 @@ module cc_tools_module
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-         !(w0):I- [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] - (w2):I[beta delta alpha gamma]
+         !(w2):I- [delta alpha<=gamma beta] <= (w2):I [beta delta alpha gamma ] - (w2):I[beta delta alpha gamma]
          call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2)
          !(w0):I- [delta alpha<=gamma c] = (w2):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
          call dgemm('t','n',nb*tred,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*tred)
