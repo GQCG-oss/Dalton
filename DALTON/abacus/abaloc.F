@@ -21,7 +21,9 @@
 !...      http://daltonprogram.org
 !
 !
-C
+ 
+C  FILE : abacus/abaloc.F
+
 C  /* Deck locini */
       SUBROUTINE LOCINI
 C
@@ -86,7 +88,7 @@ C
        END DO
 C
        IF (NEWDEF) THEN
-         WORD1 = WORD	
+         WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
             PROMPT = WORD(1:1)
@@ -880,7 +882,7 @@ C
 C
 #ifdef NOT_FINISHED_YET
 CSPAS:2.6.2011: this breaks the parallel code
-         CALL NEWMOLDE(IPRSOS,WORK(KLCMO),OCCUP)
+         CALL NEWMOLDEN(IPRSOS,WORK(KLCMO),OCCUP)
 #endif
 C
       END IF
@@ -2329,9 +2331,9 @@ C
       END
 
 C***********************************************************************
-C  /* Deck newmolde */
+C  /* Deck newmolden */
 #ifdef NOT_FINISHED_YET
-        SUBROUTINE NEWMOLDE(IPRSOS,CLMO,OCCUP)
+        SUBROUTINE NEWMOLDEN(IPRSOS,CLMO,OCCUP)
 C
 C
 C       This subroutine copies the molden.inp ( with nonlocalized mo's )
@@ -2352,7 +2354,7 @@ C      INTEGER*4 UNIT2, MATCH1, MATCH2, NRF1, NRF2, NOCCT, NBAST
 Cend-PFP
        CHARACTER LEE(77), WORD1(n1), WORD2(n2)
 C
-      CALL QENTER('NEWMOLDE')
+      CALL QENTER('NEWMOLDEN')
 C
        word1(1)='['
        word1(2)='M'
@@ -2369,21 +2371,17 @@ C
 C
        call flshfo(lupri) 
 C
-CSPAS: 27/5-11: adjusting to changes in the GPOPEN routine
-C      LUMOLDE1 = 0
-CKeinSPASmehr
-C 
-       CALL GPOPEN(LUMOLDE1,'moldenloc.inp','UNKNOWN',' ','FORMATTED',
-     &             IDUMMY,.FALSE.)
+       LU_MOLDENLOC = -1
+       CALL GPOPEN(LU_MOLDENLOC,'moldenloc.inp','UNKNOWN',' ',
+     &             'FORMATTED',IDUMMY,.FALSE.)
 C
        call flshfo(lupri) 
 C
-       IPRMOL = LUMOLDE1
        REWIND(LUMOLDEN)     
 C
  1     READ(LUMOLDEN,'(77A)',err=10,end=10)lee
 C
-       IF ( lee(1) .EQ. '[') THEN	
+       IF ( lee(1) .EQ. '[') THEN
           match1 = 0
           CALL EQUALLY(lee,word1,n1,match1)
           IF ( match1 .EQ. 4 ) THEN
@@ -2393,13 +2391,13 @@ C    here we should call to MOMOS
 C--------------------------------
 C
              DONEIV = .FALSE.
-             CALL lmomos(IPRMOL,1,CLMO,OCCUP)
+             CALL lmomos(LU_MOLDENLOC,1,CLMO,OCCUP)
  2           READ (LUMOLDEN,'(77A)',err=10,end=10)lee
              IF ( lee(1) .eq. '[' ) THEN
                 match2 = 0
                 CALL EQUALLY(lee,word2,n2,match2)
                 IF ( match2 .EQ. 7 ) THEN
-                   WRITE(LUMOLDE1,'(77A)')lee
+                   WRITE(LU_MOLDENLOC,'(77A)')lee
                    GOTO 1
                 ELSE
                    GOTO 2
@@ -2408,11 +2406,11 @@ C
                 GOTO 2
              END IF
           ELSE
-             WRITE(LUMOLDE1,'(77A)')lee
+             WRITE(LU_MOLDENLOC,'(77A)')lee
              GOTO 1
           END IF
        ELSE
-          WRITE(LUMOLDE1,'(77A)')lee
+          WRITE(LU_MOLDENLOC,'(77A)')lee
           GOTO 1
        END IF
 C
@@ -2424,9 +2422,9 @@ C
      &        '--- Use [-v] opt. when running dalton to see it ----',
      &        '----------------------------------------------------'
 C
-       CALL GPCLOSE(LUMOLDE1,'KEEP')
+       CALL GPCLOSE(LU_MOLDENLOC,'KEEP')
 C
-      CALL QEXIT('NEWMOLDE')
+      CALL QEXIT('NEWMOLDEN')
 C
        RETURN
        END
@@ -2453,11 +2451,11 @@ C
 C
        RETURN 
        END 
-	
+
 
 C***********************************************************************
 C  /* Deck lmomos */
-      SUBROUTINE LMOMOS(IPRMOL,ITASK,ORVAL,OCCUP)
+      SUBROUTINE LMOMOS(LU_MOLDENLOC,ITASK,ORVAL,OCCUP)
 C
 C     This is just momos in for localized orbtitals
 C
@@ -2493,7 +2491,7 @@ C
 C
          IF (.NOT. DONEIV) THEN 
 C
-          WRITE(IPRMOL,'(/A)') '[MO]'
+          WRITE(LU_MOLDENLOC,'(/A)') '[MO]'
 C          
             ISYMCLAS = 1
             ISYMORB = 0
@@ -2507,9 +2505,9 @@ C
                   ISYMCLAS = ISYMCLAS + 1
                END IF
 C
-               WRITE(IPRMOL,'(A,1X,F9.4)') 'Ene=',OREN(I)
-               WRITE(IPRMOL,'(A,1X)') 'Spin= Alpha'
-               WRITE(IPRMOL,'(A,1X,F6.4)') 'Occup=',OCCUP(I)
+               WRITE(LU_MOLDENLOC,'(A,1X,F9.4)') 'Ene=',OREN(I)
+               WRITE(LU_MOLDENLOC,'(A,1X)') 'Spin= Alpha'
+               WRITE(LU_MOLDENLOC,'(A,1X,F6.4)') 'Occup=',OCCUP(I)
 C
                DO 4 M=1,NBAST
 C
@@ -2528,10 +2526,10 @@ C
                            END IF
 C
                            IF (CHRSGN(NINT(CTRAN(K+IADD,J))).EQ.'+')THEN
-                              WRITE(IPRMOL,'(1X,I2,1X,F10.6)')
+                              WRITE(LU_MOLDENLOC,'(1X,I2,1X,F10.6)')
      &                             M,ORVAL(ICMMO)
                            ELSE
-                             WRITE(IPRMOL,'(1X,I2,1X,F10.6)')
+                             WRITE(LU_MOLDENLOC,'(1X,I2,1X,F10.6)')
      &                             M,-1.0D0*ORVAL(ICMMO)
                            END IF
 C
@@ -2542,7 +2540,7 @@ C
                   IF(WRTELEM) THEN
                      ICMMO = ICMMO+1
                   ELSE IF(WRTZERO) THEN
-                     WRITE(IPRMOL,'(1X,I2,1X,A)')M,'  0.000000'
+                     WRITE(LU_MOLDENLOC,'(1X,I2,1X,A)')M,'  0.000000'
                   END IF
 C
  4             CONTINUE
@@ -2550,7 +2548,7 @@ C
                ISYMORB=ISYMORB+1
  1          CONTINUE
 C
-            CALL LMOATOMS('ATOM') 
+            CALL LMOATOMS('ATOM',LU_MOLDENLOC) 
 C
          END IF
          DONEIV = .TRUE.
@@ -2572,7 +2570,7 @@ C
 
 C***********************************************************************
 C  /* Deck lmoatoms */
-      SUBROUTINE LMOATOMS(WORD)
+      SUBROUTINE LMOATOMS(WORD,LU_MOLDENLOC)
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -2619,9 +2617,9 @@ CPFP
 C       IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 C
 C          NCOOR = 3*NUCDEP
-C          IF (WORD .EQ. 'XYZ ') WRITE(LUMOLDE1,'(I3/)') NUCIND 
-C          IF (WORD .EQ. 'ATOM') WRITE(LUMOLDE1,'(A)') '[Atoms] AU' 
-C          IF(WORD .EQ. 'FREQ') WRITE(LUMOLDE1,'(A)') ' [FR-COORD]' 
+C          IF (WORD .EQ. 'XYZ ') WRITE(LU_MOLDENLOC,'(I3/)') NUCIND 
+C          IF (WORD .EQ. 'ATOM') WRITE(LU_MOLDENLOC,'(A)') '[Atoms] AU' 
+C          IF(WORD .EQ. 'FREQ') WRITE(LU_MOLDENLOC,'(A)') ' [FR-COORD]' 
 C
 C          ICRX = 1
 c          ICRY = 2
@@ -2633,11 +2631,11 @@ C             IF (MULT(MULCNT) .EQ. 1) THEN
 C                ICHARGE = NINT(CHARGE(ICENT))
 C                   
 C                IF (WORD .EQ. 'ATOM')
-C     &               WRITE (LUMOLDE1,'(A,1X,I5,1X,I5,3(1X,F20.10))')
+C     &               WRITE (LU_MOLDENLOC,'(A,1X,I5,1X,I5,3(1X,F20.10))')
 C     &               NAME,ICENT,ICHARGE,(CORD(K,ICENT),K=1,3)
 C
 C                IF(WORD .EQ. 'FREQ' .OR. WORD .EQ. 'XYZ ' )
-C     &               WRITE (LUMOLDE1,'(A,3(5X,F15.10))')
+C     &               WRITE (LU_MOLDENLOC,'(A,3(5X,F15.10))')
 C     &               NAME,(CORD(K,ICENT),K=1,3)
 C
 C                ICRX = ICRX + 3
@@ -2651,11 +2649,11 @@ C                      JATOM = JATOM + 1
 C                      ICHARGE = NINT(CHARGE(ICENT))
 C
 C                      IF (WORD .EQ. 'ATOM')
-C     &                  WRITE (LUMOLDE1,'(A,1X,I5,1X,I5,3(1X,F20.10))')
+C     &                  WRITE (LU_MOLDENLOC,'(A,1X,I5,1X,I5,3(1X,F20.10))')
 C     &                         NAME,ICENT+JATOM-1,ICHARGE,
 C     &           ((PT(IAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
 C                      IF(WORD .EQ. 'FREQ')
-C     &                   WRITE (LUMOLDE1,'(A,3(1X,F20.10))') NAME,
+C     &                   WRITE (LU_MOLDENLOC,'(A,3(1X,F20.10))') NAME,
 C     &           ((PT(IAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
 C                      ICRX = ICRX + 3
 C                      ICRY = ICRY + 3
@@ -2673,9 +2671,9 @@ C       END
        IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 
           NCOOR = 3*NUCDEP
-          IF (WORD .EQ. 'XYZ ') WRITE(LUMOLDE1,'(I5/)') NUCDEP 
-          IF (WORD .EQ. 'ATOM') WRITE(LUMOLDE1,'(A)') '[Atoms] AU' 
-          IF (WORD .EQ. 'FREQ') WRITE(LUMOLDE1,'(/A)')'[FR-COORD]' 
+          IF (WORD .EQ. 'XYZ ') WRITE(LU_MOLDENLOC,'(I5/)') NUCDEP 
+          IF (WORD .EQ. 'ATOM') WRITE(LU_MOLDENLOC,'(A)') '[Atoms] AU' 
+          IF (WORD .EQ. 'FREQ') WRITE(LU_MOLDENLOC,'(/A)')'[FR-COORD]' 
        
           IATOM = 0
           DO 100 ICENT = 1, NUCIND
@@ -2693,13 +2691,13 @@ C       END
                    ICHARGE = NINT(CHARGE(ICENT))
 C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                    IATOM = IATOM + 1
-                   WRITE (LUMOLDE1,'(A,1X,I5,1X,I5,3(1X,F20.10))')
+                   WRITE (LU_MOLDENLOC,'(A,2I6,3F21.10)')
      &                    NAME,IATOM,ICHARGE,(CORD(K,ICENT),K=1,3)
                 ELSE IF (WORD .EQ. 'FREQ') THEN
-                   WRITE (LUMOLDE1,'(A,3(1X,F20.10))')
+                   WRITE (LU_MOLDENLOC,'(A,3F21.10)')
      &                    NAME,(CORD(K,ICENT),K=1,3)
                 ELSE IF (WORD .EQ. 'XYZ ') THEN
-                   WRITE (LUMOLDE1,'(A,3(1X,F20.10))')
+                   WRITE (LU_MOLDENLOC,'(A,3F21.10)')
      &                    NAME,(XTANG*CORD(K,ICENT),K=1,3)
                 END IF
              ELSE
@@ -2717,13 +2715,13 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                       IF (WORD .EQ. 'ATOM') THEN
                          ICHARGE = NINT(CHARGE(ICENT))
                          IATOM = IATOM + 1
-                         WRITE (LUMOLDE1,'(A,1X,I5,1X,I5,3(1X,F20.10))')
+                         WRITE (LU_MOLDENLOC,'(A,2I6,3F21.10)')
      &                        NAME,IATOM,ICHARGE,CRX,CRY,CRZ
                       ELSE IF (WORD .EQ. 'FREQ') THEN
-                         WRITE (LUMOLDE1,'(A,3(1X,F20.10))')
+                         WRITE (LU_MOLDENLOC,'(A,3F21.10)')
      &                        NAME,CRX,CRY,CRZ
                       ELSE IF (WORD .EQ. 'XYZ ') THEN
-                         WRITE (LUMOLDE1,'(A,3(1X,F20.10))')
+                         WRITE (LU_MOLDENLOC,'(A,3F21.10)')
      &                        NAME,XTANG*CRX,XTANG*CRY,XTANG*CRZ
                       END IF
                    END IF
@@ -2733,6 +2731,6 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
 
        END IF
        DONEIU = .TRUE.
-       CALL FLSHFO(LUMOLDE1)
+       CALL FLSHFO(LU_MOLDENLOC)
        RETURN
        END
