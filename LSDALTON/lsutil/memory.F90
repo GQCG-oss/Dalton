@@ -395,10 +395,10 @@ INTERFACE mem_alloc
            & Mem1dimInGB,Mem1dimInGBint8
    END INTERFACE MemInGB
    interface mem_pseudo_alloc
-      module procedure mem_pseudo_alloc_realk,mem_pseudo_alloc_realk2,mem_pseudo_alloc_mpirealk
+      module procedure mem_pseudo_alloc_realk,mem_pseudo_alloc_realk2,mem_pseudo_alloc_realk3,mem_pseudo_alloc_mpirealk
    end interface mem_pseudo_alloc
    interface mem_pseudo_dealloc
-      module procedure mem_pseudo_dealloc_realk,mem_pseudo_dealloc_realk2,mem_pseudo_dealloc_mpirealk
+      module procedure mem_pseudo_dealloc_realk,mem_pseudo_dealloc_realk2,mem_pseudo_dealloc_realk3,mem_pseudo_dealloc_mpirealk
    end interface mem_pseudo_dealloc
 
 
@@ -1991,7 +1991,11 @@ subroutine mem_init_background_alloc(bytes)
    endif
 
    nelms = bytes/8_long
+#ifdef VAR_MPI
    call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+#else
+   call mem_alloc(buf_realk%p,nelms)
+#endif
 
    buf_realk%init   = .true.
    buf_realk%offset = 0
@@ -2029,9 +2033,15 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
    if( change )then
       print *,"mem_change_bg_alloc: Allocating ",bytes/(1024.0_realk**3),"GB"
 
+#ifdef VAR_MPI
       call mem_dealloc(buf_realk%p,buf_realk%c)
 
       call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+#else
+      call mem_dealloc(buf_realk%p)
+
+      call mem_alloc(buf_realk%p,nelms)
+#endif
 
       buf_realk%init   = .true.
       buf_realk%offset = 0
@@ -2056,7 +2066,11 @@ subroutine mem_free_background_alloc()
       call lsquit("ERROR(mem_free_background_alloc): background buffer not initialized",-1)
    endif
 
+#ifdef VAR_MPI
    call mem_dealloc(buf_realk%p,buf_realk%c)
+#else
+   call mem_dealloc(buf_realk%p)
+#endif
 
    buf_realk%init   = .false.
    buf_realk%offset = 0
@@ -2092,12 +2106,12 @@ subroutine mem_pseudo_alloc_realk(p,n)
    endif
 
 end subroutine mem_pseudo_alloc_realk
-subroutine mem_pseudo_alloc_realk2(p,m,n)
+subroutine mem_pseudo_alloc_realk2(p,n1,n2)
    implicit none
    real(realk), pointer :: p(:,:)
-   integer(kind=8), intent(in) :: m,n
+   integer(kind=8), intent(in) :: n1,n2
    integer(kind=8) :: nelms
-   nelms = n*m
+   nelms = n1*n2
 
    if (buf_realk%offset+nelms > buf_realk%nmax)then
       print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",nelms
@@ -2105,9 +2119,9 @@ subroutine mem_pseudo_alloc_realk2(p,m,n)
    endif
 
 #ifdef VAR_PTR_RESHAPE
-   p(1:m,1:n) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
+   p(1:n1,1:n2) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
-   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[m,n])
+   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[n1,n2])
 #else
    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
@@ -2125,6 +2139,39 @@ subroutine mem_pseudo_alloc_realk2(p,m,n)
    endif
 
 end subroutine mem_pseudo_alloc_realk2
+subroutine mem_pseudo_alloc_realk3(p,n1,n2,n3)
+   implicit none
+   real(realk), pointer :: p(:,:,:)
+   integer(kind=8), intent(in) :: n1,n2,n3
+   integer(kind=8) :: nelms
+   nelms = n1*n2*n3
+
+   if (buf_realk%offset+nelms > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",nelms
+      call lsquit("ERROR(mem_pseudo_alloc_realk3): more requested than available",-1)
+   endif
+
+#ifdef VAR_PTR_RESHAPE
+   p(1:n1,1:n2,1:n3) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[n1,n2,n3])
+#else
+   call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
+
+   buf_realk%offset = buf_realk%offset+nelms
+
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1,1))
+
+   buf_realk%n = buf_realk%n + 1
+
+   if(buf_realk%n > max_n_pointers)then
+      call lsquit("ERROR(mem_pseudo_alloc_realk2): more pointers associated then currently supported, &
+         &please change max_n_pointers in background_buffer.F90",-1)
+   endif
+
+end subroutine mem_pseudo_alloc_realk3
 subroutine mem_pseudo_dealloc_realk(p)
    implicit none
    real(realk), pointer :: p(:)
@@ -2187,6 +2234,37 @@ subroutine mem_pseudo_dealloc_realk2(p)
    buf_realk%c_addr(buf_realk%n) = c_null_ptr
 
 end subroutine mem_pseudo_dealloc_realk2
+subroutine mem_pseudo_dealloc_realk3(p)
+   implicit none
+   real(realk), pointer :: p(:,:,:)
+   integer(kind=8) :: n
+
+   buf_realk%n = buf_realk%n - 1
+
+   if(buf_realk%n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk3): programming error, more&
+      & pointers freed than associated",-1)
+   endif
+
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1,1))))then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk3): wrong sequence of &
+      &deallocating, make sure you dealloc in the opposite seqence as allocating, &
+      &otherwise you will corrupt your data",-1)
+   endif
+
+   n = size(p,kind=8)
+
+   if (buf_realk%offset-n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk3): more freed than allocated",-1)
+   endif
+
+   p => null()
+
+   buf_realk%offset = buf_realk%offset-n
+
+   buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+end subroutine mem_pseudo_dealloc_realk3
 
 function mem_is_background_buf_init() result(init)
    implicit none

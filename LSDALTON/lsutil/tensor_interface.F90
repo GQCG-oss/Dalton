@@ -493,7 +493,7 @@ contains
      call time_start_phase( PHASE_WORK )
   end subroutine tensor_dmul
 
-  subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens)
+  subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens,bg)
      implicit none
      !> specify the number of thensors that should be transformed
      integer, intent(in) :: ntens,nus,maxtensmode
@@ -505,6 +505,8 @@ contains
      type(tensor), intent(in) :: U(nus)
      !this contains the tensors
      type(tensor), intent(in) :: tens(ntens)
+     !use bg buf for temp alloc
+     logical, intent(in), optional :: bg
 
      !internal variables
      integer :: itens, imode, it_mode, isort
@@ -524,7 +526,8 @@ contains
            & pdm         = tens(itens)%access_type, &
            & tensor_type = tens(itens)%itype, &
            & tdims       = tens(itens)%tdim, &
-           & fo          = tens(itens)%offset ) 
+           & fo          = tens(itens)%offset, &
+           & bg          = bg ) 
 
         do imode = 1, it_mode
 
@@ -1656,6 +1659,8 @@ contains
      integer :: order_type,m,n
      real(realk) :: tcpu1,twall1,tcpu2,twall2
      integer(kind=long) :: nelms
+     logical :: bg
+
 
      call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
@@ -1664,6 +1669,7 @@ contains
      do i=1,arr%mode
         new_dims(i) = arr%dims(order(i))
      end do
+     bg=(mem_is_background_buf_init().and.nelms<=mem_get_bg_buf_free())
 
      if( arr%itype == TT_DENSE )then
 
@@ -1671,7 +1677,11 @@ contains
 
         call deassoc_ptr_arr(arr)
 
-        call mem_alloc( new_data,nelms )
+        if(bg)then
+           call mem_pseudo_alloc( new_data,nelms )
+        else
+           call mem_alloc( new_data,nelms )
+        endif
 
         select case(arr%mode)
         case(2)
@@ -1697,7 +1707,11 @@ contains
         !$OMP END WORKSHARE
 #endif
 
-        call mem_dealloc(new_data)
+        if(bg)then
+           call mem_pseudo_dealloc(new_data)
+        else
+           call mem_dealloc(new_data)
+        endif
 
         call assoc_ptr_arr(arr)
 

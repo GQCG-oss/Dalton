@@ -1095,7 +1095,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      master                   = lg_master.and.parent
 
      call get_int_dist_info(o2v2,fintel,nintel)
-
+    
      StartUpSlaves: if(master .and. lg_nnod>1) then
         call time_start_phase(PHASE_COMM)
         call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
@@ -1106,9 +1106,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
 #endif
-
-     !print*,"HACK:random t"
-     !if(master)call random_number(t2%elm1)
 
      if(master.and.print_debug)then
         call print_norm(xo,int(nb*no,kind=8)," NORM(xo)    :")
@@ -1392,7 +1389,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part C on master")')&
                     &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
                  ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,8,scheme,.true.,mylsitem%setting,intspec)
+                    &MaxActualDimGamma,0,5,scheme,.true.,mylsitem%setting,intspec)
               else
                  ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
                     &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
@@ -1434,10 +1431,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
         endif
 
+#ifdef VAR_MPI
         if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
            call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
            call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
         endif
+#endif
+
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
@@ -2418,10 +2418,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=2 !```DIL: remove
 #endif
+
+#ifdef VAR_MPI
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
         call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
      endif
+#endif
+
      if(scheme==1) then
         print *,"BEFORE FREEING o2ilej we need to update the full residual o2"
         call tensor_free(o2ilej)
@@ -5118,12 +5122,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            lead = no * nv
            w2size = o2v2
            w3size = o2v2
-        else if(s==3.or.s==2)then
+        else if(s==3)then
            faif = 1
            lead = tl
            !use w3 as buffer which is allocated largest possible
            w2size  = tlov
-           w3size  = min(o2v2,tlov + els2add)
+           w3size  = min(o2v2,tlov)
         else
            call lsquit("ERROR(get_cnd_terms_mo_3n4):no valid scheme",-1)
         endif
@@ -5393,14 +5397,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: iter
      integer, intent(inout) :: nba,nbg,minbsize
      real(realk),intent(in) :: MemIn
-     real(realk)            :: mem_used,frac_of_total_mem,m,MemFree
+     real(realk)            :: mem_used,mem_used4,mem_used3,mem_used2,frac_of_total_mem,m,MemFree
      logical,intent(in)     :: manual,first
      type(lssetting),intent(inout) :: se
      Character,intent(in) :: is(5)
      integer(kind=8), intent(inout) :: e2a
      logical, intent(in)    :: local, mpi_split
      integer, intent(out),optional :: nbuf
-     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize,chksze
+     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize,chksze,chksze4,chksze3,chksze2
      integer :: nnod,magic,nbuffs,choice
      logical :: checkbg
      integer(kind=8) :: locally_stored_v2o2, locally_stored_tiles
@@ -5434,38 +5438,44 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         MemFree = MemIn*frac_of_total_mem
      endif
 
-     mem_used = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-     chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-     print *,"MASTER MEM 4",MemFree,mem_used," ELM ",bg_buf_size,chksze
+     mem_used4 = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+     chksze4  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
+     mem_used = mem_used4
+     chksze   = chksze4
      if (mem_used>MemFree.or.chksze>bg_buf_size)then
 #ifdef VAR_MPI
         !test for scheme with medium requirements
         scheme=3
-        mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-        chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
+        mem_used3=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+        chksze3  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
            &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-        print *,"MASTER MEM 3",MemFree,mem_used," ELM ",bg_buf_size,chksze
+        mem_used = mem_used3
+        chksze   = chksze3
         if (mem_used>MemFree.or.chksze>bg_buf_size)then
            !test for scheme with low requirements
            scheme=2
-           mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-           chksze  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
+           mem_used2=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+           chksze2  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
               &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-           print *,"MASTER MEM 2",MemFree,mem_used," ELM ",bg_buf_size,chksze
+           mem_used = mem_used2
+           chksze   = chksze2
            if (mem_used>MemFree.or.chksze>bg_buf_size)then
-              scheme=0
+              !scheme=0
               !print *,"MASTER check 0"
-              mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-              !print *,"MASTER MEM 0",MemFree,mem_used
-              !print *,"mem",MemFree
+              !mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
               if (mem_used>MemFree)then
                  write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
-                 write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')MemFree
-                 write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-                 mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,4,3,.false.,se,is)
-                 write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-                 mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,4,4,.false.,se,is)
-                 write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
+                 if( checkbg )then
+                    write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB, free buffer: ",I10)')MemFree,bg_buf_size
+                    write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB, buff: ",I10)')mem_used4,chksze4
+                    write(DECinfo%output,'(" Memory required in scheme 3    : ",f8.3," GB, buff: ",I10)')mem_used3,chksze3
+                    write(DECinfo%output,'(" Memory required in scheme 2    : ",f8.3," GB, buff: ",I10)')mem_used2,chksze2
+                 else
+                    write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB")')MemFree
+                    write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB")')mem_used4
+                    write(DECinfo%output,'(" Memory required in scheme 3    : ",f8.3," GB")')mem_used3
+                    write(DECinfo%output,'(" Memory required in scheme 2    : ",f8.3," GB")')mem_used2
+                 endif
                  call lsquit("ERROR(CCSD): there is just not enough memory&
                     & available",DECinfo%output)
               endif
@@ -5696,11 +5706,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(lssetting),intent(inout) :: se
      Character,intent(in) :: is(5)
      integer :: nor, nvr, fe, ne , nnod, me, i, nors, nvrs
-     integer :: d1(4),ntpm(4),tdim(4),dtpm(2),mode,splt,ntiles,tsze,tszeoo,tszevv,tszetpm
+     integer :: d1(4),ntpm(4),tdim(4),dtpm(2),dsio4(3),mode,splt,ntiles,tsze,tszeoo,tszevv,tszetpm,tszesio4
      integer(kind=ls_mpik) :: master
      integer :: l1,ml1,fai1,tl1
      integer :: l2,ml2,fai2,tl2
-     integer :: nloctiles,nloctilesoo,nloctilesvv,nloctilestpm
+     integer :: nloctiles,nloctilesoo,nloctilesvv,nloctilestpm, nloctilessio4
      integer :: cd , e2
      integer(kind=long) :: w0size, w1size, w2size, w3size
      nor  = no*(no+1)/2
@@ -5767,6 +5777,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_get_ntpm([nvr,nor],[nvrs,nors],2,dtpm,ntiles)
         nloctilestpm=ceiling(float(ntiles)/float(nnod))
         tszetpm = nvrs*nors
+
+        call tensor_get_ntpm([no,no,nor],[os,os,nors],3,dsio4,ntiles)
+        nloctilessio4=ceiling(float(ntiles)/float(nnod))
+        tszesio4 = nvrs*nors
+
      else
         tsze=no*no*nv*nv
      endif
@@ -5908,13 +5923,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !after the main loop
         !-------------------
-
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
            ! w1/Fock
            memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
            ! w2 w3
            memout = memout + 1.0E0_realk*max(i8*nb*nb,max(2_long*tl1,i8*tl2))
+           ! gvoov-local gvvoo-local
+           memout = memout + 2.0E0_realk*(i8*nv*nv)*no*no
         endif
 
         ! not in bg buf
@@ -5939,8 +5955,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !*******************
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
-           ! tpl tmi
-           memin = memin + nloctilestpm*tszetpm*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           ! tpl tmi sio4
+           memin = memin + nloctilestpm*tszetpm*2.0E0_realk + 1.0E0_realk*nloctilessio4*tszesio4
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
@@ -5982,8 +5998,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
-           ! govov
-           memout = memout + (1.0E0_realk*no*no)*nv*nv
            ! space for one remaining intermediate
            memout = memout + 1.0E0_realk*tsze*nloctiles
         endif

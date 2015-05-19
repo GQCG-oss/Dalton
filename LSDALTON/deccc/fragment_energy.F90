@@ -157,21 +157,24 @@ contains
     type(mp2grad),intent(inout),optional :: grad
     !> Get MP2 info on top of actual CC model:
     logical, intent(in), optional :: add_mp2_opt
-    logical :: get_mp2
     type(tensor) :: t1, ccsdpt_t1, m1, eta
-    type(tensor) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
-    type(tensor) :: t2occp,t2virtp,t2MP2,t2MP2o,t2MP2v
-    type(tensor) :: m2occ,m2virt
-    type(tensor) :: t2_occEOS
+    !> integrals
+    type(tensor) :: VOVO,VOVOocc,VOVOvirt,VOOO,VOVV,VOVOvirtTMP
+    !> doubles amplitudes
+    type(tensor) :: t2,u,t2occ,t2virt,t2occp,t2virtp,t2MP2,t2MP2o,t2MP2v,t2_occEOS
+    !> ccsdpt arrays
+    type(tensor) :: ccsdpt_t2, ccsdpt_t2occ, ccsdpt_t2virt
+    type(tensor) :: m2,m2occ,m2virt
+
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
-    logical :: print_frags,abc,pair
-    type(tensor) :: t2f_local, VOVO_local
-    integer :: a,b,i,j,k,l, ccmodel
+    logical :: print_frags,abc,pair,get_mp2, use_bg
+    integer :: a,b,i,j,k,l, ccmodel, nvA,noA,nvE,noE
 
     get_mp2 = .false.
     if (present(add_mp2_opt)) get_mp2 = add_mp2_opt
+    use_bg  = mem_is_background_buf_init()
 
     ! Pairfragment?
     pair = MyFragment%pairfrag
@@ -190,6 +193,11 @@ contains
     times_pt   => null()
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    nvA = MyFragment%nvirtAOS
+    noA = MyFragment%noccAOS
+
+    nvE = MyFragment%nvirtEOS
+    noE = MyFragment%noccEOS
 
     ! Which model? MP2,CC2, CCSD etc.
     ! *******************************
@@ -311,75 +319,16 @@ contains
 #ifdef MOD_UNRELEASED
        ! calculate ccsd(t) fragment energies
        ! ***********************************
-
-       ! we calculate (T) contribution to single  fragment energy 
-       ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
        if(MyFragment%ccmodel==MODEL_CCSDpT) then
-
           call dec_fragment_time_init(times_pt)
 
-          print_frags = DECinfo%print_frags
-!!! this should be decided based on the amount of memory available !!!
-          abc = DECinfo%abc
-
-          ! the abc scheme only works for nvirt .ge. nocc
-          if (MyFragment%noccAOS .gt. MyFragment%nvirtAOS) abc = .false.
-
-          ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
-          if (abc) then
-
-             call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nvirtAOS],2)
-             call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
-                  &MyFragment%nvirtAOS,MyFragment%nvirtAOS],4)
-
+          if (pair) then
+             call get_ccsdpt_fragment_energies(MyFragment,VOVO,t2,t1,pair,fragment1,fragment2)
           else
-
-             call tensor_init(ccsdpt_t1, [MyFragment%nvirtAOS,MyFragment%noccAOS],2)
-             call tensor_init(ccsdpt_t2, [MyFragment%nvirtAOS,MyFragment%nvirtAOS,&
-                  &MyFragment%noccAOS,MyFragment%noccAOS],4)
-
-          endif
-
-          ! call ccsd(t) driver and single fragment evaluation
-          call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nvirtAOS,&
-               & MyFragment%nbasis,MyFragment%ppfock,&
-               & MyFragment%qqfock,MyFragment%Co,&
-               & MyFragment%Cv,MyFragment%mylsitem,&
-               & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
-
-!!! tmp solution...
-          call tensor_init(t2f_local,t2%dims,4)
-          call tensor_cp_data(t2,t2f_local)
-          call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
-!!!
-
-          if (abc) then
-
-             call tensor_reorder(ccsdpt_t2,[3,4,1,2]) ! ccsdpt_doubles in the order (a,b,i,j)
-             call tensor_reorder(ccsdpt_t1,[2,1]) ! ccsdpt_singles in the order (a,i)
-
-          endif
-
-          if (DECinfo%DECNP) then
-             call ccsdpt_decnp_e4_frag(MyFragment,t2f_local,ccsdpt_t2,&
-                & MyFragment%OccContribs,MyFragment%VirtContribs)
-             call ccsdpt_decnp_e5_frag(MyFragment,t1,ccsdpt_t1)
-          else if(pair) then
-             call ccsdpt_energy_e4_pair(Fragment1,Fragment2,MyFragment,t2f_local,ccsdpt_t2)
-             call ccsdpt_energy_e5_pair(MyFragment,t1,ccsdpt_t1)
-          else
-             call ccsdpt_energy_e4_frag(MyFragment,t2f_local,ccsdpt_t2,&
-                & MyFragment%OccContribs,MyFragment%VirtContribs)
-             call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
+             call get_ccsdpt_fragment_energies(MyFragment,VOVO,t2,t1,pair)
           end if
 
-          ! release ccsd(t) singles and doubles amplitudes
-          call tensor_free(ccsdpt_t1)
-          call tensor_free(ccsdpt_t2)
-
           call dec_fragment_time_get(times_pt)
-
-          call tensor_free(t2f_local)
        end if
 
        ! CCSD-F12 Code
@@ -632,6 +581,98 @@ contains
   end subroutine fragment_energy_and_prop
 
 
+  !> Purpose: Wrapper to ccsdpt driver and fragment energy routines
+  !> Author:  Pablo Baudin
+  !> Date:    May 2015
+  subroutine get_ccsdpt_fragment_energies(frag,VOVO,t2,t1,pair,frag1,frag2)
+
+     implicit none
+
+     !> DEC fragment 
+     type(decfrag), intent(inout) :: frag
+     !> Two-electron integrals (a i | b j)
+     type(tensor), intent(inout) :: VOVO
+     !> CCSD amplitudes:
+     type(tensor), intent(inout) :: t2, t1
+     !> Is it a pair fragment?
+     logical, intent(in) :: pair
+     type(decfrag), intent(in), optional :: frag1, frag2
+
+     type(tensor) :: ccsdpt_t1, ccsdpt_t2
+     type(tensor) :: ccsdpt_t2occ, ccsdpt_t2virt, t2occ, t2virt
+     logical :: abc,bg
+#ifdef MOD_UNRELEASED
+     bg  = mem_is_background_buf_init()
+
+     ! Get (T) singles and doubles intermediates:
+     ! ******************************************
+
+     !FIXME: this should be decided based on the amount of memory available !!!
+     abc = DECinfo%abc
+
+     ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
+     if (abc) then
+        call tensor_init(ccsdpt_t1,[frag%noccAOS,frag%nvirtAOS],2,bg=bg)
+        call tensor_init(ccsdpt_t2,[frag%noccAOS,frag%noccAOS,&
+             &frag%nvirtAOS,frag%nvirtAOS],4,bg=bg)
+     else
+        call tensor_init(ccsdpt_t1, [frag%nvirtAOS,frag%noccAOS],2)
+        call tensor_init(ccsdpt_t2, [frag%nvirtAOS,frag%nvirtAOS,&
+             &frag%noccAOS,frag%noccAOS],4,bg=bg)
+     endif
+
+     ! call ccsd(t) driver and single fragment evaluation
+     call ccsdpt_driver(frag%noccAOS,frag%nvirtAOS,frag%nbasis,frag%ppfock, &
+          & frag%qqfock,frag%Co,frag%Cv,frag%mylsitem,VOVO,t2,ccsdpt_t1, &
+          & DECinfo%print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+
+     if (abc) then
+        call tensor_reorder(ccsdpt_t2,[3,1,4,2]) ! ccsdpt_doubles in the order (a,i,b,j)
+        call tensor_reorder(ccsdpt_t1,[2,1])     ! ccsdpt_singles in the order (a,i)
+     else
+        call tensor_reorder(ccsdpt_t2,[1,3,2,4]) ! ccsdpt_doubles in the order (a,i,b,j)
+     endif
+
+
+     ! Calculate (T) fragment energy contributions:
+     ! ********************************************
+
+     ! extract EOS indices from doubles (CCSD and (T)):
+     call tensor_extract_eos_indices(ccsdpt_t2,frag,tensor_occEOS=ccsdpt_t2occ, &
+        & tensor_virtEOS=ccsdpt_t2virt)
+     call tensor_extract_eos_indices(t2,frag,tensor_occEOS=t2occ, &
+        & tensor_virtEOS=t2virt)
+
+     ! release ccsd(t) doubles amplitudes
+     call tensor_free(ccsdpt_t2)
+
+     if (DECinfo%DECNP) then
+        call lsquit('DECNP for pT: pablo update this!!',DECinfo%output)
+        !call ccsdpt_decnp_e4_frag(frag,t2f_local,ccsdpt_t2,&
+        !   & frag%OccContribs,frag%VirtContribs)
+        !call ccsdpt_decnp_e5_frag(frag,t1,ccsdpt_t1)
+     else if(pair) then
+        call get_pair_fragment_pT4_energy(ccsdpt_t2occ,ccsdpt_t2virt,t2occ,t2virt,&
+           & frag1,frag2,frag)
+        call ccsdpt_energy_e5_pair(frag,t1,ccsdpt_t1)
+     else
+        call get_single_fragment_pT4_energy(ccsdpt_t2occ,ccsdpt_t2virt,t2occ,t2virt,frag)
+        call ccsdpt_energy_e5_frag(frag,t1,ccsdpt_t1)
+     end if
+
+     ! free stuff
+     call tensor_free(ccsdpt_t1)
+     call tensor_free(ccsdpt_t2occ)
+     call tensor_free(ccsdpt_t2virt)
+     call tensor_free(t2occ)
+     call tensor_free(t2virt)
+#else
+     call lsquit("ERROR(get_ccsdpt_fragment_energies): not implemented in this version",-1)
+#endif
+
+  end subroutine get_ccsdpt_fragment_energies
+
+
   !> \brief Contract amplitudes, multipliers, and integrals to calculate atomic fragment Lagrangian energy.
   !> \author Kasper Kristensen
   !> \date August 2011
@@ -704,7 +745,6 @@ contains
     lag_occ  = 0E0_realk
     Evirt    = 0E0_realk
     lag_virt = 0E0_realk
-    ! Just in case, zero individual orbital contributions for fragment
     SOS = .false.
     if(present(doSOS)) SOS = doSOS
 
@@ -793,9 +833,9 @@ contains
                 Eocc = Eocc + tmp
 
                 ! Update contribution from orbital a
-                virt_tmp(a) = virt_tmp(a) + tmp
+                virt_tmp(a) = virt_tmp(a) + abs(tmp)
                 ! Update contribution from orbital b (only if different from a to avoid double counting)
-                if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+                if(a/=b) virt_tmp(b) = virt_tmp(b) + abs(tmp)
 
 
                 ! Contribution 2
@@ -816,11 +856,11 @@ contains
                       lag_occ = lag_occ + tmp
 
                       ! Update contribution from orbital a
-                      virt_tmp(a) = virt_tmp(a) + tmp
+                      !virt_tmp(a) = virt_tmp(a) + tmp
                       ! Update contribution from orbital b (only if different from a to avoid double counting)
-                      if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
+                      !if(a/=b) virt_tmp(b) = virt_tmp(b) + tmp
                       ! Update contribution from orbital c (only if different from a and b)
-                      if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + tmp
+                      !if( (a/=c) .and. (b/=c) ) virt_tmp(c) = virt_tmp(c) + tmp
 
                    end do
 
@@ -884,9 +924,9 @@ contains
                 Evirt = Evirt + tmp
 
                 ! Update contribution from orbital i
-                occ_tmp(i) = occ_tmp(i) + tmp
+                occ_tmp(i) = occ_tmp(i) + abs(tmp)
                 ! Update contribution from orbital j (only if different from i to avoid double counting)
-                if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                if(i/=j) occ_tmp(j) = occ_tmp(j) + abs(tmp)
 
                 ! Contribution 4
                 ! --------------
@@ -905,9 +945,9 @@ contains
                       ! Update contribution from orbital i
                       occ_tmp(i) = occ_tmp(i) + tmp
                       ! Update contribution from orbital j (only if different from i to avoid double counting)
-                      if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                      !if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
                       ! Update contribution from orbital k (only if different from i and j)
-                      if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + tmp
+                      !if( (i/=k) .and. (j/=k) ) occ_tmp(k) = occ_tmp(k) + tmp
 
                    end do
 
@@ -973,6 +1013,220 @@ contains
 
 
   end subroutine get_atomic_fragment_energy
+
+
+  !> \brief  Contract amplitudes, and (T) intermediates to get 4th order contributions
+  !          to single fragment occupied and virtual energies.
+  !> \author Pablo Baudin (Based on Kasper's routine)
+  !> \date   May 2015
+  subroutine get_single_fragment_pT4_energy(gocc,gvirt,t2occ,t2virt,MyFragment)
+
+    implicit none
+    !> (T) intermediates T_aibj, only occ orbitals on central atom, virt AOS orbitals
+    type(tensor), intent(in) :: gocc
+    !> (T) intermediates T_aibj, only virt orbitals on central atom, occ AOS orbitals
+    type(tensor), intent(in) :: gvirt
+    !> doubles amplitudes, only occ orbitals on central atom, virt AOS orbitals
+    type(tensor), intent(in) :: t2occ
+    !> doubles amplitudes, only virt orbitals on central atom, occ AOS orbitals
+    type(tensor), intent(in) :: t2virt
+    !> Atomic fragment 
+    type(decfrag), intent(inout) :: myfragment
+
+    real(realk) :: Eocc,Evirt,tmp,multaibj
+    real(realk) :: prefac_coul,prefac_k
+    real(realk),pointer :: occ_tmp(:),virt_tmp(:)
+    real(realk),pointer :: t(:,:,:,:), g(:,:,:,:), f(:,:)
+    logical ::  something_wrong
+    integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
+    integer :: i,j,k,a,b,c
+
+    ! MyFragment%OccContribs and MyFragment%VirtContribs contains the contributions from
+    ! each individual occupied and virtual orbital -- e.g. MyFragment%OccContribs(i)
+    ! is the estimated change in the energy if occupied orbital with index
+    ! MyFragment%occAOSidx(i) is removed from the fragment.
+
+    ! Init stuff
+    noccEOS  = MyFragment%noccEOS
+    nvirtEOS = MyFragment%nvirtEOS
+    noccAOS  = MyFragment%noccAOS
+    nvirtAOS = MyFragment%nvirtAOS
+    Eocc     = 0E0_realk
+    Evirt    = 0E0_realk
+    prefac_coul=2._realk
+    prefac_k=1._realk
+
+
+    ! init energy reals to be on the safe side
+    ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
+    !       as this (e4) routine is called before the e5 routine
+    MyFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
+
+    ! Sanity checks
+    ! *************
+    something_wrong=.false.
+    if(t2occ%dims(1) /= nvirtAOS) something_wrong=.true.
+    if(t2occ%dims(2) /= noccEOS) something_wrong=.true.
+    if(t2occ%dims(3) /= nvirtAOS) something_wrong=.true.
+    if(t2occ%dims(4) /= noccEOS) something_wrong=.true.
+    
+    if(gocc%dims(1) /= nvirtAOS) something_wrong=.true.
+    if(gocc%dims(2) /= noccEOS) something_wrong=.true.
+    if(gocc%dims(3) /= nvirtAOS) something_wrong=.true.
+    if(gocc%dims(4) /= noccEOS) something_wrong=.true.
+
+    if(t2virt%dims(1) /= nvirtEOS) something_wrong=.true.
+    if(t2virt%dims(2) /= noccAOS) something_wrong=.true.
+    if(t2virt%dims(3) /= nvirtEOS) something_wrong=.true.
+    if(t2virt%dims(4) /= noccAOS) something_wrong=.true.
+    
+    if(gvirt%dims(1) /= nvirtEOS) something_wrong=.true.
+    if(gvirt%dims(2) /= noccAOS) something_wrong=.true.
+    if(gvirt%dims(3) /= nvirtEOS) something_wrong=.true.
+    if(gvirt%dims(4) /= noccAOS) something_wrong=.true.
+
+    if(something_wrong) then
+       print *, 't2occ%dims =', t2occ%dims
+       print *, 'gocc%dims  =', gocc%dims
+       print *, 't2virt%dims=', t2virt%dims
+       print *, 'gvirt%dims =', gvirt%dims
+       print *, 'noccEOS  = ', noccEOS
+       print *, 'noccAOS  = ', noccAOS
+       print *, 'nvirtEOS = ', nvirtEOS
+       print *, 'nvirtAOS = ', nvirtAOS
+       call lsquit('get_single_fragment_pT_energy: &
+            & Input dimensions do not match!',-1)
+    end if
+
+
+    ! Calculate Eocc
+    ! **************
+
+    ! Point to tensor structure to avoid OMP problems:
+    t => t2occ%elm4
+    g => gocc%elm4
+    f => MyFragment%qqfock
+
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(none) PRIVATE(tmp,j,b,i,a,c,virt_tmp) &
+    !$OMP SHARED(t,g,f,nvirtAOS,noccEOS,prefac_coul,prefac_k,myfragment) &
+    !$OMP REDUCTION(+:Eocc)
+    call init_threadmemvar()
+
+    ! Contributions from each individual virtual orbital
+    call mem_alloc(virt_tmp,nvirtAOS)
+    virt_tmp = 0.0E0_realk       
+
+    !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
+    do j=1,noccEOS
+       do b=1,nvirtAOS
+          do i=1,noccEOS
+             do a=1,nvirtAOS
+
+                ! Energy contribution for orbitals (j,b,i,a)
+                tmp = 2.0E0_realk*t(a,i,b,j)*(prefac_coul*g(a,i,b,j) - prefac_k*g(b,i,a,j))
+
+                ! Update total atomic fragment energy contribution 1
+                Eocc = Eocc + tmp
+
+                ! Update contribution from orbital a
+                virt_tmp(a) = virt_tmp(a) + abs(tmp)
+                ! Update contribution from orbital b (only if different from a to avoid double counting)
+                if(a/=b) virt_tmp(b) = virt_tmp(b) + abs(tmp)
+
+             end do
+          end do
+       end do
+    end do
+    !$OMP END DO NOWAIT
+
+    ! Update total virtual contributions to fragment energy
+    !$OMP CRITICAL
+    do a=1,nvirtAOS
+       MyFragment%VirtContribs(a) = MyFragment%VirtContribs(a) + virt_tmp(a)
+    end do
+    !$OMP END CRITICAL
+
+    call mem_dealloc(virt_tmp)
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
+
+
+    ! Calculate Evirt
+    ! ***************
+
+    ! Point to tensor structure to avoid OMP problems:
+    t => t2virt%elm4
+    g => gvirt%elm4
+    f => MyFragment%ppfock
+
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(none) PRIVATE(multaibj,tmp,j,b,i,a,k,occ_tmp) &
+    !$OMP SHARED(t,g,f,noccAOS,nvirtEOS,prefac_coul,prefac_k,myfragment) &
+    !$OMP REDUCTION(+:Evirt)
+    call init_threadmemvar()
+
+    ! Contributions from each individual occupied orbital
+    call mem_alloc(occ_tmp,noccAOS)
+    occ_tmp = 0.0E0_realk
+
+    !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
+    do j=1,noccAOS
+       do b=1,nvirtEOS
+          do i=1,noccAOS
+             do a=1,nvirtEOS
+
+                ! Multiplier (multiplied by one half)
+                multaibj = prefac_coul*t(a,i,b,j) -prefac_k*t(b,i,a,j)
+
+                ! Energy contribution for orbitals (j,b,i,a)
+                tmp = 2.0E0_realk*multaibj*g(a,i,b,j)
+                ! Update total atomic fragment energy contribution 3
+                Evirt = Evirt + tmp
+
+                ! Update contribution from orbital i
+                occ_tmp(i) = occ_tmp(i) + abs(tmp)
+                ! Update contribution from orbital j (only if different from i to avoid double counting)
+                if(i/=j) occ_tmp(j) = occ_tmp(j) + abs(tmp)
+
+             end do
+          end do
+       end do
+    end do
+    !$OMP END DO NOWAIT
+
+    !$OMP CRITICAL
+    ! Update total occupied contributions to fragment energy
+    do i=1,noccAOS
+       MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
+    end do
+    !$OMP END CRITICAL
+
+    call mem_dealloc(occ_tmp)
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
+
+    t => null()
+    g => null()
+    f => null()
+
+
+    ! get total fourth--order energy contribution
+    MyFragment%energies(FRAGMODEL_OCCpT4) = Eocc
+    MyFragment%energies(FRAGMODEL_VIRTpT4) = Evirt
+   
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+       & + MyFragment%energies(FRAGMODEL_OCCpT4)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+       & + MyFragment%energies(FRAGMODEL_VIRTpT4)
+
+
+  end subroutine get_single_fragment_pT4_energy
 
 
   !> Purpose: Contract amplitudes and integrals to calculate DECNP fragment 
@@ -1629,6 +1883,212 @@ contains
      call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
   end subroutine get_pair_fragment_energy
+
+
+  !> \brief  Contract amplitudes, and (T) intermediates to get 4th order contributions
+  !          to pair fragment occupied and virtual energies.
+  !> \author Pablo Baudin (Based on Kasper's routine)
+  !> \date   May 2015
+  subroutine get_pair_fragment_pT4_energy(gocc,gvirt,t2occ,t2virt,&
+      & Fragment1, Fragment2, PairFragment)
+
+
+     implicit none
+     !> (T) doubles intermediates, only occ orbitals on central atom, virt AOS orbitals
+     type(tensor), intent(in) :: gocc
+     !> (T) doubles intermediates, only virt orbitals on central atom, occ AOS orbitals
+     type(tensor), intent(in) :: gvirt
+     !> doubles amplitudes, only occ orbitals on central atom, virt AOS orbitals
+     type(tensor), intent(in) :: t2occ
+     !> doubles amplitudes, only virt orbitals on central atom, occ AOS orbitals
+     type(tensor), intent(in) :: t2virt
+     !> Fragment 1 in the pair fragment
+     type(decfrag),intent(in) :: Fragment1
+     !> Fragment 2 in the pair fragment
+     type(decfrag),intent(in) :: Fragment2
+     !> Pair fragment formed from fragment 1 and 2
+     type(decfrag), intent(inout) :: PairFragment
+
+     real(realk) :: multaibj,prefac_coul,prefac_k
+     real(realk) :: Eocc,Evirt
+     real(realk),pointer :: t(:,:,:,:), g(:,:,:,:), f(:,:)
+     logical,pointer :: dopair_occ(:,:), dopair_virt(:,:)
+     logical :: something_wrong, do_non_pdm
+     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
+     integer :: i,j,k,a,b,c
+
+
+     ! Init stuff
+     noccEOS  = PairFragment%noccEOS
+     nvirtEOS = PairFragment%nvirtEOS
+     noccAOS  = PairFragment%noccAOS
+     nvirtAOS = PairFragment%nvirtAOS
+     Eocc     = 0E0_realk
+     Evirt    = 0E0_realk
+     prefac_coul =2._realk
+     prefac_k = 1._realk
+
+     ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
+     call mem_alloc(dopair_occ,noccEOS,noccEOS)
+     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
+     call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
+     call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
+
+     ! Sanity checks
+     ! *************
+     something_wrong=.false.
+     IF(.NOT.DECinfo%OnlyVirtPart)THEN
+        if(t2occ%dims(1) /= nvirtAOS) something_wrong = .true.
+        if(t2occ%dims(2) /= noccEOS)  something_wrong = .true.
+        if(t2occ%dims(3) /= nvirtAOS) something_wrong = .true.
+        if(t2occ%dims(4) /= noccEOS)  something_wrong = .true.
+
+        if(gocc%dims(1) /= nvirtAOS) something_wrong = .true.
+        if(gocc%dims(2) /= noccEOS)  something_wrong = .true.
+        if(gocc%dims(3) /= nvirtAOS) something_wrong = .true.
+        if(gocc%dims(4) /= noccEOS)  something_wrong = .true.
+     ENDIF
+
+     IF(.NOT.DECinfo%OnlyOccPart)THEN
+        if(t2virt%dims(1) /= nvirtEOS) something_wrong = .true.
+        if(t2virt%dims(2) /= noccAOS)  something_wrong = .true.
+        if(t2virt%dims(3) /= nvirtEOS) something_wrong = .true.
+        if(t2virt%dims(4) /= noccAOS)  something_wrong = .true.
+
+        if(gvirt%dims(1) /= nvirtEOS) something_wrong = .true.
+        if(gvirt%dims(2) /= noccAOS)  something_wrong = .true.
+        if(gvirt%dims(3) /= nvirtEOS) something_wrong = .true.
+        if(gvirt%dims(4) /= noccAOS)  something_wrong = .true.
+     ENDIF
+     if(something_wrong) then
+        print *, 't2occ%dims =', t2occ%dims
+        print *, 'gocc%dims  =', gocc%dims
+        print *, 't2virt%dims=', t2virt%dims
+        print *, 'gvirt%dims =', gvirt%dims
+        print *, 'noccEOS  = ', noccEOS
+        print *, 'noccAOS  = ', noccAOS
+        print *, 'nvirtEOS = ', nvirtEOS
+        print *, 'nvirtAOS = ', nvirtAOS
+        call lsquit('get_pair_fragment_pT4_energy: Input dimensions do not match!',-1)
+     end if
+
+     do_non_pdm = .false.
+     if( .not.DECinfo%OnlyVIRTPart )then
+        do_non_pdm = do_non_pdm .or. (t2occ%itype == TT_DENSE .and. gocc%itype == TT_DENSE )
+     endif
+     if(.not.DECinfo%OnlyoccPart)then
+        do_non_pdm = do_non_pdm .or. (t2virt%itype ==  TT_DENSE .and. gvirt%itype == TT_DENSE)
+     endif
+
+     if( do_non_pdm )then
+
+        if(.not. DECinfo%onlyVirtpart) then
+
+           ! Calculate Eocc
+           ! **************
+
+           ! Point to tensor structure to avoid OMP problems:
+           t => t2occ%elm4
+           g => gocc%elm4
+           f => PairFragment%qqfock
+
+           call mem_TurnONThread_Memory()
+           !$OMP PARALLEL DEFAULT(none) PRIVATE(j,b,i,a,c) &
+           !$OMP SHARED(t,g,f,nvirtAOS,noccEOS,prefac_coul,prefac_k,pairfragment, &
+           !$OMP dopair_occ) REDUCTION(+:Eocc)
+           call init_threadmemvar()
+
+           !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
+           do j=1,noccEOS
+              do b=1,nvirtAOS
+                 do i=1,noccEOS
+
+                    ! Only update for "interaction orbital pairs" - see which_pairs_occ
+                    if( dopair_occ(i,j) ) then  !DoPair1and2
+
+                       do a=1,nvirtAOS
+
+                          ! Update pair interaction energy contribution 1
+                          Eocc = Eocc + 2.0e0_realk*t(a,i,b,j)*(prefac_coul*g(a,i,b,j) -prefac_k*g(b,i,a,j))
+
+                       end do
+
+                    end if
+
+                 end do
+              end do
+           end do
+           !$OMP END DO NOWAIT
+           call collect_thread_memory()
+           !$OMP END PARALLEL
+           call mem_TurnOffThread_Memory()
+        ELSE
+           Eocc    = 0.0E0_realk
+        ENDIF
+
+        if(.not. DECinfo%onlyoccpart) then
+
+           ! Calculate Evirt
+           ! ***************
+
+           ! Point to tensor structure to avoid OMP problems:
+           t => t2virt%elm4
+           g => gvirt%elm4
+           f => PairFragment%ppfock
+
+           call mem_TurnONThread_Memory()
+           !$OMP PARALLEL DEFAULT(none) PRIVATE(multaibj,j,b,i,a,k) &
+           !$OMP SHARED(t,g,f,noccAOS,nvirtEOS,prefac_coul,prefac_k,pairfragment, &
+           !$OMP dopair_virt) REDUCTION(+:Evirt)
+           call init_threadmemvar()
+
+           !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
+           do j=1,noccAOS
+              do b=1,nvirtEOS
+                 do i=1,noccAOS
+                    do a=1,nvirtEOS
+
+                       ! Only update for "interaction orbital pairs" - see which_pairs_virt
+                       if( dopair_virt(a,b) ) then !Dopair3and4
+
+                          ! Multiplier (multiplied by one half)
+                          multaibj = prefac_coul*t(a,i,b,j) - prefac_k*t(b,i,a,j)
+
+                          ! Update total atomic fragment energy contribution 3
+                          Evirt = Evirt + 2.0e0_realk*multaibj*g(a,i,b,j)
+
+                       end if
+
+                    end do
+                 end do
+              end do
+           end do
+           !$OMP END DO NOWAIT
+           call collect_thread_memory()
+           !$OMP END PARALLEL
+           call mem_TurnOffThread_Memory()
+        ELSE
+           Evirt    = 0.0E0_realk
+        ENDIF
+
+     else
+        call lsquit("ERROR(get_pair_fragment_pT4_energy) PDM version not yetimplemented",-1)
+     endif
+
+     ! Put occupied (Eocc) and virtual (Evirt) scheme energies into fragment energies array
+     PairFragment%energies(FRAGMODEL_OCCpT4) = Eocc
+     PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) &
+        &+ PairFragment%energies(FRAGMODEL_OCCpT4)
+
+     PairFragment%energies(FRAGMODEL_VIRTpT4) = Evirt
+     PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) &
+        &+ PairFragment%energies(FRAGMODEL_VIRTpT4)
+
+
+     call mem_dealloc(dopair_occ)
+     call mem_dealloc(dopair_virt)
+
+  end subroutine get_pair_fragment_pT4_energy
 
 
   !> \brief Print a simple "ascii-art" plot of the largest pair energies.

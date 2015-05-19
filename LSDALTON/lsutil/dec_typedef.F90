@@ -567,6 +567,16 @@ module dec_typedef_module
      !> Do not store AO Fock matrix in full molecule structure.
      logical :: noaofock
 
+     !> THC keywords
+     logical     :: THCNOPRUN
+     real(realk) :: THCradint
+     integer     :: THC_MIN_RAD_PT
+     integer     :: THCangint
+     integer     :: THCHRDNES
+     integer     :: THCTURBO
+     integer     :: THCRADIALGRID
+     logical     :: THCZdependenMaxAng
+     integer     :: THCPARTITIONING
   end type DECSETTINGS
 
 

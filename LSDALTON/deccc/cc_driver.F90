@@ -1880,7 +1880,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ampl4_dims = [nv,nv,no,no]
    ampl2_dims = [nv,no]
 
-
    ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
    if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA&
      &.and. ccmodel /= MODEL_SOSEX) then
@@ -2130,7 +2129,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc( Co_d )
    call mem_dealloc( Cv_d )
 
-
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_fock_mat, &
       &twall = time_prec1 , labelttot = 'CCSOL: AO FOCK MATRIX :', output = DECinfo%output)
 
@@ -2184,7 +2182,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_change_atype_to_d( oofock_prec )
       call tensor_change_atype_to_d( vvfock_prec )
    endif
-
 
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_prec1,&
       &labelttot = 'CCSOL: PRECOND. INIT. :', output = DECinfo%output)
@@ -2604,7 +2601,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
-         call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
+         call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", bg=bg_was_init)
          call tensor_cp_data(t2(iter_idx), p4, order = [1,3,2,4] )
 
          if(use_singles) then
@@ -2655,7 +2652,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used
    ! RHS or restore the old rhs
-   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
+   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR", bg=bg_was_init )
    call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
    
    call ccdriver_dealloc_workspace(saferun,local,bg_was_init)
@@ -2699,7 +2696,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !transform back to original basis!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   call tensor_transform_basis( [Uo,Uv], 2, [p4,VOVO], [[2,1,2,1],[2,1,2,1]], [[2,2,2,2],[2,2,2,2]], 4, 2)
+   call tensor_transform_basis( [Uo,Uv], 2, [p4,VOVO], [[2,1,2,1],[2,1,2,1]], [[2,2,2,2],[2,2,2,2]], 4, 2,bg=bg_was_init)
 
    if(use_singles)then
       !FIXME: all can local trans and local can trans should be replaced by
@@ -2708,7 +2705,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    endif
 
    if(trafo_m2) call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=m2%elm1 )
-   if(trafo_m4) call tensor_transform_basis([Uo,Uv],2, [m4], [[2,1,2,1]], [[2,2,2,2]], 4, 1)
+   if(trafo_m4) call tensor_transform_basis([Uo,Uv],2, [m4], [[2,1,2,1]], [[2,2,2,2]], 4, 1, bg=bg_was_init)
 
    if(fragment_job.and.use_pnos)then
       call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,oo=frag%OccMat,vv=frag%VirtMat)
@@ -2731,12 +2728,12 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    integer, intent(out) :: os,vs
    logical, intent(in)  :: local,saferun,use_singles
    logical, intent(inout) :: bg_was_init
-   integer :: ntpm(4),nt, sch
+   integer :: ntpm(4),nt, sch, buf
    integer(kind=ls_mpik) :: nnod
    real(realk) :: MemFree
    integer(kind=8) :: mem41,mem31,mem21
    integer(kind=8) :: mem42,mem32,mem22
-   integer(kind=8) ::mem_out, mem_in, w1,w2
+   integer(kind=8) ::mem_out, mem_in, w1,w2, mem_o, mem_i
    integer(kind=8) :: bytes, Freebytes, bytes_to_alloc
    integer(kind=8) :: nelms_ccdriver, nelms_int0,nelms_int1,nelms_int2,nelms_int3, nelms_res_in, nelms_res_out
    logical :: use_bg
@@ -2831,6 +2828,17 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
             mem32=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
             mem22=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
 
+            if(DECinfo%PL>2)then
+               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g9.2," GB")')&
+                  &Freebytes/1024.0E0_realk**3
+               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4 out : ",g9.2," GB, in :",g9.2," GB")')&
+                  &(mem41)/1024.0E0_realk**3,(mem42)/1024.0E0_realk**3
+               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3 out : ",g9.2," GB, in :",g9.2," GB")')&
+                  &(mem31)/1024.0E0_realk**3,(mem32)/1024.0E0_realk**3
+               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2 out : ",g9.2," GB, in :",g9.2," GB")')&
+                  &(mem21)/1024.0E0_realk**3,(mem22)/1024.0E0_realk**3
+            endif
+
             if(mem41+mem42<=Freebytes)then
                sch   = 4
             else if(mem31+mem32<=Freebytes)then
@@ -2847,33 +2855,33 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
             endif
 
             if(DECinfo%PL>2)then
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Found scheme :",I2)')sch
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g9.2," GB")')&
-                  &Freebytes/1024.0E0_realk**3
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4     : ",g9.2," GB")')&
-                  &(mem41+mem42)/1024.0E0_realk**3
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3     : ",g9.2," GB")')&
-                  &(mem31+mem32)/1024.0E0_realk**3
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2     : ",g9.2," GB")')&
-                  &(mem21+mem22)/1024.0E0_realk**3
+               if(DECinfo%force_scheme)then
+                  write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Force scheme :",I2)')sch
+               else
+                  write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Found scheme :",I2)')sch
+               endif
             endif
 
-            select case(sch)
-            case(4)
-               nelms_res_out = ceiling(float(mem41)/8.0)
-               nelms_res_in  = ceiling(float(mem42)/8.0)
-            case(3)
-               nelms_res_out = ceiling(float(mem31)/8.0)
-               nelms_res_in  = ceiling(float(mem32)/8.0)
-            case(2)
-               nelms_res_out = ceiling(float(mem21)/8.0)
-               nelms_res_in  = ceiling(float(mem22)/8.0)
-            case default
-               call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
-                  & the found scheme is not known",-1)
-            end select
 
+            !simple increase buffer size
+            BufferAdaption: do buf = MinAO, nb
+               mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,5,sch,.false.,&
+                  &MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+               mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,8,sch,.false.,&
+                  &MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+               if( mem_o + mem_i > Freebytes)then
+                  mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,5,&
+                     &sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+                  mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,8,&
+                     &sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
 
+                  exit BufferAdaption
+
+               endif
+            enddo BufferAdaption
+
+            nelms_res_out = ceiling(float(mem_o)/8.0)
+            nelms_res_in  = ceiling(float(mem_i)/8.0)
 
          else if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_MP2)then     
 
