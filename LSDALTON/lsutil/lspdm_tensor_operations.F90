@@ -3439,7 +3439,7 @@ module lspdm_tensor_operations_module
     if(.not.defdims.and.present(tdims))then
       do i=1,nmodes
         if(dflt(i)<=0)then
-          print *,"WARNING:INVALID NUMBER --> GET DEFAULT"
+          print *,"WARNING:INVALID NUMBER --> GET DEFAULT",dflt
           defdims=.true.
           exit
         endif
