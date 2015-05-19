@@ -1208,11 +1208,10 @@ contains
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     real(realk), intent(inout) :: molmem
-    real(realk) :: O,V,A,tmp,GB
+    real(realk) :: O,V,A,tmp
     integer :: nnod, nblocks, nlocal_blocks
-
     ! GB conversion
-    GB = 1.000E9_realk ! 1 GB
+    real(realk), parameter :: GB=1.024E3_realk**3! 1GB
 
 
     ! Number of occupied (O), Virtual (V), atomic basis functions (A)
@@ -1236,15 +1235,15 @@ contains
     !Do we need to distribute the arrays? -> if more than 3GB and keyword, do distribute
 #ifdef VAR_MPI
     if(Decinfo%distribute_fullmolecule)then
-       if(molmem>((3*GB)/realk))then
+       !if(molmem>((1*GB)/realk))then
           MyMolecule%mem_distributed = .true.
-       else
-          print *,"WARNING(calculate_fullmolecule_memory): a distributed full&
-          & molecular structure has been requested. However, the memory&
-          & requirements for this structure are so low, that we keep it in local&
-          & memory"
-          MyMolecule%mem_distributed = .false.
-       endif
+       !else
+       !   print *,"WARNING(calculate_fullmolecule_memory): a distributed full&
+       !   & molecular structure has been requested. However, the memory&
+       !   & requirements for this structure are so low, that we keep it in local&
+       !   & memory"
+       !   MyMolecule%mem_distributed = .false.
+       !endif
     else
        MyMolecule%mem_distributed = .false.
     endif
