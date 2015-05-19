@@ -224,6 +224,7 @@ contains
     DECinfo%F12                      = .false.
     DECinfo%F12fragopt               = .false.
     DECinfo%F12debug                 = .false.
+    DECinfo%F12Ccoupling             = .false.
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
@@ -253,6 +254,7 @@ contains
 
     ! ccsd(t) settings
     DECinfo%abc               = .false.
+    DECinfo%ijk_tile_size     = 1000000
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
@@ -511,6 +513,7 @@ contains
        ! CCSD(T) INFO
        ! ==============
        case('.PT_ABC'); DECinfo%abc = .true.
+       case('.IJK_TILE'); read(input,*) DECinfo%ijk_tile_size
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
@@ -857,6 +860,8 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
+       case('.F12CCOUPLING')     
+          DECinfo%F12Ccoupling=.true.
 
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
@@ -1462,11 +1467,10 @@ contains
     write(lupri,*) 'use_preconditioner ', DECitem%use_preconditioner
     write(lupri,*) 'use_preconditioner_in_b ', DECitem%use_preconditioner_in_b
     write(lupri,*) 'use_crop ', DECitem%use_crop
-#ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
-#endif
+    write(lupri,*) 'F12CCOUPLING',DECinfo%F12Ccoupling
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'rimpisplit ', DECitem%rimpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize

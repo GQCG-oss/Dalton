@@ -78,6 +78,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_LAGLSTHCRIMP2  = 24 ! LS-THC-RI-MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCLSTHCRIMP2  = 25 ! LS-THC-RI-MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTLSTHCRIMP2 = 26 ! LS-THC-RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_RIMP2f12 = 27  ! RI-MP2F12 energy correction
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -289,6 +290,8 @@ module dec_typedef_module
      !> ****************
      !> logical for abc scheme
      logical :: abc
+     !> force a specific tile size for use with ijk scheme
+     integer :: ijk_tile_size
      !> force a specific tile size for use with abc scheme
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
@@ -306,6 +309,8 @@ module dec_typedef_module
      logical :: F12
      !> Do F12 also for fragment optimization
      logical :: F12fragopt
+     !> Do C coupling in F12 scheme
+     logical :: F12Ccoupling
 
      !> F12 debug settings
      !> ******************

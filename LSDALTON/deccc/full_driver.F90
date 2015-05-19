@@ -61,6 +61,7 @@ contains
     real(realk),intent(inout) :: Ecorr
     !local variables
     real(realk) :: Eerr,Edft
+    real(realk) :: Ecorr_rimp2, Ecorr_rimp2f12
     logical :: Success
     write(DECinfo%output,'(/,a)') ' ================================================ '
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
@@ -88,7 +89,19 @@ contains
           if(DECinfo%ccModel==MODEL_MP2) then
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
-             call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr)
+             call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr_rimp2)       
+             call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr_rimp2f12)
+             Ecorr = Ecorr_rimp2 + Ecorr_rimp2f12
+             write(DECinfo%output,'(/,a)') ' ================================================ '
+             write(DECinfo%output,'(a)')   '                 Energy Summary                   '
+             write(DECinfo%output,'(a,/)') ' ================================================ '
+             write(*,'(/,a)') ' ================================================ '
+             write(*,'(a)')   '                 Energy Summary                   '
+             write(*,'(a,/)') ' ================================================ '
+             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2 CORRECTION TO ENERGY =  ', Ecorr_rimp2
+             write(DECinfo%output,*)  'TOYCODE: RI-MP2 CORRECTION TO ENERGY =  ', Ecorr_rimp2
+             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =  ', Ecorr_rimp2f12
+             write(DECinfo%output,*)  'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =  ', Ecorr_rimp2f12
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
@@ -347,7 +360,7 @@ contains
      
     real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
     type(tensor) :: tensor_Taibj,tensor_gmo
-    integer :: vs, os
+    integer :: vs, os,offset
     logical :: local
     local = .true.
 #ifdef VAR_MPI
@@ -364,10 +377,24 @@ contains
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
-    nocc   = MyMolecule%nocc
     nvirt  = MyMolecule%nvirt
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    noccfull = nocc
+
+    ! Set number of occupied orbitals
+    if(DECinfo%frozencore) then
+       ! Frozen core: nocc = #valence orbitals
+       nocc = MyMolecule%nval
+    else
+       ! Not frozen core: nocc = total number of occ orbitals
+       nocc = MyMolecule%nocc
+    end if
+    ! noccfull: Always equal to total number of occ orbitals
+    noccfull = MyMolecule%nocc
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
 
     ! Get all F12 Fock Matrices
     ! ********************
@@ -395,15 +422,13 @@ contains
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
 
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)    
-    !   call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
-    !   call mp2f12_Cjaib(Cjaib,Giajc,Fac%elms,nocc,nvirt,ncabs)
     
     ! MP2-F12 Singles correction (Yang M. Wang 03.12.2014)
     ! ***************************    
     call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
    
-    if(DECinfo%use_canonical) then
+    DoCanonical: if(DECinfo%use_canonical) then
        !construct canonical T amplitudes
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
        do J=1,nocc
@@ -411,7 +436,8 @@ contains
              do I=1,nocc
                 do A=1,nvirt
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                        & + MyMolecule%oofock%elm2(J+offset,J+offset) &
                         & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
                    eps = gmo(A,I,B,J)/eps
                    Taibj(a,i,b,j) = eps
@@ -428,7 +454,8 @@ contains
                 do A=1,nvirt
 
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                        & + MyMolecule%oofock%elm2(J+offset,J+offset) &
                         & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
 
                    ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
@@ -438,6 +465,25 @@ contains
              end do
           end do
        end do
+       IF(DECinfo%F12Ccoupling)THEN
+          !overwrite the amplitudes with F12 modified amplitudes which includes the C coupling. TK
+          do J=1,nocc
+             do B=1,nvirt
+                do I=1,nocc
+                   do A=1,nvirt
+                      ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+                      eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                           & + MyMolecule%oofock%elm2(J+offset,J+offset) &
+                           & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
+                      eps = (gmo(A,I,B,J) + 3.0E0_realk/8.0E0_realk*Ciajb(I,A,J,B) &
+                           & + 1.0E0_realk/8.0E0_realk*Ciajb(J,A,I,B))/eps
+                      Taibj(a,i,b,j) = eps
+                   enddo
+                enddo
+             enddo
+          enddo
+       ENDIF
+
 
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS
@@ -466,7 +512,8 @@ contains
              end do
           end do
        end do
-    endif
+
+    endif DoCanonical
   
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
@@ -512,11 +559,11 @@ contains
        print *, '----------------------------------------'
 
        E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
+            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)   &
             & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
 
        print *, ' E21_Vsum: ', E21_debug
-       !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
     endif
 
     call mem_dealloc(Vijij)
@@ -1362,7 +1409,6 @@ contains
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
 
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
-    call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
 
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
    
@@ -1796,7 +1842,6 @@ contains
     endif
     
     call mem_dealloc(Ciajb)
-    call mem_dealloc(Cjaib)
 
     ! Add contributions
     ECCSD_F12 = ECCSD + EF12

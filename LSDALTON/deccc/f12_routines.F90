@@ -417,14 +417,19 @@ module f12_routines_module
     type(matrix) :: matAO,matMO
     real(realk),pointer :: elms(:)
     type(matrix) :: CMO(2)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     type(matrix) :: CMO_cabs,CMO_ri,tmp
     character(len=2) :: inputstring
     logical :: doCABS,doRI
-    integer :: i,lupri
+    integer :: i,lupri,offset
     character :: string(2)
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
     string(1)=inputstring(1:1) 
     string(2)=inputstring(2:2) 
     lupri=6
@@ -471,7 +476,7 @@ module f12_routines_module
        endif
        call mat_init(CMO(i),ndim1(i),ndim2(i))
        if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),Cocc(1:nbasis,offset+1:noccfull),1,CMO(i)%elms,1)
        elseif(string(i).EQ.'m')then !all occupied
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
@@ -1927,7 +1932,7 @@ module f12_routines_module
     real(realk),pointer :: gAO(:,:,:,:)
     real(realk),pointer :: gMO(:,:,:,:) ,elms(:)
     type(matrix) :: CMO(4)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     type(matrix) :: CMO_cabs,CMO_ri
@@ -1935,7 +1940,12 @@ module f12_routines_module
     real(realk),pointer :: tmp2(:,:,:,:)
     character :: string(4)
     logical :: doCABS,doRI
-    integer :: i,lupri
+    integer :: i,lupri,offset
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
     string(1) = inputstring(1:1)
     string(2) = inputstring(2:2)
     string(3) = inputstring(3:3)
@@ -1983,7 +1993,7 @@ module f12_routines_module
        endif
        call mat_init(CMO(i),ndim1(i),ndim2(i))
        if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),Cocc(1:nbasis,offset+1:noccfull),1,CMO(i)%elms,1)
        elseif(string(i).EQ.'m')then !all occupied
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
@@ -2151,9 +2161,11 @@ module f12_routines_module
       
     MemAvailable = 0.0E0_realk   
     call get_currently_available_memory(MemAvailable)
+    print *,"non-scaled MemAvailable: ", MemAvailable
     MemAvailable = MemAvailable*1.0E9_realk !In bytes
+    print *,"scaled MemAvailable: ", MemAvailable
   
-    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+ !   call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
  
     if(DECinfo%F12DEBUG) then
 !!$       print *, "----------------------------------"
@@ -2209,6 +2221,10 @@ module f12_routines_module
 !!$             print *, "dimAlpha:", dimAlpha
 !!$          endif
           exit alpha   
+       endif
+       
+       if(k==n11) then
+          dimAlpha = n11
        endif
 
     enddo alpha
