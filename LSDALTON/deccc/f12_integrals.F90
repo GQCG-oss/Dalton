@@ -323,7 +323,7 @@ contains
     ! **********************************************************  
     !> Rijac <ij|f12|ac> stored as (i,j,a,c)       r = RI MO
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiac','RCRRG',Rijac)
-
+!FIXME ADD A C Couplings contribution here 
     Cijab = 0.0E0_realk
     do i=1, noccEOS
        do j=1, noccEOS      

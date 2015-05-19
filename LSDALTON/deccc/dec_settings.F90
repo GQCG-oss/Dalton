@@ -787,11 +787,15 @@ contains
        case('.ICHOR'); DECinfo%UseIchor = .true.
 
 
+       ! MEMORY HANDLING KEYWORDS
+       ! **************************
+       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
+
+
 #ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
-       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
        case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
        case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
@@ -863,6 +867,7 @@ contains
        case('.F12CCOUPLING')     
           DECinfo%F12Ccoupling=.true.
 
+#endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
        ! ***********************************************
@@ -960,7 +965,6 @@ contains
           DECinfo%SkipReadIn=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
 
-#endif
        ! KEYWORDS RELATED TO TENSOR HYPER CONTRACTION (THC)
        ! ***********************
        case('.THC_PRUNE'); DECinfo%THCNOPRUN = .FALSE.
