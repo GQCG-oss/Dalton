@@ -360,7 +360,7 @@ contains
      
     real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
     type(tensor) :: tensor_Taibj,tensor_gmo
-    integer :: vs, os
+    integer :: vs, os,offset
     logical :: local
     local = .true.
 #ifdef VAR_MPI
@@ -377,10 +377,24 @@ contains
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
-    nocc   = MyMolecule%nocc
     nvirt  = MyMolecule%nvirt
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    noccfull = nocc
+
+    ! Set number of occupied orbitals
+    if(DECinfo%frozencore) then
+       ! Frozen core: nocc = #valence orbitals
+       nocc = MyMolecule%nval
+    else
+       ! Not frozen core: nocc = total number of occ orbitals
+       nocc = MyMolecule%nocc
+    end if
+    ! noccfull: Always equal to total number of occ orbitals
+    noccfull = MyMolecule%nocc
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
 
     ! Get all F12 Fock Matrices
     ! ********************
@@ -416,7 +430,7 @@ contains
     ! ***************************    
     call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
    
-    if(DECinfo%use_canonical) then
+    DoCanonical: if(DECinfo%use_canonical) then
        !construct canonical T amplitudes
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
        do J=1,nocc
@@ -424,7 +438,8 @@ contains
              do I=1,nocc
                 do A=1,nvirt
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                        & + MyMolecule%oofock%elm2(J+offset,J+offset) &
                         & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
                    eps = gmo(A,I,B,J)/eps
                    Taibj(a,i,b,j) = eps
@@ -441,7 +456,8 @@ contains
                 do A=1,nvirt
 
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                        & + MyMolecule%oofock%elm2(J+offset,J+offset) &
                         & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
 
                    ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
@@ -458,9 +474,11 @@ contains
                 do I=1,nocc
                    do A=1,nvirt
                       ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                      eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                      eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                           & + MyMolecule%oofock%elm2(J+offset,J+offset) &
                            & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
-                      eps = (gmo(A,I,B,J) + 3.0E0_realk/8.0E0_realk*Ciajb(I,A,J,B) + 1.0E0_realk/8.0E0_realk*Ciajb(J,A,I,B))/eps
+                      eps = (gmo(A,I,B,J) + 3.0E0_realk/8.0E0_realk*Ciajb(I,A,J,B) &
+                           & + 1.0E0_realk/8.0E0_realk*Ciajb(J,A,I,B))/eps
                       Taibj(a,i,b,j) = eps
                    enddo
                 enddo
@@ -496,7 +514,8 @@ contains
              end do
           end do
        end do
-    endif
+
+    endif DoCanonical
   
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
