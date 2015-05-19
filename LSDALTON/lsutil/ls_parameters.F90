@@ -137,9 +137,7 @@ MODULE lsparameters
   integer,parameter :: CHANGE_BG_BUF                = 69
   integer,parameter :: LSTHCRIMP2INAMP              = 70
   integer,parameter :: LSTHCRIMP2FULL               = 71
-#ifdef MOD_UNRELEASED
   integer,parameter :: CCSDPTSLAVE_WORK             = 72
-#endif
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

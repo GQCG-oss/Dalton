@@ -3168,6 +3168,9 @@ CONTAINS
       IF(ls%setting%IntegralTransformGC)THEN
          call lsquit('di_decpackedJ requires .NOGCBASIS',-1)
       ENDIF
+      MinimumAllowedAObatchSize = 0
+      MaxAObatchesOrbDim = 0
+      nbatchesofAOS = 0
       ForcePrint = .TRUE.
       NoSymmetry = .FALSE. !activate permutational symmetry
       call mem_alloc(Dfull,D%nrow,D%ncol)

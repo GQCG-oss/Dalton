@@ -1687,7 +1687,7 @@ function mp2f12_E22X_ri(Xijij,Xjiij,Fii,nocc) result(energy)
    !
    integer     :: i,j
    real(realk) :: tmp
-
+   tmp = 0.0E0_realk
    DO i=1,nocc
       DO j=1,nocc
          tmp = tmp - (7.0E0_realk * Xijij(i,j) + Xjiij(i,j))*(Fii(i,i) +Fii(j,j))
