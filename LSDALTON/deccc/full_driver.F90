@@ -422,9 +422,7 @@ contains
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
 
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)    
-    !   call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
-    !   call mp2f12_Cjaib(Cjaib,Giajc,Fac%elms,nocc,nvirt,ncabs)
     
     ! MP2-F12 Singles correction (Yang M. Wang 03.12.2014)
     ! ***************************    
@@ -557,15 +555,15 @@ contains
        print *, ' E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
        print *, ' E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
        print *, ' E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
-!       print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
+       print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
 
        E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc))  ! &
-!            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
+            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)   &
+            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
 
        print *, ' E21_Vsum: ', E21_debug
-       !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
     endif
 
     call mem_dealloc(Vijij)
