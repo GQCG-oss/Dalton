@@ -132,7 +132,7 @@ contains
     type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
-    real(realk), target, intent(in) :: CoccAOStot(:,:)  !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CoccAOStot(:,:)  !CoccAOS(nbasis,nocctot)
     real(realk), target, intent(in) :: CocvAOStot(:,:)  !CocvAOStot(nbasis, nocvAOS)
     real(realk), target, intent(in) :: Ccabs(:,:)    !Ccabs(ncabsAO, ncabsMO)
     real(realk), target, intent(in) :: Cri(:,:)      !Cri(ncabsAO,ncabsAO)
@@ -145,30 +145,24 @@ contains
     real(realk), pointer :: Rijpq(:,:,:,:) ! <ij|f12|pq>
 
     integer :: noccEOS !number of occupied MO orbitals in EOS
-    integer :: nocvAOS !number of occupied + virtual MO orbitals in EOS 
+    integer :: nocvAOStot !number of occupied tot + virtual MO orbitals in EOS 
 
     integer :: m, k, n
 
     noccEOS  = MyFragment%noccEOS
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
+    nocvAOStot  = MyFragment%nocctot + MyFragment%nvirtAOS
 
     call mem_alloc(V2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  
-    call mem_alloc(Gijpq,  noccEOS, noccEOS, nocvAOS, nocvAOS)    
-    call mem_alloc(Rijpq,  noccEOS, noccEOS, nocvAOS, nocvAOS)
+    call mem_alloc(Gijpq,  noccEOS, noccEOS, nocvAOStot, nocvAOStot)    
+    call mem_alloc(Rijpq,  noccEOS, noccEOS, nocvAOStot, nocvAOStot)
 
     V2energy = 0.0E0_realk
-
-    if(dopair) then
-       call get_mp2f12_pf_E21(V2ijkl, Fragment1, Fragment2, MyFragment, noccEOS, V2energy, -1.0E0_realk)
-    else 
-       call get_mp2f12_sf_E21(V2ijkl, noccEOS, V2energy, -1.0E0_realk)
-    endif
 
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iipp','RRRRC',Gijpq)
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
 
     m = noccEOS*noccEOS  ! <ij G pq> <pq R kl> = <m V2 n> 
-    k = nocvAOS*nocvAOS  
+    k = nocvAOStot*nocvAOStot  
     n = noccEOS*noccEOS
 
     !>  dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
@@ -219,18 +213,18 @@ contains
     real(realk), pointer :: V4ijkl(:,:,:,:) ! sum_mc <ji|r^-1|cm> * <cm|f12|lk> 
 
     integer :: noccEOS !number of occupied MO orbitals in EOS
-    integer :: noccAOS !number of occupied orbitals in AOS 
+    integer :: noccAOStot !number of occupied orbitals in AOStot 
     integer :: ncabsMO !number of CABS MO orbitals    
 
     integer :: m, k, n
 
     noccEOS  = MyFragment%noccEOS
-    noccAOS  = MyFragment%noccAOS 
+    noccAOStot  = MyFragment%nocctot 
     ncabsMO = size(MyFragment%Ccabs,2)
 
     call mem_alloc(V3ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  
-    call mem_alloc(Gijmc,  noccEOS, noccEOS, noccAOS, ncabsMO)
-    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS, ncabsMO)
+    call mem_alloc(Gijmc,  noccEOS, noccEOS, noccAOStot, ncabsMO)
+    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOStot, ncabsMO)
 
     call mem_alloc(V4ijkl, noccEOS, noccEOS, noccEOS, noccEOS) 
 
@@ -238,7 +232,7 @@ contains
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc) !*
 
     m = noccEOS*noccEOS  ! <ij G mc> <mc R kl> = <m V3 n> 
-    k = noccAOS*ncabsMO  ! m x k * k x n = m x n
+    k = noccAOStot*ncabsMO  ! m x k * k x n = m x n
     n = noccEOS*noccEOS
 
     !> dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
@@ -283,7 +277,7 @@ contains
     type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
-    real(realk), target, intent(in) :: CoccAOStot(:,:)  !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CoccAOStot(:,:)  !CoccEOS(nbasis,noccAOStot)
     real(realk), target, intent(in) :: CocvAOStot(:,:)  !CocvAOStot(nbasis, nocvAOS)
     real(realk), target, intent(in) :: Ccabs(:,:)    !Ccabs(ncabsAO, ncabsMO)
     real(realk), target, intent(in) :: Cri(:,:)      !Cri(ncabsAO,ncabsAO)
@@ -300,14 +294,14 @@ contains
     real(realk), pointer :: Tabij(:,:,:,:) 
 
     integer :: noccEOS !number of occupied MO orbitals in EOS
-    integer :: noccAOS
+    integer :: noccAOStot
     integer :: nvirtAOS
     integer :: ncabsMO
     integer :: i, j, m, k, n, a, b, c
     real(realk) :: tmp
 
     noccEOS  = MyFragment%noccEOS
-    noccAOS  = MyFragment%noccAOS
+    noccAOStot  = MyFragment%nocctot
     nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
 
@@ -333,8 +327,8 @@ contains
                 ! tmp2 = 0.0E0_realk
                 tmp  = 0.0E0_realk
                 do c=1, ncabsMO
-                   tmp =  tmp  + Rijac(i,j,a,c)*(Myfragment%Fcp(c,b+noccAOS)) + Rijac(j,i,b,c)*(Myfragment%Fcp(c,a+noccAOS)) 
-                   ! tmp2 = tmp2 + Rijac(j,i,a,c)*(Myfragment%Fcp(c,b+noccAOS)) + Rijac(i,j,b,c)*(Myfragment%Fcp(c,a+noccAOS)) 
+                   tmp =  tmp  + Rijac(i,j,a,c)*(Myfragment%Fcp(c,b+noccAOStot)) + Rijac(j,i,b,c)*(Myfragment%Fcp(c,a+noccAOStot)) 
+                   ! tmp2 = tmp2 + Rijac(j,i,a,c)*(Myfragment%Fcp(c,b+noccAOStot)) + Rijac(i,j,b,c)*(Myfragment%Fcp(c,a+noccAOStot)) 
                 enddo
                 Cijab(i,j,a,b) = tmp 
                    ! Cijab(j,i,a,b) = tmp2 

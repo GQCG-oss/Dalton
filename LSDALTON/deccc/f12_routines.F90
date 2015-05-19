@@ -619,7 +619,7 @@ module f12_routines_module
   !> Brief: Get <1,2|INTSPEC|3,4> MO integrals wrapper.
   !> Author: Yang M. Wang
   !> Data: Nov 2013
-  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
+  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
     implicit none
 
     !> Atomic fragment to be determined  (NOT pair fragment)
@@ -630,12 +630,12 @@ module f12_routines_module
     integer :: nbasis
     !> Number of occupied orbitals MO in EOS space
     integer :: noccEOS
-    !> Number of occupied orbitals MO in AOS space
-    integer :: noccAOS
+    !> Number of occupied orbitals MO in AOS space (includes core, also for frozen core)
+    integer :: noccAOStot
     !> Number of virtupied (virtual) orbitals MO in EOS space
     integer :: nvirtEOS
-    !> Number of occupied + virtual MO in AOS space 
-    integer :: nocvAOS
+    !> Number of occupied + virtual MO in AOS space (includes core, also for frozen core)
+    integer :: nocvAOStot
     !> Number of CABS AO orbitals
     integer :: ncabsAO
     !> Number of CABS MO orbitals
@@ -661,9 +661,9 @@ module f12_routines_module
     !> MO coefficient matrix for the occupied EOS
     real(realk), target, intent(in) :: CoccEOS(:,:) !CoccEOS(nbasis,noccEOS)
     !> MO coefficient matrix for the occupied AOS
-    real(realk), target, intent(in) :: CoccAOS(:,:) !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CoccAOStot(:,:) !CoccEOS(nbasis,noccAOStot)
     !> MO coefficient matrix for the occupied + virtual EOS
-    real(realk), target, intent(in) :: CocvAOS(:,:) !CocvAOS(nbasis, nocvAOS)
+    real(realk), target, intent(in) :: CocvAOStot(:,:) !CocvAOStot(nbasis, nocvAOS)
     !> MO coefficient matrix for the CABS 
     real(realk), target, intent(in) :: Ccabs(:,:) !Ccabs(ncabsAO, ncabsMO)
     !> MO coefficient matrix for the RI 
@@ -673,10 +673,10 @@ module f12_routines_module
 
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
-    noccAOS  =  MyFragment%noccAOS
+    noccAOStot  =  MyFragment%nocctot
     nvirtEOS = MyFragment%nvirtEOS
     nvirtAOS = MyFragment%nvirtAOS
-    nocvAOS =   MyFragment%noccAOS + MyFragment%nvirtAOS
+    nocvAOStot =   noccAOStot + nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
 
@@ -686,17 +686,17 @@ module f12_routines_module
           C(i)%n1 = nbasis
           C(i)%n2 = noccEOS               
        elseif(intType(i).EQ.'m') then ! occupied AOS
-          C(i)%cmat => CoccAOS
+          C(i)%cmat => CoccAOStot
           C(i)%n1 = nbasis
-          C(i)%n2 = noccAOS 
+          C(i)%n2 = noccAOStot 
        elseif(intType(i).EQ.'a') then ! virtual AOS
           C(i)%cmat => CvirtAOS
           C(i)%n1 = nbasis
           C(i)%n2 = nvirtAOS
        elseif(intType(i).EQ.'p') then !all occupied + virtual AOS
-          C(i)%cmat => CocvAOS
+          C(i)%cmat => CocvAOStot
           C(i)%n1 = nbasis
-          C(i)%n2 = nocvAOS 
+          C(i)%n2 = nocvAOStot 
        elseif(intType(i).EQ.'c') then !cabs
           C(i)%cmat => Ccabs
           C(i)%n1 = ncabsAO
