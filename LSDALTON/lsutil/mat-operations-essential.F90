@@ -49,7 +49,7 @@ MODULE matrix_operations
         & mat_read_info_from_disk,mat_extract_diagonal,&
         & no_of_matmuls, mat_tr, mat_trab, mat_dotproduct, mat_sqnorm2, &
         & mat_outdia_sqnorm2, info_memory, max_no_of_matrices, no_of_matrices,&
-        & mat_to_full3D, string11_mtype
+        & mat_to_full3D, string11_mtype,mat_add_to_fullunres
 
 !> Matrices are symmetric and dense (not implemented)
    integer, parameter :: mtype_symm_dense  = 1
@@ -682,6 +682,7 @@ MODULE matrix_operations
 
       END SUBROUTINE mat_set_from_full
 
+
 !> \brief Convert a type(matrix) to a standard fortran matrix - USAGE DISCOURAGED!
 !> \author L. Thogersen
 !> \date 2003
@@ -736,6 +737,34 @@ MODULE matrix_operations
          if (info_memory) write(mat_lu,*) 'After mat_to_full: mem_allocated_global =', mem_allocated_global
          call time_mat_operations2(JOB_mat_to_full)
       END SUBROUTINE mat_to_full
+
+
+!> \brief Adds an alpha or beta part of a unrestricted matrix type to 
+!>  a standard fortran matrix
+!> \author T. Kjaergaard
+!> \date 2015
+!> \param a The type(matrix) that should be converted (n x n)
+!> \param afull The output standard fortran matrix (n x n) 
+!> \param alpha The output standard fortran matrix is multiplied by alpha
+      SUBROUTINE mat_add_to_fullunres(a, alpha, afull,spin)
+        implicit none
+        TYPE(Matrix), intent(in):: a
+        real(realk), intent(in) :: alpha
+        real(realk), intent(inout):: afull(*)  !output
+        integer,intent(in) :: spin
+        call time_mat_operations1
+        if (info_memory) write(mat_lu,*) 'Before mat_to_full: mem_allocated_global =', mem_allocated_global
+        select case(matrix_type)
+        case(mtype_unres_dense) 
+           call mat_unres_dense_add_to_fullunres(a, alpha, afull,spin)
+           !FIXME BYKOV GENERALIZE TO THE OTHER TYPES!
+        case default
+           call lsquit("mat_to_full2 not implemented for this type of matrix",-1)
+        end select
+        !if (INFO_TIME_MAT) CALL LSTIMER('TOFULL',mat_TSTR,mat_TEN,mat_lu)
+        if (info_memory) write(mat_lu,*) 'After mat_to_full: mem_allocated_global =', mem_allocated_global
+        call time_mat_operations2(JOB_mat_to_full)
+      END SUBROUTINE mat_add_to_fullunres
 
 !> \brief Convert a type(matrix) to a standard 3D fortran matrix - USAGE DISCOURAGED!
 !> \author L. Thogersen

@@ -287,7 +287,15 @@ contains
     ! Stripped down keywords
     DECinfo%noaofock=.false.
 
-
+    DECinfo%THCNOPRUN = .FALSE.
+    DECinfo%THCradint = 1E-6_realk
+    DECinfo%THC_MIN_RAD_PT = 20
+    DECinfo%THCangint = 2
+    DECinfo%THCHRDNES = 3
+    DECinfo%THCTURBO = 1
+    DECinfo%THCRADIALGRID = 3
+    DECinfo%THCZdependenMaxAng = .TRUE.
+    DECinfo%THCPARTITIONING = 1 !(1=SSF, 2=Becke, 3=Becke-original)
 
   end subroutine dec_set_default_config
 
@@ -950,6 +958,17 @@ contains
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
 
 #endif
+       ! KEYWORDS RELATED TO TENSOR HYPER CONTRACTION (THC)
+       ! ***********************
+       case('.THC_PRUNE'); DECinfo%THCNOPRUN = .FALSE.
+       case('.THC_RADINT'); read(input,*) DECinfo%THCradint 
+       case('.THC_MIN_RAD_PT'); read(input,*) DECinfo%THC_MIN_RAD_PT
+       case('.THC_ANGINT'); read(input,*) DECinfo%THCangint
+       case('.THC_HRDNES'); read(input,*) DECinfo%THCHRDNES
+       case('.THC_TURBO'); read(input,*) DECinfo%THCTURBO
+       case('.THC_RADIALGRID'); read(input,*) DECinfo%THCRADIALGRID
+       case('.THC_NOZDEPENDENTMAXANG'); DECinfo%THCZdependenMaxAng=.FALSE.
+       case('.THC_PARTITIONING'); read(input,*) DECinfo%THCPARTITIONING
 
        CASE DEFAULT
           WRITE (output,'(/,3A,/)') ' Keyword "',WORD,&

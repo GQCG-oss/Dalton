@@ -23,6 +23,7 @@ module full_ls_thc_rimp2Mod
   use rimp2_module
   use full_molecule
   use THC_util
+  use files
   public :: full_canonical_ls_thc_rimp2
   private
 
@@ -44,17 +45,18 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   !
   integer :: nbasis,nocc,nvirt,naux,noccfull,mynum,numnodes,nb,nbasisAux
   integer :: nAtoms,lupri,ngrid,Iprint,NBA,M,N,K,I,J,A,B,ALPHA,P,Q,offset
-  real(realk) :: TS,TE,epsilon,TMP
+  real(realk) :: TS,TE,epsilon,TMP,TS2,TE2
   real(realk),pointer :: EpsOcc(:),EpsVirt(:),X(:,:),S(:,:),S_inv(:,:),Zpq(:,:)
   real(realk),pointer :: Calpha(:),ABdecomp(:,:),Mmat(:,:),Epq(:,:),XO(:,:)
   real(realk),pointer :: XV(:,:),TZpq(:,:),IntTHC(:,:,:,:),IntRI(:,:,:,:)
   real(realk),pointer :: SC(:,:)
-  logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate
+  logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate,WriteToDisk
   character :: intspec(5)
 
   CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
+  CALL LSTIMER('START ',TS2,TE2,DECINFO%OUTPUT)
   mp2_energy = 0.0E0_realk
-  
+  WriteToDisk = .TRUE.  
   !sanity check
   if(.NOT.DECinfo%use_canonical) then
      call lsquit('Error: full_canonical_ls_thc_rimp2 require canonical Orbitals',-1)
@@ -79,15 +81,32 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   numnodes = 1
 
   Iprint = 0
+  print*,'DECinfo%THCradint',DECinfo%THCradint
+  print*,'DECinfo%THCangint',DECinfo%THCangint
+  print*,'DECinfo%THCHRDNES',DECinfo%THCHRDNES
+  print*,'DECinfo%THCNOPRUN',DECinfo%THCNOPRUN
+  print*,'DECinfo%THCTURBO',DECinfo%THCTURBO
+  print*,'DECinfo%THCRADIALGRID',DECinfo%THCRADIALGRID
+  print*,'DECinfo%THCZdependenMaxAng',DECinfo%THCZdependenMaxAng
+  print*,'DECinfo%THCPARTITIONING',DECinfo%THCPARTITIONING
+  print*,'DECinfo%THC_MIN_RAD_PT',DECinfo%THC_MIN_RAD_PT
   !Step 1 Build the grid and return the number of gridpoints
-  call Get_THC_AO_grid_ngrid(DECinfo%output,iprint,mylsitem%setting,nb,ngrid)
+  call Get_THC_AO_grid_ngrid(DECinfo%output,iprint,mylsitem%setting,nb,ngrid,&
+       & DECinfo%THCradint,DECinfo%THCangint,DECinfo%THCHRDNES,&
+       & DECinfo%THCNOPRUN,DECinfo%THCTURBO,DECinfo%THCRADIALGRID,&
+       & DECinfo%THCZdependenMaxAng,DECinfo%THCPARTITIONING,&
+       & DECinfo%THC_MIN_RAD_PT)
   print*,'THC ngrid',ngrid 
+  CALL LSTIMER('THC:Get_THC_AO_grid_ngrid',TS2,TE2,DECINFO%OUTPUT)
 
   !Step 2a Get the Atomic Orbital function values on the gridpoints
   call mem_alloc(X,ngrid,nbasis)
   !remove grid points that do not contribute to any functions with more than 
   !THC_GRID_THRESHOLD
   call Get_THC_AO_grid_X(DECinfo%output,iprint,mylsitem%setting,nb,ngrid,X)
+
+  CALL LSTIMER('THC:Get_THC_AO_grid_X',TS2,TE2,DECINFO%OUTPUT)
+
   ! Change X to MO  
   !step 2b XV(P,a)=X(P,mu)*Cv(mu,a)
   call mem_alloc(XV,ngrid,nvirt)
@@ -96,22 +115,27 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   K = nbasis  !summation dimension
   call dgemm('N','N',M,N,K,1.0E0_realk,X,M,MyMolecule%Cv%elm2,K,0.0E0_realk,XV,M)
 
+  CALL LSTIMER('THC:DGEMM1',TS2,TE2,DECINFO%OUTPUT)
+
   !step 2c XO(P,i)=X(P,mu)*Co(mu,i)
   call mem_alloc(XO,ngrid,nocc)
   M = ngrid   !rows of Output Matrix
   N = nocc    !columns of Output Matrix
   K = nbasis  !summation dimension
   call dgemm('N','N',M,N,K,1.0E0_realk,X,M,MyMolecule%Co%elm2,K,0.0E0_realk,XO,M)
+  CALL LSTIMER('THC:DGEMM2',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(X)
 
   !Step 3 Construct the Grid Overlap Matrix Eq. 28 of JCP 137, 224106
   call mem_alloc(S,ngrid,ngrid)    
   call Get_THC_grid_overlap2(S,XO,XV,nocc,nvirt,ngrid)
-
+  CALL LSTIMER('THC:OVERLAP2',TS2,TE2,DECINFO%OUTPUT)
+  
   !Step 4 Construct the Inverse Grid Overlap Matrix
   call mem_alloc(S_inv,ngrid,ngrid)
   epsilon = 1.0E-10_realk
   call Get_THC_grid_overlap_inv(S,S_inv,ngrid,epsilon)
+  CALL LSTIMER('THC:OVERLAP_INV',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(S)
 
   !step 5a construct (alpha|ai) 
@@ -127,11 +151,13 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
        & MyMolecule%Co%elm2,nocc,mynum,numnodes,Calpha,NBA,ABdecomp,&
        & ABdecompCreate,intspec,.FALSE.)
   call mem_dealloc(ABdecomp)
+  CALL LSTIMER('THC:Build_CalphaMO2',TS2,TE2,DECINFO%OUTPUT)
 
   !step 6 construct M(P,alpha) 
   !M(P,alpha) = (alpha|ai)*X(P,a)*X(P,i)   !scaling: O*V*Nalpha*Ngrid
   call mem_alloc(Mmat,ngrid,NBA)
   CALL build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,Mmat)
+  CALL LSTIMER('THC:build_THC_MalphaP',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(Calpha)
     
   !step 7 construct Epq
@@ -141,6 +167,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   K = NBA     !summation dimension
   call mem_alloc(Epq,ngrid,ngrid)
   call dgemm('N','T',M,N,K,1.0E0_realk,Mmat,M,Mmat,M,0.0E0_realk,Epq,M)
+  CALL LSTIMER('THC:DGEMM3',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(Mmat)
 
   !step 8 construct Zpq(S,R) = S_inv(S,P)*Epq(P,Q)*S_inv(Q,R)
@@ -150,13 +177,17 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   !TZpq(S,R) = S_inv(S,P)*Epq(P,Q)
   call mem_alloc(TZpq,ngrid,ngrid)
   call dgemm('N','N',M,N,K,1.0E0_realk,S_inv,M,Epq,K,0.0E0_realk,TZpq,M)
+  CALL LSTIMER('THC:DGEMM4',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(Epq)
 
   !Zpq(S,R) = TZpq(S,Q)*S_inv(Q,R)
   call mem_alloc(Zpq,ngrid,ngrid)
   call dgemm('N','N',M,N,K,1.0E0_realk,TZpq,M,S_inv,K,0.0E0_realk,Zpq,M)
+  CALL LSTIMER('THC:DGEMM5',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(TZpq)
   call mem_dealloc(S_inv)
+
+  IF(WriteToDisk)call DumpTHCmatrices(nbasis,nocc,nvirt,ngrid,XO,XV,Zpq)
 
   offset = 0
   call mem_alloc(EpsOcc,nocc)
@@ -174,8 +205,10 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   enddo
   !$OMP END PARALLEL DO
   mp2_energy=0.0E0_realk
+  CALL LSTIMER('THC:Eps',TS2,TE2,DECINFO%OUTPUT)
   call LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,mp2_energy)
-
+  CALL LSTIMER('THC:Ecorr',TS2,TE2,DECINFO%OUTPUT)
+  print*,'LS-THC-RI-MP2 energy=',mp2_energy
   call mem_dealloc(XO)
   call mem_dealloc(XV)
   call mem_dealloc(Zpq)
@@ -219,6 +252,29 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
 
   CALL LSTIMER('LS_THC_RIMP2 ',TS,TE,DECINFO%OUTPUT)
 end subroutine full_canonical_ls_thc_rimp2
+
+subroutine DumpTHCmatrices(nbasis,nocc,nvirt,ngrid,XO,XV,Zpq)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,ngrid,nbasis
+  real(realk),intent(in) :: XO(ngrid,nocc),XV(ngrid,nvirt)
+  real(realk),intent(in) :: Zpq(ngrid,ngrid)
+  !local variables
+  integer :: LU
+  logical :: save_access_stream
+  LU = -1
+  save_access_stream = access_stream
+  access_stream = .TRUE.
+  call lsopen(LU,'THC.restart','UNKNOWN','UNFORMATTED')
+  WRITE(LU) ngrid
+  WRITE(LU) nbasis
+  WRITE(LU) nocc
+  WRITE(LU) nvirt
+  WRITE(LU) XO
+  WRITE(LU) XV
+  WRITE(LU) Zpq
+  call lsclose(LU,'KEEP')
+  access_stream = save_access_stream
+end subroutine DumpTHCmatrices
 
 subroutine LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,Ecorr)
   implicit none
@@ -300,6 +356,8 @@ subroutine build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,M)
   !
   integer :: I,A,ALPHA,K
   real(realk) :: TI,TMP
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(2) PRIVATE(I,A,ALPHA,K,&
+!$OMP TI,TMP) SHARED(NBA,nvirt,nocc,ngrid,M,XV,XO,Calpha)
   DO ALPHA=1,NBA
      DO K=1,ngrid
         TMP = 0.0E0_realk
@@ -312,6 +370,7 @@ subroutine build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,M)
         M(K,ALPHA) = TMP
      ENDDO
   ENDDO
+!$OMP END PARALLEL DO
 end subroutine build_THC_MalphaP
 
 end module full_ls_thc_rimp2Mod

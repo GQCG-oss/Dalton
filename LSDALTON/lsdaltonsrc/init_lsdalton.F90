@@ -268,29 +268,30 @@ SUBROUTINE print_intro(lupri)
   &  '                                           ',&
        &  ' LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)',&
        &  ' ----------------------------------------------------------------------------',&
-       &  ' Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)',&
+       &  ' Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)',&
        &  ' Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)',&
-       &  ' Sonia Coriani,           University of Trieste,     Italy     (response)',&
+       &  ' Pablo Baudin,            Aarhus University,         Denmark   (DEC)',&
+       &  ' Sonia Coriani,           University of Trieste,     Italy     (Response)',&
        &  ' Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)',&
-       &  ' Trygve Helgaker,         University of Oslo,        Norway    (supervision)',&
+       &  ' Trygve Helgaker,         University of Oslo,        Norway    (Supervision)',&
        &  ' Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)',&
-       &  ' Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)',&
+       &  ' Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)',&
        &  ' Robert Izsak,            University of Oslo,        Norway    (ADMM)',&
-       &  ' Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)',&
-       &  ' Poul Joergensen,         Aarhus University,         Denmark   (supervision)', &
-       &  ' Joanna Kauczor,          Aarhus University,         Denmark   (response solver)',&
-       &  ' Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)',&
+       &  ' Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)',&
+       &  ' Poul Joergensen,         Aarhus University,         Denmark   (Supervision)', &
+       &  ' Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)',&
+       &  ' Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)',&
        &  ' Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)',&
-       &  ' Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)',&
+       &  ' Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)',&
        &  ' Patrick Merlot,          University of Oslo,        Norway    (ADMM)',&
        &  ' Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)',&
-       &  ' Jeppe Olsen,             Aarhus University,         Denmark   (supervision)', &
-       &  ' Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)',&
-       &  ' Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)',&
+       &  ' Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)', &
+       &  ' Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)',&
+       &  ' Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)',&
        &  ' Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)',&
        &  ' Andrew M. Teale,         University of Nottingham   England   (E-coefficients)',&
-       &  ' Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)',&
-       &  ' Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)',&
+       &  ' Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)',&
+       &  ' Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)',&
        &  ' Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)',&
        &  ' Mark Watson,             University of Oslo,        Norway    (FMM)',&
        &  ' Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)'

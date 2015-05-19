@@ -11,22 +11,6 @@ use precision
 use TYPEDEF
 use pseudoinverseMod
 use BUILDAOBATCH
-!use dft_type
-!use dft_typetype
-!GRID1
-!DALTON%DFT%RADINT = 1E-5_realk; DALTON%DFT%ANGINT = 17; DALTON%DFT%ZdependenMaxAng=.TRUE.
-!DALTON%DFT%TURBO = 1; DALTON%DFT%RADIALGRID = 3; DALTON%DFT%PARTITIONING = 4
-logical,parameter:: THCNOPRUN = .TRUE.
-!real(realk),parameter:: THCradint = 5.01187E-14_realk
-real(realk),parameter:: THCradint = 1E-6_realk
-integer,parameter:: THCangmin = 5
-!integer,parameter:: THCangint = 35
-integer,parameter:: THCangint = 10
-integer,parameter:: THCHRDNES = 3
-integer,parameter:: TURBO = 1
-integer,parameter:: RADIALGRID = 3
-logical,parameter:: ZdependenMaxAng = .TRUE.
-integer,parameter:: PARTITIONING = 1 !(1=SSF, 2=Becke, 3=Becke-original)
 private
 public :: Get_THC_AO_grid_ngrid, Get_THC_AO_grid_X, get_thc_grid_overlap, &
      & get_thc_grid_overlap_inv, get_thc_grid_overlap2
@@ -34,9 +18,14 @@ CONTAINS
 !> \brief 
 !> \author T. Kjaergaard
 !> \date 2015
-SUBROUTINE Get_THC_AO_grid_ngrid(LUPRI,IPRINT,SETTING,NBAST,NGRID)
+SUBROUTINE Get_THC_AO_grid_ngrid(LUPRI,IPRINT,SETTING,NBAST,NGRID,&
+     & THCradint,THCangint,THCHRDNES,THCNOPRUN,THCTURBO,THCRADIALGRID,&
+     & THCZdependenMaxAng,THCPARTITIONING,THC_MIN_RAD_PT)
 IMPLICIT NONE
-INTEGER,intent(in)     :: LUPRI,IPRINT,NBAST
+REAL(REALK),intent(in) :: THCradint
+INTEGER,intent(in)     :: LUPRI,IPRINT,NBAST,THCangint,THCHRDNES
+INTEGER,intent(in)     :: THCTURBO,THCRADIALGRID,THCPARTITIONING,THC_MIN_RAD_PT
+logical,intent(in)     :: THCNOPRUN,THCZdependenMaxAng
 INTEGER,intent(inout)  :: NGRID
 TYPE(LSSETTING) :: SETTING
 !
@@ -48,11 +37,12 @@ CALL BUILD_BASINF(LUPRI,IPRINT,BAS,SETTING,THCGRIDDONE,.FALSE.)
 IPRUNE = 1 !pruning: per default on
 IF (THCNOPRUN) IPRUNE = 0
 
-CALL THCGenerateGrid(NBAST,THCradint,THCangmin,THCangint,THCHRDNES,&
+CALL THCGenerateGrid(NBAST,THCradint,THCangint,THCHRDNES,&
      & iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,&
      & BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,&
-     & TURBO,RADIALGRID,ZdependenMaxAng,PARTITIONING,LUPRI,IPRINT,NGRID)
+     & THCTURBO,THCRADIALGRID,THCZdependenMaxAng,THCPARTITIONING,&
+     & LUPRI,IPRINT,THC_MIN_RAD_PT,NGRID)
 
 CALL FREE_BASINF(BAS)
 END SUBROUTINE Get_THC_AO_grid_ngrid
@@ -63,9 +53,9 @@ END SUBROUTINE Get_THC_AO_grid_ngrid
 SUBROUTINE Get_THC_AO_grid_X(LUPRI,IPRINT,SETTING,NBAST,NGRID,X)
 use BUILDAOBATCH
 IMPLICIT NONE
-REAL(REALK),intent(inout):: X(NGRID,NBAST)
 INTEGER,intent(in)     :: LUPRI,IPRINT,NBAST,NGRID
-TYPE(LSSETTING) :: SETTING
+TYPE(LSSETTING)        :: SETTING
+REAL(REALK),intent(inout):: X(NGRID,NBAST)
 !
 TYPE(BASINF)  :: BAS
 INTEGER :: THCGRIDDONE,spSIZE,L,spSIZE2,IJ,J,I,KCKTA

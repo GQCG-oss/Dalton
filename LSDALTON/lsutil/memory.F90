@@ -1991,7 +1991,11 @@ subroutine mem_init_background_alloc(bytes)
    endif
 
    nelms = bytes/8_long
+#ifdef VAR_MPI
    call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+#else
+   call mem_alloc(buf_realk%p,nelms)
+#endif
 
    buf_realk%init   = .true.
    buf_realk%offset = 0
@@ -2029,9 +2033,15 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
    if( change )then
       print *,"mem_change_bg_alloc: Allocating ",bytes/(1024.0_realk**3),"GB"
 
+#ifdef VAR_MPI
       call mem_dealloc(buf_realk%p,buf_realk%c)
 
       call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+#else
+      call mem_dealloc(buf_realk%p)
+
+      call mem_alloc(buf_realk%p,nelms)
+#endif
 
       buf_realk%init   = .true.
       buf_realk%offset = 0
@@ -2056,7 +2066,11 @@ subroutine mem_free_background_alloc()
       call lsquit("ERROR(mem_free_background_alloc): background buffer not initialized",-1)
    endif
 
+#ifdef VAR_MPI
    call mem_dealloc(buf_realk%p,buf_realk%c)
+#else
+   call mem_dealloc(buf_realk%p)
+#endif
 
    buf_realk%init   = .false.
    buf_realk%offset = 0
