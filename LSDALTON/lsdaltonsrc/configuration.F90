@@ -3204,7 +3204,7 @@ if(mod(SPLIT_MPI_MSG,8)/=0)call lsquit("INPUT ERROR: MAX_MPI_MSG_SIZE_NEL has to
 IF(nthreads.EQ.1)THEN
  IF(infpar%nodtot.GT.1)THEN
   WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot, &
-                          & ' processors, but you are only using 1 OpenMP thread'
+                          & ' processes, but you are only using 1 OpenMP thread'
   WRITE(lupri,'(4X,A)')     'WARNING: This is NOT recommended! LSDALTON is designed as a MPI/OpenMP hybrid code'
   WRITE(lupri,'(4X,A)')     'WARNING: It is therefore HIGHLY recommended to use the command'
   WRITE(lupri,'(4X,A)')     'WARNING: export OMP_NUM_THREADS=X'
@@ -3217,16 +3217,16 @@ ENDIF
 #ifdef VAR_INT64
 #ifdef VAR_MPI_32BIT_INT
 !int64,mpi & mpi32
-WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processes'
 WRITE(lupri,'(4X,A)')'linked to a 32 bit integer MPI library.'
 #else
 !int64,mpi nompi32
-WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processes'
 WRITE(lupri,'(4X,A)')'linked to a 64 bit integer MPI library.'
 #endif
 #else
 !int32 mpi
-WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes'
 #endif
 #else
 !no MPI
@@ -3986,7 +3986,7 @@ if (config%opt%cfg_prefer_PDMM) then
       call lsquit('PDMM not implemented for unrestricted!',config%lupri)
    else
 #ifdef VAR_MPI
-      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes combined'
       WRITE(lupri,'(4X,A)')'with PDMM for memory distribution and parallelization.'
       CALL mat_select_type(mtype_pdmm,lupri,nbast)      
 #else
@@ -4009,7 +4009,7 @@ endif
       else
 #ifdef VAR_SCALAPACK
 #ifdef VAR_MPI
-         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes combined'
          WRITE(lupri,'(4X,A)')'with SCALAPACK for memory distribution and parallelization.'
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
 
@@ -4030,7 +4030,7 @@ endif
 #else
          !no VAR_SCALAPACK
 #ifdef VAR_MPI
-         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
+         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)
 #else
          !no VAR_SCALAPACK and no MPI         
