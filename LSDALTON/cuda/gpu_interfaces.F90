@@ -284,7 +284,7 @@ contains
        integer(kind=8), intent(in) :: n
        integer, intent(in) :: inca,incb
        real(realk), dimension(n), intent(in), target :: a,b
-       real(realk), dimension(1), intent(inout), target :: c ! needs to be dimension(1) for the pgi compiler not to complain.
+       real(realk), intent(inout), target :: c ! needs to be dimension(1) for the pgi compiler not to complain.
        real(realk), intent(in)  :: alpha
 #ifdef VAR_OPENACC
        integer(kind=acc_handle_kind), intent(in) :: acc_handle
