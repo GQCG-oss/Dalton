@@ -370,14 +370,14 @@ contains
 
     real(realk), intent(inout) :: Xenergy(:)
     real(realk) :: X1energy, tmp1, tmp2
-
+    ! k index: occupied AOS, for frozen core: only valence!
     real(realk), target, intent(in) :: Fkj(:,:)
     type(decfrag),intent(inout) :: MyFragment
     type(decfrag),intent(in) :: Fragment1
     type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
-    real(realk), target, intent(in) :: CoccAOStot(:,:)  !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CoccAOStot(:,:)  !CoccEOS(nbasis,noccAOStot)
     real(realk), target, intent(in) :: CocvAOStot(:,:)  !CocvAOStot(nbasis, nocvAOS)
     real(realk), target, intent(in) :: Ccabs(:,:)    !Ccabs(ncabsAO, ncabsMO)
     real(realk), target, intent(in) :: Cri(:,:)      !Cri(ncabsAO,ncabsAO)
@@ -394,17 +394,20 @@ contains
     integer :: i,j,k,n
 
     noccEOS  = MyFragment%noccEOS
-    noccAOS  = MyFragment%noccAOS
+    noccAOS  = MyFragment%noccAOS  ! (only valence for frozen core)
 
     call mem_alloc(X1ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-   
+
     call mem_alloc(X1ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
     call mem_alloc(X1ijnk, noccEOS, noccEOS, noccAOS, noccEOS)
 
+    ! For frozen core: index 4 (v) is only virtual
+    ! Without frozen core: index 4 is core+virtual (effectively v=m)
+
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,&
-         & CocvAOStot,Ccabs,Cri,CvirtAOS,'iiim','RRRR2',X1ijkn)
+         & CocvAOStot,Ccabs,Cri,CvirtAOS,'iiiv','RRRR2',X1ijkn)
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,&
-         & CocvAOStot,Ccabs,Cri,CvirtAOS,'iimi','RRRR2',X1ijnk)
+         & CocvAOStot,Ccabs,Cri,CvirtAOS,'iivi','RRRR2',X1ijnk)
 
     !> Creating the X2ijkl
     do i=1,noccEOS
@@ -469,35 +472,39 @@ contains
 
     integer :: noccEOS !number of occupied MO orbitals in EOS
     integer :: noccAOS
-    integer :: nocvAOS
+    integer :: nocvAOStot
     integer :: m,k,n,i,j
 
     noccEOS = MyFragment%noccEOS
-    noccAOS = MyFragment%noccAOS 
-    nocvAOS = MyFragment%noccAOS + MyFragment%nvirtAOS
+    noccAOS = MyFragment%noccAOS ! only valence for frozen core 
+    nocvAOStot = MyFragment%nocctot + MyFragment%nvirtAOS
 
     call mem_alloc(X2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(X2ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
     call mem_alloc(X2ijnk, noccEOS, noccEOS, noccAOS, noccEOS)
 
-    call mem_alloc(Rijpq,  noccEOS, noccEOS, nocvAOS, nocvAOS)
-    call mem_alloc(Rpqkn,  nocvAOS, nocvAOS, noccEOS, noccAOS)
-    call mem_alloc(Rpqnk,  nocvAOS, nocvAOS, noccAOS, noccEOS)
+    call mem_alloc(Rijpq,  noccEOS, noccEOS, nocvAOStot, nocvAOStot)
+    call mem_alloc(Rpqkn,  nocvAOStot, nocvAOStot, noccEOS, noccAOS)
+    call mem_alloc(Rpqnk,  nocvAOStot, nocvAOStot, noccAOS, noccEOS)
 
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'ppim','RRRRG',Rpqkn)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'ppmi','RRRRG',Rpqnk)
 
+    ! For frozen core: index 4 (v) is only virtual
+    ! Without frozen core: index 4 is core+virtual (effectively v=m) 
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'ppiv','RRRRG',Rpqkn)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'ppvi','RRRRG',Rpqnk)
+
+    ! These m,k,n refer to dgemm inputs
     m = noccEOS*noccEOS   ! <ij R pq> <pq R kn> = <m X2 n>
-    k = nocvAOS*nocvAOS  
+    k = nocvAOStot*nocvAOStot
     n = noccEOS*noccAOS 
 
     !> Creating the X2ijkn
     !>  dgemm(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
     call dgemm('N','N',m,n,k,1.0E0_realk,Rijpq,m,Rpqkn,k,0.0E0_realk,X2ijkn,m)
 
-    m = noccEOS*noccEOS   ! <ij R pq> <pq R nk> = <m X2 n>
-    k = nocvAOS*nocvAOS  
+    m = noccEOS*noccEOS   ! <ij R pq> <pq R nk> = <ij X2 nk>
+    k = nocvAOStot*nocvAOStot  
     n = noccEOS*noccAOS
 
     !> Creating the X2ijnk
@@ -573,42 +580,46 @@ contains
     real(realk), pointer :: Rmcnk(:,:,:,:)  
        
     integer :: noccEOS !number of occupied MO orbitals in EOS
-    integer :: noccAOS
+    integer :: noccAOS,noccAOStot
     integer :: ncabsMO
     integer :: m,k,n,i,j,c,l
-    integer :: dims(4)
+!    integer :: dims(4)
   
     noccEOS = MyFragment%noccEOS
-    noccAOS = MyFragment%noccAOS 
+    noccAOS = MyFragment%noccAOS
+    noccAOStot = MyFragment%nocctot
     ncabsMO = size(MyFragment%Ccabs,2) 
 
-    dims = [noccEOS, noccEOS, noccAOS, ncabsMO]
+!    dims = [noccEOS, noccEOS, noccAOStot, ncabsMO]
 !    call tensor_init(Rijmc,dims,4)
-    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS, ncabsMO)
-    call mem_alloc(Rmckn,  noccAOS, ncabsMO, noccEOS, noccAOS)
-    call mem_alloc(X3ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
+    call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOStot, ncabsMO)
+    call mem_alloc(Rmckn,  noccAOStot, ncabsMO, noccEOS, noccAOS)
 
     !(Note INTSPEC is always stored as (2,4,1,3) )    
+    ! For frozen core: index 4 (v) is only virtual
+    ! Without frozen core: index 4 is core+virtual (effectively v=m) 
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'mcim','CRRRG',Rmckn)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'mciv','CRRRG',Rmckn)
      
     !> Creating the X3ijkn
-    m = noccEOS*noccEOS   ! <ij R mc> <mc R kn> = <m X3 n>
-    k = noccAOS*ncabsMO
+    m = noccEOS*noccEOS   ! <ij R mc> <mc R kn> = <ij X3 kn>
+    k = noccAOStot*ncabsMO
     n = noccEOS*noccAOS
     
+    call mem_alloc(X3ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
     call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc,m,Rmckn,k,0.0E0_realk,X3ijkn,m)
     !call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc%elm1,m,Rmckn,k,0.0E0_realk,X3ijkn,m)
 
     call mem_dealloc(Rmckn)
-    call mem_alloc(Rmcnk,  noccAOS, ncabsMO, noccAOS, noccEOS)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'mcmi','CRRRG',Rmcnk)
+    call mem_alloc(Rmcnk,  noccAOStot, ncabsMO, noccAOS, noccEOS)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'mcvi','CRRRG',Rmcnk)
+    ! FIXME: Generate Rmcnk by reordering Rmckn instead!!!
 
     call mem_alloc(X3ijnk, noccEOS, noccEOS, noccAOS, noccEOS)
 
     !> Creating the X3ijnk
-    m = noccEOS*noccEOS   ! <ij R mc> <mc R nk> = <m X3 n>
-    k = noccAOS*ncabsMO
+    m = noccEOS*noccEOS   ! <ij R mc> <mc R nk> = <ij X3 nk>
+    k = noccAOStot*ncabsMO
     n = noccEOS*noccAOS
     
     call dgemm('N','N',m,n,k,1.0E0_realk,Rijmc,m,Rmcnk,k,0.0E0_realk,X3ijnk,m)
@@ -665,7 +676,7 @@ contains
     type(decfrag),intent(in) :: Fragment2
 
     real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
-    real(realk), target, intent(in) :: CoccAOStot(:,:)  !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CoccAOStot(:,:)  !CoccEOS(nbasis,noccAOStot)
     real(realk), target, intent(in) :: CocvAOStot(:,:)  !CocvAOStot(nbasis, nocvAOS)
     real(realk), target, intent(in) :: Ccabs(:,:)    !Ccabs(ncabsAO, ncabsMO)
     real(realk), target, intent(in) :: Cri(:,:)      !Cri(ncabsAO,ncabsAO)
@@ -682,39 +693,42 @@ contains
     real(realk), pointer :: Rcmnk(:,:,:,:)   
   
     integer :: noccEOS !number of occupied MO orbitals in EOS
-    integer :: noccAOS
+    integer :: noccAOStot,noccAOS
     integer :: ncabsMO
     integer :: m,k,n,i,j,c,l
   
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS 
+    noccAOStot = MyFragment%nocctot 
     ncabsMO = size(MyFragment%Ccabs,2) 
    
     call mem_alloc(X4ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(X4ijnk, noccEOS, noccEOS, noccAOS, noccEOS)
     call mem_alloc(X4ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
 
-    call mem_alloc(Rijcm,  noccEOS, noccEOS, ncabsMO, noccAOS)
-    call mem_alloc(Rcmkn,  ncabsMO, noccAOS, noccEOS, noccAOS)
-    call mem_alloc(Rcmnk,  ncabsMO, noccAOS, noccAOS, noccEOS)
+    call mem_alloc(Rijcm,  noccEOS, noccEOS, ncabsMO, noccAOStot)
+    call mem_alloc(Rcmkn,  ncabsMO, noccAOStot, noccEOS, noccAOS)
+    call mem_alloc(Rcmnk,  ncabsMO, noccAOStot, noccAOS, noccEOS)
     
     !(Note INTSPEC is always stored as (2,4,1,3) )    
+    ! For frozen core: index 4 (v) is only virtual
+    ! Without frozen core: index 4 is core+virtual (effectively v=m) 
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iicm','RRRCG',Rijcm)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'cmim','RRCRG',Rcmkn)
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'cmmi','RRCRG',Rcmnk)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'cmiv','RRCRG',Rcmkn)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'cmvi','RRCRG',Rcmnk)
 
     !> Creating the X4ijkn
     m = noccEOS*noccEOS   ! <ij R mc> <mc R nk> = <m X4 n> instead of <ij R cm> <cm R kn> = <m X4 n>
-    k = noccAOS*ncabsMO
+    k = noccAOStot*ncabsMO
     n = noccEOS*noccAOS
     call dgemm('N','N',m,n,k,1.0E0_realk,Rijcm,m,Rcmkn,k,0.0E0_realk,X4ijkn,m)
    
     !> Creating the X4ijnk
-    m = noccEOS*noccEOS   ! <ij R mc> <mc R nk> = <m X4 n> 
-    k = noccAOS*ncabsMO
+    m = noccEOS*noccEOS   ! <ij R mc> <mc R nk> = <ij X4 nk> 
+    k = noccAOStot*ncabsMO
     n = noccEOS*noccAOS
     call dgemm('N','N',m,n,k,1.0E0_realk,Rijcm,m,Rcmnk,k,0.0E0_realk,X4ijnk,m)
-    
+
     !> Creating the X4ijkl
     do i=1,noccEOS
        do j=1,noccEOS
@@ -2774,12 +2788,14 @@ contains
     ! Creating the F matrix 
     ! ***********************************************************
     ! Creating a Fkj MO matrix occ EOS
+
     call mem_alloc(Fkj, noccAOS, noccEOS)
     Fkj = 0E0_realk 
     do j=1, noccEOS      
        iy = MyFragment%idxo(j)
        Fkj(:,j) = MyFragment%ppfock(:,iy)
     end do
+    ! Note that Fkj contains only valence orbitals since F(core,valence)=0.
 
     WRITE(DECinfo%output,*) "Memory statistics after allocation of Fkj:"  
     call stats_globalmem(DECinfo%output)
@@ -2808,7 +2824,7 @@ contains
 
     WRITE(DECinfo%output,*) "Memory statistics after allocation of Xenergy:"  
     call stats_globalmem(DECinfo%output)
-    
+
     call get_EX1(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,&
          & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     call LSTIMER('get_EX1_timing: ',tcpu,twall,DECinfo%output)

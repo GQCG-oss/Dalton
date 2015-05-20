@@ -670,6 +670,7 @@ module f12_routines_module
     real(realk), target, intent(in) :: Cri(:,:) !Cri(ncabsAO,ncabsAO)
     !> MO coefficient matrix for the Virtual AOS
     real(realk), target, intent(in) :: CvirtAOS(:,:) !CvritAOS(nbasis,nvirtAOS)
+    integer :: offset
 
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
@@ -679,16 +680,27 @@ module f12_routines_module
     nocvAOStot =   noccAOStot + nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
+    if(DECinfo%frozencore) then
+       offset = MyFragment%ncore
+    else
+       offset = 0
+    end if
 
     do i=1,4
        if(intType(i).EQ.'i') then ! occupied EOS
           C(i)%cmat => CoccEOS
           C(i)%n1 = nbasis
           C(i)%n2 = noccEOS               
-       elseif(intType(i).EQ.'m') then ! occupied AOS
+       elseif(intType(i).EQ.'m') then ! all occupied (core+valence)
           C(i)%cmat => CoccAOStot
           C(i)%n1 = nbasis
           C(i)%n2 = noccAOStot 
+       elseif(intType(i).EQ.'v') then 
+          ! Frozen core: Only valence
+          ! Not frozen core: All occupied orbitals (same as 'm')
+          C(i)%cmat => CoccAOStot(1:nbasis,offset+1:noccAOStot)
+          C(i)%n1 = nbasis
+          C(i)%n2 = noccAOStot-offset 
        elseif(intType(i).EQ.'a') then ! virtual AOS
           C(i)%cmat => CvirtAOS
           C(i)%n1 = nbasis
