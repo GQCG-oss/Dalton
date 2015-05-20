@@ -980,8 +980,6 @@ contains
 
     ! now follows the main loop, which is collapsed.
 
-!!$acc wait
-!
 !!$acc enter data create(trip_tmp,trip_ampl,&
 !!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
 !!$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
@@ -2254,8 +2252,6 @@ contains
 
 #endif
 
-!$acc wait
-
 !$acc enter data create(trip_tmp,trip_ampl)&
 !$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
 !
@@ -2808,8 +2804,6 @@ contains
 
     ! now follows the main loop, which is collapsed like for the ijk scheme (cf. ijk_loop_par)
 
-!!$acc wait
-!
 !!$acc enter data create(trip_tmp,trip_ampl,&
 !!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
 !!$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
@@ -3600,8 +3594,6 @@ contains
     stat = cublasCreate_v2(cublas_handle)
 
 #endif
-
-!$acc wait
 
 !$acc enter data create(trip_tmp,trip_ampl)&
 !$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
