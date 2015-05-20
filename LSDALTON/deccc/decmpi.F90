@@ -2410,6 +2410,7 @@ contains
     call ls_mpi_buffer(DECitem%ccConvergenceThreshold,Master)
     call ls_mpi_buffer(DECitem%CCthrSpecified,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner,Master)
+    call ls_mpi_buffer(DECitem%ccsolverskip,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
     call ls_mpi_buffer(DECitem%F12,Master)

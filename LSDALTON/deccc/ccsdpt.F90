@@ -994,8 +994,12 @@ contains
 
  ijrun_par: do ij_count = 1,b_size + 1
 
+
           ! get value of ij from job disttribution list
           ij_comp = jobs(ij_count)
+
+          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I3"/",I3,")")') &
+             &infpar%lg_mynum,ij_comp,njobs
 
           ! no more jobs to be done? otherwise leave the loop
           if (ij_comp .lt. 0) exit
@@ -1060,6 +1064,7 @@ contains
 !!$acc enter data copyin(vovv_pdm_b) async(async_id(2)) if(b_tile .ne. a_tile) 
 
           do k_tile = 1,j_tile
+
 
              k_pos = (k_tile-1)*tile_size+1
 
@@ -1519,6 +1524,11 @@ contains
 !!$acc& eivalocc) copyout(ccsdpt_singles) if(.not. full_no_frags)
 !
 !!$acc wait
+
+    !measure idle time after loop
+    call time_start_phase(PHASE_IDLE)
+    call lsmpi_barrier(infpar%lg_comm)
+    call time_start_phase(PHASE_WORK)
 
     if (alloc_in_dummy) then
        call tensor_unlock_wins(vvvo,all_nodes=.true.)

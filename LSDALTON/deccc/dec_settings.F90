@@ -245,6 +245,7 @@ contains
     DECinfo%CCthrSpecified           = .false.
     DECinfo%use_singles              = .false.
     DECinfo%use_preconditioner       = .true.
+    DECinfo%ccsolverskip             = .false.
     DECinfo%use_preconditioner_in_b  = .true.
     DECinfo%use_crop                 = .true.
     DECinfo%array4OnFile             = .false.
@@ -807,6 +808,8 @@ contains
        case('.PRECWITHFULL')
           DECinfo%precondition_with_full=.true.
           DECinfo%ccsolver_overwrite_prec = .true.
+       case('.CCSOLVERSKIP')
+          DECinfo%ccsolverskip = .true.
        case('.MAXITER')
           read(input,*) DECinfo%MaxIter
        case('.TENSOR_SEGMENTING_SCHEME')

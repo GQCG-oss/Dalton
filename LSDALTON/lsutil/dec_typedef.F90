@@ -274,6 +274,8 @@ module dec_typedef_module
      logical :: CCthrSpecified
      !> Use preconditioner
      logical :: use_preconditioner
+     !> CCSOLVER skip iterations and return starting guess
+     logical :: ccsolverskip
      !> Use preconditioner in B matrix
      logical :: use_preconditioner_in_b
      !> Use CROP (if false we use DIIS)
