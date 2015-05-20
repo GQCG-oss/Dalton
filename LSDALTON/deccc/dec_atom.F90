@@ -644,7 +644,7 @@ contains
           fragment%Frm(i,j+offset) = MyMolecule%Frm(ix,iy)
        enddo
     enddo
-    call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOS,fragment%Cri,ncabsAO)
+    call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOStot,fragment%Cri,ncabsAO)
     
     ! Fcp in the order of the index (occ to virt)
     call mem_alloc(Fcp, ncabsAO, nocvAOStot)
