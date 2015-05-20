@@ -3215,13 +3215,12 @@ IF(nthreads.EQ.1)THEN
  ENDIF
 ENDIF
 #ifdef VAR_INT64
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processes'
 #ifdef VAR_MPI_32BIT_INT
 !int64,mpi & mpi32
-WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processes'
 WRITE(lupri,'(4X,A)')'linked to a 32 bit integer MPI library.'
 #else
 !int64,mpi nompi32
-WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processes'
 WRITE(lupri,'(4X,A)')'linked to a 64 bit integer MPI library.'
 #endif
 #else
