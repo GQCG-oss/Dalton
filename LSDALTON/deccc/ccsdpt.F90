@@ -12048,7 +12048,11 @@ contains
              n = tile_size_tmp
 
              ! tmp1(C,A,B,tile) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,tile)
-             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             if( n == 1)then
+                call dgemv('N',m,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),1,0.0E0_realk,tmp1,1)
+             else
+                call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,i),nbasis,0.0E0_realk,tmp1,m)
+             endif
 
              ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
              ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
@@ -13418,10 +13422,10 @@ contains
       do ts = max_ijk_tile_size,1,-1
 
          ! how many tiles are there in total?
-         num_tiles_tot = int(nvirt / ts)
+         num_tiles_tot = int(nocc / ts)
 
          ! modulo_1
-         remainder_1 = mod(nvirt,ts)
+         remainder_1 = mod(nocc,ts)
 
          ! update total number of tiles
          if (remainder_1 .gt. 0) num_tiles_tot = num_tiles_tot + 1
