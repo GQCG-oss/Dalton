@@ -38,27 +38,11 @@ module gpu_interfaces
       use iso_c_binding
       implicit none
       type (C_PTR), value :: handle
+      type (C_PTR), value :: A, B, C
+      integer (C_INT), value :: m, n, k, lda, ldb, ldc
       integer (C_INT), value :: transa, transb
       real (C_DOUBLE) :: alpha, beta
-      integer (C_INT), value :: m, n, k, lda, ldb, ldc
-      real (C_DOUBLE), dimension(lda,*) :: A
-      real (C_DOUBLE), dimension(ldb,*) :: B
-      real (C_DOUBLE), dimension(ldc,*) :: C
     end function cublasDgemm_v2
-
-    ! cublasDgemm_v2 (like ddot)
-    integer (C_INT) function cublasDgemm_v2_ddot(handle,transa,transb,m,n,k,alpha,A,&
-                                    & lda,B,ldb,beta,C,ldc) bind(C,name="cublasDgemm_v2") 
-      use iso_c_binding
-      implicit none
-      type (C_PTR), value :: handle
-      integer (C_INT), value :: transa, transb
-      real (C_DOUBLE), value :: alpha, beta
-      integer (C_INT), value :: m, n, k, lda, ldb, ldc
-      real (C_DOUBLE), dimension(lda,*) :: A
-      real (C_DOUBLE), dimension(ldb,*) :: B
-      type (C_PTR), value :: C
-    end function cublasDgemm_v2_ddot
 
     ! cublasSgemm_v2
     integer (C_INT) function cublasSgemm_v2(handle,transa,transb,m,n,k,alpha,A,&
@@ -66,12 +50,10 @@ module gpu_interfaces
       use iso_c_binding
       implicit none
       type (C_PTR), value :: handle
-      integer (C_INT), value :: transa, transb
-      real (C_FLOAT), value :: alpha, beta
+      type (C_PTR), value :: A, B, C
       integer (C_INT), value :: m, n, k, lda, ldb, ldc
-      real (C_FLOAT), dimension(lda,*) :: A
-      real (C_FLOAT), dimension(ldb,*) :: B
-      real (C_FLOAT), dimension(ldc,*) :: C
+      integer (C_INT), value :: transa, transb
+      real (C_FLOAT) :: alpha, beta
     end function cublasSgemm_v2
 
     ! cublasDdot_v2
@@ -137,7 +119,7 @@ contains
        integer, intent(in) :: acc_handle
 #endif
        type(c_ptr), intent(in) :: cublas_handle ! NOTE: To use cublas, make sure you've called cublasCreate_v2 beforehand!!!
-       real(kind=4) :: stat
+       integer*4 :: stat
        logical :: async,false_arg1,false_arg2
        integer :: transa_2,transb_2
 
@@ -181,8 +163,8 @@ contains
 
 !$acc host_data use_device(a,b,c)
        stat = cublasDgemm_v2(cublas_handle,int(transa_2,kind=4),int(transb_2,kind=4),int(m,kind=4),int(n,kind=4),int(k,kind=4),&
-                             & alpha,real(a,kind=8),int(lda,kind=4),real(b,kind=8),int(ldb,kind=4),&
-                             & beta,real(c,kind=8),int(ldc,kind=4))
+                             & alpha,c_loc(a),int(lda,kind=4),c_loc(b),int(ldb,kind=4),&
+                             & beta,c_loc(c),int(ldc,kind=4))
 !$acc end host_data
 
 #endif
@@ -213,8 +195,8 @@ contains
        character(len=1), intent(in) :: transa,transb
        integer, intent(in) :: m,n,k,lda,ldb,ldc
        integer(kind=8), intent(in) :: na,nb,nc
-       real(realk), dimension(na), intent(in), target :: a
-       real(realk), dimension(nb), intent(in), target :: b
+       real(kind=4), dimension(na), intent(in), target :: a
+       real(kind=4), dimension(nb), intent(in), target :: b
        real(kind=4), dimension(nc), intent(inout), target :: c
        real(realk), intent(in)  :: alpha,beta
 #ifdef VAR_OPENACC
@@ -222,7 +204,7 @@ contains
 #else
        integer, intent(in) :: acc_handle
 #endif
-       real(kind=4) :: stat
+       integer*4 :: stat
        type(c_ptr), intent(in) :: cublas_handle ! NOTE: To use cublas, make sure you've called cublasCreate_v2 beforehand!!!
        logical :: async,false_arg1,false_arg2
        integer :: transa_2,transb_2
@@ -253,14 +235,14 @@ contains
 
 !$acc host_data use_device(a,b,c)
           call sgemm_acc_openacc_async(acc_handle,transa,transb,m,n,k,&
-                   & real(alpha,kind=4),real(a,kind=4),lda,real(b,kind=4),ldb,real(beta,kind=4),c,ldc)
+                   & real(alpha,kind=4),a,lda,b,ldb,real(beta,kind=4),c,ldc)
 !$acc end host_data
 
        else
 
 !$acc host_data use_device(a,b,c)
           call sgemm_acc(transa,transb,m,n,k,&
-                   & real(alpha,kind=4),real(a,kind=4),lda,real(b,kind=4),ldb,real(beta,kind=4),c,ldc)
+                   & real(alpha,kind=4),a,lda,b,ldb,real(beta,kind=4),c,ldc)
 !$acc end host_data
 
        endif
@@ -269,8 +251,8 @@ contains
 
 !$acc host_data use_device(a,b,c)
        stat = cublasSgemm_v2(cublas_handle,int(transa_2,kind=4),int(transb_2,kind=4),int(m,kind=4),int(n,kind=4),int(k,kind=4),&
-                             & real(alpha,kind=4),real(a,kind=4),int(lda,kind=4),real(b,kind=4),int(ldb,kind=4),&
-                             & real(beta,kind=4),real(c,kind=4),int(ldc,kind=4))
+                             & real(alpha,kind=4),c_loc(a),int(lda,kind=4),c_loc(b),int(ldb,kind=4),&
+                             & real(beta,kind=4),c_loc(c),int(ldc,kind=4))
 !$acc end host_data
 
 #endif
@@ -282,7 +264,7 @@ contains
 
        ! call ordinary cpu sgemm
        call sgemm(transa,transb,m,n,k,&
-                & real(alpha,kind=4),real(a,kind=4),lda,real(b,kind=4),ldb,real(beta,kind=4),c,ldc)
+                & real(alpha,kind=4),a,lda,b,ldb,real(beta,kind=4),c,ldc)
 
 #endif
 
@@ -302,14 +284,14 @@ contains
        integer(kind=8), intent(in) :: n
        integer, intent(in) :: inca,incb
        real(realk), dimension(n), intent(in), target :: a,b
-       real(realk), intent(inout), target :: c
+       real(realk), dimension(1), intent(inout), target :: c ! needs to be dimension(1) for the pgi compiler not to complain.
        real(realk), intent(in)  :: alpha
 #ifdef VAR_OPENACC
        integer(kind=acc_handle_kind), intent(in) :: acc_handle
 #else
        integer, intent(in) :: acc_handle
 #endif
-       real(kind=4) :: stat
+       integer*4 :: stat
        type(c_ptr), intent(in) :: cublas_handle ! NOTE: To use cublas, make sure you've called cublasCreate_v2 beforehand!!!
        logical :: async
        !> ddot
@@ -339,8 +321,8 @@ contains
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(a,b,c)
-       stat = cublasDgemm_v2_ddot(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(n,kind=4),&
-                             & alpha,real(a,kind=8),int(1,kind=4),real(b,kind=8),int(n,kind=4),&
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(n,kind=4),&
+                             & alpha,c_loc(a),int(1,kind=4),c_loc(b),int(n,kind=4),&
                              & 1.0E0_realk,c_loc(c),int(1,kind=4))
 !$acc end host_data
 
@@ -352,7 +334,7 @@ contains
 #else
 
        ! call ordinary cpu ddot
-       c = c + alpha * ddot(n,a,1,b,1)
+       c(1) = c(1) + alpha * ddot(n,a,1,b,1)
 
 #endif
 
