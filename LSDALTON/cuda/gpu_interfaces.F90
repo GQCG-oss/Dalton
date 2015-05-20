@@ -62,9 +62,8 @@ module gpu_interfaces
       implicit none
       type (C_PTR), value :: handle
       integer (C_INT), value :: n, incA, incB
-      real (C_DOUBLE), dimension(n) :: A
-      real (C_DOUBLE), dimension(n) :: B
-      real (C_DOUBLE), value :: res
+      type (C_PTR), value :: A, B
+      real (C_DOUBLE) :: res
     end function cublasDdot_v2
 
     ! cublasSetStream_v2
@@ -271,7 +270,7 @@ contains
   end subroutine ls_sgemm_acc
 
 
-  subroutine ls_ddot_acc(n,a,inca,b,incb,alpha,c,acc_handle,cublas_handle)
+  subroutine ls_ddot_acc(n,a,inca,b,incb,res,acc_handle,cublas_handle)
 
        use precision
        use iso_c_binding
@@ -284,8 +283,7 @@ contains
        integer(kind=8), intent(in) :: n
        integer, intent(in) :: inca,incb
        real(realk), dimension(n), intent(in), target :: a,b
-       real(realk), intent(inout), target :: c ! needs to be dimension(1) for the pgi compiler not to complain.
-       real(realk), intent(in)  :: alpha
+       real(realk), intent(inout), target :: res
 #ifdef VAR_OPENACC
        integer(kind=acc_handle_kind), intent(in) :: acc_handle
 #else
@@ -306,24 +304,22 @@ contains
 
        if (async) then
 
-!$acc host_data use_device(a,b,c)
-          call dgemm_acc_openacc_async(acc_handle,'n','n',1,1,n,alpha,a,1,b,n,1.0E0_realk,c,1)
+!$acc host_data use_device(a,b,res)
+          call ddot_acc_openacc_async(acc_handle,n,a,1,b,1,res)
 !$acc end host_data
 
        else
 
-!$acc host_data use_device(a,b,c)
-          call dgemm_acc('n','n',1,1,n,alpha,a,1,b,n,1.0E0_realk,c,1)
+!$acc host_data use_device(a,b,res)
+          res = ddot_acc(n,a,1,b,1)
 !$acc end host_data
 
        endif
 
 #elif defined(VAR_CUBLAS)
 
-!$acc host_data use_device(a,b,c)
-       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(n,kind=4),&
-                             & alpha,c_loc(a),int(1,kind=4),c_loc(b),int(n,kind=4),&
-                             & 1.0E0_realk,c_loc(c),int(1,kind=4))
+!$acc host_data use_device(a,b,res)
+       stat = cublasDdot_v2(cublas_handle,int(n,kind=4),c_loc(a),int(1,kind=4),c_loc(b),int(1,kind=4),res)
 !$acc end host_data
 
 #endif
@@ -334,7 +330,7 @@ contains
 #else
 
        ! call ordinary cpu ddot
-       c(1) = c(1) + alpha * ddot(n,a,1,b,1)
+       res = ddot(n,a,1,b,1)
 
 #endif
 

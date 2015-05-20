@@ -3983,8 +3983,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
-    ! see the ccsdpt_driver_ijk_case1 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
@@ -4000,7 +3999,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o1,o3,nv,no,vvoo_tile_13(:,:,i,k),vvoo_tile_31(:,:,k,i),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4019,7 +4018,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -4033,12 +4032,18 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o1,o1,nv,no,vvoo_tile_12(:,:,i,i),vvoo_tile_12(:,:,i,i),&
                  & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
     call ccsdpt_contract_ijk_12(o3,o1,o1,nv,no,vvoo_tile_13(:,:,i,k),vvoo_tile_31(:,:,k,i),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
   end subroutine ccsdpt_energy_full_ijk_case1_par
 
@@ -4083,8 +4088,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
-    ! see the ccsdpt_driver_ijk_case1 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
@@ -4100,7 +4104,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4119,7 +4123,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -4133,12 +4137,18 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o1,o1,nv,no,vvoo_tile_12,vvoo_tile_12,&
                  & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
     call ccsdpt_contract_ijk_12(o3,o1,o1,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
   end subroutine ccsdpt_energy_full_ijk_case1_ser
 
@@ -4187,8 +4197,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
-    ! see the ccsdpt_driver_abc_case1 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
@@ -4204,7 +4213,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4223,7 +4232,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -4237,12 +4246,18 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv_tile_12(:,:,a,a),oovv_tile_12(:,:,a,a),&
                  & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
     call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
   end subroutine ccsdpt_energy_full_abc_case1_par
 
@@ -4286,8 +4301,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
-    ! see the ccsdpt_driver_abc_case1 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
@@ -4303,7 +4317,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v1,v3,nv,no,oovv(:,:,v1,v3),oovv(:,:,v3,v1),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4322,7 +4336,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,no,no,no,[3,1,2],0.0E0_realk,trip_ampl,handle)
@@ -4336,12 +4350,18 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v1,v1,nv,no,oovv(:,:,v1,v1),oovv(:,:,v1,v1),&
                  & ccsdpt_singles_3,trip_ampl,.true.,handle,cublas_handle)
     call ccsdpt_contract_abc_12(v3,v1,v1,nv,no,oovv(:,:,v1,v3),oovv(:,:,v3,v1),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
   end subroutine ccsdpt_energy_full_abc_case1_ser
 
@@ -4390,8 +4410,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
-    ! see the ccsdpt_driver_ijk_case2 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
@@ -4407,7 +4426,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o2,o2,nv,no,vvoo_tile_23(:,:,j,j),vvoo_tile_23(:,:,j,j),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
@@ -4426,7 +4445,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o2,o1,nv,no,vvoo_tile_21(:,:,j,i),vvoo_tile_12(:,:,i,j),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -4445,7 +4464,13 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
   end subroutine ccsdpt_energy_full_ijk_case2_par
 
@@ -4490,8 +4515,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
-    ! see the ccsdpt_driver_ijk_case2 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
@@ -4507,7 +4531,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o2,o2,nv,no,vvoo_tile_23,vvoo_tile_23,&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
@@ -4526,7 +4550,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -4545,7 +4569,13 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
   end subroutine ccsdpt_energy_full_ijk_case2_ser
 
@@ -4594,8 +4624,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
-    ! see the ccsdpt_driver_abc_case2 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
@@ -4611,7 +4640,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv_tile_23(:,:,b,b),oovv_tile_23(:,:,b,b),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
@@ -4630,7 +4659,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -4649,7 +4678,13 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
   end subroutine ccsdpt_energy_full_abc_case2_par
 
@@ -4693,8 +4728,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
-    ! see the ccsdpt_driver_abc_case2 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
@@ -4710,7 +4744,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v2,v2,nv,no,oovv(:,:,v2,v2),oovv(:,:,v2,v2),&
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
@@ -4729,7 +4763,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v2,v1,nv,no,oovv(:,:,v2,v1),oovv(:,:,v1,v2),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -4748,7 +4782,13 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-1.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
 
   end subroutine ccsdpt_energy_full_abc_case2_ser
 
@@ -4800,8 +4840,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
-    ! see the ccsdpt_driver_ijk_case3 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
@@ -4817,7 +4856,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,8.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o2,o3,nv,no,vvoo_tile_23(:,:,j,k),vvoo_tile_32(:,:,k,j),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4836,7 +4875,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o3,o1,nv,no,vvoo_tile_31(:,:,k,i),vvoo_tile_13(:,:,i,k),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -4855,7 +4894,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o1,o2,nv,no,vvoo_tile_12(:,:,i,j),vvoo_tile_21(:,:,j,i),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -4874,7 +4913,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o2,o1,nv,no,vvoo_tile_21(:,:,j,i),vvoo_tile_12(:,:,i,j),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -4893,7 +4932,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp5,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o3,o2,nv,no,vvoo_tile_32(:,:,k,j),vvoo_tile_23(:,:,j,k),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4912,12 +4951,19 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp6,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o1,o3,nv,no,vvoo_tile_13(:,:,i,k),vvoo_tile_31(:,:,k,i),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
     call ccsdpt_contract_ijk_12(o2,o1,o3,nv,no,vvoo_tile_12(:,:,i,j),vvoo_tile_21(:,:,j,i),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
+          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
 
   end subroutine ccsdpt_energy_full_ijk_case3_par
 
@@ -4963,8 +5009,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
-    ! see the ccsdpt_driver_ijk_case3 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*nv)*(i8*nv**2))
@@ -4980,7 +5025,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,8.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o2,o3,nv,no,vvoo_tile_23,vvoo_tile_32,&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -4999,7 +5044,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o3,o1,nv,no,vvoo_tile_31,vvoo_tile_13,&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -5018,7 +5063,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o1,o2,nv,no,vvoo_tile_12,vvoo_tile_21,&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5037,7 +5082,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp4,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o3,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5056,7 +5101,7 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp5,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o1,o3,o2,nv,no,vvoo_tile_32,vvoo_tile_23,&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5075,12 +5120,19 @@ contains
     call trip_denom_ijk_cpu(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp6,handle,cublas_handle)
 
     call ccsdpt_contract_ijk_11(o2,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
     call ccsdpt_contract_ijk_12(o2,o1,o3,nv,no,vvoo_tile_12,vvoo_tile_21,&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
+          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
 
   end subroutine ccsdpt_energy_full_ijk_case3_ser
 
@@ -5132,8 +5184,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
-    ! see the ccsdpt_driver_abc_case3 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
@@ -5149,7 +5200,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,8.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv_tile_23(:,:,b,c),oovv_tile_32(:,:,c,b),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5168,7 +5219,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv_tile_31(:,:,c,a),oovv_tile_13(:,:,a,c),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -5187,7 +5238,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5206,7 +5257,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv_tile_21(:,:,b,a),oovv_tile_12(:,:,a,b),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5225,7 +5276,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp5,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv_tile_32(:,:,c,b),oovv_tile_23(:,:,b,c),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5244,12 +5295,19 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp6,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv_tile_13(:,:,a,c),oovv_tile_31(:,:,c,a),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
     call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv_tile_12(:,:,a,b),oovv_tile_21(:,:,b,a),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
+          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
 
   end subroutine ccsdpt_energy_full_abc_case3_par
 
@@ -5293,8 +5351,7 @@ contains
     stat = acc_set_cuda_stream(handle,cublas_handle)
 #endif
 
-    ! for explanations on the calls to ccsdpt_contract_abc_11/12,
-    ! see the ccsdpt_driver_abc_case3 routine 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
 
 #if defined(VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN) && !defined(VAR_OPENACC)
     call assign_in_subblocks(trip_tmp,'=',trip_ampl,(i8*no)*no**2)
@@ -5310,7 +5367,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,8.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp1,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v2,v3,nv,no,oovv(:,:,v2,v3),oovv(:,:,v3,v2),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5329,7 +5386,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp2,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v3,v1,nv,no,oovv(:,:,v3,v1),oovv(:,:,v1,v3),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
@@ -5348,7 +5405,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,2.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v1,v2,nv,no,oovv(:,:,v1,v2),oovv(:,:,v2,v1),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5367,7 +5424,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp4,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v3,v2,v1,nv,no,oovv(:,:,v2,v1),oovv(:,:,v1,v2),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
@@ -5386,7 +5443,7 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp5,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v1,v3,v2,nv,no,oovv(:,:,v3,v2),oovv(:,:,v2,v3),&
                  & ccsdpt_singles_1,trip_ampl,.false.,handle,cublas_handle)
@@ -5405,12 +5462,19 @@ contains
     call trip_denom_abc_cpu(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl)
 #endif
 
-    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,-4.0E0_realk,e4,handle,cublas_handle)
+    call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp6,handle,cublas_handle)
 
     call ccsdpt_contract_abc_11(v2,v1,v3,nv,no,oovv(:,:,v1,v3),oovv(:,:,v3,v1),&
                  & ccsdpt_singles_2,trip_ampl,.false.,handle,cublas_handle)
     call ccsdpt_contract_abc_12(v2,v1,v3,nv,no,oovv(:,:,v1,v2),oovv(:,:,v2,v1),&
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
+
+!$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
+          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+!$acc end kernels
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
 
   end subroutine ccsdpt_energy_full_abc_case3_ser
 
