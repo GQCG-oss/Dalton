@@ -1054,15 +1054,15 @@ contains
 
     integer :: noccEOS !number of occupied MO orbitals in EOS
     integer :: ncabsAO !number of CABS AO orbitals
-    integer :: noccAOS 
+    integer :: noccAOStot
     integer :: i,j,r,s,t,m
     
     noccEOS = MyFragment%noccEOS
-    noccAOS = MyFragment%noccAOS
+    noccAOStot = MyFragment%nocctot
     ncabsAO = size(MyFragment%Ccabs,1)    
 
     call mem_alloc(B5ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    call mem_alloc(Rijrm,  noccEOS, noccEOS, ncabsAO, noccAOS)
+    call mem_alloc(Rijrm,  noccEOS, noccEOS, ncabsAO, noccAOStot)
 
     !> B5-term
     !> Rijrm <ij|f12|rm> stored as (i,j,r,m)       r = RI MO
@@ -1076,7 +1076,7 @@ contains
           tmp2 = 0.0E0_realk
           do r=1, ncabsAO
              do s=1, ncabsAO
-                do m=1, noccAOS
+                do m=1, noccAOStot
                    tmp1 = tmp1 + Rijrm(i,j,r,m)*Myfragment%Frs(s,r)*Rijrm(i,j,s,m) + &
                         & Rijrm(j,i,r,m)*Myfragment%Frs(s,r)*Rijrm(j,i,s,m) 
                    tmp2 = tmp2 + Rijrm(j,i,r,m)*Myfragment%Frs(s,r)*Rijrm(i,j,s,m) + &
@@ -1134,17 +1134,26 @@ contains
 
     integer :: noccEOS !number of occupied MO orbitals in EOS
     integer :: noccAOS
-    integer :: nocvAOS
+    integer :: nocvAOStot
+    integer :: noccAOStot
     integer :: nvirtAOS 
     integer :: i,j,p,q,a
+    integer :: offset
+
+    if(Decinfo%Frozencore) then
+       offset = MyFragment%ncore
+    else
+       offset = 0
+    endif
     
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS
-    nocvAOS = MyFragment%noccAOS + MyFragment%nvirtAOS
+    noccAOStot = MyFragment%nocctot
+    nocvAOStot = MyFragment%nocctot + MyFragment%nvirtAOS
     nvirtAOS = MyFragment%nvirtAOS    
 
     call mem_alloc(B6ijkl, noccEOS, noccEOS,  noccEOS, noccEOS)
-    call mem_alloc(Rijpa,  noccEOS, noccEOS,  nocvAOS, nvirtAOS)
+    call mem_alloc(Rijpa,  noccEOS, noccEOS,  nocvAOStot, nvirtAOS)
     
     !> B6-term
     !> Rijpa <ij|f12|pa> stored as (i,j,p,a)       r = RI MO
@@ -1158,26 +1167,37 @@ contains
           tmp1  = 0.0E0_realk
           tmp2 = 0.0E0_realk
           do a=1, nvirtAOS
-             do p=1, noccAOS
-                do q=1, noccAOS
-                   tmp1 = tmp1 + Rijpa(i,j,p,a)*Fmn(q,p)*Rijpa(i,j,q,a) + &
-                        & Rijpa(j,i,p,a)*Fmn(q,p)*Rijpa(j,i,q,a) 
 
-                   tmp2 = tmp2 + Rijpa(j,i,p,a)*Fmn(q,p)*Rijpa(i,j,q,a) + &
-                        & Rijpa(i,j,p,a)*Fmn(q,p)*Rijpa(j,i,q,a) 
+             do p=1, offset
+                do q=1, offset
+                   tmp1 = tmp1 + Rijpa(i,j,p,a)*MyFragment%ccfock(q,p)*Rijpa(i,j,q,a) + &
+                      & Rijpa(j,i,p,a)*MyFragment%ccfock(q,p)*Rijpa(j,i,q,a) 
 
+                   tmp2 = tmp2 + Rijpa(j,i,p,a)*MyFragment%ccfock(q,p)*Rijpa(i,j,q,a) + &
+                      & Rijpa(i,j,p,a)*MyFragment%ccfock(q,p)*Rijpa(j,i,q,a) 
                 enddo
              enddo
 
-             do p=1, nvirtAOS
-                do q=1, nvirtAOS
-                   tmp1 = tmp1 + Rijpa(i,j,p+noccAOS,a)*Fab(q,p)*Rijpa(i,j,q+noccAOS,a) + &
-                        & Rijpa(j,i,p+noccAOS,a)*Fab(q,p)*Rijpa(j,i,q+noccAOS,a) 
+             do p=1+offset, noccAOStot
+                do q=1+offset, noccAOStot
+                   tmp1 = tmp1 + Rijpa(i,j,p,a)*MyFragment%ppfock(q-offset,p-offset)*Rijpa(i,j,q,a) + &
+                      & Rijpa(j,i,p,a)*Myfragment%ppfock(q-offset,p-offset)*Rijpa(j,i,q,a) 
 
-                   tmp2 = tmp2 + Rijpa(j,i,p+noccAOS,a)*Fab(q,p)*Rijpa(i,j,q+noccAOS,a) + &
-                        & Rijpa(i,j,p+noccAOS,a)*Fab(q,p)*Rijpa(j,i,q+noccAOS,a) 
+                   tmp2 = tmp2 + Rijpa(j,i,p,a)*MyFragment%ppfock(q-offset,p-offset)*Rijpa(i,j,q,a) + &
+                      & Rijpa(i,j,p,a)*MyFragment%ppfock(q-offset,p-offset)*Rijpa(j,i,q,a) 
                 enddo
              enddo
+
+             do p=noccAOStot+1, nvirtAOS+noccAOStot
+                do q=noccAOStot+1, nvirtAOS+noccAOStot
+                   tmp1 = tmp1 + Rijpa(i,j,p,a)*MyFragment%qqfock(q-noccAOStot,p-noccAOStot)*Rijpa(i,j,q,a) + &
+                        & Rijpa(j,i,p,a)*MyFragment%qqfock(q-noccAOStot,p-noccAOStot)*Rijpa(j,i,q,a) 
+
+                   tmp2 = tmp2 + Rijpa(j,i,p,a)*MyFragment%qqfock(q-noccAOStot,p-noccAOStot)*Rijpa(i,j,q,a) + &
+                        & Rijpa(i,j,p,a)*MyFragment%qqfock(q-noccAOStot,p-noccAOStot)*Rijpa(j,i,q,a) 
+                enddo
+             enddo
+          
           enddo
           B6ijkl(i,j,i,j) = tmp1
           B6ijkl(i,j,j,i) = tmp2
@@ -1229,15 +1249,17 @@ contains
 
     integer :: noccEOS !number of occupied MO orbitals in EOS
     integer :: noccAOS
+    integer :: noccAOStot
     integer :: ncabsMO
     integer :: i,j,c,m,n
     
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS
+    noccAOStot = MyFragment%nocctot
     ncabsMO = size(MyFragment%Ccabs,2)    
 
     call mem_alloc(B7ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    call mem_alloc(Rijcm, noccEOS, noccEOS,  ncabsMO, noccAOS)
+    call mem_alloc(Rijcm, noccEOS, noccEOS,  ncabsMO, noccAOStot)
 
     !> Rijcm <ij|f12|cm> stored as (i,j,c,m)       r = RI MO
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iicm','RRRCG',Rijcm)
@@ -1309,18 +1331,20 @@ contains
  
     integer :: noccEOS !number of occupied MO orbitals in EOS
     integer :: noccAOS
+    integer :: noccAOStot
     integer :: ncabsMO
     integer :: ncabsAO
      integer :: i,j,r,c,m
     
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS
+    noccAOStot = MyFragment%nocctot
     ncabsMO = size(MyFragment%Ccabs,2)    
     ncabsAO = size(MyFragment%Ccabs,1)    
 
     call mem_alloc(B8ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(Rijcr,  noccEOS, noccEOS, ncabsMO, ncabsAO) 
-    call mem_alloc(Rijcm,  noccEOS, noccEOS, ncabsMO, noccAOS) 
+    call mem_alloc(Rijcm,  noccEOS, noccEOS, ncabsMO, noccAOStot) 
  
     !> Rijcm <ij|f12|cm> stored as (i,j,c,m)       r = RI MO
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iicm','RRRCG',Rijcm)
@@ -1394,16 +1418,16 @@ contains
     integer :: noccEOS !number of occupied MO orbitals in EOS
     integer :: ncabsMO
     integer :: nvirtAOS
-    integer :: nocvAOS
+    integer :: nocvAOStot
     integer :: i,j,r,c,a,p
 
     noccEOS  = MyFragment%noccEOS
-    nocvAOS = MyFragment%noccAOS + MyFragment%nvirtAOS
+    nocvAOStot = MyFragment%nocctot + MyFragment%nvirtAOS
     nvirtAOS = MyFragment%nvirtAOS
     ncabsMO = size(MyFragment%Ccabs,2)
 
     call mem_alloc(B9ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
-    call mem_alloc(Rijpa,  noccEOS, noccEOS, nocvAOS, nvirtAOS)
+    call mem_alloc(Rijpa,  noccEOS, noccEOS, nocvAOStot, nvirtAOS)
     call mem_alloc(Rijca,  noccEOS, noccEOS, ncabsMO, nvirtAOS)
 
     !> Rijpa <ij|f12|pa> stored as (i,j,p,a)       r = RI MO
@@ -1417,7 +1441,7 @@ contains
           tmp2 = 0.0E0_realk
           do c=1, ncabsMO
              do a=1, nvirtAOS
-                do p=1, nocvAOS
+                do p=1, nocvAOStot
                    tmp1 = tmp1 + Rijpa(i,j,p,a)*MyFragment%Fcp(c,p)*Rijca(i,j,c,a) + &
                         & Rijpa(j,i,p,a)*MyFragment%Fcp(c,p)*Rijca(j,i,c,a)
 

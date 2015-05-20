@@ -883,22 +883,22 @@ module f12_routines_module
     !MinAlphaBatchSize = AlphaBatchSize
     !MinGammaBatchSize = GammaBatchSize
 
-    if(DECinfo%F12DEBUG) then
-       print *, "call get_max_batchsize..."
-    endif
+    !if(DECinfo%F12DEBUG) then
+    !   print *, "call get_max_batchsize..."
+    !endif
     
     call get_max_batchsize(MaxdimAlpha,MaxdimGamma,MinAlphaBatchSize,MinGammaBatchSize,n11,n12,n21,n22,n31,n32,n41,n42)
 
-    if(DECinfo%F12DEBUG) then
-       print *, "exit get_max_batchsize..."
-       print *, "----------------------------"
-       print *, "MaxdimAlpha: ", MaxdimAlpha
-       print *, "MaxdimGamma: ", MaxdimGamma
-       print *, "----------------------------"
-       print *, "MindimAlpha: ", AlphaBatchSize
-       print *, "MindimGamma: ", GammaBatchSize
-       print *, "----------------------------"
-    endif
+    !if(DECinfo%F12DEBUG) then
+   !    print *, "exit get_max_batchsize..."
+   !    print *, "----------------------------"
+   !    print *, "MaxdimAlpha: ", MaxdimAlpha
+   !    print *, "MaxdimGamma: ", MaxdimGamma
+   !    print *, "----------------------------"
+   !    print *, "MindimAlpha: ", AlphaBatchSize
+   !    print *, "MindimGamma: ", GammaBatchSize
+   !    print *, "----------------------------"
+   ! endif
         
     GammaBatchSize = MaxdimGamma
     AlphaBatchSize = MaxdimAlpha
@@ -2173,9 +2173,7 @@ module f12_routines_module
       
     MemAvailable = 0.0E0_realk   
     call get_currently_available_memory(MemAvailable)
-    print *,"non-scaled MemAvailable: ", MemAvailable
     MemAvailable = MemAvailable*1.0E9_realk !In bytes
-    print *,"scaled MemAvailable: ", MemAvailable
   
  !   call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
  
@@ -2202,10 +2200,6 @@ module f12_routines_module
 !!$       print *, "dimAlpha: ", dimAlpha
 !!$       print *, "dimGamma: ", dimGamma
 !!$    endif
-
-    if(DECinfo%F12DEBUG) then
-       print *, "minAlpha: ", minAlpha
-    endif
     
     dimAlpha = minAlpha
     
