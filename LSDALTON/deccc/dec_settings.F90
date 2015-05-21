@@ -259,6 +259,7 @@ contains
     DECinfo%abc_nbuffs        = 1000000
     DECinfo%acc_sync          = .false.
     DECinfo%pt_hack           = .false.
+    DECinfo%pt_hack2          = .false.
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -518,6 +519,7 @@ contains
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
        case('.ACC_SYNC'); DECinfo%acc_sync = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
+       case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
 
        ! DEC CALCULATION 
        ! ===============

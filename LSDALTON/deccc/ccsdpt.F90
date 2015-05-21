@@ -11464,7 +11464,7 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, lg_me
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, lg_me, nodtotal
     integer :: p,pos, batch, old_gammaB
     !> use background buffering to avoid memory fragmentation problems?
     logical :: use_bg_buf, first_round, dynamic_load
@@ -11477,6 +11477,7 @@ contains
 
 #ifdef VAR_MPI
 
+    nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
     lg_me  = infpar%lg_mynum
     if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -11488,6 +11489,64 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 #endif
+
+    if (DECinfo%pt_hack2) then
+
+#ifdef VAR_MPI
+       mode   = MPI_MODE_NOCHECK
+
+       if (nodtotal .gt. 1) then
+
+          ! Integrals (AI|KJ) in the order (J,A,I,K)
+          dims = [nocc,nvirt,nocc,nocc]
+          call tensor_init(ovoo, dims,4,bg=use_bg_buf)
+
+          ! Integrals (AB|IC) in the order (C,B,A,I)
+          dims = [nvirt,nvirt,nvirt,nocc]   
+          call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,tile_size],atype="TDAR",bg=use_bg_buf)
+
+          call tensor_random(ovoo)
+          call tensor_random(vvvo)
+
+          call tensor_scale(ovoo,1.0E-4_realk)
+          call tensor_scale(vvvo,1.0E-4_realk)
+
+       elseif (nodtotal .eq. 1) then
+
+          dims = [nocc,nvirt,nocc,nocc]
+          call tensor_init(ovoo, dims,4,bg=use_bg_buf)
+
+          dims = [nvirt,nvirt,nvirt,nocc]
+          call tensor_init(vvvo, dims,4,bg=use_bg_buf)
+
+          call tensor_random(ovoo)
+          call tensor_random(vvvo)
+
+          call dscal(nvirt*nocc**3,1.0E-4_realk,ovoo%elm1,1)
+          call dscal(nocc*nvirt**3,1.0E-4_realk,vvvo%elm1,1)
+
+       endif
+#else
+
+       dims = [nocc,nvirt,nocc,nocc]
+       call tensor_init(ovoo, dims,4,bg=use_bg_buf)
+
+       dims = [nvirt,nvirt,nvirt,nocc]
+       call tensor_init(vvvo, dims,4,bg=use_bg_buf)
+
+       call tensor_random(ovoo)
+       call tensor_random(vvvo)
+
+       call dscal(nvirt*nocc**3,1.0E-4_realk,ovoo%elm1,1)
+       call dscal(nocc*nvirt**3,1.0E-4_realk,vvvo%elm1,1)
+
+#endif
+
+       if (master) call LSTIMER('CCSD(T) INT (IJK - .PT_HACK2)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
+       return
+
+    endif
 
     ! Set integral info
     ! *****************
@@ -12109,7 +12168,7 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, nodtotal
     integer :: p,pos
     !> use background buffering to avoid memory fragmentation problems?
     logical :: use_bg_buf
@@ -12122,6 +12181,7 @@ contains
 
 #ifdef VAR_MPI
 
+    nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
     if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -12131,6 +12191,68 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 #endif
+
+    if (DECinfo%pt_hack2) then
+
+#ifdef VAR_MPI
+       mode   = MPI_MODE_NOCHECK
+
+       if (nodtotal .gt. 1) then
+
+          ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
+          dims = [nocc,nocc,nocc,nvirt]
+          call tensor_init(ooov, dims,4,bg=use_bg_buf)
+
+          ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
+          dims = [nvirt,nocc,nvirt,nvirt]
+          call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR",bg=use_bg_buf)
+
+          call tensor_random(ooov)
+          call tensor_random(vovv)
+
+          call tensor_scale(ooov,1.0E-4_realk)
+          call tensor_scale(vovv,1.0E-4_realk)
+
+       elseif (nodtotal .eq. 1) then
+
+          ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
+          dims = [nocc,nocc,nocc,nvirt]
+          call tensor_init(ooov, dims,4,bg=use_bg_buf)
+
+          ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
+          dims = [nvirt,nocc,nvirt,nvirt]
+          call tensor_init(vovv,dims,4,bg=use_bg_buf)
+
+          call tensor_random(ooov)
+          call tensor_random(vovv)
+
+          call dscal(nvirt*nocc**3,1.0E-4_realk,ooov%elm1,1)
+          call dscal(nocc*nvirt**3,1.0E-4_realk,vovv%elm1,1)
+
+       endif
+#else
+
+       ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
+       dims = [nocc,nocc,nocc,nvirt]
+       call tensor_init(ooov, dims,4,bg=use_bg_buf)
+
+       ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
+       dims = [nvirt,nocc,nvirt,nvirt]
+       call tensor_init(vovv,dims,4,bg=use_bg_buf)
+
+       call tensor_random(ooov)
+       call tensor_random(vovv)
+
+       call dscal(nvirt*nocc**3,1.0E-4_realk,ooov%elm1,1)
+       call dscal(nocc*nvirt**3,1.0E-4_realk,vovv%elm1,1)
+
+#endif
+
+       if (master) call LSTIMER('CCSD(T) INT (ABC - .PT_HACK2)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
+       return
+
+    endif
 
     ! Set integral info
     ! *****************
