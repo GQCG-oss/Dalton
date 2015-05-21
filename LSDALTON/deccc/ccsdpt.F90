@@ -429,7 +429,13 @@ contains
        call ls_mpi_buffer(abc_tile_size,infpar%master)
        call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
+       if( .not. master )then
+          ccsd_doubles = ccsd_doubles_in
+          vovo         = vovo_in
+       endif
+
     endif
+
 
     call time_start_phase(PHASE_WORK)
 #endif
@@ -645,6 +651,27 @@ contains
     ! here, synchronize all procs
     call time_start_phase(PHASE_IDLE)
     call lsmpi_barrier(infpar%lg_comm)
+    call time_start_phase(PHASE_WORK)
+
+#endif
+    ! release o^3v and v^3o integrals
+    if (abc) then
+
+       call tensor_free(vovv)
+       call tensor_free(ooov)
+
+    else
+
+       call tensor_free(vvvo)
+       call tensor_free(ovoo)
+
+    endif
+
+    ! now everything resides on the master...
+    call tensor_free(ccsd_doubles)
+    call tensor_free(vovo)
+
+#ifdef VAR_MPI
 
     ! reduce singles and doubles arrays into that residing on the master
     reducing_to_master: if (nodtotal .gt. 1) then
@@ -671,58 +698,21 @@ contains
     ! release stuff located on slaves
     releasing_the_slaves: if ((nodtotal .gt. 1) .and. .not. master) then
 
-       call time_start_phase(PHASE_WORK)
 
        ! release stuff initialized herein
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
 
-       ! release o^3v and v^3o integrals
-       if (abc) then
-
-          call tensor_free(vovv)
-          call tensor_free(ooov)
-
-       else
-
-          call tensor_free(vvvo)
-          call tensor_free(ovoo)
-
-       endif
 
        ! now, release the slaves  
        return
 
     end if releasing_the_slaves
 
-    if (nodtotal .gt. 1 .and. master) then
-
-       ccsd_doubles%access_type = AT_MASTER_ACCESS
-       vovo%access_type = AT_MASTER_ACCESS
-
-    endif
-
     call time_start_phase(PHASE_WORK)
 
 #endif
 
-    ! now everything resides on the master...
-
-    ! release o^3v and v^3o integrals
-    if (abc) then
-
-       call tensor_free(vovv)
-       call tensor_free(ooov)
-
-    else
-
-       call tensor_free(vvvo)
-       call tensor_free(ovoo)
-
-    endif
-
-    call tensor_free(ccsd_doubles)
-    call tensor_free(vovo)
 
     ! *************************************************
     ! ***** do canonical --> local transformation *****
@@ -13750,8 +13740,6 @@ end module ccsdpt_module
 
     endif
 
-    ccsd_t2%access_type = AT_MASTER_ACCESS
-    vovo%access_type = AT_MASTER_ACCESS
 
     call time_start_phase(PHASE_WORK)
 
