@@ -92,8 +92,6 @@ contains
     ! vovv is of type DENSE, if this is a serial calculation, and TILED_DIST,
     ! if this is a parallel calculation
     type(tensor) :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
-    ! tmp tensors
-    type(tensor) :: tmp_tensor_1,tmp_tensor_2
     integer :: nodtotal
     integer :: ijk_nbuffs,abc_nbuffs,ijk_tile_size,abc_tile_size
     !> orbital energies
@@ -245,161 +243,9 @@ contains
     call ccsdpt_info(nbasis,nocc,nvirt,print_frags,abc,ijk_nbuffs,abc_nbuffs,ijk_tile_size,abc_tile_size,nodtotal)
 #endif
 
-    if (DECinfo%pt_hack) then
-
-#ifdef VAR_MPI
-       if ((nodtotal .gt. 1) .and. master) then
-
-          if (abc) then
-
-             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,&
-                &tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR',bg=use_bg)
-             call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,&
-                &tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
-
-          else
-
-             call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,&
-                &tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR',bg=use_bg)
-             call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
-                &tdims=[nvirt,nvirt,nocc,ijk_tile_size],atype='TDAR',bg=use_bg)
-
-          endif
-
-          call tensor_random(ccsd_doubles)
-          call tensor_random(vovo)
-          call tensor_scale(ccsd_doubles,1.0E-2_realk)
-          call tensor_scale(vovo,1.0E-2_realk)
-
-       elseif (nodtotal .eq. 1) then
-
-          if (abc) then
-   
-             call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
-             call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
-   
-          else
-   
-             call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
-             call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
-   
-          endif
-   
-          call tensor_random(ccsd_doubles)
-          call tensor_random(vovo)
-          call dscal(nocc**2*nvirt**2,1.0E-2_realk,ccsd_doubles%elm1,1)
-          call dscal(nocc**2*nvirt**2,1.0E-2_realk,vovo%elm1,1)
-
-       endif
-#else
-       if (abc) then
-
-          call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
-          call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
-
-       else
-
-          call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
-          call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
-
-       endif
-
-       call tensor_random(vovo)
-       call tensor_random(ccsd_doubles)
-       call dscal(nocc**2*nvirt**2,1.0E-2_realk,ccsd_doubles%elm1,1)
-       call dscal(nocc**2*nvirt**2,1.0E-2_realk,vovo%elm1,1)
-
-#endif
-
-    else
-
-#ifdef VAR_MPI
-       if ((nodtotal .gt. 1) .and. master) then
-
-          if (abc) then
-
-             call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4)
-             call tensor_cp_data(vovo_in,tmp_tensor_1,order=[2,4,1,3])
-             !call tensor_reorder(tmp_tensor_1,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_1%elm1)
-             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR',bg=use_bg)
-             call tensor_cp_data(tmp_tensor_1,vovo)
-             call tensor_free(tmp_tensor_1)
-             call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4)
-             call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[2,4,3,1])
-             !call tensor_reorder(tmp_tensor_2,[2,4,3,1]) ! ccsd_doubles in the order (i,j,b,a)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_2%elm1)
-             call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
-             call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
-             call tensor_free(tmp_tensor_2)
-
-          else
-
-             call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4)
-             call tensor_cp_data(vovo_in,tmp_tensor_1,order=[1,3,2,4])
-             !call tensor_reorder(tmp_tensor_1,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_1%elm1)
-             call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,&
-                &tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR',bg=use_bg)
-             call tensor_cp_data(tmp_tensor_1,vovo)
-             call tensor_free(tmp_tensor_1)
-             call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4)
-             call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[1,3,4,2])
-             !call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_2%elm1)
-             call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
-                &tdims=[nvirt,nvirt,nocc,ijk_tile_size],atype='TDAR',bg=use_bg)
-             call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
-             call tensor_free(tmp_tensor_2)
-
-          endif
-
-       elseif (nodtotal .eq. 1) then
-
-          if (abc) then
-
-             call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
-             call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
-             call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
-             call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
-
-          else
-   
-             call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
-             call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
-             call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
-             call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
-   
-          endif
-
-       endif
-#else
-       if (abc) then
-
-          call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
-          call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
-          call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
-          call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
- 
-       else
-
-          call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
-          call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
-          call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
-          call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
- 
-       endif
-#endif
-
-    endif
+    ! convert the ccsd doubles and the vovo from the distribution used in ccsd to the one we want to use for (t)
+    if (master) call convert_ccsd_and_vovo(nocc,nvirt,nbasis,Uocc,Uvirt,ccsd_doubles_in,vovo_in,ccsd_doubles,vovo,&
+                                         & nodtotal,abc,ijk_tile_size,abc_tile_size,use_bg)
 
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
@@ -834,7 +680,12 @@ contains
     real(realk) :: time_w_min, time_w_max
     real(realk) :: time_c_min, time_c_max
     real(realk) :: time_i_min, time_i_max
-    logical :: use_bg_buf
+    logical :: use_bg_buf, dynamic_load
+    ! remote counter and additional variables for dynamic load
+    integer, pointer      :: dyn_i(:)
+    type(c_ptr)           :: dyn_c
+    integer(kind=ls_mpik) :: dyn_w
+    integer               :: plus_one
 
     ! init timings
     unlock_time   = time_lsmpi_win_unlock
@@ -847,6 +698,8 @@ contains
 
     full_no_frags = .false.
     use_bg_buf    = mem_is_background_buf_init()
+    dynamic_load  = DECinfo%dyn_load
+    plus_one      = 1
 
     if (present(e4)) full_no_frags = .true.
 
@@ -965,13 +818,9 @@ contains
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
-    ! release ij_array
-    call mem_dealloc(ij_array)
 
     ! now follows the main loop, which is collapsed.
 
-!!$acc wait
-!
 !!$acc enter data create(trip_tmp,trip_ampl,&
 !!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
 !!$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
@@ -982,13 +831,49 @@ contains
 !
 !!$acc wait
 
- ijrun_par: do ij_count = 1,b_size + 1
+    if(dynamic_load)then
+       ij_count=0
+       call mem_alloc( dyn_i, dyn_c, 1)
 
+       dyn_i = 0
+       if(infpar%lg_mynum == 0) dyn_i(1) = infpar%lg_nodtot+1
 
-          ! get value of ij from job disttribution list
-          ij_comp = jobs(ij_count)
+       call lsmpi_win_create(dyn_i,dyn_w,1,infpar%lg_comm)
+#ifdef VAR_HAVE_MPI3
+       call lsmpi_win_lock_all(dyn_w,ass=MPI_MODE_NOCHECK)
+#else
+       call lsquit("ERROR(ijk_loop_par): dynamic load only implemented for MPI3",-1)
+#endif
+    else
+       ij_count=1
+    endif
 
-          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I3"/",I3,")")') &
+    ijrun_par: do while (ij_count <= b_size + 1)
+
+          !Get Job index
+          if(dynamic_load)then
+
+             if(ij_count == 0) then
+                ij_count = infpar%lg_mynum + 1
+             else
+                call lsmpi_get_acc(plus_one,ij_count,infpar%master,1,dyn_w)
+                call lsmpi_win_flush(dyn_w,local=.true.)
+                ij_count = ij_count + 1
+                print *,plus_one,ij_count
+             endif
+
+             if(ij_count <= njobs)then
+                ij_comp  = ij_array(ij_count)
+             else
+                ij_comp  = -1
+             endif
+
+          else
+             ij_count = ij_count + 1
+             ij_comp  = jobs(ij_count)
+          endif
+
+          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5,")")') &
              &infpar%lg_mynum,ij_comp,njobs
 
           ! no more jobs to be done? otherwise leave the loop
@@ -1113,13 +998,13 @@ contains
              call time_start_phase(PHASE_WORK, twall = time_preload )
              call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nvirt,nocc,i_tile,j_tile,k_tile,ij_count,3*nbuffs,&
                                          & needed_vvvo,tiles_in_buf_vvvo,vvvo_pdm_buff,req_vvvo,&
-                                         & .true.,tile_size,dim_ts)
+                                         & .true.,tile_size,dim_ts,dynamic_load)
              call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nvirt,nocc,i_tile,j_tile,k_tile,ij_count,3*nbuffs,&
                                          & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd,&
-                                         & .true.,tile_size,dim_ts)
+                                         & .true.,tile_size,dim_ts,dynamic_load)
              call preload_tiles_in_bg_buf(vvoo,jobs,b_size,nvirt,nocc,i_tile,j_tile,k_tile,ij_count,6*nbuffs,&
                                          & needed_vvoo,tiles_in_buf_vvoo,vvoo_pdm_buff,req_vvoo,&
-                                         & .true.,tile_size,dim_ts,vovo_array=.true.)
+                                         & .true.,tile_size,dim_ts,dynamic_load,vovo_array=.true.)
              call time_start_phase(PHASE_WORK, ttot = time_preload )
              time_preload_tot = time_preload_tot + time_preload
 
@@ -1498,7 +1383,10 @@ contains
 
 !!$acc exit data delete(vovv_pdm_a) async(async_id(2))
 
-       enddo ijrun_par
+    enddo ijrun_par
+
+    ! release ij_array
+    call mem_dealloc(ij_array)
 
     call time_start_phase(PHASE_WORK)
 
@@ -1679,6 +1567,17 @@ contains
 
     endif
 
+    if(dynamic_load)then
+#ifdef VAR_HAVE_MPI3
+       call lsmpi_win_unlock_all(dyn_w)
+#else
+       call lsquit("ERROR(ijk_loop_par): dynamic load only implemented for MPI3",-1)
+#endif
+       call mem_dealloc( dyn_i, dyn_c )
+
+       call lsmpi_win_free( dyn_w )
+    endif
+
     if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('IJK_LOOP_PAR',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine ijk_loop_par
@@ -1686,7 +1585,7 @@ contains
 
 
   subroutine preload_tiles_in_bg_buf(array,jobs,b_size,nvirt,nocc,current_i,current_j,current_k,current_ij_count,nbuffs,needed,&
-        &tiles_in_buf,array_pdm_buff,req,scheme,tdim,t1dim,vovo_array)
+        &tiles_in_buf,array_pdm_buff,req,scheme,tdim,t1dim,dynamic_load,vovo_array)
      implicit none
      type(tensor), intent(inout) :: array
      integer, intent(in) :: b_size, current_i, current_j, current_k, current_ij_count, nbuffs, nvirt, nocc
@@ -1696,7 +1595,7 @@ contains
      real(realk), pointer, intent(inout) :: array_pdm_buff(:,:)
      integer(kind=ls_mpik),intent(inout) :: req(nbuffs)
      integer, intent(in) :: tdim,t1dim
-     logical :: scheme ! if scheme == .true., then ijk, if .false., then abc
+     logical,intent(in) :: scheme,dynamic_load ! if scheme == .true., then ijk, if .false., then abc
      logical, optional, intent(in) :: vovo_array
      integer :: i_test,j_test,k_test,i_search_buf
      integer :: ij_test,ji_test,ik_test,ki_test,jk_test,kj_test
@@ -1997,162 +1896,169 @@ contains
         else ! k_test > j_test
 
            !Load the next i and j tiles
+           if(.not.dynamic_load)then
 
-           ij_count_test = ij_count_test + 1
+              ij_count_test = ij_count_test + 1
 
-           if(ij_count_test<=b_size)then
+              if(ij_count_test<=b_size)then
 
-              !is incremented by one at the end of the loop
-              !therefore we set it to 0 here
-              k_test = 0
+                 !is incremented by one at the end of the loop
+                 !therefore we set it to 0 here
+                 k_test = 0
 
-              ij_new = jobs(ij_count_test)
+                 ij_new = jobs(ij_count_test)
 
-              call calc_i_leq_j(ij_new,t1dim,i_test,j_test)
+                 call calc_i_leq_j(ij_new,t1dim,i_test,j_test)
 
-              call check_if_new_instance_needed(j_test,tiles_in_buf,nbuffs,new_j_needed,set_needed=needed)
+                 call check_if_new_instance_needed(j_test,tiles_in_buf,nbuffs,new_j_needed,set_needed=needed)
 
-              !load new j
-              if (new_j_needed .or. vovo) then
-
-                 if (vovo) then
-
-                    if (i_test .eq. j_test) then
-
-                       ij_test = (j_test-1)*t1dim+i_test
-                       !Load the next ij tile
-                       call check_if_new_instance_needed(ij_test,tiles_in_buf,nbuffs,new_ij_needed,set_needed=needed)
-
-                       !find pos in buff
-                       if (new_ij_needed) then
-                          call find_free_pos_in_buf(needed,nbuffs,ijbuf_test,found_ij)
-                          if (found_ij) then
-                             needed(ijbuf_test) = .true.
-                             tiles_in_buf(ijbuf_test) = ij_test
-                             found_ji = .false. 
-                          endif
-                       else
-                          found_ij = .false.; found_ji = .false.
-                       endif
-
-                    else
-
-                       ij_test = (j_test-1)*t1dim+i_test; ji_test = (i_test-1)*t1dim+j_test
-                       !Load the next ij tile
-                       call check_if_new_instance_needed(ij_test,tiles_in_buf,nbuffs,new_ij_needed,set_needed=needed)
-                       !Load the next ji tile
-                       if (count(needed) .lt. nbuffs) then
-                          call check_if_new_instance_needed(ji_test,tiles_in_buf,nbuffs,new_ji_needed,set_needed=needed)
-                       else
-                          new_ji_needed = .false.
-                       endif
-
-                       !find pos in buff
-                       if (new_ij_needed) then
-                          call find_free_pos_in_buf(needed,nbuffs,ijbuf_test,found_ij)
-                          if (found_ij) then
-                             needed(ijbuf_test) = .true.
-                             tiles_in_buf(ijbuf_test) = ij_test 
-                          endif
-                       else
-                          found_ij = .false.
-                       endif
-                       if (new_ji_needed .and. count(needed) .lt. nbuffs) then
-                          call find_free_pos_in_buf(needed,nbuffs,jibuf_test,found_ji)
-                          if (found_ji) then
-                             needed(jibuf_test) = .true.
-                             tiles_in_buf(jibuf_test) = ji_test
-                          endif
-                       else
-                          found_ji = .false.
-                       endif
-
-                    endif
-
-                    if (found_ij .or. found_ji) found = .true.
-
-                 else
-
-                    !find pos in buff
-                    call find_free_pos_in_buf(needed,nbuffs,jbuf_test,found)
-
-                 endif
-
-                 if(found)then
+                 !load new j
+                 if (new_j_needed .or. vovo) then
 
                     if (vovo) then
 
-                       if (.not. alloc_in_dummy) then
-                          if (found_ij) call tensor_lock_win(array,ij_test,'s',assert=mode)
-                          if (found_ji) call tensor_lock_win(array,ji_test,'s',assert=mode)
-                       endif
-                       if( alloc_in_dummy )then
-                          if (found_ij) call tensor_get_tile(array,ij_test,array_pdm_buff(:,ijbuf_test),ts2,&
-                             &lock_set=.true.,req=req(ijbuf_test))
-                          if (found_ji) call tensor_get_tile(array,ji_test,&
-                             &array_pdm_buff(:,jibuf_test),ts2,lock_set=.true.,req=req(jibuf_test))
+                       if (i_test .eq. j_test) then
+
+                          ij_test = (j_test-1)*t1dim+i_test
+                          !Load the next ij tile
+                          call check_if_new_instance_needed(ij_test,tiles_in_buf,nbuffs,new_ij_needed,set_needed=needed)
+
+                          !find pos in buff
+                          if (new_ij_needed) then
+                             call find_free_pos_in_buf(needed,nbuffs,ijbuf_test,found_ij)
+                             if (found_ij) then
+                                needed(ijbuf_test) = .true.
+                                tiles_in_buf(ijbuf_test) = ij_test
+                                found_ji = .false. 
+                             endif
+                          else
+                             found_ij = .false.; found_ji = .false.
+                          endif
+
                        else
-                          if (found_ij) call tensor_get_tile(array,ij_test,array_pdm_buff(:,ijbuf_test),ts2,&
-                             &lock_set=.true.,flush_it=.true.)
-                          if (found_ji) call tensor_get_tile(array,ji_test,&
-                             &array_pdm_buff(:,jibuf_test),ts2,lock_set=.true.,flush_it=.true.)
+
+                          ij_test = (j_test-1)*t1dim+i_test; ji_test = (i_test-1)*t1dim+j_test
+                          !Load the next ij tile
+                          call check_if_new_instance_needed(ij_test,tiles_in_buf,nbuffs,new_ij_needed,set_needed=needed)
+                          !Load the next ji tile
+                          if (count(needed) .lt. nbuffs) then
+                             call check_if_new_instance_needed(ji_test,tiles_in_buf,nbuffs,new_ji_needed,set_needed=needed)
+                          else
+                             new_ji_needed = .false.
+                          endif
+
+                          !find pos in buff
+                          if (new_ij_needed) then
+                             call find_free_pos_in_buf(needed,nbuffs,ijbuf_test,found_ij)
+                             if (found_ij) then
+                                needed(ijbuf_test) = .true.
+                                tiles_in_buf(ijbuf_test) = ij_test 
+                             endif
+                          else
+                             found_ij = .false.
+                          endif
+                          if (new_ji_needed .and. count(needed) .lt. nbuffs) then
+                             call find_free_pos_in_buf(needed,nbuffs,jibuf_test,found_ji)
+                             if (found_ji) then
+                                needed(jibuf_test) = .true.
+                                tiles_in_buf(jibuf_test) = ji_test
+                             endif
+                          else
+                             found_ji = .false.
+                          endif
+
                        endif
-   
+
+                       if (found_ij .or. found_ji) found = .true.
+
                     else
 
-                       if( .not. alloc_in_dummy ) call tensor_lock_win(array,j_test,'s',assert=mode)
-                       call get_tile_dim(ts1,array,j_test)
-                       if(alloc_in_dummy)then
-                          call tensor_get_tile(array,j_test,array_pdm_buff(:,jbuf_test),ts1,&
-                             &lock_set=.true.,req=req(jbuf_test))
-                       else
-                          call tensor_get_tile(array,j_test,array_pdm_buff(:,jbuf_test),ts1,&
-                             &lock_set=.true.,flush_it=.true.)
-                       endif
-   
-                       needed(jbuf_test)       = .true.
-                       tiles_in_buf(jbuf_test) = j_test
+                       !find pos in buff
+                       call find_free_pos_in_buf(needed,nbuffs,jbuf_test,found)
 
                     endif
 
-                 endif
-
-              endif
-
-              if (.not. vovo) then
-
-                 call check_if_new_instance_needed(i_test,tiles_in_buf,nbuffs,new_i_needed,set_needed=needed)
-   
-                 !load new i
-                 if( new_i_needed )then
-  
-                    !find pos in buff
-                    call find_free_pos_in_buf(needed,nbuffs,ibuf_test,found)
-   
                     if(found)then
-   
-                       if( .not. alloc_in_dummy ) call tensor_lock_win(array,i_test,'s',assert=mode)
-                       call get_tile_dim(ts1,array,i_test)
-                       if(alloc_in_dummy )then
-                          call tensor_get_tile(array,i_test,array_pdm_buff(:,ibuf_test),ts1,&
-                             &lock_set=.true.,req=req(ibuf_test))
+
+                       if (vovo) then
+
+                          if (.not. alloc_in_dummy) then
+                             if (found_ij) call tensor_lock_win(array,ij_test,'s',assert=mode)
+                             if (found_ji) call tensor_lock_win(array,ji_test,'s',assert=mode)
+                          endif
+                          if( alloc_in_dummy )then
+                             if (found_ij) call tensor_get_tile(array,ij_test,array_pdm_buff(:,ijbuf_test),ts2,&
+                                &lock_set=.true.,req=req(ijbuf_test))
+                             if (found_ji) call tensor_get_tile(array,ji_test,&
+                                &array_pdm_buff(:,jibuf_test),ts2,lock_set=.true.,req=req(jibuf_test))
+                          else
+                             if (found_ij) call tensor_get_tile(array,ij_test,array_pdm_buff(:,ijbuf_test),ts2,&
+                                &lock_set=.true.,flush_it=.true.)
+                             if (found_ji) call tensor_get_tile(array,ji_test,&
+                                &array_pdm_buff(:,jibuf_test),ts2,lock_set=.true.,flush_it=.true.)
+                          endif
+
                        else
-                          call tensor_get_tile(array,i_test,array_pdm_buff(:,ibuf_test),ts1,&
-                             &lock_set=.true.,flush_it=.true.)
+
+                          if( .not. alloc_in_dummy ) call tensor_lock_win(array,j_test,'s',assert=mode)
+                          call get_tile_dim(ts1,array,j_test)
+                          if(alloc_in_dummy)then
+                             call tensor_get_tile(array,j_test,array_pdm_buff(:,jbuf_test),ts1,&
+                                &lock_set=.true.,req=req(jbuf_test))
+                          else
+                             call tensor_get_tile(array,j_test,array_pdm_buff(:,jbuf_test),ts1,&
+                                &lock_set=.true.,flush_it=.true.)
+                          endif
+
+                          needed(jbuf_test)       = .true.
+                          tiles_in_buf(jbuf_test) = j_test
+
                        endif
-   
-                       needed(ibuf_test)       = .true.
-                       tiles_in_buf(ibuf_test) = i_test
 
                     endif
-   
+
                  endif
+
+                 if (.not. vovo) then
+
+                    call check_if_new_instance_needed(i_test,tiles_in_buf,nbuffs,new_i_needed,set_needed=needed)
+
+                    !load new i
+                    if( new_i_needed )then
+
+                       !find pos in buff
+                       call find_free_pos_in_buf(needed,nbuffs,ibuf_test,found)
+
+                       if(found)then
+
+                          if( .not. alloc_in_dummy ) call tensor_lock_win(array,i_test,'s',assert=mode)
+                          call get_tile_dim(ts1,array,i_test)
+                          if(alloc_in_dummy )then
+                             call tensor_get_tile(array,i_test,array_pdm_buff(:,ibuf_test),ts1,&
+                                &lock_set=.true.,req=req(ibuf_test))
+                          else
+                             call tensor_get_tile(array,i_test,array_pdm_buff(:,ibuf_test),ts1,&
+                                &lock_set=.true.,flush_it=.true.)
+                          endif
+
+                          needed(ibuf_test)       = .true.
+                          tiles_in_buf(ibuf_test) = i_test
+
+                       endif
+
+                    endif
+
+                 endif
+
+              else
+
+                 ij_done = .true.
 
               endif
 
            else
 
-              ij_done = .true.
+              ij_done = .true. 
 
            endif
 
@@ -2253,8 +2159,6 @@ contains
     stat = cublasCreate_v2(cublas_handle)
 
 #endif
-
-!$acc wait
 
 !$acc enter data create(trip_tmp,trip_ampl)&
 !$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
@@ -2808,8 +2712,6 @@ contains
 
     ! now follows the main loop, which is collapsed like for the ijk scheme (cf. ijk_loop_par)
 
-!!$acc wait
-!
 !!$acc enter data create(trip_tmp,trip_ampl,&
 !!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
 !!$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
@@ -2946,13 +2848,13 @@ contains
              call time_start_phase(PHASE_WORK, twall = time_preload )
              call preload_tiles_in_bg_buf(vovv,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,3*nbuffs,&
                                          & needed_vovv,tiles_in_buf_vovv,vovv_pdm_buff,req_vovv,&
-                                         & .false.,tile_size,dim_ts)
+                                         & .false.,tile_size,dim_ts,.false.)
              call preload_tiles_in_bg_buf(ccsd_doubles,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,3*nbuffs,&
                                          & needed_ccsd,tiles_in_buf_ccsd,ccsd_pdm_buff,req_ccsd,&
-                                         & .false.,tile_size,dim_ts)
+                                         & .false.,tile_size,dim_ts,.false.)
              call preload_tiles_in_bg_buf(oovv,jobs,b_size,nvirt,nocc,a_tile,b_tile,c_tile,ab_count,6*nbuffs,&
                                          & needed_oovv,tiles_in_buf_oovv,oovv_pdm_buff,req_oovv,&
-                                         & .false.,tile_size,dim_ts,vovo_array=.true.)
+                                         & .false.,tile_size,dim_ts,.false.,vovo_array=.true.)
              call time_start_phase(PHASE_WORK, ttot = time_preload )
              time_preload_tot = time_preload_tot + time_preload
 
@@ -3601,8 +3503,6 @@ contains
 
 #endif
 
-!$acc wait
-
 !$acc enter data create(trip_tmp,trip_ampl)&
 !$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
 !
@@ -3973,7 +3873,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4040,7 +3940,7 @@ contains
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4078,7 +3978,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4145,7 +4045,7 @@ contains
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4187,7 +4087,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4254,7 +4154,7 @@ contains
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4291,7 +4191,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4358,7 +4258,7 @@ contains
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4400,7 +4300,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4467,7 +4367,7 @@ contains
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4505,7 +4405,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4572,7 +4472,7 @@ contains
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4614,7 +4514,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4681,7 +4581,7 @@ contains
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4718,7 +4618,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4785,7 +4685,7 @@ contains
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4830,7 +4730,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1), e4_tmp4(1), e4_tmp5(1), e4_tmp6(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4959,8 +4859,8 @@ contains
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
-          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1(1) + e4_tmp2(1) + e4_tmp3(1) ) &
+          & - 4.0E0_realk * ( e4_tmp4(1) + e4_tmp5(1) + e4_tmp6(1) )
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
@@ -4999,7 +4899,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1), e4_tmp4(1), e4_tmp5(1), e4_tmp6(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -5128,8 +5028,8 @@ contains
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
-          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1(1) + e4_tmp2(1) + e4_tmp3(1) ) &
+          & - 4.0E0_realk * ( e4_tmp4(1) + e4_tmp5(1) + e4_tmp6(1) )
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
@@ -5174,7 +5074,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1), e4_tmp4(1), e4_tmp5(1), e4_tmp6(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -5303,8 +5203,8 @@ contains
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
-          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1(1) + e4_tmp2(1) + e4_tmp3(1) ) &
+          & - 4.0E0_realk * ( e4_tmp4(1) + e4_tmp5(1) + e4_tmp6(1) )
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
@@ -5341,7 +5241,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1), e4_tmp4(1), e4_tmp5(1), e4_tmp6(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -5470,8 +5370,8 @@ contains
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
-          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1(1) + e4_tmp2(1) + e4_tmp3(1) ) &
+          & - 4.0E0_realk * ( e4_tmp4(1) + e4_tmp5(1) + e4_tmp6(1) )
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
@@ -11628,7 +11528,7 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, lg_me
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, lg_me, nodtotal
     integer :: p,pos, batch, old_gammaB
     !> use background buffering to avoid memory fragmentation problems?
     logical :: use_bg_buf, first_round, dynamic_load
@@ -11641,6 +11541,7 @@ contains
 
 #ifdef VAR_MPI
 
+    nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
     lg_me  = infpar%lg_mynum
     if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -11652,6 +11553,64 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 #endif
+
+    if (DECinfo%pt_hack2) then
+
+#ifdef VAR_MPI
+       mode   = MPI_MODE_NOCHECK
+
+       if (nodtotal .gt. 1) then
+
+          ! Integrals (AI|KJ) in the order (J,A,I,K)
+          dims = [nocc,nvirt,nocc,nocc]
+          call tensor_init(ovoo, dims,4,bg=use_bg_buf)
+
+          ! Integrals (AB|IC) in the order (C,B,A,I)
+          dims = [nvirt,nvirt,nvirt,nocc]   
+          call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,tile_size],atype="TDAR",bg=use_bg_buf)
+
+          call tensor_random(ovoo)
+          call tensor_random(vvvo)
+
+          call tensor_scale(ovoo,1.0E-4_realk)
+          call tensor_scale(vvvo,1.0E-4_realk)
+
+       elseif (nodtotal .eq. 1) then
+
+          dims = [nocc,nvirt,nocc,nocc]
+          call tensor_init(ovoo, dims,4,bg=use_bg_buf)
+
+          dims = [nvirt,nvirt,nvirt,nocc]
+          call tensor_init(vvvo, dims,4,bg=use_bg_buf)
+
+          call tensor_random(ovoo)
+          call tensor_random(vvvo)
+
+          call dscal(nvirt*nocc**3,1.0E-4_realk,ovoo%elm1,1)
+          call dscal(nocc*nvirt**3,1.0E-4_realk,vvvo%elm1,1)
+
+       endif
+#else
+
+       dims = [nocc,nvirt,nocc,nocc]
+       call tensor_init(ovoo, dims,4,bg=use_bg_buf)
+
+       dims = [nvirt,nvirt,nvirt,nocc]
+       call tensor_init(vvvo, dims,4,bg=use_bg_buf)
+
+       call tensor_random(ovoo)
+       call tensor_random(vvvo)
+
+       call dscal(nvirt*nocc**3,1.0E-4_realk,ovoo%elm1,1)
+       call dscal(nocc*nvirt**3,1.0E-4_realk,vvvo%elm1,1)
+
+#endif
+
+       if (master) call LSTIMER('CCSD(T) INT (IJK - .PT_HACK2)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
+       return
+
+    endif
 
     ! Set integral info
     ! *****************
@@ -12273,7 +12232,7 @@ contains
     logical :: master
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
-    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx
+    integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, nodtotal
     integer :: p,pos
     !> use background buffering to avoid memory fragmentation problems?
     logical :: use_bg_buf
@@ -12286,6 +12245,7 @@ contains
 
 #ifdef VAR_MPI
 
+    nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
     if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -12295,6 +12255,68 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 #endif
+
+    if (DECinfo%pt_hack2) then
+
+#ifdef VAR_MPI
+       mode   = MPI_MODE_NOCHECK
+
+       if (nodtotal .gt. 1) then
+
+          ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
+          dims = [nocc,nocc,nocc,nvirt]
+          call tensor_init(ooov, dims,4,bg=use_bg_buf)
+
+          ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
+          dims = [nvirt,nocc,nvirt,nvirt]
+          call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR",bg=use_bg_buf)
+
+          call tensor_random(ooov)
+          call tensor_random(vovv)
+
+          call tensor_scale(ooov,1.0E-4_realk)
+          call tensor_scale(vovv,1.0E-4_realk)
+
+       elseif (nodtotal .eq. 1) then
+
+          ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
+          dims = [nocc,nocc,nocc,nvirt]
+          call tensor_init(ooov, dims,4,bg=use_bg_buf)
+
+          ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
+          dims = [nvirt,nocc,nvirt,nvirt]
+          call tensor_init(vovv,dims,4,bg=use_bg_buf)
+
+          call tensor_random(ooov)
+          call tensor_random(vovv)
+
+          call dscal(nvirt*nocc**3,1.0E-4_realk,ooov%elm1,1)
+          call dscal(nocc*nvirt**3,1.0E-4_realk,vovv%elm1,1)
+
+       endif
+#else
+
+       ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
+       dims = [nocc,nocc,nocc,nvirt]
+       call tensor_init(ooov, dims,4,bg=use_bg_buf)
+
+       ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
+       dims = [nvirt,nocc,nvirt,nvirt]
+       call tensor_init(vovv,dims,4,bg=use_bg_buf)
+
+       call tensor_random(ooov)
+       call tensor_random(vovv)
+
+       call dscal(nvirt*nocc**3,1.0E-4_realk,ooov%elm1,1)
+       call dscal(nocc*nvirt**3,1.0E-4_realk,vovv%elm1,1)
+
+#endif
+
+       if (master) call LSTIMER('CCSD(T) INT (ABC - .PT_HACK2)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
+       return
+
+    endif
 
     ! Set integral info
     ! *****************
@@ -13633,6 +13655,178 @@ contains
       enddo
 
   end subroutine abc_tile_size_routine
+
+  subroutine convert_ccsd_and_vovo(nocc,nvirt,nbasis,Uocc,Uvirt,ccsd_doubles_in,vovo_in,ccsd_doubles,vovo,&
+                                 & nodtotal,abc,ijk_tile_size,abc_tile_size,use_bg)
+
+    implicit none
+
+    integer, intent(in) :: nocc,nvirt,nbasis,nodtotal
+    logical, intent(in) :: abc,use_bg
+    integer, intent(in) :: ijk_tile_size,abc_tile_size
+    type(array2), intent(inout) :: Uocc,Uvirt
+    type(tensor), intent(inout) :: ccsd_doubles_in,vovo_in
+    type(tensor), intent(inout) :: ccsd_doubles,vovo
+    ! tmp tensors
+    type(tensor) :: tmp_tensor_1,tmp_tensor_2
+
+    if (DECinfo%pt_hack) then
+
+#ifdef VAR_MPI
+       if (nodtotal .gt. 1) then
+
+          if (abc) then
+
+             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,&
+                &tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR',bg=use_bg)
+             call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,&
+                &tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
+
+          else
+
+             call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,&
+                &tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR',bg=use_bg)
+             call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
+                &tdims=[nvirt,nvirt,nocc,ijk_tile_size],atype='TDAR',bg=use_bg)
+
+          endif
+
+          call tensor_random(ccsd_doubles)
+          call tensor_random(vovo)
+          call tensor_scale(ccsd_doubles,1.0E-2_realk)
+          call tensor_scale(vovo,1.0E-2_realk)
+
+       elseif (nodtotal .eq. 1) then
+
+          if (abc) then
+
+             call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
+             call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
+
+          else
+
+             call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
+             call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
+
+          endif
+
+          call tensor_random(ccsd_doubles)
+          call tensor_random(vovo)
+          call dscal(nocc**2*nvirt**2,1.0E-2_realk,ccsd_doubles%elm1,1)
+          call dscal(nocc**2*nvirt**2,1.0E-2_realk,vovo%elm1,1)
+
+       endif
+#else
+       if (abc) then
+
+          call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
+          call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
+
+       else
+
+          call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4)
+          call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4)
+
+       endif
+
+       call tensor_random(vovo)
+       call tensor_random(ccsd_doubles)
+       call dscal(nocc**2*nvirt**2,1.0E-2_realk,ccsd_doubles%elm1,1)
+       call dscal(nocc**2*nvirt**2,1.0E-2_realk,vovo%elm1,1)
+
+#endif
+
+    else
+
+#ifdef VAR_MPI
+       if (nodtotal .gt. 1) then
+
+          if (abc) then
+
+             call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4)
+             call tensor_cp_data(vovo_in,tmp_tensor_1,order=[2,4,1,3])
+             !call tensor_reorder(tmp_tensor_1,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_1%elm1)
+             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR',bg=use_bg)
+             call tensor_cp_data(tmp_tensor_1,vovo)
+             call tensor_free(tmp_tensor_1)
+             call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4)
+             call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[2,4,3,1])
+             !call tensor_reorder(tmp_tensor_2,[2,4,3,1]) ! ccsd_doubles in the order (i,j,b,a)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_2%elm1)
+             call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
+             call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
+             call tensor_free(tmp_tensor_2)
+
+          else
+
+             call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4)
+             call tensor_cp_data(vovo_in,tmp_tensor_1,order=[1,3,2,4])
+             !call tensor_reorder(tmp_tensor_1,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_1%elm1)
+             call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,&
+                &tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR',bg=use_bg)
+             call tensor_cp_data(tmp_tensor_1,vovo)
+             call tensor_free(tmp_tensor_1)
+             call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4)
+             call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[1,3,4,2])
+             !call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_2%elm1)
+             call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
+                &tdims=[nvirt,nvirt,nocc,ijk_tile_size],atype='TDAR',bg=use_bg)
+             call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
+             call tensor_free(tmp_tensor_2)
+
+          endif
+
+       elseif (nodtotal .eq. 1) then
+
+          if (abc) then
+
+             call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
+             call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+             call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
+             call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+
+          else
+
+             call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
+             call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+             call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
+             call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+
+          endif
+
+       endif
+#else
+       if (abc) then
+
+          call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
+          call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+          call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
+          call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+
+       else
+
+          call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
+          call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+          call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
+          call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+
+       endif
+#endif
+
+    endif
+
+  end subroutine convert_ccsd_and_vovo
 
 !endif mod_unreleased
 #endif

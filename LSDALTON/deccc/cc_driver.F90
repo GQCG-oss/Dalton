@@ -767,8 +767,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       ! free amplitude arrays
       call tensor_free(t1_final)
    endif
-   call tensor_free(t2_final)
-   call tensor_free(VOVO)
+   if (.not. DECinfo%pt_hack) then
+      call tensor_free(t2_final)
+      call tensor_free(VOVO)
+   endif
 end function ccsolver_justenergy
 
 !> \brief For a given fragment, calculate singles and doubles amplitudes and

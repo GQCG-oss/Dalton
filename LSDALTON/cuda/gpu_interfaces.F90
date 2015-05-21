@@ -62,7 +62,9 @@ module gpu_interfaces
       implicit none
       type (C_PTR), value :: handle
       integer (C_INT), value :: n, incA, incB
-      type (C_PTR), value :: A, B
+!      type (C_PTR), value :: A, B
+!      type (C_PTR) :: res
+      real (C_DOUBLE) :: A(*), B(*)
       real (C_DOUBLE) :: res
     end function cublasDdot_v2
 
@@ -283,7 +285,7 @@ contains
        integer(kind=8), intent(in) :: n
        integer, intent(in) :: inca,incb
        real(realk), dimension(n), intent(in), target :: a,b
-       real(realk), intent(inout), target :: res
+       real(realk), intent(inout), target :: res(1)
 #ifdef VAR_OPENACC
        integer(kind=acc_handle_kind), intent(in) :: acc_handle
 #else
@@ -294,6 +296,9 @@ contains
        logical :: async
        !> ddot
        real(realk), external :: ddot
+#if defined(VAR_OPENACC) && defined(VAR_CRAY)
+       real(realk), external :: ddot_acc
+#endif
 
 #ifdef VAR_OPENACC
 
@@ -305,13 +310,15 @@ contains
        if (async) then
 
 !$acc host_data use_device(a,b,res)
-          call ddot_acc_openacc_async(acc_handle,n,a,1,b,1,res)
+!          call ddot_acc_openacc_async(acc_handle,n,a,1,b,1,res)
+          call dgemm_acc_openacc_async(acc_handle,'n','n',1,1,n,1.0E0_realk,a,1,b,n,0.0E0_realk,res,1)
 !$acc end host_data
 
        else
 
 !$acc host_data use_device(a,b,res)
-          res = ddot_acc(n,a,1,b,1)
+!          res = ddot_acc(n,a,1,b,1)
+          call dgemm_acc('n','n',1,1,n,1.0E0_realk,a,1,b,n,0.0E0_realk,res,1)
 !$acc end host_data
 
        endif
@@ -319,7 +326,10 @@ contains
 #elif defined(VAR_CUBLAS)
 
 !$acc host_data use_device(a,b,res)
-       stat = cublasDdot_v2(cublas_handle,int(n,kind=4),c_loc(a),int(1,kind=4),c_loc(b),int(1,kind=4),res)
+!       stat = cublasDdot_v2(cublas_handle,int(n,kind=4),a,int(1,kind=4),b,int(1,kind=4),res)
+       stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(n,kind=4),&
+                             & 1.0E0_realk,c_loc(a),int(1,kind=4),c_loc(b),int(n,kind=4),&
+                             & 0.0E0_realk,c_loc(res),int(1,kind=4))
 !$acc end host_data
 
 #endif
