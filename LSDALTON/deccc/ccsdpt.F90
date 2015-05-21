@@ -975,8 +975,6 @@ contains
 
     ! now follows the main loop, which is collapsed.
 
-!!$acc wait
-!
 !!$acc enter data create(trip_tmp,trip_ampl,&
 !!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
 !!$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
@@ -2308,8 +2306,6 @@ contains
 
 #endif
 
-!$acc wait
-
 !$acc enter data create(trip_tmp,trip_ampl)&
 !$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
 !
@@ -2862,8 +2858,6 @@ contains
 
     ! now follows the main loop, which is collapsed like for the ijk scheme (cf. ijk_loop_par)
 
-!!$acc wait
-!
 !!$acc enter data create(trip_tmp,trip_ampl,&
 !!$acc& ccsd_doubles_portions_a,ccsd_doubles_portions_b,ccsd_doubles_portions_c)&
 !!$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
@@ -3655,8 +3649,6 @@ contains
 
 #endif
 
-!$acc wait
-
 !$acc enter data create(trip_tmp,trip_ampl)&
 !$acc& copyin(eivalocc,ccsdpt_singles,e4) if(full_no_frags)
 !
@@ -4027,7 +4019,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4094,7 +4086,7 @@ contains
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4132,7 +4124,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4199,7 +4191,7 @@ contains
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4241,7 +4233,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4308,7 +4300,7 @@ contains
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4345,7 +4337,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4412,7 +4404,7 @@ contains
                  & ccsdpt_singles_1,trip_ampl,.true.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4454,7 +4446,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4521,7 +4513,7 @@ contains
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4559,7 +4551,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4626,7 +4618,7 @@ contains
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4668,7 +4660,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4735,7 +4727,7 @@ contains
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4772,7 +4764,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -4839,7 +4831,7 @@ contains
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp3,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+    e4 = e4 + 2.0E0_realk * e4_tmp1(1) - e4_tmp2(1) - e4_tmp3(1)
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(handle)
@@ -4884,7 +4876,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1), e4_tmp4(1), e4_tmp5(1), e4_tmp6(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -5013,8 +5005,8 @@ contains
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
-          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1(1) + e4_tmp2(1) + e4_tmp3(1) ) &
+          & - 4.0E0_realk * ( e4_tmp4(1) + e4_tmp5(1) + e4_tmp6(1) )
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
@@ -5053,7 +5045,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1), e4_tmp4(1), e4_tmp5(1), e4_tmp6(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -5182,8 +5174,8 @@ contains
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
-          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1(1) + e4_tmp2(1) + e4_tmp3(1) ) &
+          & - 4.0E0_realk * ( e4_tmp4(1) + e4_tmp5(1) + e4_tmp6(1) )
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
@@ -5228,7 +5220,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1), e4_tmp4(1), e4_tmp5(1), e4_tmp6(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -5357,8 +5349,8 @@ contains
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
-          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1(1) + e4_tmp2(1) + e4_tmp3(1) ) &
+          & - 4.0E0_realk * ( e4_tmp4(1) + e4_tmp5(1) + e4_tmp6(1) )
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
@@ -5395,7 +5387,7 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
+    real(realk) :: e4_tmp1(1), e4_tmp2(1), e4_tmp3(1), e4_tmp4(1), e4_tmp5(1), e4_tmp6(1)
     !> ddot
     real(realk), external :: ddot
 
@@ -5524,8 +5516,8 @@ contains
                  & ccsdpt_singles_3,trip_ampl,.false.,handle,cublas_handle)
 
 !$acc kernels present(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6,e4) async(handle)
-    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1 + e4_tmp2 + e4_tmp3 ) &
-          & - 4.0E0_realk * ( e4_tmp4 + e4_tmp5 + e4_tmp6 )
+    e4 = e4 + 2.0E0_realk * ( 4.0E0_realk * e4_tmp1(1) + e4_tmp2(1) + e4_tmp3(1) ) &
+          & - 4.0E0_realk * ( e4_tmp4(1) + e4_tmp5(1) + e4_tmp6(1) )
 !$acc end kernels
 
 !$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(handle)
