@@ -859,7 +859,6 @@ contains
                 call lsmpi_get_acc(plus_one,ij_count,infpar%master,1,dyn_w)
                 call lsmpi_win_flush(dyn_w,local=.true.)
                 ij_count = ij_count + 1
-                print *,plus_one,ij_count
              endif
 
              if(ij_count <= njobs)then
