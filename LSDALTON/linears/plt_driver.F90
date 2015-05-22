@@ -18,6 +18,7 @@ module plt_driver_module
   use grid_utilities_module
   use davidson_settings
   use IntegralInterfaceMOD!,only:II_Get_overlap
+  use files
   private
   public :: plt_wrapper, pltinfo_set_default_config, config_plt_input, &
        & config_pltgrid_input, construct_plt_file_driver, &
@@ -68,15 +69,15 @@ contains
 
     write(ls%lupri,*) 'PLT driver reads input file...'
     funit = 33
-    OPEN(UNIT=funit,FILE=trim(MyPlt%inputfile),STATUS='OLD', &
-         & FORM='UNFORMATTED',IOSTAT=IOS)
+    call LSOPEN(funit,trim(MyPlt%inputfile),'OLD', &
+         & 'UNFORMATTED')
     READ (funit) nrow8,ncol8
     nrow=nrow8
     ncol=ncol8
     write(ls%lupri,*) 'Matrix size: ', nrow, ncol
     call mat_init(InputMat,nrow,ncol)
     READ(funit) InputMat%elms
-    CLOSE(funit,STATUS='KEEP',IOSTAT=IOS)
+    call LSCLOSE(funit,'KEEP')
 
     ! Safety precaution for GC basis
     IF(ls%setting%integraltransformGC)THEN
