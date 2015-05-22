@@ -332,7 +332,7 @@ subroutine LS_THC_RIMP2_EcorrAO(nocc,nvirt,ngrid,nbasis,X,Zpq,EpsOcc,EpsVirt,Cv,
   real(realk),pointer :: IntAIGAMMAJ(:,:,:,:),IntMO(:,:,:,:)
   call mem_alloc(IntAO,nbasis,nbasis,nbasis,nbasis)
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(ALPHA,BETA,GAMMA,DELTA,P,Q,&
-  !$OMP TMP) SHARED(X,ZPQ,IntAO,nbasis,nocc,nvirt)
+  !$OMP TMP) SHARED(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid)
   DO DELTA=1,nbasis
      DO GAMMA=1,nbasis
         DO BETA=1,nbasis
