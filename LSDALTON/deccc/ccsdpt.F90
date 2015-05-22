@@ -848,32 +848,37 @@ contains
        ij_count=1
     endif
 
-    ijrun_par: do while (ij_count <= b_size + 1)
+!    ijrun_par: do while (ij_count <= b_size + 1)
+!
+!          !Get Job index
+!          if(dynamic_load)then
+!
+!             if(ij_count == 0) then
+!                ij_count = infpar%lg_mynum + 1
+!             else
+!                call lsmpi_get_acc(plus_one,ij_count,infpar%master,1,dyn_w)
+!                call lsmpi_win_flush(dyn_w,local=.true.)
+!                ij_count = ij_count + 1
+!             endif
+!
+!             if(ij_count <= njobs)then
+!                ij_comp  = ij_array(ij_count)
+!             else
+!                ij_comp  = -1
+!             endif
+!
+!          else
+!             ij_count = ij_count + 1
+!             ij_comp  = jobs(ij_count)
+!          endif
+!
+!          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5,")")') &
+!             &infpar%lg_mynum,ij_comp,njobs
 
-          !Get Job index
-          if(dynamic_load)then
+ ijrun_par: do ij_count = 1,b_size + 1
 
-             if(ij_count == 0) then
-                ij_count = infpar%lg_mynum + 1
-             else
-                call lsmpi_get_acc(plus_one,ij_count,infpar%master,1,dyn_w)
-                call lsmpi_win_flush(dyn_w,local=.true.)
-                ij_count = ij_count + 1
-             endif
-
-             if(ij_count <= njobs)then
-                ij_comp  = ij_array(ij_count)
-             else
-                ij_comp  = -1
-             endif
-
-          else
-             ij_count = ij_count + 1
-             ij_comp  = jobs(ij_count)
-          endif
-
-          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5,")")') &
-             &infpar%lg_mynum,ij_comp,njobs
+          ! get value of ij from job disttribution list
+          ij_comp = jobs(ij_count)
 
           ! no more jobs to be done? otherwise leave the loop
           if (ij_comp .lt. 0) exit
