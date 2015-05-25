@@ -939,9 +939,6 @@ contains
 !$acc enter data pcopyin(ccsd_pdm_i,ccsd_pdm_j,&
 !$acc& vvvo_pdm_i,vvvo_pdm_j) async(async_id(1))
 
-!!$acc enter data copyin(vvoo_pdm_ij) async(async_id(3)) if(j_tile .eq. i_tile)
-!!
-!!$acc enter data copyin(vvoo_pdm_ij,vvoo_pdm_ji) async(async_id(3)) if(j_tile .ne. i_tile)
 !$acc enter data pcopyin(vvoo_pdm_ij,vvoo_pdm_ji) async(async_id(3))
 
           do k_tile = 1,j_tile
@@ -998,6 +995,11 @@ contains
  
              call time_start_phase(PHASE_WORK)
 
+!$acc enter data pcopyin(ccsd_pdm_k,&
+!$acc& vvvo_pdm_k) async(async_id(1))
+
+!$acc enter data pcopyin(vvoo_pdm_ik,vvoo_pdm_ki,vvoo_pdm_jk,vvoo_pdm_kj) async(async_id(3))
+
              call time_start_phase(PHASE_WORK, twall = time_preload )
              call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nvirt,nocc,i_tile,j_tile,k_tile,ij_count,3*nbuffs,&
                                          & needed_vvvo,tiles_in_buf_vvvo,vvvo_pdm_buff,req_vvvo,&
@@ -1010,16 +1012,6 @@ contains
                                          & .true.,tile_size,dim_ts,dynamic_load,vovo_array=.true.)
              call time_start_phase(PHASE_WORK, ttot = time_preload )
              time_preload_tot = time_preload_tot + time_preload
-
-!$acc enter data pcopyin(ccsd_pdm_k,&
-!$acc& vvvo_pdm_k) async(async_id(1))
-
-!!$acc enter data copyin(vvoo_pdm_ik,vvoo_pdm_ki,vvoo_pdm_jk)&
-!!$acc& async(async_id(3)) if((k_tile .eq. j_tile) .and. (j_tile .ne. i_tile))
-!!
-!!$acc enter data copyin(vvoo_pdm_ik,vvoo_pdm_ki,vvoo_pdm_jk,vvoo_pdm_kj)&
-!!$acc& async(async_id(3)) if((k_tile .ne. j_tile) .and. (j_tile .ne. i_tile))
-!$acc enter data pcopyin(vvoo_pdm_ik,vvoo_pdm_ki,vvoo_pdm_jk,vvoo_pdm_kj) async(async_id(3))
 
 ! ##########################
 
@@ -1352,7 +1344,10 @@ contains
           endif
 
 !$acc wait(async_id(5)) async(async_id(3))
-!$acc exit data delete(vvoo_pdm_ik,vvoo_pdm_ki,vvoo_pdm_jk)&
+!$acc exit data delete(vvoo_pdm_ik,vvoo_pdm_ki)&
+!$acc& async(async_id(3)) if((k_tile .ne. j_tile) .and. (j_tile .eq. i_tile))
+!
+!$acc exit data delete(vvoo_pdm_jk)&
 !$acc& async(async_id(3)) if((k_tile .eq. j_tile) .and. (j_tile .ne. i_tile))
 !
 !$acc exit data delete(vvoo_pdm_ik,vvoo_pdm_ki,vvoo_pdm_jk,vvoo_pdm_kj)&
