@@ -2525,6 +2525,7 @@ contains
     call ls_mpi_buffer(DECitem%IntegralThreshold,Master)
     call ls_mpi_buffer(DECitem%noaofock,Master)
     call ls_mpi_buffer(DECitem%THCNOPRUN,Master)
+    call ls_mpi_buffer(DECitem%THCDUMP,Master)
     call ls_mpi_buffer(DECitem%THCradint,Master)
     call ls_mpi_buffer(DECitem%THC_MIN_RAD_PT,Master)
     call ls_mpi_buffer(DECitem%THCangint,Master)

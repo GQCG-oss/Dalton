@@ -289,6 +289,7 @@ contains
     DECinfo%noaofock=.false.
 
     DECinfo%THCNOPRUN = .FALSE.
+    DECinfo%THCDUMP = .FALSE.
     DECinfo%THCradint = 1E-6_realk
     DECinfo%THC_MIN_RAD_PT = 20
     DECinfo%THCangint = 2
@@ -968,6 +969,7 @@ contains
        ! KEYWORDS RELATED TO TENSOR HYPER CONTRACTION (THC)
        ! ***********************
        case('.THC_PRUNE'); DECinfo%THCNOPRUN = .FALSE.
+       case('.THC_DUMP'); DECinfo%THCDUMP = .TRUE.
        case('.THC_RADINT'); read(input,*) DECinfo%THCradint 
        case('.THC_MIN_RAD_PT'); read(input,*) DECinfo%THC_MIN_RAD_PT
        case('.THC_ANGINT'); read(input,*) DECinfo%THCangint

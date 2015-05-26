@@ -572,6 +572,7 @@ module dec_typedef_module
 
      !> THC keywords
      logical     :: THCNOPRUN
+     logical     :: THCDUMP
      real(realk) :: THCradint
      integer     :: THC_MIN_RAD_PT
      integer     :: THCangint
