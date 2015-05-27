@@ -1010,16 +1010,16 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   call mat_init(tempm1,nbast,nbast) 
   call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
   do jcoor=1,nAtomsSelected
-    istart=3*jcoor-2
-    iend=istart+2
-    iAtom = AtomList(jcoor)
+     istart=3*jcoor-2
+     iend=istart+2
+     iAtom = AtomList(jcoor)
      call II_get_PSO_spec(LUPRI,LUERR,molcfg%SETTING,hk(istart:iend),iAtom)
-    do icoor=istart,iend
-     call mat_init(RHSk(icoor),nbast,nbast)
-     call mat_mul(hk(icoor),tempm1,'n','n',1.0E0_realk,0.0E0_realk,RHSk(icoor))  
-     call mat_mul(tempm1,hk(icoor),'t','n',1.0E0_realk,-1.0E0_realk,RHSk(icoor))  
-     call mat_free(hk(icoor))
-    enddo
+     do icoor=istart,iend
+        call mat_init(RHSk(icoor),nbast,nbast)
+        call mat_mul(hk(icoor),tempm1,'n','n',1.0E0_realk,0.0E0_realk,RHSk(icoor))  
+        call mat_mul(tempm1,hk(icoor),'t','n',1.0E0_realk,-1.0E0_realk,RHSk(icoor))  
+        call mat_free(hk(icoor))
+     enddo
   enddo
   call mat_free(tempm1)
   !###########################################################################
@@ -1047,10 +1047,10 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   call mat_init(SX(2),nbast,nbast)
   call mat_init(SX(3),nbast,nbast)                                     
   do icoor=1,3
-        call mat_init(GbJ(icoor),nbast,nbast)
-        call mat_init(GbK(icoor),nbast,nbast)
-        call mat_zero(GbK(icoor))
-        call mat_init(hb(icoor),nbast,nbast)
+     call mat_init(GbJ(icoor),nbast,nbast)
+     call mat_init(GbK(icoor),nbast,nbast)
+     call mat_zero(GbK(icoor))
+     call mat_init(hb(icoor),nbast,nbast)
   enddo 
   call II_get_magderivOverlap(Sx,molcfg%setting,lupri,luerr)
   call II_get_prop(LUPRI,LUERR,molcfg%SETTING,hb,3,'MAGMOM ')   ! Generate h^b  
@@ -1065,20 +1065,20 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   call mat_free(tempm1)
   call di_GET_GbDs(lupri,luerr,NDX,GbDX,3,molcfg%setting)  ! G(D0^B)
   IF(molcfg%setting%do_dft)THEN
-             call II_get_xc_linrsp(lupri,luerr,molcfg%setting,nbast,NDX,D(1),GbDXc,3) 
+     call II_get_xc_linrsp(lupri,luerr,molcfg%setting,nbast,NDX,D(1),GbDXc,3) 
   endif          
   if(molcfg%setting%do_dft)then  
-        do icoor=1,3 
-         call mat_init(GbXc(icoor),nbast,nbast)
-        enddo
-        call II_get_xc_magderiv_kohnsham_mat(LUPRI,LUERR,molcfg%SETTING,nbast,D(1),GbXc)
+     do icoor=1,3 
+        call mat_init(GbXc(icoor),nbast,nbast)
+     enddo
+     call II_get_xc_magderiv_kohnsham_mat(LUPRI,LUERR,molcfg%SETTING,nbast,D(1),GbXc)
   endif
   call mat_mul(D(1),S, 'n','n',1E0_realk,0E0_realk,DS) 
   call mat_mul(S,D(1), 'n','n',1E0_realk,0E0_realk,SD) 
-
    
   call mat_init(tempm1,nbast,nbast) 
   do icoor=1,3      
+<<<<<<< HEAD
         call mat_init(ProdA(icoor),nbast,nbast)
         !FD0^bS 
         call mat_mul(NDX(icoor),S,'n','n',1E0_realk,0E0_realk,tempm1) 
@@ -1119,6 +1119,48 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
            call mat_mul(GbDXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
            call mat_mul(SD,GbDxc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
         endif 
+=======
+     call mat_init(ProdA(icoor),nbast,nbast)
+     !FD0^bS 
+     call mat_mul(NDX(icoor),S,'n','n',1E0_realk,0E0_realk,tempm2) 
+     call mat_mul(F(1),tempm2,'n','n',-1E0_realk,0E0_realk,ProdA(icoor))
+     !-SDOBF
+     call mat_mul(NDX(icoor),F(1),'n','n',1E0_realk,0E0_realk,tempm2) 
+     call mat_mul(S,tempm2,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
+     !-FD0SB 
+     call mat_mul(D(1),SX(icoor), 'n','n',1E0_realk,0E0_realk,tempm2) 
+     call mat_mul(F(1),tempm2,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+     ! SBD0F
+     call mat_mul(D(1),F(1), 'n','n',1E0_realk,0E0_realk,tempm2) 
+     call mat_mul(SX(icoor),tempm2,'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     ! -hbDS 
+     call mat_mul(hb(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+     ! SDhb
+     call mat_mul(SD,hb(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     !-J^b(D)D0S 
+     
+     call mat_mul(GbJ(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+     !  - SD0J^b(D)
+     call mat_mul(SD,GbJ(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     
+     !-K^b(D)D0S  
+     call mat_mul(GbK(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
+     !SD0K^b(D) 
+     call mat_mul(SD,Gbk(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     !G(D0B)D0S
+     call mat_mul(GbDX(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+     !-SD0G(D0B)
+     call mat_mul(SD,GbDX(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     !G^bDOS (DFT XC) - SD0G^b (DFT XC)
+     if(molcfg%setting%do_dft)then  
+        call mat_mul(GbXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+        call mat_mul(SD,GbXc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     endif
+     IF(molcfg%setting%do_dft)THEN
+        call mat_mul(GbDXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+        call mat_mul(SD,GbDxc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     endif
+>>>>>>> c721a5c3a468d152b8853a64460f6851af46fcb2
   enddo
   call mat_free(tempm1)
   call mat_free(DS)
@@ -1160,10 +1202,6 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      do icoor = 1,3 
         Prodtotal(icoor,jcoor)=-4E0_realk*factor*mat_trAB(Xk(1),ProdA(icoor))
      enddo
-     !Make D^k=[D_0,X^k]_s
-     call mat_init(DXk(jcoor),nbast,nbast)
-     call ABCcommutator(nbast,D(1),Xk(1),S,DXk(jcoor))       !Generate [D_0,X^k]_s 
-     call mat_scal(-4.0d0,DXk(jcoor))
   enddo
 
   call mat_free(Xk(1)) 
@@ -1221,7 +1259,6 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   enddo
   do icoor = 1,3*nAtomsSelected
     call mat_free(hk(icoor))
-    call mat_free(DXk(icoor))
   enddo
   do icoor=1,3 
     call mat_free(NDX(icoor))
@@ -1245,6 +1282,11 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
     atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(iAtom)%Name
   enddo
  
+<<<<<<< HEAD
+=======
+ ! Prinitng for individual term X3 
+  Write (lupri,*)   "The nuclear magnetic shielding for selected atoms" 
+>>>>>>> c721a5c3a468d152b8853a64460f6851af46fcb2
   do jcoor=1,natomsselected  
     WRITE (LUPRI,'(2X,A,I7)') 'Atom Identity:',AtomList(jcoor)
     WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
