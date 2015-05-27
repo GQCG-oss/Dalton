@@ -908,11 +908,11 @@ C
 C     Evaluation of CRF
 C     =================
 C
-C      IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
-C         CALL AROUND('Evaluate Cubic Response Functions')
-C         CALL ABS_CRF(CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
-C     &                XINDX, WRK(KMJWOP), WRK(KFREE), LFREE)
-C      END IF
+      IF (ABSLRS_GAMMA .OR. ABSLRS_IDRI) THEN
+         CALL AROUND('Evaluate Cubic Response Functions')
+         CALL ABS_CRF(CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+     &                XINDX, WRK(KMJWOP), WRK(KFREE), LFREE)
+      END IF
 C
 C     Print obtained response results
 C     ===============================

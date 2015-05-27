@@ -938,8 +938,6 @@ C     Putting NFREQS and NGD to 1 so that ABS_CTL is called once for
 C     every ABS_NXYVEC                                                                        
       NFREQS = 1
       NGD = 1
-C
-      IF (.NOT. ISOLATE) THEN
 C                                                                                             
 C     Call the LR solver for every ABS_NXYVEC                                                 
 C     =======================================                                                 
@@ -978,10 +976,6 @@ C        to file
          KXSOL = KFREE
          KFREE = KXSOL + 2*KZYVXY
          LFREE = LWRK  - KFREE
-C ---
-C PRINT FLAG
-         WRITE(LUPRI,*) 'KXSOL=',KXSOL,' KFREE=',KFREE,' LFREE=',LFREE
-C ---
 C                                                                                             
 C        Determine the norm of the r.h.s.                                                     
          VNORM = DNRM2(2*KZYVXY,WRK(ABS_XYMEMREF(INXY)),1)
@@ -1002,15 +996,6 @@ C        Open temporary auxiliary files
          CALL GPOPEN(LUAS,'ABS_AS','NEW',' ',' ',IDUMMY,.FALSE.)
 C
 C        Solve the linear response equation
-C ---
-C PRINT FLAG
-         WRITE(LUPRI,*) 'Entering ABS_CTL'
-         WRITE(LUPRI,*) 'KZYVXY/2=',KZYVXY/2
-         WRITE(LUPRI,*) 'WRK(ABS_XYMEMREF(',INXY,'))='
-         DO ITEST=1,2*KZYVXY
-            WRITE(LUPRI,*) ITEST,' ',WRK(ABS_XYMEMREF(INXY)+ITEST-1)
-         END DO
-C ---
          CALL ABS_CTL('XYLAB   ',KZYVXY/2,WRK(ABS_XYMEMREF(INXY)),
      &        NGD, WRK(KXSOL), FREQS, NFREQS, LUTEMP,
      &        MJWOP, CMO, UDV, FC, FCAC, FV, PV, XINDX,
@@ -1062,8 +1047,6 @@ C
 C                                                                                             
       END DO
 C
-      END IF !Isolation end (debugging)
-C                                                                                             
 C     End of ABS_NXY                                                                          
 C                                                                                             
       RETURN
@@ -1100,15 +1083,15 @@ C
 #include "abscrs.h"
 #include "thrzer.h"
 C
-      PARAMETER ( D0=0.0D0 )
+      PARAMETER ( D0=0.0D0, DM1=-1.0D0 )
 C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*), MJWOP(*), WRK(LWRK)
 C
       CHARACTER*8 ALAB, BLAB, CLAB, DLAB
-      DIMENSION HYPVAL(2), TMPVAL(2), VAL(4)
+      DIMENSION HYPVAL(2), TMPVAL(2), VAL(4), IBCDCOMPLEX(2,2,2)
       LOGICAL ISOLATE
-      ISOLATE = .FALSE.
+      ISOLATE = .TRUE.
 C
 C     Spin multiplicity is always 1, i.e. only singlets 
       ISPINA  = 0
@@ -1188,11 +1171,11 @@ C
 C     Check if some of the single-indexed vectors are equal or zero
 C     =============================================================
 C
-      CALL ABS_BCDCHK(IBCDEQ,
-     &                FREQA,      FREQB,      FREQC,      FREQD,
-     &                ISYMA,      ISYMB,      ISYMC,      ISYMD,
-     &                KZYVA,      KZYVB,      KZYVC,      KZYVD,
-     &                WRK(KVECA), WRK(KVECB), WRK(KVECC), WRK(KVECD))
+      CALL ABS_ABCDCHK_INIT(IAEQ,  IBCDCOMPLEX,
+     &     FREQA,      FREQB,      FREQC,      FREQD,
+     &     ISYMA,      ISYMB,      ISYMC,      ISYMD,
+     &     KZYVA,      KZYVB,      KZYVC,      KZYVD,
+     &     WRK(KVECA), WRK(KVECB), WRK(KVECC), WRK(KVECD))
 C
 C     Print individual contributions if requested
       IF (IPRABSLRS .GT. 0) THEN
@@ -1206,6 +1189,12 @@ C     Print individual contributions if requested
 C
 C     1. Calculate Na T[3] Nb Ncd type terms (three permutations)
 C     ===========================================================
+C
+      TMPVAL(1) = D0
+      TMPVAL(2) = D0
+C
+C     If WRK(KVECA) is zero, add zero T[3] contribution
+      IF (IAEQ .NE. 0) THEN
 C
 C     This is the A B CD permutation
       CALL T3COMPLEX(KZYVA,      KZYVB,      KZYVCD,
@@ -1221,69 +1210,72 @@ C     This is the A B CD permutation
       HYPVAL(1) = HYPVAL(1) + VAL(1)
       HYPVAL(2) = HYPVAL(2) + VAL(2)
 C
-C     If all single-indexed vectors are equal, add twice the value of
-C     the first permutation
-      IF (IBCDEQ.EQ.24) THEN
+C     If the real and imaginary parts of all single-indexed vectors are
+C     equal, add twice the value of the first permutation
+      IF (IBCDCOMPLEX(1,1,1).EQ.24 .AND. IBCDCOMPLEX(2,2,2).EQ.24) THEN
          TMPVAL(1) = TMPVAL(1) + 2*VAL(1)
          TMPVAL(2) = TMPVAL(2) + 2*VAL(2)
          HYPVAL(1) = HYPVAL(1) + 2*VAL(1)
          HYPVAL(2) = HYPVAL(2) + 2*VAL(2)
+C
+C     (The following cases have been commented out due to incomp-
+C      atibility with IBCDCOMPLEX as of 27/5 2015) 
 C
 C     If vectors WRK(KVECB) and WRK(KVECC) are equal, add the value of
 C     the first permutation and calculate the A D BC permutation
-      ELSE IF (IBCDEQ.EQ.2) THEN
-         TMPVAL(1) = TMPVAL(1) + VAL(1)
-         TMPVAL(2) = TMPVAL(2) + VAL(2)
-         HYPVAL(1) = HYPVAL(1) + VAL(1)
-         HYPVAL(2) = HYPVAL(2) + VAL(2)
-         CALL T3COMPLEX(KZYVA,      KZYVD,      KZYVBC,
-     &                  ISYMA,      ISYMD,      ISYMBC,
-     &                  WRK(KVECA), WRK(KVECD), WRK(KVECBC),
-     &                  VAL(1),     FREQD,      FREQB+FREQC,
-     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
-     &                  WRK(KFREE), LFREE)
-         VAL(1) = -VAL(1)
-         VAL(2) = -VAL(2)
-         TMPVAL(1) = TMPVAL(1) + VAL(1)
-         TMPVAL(2) = TMPVAL(2) + VAL(2)
-         HYPVAL(1) = HYPVAL(1) + VAL(1)
-         HYPVAL(2) = HYPVAL(2) + VAL(2)
+C      ELSE IF (IBCDEQ.EQ.2) THEN
+C         TMPVAL(1) = TMPVAL(1) + VAL(1)
+C         TMPVAL(2) = TMPVAL(2) + VAL(2)
+C         HYPVAL(1) = HYPVAL(1) + VAL(1)
+C         HYPVAL(2) = HYPVAL(2) + VAL(2)
+C         CALL T3COMPLEX(KZYVA,      KZYVD,      KZYVBC,
+C     &                  ISYMA,      ISYMD,      ISYMBC,
+C     &                  WRK(KVECA), WRK(KVECD), WRK(KVECBC),
+C     &                  VAL(1),     FREQD,      FREQB+FREQC,
+C     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+C     &                  WRK(KFREE), LFREE)
+C         VAL(1) = -VAL(1)
+C         VAL(2) = -VAL(2)
+C         TMPVAL(1) = TMPVAL(1) + VAL(1)
+C         TMPVAL(2) = TMPVAL(2) + VAL(2)
+C         HYPVAL(1) = HYPVAL(1) + VAL(1)
+C         HYPVAL(2) = HYPVAL(2) + VAL(2)
 C
 C     If vectors WRK(KVECB) and WRK(KVECD) are equal, add the value of
 C     the first permutation and calculate the A C BD permutation
-      ELSE IF (IBCDEQ.EQ.3) THEN
-         TMPVAL(1) = TMPVAL(1) + VAL(1)
-         TMPVAL(2) = TMPVAL(2) + VAL(2)
-         HYPVAL(1) = HYPVAL(1) + VAL(1)
-         HYPVAL(2) = HYPVAL(2) + VAL(2)
-         CALL T3COMPLEX(KZYVA,      KZYVC,      KZYVBD,
-     &                  ISYMA,      ISYMC,      ISYMBD,
-     &                  WRK(KVECA), WRK(KVECC), WRK(KVECBD),
-     &                  VAL(1),     FREQC,      FREQB+FREQD,
-     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
-     &                  WRK(KFREE), LFREE)
-         VAL(1) = -VAL(1)
-         VAL(2) = -VAL(2)
-         TMPVAL(1) = TMPVAL(1) + VAL(1)
-         TMPVAL(2) = TMPVAL(2) + VAL(2)
-         HYPVAL(1) = HYPVAL(1) + VAL(1)
-         HYPVAL(2) = HYPVAL(2) + VAL(2)
+C      ELSE IF (IBCDEQ.EQ.3) THEN
+C         TMPVAL(1) = TMPVAL(1) + VAL(1)
+C         TMPVAL(2) = TMPVAL(2) + VAL(2)
+C         HYPVAL(1) = HYPVAL(1) + VAL(1)
+C         HYPVAL(2) = HYPVAL(2) + VAL(2)
+C         CALL T3COMPLEX(KZYVA,      KZYVC,      KZYVBD,
+C     &                  ISYMA,      ISYMC,      ISYMBD,
+C     &                  WRK(KVECA), WRK(KVECC), WRK(KVECBD),
+C     &                  VAL(1),     FREQC,      FREQB+FREQD,
+C     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+C     &                  WRK(KFREE), LFREE)
+C         VAL(1) = -VAL(1)
+C         VAL(2) = -VAL(2)
+C         TMPVAL(1) = TMPVAL(1) + VAL(1)
+C         TMPVAL(2) = TMPVAL(2) + VAL(2)
+C         HYPVAL(1) = HYPVAL(1) + VAL(1)
+C         HYPVAL(2) = HYPVAL(2) + VAL(2)
 C
 C     If vectors WRK(KVECC) and WRK(KVECD) are equal, calculate the
 C     A C BD permutation and add twice its value
-      ELSE IF (IBCDEQ.EQ.4) THEN
-         CALL T3COMPLEX(KZYVA,      KZYVC,      KZYVBD,
-     &                  ISYMA,      ISYMC,      ISYMBD,
-     &                  WRK(KVECA), WRK(KVECC), WRK(KVECBD),
-     &                  VAL(1),     FREQC,      FREQB+FREQD,
-     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
-     &                  WRK(KFREE), LFREE)
-         VAL(1) = -VAL(1)
-         VAL(2) = -VAL(2)
-         TMPVAL(1) = TMPVAL(1) + 2*VAL(1)
-         TMPVAL(2) = TMPVAL(2) + 2*VAL(2)
-         HYPVAL(1) = HYPVAL(1) + 2*VAL(1)
-         HYPVAL(2) = HYPVAL(2) + 2*VAL(2)
+C      ELSE IF (IBCDEQ.EQ.4) THEN
+C         CALL T3COMPLEX(KZYVA,      KZYVC,      KZYVBD,
+C     &                  ISYMA,      ISYMC,      ISYMBD,
+C     &                  WRK(KVECA), WRK(KVECC), WRK(KVECBD),
+C     &                  VAL(1),     FREQC,      FREQB+FREQD,
+C     &                  ABS_DAMP, XINDX, UDV, PV, MJWOP, CMO, FC, FV,
+C     &                  WRK(KFREE), LFREE)
+C         VAL(1) = -VAL(1)
+C         VAL(2) = -VAL(2)
+C         TMPVAL(1) = TMPVAL(1) + 2*VAL(1)
+C         TMPVAL(2) = TMPVAL(2) + 2*VAL(2)
+C         HYPVAL(1) = HYPVAL(1) + 2*VAL(1)
+C         HYPVAL(2) = HYPVAL(2) + 2*VAL(2)
 C
 C     If no single-indexed vectors are equal, add the remaining two
 C     permutations A C BD and A D BC
@@ -1315,6 +1307,8 @@ C
          HYPVAL(2) = HYPVAL(2) + VAL(2)
       END IF
 C
+      END IF
+C
       IF (IPRABSLRS .GT. 0) THEN
       WRITE(LUPRI,'(A13,4F18.8)') 'Na T[3] NbNcd',
      &        TMPVAL(1),TMPVAL(2),HYPVAL(1),HYPVAL(2)
@@ -1324,7 +1318,7 @@ C     2. Calculate Na T[4] Nb Nc Nd type terms (all permutations
 C     done in a single call)
 C     ==========================================================
 C
-      CALL T4COMPLEX(IBCDEQ,
+      CALL T4COMPLEX(IAEQ,       IBCDCOMPLEX,
      &               ISYMA,      ISYMB,      ISYMC,      ISYMD,
      &               KZYVA,      KZYVB,      KZYVC,      KZYVD,
      &               WRK(KVECA), WRK(KVECB), WRK(KVECC), WRK(KVECD),
@@ -1333,10 +1327,10 @@ C
      &               WRK(KFREE), LFREE, VAL(1))
 C
       IF (ABS_DAMP .GT. D0) THEN
-         CALL R4DRV(IBCDEQ,
-     &              ISYMA,      ISYMB,      ISYMC,      ISYMD,
-     &              KZYVA,      KZYVB,      KZYVC,      KZYVD,
-     &              WRK(KVECA), WRK(KVECB), WRK(KVECC), WRK(KVECD),
+         CALL R4DRV(IAEQ,       IBCDCOMPLEX,
+     &              ISYMA,      ISYMB,       ISYMC,      ISYMD,
+     &              KZYVA,      KZYVB,       KZYVC,      KZYVD,
+     &              WRK(KVECA), WRK(KVECB),  WRK(KVECC), WRK(KVECD),
      &              ABS_DAMP, XINDX, UDV, MJWOP,
      &              WRK(KFREE), LFREE, VAL(3))
       END IF
@@ -1755,15 +1749,15 @@ C
 C
 C
       SUBROUTINE ABS_BCDCHK(IBCDEQ,
-     &                      FREQA,  FREQB, FREQC, FREQD,
-     &                      ISYMA,  ISYMB, ISYMC, ISYMD,
-     &                      KZYVA,  KZYVB, KZYVC, KZYVD,
-     &                      VECA,   VECB,  VECC,  VECD)
+     &                      FREQB, FREQC, FREQD,
+     &                      ISYMB, ISYMC, ISYMD,
+     &                      KZYVB, KZYVC, KZYVD,
+     &                      VECB,  VECC,  VECD)
 C
 C ======================================================================
 C
 C  Purpose : Check if some of the vectors VECB, VECC, and VECD are equal
-C            or zero (VECA also checked if zero). IBCDEQ indicates the
+C            or zero. IBCDEQ indicates the
 C            result as in
 C            0    at least one vector is equal to zero
 C            1    all vectors are unequal
@@ -1772,7 +1766,7 @@ C            3    VECB = VECD
 C            4    VECC = VECD
 C            24   all vectors are equal
 C
-C  Author  : Tobias Fahleson, 2014
+C   Author : Tobias Fahleson, 2014
 C 
 C ======================================================================
 C
@@ -1820,11 +1814,6 @@ C
 C     Check if some vector is equal to zero
 C     =====================================
 C
-      VNORM = DNRM2(2*KZYVA,VECA,1)
-      IF (VNORM .LT. THRSML) THEN
-         IBCDEQ = 0
-      END IF
-C
       VNORM = DNRM2(2*KZYVB,VECB,1)
       IF (VNORM .LT. THRSML) THEN
          IBCDEQ = 0
@@ -1848,17 +1837,17 @@ C
 C
 C
 
-      SUBROUTINE T4COMPLEX(IBCDEQ,
-     &                     ISYMA,  ISYMB, ISYMC,  ISYMD,
-     &                     KZYVA,  KZYVB, KZYVC,  KZYVD,
-     &                     VECA,   VECB,  VECC,   VECD,
-     &                             FREQB, FREQC,  FREQD,
+      SUBROUTINE T4COMPLEX(IAEQ,  IBCDCOMPLEX,
+     &                     ISYMA, ISYMB, ISYMC,  ISYMD,
+     &                     KZYVA, KZYVB, KZYVC,  KZYVD,
+     &                     VECA,  VECB,  VECC,   VECD,
+     &                            FREQB, FREQC,  FREQD,
      &                     FACTOR, XINDX, UDV, PV, MJWOP, CMO, FC,
      &                     WRK, LWRK, RESULT)
 C
 C ======================================================================
 C
-C  Purpose : Calculate the T[4] times 3 complex vectors
+C  Purpose : Calculate T[4] times 3 complex vectors
 C
 C  Author  : Tobias Fahleson, 2014
 C
@@ -1876,7 +1865,7 @@ C
       PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
       DIMENSION VECA(2*KZYVA),VECB(2*KZYVB),VECC(2*KZYVC),VECD(2*KZYVD)
       DIMENSION WRK(LWRK),XINDX(*),UDV(*),PV(*),MJWOP(*),CMO(*),FC(*)
-      DIMENSION RESULT(2)
+      DIMENSION RESULT(2), TMPVAL(2), IBCDCOMPLEX(2,2,2)
 C
       KFREE = 1
       LFREE = LWRK - KFREE
@@ -1884,10 +1873,10 @@ C
       RESULT(1) = D0
       RESULT(2) = D0
 C
-C     If any of the four vectors are zero, return zero contribution
-C     =============================================================
+C     If VECA is zero, return zero contribution
+C     =========================================
 C
-      IF (IBCDEQ .EQ. 0) RETURN
+      IF (IAEQ .EQ. 0) RETURN
 C
 C     Calculate four real and four imaginary terms of T[4] NbNcNd and
 C     multiply with Na
@@ -1897,81 +1886,113 @@ C     Four real terms
 C     ===============
 C
 C     Na T[4] Re{Nb}Re{Nc}Re{Nd}
-      CALL T4DRV(IBCDEQ,
+      IF (IBCDCOMPLEX(1,1,1) .NE. 0) THEN
+      CALL T4DRV(IBCDCOMPLEX(1,1,1),
      &           ISYMA,   ISYMB,   ISYMC,   ISYMD,
      &           VECA(1), VECB(1), VECC(1), VECD(1),
      &                   -FREQB,  -FREQC,  -FREQD,
      &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      TMPVAL(1) = + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      TMPVAL(2) = + DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
       RESULT(1) = RESULT(1) + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
       RESULT(2) = RESULT(2) + DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      END IF
 C
       IF (ABS_DAMP .GT. D0) THEN
 C
 C     Na T[4] (-)Re{Nb}Im{Nc}Im{Nd}
-      CALL T4DRV(IBCDEQ,
+      IF (IBCDCOMPLEX(1,2,2) .NE. 0) THEN
+      CALL T4DRV(IBCDCOMPLEX(1,2,2),
      &           ISYMA,   ISYMB,   ISYMC,         ISYMD,
      &           VECA(1), VECB(1), VECC(1+KZYVC), VECD(1+KZYVD),
      &                   -FREQB,  -FREQC,        -FREQD,
      &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      TMPVAL(1) = - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      TMPVAL(2) = - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
       RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
       RESULT(2) = RESULT(2) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      END IF
 C
 C     Na T[4] (-)Im{Nb}Re{Nc}Im{Nd}
-      CALL T4DRV(IBCDEQ,
+      IF (IBCDCOMPLEX(2,1,2) .NE. 0) THEN
+      CALL T4DRV(IBCDCOMPLEX(2,1,2),
      &           ISYMA,   ISYMB,         ISYMC,   ISYMD,
      &           VECA(1), VECB(1+KZYVB), VECC(1), VECD(1+KZYVD),
      &                   -FREQB,        -FREQC,  -FREQD,
      &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      TMPVAL(1) = - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      TMPVAL(2) = - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
       RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
       RESULT(2) = RESULT(2) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      END IF
 C
 C     Na T[4] (-)Im{Nb}Im{Nc}Re{Nd}
-      CALL T4DRV(IBCDEQ,
+      IF (IBCDCOMPLEX(2,2,1) .NE. 0) THEN
+      CALL T4DRV(IBCDCOMPLEX(2,2,1),
      &           ISYMA,   ISYMB,         ISYMC,         ISYMD,
      &           VECA(1), VECB(1+KZYVB), VECC(1+KZYVC), VECD(1),
      &                   -FREQB,        -FREQC,        -FREQD,
      &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      TMPVAL(1) = - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      TMPVAL(2) = - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
       RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
       RESULT(2) = RESULT(2) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      END IF
 C
 C     Four imaginary terms
 C     ===================
 C
 C     Na T[4] (+i)Re{Nb}Re{Nc}Im{Nd}
-      CALL T4DRV(IBCDEQ,
+      IF (IBCDCOMPLEX(1,1,2) .NE. 0) THEN
+      CALL T4DRV(IBCDCOMPLEX(1,1,2),
      &           ISYMA,   ISYMB,   ISYMC,   ISYMD,
      &           VECA(1), VECB(1), VECC(1), VECD(1+KZYVD),
      &                   -FREQB,  -FREQC,  -FREQD,
      &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      TMPVAL(1) = - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      TMPVAL(2) = + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
       RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
       RESULT(2) = RESULT(2) + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      END IF
 C
 C     Na T[4] (+i)Re{Nb}Im{Nc}Re{Nd}
-      CALL T4DRV(IBCDEQ,
+      IF (IBCDCOMPLEX(1,2,1) .NE. 0) THEN
+      CALL T4DRV(IBCDCOMPLEX(1,2,1),
      &           ISYMA,   ISYMB,   ISYMC,         ISYMD,
      &           VECA(1), VECB(1), VECC(1+KZYVC), VECD(1),
      &                   -FREQB,  -FREQC,        -FREQD,
      &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      TMPVAL(1) = - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      TMPVAL(2) = + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
       RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
       RESULT(2) = RESULT(2) + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      END IF
 C
 C     Na T[4] (+i)Im{Nb}Re{Nc}Re{Nd}
-      CALL T4DRV(IBCDEQ,
+      IF (IBCDCOMPLEX(2,1,1) .NE. 0) THEN
+      CALL T4DRV(IBCDCOMPLEX(2,1,1),
      &           ISYMA,   ISYMB,         ISYMC,   ISYMD,
      &           VECA(1), VECB(1+KZYVB), VECC(1), VECD(1),
      &                   -FREQB,        -FREQC,  -FREQD,
      &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      TMPVAL(1) = - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      TMPVAL(2) = + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
       RESULT(1) = RESULT(1) - DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
       RESULT(2) = RESULT(2) + DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      END IF
 C
 C     Na T[4] (-i)Im{Nb}Im{Nc}Im{Nd}
-      CALL T4DRV(IBCDEQ,
+      IF (IBCDCOMPLEX(2,2,2) .NE. 0) THEN
+      CALL T4DRV(IBCDCOMPLEX(2,2,2),
      &           ISYMA,   ISYMB,         ISYMC,         ISYMD,
      &           VECA(1), VECB(1+KZYVB), VECC(1+KZYVC), VECD(1+KZYVD),
      &                   -FREQB,        -FREQC,        -FREQD,
      &           XINDX,UDV,PV,MJWOP,WRK(KFREE),LFREE,CMO,FC)
+      TMPVAL(1) = + DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
+      TMPVAL(2) = - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
       RESULT(1) = RESULT(1) + DDOT(KZYVA,VECA(1+KZYVA),1,WRK(KFREE),1)
       RESULT(2) = RESULT(2) - DDOT(KZYVA,VECA(1),1,WRK(KFREE),1)
+      END IF
 C
       END IF
 C
@@ -1982,7 +2003,7 @@ C
 C
 C
 C
-      SUBROUTINE R4DRV(IBCDEQ,
+      SUBROUTINE R4DRV(IAEQ,   IBCDCOMPLEX,
      &                 ISYMA,  ISYMB, ISYMC,  ISYMD,
      &                 KZYVA,  KZYVB, KZYVC,  KZYVD,
      &                 VECA,   VECB,  VECC,   VECD,
@@ -2009,7 +2030,7 @@ C
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
       DIMENSION WRK(LWRK),XINDX(*),MJWOP(*),UDV(*)
       DIMENSION VECA(2*KZYVA),VECB(2*KZYVB),VECC(2*KZYVC),VECD(2*KZYVD)
-      DIMENSION RESULT(2)
+      DIMENSION RESULT(2), IBCDCOMPLEX(2,2,2)
       LOGICAL ISOLATE
       ISOLATE = .TRUE.
 C
@@ -2022,10 +2043,14 @@ C
       KVECDBAR = KVECCBAR + 2*KZYVC
       KS4      = KVECDBAR + 2*KZYVD
 C
-C     If any of the four vectors are zero, return zero contribution
-C     =============================================================
+C     If any vector is zero, return zero contribution
+C     ===============================================
 C
-      IF (IBCDEQ .EQ. 0) RETURN
+      IF (IAEQ .EQ. 0 .OR.
+     & IBCDCOMPLEX(1,1,1).EQ.0 .OR. IBCDCOMPLEX(1,1,2).EQ.0 .OR.
+     & IBCDCOMPLEX(1,2,1).EQ.0 .OR. IBCDCOMPLEX(1,2,2).EQ.0 .OR.
+     & IBCDCOMPLEX(2,1,1).EQ.0 .OR. IBCDCOMPLEX(2,1,2).EQ.0 .OR.
+     & IBCDCOMPLEX(2,2,1).EQ.0 .OR. IBCDCOMPLEX(2,2,2).EQ.0) RETURN
 C
 C     Form the bar-vectors
 C     ====================
@@ -2732,6 +2757,103 @@ C
       END IF
 C
 C     End of ABS_CRRDVE
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE ABS_ABCDCHK_INIT(IAEQ, IBCDCOMPLEX,
+     &      FREQA, FREQB, FREQC, FREQD,
+     &      ISYMA, ISYMB, ISYMC, ISYMD,
+     &      KZYVA, KZYVB, KZYVC, KZYVD,
+     &      VECA,  VECB,  VECC,  VECD)
+C
+C ======================================================================
+C
+C  Purpose : Call ABS_BCDCHK for all 8 terms included in complex
+C            multiplication of vectors VECB,C,D. Also check if VECA is
+C            zero.
+C
+C   Author : Tobias Fahleson, 2015
+C
+C ======================================================================
+C
+#include "implicit.h"
+C
+      PARAMETER ( THRSML=1.0D-9 )
+      DIMENSION IBCDCOMPLEX(2,2,2),VECA(*),VECB(*),VECC(*),VECD(*)
+C
+C     Check if VECA is zero
+C     =====================
+C
+      VNORM = DNRM2(2*KZYVA,VECA,1)
+      IF (VNORM .LT. THRSML) THEN
+         IAEQ = 0
+      ELSE
+         IAEQ = 1
+      END IF
+C
+C     Check vectors VECB,C,D for (in)equality
+C     =======================================
+C
+C     Re{Nb}Re{Nc}Re{Nd}
+      CALL ABS_BCDCHK(IBCDCOMPLEX(1,1,1),
+     &     FREQB,   FREQC,   FREQD,
+     &     ISYMB,   ISYMC,   ISYMD,
+     &     KZYVB,   KZYVC,   KZYVD,
+     &     VECB(1), VECC(1), VECD(1))
+C
+C     Re{Nb}Re{Nc}Im{Nd}
+      CALL ABS_BCDCHK(IBCDCOMPLEX(1,1,2),
+     &     FREQB,   FREQC,   FREQD,
+     &     ISYMB,   ISYMC,   ISYMD,
+     &     KZYVB,   KZYVC,   KZYVD,
+     &     VECB(1), VECC(1), VECD(1+KZYVD))
+C
+C     Re{Nb}Im{Nc}Re{Nd}
+      CALL ABS_BCDCHK(IBCDCOMPLEX(1,2,1),
+     &     FREQB,   FREQC,         FREQD,
+     &     ISYMB,   ISYMC,         ISYMD,
+     &     KZYVB,   KZYVC,         KZYVD,
+     &     VECB(1), VECC(1+KZYVC), VECD(1))
+C
+C     Re{Nb}Im{Nc}Im{Nd}
+      CALL ABS_BCDCHK(IBCDCOMPLEX(1,2,2),
+     &     FREQB,   FREQC,         FREQD,
+     &     ISYMB,   ISYMC,         ISYMD,
+     &     KZYVB,   KZYVC,         KZYVD,
+     &     VECB(1), VECC(1+KZYVC), VECD(1+KZYVD))
+C
+C     Im{Nb}Re{Nc}Re{Nd}
+      CALL ABS_BCDCHK(IBCDCOMPLEX(2,1,1),
+     &     FREQB,         FREQC,   FREQD,
+     &     ISYMB,         ISYMC,   ISYMD,
+     &     KZYVB,         KZYVC,   KZYVD,
+     &     VECB(1+KZYVB), VECC(1), VECD(1))
+C
+C     Im{Nb}Re{Nc}Im{Nd}
+      CALL ABS_BCDCHK(IBCDCOMPLEX(2,1,2),
+     &     FREQB,         FREQC,   FREQD,
+     &     ISYMB,         ISYMC,   ISYMD,
+     &     KZYVB,         KZYVC,   KZYVD,
+     &     VECB(1+KZYVB), VECC(1), VECD(1+KZYVD))
+C
+C     Im{Nb}Im{Nc}Re{Nd}
+      CALL ABS_BCDCHK(IBCDCOMPLEX(2,2,1),
+     &     FREQB,         FREQC,         FREQD,
+     &     ISYMB,         ISYMC,         ISYMD,
+     &     KZYVB,         KZYVC,         KZYVD,
+     &     VECB(1+KZYVB), VECC(1+KZYVC), VECD(1))
+C
+C     Im{Nb}Im{Nc}Im{Nd}
+      CALL ABS_BCDCHK(IBCDCOMPLEX(2,2,2),
+     &     FREQB,         FREQC,         FREQD,
+     &     ISYMB,         ISYMC,         ISYMD,
+     &     KZYVB,         KZYVC,         KZYVD,
+     &     VECB(1+KZYVB), VECC(1+KZYVC), VECD(1+KZYVD))
+C
+C     End of ABS_BCDCHK_INIT
 C
       RETURN
       END
