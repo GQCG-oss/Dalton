@@ -922,7 +922,7 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   real(realk)                  :: TS,TE
   integer                      :: natoms,icoor,jcoor,lupri,nbast,luerr,k
   Character(len=4),allocatable :: atomName(:)
-  type(Matrix)     :: NDX(3),Sx(3),tempm1,Xk(1),GbJ(3), GbK(3),GbDX(3),tempm2
+  type(Matrix)     :: NDX(3),Sx(3),tempm1,Xk(1),GbJ(3), GbK(3),GbDX(3)
   type(Matrix) :: GbXc(3), GbDXc(3)
   type(Matrix),pointer ::  RHSk(:), DXk(:),hk(:),hb(:)
   type(Matrix),pointer :: ProdA(:)
@@ -1077,21 +1077,21 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   call mat_mul(S,D(1), 'n','n',1E0_realk,0E0_realk,SD) 
 
    
-  call mat_init(tempm2,nbast,nbast) 
+  call mat_init(tempm1,nbast,nbast) 
   do icoor=1,3      
         call mat_init(ProdA(icoor),nbast,nbast)
         !FD0^bS 
-        call mat_mul(NDX(icoor),S,'n','n',1E0_realk,0E0_realk,tempm2) 
-        call mat_mul(F(1),tempm2,'n','n',-1E0_realk,0E0_realk,ProdA(icoor))
+        call mat_mul(NDX(icoor),S,'n','n',1E0_realk,0E0_realk,tempm1) 
+        call mat_mul(F(1),tempm1,'n','n',-1E0_realk,0E0_realk,ProdA(icoor))
         !-SDOBF
-        call mat_mul(NDX(icoor),F(1),'n','n',1E0_realk,0E0_realk,tempm2) 
-        call mat_mul(S,tempm2,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
+        call mat_mul(NDX(icoor),F(1),'n','n',1E0_realk,0E0_realk,tempm1) 
+        call mat_mul(S,tempm1,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
         !-FD0SB 
-        call mat_mul(D(1),SX(icoor), 'n','n',1E0_realk,0E0_realk,tempm2) 
-        call mat_mul(F(1),tempm2,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+        call mat_mul(D(1),SX(icoor), 'n','n',1E0_realk,0E0_realk,tempm1) 
+        call mat_mul(F(1),tempm1,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
         ! SBD0F
-        call mat_mul(D(1),F(1), 'n','n',1E0_realk,0E0_realk,tempm2) 
-        call mat_mul(SX(icoor),tempm2,'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+        call mat_mul(D(1),F(1), 'n','n',1E0_realk,0E0_realk,tempm1) 
+        call mat_mul(SX(icoor),tempm1,'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
         ! -hbDS 
         call mat_mul(hb(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
         ! SDhb
@@ -1120,7 +1120,7 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
            call mat_mul(SD,GbDxc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
         endif 
   enddo
-  call mat_free(tempm2)
+  call mat_free(tempm1)
   call mat_free(DS)
   call mat_free(SD)
   call mat_free(SX(1))
@@ -1156,7 +1156,6 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
         call mat_zero(Xk(1))
      end if
      call mat_free(RHSk(jcoor))
-     write(lupri,*) 'jcoor = ',jcoor
      
      do icoor = 1,3 
         Prodtotal(icoor,jcoor)=-4E0_realk*factor*mat_trAB(Xk(1),ProdA(icoor))
@@ -1227,7 +1226,6 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   do icoor=1,3 
     call mat_free(NDX(icoor))
   enddo
- ! print *, 'test latest 2'
  !######################################################################################
  !  Adding: Prodtotal+ NucSpecNMSTtotal
  !
@@ -1240,7 +1238,6 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
     enddo
   enddo
 
- ! print *, 'test latest 3'
 
   allocate(atomname(natoms))
   do jcoor=1,natomsselected  
@@ -1248,8 +1245,6 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
     atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(iAtom)%Name
   enddo
  
- ! Prinitng for individual term X3 
-  Write (lupri,*)   "Preexist term  - X3 :: NMST " 
   do jcoor=1,natomsselected  
     WRITE (LUPRI,'(2X,A,I7)') 'Atom Identity:',AtomList(jcoor)
     WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
