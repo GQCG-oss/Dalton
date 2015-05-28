@@ -434,7 +434,7 @@ contains
   !            Fab(i,j) = MyMolecule%vvfock(i,j)
   !     enddo
   !  enddo
-
+    ES2 = 0.0E0_realk
     !call get_ES2(ES2,Fic,Fii,MyMolecule%vvfock%elm2,Fcd,nocc,nvirt,ncabs)
    
     !call mat_free(Fab)
@@ -911,11 +911,11 @@ contains
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E22_debug + E23_debug
        write(*,'(1X,a)') '-----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =         ', E21_debug+E22_debug+E23_debug
-!       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 ES2 CORRECTION TO ENERGY =     ', ES2
-       write(*,'(1X,a,f20.10)') 'TOYCODE: FULL F12 CORRECTION TO ENERGY =    ', E21_debug+E22_debug+E23_debug!+ES2
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 ES2 CORRECTION TO ENERGY =     ', ES2
+       write(*,'(1X,a,f20.10)') 'TOYCODE: FULL F12 CORRECTION TO ENERGY =    ', E21_debug+E22_debug+E23_debug+ES2
        write(*,'(1X,a)') '-----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 ENERGY =                   ', mp2_energy+E21_debug+E22_debug+E23_debug
-       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12-ES2 ENERGY =               ', mp2_energy+E21_debug+E22_debug+E23_debug!+ES2
+       write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12-ES2 ENERGY =               ', mp2_energy+E21_debug+E22_debug+E23_debug+ES2
     else
 
        mp2f12_energy = 0.0E0_realk
@@ -1347,7 +1347,6 @@ contains
     if(MyMolecule%mem_distributed)then
        call lsquit("ERROR(full_get_ccsd_f12_energy): does not work with PDM fullmolecule",-1)
     endif
-
     ! Init dimensions
     nocc = MyMolecule%nocc
     nvirt = MyMolecule%nvirt
@@ -1824,6 +1823,7 @@ contains
        call submp2f12_EBXfull(E22,Bijij,Bjiij,Xijkl,Fii%elms,nocc)
     endif
 
+    ES2=0.0E0_realk
     ! CCSD-F12 Singles Correction Energy
     !call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
 
