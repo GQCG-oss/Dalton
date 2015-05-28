@@ -1067,10 +1067,10 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   IF(molcfg%setting%do_dft)THEN
      call II_get_xc_linrsp(lupri,luerr,molcfg%setting,nbast,NDX,D(1),GbDXc,3) 
   endif          
-  if(molcfg%setting%do_dft)then  
-     do icoor=1,3 
+  do icoor=1,3 
         call mat_init(GbXc(icoor),nbast,nbast)
-     enddo
+  enddo
+  if(molcfg%setting%do_dft)then  
      call II_get_xc_magderiv_kohnsham_mat(LUPRI,LUERR,molcfg%SETTING,nbast,D(1),GbXc)
   endif
   call mat_mul(D(1),S, 'n','n',1E0_realk,0E0_realk,DS) 
@@ -1078,7 +1078,6 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
    
   call mat_init(tempm1,nbast,nbast) 
   do icoor=1,3      
-<<<<<<< HEAD
         call mat_init(ProdA(icoor),nbast,nbast)
         !FD0^bS 
         call mat_mul(NDX(icoor),S,'n','n',1E0_realk,0E0_realk,tempm1) 
@@ -1119,48 +1118,6 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
            call mat_mul(GbDXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
            call mat_mul(SD,GbDxc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
         endif 
-=======
-     call mat_init(ProdA(icoor),nbast,nbast)
-     !FD0^bS 
-     call mat_mul(NDX(icoor),S,'n','n',1E0_realk,0E0_realk,tempm2) 
-     call mat_mul(F(1),tempm2,'n','n',-1E0_realk,0E0_realk,ProdA(icoor))
-     !-SDOBF
-     call mat_mul(NDX(icoor),F(1),'n','n',1E0_realk,0E0_realk,tempm2) 
-     call mat_mul(S,tempm2,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
-     !-FD0SB 
-     call mat_mul(D(1),SX(icoor), 'n','n',1E0_realk,0E0_realk,tempm2) 
-     call mat_mul(F(1),tempm2,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-     ! SBD0F
-     call mat_mul(D(1),F(1), 'n','n',1E0_realk,0E0_realk,tempm2) 
-     call mat_mul(SX(icoor),tempm2,'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-     ! -hbDS 
-     call mat_mul(hb(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-     ! SDhb
-     call mat_mul(SD,hb(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-     !-J^b(D)D0S 
-     
-     call mat_mul(GbJ(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-     !  - SD0J^b(D)
-     call mat_mul(SD,GbJ(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-     
-     !-K^b(D)D0S  
-     call mat_mul(GbK(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
-     !SD0K^b(D) 
-     call mat_mul(SD,Gbk(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-     !G(D0B)D0S
-     call mat_mul(GbDX(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-     !-SD0G(D0B)
-     call mat_mul(SD,GbDX(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-     !G^bDOS (DFT XC) - SD0G^b (DFT XC)
-     if(molcfg%setting%do_dft)then  
-        call mat_mul(GbXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-        call mat_mul(SD,GbXc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-     endif
-     IF(molcfg%setting%do_dft)THEN
-        call mat_mul(GbDXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-        call mat_mul(SD,GbDxc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-     endif
->>>>>>> c721a5c3a468d152b8853a64460f6851af46fcb2
   enddo
   call mat_free(tempm1)
   call mat_free(DS)
@@ -1171,8 +1128,8 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   do icoor=1,3
     call mat_free(GbJ(icoor))
     call mat_free(GbK(icoor))
-    call mat_free(GbXc(icoor))
     call mat_free(GbDX(icoor))
+    call mat_free(GbXc(icoor))
     call mat_free(GbDXc(icoor))                                  
     call mat_free(hb(icoor))
   enddo 
@@ -1282,11 +1239,7 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
     atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(iAtom)%Name
   enddo
  
-<<<<<<< HEAD
-=======
- ! Prinitng for individual term X3 
   Write (lupri,*)   "The nuclear magnetic shielding for selected atoms" 
->>>>>>> c721a5c3a468d152b8853a64460f6851af46fcb2
   do jcoor=1,natomsselected  
     WRITE (LUPRI,'(2X,A,I7)') 'Atom Identity:',AtomList(jcoor)
     WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
