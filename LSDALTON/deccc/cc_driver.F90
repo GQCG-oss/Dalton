@@ -2293,8 +2293,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !Get the residual r = Ax - b for any of the implemented models
          !-------------------------------------------------------------
          if(.not.DECinfo%ccsolverskip)then
-            call ccsolver_get_residual(ccmodel,JOB,omega2,t2,fock,t1fock,iajb,no,nv,oofock_prec,vvfock_prec,xo,xv,yo,yv,nb,MyLsItem,&
-               &omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
+           call ccsolver_get_residual(ccmodel,JOB,omega2,t2,fock,t1fock,iajb,no,nv,oofock_prec,vvfock_prec,xo,xv,yo,yv,nb,MyLsItem,&
+              &omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
          endif
 
 
