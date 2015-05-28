@@ -54,7 +54,7 @@ C
       DIMENSION MJWOP(*),XINDX(*)
       DIMENSION CMO(*),UDV(*),FC(*),FCAC(*),FV(*),PV(*)
       DIMENSION FREQS(NFREQS)
-      DIMENSION RESLRF(2,NFREQS,3,3,2),WRK(LWRK)
+      DIMENSION RESLRF(2,NFREQS,3,3,3),WRK(LWRK)
       DIMENSION KLRED(2),KNVEC(2)
       LOGICAL CONV(NFREQS),CONVERGED,EX1,EX2,EX3
 C
@@ -190,7 +190,7 @@ C
         ELSE IF (LABEL(3:7).EQ.'THETA') THEN
           ITYPE = 3
         ELSE
-          WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
+c          WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
           GO TO 778
         END IF
 C
@@ -812,14 +812,14 @@ C
      &            'Damping:',ABS_DAMP,
      &            'Residual:',DNORM_RT/DNORM_GT
             END IF
-            WRITE(LUABSPRI,'(A,2(I4),2X,A,2X,F6.4,2X,A,2(D15.7))')
+            WRITE(LUABSPRI,'(A,2(I4),2X,A,2X,F10.5,2X,A,2(D15.7))')
      &             'ITER, IVEC:',ITER,K, LABEL,FREQS(K),
      &             ' RESID, RESID/X:',DNORM_RT/DNORM_GT,DNORM_RT/DNORM_X
 c            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),
 c     &        DNORM_RT/DNORM_GT
          ELSE
             NCONV=NCONV+1
-            WRITE(LUABSPRI,'(A,2(I3),2X,A,2X,F6.4,A,2(L1))')
+            WRITE(LUABSPRI,'(A,2(I3),2X,A,2X,F10.5,A,2(L1))')
      *           'ITER, IVEC:',ITER,K,LABEL,FREQS(K),
      *           ' RESID, RESID/X:',CONV(K),CONV(K)
 c            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),

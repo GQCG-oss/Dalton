@@ -331,6 +331,7 @@ C
       LOGICAL FOUND,CONV
       CHARACTER*8 LABX,LABY,BLANK,LABEL1,LABEL2
       PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
+      PARAMETER(THR0=1.0D-10)
 c      DIMENSION TMP(4*ABS_MKZVAR)                                                            
 C                                                                                             
       FOUND  = .FALSE.
@@ -357,7 +358,7 @@ c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN
                 GOTO 200
              ENDIF
             FOUND = .TRUE.
-            IF ((RSDX-RSD) .LT. D0) CONV = .TRUE.
+            IF ((RSDX-RSD) .LE. THR0) CONV = .TRUE.
             IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
             GOTO 199
 C Removed the ABS around FREQX/Y - Tobias
@@ -374,7 +375,7 @@ c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN
                 GOTO 200
              ENDIF
             FOUND = .TRUE.
-            IF ((RSDX-RSD) .LT. D0) CONV = .TRUE.
+            IF ((RSDX-RSD) .LE. THR0) CONV = .TRUE.
             IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
             GOTO 199
          ELSE
