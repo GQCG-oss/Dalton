@@ -2348,13 +2348,13 @@ contains
        trafo4%access_type   = AT_ALL_ACCESS
 #ifdef VAR_MPI
        call time_start_phase( PHASE_COMM )
-       call ls_mpiInitBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
-       call ls_mpi_buffer(MaxAllowedDimAlpha,master)
-       call ls_mpi_buffer(MaxAllowedDimGamma,master)
-       call ls_mpi_buffer(scheme,master)
-       call ls_mpi_buffer(nbuffs,master)
-       call ls_mpi_buffer(INTSPEC,5,master)
-       call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+       call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
+       call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
+       call ls_mpi_buffer(scheme,infpar%master)
+       call ls_mpi_buffer(nbuffs,infpar%master)
+       call ls_mpi_buffer(INTSPEC,5,infpar%master)
+       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
 #endif
     endif
