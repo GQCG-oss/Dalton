@@ -363,13 +363,15 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    !> local variables 
    character(len=30) :: CorrEnergyString
    integer :: iCorrLen, nsingle, npair, njobs
+   logical :: bg
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
 
    call time_start_phase(PHASE_WORK, swwork = time_CCSD_work, swcomm = time_CCSD_comm, swidle = time_CCSD_idle) 
 
-   local=.true.
+   local= .true.
+   bg   = mem_is_background_buf_init()
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
@@ -448,13 +450,13 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
  
          if (abc) then
 
-            call tensor_init(ccsdpt_t1 , [nocc,nvirt],2)
-            call tensor_init(ccsdpt_t2 , [nocc,nocc,nvirt,nvirt],4)
+            call tensor_init(ccsdpt_t1 , [nocc,nvirt],2, bg=bg)
+            call tensor_init(ccsdpt_t2 , [nocc,nocc,nvirt,nvirt],4, bg=bg)
 
          else
  
-            call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
-            call tensor_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
+            call tensor_init(ccsdpt_t1, [nvirt,nocc],2,bg=bg)
+            call tensor_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4,bg=bg)
    
          endif
 
@@ -481,8 +483,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       !FIXME: all the following should be implemented in PDM
       !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
       !one node is used
-      call tensor_init(VOVO_local,VOVO%dims,4)
-      call tensor_init(t2f_local,t2_final%dims,4 )
+      call tensor_init(VOVO_local, VOVO%dims,     4, bg=bg)
+      call tensor_init(t2f_local,  t2_final%dims, 4, bg=bg)
       call tensor_cp_data( VOVO,     VOVO_local  )
       call tensor_cp_data( t2_final, t2f_local   )
       call tensor_reorder(t2f_local,[1,3,2,4]) ! t2 in the order (a,b,i,j)
@@ -629,13 +631,13 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             if(VOVO%itype==TT_DENSE .and. t2_final%itype==TT_DENSE) then
                call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
             else
-               call tensor_init( VOVO_local, VOVO%dims,    4 )
-               call tensor_init( t2f_local, t2_final%dims, 4 )
+               call tensor_init( VOVO_local, VOVO%dims,    4, bg=bg )
+               call tensor_init( t2f_local, t2_final%dims, 4, bg=bg )
                call tensor_cp_data( VOVO,     VOVO_local )
                call tensor_cp_data( t2_final, t2f_local  )
                call SNOOP_partition_energy(VOVO_local,t1_final,t2f_local,mylsitem,MyMolecule)
-               call tensor_free(VOVO_local)
                call tensor_free(t2f_local)
+               call tensor_free(VOVO_local)
             end if
          end if
 
@@ -650,9 +652,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       if(ccmodel == MODEL_CCSDpT)then
 
          if (abc) then
-            call tensor_init(ccsdpt_t1,[nocc,nvirt],2)
+            call tensor_init(ccsdpt_t1,[nocc,nvirt],2,bg=bg)
          else
-            call tensor_init(ccsdpt_t1,[nvirt,nocc],2)
+            call tensor_init(ccsdpt_t1,[nvirt,nocc],2,bg=bg)
          endif
 
          call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags, &
@@ -746,8 +748,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    if(ccmodel == MODEL_CCSDpT)then
       if (DECinfo%print_frags) then
-         call tensor_free(ccsdpt_t1)
          call tensor_free(ccsdpt_t2)
+         call tensor_free(ccsdpt_t1)
       else
          call tensor_free(ccsdpt_t1)
       endif
