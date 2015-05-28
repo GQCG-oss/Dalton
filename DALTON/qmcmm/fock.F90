@@ -45,7 +45,7 @@ contains
       integer :: i
       integer :: idimension
 !
-      CALL  GETDIM_RELMAT(idimension,.FALSE.)
+      idimension = getdim_relmat(.false.)
 !
       EQMNP = 0.0d0
 !

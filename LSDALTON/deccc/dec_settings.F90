@@ -224,6 +224,7 @@ contains
     DECinfo%F12                      = .false.
     DECinfo%F12fragopt               = .false.
     DECinfo%F12debug                 = .false.
+    DECinfo%F12Ccoupling             = .false.
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
@@ -290,6 +291,7 @@ contains
     DECinfo%noaofock=.false.
 
     DECinfo%THCNOPRUN = .FALSE.
+    DECinfo%THCDUMP = .FALSE.
     DECinfo%THCradint = 1E-6_realk
     DECinfo%THC_MIN_RAD_PT = 20
     DECinfo%THCangint = 2
@@ -789,11 +791,15 @@ contains
        case('.ICHOR'); DECinfo%UseIchor = .true.
 
 
+       ! MEMORY HANDLING KEYWORDS
+       ! **************************
+       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
+
+
 #ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
-       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
        case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
        case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
@@ -864,7 +870,10 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
+       case('.F12CCOUPLING')     
+          DECinfo%F12Ccoupling=.true.
 
+#endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
        ! ***********************************************
@@ -962,10 +971,10 @@ contains
           DECinfo%SkipReadIn=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
 
-#endif
        ! KEYWORDS RELATED TO TENSOR HYPER CONTRACTION (THC)
        ! ***********************
        case('.THC_PRUNE'); DECinfo%THCNOPRUN = .FALSE.
+       case('.THC_DUMP'); DECinfo%THCDUMP = .TRUE.
        case('.THC_RADINT'); read(input,*) DECinfo%THCradint 
        case('.THC_MIN_RAD_PT'); read(input,*) DECinfo%THC_MIN_RAD_PT
        case('.THC_ANGINT'); read(input,*) DECinfo%THCangint
@@ -1469,11 +1478,10 @@ contains
     write(lupri,*) 'use_preconditioner ', DECitem%use_preconditioner
     write(lupri,*) 'use_preconditioner_in_b ', DECitem%use_preconditioner_in_b
     write(lupri,*) 'use_crop ', DECitem%use_crop
-#ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
-#endif
+    write(lupri,*) 'F12CCOUPLING',DECinfo%F12Ccoupling
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'rimpisplit ', DECitem%rimpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize

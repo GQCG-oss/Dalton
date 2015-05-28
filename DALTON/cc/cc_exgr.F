@@ -1648,7 +1648,7 @@ C
 #include "cclr.h"
 C
       CHARACTER MODEL*5,MODDUM*10
-      CHARACTER LLIST*(*),RLIST*(*)
+      CHARACTER LLIST*(*),RLIST*(*), L0LIST*(*)
 C
       CALL QENTER('CCSX_D1AO')
 C

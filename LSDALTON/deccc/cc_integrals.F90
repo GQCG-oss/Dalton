@@ -2128,11 +2128,12 @@ contains
   end subroutine unpack_gmo
 #endif
 
-  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective)
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,INTSPEC,local,collective)
     implicit none
-    type(tensor),intent(inout)   :: integral
-    type(tensor),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
+    type(tensor),intent(inout)  :: integral
+    type(tensor),intent(inout)  :: trafo1,trafo2,trafo3,trafo4
     type(lsitem), intent(inout) :: mylsitem
+    character, intent(inout)    :: INTSPEC(5)
     logical, intent(in) :: local
     logical, intent(inout) :: collective
     !Integral stuff
@@ -2156,7 +2157,6 @@ contains
     integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)  :: DecScreen
     integer, pointer :: batchdimAlpha(:),batchdimGamma(:)
-    Character        :: INTSPEC(5)
     logical :: fullRHS
     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
@@ -2261,22 +2261,7 @@ contains
        call lsquit("EEROR(get_mo_integral_par)wrong dimensions of the integrals&
             & or the transformation matrices",-1)
     endif
-    bs            = get_split_scheme_0(nb)
-
-    ! Set integral info
-    ! *****************
-    !R = Regular Basis set on the 1th center 
-    !R = Regular Basis set on the 2th center 
-    !R = Regular Basis set on the 3th center 
-    !R = Regular Basis set on the 4th center 
-    !C = Coulomb operator
-    !E = Long-Range Erf operator
-    if (mylsitem%setting%scheme%CAM) then
-       INTSPEC = ['R','R','R','R','E'] 
-    else
-       INTSPEC = ['R','R','R','R','C'] 
-    endif
-    
+    bs = get_split_scheme_0(nb)
 
     IF(DECinfo%useIchor)THEN
        iprint     = 0       !print level for Ichor Integral code
@@ -2363,10 +2348,13 @@ contains
        trafo4%access_type   = AT_ALL_ACCESS
 #ifdef VAR_MPI
        call time_start_phase( PHASE_COMM )
-       call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(MaxAllowedDimGamma,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(scheme,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(nbuffs,infpar%master,infpar%lg_comm)
+       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+       call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
+       call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
+       call ls_mpi_buffer(scheme,infpar%master)
+       call ls_mpi_buffer(nbuffs,infpar%master)
+       call ls_mpi_buffer(INTSPEC,5,infpar%master)
+       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
 #endif
     endif
@@ -3646,9 +3634,26 @@ subroutine get_mo_integral_par_slave()
   type(tensor) :: integral,trafo1,trafo2,trafo3,trafo4
   type(lsitem) :: mylsitem
   logical :: c
+  character :: is(5)
+
 
   call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
-  call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.,c)
+
+  ! Set integral info
+  ! *****************
+  !R = Regular Basis set on the 1th center 
+  !R = Regular Basis set on the 2th center 
+  !R = Regular Basis set on the 3th center 
+  !R = Regular Basis set on the 4th center 
+  !C = Coulomb operator
+  !E = Long-Range Erf operator
+  if (mylsitem%setting%scheme%CAM) then
+     is = ['R','R','R','R','E'] 
+  else
+     is = ['R','R','R','R','C'] 
+  endif
+
+  call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,is,.false.,c)
   call ls_free(mylsitem)
 
 end subroutine get_mo_integral_par_slave

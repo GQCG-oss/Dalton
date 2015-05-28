@@ -534,9 +534,9 @@ contains
 #ifdef MOD_UNRELEASED
 
     !> F12 Specific Variables
-    integer :: nbasis, noccEOS, nvirtEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
-    integer :: noccAOS
-    integer :: ix, iy
+    integer :: nbasis, noccEOS, nvirtEOS, noccfull, nocvAOStot, nvirtAOS, ncabsAO, ncabsMO
+    integer :: noccAOS,noccAOStot
+    integer :: ix, iy,offset
     real(realk),pointer :: Fcp(:,:) 
 
     ! ============================================================
@@ -549,8 +549,15 @@ contains
 
     noccAOS   = fragment%noccAOS
     nvirtAOS = fragment%nvirtAOS  
-    nocvAOS   = fragment%noccAOS + fragment%nvirtAOS
+    nocvAOStot = fragment%nocctot + fragment%nvirtAOS
     nvirtAOS  = fragment%nvirtAOS
+    noccAOStot = fragment%nocctot
+
+    if(DECinfo%frozencore) then
+       offset = fragment%ncore
+    else
+       offset = 0
+    end if
     
     !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
     !to the CABS-MO and RI-MO basis which happens in this routine 
@@ -570,7 +577,7 @@ contains
        print *, "noccEOS: ", noccEOS
        print *, "nvirtEOS: ", nvirtEOS
        print *, "---------------------------------------"
-       print *, "nocvAOS", nocvAOS
+       print *, "nocvAOStot", nocvAOStot
        print *, "noccAOS", noccAOS
        print *, "nvirtAOS", nvirtAOS
        print *, "ncabsAO", ncabsAO
@@ -617,39 +624,58 @@ contains
     call F12_RI_transform_realMat(fragment%Frs,ncabsAO,ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frm
-    call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
-    do j=1, fragment%noccAOS
+    call mem_alloc(fragment%Frm, ncabsAO, noccAOStot)
+
+    ! Copy core orbitals explicitly for frozen core 
+    ! (not necessary without frozen core)
+    do j=1,offset
        do i=1, fragment%ncabsAO
           ix = fragment%cabsbasis_idx(i)
-          iy = fragment%occAOSidx(j)
+          iy = fragment%coreidx(j)
           fragment%Frm(i,j) = MyMolecule%Frm(ix,iy)
        enddo
     enddo
-    call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOS,fragment%Cri,ncabsAO)
-    
-    ! Fcp in the order of the index (occ to virt)
-    ! Extracting from the full in molecule_mo_f12, needs to be changed 
-    ! HACK NOT fragment%Fcp, ncabsMO, nocvAOS)
-    call mem_alloc(Fcp, ncabsAO, nocvAOS)
-    
-     do j=1, fragment%noccAOS
+
+    do j=1,noccAOS
        do i=1, fragment%ncabsAO
           ix = fragment%cabsbasis_idx(i)
           iy = fragment%occAOSidx(j)
+          ! Add offset to valence orbital index for frozen fore
+          fragment%Frm(i,j+offset) = MyMolecule%Frm(ix,iy)
+       enddo
+    enddo
+    call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOStot,fragment%Cri,ncabsAO)
+    
+    ! Fcp in the order of the index (occ to virt)
+    call mem_alloc(Fcp, ncabsAO, nocvAOStot)
+
+    ! Copy core orbitals explicitly for frozen core (as above)
+    do j=1,offset
+       do i=1, fragment%ncabsAO
+          ix = fragment%cabsbasis_idx(i)
+          iy = fragment%coreidx(j)
           Fcp(i,j) = MyMolecule%Fcp(ix,iy)
        enddo
     enddo
 
-    do j=fragment%noccAOS+1, fragment%nvirtAOS+fragment%noccAOS
+     do j=1, fragment%noccAOS
        do i=1, fragment%ncabsAO
-          ix = fragment%cabsbasis_idx(i)         
-          iy = fragment%virtAOSidx(j-fragment%noccAOS)
-          Fcp(i,j) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
+          ix = fragment%cabsbasis_idx(i)
+          iy = fragment%occAOSidx(j)
+          Fcp(i,j+offset) = MyMolecule%Fcp(ix,iy)
        enddo
     enddo
 
-    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
-    call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOS,fragment%Ccabs,ncabsAO,ncabsMO)
+    do j=1,nvirtAOS
+       do i=1, fragment%ncabsAO
+          ix = fragment%cabsbasis_idx(i)         
+          iy = fragment%virtAOSidx(j)
+          Fcp(i,j+noccAOStot) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
+       enddo
+    enddo
+
+    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOStot)
+    call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOStot,fragment%Ccabs,ncabsAO,ncabsMO)
     call mem_dealloc(Fcp)
 
     if(DECinfo%F12debug) then

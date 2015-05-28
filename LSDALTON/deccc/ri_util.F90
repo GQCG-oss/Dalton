@@ -1139,7 +1139,7 @@ subroutine Get_InverseCholeskyFactor(n,A,lupri)
   !
   integer                      :: i,j,np,k,info
   real(realk) :: TS,TE
-  call LSTIMER('START ',TS,TE,lupri,.TRUE.)
+  call LSTIMER('START ',TS,TE,lupri)
   call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor
   IF(INFO.ne. 0) THEN
      print *, 'DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',INFO
@@ -1160,7 +1160,7 @@ subroutine Get_InverseCholeskyFactor(n,A,lupri)
         A(I,J) = 0.0E0_realk
      enddo
   enddo
-  call LSTIMER('Get_CholeskyFactor',TS,TE,lupri,.TRUE.)
+  call LSTIMER('Get_CholeskyFactor',TS,TE,lupri)
 end subroutine Get_InverseCholeskyFactor
 
 subroutine NAF_buildCalphaNAF(Calpha,nAux2,nvirt,nocc,&
