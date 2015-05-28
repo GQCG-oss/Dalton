@@ -1760,6 +1760,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    logical                :: trafo_vovo, trafo_m4, trafo_m2,bg_was_init
    logical                :: diag_oo_block, diag_vv_block, prec, prec_not1, prec_in_b
    character(4)           :: atype
+   character              :: intspec(5)
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
@@ -1789,6 +1790,20 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    
    o2v2             = (i8*nv**2)*no**2
    mem_o2v2         = (8.0E0_realk*o2v2)/(1.024E3_realk**3)
+
+   ! Set integral info
+   ! *****************
+   !R = Regular Basis set on the 1th center 
+   !R = Regular Basis set on the 2th center 
+   !R = Regular Basis set on the 3th center 
+   !R = Regular Basis set on the 4th center 
+   !C = Coulomb operator
+   !E = Long-Range Erf operator
+   if (mylsitem%setting%scheme%CAM) then
+      intspec = ['R','R','R','R','E']
+   else
+      intspec = ['R','R','R','R','C']
+   endif
 
 
    call get_currently_available_memory(MemFree)
@@ -2197,9 +2212,10 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !Get OVOV integrals from non-T1 transformed VOVO integrals or generate
    !----------------------------------------------------------------------
    call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
+
    if(.not.vovo_avail)then
       call tensor_zero(iajb)
-      call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
+      call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, intspec, local, collective )
    else
       call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
       call tensor_free(VOVO)
@@ -2546,7 +2562,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 #ifdef VAR_LSDEBUG
 
-      call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
+      call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, intspec, local, collective )
 
       !MODIFY FOR NEW MODEL
 

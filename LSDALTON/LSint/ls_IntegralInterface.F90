@@ -3085,6 +3085,7 @@ IF(attach_to_input)THEN
    saveGABtoMem = SETTING%SCHEME%saveGABtoMem
    recalcGab = SETTING%SCHEME%recalcGab
    IF(.NOT.saveGABtoMem) ReCalcGab=.TRUE. 
+   IF(AO1.EQ.AOpCharge) ReCalcGab = .TRUE.
    IntegralTransformGC = .FALSE.
    iprint = SETTING%SCHEME%intPrint
 

@@ -2,7 +2,7 @@ all: libdeccc.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../LSint -I../lsutil -I../linears
+INCLUDES := $(INCLUDES) -I../LSint -I../lsutil -I../linears -I../cuda
 
 F90_OBJS = dec_settings.o \
         cc_tools.o \
@@ -61,7 +61,7 @@ clean :
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) 
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../lsutil -- $(F90_OBJS:.o=.F90) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../lsutil -M../cuda -- $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

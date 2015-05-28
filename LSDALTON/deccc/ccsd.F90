@@ -5833,7 +5833,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi
-           memin = memin + (i8*nors)*nvrs*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
