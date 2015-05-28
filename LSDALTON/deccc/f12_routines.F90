@@ -2394,7 +2394,8 @@ module f12_routines_module
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Fcc,Fij)
     call mat_free(Fcc)
 
-    call get_ES2(ES2,Fic,Fij,Fcd,nocc,ncabs)
+    !Fix Me needs to change to tensor format for vvfock
+    !call get_ES2(ES2,Fic,Fij,MyMolecule%vvfock%elm2,Fcd,nocc,nvirt,ncabs)
     
     call mat_free(Fic)
     call mat_free(Fcd)
@@ -2403,10 +2404,12 @@ module f12_routines_module
   end subroutine get_ES2_from_dec_main
   
   
-  subroutine get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+  subroutine get_ES2(ES2,Fic,Fii,Fab,Fcd,nocc,nvirt,ncabs)
     type(matrix) :: Fic
     type(matrix) :: Fii
     type(matrix) :: Fcd
+  
+    real(realk), target, intent(in) :: Fab(:,:)
 
     real(realk), pointer :: Fic_real(:,:)
     real(realk), pointer :: Fcd_real(:,:)
@@ -2423,7 +2426,7 @@ module f12_routines_module
     real(realk), intent(inout) :: ES2
     real(realk) :: tmp
 
-    integer, intent(inout) :: nocc,ncabs
+    integer, intent(inout) :: nocc,ncabs,nvirt
     integer :: i,j,a,c
 
     call mem_alloc(Fcd_real,ncabs,ncabs)

@@ -354,6 +354,7 @@ contains
     !> Singles correction
     type(matrix) :: Fcd
     type(matrix) :: Fic  
+    type(matrix) :: Fab
         
     !> Singles correction energy
     real(realk)  :: ES2
@@ -426,8 +427,18 @@ contains
     
     ! MP2-F12 Singles correction (Yang M. Wang 03.12.2014)
     ! ***************************    
-    call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+    ! Fab
+  !  call mat_init(Fab,nvirt,nvirt)
+  !  do i = 1, nvirt
+  !     do j = 1, nvirt
+  !            Fab(i,j) = MyMolecule%vvfock(i,j)
+  !     enddo
+  !  enddo
+
+    !call get_ES2(ES2,Fic,Fii,MyMolecule%vvfock%elm2,Fcd,nocc,nvirt,ncabs)
    
+    !call mat_free(Fab)
+
     E21 = 0.0E0_realk
     E21_debug = 0.0E0_realk
     DoCanonical: if(DECinfo%use_canonical) then
@@ -1814,7 +1825,7 @@ contains
     endif
 
     ! CCSD-F12 Singles Correction Energy
-    call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+    !call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
 
 
     call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
