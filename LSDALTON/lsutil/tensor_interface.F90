@@ -29,35 +29,39 @@ module tensor_interface_module
   public MAX_TENSOR_RANK   !max allowed tensor rank for DIL tensor algebra
   public DIL_TC_EACH       !parameter for <tensor_contract>: Each MPI process performs its own tensor contraction
   public DIL_TC_ALL        !parameter for <tensor_contract>: All MPI processes work on the same tensor contraction
-  public DIL_ALLOC_BASIC   !Fortran allocate will be used for buffer allocation in <tensor_algebra_dil>
-  public DIL_ALLOC_PINNED  !cudaMallocHost will be used for buffer allocation in <tensor_algebra_dil>
-  public DIL_ALLOC_MPI     !MPI_ALLOC_MEM will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
+  public DIL_ALLOC_NOT     !status "NOT ALLOCATED"
+  public DIL_ALLOC_BASIC   !Fortran allocate() will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_PINNED  !cudaMallocHost() will be used for buffer allocation in <tensor_algebra_dil>
+  public DIL_ALLOC_MPI     !MPI_ALLOC_MEM() will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
+  public DIL_ALLOC_EXT     !external buffer will be used in <tensor_algebra_dil>
   public DIL_CONS_OUT      !output for DIL messages
   public DIL_DEBUG         !DIL debugging switch
-  public dil_tens_contr_t  !tensor contraction specification
-  public subtens_t         !subtensor specification for Janus
-  public dil_subtensor_set !subtensor setting method for Janus
-  public dil_set_alloc_type
-  public dil_clean_tens_contr
-  public dil_set_tens_contr_args
-  public dil_get_min_buf_size
-  public dil_set_tens_contr_spec
-  public dil_tensor_contract
-  public dil_debug_to_file_start
-  public dil_debug_to_file_finish
-  public thread_wtime
-  public process_wtime
-  public dil_array_print
-  public dil_array_init
-  public dil_tensor_init
-  public dil_array_norm1
-  public dil_tensor_norm1
-  public dil_tens_fetch_start        !tensor slice fetching for Janus
-  public dil_tens_fetch_finish_prep  !tensor slice fetching for Janus
-!  public dil_tens_upload_start       !tensor slice uploading for Janus
-!  public dil_tens_upload_finish_prep !tensor slice uploading for Janus
-  public dil_will_malloc_succeed     !tells whether a given malloc() request can succeed if issued
-  public int2str !converts integers to strings
+  public dil_tens_contr_t             !tensor contraction specification
+  public subtens_t                    !subtensor (tensor slice) specification for Janus
+  public dil_subtensor_set            !subtensor (tensor slice) setting method for Janus
+  public dil_set_alloc_type           !set default memory allocation flags (BASIC,MPI_ALLOC,PINNED,etc.)
+  public dil_clean_tens_contr         !clean the tensor contraction handle
+  public dil_set_tens_contr_args      !set up an argument for a tensor contraction
+  public dil_set_tens_contr_spec      !define the tensor contraction specification
+  public dil_get_min_buf_size         !get the minimal buffer size needed to perform the tensor contraction
+  public dil_prepare_buffer           !prepare a work buffer for a tensor contraction
+  public dil_tensor_contract          !contract tensors (pipelined)
+  public dil_tensor_contract_finalize !finalize a non-blocking tensor contraction
+  public dil_debug_to_file_start      !start redirecting debugging information to a file
+  public dil_debug_to_file_finish     !finish redirecting debugging information to a file
+  public thread_wtime                 !OMP thread wall time
+  public process_wtime                !MPI process wall time
+  public dil_array_print              !print a whole (local) array or its part
+  public dil_array_init               !initialize a local array
+  public dil_tensor_init              !initialize a distributed tensor
+  public dil_array_norm1              !compute the 1-norm of a local array
+  public dil_tensor_norm1             !compute the 1-norm of a distributed tensor (blocking)
+  public dil_tens_fetch_start         !tensor slice fetching for Janus (start)
+  public dil_tens_fetch_finish_prep   !tensor slice fetching for Janus (finish)
+  public dil_tens_prep_upload_start   !tensor slice uploading for Janus (start)
+  public dil_tens_upload_finish       !tensor slice uploading for Janus  (finish)
+  public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued
+  public int2str                      !converts integers to strings
 #endif
 
   !This defines the public interface to the tensors
@@ -111,6 +115,7 @@ module tensor_interface_module
   public tensor_set_always_sync_true
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
   public assoc_ptr_to_buf, lspdm_init_global_buffer, lspdm_free_global_buffer
+  public tensor_flush_win
 
   private
 
@@ -221,18 +226,35 @@ contains
    tensor_contract_dil_backend=(lv.and.alloc_in_dummy) !works only with MPI-3
   end subroutine tensor_set_dil_backend
 
-  subroutine tensor_allocate_dense(T)
+  subroutine tensor_allocate_dense(T,bg,change)
      implicit none
      type(tensor), intent(inout) :: T
-     call memory_allocate_tensor_dense(T)
+     logical, optional, intent(in) :: bg, change
+     logical :: bg_int, change_int
+
+     bg_int = .false.
+     if(present(bg))bg_int = bg
+     change_int = .false.
+     if(present(change))change_int = change
+
+     call memory_allocate_tensor_dense(T, bg_int)
+
+     if(change_int)T%itype=TT_DENSE
+
   end subroutine tensor_allocate_dense
 
 
-  subroutine copy_array(tensor_in,tensor_out)
+  subroutine copy_array(tensor_in,tensor_out,bg)
     implicit none
     type(tensor), intent(in) :: tensor_in
     type(tensor), intent(inout) :: tensor_out
+    logical, intent(in), optional :: bg
     integer :: i
+    logical :: bg_int
+
+    bg_int = .false.
+    if(present(bg))bg_int = bg
+
     tensor_out%mode = tensor_in%mode
     tensor_out%nlti = tensor_in%nlti
     tensor_out%tsize = tensor_in%tsize
@@ -249,11 +271,11 @@ contains
     !tensor_out%tdim = tensor_in%tdim
     !tensor_out%ntpm = tensor_in%ntpm
     if(associated(tensor_in%elm1))then
-      call memory_allocate_tensor_dense(tensor_out)
+      call memory_allocate_tensor_dense(tensor_out,bg_int)
       tensor_out%elm1=tensor_in%elm1
     endif
     if(associated(tensor_in%ti))then
-      call memory_allocate_tiles(tensor_out)
+      call memory_allocate_tiles(tensor_out,bg_int)
       do i=1,tensor_in%nlti
         tensor_out%ti(i)%t=tensor_in%ti(i)%t
       enddo
@@ -471,7 +493,7 @@ contains
      call time_start_phase( PHASE_WORK )
   end subroutine tensor_dmul
 
-  subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens)
+  subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens,bg)
      implicit none
      !> specify the number of thensors that should be transformed
      integer, intent(in) :: ntens,nus,maxtensmode
@@ -483,6 +505,8 @@ contains
      type(tensor), intent(in) :: U(nus)
      !this contains the tensors
      type(tensor), intent(in) :: tens(ntens)
+     !use bg buf for temp alloc
+     logical, intent(in), optional :: bg
 
      !internal variables
      integer :: itens, imode, it_mode, isort
@@ -502,7 +526,8 @@ contains
            & pdm         = tens(itens)%access_type, &
            & tensor_type = tens(itens)%itype, &
            & tdims       = tens(itens)%tdim, &
-           & fo          = tens(itens)%offset ) 
+           & fo          = tens(itens)%offset, &
+           & bg          = bg ) 
 
         do imode = 1, it_mode
 
@@ -1634,6 +1659,8 @@ contains
      integer :: order_type,m,n
      real(realk) :: tcpu1,twall1,tcpu2,twall2
      integer(kind=long) :: nelms
+     logical :: bg
+
 
      call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
@@ -1642,6 +1669,7 @@ contains
      do i=1,arr%mode
         new_dims(i) = arr%dims(order(i))
      end do
+     bg=(mem_is_background_buf_init().and.nelms<=mem_get_bg_buf_free())
 
      if( arr%itype == TT_DENSE )then
 
@@ -1649,7 +1677,11 @@ contains
 
         call deassoc_ptr_arr(arr)
 
-        call mem_alloc( new_data,nelms )
+        if(bg)then
+           call mem_pseudo_alloc( new_data,nelms )
+        else
+           call mem_alloc( new_data,nelms )
+        endif
 
         select case(arr%mode)
         case(2)
@@ -1675,7 +1707,11 @@ contains
         !$OMP END WORKSHARE
 #endif
 
-        call mem_dealloc(new_data)
+        if(bg)then
+           call mem_pseudo_dealloc(new_data)
+        else
+           call mem_dealloc(new_data)
+        endif
 
         call assoc_ptr_arr(arr)
 
@@ -1693,21 +1729,23 @@ contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  subroutine tensor_minit(arr, dims, nmodes, local, atype, tdims, fo)
+  subroutine tensor_minit(arr, dims, nmodes, local, atype, tdims, fo, bg)
     !> the output array
     type(tensor),intent(inout) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in)              :: nmodes, dims(nmodes)
     integer, intent(in),optional     :: tdims(nmodes)
-    logical, intent(in),optional     :: local
+    logical, intent(in),optional     :: local, bg
     character(4),intent(in),optional :: atype
     integer,intent(in),optional :: fo
     character(4)  :: at
     integer       :: it
-    logical :: loc
+    logical :: loc, bg_int
     real(realk) :: time_minit
     call time_start_phase(PHASE_WORK, twall = time_minit )
 
+    bg_int = .false.
+    if(present(bg))bg_int = bg
 
     ! Sanity check
     if(arr%initialized)call lsquit("ERROR(tensor_minit):array already initialized",-1) 
@@ -1738,7 +1776,7 @@ contains
     if(loc) then
       select case(at)
       case('LDAR','REAR','REPD','TDAR','TDPD','RTAR')
-        call tensor_init_standard(arr,dims,nmodes,pdm=AT_NO_PDM_ACCESS)
+        call tensor_init_standard(arr,dims,nmodes,AT_NO_PDM_ACCESS,bg_int)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
       !  arr=tensor_init_tiled(dims,nmodes,pdm=AT_NO_PDM_ACCESS)
@@ -1750,33 +1788,33 @@ contains
       select case(at)
       case('LDAR')
         !INITIALIZE a Local Dense ARray
-        call tensor_init_standard(arr,dims,nmodes,pdm=AT_MASTER_ACCESS)
+        call tensor_init_standard(arr,dims,nmodes,AT_MASTER_ACCESS,bg_int)
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
         it               = TT_TILED_DIST
-        call tensor_init_tiled(arr, dims,nmodes,at,it,pdm=AT_MASTER_ACCESS,tdims=tdims,force_offset = fo)
+        call tensor_init_tiled(arr, dims,nmodes,at,it,AT_MASTER_ACCESS,bg_int,tdims=tdims,force_offset = fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('RTAR')
         !INITIALIZE a Replicated Tiled ARray (all nodes have all tiles)
         it               = TT_TILED_REPL
-        call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_MASTER_ACCESS,tdims=tdims,force_offset = fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_MASTER_ACCESS,bg_int,tdims=tdims,force_offset = fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
-        call tensor_init_replicated(arr,dims,nmodes,pdm=AT_MASTER_ACCESS)
+        call tensor_init_replicated(arr,dims,nmodes,AT_MASTER_ACCESS,bg_int)
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = TT_REPLICATED
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         it               = TT_TILED_DIST ! for tensor_init_tiled routine
-        call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_MASTER_ACCESS,tdims=tdims,ps_d=.true.,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_MASTER_ACCESS,bg_int,tdims=tdims,ps_d=.true.,force_offset=fo)
         arr%itype        = TT_DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
         !INITIALIZE a REplicated Pseudo Dense array
-        call tensor_init_replicated(arr,dims,nmodes,pdm=AT_MASTER_ACCESS)
+        call tensor_init_replicated(arr,dims,nmodes,AT_MASTER_ACCESS,bg_int)
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = TT_DENSE
         arr%atype        = 'REPD'
@@ -1785,7 +1823,7 @@ contains
       end select
     endif
 #else
-    call tensor_init(arr,dims,nmodes)
+    call tensor_init(arr,dims,nmodes,bg=bg)
     arr%atype='LDAR'
 #endif
     arr%initialized=.true.
@@ -1795,21 +1833,24 @@ contains
 
   end subroutine tensor_minit
 
-  subroutine tensor_ainit(arr, dims, nmodes, local, atype, tdims, fo )
+  subroutine tensor_ainit(arr, dims, nmodes, local, atype, tdims, fo, bg )
     !> the output array
     type(tensor),intent(inout) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in)              :: nmodes, dims(nmodes)
     integer, intent(in),optional     :: tdims(nmodes)
-    logical, intent(in),optional     :: local
+    logical, intent(in),optional     :: local, bg
     character(4),intent(in),optional :: atype
     integer,intent(in),optional :: fo
     character(4)  :: at
     integer       :: it
-    logical :: loc
+    logical :: loc, bg_int
     real(realk) :: time_ainit
     call time_start_phase(PHASE_WORK, twall = time_ainit )
  
+    bg_int = .false.
+    if(present(bg))bg_int = bg
+
     ! Sanity check
     if(arr%initialized)call lsquit("ERROR(tensor_ainit):tensor already initialized",-1) 
     do i=1, nmodes
@@ -1838,7 +1879,7 @@ contains
       select case(at)
       case('LDAR','REAR','REPD','TDAR','TDPD')
         !if local recast to a local dense array
-        call tensor_init_standard(arr,dims,nmodes,pdm=AT_NO_PDM_ACCESS)
+        call tensor_init_standard(arr,dims,nmodes,AT_NO_PDM_ACCESS,bg_int)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
       !  arr=tensor_init_tiled(dims,nmodes,pdm=AT_NO_PDM_ACCESS)
@@ -1850,28 +1891,28 @@ contains
       select case(at)
       case('LDAR')
         !INITIALIZE a Local Dense ARray
-        call tensor_init_standard(arr,dims,nmodes,pdm=AT_ALL_ACCESS)
+        call tensor_init_standard(arr,dims,nmodes,AT_ALL_ACCESS,bg_int)
         arr%atype        = 'LDAR'
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
         it               = TT_TILED_DIST
-        call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_ALL_ACCESS,tdims=tdims,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
-        call tensor_init_replicated(arr,dims,nmodes,pdm=AT_ALL_ACCESS)
+        call tensor_init_replicated(arr,dims,nmodes,AT_ALL_ACCESS,bg_int)
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = TT_REPLICATED
         arr%atype        = 'REAR'
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         it               = TT_TILED_DIST ! for tensor_init_tiled routine
-        call tensor_init_tiled(arr,dims,nmodes,at,it,pdm=AT_ALL_ACCESS,tdims=tdims,ps_d=.true.,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,ps_d=.true.,force_offset=fo)
         arr%itype        = TT_DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
         !INITIALIZE a REplicated Pseudo Dense array
-        call tensor_init_replicated(arr,dims,nmodes,pdm=AT_ALL_ACCESS)
+        call tensor_init_replicated(arr,dims,nmodes,AT_ALL_ACCESS,bg_int)
         CreatedPDMArrays = CreatedPDMArrays+1
         arr%itype        = TT_DENSE
         arr%atype        = 'REPD'
@@ -1880,7 +1921,7 @@ contains
       end select
     endif
 #else
-    call tensor_init_standard(arr,dims,nmodes,AT_NO_PDM_ACCESS)
+    call tensor_init_standard(arr,dims,nmodes,AT_NO_PDM_ACCESS,bg_int)
     arr%atype='LDAR'
 #endif
     arr%initialized=.true.
@@ -1892,7 +1933,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief MAIN ARRAY INITIALIZATION ROUTINE
-  subroutine  tensor_init(arr,dims,nmodes,tensor_type,pdm,tdims,fo)
+  subroutine  tensor_init(arr,dims,nmodes,tensor_type,pdm,tdims,fo,bg)
     implicit none
     !> output array
     type(tensor),intent(inout) :: arr
@@ -1905,9 +1946,13 @@ contains
     integer, optional :: tdims(nmodes)
     !> specifies the type of access to the array (AT_NO_PDM_ACCESS,AT_MASTER_ACCESS,AT_ALL_ACCESS)
     integer, optional :: pdm,fo
+    logical, optional :: bg 
     integer :: sel_type,pdmtype,it
-    logical :: zeros_in_tiles,wcps
+    logical :: zeros_in_tiles,wcps, bg_int
     real(realk) :: time_init
+
+    bg_int = .false.
+    if(present(bg))bg_int = bg
 
     !choose which kind of array
     call time_start_phase(PHASE_WORK, twall = time_init )
@@ -1935,16 +1980,16 @@ contains
     !select corresponding routine
     select case(it)
       case(TT_DENSE)
-        call tensor_init_standard(arr,dims,nmodes,pdmtype)
+        call tensor_init_standard(arr,dims,nmodes,pdmtype,bg_int)
         arr%atype = 'LDAR'
       case(TT_REPLICATED)
-        call tensor_init_replicated(arr,dims,nmodes,pdmtype)
+        call tensor_init_replicated(arr,dims,nmodes,pdmtype,bg_int)
         arr%atype = 'REAR'
         CreatedPDMArrays = CreatedPDMArrays+1
       case(TT_TILED)
-        call tensor_init_tiled(arr,dims,nmodes,'TIAR',it,pdmtype,tdims=tdims,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,'TIAR',it,pdmtype,bg_int,tdims=tdims,force_offset=fo)
       case(TT_TILED_DIST)
-        call tensor_init_tiled(arr,dims,nmodes,'TDAR',it,pdmtype,tdims=tdims,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,'TDAR',it,pdmtype,bg_int,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
     end select
     arr%access_type   = pdmtype
@@ -1959,10 +2004,11 @@ contains
   !> \author Patrick Ettenhuber adpted from Marcin Ziolkowski
   !> \date September 2012
   !> \brief get mode index from composite index
-  subroutine tensor_init_standard(arr,dims,nmodes,pdm)
+  subroutine tensor_init_standard(arr,dims,nmodes,pdm,bg)
     implicit none
     integer, intent(in)   :: nmodes,dims(nmodes),pdm
     type(tensor),intent(inout) :: arr
+    logical, intent(in)   :: bg
     logical               :: master
     integer               :: i,addr,tdimdummy(nmodes)
     integer,pointer       :: buf(:)
@@ -2053,7 +2099,7 @@ contains
     !call mem_dealloc(buf)
 
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
-    call memory_allocate_tensor_dense(p_arr%a(addr))
+    call memory_allocate_tensor_dense(p_arr%a(addr),bg)
 
     !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)
@@ -2208,7 +2254,7 @@ contains
   !distributed part
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine tensor_cp_tiled2dense(arr,change,order)
+  subroutine tensor_cp_tiled2dense(arr,change,order,bg)
     implicit none
     !> array to copy data from the tiled to its dense part
     type(tensor),intent(inout) :: arr
@@ -2217,11 +2263,15 @@ contains
     !> if order is given the dense part will be reordered with respect to the
     !tiled distributed part
     integer,intent(in),optional:: order(arr%mode)
-    logical :: pdm
+    logical, intent(in),optional :: bg
+    logical :: pdm, bg_int
     pdm=.false.
+    bg_int = .false.
+    if(present(bg)) bg_int = bg
+
     if(arr%itype/=TT_DENSE.and.arr%itype/=TT_REPLICATED)then
       if(.not.associated(arr%elm1))then
-        call memory_allocate_tensor_dense(arr)
+        call memory_allocate_tensor_dense(arr,bg_int)
       else
         call lsquit("ERROR(tensor_cp_tiled2dense):dense is already allocated,&
         & please make sure you are not doing someting stupid",DECinfo%output)
@@ -3598,7 +3648,7 @@ contains
     call lsmpi_barrier(infpar%lg_comm)
     call tensor_init(test2,[no-4,nv+3,nv/7,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[no-4,nv+3,5,2])
     call tensor_init(test1,[nv/7,nv+3,no,no-4],4,TT_TILED_DIST,AT_ALL_ACCESS)
-    call memory_allocate_tensor_dense(test1)
+    call memory_allocate_tensor_dense(test1,.false.)
     call random_number(test1%elm1)
     call lsmpi_allreduce(test1%elm1,test1%nelms,infpar%lg_comm)
     if(infpar%lg_mynum==0)then
@@ -3620,7 +3670,7 @@ contains
     call print_norm(test2,normher)
     print *,"convert",ref,normher
     call tensor_mv_dense2tiled(test1,.false.)
-    call memory_allocate_tensor_dense(test2)
+    call memory_allocate_tensor_dense(test2,.false.)
     call lsmpi_barrier(infpar%lg_comm)
     test2%elm1=0.0E0_realk
     do i=1,test2%ntiles

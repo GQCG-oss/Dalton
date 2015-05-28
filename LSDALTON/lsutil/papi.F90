@@ -15,8 +15,6 @@ module papi_module
 use precision
 !> EPAPI vent set which is initiated at the very beginning of LSDALTON.
 integer,save :: eventset
-!> module variable to count the FLOPs done on the GPU
-real(realk),save :: FLOPonGPU
 
 contains
 
@@ -48,19 +46,46 @@ contains
 
   end subroutine mypapi_init
 
+  !Wrapper to PAPIf_start
+  subroutine mypapi_start(es)  
+    integer :: es
+    integer :: event, retval
+    
+    event = PAPI_FP_INS
+    call PAPIf_query_event(event, retval)
+    !instrument thread
+    es = PAPI_NULL
+    call PAPIf_create_eventset(es, retval)
+    call myPAPIf_set_inherit(es, retval)
+    call PAPIf_add_event( es, event, retval )
+  end subroutine mypapi_start
+
+  !Wrapper to PAPIf_stop
+  subroutine mypapi_stop(es,flops)  
+    integer,intent(inout) :: es
+    integer(8),intent(inout) :: flops
+    !local variables
+    integer :: retval    
+    flops=0 ! zero flops (this is probably redundant)
+    call PAPIf_stop(es,flops,retval)
+  end subroutine mypapi_stop
+
+
   !> Simple example of FLOP counting using PAPI
   !> This assumes that mypapi_init was called at the very beginning of the lsdalton
   !> subroutine to initiate the eventset stored in the global integer "eventset".
   !> \author Branislav Jansik (modified for LSDALTON by Kasper Kristensen)
-  subroutine papi_example
-
+  subroutine papi_example(lupriIN)
     implicit none
+    integer,optional :: lupriIN
     integer(8) :: flops
-    integer :: retval, i
+    integer :: retval, i,lupri
     integer, parameter :: n=500, n1=50
     real(8)     :: a(n,n),b(n,n),c(n,n)
     integer, external :: omp_get_max_threads
-
+    integer :: eventset2
+    lupri = 6
+    IF(present(lupriIN)) lupri = lupriIN
 
     ! initialize stuff to be used in this example (not PAPI related)
     ! **************************************************************
@@ -71,12 +96,15 @@ contains
     b=3.0
     c=0.0
     i=omp_get_max_threads()
-    write (*,*) 'Using ', i, ' threads'
-    write (*,*) 'Matrix ', n
+    write (lupri,*) 'Using ', i, ' threads'
+    write (lupri,*) 'Matrix(n,n)    n=', n
+    write (lupri,*) 'Matrix(n1,n1) n1=', n
 
 
     ! start PAPI counters
     ! *******************
+    call mypapi_start(eventset2)  
+
     call PAPIf_start(eventset, retval)
 
     ! Do some operations - dgemm in this simple example
@@ -87,47 +115,22 @@ contains
     ! ****************************
     flops=0 ! zero flops (this is probably redundant)
     call PAPIf_stop(eventset,flops,retval)
-    write(*,*) 'FLOPS for first  dgemm = ', flops
+    write(lupri,*) 'FLOPS for first  dgemm = ', flops
 
 
     ! One can now have as many new Papi sections as requested. E.g. we could do:
     call PAPIf_start(eventset, retval)
     call dgemm('n','n',n1,n1,n1,1.0E0_realk,a,n1,b,n1,0.0E0_realk,c,n1)
+
     flops=0
     call PAPIf_stop(eventset,flops,retval)
-    write(*,*) 'FLOPS for second dgemm = ', flops
+    write(lupri,*) 'FLOPS for second dgemm = ', flops
 
+    flops=0
+    call mypapi_stop(eventset2,flops)  
+    write(lupri,*) 'FLOPS for both dgemm = ', flops
 
   end subroutine papi_example
 #endif
-
-  subroutine AddFLOP_FLOPonGPUaccouting(inputFLOPonGPU)
-    implicit none
-    real(realk),intent(in) :: inputFLOPonGPU
-    FLOPonGPU = FLOPonGPU + inputFLOPonGPU
-  end subroutine AddFLOP_FLOPonGPUaccouting
-
-  subroutine addDGEMM_FLOPonGPUaccouting(M,N,K,beta)
-    implicit none
-    integer,intent(in) :: M,N,K
-    real(realk),intent(in) :: beta
-    IF(ABS(beta).GT.1.0E-10_realk)THEN
-       FLOPonGPU = FLOPonGPU + 2*M*N*K
-    ELSE
-       FLOPonGPU = FLOPonGPU + M*N*(2*K-1)
-    ENDIF
-  end subroutine AddDGEMM_FLOPonGPUaccouting
-  
-  subroutine init_FLOPonGPUaccouting()
-    implicit none
-    FLOPonGPU = 0.0E0_realk
-    
-  end subroutine Init_FLOPonGPUaccouting
-
-  subroutine extract_FLOPonGPUaccouting(outFLOPonGPU)
-    implicit none
-    real(realk),intent(inout) :: outFLOPonGPU
-    outFLOPonGPU = FLOPonGPU
-  end subroutine Extract_FLOPonGPUaccouting
 
 end module papi_module

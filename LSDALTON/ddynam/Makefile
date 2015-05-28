@@ -2,7 +2,7 @@ all: libddynam.a
 
 include ../Makefile.config
 
-INCLUDES:=$(INCLUDES) -I../lsutil -I../LSint -I/geomopt
+INCLUDES:=$(INCLUDES) -I../lsutil -I../LSint -I/geomopt -I/deccc
 
 F90_OBJS =  Modules.o\
             LSinput.o\
@@ -22,7 +22,7 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -M../deccc -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
 
 ######################################################################
 # read dependencies:

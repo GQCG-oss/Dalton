@@ -196,8 +196,10 @@ subroutine lsmpi_slave(comm)
          call cc_gmo_data_slave
       case(MOCCSDDATA);
          call moccsd_data_slave
-      case(CCSDPTSLAVE);
-         call ccsdpt_slave
+      case(CCSDPTSLAVE_INFO);
+         call ccsdpt_slave_info
+      case(CCSDPTSLAVE_WORK);
+         call ccsdpt_slave_work
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave

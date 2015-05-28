@@ -1,0 +1,27 @@
+TMP_DIR=/home/sisyphos/NightlyTesting/tmp/DaltonTitanBuild
+SCRATCH_DIR=/tmp/sisyphos/DaltonTitanBuild
+rm -rf $TMP_DIR
+rm -rf $SCRATCH_DIR
+
+git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+cd $TMP_DIR
+git checkout -b titan_branch origin/titan_branch
+git pull
+export OMP_NUM_THREADS=2
+export DALTON_TMPDIR=$SCRATCH_DIR
+export DALTON_NUM_MPI_PROCS=3
+export CTEST_PROJECT_NAME=LSDALTON
+
+source /opt/intel/bin/compilervars.sh intel64
+source /opt/intel/mkl/bin/mklvars.sh intel64
+export MATH_ROOT=/opt/intel/mkl
+#mpich2 32 bit integer MPI compiled using ifort 
+export PATH=/home/sisyphos/mpich2-ifortbuild-exec/bin:$PATH
+export LD_LIBRARY_PATH=/home/sisyphos/mpich2-ifortbuild-exec/lib:$LD_LIBRARY_PATH
+
+./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --collapse -DENABLE_TITANBUILD=ON -D FORCE_32BIT_MPI_INTERFACE=ON -D CPP="-DVAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN" -D BUILDNAME="TB-Sisyphos-test-titanbuild" build
+
+cd build
+ctest -D Nightly --track TitanBranch -L linsca
+exit 0
+

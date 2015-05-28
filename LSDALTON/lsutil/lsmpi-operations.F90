@@ -1796,6 +1796,7 @@ SUBROUTINE mpicopy_basissetinfo(BAS,slave,master)
   call LS_MPI_BUFFER(BAS%nbast,Master)
   call LS_MPI_BUFFER(BAS%nprimbast,Master)
   call LS_MPI_BUFFER(BAS%DunningsBasis,Master)
+  call LS_MPI_BUFFER(BAS%GeminalScalingFactor,Master)
   call LS_MPI_BUFFER(BAS%GCbasis,Master)
   call LS_MPI_BUFFER(BAS%Spherical,Master)
   call LS_MPI_BUFFER(BAS%Gcont,Master)     
@@ -1877,30 +1878,11 @@ LOGICAL  :: isassociated
 
 call LS_MPI_BUFFER(GGem%is_set,Master)
 IF (GGem%is_set) THEN
-  IF(SLAVE)THEN
-     isassociated = .FALSE.     
-  ELSE
-     isassociated = associated(GGem%expProd)
-  ENDIF
-  call LS_MPI_BUFFER(isassociated,Master)
   call LS_MPI_BUFFER(GGem%N,Master)
-  IF (SLAVE) THEN
-    NULLIFY(GGem%coeff)
-    NULLIFY(GGem%exponent)
-    NULLIFY(GGem%expProd)
-    IF (GGem%N.GT.0) THEN
-      call mem_alloc(GGem%coeff,GGem%N)
-      call mem_alloc(GGem%exponent,GGem%N)
-      IF(isassociated)call mem_alloc(GGem%expProd,GGem%N)
-    ENDIF
-  ENDIF
-
   IF (GGem%N.GT.0) THEN
     call LS_MPI_BUFFER(GGem%coeff,GGem%N,Master)
     call LS_MPI_BUFFER(GGem%exponent,GGem%N,Master)
-    IF(isassociated)THEN
-       call LS_MPI_BUFFER(GGem%expProd,GGem%N,Master)
-    ENDIF
+    call LS_MPI_BUFFER(GGem%expProd,GGem%N,Master)
   ENDIF
 ENDIF
 END SUBROUTINE mpicopy_GaussianGeminal
@@ -1988,10 +1970,11 @@ END SUBROUTINE mpicopy_reduced_screen_info
 
   subroutine mem_init_background_alloc_all_nodes(comm,bytes)
      implicit none
-     real(realk),intent(in) :: bytes
+     integer(kind=8),intent(in) :: bytes
      integer(kind=ls_mpik),intent(in) :: comm
      integer(kind=ls_mpik) :: nnod,me
-     real(realk) :: bytes_int
+     integer(kind=8) :: bytes_int
+
      call time_start_phase(PHASE_WORK)
      
      bytes_int  = bytes
@@ -2033,10 +2016,10 @@ END SUBROUTINE mpicopy_reduced_screen_info
 
   subroutine mem_change_background_alloc_all_nodes(comm,bytes)
      implicit none
-     real(realk),intent(in) :: bytes
+     integer(kind=8),intent(in) :: bytes
      integer(kind=ls_mpik),intent(in) :: comm
      integer(kind=ls_mpik) :: nnod,me
-     real(realk) :: bytes_int
+     integer(kind=8) :: bytes_int
      call time_start_phase(PHASE_WORK)
      
      bytes_int  = bytes
@@ -2102,9 +2085,9 @@ subroutine mem_init_background_alloc_slave(comm)
    use lsmpi_op, only: mem_init_background_alloc_all_nodes
    implicit none
    integer(kind=ls_mpik),intent(in) :: comm
-   real(realk) :: bytes
+   integer(kind=8):: bytes
 
-   bytes=1.0E0_realk
+   bytes=8
    call mem_init_background_alloc_all_nodes(comm,bytes)
 
 end subroutine mem_init_background_alloc_slave

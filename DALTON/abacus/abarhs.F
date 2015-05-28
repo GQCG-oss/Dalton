@@ -2971,7 +2971,7 @@ C  /* Deck rumog1 */
 #include "inftap.h"      
 
 C
-      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
+      LENINT4 = 2*LBUF + LBUF + 1  ! length in integer*4 units
       KINT  = 1
       KIINT = KINT + LBUF
 C

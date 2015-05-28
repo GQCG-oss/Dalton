@@ -4,8 +4,8 @@
      &                  IBTYP,EIVAL,RESID,EIVEC,XINDX,
      &                  Xf,S2Xf,WRK,LWRK)
 !
-! Sonia 9/12/2009
-! Special version of RSPCTL for projecting redundant states
+! Sonia 9/12/2009, Revised 2015
+! Special version of RSPCTL for projecting out redundant states
 ! out  in MCD calculation
 ! LINEQ=.false. is disabled!!!!!!!
 !
@@ -50,6 +50,9 @@
       DATA RESTAR/'RESTART '/
 !
       CALL QENTER('RSPCTLMCD')
+      !Sonia Debug
+      !IPRRSP = 16
+
       IF (IPRRSP .GE. 0) THEN
       IF (LINEQ) THEN
          WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
@@ -610,12 +613,13 @@ C
       ISTEC  = KECVEC
       ISTEO  = KEOVEC
       !call dcopy(KZYVAR,Xf,1,wrk(ISTBO),1)
+      write(lupri,*)'LRSTMCD: before DCOPY'
       call dcopy(KZYWOP,Xf,1,wrk(ISTBO),1)
       if (iprrsp.ge.10) then
          write(lupri,*)'LRSTMCD: Xf in input'
-         call rsppro(Xf,KZVAR,-LUPRI)
+         call rsppro(Xf,KZVAR,UDV,-LUPRI)
          write(lupri,*)'LRSTMCD: istbo copied'
-         call rsppro(wrk(istbo),KZVAR,-LUPRI)
+         call rsppro(wrk(istbo),KZVAR,UDV,-LUPRI)
       end if
 
       !trial vector is on LURPS3, E[2] transformed on LURSP5
@@ -627,10 +631,11 @@ C
      &            CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &            XINDX,WRK(KWRK),LWRKRE)
       write(lupri,*)'LRSTMCD: E[2]Xf of unnormalized Eigenvec'
-      call rsppro(wrk(KWRK),KZVAR,-LUPRI)
+      call rsppro(wrk(KWRK),KZVAR,UDV,-LUPRI)
 C
 C CREATE first NEW ORBITAL TRIAL VECTOR BY normalization of 
 C Xf excitation vector, dump on LURSP5 file
+C E[2]Xf = w_f S[2]Xf
 C
       nbn = 1  !number of new b's
       nbp = 0  !number of previous b's
@@ -638,20 +643,20 @@ C
       call rspnor(wrk(ISTBO),nbn,nbp,IBTYP,THRLDP,
      &            WRK(KWRK),LURSP3)
       write(lupri,*)'LRSTMCD: exiting RSPNOR', nbn, nbp
-      call rsppro(wrk(istbo),KZVAR,-LUPRI)
+      call rsppro(wrk(istbo),KZVAR,UDV,-LUPRI)
       call flshfo(lupri)
       !E[2] transform the normalized vector (again, it is redundant!!)
       CALL RSPELI(NCSIM,NOSIM,WRK(ISTBC),WRK(ISTBO),
      &            CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &            XINDX,WRK(KECVEC),LWRKRE)
       write(lupri,*)'SONIA: LRSTMCD, out of E[2]Xf'
-      call rsppro(wrk(kecvec),KZVAR,-LUPRI)
+      call rsppro(wrk(kecvec),KZVAR,UDV,-LUPRI)
       !dump E[2]Xf on file
       CALL REWSPL(LURSP5)
       JRSP5 = 0
       ISTEC = KECVEC
       ISTEO = ISTEC + NCSIM*KZYVAR
-      call rsppro(wrk(ISTEO),KZVAR,-LUPRI)
+      call rsppro(wrk(ISTEO),KZVAR,UDV,-LUPRI)
       !DO 216 ISIM=1,NSIM
       ISIM = 1
       IF (IBTYP(KZRED+ISIM+KOFFTY).EQ.JBONDX) THEN
@@ -715,7 +720,7 @@ C GRADIENTS WITH DIAGONAL HESSIAN ELEMENTS
 
       IF (IPRRSP.GT.10) THEN
          WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
-         call rsppro(GD,KZVAR,-LUPRI)
+         call rsppro(GD,KZVAR,UDV,-LUPRI)
       ENDIF
       IF (IPRRSP.GT.10) THEN
          WRITE(LUPRI,*)' DIAGONAL HESSIAN MATRIX WVAL=0.0'

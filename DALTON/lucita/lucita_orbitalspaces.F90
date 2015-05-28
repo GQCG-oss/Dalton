@@ -145,6 +145,7 @@ contains
     end select
 
 !   b. total number of active shells for each point group irrep
+    is_nash_lucita(:) = 0
     do i = 1, tmp_nr_gas_spaces
       do j = 1, number_of_ptg_irreps
         is_nash_lucita(j) = is_nash_lucita(j) + is_ngsh_lucita(i,j)

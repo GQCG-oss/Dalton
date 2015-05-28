@@ -78,6 +78,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_LAGLSTHCRIMP2  = 24 ! LS-THC-RI-MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCLSTHCRIMP2  = 25 ! LS-THC-RI-MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTLSTHCRIMP2 = 26 ! LS-THC-RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_RIMP2f12 = 27  ! RI-MP2F12 energy correction
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -156,6 +157,8 @@ module dec_typedef_module
      logical :: HFrestart
      !> Restart DEC calculation using fragment info files (requires HFrestart to be true)
      logical :: DECrestart
+     !> Enforce restart in spite of inconsistencies in restart file - only for advanced users!
+     logical :: EnforceRestart
      !> Creating files for restart: Time (in seconds) passing before backing up restart files
      real(realk) :: TimeBackup
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
@@ -248,6 +251,8 @@ module dec_typedef_module
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option
      logical :: CRASHCALC
+     !> Crash Calc Debug keyword - to test restart option
+     logical :: CRASHESTI
      !> Debug CC driver
      logical :: cc_driver_debug
      !> Use Background buffer
@@ -285,6 +290,8 @@ module dec_typedef_module
      !> ****************
      !> logical for abc scheme
      logical :: abc
+     !> force a specific tile size for use with ijk scheme
+     integer :: ijk_tile_size
      !> force a specific tile size for use with abc scheme
      integer :: abc_tile_size
      !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
@@ -293,6 +300,8 @@ module dec_typedef_module
      integer :: abc_nbuffs
      !> do we want to do gpu computations synchronous?
      logical :: acc_sync
+     !> (T) hack variable - presently used for omitting CCSD
+     logical :: pt_hack
 
      !> F12 settings
      !> ************
@@ -300,6 +309,8 @@ module dec_typedef_module
      logical :: F12
      !> Do F12 also for fragment optimization
      logical :: F12fragopt
+     !> Do C coupling in F12 scheme
+     logical :: F12Ccoupling
 
      !> F12 debug settings
      !> ******************
@@ -343,6 +354,8 @@ module dec_typedef_module
      logical :: RIMP2ForcePDMCalpha
      !> Force tiling in Step 5 of RIMP2 code
      logical :: RIMP2_tiling
+     !> Use lowdin decomposition
+     logical :: RIMP2_lowdin
      !> MPI group is split if #nodes > O*V/RIMPIsplit
      integer :: RIMPIsplit
 
@@ -454,8 +467,6 @@ module dec_typedef_module
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
-     !> Temporary keyword to use clean version of the frag opt
-     logical :: no_orb_based_fragopt
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Only consider virtual partitioning
@@ -559,6 +570,17 @@ module dec_typedef_module
      !> Do not store AO Fock matrix in full molecule structure.
      logical :: noaofock
 
+     !> THC keywords
+     logical     :: THCNOPRUN
+     logical     :: THCDUMP
+     real(realk) :: THCradint
+     integer     :: THC_MIN_RAD_PT
+     integer     :: THCangint
+     integer     :: THCHRDNES
+     integer     :: THCTURBO
+     integer     :: THCRADIALGRID
+     logical     :: THCZdependenMaxAng
+     integer     :: THCPARTITIONING
   end type DECSETTINGS
 
 
@@ -835,20 +857,6 @@ module dec_typedef_module
      !         at the top of this file if you add new models!!!
      real(realk),dimension(ndecenergies) :: energies
 
-
-     !> The energy definitions below are only used for fragment optimization (FOP)
-     !> These are (in general) identical to the corresponding energies saved in "energies".
-     !> However, for fragment optimization it is very convenient to have direct access to the energies
-     !> without thinking about which CC model we are using...
-     !> Energy using occupied partitioning scheme
-     real(realk) :: EoccFOP
-     !> Energy using occupied partitioning scheme with the F12 Correction
-     real(realk) :: EoccFOP_Corr
-     !> Energy using virtual partitioning scheme
-     real(realk) :: EvirtFOP
-     !> Lagrangian energy 
-     !> ( = 0.5*OccEnergy + 0.5*VirtEnergy for models where Lagrangian has not been implemented)
-     real(realk) :: LagFOP
      !> energy error estimates
      real(realk) :: Eocc_err
      real(realk) :: Evir_err
@@ -1024,8 +1032,6 @@ module dec_typedef_module
      integer,pointer :: noccLOC
      !> Number of local virtupied orbitals in fragment
      integer,pointer :: nvirtLOC
-
-
 
 
      !> Information used only for the CC2 and CCSD models to describe

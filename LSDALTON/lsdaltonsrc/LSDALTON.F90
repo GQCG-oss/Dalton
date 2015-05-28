@@ -91,6 +91,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
+  use HODItest_module, only: debugTestHODI
 #ifdef VAR_PAPI
   use papi_module
 #endif
@@ -169,7 +170,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      !for now atleast
      RETURN
   ENDIF
-
+  IF(config%papitest)THEN
+#ifdef VAR_PAPI
+     call papi_example(LUPRI)
+#endif
+  ENDIF
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
      CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
@@ -317,6 +322,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mem_alloc(GGem,nbast,nbast,nbast,nbast,1) 
            call II_get_GaussianGeminalFourCenter(lupri,luerr,ls%setting,GGem,nbast,.true.) 
            call mem_dealloc(GGem) 
+        ENDIF
+
+        IF (config%doTestHodi) THEN
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
         ENDIF
 
         CALL mat_init(D(1),nbast,nbast)
@@ -794,6 +804,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
+#ifdef VAR_OPENACC
+  use openacc
+#endif
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
 #endif
@@ -802,6 +815,10 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
   real(realk), intent(inout) :: t1,t2
+#ifdef VAR_OPENACC
+  !> device type
+  integer(acc_device_kind) :: acc_device_type
+#endif
   
   !INITIALIZING TIMERS SHOULD ALWAYS BE THE FIRST CALL
   call init_timers
@@ -810,6 +827,14 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   call mypapi_init(eventset)
 #endif
+
+#ifdef VAR_OPENACC
+  ! probe for device type
+  acc_device_type = acc_get_device_type()
+  ! initialize the device
+  call acc_init(acc_device_type)
+#endif
+
   call init_globalmemvar  !initialize the global memory counters
   call NullifyMPIbuffers  !initialize the MPI buffers
   call set_matrix_default !initialize global matrix counters
@@ -848,6 +873,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_OPENACC
+  use openacc
+#endif
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
 #endif
@@ -860,6 +888,17 @@ implicit none
   integer,intent(inout)      :: lupri,luerr
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
+#ifdef VAR_OPENACC
+  !> device type
+  integer(acc_device_kind) :: acc_device_type
+#endif
+
+#ifdef VAR_OPENACC
+  ! probe for device type
+  acc_device_type = acc_get_device_type()
+  ! shut down the device
+  call acc_shutdown(acc_device_type)
+#endif
   
   IF(OnMaster)THEN
      !these routines free matrices and must be called while the 

@@ -27,7 +27,7 @@ module dec_fragment_utils
   use lsmpi_op
 #endif
   use papi_module
-  
+  use gpu_interfaces  
 
   ! F12 DEPENDENCIES 
   ! *****************************************
@@ -3501,9 +3501,6 @@ end function max_batch_dimension
     dofragopt64 = jobs%dofragopt
     esti64      = jobs%esti
 
-    ! Pair cutoff
-    write(funit) DECinfo%pair_distance_threshold
-
     write(funit) int(jobs%njobs,kind=8)
     write(funit) int(jobs%atom1,kind=8)
     write(funit) int(jobs%atom2,kind=8)
@@ -3546,11 +3543,6 @@ end function max_batch_dimension
     ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-
-    ! Pair cutoff
-    read(funit) DECinfo%pair_distance_threshold
-    write(DECinfo%output,'(1X,a,g20.8)') 'Pair cutoff read from file:', DECinfo%pair_distance_threshold
 
     call read_64bit_to_int(funit,njobs)
     if(njobs/=jobs%njobs) then
@@ -4401,16 +4393,16 @@ end function max_batch_dimension
        end if
     else
        IF(.NOT.DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy      :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)       :', Ehf
-          write(lupri,'(15X,a,f20.10)')    'E: DFT energy               :', Edft
+          write(lupri,'(15X,a,f20.10)')    'E: HF energy (KS orb)  :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Edft
        ENDIF
        if(SOS) then
-         write(lupri,'(15X,a,f20.10)')     'E: SOSEX energy             :', Ecorr
+         write(lupri,'(15X,a,f20.10)')     'E: SOSEX energy        :', Ecorr
        else
-         write(lupri,'(15X,a,f20.10)')     'E: Correlation energy       :', Ecorr
+         write(lupri,'(15X,a,f20.10)')     'E: Correlation energy  :', Ecorr
        endif
 
        ! skip error print for full calculation (0 by definition)
@@ -6138,5 +6130,114 @@ end function max_batch_dimension
    end do
 
  end subroutine GetOrbAtomDistances
+
+
+  !> \brief The actual writing of job list and fragment energies
+  !> \author Kasper Kristensen
+  !> \date May 2012
+ subroutine basic_write_jobs_and_fragment_energies_for_restart(nfrags,FragEnergies,jobs,funit,filename)
+
+   implicit none
+   !> Number of fragments
+   integer,intent(in) :: nfrags
+   !> Fragment energies (see decfrag type def)
+   real(realk),dimension(nfrags,nfrags,ndecenergies),intent(in) :: FragEnergies
+   !> Job list of fragment jobs
+   type(joblist),intent(in) :: jobs
+   !> File unit number
+   integer,intent(in) :: funit
+   !> File name
+   character(len=40) :: FileName
+   integer :: i,j
+   logical :: file_exist
+   integer(8) :: ndecenergies_file
+
+   call write_fragment_joblist_to_file(jobs,funit)
+   ndecenergies_file = ndecenergies
+   write(funit) ndecenergies_file
+
+   do j=1,ndecenergies
+      do i=1,nfrags
+         write(funit) FragEnergies(:,i,j)
+         flush(funit)
+      end do
+   end do
+
+ end subroutine basic_write_jobs_and_fragment_energies_for_restart
+
+
+  !> \brief The actual reading of fragment energies for fragment from file 
+  !> (assumes file is already opened)
+  !> \author Kasper Kristensen
+  !> \date May 2012
+  subroutine basic_read_jobs_and_fragment_energies_for_restart(nfrags,FragEnergies,jobs,funit,FileName)
+
+    implicit none
+    !> Number of fragments
+    integer,intent(in) :: nfrags
+    !> Fragment energies (see decfrag type def)
+    real(realk),dimension(nfrags,nfrags,ndecenergies),intent(inout) :: FragEnergies
+    !> Job list of fragments
+    type(joblist),intent(inout) :: jobs
+    !> File unit number
+    integer,intent(in) :: funit
+    !> File name
+    character(len=40),intent(in) :: FileName
+    integer :: i,j
+    integer(8) :: ndecenergies_file
+
+    ! Read job list and fragment energies from file
+    call read_fragment_joblist_from_file(jobs,funit)
+    read(funit) ndecenergies_file
+
+    ! Sanity check
+    if(ndecenergies_file /= ndecenergies) then
+
+       call restart_sanity_check(ndecenergies_file)
+
+       ! Zero all fragenergies, just in case
+       do j=1,ndecenergies
+          do i=1,nfrags
+             FragEnergies(:,i,j) = 0.0_realk
+          end do
+       end do
+
+    end if
+
+    do j=1,ndecenergies_file
+       do i=1,nfrags
+          read(funit) FragEnergies(:,i,j)
+       end do
+    end do
+
+  end subroutine basic_read_jobs_and_fragment_energies_for_restart
+
+
+
+  !> \brief Sanity check for reading fragment energies
+  !> \author Kasper Kristensen
+  !> \date May 2012
+  subroutine restart_sanity_check(ndecenergies_file)
+
+    implicit none
+    !> Number of DEC energies read from file
+    integer(8),intent(in) :: ndecenergies_file
+
+    write(DECinfo%output,*) 'WARNING! Different ndecenergies: file/current:', &
+         & ndecenergies_file,ndecenergies
+
+    ! Sanity check - do we really want to restart?
+    if( (ndecenergies_file > ndecenergies) .or. (ndecenergies_file<1) ) then
+       call lsquit('restart_sanity_check: bad ndecenergies read from file!',-1)
+    end if
+    if(.not. DECinfo%EnforceRestart) then
+       write(DECinfo%output,*) 'Quitting due to wrong ndecenergies read from file!'
+       write(DECinfo%output,*) 'You can enforce restart using .ENFORCERESTART keyword'
+       write(DECinfo%output,*) '--> USE AT OWN RISK!'
+       call lsquit('Wrong ndecenergies read from file!',-1)
+    end if
+
+  end subroutine restart_sanity_check
+
 
 end module dec_fragment_utils

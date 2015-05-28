@@ -1969,11 +1969,10 @@ contains
     ! Write info to file
     ! ******************
     
-    ! Job list info
-    call write_fragment_joblist_to_file(jobs,funit)
+    ! Job list and energies
+    call basic_write_jobs_and_fragment_energies_for_restart(natoms,FragEnergies,jobs,funit,filename)
 
-    ! Energies and Gradient stuff
-    write(funit) FragEnergies
+    ! Gradient stuff
     write(funit) fullgrad%nocc
     write(funit) fullgrad%nvirt
     write(funit) fullgrad%natoms
@@ -1994,13 +1993,13 @@ contains
   !> fragment energies from file mp2grad.info for easy restart.
   !> \author Kasper Kristensen
   !> \date June 2012
-  subroutine read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
+  subroutine read_gradient_and_energies_for_restart(nfrags,FragEnergies,jobs,fullgrad)
 
     implicit none
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
+    !> Number of fragments
+    integer,intent(in) :: nfrags
     !> Fragment energies (see decfrag type def)
-    real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
+    real(realk),dimension(nfrags,nfrags,ndecenergies),intent(inout) :: FragEnergies
     !> Job list of fragments
     type(joblist),intent(inout) :: jobs
     !> Full MP2 gradient structure
@@ -2014,11 +2013,12 @@ contains
     funit = -1
     FileName='mp2grad.info'
 
-    ! Sanity check
+    ! Check if file exists
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then
-       call lsquit('read_gradient_and_energies_for_restart: &
-            & File mp2grad.info does not exist!',-1)
+       write(DECinfo%output,*) 'WARNING: Restart file: ', FileName
+       write(DECinfo%output,*) 'does not exist! I therefore calculate it from scratch...'
+       return
     end if
 
     ! Open file mp2grad.info
@@ -2028,12 +2028,10 @@ contains
     ! Read info from file
     ! *******************
 
-    ! Read job list
-    call read_fragment_joblist_from_file(jobs,funit)
-    
-    ! Fragment energies and gradient stuff
-    read(funit) FragEnergies
+    ! Job and energy info
+    call basic_read_jobs_and_fragment_energies_for_restart(nfrags,FragEnergies,jobs,funit,FileName)
 
+    ! Gradient stuff
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(funit,fullgrad%nocc)
        call read_64bit_to_32bit(funit,fullgrad%nvirt)

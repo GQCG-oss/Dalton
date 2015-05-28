@@ -1146,11 +1146,12 @@ contains
           DO j=1,nocc
              DO a=1,ncabs
                 DO i=1,nocc
+
                    Bijij(i,j) = Bijij(i,j) - D2*(Gipja(i,p,j,b)*Fcp(a,p)*Gciaj(a,i,b,j) &
                         & + Gipja(j,p,i,b)*Fcp(a,p)*Gciaj(a,j,b,i))
                    Bjiij(i,j) = Bjiij(i,j) - D2*(Gipja(j,p,i,b)*Fcp(a,p)*Gciaj(a,i,b,j) &
                         & + Gipja(i,p,j,b)*Fcp(a,p)*Gciaj(a,j,b,i))
-                ENDDO
+                  ENDDO
              ENDDO
           ENDDO
        ENDDO
@@ -2347,103 +2348,140 @@ contains
     real(realk),parameter :: D05=0.5E0_realk,D2=2.0E0_realk
     !
     Integer :: i,j,p,q,r,m,a,n,b
+    real(realk) :: tmp
 
+    !$OMP PARALLEL DEFAULT(shared) PRIVATE(i,j,p,q,r,m,a,n,b,tmp)
+    !$OMP DO COLLAPSE(2)
     DO j=1,nocc
        DO i=1,nocc
           Bjiij(i,j) = Dijkl(i,j,i,j)
        ENDDO
     ENDDO
+    !$OMP END DO
+    !$OMP DO COLLAPSE(2)
     DO j=1,nocc
-       DO p=1,ncabsAO
-          DO i=1,nocc
-             Bjiij(i,j) = Bjiij(i,j) + Tirjk(j,p,i,j)*hJ(i,p)
+       DO i=1,nocc
+          tmp = 0.0E0_realk
+          DO p=1,ncabsAO
+             tmp = tmp + Tirjk(j,p,i,j)*hJ(i,p)
           ENDDO
+          Bjiij(i,j) = Bjiij(i,j) + tmp
        ENDDO
     ENDDO
+    !$OMP END DO
+    !$OMP DO COLLAPSE(2)
     DO j=1,nocc
-       DO p=1,ncabsAO
-          DO i=1,nocc
-             Bjiij(i,j) = Bjiij(i,j) + Tijkr(i,j,i,p)*hJ(j,p)
+       DO i=1,nocc
+          tmp = 0.0E0_realk
+          DO p=1,ncabsAO
+             tmp = tmp + Tijkr(i,j,i,p)*hJ(j,p)
           ENDDO
+          Bjiij(i,j) = Bjiij(i,j) + tmp
        ENDDO
     ENDDO
-    DO r=1,ncabsAO
-       DO q=1,ncabsAO
-          DO j=1,nocc
-             DO p=1,ncabsAO
-                DO i=1,nocc
-                   Bjiij(i,j) = Bjiij(i,j) + (Girjs(j,r,i,p)*K(q,p)*Girjs(i,r,j,q) &
+    !$OMP END DO
+    !$OMP DO COLLAPSE(2)
+    DO j=1,nocc
+       DO i=1,nocc
+          tmp = 0.0E0_realk
+          DO r=1,ncabsAO
+             DO q=1,ncabsAO
+                DO p=1,ncabsAO
+                   tmp = tmp + (Girjs(j,r,i,p)*K(q,p)*Girjs(i,r,j,q) &
                         & + Girjs(j,p,i,r)*K(q,p)*Girjs(i,q,j,r))
                 ENDDO
              ENDDO
           ENDDO
+          Bjiij(i,j) = Bjiij(i,j) + tmp
        ENDDO
     ENDDO
+    !$OMP END DO
 !!$ !fourth term first Fock
-    DO m=1,noccfull
-       DO q=1,ncabsAO
-          DO j=1,nocc
-             DO p=1,ncabsAO
-                DO i=1,nocc
-                   Bjiij(i,j) = Bjiij(i,j) - (Girjm(j,p,i,m)*Frr(q,p)*Grimj(q,i,m,j) &
+    !$OMP DO COLLAPSE(2)
+    DO j=1,nocc
+       DO i=1,nocc
+          tmp = 0.0E0_realk
+          DO m=1,noccfull
+             DO q=1,ncabsAO
+                DO p=1,ncabsAO
+                   tmp = tmp - (Girjm(j,p,i,m)*Frr(q,p)*Grimj(q,i,m,j) &
                         & + Girjm(i,p,j,m)*Frr(q,p)*Grimj(q,j,m,i))
                 ENDDO
              ENDDO
           ENDDO
+          Bjiij(i,j) = Bjiij(i,j) + tmp
        ENDDO
     ENDDO
+    !$OMP END DO
 !!$ !Fpp
-    DO a=1,nvirt
-       DO q=1,nbasis
-          DO j=1,nocc
-             DO p=1,nbasis
-                DO i=1,nocc
-                   Bjiij(i,j) = Bjiij(i,j) - (Gipja(j,p,i,a)*Fpp(q,p)*Gpiaj(q,i,a,j) &
+    !$OMP DO COLLAPSE(2)
+    DO j=1,nocc
+       DO i=1,nocc
+          tmp = 0.0E0_realk
+          DO a=1,nvirt
+             DO q=1,nbasis
+                DO p=1,nbasis
+                   tmp = tmp - (Gipja(j,p,i,a)*Fpp(q,p)*Gpiaj(q,i,a,j) &
                         & + Gipja(i,p,j,a)*Fpp(q,p)*Gpiaj(q,j,a,i))
                 ENDDO
              ENDDO
           ENDDO
+          Bjiij(i,j) = Bjiij(i,j) + tmp
        ENDDO
     ENDDO
+    !$OMP END DO
     !Fmm
-    DO n=1,noccfull
-       DO m=1,noccfull
-          DO j=1,nocc
-             DO a=1,ncabs
-                DO i=1,nocc
-                   Bjiij(i,j) = Bjiij(i,j) + (Gicjm(j,a,i,m)*Fmm(n,m)*Gcimj(a,i,n,j) &
+    !$OMP DO COLLAPSE(2)
+    DO j=1,nocc
+       DO i=1,nocc
+          tmp = 0.0E0_realk
+          DO n=1,noccfull
+             DO m=1,noccfull
+                DO a=1,ncabs
+                   tmp = tmp + (Gicjm(j,a,i,m)*Fmm(n,m)*Gcimj(a,i,n,j) &
                         & + Gicjm(i,a,j,m)*Fmm(n,m)*Gcimj(a,j,n,i))
                 ENDDO
              ENDDO
           ENDDO
+          Bjiij(i,j) = Bjiij(i,j) + tmp
        ENDDO
     ENDDO
+    !$OMP END DO
 !!$  !Frm
-    DO p=1,ncabsAO
-       DO m=1,noccfull
-          DO j=1,nocc
-             DO a=1,ncabs
-                DO i=1,nocc
-                   Bjiij(i,j) = Bjiij(i,j) - D2*(Gicjm(j,a,i,m)*Frm(p,m)*Gcirj(a,i,p,j) &
+    !$OMP DO COLLAPSE(2)
+    DO j=1,nocc
+       DO i=1,nocc
+          tmp = 0.0E0_realk
+          DO p=1,ncabsAO
+             DO m=1,noccfull
+                DO a=1,ncabs
+                   tmp = tmp - D2*(Gicjm(j,a,i,m)*Frm(p,m)*Gcirj(a,i,p,j) &
                         & + Gicjm(i,a,j,m)*Frm(p,m)*Gcirj(a,j,p,i))
                 ENDDO
              ENDDO
           ENDDO
+          Bjiij(i,j) = Bjiij(i,j) + tmp
        ENDDO
     ENDDO
+    !$OMP END DO
     !Fcp
-    DO p=1,nbasis
-       DO b=1,nvirt
-          DO j=1,nocc
-             DO a=1,ncabs
-                DO i=1,nocc
-                   Bjiij(i,j) = Bjiij(i,j) - D2*(Gipja(j,p,i,b)*Fcp(a,p)*Gciaj(a,i,b,j) &
+    !$OMP DO COLLAPSE(2)
+    DO j=1,nocc
+       DO i=1,nocc
+          tmp = 0.0E0_realk
+          DO p=1,nbasis
+             DO b=1,nvirt
+                DO a=1,ncabs
+                   tmp = tmp - D2*(Gipja(j,p,i,b)*Fcp(a,p)*Gciaj(a,i,b,j) &
                         & + Gipja(i,p,j,b)*Fcp(a,p)*Gciaj(a,j,b,i))
                 ENDDO
              ENDDO
           ENDDO
+          Bjiij(i,j) = Bjiij(i,j) + tmp
        ENDDO
     ENDDO
+    !$OMP END DO
+    !$OMP END PARALLEL
   end subroutine mp2f12_Bjiij
 
   subroutine ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj,Viajb,Vijja,Viaji,Tai,nocc,nvirt)

@@ -26,7 +26,10 @@ module f12_routines_module
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
        & get_4Center_MO_integrals, get_4Center_F12_integrals, free_4Center_F12_integrals, &
-       & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM
+       & mp2f12_Xijij_term3, mp2f12_Xjiij_term3, mp2f12_Xijij_term4, mp2f12_Xjiij_term4, &
+       & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM, &
+       & mp2f12_Bijij_term2, mp2f12_Bijij_term3, mp2f12_Bijij_term4, mp2f12_Bijij_term5, mp2f12_Bijij_term6, mp2f12_Bijij_term7, &
+       & mp2f12_Bijij_term8, mp2f12_Bijij_term9
 
   private
 
@@ -356,18 +359,17 @@ module f12_routines_module
   subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
     implicit none
-    type(matrix) :: HJir
-    type(matrix) :: Krr
-    type(matrix) :: Frr
-    type(matrix) :: Frc
-    type(matrix) :: Frm
-    type(matrix) :: Fcp
-    type(matrix) :: Fpp
-    type(matrix) :: Fmm
-    type(matrix) :: Fii
-    type(matrix) :: Fac
-    type(matrix) :: Fic
-    type(matrix) :: Fcd
+    type(matrix),intent(inout) :: HJir
+    type(matrix),intent(inout) :: Krr
+    type(matrix),intent(inout) :: Frr
+    type(matrix),intent(inout) :: Fac
+    type(matrix),intent(inout) :: Frm
+    type(matrix),intent(inout) :: Fcp
+    type(matrix),intent(inout) :: Fpp
+    type(matrix),intent(inout) :: Fmm
+    type(matrix),intent(inout) :: Fii
+    type(matrix),intent(inout) :: Fic
+    type(matrix),intent(inout) :: Fcd
 
     call mat_free(HJir)
     call mat_free(Krr)
@@ -415,14 +417,19 @@ module f12_routines_module
     type(matrix) :: matAO,matMO
     real(realk),pointer :: elms(:)
     type(matrix) :: CMO(2)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     type(matrix) :: CMO_cabs,CMO_ri,tmp
     character(len=2) :: inputstring
     logical :: doCABS,doRI
-    integer :: i,lupri
+    integer :: i,lupri,offset
     character :: string(2)
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
     string(1)=inputstring(1:1) 
     string(2)=inputstring(2:2) 
     lupri=6
@@ -469,7 +476,7 @@ module f12_routines_module
        endif
        call mat_init(CMO(i),ndim1(i),ndim2(i))
        if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),Cocc(1:nbasis,offset+1:noccfull),1,CMO(i)%elms,1)
        elseif(string(i).EQ.'m')then !all occupied
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
@@ -612,7 +619,7 @@ module f12_routines_module
   !> Brief: Get <1,2|INTSPEC|3,4> MO integrals wrapper.
   !> Author: Yang M. Wang
   !> Data: Nov 2013
-  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
+  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
     implicit none
 
     !> Atomic fragment to be determined  (NOT pair fragment)
@@ -623,12 +630,12 @@ module f12_routines_module
     integer :: nbasis
     !> Number of occupied orbitals MO in EOS space
     integer :: noccEOS
-    !> Number of occupied orbitals MO in AOS space
-    integer :: noccAOS
+    !> Number of occupied orbitals MO in AOS space (includes core, also for frozen core)
+    integer :: noccAOStot
     !> Number of virtupied (virtual) orbitals MO in EOS space
     integer :: nvirtEOS
-    !> Number of occupied + virtual MO in AOS space 
-    integer :: nocvAOS
+    !> Number of occupied + virtual MO in AOS space (includes core, also for frozen core)
+    integer :: nocvAOStot
     !> Number of CABS AO orbitals
     integer :: ncabsAO
     !> Number of CABS MO orbitals
@@ -654,42 +661,54 @@ module f12_routines_module
     !> MO coefficient matrix for the occupied EOS
     real(realk), target, intent(in) :: CoccEOS(:,:) !CoccEOS(nbasis,noccEOS)
     !> MO coefficient matrix for the occupied AOS
-    real(realk), target, intent(in) :: CoccAOS(:,:) !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CoccAOStot(:,:) !CoccEOS(nbasis,noccAOStot)
     !> MO coefficient matrix for the occupied + virtual EOS
-    real(realk), target, intent(in) :: CocvAOS(:,:) !CocvAOS(nbasis, nocvAOS)
+    real(realk), target, intent(in) :: CocvAOStot(:,:) !CocvAOStot(nbasis, nocvAOS)
     !> MO coefficient matrix for the CABS 
     real(realk), target, intent(in) :: Ccabs(:,:) !Ccabs(ncabsAO, ncabsMO)
     !> MO coefficient matrix for the RI 
     real(realk), target, intent(in) :: Cri(:,:) !Cri(ncabsAO,ncabsAO)
     !> MO coefficient matrix for the Virtual AOS
     real(realk), target, intent(in) :: CvirtAOS(:,:) !CvritAOS(nbasis,nvirtAOS)
+    integer :: offset
 
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
-    noccAOS  =  MyFragment%noccAOS
+    noccAOStot  =  MyFragment%nocctot
     nvirtEOS = MyFragment%nvirtEOS
     nvirtAOS = MyFragment%nvirtAOS
-    nocvAOS =   MyFragment%noccAOS + MyFragment%nvirtAOS
+    nocvAOStot =   noccAOStot + nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
+    if(DECinfo%frozencore) then
+       offset = MyFragment%ncore
+    else
+       offset = 0
+    end if
 
     do i=1,4
        if(intType(i).EQ.'i') then ! occupied EOS
           C(i)%cmat => CoccEOS
           C(i)%n1 = nbasis
           C(i)%n2 = noccEOS               
-       elseif(intType(i).EQ.'m') then ! occupied AOS
-          C(i)%cmat => CoccAOS
+       elseif(intType(i).EQ.'m') then ! all occupied (core+valence)
+          C(i)%cmat => CoccAOStot
           C(i)%n1 = nbasis
-          C(i)%n2 = noccAOS 
+          C(i)%n2 = noccAOStot 
+       elseif(intType(i).EQ.'v') then 
+          ! Frozen core: Only valence
+          ! Not frozen core: All occupied orbitals (same as 'm')
+          C(i)%cmat => CoccAOStot(1:nbasis,offset+1:noccAOStot)
+          C(i)%n1 = nbasis
+          C(i)%n2 = noccAOStot-offset 
        elseif(intType(i).EQ.'a') then ! virtual AOS
           C(i)%cmat => CvirtAOS
           C(i)%n1 = nbasis
           C(i)%n2 = nvirtAOS
        elseif(intType(i).EQ.'p') then !all occupied + virtual AOS
-          C(i)%cmat => CocvAOS
+          C(i)%cmat => CocvAOStot
           C(i)%n1 = nbasis
-          C(i)%n2 = nocvAOS 
+          C(i)%n2 = nocvAOStot 
        elseif(intType(i).EQ.'c') then !cabs
           C(i)%cmat => Ccabs
           C(i)%n1 = ncabsAO
@@ -864,22 +883,22 @@ module f12_routines_module
     !MinAlphaBatchSize = AlphaBatchSize
     !MinGammaBatchSize = GammaBatchSize
 
-    if(DECinfo%F12DEBUG) then
-       print *, "call get_max_batchsize..."
-    endif
+    !if(DECinfo%F12DEBUG) then
+    !   print *, "call get_max_batchsize..."
+    !endif
     
     call get_max_batchsize(MaxdimAlpha,MaxdimGamma,MinAlphaBatchSize,MinGammaBatchSize,n11,n12,n21,n22,n31,n32,n41,n42)
 
-    if(DECinfo%F12DEBUG) then
-       print *, "exit get_max_batchsize..."
-       print *, "----------------------------"
-       print *, "MaxdimAlpha: ", MaxdimAlpha
-       print *, "MaxdimGamma: ", MaxdimGamma
-       print *, "----------------------------"
-       print *, "MindimAlpha: ", AlphaBatchSize
-       print *, "MindimGamma: ", GammaBatchSize
-       print *, "----------------------------"
-    endif
+    !if(DECinfo%F12DEBUG) then
+   !    print *, "exit get_max_batchsize..."
+   !    print *, "----------------------------"
+   !    print *, "MaxdimAlpha: ", MaxdimAlpha
+   !    print *, "MaxdimGamma: ", MaxdimGamma
+   !    print *, "----------------------------"
+   !    print *, "MindimAlpha: ", AlphaBatchSize
+   !    print *, "MindimGamma: ", GammaBatchSize
+   !    print *, "----------------------------"
+   ! endif
         
     GammaBatchSize = MaxdimGamma
     AlphaBatchSize = MaxdimAlpha
@@ -1925,7 +1944,7 @@ module f12_routines_module
     real(realk),pointer :: gAO(:,:,:,:)
     real(realk),pointer :: gMO(:,:,:,:) ,elms(:)
     type(matrix) :: CMO(4)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     type(matrix) :: CMO_cabs,CMO_ri
@@ -1933,7 +1952,12 @@ module f12_routines_module
     real(realk),pointer :: tmp2(:,:,:,:)
     character :: string(4)
     logical :: doCABS,doRI
-    integer :: i,lupri
+    integer :: i,lupri,offset
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
     string(1) = inputstring(1:1)
     string(2) = inputstring(2:2)
     string(3) = inputstring(3:3)
@@ -1981,7 +2005,7 @@ module f12_routines_module
        endif
        call mat_init(CMO(i),ndim1(i),ndim2(i))
        if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),Cocc(1:nbasis,offset+1:noccfull),1,CMO(i)%elms,1)
        elseif(string(i).EQ.'m')then !all occupied
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
@@ -2151,7 +2175,7 @@ module f12_routines_module
     call get_currently_available_memory(MemAvailable)
     MemAvailable = MemAvailable*1.0E9_realk !In bytes
   
-    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+ !   call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
  
     if(DECinfo%F12DEBUG) then
 !!$       print *, "----------------------------------"
@@ -2176,10 +2200,6 @@ module f12_routines_module
 !!$       print *, "dimAlpha: ", dimAlpha
 !!$       print *, "dimGamma: ", dimGamma
 !!$    endif
-
-    if(DECinfo%F12DEBUG) then
-       print *, "minAlpha: ", minAlpha
-    endif
     
     dimAlpha = minAlpha
     
@@ -2207,6 +2227,10 @@ module f12_routines_module
 !!$             print *, "dimAlpha:", dimAlpha
 !!$          endif
           exit alpha   
+       endif
+       
+       if(k==n11) then
+          dimAlpha = n11
        endif
 
     enddo alpha
@@ -2370,7 +2394,8 @@ module f12_routines_module
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Fcc,Fij)
     call mat_free(Fcc)
 
-    call get_ES2(ES2,Fic,Fij,Fcd,nocc,ncabs)
+    !Fix Me needs to change to tensor format for vvfock
+    !call get_ES2(ES2,Fic,Fij,MyMolecule%vvfock%elm2,Fcd,nocc,nvirt,ncabs)
     
     call mat_free(Fic)
     call mat_free(Fcd)
@@ -2379,10 +2404,12 @@ module f12_routines_module
   end subroutine get_ES2_from_dec_main
   
   
-  subroutine get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+  subroutine get_ES2(ES2,Fic,Fii,Fab,Fcd,nocc,nvirt,ncabs)
     type(matrix) :: Fic
     type(matrix) :: Fii
     type(matrix) :: Fcd
+  
+    real(realk), target, intent(in) :: Fab(:,:)
 
     real(realk), pointer :: Fic_real(:,:)
     real(realk), pointer :: Fcd_real(:,:)
@@ -2399,7 +2426,7 @@ module f12_routines_module
     real(realk), intent(inout) :: ES2
     real(realk) :: tmp
 
-    integer, intent(inout) :: nocc,ncabs
+    integer, intent(inout) :: nocc,ncabs,nvirt
     integer :: i,j,a,c
 
     call mem_alloc(Fcd_real,ncabs,ncabs)

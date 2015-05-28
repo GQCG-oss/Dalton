@@ -3168,6 +3168,9 @@ CONTAINS
       IF(ls%setting%IntegralTransformGC)THEN
          call lsquit('di_decpackedJ requires .NOGCBASIS',-1)
       ENDIF
+      MinimumAllowedAObatchSize = 0
+      MaxAObatchesOrbDim = 0
+      nbatchesofAOS = 0
       ForcePrint = .TRUE.
       NoSymmetry = .FALSE. !activate permutational symmetry
       call mem_alloc(Dfull,D%nrow,D%ncol)
@@ -3666,12 +3669,14 @@ CONTAINS
       type(lsitem),intent(inout) :: ls
       real(realk),pointer   :: integrals(:,:,:,:)
       integer :: iA,funit
-      integer(kind=long) :: begin_add,nbast3
+      integer(kind=long) :: begin_add,nbast3,n1
       character :: intspec(5)
       character(len=26) :: Filename
       !
-      integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesXY
-      integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,j,MinAObatch,MaxAllowedDim,MaxActualDim,ib,id,ix,iy
+      integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx
+      integer :: nthreads,idx,nbatchesXY
+      integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,j,MinAObatch,MaxAllowedDim
+      integer :: MaxActualDim,ib,id,ix,iy,ic
       logical :: doscreen,fullrhs
       TYPE(DECscreenITEM)    :: DecScreen
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)
@@ -3686,13 +3691,28 @@ CONTAINS
          call mem_alloc(integrals,nbast,nbast,nbast,nbast)
          call II_get_4center_eri(LUPRI,LUERR,ls%setting,integrals,&
               & nbast,nbast,nbast,nbast,intspec)
-
+         n1 = 1
          nbast3 = nbast*nbast*nbast
          begin_add = 1
          do iA = 1,nbast
-            call writevector(funit,begin_add,nbast3,integrals(iA:iA,1:nbast,1:nbast,1:nbast))
-            begin_add = begin_add + nbast3
+            do iB = 1,nbast
+               do iC = 1,nbast
+                  do iD = 1,nbast
+                     call writevector(funit,begin_add,n1,integrals(iA:iA,iB:iB,iC:iC,iD:iD))
+                     begin_add = begin_add + n1                     
+                  enddo
+               enddo
+            enddo
          enddo
+         write(lupri,*)'integrals(1,1,1,1) =',integrals(1,1,1,1)
+         write(lupri,*)'integrals(nbast,1,1,1) =',integrals(nbast,1,1,1)
+         write(lupri,*)'integrals(1,nbast,1,1) =',integrals(1,nbast,1,1)
+         write(lupri,*)'integrals(1,1,1,nbast) =',integrals(1,1,1,nbast)
+         write(lupri,*)'integrals(1,1,1,nbast) =',integrals(1,1,1,nbast)
+         write(lupri,*)'integrals(nbast,1,1,nbast) =',integrals(nbast,1,1,nbast)
+         write(lupri,*)'integrals(1,nbast,1,nbast) =',integrals(1,nbast,1,nbast)
+         write(lupri,*)'integrals(1,1,1,nbast) =',integrals(1,1,1,nbast)
+         write(lupri,*)'integrals(nbast,nbast,nbast,nbast) =',integrals(nbast,nbast,nbast,nbast)
          call mem_dealloc(integrals)
       ELSE         
          doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN

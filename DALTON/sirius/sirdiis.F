@@ -976,7 +976,7 @@ c        density
 
            IF (QMNPMM) THEN
 
-             CALL GETDIM_RELMAT(IDIM,.TRUE.)
+             idim = GETDIM_RELMAT(.TRUE.)
              idim_side = idim**0.5
              allocate(relay_matrix(idim_side, idim_side, 1))
              CALL COMP_RELMAT(relay_matrix,WRK(KFREE),LFREE)

@@ -642,6 +642,7 @@ C
       IF (KZCONF .GT. 0) then
          IF (MCDPRJ) write(lupri,*)'SONIA: RESET MCDPRJ=false for MCSCF'
          MCDPRJ = .false.
+         !call quit
       END IF
       if (MCDPRJ) then
         write(lupri,*)'SONIA: allocating for projection'
@@ -697,211 +698,221 @@ C
                END IF
             END IF
   410    CONTINUE
-         if (mcdprj)
-     &   write(lupri,*)'SONIA: we requested NFREQ frequencies=',NFREQ
+         if (mcdprj) then
+           write(lupri,*)'MCDPRJ: requested NFREQ frequencies=',NFREQ
+         end if
 
          IF (NFREQ .EQ. 0) GOTO 680
 C
-         !SONIA: usual code
+         !SONIA: standard code
          if (.not.(mcdprj.and.LRLAB(ILRLAB)(2:7).eq.'DIPLEN')) then
 
-
-         CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
+            CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &               ANTSYM,WRK(KGP),LWRK1)
-         GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
+            GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
 C
-         WRITE (LUPRI,'(//A,I3,3A,/2A,/A,I3,/A,(T25,5F10.6))')
+            WRITE (LUPRI,'(//A,I3,3A,/2A,/A,I3,/A,(T25,5F10.6))')
      &   ' QRLRVE -- linear response calculation for symmetry',KSYMOP,
      &            '  ( ',REP(KSYMOP-1),')',
      &   ' QRLRVE -- operator label : ',LRLAB(ILRLAB),
      &   ' QRLRVE -- operator spin  : ',OPRANK(INDPRP(LRLAB(ILRLAB))),
      &   ' QRLRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
-         IF (GPNORM .LT. THRSML) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'//
+            IF (GPNORM .LT. THRSML) THEN
+               WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'//
      &                      ' property vector is only',GPNORM
-            CALL DZERO(WRK(KBVECS),KZYVAR)
-            DO 450 IFREQ = 1,NFREQ
-               CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),BLANK,
+               CALL DZERO(WRK(KBVECS),KZYVAR)
+               DO 450 IFREQ = 1,NFREQ
+                  CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),
+     &                     BLANK,
      &                     WRK(KEIVAL+IFREQ-1),D0,KSYMOP,0,D0,ANTSYM)
- 450        CONTINUE
-            GO TO 680
-         END IF
+ 450           CONTINUE
+               GO TO 680
+            END IF
 C
-         KZRED  = 0
-         KZYRED = 0
-         KEXSIM = NFREQ
-         KEXCNV = KEXSIM
-         CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+            KZRED  = 0
+            KZYRED = 0
+            KEXSIM = NFREQ
+            KEXCNV = KEXSIM
+            CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               .TRUE.,LRLAB(ILRLAB),BLANK,WRK(KGP),
      *               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
      *               WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
      *               XINDX,WRK(KWRK1),LWRK1)
-!        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+!           CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
 !    *               LINEQ,GP,REDGP,REDE,REDS,
 !    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 !
-         DO 580 IFREQ = 1,NFREQ,NFRQMX
-         if (mcdprj)
-     &      write(lupri,*)'SONIA: NFREQ=', NFREQ, ' NBX = ', NBX
-            NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
-            IBOFF = IFREQ - 1
-            CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+            DO 580 IFREQ = 1,NFREQ,NFRQMX
+               !do a batch of exc freqs at a time
+               if (mcdprj) then
+                  write(lupri,*)'MCDPRJ: NFREQ=', NFREQ, ' NBX = ', NBX
+               end if
+               NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
+               IBOFF = IFREQ - 1
+               CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
      &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-!           CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
+!              CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
 !
-            JBVECS = KBVECS
-            DO 560 JFREQ = IFREQ,IFREQ-1+NBX
-CTODO        IF (IPRRSP.GE.5) THEN
+               JBVECS = KBVECS
+               DO 560 JFREQ = IFREQ,IFREQ-1+NBX
+CTODO           IF (IPRRSP.GE.5) THEN
                   WRITE(LUPRI,'(/A,I5,3A,3(3X,A),D14.6)')
      &            '@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
      &            '  ( ',REP(KSYMOP-1),')',
      &            ' LABEL',LRLAB(ILRLAB),
      &            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ)
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
-               DO JLRLAB = 1, NLRLAB
-               CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
+                  DO JLRLAB = 1, NLRLAB
+                     CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                     ANTSM2,WRK(KGP2),LGP2)
-               VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
-               WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
+                     VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
+                     WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
      &              '@ QRLRVE:  << ', LRLAB(JLRLAB),' ; '
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
-               END DO
-CTODO        END IF
-               IF (IPRRSP.GT.100) THEN
-                  WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
-                  CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-               END IF
-               CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
+                  END DO
+CTODO           END IF
+                  IF (IPRRSP.GT.100) THEN
+                     WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
+                    CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+                  END IF
+                  CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
      &                     BLANK,WRK(KEIVAL-1+JFREQ),D0,KSYMOP,0,
      &                     WRK(KRESID - 1 + JFREQ),ANTSYM)
-               JBVECS = JBVECS + KZYVAR
-  560       CONTINUE
-  580    CONTINUE
+                  JBVECS = JBVECS + KZYVAR
+  560          CONTINUE
+  580       CONTINUE
+
          else !SONIA: MCDPRJ special code
 
-       !SONIA: MCD, we want to ensure we solve for 1 freq at at time
-       !in the resonant case (diplen)
-       do ifreq = 1, NFREQ
-         WRITE(LUPRI,*)'SONIA: CALL SOLVER 1 freq at a time', ifreq
-         !get property gradient vector
-         CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
+           !SONIA: MCD, we want to ensure we solve for 1 freq at at time
+           !in the resonant case (diplen)
+           do ifreq = 1, NFREQ
+             WRITE(LUPRI,*)'SONIA: CALL SOLVER 1 freq at a time', ifreq
+             !get property gradient vector
+             CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                  ANTSYM,WRK(KGP),LWRK1)
-         GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
-         WRITE (LUPRI,'(//A,I3,3A/2A,/A,(T25,5F10.6))')
+             GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
+             WRITE (LUPRI,'(//A,I3,3A/2A,/A,(T25,5F10.6))')
      &   ' QRLRVE PRJ -- linear response calculation for sym',KSYMOP,
      &            '  ( ',REP(KSYMOP-1),')',
      &   ' QRLRVE PRJ -- operator label : ',LRLAB(ILRLAB),
      &   ' QRLRVE PRJ -- frequency :', WRK(KEIVAL+ifreq-1)
 
-         IF (GPNORM .LT. THRSML) THEN
-           WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
-           WRITE (LUPRI,*) '     property vector is only',GPNORM
-           CALL DZERO(WRK(KBVECS),KZYVAR)
-           CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),BLANK,
+             IF (GPNORM .LT. THRSML) THEN
+               WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+               WRITE (LUPRI,*) '     property vector is only',GPNORM
+               CALL DZERO(WRK(KBVECS),KZYVAR)
+               CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),
+     &                     BLANK,
      &                     WRK(KEIVAL+IFREQ-1),D0,KSYMOP,0,D0,ANTSYM)
-           GO TO 680
-         END IF
-         !read in the excitation vector for the resonant excitation
-         afrq=WRK(KEIVAL+ifreq-1)
-         CALL REARSP(LURSP,KLEN,WRK(KXf),'EXCITLAB',BLANK,
+               GO TO 680
+             END IF
+             !read in the excitation vector for the resonant excitation
+             afrq=WRK(KEIVAL+ifreq-1)
+             CALL REARSP(LURSP,KLEN,WRK(KXf),'EXCITLAB',BLANK,
      &               afrq,D0,KSYMOP,0,THCLR,FOUND,CONV,ANTSYM)
 
-         if ((found).and.(conv)) then
-           write(lupri,*)'SONIA: found redundant exci X_f on file'
-           !CALL RSPPRO(WRK(KXf),KZVAR,UDV,-LUPRI)
-           call dzero(WRK(KS2Xf),KZYVAR)
-           CALL RSPSLI(0,1,DUMMY,WRK(KXf),
+            if ((found).and.(conv)) then
+               write(lupri,*)'SONIA: found redundant exci X_f on file'
+               !CALL RSPPRO(WRK(KXf),KZVAR,UDV,-LUPRI)
+               call dzero(WRK(KS2Xf),KZYVAR)
+               CALL RSPSLI(0,1,DUMMY,WRK(KXf),
      *                 UDV,WRK(KS2Xf),XINDX,WRK(KWRK1),LWRK1)
-           write(lupri,*)'SONIA: S2X_f of excitation vector'
-           CALL RSPPRO(WRK(KS2Xf),KZVAR,UDV,-LUPRI)
-        write(lupri,*)'XfS2Xf=',ddot(KZYVAR,WRK(KXf),1,WRK(KS2Xf),1)
-           tt = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
-           write(lupri,*)'SONIA: ddot{Xf,GD}=', tt
-           !write(lupri,*)'SONIA: Property gradient before projection'
-           !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
-           !project out X_f as: GDp= GD-(ddot{Xf,GD})S[2]X_f
-           CALL DAXPY(KZYVAR,-TT,WRK(KS2Xf),1,WRK(KGP),1)
-           write(lupri,*)'SONIA: property gradient after projection'
-           !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
-           tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
-           write(lupri,*)'SONIA: hopefully zero, ddot{Xf|GDp}=', tt2
-         end if
-         KZRED  = 0
-         KZYRED = 0
-         KEXSIM = 1
-         KEXCNV = 1
-         kfreque = KEIVAL+ifreq-1
-         !sonia: call response control to start the LR solution...
-         !if (.true.) then
-         if (abs(tt).le.1.0d-16) then
-            !if gradient does not have components along Xf no need
-            !to go thru this misery? Maybe not...
-            write(lupri,*)'Calling regular RSPCTL,tt=', tt
-            CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+               write(lupri,*)'SONIA: S2X_f of excitation vector'
+               CALL RSPPRO(WRK(KS2Xf),KZVAR,UDV,-LUPRI)
+               write(lupri,*)'ddot{Xf,S2Xf}=',
+     &                       ddot(KZYVAR,WRK(KXf),1,WRK(KS2Xf),1)
+               tt = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
+               write(lupri,*)'SONIA: ddot{Xf,GD}=', tt
+               !write(lupri,*)'SONIA: Property gradient before projection'
+               !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
+               !project out X_f as: GDp= GD-(ddot{Xf,GD})S[2]X_f
+               CALL DAXPY(KZYVAR,-TT,WRK(KS2Xf),1,WRK(KGP),1)
+               write(lupri,*)'SONIA: property gradient after projection'
+               !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
+               tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
+               write(lupri,*)'SONIA: hopefully zero, ddot{Xf|GDp}=', tt2
+             end if
+             KZRED  = 0
+             KZYRED = 0
+             KEXSIM = 1
+             KEXCNV = 1
+             kfreque = KEIVAL+ifreq-1
+             !sonia: call response control to start the LR solution...
+             !if (.true.) then
+             if (abs(tt).le.1.0d-16) then
+                !if gradient does not have components along Xf no need
+                !to go thru this misery? Maybe not...
+                write(lupri,*)'Calling regular RSPCTL,tt=', tt
+                CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &               .TRUE.,LRLAB(ILRLAB),BLANK,WRK(KGP),
      &               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
      &               WRK(KIBTYP),WRK(Kfreque),WRK(KRESID),WRK(KEIVEC),
      &               XINDX,WRK(KWRK1),LWRK1)
 
-         else
-            !use the projecting algorithm...
-            write(lupri,*)'Calling RSPCTLMCD, tt=',tt
-            CALL RSPCTLMCD(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+             else
+                !use the projecting algorithm...
+                write(lupri,*)'Calling RSPCTLMCD, tt=',tt
+                CALL RSPCTLMCD(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &               .TRUE.,LRLAB(ILRLAB),BLANK,WRK(KGP),
      &               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
      &               WRK(KIBTYP),WRK(kfreque),WRK(KRESID),WRK(KEIVEC),
      &               XINDX,WRK(KXf),WRK(KS2Xf),WRK(KWRK1),LWRK1)
-            write(lupri,*)'Exit projecting response control'
-            call flshfo(lupri)
-         end if
+                write(lupri,*)'Exit projecting response control'
+                call flshfo(lupri)
+             end if
 
 !         DO 580 IFREQ = 1,NFREQ,NFRQMX
 !            NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
 !            IBOFF = IFREQ - 1
-          NBX   = 1 !this is the number of freqs (sets of red space elements)
-          IBOFF = 0
-           !IBOFF = IFREQ - 1
-!          CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+             NBX   = 1 !this is the number of freqs (sets of red space elements)
+             IBOFF = 0
+              !IBOFF = IFREQ - 1
+!             CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
 !     &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-          CALL RSPEVE(WRK(KIBTYP),WRK(kfreque),WRK(KEIVEC),
+             CALL RSPEVE(WRK(KIBTYP),WRK(kfreque),WRK(KEIVEC),
      &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-          write(lupri,*)'Exit RSPEVE PRJ iboff,ifreq', iboff, ifreq
-          call flshfo(lupri)
+             tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KBVECS),1)
+             write(lupri,*)'SONIA: hopefully zero, ddot{Xf|Sol}=', tt2
 
-          JBVECS = KBVECS
-          !compute the LR function of the current solution vector
-          !DO 560 JFREQ = IFREQ,IFREQ-1+NBX
-!TODO     IF (IPRRSP.GE.5) THEN
-          JFREQ = IFREQ
-          WRITE(LUPRI,'(/A,I5,3A,3(3X,A),D14.6)')
+             write(lupri,*)'Exit RSPEVE PRJ iboff,ifreq', iboff, ifreq
+             call flshfo(lupri)
+
+             JBVECS = KBVECS
+             !compute the LR function of the current solution vector
+             !DO 560 JFREQ = IFREQ,IFREQ-1+NBX
+!TODO        IF (IPRRSP.GE.5) THEN
+             JFREQ = IFREQ
+             WRITE(LUPRI,'(/A,I5,3A,3(3X,A),D14.6)')
      &      '@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
      &            '  ( ',REP(KSYMOP-1),')',
      &      ' LABEL',LRLAB(ILRLAB),
      &      ' FREQUENCY ',WRK(KEIVAL-1+IFREQ)
-          CALL FLSHFO(LUPRI)
-          JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
-          DO JLRLAB = 1, NLRLAB
-             CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
+             CALL FLSHFO(LUPRI)
+             JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
+             DO JLRLAB = 1, NLRLAB
+                !make linear response 
+                CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                     ANTSM2,WRK(KGP2),LGP2)
-             VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
-             WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
+                VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
+                WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
      &              '@ QRLRVE:  << ', LRLAB(JLRLAB),' ; '
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
-          END DO
+             END DO
 !TODO        END IF
-          IF (IPRRSP.GT.100) THEN
-            WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
-            CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-          END IF
-          !sonia: I dump the solution vector on file RSPVEC
-          CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
+             IF (IPRRSP.GT.100) THEN
+               WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
+               CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+             END IF
+             !sonia: I dump the solution vector on file RSPVEC
+             CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
      &                  BLANK,WRK(KEIVAL-1+JFREQ),D0,KSYMOP,0,
      &                  WRK(KRESID - 1 + JFREQ),ANTSYM)
-          JBVECS = JBVECS + KZYVAR
+             JBVECS = JBVECS + KZYVAR
 !  560      CONTINUE
 !  580    CONTINUE
-       end do !ifreq
-      end if  !SONIA extra MCDPRJ control...
+          end do !ifreq
+         end if  !SONIA extra MCDPRJ control...
   680 CONTINUE
 C
 C *** end of QRLRVE --
@@ -2285,7 +2296,7 @@ C
                               END IF
                               IF (LYESGP) THEN
 C
-C Calculate propriety gradient. Returned as first element in WRK
+C Calculate property gradient. Returned as first element in WRK
 C
                                  !backup variables in wrkrsp.h
                                  KSYMOPSV = KSYMOP

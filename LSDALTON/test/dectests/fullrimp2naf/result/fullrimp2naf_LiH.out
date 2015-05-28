@@ -114,12 +114,12 @@
                           | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
                           | o
  Static linking           | OFF
- Last Git revision        | 777e2c6c0988143fca43bd68ecd85003ebedf6a1
+ Last Git revision        | 7814dd1aee2a5affbfca48a60398fe95733e2f5c
  Git branch               | master
- Configuration time       | 2015-04-11 18:14:55.968441
+ Configuration time       | 2015-04-13 18:36:15.733900
 
 Start simulation
-     Date and time (Linux)  : Sat Apr 11 18:22:54 2015
+     Date and time (Linux)  : Mon Apr 13 18:41:30 2015
      Host name              : localhost.localdomain                   
                       
  -----------------------------------------
@@ -158,6 +158,8 @@ Start simulation
   1.d-4                                                                                               
   .MEMORY                                                                                             
   1.0                                                                                                 
+  .DECPRINT                                                                                           
+  3                                                                                                   
   *END OF INPUT                                                                                       
   
   MOLPRINT IS SET TO       0
@@ -197,11 +199,13 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/home/tkjaer/DaltonDevelopment2015/NAF/build-debug/basis/STO-3G
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/F12LinearScaling/build-debug/basis/STO-3G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/home/tkjaer/DaltonDevelopment2015/NAF/build-debug/basis/6-31G**
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/F12LinearScaling/build-debug/basis/6-31G**
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -369,7 +373,7 @@ Matrix OAO F has nnz=        18 sparsity:     50.000 %
     2 step norm =  0.090 trust radius =   0.500 mu =   0.00 micro it. =   5  %#%
 No. of matmuls in get_density:    31
  >>>  CPU Time used in SCF iteration is   0.02 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>> wall Time used in SCF iteration is   0.02 seconds
 ** Get Fock matrix number   2
  The Coulomb energy contribution    6.13657656475742     
  The Exchange energy contribution    2.22427558037144     
@@ -440,8 +444,8 @@ No. of matmuls in get_density:    44
  The Fock energy contribution   -3.91284655520878     
   6     -7.8053365720   -0.00000000010    0.00      0.00000    0.00    1.72E-07  ###
 SCF converged in      6 iterations
- >>>  CPU Time used in **ITER is   0.14 seconds
- >>> wall Time used in **ITER is   0.14 seconds
+ >>>  CPU Time used in **ITER is   0.13 seconds
+ >>> wall Time used in **ITER is   0.13 seconds
  
 Total no. of matmuls in SCF optimization:        325
  
@@ -508,6 +512,8 @@ FULL: Number of core orbitals    :      1
 FULL: Number of valence orbitals :      1
 FULL: Number of occ. orbitals    :      2
 FULL: Number of virt. orbitals   :      4
+FULL: Local memory use type full :  0.74E-06
+FULL: Distribute matrices        :  F
  
  Orbital energies:
            1  -2.35813828970285     
@@ -534,13 +540,36 @@ Full molecular calculation is carried out...
  >>> wall Time used in RIMP2: MemCheck is   0.00 seconds
  >>>  CPU Time used in RIMP2: WakeSlaves is   0.00 seconds
  >>> wall Time used in RIMP2: WakeSlaves is   0.00 seconds
- NAF Threshold =   1.000000000000000E-004
- NAF           =  T
- >>>  CPU Time used in AlphaBetamSq is   0.00 seconds
- >>> wall Time used in AlphaBetamSq is   0.01 seconds
- >>>  CPU Time used in RIMP2: EnergyCont is   0.02 seconds
- >>> wall Time used in RIMP2: EnergyCont is   0.02 seconds
- RIMP2 CORRELATION ENERGY =  -9.790387754967147E-003
+ Use Natural Auxiliary Functions (NAF) with Threshold =   1.000000000000000E-004
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in Get_CholeskyFactor is   0.00 seconds
+ >>> wall Time used in Get_CholeskyFactor is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.01 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+3 center RI: Allocating MO (alpha|AI)      0.00000 GB
+3 center RI: Allocating 5dim Buffer      0.00000 GB for each thread =       0.00000 GB
+3 center RI: Allocating TmpArray of       0.00000 GB
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.01 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.01 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ NAF: Auxiliary functions         =           19
+ NAF: Natural Auxiliary functions =            7
+ NAF: Sum of included eigenvalues =   0.188162840775701     
+ NAF: Sum of neglected eigenvalues=   7.179839721119241E-005
+ NAF: Sum of all eigenvalues      =   0.188234639172912     
+ >>>  CPU Time used in DF_Calpha:NAF is   0.00 seconds
+ >>> wall Time used in DF_Calpha:NAF is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.01 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.01 seconds
+ >>>  CPU Time used in RIMP2: EnergyCont is   0.01 seconds
+ >>> wall Time used in RIMP2: EnergyCont is   0.01 seconds
+ RIMP2 CORRELATION ENERGY =  -9.790387754967714E-003
  LEAK TOOL STATISTICS IN full_canonical_rimp2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
             LeakTool Memory statistics          
@@ -566,9 +595,9 @@ Full molecular calculation is carried out...
              *                   CC ENERGY SUMMARY                    *
              **********************************************************
  
-               E: Hartree-Fock energy :       -7.8053365720
-               E: Correlation energy  :       -0.0097903878
-               G: Total RIMP2 energy  :       -7.8151269598
+               E: Hartree-Fock energy      :       -7.8053365720
+               E: Correlation energy       :       -0.0097903878
+               E: Total RIMP2 energy       :       -7.8151269598
  
  
  
@@ -585,12 +614,12 @@ Full molecular calculation is carried out...
  
 
 ------------------------------------------------------
-Total CPU  time used in CC           :        0.320000E-01 s
-Total Wall time used in CC           :        0.320000E-01 s
+Total CPU  time used in CC           :        0.230000E-01 s
+Total Wall time used in CC           :        0.230000E-01 s
 ------------------------------------------------------
 
  
-Job finished   : Date: 11/04/2015   Time: 18:22:55
+Job finished   : Date: 13/04/2015   Time: 18:41:31
  
  
 
@@ -600,12 +629,12 @@ Job finished   : Date: 11/04/2015   Time: 18:22:55
 
  
  
- >>>  CPU Time used in *SCF is   0.80 seconds
+ >>>  CPU Time used in *SCF is   0.79 seconds
  >>> wall Time used in *SCF is   0.80 seconds
  
 Total no. of matmuls used:                       353
 Total no. of Fock/KS matrix evaluations:           7
-Max no. of matrices allocated in Level 3:         46
+Max no. of matrices allocated in Level 3:         43
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -654,7 +683,7 @@ Max no. of matrices allocated in Level 3:         46
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                          2.425 MB
-  Max allocated memory, type(matrix)                  40.448 kB
+  Max allocated memory, type(matrix)                  39.584 kB
   Max allocated memory, real(realk)                    2.387 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
@@ -670,7 +699,7 @@ Max no. of matrices allocated in Level 3:         46
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                        844.000 kB
+  Max allocated memory, ARRAY                        848.000 kB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
@@ -715,13 +744,13 @@ Max no. of matrices allocated in Level 3:         46
       ==============================================================
    L1 TOTAL MAT                             0.0000            0.0000
       ==============================================================
-   L1     II_get_overlap       2            0.0030            0.0030
-   L1     II_get_kinetic       2            0.0020            0.0010
-   L1   II_get_nucel_mat       2            0.0050            0.0060
-   L1 II_GET_EXCHANGE_MA       4            0.0290            0.0270
-   L1 II_get_coulomb_mat       4            0.0250            0.0260
+   L1     II_get_overlap       2            0.0020            0.0010
+   L1     II_get_kinetic       2            0.0000            0.0020
+   L1   II_get_nucel_mat       2            0.0040            0.0030
+   L1 II_GET_EXCHANGE_MA       4            0.0170            0.0180
+   L1 II_get_coulomb_mat       4            0.0170            0.0150
       ==============================================================
-   L1 TOTAL INTEGRAL                        0.0640            0.0630
+   L1 TOTAL INTEGRAL                        0.0400            0.0390
       ==============================================================
       ===============================================================
       Overall Timings for the Matrix Operations and Integral routines
@@ -730,39 +759,39 @@ Max no. of matrices allocated in Level 3:         46
       ===============================================================
    L3 mat_set_from_full        6            0.0000            0.0000
    L3 mat_to_full              6            0.0000            0.0000
-   L3 mat_trans              131            0.0000            0.0000
+   L3 mat_trans              131            0.0010            0.0000
    L3 mat_assign             151            0.0000            0.0000
    L3 mat_copy                10            0.0000            0.0000
    L3 mat_mul                340            0.0010            0.0010
-   L3 mat_add                395            0.0010            0.0000
-   L3 mat_daxpy              842            0.0020            0.0000
-   L3 mat_dotproduct         382            0.0010            0.0000
-   L3 mat_sqnorm2            286            0.0000            0.0000
+   L3 mat_add                395            0.0010            0.0010
+   L3 mat_daxpy              842            0.0000            0.0010
+   L3 mat_dotproduct         382            0.0000            0.0000
+   L3 mat_sqnorm2            286            0.0000            0.0010
    L3 mat_diag_f               2            0.0000            0.0000
    L3 mat_scal               141            0.0000            0.0000
-   L3 mat_zero               228            0.0000            0.0000
-   L3 mat_density_from_o       1            0.0000            0.0000
+   L3 mat_zero               228            0.0010            0.0020
+   L3 mat_density_from_o       1            0.0000            0.0010
    L3 mat_scal_dia_vec         2            0.0000            0.0000
    L3 mat_dsyev                1            0.0000            0.0000
    L3 mat_identity             7            0.0000            0.0000
-   L3 mat_write_to_disk        8            0.0000            0.0010
+   L3 mat_write_to_disk        8            0.0010            0.0000
       ==============================================================
-   L3 TOTAL MAT                             0.0050            0.0020
+   L3 TOTAL MAT                             0.0050            0.0060
       ==============================================================
-   L3     II_get_overlap       1            0.0010            0.0010
+   L3     II_get_overlap       1            0.0000            0.0010
    L3     II_get_kinetic       2            0.0030            0.0030
-   L3   II_get_nucel_mat       2            0.0080            0.0090
-   L3 II_precalc_ScreenM       1            0.0270            0.0260
-   L3      II_get_nucpot       2            0.0000            0.0010
-   L3 II_GET_EXCHANGE_MA       7            0.0720            0.0730
-   L3 II_get_coulomb_mat       7            0.0600            0.0610
-   L3           homolumo       1            0.6270            0.6290
+   L3   II_get_nucel_mat       2            0.0090            0.0090
+   L3 II_precalc_ScreenM       1            0.0210            0.0200
+   L3      II_get_nucpot       2            0.0000            0.0000
+   L3 II_GET_EXCHANGE_MA       7            0.0690            0.0700
+   L3 II_get_coulomb_mat       7            0.0590            0.0560
+   L3           homolumo       1            0.6310            0.6360
       ==============================================================
-   L3 TOTAL INTEGRAL                        0.7990            0.8040
+   L3 TOTAL INTEGRAL                        1.6360            1.6470
       ==============================================================
- >>>  CPU Time used in LSDALTON is   0.92 seconds
- >>> wall Time used in LSDALTON is   0.92 seconds
+ >>>  CPU Time used in LSDALTON is   0.87 seconds
+ >>> wall Time used in LSDALTON is   0.88 seconds
 
 End simulation
-     Date and time (Linux)  : Sat Apr 11 18:22:55 2015
+     Date and time (Linux)  : Mon Apr 13 18:41:31 2015
      Host name              : localhost.localdomain                   
