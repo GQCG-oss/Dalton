@@ -70,6 +70,12 @@ CALL LS_GETTIM(t1,t2)
     IF (AO2.EQ.AOelField) nAtomsB_full = setting%molecule(2)%p%nAtoms
     IF (AO3.EQ.AOelField) nAtomsC_full = setting%molecule(3)%p%nAtoms
     IF (AO4.EQ.AOelField) nAtomsD_full = setting%molecule(4)%p%nAtoms
+
+    IF (AO1.EQ.AOdfCABS) nAtomsA_full = 2*setting%molecule(1)%p%nAtoms
+    IF (AO2.EQ.AOdfCABS) nAtomsB_full = 2*setting%molecule(2)%p%nAtoms
+    IF (AO3.EQ.AOdfCABS) nAtomsC_full = 2*setting%molecule(3)%p%nAtoms
+    IF (AO4.EQ.AOdfCABS) nAtomsD_full = 2*setting%molecule(4)%p%nAtoms
+
       
     !Specify if auxiliary basis sets are used for left- or right-hand side, used when building fragments
     tasks%lhs_aux = AO1.EQ.AOdfdefault.OR.AO2.EQ.AOdfdefault
@@ -1265,6 +1271,7 @@ ENDIF
       ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
 !        bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
 !         will not work
+         nAtoms(iAO) = 2*mol(iAO)%p%nAtomsNPC
       ELSE IF (AO(iAO).EQ.AOdfCABO) THEN
 !        bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
       ELSE IF (AO(iAO).EQ.AOdfJK) THEN
@@ -1716,6 +1723,8 @@ DO iAO=1,4
   ELSE IF (AO(iAO).EQ.AOVAL) THEN
 !    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
   ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
+     nAtoms(iAO) = 2*mol(iAO)%p%nAtomsNPC
+  ELSE IF (AO(iAO).EQ.AOdfCABO) THEN
 !    bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
   ELSE IF (AO(iAO).EQ.AOdfJK) THEN
 !    bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
@@ -2132,8 +2141,15 @@ ELSE
       ELSE
         iatomfull = task%row_atoms(iatom)
       ENDIF
-      IF ((AOA.EQ.AOdfAux).OR.(AOA.EQ.AOdfCABS).OR.(AOA.EQ.AOdfJK).OR.(AOA.EQ.AOadmm)) THEN
+      IF ((AOA.EQ.AOdfAux).OR.(AOA.EQ.AOdfCABO).OR.(AOA.EQ.AOdfJK).OR.(AOA.EQ.AOadmm)) THEN
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsAux(iatomfull)
+     ELSEIF (AOA.EQ.AOdfCABS) THEN
+        IF(iatomfull.GT.size(orbInfo(iA)%numAtomicOrbitalsReg))THEN
+           nbastA = nbastA + &
+ &orbInfo(iA)%numAtomicOrbitalsAux(iatomfull-size(orbInfo(iA)%numAtomicOrbitalsReg))
+        ELSE
+           nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsReg(iatomfull)
+        ENDIF
       ELSE IF ((AOA.EQ.AORegular).OR.(AOA.EQ.AOVAL)) THEN
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsReg(iatomfull)
       ELSE IF (AOA.EQ.AOpCharge) THEN
@@ -2162,8 +2178,15 @@ ELSE
       ENDIF
       IF ((AOB.EQ.AORegular).OR.(AOB.EQ.AOVAL)) THEN
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsReg(iatomfull)
-      ELSE IF ((AOB.EQ.AOdfAux).OR.(AOB.EQ.AOdfCABS).OR.(AOB.EQ.AOdfJK).OR.(AOB.EQ.AOadmm)) THEN
+      ELSE IF ((AOB.EQ.AOdfAux).OR.(AOB.EQ.AOdfCABO).OR.(AOB.EQ.AOdfJK).OR.(AOB.EQ.AOadmm)) THEN
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsAux(iatomfull)
+     ELSEIF (AOB.EQ.AOdfCABS) THEN
+        IF(iatomfull.GT.size(orbInfo(iB)%numAtomicOrbitalsReg))THEN
+           nbastB = nbastB + &
+& orbInfo(iB)%numAtomicOrbitalsAux(iatomfull-size(orbInfo(iB)%numAtomicOrbitalsReg))
+        ELSE
+           nbastB = nbastB + orbInfo(iB)%numAtomicOrbitalsReg(iatomfull)
+        ENDIF
       ELSE IF (AOB.EQ.AOpCharge) THEN
         nbastB = nbastB + 1
       ELSE IF (AOB.EQ.AOelField) THEN
@@ -2208,22 +2231,32 @@ Type(moleculeinfo),intent(IN) :: molA,molB
 integer                       :: getNAtomsSide
 !
 Logical :: emptyA,emptyB
+integer :: factor,factor2
 
 emptyA = AOA.EQ.AOEmpty
 emptyB = AOB.EQ.AOEmpty
+IF (AOA.EQ.AOdfCABS.AND.AOB.EQ.AOdfCABS)THEN 
+   factor = 4;   factor2 = 2
+ELSEIF (AOA.EQ.AOdfCABS)THEN 
+   factor = 2;   factor2 = 2
+ELSEIF (AOB.EQ.AOdfCABS)THEN 
+   factor = 2;   factor2 = 2
+ELSE
+   factor = 1;   factor2 = 1  
+ENDIF
 
 IF (emptyA.AND.emptyB) THEN
   getNAtomsSide = 1
 ELSE IF (emptyA) THEN
-  getNAtomsSide = molB%nAtomsNPC
+  getNAtomsSide = factor*molB%nAtomsNPC
 ELSE IF (emptyB) THEN
-  getNAtomsSide = molA%nAtomsNPC
+  getNAtomsSide = factor*molA%nAtomsNPC
 ELSE
-  getNAtomsSide = molA%nAtomsNPC*molB%nAtomsNPC
+  getNAtomsSide = factor*molA%nAtomsNPC*molB%nAtomsNPC
   IF (symmetry) THEN
     IF (molA%nAtomsNPC.NE.molB%nAtomsNPC) &
     & CALL LSQUIT('Error in getNAtomsSide: symmetry requested but nAtoms not equal',-1)
-    getNAtomsSide = molA%nAtomsNPC*(molA%nAtomsNPC+1)/2
+    getNAtomsSide = factor2*molA%nAtomsNPC*(factor2*molA%nAtomsNPC+1)/2
   ENDIF
 ENDIF
 END FUNCTION getNAtomsSide

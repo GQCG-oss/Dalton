@@ -364,6 +364,7 @@ contains
     integer :: vs, os,offset
     logical :: local
     local = .true.
+    ES2=0.0E0_realk
 #ifdef VAR_MPI
     local = (infpar%lg_nodtot==1)
 #endif

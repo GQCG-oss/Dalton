@@ -77,7 +77,7 @@ CONTAINS
     real(realk),pointer :: SV(:),optwrk(:),Sfull(:,:),S_cabsfull(:,:)
     integer,pointer :: IWORK(:)
     integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I,nbastCABO
-    logical  :: ODSCREEN,Failed,VerifyCabs
+    logical  :: ODSCREEN,Failed,VerifyCabs,doMPI
 
     VerifyCabs = DECinfo%F12debug
 #ifdef VAR_LSDEBUG
@@ -105,6 +105,8 @@ CONTAINS
        call mat_init(S_minus_sqrt_cabs,nbast_cabs,nbast_cabs)
        
        call mat_init(tmp_cabs,nbast_cabs,nbast_cabs)
+       doMPI = SETTING%SCHEME%doMPI
+       SETTING%SCHEME%doMPI = .FALSE.
        call II_get_mixed_overlap(LUPRI,LUERR,SETTING,S_cabs,AOdfCABS,AOdfCABS,.FALSE.,.FALSE.)
        If(VerifyCabs) then
           !Test that S_cabs have the structure 
@@ -157,6 +159,7 @@ CONTAINS
        CALL mat_free(S_cabs)       
        CALL mat_init(Smix,nbast,nbast_cabs)
        call II_get_mixed_overlap(LUPRI,LUERR,setting,Smix,AORegular,AOdfCABS,.FALSE.,.FALSE.)
+       SETTING%SCHEME%doMPI=doMPI
        
        call mat_init(tmp,nbast,nbast_cabs)
        call mat_mul(S_minus_sqrt,Smix,'N','N',1.0E0_realk,0.0E0_realk,tmp)
@@ -312,6 +315,7 @@ CONTAINS
     type(matrix) :: tmp_cabs,tmp2
     real(realk),pointer :: SV(:),optwrk(:)
     integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I
+    logical     :: doMPI
     IF(CMO_RI_save_created)THEN
        call mat_assign(CMO_RI,CMO_RI_save)
     ELSE
@@ -319,7 +323,10 @@ CONTAINS
        CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
        CALL mat_init(S_cabs,nbast_cabs,nbast_cabs)
        call mat_init(tmp_cabs,nbast_cabs,nbast_cabs)
+       doMPI=SETTING%SCHEME%doMPI
+       SETTING%SCHEME%doMPI=.FALSE.
        call II_get_mixed_overlap(LUPRI,LUERR,SETTING,S_cabs,AOdfCABS,AOdfCABS,.FALSE.,.FALSE.)
+       SETTING%SCHEME%doMPI=doMPI
        call lowdin_diag(nbast_cabs, S_cabs%elms,tmp_cabs%elms, CMO_RI%elms, lupri)
        CALL mat_free(S_cabs)
        call mat_free(tmp_cabs)
@@ -341,10 +348,14 @@ CONTAINS
 !
     TYPE(MATRIX)    :: tmp,tmp2,tmp3,S_cabs
     integer ::  nbast_cabs,luerr
+    logical     :: doMPI
     luerr=6
     nbast_cabs = CMO_cabs%nrow
     CALL mat_init(S_cabs,nbast_cabs,nbast_cabs)
+    doMPI=SETTING%SCHEME%doMPI
+    SETTING%SCHEME%doMPI=.FALSE.
     call II_get_mixed_overlap(LUPRI,LUERR,SETTING,S_cabs,AOdfCABS,AOdfCABS,.FALSE.,.FALSE.)
+    SETTING%SCHEME%doMPI=doMPI
 
     call mat_init(tmp2,Cmo_cabs%ncol,nbast_cabs)
     call mat_init(tmp,Cmo_cabs%ncol,Cmo_cabs%ncol)
@@ -379,11 +390,15 @@ CONTAINS
 !
     TYPE(MATRIX)    :: tmp,tmp2,Smix
     integer ::  nbast_cabs,nbast,luerr
+    logical     :: doMPI
     luerr=6
     nbast_cabs = CMO_cabs%nrow
     nbast = CMO%nrow
     CALL mat_init(Smix,nbast,nbast_cabs)    
+    doMPI=SETTING%SCHEME%doMPI
+    SETTING%SCHEME%doMPI=.FALSE.
     call II_get_mixed_overlap(LUPRI,LUERR,SETTING,Smix,AORegular,AOdfCABS,.FALSE.,.FALSE.)
+    SETTING%SCHEME%doMPI=doMPI
     call mat_init (tmp2, nbast, nbast_cabs)
     call mat_init (tmp, nbast, Cmo_cabs%ncol)
     call mat_mul(Cmo,Smix,'T','N',1.0E0_realk,0.0E0_realk,tmp2)

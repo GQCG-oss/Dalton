@@ -830,9 +830,12 @@ module f12_routines_module
           BatchType(i) = 'C'          
        elseif(intType(i).EQ.'r') then !ri - MOs
           BatchType(i) = 'C'
+       elseif(intType(i).EQ.'v') then !only valence
+          BatchType(i) = 'R'
+       else
+          call lsquit('unknown option in get_mp2f12_AO_transform_MO',-1)
        endif
     enddo  
-    
     !Determine MinGamma and MinAlpha    
     call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
     call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
@@ -2380,7 +2383,7 @@ module f12_routines_module
     call mat_init(Fcc,ncabsAO,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Fcd,ncabs,ncabs)
-      call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
     call mat_free(Fcc)
     

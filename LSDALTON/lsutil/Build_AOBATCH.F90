@@ -105,7 +105,7 @@ DO I=1,MOLECULE%natoms
 ENDDO
 AO%natoms = J
 IF(EXTEND)THEN
-   AO%natoms = J + AOTMP%natoms
+   AO%natoms = AOTMP%natoms + J
 ENDIF
 CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)
 CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
@@ -1949,6 +1949,7 @@ ELSEIF(AOspec.EQ.'O')THEN
    !   The CABS AO-type basis
    AObasis1 => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
+   print*,'AOSPEC',AOSpec
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 

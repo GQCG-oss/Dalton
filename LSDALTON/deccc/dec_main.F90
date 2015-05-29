@@ -242,6 +242,7 @@ contains
     
     if(DECinfo%F12) then
 #ifdef MOD_UNRELEASED
+       ES2 = 0.0E0_realk
        !call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
        if(DECinfo%F12debug) then
           print *,   '----------------------------------------------------------------'
