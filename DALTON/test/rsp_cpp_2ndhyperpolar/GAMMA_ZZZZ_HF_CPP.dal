@@ -1,0 +1,25 @@
+**DALTON INPUT                                                                                    
+.DIRECT                                                                                           
+.RUN RESPONSE                                                                                     
+**INTEGRAL                                                                                        
+.DIPLEN                                                                                           
+**WAVE FUNCTIONS                                                                                  
+.HF                                                                                               
+**RESPONSE INPUT                                                                                  
+*ABSORP                                                                                           
+.PRINT                                                                                            
+ 1                                                                                                
+.GAMMA                                                                                            
+.ELEMNT                                                                                           
+1                                                                                                 
+ZZZZ                                                                                              
+.BFREQ                                                                                            
+ 1                                                                                                
+ 0.65                                                                                             
+.CFREQ                                                                                            
+ 1                                                                                                
+ 0.75                                                                                             
+.DFREQ                                                                                            
+ 1                                                                                                
+ 0.85                                                                                             
+**END OF DALTON INPUT
