@@ -1193,7 +1193,7 @@ ENDIF
     Integer                      :: power
     integer                      :: AO(4)
     type(molecule_pt)            :: mol(4)
-    type(basisset_pt)            :: bas(4)
+!    type(basisset_pt)            :: bas(4)
     integer                      :: nAtoms(4)
     logical                      :: noPart(4)
     integer                      :: iA,iB,iC,iD,iAO,indAB,indCD,startB,startD
@@ -1257,17 +1257,20 @@ ENDIF
         nAtoms(iAO) = 1
         noPart(iAO) = .TRUE.
       ELSE IF (AO(iAO).EQ.AOdfAux) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
+!        bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
       ELSE IF (AO(iAO).EQ.AORegular) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
+!        bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
       ELSE IF (AO(iAO).EQ.AOVAL) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
+!        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
       ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
+!        bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
+!         will not work
+      ELSE IF (AO(iAO).EQ.AOdfCABO) THEN
+!        bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
       ELSE IF (AO(iAO).EQ.AOdfJK) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
+!        bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
       ELSE IF (AO(iAO).EQ.AOadmm) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
+!        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
       ELSE IF (AO(iAO).EQ.AOpCharge) THEN
         nAtoms(iAO) = mol(iAO)%p%nAtoms
         noPart(iAO) = .TRUE.
@@ -1656,7 +1659,7 @@ integer                       :: nA,nB,nC,nD
 Integer                      :: power
 integer                      :: AO(4)
 type(molecule_pt)            :: mol(4)
-type(basisset_pt)            :: bas(4)
+!type(basisset_pt)            :: bas(4)
 integer                      :: nAtoms(4)
 logical                      :: noPart(4)
 integer                      :: iA,iB,iC,iD,iAO,indAB,indCD,startC,startD
@@ -1707,17 +1710,17 @@ DO iAO=1,4
     nAtoms(iAO) = 1
     noPart(iAO) = .TRUE.
   ELSE IF (AO(iAO).EQ.AOdfAux) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
+!    bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
   ELSE IF (AO(iAO).EQ.AORegular) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
+!    bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
   ELSE IF (AO(iAO).EQ.AOVAL) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
+!    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
   ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
+!    bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
   ELSE IF (AO(iAO).EQ.AOdfJK) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
+!    bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
   ELSE IF (AO(iAO).EQ.AOadmm) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
+!    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
   ELSE IF (AO(iAO).EQ.AOpCharge) THEN
     nAtoms(iAO) = mol(iAO)%p%nAtoms
     noPart(iAO) = .TRUE.

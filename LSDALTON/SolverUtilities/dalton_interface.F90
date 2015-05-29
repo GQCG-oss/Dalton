@@ -1990,7 +1990,7 @@ CONTAINS
 !!$           &nBast,orb2Batch,nBatches,lupri,luerr)
 !!$
 !!$      call BUILD_AO(LUPRI,ls%setting%SCHEME,0,ls%setting%MOLECULE(1)%p,ls%setting%BASIS(1)%p%REGULAR,AO&
-!!$     &,.false.,.false.)
+!!$     &,.false.,.false.,.false.)
 !!$
 !!$      call mem_alloc(orb2atom,nbast)
 !!$      do iorb = 1,nbast

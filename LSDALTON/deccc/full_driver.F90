@@ -1343,7 +1343,6 @@ contains
     nbasis = MyMolecule%nbasis
     noccfull = nocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-
     ! Get full CCSD singles (Tai) and doubles (Taibj) amplitudes
     call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai,Taibj)
 
@@ -1725,6 +1724,7 @@ contains
 
     !> CCSD Specific MP2-F12 energy
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
+    ES2=0.0E0_realk
 
     ! F12 Specific
     call mem_dealloc(Vijij)
@@ -1814,7 +1814,7 @@ contains
     endif
 
     ! CCSD-F12 Singles Correction Energy
-    call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+!    call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
 
 
     call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)

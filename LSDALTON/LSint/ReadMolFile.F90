@@ -435,8 +435,11 @@ IF (IPOS .NE. 0) THEN
 ENDIF
 
 IPOS = INDEX(WORD,'CABSP')
+IF (IPOS .NE. 0)Call LSQUIT('CABSP have been renamed to CABS',-1)
+
+IPOS = INDEX(WORD,'CABS')
 IF (IPOS .NE. 0) THEN
-   BASIS(CAPBasParam)=.TRUE.
+   BASIS(CABBasParam)=.TRUE.
    IPOS2 = INDEX(WORD(IPOS:80),'=')
    DO I=IPOS+IPOS2,80
       IF(WORD(I:I).EQ.' ')THEN
@@ -445,21 +448,7 @@ IF (IPOS .NE. 0) THEN
       ENDIF
    ENDDO
    LEN = IPOS3-(IPOS+IPOS2)
-   BASISSET(CAPBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
-ELSE
-   IPOS = INDEX(WORD,'CABS')
-   IF (IPOS .NE. 0) THEN
-      BASIS(CABBasParam)=.TRUE.
-      IPOS2 = INDEX(WORD(IPOS:80),'=')
-      DO I=IPOS+IPOS2,80
-         IF(WORD(I:I).EQ.' ')THEN
-            IPOS3=I
-            EXIT
-         ENDIF
-      ENDDO
-      LEN = IPOS3-(IPOS+IPOS2)
-      BASISSET(CABBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
-   ENDIF
+   BASISSET(CABBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
 ENDIF
 
 IPOS = INDEX(WORD,'JK')
@@ -1476,47 +1465,27 @@ IF (ATOMBASIS) THEN
 
    !CABSP basisset - Complementary Auxiliary basis set PLUS regular
    IPOS = INDEX(TEMPLINE,'CABSP')
+   IF (IPOS .NE. 0) CALL LSQUIT('CABSP have been renamed to CABS',-1)
+   !CABS basisset - Complementary Auxiliary basis set
+   IPOS = INDEX(TEMPLINE,'CABS')
    IF (IPOS .NE. 0) THEN
-      BASIS(CAPBasParam)=.TRUE.
+      BASIS(CABBasParam)=.TRUE.
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
-      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
          WRITE (LUPRI,*) 'Incorrect input for choice of Complementary auxiliary atomic basis set'
-         WRITE (LUPRI,*) ' Format is "CABSP=? ? ?"'
+         WRITE (LUPRI,*) ' Format is "CABS=? ? ?"'
          CALL LSQUIT('Incorrect input for choice of Complementary auxiliary atomic basis set',lupri)
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
-!         IF (IPOS3 .LT. 10) THEN
-!            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
-!         ELSE
-!            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
-!         ENDIF
-!         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CAPBasParam)
-         call StringInit80(AtomicBasisset(CAPBasParam))
-         AtomicBasisset(CAPBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
-
-      ENDIF
-   ELSE
-      !CABS basisset - Complementary Auxiliary basis set
-      IPOS = INDEX(TEMPLINE,'CABS')
-      IF (IPOS .NE. 0) THEN
-         BASIS(CABBasParam)=.TRUE.
-         IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
-         IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
-            WRITE (LUPRI,*) 'Incorrect input for choice of Complementary auxiliary atomic basis set'
-            WRITE (LUPRI,*) ' Format is "CABS=? ? ?"'
-            CALL LSQUIT('Incorrect input for choice of Complementary auxiliary atomic basis set',lupri)
-         ELSE
-            IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
-            !         IF (IPOS3 .LT. 10) THEN
-            !            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
-            !         ELSE
-            !            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
-            !         ENDIF
-            !         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CABBasParam)
-            call StringInit80(AtomicBasisset(CABBasParam))
-            AtomicBasisset(CABBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
+         !         IF (IPOS3 .LT. 10) THEN
+         !            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+         !         ELSE
+         !            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
+         !         ENDIF
+         !         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CABBasParam)
+         call StringInit80(AtomicBasisset(CABBasParam))
+         AtomicBasisset(CABBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
             
-         ENDIF
       ENDIF
    ENDIF
 

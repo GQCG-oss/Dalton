@@ -74,13 +74,16 @@ CONTAINS
     real(realk)     :: TIMSTR,TIMEND
     type(matrix) :: S,Smix,S_cabs,tmp,S_minus_sqrt,S_minus_sqrt_cabs
     type(matrix) :: tmp_cabs,Vnull,tmp2
-    real(realk),pointer :: SV(:),optwrk(:)
+    real(realk),pointer :: SV(:),optwrk(:),Sfull(:,:),S_cabsfull(:,:)
     integer,pointer :: IWORK(:)
-    integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I
-    logical  :: ODSCREEN
+    integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I,nbastCABO
+    logical  :: ODSCREEN,Failed,VerifyCabs
 
+    VerifyCabs = DECinfo%F12debug
+#ifdef VAR_LSDEBUG
+    VerifyCabs = .TRUE.
+#endif
     IERR=0
-
     IF(CMO_CABS_save_created)THEN
        call mat_assign(CMO_cabs,CMO_CABS_save)
     ELSE
@@ -103,6 +106,52 @@ CONTAINS
        
        call mat_init(tmp_cabs,nbast_cabs,nbast_cabs)
        call II_get_mixed_overlap(LUPRI,LUERR,SETTING,S_cabs,AOdfCABS,AOdfCABS,.FALSE.,.FALSE.)
+       If(VerifyCabs) then
+          !Test that S_cabs have the structure 
+          !  S_cabs =  (  S   |     *      )
+          !            (  *   |  cabs_only )
+          CALL mat_init(S,nbast,nbast)
+          call II_get_mixed_overlap(LUPRI,LUERR,SETTING,S,AORegular,AORegular,.FALSE.,.FALSE.)
+          call mem_alloc(Sfull,nbast,nbast)
+          CALL mat_to_full(S,1.0E0_realk,Sfull)
+          CALL mat_free(S)
+
+          call mem_alloc(S_cabsfull,nbast_cabs,nbast_cabs)
+          CALL mat_to_full(S_cabs,1.0E0_realk,S_cabsfull)
+          call verifyCABS_HaveRegularFirst(Sfull,nbast,S_cabsfull,nbast_cabs,Failed)
+          call mem_dealloc(Sfull)
+          IF(Failed)THEN
+             CALL LSQUIT('Something Wrong CABSAO do not have regular AO first',-1)
+          ELSE
+             !check CABSonly is last 
+             nbastCABO = nbast_cabs - nbast
+             CALL mat_init(S,nbastCABO,nbastCABO)
+             call II_get_mixed_overlap(LUPRI,LUERR,SETTING,S,AOdfCABO,AOdfCABO,.FALSE.,.FALSE.)
+             call mem_alloc(Sfull,nbastCABO,nbastCABO)
+             CALL mat_to_full(S,1.0E0_realk,Sfull)
+             CALL mat_free(S)
+             call verifyCABS_HaveCABOLast(Sfull,nbastCABO,nbast,S_cabsfull,nbast_cabs,Failed)
+             call mem_dealloc(Sfull)
+             IF(Failed)THEN
+                CALL LSQUIT('Something Wrong CABSAO do not have CABS only last',-1)
+             ELSE
+                !check last block
+                CALL mat_init(S,nbastCABO,nbast)
+                call II_get_mixed_overlap(LUPRI,LUERR,SETTING,S,AOdfCABO,AORegular,.FALSE.,.FALSE.)
+                call mem_alloc(Sfull,nbastCABO,nbast)
+                CALL mat_to_full(S,1.0E0_realk,Sfull)
+                CALL mat_free(S)
+                call verifyCABS3(Sfull,nbastCABO,nbast,S_cabsfull,nbast_cabs,Failed)
+                call mem_dealloc(Sfull)
+                IF(Failed)THEN
+                   CALL LSQUIT('Something Wrong CABS3',-1)
+                ENDIF
+             ENDIF
+          ENDIF
+          call mem_dealloc(S_cabsfull)
+          WRITE(lupri,*)'CABS basis test is successful'
+       endif
+
        call lowdin_diag(nbast_cabs, S_cabs%elms,tmp_cabs%elms, S_minus_sqrt_cabs%elms, lupri)
        call mat_free(tmp_cabs)
        CALL mat_free(S_cabs)       
@@ -187,6 +236,70 @@ CONTAINS
        SETTING%SCHEME%OD_SCREEN = ODSCREEN
     ENDIF
   end subroutine build_CABS_MO
+
+  subroutine verifyCABS_HaveRegularFirst(Sfull,nbast,S_cabsfull,nbast_cabs,Failed)
+    implicit none
+    integer,intent(in) :: nbast,nbast_cabs
+    real(realk),intent(in) :: Sfull(nbast,nbast),S_cabsfull(nbast_cabs,nbast_cabs)
+    logical,intent(inout) :: Failed 
+    !
+    integer :: I,J
+    Failed =.FALSE.
+    VerifyCabsJloop: DO J=1,nbast
+       DO I=1,nbast
+          IF(ABS(Sfull(I,J)-S_cabsfull(I,J)).GT.1.0E-12_realk)THEN
+             Failed =.TRUE.
+             print*,'verifyAOFirst: I=',I,'J=',J
+             print*,'verifyAOFirst: Sfull(I,J)',Sfull(I,J)
+             print*,'verifyAOFirst: S_cabsfull(I,J)',S_cabsfull(I,J)
+             EXIT VerifyCabsJloop
+          ENDIF
+       ENDDO
+    ENDDO VerifyCabsJloop
+  end subroutine verifyCABS_HaveRegularFirst
+
+  subroutine verifyCABS_HaveCABOLast(Sfull,nbastCABO,nbast,S_cabsfull,nbast_cabs,Failed)
+    implicit none
+    integer,intent(in) :: nbast,nbast_cabs,nbastCABO
+    real(realk),intent(in) :: Sfull(nbastCABO,nbastCABO),S_cabsfull(nbast_cabs,nbast_cabs)
+    logical,intent(inout) :: Failed 
+    !
+    integer :: I,J
+    Failed =.FALSE.
+    VerifyCabsJloop2: DO J=1,nbastCABO
+       DO I=1,nbastCABO
+          IF(ABS(Sfull(I,J)-S_cabsfull(nbast+I,nbast+J)).GT.1.0E-12_realk)THEN
+             Failed =.TRUE.
+             print*,'verifyCABSLast: I=',I,'J=',J,'nbast=',nbast
+             print*,'verifyCABSLast: Sfull(I,J)',Sfull(I,J)
+             print*,'verifyCABSLast: S_cabsfull(nbast+I,nbast+J)',S_cabsfull(nbast+I,nbast+J)
+             EXIT VerifyCabsJloop2
+          ENDIF
+       ENDDO
+    ENDDO VerifyCabsJloop2
+  end subroutine verifyCABS_HaveCABOLast
+
+  subroutine verifyCABS3(Sfull,nbastCABO,nbast,S_cabsfull,nbast_cabs,Failed)
+    implicit none
+    integer,intent(in) :: nbast,nbast_cabs,nbastCABO
+    real(realk),intent(in) :: Sfull(nbastCABO,nbast),S_cabsfull(nbast_cabs,nbast_cabs)
+    logical,intent(inout) :: Failed 
+    !
+    integer :: I,J
+    Failed =.FALSE.
+    VerifyCabsJloop3: DO J=1,nbast
+       DO I=1,nbastCABO
+          IF(ABS(Sfull(I,J)-S_cabsfull(nbast+I,J)).GT.1.0E-12_realk)THEN
+             Failed =.TRUE.
+             print*,'verifyCABS3: I=',I,'J=',J,'nbast=',nbast
+             print*,'verifyCABS3: Sfull(I,J)',Sfull(I,J)
+             print*,'verifyCABS3: S_cabsfull(nbast+I,nbast+J)',S_cabsfull(nbast+I,nbast+J)
+             EXIT VerifyCabsJloop3
+          ENDIF
+       ENDDO
+    ENDDO VerifyCabsJloop3
+  end subroutine verifyCABS3
+
 
   subroutine build_RI_MO(CMO_RI,nbast_cabs,SETTING,lupri)
     implicit none

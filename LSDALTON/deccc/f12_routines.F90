@@ -1057,7 +1057,6 @@ module f12_routines_module
           ELSE
              IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
              IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                   & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
@@ -2016,7 +2015,7 @@ module f12_routines_module
        elseif(string(i).EQ.'c')then !cabs
           call dcopy(ndim2(i)*ndim1(i),CMO_cabs%elms,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'r')then !ri - MOs
-          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)          
        endif
     enddo
     IF(doCABS)THEN
@@ -2026,8 +2025,8 @@ module f12_routines_module
        call mat_free(CMO_ri)
     ENDIF
     call mem_alloc(tmp,ndim2(1),ndim1(2),ndim1(3),ndim1(4))
-    call ls_dzero(tmp,ndim2(1)*ndim1(2)*ndim1(3)*ndim1(4))
-    call sub1(gao,tmp,CMO(1)%elms,ndim2,ndim1)
+    call ls_dzero(tmp,ndim2(1)*ndim1(2)*ndim1(3)*ndim1(4)) !replace with a dgemm !!
+    call sub1(gao,tmp,CMO(1)%elms,ndim2,ndim1)             !replace with a dgemm !!
 
     call mem_alloc(tmp2,ndim2(1),ndim2(2),ndim1(3),ndim1(4))
     call ls_dzero(tmp2,ndim2(1)*ndim2(2)*ndim1(3)*ndim1(4))
