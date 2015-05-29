@@ -794,7 +794,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
   logical, intent(inout)     :: OnMaster
@@ -815,7 +817,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call lstmem_init
   call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
+#ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
+#endif
   call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
   ! MPI initialization
@@ -844,7 +848,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
 #ifdef VAR_SCALAPACK
   use matrix_operations_scalapack
 #endif
@@ -862,7 +868,9 @@ implicit none
      call free_AO2GCAO_GCAO2AO()
   ENDIF
   call lstmem_free
+#ifdef VAR_ICHOR
   if(OnMaster)call FreeIchorSaveGabModule()
+#endif
   
 
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL

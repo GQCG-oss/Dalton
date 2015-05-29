@@ -149,7 +149,7 @@ contains
     integer :: m, k, n
 
     noccEOS  = MyFragment%noccEOS
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(V2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)  
     call mem_alloc(Gijpq,  noccEOS, noccEOS, nocvAOS, nocvAOS)    
@@ -307,7 +307,7 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
 
     call mem_alloc(V5ijkl, noccEOS, noccEOS, noccEOS, noccEOS) 
@@ -477,7 +477,7 @@ contains
 
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS 
-    nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(X2ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(X2ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
@@ -1126,8 +1126,8 @@ contains
     
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS
-    nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
-    nvirtAOS = MyFragment%nunoccAOS    
+    nocvAOS = MyFragment%noccAOS + MyFragment%nvirtAOS
+    nvirtAOS = MyFragment%nvirtAOS    
 
     call mem_alloc(B6ijkl, noccEOS, noccEOS,  noccEOS, noccEOS)
     call mem_alloc(Rijpa,  noccEOS, noccEOS,  nocvAOS, nvirtAOS)
@@ -1384,8 +1384,8 @@ contains
     integer :: i,j,r,c,a,p
 
     noccEOS  = MyFragment%noccEOS
-    nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
-    nvirtAOS = MyFragment%nunoccAOS
+    nocvAOS = MyFragment%noccAOS + MyFragment%nvirtAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO = size(MyFragment%Ccabs,2)
 
     call mem_alloc(B9ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
@@ -1468,9 +1468,9 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Fijab, noccEOS,  noccEOS,  nvirtAOS, nvirtAOS) 
  
@@ -1551,9 +1551,9 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Rijpq, noccEOS,  noccEOS,  nocvAOS,  nocvAOS) 
     call mem_alloc(Gpqab, nocvAOS,  nocvAOS,  nvirtAOS, nvirtAOS) 
@@ -1657,9 +1657,9 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Rijmc, noccEOS, noccEOS, noccAOS, ncabsMO) 
     call mem_alloc(Gmcab, noccAOS, ncabsMO, nvirtAOS, nvirtAOS) 
@@ -1777,9 +1777,9 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Fijka, noccEOS, noccEOS, noccEOS, nvirtAOS) 
     call mem_alloc(Fijak, noccEOS, noccEOS, nvirtAOS, noccEOS) 
@@ -1857,9 +1857,9 @@ contains
     
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Rijpq,  noccEOS, noccEOS, nocvAOS,  nocvAOS)
     call mem_alloc(Gpqia,  nocvAOS, nocvAOS, noccEOS,  nvirtAOS)
@@ -1962,9 +1962,9 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS,  ncabsMO)
     call mem_alloc(Gmcia,  noccAOS, ncabsMO, noccEOS,  nvirtAOS)
@@ -2104,9 +2104,9 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(V1ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(Fijka, noccEOS, noccEOS, noccEOS, nvirtAOS) 
@@ -2187,9 +2187,9 @@ contains
     
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Rijpq,  noccEOS, noccEOS, nocvAOS,  nocvAOS)
     call mem_alloc(Gpqia,  nocvAOS, nocvAOS, noccEOS,  nvirtAOS)
@@ -2298,9 +2298,9 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Rijmc,  noccEOS, noccEOS, noccAOS,  ncabsMO)
     call mem_alloc(Gmcia,  noccAOS, ncabsMO, noccEOS,  nvirtAOS)
@@ -2433,9 +2433,9 @@ contains
 
     noccEOS  = MyFragment%noccEOS
     noccAOS  = MyFragment%noccAOS 
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     ncabsMO  = size(MyFragment%Ccabs,2)
-    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nvirtAOS
 
     call mem_alloc(Gijab,  noccEOS, noccEOS, nvirtAOS, nvirtAOS)
  
@@ -2518,15 +2518,13 @@ contains
     !> number of AO orbitals
     integer :: nbasis
     !> number of occupied MO orbitals in EOS 
-    integer :: noccEOS, nunoccEOS, noccfull
+    integer :: noccEOS, nvirtEOS, noccfull
     !> number of occupied MO orbitals in AOS 
     integer :: noccAOS
     !> number of virtual MO orbitals in AOS 
-    integer :: nunoccAOS
+    integer :: nvirtAOS
     !> number of occupied + virtual MO orbitals in EOS 
     integer :: nocvAOS  
-    !> number of virtual MO orbitals in AOS 
-    integer :: nvirtAOS
 
     !> number of CABS AO orbitals
     integer :: ncabsAO
@@ -2600,13 +2598,13 @@ contains
     
     nbasis   = MyFragment%nbasis
     noccEOS  = MyFragment%noccEOS
-    nunoccEOS = MyFragment%nunoccEOS
+    nvirtEOS = MyFragment%nvirtEOS
     noccfull = noccEOS
        
     noccAOS = MyFragment%noccAOS
-    nunoccAOS = MyFragment%nunoccAOS
-    nocvAOS = MyFragment%noccAOS + MyFragment%nunoccAOS
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
+    nocvAOS = MyFragment%noccAOS + MyFragment%nvirtAOS
+    nvirtAOS = MyFragment%nvirtAOS
     
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
@@ -2620,7 +2618,7 @@ contains
        print *, "-------------------------------------------------"
        print *, "nbasis:    ", nbasis
        print *, "noccEOS:   ", noccEOS
-       print *, "nunoccEOS: ", nunoccEOS
+       print *, "nvirtEOS: ", nvirtEOS
        print *, "-------------------------------------------------"
        print *, "noccAOS    ", noccAOS
        print *, "nocvAOS    ", nocvAOS
@@ -2668,7 +2666,7 @@ contains
 
     ! Creating a CvirtAOS matrix 
     call mem_alloc(CvirtAOS, MyFragment%nbasis, nvirtAOS)
-    do i=1, MyFragment%nunoccAOS
+    do i=1, MyFragment%nvirtAOS
        CvirtAOS(:,i) = MyFragment%Cv(:,i)
     end do
 
@@ -2680,7 +2678,7 @@ contains
     do i=1, MyFragment%noccAOS
        CocvAOS(:,i) = MyFragment%Co(:,i)
     end do
-    do i=1, MyFragment%nunoccAOS
+    do i=1, MyFragment%nvirtAOS
        CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%Cv(:,i)
     end do
 

@@ -52,17 +52,17 @@ MODULE matrix_operations
         & mat_to_full3D, string11_mtype
 
 !> Matrices are symmetric and dense (not implemented)
-   integer, parameter :: mtype_symm_dense = 1
+   integer, parameter :: mtype_symm_dense  = 1
 !> Matrices are dense (default) 
-   integer, parameter :: mtype_dense = 2
+   integer, parameter :: mtype_dense       = 2
 !> Matrices are dense and have both alpha and beta part (default for open shell)
-   integer, parameter ::  mtype_unres_dense = 5
+   integer, parameter :: mtype_unres_dense = 5
 !> Matrices are compressed sparse row (CSR) 
-   integer, parameter ::  mtype_csr = 7
+   integer, parameter :: mtype_csr         = 7
 !> Matrices are MPI memory distributed using scalapack
-   integer, parameter ::  mtype_scalapack = 8
+   integer, parameter :: mtype_scalapack   = 8
 !> Matrices are MPI memory distributed using TK scheme
-   integer, parameter ::  mtype_pdmm = 9
+   integer, parameter :: mtype_pdmm        = 9
 !*****************
 !Possible matrix types - 
 !(Exploiting symmetry when operating sparse matrices is probably a vaste of effort - 

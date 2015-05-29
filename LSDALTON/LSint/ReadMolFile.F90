@@ -36,19 +36,19 @@ contains
 !>    AND READS THE X,Y,Z COORDINATES OF THE INDIVIDUAL ATOMS
 !>
 SUBROUTINE READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,MOLECULE,&
-     &BASISSETLIBRARY,doprint,iprint,DoSpherical,basis,&
-	 &latt_config)
+     & BASISSETLIBRARY,doprint,iprint,DoSpherical,basis,&
+     & latt_config,ATOMBASIS)
 implicit none
 INTEGER,intent(in)               :: LUPRI,iprint
 TYPE(MOLECULEINFO),intent(inout) :: MOLECULE
-LOGICAL,intent(inout) :: BASIS(nBasisBasParam),DoSpherical
+LOGICAL,intent(inout) :: ATOMBASIS,BASIS(nBasisBasParam),DoSpherical
 LOGICAL,intent(in) :: doprint
 TYPE(BASISSETLIBRARYITEM),intent(inout) :: BASISSETLIBRARY(nBasisBasParam)
 TYPE(lvec_list_t),INTENT(INOUT) :: latt_config
 !
 integer            :: LUINFO
 logical            :: PRINTATOMCOORD,file_exist,Angstrom,Symmetry,dopbc
-logical            :: ATOMBASIS,Subsystems
+logical            :: Subsystems
 CHARACTER(len=80)  :: BASISSET(nBasisBasParam)
 integer            :: MolecularCharge,Atomtypes,Totalnatoms,I,IPOS
 
@@ -83,9 +83,26 @@ IF(.NOT.ATOMBASIS)THEN
    DO I=1,nBasisBasParam
       BASISSETLIBRARY(I)%nbasissets=1
       BASISSETLIBRARY(I)%BASISSETNAME(1)=BASISSET(I)
+      BASISSETLIBRARY(I)%GeminalScalingFactor = 1.0E0_realk
       IPOS = INDEX(BASISSET(I),'cc-pV')
       IF (IPOS .NE. 0) THEN 
          BASISSETLIBRARY(I)%DunningsBasis = .TRUE.
+         !Setting the F12 geminal scaling factor 
+         !see J. Chem. Phys 128, 084102         
+         IPOS = INDEX(BASISSET(I),'aug-cc-pVDZ')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.1E0_realk
+         IPOS = INDEX(BASISSET(I),'aug-cc-pVTZ')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.2E0_realk
+         IPOS = INDEX(BASISSET(I),'aug-cc-pVQZ')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.4E0_realk
+         IPOS = INDEX(BASISSET(I),'aug-cc-pV5Z')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.4E0_realk
+         IPOS = INDEX(BASISSET(I),'cc-pVDZ-F12')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 0.9E0_realk
+         IPOS = INDEX(BASISSET(I),'cc-pVTZ-F12')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.0E0_realk
+         IPOS = INDEX(BASISSET(I),'cc-pVQZ-F12')
+         IF (IPOS .NE. 0) BASISSETLIBRARY(I)%GeminalScalingFactor = 1.1E0_realk
       ENDIF
    ENDDO
 ELSE !ATOMBASIS
@@ -823,7 +840,6 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
   call StringInit80(SubsystemLabel)
   atomnumber=0
   basissetnumber=0
-
   DunningsBasis = .TRUE.
   nSubsystemLabels = 0 
   DO I=1,Atomtypes
@@ -1036,13 +1052,16 @@ ENDDO
   ENDIF
 #endif
 
+
   IF(ATOMBASIS)THEN
+     BASISSETLIBRARY%GeminalScalingFactor = 1.0E0_realk
      IF(DunningsBasis)THEN
         !all basis sets used for all atoms are Dunnings
         BASISSETLIBRARY%DunningsBasis = .TRUE.
      ELSE
         BASISSETLIBRARY%DunningsBasis = .FALSE.
      ENDIF
+
      !ELSE
      !do nothing already set
   ENDIF

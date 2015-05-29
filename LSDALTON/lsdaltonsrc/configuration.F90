@@ -205,7 +205,7 @@ implicit none
    !read the MOLECULE.INP and set input
    call read_molfile_and_build_molecule(lupri,config%molecule,config%LIB,&
         & .FALSE.,0,config%integral%DoSpherical,config%integral%basis,&
-        & config%latt_config)
+        & config%latt_config,config%integral%atombasis)
    config%integral%nelectrons = config%molecule%nelectrons 
    config%integral%molcharge = INT(config%molecule%charge)
    !read the LSDALTON.INP and set input
@@ -3691,10 +3691,17 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 
    CABS_BASIS_PRESENT = config%integral%basis(CABBasParam) .OR. config%integral%basis(CAPBasParam)
 
-   if(config%doF12 .AND. (.NOT. CABS_BASIS_PRESENT))then
-      WRITE(config%LUPRI,'(/A)') &
-           &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
-      CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+   if(config%doF12)THEN
+      if(.NOT. CABS_BASIS_PRESENT)then         
+         WRITE(config%LUPRI,'(/A)') &
+              &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+         CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+      endif
+      WRITE(config%LUPRI,'(A,F7.1)')'The F12 Geminal exponent for the Regular Basis = ',&
+           & ls%setting%basis(1)%p%BINFO(REGBASPARAM)%GeminalScalingFactor
+      IF(config%integral%ATOMBASIS)THEN
+         WRITE(config%LUPRI,'(A)') 'WARNING BASIS (NOT ATOMBASIS) is required to auto detect the Geminal exponent'
+      ENDIF
    endif
 !ADMM basis input
    if(config%integral%ADMM_EXCHANGE) THEN

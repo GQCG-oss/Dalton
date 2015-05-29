@@ -20,6 +20,7 @@ MODULE IntegralInterfaceModuleDF
   use dec_typedef_module, only: batchTOorb
   use screen_mod
   use BUILDAOBATCH
+  use,intrinsic :: iso_c_binding,only:c_f_pointer, c_loc,C_PTR
   use ThermiteIntTransform_module
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
        & II_get_df_exchange_mat, II_get_pari_df_exchange_mat,&
@@ -2829,23 +2830,27 @@ END SUBROUTINE II_get_RI_AlphaCD_3CenterInt2
 !> \date 2015
 SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      & SETTING,nAux,n1,n2,intspec,MaxnAux,nMO1,nMO2,AOtoMO,C1,C2,nthreads,dim1,&
-     & GindexToLocal,DECPRINTLEVEL)
+     & GindexToLocal,DECPRINTLEVEL,use_bg_bufInput)
   IMPLICIT NONE
   Integer,intent(in)     :: LUPRI,LUERR,n1,n2,nAux,MaxnAux,nthreads
   integer,intent(in)     :: nMO1,nMO2,dim1,DECPRINTLEVEL
-  REAL(REALK),pointer    :: FullAlphaCD(:,:,:) !dim1,nMO1,nMO2
+  REAL(REALK),pointer    :: FullAlphaCD(:) !dim1,nMO1,nMO2
   TYPE(LSSETTING),intent(inout) :: SETTING
   character,intent(in)  :: intspec(4)
   logical :: AOtoMO
-  real(realk),optional :: C1(n1,nMO1),C2(n2,nMO2)  
+  real(realk) :: C1(n1,nMO1),C2(n2,nMO2)  
   integer :: GindexToLocal(nAux)
+  logical,optional :: use_bg_bufInput
   !
   real(realk) :: TSTART,TEND
-  real(realk),pointer :: TmpAlphaCD(:,:)
-  logical :: MasterWakeSlaves,RestricedSize
+  real(realk),pointer :: TmpAlphaCD(:),w0(:)
+  logical :: MasterWakeSlaves,RestricedSize,use_bg_buf
   integer :: Oper,MaxN,i,startF,N,M,K,TID
   integer :: ao(3),dims(3),GlobalToLocal(nAux)
-  integer(kind=8) :: n8
+  integer(kind=8) :: n8,w0size,w1size
+  type(C_PTR) :: cpointer
+  use_bg_buf = .FALSE.
+  IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
   call nullThermiteIntTransform()
   call InitThermiteIntTransform1(GindexToLocal,nAux) 
 
@@ -2869,23 +2874,39 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      !When AO integrals becomes bigger than (MaxN,n1,n2)
      !the AO integrals are transformed to
      !MO basis with accumulation in setting%output%Result3D
+
+     w1size = dim1*nMO1*nMO2
+     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
+          & '3 center RI: Allocating MO (alpha|AI)',dim1*nMO1*nMO2*8E-9_realk,' GB'
+     IF(use_bg_buf)THEN
+        call mem_pseudo_alloc(FullAlphaCD, w1size)
+     ELSE
+        call mem_alloc(FullAlphaCD,w1size)
+     ENDIF
+
      call InitThermiteIntTransform(n1,nMO1,n2,nMO2,C1,C2,dim1,MaxN,nthreads) !full
      call initIntegralOutputDims(setting%Output,MaxN,1,n1,n2,nthreads)
      IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A,F13.5,A)')&
           & '3 center RI: Allocating 5dim Buffer',MaxN*n1*n2*8E-9_realk,&
           & ' GB for each thread = ',MaxN*n1*n2*nthreads*8E-9_realk,' GB'
-     call mem_alloc(setting%output%ResultMat,MaxN,1,n1,n2,nthreads)
+     IF(use_bg_buf)THEN
+        w0size = MaxN*n1*n2*nthreads
+        call mem_pseudo_alloc(w0, w0size)
+!        setting%output%ResultMat(1:MaxN,1,1:n1,1:n2,1:nthreads) => w0(1:w0size)
+        cpointer = c_loc(w0(1))
+        call c_f_pointer(cpointer,setting%output%ResultMat,[MaxN,1,n1,n2,nthreads])
+     ELSE
+        call mem_alloc(setting%output%ResultMat,MaxN,1,n1,n2,nthreads)
+     ENDIF
      n8 = MaxN*n1*n2*nthreads
      call ls_dzero8(setting%output%ResultMat,n8) !due to screening 
      IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
           & '3 center RI: Allocating TmpArray of ',MaxN*n1*nMO2*8E-9_realk,' GB'
-     call ThermiteIntTransform_alloc_TmpArray() !MaxN,n1,nMO2
-     n8 = dim1*nMO1*nMO2
-     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
-          & '3 center RI: Allocating MO (alpha|AI)',dim1*nMO1*nMO2*8E-9_realk,' GB'
-     call mem_alloc(FullAlphaCD,dim1,nMO1,nMO2)
-     call ls_dzero8(FullAlphaCD,n8)
-     setting%output%Result3D => FullAlphaCD     
+     call ThermiteIntTransform_alloc_TmpArray(use_bg_buf) !MaxN,n1,nMO2
+     call ls_dzero8(FullAlphaCD,w1size)
+!     setting%output%Result3D => FullAlphaCD
+     cpointer = c_loc(FullAlphaCD(1))
+     call c_f_pointer(cpointer,setting%output%Result3D,[dim1,nMO1,nMO2])
      setting%Output%ndim3D(1) = dim1
      setting%Output%ndim3D(2) = nMO1
      setting%Output%ndim3D(3) = nMO2
@@ -2903,9 +2924,16 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      n8 = dim1*n1*n2
      IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
           & '3 center RI: Allocating AO (alpha|CD)',dim1*n1*n2*8E-9_realk,' GB'
-     call mem_alloc(FullAlphaCD,dim1,n1,n2)
-     call ls_dzero8(FullAlphaCD,n8)
-     setting%output%Result3D => FullAlphaCD
+     w1size = dim1*n1*n2
+     IF(use_bg_buf)THEN
+        call mem_pseudo_alloc(FullAlphaCD, w1size)
+     ELSE
+        call mem_alloc(FullAlphaCD,w1size)
+     ENDIF
+     call ls_dzero8(FullAlphaCD,w1size)
+     cpointer = c_loc(FullAlphaCD(1))
+     call c_f_pointer(cpointer,setting%output%Result3D,[dim1,n1,n2])
+!     setting%output%Result3D => FullAlphaCD
      setting%Output%ndim3D(1) = dim1
      setting%Output%ndim3D(2) = n1
      setting%Output%ndim3D(3) = n2
@@ -2944,22 +2972,51 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         K = n2        !summation dimension
         IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
              & '3 center RI: Allocating Full TmpArray ',M*N*8E-9_realk,' GB'
-        call mem_alloc(TmpAlphaCD,M,N)
+        n8 = M*N
+        IF(use_bg_buf)THEN
+           call mem_pseudo_alloc(TmpAlphaCD,n8)
+        ELSE
+           call mem_alloc(TmpAlphaCD,n8)
+        ENDIF
         call dgemm('N','N',M,N,K,1.0E0_realk,FullAlphaCD,M,C2,K,0.0E0_realk,TmpAlphaCD,M)
 
 !        print*,'II_get_RI_AlphaCD_3CenterIntFullOnAll:    FullAlphaCD(1:nA,1:4) HALF'
 !        call ls_output(TmpAlphaCD,1,dim1,1,4,dim1,n1*nMO2,1,6)
+        w1size = dim1*nMO1*nMO2
+        IF(use_bg_buf)THEN
+           !do nothing
+        ELSE
+           call mem_dealloc(FullAlphaCD)
+           call mem_alloc(FullAlphaCD,w1size)
+        ENDIF
 
-        call mem_dealloc(FullAlphaCD)
-        call mem_alloc(FullAlphaCD,dim1,nMO1,nMO2)
-        call DF3centerTrans4(nMO1,nMO2,n1,dim1,C1,TmpAlphaCD,FullAlphaCD)
-        call mem_dealloc(TmpAlphaCD)
+        call DF3centerTrans4(nMO1,nMO2,n1,dim1,C1,TmpAlphaCD,FullAlphaCD(1:w1size))
+
+        IF(use_bg_buf)THEN
+           call mem_pseudo_dealloc(TmpAlphaCD)
+           !This looks weird but FullAlphaCD is currently pointing to the first 1:dim1*n1*n2 elements
+           !of a "permanent" memory array. I only need the first 1:dim1*nMO1*nMO2 elements
+           !so I shrink the array dimension by deassociating (NOT deallocating) and reassociate
+           call mem_pseudo_dealloc(FullAlphaCD)
+           call mem_pseudo_alloc(FullAlphaCD, w1size)
+        ELSE
+           call mem_dealloc(TmpAlphaCD)
+        ENDIF
      ENDIF
 !     print*,'II_get_RI_AlphaCD_3CenterIntFullOnAll: FullAlphaCD(1:nA,1:4) MO dim1=',dim1
 !     call ls_output(FullAlphaCD,1,dim1,1,4,dim1,n1*n2,1,6)
   ENDIF
-  call mem_dealloc(setting%output%ResultMat)
-  call FreeThermiteIntTransform()
+  call FreeThermiteIntTransform(use_bg_buf)
+  IF(RestricedSize)THEN
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(w0)
+        nullify(setting%output%ResultMat)
+     ELSE
+        call mem_dealloc(setting%output%ResultMat)
+     ENDIF
+  ELSE
+     call mem_dealloc(setting%output%ResultMat)
+  ENDIF
 END SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN
 
 subroutine II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim(setting,nAuxMPI,&
@@ -3067,7 +3124,7 @@ ELSE
          coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
       ENDDO
       IF (intSpec.EQ.'G') THEN
-         ! The Gaussian geminal operator g
+         ! The Gaussian geminal operatorg 
          oper = GGemOperator
          call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
       ELSE IF (intSpec.EQ.'F') THEN

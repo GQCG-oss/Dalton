@@ -605,11 +605,7 @@ module lspdm_basic_module
        integer, intent(out), optional :: pos_on_node, idx_on_node,window_index
        integer :: nnod, pos, idx,widx
 
-       nnod=1
-#ifdef VAR_MPI
-       nnod=infpar%lg_nodtot
-#endif      
-
+       nnod=arr%nnod
        rank_of_node = mod(globaltilenumber-1+arr%offset,nnod)
 
        if( alloc_in_dummy ) then

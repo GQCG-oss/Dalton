@@ -52,6 +52,7 @@ Character(len=80)        :: NAME
 END TYPE ATOMTYPEITEM
 
 TYPE BASISSETINFO
+REAL(REALK)                :: GeminalScalingFactor
 LOGICAL                    :: DunningsBasis
 LOGICAL                    :: SPHERICAL
 LOGICAL                    :: GCbasis
@@ -134,6 +135,7 @@ subroutine nullifyBasisset(BAS)
   implicit none
   TYPE(BASISSETINFO) :: BAS
   BAS%DunningsBasis = .FALSE.
+  BAS%GeminalScalingFactor = 1.0E0_realk
   BAS%SPHERICAL = .FALSE.
   BAS%GCbasis = .FALSE.
   BAS%GCONT = .FALSE.

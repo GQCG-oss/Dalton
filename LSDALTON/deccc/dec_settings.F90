@@ -66,6 +66,7 @@ contains
     DECinfo%memory                 = 2.0E0_realk
     DECinfo%memory_defined         = .false.
     DECinfo%use_system_memory_info = .false.
+    DECinfo%bg_memory              = -2.0E0_realk
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc  = .false. ! full molecular cc
@@ -90,9 +91,10 @@ contains
 
     ! -- Debug modes
     DECinfo%test_fully_distributed_integrals = .false.
+    DECinfo%distribute_fullmolecule = .false.
     DECinfo%CRASHCALC               = .false.
     DECinfo%cc_driver_debug         = .false.
-    DECinfo%cc_driver_use_bg_buffer = .false.
+    DECinfo%use_bg_buffer           = .false.
     DECinfo%manual_batchsizes       = .false.
     DECinfo%ccsdAbatch              = 0
     DECinfo%ccsdGbatch              = 0
@@ -278,7 +280,8 @@ contains
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
 
-    ! Test stuff
+    ! Stripped down keywords
+    DECinfo%noaofock=.false.
 
 
 
@@ -289,7 +292,7 @@ contains
     implicit none
     !> The DEC item
     type(decsettings),intent(inout) :: DECitem
-
+    ! MODIFY FOR NEW MODEL
     DECitem%cc_models(MODEL_MP2)   ='MP2     '
     DECitem%cc_models(MODEL_CC2)   ='CC2     '
     DECitem%cc_models(MODEL_CCSD)  ='CCSD    '
@@ -297,7 +300,7 @@ contains
     DECitem%cc_models(MODEL_RPA)   ='RPA     '
     DECitem%cc_models(MODEL_SOSEX) ='SOSEX   '
     DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
-
+    DECitem%cc_models(MODEL_LSTHCRIMP2) ='THCRIMP2'
   end subroutine dec_set_model_names
 
 
@@ -445,6 +448,11 @@ contains
           DECinfo%use_singles = .false.  
           DECinfo%NO_MO_CCSD  = .true.
           doRIMP2 = .TRUE.
+       case('.LSTHCRIMP2') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles = .false.  
+          DECinfo%NO_MO_CCSD  = .true.
+          doRIMP2 = .TRUE. !we need an Aux basis 
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -526,6 +534,9 @@ contains
        case('.MEMORY') 
           read(input,*) DECinfo%memory           
           DECinfo%memory_defined=.true.
+
+       case('.BG_MEMORY') 
+          read(input,*) DECinfo%bg_memory           
 
        case('.USE_SYS_MEM_INFO') 
           DECinfo%use_system_memory_info = .true.
@@ -618,6 +629,8 @@ contains
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+       case('.DISTRIBUTE_FULLINFO')
+          DECinfo%distribute_fullmolecule = .true.
 
 
        !KEYWORDS RELATED TO FRAGMENT SPACES
@@ -760,7 +773,7 @@ contains
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
-       case('.CCDRIVER_BG_BUF');      DECinfo%cc_driver_use_bg_buffer = .true.
+       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
        case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
        case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
@@ -795,6 +808,10 @@ contains
        case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
                                           read(input,*) DECinfo%en_mem
        case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
+
+          ! Stripped-down keywords
+          ! **********************
+       case('.NOAOFOCK'); DECinfo%noaofock   = .true.
 
 
 #ifdef MOD_UNRELEASED
@@ -958,7 +975,7 @@ contains
        DECinfo%PairEstimate=.false.
        DECinfo%PairEstimateIgnore = .true.
        DECinfo%no_pairs = .true.
-
+       ! MODIFY FOR NEW MODEL
        ! Some models are not compatible with DECNP
        select case(DECinfo%ccmodel) 
        case (MODEL_RPA)
@@ -967,6 +984,8 @@ contains
           call lsquit("SOSEX model is not compatible with DECNP yet",DECinfo%output)
        case (MODEL_RIMP2)
           call lsquit("RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
+       case (MODEL_LSTHCRIMP2)
+          call lsquit("LS-THC-RI-MP2 model is not compatible with DECNP yet",DECinfo%output)
        end select
 
        if (DECinfo%first_order) then
@@ -1058,6 +1077,12 @@ contains
        if(DECinfo%DECCO) then
           call lsquit('SNOOP cannot be used in connection with the DECCO keyword!',-1)
        end if
+
+       if(Decinfo%distribute_fullmolecule)then
+          print*,"WARNING: memory distribution for the molecule type in a snoop&
+             & calculation is currently not implemented -> falling back to standart"
+          Decinfo%distribute_fullmolecule = .false.
+       endif
        
     end if
 
@@ -1124,6 +1149,13 @@ contains
                & It is therefore not possible to print the fragment energies. &
                & Suggestion: Remove .PRINTFRAGS keyword!', DECinfo%output)
        ENDIF
+
+       if(Decinfo%distribute_fullmolecule)then
+          print*,"WARNING: memory distribution for the molecule type in a full&
+          & calculation is currently not implemented -> falling back to standart"
+          Decinfo%distribute_fullmolecule = .false.
+       endif
+
     ENDIF
 
     FirstOrderModel: if(DECinfo%ccModel /= MODEL_MP2.and.DECinfo%ccModel /= MODEL_CCSD.and.DECinfo%ccModel /= MODEL_RIMP2) then
@@ -1208,6 +1240,22 @@ contains
             & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
     end if
 
+    if(DECinfo%use_bg_buffer.AND.DECinfo%bg_memory.LT.0.0E0_realk) then
+       write(DECinfo%output,*) 'Background Memory buffer size not set!'
+       write(DECinfo%output,*) 'Please specify .BG_MEMORY keyword (in gigabytes)'
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#endif
+       write(DECinfo%output,*) '.BG_MEMORY'
+       write(DECinfo%output,*) '8.0'
+       write(DECinfo%output,*) ''
+       call lsquit('.BACKGROUND_BUFFER requires specification of .BG_MEMORY keyword!',-1)
+    end if
+
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
@@ -1252,6 +1300,24 @@ contains
 
     ! Set FOTs for geometry opt.
     call set_geoopt_FOTs(DECinfo%FOT)
+
+    if(DECinfo%noaofock) then
+       if(DECinfo%SinglesPolari) then
+          call lsquit('Singles polarization does not work with .NOAOFOCK keyword!',-1)
+       end if
+       if(DECinfo%use_canonical) then
+          call lsquit('NOAOFOCK keyword does not work with canonical orbitals!',-1)
+       end if       
+       if(DECinfo%check_lcm_orbitals) then
+          call lsquit('NOAOFOCK keyword does not work with CHECKLCM keyword!',-1)
+       end if
+       if(DECinfo%fragadapt) then
+          call lsquit('NOAOFOCK keyword does not work with fragment-adapted orbitals!',-1)
+       end if
+       if(DECinfo%full_molecular_cc) then
+          call lsquit('NOAOFOCK keyword does not work for full molecular calculation!',-1)
+       end if
+    end if
 
   end subroutine check_dec_input
 
@@ -1360,7 +1426,7 @@ contains
     write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
     write(lupri,*) 'CRASHCALC            ', DECitem%CRASHCALC
     write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
-    write(lupri,*) 'cc_driver_use_bg_buffer ', DECitem%cc_driver_use_bg_buffer
+    write(lupri,*) 'use_bg_buffer ', DECitem%use_bg_buffer
     write(lupri,*) 'en_mem ', DECitem%en_mem
     write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
     write(lupri,*) 'ccsd_expl ', DECitem%ccsd_expl
@@ -1487,6 +1553,7 @@ contains
     case('.RPA');     modelnumber = MODEL_RPA
     case('.SOSEX');   modelnumber = MODEL_SOSEX
     case('.RIMP2');   modelnumber = MODEL_RIMP2
+    case('.LSTHCRIMP2'); modelnumber = MODEL_LSTHCRIMP2
     case default
        print *, 'Model not found: ', myword
        write(DECinfo%output,*)'Model not found: ', myword
@@ -1499,6 +1566,7 @@ contains
        write(DECinfo%output,*)'.RPA'
        write(DECinfo%output,*)'.SOSEX'
        write(DECinfo%output,*)'.RIMP2'
+       write(DECinfo%output,*)'.LS-THC-RIMP2'       
        call lsquit('Requested model not found!',-1)
     end SELECT
 

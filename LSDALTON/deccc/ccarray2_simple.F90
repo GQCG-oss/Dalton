@@ -497,18 +497,18 @@ module array2_simple_operations
     end if
     if( (.not. occ) .and. row ) then
        ! Number of rows in input matrix must correspond to virtual AOS
-       if(AOS%dims(1) /= MyFragment%nunoccAOS) something_wrong=.true.
+       if(AOS%dims(1) /= MyFragment%nvirtAOS) something_wrong=.true.
        ES=3  ! extraction scheme 3
     end if
     if( (.not. occ) .and. (.not. row) ) then
        ! Number of columns in input matrix must correspond to virtual AOS
-       if(AOS%dims(2) /= MyFragment%nunoccAOS) something_wrong=.true.
+       if(AOS%dims(2) /= MyFragment%nvirtAOS) something_wrong=.true.
        ES=4  ! extraction scheme 4
     end if
     if(something_wrong) then
        write(DECinfo%output,*) 'Input matrix dims = ', AOS%dims
        write(DECinfo%output,*) 'Occupied/virtual AOS = ', MyFragment%noccAOS, &
-            & MyFragment%nunoccAOS
+            & MyFragment%nvirtAOS
        write(DECinfo%output,*) 'Logical row/occupied', row,occ
        call lsquit('Inconsistent input in array2_extract_EOS',DECinfo%output)
     end if
@@ -525,11 +525,11 @@ module array2_simple_operations
        dim1 = AOS%dims(1)
        dim2 = MyFragment%noccEOS
     case(3)  ! ES=3: Extract virtual row EOS, same columns as AOS input
-       dim1 = MyFragment%nunoccEOS
+       dim1 = MyFragment%nvirtEOS
        dim2 = AOS%dims(2)
     case(4)  ! ES=4: Extract virtual column EOS, same rows as AOS input
        dim1 = AOS%dims(1)
-       dim2 = MyFragment%nunoccEOS
+       dim2 = MyFragment%nvirtEOS
     end select
     EOS = array2_init([dim1,dim2])
 
@@ -616,14 +616,14 @@ module array2_simple_operations
     ! Number of basis functions in fragment
     integer :: nbasis
     ! Number of occupied orbitals in EOS
-    integer :: nunocc_eos
+    integer :: nvirt_eos
     integer :: a, ax
 
-    nunocc_eos = MyFragment%nunoccEOS
+    nvirt_eos = MyFragment%nvirtEOS
     nbasis = MyFragment%nbasis
 
     ! Loop over orbitals and extract virtual EOS orbitals
-    do a=1,nunocc_eos
+    do a=1,nvirt_eos
        ax=MyFragment%idxu(a)
        Ceos%val(1:nbasis,a) = MyFragment%Cv(1:nbasis,ax)
     end do
@@ -660,7 +660,7 @@ module array2_simple_operations
     !> Eigenvalues from diagonalization of occ-occ Fock matrix block
     real(realk), dimension(MyFragment%noccAOS),intent(inout) :: EVocc
     !> Eigenvalues from diagonalization of virt-virt Fock matrix block
-    real(realk), dimension(MyFragment%nunoccAOS),intent(inout) :: EVvirt
+    real(realk), dimension(MyFragment%nvirtAOS),intent(inout) :: EVvirt
     real(realk), pointer :: S(:,:)
     integer :: nocc,nvirt,nbasis,i
     integer, dimension(2) :: occocc,virtvirt,occAO,virtAO
@@ -670,7 +670,7 @@ module array2_simple_operations
     ! Init stuff
     ! **********
     nocc = MyFragment%noccAOS      ! (occ AOS size)
-    nvirt = MyFragment%nunoccAOS   ! (virt AOS size)
+    nvirt = MyFragment%nvirtAOS   ! (virt AOS size)
     nbasis = MyFragment%nbasis        ! (atomic extent)
     occocc = [nocc,nocc]
     virtvirt = [nvirt,nvirt]
@@ -898,7 +898,7 @@ module array2_simple_operations
     !> Eigenvalues from diagonalization of valence-valence Fock matrix block 
     real(realk), dimension(MyFragment%noccAOS),intent(inout) :: EVocc
     !> Eigenvalues from diagonalization of virt-virt Fock matrix block
-    real(realk), dimension(MyFragment%nunoccAOS),intent(inout) :: EVvirt
+    real(realk), dimension(MyFragment%nvirtAOS),intent(inout) :: EVvirt
     real(realk), pointer :: S(:,:), EVcore(:), Ucore(:,:)
     integer :: nval,nvirt,nbasis,i,nocctot,j,ncore
     integer, dimension(2) :: virtvirt,occAO,virtAO,LoccT_dims
@@ -914,7 +914,7 @@ module array2_simple_operations
     ! **********
     ncore = MyFragment%ncore   ! number of core orbitals
     nval = MyFragment%noccAOS      ! (occ AOS valence size)
-    nvirt = MyFragment%nunoccAOS   ! (virt AOS size)
+    nvirt = MyFragment%nvirtAOS   ! (virt AOS size)
     nbasis = MyFragment%nbasis        ! (atomic extent)
     nocctot = MyFragment%nocctot   ! occ AOS core+valence
     virtvirt = [nvirt,nvirt]

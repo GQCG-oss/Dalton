@@ -1153,7 +1153,7 @@ contains
 
     ! Number of occ and virt orbitals on central atom in fragment
     nocc  = MyFragment%noccEOS
-    nvirt = MyFragment%nunoccEOS
+    nvirt = MyFragment%nvirtEOS
 
     ! Extract virtual EOS indices and leave occupied indices untouched
     ! ****************************************************************
@@ -1488,7 +1488,7 @@ contains
 
      ! Initialize stuff
      ! ****************
-     nEOS     = myfragment%nunoccEOS
+     nEOS     = myfragment%nvirtEOS
      EOS_idx  => myFragment%idxu(1:nEOS)
      new_dims = [nEOS,nocc,nvirt,nocc]  ! nEOS=Number of virtual EOS orbitals
 
@@ -1987,6 +1987,9 @@ contains
     p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
     p_arr%a(addr)%local_addr  = addr
     p_arr%a(addr)%initialized = .true.
+    !set to invalid, since not used here
+    p_arr%a(addr)%nnod        = -1
+    p_arr%a(addr)%comm        = -1
 
     !SET MODE
     p_arr%a(addr)%mode      = nmodes
@@ -2216,7 +2219,7 @@ contains
     integer,intent(in),optional:: order(arr%mode)
     logical :: pdm
     pdm=.false.
-    if(arr%itype/=TT_DENSE)then
+    if(arr%itype/=TT_DENSE.and.arr%itype/=TT_REPLICATED)then
       if(.not.associated(arr%elm1))then
         call memory_allocate_tensor_dense(arr)
       else

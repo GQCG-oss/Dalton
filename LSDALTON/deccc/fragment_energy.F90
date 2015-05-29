@@ -26,6 +26,7 @@ module fragment_energy_module
   use mp2_module !,only: max_batch_dimension,get_vovo_integrals, &
 !       & mp2_integrals_and_amplitudes
   use rimp2_module
+  use dec_ls_thc_rimp2_module
   use atomic_fragment_operations!  ,only: atomic_fragment_init_basis_part, &
   !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
   !       & update_full_t1_from_atomic_frag,which_pairs, &
@@ -48,14 +49,14 @@ private
 
 contains
 
-  !> \brief Construct new atomic fragment based on info in occ_atoms and Unocc_atoms,
+  !> \brief Construct new atomic fragment based on info in occ_atoms and virt_atoms,
   !> and calculate fragment energy. Energy contributions from each individual orbital
   !> is also calculated and stored in MyFragment%OccContribs and MyFragment%VirtContribs for
   !> the occupied and virtual orbitals, respectively.
   !> \author Kasper Kristensen
   !> \date January 2011
-  subroutine get_fragment_and_Energy(MyAtom,natoms,occ_atoms,Unocc_atoms,&
-       & MyMolecule,MyLsitem,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals,&
+  subroutine get_fragment_and_Energy(MyAtom,natoms,occ_atoms,virt_atoms,&
+       & MyMolecule,MyLsitem,nocc_tot,nvirt_tot,OccOrbitals,virtOrbitals,&
        & MyFragment)
 
     implicit none
@@ -65,20 +66,20 @@ contains
     integer,intent(in) :: natoms
     !> Which atoms are in the occupied fragment space
     logical, dimension(natoms),intent(in) :: occ_atoms
-    !> Which atoms are in the unoccupied fragment space
-    logical, dimension(natoms),intent(in) :: Unocc_atoms
+    !> Which atoms are in the virtupied fragment space
+    logical, dimension(natoms),intent(in) :: virt_atoms
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Full molecule lsitem
     type(lsitem), intent(inout) :: mylsitem
     !> Number of occupied orbitals in full molecule
     integer, intent(in) :: nocc_tot
-    !> Number of unoccupied orbitals in full molecule
-    integer, intent(in) :: nunocc_tot
+    !> Number of virtupied orbitals in full molecule
+    integer, intent(in) :: nvirt_tot
     !> Occupied orbitals for full molecule
     type(decorbital), dimension(nOcc_tot), intent(in) :: OccOrbitals
-    !> Unoccupied orbitals for full molecule
-    type(decorbital), dimension(nUnocc_tot), intent(in) :: UnoccOrbitals
+    !> virtupied orbitals for full molecule
+    type(decorbital), dimension(nvirt_tot), intent(in) :: virtOrbitals
     !> Atomic fragment to be determined  (NOT pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
@@ -94,8 +95,8 @@ contains
     ! Initialize fragment
     ! *******************
     DoBasis=.true.
-    call atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
-         & occ_atoms,nocc_tot,nunocc_tot,OccOrbitals,UnoccOrbitals, &
+    call atomic_fragment_init_atom_specific(MyAtom,natoms,virt_atoms, &
+         & occ_atoms,nocc_tot,nvirt_tot,OccOrbitals,virtOrbitals, &
          & MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
 
     ! Calculate fragment energies
@@ -105,12 +106,12 @@ contains
 
   end subroutine get_fragment_and_Energy
 
-  !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
+  !> \brief Construct new fragment based on list of orbitals in OccAOS and virtAOS,
   !> and calculate fragment energy. 
   !> \author Kasper Kristensen
   !> \date March 2013
   subroutine get_fragment_and_Energy_orb_specific(MyAtom,MyMolecule,mylsitem,&
-       & OccOrbitals,UnoccOrbitals,OccAOS,UnoccAOS, MyFragment)
+       & OccOrbitals,virtOrbitals,OccAOS,virtAOS, MyFragment)
 
     implicit none
     !> Central atom in fragment
@@ -121,12 +122,12 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Occupied orbitals for full molecule
     type(decorbital), dimension(MyMolecule%nocc), intent(in) :: OccOrbitals
-    !> Unoccupied orbitals for full molecule
-    type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
+    !> virtupied orbitals for full molecule
+    type(decorbital), dimension(MyMolecule%nvirt), intent(in) :: virtOrbitals
     !> Which atoms are in the occupied fragment space
     logical, dimension(MyMolecule%nocc),intent(inout) :: OccAOS
-    !> Which atoms are in the unoccupied fragment space
-    logical, dimension(MyMolecule%nunocc),intent(in) :: UnoccAOS
+    !> Which atoms are in the virtupied fragment space
+    logical, dimension(MyMolecule%nvirt),intent(in) :: virtAOS
     !> Atomi Fragment to be determined (NOT pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     real(realk) :: tcpu, twall
@@ -141,9 +142,9 @@ contains
 
     ! Init fragment type based on logical vectors
     DoBasis=.true.
-    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nunocc, &
-         & MyMolecule%nocc, UnoccAOS, &
-         & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
+    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nvirt, &
+         & MyMolecule%nocc, virtAOS, &
+         & occAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,MyFragment,DoBasis,.false.)
 
     ! Calculate fragment energies
     call fragment_energy_and_prop(MyFragment)
@@ -162,8 +163,8 @@ contains
   !>    by the calculated fragment singles amplitudes.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine atomic_driver_advanced(nocc,nunocc,&
-       & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,MyFragment,grad,&
+  subroutine atomic_driver_advanced(nocc,nvirt,&
+       & OccOrbitals,virtOrbitals,MyLsitem,MyMolecule,MyFragment,grad,&
        & t1old,t1new)
 
     implicit none
@@ -173,12 +174,12 @@ contains
     type(mp2grad),intent(inout) :: grad
     !> Number of occupied orbitals in full molecule
     integer,intent(in) :: nOcc
-    !> Number of unoccupied orbitals in full molecule
-    integer,intent(in) :: nUnocc
+    !> Number of virtupied orbitals in full molecule
+    integer,intent(in) :: nvirt
     !> Occupied orbitals for full molecule
     type(decorbital), intent(in) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals for full molecule
-    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> virtupied orbitals for full molecule
+    type(decorbital), intent(in) :: virtOrbitals(nvirt)
     !> Full molecule info (will be unchanged at output)
     type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDalton info
@@ -189,8 +190,8 @@ contains
     type(array2),intent(inout),optional :: t1new
 
     ! Init fragment basis information
-    call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-         & UnoccOrbitals,MyMolecule,mylsitem,MyFragment)
+    call atomic_fragment_init_basis_part(nvirt, nocc, OccOrbitals,&
+         & virtOrbitals,MyMolecule,mylsitem,MyFragment)
      
     ! Attach fragments singles amplitudes to fragment structure
     ! if long-range singles polarization effects are requested.
@@ -199,7 +200,7 @@ contains
     end if
 
     ! Call main driver to get energy (and possibly density or gradient)
-    call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+    call atomic_driver(MyMolecule,mylsitem,OccOrbitals,virtOrbitals,&
          & MyFragment,grad=grad)
     
     ! Update full molecular singles amplitudes with (virt EOS,occ EOS) fragment contributions
@@ -221,7 +222,7 @@ contains
   !> the Lagrangian approach.
   !> If requested, first order properties (MP2 density or gradient) are also calculated.
   !> \author Kasper Kristensen
-  subroutine atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+  subroutine atomic_driver(MyMolecule,mylsitem,OccOrbitals,virtOrbitals,&
        & MyFragment,grad)
 
     implicit none
@@ -231,8 +232,8 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Information about DEC occupied orbitals                                                         
     type(decorbital), dimension(MyMolecule%nocc), intent(in) :: OccOrbitals
-    !> Information about DEC unoccupied orbitals
-    type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
+    !> Information about DEC virtupied orbitals
+    type(decorbital), dimension(MyMolecule%nvirt), intent(in) :: virtOrbitals
     !> Atomic fragment 
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
@@ -358,6 +359,10 @@ contains
           ! calculate also RIMP2 density integrals
           call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        endif
+    case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
+
+       if(DECinfo%first_order)call lsquit('no first order LSTHCRIMP2',-1)       
+       call LSTHCRIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX) ! higher order CC (-like)
 
@@ -417,23 +422,23 @@ contains
              call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
              call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-             call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
+             call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nvirtAOS],2)
              call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
-                  &MyFragment%nunoccAOS,MyFragment%nunoccAOS],4)
+                  &MyFragment%nvirtAOS,MyFragment%nvirtAOS],4)
 
           else
 
              call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
              call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-             call tensor_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
-             call tensor_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
+             call tensor_init(ccsdpt_t1, [MyFragment%nvirtAOS,MyFragment%noccAOS],2)
+             call tensor_init(ccsdpt_t2, [MyFragment%nvirtAOS,MyFragment%nvirtAOS,&
                   &MyFragment%noccAOS,MyFragment%noccAOS],4)
 
           endif
 
           ! call ccsd(t) driver and single fragment evaluation
-          call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
+          call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nvirtAOS,&
                & MyFragment%nbasis,MyFragment%ppfock,&
                & MyFragment%qqfock,MyFragment%Co,&
                & MyFragment%Cv,MyFragment%mylsitem,&
@@ -741,9 +746,9 @@ contains
       
      ! Init stuff
      noccEOS  = MyFragment%noccEOS
-     nvirtEOS = MyFragment%nunoccEOS
+     nvirtEOS = MyFragment%nvirtEOS
      noccAOS  = MyFragment%noccAOS
-     nvirtAOS = MyFragment%nunoccAOS
+     nvirtAOS = MyFragment%nvirtAOS
      Eocc     = 0E0_realk
      Evirt    = 0E0_realk
 
@@ -1001,9 +1006,9 @@ contains
 
     ! Init stuff
     noccEOS  = MyFragment%noccEOS
-    nvirtEOS = MyFragment%nunoccEOS
+    nvirtEOS = MyFragment%nvirtEOS
     noccAOS  = MyFragment%noccAOS
-    nvirtAOS = MyFragment%nunoccAOS
+    nvirtAOS = MyFragment%nvirtAOS
     Eocc     = 0E0_realk
     lag_occ  = 0E0_realk
     Evirt    = 0E0_realk
@@ -1297,8 +1302,8 @@ contains
   !> improved full molecular singles amplitudes by the calculated fragment singles amplitudes.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine pair_driver_singles(natoms,nocc,nunocc,&
-       & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
+  subroutine pair_driver_singles(natoms,nocc,nvirt,&
+       & OccOrbitals,virtOrbitals,MyLsitem,MyMolecule,&
        & Fragment1,Fragment2,PairFragment,t1old,t1new)
 
     implicit none
@@ -1306,12 +1311,12 @@ contains
     integer, intent(in) :: natoms
     !> Number of occupied orbitals in full molecule
     integer,intent(in) :: nOcc
-    !> Number of unoccupied orbitals in full molecule
-    integer,intent(in) :: nUnocc
+    !> Number of virtupied orbitals in full molecule
+    integer,intent(in) :: nvirt
     !> Occupied orbitals for full molecule
     type(decorbital), intent(in) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals for full molecule
-    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> virtupied orbitals for full molecule
+    type(decorbital), intent(in) :: virtOrbitals(nvirt)
     !> Full molecule info (will be unchanged at output)
     type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDalton info
@@ -1349,8 +1354,8 @@ contains
 
     ! Update full molecular singles amplitudes
     ! with pair (i,j) interaction contribution.
-    call update_full_t1_from_pair_frag(PairFragment,nocc,nunocc,&
-         & natoms,dopair,OccOrbitals,UnoccOrbitals,t1new)
+    call update_full_t1_from_pair_frag(PairFragment,nocc,nvirt,&
+         & natoms,dopair,OccOrbitals,virtOrbitals,t1new)
     call mem_dealloc(dopair)
 
     ! Free t1 info again
@@ -1453,9 +1458,9 @@ contains
 
      ! Init stuff
      noccEOS  = PairFragment%noccEOS
-     nvirtEOS = PairFragment%nunoccEOS
+     nvirtEOS = PairFragment%nvirtEOS
      noccAOS  = PairFragment%noccAOS
-     nvirtAOS = PairFragment%nunoccAOS
+     nvirtAOS = PairFragment%nvirtAOS
      Eocc     = 0E0_realk
      lag_occ  = 0E0_realk
      Evirt    = 0E0_realk
@@ -1479,11 +1484,11 @@ contains
         prefac_k = 1._realk
      endif
 
-     ! Which "interaction pairs" to include for occ and unocc space (avoid double counting)
+     ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
      call mem_alloc(dopair_occ,noccEOS,noccEOS)
      call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
      call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
-     call which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair_virt)
+     call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
      ! Sanity checks
      ! *************
@@ -1618,7 +1623,7 @@ contains
                  do i=1,noccAOS
                     do a=1,nvirtEOS
 
-                       ! Only update for "interaction orbital pairs" - see which_pairs_unocc
+                       ! Only update for "interaction orbital pairs" - see which_pairs_virt
                        if( dopair_virt(a,b) ) then !Dopair3and4
 
                           ! Multiplier (multiplied by one half)
@@ -1736,10 +1741,14 @@ contains
     integer, external :: OMP_GET_MAX_THREADS
 #endif
     type(decorbital), pointer :: OccOrbitals(:)
-    type(decorbital), pointer :: UnoccOrbitals(:)
-    integer :: nocc,nunocc,nbasis,natoms,lupri
+    type(decorbital), pointer :: virtOrbitals(:)
+    integer :: nocc,nvirt,nbasis,natoms,lupri
 
     write(DECinfo%output,*) 'Using DEC-MP2 debug routine for full molecular system...'
+
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(Full_DECMP2_calculation) not implemented for distributed mol",-1)
+    endif
 
     ! Only for MP2
     if(DECinfo%ccModel/=MODEL_MP2) then
@@ -1749,15 +1758,15 @@ contains
 
     ncore = MyMolecule%ncore
     nOcc = MyMolecule%nocc
-    nUnocc = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     nBasis = MyMolecule%nbasis
     nAtoms = MyMolecule%natoms
 
     ! -- Analyze basis and create orbitals 
     call mem_alloc(OccOrbitals,nOcc)
-    call mem_alloc(UnoccOrbitals,nUnocc)
-    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals)
+    call mem_alloc(virtOrbitals,nvirt)
+    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nvirt,natoms, &
+         & OccOrbitals, virtOrbitals)
 
 
     if(DECinfo%frozencore) then
@@ -1771,31 +1780,31 @@ contains
     ! Initialize stuff
     ! ****************
     energy_matrix(:,:) = 0E0_realk
-    dims = [nunocc, nocc, nunocc, nocc]
+    dims = [nvirt, nocc, nvirt, nocc]
     call mem_alloc(ppfock,nocc,nocc)
     if(DECinfo%frozencore) then
        ! Only copy valence orbitals into array2 structure
        call mem_alloc(Cocc,nbasis,nocc)
        do i=1,nocc
-          Cocc(:,i) = MyMolecule%Co(:,i+Ncore)
+          Cocc(:,i) = MyMolecule%Co%elm2(:,i+Ncore)
        end do
 
        ! Fock valence
        do j=1,nocc
           do i=1,nocc
-             ppfock(i,j) = MyMolecule%ppfock(i+Ncore,j+Ncore)
+             ppfock(i,j) = MyMolecule%oofock%elm2(i+Ncore,j+Ncore)
           end do
        end do
        offset = ncore
     else
        ! No frozen core, simply copy elements for all occupied orbitals
        call mem_alloc(Cocc,nbasis,nocc)
-       Cocc=MyMolecule%Co
-       ppfock = MyMolecule%ppfock
+       Cocc=MyMolecule%Co%elm2
+       ppfock = MyMolecule%oofock%elm2
        offset=0
     end if
-    call mem_alloc(Cvirt,nbasis,nunocc)
-    Cvirt = MyMolecule%Cv
+    call mem_alloc(Cvirt,nbasis,nvirt)
+    Cvirt = MyMolecule%Cv%elm2
     e1=0E0_realk
     e2=0E0_realk
     e3=0E0_realk
@@ -1816,8 +1825,8 @@ contains
        idx = OccOrbitals(i)%centralatom
        orbitals_assigned(idx) = .true.
     end do
-    do i=1,nunocc
-       idx = UnoccOrbitals(i)%centralatom
+    do i=1,nvirt
+       idx = virtOrbitals(i)%centralatom
        orbitals_assigned(idx) = .true.
     end do
 
@@ -1826,7 +1835,7 @@ contains
     ! ***************************
     nbatchINT = max_batch_dimension(mylsitem,nbasis)
     OO=nocc ! Number of occupied orbitals (as real)
-    VV=nunocc ! Number of virtual orbitals (as real)
+    VV=nvirt ! Number of virtual orbitals (as real)
     BB=nbatchINT ! Maximum batch dimension (as real)
     AA=nbasis ! Number of atomic orbitals (as real)
 
@@ -1848,7 +1857,7 @@ contains
     write(DECinfo%output,'(1X,a,i9)') 'ME: Number of occupied orbitals   = ', &
          & nocc
     write(DECinfo%output,'(1X,a,i9)') 'ME: Number of virtual orbitals    = ', &
-         & nunocc
+         & nvirt
     write(DECinfo%output,'(1X,a,i9)') 'ME: Number of atomic orbitals     = ', &
          & nbasis
     write(DECinfo%output,'(1X,a,i9)') 'ME: Maximum number of batches     = ', nbatchINT
@@ -1885,7 +1894,7 @@ contains
 
     ! Get (C K | D L) integrals stored in the order (C,K,D,L)
     ! *******************************************************
-    !call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cvirt,Cocc,g)
+    !call get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,g)
     call mem_dealloc(Cocc)
     call mem_dealloc(Cvirt)
 
@@ -1921,8 +1930,8 @@ contains
        call array4_open_file(g)
        call array4_open_file(t2)
     end if
-    call mem_alloc(gval,nunocc,nocc,nunocc)
-    call mem_alloc(t2val,nunocc,nocc,nunocc)
+    call mem_alloc(gval,nvirt,nocc,nvirt)
+    call mem_alloc(t2val,nvirt,nocc,nvirt)
 
 
     ! Calculate e1 and e2
@@ -1934,15 +1943,15 @@ contains
        if(DECinfo%array4OnFile) then ! Read values from file
           ! g
           call array4_read_file_type1(g,j,&
-               & gval(1:nunocc,1:nocc,1:nunocc),nunocc,nocc,nunocc)
+               & gval(1:nvirt,1:nocc,1:nvirt),nvirt,nocc,nvirt)
           ! t2
           call array4_read_file_type1(t2,j,&
-               & t2val(1:nunocc,1:nocc,1:nunocc),nunocc,nocc,nunocc)
+               & t2val(1:nvirt,1:nocc,1:nvirt),nvirt,nocc,nvirt)
 
        else ! Values exist in memory
 
-          gval(1:nunocc,1:nocc,1:nunocc) = g%val(1:nunocc,1:nocc,1:nunocc,j)
-          t2val(1:nunocc,1:nocc,1:nunocc) = t2%val(1:nunocc,1:nocc,1:nunocc,j)
+          gval(1:nvirt,1:nocc,1:nvirt) = g%val(1:nvirt,1:nocc,1:nvirt,j)
+          t2val(1:nvirt,1:nocc,1:nvirt) = t2%val(1:nvirt,1:nocc,1:nvirt,j)
 
        end if
 
@@ -1957,12 +1966,12 @@ contains
 
        !$OMP DO SCHEDULE(dynamic,1)
 
-       do b=1,nunocc
-          atomB = UnoccOrbitals(b)%CentralAtom
+       do b=1,nvirt
+          atomB = virtOrbitals(b)%CentralAtom
           do i=1,nocc
              atomI = OccOrbitals(i+offset)%CentralAtom
-             do a=1,nunocc
-                atomA = UnoccOrbitals(a)%CentralAtom
+             do a=1,nvirt
+                atomA = virtOrbitals(a)%CentralAtom
 
                 ! Multiplier (multiplied by one half)
                 multaibj = 2.0_realk*t2val(a,i,b) - t2val(b,i,a)
@@ -1978,8 +1987,8 @@ contains
 
                 ! Contribution 2
                 ! ''''''''''''''
-                do c=1,nunocc
-                   tmp = t2val(c,i,b)*MyMolecule%qqfock(a,c) + t2val(a,i,c)*MyMolecule%qqfock(b,c)
+                do c=1,nvirt
+                   tmp = t2val(c,i,b)*MyMolecule%vvfock%elm2(a,c) + t2val(a,i,c)*MyMolecule%vvfock%elm2(b,c)
                    tmp = multaibj*tmp
                    ! Update total atomic fragment energy contribution 2
                    e2_tmp(atomI,atomJ) = e2_tmp(atomI,atomJ) + tmp
@@ -2100,11 +2109,11 @@ contains
     do i=1,nOcc
        call orbital_free(OccOrbitals(i))
     end do
-    do i=1,nUnocc
-       call orbital_free(UnoccOrbitals(i))
+    do i=1,nvirt
+       call orbital_free(virtOrbitals(i))
     end do
     call mem_dealloc(OccOrbitals)
-    call mem_dealloc(UnoccOrbitals)
+    call mem_dealloc(virtOrbitals)
 
   end subroutine Full_DECMP2_calculation
 
@@ -2332,13 +2341,13 @@ contains
   !> \date February 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen & Thomas Kjaergaard
   subroutine optimize_atomic_fragment(MyAtom,AtomicFragment,nAtoms, &
-        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
+        &OccOrbitals,nOcc,virtOrbitals,nvirt,&
         &MyMolecule,mylsitem,freebasisinfo,t1full)
      implicit none
      !> Number of occupied orbitals in molecule
      integer, intent(in) :: nOcc
-     !> Number of unoccupied orbitals in molecule
-     integer, intent(in) :: nunocc
+     !> Number of virtupied orbitals in molecule
+     integer, intent(in) :: nvirt
      !> Number of atoms in molecule
      integer, intent(in) :: natoms
      !> Central atom in molecule
@@ -2347,8 +2356,8 @@ contains
      type(decfrag),intent(inout)        :: AtomicFragment
      !> All occupied orbitals
      type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
-     !> All unoccupied orbitals
-     type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+     !> All virtupied orbitals
+     type(decorbital), dimension(nvirt), intent(in)    :: virtOrbitals
      !> Full molecule information
      type(fullmolecule), intent(inout) :: MyMolecule
      !> Integral information
@@ -2362,18 +2371,18 @@ contains
      real(realk)                    :: init_Occradius, init_Virtradius
      logical, dimension(natoms)     :: Occ_atoms,Virt_atoms,OccOld,VirtOld
      real(realk),dimension(natoms)  :: DistMyAtom,SortedDistMyAtom
-     integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
+     integer,dimension(natoms)      :: DistTrackMyAtom, nocc_per_atom,nvirt_per_atom
      integer      :: iter,i,idx,StepsizeLoop3,StepsizeLoop2,NF,IT,StepsizeLoop4
      integer      :: max_iter_red,nAtomsWithOccOrb,nAtomsWithVirtOrb,ncore
      logical :: expansion_converged,ExpandFragmentConverged,DistanceRemoval
      logical :: OccUnchanged,VirtUnchanged,ExpandVirt,ExpandOcc
      logical :: BinarySearch,SeperateExpansion,OrbDistanceSpec,TestOcc
      type(tensor) :: t2,g
-     real(realk)  :: FmaxOcc(nocc),FmaxVirt(nunocc)
+     real(realk)  :: FmaxOcc(nocc),FmaxVirt(nvirt)
      real(realk),pointer :: OccContribs(:),VirtContribs(:)    
      real(realk),pointer :: times_fragopt(:)
-     real(realk),pointer :: SortedDistanceTableOrbAtomOcc(:)
-     real(realk),pointer :: SortedDistanceTableOrbAtomVirt(:)
+     real(realk),pointer :: SortedDistanceTableOrbAtomOcc(:),DistanceTableOrbAtomOcc(:,:)
+     real(realk),pointer :: SortedDistanceTableOrbAtomVirt(:),DistanceTableOrbAtomVirt(:,:)
      integer,pointer :: OrbOccDistTrackMyAtom(:),OrbOccFockTrackMyAtom(:)
      integer,pointer :: OrbVirtDistTrackMyAtom(:),OrbVirtFockTrackMyAtom(:)
      logical,pointer :: OccAOS(:),VirtAOS(:),OldOccAOS(:),OldVirtAOS(:)
@@ -2397,7 +2406,7 @@ contains
 !!$        print *, "-------------------------------------------------"
 !!$
 !!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & MyMolecule,MyLsitem,nocc,nvirt,OccOrbitals,virtOrbitals,&
 !!$             & AtomicFragment)
 !!$        call atomic_fragment_free(AtomicFragment)
 !!$     end do
@@ -2415,7 +2424,7 @@ contains
 !!$        print *, "-------------------------------------------------"
 !!$
 !!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & MyMolecule,MyLsitem,nocc,nvirt,OccOrbitals,virtOrbitals,&
 !!$             & AtomicFragment)
 !!$        call atomic_fragment_free(AtomicFragment)
 !!$     end do
@@ -2432,7 +2441,7 @@ contains
 !!$        print *, "     Occ and Virt", i
 !!$        print *, "-------------------------------------------------"
 !!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & MyMolecule,MyLsitem,nocc,nvirt,OccOrbitals,virtOrbitals,&
 !!$             & AtomicFragment)
 !!$        call atomic_fragment_free(AtomicFragment)
 !!$     end do
@@ -2441,7 +2450,7 @@ contains
 
      if (.not.DECinfo%no_orb_based_fragopt) then
        call optimize_atomic_fragment_CLEAN(MyAtom,AtomicFragment,nAtoms, &
-            & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
+            & OccOrbitals,nOcc,virtOrbitals,nvirt,&
             & MyMolecule,mylsitem,freebasisinfo)
        return
      end if
@@ -2545,9 +2554,9 @@ contains
         OrbDistanceSpec = .TRUE. 
         FockMatrixOrdering = .TRUE.
         call mem_alloc(OrbOccFockTrackMyAtom,nocc)
-        call mem_alloc(OrbVirtFockTrackMyAtom,nunocc)
-        call GetSortedFockMaxElements(FmaxOcc,FmaxVirt,nocc,nunocc,MyMolecule,ncore,OccOrbitals,&
-             & UnOccOrbitals,MyAtom,OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom)
+        call mem_alloc(OrbVirtFockTrackMyAtom,nvirt)
+        call GetSortedFockMaxElements(FmaxOcc,FmaxVirt,nocc,nvirt,MyMolecule,ncore,OccOrbitals,&
+             & virtOrbitals,MyAtom,OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom)
      ELSE
         call lsquit('Frag_Opt_Scheme unknown',-1)
      ENDIF
@@ -2579,10 +2588,10 @@ contains
      call GetSortedList(SortedDistMyAtom,DistTrackMyAtom,mymolecule%DistanceTable,natoms,natoms,MyAtom)
 
      nocc_per_atom   = get_number_of_orbitals_per_atom( OccOrbitals,   nocc,   natoms, .true.)
-     nunocc_per_atom = get_number_of_orbitals_per_atom( UnoccOrbitals, nunocc, natoms, .true.)
+     nvirt_per_atom = get_number_of_orbitals_per_atom( virtOrbitals, nvirt, natoms, .true.)
 
      ! Only do fragment optimization if there are orbitals assigned to central atom.
-     if( (nocc_per_atom(MyAtom) == 0) .and. (nunocc_per_atom(MyAtom) == 0) ) then
+     if( (nocc_per_atom(MyAtom) == 0) .and. (nvirt_per_atom(MyAtom) == 0) ) then
         write(DECinfo%output,*) 'FOP Skipping optimization of fragment ', MyAtom
         AtomicFragment%LagFOP   = 0E0_realk
         AtomicFragment%EoccFOP  = 0E0_realk
@@ -2602,7 +2611,7 @@ contains
      ! --> we then skip energy calculation here and just init fragment
      if(DECinfo%InclFullMolecule .or.  DECinfo%simulate_full.or.DECinfo%all_init_radius>0.0E0_realk) then
         call fragopt_include_fullmolecule(MyAtom,AtomicFragment, &
-           &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+           &OccOrbitals,nOcc,virtOrbitals,nvirt, &
            &MyMolecule,mylsitem,freebasisinfo,t1full)
         call dec_fragment_time_get(times_fragopt)
         call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
@@ -2611,14 +2620,25 @@ contains
      end if
 
      IF(OrbDistanceSpec)THEN
+        ! Occupied
         call mem_alloc(SortedDistanceTableOrbAtomOcc,nocc)
         call mem_alloc(OrbOccDistTrackMyAtom,nocc)
+        call mem_alloc(DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms)
+        call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
+             & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistanceTableOrbAtomOcc)
         call GetSortedList(SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
-             & mymolecule%DistanceTableOrbAtomOcc,nocc,natoms,MyAtom)
-        call mem_alloc(SortedDistanceTableOrbAtomVirt,nunocc)
-        call mem_alloc(OrbVirtDistTrackMyAtom,nunocc)
+             & DistanceTableOrbAtomOcc,nocc,natoms,MyAtom)
+        call mem_dealloc(DistanceTableOrbAtomOcc)
+
+        ! Virtual
+        call mem_alloc(SortedDistanceTableOrbAtomVirt,nvirt)
+        call mem_alloc(OrbVirtDistTrackMyAtom,nvirt)
+        call mem_alloc(DistanceTableOrbAtomVirt,MyMolecule%nvirt,MyMolecule%natoms)
+        call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
+             & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
         call GetSortedList(SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
-             & mymolecule%DistanceTableOrbAtomVirt,nunocc,natoms,MyAtom)
+             & DistanceTableOrbAtomVirt,nvirt,natoms,MyAtom)
+        call mem_dealloc(DistanceTableOrbAtomVirt)
      ENDIF
 
      ! Do fragment expansion at different level than target model?
@@ -2655,50 +2675,50 @@ contains
 
      IF(FockMatrixOrdering)THEN
         call mem_alloc(OccAOS,nocc)
-        call mem_alloc(VirtAOS,nunocc)
+        call mem_alloc(VirtAOS,nvirt)
         call mem_alloc(OldOccAOS,nocc)
-        call mem_alloc(OldVirtAOS,nunocc)
-        call InitialFragmentFockSpec(natoms,nocc,nunocc,&
+        call mem_alloc(OldVirtAOS,nvirt)
+        call InitialFragmentFockSpec(natoms,nocc,nvirt,&
              & FmaxOcc,OrbOccFockTrackMyAtom,&
              & FmaxVirt,OrbVirtFockTrackMyAtom,&
-             & OccAOS,VirtAOS,OccOrbitals,UnOccOrbitals,MyAtom)
-        call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS, &
-             & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+             & OccAOS,VirtAOS,OccOrbitals,virtOrbitals,MyAtom)
+        call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS, &
+             & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
         call fragment_energy_and_prop(AtomicFragment)
      ELSEIF(OrbDistanceSpec)THEN
         call mem_alloc(OccAOS,nocc)
-        call mem_alloc(VirtAOS,nunocc)
+        call mem_alloc(VirtAOS,nvirt)
         call mem_alloc(OldOccAOS,nocc)
-        call mem_alloc(OldVirtAOS,nunocc)
-        call InitialFragmentOrbitalSpec(natoms,nocc,nunocc,&
+        call mem_alloc(OldVirtAOS,nvirt)
+        call InitialFragmentOrbitalSpec(natoms,nocc,nvirt,&
              & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
              & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
              & init_Occradius,init_Virtradius,OccAOS,VirtAOS,&
-             & OccOrbitals,UnOccOrbitals,MyAtom)
-        call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS, &
-             & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+             & OccOrbitals,virtOrbitals,MyAtom)
+        call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS, &
+             & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
         call fragment_energy_and_prop(AtomicFragment)
      ELSE
-        call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
+        call InitialFragment(natoms,nocc_per_atom,nvirt_per_atom,DistMyatom,&
              & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
         call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+             & MyMolecule,MyLsitem,nocc,nvirt,OccOrbitals,virtOrbitals,&
              & AtomicFragment)
      ENDIF
      ! Print initial fragment information
      call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
      call GetnAtomsWithOrb(natoms,nocc_per_atom,&
-          & nunocc_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
+          & nvirt_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
 
      StepsizeLoop2 = DECinfo%Frag_Exp_Size
      ExpandVirt = .TRUE.    !Expand both Occupied and Virtual Space untill convergence
      ExpandOcc  = .TRUE. 
      call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
-          & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
+          & OccOrbitals,nOcc,virtOrbitals,nvirt,&
           & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
           & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
-          & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
+          & DistTrackMyAtom, nocc_per_atom,nvirt_per_atom,&
           & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
           & nAtomsWithOccOrb,nAtomsWithVirtOrb,&
           & OrbDistanceSpec,OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,&
@@ -2716,7 +2736,7 @@ contains
      ! Note 1: The current fragment is larger than the converged fragment
      ! Note 2: This information is only used for local reduction procedure below (not fragment-adapted)
      call mem_alloc(OccContribs,nocc)
-     call mem_alloc(VirtContribs,nunocc)
+     call mem_alloc(VirtContribs,nvirt)
      OccContribs=0.0E0_realk
      VirtContribs=0.0E0_realk
 
@@ -2728,9 +2748,9 @@ contains
      end do
 
      ! Contributions from local virtual orbitals
-     do i=1,AtomicFragment%nunoccAOS
+     do i=1,AtomicFragment%nvirtAOS
         ! index of virtual AOS orbital "i" in list of ALL virtual orbitals in the molecule
-        idx=AtomicFragment%unoccAOSidx(i)
+        idx=AtomicFragment%virtAOSidx(i)
         VirtContribs(idx) = AtomicFragment%VirtContribs(i)
      end do
 
@@ -2748,8 +2768,8 @@ contains
 !           OccEnergyOldFull = AtomicFragment%EoccFOP
 !           VirtEnergyOldFull = AtomicFragment%EvirtFOP
            call atomic_fragment_free(AtomicFragment)
-           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc,VirtAOS,&
-                & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+           call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc,VirtAOS,&
+                & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
         ELSE
            LagEnergyOld = AtomicFragment%LagFOP
            OccEnergyOld = AtomicFragment%EoccFOP
@@ -2759,7 +2779,7 @@ contains
         call atomic_fragment_free(AtomicFragment)
         ! Init fragment with converged size
         call atomic_fragment_init_atom_specific(MyAtom,natoms,Virt_Atoms, &
-             & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
+             & Occ_Atoms,nocc,nvirt,OccOrbitals,virtOrbitals, &
              & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
      ENDIF
      ! Information for fragment-adapted orbitals
@@ -2772,7 +2792,7 @@ contains
         ! *******************************
         ! Integrals (ai|bj)
         !call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
-        !   & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+        !   & AtomicFragment%noccAOS,AtomicFragment%nvirtAOS,&
         !   & AtomicFragment%Cv, AtomicFragment%Co, g)
         !! Amplitudes
         call mp2_solver(AtomicFragment,g,t2,.false.)
@@ -2832,7 +2852,7 @@ contains
         ! Reduce using fragment-adapted orbitals
         print *,"before",t2%initialized
         call fragopt_reduce_FOs(MyAtom,AtomicFragment, &
-           &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+           &OccOrbitals,nOcc,virtOrbitals,nvirt, &
            &MyMolecule,mylsitem,freebasisinfo,t2,max_iter_red)
         print *,"freeing tesn",t2%initialized
         call tensor_free(t2)
@@ -2840,7 +2860,7 @@ contains
         ! Reduce using local orbitals
         if(present(t1full)) then
            call fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
-                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,ncore,BinarySearch, &
+                & OccOrbitals,nOcc,virtOrbitals,nvirt,ncore,BinarySearch, &
                 & MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,&
                 & VirtContribs,&
                 & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
@@ -2851,7 +2871,7 @@ contains
                 & t1full=t1full)
         else
            call fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
-              & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,ncore,BinarySearch, &
+              & OccOrbitals,nOcc,virtOrbitals,nvirt,ncore,BinarySearch, &
               & MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,VirtContribs,&
               & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
               & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
@@ -2909,22 +2929,26 @@ contains
 
   end subroutine optimize_atomic_fragment
 
-  subroutine GetSortedFockMaxElements(FmaxOcc,FmaxVirt,nocc,nunocc,&
-       & MyMolecule,ncore,OccOrbitals,UnOccOrbitals,MyAtom,&
+  subroutine GetSortedFockMaxElements(FmaxOcc,FmaxVirt,nocc,nvirt,&
+       & MyMolecule,ncore,OccOrbitals,virtOrbitals,MyAtom,&
        & OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom)
     implicit none
-    integer,intent(in) :: nocc,nunocc,ncore,MyAtom
+    integer,intent(in) :: nocc,nvirt,ncore,MyAtom
     !> All occupied orbitals
     type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
-    !> All unoccupied orbitals
-    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    !> All virtupied orbitals
+    type(decorbital), dimension(nvirt), intent(in)    :: virtOrbitals
     !> Full molecule information          
     type(fullmolecule), intent(in) :: MyMolecule
-    real(realk),intent(inout) :: FmaxOcc(nocc),FmaxVirt(nunocc)
-    integer,intent(inout) :: OrbOccFockTrackMyAtom(nocc),OrbVirtFockTrackMyAtom(nunocc)
+    real(realk),intent(inout) :: FmaxOcc(nocc),FmaxVirt(nvirt)
+    integer,intent(inout) :: OrbOccFockTrackMyAtom(nocc),OrbVirtFockTrackMyAtom(nvirt)
     !
     integer :: noccEOS,j,centralatom,nvirtEOS
     integer,pointer :: occEOSidx(:),virtEOSidx(:)
+
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(GetSortedFockMaxElements) not implemented for distributed mol",-1)
+    endif
 
     noccEOS = 0
     do j=1,nOcc !note this include core orbitals
@@ -2944,13 +2968,13 @@ contains
        endif
        OrbOccFockTrackMyAtom(j) = j
     enddo
-    call GetFockMaxElement(FmaxOcc,nocc,MyMolecule%ppFock,noccEOS,occEOSidx,ncore)
+    call GetFockMaxElement(FmaxOcc,nocc,MyMolecule%oofock%elm2,noccEOS,occEOSidx,ncore)
     call mem_dealloc(occEOSidx)
     call real_inv_sort_with_tracking(FmaxOcc,OrbOccFockTrackMyAtom,nocc)
 
     nvirtEOS = 0
-    do j=1,nunocc !note this include core orbitals
-       CentralAtom=UnOccOrbitals(j)%centralatom
+    do j=1,nvirt !note this include core orbitals
+       CentralAtom=virtOrbitals(j)%centralatom
        if( CentralAtom .EQ. MyAtom)THEN
           nvirtEOS         = nvirtEOS + 1
        endif
@@ -2958,24 +2982,24 @@ contains
     call mem_alloc(virtEOSidx,nvirtEOS)
     virtEOSidx = 0
     nvirtEOS = 0
-    do j=1,nunocc !note this include core orbitals
-       CentralAtom=UnOccOrbitals(j)%centralatom
+    do j=1,nvirt !note this include core orbitals
+       CentralAtom=virtOrbitals(j)%centralatom
        if( CentralAtom .EQ. MyAtom)THEN
           nvirtEOS         = nvirtEOS + 1
           virtEOSidx(nvirtEOS)=j
        endif
        OrbVirtFockTrackMyAtom(j) = j
     enddo
-    call GetFockMaxElement(FmaxVirt,nunocc,MyMolecule%qqFock,nvirtEOS,virtEOSidx,0)
+    call GetFockMaxElement(FmaxVirt,nvirt,MyMolecule%vvfock%elm2,nvirtEOS,virtEOSidx,0)
     call mem_dealloc(virtEOSidx)
-    call real_inv_sort_with_tracking(FmaxVirt,OrbVirtFockTrackMyAtom,nunocc)
+    call real_inv_sort_with_tracking(FmaxVirt,OrbVirtFockTrackMyAtom,nvirt)
   end subroutine GetSortedFockMaxElements
 
   subroutine InitialFragmentOrbitalSpec(natoms,nocc,nvirt,&
        & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
        & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
        & init_Occradius,init_Virtradius,OccAOS,VirtAOS,&
-       & OccOrbitals,UnoccOrbitals,MyAtom)
+       & OccOrbitals,virtOrbitals,MyAtom)
     implicit none
     integer,intent(in) :: natoms,nocc,nvirt
     real(realk),intent(in) :: SortedDistanceTableOrbAtomOcc(nocc)
@@ -2985,7 +3009,7 @@ contains
     logical,intent(inout) :: OccAOS(nocc), VirtAOS(nvirt)
     real(realk),intent(in) :: init_Occradius,init_Virtradius
     type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
-    type(decorbital), dimension(nvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nvirt), intent(in) :: virtOrbitals
     integer,intent(in) :: MyAtom
     !
     integer :: i,ii
@@ -3008,7 +3032,7 @@ contains
        end if
     end do
     do i=1,nvirt
-       if(UnOccOrbitals(i)%centralatom.EQ.MyAtom) then
+       if(virtOrbitals(i)%centralatom.EQ.MyAtom) then
           VirtAOS(i)=.true.
        end if
     end do
@@ -3017,7 +3041,7 @@ contains
   subroutine InitialFragmentFockSpec(natoms,nocc,nvirt,&
        & SortedFmaxOcc,OrbOccFockTrackMyAtom,&
        & SortedFmaxVirt,OrbVirtFockTrackMyAtom,&
-       & OccAOS,VirtAOS,OccOrbitals,UnoccOrbitals,MyAtom)
+       & OccAOS,VirtAOS,OccOrbitals,virtOrbitals,MyAtom)
     implicit none
     integer,intent(in) :: natoms,nocc,nvirt
     real(realk),intent(in) :: SortedFmaxOcc(nocc)
@@ -3026,7 +3050,7 @@ contains
     integer,intent(in) :: OrbVirtFockTrackMyAtom(nvirt)
     logical,intent(inout) :: OccAOS(nocc), VirtAOS(nvirt)
     type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
-    type(decorbital), dimension(nvirt), intent(in) :: UnoccOrbitals
+    type(decorbital), dimension(nvirt), intent(in) :: virtOrbitals
     integer,intent(in) :: MyAtom
     !
     integer :: i,ii
@@ -3051,7 +3075,7 @@ contains
        end if
     end do
     do i=1,nvirt
-       if(UnOccOrbitals(i)%centralatom.EQ.MyAtom) then
+       if(virtOrbitals(i)%centralatom.EQ.MyAtom) then
           VirtAOS(i)=.true.
        end if
     end do
@@ -3160,10 +3184,10 @@ contains
   end subroutine ExpandFragmentOrbitalSpecFock
   
   subroutine FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
-          & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
+          & OccOrbitals,nOcc,virtOrbitals,nvirt,&
           & MyMolecule,mylsitem,freebasisinfo,t1full,ExpandOcc,ExpandVirt,&
           & Occ_atoms,Virt_atoms,FOT,DistMyAtom,SortedDistMyAtom,&
-          & DistTrackMyAtom, nocc_per_atom,nunocc_per_atom,&
+          & DistTrackMyAtom, nocc_per_atom,nvirt_per_atom,&
           & StepsizeLoop2,LagEnergyOld, OccEnergyOld, VirtEnergyOld,&
           & nAtomsWithOccOrb,nAtomsWithVirtOrb,&
           & OrbDistanceSpec,OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,&
@@ -3174,8 +3198,8 @@ contains
        implicit none
      !> Number of occupied orbitals in molecule
      integer, intent(in) :: nOcc
-     !> Number of unoccupied orbitals in molecule
-     integer, intent(in) :: nunocc
+     !> Number of virtupied orbitals in molecule
+     integer, intent(in) :: nvirt
      !> Number of atoms in molecule
      integer, intent(in) :: natoms
      !> Central atom in molecule
@@ -3184,8 +3208,8 @@ contains
      type(decfrag),intent(inout)        :: AtomicFragment
      !> All occupied orbitals
      type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
-     !> All unoccupied orbitals
-     type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+     !> All virtupied orbitals
+     type(decorbital), dimension(nvirt), intent(in)    :: virtOrbitals
      !> Full molecule information
      type(fullmolecule), intent(inout) :: MyMolecule
      !> Integral information
@@ -3203,7 +3227,7 @@ contains
      real(realk),intent(in)         :: FOT
      integer,intent(in)             :: StepsizeLoop2,nAtomsWithOccOrb,nAtomsWithVirtOrb
      real(realk),dimension(natoms),intent(in)  :: DistMyAtom,SortedDistMyAtom
-     integer,dimension(natoms),intent(in)      :: DistTrackMyAtom, nocc_per_atom,nunocc_per_atom
+     integer,dimension(natoms),intent(in)      :: DistTrackMyAtom, nocc_per_atom,nvirt_per_atom
      real(realk),intent(inout)      :: LagEnergyOld, OccEnergyOld, VirtEnergyOld
      logical :: FockMatrixOrdering
      logical,pointer :: OccAOS(:),VirtAOS(:),OldOccAOS(:),OldVirtAOS(:) !not always allocated only if OrbDistanceSpec 
@@ -3246,31 +3270,31 @@ contains
         VirtEnergyOld = AtomicFragment%EvirtFOP
 
         IF(FockMatrixOrdering)THEN
-           call ExpandFragmentOrbitalSpecFock(natoms,nocc,nunocc,&
+           call ExpandFragmentOrbitalSpecFock(natoms,nocc,nvirt,&
                 & OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom,&
                 & StepsizeLoop3,OccAOS,VirtAOS,ExpandFragmentConverged)
            call atomic_fragment_free(AtomicFragment)
-           call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,VirtAOS, &
-                & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+           call atomic_fragment_init_orbital_specific(MyAtom,nvirt,nocc,VirtAOS, &
+                & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
            call fragment_energy_and_prop(AtomicFragment)
         ELSEIF(OrbDistanceSpec)THEN
-           call ExpandFragmentOrbitalSpec(natoms,nocc,nunocc,&
+           call ExpandFragmentOrbitalSpec(natoms,nocc,nvirt,&
                 & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
                 & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
                 & StepsizeLoop3,OccAOS,VirtAOS,ExpandFragmentConverged)
            call atomic_fragment_free(AtomicFragment)
-           call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,VirtAOS, &
-                & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+           call atomic_fragment_init_orbital_specific(MyAtom,nvirt,nocc,VirtAOS, &
+                & OccAOS,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
            call fragment_energy_and_prop(AtomicFragment)
         ELSE
            ! Expand fragment and get new energy
            call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
-                & nocc_per_atom,nunocc_per_atom,ExpandFragmentConverged,&
+                & nocc_per_atom,nvirt_per_atom,ExpandFragmentConverged,&
                 & nAtomsWithOccOrb,nAtomsWithVirtOrb,StepsizeLoop3,&
                 & ExpandOcc,ExpandVirt)           
            call atomic_fragment_free(AtomicFragment)
            call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-                & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+                & MyMolecule,MyLsitem,nocc,nvirt,OccOrbitals,virtOrbitals,&
                 & AtomicFragment)
         ENDIF
         ! Energy differences
@@ -3329,21 +3353,21 @@ contains
   !> \date September 2013
   !> \author Kasper Kristensen
   subroutine fragopt_reduce_FOs(MyAtom,AtomicFragment, &
-       &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+       &OccOrbitals,nOcc,virtOrbitals,nvirt, &
        &MyMolecule,mylsitem,freebasisinfo,t2tens,max_iter_red)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
-    !> Number of unoccupied orbitals in molecule
-    integer, intent(in) :: nunocc
+    !> Number of virtupied orbitals in molecule
+    integer, intent(in) :: nvirt
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
     type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
     type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
-    !> All unoccupied orbitals
-    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    !> All virtupied orbitals
+    type(decorbital), dimension(nvirt), intent(in)    :: virtOrbitals
     !> Full molecule information
     type(fullmolecule), intent(in) :: MyMolecule
     !> Integral information
@@ -3372,7 +3396,7 @@ contains
     VirtEnergyOld = AtomicFragment%EvirtFOP
     ! Dimensions for converged fragment
     nocc_exp = AtomicFragment%noccAOS
-    nvirt_exp = AtomicFragment%nunoccAOS
+    nvirt_exp = AtomicFragment%nvirtAOS
 
 
     
@@ -3437,7 +3461,7 @@ contains
              if(ov==1) then
                 Nold = AtomicFragment%noccAOS
              else
-                Nold = AtomicFragment%nunoccAOS
+                Nold = AtomicFragment%nvirtAOS
              end if
              ! Threshold for throwing away fragment-adapted orbitals (start with FOT value)
              AtomicFragment%RejectThr(ov) = FOT
@@ -3446,7 +3470,7 @@ contains
              if(ov==1) then
                 Nold = AtomicFragment%noccAOS
              else
-                Nold = AtomicFragment%nunoccAOS
+                Nold = AtomicFragment%nvirtAOS
              end if
              ! decrease rejection threshold by a factor 10 in each step
              AtomicFragment%RejectThr(ov) = AtomicFragment%RejectThr(ov)/10.0_realk
@@ -3466,7 +3490,7 @@ contains
           if(ov==1) then
              Nnew = AtomicFragment%noccAOS
           else
-             Nnew = AtomicFragment%nunoccAOS
+             Nnew = AtomicFragment%nvirtAOS
           end if
 
 
@@ -3540,7 +3564,7 @@ contains
     write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Fragment number                  :', MyAtom
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in virt total :', &
-         & AtomicFragment%nunoccFA
+         & AtomicFragment%nvirtFA
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
          & AtomicFragment%noccFA
     write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
@@ -3565,8 +3589,8 @@ contains
          & nocc_exp-AtomicFragment%noccFA, ' of ', nocc_exp, ' orbitals ( ', &
          & (nocc_exp-AtomicFragment%noccFA)*100.0_realk/nocc_exp, ' %)'
     write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Virtual  reduction removed ', &
-         & nvirt_exp-AtomicFragment%nunoccFA, ' of ', nvirt_exp, ' orbitals ( ', &
-         & (nvirt_exp-AtomicFragment%nunoccFA)*100.0_realk/nvirt_exp, ' %)'
+         & nvirt_exp-AtomicFragment%nvirtFA, ' of ', nvirt_exp, ' orbitals ( ', &
+         & (nvirt_exp-AtomicFragment%nvirtFA)*100.0_realk/nvirt_exp, ' %)'
     write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
     write(DECinfo%output,*) 'FOP'
 
@@ -3580,7 +3604,7 @@ contains
   !> \date September 2013
   !> \author Kasper Kristensen
   subroutine fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
-       & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,ncore,BinarySearch, &
+       & OccOrbitals,nOcc,virtOrbitals,nvirt,ncore,BinarySearch, &
        & MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,VirtContribs,&
        & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
        & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
@@ -3590,8 +3614,8 @@ contains
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
-    !> Number of unoccupied orbitals in molecule
-    integer, intent(in) :: nunocc
+    !> Number of virtupied orbitals in molecule
+    integer, intent(in) :: nvirt
     !> Number of core occupied orbitals in molecule
     integer, intent(in) :: ncore
     !> Central atom in molecule
@@ -3600,8 +3624,8 @@ contains
     type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
     type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
-    !> All unoccupied orbitals
-    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    !> All virtupied orbitals
+    type(decorbital), dimension(nvirt), intent(in)    :: virtOrbitals
     !> Perform binary search? 
     logical,intent(in) :: BinarySearch
     !> Full molecule information
@@ -3613,7 +3637,7 @@ contains
     !> Maximum number of reduction steps
     integer,intent(in) :: max_iter_red
     !> Contributions from individual occupied and virtual orbitals
-    real(realk),intent(in) :: OccContribs(nocc), VirtContribs(nunocc)
+    real(realk),intent(in) :: OccContribs(nocc), VirtContribs(nvirt)
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
     real(realk)  :: RejectThresh,FOT
@@ -3635,18 +3659,18 @@ contains
     integer,pointer :: TrackSortedOccContribs(:),TrackSortedVirtContribs(:)
     real(realk),pointer :: BruteForceOccContribs(:),BruteForceVirtContribs(:)
     integer,pointer :: BruteForceTrackListOcc(:),BruteForceTrackListVirt(:)
-    real(realk) :: FmaxOcc(nocc),FmaxVirt(nunocc)
+    real(realk) :: FmaxOcc(nocc),FmaxVirt(nvirt)
     integer,pointer :: OrbOccFockTrackMyAtom(:),OrbVirtFockTrackMyAtom(:)
-    integer :: k,j,noccEOS,nunoccEOS,nO2V2_ModOcc,nO2V2_ModVirt
+    integer :: k,j,noccEOS,nvirtEOS,nO2V2_ModOcc,nO2V2_ModVirt
     real(realk)  :: LagEnergy,OccEnergy,VirtEnergy
 
     ! Initialize logical vectors controlling occupied and virtual AOS during reduction scheme
     call mem_alloc(OccAOS_old,nocc)
-    call mem_alloc(VirtAOS_old,nunocc)
+    call mem_alloc(VirtAOS_old,nvirt)
     call mem_alloc(OccAOS_new,nocc)
-    call mem_alloc(VirtAOS_new,nunocc)
+    call mem_alloc(VirtAOS_new,nvirt)
     call mem_alloc(OccAOS_orig,nocc)
-    call mem_alloc(VirtAOS_orig,nunocc)
+    call mem_alloc(VirtAOS_orig,nvirt)
     OccAOS_old=.false.
     VirtAOS_old=.false.
     OccAOS_new=.false.
@@ -3656,19 +3680,19 @@ contains
     do i=1,AtomicFragment%noccAOS
        OccAOS_orig(AtomicFragment%occAOSidx(i)) = .true.
     end do
-    do i=1,AtomicFragment%nunoccAOS
-       VirtAOS_orig(AtomicFragment%unoccAOSidx(i)) = .true.
+    do i=1,AtomicFragment%nvirtAOS
+       VirtAOS_orig(AtomicFragment%virtAOSidx(i)) = .true.
     end do
     OccAOS_old = OccAOS_orig
     VirtAOS_old = VirtAOS_orig
     nocc_orig = AtomicFragment%noccAOS
-    nvirt_orig = AtomicFragment%nunoccAOS
+    nvirt_orig = AtomicFragment%nvirtAOS
     LagEnergyOld = AtomicFragment%LagFOP
     OccEnergyOld = AtomicFragment%EoccFOP
     VirtEnergyOld = AtomicFragment%EvirtFOP
 
     noccEOS = AtomicFragment%noccEOS
-    nunoccEOS = AtomicFragment%nunoccEOS
+    nvirtEOS = AtomicFragment%nvirtEOS
 
     O2V2choice = .FALSE.
 
@@ -3703,8 +3727,8 @@ contains
                 IF(COUNT(OccAOS_new).NE.COUNT(ExpOccAOS))THEN
                    bin_reduction_converged = .FALSE.
                    call atomic_fragment_free(AtomicFragment)
-                   call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
-                        & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+                   call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS_new, &
+                        & OccAOS_new,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
                    call fragment_energy_and_prop(AtomicFragment)
                    WRITE(DECinfo%output,'(A,I5)')'Orbital i included in AOS space (CALC)  i=',I
                    BruteForceOccContribs(I) = ABS(AtomicFragment%EoccFOP-OccEnergyOld)
@@ -3736,10 +3760,10 @@ contains
 
 !       ENDIF
 
-       call mem_alloc(BruteForceVirtContribs,nunocc)
+       call mem_alloc(BruteForceVirtContribs,nvirt)
        BruteForceVirtContribs = 0.0E0_realk
-       call mem_alloc(BruteForceTrackListVirt,nunocc)       
-       do I=1,nunocc
+       call mem_alloc(BruteForceTrackListVirt,nvirt)       
+       do I=1,nvirt
           BruteForceTrackListVirt(I) = I
        enddo
        IF(DECinfo%OnlyVirtPart)THEN
@@ -3765,8 +3789,8 @@ contains
 !!$
 !!$             bin_reduction_converged = .FALSE.
 !!$             call atomic_fragment_free(AtomicFragment)
-!!$             call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
-!!$                  & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+!!$             call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS_new, &
+!!$                  & OccAOS_new,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 !!$             call fragment_energy_and_prop(AtomicFragment)
 !!$             BruteForceOccContribs(I) = ABS(AtomicFragment%EoccFOP)            
 !!$          ENDDO
@@ -3805,13 +3829,13 @@ contains
           ENDIF
 !       ENDIF
 
-       call mem_alloc(SortedVirtContribs,nunocc)
-       call mem_alloc(TrackSortedVirtContribs,nunocc)
-       do i=1,nunocc
+       call mem_alloc(SortedVirtContribs,nvirt)
+       call mem_alloc(TrackSortedVirtContribs,nvirt)
+       do i=1,nvirt
           TrackSortedVirtContribs(i) = i          
        enddo
        SortedVirtContribs = ABS(VirtContribs)
-       call real_inv_sort_with_tracking(SortedVirtContribs,TrackSortedVirtContribs,nunocc)
+       call real_inv_sort_with_tracking(SortedVirtContribs,TrackSortedVirtContribs,nvirt)
 
 !       call BinarySearch(PriorityListOcc,PriorityListVirt,...)
 
@@ -3842,7 +3866,7 @@ contains
              nLowerOcc = 1 
           ENDIF
           !nLowerVirt = 0
-          !DO I=1,nunocc
+          !DO I=1,nvirt
           !   II = TrackSortedVirtContribs(I)
           !   IF(ExpOldVirtAOS(II))THEN
           !      nLowerVirt = nLowerVirt + 1
@@ -3850,7 +3874,7 @@ contains
           !      EXIT
           !   ENDIF
           !ENDDO
-          nLowerVirt = nunoccEOS
+          nLowerVirt = nvirtEOS
        ELSE
           !RejectThresh a little bigger than FOT to ensure that this step would be rejected 
           !and provide a good lower guess
@@ -3862,13 +3886,13 @@ contains
           call ReduceSpace_orbitalspecific(AtomicFragment,nocc,OccContribs,'O',&
                & RejectThresh,OccAOS_new,nocc_new)
           write(DECinfo%output,*) ' FOP VIRT: '
-          call ReduceSpace_orbitalspecific(AtomicFragment,nunocc,VirtContribs,'V',&
+          call ReduceSpace_orbitalspecific(AtomicFragment,nvirt,VirtContribs,'V',&
                & RejectThresh,VirtAOS_new,nvirt_new)
           nLowerOcc  = nocc_new  !highest number of Occupied that has been verified to be NOT acceptable
           nLowerVirt = nvirt_new !highest number of Virtuals that has been verified to be NOT acceptable  
        ENDIF
        !nLowerOcc = noccEOS
-       !nLowerVirt = nunoccEOS
+       !nLowerVirt = nvirtEOS
        call mem_dealloc(SortedOccContribs)
        call mem_dealloc(SortedVirtContribs)
 
@@ -3968,10 +3992,10 @@ contains
                      &OrbOccDistTrackMyAtom,'O',OccAOS_new,nocc_new)
              ENDIF
 !             IF(DECinfo%onlyVirtPart)THEN
-!                call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,BruteForce,&
+!                call ReduceSpace_binary(AtomicFragment,nvirt,TrackSortedVirtContribs,BruteForce,&
 !                     &BruteForceTrackListVirt,'V',VirtAOS_new,nvirt_new)
 !             ELSE
-                call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,DistanceRemoval,&
+                call ReduceSpace_binary(AtomicFragment,nvirt,TrackSortedVirtContribs,DistanceRemoval,&
                      &OrbVirtDistTrackMyAtom,'V',VirtAOS_new,nvirt_new)
 !             ENDIF
           ELSEIF(FockMatrixOrdering)THEN
@@ -3986,16 +4010,16 @@ contains
              ENDIF
              IF(DECinfo%onlyVirtPart)THEN
                 !use Fock matrix ordering to remove Virtual 
-                call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,FockMatrixOrdering,&
+                call ReduceSpace_binary(AtomicFragment,nvirt,TrackSortedVirtContribs,FockMatrixOrdering,&
                      &OrbVirtFockTrackMyAtom,'V',VirtAOS_new,nvirt_new)
              ELSE
-                call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,DistanceRemoval,&
+                call ReduceSpace_binary(AtomicFragment,nvirt,TrackSortedVirtContribs,DistanceRemoval,&
                      &OrbVirtDistTrackMyAtom,'V',VirtAOS_new,nvirt_new)
              ENDIF
           ELSE
              call ReduceSpace_binary(AtomicFragment,nocc,TrackSortedOccContribs,DistanceRemoval,&
                   &OrbOccDistTrackMyAtom,'O',OccAOS_new,nocc_new)
-             call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,DistanceRemoval,&
+             call ReduceSpace_binary(AtomicFragment,nvirt,TrackSortedVirtContribs,DistanceRemoval,&
                   &OrbVirtDistTrackMyAtom,'V',VirtAOS_new,nvirt_new)
           ENDIF
 
@@ -4008,8 +4032,8 @@ contains
           ! ***************************
           bin_reduction_converged = .FALSE.
           call atomic_fragment_free(AtomicFragment)
-          call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
-               & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+          call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS_new, &
+               & OccAOS_new,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
           call fragment_energy_and_prop(AtomicFragment)
           
           ! Check if reduced fragment energy is converged to FOT precision
@@ -4093,8 +4117,8 @@ contains
                 !the last binary search step did not succeed so  
                 !we init everything to the last successful step
                 call atomic_fragment_free(AtomicFragment)
-                call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_old, &
-                     & OccAOS_old,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+                call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS_old, &
+                     & OccAOS_old,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
                 AtomicFragment%LagFOP = LagEnergy
                 AtomicFragment%EoccFOP = OccEnergy
                 AtomicFragment%EvirtFOP = VirtEnergy
@@ -4144,7 +4168,7 @@ contains
           
           ! Number of occupied and virtual AOS orbitals in current fragment
           nocc_old = AtomicFragment%noccAOS
-          nvirt_old = AtomicFragment%nunoccAOS
+          nvirt_old = AtomicFragment%nvirtAOS
           
           
           ! Set new logical vectors controlling which occupied and virtual AOS orbitals are included
@@ -4159,7 +4183,7 @@ contains
           call ReduceSpace_orbitalspecific(AtomicFragment,nocc,OccContribs,'O',&
                & RejectThresh,OccAOS_new,nocc_new)
           write(DECinfo%output,*) ' FOP VIRT: '
-          call ReduceSpace_orbitalspecific(AtomicFragment,nunocc,VirtContribs,'V',&
+          call ReduceSpace_orbitalspecific(AtomicFragment,nvirt,VirtContribs,'V',&
                & RejectThresh,VirtAOS_new,nvirt_new)
           
           
@@ -4174,8 +4198,8 @@ contains
              ! Go back to old fragment
              ! ***********************
              call atomic_fragment_free(AtomicFragment)
-             call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_orig, &
-                  & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
+             call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS_orig, &
+                  & OccAOS_orig,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,&
                   & AtomicFragment,.true.,.false.)
              
              call fragment_energy_and_prop(AtomicFragment)
@@ -4195,8 +4219,8 @@ contains
           ! Get reduced atomic fragment
           ! ***************************
           call atomic_fragment_free(AtomicFragment)
-          call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
-               & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+          call atomic_fragment_init_orbital_specific(MyAtom,nvirt, nocc, VirtAOS_new, &
+               & OccAOS_new,OccOrbitals,virtOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
           call fragment_energy_and_prop(AtomicFragment)
           
           
@@ -4255,7 +4279,7 @@ contains
     write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Fragment number                  :', MyAtom
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in virt total :', &
-         & AtomicFragment%nunoccAOS
+         & AtomicFragment%nvirtAOS
     write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
          & AtomicFragment%noccAOS
     write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
@@ -4279,8 +4303,8 @@ contains
          & nocc_orig-AtomicFragment%noccAOS, ' of ', nocc_orig, ' orbitals ( ', &
          & (nocc_orig-AtomicFragment%noccAOS)*100.0_realk/nocc_orig, ' %)'
     write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Virtual  reduction removed ', &
-         & nvirt_orig-AtomicFragment%nunoccAOS, ' of ', nvirt_orig, ' orbitals ( ', &
-         & (nvirt_orig-AtomicFragment%nunoccAOS)*100.0_realk/nvirt_orig, ' %)'
+         & nvirt_orig-AtomicFragment%nvirtAOS, ' of ', nvirt_orig, ' orbitals ( ', &
+         & (nvirt_orig-AtomicFragment%nvirtAOS)*100.0_realk/nvirt_orig, ' %)'
     write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
     write(DECinfo%output,*) 'FOP'
 
@@ -4417,21 +4441,21 @@ contains
   !> \date September 2013
   !> \author Kasper Kristensen
   subroutine fragopt_include_fullmolecule(MyAtom,AtomicFragment, &
-       &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+       &OccOrbitals,nOcc,virtOrbitals,nvirt, &
        &MyMolecule,mylsitem,freebasisinfo,t1full)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
-    !> Number of unoccupied orbitals in molecule
-    integer, intent(in) :: nunocc
+    !> Number of virtupied orbitals in molecule
+    integer, intent(in) :: nvirt
     !> Central atom in molecule
     integer, intent(in) :: MyAtom
     !> Atomic fragment to be optimized
     type(decfrag),intent(inout)        :: AtomicFragment
     !> All occupied orbitals
     type(decorbital), dimension(nOcc), intent(in)      :: OccOrbitals
-    !> All unoccupied orbitals
-    type(decorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    !> All virtupied orbitals
+    type(decorbital), dimension(nvirt), intent(in)    :: virtOrbitals
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     !> Integral information
@@ -4446,7 +4470,7 @@ contains
     write(DECinfo%output,*) 'FOP Fragment includes all orbitals and fragment optimization is skipped'
 
     ! Init fragment will orbital space for full molecule
-    call fragment_init_simulate_full(MyAtom,nunocc, nocc, OccOrbitals,UnoccOrbitals,&
+    call fragment_init_simulate_full(MyAtom,nvirt, nocc, OccOrbitals,virtOrbitals,&
          & MyMolecule,mylsitem,AtomicFragment,.true.)
 
     ! Set information for fragment-adapted orbitals
@@ -4457,10 +4481,10 @@ contains
 
        ! Integrals (ai|bj)
        !call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
-       !     & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+       !     & AtomicFragment%noccAOS,AtomicFragment%nvirtAOS,&
        !     & AtomicFragment%Cv, AtomicFragment%Co, g)
        ! MP2 amplitudes
-       !call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+       !call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nvirtAOS,&
        !     & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
        call mp2_solver(AtomicFragment,g,t2,.false.)
        call tensor_free(g)
@@ -4509,7 +4533,7 @@ contains
        write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Fragment number                  :', &
           & fragment%EOSatoms(1)
        write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in virt total :', &
-          & Fragment%nunoccAOS
+          & Fragment%nvirtAOS
        write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in occ total  :', &
           & Fragment%noccAOS
        write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of basis functions        :', &
@@ -4557,7 +4581,7 @@ contains
   !> \author Kasper Kristensen
   !> \date April 2013
   subroutine set_reduced_fragmentAOS(MyAtom,natomsAOS_old,natomsfull,natomsAOS_new,atomlist,&
-       & occ_atoms,unocc_atoms)
+       & occ_atoms,virt_atoms)
 
     implicit none
     !> Central atom in fragment (will of course always be included in AOS)
@@ -4572,9 +4596,9 @@ contains
     integer,intent(in),dimension(natomsAOS_old) :: atomlist
     !> Which AOS atoms to include in new fragment (occ space)
     logical,intent(inout),dimension(natomsfull) :: occ_atoms
-    !> Which AOS atoms to include in new fragment (unocc space)
-    !> (occ_atoms = unocc_atoms but it is convenient to have both outputs in fragment optimization)
-    logical,intent(inout),dimension(natomsfull) :: unocc_atoms
+    !> Which AOS atoms to include in new fragment (virt space)
+    !> (occ_atoms = virt_atoms but it is convenient to have both outputs in fragment optimization)
+    logical,intent(inout),dimension(natomsfull) :: virt_atoms
     integer :: counter,idx,i
 
     ! Always include central atom in fragment
@@ -4599,7 +4623,7 @@ contains
        print *, 'counter / natomsAOS_new', counter,natomsAOS_new
        call lsquit('set_reduced_fragmentAOS: Counter is wrong',-1)
     end if
-    unocc_atoms = occ_atoms
+    virt_atoms = occ_atoms
 
   end subroutine set_reduced_fragmentAOS
 
@@ -4608,14 +4632,14 @@ contains
   !> date: august-2011
   !> author: Ida-Marie Hoyvik
   subroutine Expandfragment(Occ,Virt,Track,natoms,&
-       & nocc_per_atom,nunocc_per_atom,Converged,&
+       & nocc_per_atom,nvirt_per_atom,Converged,&
        & nAtomsWithOccOrb,nAtomsWithVirtOrb,Inputstep,&
        & ExpandOcc,ExpandVirt)
     implicit none
     integer,intent(in)         :: natoms
     logical,dimension(natoms)  :: Occ,Virt,Temp
     integer,intent(in)         :: nocc_per_atom(natoms)
-    integer,intent(in)         :: nunocc_per_atom(natoms)
+    integer,intent(in)         :: nvirt_per_atom(natoms)
     integer,intent(in)         :: Track(natoms)
     logical,intent(inout)      :: Converged
     logical,intent(in)         :: ExpandOcc,ExpandVirt
@@ -4660,7 +4684,7 @@ contains
        do i=1,natoms
           indx= Track(i)
           if ((.not. Virt(indx)) .and. &
-               & (nunocc_per_atom(indx)> 0)) then
+               & (nvirt_per_atom(indx)> 0)) then
              Temp(indx)=.true.
              counter=counter+1
              if (counter == step) exit
@@ -4686,11 +4710,11 @@ contains
   !> date: august-2011
   !> author: Ida-Marie Hoyvik
   subroutine GetnAtomsWithOrb(natoms,nocc_per_atom,&
-       & nunocc_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
+       & nvirt_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
     implicit none
     integer,intent(in)        :: natoms
     integer,intent(in)        :: nocc_per_atom(natoms)
-    integer,intent(in)        :: nunocc_per_atom(natoms)
+    integer,intent(in)        :: nvirt_per_atom(natoms)
     integer,intent(inout)     :: nAtomsWithOccOrb,nAtomsWithVirtOrb
     !
     integer                   :: indx
@@ -4700,7 +4724,7 @@ contains
        if (nocc_per_atom(indx) > 0) then
           nAtomsWithOccOrb = nAtomsWithOccOrb + 1
        end if
-       if (nunocc_per_atom(indx) > 0) then
+       if (nvirt_per_atom(indx) > 0) then
           nAtomsWithVirtOrb = nAtomsWithVirtOrb + 1
        end if
     end do
@@ -4711,7 +4735,7 @@ contains
   !> \date April 2013
   !> \author Kasper Kristensen
   subroutine Set_fragment_fixed_AOSatoms(natomsAOS,natoms,&
-       & nocc_per_atom,nunocc_per_atom,Track,Occ,Unocc)
+       & nocc_per_atom,nvirt_per_atom,Track,Occ,virt)
     implicit none
     !> Number of requested AOS atoms
     integer,intent(in)        :: natomsAOS
@@ -4719,15 +4743,15 @@ contains
     integer,intent(in)        :: natoms
     !> Number of occ orbitals assigned to each atom
     integer,intent(in)        :: nocc_per_atom(natoms)
-    !> Number of unocc orbitals assigned to each atom
-    integer,intent(in)        :: nunocc_per_atom(natoms)
+    !> Number of virt orbitals assigned to each atom
+    integer,intent(in)        :: nvirt_per_atom(natoms)
     !> Prioritized track list of atoms (the first natomsAOS from this list are included)
     integer,intent(in)        :: Track(natoms)
     !> Which AOS atoms to include for occ space
     logical,dimension(natoms),intent(inout) :: Occ
-    !> Which AOS atoms to include for unocc space 
+    !> Which AOS atoms to include for virt space 
     !> (will in general be identical to occ but keep it general)
-    logical,dimension(natoms),intent(inout) :: Unocc
+    logical,dimension(natoms),intent(inout) :: virt
     integer                   :: i,indx,counter
 
     ! Sanity check
@@ -4748,17 +4772,17 @@ contains
        end if
     end do IncludeOcc
 
-    ! Include natomsAOS atoms for unocc space
+    ! Include natomsAOS atoms for virt space
     counter = 0
-    Unocc=.false.
-    IncludeUnocc: do i=1,natoms
+    virt=.false.
+    Includevirt: do i=1,natoms
        indx=Track(i)
-       if (nunocc_per_atom(indx) > 0) then
-          Unocc(indx)=.true.
+       if (nvirt_per_atom(indx) > 0) then
+          virt(indx)=.true.
           counter = counter+1
-          if (counter == natomsAOS) exit IncludeUnocc
+          if (counter == natomsAOS) exit Includevirt
        end if
-    end do IncludeUnocc
+    end do Includevirt
 
 
   end subroutine Set_fragment_fixed_AOSatoms
@@ -4959,6 +4983,11 @@ contains
        fragment%LagFOP = fragment%energies(FRAGMODEL_LAGRIMP2)
        fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRIMP2)
        fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRIMP2)
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2
+       fragment%LagFOP = fragment%energies(FRAGMODEL_LAGLSTHCRIMP2)
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCLSTHCRIMP2)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTLSTHCRIMP2)
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', fragment%ccmodel
@@ -5031,6 +5060,11 @@ contains
        fragment%energies(FRAGMODEL_LAGRIMP2) = fragment%LagFOP 
        fragment%energies(FRAGMODEL_OCCRIMP2) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTRIMP2) = fragment%EvirtFOP 
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2
+       fragment%energies(FRAGMODEL_LAGLSTHCRIMP2) = fragment%LagFOP 
+       fragment%energies(FRAGMODEL_OCCLSTHCRIMP2) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTLSTHCRIMP2) = fragment%EvirtFOP 
 
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
@@ -5135,6 +5169,10 @@ contains
        ! RI-MP2
        energies(FRAGMODEL_OCCRIMP2) = Eocc     ! occupied
        energies(FRAGMODEL_VIRTRIMP2) = Evirt   ! virtual
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2
+       energies(FRAGMODEL_OCCLSTHCRIMP2) = Eocc     ! occupied
+       energies(FRAGMODEL_VIRTLSTHCRIMP2) = Evirt   ! virtual
     case default
        call lsquit('case unknown in put_fragment_energy_contribs',-1)
     end select
@@ -5286,9 +5324,9 @@ contains
       enddo
 
       AtomicFragment%noccEOS   = idx
-      AtomicFragment%nunoccEOS = nvir_per_atom(MyAtom)
+      AtomicFragment%nvirtEOS = nvir_per_atom(MyAtom)
       call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS)
-      call mem_alloc(AtomicFragment%unoccEOSidx,AtomicFragment%nunoccEOS)
+      call mem_alloc(AtomicFragment%virtEOSidx,AtomicFragment%nvirtEOS)
 
       idx = 1
       do i=nc+1,MyMolecule%nocc
@@ -5302,13 +5340,13 @@ contains
       endif
 
       idx = 1
-      do a=1,MyMolecule%nunocc
+      do a=1,MyMolecule%nvirt
          if(VirOrbitals(a)%centralatom == MyAtom)then
-            AtomicFragment%unoccEOSidx(idx) = a
+            AtomicFragment%virtEOSidx(idx) = a
             idx = idx + 1
          endif
       enddo
-      if(idx-1/=AtomicFragment%nunoccEOS)then
+      if(idx-1/=AtomicFragment%nvirtEOS)then
          call lsquit("ERROR finding the right amount of occupied EOS orbitals",-1)
       endif
 
@@ -5317,7 +5355,7 @@ contains
          & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
 
       call mem_dealloc(AtomicFragment%occEOSidx)
-      call mem_dealloc(AtomicFragment%unoccEOSidx)
+      call mem_dealloc(AtomicFragment%virtEOSidx)
 
       !==================================================================================!
       !                               Initialize Fragment                                !
@@ -5483,7 +5521,7 @@ contains
       type(fullmolecule), intent(inout) :: MyMolecule
       !> All occupied orbitals
       type(decorbital), dimension(no), intent(in) :: OccOrbitals
-      !> All unoccupied orbitals
+      !> All virtupied orbitals
       type(decorbital), dimension(nv), intent(in) :: VirOrbitals
       !> Logical vector telling which orbital is include in the fragment
       logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv)
@@ -5580,7 +5618,7 @@ contains
      type(fullmolecule), intent(in) :: MyMolecule
      !> All occupied orbitals
      type(decorbital), dimension(no), intent(in) :: OccOrbitals
-     !> All unoccupied orbitals
+     !> All virtupied orbitals
      type(decorbital), dimension(nv), intent(in) :: VirOrbitals
      !> Integral information
      type(lsitem), intent(inout)       :: mylsitem
@@ -5593,8 +5631,8 @@ contains
       integer, intent(out) :: iter
      real(realk) :: LagEnergy_exp,OccEnergy_exp,VirEnergy_exp,FOTincreased
      type(decfrag) :: ReducedFragment
-     integer :: i,noccAOSprev, nunoccAOSprev
-     integer,pointer :: occAOSidxprev(:),unoccAOSidxprev(:)
+     integer :: i,noccAOSprev, nvirtAOSprev
+     integer,pointer :: occAOSidxprev(:),virtAOSidxprev(:)
 
      ! Sanity check
      if(DECinfo%FOTscaling<1.0_realk) then
@@ -5617,16 +5655,16 @@ contains
 
      if(DECinfo%print_small_calc)then
         write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,FOT,&
-           & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,AtomicFragment%nbasis
+           & AtomicFragment%noccAOS,AtomicFragment%nvirtAOS,AtomicFragment%nbasis
      endif
 
      ! Store AOS space for converged AtomicFragment 
      noccAOSprev=AtomicFragment%noccAOS
-     nunoccAOSprev=AtomicFragment%nunoccAOS
+     nvirtAOSprev=AtomicFragment%nvirtAOS
      call mem_alloc(occAOSidxprev,noccAOSprev)
-     call mem_alloc(unoccAOSidxprev,nunoccAOSprev)
+     call mem_alloc(virtAOSidxprev,nvirtAOSprev)
      occAOSidxprev = AtomicFragment%occAOSidx
-     unoccAOSidxprev = AtomicFragment%unoccAOSidx
+     virtAOSidxprev = AtomicFragment%virtAOSidx
 
      
      ! Loop over different increased FOTs to determine reduced spaces
@@ -5636,8 +5674,8 @@ contains
 
         ! Initialize ReducedFragment identical fragment for previous FOT
         ! (converged fragment for i=1).
-        call atomic_fragment_init_integer_list(MyAtom,nv, no, nunoccAOSprev,&
-             & noccAOSprev,unoccAOSidxprev,occAOSidxprev,&
+        call atomic_fragment_init_integer_list(MyAtom,nv, no, nvirtAOSprev,&
+             & noccAOSprev,virtAOSidxprev,occAOSidxprev,&
              & OccOrbitals,VirOrbitals,MyMolecule,mylsitem,ReducedFragment,.true.,.false.)
 
         ! Set initial energies for ReducedFragment equal to the ones for the expanded fragment
@@ -5655,29 +5693,29 @@ contains
         
         ! Save information about ReducedFragment AOS in AtomicFragment structure
         AtomicFragment%REDfrags(i)%noccAOS   = ReducedFragment%noccAOS
-        AtomicFragment%REDfrags(i)%nunoccAOS = ReducedFragment%nunoccAOS
+        AtomicFragment%REDfrags(i)%nvirtAOS = ReducedFragment%nvirtAOS
         call mem_alloc(AtomicFragment%REDfrags(i)%occAOSidx,AtomicFragment%REDfrags(i)%noccAOS)
         AtomicFragment%REDfrags(i)%occAOSidx = ReducedFragment%occAOSidx
-        call mem_alloc(AtomicFragment%REDfrags(i)%unoccAOSidx,AtomicFragment%REDfrags(i)%nunoccAOS)
-        AtomicFragment%REDfrags(i)%unoccAOSidx = ReducedFragment%unoccAOSidx
+        call mem_alloc(AtomicFragment%REDfrags(i)%virtAOSidx,AtomicFragment%REDfrags(i)%nvirtAOS)
+        AtomicFragment%REDfrags(i)%virtAOSidx = ReducedFragment%virtAOSidx
         AtomicFragment%REDfrags(i)%FOT = FOTincreased
 
         ! Print summary (delete this at some point but nice to have for analysis now)
         if(DECinfo%print_small_calc)then
            write(DECinfo%output,'(1X,a,i7,g14.3,3i7)') 'FOP reduction: Atom,FOT,O,V,B',MyAtom,&
-              & FOTincreased, ReducedFragment%noccAOS,ReducedFragment%nunoccAOS,&
+              & FOTincreased, ReducedFragment%noccAOS,ReducedFragment%nvirtAOS,&
               & ReducedFragment%nbasis
         endif
 
         ! Store AOS information to use as starting point in fragment for next FOT
         call mem_dealloc(occAOSidxprev)
-        call mem_dealloc(unoccAOSidxprev)
+        call mem_dealloc(virtAOSidxprev)
         noccAOSprev=ReducedFragment%noccAOS
-        nunoccAOSprev=ReducedFragment%nunoccAOS
+        nvirtAOSprev=ReducedFragment%nvirtAOS
         call mem_alloc(occAOSidxprev,noccAOSprev)
-        call mem_alloc(unoccAOSidxprev,nunoccAOSprev)
+        call mem_alloc(virtAOSidxprev,nvirtAOSprev)
         occAOSidxprev = ReducedFragment%occAOSidx
-        unoccAOSidxprev = ReducedFragment%unoccAOSidx
+        virtAOSidxprev = ReducedFragment%virtAOSidx
 
         ! Done with reduced fragment
         call atomic_fragment_free(ReducedFragment)
@@ -5685,7 +5723,7 @@ contains
      end do
 
      call mem_dealloc(occAOSidxprev)
-     call mem_dealloc(unoccAOSidxprev)
+     call mem_dealloc(virtAOSidxprev)
 
 
    end subroutine fragment_reduction_procedure_wrapper
@@ -5724,7 +5762,7 @@ contains
       type(fullmolecule), intent(in) :: MyMolecule
       !> All occupied orbitals
       type(decorbital), dimension(no), intent(in) :: OccOrbitals
-      !> All unoccupied orbitals
+      !> All virtupied orbitals
       type(decorbital), dimension(nv), intent(in) :: VirOrbitals
       !> Integral information
       type(lsitem), intent(inout)       :: mylsitem
@@ -5753,7 +5791,7 @@ contains
       call mem_alloc(VirAOS_old,nv)
 
       no_exp = AtomicFragment%noccAOS
-      nv_exp = AtomicFragment%nunoccAOS
+      nv_exp = AtomicFragment%nvirtAOS
       LagEnergy_exp = AtomicFragment%LagFOP
       OccEnergy_exp = AtomicFragment%EoccFOP
       VirEnergy_exp = AtomicFragment%EvirtFOP
@@ -5761,9 +5799,9 @@ contains
       ! Set boundaries of the list (min = EOS, max = Expanded fragment AOS)
       ! note: if frozen core then core orbitals are already excluded from those numbers
       no_min = AtomicFragment%noccEOS
-      nv_min = AtomicFragment%nunoccEOS
+      nv_min = AtomicFragment%nvirtEOS
       no_max = AtomicFragment%noccAOS
-      nv_max = AtomicFragment%nunoccAOS
+      nv_max = AtomicFragment%nvirtAOS
 
       ! The initial (or old) condition correspond to the expanded fragment
       no_old = no_exp
@@ -5997,7 +6035,7 @@ contains
          write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
          write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Fragment number                  :', MyAtom
          write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in virt total :', &
-            & AtomicFragment%nunoccAOS
+            & AtomicFragment%nvirtAOS
          write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
             & AtomicFragment%noccAOS
          write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
@@ -6018,8 +6056,8 @@ contains
             & no_exp-AtomicFragment%noccAOS, ' of ', no_exp, ' orbitals ( ', &
             & (no_exp-AtomicFragment%noccAOS)*100.0_realk/no_exp, ' %)'
          write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Virtual  reduction removed ', &
-            & nv_exp-AtomicFragment%nunoccAOS, ' of ', nv_exp, ' orbitals ( ', &
-            & (nv_exp-AtomicFragment%nunoccAOS)*100.0_realk/nv_exp, ' %)'
+            & nv_exp-AtomicFragment%nvirtAOS, ' of ', nv_exp, ' orbitals ( ', &
+            & (nv_exp-AtomicFragment%nvirtAOS)*100.0_realk/nv_exp, ' %)'
          write(DECinfo%output,'(1X,a)') 'FOP========================================================='
          write(DECinfo%output,'(1X,a,/)') 'FOP'
       endif

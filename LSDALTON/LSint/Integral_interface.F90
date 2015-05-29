@@ -2562,7 +2562,7 @@ integer             :: i,j,k,l,Oper
 real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: IJ,nGaussian,nG2,ao(4),dummy
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 
 DO i=1,4
    IF (intSpec(i).NE.'R')call lsquit('Only R allowed in II_get_4center_eri',-1)
@@ -2572,7 +2572,8 @@ IF (intSpec(5).NE.'C') THEN
    nGaussian = 6
    nG2 = nGaussian*(nGaussian+1)/2
    GGem = 0E0_realk
-   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+   call stgfit(slater,nGaussian,exponent,coeff)
    IJ=0
    DO I=1,nGaussian
       DO J=1,I
@@ -2658,13 +2659,14 @@ integer             :: i,j,k,l
 real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: IJ,nGaussian,nG2,ao(4),dummy
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 
 IF(oper.NE.CoulombOperator)THEN
    nGaussian = 6
    nG2 = nGaussian*(nGaussian+1)/2
    GGem = 0E0_realk
-   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+   call stgfit(slater,nGaussian,exponent,coeff)
    IJ=0
    DO I=1,nGaussian
       DO J=1,I
@@ -3056,13 +3058,14 @@ integer :: Oper,double
 TYPE(LSSETTING)       :: SETTING
 !local variables
 integer             :: i,j,k,l
-real(realk)         :: coeff(6),exponent(6),tmp
+real(realk)         :: coeff(6),exponent(6),tmp,slater
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: IJ,nGaussian,nG2,ao(4),dummy
 
 nGaussian = 6
 nG2 = nGaussian*(nGaussian+1)/2
-call stgfit(1E0_realk,nGaussian,exponent,coeff)
+slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+call stgfit(slater,nGaussian,exponent,coeff)
 IJ=0
 DO I=1,nGaussian
    DO J=1,I
@@ -4106,7 +4109,7 @@ logical               :: filedump
 !
 real         :: TS,TE
 real(realk)         :: TS2,TE2
-real(realk)         :: coeff(6),exponent(6),tmp
+real(realk)         :: coeff(6),exponent(6),tmp,slater
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: iunit,i,j,k,l,IJ
 integer             :: nGaussian,nG2
@@ -4119,7 +4122,8 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 
 GGem = 0E0_realk
 
-call stgfit(1E0_realk,nGaussian,exponent,coeff)
+slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+call stgfit(slater,nGaussian,exponent,coeff)
 
 IJ=0
 DO I=1,nGaussian

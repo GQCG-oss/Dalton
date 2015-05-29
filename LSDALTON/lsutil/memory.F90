@@ -42,7 +42,7 @@ public mem_pseudo_dealloc
 public mem_init_background_alloc
 public mem_change_background_alloc
 public mem_free_background_alloc
-public mem_is_background_buf_init,mem_get_bg_buf_n
+public mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
 public mem_allocated_mem_real, mem_deallocated_mem_real
 public mem_allocated_global,mem_allocated_type_matrix
 !parameters
@@ -2128,11 +2128,18 @@ function mem_is_background_buf_init() result(init)
    logical :: init
    init = buf_realk%init
 end function mem_is_background_buf_init
+
 function mem_get_bg_buf_n() result(n)
    implicit none
    integer(kind=8) :: n
    n = buf_realk%nmax
 end function mem_get_bg_buf_n
+
+function mem_get_bg_buf_free() result(n)
+   implicit none
+   integer(kind=8) :: n
+   n = buf_realk%nmax-buf_realk%offset
+end function mem_get_bg_buf_free
 
 subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
    implicit none

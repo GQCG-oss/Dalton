@@ -38,6 +38,7 @@ module full
   use fullrimp2 !,only: full_canonical_rimp2
   use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
+  use full_ls_thc_rimp2Mod
   !  use fragment_energy_module,only : Full_DECMP2_calculation
 
   public :: full_driver
@@ -100,6 +101,8 @@ contains
        elseif(DECinfo%ccModel==MODEL_RIMP2)then
           !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
+       elseif(DECinfo%ccModel==MODEL_LSTHCRIMP2)then
+          call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
        else
           if(DECinfo%ccModel==MODEL_MP2) then
              if(DECinfo%use_canonical ) then
@@ -146,9 +149,13 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> Correlation energy
     real(realk),intent(inout) :: Ecorr
-    integer :: nocc,nunocc,nbasis,print_level,i,j
+    integer :: nocc,nvirt,nbasis,print_level,i,j
     logical :: fragment_job
     real(realk),pointer :: ppfock_fc(:,:), Co_fc(:,:)
+
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_cc_dispatch): does not work with distributed full molecule",-1)
+    endif
 
     Ecorr = 0.0E0_realk
 
@@ -157,7 +164,7 @@ contains
     else
        nocc = MyMolecule%nocc
     end if
-    nunocc = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
 
     fragment_job = .false.
@@ -168,7 +175,7 @@ contains
        call mem_alloc(ppfock_fc,nocc,nocc)
        do j=1,nocc
           do i=1,nocc
-             ppfock_fc(i,j) = MyMolecule%ppfock(MyMolecule%ncore+i,MyMolecule%ncore+j)
+             ppfock_fc(i,j) = MyMolecule%oofock%elm2(MyMolecule%ncore+i,MyMolecule%ncore+j)
           end do
        end do
 
@@ -176,11 +183,11 @@ contains
        call mem_alloc(Co_fc,nbasis,nocc)
        do j=1,nocc
           do i=1,nbasis
-             Co_fc(i,j) = MyMolecule%Co(i,MyMolecule%ncore+j)
+             Co_fc(i,j) = MyMolecule%Co%elm2(i,MyMolecule%ncore+j)
           end do
        end do
 
-       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
           & mylsitem,print_level,fragment_job,Co_fc=Co_fc,ppfock_fc=ppfock_fc)
 
        call mem_dealloc(ppfock_fc)
@@ -191,15 +198,15 @@ contains
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%CCSDmultipliers)then
-          call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-             & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
-             & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
+          call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,&
+             & MyMolecule%fock%elm2, nbasis,nocc,nvirt,mylsitem, &
+             & print_level,fragment_job,MyMolecule%oofock%elm2,MyMolecule%vvfock%elm2,ecorr)
        else
-          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+          Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
              & mylsitem,print_level,fragment_job)
        endif
 #else
-       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
              & mylsitem,print_level,fragment_job)
 #endif
 
@@ -354,11 +361,15 @@ contains
     !    fulldriver = .TRUE.
     !    call init_cabs(fulldriver)
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_canonical_mp2_f12): does not work with PDM type fullmolecule",-1)
+    endif
+
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
 
@@ -374,7 +385,7 @@ contains
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
     ! Transform AO integrals to MO integrals (A I | B J)
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'aiai',gAO,gMO)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'aiai',gAO,gMO)
     call mem_dealloc(gao)
 
     call get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
@@ -404,8 +415,8 @@ contains
              do I=1,nocc
                 do A=1,nvirt
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%ppfock(I,I) + MyMolecule%ppfock(J,J) &
-                        & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
+                   eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                        & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
                    eps = gmo(A,I,B,J)/eps
                    Taibj(a,i,b,j) = eps
                 enddo
@@ -421,8 +432,8 @@ contains
                 do A=1,nvirt
 
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%ppfock(I,I) + MyMolecule%ppfock(J,J) &
-                        & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
+                   eps = MyMolecule%oofock%elm2(I,I) + MyMolecule%oofock%elm2(J,J) &
+                        & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
 
                    ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
                    mp2_energy = mp2_energy + gmo(A,I,B,J)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))/eps
@@ -1246,9 +1257,13 @@ contains
     real(realk) :: tmp
     real(realk) :: E21_Viajb, E21_Viija, E21_Viajj 
 
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_get_ccsd_f12_energy): does not work with PDM fullmolecule",-1)
+    endif
+
     ! Init dimensions
     nocc = MyMolecule%nocc
-    nvirt = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
     noccfull = nocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
@@ -1267,7 +1282,7 @@ contains
 
     ! Transform AO integrals to MO integrals (A I | B J)
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'aiai',gAO,AIBJ)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'aiai',gAO,AIBJ)
     call mem_dealloc(gao)
 
     call get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
@@ -1280,10 +1295,10 @@ contains
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
     !   Rapbq
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'apap',gAO,Rapbq)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'apap',gAO,Rapbq)
     !   Ripaq
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ipap',gAO,Ripaq)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipap',gAO,Ripaq)
     call mem_dealloc(gao)
 
     !   Rrrrc
@@ -1292,13 +1307,13 @@ contains
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCC')
     !   Rambc
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'amac',gAO,Rambc)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'amac',gAO,Rambc)
     !   Rimac
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'imac',gAO,Rimac)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imac',gAO,Rimac)
     !   Ramic
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'amic',gAO,Ramic)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'amic',gAO,Ramic)
     call mem_dealloc(gao)
 
     !   Rrrrc
@@ -1307,10 +1322,10 @@ contains
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRF')
     !   Fiajb
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'iaia',gAO,Fiajb)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iaia',gAO,Fiajb)
     !   Fijka
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'iiia',gAO,Fijka)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiia',gAO,Fijka)
     call mem_dealloc(gao)
 
     ! Calculate standard CCSD energy (brainless summation in this test code)
@@ -1821,7 +1836,7 @@ contains
     type(tensor),intent(inout) :: Tai_local
     !> Doubles amplitudes
     type(tensor),intent(inout) :: Taibj_local
-    integer :: nocc,nunocc,nbasis,print_level,save_model,startidx,endidx,i,j
+    integer :: nocc,nvirt,nbasis,print_level,save_model,startidx,endidx,i,j
     logical :: fragment_job
     real(realk) :: energy
     type(tensor) :: VOVO,Tai,Taibj
@@ -1832,6 +1847,9 @@ contains
 #ifdef VAR_MPI
     local = .false.
 #endif
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_get_ccsd_singles_and_doubles): does not work with PDM fullmolecule",-1)
+    endif
 
     ! Quick fix to always use CCSD model
     !    save_model=DECinfo%ccmodel
@@ -1842,7 +1860,7 @@ contains
     else
        nocc = MyMolecule%nocc
     end if
-    nunocc = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
 
     fragment_job = .false.
@@ -1856,22 +1874,22 @@ contains
        call mem_alloc(ppfock,nocc,nocc)
        do j=1,nocc
           do i=1,nocc
-             ppfock(i,j) = MyMolecule%ppfock(MyMolecule%ncore+i,MyMolecule%ncore+j)
+             ppfock(i,j) = MyMolecule%oofock%elm2(MyMolecule%ncore+i,MyMolecule%ncore+j)
           end do
        end do
 
        startidx = MyMolecule%ncore+1  
        endidx = MyMolecule%nocc
-       call ccsolver(solver_ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
-            & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
+       call ccsolver(solver_ccmodel,MyMolecule%Co%elm2(1:nbasis,startidx:endidx),&
+            & MyMolecule%Cv%elm2,MyMolecule%fock%elm2, nbasis,nocc,nvirt,mylsitem,&
             & print_level,energy,&
             & VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
        call mem_dealloc(ppfock)
 
     else
 
-       call ccsolver(solver_ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-            & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
+       call ccsolver(solver_ccmodel,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,&
+            & MyMolecule%fock%elm2, nbasis,nocc,nvirt,mylsitem, print_level, &
             & energy,VOVO,.false.,local,SOLVE_AMPLITUDES,p2=Tai,p4=Taibj)
 
     end if
@@ -1880,9 +1898,9 @@ contains
 
     !convert the parallel distributed quantities to local quantities, this is
     !essentially a copying if the tensors are not parallel distributed
-    call tensor_minit(Tai_local,[nunocc,nocc],2,atype="LDAR")
+    call tensor_minit(Tai_local,[nvirt,nocc],2,atype="LDAR")
     call tensor_add(Tai_local,1.0E0_realk,Tai,a=0.0E0_realk)
-    call tensor_minit(Taibj_local,[nunocc,nocc,nunocc,nocc],4,atype="LDAR")
+    call tensor_minit(Taibj_local,[nvirt,nocc,nvirt,nocc],4,atype="LDAR")
     call tensor_add(Taibj_local,1.0E0_realk,Taibj,a=0.0E0_realk)
 
     call tensor_free(Taibj)

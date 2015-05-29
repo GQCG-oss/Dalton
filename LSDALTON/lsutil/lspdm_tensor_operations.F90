@@ -3120,6 +3120,14 @@ module lspdm_tensor_operations_module
     p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
     p_arr%a(addr)%local_addr  = addr
     p_arr%a(addr)%initialized = .true.
+#ifdef VAR_MPI
+    p_arr%a(addr)%nnod        = infpar%lg_nodtot
+    p_arr%a(addr)%comm        = infpar%lg_comm
+#else
+    !set to invalid, since not used here
+    p_arr%a(addr)%nnod        = -1
+    p_arr%a(addr)%comm        = -1
+#endif
 
     allocate( p_arr%a(addr)%access_type )
     p_arr%a(addr)%access_type = pdm
@@ -3377,6 +3385,14 @@ module lspdm_tensor_operations_module
     p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
     p_arr%a(addr)%local_addr  = addr
     p_arr%a(addr)%initialized = .true.
+#ifdef VAR_MPI
+    p_arr%a(addr)%nnod        = infpar%lg_nodtot
+    p_arr%a(addr)%comm        = infpar%lg_comm
+#else
+    !set to invalid, since not used here
+    p_arr%a(addr)%nnod        = -1
+    p_arr%a(addr)%comm        = -1
+#endif
 
     allocate( p_arr%a(addr)%access_type )
     p_arr%a(addr)%access_type = pdm
@@ -4572,7 +4588,6 @@ module lspdm_tensor_operations_module
      integer, intent(in), optional             :: oo(arr%mode)
      real(realk),intent(inout),target,optional :: wrk(*)
      integer(kind=8),intent(in),optional,target:: iwrk
-     integer(kind=ls_mpik) :: src,me,nnod
      integer               :: i,ltidx,o(arr%mode)
      integer               :: nelintile,fullfortdim(arr%mode)
      real(realk), pointer  :: tmp(:)
@@ -4619,9 +4634,6 @@ module lspdm_tensor_operations_module
            tmp  => gm_buf%buf(1:tmps)
         endif
      endif
-
-     me   = infpar%lg_mynum
-     nnod = infpar%lg_nodtot
 
 #ifdef VAR_LSDEBUG
      if(nelms/=arr%nelms)call lsquit('ERROR(tensor_gather):array&
@@ -4693,7 +4705,7 @@ module lspdm_tensor_operations_module
         call mem_alloc(req,maxintmp)
 
         do i=1,arr%ntiles
-
+           
            !set the buffer index
            bidx = mod(i-1,maxintmp)+1
 
@@ -4766,6 +4778,7 @@ module lspdm_tensor_operations_module
            b = 1 + (bidx - 1) * arr%tsize
            e = b + arr%tsize -1
 
+
            if( alloc_in_dummy )then
               call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
               call lsmpi_wait(req(bidx))
@@ -4775,6 +4788,7 @@ module lspdm_tensor_operations_module
            endif
 
            call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+
 
         enddo
 
