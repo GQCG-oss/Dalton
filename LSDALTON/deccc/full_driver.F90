@@ -396,6 +396,8 @@ contains
     !           Not frozen core: 0
     offset = noccfull - nocc
 
+    !> Singles correction
+    call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
 
     ! Get all F12 Fock Matrices
     ! ********************
@@ -435,8 +437,7 @@ contains
   !     enddo
   !  enddo
 
-    !call get_ES2(ES2,Fic,Fii,MyMolecule%vvfock%elm2,Fcd,nocc,nvirt,ncabs)
-   
+
     !call mat_free(Fab)
 
     E21 = 0.0E0_realk
