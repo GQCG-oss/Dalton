@@ -741,15 +741,15 @@ contains
     !> PLT info, including grid box info
     type(pltinfo),intent(in) :: MyPlt
     !Local
-    real(realk), allocatable       :: R(:,:), emoorb(:)
+    real(realk), allocatable       :: R(:,:), emoorb(:),moorb1(:)
     integer                        :: I,Q,Xg,Yg,Zg,nGRIDPOINTS
     integer                        :: orbnr, nORBITALS,nBASIS,iunit,ig
-    real(4)                        :: X,Y,Z,X1,Y1,Z1,Xgrid, Ygrid,Zgrid,deltax, deltay, deltaz 
+    real(realk)                    :: X,Y,Z,X1,Y1,Z1,Xgrid, Ygrid,Zgrid,deltax, deltay, deltaz 
     real(4), allocatable           :: moorb(:)
-    real(4)                        :: fZ1,fY1,fX1,fZn,fYn,fXn,epnuc
+    real(realk)                    :: fZ1,fY1,fX1,fZn,fYn,fXn,epnuc
     integer                        :: II,TD, ijk, icount
     integer                        :: reclen
-    real(4)                       :: br
+    real(realk)                    :: br
     br=real(bohr_to_angstrom,4)
 
     nORBITALS = D%ncol
@@ -767,8 +767,8 @@ contains
     Z1 = MyPlt%Z1
     nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
-    allocate(moorb(nGRIDPOINTS),emoorb(nGRIDPOINTS),R(3,nGRIDPOINTS)) !MO orbitals
-    moorb = 0_4; emoorb = 0_realk;
+    allocate(moorb1(nGRIDPOINTS),emoorb(nGRIDPOINTS),R(3,nGRIDPOINTS)) !MO orbitals
+    emoorb = 0_realk;
 
     write(6,*) 'Computing ', nGRIDPOINTS, ' gridpoints'
 
@@ -785,20 +785,22 @@ contains
 
              ijk = Xg + (Yg-1)*nX + (Zg-1)*nX*nY
 
-             epnuc = 0_4
+             epnuc = 0_realk
 
              DO I=1,natoms
                 ! X-, Y-, and Z-distances from gridpoint to atom I
                 X = Xgrid - ATOMXYZ(1,I)
                 Y = Ygrid - ATOMXYZ(2,I)
                 Z = Zgrid - ATOMXYZ(3,I)
-                Q = real(ls%setting%molecule(1)%p%atom(I)%Charge,4)
+                Q = ls%setting%molecule(1)%p%atom(I)%Charge
                 epnuc = epnuc + (Q/SQRT(X*X + Y*Y + Z*Z))
              ENDDO
 
-             R(:,ijk) = real((/Xgrid, Ygrid, Zgrid/),realk)
+             R(1,ijk) = Xgrid
+             R(2,ijk) = Ygrid
+             R(3,ijk) = Zgrid
 
-             moorb(ijk) = epnuc 
+             moorb1(ijk) = epnuc 
 
           ENDDO
        ENDDO
@@ -806,17 +808,16 @@ contains
     !$OMP END PARALLEL DO
 
     !   Electronic contribution
-
     call II_get_ep_integrals3(ls%lupri,ls%luerr,ls%setting,R,nGRIDPOINTS,D,emoorb)
-
     !   Add the two
-
     deallocate(R)
 
-    moorb = moorb - real(emoorb,4)
+    allocate(moorb(nGRIDPOINTS)) !MO orbitals
+
+    moorb = real(moorb1 - emoorb,4)
 
     deallocate(emoorb)
-
+    deallocate(moorb1)
 
     !Write plt file
 
@@ -833,8 +834,9 @@ contains
          & ACCESS='DIRECT',RECL=reclen)
 
 
-    WRITE(IUNIT,REC=1) int(II,4),int(TD,4),int(nZ,4),int(nY,4),int(nX,4),fZ1,fZn,fY1,fYn,fX1,fXn,moorb
-
+    WRITE(IUNIT,REC=1) int(II,4),int(TD,4),int(nZ,4),int(nY,4),int(nX,4),&
+         & real(fZ1,4),real(fZn,4),real(fY1,4),real(fYn,4),real(fX1,4),&
+         & real(fXn,4),moorb
     CLOSE(IUNIT,STATUS='KEEP')
 
     deallocate(moorb)

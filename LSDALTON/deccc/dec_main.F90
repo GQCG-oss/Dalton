@@ -242,7 +242,7 @@ contains
     
     if(DECinfo%F12) then
 #ifdef MOD_UNRELEASED
-       call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
+       !call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
        if(DECinfo%F12debug) then
           print *,   '----------------------------------------------------------------'
           print *,   '                   F12-SINGLES CORRECTION                       '

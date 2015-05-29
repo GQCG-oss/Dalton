@@ -1252,6 +1252,13 @@ contains
     integer :: noccAOStot
     integer :: ncabsMO
     integer :: i,j,c,m,n
+    integer :: offset
+
+    if(Decinfo%Frozencore) then
+       offset = MyFragment%ncore
+    else
+       offset = 0
+    endif
     
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS
@@ -1270,15 +1277,28 @@ contains
           tmp1  = 0.0E0_realk
           tmp2 = 0.0E0_realk
           do c=1, ncabsMO
-             do m=1, noccAOS
-                do n=1, noccAOS
-                   tmp1 = tmp1 + Rijcm(i,j,c,m)*Fmn(m,n)*Rijcm(i,j,c,n) + &
-                        & Rijcm(j,i,c,m)*Fmn(m,n)*Rijcm(j,i,c,n) 
+             
+             do m=1, offset
+                do n=1, offset
+                   tmp1 = tmp1 + Rijcm(i,j,c,m)*MyFragment%ccfock(m,n)*Rijcm(i,j,c,n) + &
+                        & Rijcm(j,i,c,m)*MyFragment%ccfock(m,n)*Rijcm(j,i,c,n) 
 
-                   tmp2 = tmp2 + Rijcm(j,i,c,m)*Fmn(m,n)*Rijcm(i,j,c,n) + &
-                        & Rijcm(i,j,c,m)*Fmn(m,n)*Rijcm(j,i,c,n) 
+                   tmp2 = tmp2 + Rijcm(j,i,c,m)*MyFragment%ccfock(m,n)*Rijcm(i,j,c,n) + &
+                        & Rijcm(i,j,c,m)*MyFragment%ccfock(m,n)*Rijcm(j,i,c,n) 
                 enddo
              enddo
+       
+             do m=offset+1, noccAOStot
+                do n=offset+1, noccAOStot
+                   tmp1 = tmp1 + Rijcm(i,j,c,m)*MyFragment%ppfock(m-offset,n-offset)*Rijcm(i,j,c,n) + &
+                        & Rijcm(j,i,c,m)*MyFragment%ppfock(m-offset,n-offset)*Rijcm(j,i,c,n) 
+
+                   tmp2 = tmp2 + Rijcm(j,i,c,m)*MyFragment%ppfock(m-offset,n-offset)*Rijcm(i,j,c,n) + &
+                        & Rijcm(i,j,c,m)*MyFragment%ppfock(m-offset,n-offset)*Rijcm(j,i,c,n) 
+                enddo
+             enddo
+          
+          
           enddo
           B7ijkl(i,j,j,i) = tmp2
           B7ijkl(i,j,i,j) = tmp1
@@ -1334,13 +1354,20 @@ contains
     integer :: noccAOStot
     integer :: ncabsMO
     integer :: ncabsAO
-     integer :: i,j,r,c,m
-    
+    integer :: i,j,r,c,m
+    integer :: offset
+
     noccEOS = MyFragment%noccEOS
     noccAOS = MyFragment%noccAOS
     noccAOStot = MyFragment%nocctot
     ncabsMO = size(MyFragment%Ccabs,2)    
     ncabsAO = size(MyFragment%Ccabs,1)    
+
+    if(Decinfo%Frozencore) then
+       offset = MyFragment%ncore
+    else
+       offset = 0
+    endif
 
     call mem_alloc(B8ijkl, noccEOS, noccEOS, noccEOS, noccEOS)
     call mem_alloc(Rijcr,  noccEOS, noccEOS, ncabsMO, ncabsAO) 
@@ -1358,13 +1385,15 @@ contains
           tmp2 = 0.0E0_realk
           do r=1, ncabsAO
              do c=1, ncabsMO
-                do m=1, noccAOS
+                
+                do m=1, noccAOStot
                    tmp1 = tmp1 + Rijcm(i,j,c,m)*MyFragment%Frm(r,m)*Rijcr(i,j,c,r) + &
                         & Rijcm(j,i,c,m)*MyFragment%Frm(r,m)*Rijcr(j,i,c,r) 
 
                    tmp2 = tmp2 + Rijcm(j,i,c,m)*MyFragment%Frm(r,m)*Rijcr(i,j,c,r) + &
                         & Rijcm(i,j,c,m)*MyFragment%Frm(r,m)*Rijcr(j,i,c,r) 
                 enddo
+
              enddo
           enddo
           B8ijkl(i,j,j,i) = tmp2
@@ -1372,6 +1401,8 @@ contains
        enddo
     enddo
 
+    !call ls_output(MyFragment%Frm,1,ncabsAO,1,noccAOStot,ncabsAO,noccAOStot,1,6)
+   
     B8energy = 0.0E0_realk
 
     if(dopair) then

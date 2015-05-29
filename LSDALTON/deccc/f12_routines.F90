@@ -2340,7 +2340,7 @@ module f12_routines_module
   subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
     implicit none
     
-    type(fullmolecule),intent(inout) :: MyMolecule
+    type(fullmolecule),intent(in) :: MyMolecule
     type(lsitem), intent(inout) :: Mylsitem
     real(realk), intent(inout) :: ES2
     type(matrix), intent(in) :: Dmat
@@ -2350,10 +2350,16 @@ module f12_routines_module
     !> Singles contribution
     type(matrix) :: Fic
     type(matrix) :: Fcd
-    type(matrix) :: Fij
-    
+    type(matrix) :: Fac
+
+    !> Fock AO
     type(matrix) :: Fcc
     type(matrix) :: Frc
+ 
+    !> Fock matrices of type real
+    real(realk), pointer :: Fic_real(:,:)
+    real(realk), pointer :: Fcd_real(:,:)
+    real(realk), pointer :: Fac_real(:,:)
 
     !Need to build Cabs
     ! Init stuff
@@ -2361,6 +2367,7 @@ module f12_routines_module
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
     nvirt  = MyMolecule%nvirt
+
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
 
@@ -2376,7 +2383,11 @@ module f12_routines_module
       call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
     call mat_free(Fcc)
-
+    
+    call mem_alloc(Fcd_real,ncabs,ncabs)
+    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
+    call mat_free(Fcd)
+    
     !Fic
     call mat_init(Frc,nbasis,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
@@ -2385,270 +2396,170 @@ module f12_routines_module
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
     call mat_free(Frc)
 
-    !Fii
-    call mat_init(Fcc,nbasis,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
-    call mat_init(Fij,nocc,nocc)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Fcc,Fij)
-    call mat_free(Fcc)
-
-    call get_ES2(ES2,Fic,Fij,Fcd,nocc,ncabs)
-    
-    call mat_free(Fic)
-    call mat_free(Fcd)
-    call mat_free(Fij)
-   
-  end subroutine get_ES2_from_dec_main
-  
-  
-  subroutine get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
-    type(matrix) :: Fic
-    type(matrix) :: Fii
-    type(matrix) :: Fcd
-
-    real(realk), pointer :: Fic_real(:,:)
-    real(realk), pointer :: Fcd_real(:,:)
-    real(realk), pointer :: Fij_real(:,:)
-
-    real(realk), pointer :: Fia(:,:)
-    
-    real(realk), pointer :: eps_c(:)
-    real(realk), pointer :: eps_i(:)
-
-    real(realk), pointer :: C_cd(:,:)
-    real(realk), pointer :: C_ij(:,:)
-    
-    real(realk), intent(inout) :: ES2
-    real(realk) :: tmp
-
-    integer, intent(inout) :: nocc,ncabs
-    integer :: i,j,a,c
-
-    call mem_alloc(Fcd_real,ncabs,ncabs)
-    call mem_alloc(C_cd,ncabs,ncabs)
-    call mem_alloc(eps_c,ncabs)
-
-    ! \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
-    ! subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
-
-    !Fcd
-    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
-    call solve_eigenvalue_problem_unitoverlap(ncabs,Fcd_real,eps_c,C_cd)    
-
-    !print *, "norm2(Fcd_real):",  norm2(Fcd_real)  
-    !print *, "norm2(C_cd):",  norm2(C_cd)
-    !print *, "norm2(eps_c):", norm2(eps_c)    
-
-    !Fij
-    call mem_alloc(Fij_real,nocc,nocc)
-    call mem_alloc(C_ij,nocc,nocc)
-    call mem_alloc(eps_i,nocc)
-
-    call mat_to_full(Fii,1.0E0_realk,Fij_real)
-    call solve_eigenvalue_problem_unitoverlap(nocc,Fij_real,eps_i,C_ij)     
-
-    !print *, "norm2(Fij_real):",  norm2(Fij_real)  
-    !print *, "norm2(C_ij):",      norm2(C_ij)
-    !print *, "norm2(eps_i):",     norm2(eps_i)   
-
-    !Fic
     call mem_alloc(Fic_real,nocc,ncabs)
     call mat_to_full(Fic,1.0E0_realk,Fic_real)
-
-    !print *, "norm2(Fic):",  norm2(Fic_real)  
-
-!!$    !F12DEBUG
-!!$    if(DECinfo%F12debug) then
-!!$       print *, "------------ Fic(AO) ----------- "
-!!$       print *, "-------------------------------- "
-!!$       
-!!$       do i=1,nocc
-!!$          do c=1, ncabs
-!!$             if(abs(Fic_real(i,c)) > 1E-010) then
-!!$                print *, "i c Fic_real(i,c):  " , i, c, Fic_real(i,c)
-!!$             endif
-!!$          enddo
-!!$       enddo
-!!$    endif
-        
-    ! Transform to ortoghonal basis Fia'
-    call mem_alloc(Fia,nocc,ncabs)
-    do i=1,nocc
-       do a=1, ncabs
-          tmp = 0.0E0_realk
-          do j=1,nocc
-             do c=1, ncabs
-                tmp = tmp + C_ij(j,i)*Fic_real(j,c)*C_cd(c,a)
-             enddo
-          enddo
-          Fia(i,a) = tmp
-       enddo
-    enddo
-
-    !print *, "norm2D(Fia) 1:", norm2D(Fia)
-
-    !> matB = C1^T matA C2
-    !dec_diff_basis_transform1(nA,nB1,nB2,C1,C2,matA,matB)
-    !call dec_diff_basis_transform1(nocc*ncabs,nocc,ncabs,C_ij,C_cd,Fic_real,Fia)
-    !print *, "norm2D(Fia) 2:", norm2D(Fia)
-
-
-    !PRINT *, "norm2(Fic):",  norm2(Fic_real)  
-!!$    F12DEBUG
-!!$    if(DECinfo%F12debug) then
-!!$       print *, "------------ Fia(MO) ----------- "
-!!$       print *, "-------------------------------- "
-!!$       
-!!$       do i=1,nocc
-!!$          do a=1, ncabs
-!!$             if(abs(Fia(i,a)) > 1E-010) then
-!!$                print *, "i a Fia(i,a):  " , i, a, Fia(i,a)
-!!$             endif
-!!$          enddo
-!!$       enddo
-!!$    endif
-
-!!$  Print of orbital energies of eps_c
-!!$    print *, "------------ print epc ----------- "
-!!$    do a=1,ncabs
-!!$       print *, "eps_c:",a,eps_c(a)   
-!!$    enddo
-!!$    
-!!$    print *, "------------ print eps_i ----------- "
-!!$    !Print of orbital energies of eps_c
-!!$    do a=1,nocc
-!!$       print *, "eps_i:",a,eps_i(a)   
-!!$    enddo
+    call mat_free(Fic)
     
-    !Singles energy correction
-    ES2 = 0.0E0_realk
-    do i=1,nocc
-       do a=1,ncabs
-          ES2 = ES2 + (Fia(i,a)*Fia(i,a))/(eps_i(i)-eps_c(a))           
-       enddo
-    enddo
+    ! Fac
+    call mat_init(Frc,nbasis,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call mat_init(Fac,nvirt,ncabs)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
+    call mat_free(Frc)
 
-    !print *, "Singles Contribution: ", ES2
+    call mem_alloc(Fac_real,nvirt,ncabs)
+    call mat_to_full(Fac,1.0E0_realk,Fac_real)
+    call mat_free(Fac)
+    
+    call get_ES2(ES2,Fic_real,MyMolecule%oofock%elm2,MyMolecule%vvfock%elm2, &
+         & Fcd_real,Fac_real,nocc,nvirt,ncabs,ncabsAO)
     
     call mem_dealloc(Fcd_real)
-    call mem_dealloc(eps_c)
-    call mem_dealloc(C_cd)
-
-    call mem_dealloc(Fij_real)
-    call mem_dealloc(eps_i)
-    call mem_dealloc(C_ij)
-
-    call mem_dealloc(Fia)
     call mem_dealloc(Fic_real)
+    call mem_dealloc(Fac_real)
 
-  end subroutine get_ES2
-
- subroutine get_ES2_AO(ES2,Fic,Fii,Fcd,nocc,ncabsAO)
-    type(matrix) :: Fic
-    type(matrix) :: Fii
-    type(matrix) :: Fcd
-
-    real(realk), pointer :: Fic_real(:,:)
-    real(realk), pointer :: Fcd_real(:,:)
-    real(realk), pointer :: Fij_real(:,:)
-
-    real(realk), pointer :: Fia(:,:)
+  end subroutine get_ES2_from_dec_main
+  
+  subroutine get_ES2(ES2,Fic,Fij,Fab,Fcd,Fac,nocc,nvirt,ncabs,ncabsAO)
+  
+    
+    real(realk), target, intent(in) :: Fcd(:,:)
+    real(realk), target, intent(in) :: Fab(:,:)
+    real(realk), target, intent(in) :: Fij(:,:)
+    real(realk), target, intent(in) :: Fac(:,:)
+    real(realk), target, intent(in) :: Fic(:,:)
     
     real(realk), pointer :: eps_c(:)
     real(realk), pointer :: eps_i(:)
+    real(realk), pointer :: eps_a(:)
 
     real(realk), pointer :: C_cd(:,:)
     real(realk), pointer :: C_ij(:,:)
-    
+    real(realk), pointer :: C_ab(:,:)
+
     real(realk), intent(inout) :: ES2
     real(realk) :: tmp
+    real(realk) :: denom
+    real(realk) :: Ecorr
+    real(realk) :: Ecorr_old
 
-    integer, intent(inout) :: nocc,ncabsAO
-    integer :: i,j,a,c
- 
-    call mem_alloc(Fcd_real,ncabsAO,ncabsAO)
-    call mem_alloc(C_cd,ncabsAO,ncabsAO)
-    call mem_alloc(eps_c,ncabsAO)
+    integer, intent(inout) :: nocc,ncabs,nvirt,ncabsAO
+    integer :: i,j,a,c,iter
+   
+    real(realk), pointer :: tia(:,:) 
+    real(realk), pointer :: tic(:,:)
 
     ! \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
     ! subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
 
     !Fcd
-    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
-    call solve_eigenvalue_problem_unitoverlap(ncabsAO,Fcd_real,eps_c,C_cd)    
-
-    !print *, "norm2D(Fcd_real):",  norm2D(Fcd_real)  
-    !print *, "norm2D(C_cd):",  norm2D(C_cd)
-    !print *, "norm2D(eps_c):", norm2D(eps_c)    
+    call mem_alloc(C_cd,ncabs,ncabs)
+    call mem_alloc(eps_c,ncabs)
+    call solve_eigenvalue_problem_unitoverlap(ncabs,Fcd,eps_c,C_cd)    
 
     !Fij
-    call mem_alloc(Fij_real,nocc,nocc)
     call mem_alloc(C_ij,nocc,nocc)
     call mem_alloc(eps_i,nocc)
+    call solve_eigenvalue_problem_unitoverlap(nocc,Fij,eps_i,C_ij)     
+
+    !Fab
+    call mem_alloc(C_ab,nvirt,nvirt)
+    call mem_alloc(eps_a,nvirt)
+    call solve_eigenvalue_problem_unitoverlap(nvirt,Fab,eps_a,C_ab)     
     
-    call mat_to_full(Fii,1.0E0_realk,Fij_real)
-  
-    call solve_eigenvalue_problem_unitoverlap(nocc,Fij_real,eps_i,C_ij)     
+    print *, "norm2(eps_i): ", norm2(eps_i)
+    print *, "norm2(eps_a): ", norm2(eps_a)
+    print *, "norm2(eps_c): ", norm2(eps_c)
 
-    !print *, "norm2D(Fij_real):",  norm2D(Fij_real)  
-    !print *, "norm2D(C_ij):",      norm2D(C_ij)
-    !print *, "norm2D(eps_i):",     norm2D(eps_i)   
+    !t-matrices
+    call mem_alloc(tia,nocc,nvirt)
+    call mem_alloc(tic,nocc,ncabs)
 
-    !Fic
-    call mem_alloc(Fic_real,nocc,ncabsAO)
-    call mat_to_full(Fic,1.0E0_realk,Fic_real)
-       
-    ! Transform to ortoghonal basis Fia'
-    call mem_alloc(Fia,nocc,ncabsAO)
-    do i=1,nocc
-       do a=1, ncabsAO
+    !iter=0
+    do c=1,ncabs
+       do i=1,nocc
+          tic(i,c) = Fic(i,c)/(eps_i(i)-eps_c(c))
+       enddo
+    enddo
+
+    do a=1,nvirt
+       do i=1,nocc
+          denom = (eps_i(i)-eps_a(a))
           tmp = 0.0E0_realk
-          do j=1,nocc
-             do c=1, ncabsAO
-                tmp = tmp + C_ij(j,i)*Fic_real(j,c)*C_cd(c,a)
-             enddo
+          do c=1,ncabs
+             tmp = tmp + Fac(a,c)*tic(i,c)
           enddo
-          Fia(i,a) = tmp
+          tia(i,a) = tmp/denom 
        enddo
     enddo
 
-!!$    !Print of orbital energies of eps_c
-!!$    print *, "------------ print epc ----------- "
-!!$    do a=1,ncabsAO
-!!$       print *, "eps_c:",a,eps_c(a)   
-!!$    enddo
-!!$    
-!!$    print *, "------------ print eps_i ----------- "
-!!$    !Print of orbital energies of eps_c
-!!$    do a=1,nocc
-!!$       print *, "eps_i:",a,eps_i(a)   
-!!$    enddo
-    
-    !Singles energy correction
-    ES2 = 0.0E0_realk
-    do i=1,nocc
-       do a=1,ncabsAO
-          ES2 = ES2 + (Fia(i,a)*Fia(i,a))/(eps_i(i)-eps_c(a))           
-       enddo
-    enddo
 
-    print *, "Singles Contribution: ", ES2
+    !Starting iterations
+    do iter=1,20
+       
+       Ecorr = 0.0E0_realk
+       Ecorr_old = 0.0E0_realk
+       
+       do c=1,ncabs
+          do i=1,nocc
+             Ecorr_old = Ecorr_old + Fic(i,c)*tic(i,c)
+          enddo
+       enddo
+
+      !make tic
+       do c=1,ncabs
+          do i=1,nocc
+             denom = (eps_i(i)-eps_c(c))
+             tmp = 0.0E0_realk
+             do a=1,nvirt
+                tmp = tmp + Fac(a,c)*tia(i,a)
+             enddo
+             tic(i,c) = (Fic(i,c)+tmp)/denom 
+          enddo
+       enddo
+
+       !make tia
+       do a=1,nvirt
+          do i=1,nocc
+             denom = (eps_i(i)-eps_a(a))
+             tmp = 0.0E0_realk
+             do c=1,ncabs
+                tmp = tmp + Fac(a,c)*tic(i,c)
+             enddo
+             tia(i,a) = tmp/denom 
+          enddo
+       enddo
+
+       Ecorr = 0.0E0_realk
+       do c=1,ncabs
+          do i=1,nocc
+             Ecorr = Ecorr + Fic(i,c)*tic(i,c)
+          enddo
+       enddo
+
+       print *, "----------------------------------"
+       print *, "Ecorr: ", iter, Ecorr
+       print *, "deltA_E: ", iter, abs(Ecorr-Ecorr_old)
+       print *, "norm2(tic): ", iter, norm2(tic)
+       print *, "norm2(tia): ", iter, norm2(tia)
+
+    enddo
     
-    call mem_dealloc(Fcd_real)
+    call mem_dealloc(tic)
+    call mem_dealloc(tia)
+
     call mem_dealloc(eps_c)
     call mem_dealloc(C_cd)
 
-    call mem_dealloc(Fij_real)
     call mem_dealloc(eps_i)
     call mem_dealloc(C_ij)
 
-    call mem_dealloc(Fia)
-    call mem_dealloc(Fic_real)
+    call mem_dealloc(eps_a)    
+    call mem_dealloc(C_ab)
 
-  end subroutine get_ES2_AO
-  
-  
+ end subroutine get_ES2
+
   subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
     implicit none
 
