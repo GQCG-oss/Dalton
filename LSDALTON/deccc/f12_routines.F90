@@ -2470,10 +2470,10 @@ module f12_routines_module
     call mem_alloc(C_ab,nvirt,nvirt)
     call mem_alloc(eps_a,nvirt)
     call solve_eigenvalue_problem_unitoverlap(nvirt,Fab,eps_a,C_ab)     
-    
-    print *, "norm2(eps_i): ", norm2(eps_i)
-    print *, "norm2(eps_a): ", norm2(eps_a)
-    print *, "norm2(eps_c): ", norm2(eps_c)
+! YANG DO NOT USE NORM2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   
+!    print *, "norm2(eps_i): ", norm2(eps_i)
+!    print *, "norm2(eps_a): ", norm2(eps_a)
+!    print *, "norm2(eps_c): ", norm2(eps_c)
 
     !t-matrices
     call mem_alloc(tia,nocc,nvirt)
@@ -2544,8 +2544,9 @@ module f12_routines_module
        print *, "----------------------------------"
        print *, "Ecorr: ", iter, Ecorr
        print *, "deltA_E: ", iter, abs(Ecorr-Ecorr_old)
-       print *, "norm2(tic): ", iter, norm2(tic)
-       print *, "norm2(tia): ", iter, norm2(tia)
+! YANG DO NOT USE NORM2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   
+!       print *, "norm2(tic): ", iter, norm2(tic)
+!       print *, "norm2(tia): ", iter, norm2(tia)
 
     enddo
     
