@@ -607,7 +607,7 @@ contains
 
     IF(infpar%mynum==0)THEN ! Global master
        gm=.true.
-    else ! Local master
+    else ! global slave
        gm=.false.
     end IF
 
@@ -634,7 +634,7 @@ contains
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
 
-    ! Allocate pointers if local master
+    ! Allocate pointers if global slave
     if(.not. gm) then
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
@@ -664,17 +664,19 @@ contains
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nvirt)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
        call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
-       IF(DECinfo%F12)THEN
-          call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
-          call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
-          call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-          call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-          !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
-          call mem_alloc(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO)
-          !Warning MyMolecule%Frm is allocated with noccfull ?????
-          call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
-          !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
-          call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
+       IF(DECinfo%F12)THEN          
+          IF(.NOT.DECinfo%full_molecular_cc)THEN
+             call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
+             call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
+             call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+             call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+             !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
+             call mem_alloc(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO)
+             !Warning MyMolecule%Frm is allocated with noccfull ?????
+             call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
+             !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
+             call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
+          ENDIF
        ENDIF
        call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
@@ -755,16 +757,18 @@ contains
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
-       call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
-       call ls_mpibcast(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       !Warning MyMolecule%Frm is allocated with noccfull ?????
-       call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-       !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
-       call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+       IF(.NOT.DECinfo%full_molecular_cc)THEN
+          call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
+          call ls_mpibcast(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          !Warning MyMolecule%Frm is allocated with noccfull ?????
+          call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+          !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
+          call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+       ENDIF
     ENDIF
     call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
