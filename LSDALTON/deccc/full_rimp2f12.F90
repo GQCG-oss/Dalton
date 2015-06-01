@@ -209,10 +209,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !==============================================================
 
    write(DECinfo%output,'(/,a)') ' ================================================ '
-   write(DECinfo%output,'(a)')   '            DEC-RI-MP2F12 ENERGY TERMS            '
+   write(DECinfo%output,'(a)')   '            FULL-RI-MP2F12 ENERGY TERMS            '
    write(DECinfo%output,'(a,/)') ' ================================================ '
    write(*,'(/,a)') ' ================================================ '
-   write(*,'(a)')   '           DEC-RI-MP2F12 ENERGY TERMS             '
+   write(*,'(a)')   '           FULL-RI-MP2F12 ENERGY TERMS             '
    write(*,'(a,/)') ' ================================================ '
 
    LS = .FALSE.
