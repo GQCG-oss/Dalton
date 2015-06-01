@@ -3908,6 +3908,8 @@ Integer               :: nrowLHS,ncolLHS,nrowRHS,ncolRHS
 !
 TYPE(INTEGRALOUTPUT)  :: INT_OUTPUT
 !
+!initialize the Integral Output structure.
+call nullifyIntegralOutput(INT_OUTPUT)
 IDUMMY=1
 LHSDENSFIT = .FALSE.
 RHSDENSFIT = .FALSE.
