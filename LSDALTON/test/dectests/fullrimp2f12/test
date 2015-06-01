@@ -27,7 +27,6 @@ f.add(string = 'RI-MP2F12 CORRECTION TO ENERGY',
       rel_tolerance = 1.0e-7)
 
 f.add(string = 'Allocated memory (TOTAL)')
-f.add(string = 'Allocated MPI memory a cross all slaves')
 
 f.add(string = 'Memory in use for array4',
       rel_tolerance = 1.0e-9)
