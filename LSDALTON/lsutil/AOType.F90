@@ -44,6 +44,7 @@ INTEGER                 :: nPrimOrbComp(maxAOangmom)
 INTEGER                 :: nOrbitals(maxAOangmom)
 TYPE(LSMatrixpointer)   :: pCC(maxAOangmom)    
 INTEGER                 :: CCindex(maxAOangmom) 
+INTEGER                 :: Expindex
 INTEGER                 :: itype
 INTEGER                 :: redtype
 END TYPE AOBATCH
@@ -66,6 +67,7 @@ INTEGER                      :: natoms
 INTEGER                      :: ntype
 INTEGER                      :: nredtype
 INTEGER                      :: nbast
+INTEGER                      :: nprimbast
 INTEGER                      :: maxJ
 INTEGER,pointer              :: ATOMICnORB(:)!size = natoms
 INTEGER,pointer              :: ATOMICnBATCH(:)!size = natoms

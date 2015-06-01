@@ -14,6 +14,7 @@ MODULE lsparameters
   integer,parameter :: AOelField = 9
   integer,parameter :: AOadmm = 10  !ADMM basis
   integer,parameter :: AONuclearSpec = 11 !single Nuclei
+  integer,parameter :: AOdfCABO = 12
 ! THESE ARE STRING SPECIFIERS FOR THE Operator
   integer,parameter :: CoulombOperator = 1
   integer,parameter :: OverlapOperator = 2
@@ -332,6 +333,8 @@ subroutine param_AO_Stringfromparam(AO1,AO1param)
      AO1 = 'pCharge '
   CASE(AOdfCABS) 
      AO1 = 'CABS    '
+  CASE(AOdfCABO) 
+     AO1 = 'CABSonly'
   CASE(AOdfJK) 
      AO1 = 'JKAUX   '
   CASE(AOVAL) 
