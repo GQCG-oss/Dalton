@@ -156,19 +156,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    != 1. the have a very simple structure(B1 does require robust DF)=
    != 2. They could all be done in a Linear scaling way outside DEC =
    != 3. The intermediates are only used once                       =
-   != 4. Due to noccEOS,noccEOS,noccEOS,noccEOS very small mem req  =     
-   != Note 
+   != 4. Due to noccEOS,noccEOS,noccEOS,noccEOS very small mem req  =
+   != Note                                                          =
    != Fijkl:                                                        =
-   != The Gaussian geminal divided by the Coulomb operator g/r12    =     
+   != The Gaussian geminal divided by the Coulomb operator g/r12    =
    != Xijkl                                                         =
-   != The Gaussian geminal squared g^2                              =     
+   != The Gaussian geminal squared g^2                              =
    != Dijkl                                                         =
    != The double commutator [[T,g],g] with g = Gaussian geminal     =
    != Since the integral (alpha|[[T,g],g]|beta) is not positive     =
    != definite this term is done using robust density fitting       =
    != Done according to Eq. 87 of                                   =
    != J Comput Chem 32: 2492–2513, 2011                             =
-   !==============================================================
+   !=================================================================
 
    !normally I do not like to allocate things at the beginning but 
    !due to an analysis of memory heap performance and the 
