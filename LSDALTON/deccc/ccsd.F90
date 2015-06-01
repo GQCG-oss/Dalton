@@ -5783,7 +5783,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         tszesio4 = nvrs*nors
 
      else
-        tsze=no*no*nv*nv
+        tsze      = no*no*nv*nv
+        nloctiles = 1
      endif
 
 
