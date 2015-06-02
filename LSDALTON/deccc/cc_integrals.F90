@@ -2717,6 +2717,10 @@ contains
           endif
        endif
 
+       if(DECinfo%ccsolverskip)then
+          call random_number(w1)
+          call random_number(w2)
+       else
        if(.not.completely_distributed)then
           IF(DECinfo%useIchor)THEN
              lg = AOGammabatchinfo(gammaB)%dim               ! Dimension of gamma batch
@@ -3061,6 +3065,7 @@ contains
           call tensor_free( t3_fa )
           call tensor_free( t4_fg )
        endif
+       endif
 
     enddo BatchLoop
 
@@ -3161,6 +3166,10 @@ contains
     else
        call mem_dealloc( w2 )
        call mem_dealloc( w1 )
+    endif
+
+    if(DECinfo%ccsolverskip)then
+       call tensor_random(integral)
     endif
 
 

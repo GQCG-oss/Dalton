@@ -10,7 +10,8 @@ use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
 use tensor_interface_module, only: tensor_set_dil_backend_true, &
-   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer
+   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer, &
+   tensor_set_global_segment_length
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -1333,24 +1334,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 
      if (WORD(1:7) == '*TENSOR') then
         READWORD=.TRUE.
-        do
-           read(LUCMD,'(A40)') word
-           if(word(1:1) == '!' .or. word(1:1) == '#') cycle
-           if(word(1:1) == '*') then ! New property or *END OF INPUT
-              backspace(LUCMD)
-              exit
-           end if
-           select case(word)
-           case('.DIL_BACKEND')
-              call tensor_set_dil_backend_true(.true.)
-           case('.DEBUG')
-              call tensor_set_debug_mode_true(.true.)
-           case default
-              print *,"UNRECOGNIZED KEYWORD: ",word
-              call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
-
-           end select
-        enddo
+        call TENSOR_INPUT(word,LUCMD)
      endif
 
      IF (WORD(1:2) == '**') THEN
@@ -1364,6 +1348,34 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 
   ENDDO
 END subroutine GENERAL_INPUT
+
+subroutine TENSOR_INPUT(word,lucmd)
+   implicit none
+   character(len=80),intent(inout)  :: word
+   integer,intent(in) :: lucmd 
+   integer(kind=8)    :: seg_len
+   do
+      read(LUCMD,'(A40)') word
+      if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+      if(word(1:1) == '*') then ! New property or *END OF INPUT
+         backspace(LUCMD)
+         exit
+      end if
+      select case(word)
+      case('.DIL_BACKEND')
+         call tensor_set_dil_backend_true(.true.)
+      case('.DEBUG')
+         call tensor_set_debug_mode_true(.true.)
+      case('.SEGMENT_LENGTH')
+         read(LUCMD,*) seg_len
+         call tensor_set_global_segment_length(seg_len)
+      case default
+         print *,"UNRECOGNIZED KEYWORD: ",word
+         call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
+
+      end select
+   enddo
+end subroutine TENSOR_INPUT
 
 subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   implicit none

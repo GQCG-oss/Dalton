@@ -1729,7 +1729,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(tensor) :: Lmo, Co_orig, Cv_orig
    real(realk)             :: test_norm,two_norm_total, one_norm_total,one_norm1, one_norm2, prev_norm
    real(realk), pointer    :: B(:,:),c(:)
-   integer                 :: iter,last_iter,i,j,k,l,iter_idx,next,nSS
+   integer                 :: iter,last_iter,i,j,k,l,iter_idx,next,nSS,ib,ie
    logical                 :: crop_ok,break_iterations,saferun, use_pseudo_diag_basis, use_pnos, get_multipliers
    type(ri)                :: l_ao
    type(tensor)            :: oofock_prec, vvfock_prec, vofock_prec, ovfock_prec
@@ -1751,13 +1751,13 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk) :: t2fnorm2, t1fnorm2
    !SOME DUMMIES FOR TESTING
    type(array4) :: iajb_a4
-   type(tensor)            :: tmp
+   type(tensor)            :: tmp1,tmp2,tmp3
    character(tensor_MSG_LEN) :: msg
    integer(kind=8)        :: o2v2
    real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
    logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
-   logical                :: trafo_vovo, trafo_m4, trafo_m2,bg_was_init
+   logical                :: trafo_vovo, trafo_m4, trafo_m2,bg_was_init, bg
    logical                :: diag_oo_block, diag_vv_block, prec, prec_not1, prec_in_b
    character(4)           :: atype
    character              :: intspec(5)
@@ -1891,6 +1891,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    end select ModelSpecificSettings
 
    call ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os,vs,local,saferun,use_singles,JOB,ccmodel,bg_was_init)
+   bg = mem_is_background_buf_init()
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -1902,10 +1903,10 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
    if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA&
      &.and. ccmodel /= MODEL_SOSEX) then
-      call tensor_minit(xo, occ_dims, 2, local=local, atype='LDAR' )
-      call tensor_minit(yo, occ_dims, 2, local=local, atype='LDAR' )
-      call tensor_minit(xv, virt_dims,2, local=local, atype='LDAR' )
-      call tensor_minit(yv, virt_dims,2, local=local, atype='LDAR' )
+      call tensor_minit(xo, occ_dims, 2, local=local, atype='LDAR', bg=bg )
+      call tensor_minit(yo, occ_dims, 2, local=local, atype='LDAR', bg=bg )
+      call tensor_minit(xv, virt_dims,2, local=local, atype='LDAR', bg=bg )
+      call tensor_minit(yv, virt_dims,2, local=local, atype='LDAR', bg=bg )
    end if
 
    ! allocate things
@@ -1913,19 +1914,31 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call mem_alloc( t1,     DECinfo%ccMaxIter )
       call mem_alloc( omega1, DECinfo%ccMaxIter )
 
-      call tensor_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
+      if( bg )then
+         do i=1,DECinfo%ccMaxDIIS
+            call tensor_minit(t1(i), ampl2_dims, 2, local=local, atype='REPD', bg=bg )
+         enddo
+      else
+         call tensor_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
+      endif
    end if
 
    call mem_alloc( t2,     DECinfo%ccMaxDIIS )
    call mem_alloc( omega2, DECinfo%ccMaxDIIS )
 
-   call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+   if( bg )then
+      do i=1,DECinfo%ccMaxDIIS
+         call tensor_minit(t2(i), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=bg )
+      enddo
+   else
+      call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+   endif
 
    ! Fock matices and density corresponding to input MOs
-   call tensor_minit( fock, ao2_dims, 2, local=local, atype=atype )
+   call tensor_minit( fock, ao2_dims, 2, local=local, atype=atype, bg=bg )
    call tensor_convert( fock_f,  fock )
 
-   call tensor_minit( t1fock, ao2_dims, 2, local=local, atype=atype )
+   call tensor_minit( t1fock, ao2_dims, 2, local=local, atype=atype , bg=bg )
 
    !set job related
    select case(JOB)
@@ -1989,8 +2002,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          trafo_m2 = .false.
       endif
 
-      call tensor_minit(Co_orig, occ_dims, 2, local=local, atype='LDAR' )
-      call tensor_minit(Cv_orig, virt_dims,2, local=local, atype='LDAR' )
+      call tensor_minit(Co_orig, occ_dims, 2, local=local, atype='LDAR',bg=bg )
+      call tensor_minit(Cv_orig, virt_dims,2, local=local, atype='LDAR',bg=bg )
 
       Co_b1 => Co_f
       Cv_b1 => Cv_f
@@ -1999,8 +2012,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call get_t1_matrices(MyLsitem,m2,Co_orig,Cv_orig,xo,yo,xv,yv,fock,t1fock,.false.)
 
-      call tensor_free(Co_orig)
       call tensor_free(Cv_orig)
+      call tensor_free(Co_orig)
 
       Co_b1 => xo%elm2
       Co_b2 => yo%elm2
@@ -2059,8 +2072,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc( vvfock_d, nv, nv )
    call tensor_minit(Uo,   [no,no],  2, local=local, atype="TDPD", tdims = [os,os] )
    call tensor_minit(Uv,   [nv,nv],  2, local=local, atype="TDPD", tdims = [vs,vs] )
-   call tensor_minit( oo_fock, [no,no], 2 )
-   call tensor_minit( vv_fock, [nv,nv], 2 )
+   call tensor_minit( oo_fock, [no,no], 2, bg=bg )
+   call tensor_minit( vv_fock, [nv,nv], 2, bg=bg )
 
    !misuse Co_d and Cv_d as workspaces
    call dgemm('n','n',nb,no,nb,1.0E0_realk,fock_,nb,Co_b2,nb,0.0E0_realk,Co_d,nb)
@@ -2115,8 +2128,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       enddo
    endif
 
-   call tensor_free(oo_fock)
    call tensor_free(vv_fock)
+   call tensor_free(oo_fock)
 
    call mem_dealloc( focc  )
    call mem_dealloc( fvirt )
@@ -2139,11 +2152,11 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    endif
 
    ! create transformation matrices in array form
-   call tensor_minit( Co , occ_dims, 2, local=local, atype="REAR" )
-   call tensor_minit( Cv , virt_dims,2, local=local, atype="REAR" )
+   call tensor_minit( Co , occ_dims, 2, local=local, atype="REAR", bg=bg )
+   call tensor_minit( Cv , virt_dims,2, local=local, atype="REAR", bg=bg )
 
-   call tensor_convert( Co_d,   Co   )
-   call tensor_convert( Cv_d,   Cv   )
+   call tensor_convert( Co_d, Co )
+   call tensor_convert( Cv_d, Cv )
 
    call mem_dealloc( Co_d )
    call mem_dealloc( Cv_d )
@@ -2155,8 +2168,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! get fock matrices, used in Preconditioning and MP2
    ! --------------------------------------------------
 
-   call tensor_minit(oofock_prec, [no,no], 2, local=local, atype='REPD' )
-   call tensor_minit(vvfock_prec, [nv,nv], 2, local=local, atype='REPD' )
+   call tensor_minit(oofock_prec, [no,no], 2, local=local, atype='REPD', bg=bg )
+   call tensor_minit(vvfock_prec, [nv,nv], 2, local=local, atype='REPD', bg=bg )
    call tensor_minit(vofock_prec, [nv,no], 2, local=local, atype='REPD' )
    if( JOB == SOLVE_MULTIPLIERS )then
       call tensor_minit(ovfock_prec, [no,nv], 2, local=local, atype='REPD' )
@@ -2170,28 +2183,28 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_convert( vvfock_d, vvfock_prec )
       call tensor_zero(vofock_prec)
    else
-      call tensor_minit(tmp, [nb,no], 2, local=local, atype='LDAR' )
+      call tensor_minit(tmp1, [nb,no], 2, local=local, atype='LDAR', bg=bg )
       ord2 = [1,2]
-      call tensor_contract(1.0E0_realk,fock,Co,[2],[1],1,0.0E0_realk,tmp,ord2)
-      call tensor_contract(1.0E0_realk,Co,tmp,[1],[1],1,0.0E0_realk,oofock_prec,ord2)
-      call tensor_free(tmp)
+      call tensor_contract(1.0E0_realk,fock,Co,[2],[1],1,0.0E0_realk,tmp1,ord2)
+      call tensor_contract(1.0E0_realk,Co,tmp1,[1],[1],1,0.0E0_realk,oofock_prec,ord2)
+      call tensor_free(tmp1)
 
-      call tensor_minit(tmp, [nb,nv], 2, local=local, atype='LDAR'  )
-      call tensor_contract(1.0E0_realk,fock,Cv,[2],[1],1,0.0E0_realk,tmp,ord2)
-      call tensor_contract(1.0E0_realk,Cv,tmp,[1],[1],1,0.0E0_realk,vvfock_prec,ord2)
-      call tensor_free(tmp)
+      call tensor_minit(tmp1, [nb,nv], 2, local=local, atype='LDAR', bg=bg )
+      call tensor_contract(1.0E0_realk,fock,Cv,[2],[1],1,0.0E0_realk,tmp1,ord2)
+      call tensor_contract(1.0E0_realk,Cv,tmp1,[1],[1],1,0.0E0_realk,vvfock_prec,ord2)
+      call tensor_free(tmp1)
 
-      call tensor_minit(tmp, [nb,no], 2, local=local, atype='LDAR'  )
-      call tensor_contract(1.0E0_realk,fock,Co,[2],[1],1,0.0E0_realk,tmp,ord2)
-      call tensor_contract(1.0E0_realk,Cv,tmp,[1],[1],1,0.0E0_realk,vofock_prec,ord2)
-      call tensor_free(tmp)
+      call tensor_minit(tmp1, [nb,no], 2, local=local, atype='LDAR', bg=bg )
+      call tensor_contract(1.0E0_realk,fock,Co,[2],[1],1,0.0E0_realk,tmp1,ord2)
+      call tensor_contract(1.0E0_realk,Cv,tmp1,[1],[1],1,0.0E0_realk,vofock_prec,ord2)
+      call tensor_free(tmp1)
 
       if(JOB == SOLVE_MULTIPLIERS )then
          !For the starting guess
-         call tensor_minit(tmp, [nb,nv], 2, local=local, atype='LDAR'  )
-         call tensor_contract(1.0E0_realk,t1fock,Cv,[2],[1],1,0.0E0_realk,tmp,ord2)
-         call tensor_contract(-2.0E0_realk,Co,tmp,[1],[1],1,0.0E0_realk,ovfock_prec,ord2)
-         call tensor_free(tmp)
+         call tensor_minit(tmp1, [nb,nv], 2, local=local, atype='LDAR', bg=bg )
+         call tensor_contract(1.0E0_realk,t1fock,Cv,[2],[1],1,0.0E0_realk,tmp1,ord2)
+         call tensor_contract(-2.0E0_realk,Co,tmp1,[1],[1],1,0.0E0_realk,ovfock_prec,ord2)
+         call tensor_free(tmp1)
       endif
 
    end if
@@ -2211,7 +2224,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    !Get OVOV integrals from non-T1 transformed VOVO integrals or generate
    !----------------------------------------------------------------------
-   call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
+   call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs], bg=bg )
 
    if(.not.vovo_avail)then
       call tensor_zero(iajb)
@@ -2269,6 +2282,18 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       crop_ok          = .false.
       prev_norm        = huge(prev_norm)
 
+      if(bg)then
+         if(use_singles)then
+            do i=1,DECinfo%ccMaxDIIS
+               call tensor_minit(omega1(i), ampl2_dims, 2 , local=local, atype='LDAR',bg=bg )
+            enddo
+         endif
+         do i=1,DECinfo%ccMaxDIIS
+            call tensor_minit(omega2(i), ampl4_dims, 4, local=local,&
+               & atype='TDAR', tdims=[vs,vs,os,os], bg=bg )
+         enddo
+      endif
+
       ! Iterate the equations
       ! ---------------------
       CCIteration : do iter=1,DECinfo%ccMaxIter
@@ -2282,11 +2307,15 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! Initialize residual vectors
          ! ---------------------------
          if(use_singles)then
-            if(iter <= DECinfo%ccMaxDIIS)call tensor_minit(omega1(iter_idx), ampl2_dims, 2 , local=local, atype='LDAR' )
+            if(iter <= DECinfo%ccMaxDIIS .and. .not. bg)then
+               call tensor_minit(omega1(iter_idx), ampl2_dims, 2 , local=local, atype='LDAR' )
+            endif
             call tensor_zero(omega1(iter_idx))
          endif
-         if(iter <= DECinfo%ccMaxDIIS)call tensor_minit(omega2(iter_idx), ampl4_dims, 4, local=local,&
-            & atype='TDAR', tdims=[vs,vs,os,os] )
+         if(iter <= DECinfo%ccMaxDIIS .and. .not. bg)then
+            call tensor_minit(omega2(iter_idx), ampl4_dims, 4, local=local,&
+               & atype='TDAR', tdims=[vs,vs,os,os] )
+         endif
          call tensor_zero(omega2(iter_idx))
 
 
@@ -2335,14 +2364,14 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! Calculate linear combinations of the residual and parameter vectors
          ! -------------------------------------------------------------------
          if(use_singles) then
-            call tensor_minit(t1_opt    , ampl2_dims, 2 , local=local, atype='LDAR')
-            call tensor_minit(omega1_opt, ampl2_dims, 2 , local=local, atype='LDAR')
-            call tensor_zero(t1_opt    )
+            call tensor_minit(omega1_opt, ampl2_dims, 2 , local=local, atype='LDAR',bg=bg )
+            call tensor_minit(t1_opt    , ampl2_dims, 2 , local=local, atype='LDAR',bg=bg )
             call tensor_zero(omega1_opt)
+            call tensor_zero(t1_opt    )
          end if
 
-         call tensor_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-         call tensor_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         call tensor_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=bg )
+         call tensor_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=bg )
 
          call tensor_zero( omega2_opt )
          call tensor_zero( t2_opt     )
@@ -2481,7 +2510,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             if( prec ) then
                if(use_singles) then
                   omega1_prec = precondition_singles(omega1_opt,oofock_prec,vvfock_prec)
-                  if(iter+1<=DECinfo%ccMaxDIIS)then
+                  if(iter+1<=DECinfo%ccMaxDIIS.and. .not. bg)then
                      call tensor_minit(t1(next),  ampl2_dims, 2, local=local, atype='REPD' )
                   endif
                   call tensor_cp_data(t1_opt,t1(next))
@@ -2490,7 +2519,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                end if
                omega2_prec = precondition_doubles(omega2_opt,oofock_prec,vvfock_prec,local)
 
-               if(iter+1<=DECinfo%ccMaxDIIS)then
+               if(iter+1<=DECinfo%ccMaxDIIS.and..not.bg)then
                   call tensor_minit(t2(next), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
                endif
                call tensor_cp_data(t2_opt,t2(next))
@@ -2499,13 +2528,13 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             else
                if(use_singles)then
-                  if(iter+1<=DECinfo%ccMaxDIIS)then
+                  if(iter+1<=DECinfo%ccMaxDIIS.and..not.bg)then
                      call tensor_minit(t1(next), ampl2_dims, 2, local=local, atype='REPD' )
                   endif
                   call tensor_cp_data(t1_opt,t1(next))
                   call tensor_add(t1(next),1.0E0_realk,omega1_opt)
                endif
-               if(iter+1<=DECinfo%ccMaxDIIS)then
+               if(iter+1<=DECinfo%ccMaxDIIS.and..not.bg)then
                   call tensor_minit(t2(next), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
                endif
                call tensor_cp_data(t2_opt,t2(next))
@@ -2520,12 +2549,12 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          ! delete optimals
          ! ---------------
+         call tensor_free(t2_opt)
+         call tensor_free(omega2_opt)
          if(use_singles) then
             call tensor_free(t1_opt)
             call tensor_free(omega1_opt)
          end if
-         call tensor_free(t2_opt)
-         call tensor_free(omega2_opt)
 
 
          ! Checkpoint the calculation
@@ -2558,50 +2587,26 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       end do CCIteration
 
+      !Free residuals
+      if(bg)then
+         ib = DECinfo%ccMaxDIIS
+         ie = 1
+      else
+         ib = last_iter
+         ie = max(last_iter-DECinfo%ccMaxDIIS+1,1)
+      endif
+      do i=ib,ie,-1
+         iter_idx = get_iter_idx(i)
+         call tensor_free(omega2(iter_idx))
+      end do
+      if(use_singles) then
+         do i=ib,ie,-1
+            iter_idx = get_iter_idx(i)
+            call tensor_free( omega1(iter_idx) )
+         end do
+      endif
+
    else
-
-#ifdef VAR_LSDEBUG
-
-      call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, intspec, local, collective )
-
-      !MODIFY FOR NEW MODEL
-
-      if( JOB == SOLVE_AMPLITUDES.or.JOB == SOLVE_AMPLITUDES_PNO )then
-         EnergyForCCmodelRestart: select case(CCmodel)
-         case( MODEL_MP2 )
-            ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
-         case( MODEL_RIMP2,MODEL_LSTHCRIMP2)
-            ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
-         case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
-            ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
-            ccenergy_check = get_cc_energy(t1(1),t2(1),iajb,no,nv)
-         case(MODEL_RPA)
-            ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
-            if(DECinfo%SOS) then
-               ccenergy_check =ccenergy_check+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
-            endif
-         case(MODEL_SOSEX)
-            ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
-            ccenergy_check =ccenergy_check+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
-         case default
-            call lsquit("ERROR(ccsolver_par):energy expression for your model&
-               & not yet implemented",-1)
-         end select EnergyForCCmodelRestart
-      endif
-
-      if( abs(ccenergy_check-ccenergy) > DECinfo%ccConvergenceThreshold )then
-         print *,"WARNING(ccsolver_par): Energy saved in restart and energy calculated" 
-         print *,"  from the newly calculated integrals and saved amplitudes are not  "
-         print *,"  the same up to the chosen convergence threshold"
-         print *,"  Convergence threshold:           ",DECinfo%ccConvergenceThreshold
-         print *,"  Difference between the energies: ",abs(ccenergy_check-ccenergy)
-         print *,"  old energy:                      ",ccenergy
-         print *,"  new energy:                      ",ccenergy_check
-         print *,"This usually indicates that there is something wrong with the basis"
-         print *,"chosen for the integrals and amplitudes"
-      endif
-
-#endif
 
       call print_ccjob_iterinfo(old_iter,two_norm_total,ccenergy,(JOB==SOLVE_MULTIPLIERS),fragment_job)
 
@@ -2617,54 +2622,87 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! Free memory and save final amplitudes
    ! *************************************
+   ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used RHS or restore the old rhs
+   call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
+   call tensor_cp_data(iajb, tmp2, order = [2,1,4,3] )
+   call tensor_free(iajb)
+
+   call tensor_free(vvfock_prec)
+   call tensor_free(oofock_prec)
+
+   call tensor_free(Cv)
+   call tensor_free(Co)
+
+   call tensor_free(t1fock)
+   call tensor_free(fock)
 
    ! remove rest of the singles amplitudes and residuals
-   do i=last_iter,max(last_iter-DECinfo%ccMaxDIIS+1,1),-1
 
+   iter_idx = get_iter_idx(last_iter)
+
+   ! Save final double amplitudes (to file if saferun)
+   call tensor_minit( tmp1, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR" )
+   call tensor_cp_data(t2(iter_idx), tmp1, order = [1,3,2,4] )
+
+   if(use_singles) then
+      call tensor_minit(tmp3,[nv,no],2)
+      call tensor_cp_data(t1(iter_idx), tmp3 )
+   endif
+
+   !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
+   if(saferun.and..not.restart_from_converged.and..not.DECinfo%CRASHCALC)then
+      if(use_singles)then
+         call save_current_guess(local,last_iter+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
+            &t2(iter_idx),safefilet2f,safefilet2f,t1(iter_idx),safefilet1f,safefilet1f)
+      else
+         call save_current_guess(local,last_iter+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
+            &t2(iter_idx),safefilet2f,safefilet2f)
+      endif
+   endif
+
+   !Free workspace
+   if(bg)then
+      ib = DECinfo%ccMaxDIIS
+      ie = 1
+   else
+      ib = last_iter
+      ie = max(last_iter-DECinfo%ccMaxDIIS+1,1)
+   endif
+   ! Free doubles amplitudes
+   do i=ib,ie,-1
       iter_idx = get_iter_idx(i)
-
-      ! Save final double amplitudes (to file if saferun)
-      if(i==last_iter) then
-         call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", bg=bg_was_init)
-         call tensor_cp_data(t2(iter_idx), p4, order = [1,3,2,4] )
-
-         if(use_singles) then
-            if(.not.longrange_singles) then ! intitialize and copy, else just copy
-               call tensor_minit(p2,[nv,no],2)
-            end if
-            call tensor_cp_data(t1(iter_idx), p2 )
-         endif
-
-         !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
-         if(saferun.and..not.restart_from_converged.and..not.DECinfo%CRASHCALC)then
-            if(use_singles)then
-               call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
-                  &t2(iter_idx),safefilet2f,safefilet2f,t1(iter_idx),safefilet1f,safefilet1f)
-            else
-               call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
-                  &t2(iter_idx),safefilet2f,safefilet2f)
-            endif
-         endif
-
-      end if
-
-      ! Free doubles residuals
-      if(.not.restart_from_converged)call tensor_free(omega2(iter_idx))
-      ! Free doubles amplitudes
       call tensor_free(t2(iter_idx))
-
-
-      ! Free singles amplitudes and residuals
-      if(use_singles) then
-         call tensor_free( t1(iter_idx) )
-         if(.not.restart_from_converged)call tensor_free( omega1(iter_idx) )
-      end if
-
    end do
+   ! Free singles amplitudes and residuals
+   if(use_singles) then
+      do i=ib,ie,-1
+         iter_idx = get_iter_idx(i)
+         call tensor_free( t1(iter_idx) )
+      end do
+   end if
+
+   if(use_singles) then
+      call mem_dealloc(t1)
+      call mem_dealloc(omega1)
+   end if
+   call mem_dealloc(t2)
+   call mem_dealloc(omega2)
+
+   call mem_dealloc(B)
+   call mem_dealloc(c)
+
+
+   if(use_singles) then
+      !call array2_free(h1)
+      call tensor_free(yv)
+      call tensor_free(xv)
+      call tensor_free(yo)
+      call tensor_free(xo)
+   end if
 
    call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 
-   call print_norm(p4,t2fnorm2,.true.)
+   call print_norm(tmp1,t2fnorm2,.true.)
    if(use_singles)then
       call print_norm(p2,t1fnorm2,.true.)
    endif
@@ -2673,48 +2711,28 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       &last_iter+old_iter,use_singles,ccenergy,ttotend_wall,&
       &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2,nm1=t1fnorm2,nm2=t2fnorm2)
    
-
-   ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used
-   ! RHS or restore the old rhs
-   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR", bg=bg_was_init )
-   call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
-   
    call ccdriver_dealloc_workspace(saferun,local,bg_was_init)
-
-   call tensor_free(iajb)
-
-   ! deallocate stuff
-   if(use_singles) then
-      call mem_dealloc(t1)
-      call mem_dealloc(omega1)
-   end if
-
-   call mem_dealloc(t2)
-   call mem_dealloc(omega2)
-
-   call mem_dealloc(B)
-   call mem_dealloc(c)
-
-
-   ! remove preconditioning matrices
-   call tensor_free(oofock_prec)
-   call tensor_free(vvfock_prec)
-
-   if(use_singles) then
-      !call array2_free(h1)
-      call tensor_free(xo)
-      call tensor_free(yo)
-      call tensor_free(xv)
-      call tensor_free(yv)
-   end if
-   call tensor_free(t1fock)
-
-   call tensor_free(Co)
-   call tensor_free(Cv)
-   call tensor_free(fock)
 
    call ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart_from_converged,&
       &mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
+
+
+   !initialize and copy data to output arrays
+   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
+   call tensor_cp_data(tmp2, VOVO )
+   call tensor_free(tmp2)
+
+   call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", fo=tmp1%offset, bg=bg_was_init)
+   call tensor_cp_data( tmp1, p4 )
+   call tensor_free(tmp1)
+
+   if(use_singles) then
+      if(.not.longrange_singles) then 
+         call tensor_minit(p2,[nv,no],2, bg=bg_was_init)
+      end if
+      call tensor_cp_data(tmp3, p2 )
+      call tensor_free(tmp3)
+   endif
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !transform back to original basis!
@@ -2757,7 +2775,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    real(realk) :: MemFree
    integer(kind=8) :: mem41,mem31,mem21
    integer(kind=8) :: mem42,mem32,mem22
-   integer(kind=8) ::mem_out, mem_in, w1,w2, mem_o, mem_i
+   integer(kind=8) ::mem_out, mem_in, w1,w2, mem_o, mem_i, mem_in_basic,mem_out_basic
    integer(kind=8) :: bytes, Freebytes, bytes_to_alloc
    integer(kind=8) :: nelms_ccdriver, nelms_int0,nelms_int1,nelms_int2,nelms_int3, nelms_res_in, nelms_res_out
    logical :: use_bg
@@ -2782,15 +2800,28 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          call get_currently_available_memory(MemFree)
          Freebytes = int(MemFree * (1024.0E0_realk**3) * 0.8E0_realk,kind=8)
 
+         !CCSOLVER OUTSIDE BG BUFFER
+         !**************************
          !estimate memory use in solver while the residual is build, the other
          ! FOck matrix, MO trafo matrices (bv,bo), Lambda matrices, basis trafo matrices, fock-blocks
-         nelms_ccdriver = i8*nb**2 + 3_long*nb*no + 3_long*nb*nv + 2_long*no**2 + 2_long*nv**2 + 2_long*no*nv
+         nelms_ccdriver = 1_long*nb*no + 1_long*nb*nv + 1_long*no**2 + 1_long*nv**2 + 1_long*no*nv
          !singles vectors and residuals, and t1 fock matrix
          if( use_singles )then
-            elm = (i8*nv)*no * (2*DECinfo%ccMaxDIIS ) + i8*nb**2
+            elm = i8*nb**2
             nelms_ccdriver = nelms_ccdriver + elm
          endif
+         mem_out_basic = nelms_ccdriver * 8
+         mem_out = nelms_ccdriver * 8
+
+         !CCSOLVER INSIDE BG BUFFER
+         !*************************
          ! residual-, trial- and integral vectors, additional two tiles for buffering
+         !singles vectors and residuals, and t1 fock matrix
+         nelms_ccdriver = i8*nb**2 + 2_long*nb*no + 2_long*nb*nv + 1_long*no**2 + 1_long*nv**2 + 1_long*no*nv
+         if( use_singles )then
+            elm = (i8*nv)*no * (2*DECinfo%ccMaxDIIS )
+            nelms_ccdriver = nelms_ccdriver + elm
+         endif
          if( local )then
             elm = (i8*nv*nv)*no*no * (2*DECinfo%ccMaxDIIS + 1)
          else
@@ -2801,8 +2832,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
             elm = nt * (i8*vs**2) * os**2 * (2*DECinfo%ccMaxDIIS + 3 )  
          endif
          nelms_ccdriver = nelms_ccdriver + elm
-
-         mem_out = nelms_ccdriver * 8
+         mem_in_basic = nelms_ccdriver * 8
 
 
          !estimate memory use in residual without workspaces
@@ -2921,26 +2951,28 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
          endif
 
          mem_out = mem_out + nelms_res_out*8
-         mem_in  = nelms_res_in*8
+         mem_in  = max(mem_in,nelms_res_in*8)
 
          bytes = mem_out
 
          !we may use 80% of the difference between bytes and Freebytes now as the background buffer or 2*mem_in
-         bytes_to_alloc = max(min( (Freebytes - bytes) * 8 / 10, 5 * mem_in, int(DECinfo%bg_memory * 1024.0E0**3,kind=8)),mem_in)
+         bytes_to_alloc = max(min( (Freebytes - bytes) * 8 / 10, 5 * mem_in +mem_in_basic, &
+            &int(DECinfo%bg_memory * 1024.0E0**3,kind=8)),mem_in+mem_in_basic)
 
          if(DECinfo%PL>1)then
 
             write (DECinfo%output,*) "cc driver info:"
             write (DECinfo%output,*) "---------------"
             write (DECinfo%output,'("Free memory is                   : ",g9.2," GB")')Freebytes/1024.0E0_realk**3
-            write (DECinfo%output,'("Requirement for the solver   (o) : ",g9.2," GB")')(nelms_ccdriver*8)/1024.0E0_realk**3
+            write (DECinfo%output,'("Requirement for the solver   (o) : ",g9.2," GB")')mem_out_basic/1024.0E0_realk**3
+            write (DECinfo%output,'("Requirement for the solver   (i) : ",g9.2," GB")')mem_in_basic /1024.0E0_realk**3
             write (DECinfo%output,'("Requirement for int trafo    (i) : ",g9.2," GB")')&
                &(min(nelms_int0,nelms_int1,nelms_int2,nelms_int3)*8)/1024.0E0_realk**3
             write (DECinfo%output,'("Requirement for the residual (o) : ",g9.2," GB")')(nelms_res_out*8)/1024.0E0_realk**3
             write (DECinfo%output,'("Requirement for the residual (i) : ",g9.2," GB")')(nelms_res_in*8)/1024.0E0_realk**3
 
             write (DECinfo%output,'("Min heap memory requirement (=o) : ",g9.2," GB")') mem_out/1024.0E0_realk**3
-            write (DECinfo%output,'("Min buffer requirement      (=i) : ",g9.2," GB")') mem_in /1024.0E0_realk**3
+            write (DECinfo%output,'("Min buffer requirement      (=i) : ",g9.2," GB")') (mem_in+mem_in_basic)/1024.0E0_realk**3
 
             write (DECinfo%output,'("Requesting                       : ",g9.2," GB to be allocated in BG buffer")')&
                &bytes_to_alloc/1024.0E0_realk**3
@@ -3176,6 +3208,9 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
    !internal
    type(tensor) :: omega2_prec,omega1_prec
    integer :: i,j
+   logical :: bg
+
+   bg = mem_is_background_buf_init()
 
    ! calculate crop/diis matrix
    B=0.0E0_realk
@@ -3189,7 +3224,7 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
          do j=1,i
             ! just doubles
             if( prec ) then
-               omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local)
+               omega2_prec = precondition_doubles(omega2(j),ppfock_prec,qqfock_prec,local,bg=bg)
                B(i,j) = tensor_ddot( omega2(i), omega2_prec )
                call tensor_free( omega2_prec )
             else
@@ -3205,8 +3240,8 @@ subroutine ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,ppfock_prec,qqfock
       do i=1,nSS
          do j=1,i
             if( prec ) then
-               omega1_prec = precondition_singles( omega1(j), ppfock_prec, qqfock_prec        )
-               omega2_prec = precondition_doubles( omega2(j), ppfock_prec, qqfock_prec, local )
+               omega1_prec = precondition_singles( omega1(j), ppfock_prec, qqfock_prec )
+               omega2_prec = precondition_doubles( omega2(j), ppfock_prec, qqfock_prec, local, bg=bg )
                B(i,j) =          tensor_ddot( omega1(i), omega1_prec ) 
                B(i,j) = B(i,j) + tensor_ddot( omega2(i), omega2_prec )
 

@@ -24,6 +24,11 @@ module background_buffer_module
      type(c_ptr)          :: c = c_null_ptr
      integer              :: n
      type(c_ptr)          :: c_addr(max_n_pointers)
+     type(c_ptr)          :: c_mdel(max_n_pointers)
+     integer              :: e_mdel(max_n_pointers)
+     integer              :: n_mdel
+     integer              :: n_prev
+     logical              :: l_mdel
   end type bg_buf_realk
 
   save

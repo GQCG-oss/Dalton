@@ -384,12 +384,12 @@ contains
 
        ! free stuff
        ! **********
-       call tensor_free(VOVO)
        call tensor_free(u)
-       call tensor_free(t2)
        if(DECinfo%use_singles)then
           call tensor_free(t1)
        endif
+       call tensor_free(t2)
+       call tensor_free(VOVO)
 
     case default
 
@@ -2783,15 +2783,15 @@ contains
 
        ! Get MP2 amplitudes and energy for fragment
        call mp2_solver(AtomicFragment,g,t2,.false.)
-       call tensor_free(g)
 
        ! Get correlation density matrix for atomic fragment
        call calculate_MP2corrdens_frag(t2,AtomicFragment)
+       call tensor_free(t2)
+       call tensor_free(g)
 
        ! Reduce using fragment-adapted orbitals
        call fragopt_reduce_FOs(MyAtom,AtomicFragment,OccOrbitals,no,VirOrbitals,nv, &
           & MyMolecule,mylsitem,t2,iter)
-       call tensor_free(t2)
 
        return
     end if FragAdapt

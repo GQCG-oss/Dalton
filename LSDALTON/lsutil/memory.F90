@@ -2003,6 +2003,12 @@ subroutine mem_init_background_alloc(bytes)
 
    buf_realk%n      = 1
 
+   buf_realk%c_addr = c_null_ptr
+   buf_realk%c_mdel = c_null_ptr
+   buf_realk%e_mdel = 0
+   buf_realk%n_mdel = 0
+   buf_realk%l_mdel = .false.
+
 end subroutine mem_init_background_alloc
 subroutine mem_change_background_alloc(bytes,not_lazy)
    implicit none
@@ -2048,6 +2054,11 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
       buf_realk%nmax   = nelms
 
       buf_realk%n      = 1
+      buf_realk%c_addr = c_null_ptr
+      buf_realk%c_mdel = c_null_ptr
+      buf_realk%e_mdel = 0
+      buf_realk%n_mdel = 0
+      buf_realk%l_mdel = .false.
    endif
 
 end subroutine mem_change_background_alloc
@@ -2077,8 +2088,38 @@ subroutine mem_free_background_alloc()
    buf_realk%nmax   = 0
 
    buf_realk%n      = 1
+   buf_realk%c_addr = c_null_ptr
+   buf_realk%c_mdel = c_null_ptr
+   buf_realk%e_mdel = 0
+   buf_realk%n_mdel = 0
+   buf_realk%l_mdel = .false.
 
 end subroutine mem_free_background_alloc
+
+
+subroutine mem_clear_mdel_bg_buf()
+   implicit none
+   integer :: i
+   if (buf_realk%l_mdel) then
+      do i=buf_realk%n_mdel,1,-1
+
+         if(.not.c_associated(buf_realk%c_addr(buf_realk%n),buf_realk%c_mdel(i)))then
+            call lsquit("ERROR(mem_clear_mdel_bg_buf): wrong sequence of&
+               & deallocating, make sure you dealloc in the opposite seqence as&
+               & allocating, also when using mark_deleted",-1)
+         endif
+
+         buf_realk%n = buf_realk%n - 1
+         buf_realk%offset = buf_realk%offset - buf_realk%e_mdel(i)
+
+      enddo
+      
+      buf_realk%c_mdel = c_null_ptr
+      buf_realk%e_mdel = 0
+      buf_realk%n_mdel = 0
+      buf_realk%l_mdel = .false.
+   endif
+end subroutine mem_clear_mdel_bg_buf
 
 !ATTENTION, WHEN USING THIS STRUCTURE YOU NEED TO MAKE SURE THAT YOU DEALLOCATE
 !IN THE OPPOSITE SEQUENCE OF ALLOCATING, OTHERWISE YOUR DATA WILL BE CORRUPTED
@@ -2172,19 +2213,36 @@ subroutine mem_pseudo_alloc_realk3(p,n1,n2,n3)
    endif
 
 end subroutine mem_pseudo_alloc_realk3
-subroutine mem_pseudo_dealloc_realk(p)
+subroutine mem_pseudo_dealloc_realk(p, mark_deleted)
    implicit none
    real(realk), pointer :: p(:)
+   ! if a pointer is to be freed it may be marked as deleted, as long as there
+   ! are pointers marked as deleted, no new pointers can be associated to the bg
+   ! buffer
+   logical, optional, intent(in) :: mark_deleted
    integer(kind=8) :: n
+   logical :: md, last_assoc
 
-   buf_realk%n = buf_realk%n - 1
+   md=.false.
+   if(present(mark_deleted))md=mark_deleted
+
+   !no need to mark_deleted if it is the correct last element in the buffer
+   last_assoc = c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1)))
+   if(last_assoc) md = .false.
+
+   if(md)then
+      buf_realk%l_mdel = .true.
+      buf_realk%n_mdel = buf_realk%n_mdel + 1
+   else
+      buf_realk%n = buf_realk%n - 1
+   endif
 
    if(buf_realk%n < 0)then
       call lsquit("ERROR(mem_pseudo_dealloc_realk): programming error, more&
       & pointers freed than associated",-1)
    endif
 
-   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1))))then
+   if(.not.md.and..not.last_assoc)then
       call lsquit("ERROR(mem_pseudo_dealloc_realk): wrong sequence of &
       &deallocating, make sure you dealloc in the opposite seqence as allocating, &
       &otherwise you will corrupt your data",-1)
@@ -2198,9 +2256,22 @@ subroutine mem_pseudo_dealloc_realk(p)
 
    p => null()
 
-   buf_realk%offset = buf_realk%offset-n
-
+   if(md)then
+      buf_realk%e_mdel(buf_realk%n_mdel) = n
+      buf_realk%c_mdel(buf_realk%n_mdel) = c_loc(p(1))
+   else
+      buf_realk%offset = buf_realk%offset-n
+   end if
    buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+   !Right now, always clear the mark_deleted buffer at the next real
+   !deallocation, otherwise bookeeping becomes more cumbersome
+   !NOTE: the deassociation from the buffer happens after the real deallocation
+   !and it has to be performed in the correct sequence to ensure the correctness
+   !of the data in the buffer (without too much bookkeeping)
+   if(last_assoc)then
+      call mem_clear_mdel_bg_buf()
+   endif
 
 end subroutine mem_pseudo_dealloc_realk
 subroutine mem_pseudo_dealloc_realk2(p)

@@ -1299,6 +1299,11 @@ contains
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
+
+       if(DECinfo%use_bg_buffer)then
+          call lsquit("ERROR: bg buffer not implemented for fragment adapted orbitals",-1)
+       endif
+
     end if
 
     if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)

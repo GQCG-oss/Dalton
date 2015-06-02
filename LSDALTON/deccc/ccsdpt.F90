@@ -1095,6 +1095,11 @@ contains
          
                       end if
 
+                      if(DECinfo%ccsolverskip)then
+                         call random_number(trip_ampl)
+                         call random_number(trip_tmp)
+                      else
+
                       ! generate tuple(s)
                       TypeOfTuple_par_ijk: select case(tuple_type)
 
@@ -1274,6 +1279,7 @@ contains
                          endif
 
                       end select TypeOfTuple_par_ijk
+                      endif
 
                       if (k_count .eq. tile_size_tmp_k) k_count = 0
 
@@ -2116,17 +2122,27 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
     real(realk) :: tcpu,twall,norm
+    logical :: use_bg_buf
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     full_no_frags = .false.
 
+    use_bg_buf = mem_is_background_buf_init()
+
     if (present(e4)) full_no_frags = .true.
 
-    ! init triples tuples structure
-    call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
-    ! init 3d wrk array
-    call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
+    if(use_bg_buf)then
+       ! init triples tuples structure
+       call mem_pseudo_alloc(trip_ampl,nvirt,nvirt,nvirt)
+       ! init 3d wrk array
+       call mem_pseudo_alloc(trip_tmp,nvirt,nvirt,nvirt)
+    else
+       ! init triples tuples structure
+       call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
+       ! init 3d wrk array
+       call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
+    endif
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles and vvvo / ovoo integrals
@@ -2507,8 +2523,13 @@ contains
     call mem_dealloc(async_id)
 
     ! release triples ampl structures
-    call mem_dealloc(trip_ampl)
-    call mem_dealloc(trip_tmp)
+    if(use_bg_buf)then
+       call mem_pseudo_dealloc(trip_tmp)
+       call mem_pseudo_dealloc(trip_ampl)
+    else
+       call mem_dealloc(trip_tmp)
+       call mem_dealloc(trip_ampl)
+    end if
 
     call LSTIMER('IJK_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
@@ -2637,10 +2658,15 @@ contains
     tiles_in_buf_ccsd = -1
     tiles_in_buf_oovv = -1
 
+    if( use_bg_buf )then
+    call mem_pseudo_alloc(trip_ampl,nvirt,nocc,nocc)
+    call mem_pseudo_alloc(trip_tmp,nvirt,nocc,nocc)
+    else
     ! init triples tuples structure
     call mem_alloc(trip_ampl,nvirt,nocc,nocc)
     ! init 3d wrk array
     call mem_alloc(trip_tmp,nvirt,nocc,nocc)
+ endif
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles
@@ -3275,10 +3301,14 @@ contains
 
     ! release preloading stuff
     if( use_bg_buf )then
+       call mem_pseudo_dealloc(trip_tmp)
+       call mem_pseudo_dealloc(trip_ampl)
        call mem_pseudo_dealloc(oovv_pdm_buff)
        call mem_pseudo_dealloc(ccsd_pdm_buff)
        call mem_pseudo_dealloc(vovv_pdm_buff)
     else
+       call mem_dealloc(trip_tmp)
+       call mem_dealloc(trip_ampl)
        call mem_dealloc(oovv_pdm_buff)
        call mem_dealloc(ccsd_pdm_buff)
        call mem_dealloc(vovv_pdm_buff)
@@ -3295,8 +3325,6 @@ contains
     call mem_dealloc(jobs)
 
     ! release triples ampl structures
-    call mem_dealloc(trip_ampl)
-    call mem_dealloc(trip_tmp)
     
     call time_phases_get_diff(current_wt=phase_cntrs)
     call time_start_phase( PHASE_WORK, ttot = time_pt_abc )
@@ -3459,17 +3487,24 @@ contains
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
     real(realk) :: tcpu,twall
+    logical :: use_bg_buf
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     full_no_frags = .false.
+    use_bg_buf = mem_is_background_buf_init()
 
     if (present(e4)) full_no_frags = .true.
 
-    ! init triples tuples structure
-    call mem_alloc(trip_ampl,nvirt,nocc,nocc)
-    ! init 3d wrk array
-    call mem_alloc(trip_tmp,nvirt,nocc,nocc)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(trip_ampl,nvirt,nocc,nocc)
+       call mem_pseudo_alloc(trip_tmp,nvirt,nocc,nocc)
+    else
+       ! init triples tuples structure
+       call mem_alloc(trip_ampl,nvirt,nocc,nocc)
+       ! init 3d wrk array
+       call mem_alloc(trip_tmp,nvirt,nocc,nocc)
+    endif
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles and vovv / ooov integrals
@@ -3836,8 +3871,13 @@ contains
     call mem_dealloc(async_id)
 
     ! release triples ampl structures
-    call mem_dealloc(trip_ampl)
-    call mem_dealloc(trip_tmp)
+    if(use_bg_buf)then
+       call mem_pseudo_dealloc(trip_tmp)
+       call mem_pseudo_dealloc(trip_ampl)
+    else
+       call mem_dealloc(trip_tmp)
+       call mem_dealloc(trip_ampl)
+    endif
 
     call LSTIMER('ABC_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
@@ -11529,7 +11569,7 @@ contains
     type(c_ptr)           :: distributionc
     integer(kind=ls_mpik) :: distributionw
     Character            :: intSpec(5)
-    integer :: myload,first_el_i_block,nelms,tile_size_tmp,total_num_tiles,tile
+    integer :: myload,first_el_i_block,nelms,tile_size_tmp,total_num_tiles,tile,ats1,ats2
     logical :: master
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
@@ -11877,9 +11917,8 @@ contains
     old_gammaB = -1
     batch      =  0
 
-    first_round=.false.
+    first_round = .true.
     if(dynamic_load)then
-       first_round = .true.
        batch       = lg_me + 1
     endif
 
@@ -11925,6 +11964,15 @@ contains
 
        ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
        ! ************************************************************************************
+       if(DECinfo%ccsolverskip)then
+          if(first_round)then
+          call random_number(tmp1)
+          call random_number(tmp2)
+          call random_number(tmp3)
+          call random_number(ovoo%elm1)
+          first_round=.false.
+          endif
+       else
 
        if (DECinfo%useichor) then
           call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
@@ -12085,6 +12133,7 @@ contains
           end do
 
        endif
+       endif
 
 #else
 
@@ -12138,6 +12187,17 @@ contains
     endif
 
 #endif
+
+    if(DECinfo%ccsolverskip)then
+       ats1 = vvvo%access_type
+       ats2 = ovoo%access_type
+       vvvo%access_type = AT_ALL_ACCESS
+       ovoo%access_type = AT_ALL_ACCESS
+       call tensor_random(vvvo)
+       call tensor_random(ovoo)
+       vvvo%access_type = ats1
+       ovoo%access_type = ats2
+    endif
 
     ! free stuff
     ! **********
@@ -13674,6 +13734,8 @@ contains
     type(tensor), intent(inout) :: ccsd_doubles,vovo
     ! tmp tensors
     type(tensor) :: tmp_tensor_1,tmp_tensor_2
+    logical :: transform_bg
+
 
     if (DECinfo%pt_hack) then
 
@@ -13746,39 +13808,44 @@ contains
 #ifdef VAR_MPI
        if (nodtotal .gt. 1) then
 
+
           if (abc) then
 
-             call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4)
+             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR',bg=use_bg)
+             transform_bg = use_bg .and.  (mem_get_bg_buf_free()>=(i8*nocc*nocc)*nvirt*nvirt)
+             call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4,bg=transform_bg)
              call tensor_cp_data(vovo_in,tmp_tensor_1,order=[2,4,1,3])
              !call tensor_reorder(tmp_tensor_1,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_1%elm1)
-             call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR',bg=use_bg)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
-             call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4)
+             call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
+             transform_bg = use_bg .and.  (mem_get_bg_buf_free()>=(i8*nocc*nocc)*nvirt*nvirt)
+             call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4,bg=transform_bg)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[2,4,3,1])
              !call tensor_reorder(tmp_tensor_2,[2,4,3,1]) ! ccsd_doubles in the order (i,j,b,a)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_2%elm1)
-             call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
              call tensor_free(tmp_tensor_2)
 
           else
 
-             call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4)
+             call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,&
+                &tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR',bg=use_bg)
+             transform_bg = use_bg .and.  (mem_get_bg_buf_free()>=(i8*nocc*nocc)*nvirt*nvirt)
+             call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4,bg=transform_bg)
              call tensor_cp_data(vovo_in,tmp_tensor_1,order=[1,3,2,4])
              !call tensor_reorder(tmp_tensor_1,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_1%elm1)
-             call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,&
-                &tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR',bg=use_bg)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
-             call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4)
+             call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
+                &tdims=[nvirt,nvirt,nocc,ijk_tile_size],atype='TDAR',bg=use_bg)
+             transform_bg = use_bg .and.  (mem_get_bg_buf_free()>=(i8*nocc*nocc)*nvirt*nvirt)
+             call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4,bg=transform_bg)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[1,3,4,2])
              !call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
              call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_2%elm1)
-             call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
-                &tdims=[nvirt,nvirt,nocc,ijk_tile_size],atype='TDAR',bg=use_bg)
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
              call tensor_free(tmp_tensor_2)
 
