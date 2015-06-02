@@ -407,7 +407,7 @@ endif()
 
 if(ENABLE_QFITLIB)
     add_dalton_runtest(qfit_hf_charges               "dalton;qfit;short")
-    add_dalton_runtest(qfit_dft_charges              "dalton;qfit;short")
+    add_dalton_runtest(qfit_hf_moments               "dalton;qfit;short")
     add_dalton_runtest(qfit_dft_transition_charges   "dalton;qfit;short;essential")
 endif()
 
