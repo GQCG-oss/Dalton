@@ -12,9 +12,10 @@ use dec_typedef_module
 use matrix_module
 use matrix_operations
 use memory_handling
+use LSTIMING
+
 use dec_fragment_utils
 use CABS_operations
-
 use ccintegrals
 
 !WARNING FOR TESTING
@@ -56,8 +57,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk) :: E21,Econt(1),E23
    real(realk) :: ExchangeF12V1,CoulombF12V1
    real(realk) :: ExchangeF12X1,CoulombF12X1
+   real(realk) :: ExchangeF12B1,CoulombF12B1
    real(realk) :: EV1,EV2,EV3,EV4,EX1,EX2,EX3,EX4
    real(realk) :: EB1,EB2,EB3,EB4,EB5,EB6,EB7,EB8,EB9
+   real(realk) :: TS,TE,TS2,TE2
    integer :: i,j,p,q,c,m,mynum,numnodes,nAtoms,lupri,nsize
    !    type(matrix) :: HJrc
    type(matrix) :: HJir
@@ -99,6 +102,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 #else
    FORCEPRINT = .FALSE.
 #endif    
+   call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
+
 #ifdef VAR_MPI
    master= (infpar%mynum == infpar%master)
    mynum = infpar%mynum
@@ -112,6 +117,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    numnodes = 1
    wakeslaves = .false.
 #endif
+   call LSTIMER('START ',TS2,TE2,DECinfo%output,ForcePrint)
 
    ! Init stuff
    ! **********
@@ -150,6 +156,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
       & nocc,noccfull,nvirt,ncabsMO,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
+   call LSTIMER('FULLRIMP2:Init',TS2,TE2,DECinfo%output,ForcePrint)
    !=================================================================
    != Step 1:  Fijkl,Xijkl,Dijkl                                    =
    !=          corresponding to V1,X1,B1                            =
@@ -172,6 +179,45 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    != J Comput Chem 32: 2492–2513, 2011                             =
    !=================================================================
 
+   write(DECinfo%output,'(/,a)') ' ================================================ '
+   write(DECinfo%output,'(a)')   '            FULL-RI-MP2F12 ENERGY TERMS            '
+   write(DECinfo%output,'(a,/)') ' ================================================ '
+   write(*,'(/,a)') ' ================================================ '
+   write(*,'(a)')   '           FULL-RI-MP2F12 ENERGY TERMS             '
+   write(*,'(a,/)') ' ================================================ '
+
+   LS = .FALSE.
+   if (LS) THEN
+      call LSTIMER('START ',TS2,TE2,DECinfo%output,ForcePrint)
+      !This is how the V1 Fijkl can be done in a linear scaling manner
+      call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+           & [Dmat],Econt,1,GGemCouOperator)
+      CoulombF12V1 = Econt(1) 
+      Econt(1) = 0.0E0_realk
+      call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+           & [Dmat],Econt,1,GGemCouOperator)
+      ExchangeF12V1 = Econt(1)       
+      E21 = -0.25E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12V1+ExchangeF12V1)
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ',E21
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ', E21
+
+      !Note X1 cannot be done in a linear scaling way due to Fii 
+
+      !This is how the B1 Dijkl can be done in a linear scaling manner
+      call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+           & [Dmat],Econt,1,GGemGrdOperator)
+      CoulombF12B1 = Econt(1) 
+      Econt(1) = 0.0E0_realk
+      call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+           & [Dmat],Econt,1,GGemGrdOperator)
+      ExchangeF12B1 = Econt(1)       
+      E21 = -(1.0E0_realk/32.0E0_realk)*((7.0E0_realk/2.0E0_realk)*CoulombF12B1-ExchangeF12B1)
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,LS) = ',E21
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,LS) = ', E21
+      call LSTIMER('FULLRIMP2:LS',TS2,TE2,DECinfo%output,ForcePrint)
+   ENDIF
+   call LSTIMER('START ',TS2,TE2,DECinfo%output,ForcePrint)
+
    !normally I do not like to allocate things at the beginning but 
    !due to an analysis of memory heap performance and the 
    !background buffer features of ordered allocations this is beneficial
@@ -185,27 +231,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(2) = 'R' !Regular AO basis function on center 3
    intspec(3) = 'R' !Regular AO basis function on center 4
 
-   write(DECinfo%output,'(/,a)') ' ================================================ '
-   write(DECinfo%output,'(a)')   '            FULL-RI-MP2F12 ENERGY TERMS            '
-   write(DECinfo%output,'(a,/)') ' ================================================ '
-   write(*,'(/,a)') ' ================================================ '
-   write(*,'(a)')   '           FULL-RI-MP2F12 ENERGY TERMS             '
-   write(*,'(a,/)') ' ================================================ '
 
-   LS = .FALSE.
-   if (LS) THEN
-      !This is how the V1 Fijkl can be done in a linear scaling manner
-      call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
-           & [Dmat],Econt,1,GGemCouOperator)
-      CoulombF12V1 = Econt(1) 
-      Econt(1) = 0.0E0_realk
-      call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
-           & [Dmat],Econt,1,GGemCouOperator)
-      ExchangeF12V1 = Econt(1)       
-      E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12V1+ExchangeF12V1*0.5E0_realk)
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ',E21
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ', E21
-   ENDIF
    ! Calculate the Fitting Coefficients (alpha|F|ij)
    use_bg_buf = .FALSE.
    mp2f12_energy = 0.0E0_realk 
@@ -280,6 +306,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
 
    call mem_dealloc(CalphaD)
+   call LSTIMER('FULLRIMP2:Step1',TS2,TE2,DECinfo%output,ForcePrint)
 
    !==============================================================
    !=  B2: sum_c' (ic'|f12^2|jj) hJ_ic' - (jc'|f12^2|ij) hJ_ic'  =
@@ -310,6 +337,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call mem_dealloc(ABdecompX)
    call mem_dealloc(ABdecompF)
    !ABdecompR still exists
+   call LSTIMER('FULLRIMP2:B2B3',TS2,TE2,DECinfo%output,ForcePrint)
 
    !=================================================================
    != Step 2: Ripjq*Gipjq+Rimjc*Gimjc+Rjmic*Gjmic                   =
@@ -430,6 +458,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
 
+   call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
 
    !=================================================================
    != Step 3: The remaining B terms                                 =
@@ -577,279 +606,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call mat_free(CMO_CABS)
    call mat_free(CMO_RI)
    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+   call LSTIMER('FULLRIMP2:Step3',TS2,TE2,DECinfo%output,ForcePrint)
+   call LSTIMER('FULLRIMP2F12',TS,TE,DECinfo%output,ForcePrint)
 
 end subroutine full_canonical_rimp2_f12
-
-function mp2f12_E23(Bijij,Bjiij,nocc) result(energy)
-   implicit none
-   integer,intent(IN)  :: nocc
-   !>
-   real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
-   real(realk) :: energy
-   !
-   integer     :: i,j
-   real(realk) :: tmp
-
-   tmp = 0E0_realk
-   DO i=1,nocc
-      tmp = tmp + Bijij(i,i)
-   ENDDO
-
-   energy = 0.25E0_realk*tmp
-
-   tmp = 0E0_realk
-
-   DO j=1,nocc
-      DO i=j+1,nocc
-         tmp = tmp + 7.0E0_realk * Bijij(i,j) + Bjiij(i,j)
-      ENDDO
-   ENDDO
-   energy = energy + tmp*1.0/16.0
-end function mp2f12_E23
-
-!> Function for finding the E23 energy for the B-matrix
-function mp2f12_E23A(Bijij,Bjiij,nocc) result(energy)
-   implicit none
-   integer,intent(IN)  :: nocc
-   !>
-   real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
-   real(realk) :: energy
-   !
-   integer     :: i,j
-   real(realk) :: tmp
-
-   tmp = 0E0_realk
-   DO i=1,nocc
-      tmp = tmp + Bijij(i,i)
-   ENDDO
-
-   energy = 0.25E0_realk*tmp
-end function mp2f12_E23A
-
-!> Function for finding the E23 energy for the B-matrix
-function mp2f12_E23B(Bijij,Bjiij,nocc) result(energy)
-   implicit none
-   integer,intent(IN)  :: nocc
-   !>
-   real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
-   real(realk) :: energy
-   !
-   integer     :: i,j
-   real(realk) :: tmp
-
-   tmp = 0E0_realk
-
-   DO j=1,nocc
-      DO i=j+1,nocc
-         tmp = tmp + 7.0E0_realk * Bijij(i,j)
-      ENDDO
-   ENDDO
-   energy = 0.0625E0_realk*tmp !1/16
-end function mp2f12_E23B
-
-!> Function for finding the E23 energy for the B-matrix
-function mp2f12_E23C(Bijij,Bjiij,nocc) result(energy)
-   implicit none
-   integer,intent(IN)  :: nocc
-   !>
-   real(realk),intent(IN) :: Bijij(nocc,nocc), Bjiij(nocc,nocc)
-   real(realk) :: energy
-   !
-   integer     :: i,j
-   real(realk) :: tmp
-
-   tmp = 0E0_realk
-
-   DO j=1,nocc
-      DO i=j+1,nocc
-         tmp = tmp + Bjiij(i,j)
-      ENDDO
-   ENDDO
-   energy = 0.0625E0_realk*tmp !1/16
-end function mp2f12_E23C
-
-!> Function for finding the E21 energy  
-function mp2f12_E21(Vijij,Vjiij,nocc) result(energy)
-   implicit none
-   Integer,intent(IN)     :: nocc
-   Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
-   Real(realk) :: energy
-   !
-   Integer     :: i,j
-   Real(realk) :: tmp
-
-   tmp = 0E0_realk
-   DO i=1,nocc
-      tmp = tmp + Vijij(i,i)
-   ENDDO
-
-   energy = -0.5E0_realk*tmp
-   tmp = 0E0_realk
-
-   DO j=1,nocc
-      DO i=j+1,nocc
-         tmp = tmp + 5E0_realk * Vijij(i,j) - Vjiij(i,j)
-      ENDDO
-   ENDDO
-   energy = 2.0E0_realk*(energy - 0.25E0_realk*tmp)
-end function mp2f12_E21
-
-
-function mp2f12_E21A(Vijij,Vjiij,nocc) result(energy)
-   implicit none
-   Integer,intent(IN)     :: nocc
-   Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
-   Real(realk) :: energy
-   !
-   Integer     :: i,j
-   Real(realk) :: tmp
-
-   tmp = 0E0_realk
-   DO i=1,nocc
-      tmp = tmp + Vijij(i,i)
-   ENDDO    
-   energy = -0.5E0_realk*tmp
-end function mp2f12_E21A
-
-!> Function for finding the E22 energy (canonical)
-function mp2f12_E22(Xijij,Xjiij,Fii,nocc) result(energy)
-   implicit none
-   integer,intent(IN)  :: nocc
-   real(realk), pointer :: Bijij(:,:), Bjiij(:,:)
-   !
-   real(realk),intent(IN) :: Xijij(nocc,nocc), Xjiij(nocc,nocc)
-   real(realk),intent(IN) :: Fii(nocc,nocc)
-   real(realk) :: energy
-   !
-   integer     :: i,j
-   real(realk) :: tmp
-
-   call mem_alloc(Bijij,nocc,nocc)
-   call mem_alloc(Bjiij,nocc,nocc)
-
-   Bijij = 0.0E0_realk
-   Bjiij = 0.0E0_realk
-
-   DO j=1,nocc
-      DO i=1,nocc
-         Bijij(i,j) = -1.0E0_realk*(Fii(i,i)+Fii(j,j))*Xijij(i,j)
-         Bjiij(i,j) = -1.0E0_realk*(Fii(i,i)+Fii(j,j))*Xjiij(i,j)
-      ENDDO
-   ENDDO
-
-   tmp = 0E0_realk
-   DO i=1,nocc
-      tmp = tmp + Bijij(i,i)
-   ENDDO
-
-   energy = 0.25E0_realk*tmp
-   tmp = 0E0_realk
-
-   DO j=1,nocc
-      DO i=j+1,nocc
-         tmp = tmp + 7.0E0_realk * Bijij(i,j) + Bjiij(i,j)
-      ENDDO
-   ENDDO
-   energy = energy + 0.0625E0_realk*tmp
-
-   call mem_dealloc(Bijij)
-   call mem_dealloc(Bjiij)
-
-end function mp2f12_E22
-
-!> Function for finding the E22 energy (canonical)
-function mp2f12_E22X_ri(Xijij,Xjiij,Fii,nocc) result(energy)
-   implicit none
-   integer,intent(IN)  :: nocc
-   !
-   real(realk),intent(IN) :: Xijij(nocc,nocc), Xjiij(nocc,nocc)
-   real(realk),intent(IN) :: Fii(nocc,nocc)
-   real(realk) :: energy
-   !
-   integer     :: i,j
-   real(realk) :: tmp
-   tmp = 0.0E0_realk
-   DO i=1,nocc
-      DO j=1,nocc
-         tmp = tmp - (7.0E0_realk * Xijij(i,j) + Xjiij(i,j))*(Fii(i,i) +Fii(j,j))
-      ENDDO
-   ENDDO
-
-   energy = 1.0/32.0*tmp
-
-end function mp2f12_E22X_ri
-
-function mp2f12_E21B(Vijij,Vjiij,nocc) result(energy)
-   implicit none
-   Integer,intent(IN)     :: nocc
-   Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
-   Real(realk) :: energy
-   !
-   Integer     :: i,j
-   Real(realk) :: tmp
-
-   tmp = 0E0_realk    
-   DO j=1,nocc
-      DO i=j+1,nocc
-         tmp = tmp + 5E0_realk * Vijij(i,j)
-      ENDDO
-   ENDDO
-   energy = - 0.25E0_realk*tmp
-end function mp2f12_E21B
-
-function mp2f12_E21B2(Vijij,Vjiij,nocc) result(energy)
-   implicit none
-   Integer,intent(IN)     :: nocc
-   Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
-   Real(realk) :: energy
-   !
-   Integer     :: i,j
-   Real(realk) :: tmp
-
-   tmp = 0E0_realk    
-   DO j=1,nocc
-      DO i=1,nocc
-         tmp = tmp + 5E0_realk * Vijij(i,j)
-      ENDDO
-   ENDDO
-   energy = - 0.25E0_realk*tmp
-end function mp2f12_E21B2
-
-function mp2f12_E21C(Vijij,Vjiij,nocc) result(energy)
-   implicit none
-   Integer,intent(IN)     :: nocc
-   Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
-   Real(realk) :: energy
-   !
-   Integer     :: i,j
-   Real(realk) :: tmp
-
-   tmp = 0E0_realk    
-   DO j=1,nocc
-      DO i=j+1,nocc
-         tmp = tmp - Vjiij(i,j)
-      ENDDO
-   ENDDO
-   energy = - 0.25E0_realk*tmp
-end function mp2f12_E21C
-
-function mp2f12_E21C2(Vijij,Vjiij,nocc) result(energy)
-   implicit none
-   Integer,intent(IN)     :: nocc
-   Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
-   Real(realk) :: energy
-   !
-   Integer     :: i,j
-   Real(realk) :: tmp
-
-   tmp = 0E0_realk    
-   DO j=1,nocc
-      DO i=1,nocc
-         tmp = tmp - Vjiij(i,j)
-      ENDDO
-   ENDDO
-   energy = - 0.25E0_realk*tmp
-end function mp2f12_E21C2
 
 subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,n,nbasis,Rtilde,CalphaR,EJK)
    implicit none
