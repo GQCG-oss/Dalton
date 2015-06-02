@@ -1,31 +1,6 @@
-
-# variables used:
-#     DEVELOPMENT_CODE - True if within Dalton Git repository
-#                      - False if within exported tarball
-
-if(DEVELOPMENT_CODE)
-    include(FindGit)
-    if (GIT_FOUND)
-        add_custom_target(
-            git_update
-            COMMAND ${GIT_EXECUTABLE} submodule init
-            COMMAND ${GIT_EXECUTABLE} submodule update
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        )
-    else()
-        message("-- Git not found. You need Git for the Git submodule mechanism to work.")
-    endif()
-endif()
-
 include(ExternalProject)
 
 macro(add_external _project)
-
-    if(DEVELOPMENT_CODE AND GIT_FOUND)
-        set(UPDATE_COMMAND ${GIT_EXECUTABLE} submodule update)
-    else()
-        set(UPDATE_COMMAND echo)
-    endif()
 
     add_custom_target(
         check_external_timestamp_${_project}
@@ -36,7 +11,7 @@ macro(add_external _project)
     )
 
     ExternalProject_Add(${_project}
-        DOWNLOAD_COMMAND ${UPDATE_COMMAND}
+        DOWNLOAD_COMMAND echo
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
         BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
@@ -49,10 +24,6 @@ macro(add_external _project)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
 
-    if(DEVELOPMENT_CODE)
-        add_dependencies(${_project} git_update)
-        add_dependencies(check_external_timestamp_${_project} git_update)
-    endif()
     add_dependencies(${_project} check_external_timestamp_${_project})
 
 endmacro()
