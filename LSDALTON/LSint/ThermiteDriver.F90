@@ -3662,7 +3662,7 @@ CONTAINS
   DO i5P = 1,n5P
   DO iQ  = 1,nQ
   DO iAng = 1,nAng
-    write(lupri,'(5X,4I5,10F15.9/25X,10F15.9)') i5Q,i5P,iQ,iAng,(AddPQ(iCont,iQ,i5Q,i5P,iAng),iCont=1,nCont)
+    write(lupri,'(5X,4I5,10F15.9/(25X,10F15.9))') i5Q,i5P,iQ,iAng,(AddPQ(iCont,iQ,i5Q,i5P,iAng),iCont=1,nCont)
   ENDDO
   ENDDO
   ENDDO

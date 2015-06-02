@@ -439,12 +439,13 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   integer :: GindexToLocal(nbasisAux),nbasisAuxMPI3(numnodes),NREDLOC,NRED
   integer :: MetricOper
   real(realk) :: epsilon
-  logical :: use_bg_buf
+  logical :: use_bg_buf,noOMP
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
   CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
   CALL LSTIMER('START ',TS3,TE3,LUPRI,ForcePrint)
+  noOMP = mylsitem%setting%scheme%noOMP
   use_bg_buf = .FALSE.
   IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
   epsilon = DECinfo%NAFthreshold 
@@ -672,13 +673,21 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            print*,'nthreads',nthreads
            print*,'nbasis1',nbasis1
            print*,'nbasis2',nbasis2
-           CALL lsquit('Not enough memory in build_calpha bcast schem',-1)
-        ELSE
-           MaxNaux = MIN(nAuxMPI(mynum+1),&
-                &FLOOR((MaxSize/8.0E-9_realk-nAuxMPI(mynum+1)*nvirt*nocc-&
-                & nbasis1*nvirt-nbasis2*nocc) &
-                & /((nbasis1*nocc+nbasis1*nbasis2)*nthreads)))
+           IF(nthreads.GT.1)THEN
+              !use Critical instead ! 
+              !deactivating OpenMP 
+              mylsitem%setting%scheme%noOMP = .TRUE.
+              nthreads = 1              
+           ELSE
+              CALL lsquit('Not enough memory in build_calpha bcast schem',-1)
+           ENDIF
         ENDIF
+
+        MaxNaux = MIN(nAuxMPI(mynum+1),&
+             &FLOOR((MaxSize/8.0E-9_realk-nAuxMPI(mynum+1)*nvirt*nocc-&
+             & nbasis1*nvirt-nbasis2*nocc) &
+             & /((nbasis1*nocc+nbasis1*nbasis2)*nthreads)))
+        
         IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
            MaxNaux = MinAuxBatch + 1
         ENDIF
@@ -1041,7 +1050,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ENDIF
   ENDIF
   call mem_dealloc(IndexToGlobal) 
-
+  mylsitem%setting%scheme%noOMP = noOMP
 !  call sleep(mynum*5)
 !  PRINT*,'Build_CalphaMO2:Nba',Nba
 !  WRITE(6,*)'Build_CalphaMO2:Final Calph(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
@@ -1130,7 +1139,7 @@ subroutine Get_InverseCholeskyFactor(n,A,lupri)
   !
   integer                      :: i,j,np,k,info
   real(realk) :: TS,TE
-  call LSTIMER('START ',TS,TE,lupri,.TRUE.)
+  call LSTIMER('START ',TS,TE,lupri)
   call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor
   IF(INFO.ne. 0) THEN
      print *, 'DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',INFO
@@ -1151,7 +1160,7 @@ subroutine Get_InverseCholeskyFactor(n,A,lupri)
         A(I,J) = 0.0E0_realk
      enddo
   enddo
-  call LSTIMER('Get_CholeskyFactor',TS,TE,lupri,.TRUE.)
+  call LSTIMER('Get_CholeskyFactor',TS,TE,lupri)
 end subroutine Get_InverseCholeskyFactor
 
 subroutine NAF_buildCalphaNAF(Calpha,nAux2,nvirt,nocc,&

@@ -224,6 +224,7 @@ contains
     DECinfo%F12                      = .false.
     DECinfo%F12fragopt               = .false.
     DECinfo%F12debug                 = .false.
+    DECinfo%F12Ccoupling             = .false.
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
@@ -253,6 +254,7 @@ contains
 
     ! ccsd(t) settings
     DECinfo%abc               = .false.
+    DECinfo%ijk_tile_size     = 1000000
     DECinfo%abc_tile_size     = 1000000
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
@@ -286,7 +288,16 @@ contains
     ! Stripped down keywords
     DECinfo%noaofock=.false.
 
-
+    DECinfo%THCNOPRUN = .FALSE.
+    DECinfo%THCDUMP = .FALSE.
+    DECinfo%THCradint = 1E-6_realk
+    DECinfo%THC_MIN_RAD_PT = 20
+    DECinfo%THCangint = 2
+    DECinfo%THCHRDNES = 3
+    DECinfo%THCTURBO = 1
+    DECinfo%THCRADIALGRID = 3
+    DECinfo%THCZdependenMaxAng = .TRUE.
+    DECinfo%THCPARTITIONING = 1 !(1=SSF, 2=Becke, 3=Becke-original)
 
   end subroutine dec_set_default_config
 
@@ -503,6 +514,7 @@ contains
        ! CCSD(T) INFO
        ! ==============
        case('.PT_ABC'); DECinfo%abc = .true.
+       case('.IJK_TILE'); read(input,*) DECinfo%ijk_tile_size
        case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
@@ -776,11 +788,15 @@ contains
        case('.ICHOR'); DECinfo%UseIchor = .true.
 
 
+       ! MEMORY HANDLING KEYWORDS
+       ! **************************
+       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
+
+
 #ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
-       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
        case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
        case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
@@ -849,7 +865,10 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
+       case('.F12CCOUPLING')     
+          DECinfo%F12Ccoupling=.true.
 
+#endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
        ! ***********************************************
@@ -947,7 +966,18 @@ contains
           DECinfo%SkipReadIn=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
 
-#endif
+       ! KEYWORDS RELATED TO TENSOR HYPER CONTRACTION (THC)
+       ! ***********************
+       case('.THC_PRUNE'); DECinfo%THCNOPRUN = .FALSE.
+       case('.THC_DUMP'); DECinfo%THCDUMP = .TRUE.
+       case('.THC_RADINT'); read(input,*) DECinfo%THCradint 
+       case('.THC_MIN_RAD_PT'); read(input,*) DECinfo%THC_MIN_RAD_PT
+       case('.THC_ANGINT'); read(input,*) DECinfo%THCangint
+       case('.THC_HRDNES'); read(input,*) DECinfo%THCHRDNES
+       case('.THC_TURBO'); read(input,*) DECinfo%THCTURBO
+       case('.THC_RADIALGRID'); read(input,*) DECinfo%THCRADIALGRID
+       case('.THC_NOZDEPENDENTMAXANG'); DECinfo%THCZdependenMaxAng=.FALSE.
+       case('.THC_PARTITIONING'); read(input,*) DECinfo%THCPARTITIONING
 
        CASE DEFAULT
           WRITE (output,'(/,3A,/)') ' Keyword "',WORD,&
@@ -1443,11 +1473,10 @@ contains
     write(lupri,*) 'use_preconditioner ', DECitem%use_preconditioner
     write(lupri,*) 'use_preconditioner_in_b ', DECitem%use_preconditioner_in_b
     write(lupri,*) 'use_crop ', DECitem%use_crop
-#ifdef MOD_UNRELEASED    
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
-#endif
+    write(lupri,*) 'F12CCOUPLING',DECinfo%F12Ccoupling
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'rimpisplit ', DECitem%rimpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize

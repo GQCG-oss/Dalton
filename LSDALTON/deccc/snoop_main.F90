@@ -33,7 +33,7 @@ module snoop_main_module
   use crop_tools_module
   use ccintegrals
   use full_molecule
-  use full
+  use full, only: full_driver
   use dec_driver_module
   use array2_simple_operations
   use orbital_operations

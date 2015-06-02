@@ -44,29 +44,30 @@
                                                 
       LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
       ----------------------------------------------------------------------------
-      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
-      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
       Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
-      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
       Robert Izsak,            University of Oslo,        Norway    (ADMM)
-      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
-      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
-      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
-      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
       Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
-      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
       Patrick Merlot,          University of Oslo,        Norway    (ADMM)
       Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
-      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
-      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
-      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
       Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
       Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
-      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
-      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
       Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
       Mark Watson,             University of Oslo,        Norway    (FMM)
       Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
@@ -87,28 +88,40 @@
      for further information.
   
   
- Who compiled             | hubi
- Host                     | funmac.local
- System                   | Darwin-14.1.0
+ Who compiled             | tkjaer
+ Host                     | localhost.localdomain
+ System                   | Linux-3.16.6-200.fc20.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran-4.9
- Fortran compiler version | unknown
- C compiler               | /usr/local/bin/gcc-4.9
- C compiler version       | unknown
- C++ compiler             | /usr/local/bin/g++-4.9
- C++ compiler version     | unknown
- Explicit libs            | -framework Accelerate
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
  Static linking           | OFF
- Last Git revision        | 24e21f9fe894cbee39b57a192c1ff002693a4fdf
- Git branch               | titan_branch
- Configuration time       | 2015-02-18 13:47:18.276410
+ Last Git revision        | 6681de8e0b5cad9c86ef1a96a74068f1c223908f
+ Git branch               | master
+ Configuration time       | 2015-05-24 21:51:45.628215
 
 Start simulation
-     Date and time (Linux)  : Wed Feb 18 13:50:35 2015
-     Host name              : funmac.st.client.au.dk                  
+     Date and time (Linux)  : Sun May 24 21:55:49 2015
+     Host name              : localhost.localdomain                   
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -118,10 +131,10 @@ Start simulation
                                           
                                           
   Atomtypes=2 Charge=0 Angstrom Nosymmetry                    
-  Charge=6.0 Atoms=2 Basis=STO-3G CABS=3-21G                  
+  Charge=6.0 Atoms=2 Basis=STO-3G CABSP=3-21G                 
   C    0.5788000    0.0124000    0.1371                       
   C   -0.5788000   -0.0124000   -0.1371                       
-  Charge=1.0 Atoms=2 Basis=STO-3G CABS=3-21G                  
+  Charge=1.0 Atoms=2 Basis=STO-3G CABSP=3-21G                 
   H    1.6143000    0.0346000    0.3826                       
   H   -1.6143000   -0.0345000   -0.3823                       
                       
@@ -145,7 +158,6 @@ Start simulation
   .PFM                                                                                                
   2 2                                                                                                 
   **DEC                                                                                               
-  .FROZENCORE                                                                                         
   .MP2                                                                                                
   .F12debug                                                                                           
   .MEMORY                                                                                             
@@ -188,7 +200,7 @@ BASISSETLIBRARY
  BASISSET:  STO-3G                                            
   CHARGES:    6.0000    1.0000
                       
- BASISSETLIBRARY  : CABS     
+ BASISSETLIBRARY  : CABSP    
    
 BASISSETLIBRARY
  Number of Basisset           1
@@ -198,21 +210,23 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/hubi/PhD/daltons/fresh-dont-touch/b32--o-dc/basis/STO-3G
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DebugMasterBranch5/build-debug/basis/STO-3G
    
-  CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
+  CALLING BUILD BASIS WITH DEFAULT CABSP     BASIS
    
- OPENING FILE/Users/hubi/PhD/daltons/fresh-dont-touch/b32--o-dc/basis/3-21G
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DebugMasterBranch5/build-debug/basis/3-21G
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
  --------------------------------------------------------------------
  Molecular Charge                    :    0.0000
     Regular basisfunctions             :       12
-    CABS basisfunctions                :       22
+    CABS basisfunctions                :       34
     Valence basisfunctions             :        0
     Primitive Regular basisfunctions   :       36
-    Primitive CABS basisfunctions      :       36
+    Primitive CABS basisfunctions      :       72
     Primitive Valence basisfunctions   :        0
  --------------------------------------------------------------------
                       
@@ -254,6 +268,21 @@ Atoms and basis sets
 ---------------------------------------------------------------------
   atom label  charge basisset                prim     cont   basis
 ---------------------------------------------------------------------
+      1 C      6.000 STO-3G+3-21G              30       14 [12s6p|5s3p]                                 
+      2 C      6.000 STO-3G+3-21G              30       14 [12s6p|5s3p]                                 
+      3 H      1.000 STO-3G+3-21G               6        3 [6s|3s]                                      
+      4 H      1.000 STO-3G+3-21G               6        3 [6s|3s]                                      
+---------------------------------------------------------------------
+total         14                               72       34
+---------------------------------------------------------------------
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      4
+  THE  CABSP     is on R =   8
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
       1 C      6.000 3-21G                     15        9 [6s3p|3s2p]                                  
       2 C      6.000 3-21G                     15        9 [6s3p|3s2p]                                  
       3 H      1.000 3-21G                      3        2 [3s|2s]                                      
@@ -264,16 +293,18 @@ total         14                               36       22
                       
  Configuration:
  ==============
-    This is an OpenMP calculation using   2 threads.
+    This is a Single core calculation. (no OpenMP)
     This is a serial calculation (no MPI)
-
+ 
 Density subspace min. method    : Van Lenthe modified DIIS
 Density optimization : Diagonalization                    
 with Van Lenthe fixed level shifts      
-
+ 
  Maximum size of Fock/density queue in averaging:          10
-
+ 
 Convergence threshold for gradient:   0.10E-05
+The F12 Geminal exponent for the Regular Basis =     1.0
+WARNING BASIS (NOT ATOMBASIS) is required to auto detect the Geminal exponent
 We perform the calculation in the standard input basis
  
     The Overall Screening threshold is set to              :  1.0000E-08
@@ -281,53 +312,53 @@ We perform the calculation in the standard input basis
     The Screening threshold used for Exchange              :  1.0000E-08
     The Screening threshold used for One-electron operators:  1.0000E-15
  The SCF Convergence Criteria is applied to the gradnorm in AO basis
-
+ 
  End of configuration!
-
- >>>  CPU Time used in *INPUT is   0.01 seconds
- >>> wall Time used in *INPUT is   0.03 seconds
+ 
+ >>>  CPU Time used in *INPUT is   0.00 seconds
+ >>> wall Time used in *INPUT is   0.00 seconds
  >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
  >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
- >>>  CPU Time used in II_precalc_ScreenMat is   0.02 seconds
- >>> wall Time used in II_precalc_ScreenMat is   0.03 seconds
+ >>>  CPU Time used in II_precalc_ScreenMat is   0.25 seconds
+ >>> wall Time used in II_precalc_ScreenMat is   0.25 seconds
  >>>  CPU Time used in OVERLAP is   0.00 seconds
  >>> wall Time used in OVERLAP is   0.00 seconds
  >>>  CPU Time used in *S is   0.00 seconds
  >>> wall Time used in *S is   0.00 seconds
- >>>  CPU Time used in NucElec is   0.00 seconds
- >>> wall Time used in NucElec is   0.00 seconds
+ >>>  CPU Time used in NucElec is   0.01 seconds
+ >>> wall Time used in NucElec is   0.01 seconds
  >>>  CPU Time used in Kinetic is   0.00 seconds
  >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in *H1 is   0.00 seconds
- >>> wall Time used in *H1 is   0.00 seconds
-
+ >>>  CPU Time used in *H1 is   0.01 seconds
+ >>> wall Time used in *H1 is   0.01 seconds
+ 
  Optimize first density for H1 operator
-
-
+ 
+ 
 Max no. of matrices allocated in Level 2 / get_initial_dens:          5
  >>>  CPU Time used in *START is   0.00 seconds
  >>> wall Time used in *START is   0.00 seconds
  Preparing to do S^1/2 decomposition...
  >>>  CPU Time used in LWDIAG is   0.00 seconds
  >>> wall Time used in LWDIAG is   0.00 seconds
- smallest accepted overlap:  0.97999999999999998     
- maximum accepted ratio in dorth:   8.0000000000000002E-002
+ smallest accepted overlap:  0.980000000000000     
+ maximum accepted ratio in dorth:  8.000000000000000E-002
 Matrix S     has nnz=       108 sparsity:     75.000 %
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
-  Relative convergence threshold for solver:   1.0000000000000000E-002
-  SCF Convergence criteria for gradient norm:   9.9999999999999995E-007
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  1.000000000000000E-006
  >>>  CPU Time used in INIT SCF is   0.00 seconds
  >>> wall Time used in INIT SCF is   0.00 seconds
 ** Get Fock matrix number   1
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    71.296848424717780     
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.559289978326959     
- The Fock energy contribution   -59.737558446390814     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.04 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    71.2968484247178     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.5592899783269     
+ The Fock energy contribution   -59.7375584463908     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.18 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
 *******************************************************************************************###
@@ -343,24 +374,24 @@ Matrix AO D  has nnz=       144 sparsity:    100.000 %
 No. of matmuls in get_density:     3
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number   2
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    62.467958354006655     
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.024783280361188     
- The Fock energy contribution   -51.443175073645463     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    62.4679583540067     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0247832803612     
+ The Fock energy contribution   -51.4431750736455     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.17 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   2    -75.6098792320   -4.52003865799    0.00      0.00000    1.00    0.0000000    1.55E+00  ###
 ** Make average of the last F and D matrices
  config%decomp%nocc, nbast:           7          12
- Fov maxelm  0.18399254218540351     
+ Fov maxelm  0.183992542185403     
  Used simple averaging
  >>>  CPU Time used in AVERAG is   0.00 seconds
  >>> wall Time used in AVERAG is   0.00 seconds
@@ -369,24 +400,24 @@ No. of matmuls in get_density:     3
 No. of matmuls in get_density:     3
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   3
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    62.363785802573602     
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.050148939561234     
- The Fock energy contribution   -51.313636863012370     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    62.3637858025737     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0501489395613     
+ The Fock energy contribution   -51.3136368630124     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.18 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   3    -75.7368637113   -0.12698447932    0.00      0.00000    1.00    0.0000000    1.09E+00  ###
 ** Make average of the last F and D matrices
  config%decomp%nocc, nbast:           7          12
- Fov maxelm   1.3629846703563740E-002
+ Fov maxelm  1.362984670356365E-002
  Queue flushed!
  Used simple averaging
  >>>  CPU Time used in AVERAG is   0.00 seconds
@@ -396,18 +427,18 @@ No. of matmuls in get_density:     3
 No. of matmuls in get_density:     3
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.18 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number   4
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    62.251547650507803     
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.057593354154571     
- The Fock energy contribution   -51.193954296353219     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    62.2515476505077     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0575933541546     
+ The Fock energy contribution   -51.1939542963532     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.17 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   4    -75.7934383835   -0.05657467217    0.00      0.00000    1.00    0.0000000    7.90E-01  ###
@@ -420,18 +451,18 @@ No. of matmuls in get_density:     3
 No. of matmuls in get_density:     3
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   5
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    62.161534646431051     
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.059426195182322     
- The Fock energy contribution   -51.102108451248725     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    62.1615346464310     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0594261951823     
+ The Fock energy contribution   -51.1021084512487     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.18 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   5    -75.8217099127   -0.02827152919    0.00      0.00000    1.00    0.0000000    5.80E-01  ###
@@ -443,18 +474,18 @@ No. of matmuls in get_density:     3
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.18 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number   6
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    61.897671174995963     
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.053256254230753     
- The Fock energy contribution   -50.844414920765217     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    61.8976711749959     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0532562542307     
+ The Fock energy contribution   -50.8444149207651     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.18 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   6    -75.8549195452   -0.03320963252   -1.00      0.00000    0.00    0.0000000    9.12E-03  ###
@@ -466,18 +497,18 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number   7
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    61.900604122725184     
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.053447036627382     
- The Fock energy contribution   -50.847157086097802     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    61.9006041227252     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0534470366274     
+ The Fock energy contribution   -50.8471570860979     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.17 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   7    -75.8549331886   -0.00001364337   -1.00      0.00000    0.00    0.0000000    1.33E-03  ###
@@ -489,18 +520,18 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.18 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number   8
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    61.900531698092678     
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.053443682036484     
- The Fock energy contribution   -50.847088016056198     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    61.9005316980927     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0534436820365     
+ The Fock energy contribution   -50.8470880160562     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.17 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   8    -75.8549332687   -0.00000008015   -1.00      0.00000    0.00    0.0000000    7.74E-04  ###
@@ -512,18 +543,18 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number   9
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    61.900501169456831     
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.053442100036408     
- The Fock energy contribution   -50.847059069420425     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    61.9005011694569     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0534421000364     
+ The Fock energy contribution   -50.8470590694205     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.17 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   9    -75.8549333011   -0.00000003238   -1.00      0.00000    0.00    0.0000000    1.73E-05  ###
@@ -535,18 +566,18 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
 ** Get Fock matrix number  10
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.02 seconds
- The Coulomb energy contribution    61.900494041326354     
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.053441642359381     
- The Fock energy contribution   -50.847052398966966     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    61.9004940413264     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0534416423594     
+ The Fock energy contribution   -50.8470523989670     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.18 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
  10    -75.8549333012   -0.00000000004   -1.00      0.00000    0.00    0.0000000    2.41E-06  ###
@@ -558,49 +589,49 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   0.06 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number  11
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- The Coulomb energy contribution    61.900494497041528     
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- The Exchange energy contribution    11.053441661459006     
- The Fock energy contribution   -50.847052835582517     
- >>>  CPU Time used in FCK_FO is   0.06 seconds
- >>> wall Time used in FCK_FO is   0.03 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ The Coulomb energy contribution    61.9004944970416     
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ The Exchange energy contribution    11.0534416614590     
+ The Fock energy contribution   -50.8470528355826     
+ >>>  CPU Time used in FCK_FO is   0.17 seconds
+ >>> wall Time used in FCK_FO is   0.17 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
  11    -75.8549333012   -0.00000000000   -1.00      0.00000    0.00    0.0000000    5.44E-07  ###
 SCF converged in     11 iterations
- >>>  CPU Time used in **ITER is   0.68 seconds
- >>> wall Time used in **ITER is   0.38 seconds
-
+ >>>  CPU Time used in **ITER is   1.92 seconds
+ >>> wall Time used in **ITER is   1.93 seconds
+ 
 Total no. of matmuls in SCF optimization:         60
-
+ 
  Number of occupied orbitals:           7
  Number of virtual orbitals:           5
-
+ 
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
-
-
+ 
+ 
 Calculation of HOMO-LUMO gap
 ============================
-
+ 
 Calculation of occupied orbital energies converged in     6 iterations!
-
+ 
 Calculation of virtual orbital energies converged in     4 iterations!
-
+ 
     E(LUMO):                         0.401243 au
    -E(HOMO):                        -0.353868 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.755111 au
-
- >>>  CPU Time used in HL GAP is   0.23 seconds
- >>> wall Time used in HL GAP is   0.23 seconds
-
+ 
+ >>>  CPU Time used in HL GAP is   0.67 seconds
+ >>> wall Time used in HL GAP is   0.67 seconds
+ 
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
@@ -615,31 +646,31 @@ Calculation of virtual orbital energies converged in     4 iterations!
   9   -0.00000003238   -1.0000    0.0000    0.0000000
  10   -0.00000000004   -1.0000    0.0000    0.0000000
  11   -0.00000000000   -1.0000    0.0000    0.0000000
-
+ 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -71.08984057403026213251      0.352891486577866D+01
-    2           -75.60987923202168303760      0.154586024162799D+01
-    3           -75.73686371134562023144      0.109054674823770D+01
-    4           -75.79343838351715589852      0.790343161339300D+00
-    5           -75.82170991270868398715      0.580321869672045D+00
-    6           -75.85491954522547075612      0.912292377756576D-02
-    7           -75.85493318859354872075      0.132716906061539D-02
-    8           -75.85493326874828312611      0.773841437710935D-03
-    9           -75.85493330112927878872      0.173235013627288D-04
-   10           -75.85493330116710808397      0.241381082881597D-05
-   11           -75.85493330116804600038      0.543698062781168D-06
-
+    1           -71.08984057403023371080      0.352891486577866D+01
+    2           -75.60987923202165461589      0.154586024162801D+01
+    3           -75.73686371134562023144      0.109054674823771D+01
+    4           -75.79343838351712747681      0.790343161339297D+00
+    5           -75.82170991270868398715      0.580321869672046D+00
+    6           -75.85491954522549917783      0.912292377756956D-02
+    7           -75.85493318859363398587      0.132716906094093D-02
+    8           -75.85493326874831154782      0.773841437730481D-03
+    9           -75.85493330112933563214      0.173235013641765D-04
+   10           -75.85493330116713650568      0.241381083433038D-05
+   11           -75.85493330116810284380      0.543698052243967D-06
+ 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
-
-
+ 
+ 
       Final HF energy:                       -75.854933301168
       Nuclear repulsion:                      24.952482648040
       Electronic energy:                    -100.807415949208
-
+ 
  inside leastchange_lcm
   %LOC%   
   %LOC%   ********************************************
@@ -775,35 +806,35 @@ Calculation of virtual orbital energies converged in     4 iterations!
   %LOC%  *                                                   *
   %LOC%  *****************************************************
   %LOC% 
-
+ 
   %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    0.31    2
   %LOC%   Max. sigma_4 and orb.number:    0.41    1
   %LOC%   Min. sigma_2 and orb.number:    0.31    1
   %LOC%   Min. sigma_4 and orb.number:    0.41    2
-
-
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    1.63    6
   %LOC%   Max. sigma_4 and orb.number:    1.97    6
   %LOC%   Min. sigma_2 and orb.number:    1.50    7
   %LOC%   Min. sigma_4 and orb.number:    1.84    7
-
-
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    1.78    8
   %LOC%   Max. sigma_4 and orb.number:    2.06    8
   %LOC%   Min. sigma_2 and orb.number:    1.58   12
   %LOC%   Min. sigma_4 and orb.number:    1.89   12
-
+ 
  >>>  CPU Time used in OVERLAP is   0.00 seconds
  >>> wall Time used in OVERLAP is   0.00 seconds
- >>>  CPU Time used in Orbital Localization is   0.69 seconds
- >>> wall Time used in Orbital Localization is   0.43 seconds
+ >>>  CPU Time used in Orbital Localization is   3.41 seconds
+ >>> wall Time used in Orbital Localization is   3.42 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
-
+ 
 
 -- Full molecular info --
 
@@ -817,93 +848,95 @@ FULL: Number of core orbitals    :      2
 FULL: Number of valence orbitals :      5
 FULL: Number of occ. orbitals    :      7
 FULL: Number of virt. orbitals   :      5
-
+FULL: Local memory use type full :  0.29E-05
+FULL: Distribute matrices        :  F
+ 
  Calculating carmom matrix for DEC calculation...
- >>>  CPU Time used in CS15_INPUT-Mole is   0.02 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in NucElec is   0.03 seconds
- >>> wall Time used in NucElec is   0.02 seconds
- >>>  CPU Time used in Kinetic is   0.00 seconds
- >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.05 seconds
- >>> wall Time used in reg-Jengine is   0.02 seconds
- >>>  CPU Time used in CS08_INPUT-Mole is   0.02 seconds
- >>> wall Time used in CS08_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.16 seconds
- >>> wall Time used in LINK-Kbuild is   0.10 seconds
- >>>  CPU Time used in CS15_INPUT-Mole is   0.02 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in NucElec is   0.03 seconds
- >>> wall Time used in NucElec is   0.02 seconds
- >>>  CPU Time used in Kinetic is   0.00 seconds
- >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.15 seconds
- >>> wall Time used in LINK-Kbuild is   0.09 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.10 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.10 seconds
+ >>>  CPU Time used in NucElec is   0.14 seconds
+ >>> wall Time used in NucElec is   0.14 seconds
+ >>>  CPU Time used in Kinetic is   0.01 seconds
+ >>> wall Time used in Kinetic is   0.01 seconds
+ >>>  CPU Time used in reg-Jengine is   0.25 seconds
+ >>> wall Time used in reg-Jengine is   0.25 seconds
+ >>>  CPU Time used in CS08_INPUT-Mole is   0.10 seconds
+ >>> wall Time used in CS08_INPUT-Mole is   0.10 seconds
+ >>>  CPU Time used in LINK-Kbuild is   1.43 seconds
+ >>> wall Time used in LINK-Kbuild is   1.43 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.18 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.18 seconds
+ >>>  CPU Time used in NucElec is   0.24 seconds
+ >>> wall Time used in NucElec is   0.24 seconds
+ >>>  CPU Time used in Kinetic is   0.01 seconds
+ >>> wall Time used in Kinetic is   0.01 seconds
+ >>>  CPU Time used in reg-Jengine is   0.28 seconds
+ >>> wall Time used in reg-Jengine is   0.28 seconds
+ >>>  CPU Time used in LINK-Kbuild is   1.33 seconds
+ >>> wall Time used in LINK-Kbuild is   1.33 seconds
+ >>>  CPU Time used in NucElec is   0.04 seconds
+ >>> wall Time used in NucElec is   0.04 seconds
+ >>>  CPU Time used in Kinetic is   0.01 seconds
+ >>> wall Time used in Kinetic is   0.01 seconds
+ >>>  CPU Time used in reg-Jengine is   0.25 seconds
+ >>> wall Time used in reg-Jengine is   0.25 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.66 seconds
+ >>> wall Time used in LINK-Kbuild is   0.66 seconds
  >>>  CPU Time used in NucElec is   0.01 seconds
- >>> wall Time used in NucElec is   0.00 seconds
- >>>  CPU Time used in Kinetic is   0.00 seconds
- >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.05 seconds
- >>> wall Time used in reg-Jengine is   0.02 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.13 seconds
- >>> wall Time used in LINK-Kbuild is   0.07 seconds
- >>>  CPU Time used in NucElec is   0.00 seconds
- >>> wall Time used in NucElec is   0.00 seconds
- >>>  CPU Time used in Kinetic is   0.00 seconds
- >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- >>>  CPU Time used in CS15_INPUT-Mole is   0.02 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in NucElec is   0.03 seconds
  >>> wall Time used in NucElec is   0.01 seconds
  >>>  CPU Time used in Kinetic is   0.00 seconds
  >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.05 seconds
- >>> wall Time used in reg-Jengine is   0.03 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.14 seconds
- >>> wall Time used in LINK-Kbuild is   0.07 seconds
- >>>  CPU Time used in DEC: MOL INIT is   0.92 seconds
- >>> wall Time used in DEC: MOL INIT is   0.53 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.10 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.10 seconds
+ >>>  CPU Time used in NucElec is   0.14 seconds
+ >>> wall Time used in NucElec is   0.14 seconds
+ >>>  CPU Time used in Kinetic is   0.01 seconds
+ >>> wall Time used in Kinetic is   0.01 seconds
+ >>>  CPU Time used in reg-Jengine is   0.25 seconds
+ >>> wall Time used in reg-Jengine is   0.25 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.77 seconds
+ >>> wall Time used in LINK-Kbuild is   0.78 seconds
+ >>>  CPU Time used in DEC: MOL INIT is   5.98 seconds
+ >>> wall Time used in DEC: MOL INIT is   6.00 seconds
  Memory set in input to be:    1.000     GB
-
-
+ 
+ 
 =============================================================================
              -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
 =============================================================================
-
+ 
+ >>>  CPU Time used in NucElec is   0.05 seconds
+ >>> wall Time used in NucElec is   0.05 seconds
+ >>>  CPU Time used in Kinetic is   0.01 seconds
+ >>> wall Time used in Kinetic is   0.01 seconds
+ >>>  CPU Time used in reg-Jengine is   0.28 seconds
+ >>> wall Time used in reg-Jengine is   0.28 seconds
+ >>>  CPU Time used in LINK-Kbuild is   1.32 seconds
+ >>> wall Time used in LINK-Kbuild is   1.33 seconds
+ >>>  CPU Time used in NucElec is   0.04 seconds
+ >>> wall Time used in NucElec is   0.04 seconds
+ >>>  CPU Time used in Kinetic is   0.01 seconds
+ >>> wall Time used in Kinetic is   0.01 seconds
+ >>>  CPU Time used in reg-Jengine is   0.25 seconds
+ >>> wall Time used in reg-Jengine is   0.25 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.66 seconds
+ >>> wall Time used in LINK-Kbuild is   0.66 seconds
  >>>  CPU Time used in NucElec is   0.01 seconds
  >>> wall Time used in NucElec is   0.01 seconds
  >>>  CPU Time used in Kinetic is   0.00 seconds
  >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.02 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.14 seconds
- >>> wall Time used in LINK-Kbuild is   0.09 seconds
- >>>  CPU Time used in NucElec is   0.01 seconds
- >>> wall Time used in NucElec is   0.00 seconds
- >>>  CPU Time used in Kinetic is   0.00 seconds
- >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.05 seconds
- >>> wall Time used in reg-Jengine is   0.02 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.12 seconds
- >>> wall Time used in LINK-Kbuild is   0.07 seconds
- >>>  CPU Time used in NucElec is   0.00 seconds
- >>> wall Time used in NucElec is   0.00 seconds
- >>>  CPU Time used in Kinetic is   0.00 seconds
- >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in reg-Jengine is   0.03 seconds
- >>> wall Time used in reg-Jengine is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in reg-Jengine is   0.07 seconds
+ >>> wall Time used in reg-Jengine is   0.07 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.10 seconds
+ >>> wall Time used in LINK-Kbuild is   0.10 seconds
  ----------------------------------------------------------------
                     F12-SINGLES CORRECTION                       
  ----------------------------------------------------------------
- WANGY TOYCODE F12 SINGLES CORRECTION =        -0.0286639304
+ WANGY TOYCODE F12 SINGLES CORRECTION =        -0.3033592212
  ----------------------------------------------------------------
 
 DEC calculation is carried out...
@@ -932,7 +965,7 @@ The Integral Screening threshold                    =             1.0000E-10
  
 DEC orbitals will be generated using  simple Lowdin charge analysis
 Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis
-
+ 
 
 --------------------------
   Coupled-cluster input   
@@ -954,55 +987,54 @@ Use F12 correction           =            TRUE
  Generating DEC orbitals using simple Lowdin charge analysis
  >>>  CPU Time used in GenerateOrb is   0.00 seconds
  >>> wall Time used in GenerateOrb is   0.00 seconds
-
-
+ 
+ 
  Simple Lowdin-based orbital assignment: Summary
  -----------------------------------------------
-
-
+ 
+ 
  ORBITAL DISTRIBUTION INFORMATION
  ********************************
-
- --- using frozen core approximation, only valence orbitals are printed
-
-    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Secondary
-     1    C            3                2                3                2
-     2    C            2                3                2                3
+ 
+    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Sec
+ ondary
+     1    C            4                2                4                2
+     2    C            3                3                3                3
      3    H            0                0                0                0
      4    H            0                0                0                0
- Total:                5                5
-
-
-
+ Total:                7                5
+ 
+ 
+ 
  ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
  **********************************************************************
-
+ 
  Maximum occ orbital extent (#AOs) =     10   -- Orbital index     4
- Maximum unocc orbital extent (#AOs) =     10   -- Orbital index     1
+ Maximum virt orbital extent (#AOs) =     10   -- Orbital index     1
  Average occ orbital extent (#AOs)  =       7.4286
- Average unocc orbital extent (#AOs) =       8.4000
-
-
+ Average virt orbital extent (#AOs) =       8.4000
+ 
+ 
  >>>  CPU Time used in DEC INIT is   0.00 seconds
  >>> wall Time used in DEC INIT is   0.00 seconds
-
-
+ 
+ 
  ******************************************************************
         ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       
  ******************************************************************
-
+ 
  JobNumber  AtomType  AtomIndex  SizeMeasure
       1       C          1         432
       2       C          2         432
       3       H          3           0
       4       H          4           0
-
-
-
-
+ 
+ 
+ 
+ 
  *** Initiating optimization of atomic fragments ***
-
-
+ 
+ 
  FOP Occ Radius for initial fragment:  3.78
  FOP Virt Radius for initial fragment:  3.78
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
@@ -1012,142 +1044,142 @@ Use F12 correction           =            TRUE
  >>>  CPU Time used in FRAGMENT INIT is   0.00 seconds
  >>> wall Time used in FRAGMENT INIT is   0.00 seconds
  Preparing job list...
-
-
-
+ 
+ 
+ 
  *******************************************************************************
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      1      5      5     12     1.19    /  2.25       1.19    /  3.32              FRAG_SIZE
-      2      5      5     12     1.19    /  2.25       1.19    /  3.32              FRAG_SIZE
-
- FRAGANALYSIS: Max/Ave/Min occ         :        5       /     5.0000    /       5
- FRAGANALYSIS: Max/Ave/Min unocc       :        5       /     5.0000    /       5
+      1      7      5     12     1.19    /  2.25       1.19    /  3.32              FRAG_SIZE
+      2      7      5     12     1.19    /  2.25       1.19    /  3.32              FRAG_SIZE
+ 
+ FRAGANALYSIS: Max/Ave/Min occ         :        7       /     7.0000    /       7
+ FRAGANALYSIS: Max/Ave/Min virt        :        5       /     5.0000    /       5
  FRAGANALYSIS: Max/Ave/Min basis       :       12       /     12.000    /      12
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      1.1899    /     1.1899    /     1.1899    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      2.2543    /     2.2543    /     2.2543    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:      1.1899    /     1.1899    /     1.1899    
  FRAGANALYSIS: Max/Ave/Min Diameter AE :      3.3187    /     3.3187    /     3.3187    
-
-
-
+ 
+ 
+ 
  *****************************************************
  *      DEC ESTIMATED FRAGMENT JOB LIST              *
  *****************************************************
  Number of jobs =            1
-
+ 
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
-        1                300              1       2        5        5       12
-
-
+        1                420              1       2        7        5       12
+ 
+ 
  DEC JOB SUMMARY: Number of single jobs =          2
  DEC JOB SUMMARY: Number of pair jobs   =          1
  DEC JOB SUMMARY: Total number of jobs  =          1
-
-
+ 
+ 
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   1
  FOP ===============================================
  FOP
  FOP Fragment includes all orbitals and fragment optimization is skipped
- >>>  CPU Time used in build_CABS_MO is   0.01 seconds
- >>> wall Time used in build_CABS_MO is   0.01 seconds
- >>>  CPU Time used in build_RI_MO is   0.01 seconds
- >>> wall Time used in build_RI_MO is   0.00 seconds
- >>>  CPU Time used in FRAGMENT INIT is   0.02 seconds
- >>> wall Time used in FRAGMENT INIT is   0.01 seconds
+ >>>  CPU Time used in build_CABS_MO is   0.03 seconds
+ >>> wall Time used in build_CABS_MO is   0.03 seconds
+ >>>  CPU Time used in build_RI_MO is   0.02 seconds
+ >>> wall Time used in build_RI_MO is   0.02 seconds
+ >>>  CPU Time used in FRAGMENT INIT is   0.06 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.06 seconds
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   2
  FOP ===============================================
  FOP
  FOP Fragment includes all orbitals and fragment optimization is skipped
- >>>  CPU Time used in build_CABS_MO is   0.01 seconds
- >>> wall Time used in build_CABS_MO is   0.01 seconds
- >>>  CPU Time used in build_RI_MO is   0.01 seconds
- >>> wall Time used in build_RI_MO is   0.00 seconds
- >>>  CPU Time used in FRAGMENT INIT is   0.02 seconds
- >>> wall Time used in FRAGMENT INIT is   0.01 seconds
- >>>  CPU Time used in build_CABS_MO is   0.01 seconds
- >>> wall Time used in build_CABS_MO is   0.01 seconds
- >>>  CPU Time used in build_RI_MO is   0.00 seconds
- >>> wall Time used in build_RI_MO is   0.00 seconds
- >>>  CPU Time used in FRAGMENT INIT is   0.01 seconds
- >>> wall Time used in FRAGMENT INIT is   0.01 seconds
-#PAIRDIMS# basis,occ,virt       12       5       5
+ >>>  CPU Time used in build_CABS_MO is   0.03 seconds
+ >>> wall Time used in build_CABS_MO is   0.03 seconds
+ >>>  CPU Time used in build_RI_MO is   0.02 seconds
+ >>> wall Time used in build_RI_MO is   0.02 seconds
+ >>>  CPU Time used in FRAGMENT INIT is   0.06 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.06 seconds
+ >>>  CPU Time used in build_CABS_MO is   0.03 seconds
+ >>> wall Time used in build_CABS_MO is   0.03 seconds
+ >>>  CPU Time used in build_RI_MO is   0.02 seconds
+ >>> wall Time used in build_RI_MO is   0.02 seconds
+ >>>  CPU Time used in FRAGMENT INIT is   0.06 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.06 seconds
+#PAIRDIMS# basis,occ,virt       12       7       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.848    
+ 
  Number of atomic basis functions        =      12
- Number of occupied orbitals AOS/EOS     =       5       5
+ Number of occupied orbitals AOS/EOS     =       7       7
  Number of virtual  orbitals AOS/EOS     =       5       5
  Maximum alpha batch dimension           =       3
  Maximum gamma batch dimension           =      12
- Maximum virtual batch dimension         =       4
- Number of OMP threads                   =       2
-
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.660E-04
+ Tot memory required for tmp arrays (GB) = 0.757E-04
  Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.720E-05
- Memory required for tmp array 3 (GB)    = 0.173E-04
-
+ Memory required for tmp array 2 (GB)    = 0.101E-04
+ Memory required for tmp array 3 (GB)    = 0.242E-04
+ 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.290E-04
- Memory required for tmp array 1 (GB)    = 0.400E-05
- Memory required for tmp array 2 (GB)    = 0.500E-05
- Memory required for tmp array 3 (GB)    = 0.400E-05
- Memory required for tmp array 4 (GB)    = 0.300E-05
-
+ Tot memory required for tmp arrays (GB) = 0.353E-04
+ Memory required for tmp array 1 (GB)    = 0.980E-05
+ Memory required for tmp array 2 (GB)    = 0.980E-05
+ Memory required for tmp array 3 (GB)    = 0.980E-05
+ Memory required for tmp array 4 (GB)    = 0.588E-05
+ 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.100E-04
- Memory required for tmp array 1 (GB)    = 0.500E-05
- Memory required for tmp array 2 (GB)    = 0.500E-05
-
+ Tot memory required for tmp arrays (GB) = 0.196E-04
+ Memory required for tmp array 1 (GB)    = 0.980E-05
+ Memory required for tmp array 2 (GB)    = 0.980E-05
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.660E-04
- Big Array Memory required       (GB)    = 0.946E-04
-
+ Memory required                 (GB)    = 0.757E-04
+ Big Array Memory required       (GB)    = 0.921E-04
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           2
+ BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.03 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.02 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in INIT MP2-INT is   0.03 seconds
- >>> wall Time used in INIT MP2-INT is   0.02 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.12 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.07 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.12 seconds
- >>> wall Time used in MP2-INT LOOP is   0.07 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.07 seconds
+ >>> wall Time used in INIT MP2-INT is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.33 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.33 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.33 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.33 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1162,188 +1194,188 @@ Use F12 correction           =            TRUE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.15 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.09 seconds
- >>>  WALL Time used in MP2 Integral Calculation   0.06 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.11 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.40 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.40 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.32 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.32 seconds
  >>>  WALL Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
-
-
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       1      2
  *****************************************************************************
- Distance(Ang), pair occ energy  =       1.1899       -0.5247514314E-01
- Distance(Ang), pair virt energy =       1.1899       -0.5376887157E-01
- Distance(Ang), pair lagr. occ term  =       1.1899        0.2868540933E-01
- Distance(Ang), pair lagr. virt term =       1.1899        0.2519437989E-01
-
-
+ Distance(Ang), pair occ energy  =       1.1899       -0.5267739483E-01
+ Distance(Ang), pair virt energy =       1.1899       -0.5404609846E-01
+ Distance(Ang), pair lagr. occ term  =       1.1899        0.2870772897E-01
+ Distance(Ang), pair lagr. virt term =       1.1899        0.2543991281E-01
+ 
+ 
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  67.124 MB
-  Max allocated memory, TOTAL                         67.474 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   0.15 seconds
- >>> wall Time used in SINGLE L.ENERGY is   0.09 seconds
-
-
+  Allocated memory,     TOTAL                   1.830 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.40 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.41 seconds
+ 
+ 
  ******************************************************************
  *            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *
  ******************************************************************
-
+ 
  Total number of pairs:                         1
  Number of pairs to calculate:                  1
  Pairs to be skipped from calculation           0
-
+ 
  Pairs to be treated using input FOT            1
-
- Estimated pair correlation energy:            -0.5247514314E-01
+ 
+ Estimated pair correlation energy:            -0.5267739483E-01
  Estimated contribution from skipped pairs:      0.000000000    
-
-
-
+ 
+ 
+ 
  =================================================================
  Last pairs included for each atomic center
  =================================================================
-
+ 
   Atom1  Atom2     Dist(Ang)        Energy
-     2       1      1.1899         -0.5247514314E-01    PF_LASTPAIR
-
-
-
-
+     2       1      1.1899         -0.5267739483E-01    PF_LASTPAIR
+ 
+ 
+ 
+ 
  =================================================================
  Estimated occupied pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.1899         -0.5247514314E-01    PF_ESTIMATE
-
-
+     1       2      1.1899         -0.5267739483E-01    PF_ESTIMATE
+ 
+ 
   ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.21 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   0.13 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.57 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   0.58 seconds
  Preparing job list...
-
-
-
+ 
+ 
+ 
  *******************************************************************************
               Atomic fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      1      5      5     12     1.19    /  2.25       1.19    /  3.32              FRAG_SIZE
-      2      5      5     12     1.19    /  2.25       1.19    /  3.32              FRAG_SIZE
-
- FRAGANALYSIS: Max/Ave/Min occ         :        5       /     5.0000    /       5
- FRAGANALYSIS: Max/Ave/Min unocc       :        5       /     5.0000    /       5
+      1      7      5     12     1.19    /  2.25       1.19    /  3.32              FRAG_SIZE
+      2      7      5     12     1.19    /  2.25       1.19    /  3.32              FRAG_SIZE
+ 
+ FRAGANALYSIS: Max/Ave/Min occ         :        7       /     7.0000    /       7
+ FRAGANALYSIS: Max/Ave/Min virt        :        5       /     5.0000    /       5
  FRAGANALYSIS: Max/Ave/Min basis       :       12       /     12.000    /      12
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      1.1899    /     1.1899    /     1.1899    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      2.2543    /     2.2543    /     2.2543    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:      1.1899    /     1.1899    /     1.1899    
  FRAGANALYSIS: Max/Ave/Min Diameter AE :      3.3187    /     3.3187    /     3.3187    
-
-
-
+ 
+ 
+ 
  *****************************************************
  *               DEC FRAGMENT JOB LIST               *
  *****************************************************
  Number of jobs =            3
-
+ 
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
-        1                300              1                5        5       12
-        2                300              1       2        5        5       12
-        3                300              2                5        5       12
-
-
+        1                420              1                7        5       12
+        2                420              1       2        7        5       12
+        3                420              2                7        5       12
+ 
+ 
  DEC JOB SUMMARY: Number of single jobs =          2
  DEC JOB SUMMARY: Number of pair jobs   =          1
  DEC JOB SUMMARY: Total number of jobs  =          3
-
-
+ 
+ 
  >>>  CPU Time used in DEC JOBLIST is   0.00 seconds
  >>> wall Time used in DEC JOBLIST is   0.00 seconds
-
+ 
  *** Calculating single and pair interaction energies ***
-
- >>>  CPU Time used in build_CABS_MO is   0.01 seconds
- >>> wall Time used in build_CABS_MO is   0.00 seconds
- >>>  CPU Time used in build_RI_MO is   0.00 seconds
- >>> wall Time used in build_RI_MO is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       12       5       5
+ 
+ >>>  CPU Time used in build_CABS_MO is   0.03 seconds
+ >>> wall Time used in build_CABS_MO is   0.03 seconds
+ >>>  CPU Time used in build_RI_MO is   0.02 seconds
+ >>> wall Time used in build_RI_MO is   0.02 seconds
+#SINGLEDIMS# basis,occ,virt       12       7       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.849    
+ 
  Number of atomic basis functions        =      12
- Number of occupied orbitals AOS/EOS     =       5       3
+ Number of occupied orbitals AOS/EOS     =       7       4
  Number of virtual  orbitals AOS/EOS     =       5       2
  Maximum alpha batch dimension           =       3
  Maximum gamma batch dimension           =      12
- Maximum virtual batch dimension         =       4
- Number of OMP threads                   =       2
-
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.660E-04
+ Tot memory required for tmp arrays (GB) = 0.757E-04
  Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.720E-05
- Memory required for tmp array 3 (GB)    = 0.173E-04
-
+ Memory required for tmp array 2 (GB)    = 0.101E-04
+ Memory required for tmp array 3 (GB)    = 0.242E-04
+ 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.238E-04
- Memory required for tmp array 1 (GB)    = 0.400E-05
- Memory required for tmp array 2 (GB)    = 0.240E-05
- Memory required for tmp array 3 (GB)    = 0.400E-05
- Memory required for tmp array 4 (GB)    = 0.300E-05
-
+ Tot memory required for tmp arrays (GB) = 0.311E-04
+ Memory required for tmp array 1 (GB)    = 0.980E-05
+ Memory required for tmp array 2 (GB)    = 0.560E-05
+ Memory required for tmp array 3 (GB)    = 0.980E-05
+ Memory required for tmp array 4 (GB)    = 0.588E-05
+ 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.360E-05
- Memory required for tmp array 1 (GB)    = 0.180E-05
- Memory required for tmp array 2 (GB)    = 0.180E-05
-
+ Tot memory required for tmp arrays (GB) = 0.640E-05
+ Memory required for tmp array 1 (GB)    = 0.320E-05
+ Memory required for tmp array 2 (GB)    = 0.320E-05
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.660E-04
- Big Array Memory required       (GB)    = 0.946E-04
-
+ Memory required                 (GB)    = 0.757E-04
+ Big Array Memory required       (GB)    = 0.921E-04
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           2
+ BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.03 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.02 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in INIT MP2-INT is   0.04 seconds
- >>> wall Time used in INIT MP2-INT is   0.02 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.14 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.08 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.14 seconds
- >>> wall Time used in MP2-INT LOOP is   0.08 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.07 seconds
+ >>> wall Time used in INIT MP2-INT is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.33 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.33 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.33 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.33 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1358,244 +1390,223 @@ Use F12 correction           =            TRUE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.17 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.10 seconds
- >>>  WALL Time used in MP2 Integral Calculation   0.07 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.12 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.40 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.40 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.32 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.32 seconds
  >>>  WALL Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
- Memory statistics before allocation of CoccEOS:
-  Allocated memory,     TOTAL                  67.043 MB
-  Max allocated memory, TOTAL                         67.474 MB
- Memory statistics after allocation of CoccEOS:
-  Allocated memory,     TOTAL                  67.043 MB
-  Max allocated memory, TOTAL                         67.474 MB
- Memory statistics after allocation of CoccAOS:
-  Allocated memory,     TOTAL                  67.043 MB
-  Max allocated memory, TOTAL                         67.474 MB
- Memory statistics after allocation of CvirtAOS:
-  Allocated memory,     TOTAL                  67.044 MB
-  Max allocated memory, TOTAL                         67.474 MB
- Memory statistics after allocation of CocvAOS:
-  Allocated memory,     TOTAL                  67.045 MB
-  Max allocated memory, TOTAL                         67.474 MB
- Memory statistics after allocation of Ccabs:
-  Allocated memory,     TOTAL                  67.046 MB
-  Max allocated memory, TOTAL                         67.474 MB
- Memory statistics after allocation of Cri:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.474 MB
  Memory statistics after allocation of Venergy:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.474 MB
- >>>  CPU Time used in get_EV1_timing: is   0.39 seconds
- >>> wall Time used in get_EV1_timing: is   0.21 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EV1_timing: is   0.27 seconds
+ >>> wall Time used in get_EV1_timing: is   0.27 seconds
  Memory statistics after subroutine get_EV1:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.474 MB
- >>>  CPU Time used in get_EV2_timing: is   0.36 seconds
- >>> wall Time used in get_EV2_timing: is   0.19 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EV2_timing: is   0.24 seconds
+ >>> wall Time used in get_EV2_timing: is   0.24 seconds
  Memory statistics after subroutine get_EV2:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.474 MB
- >>>  CPU Time used in get_EV3_timing: is   0.64 seconds
- >>> wall Time used in get_EV3_timing: is   0.35 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EV3_timing: is   1.52 seconds
+ >>> wall Time used in get_EV3_timing: is   1.52 seconds
  Memory statistics after subroutine get_EV3:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EV4_timing: is   0.37 seconds
- >>> wall Time used in get_EV4_timing: is   0.19 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EV4_timing: is   0.94 seconds
+ >>> wall Time used in get_EV4_timing: is   0.95 seconds
  Memory statistics after subroutine get_EV4:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.593 MB
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Fkj:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.593 MB
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Fmn:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Fab:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Xenergy:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EX1_timing: is   0.84 seconds
- >>> wall Time used in get_EX1_timing: is   0.43 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EX1_timing: is   0.60 seconds
+ >>> wall Time used in get_EX1_timing: is   0.60 seconds
  Memory statistics after subroutine get_EX1:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EX2_timing: is   0.57 seconds
- >>> wall Time used in get_EX2_timing: is   0.30 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EX2_timing: is   0.45 seconds
+ >>> wall Time used in get_EX2_timing: is   0.45 seconds
  Memory statistics after subroutine get_EX2:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EX3_timing: is   1.04 seconds
- >>> wall Time used in get_EX3_timing: is   0.54 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EX3_timing: is   2.83 seconds
+ >>> wall Time used in get_EX3_timing: is   2.84 seconds
  Memory statistics after subroutine get_EX3:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EX4_timing: is   0.69 seconds
- >>> wall Time used in get_EX4_timing: is   0.36 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EX4_timing: is   3.11 seconds
+ >>> wall Time used in get_EX4_timing: is   3.12 seconds
  Memory statistics after subroutine get_EX4:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Benergy:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EB1_timing: is   0.52 seconds
- >>> wall Time used in get_EB1_timing: is   0.27 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB1_timing: is   0.37 seconds
+ >>> wall Time used in get_EB1_timing: is   0.37 seconds
  Memory statistics after subroutine get_EB1:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EB2_timing: is   0.44 seconds
- >>> wall Time used in get_EB2_timing: is   0.22 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB2_timing: is   2.07 seconds
+ >>> wall Time used in get_EB2_timing: is   2.08 seconds
  Memory statistics after subroutine get_EB2:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EB3_timing: is   0.75 seconds
- >>> wall Time used in get_EB3_timing: is   0.38 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB3_timing: is   1.98 seconds
+ >>> wall Time used in get_EB3_timing: is   1.99 seconds
  Memory statistics after subroutine get_EB3:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.593 MB
- >>>  CPU Time used in get_EB4_timing: is   0.40 seconds
- >>> wall Time used in get_EB4_timing: is   0.21 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB4_timing: is   2.00 seconds
+ >>> wall Time used in get_EB4_timing: is   2.00 seconds
  Memory statistics after subroutine get_EB4:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in get_EB5_timing: is   0.22 seconds
- >>> wall Time used in get_EB5_timing: is   0.11 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB5_timing: is   1.07 seconds
+ >>> wall Time used in get_EB5_timing: is   1.07 seconds
  Memory statistics after subroutine get_EB5:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in get_EB6_timing: is   0.19 seconds
- >>> wall Time used in get_EB6_timing: is   0.10 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB6_timing: is   0.15 seconds
+ >>> wall Time used in get_EB6_timing: is   0.15 seconds
  Memory statistics after subroutine get_EB6:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in get_EB7_timing: is   0.21 seconds
- >>> wall Time used in get_EB7_timing: is   0.11 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB7_timing: is   1.04 seconds
+ >>> wall Time used in get_EB7_timing: is   1.04 seconds
  Memory statistics after subroutine get_EB7:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in get_EB8_timing: is   0.60 seconds
- >>> wall Time used in get_EB8_timing: is   0.31 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB8_timing: is   2.91 seconds
+ >>> wall Time used in get_EB8_timing: is   2.91 seconds
  Memory statistics after subroutine get_EB8:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in get_EB9_timing: is   0.41 seconds
- >>> wall Time used in get_EB9_timing: is   0.21 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB9_timing: is   1.19 seconds
+ >>> wall Time used in get_EB9_timing: is   1.19 seconds
  Memory statistics after subroutine get_EB9:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.620 MB
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.445 MB
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
   WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.2100328761
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0183196141
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0631883814
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0815079955
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.1285248806
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.1285248806
-
-
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.4916308811
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.1150697750
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.1526983943
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.2677681693
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.2238627118
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.2238627118
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       1
  **********************************************************************
- Single occupied energy =    -0.6672503680E-01
- Single virtual  energy =    -0.2645102727E-01
- Single Lagrangian occ term  =     0.3517094349E-01
- Single Lagrangian virt term =     0.1249850370E-01
-
-
+ Single occupied energy =    -0.6704295912E-01
+ Single virtual  energy =    -0.2660276598E-01
+ Single Lagrangian occ term  =     0.3520235508E-01
+ Single Lagrangian virt term =     0.1263692289E-01
+ 
+ 
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  67.043 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   8.80 seconds
- >>> wall Time used in SINGLE L.ENERGY is   4.57 seconds
- >>>  CPU Time used in build_CABS_MO is   0.01 seconds
- >>> wall Time used in build_CABS_MO is   0.00 seconds
- >>>  CPU Time used in build_RI_MO is   0.00 seconds
- >>> wall Time used in build_RI_MO is   0.00 seconds
- >>>  CPU Time used in FRAGMENT INIT is   0.01 seconds
- >>> wall Time used in FRAGMENT INIT is   0.01 seconds
-#PAIRDIMS# basis,occ,virt       12       5       5
+  Allocated memory,     TOTAL                   1.721 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in SINGLE L.ENERGY is  23.13 seconds
+ >>> wall Time used in SINGLE L.ENERGY is  23.20 seconds
+ >>>  CPU Time used in build_CABS_MO is   0.03 seconds
+ >>> wall Time used in build_CABS_MO is   0.03 seconds
+ >>>  CPU Time used in build_RI_MO is   0.02 seconds
+ >>> wall Time used in build_RI_MO is   0.02 seconds
+ >>>  CPU Time used in FRAGMENT INIT is   0.06 seconds
+ >>> wall Time used in FRAGMENT INIT is   0.06 seconds
+#PAIRDIMS# basis,occ,virt       12       7       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.849    
+ 
  Number of atomic basis functions        =      12
- Number of occupied orbitals AOS/EOS     =       5       5
+ Number of occupied orbitals AOS/EOS     =       7       7
  Number of virtual  orbitals AOS/EOS     =       5       5
  Maximum alpha batch dimension           =       3
  Maximum gamma batch dimension           =      12
- Maximum virtual batch dimension         =       4
- Number of OMP threads                   =       2
-
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.660E-04
+ Tot memory required for tmp arrays (GB) = 0.757E-04
  Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.720E-05
- Memory required for tmp array 3 (GB)    = 0.173E-04
-
+ Memory required for tmp array 2 (GB)    = 0.101E-04
+ Memory required for tmp array 3 (GB)    = 0.242E-04
+ 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.290E-04
- Memory required for tmp array 1 (GB)    = 0.400E-05
- Memory required for tmp array 2 (GB)    = 0.500E-05
- Memory required for tmp array 3 (GB)    = 0.400E-05
- Memory required for tmp array 4 (GB)    = 0.300E-05
-
+ Tot memory required for tmp arrays (GB) = 0.353E-04
+ Memory required for tmp array 1 (GB)    = 0.980E-05
+ Memory required for tmp array 2 (GB)    = 0.980E-05
+ Memory required for tmp array 3 (GB)    = 0.980E-05
+ Memory required for tmp array 4 (GB)    = 0.588E-05
+ 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.100E-04
- Memory required for tmp array 1 (GB)    = 0.500E-05
- Memory required for tmp array 2 (GB)    = 0.500E-05
-
+ Tot memory required for tmp arrays (GB) = 0.196E-04
+ Memory required for tmp array 1 (GB)    = 0.980E-05
+ Memory required for tmp array 2 (GB)    = 0.980E-05
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.660E-04
- Big Array Memory required       (GB)    = 0.946E-04
-
+ Memory required                 (GB)    = 0.757E-04
+ Big Array Memory required       (GB)    = 0.921E-04
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           2
+ BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.03 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.02 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in INIT MP2-INT is   0.03 seconds
- >>> wall Time used in INIT MP2-INT is   0.02 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.12 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.06 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.12 seconds
- >>> wall Time used in MP2-INT LOOP is   0.06 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.07 seconds
+ >>> wall Time used in INIT MP2-INT is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.33 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.33 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.33 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.33 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1610,242 +1621,221 @@ Use F12 correction           =            TRUE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.15 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.08 seconds
- >>>  WALL Time used in MP2 Integral Calculation   0.06 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.11 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.40 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.40 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.32 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.31 seconds
  >>>  WALL Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
- Memory statistics before allocation of CoccEOS:
-  Allocated memory,     TOTAL                  67.059 MB
-  Max allocated memory, TOTAL                         67.620 MB
- Memory statistics after allocation of CoccEOS:
-  Allocated memory,     TOTAL                  67.059 MB
-  Max allocated memory, TOTAL                         67.620 MB
- Memory statistics after allocation of CoccAOS:
-  Allocated memory,     TOTAL                  67.060 MB
-  Max allocated memory, TOTAL                         67.620 MB
- Memory statistics after allocation of CvirtAOS:
-  Allocated memory,     TOTAL                  67.060 MB
-  Max allocated memory, TOTAL                         67.620 MB
- Memory statistics after allocation of CocvAOS:
-  Allocated memory,     TOTAL                  67.061 MB
-  Max allocated memory, TOTAL                         67.620 MB
- Memory statistics after allocation of Ccabs:
-  Allocated memory,     TOTAL                  67.063 MB
-  Max allocated memory, TOTAL                         67.620 MB
- Memory statistics after allocation of Cri:
-  Allocated memory,     TOTAL                  67.067 MB
-  Max allocated memory, TOTAL                         67.620 MB
  Memory statistics after allocation of Venergy:
-  Allocated memory,     TOTAL                  67.067 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in get_EV1_timing: is   0.34 seconds
- >>> wall Time used in get_EV1_timing: is   0.18 seconds
+  Allocated memory,     TOTAL                   1.771 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EV1_timing: is   0.27 seconds
+ >>> wall Time used in get_EV1_timing: is   0.27 seconds
  Memory statistics after subroutine get_EV1:
-  Allocated memory,     TOTAL                  67.067 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in get_EV2_timing: is   0.30 seconds
- >>> wall Time used in get_EV2_timing: is   0.16 seconds
+  Allocated memory,     TOTAL                   1.771 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EV2_timing: is   0.24 seconds
+ >>> wall Time used in get_EV2_timing: is   0.24 seconds
  Memory statistics after subroutine get_EV2:
-  Allocated memory,     TOTAL                  67.067 MB
-  Max allocated memory, TOTAL                         67.620 MB
- >>>  CPU Time used in get_EV3_timing: is   0.55 seconds
- >>> wall Time used in get_EV3_timing: is   0.28 seconds
+  Allocated memory,     TOTAL                   1.771 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EV3_timing: is   1.52 seconds
+ >>> wall Time used in get_EV3_timing: is   1.53 seconds
  Memory statistics after subroutine get_EV3:
-  Allocated memory,     TOTAL                  67.067 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EV4_timing: is   0.34 seconds
- >>> wall Time used in get_EV4_timing: is   0.18 seconds
+  Allocated memory,     TOTAL                   1.771 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EV4_timing: is   0.95 seconds
+ >>> wall Time used in get_EV4_timing: is   0.95 seconds
  Memory statistics after subroutine get_EV4:
-  Allocated memory,     TOTAL                  67.067 MB
-  Max allocated memory, TOTAL                         67.638 MB
+  Allocated memory,     TOTAL                   1.771 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Fkj:
-  Allocated memory,     TOTAL                  67.067 MB
-  Max allocated memory, TOTAL                         67.638 MB
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Fmn:
-  Allocated memory,     TOTAL                  67.067 MB
-  Max allocated memory, TOTAL                         67.638 MB
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Fab:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Xenergy:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EX1_timing: is   0.82 seconds
- >>> wall Time used in get_EX1_timing: is   0.41 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EX1_timing: is   0.60 seconds
+ >>> wall Time used in get_EX1_timing: is   0.60 seconds
  Memory statistics after subroutine get_EX1:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EX2_timing: is   0.73 seconds
- >>> wall Time used in get_EX2_timing: is   0.39 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EX2_timing: is   0.45 seconds
+ >>> wall Time used in get_EX2_timing: is   0.45 seconds
  Memory statistics after subroutine get_EX2:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EX3_timing: is   1.12 seconds
- >>> wall Time used in get_EX3_timing: is   0.58 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EX3_timing: is   2.84 seconds
+ >>> wall Time used in get_EX3_timing: is   2.84 seconds
  Memory statistics after subroutine get_EX3:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EX4_timing: is   0.65 seconds
- >>> wall Time used in get_EX4_timing: is   0.33 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EX4_timing: is   3.12 seconds
+ >>> wall Time used in get_EX4_timing: is   3.13 seconds
  Memory statistics after subroutine get_EX4:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
  Memory statistics after allocation of Benergy:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EB1_timing: is   0.51 seconds
- >>> wall Time used in get_EB1_timing: is   0.26 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB1_timing: is   0.37 seconds
+ >>> wall Time used in get_EB1_timing: is   0.37 seconds
  Memory statistics after subroutine get_EB1:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EB2_timing: is   0.46 seconds
- >>> wall Time used in get_EB2_timing: is   0.24 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB2_timing: is   2.08 seconds
+ >>> wall Time used in get_EB2_timing: is   2.08 seconds
  Memory statistics after subroutine get_EB2:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EB3_timing: is   0.76 seconds
- >>> wall Time used in get_EB3_timing: is   0.38 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB3_timing: is   1.98 seconds
+ >>> wall Time used in get_EB3_timing: is   1.99 seconds
  Memory statistics after subroutine get_EB3:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.638 MB
- >>>  CPU Time used in get_EB4_timing: is   0.45 seconds
- >>> wall Time used in get_EB4_timing: is   0.24 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.445 MB
+ >>>  CPU Time used in get_EB4_timing: is   2.31 seconds
+ >>> wall Time used in get_EB4_timing: is   2.32 seconds
  Memory statistics after subroutine get_EB4:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB5_timing: is   0.22 seconds
- >>> wall Time used in get_EB5_timing: is   0.11 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB5_timing: is   1.13 seconds
+ >>> wall Time used in get_EB5_timing: is   1.14 seconds
  Memory statistics after subroutine get_EB5:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB6_timing: is   0.18 seconds
- >>> wall Time used in get_EB6_timing: is   0.09 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB6_timing: is   0.15 seconds
+ >>> wall Time used in get_EB6_timing: is   0.15 seconds
  Memory statistics after subroutine get_EB6:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB7_timing: is   0.21 seconds
- >>> wall Time used in get_EB7_timing: is   0.11 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB7_timing: is   1.05 seconds
+ >>> wall Time used in get_EB7_timing: is   1.05 seconds
  Memory statistics after subroutine get_EB7:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB8_timing: is   0.58 seconds
- >>> wall Time used in get_EB8_timing: is   0.30 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB8_timing: is   2.96 seconds
+ >>> wall Time used in get_EB8_timing: is   2.97 seconds
  Memory statistics after subroutine get_EB8:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB9_timing: is   0.40 seconds
- >>> wall Time used in get_EB9_timing: is   0.20 seconds
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB9_timing: is   1.20 seconds
+ >>> wall Time used in get_EB9_timing: is   1.21 seconds
  Memory statistics after subroutine get_EB9:
-  Allocated memory,     TOTAL                  67.068 MB
-  Max allocated memory, TOTAL                         67.765 MB
+  Allocated memory,     TOTAL                   1.772 MB
+  Max allocated memory, TOTAL                          4.826 MB
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
   WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.1493560711
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0118570852
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0419209336
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0537780189
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0955780522
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0955780522
-
-
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.2223695616
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0513871408
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0648953881
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.1162825288
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.1060870327
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.1060870327
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       1      2
  *****************************************************************************
- Distance(Ang), pair occ energy  =       1.1899       -0.5247514314E-01
- Distance(Ang), pair virt energy =       1.1899       -0.5376887157E-01
- Distance(Ang), pair lagr. occ term  =       1.1899        0.2868540933E-01
- Distance(Ang), pair lagr. virt term =       1.1899        0.2519437989E-01
-
-
+ Distance(Ang), pair occ energy  =       1.1899       -0.5267739483E-01
+ Distance(Ang), pair virt energy =       1.1899       -0.5404609846E-01
+ Distance(Ang), pair lagr. occ term  =       1.1899        0.2870772897E-01
+ Distance(Ang), pair lagr. virt term =       1.1899        0.2543991281E-01
+ 
+ 
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  67.059 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   8.77 seconds
- >>> wall Time used in SINGLE L.ENERGY is   4.53 seconds
- >>>  CPU Time used in build_CABS_MO is   0.01 seconds
- >>> wall Time used in build_CABS_MO is   0.00 seconds
- >>>  CPU Time used in build_RI_MO is   0.00 seconds
- >>> wall Time used in build_RI_MO is   0.00 seconds
-#SINGLEDIMS# basis,occ,virt       12       5       5
+  Allocated memory,     TOTAL                   1.753 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in SINGLE L.ENERGY is  23.62 seconds
+ >>> wall Time used in SINGLE L.ENERGY is  23.69 seconds
+ >>>  CPU Time used in build_CABS_MO is   0.03 seconds
+ >>> wall Time used in build_CABS_MO is   0.03 seconds
+ >>>  CPU Time used in build_RI_MO is   0.02 seconds
+ >>> wall Time used in build_RI_MO is   0.02 seconds
+#SINGLEDIMS# basis,occ,virt       12       7       5
  >>>  CPU Time used in MP2workhorse Init: is   0.00 seconds
  >>> wall Time used in MP2workhorse Init: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransMatInit: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse extractEOSInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse extractEOSInit: is   0.00 seconds
-
-
+ 
+ 
  =======================================================================
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
-
- 85% of available memory (GB)            = 0.793    
-
+ 
+ 85% of available memory (GB)            = 0.849    
+ 
  Number of atomic basis functions        =      12
- Number of occupied orbitals AOS/EOS     =       5       2
+ Number of occupied orbitals AOS/EOS     =       7       3
  Number of virtual  orbitals AOS/EOS     =       5       3
  Maximum alpha batch dimension           =       3
  Maximum gamma batch dimension           =      12
- Maximum virtual batch dimension         =       4
- Number of OMP threads                   =       2
-
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+ 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.660E-04
+ Tot memory required for tmp arrays (GB) = 0.757E-04
  Memory required for tmp array 1 (GB)    = 0.415E-04
- Memory required for tmp array 2 (GB)    = 0.720E-05
- Memory required for tmp array 3 (GB)    = 0.173E-04
-
+ Memory required for tmp array 2 (GB)    = 0.101E-04
+ Memory required for tmp array 3 (GB)    = 0.242E-04
+ 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.238E-04
- Memory required for tmp array 1 (GB)    = 0.400E-05
- Memory required for tmp array 2 (GB)    = 0.240E-05
- Memory required for tmp array 3 (GB)    = 0.400E-05
- Memory required for tmp array 4 (GB)    = 0.300E-05
-
+ Tot memory required for tmp arrays (GB) = 0.314E-04
+ Memory required for tmp array 1 (GB)    = 0.980E-05
+ Memory required for tmp array 2 (GB)    = 0.588E-05
+ Memory required for tmp array 3 (GB)    = 0.980E-05
+ Memory required for tmp array 4 (GB)    = 0.588E-05
+ 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.360E-05
- Memory required for tmp array 1 (GB)    = 0.180E-05
- Memory required for tmp array 2 (GB)    = 0.180E-05
-
+ Tot memory required for tmp arrays (GB) = 0.706E-05
+ Memory required for tmp array 1 (GB)    = 0.353E-05
+ Memory required for tmp array 2 (GB)    = 0.353E-05
+ 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.660E-04
- Big Array Memory required       (GB)    = 0.946E-04
-
+ Memory required                 (GB)    = 0.757E-04
+ Big Array Memory required       (GB)    = 0.921E-04
+ 
  >>>  CPU Time used in MP2workhorse BatchesInit: is   0.00 seconds
  >>> wall Time used in MP2workhorse BatchesInit: is   0.00 seconds
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           2
+ BATCH: Number of virtual batches =           1
  >>>  CPU Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>> wall Time used in MP2workhorse TransposeMatrices: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
  >>> wall Time used in MP2workhorse CvirtTspecial: is   0.00 seconds
- >>>  CPU Time used in MP2workhorse Screening: is   0.03 seconds
- >>> wall Time used in MP2workhorse Screening: is   0.02 seconds
+ >>>  CPU Time used in MP2workhorse Screening: is   0.07 seconds
+ >>> wall Time used in MP2workhorse Screening: is   0.07 seconds
  >>>  CPU Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>> wall Time used in MP2workhorse BigArraymaxdim: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse Mem: is   0.00 seconds
  >>> wall Time used in MP2workhorse Mem: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse WorkAround: is   0.00 seconds
  >>> wall Time used in MP2workhorse WorkAround: is   0.00 seconds
- >>>  CPU Time used in INIT MP2-INT is   0.03 seconds
- >>> wall Time used in INIT MP2-INT is   0.02 seconds
- >>>  CPU Time used in MP2workhorse GammaLoop: is   0.12 seconds
- >>> wall Time used in MP2workhorse GammaLoop: is   0.07 seconds
- >>>  CPU Time used in MP2-INT LOOP is   0.12 seconds
- >>> wall Time used in MP2-INT LOOP is   0.07 seconds
+ >>>  CPU Time used in INIT MP2-INT is   0.07 seconds
+ >>> wall Time used in INIT MP2-INT is   0.07 seconds
+ >>>  CPU Time used in MP2workhorse GammaLoop: is   0.33 seconds
+ >>> wall Time used in MP2workhorse GammaLoop: is   0.33 seconds
+ >>>  CPU Time used in MP2-INT LOOP is   0.33 seconds
+ >>> wall Time used in MP2-INT LOOP is   0.33 seconds
  >>>  CPU Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>> wall Time used in MP2workhorse Dealloc: is   0.00 seconds
  >>>  CPU Time used in MP2workhorse toccEOS: is   0.00 seconds
@@ -1860,320 +1850,298 @@ Use F12 correction           =            TRUE
  >>> wall Time used in MP2workhorse FirstOrder: is   0.00 seconds
  >>>  CPU Time used in MP2-INT FIN is   0.00 seconds
  >>> wall Time used in MP2-INT FIN is   0.00 seconds
- >>>  CPU Time used in MP2-INT TOTAL is   0.15 seconds
- >>> wall Time used in MP2-INT TOTAL is   0.09 seconds
- >>>  WALL Time used in MP2 Integral Calculation   0.06 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.11 seconds
+ >>>  CPU Time used in MP2-INT TOTAL is   0.40 seconds
+ >>> wall Time used in MP2-INT TOTAL is   0.40 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.32 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.31 seconds
  >>>  WALL Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in MP2workhorse Finalize: is   0.00 seconds
  >>> wall Time used in MP2workhorse Finalize: is   0.00 seconds
- Memory statistics before allocation of CoccEOS:
-  Allocated memory,     TOTAL                  67.042 MB
-  Max allocated memory, TOTAL                         67.765 MB
- Memory statistics after allocation of CoccEOS:
-  Allocated memory,     TOTAL                  67.043 MB
-  Max allocated memory, TOTAL                         67.765 MB
- Memory statistics after allocation of CoccAOS:
-  Allocated memory,     TOTAL                  67.043 MB
-  Max allocated memory, TOTAL                         67.765 MB
- Memory statistics after allocation of CvirtAOS:
-  Allocated memory,     TOTAL                  67.043 MB
-  Max allocated memory, TOTAL                         67.765 MB
- Memory statistics after allocation of CocvAOS:
-  Allocated memory,     TOTAL                  67.044 MB
-  Max allocated memory, TOTAL                         67.765 MB
- Memory statistics after allocation of Ccabs:
-  Allocated memory,     TOTAL                  67.046 MB
-  Max allocated memory, TOTAL                         67.765 MB
- Memory statistics after allocation of Cri:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.765 MB
  Memory statistics after allocation of Venergy:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EV1_timing: is   0.34 seconds
- >>> wall Time used in get_EV1_timing: is   0.17 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EV1_timing: is   0.27 seconds
+ >>> wall Time used in get_EV1_timing: is   0.27 seconds
  Memory statistics after subroutine get_EV1:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EV2_timing: is   0.29 seconds
- >>> wall Time used in get_EV2_timing: is   0.15 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EV2_timing: is   0.24 seconds
+ >>> wall Time used in get_EV2_timing: is   0.24 seconds
  Memory statistics after subroutine get_EV2:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EV3_timing: is   0.53 seconds
- >>> wall Time used in get_EV3_timing: is   0.27 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EV3_timing: is   1.52 seconds
+ >>> wall Time used in get_EV3_timing: is   1.52 seconds
  Memory statistics after subroutine get_EV3:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EV4_timing: is   0.36 seconds
- >>> wall Time used in get_EV4_timing: is   0.19 seconds
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EV4_timing: is   0.94 seconds
+ >>> wall Time used in get_EV4_timing: is   0.95 seconds
  Memory statistics after subroutine get_EV4:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.765 MB
+  Allocated memory,     TOTAL                   1.739 MB
+  Max allocated memory, TOTAL                          4.826 MB
  Memory statistics after allocation of Fkj:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.765 MB
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
  Memory statistics after allocation of Fmn:
-  Allocated memory,     TOTAL                  67.050 MB
-  Max allocated memory, TOTAL                         67.765 MB
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
  Memory statistics after allocation of Fab:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
  Memory statistics after allocation of Xenergy:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EX1_timing: is   0.83 seconds
- >>> wall Time used in get_EX1_timing: is   0.42 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EX1_timing: is   0.59 seconds
+ >>> wall Time used in get_EX1_timing: is   0.60 seconds
  Memory statistics after subroutine get_EX1:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EX2_timing: is   0.59 seconds
- >>> wall Time used in get_EX2_timing: is   0.30 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EX2_timing: is   0.45 seconds
+ >>> wall Time used in get_EX2_timing: is   0.45 seconds
  Memory statistics after subroutine get_EX2:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EX3_timing: is   1.05 seconds
- >>> wall Time used in get_EX3_timing: is   0.55 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EX3_timing: is   2.83 seconds
+ >>> wall Time used in get_EX3_timing: is   2.84 seconds
  Memory statistics after subroutine get_EX3:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EX4_timing: is   0.64 seconds
- >>> wall Time used in get_EX4_timing: is   0.33 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EX4_timing: is   3.11 seconds
+ >>> wall Time used in get_EX4_timing: is   3.12 seconds
  Memory statistics after subroutine get_EX4:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
  Memory statistics after allocation of Benergy:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB1_timing: is   0.53 seconds
- >>> wall Time used in get_EB1_timing: is   0.27 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB1_timing: is   0.37 seconds
+ >>> wall Time used in get_EB1_timing: is   0.37 seconds
  Memory statistics after subroutine get_EB1:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB2_timing: is   0.44 seconds
- >>> wall Time used in get_EB2_timing: is   0.22 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB2_timing: is   2.07 seconds
+ >>> wall Time used in get_EB2_timing: is   2.08 seconds
  Memory statistics after subroutine get_EB2:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB3_timing: is   0.74 seconds
- >>> wall Time used in get_EB3_timing: is   0.37 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB3_timing: is   1.98 seconds
+ >>> wall Time used in get_EB3_timing: is   1.99 seconds
  Memory statistics after subroutine get_EB3:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB4_timing: is   0.38 seconds
- >>> wall Time used in get_EB4_timing: is   0.20 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB4_timing: is   1.93 seconds
+ >>> wall Time used in get_EB4_timing: is   1.94 seconds
  Memory statistics after subroutine get_EB4:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB5_timing: is   0.21 seconds
- >>> wall Time used in get_EB5_timing: is   0.11 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB5_timing: is   1.05 seconds
+ >>> wall Time used in get_EB5_timing: is   1.06 seconds
  Memory statistics after subroutine get_EB5:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB6_timing: is   0.19 seconds
- >>> wall Time used in get_EB6_timing: is   0.10 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB6_timing: is   0.15 seconds
+ >>> wall Time used in get_EB6_timing: is   0.15 seconds
  Memory statistics after subroutine get_EB6:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB7_timing: is   0.22 seconds
- >>> wall Time used in get_EB7_timing: is   0.11 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB7_timing: is   1.04 seconds
+ >>> wall Time used in get_EB7_timing: is   1.04 seconds
  Memory statistics after subroutine get_EB7:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB8_timing: is   0.60 seconds
- >>> wall Time used in get_EB8_timing: is   0.30 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB8_timing: is   2.90 seconds
+ >>> wall Time used in get_EB8_timing: is   2.91 seconds
  Memory statistics after subroutine get_EB8:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in get_EB9_timing: is   0.40 seconds
- >>> wall Time used in get_EB9_timing: is   0.20 seconds
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in get_EB9_timing: is   1.19 seconds
+ >>> wall Time used in get_EB9_timing: is   1.19 seconds
  Memory statistics after subroutine get_EB9:
-  Allocated memory,     TOTAL                  67.051 MB
-  Max allocated memory, TOTAL                         67.765 MB
+  Allocated memory,     TOTAL                   1.740 MB
+  Max allocated memory, TOTAL                          4.826 MB
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
   WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.1021503366
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0093403089
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0315157741
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0408560830
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0612942536
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0612942536
-
-
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.3621327147
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0944066736
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.1135492101
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.2079558837
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.1541768310
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.1541768310
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single occupied energy =    -0.2759725616E-01
- Single virtual  energy =    -0.6657753726E-01
- Single Lagrangian occ term  =     0.1424730020E-01
- Single Lagrangian virt term =     0.3100089949E-01
-
-
+ Single occupied energy =    -0.2785252374E-01
+ Single virtual  energy =    -0.6692401326E-01
+ Single Lagrangian occ term  =     0.1427184734E-01
+ Single Lagrangian virt term =     0.3131411061E-01
+ 
+ 
  >>>  CPU Time used in L.ENERGY CONTR is   0.00 seconds
  >>> wall Time used in L.ENERGY CONTR is   0.00 seconds
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  67.042 MB
-  Max allocated memory, TOTAL                         67.765 MB
- >>>  CPU Time used in SINGLE L.ENERGY is   8.49 seconds
- >>> wall Time used in SINGLE L.ENERGY is   4.36 seconds
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  26.10 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is  13.48 seconds
-
-
+  Allocated memory,     TOTAL                   1.722 MB
+  Max allocated memory, TOTAL                          4.826 MB
+ >>>  CPU Time used in SINGLE L.ENERGY is  23.05 seconds
+ >>> wall Time used in SINGLE L.ENERGY is  23.11 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  1 minute  10 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  1 minute  10 seconds
+ 
+ 
               ===============================================
               |   Print single and pair fragment energies   |
               ===============================================
-
-
-
+ 
+ 
+ 
  =================================================================
  MP2 occupied single energies
  =================================================================
-
+ 
  Fragment       Energy
-     1      -0.6672503680E-01    AF_MP2_OCC
-     2      -0.2759725616E-01    AF_MP2_OCC
-
-
+     1      -0.6704295912E-01    AF_MP2_OCC
+     2      -0.2785252374E-01    AF_MP2_OCC
+ 
+ 
  =================================================================
  MP2 virtual single energies
  =================================================================
-
+ 
  Fragment       Energy
-     1      -0.2645102727E-01    AF_MP2_VIR
-     2      -0.6657753726E-01    AF_MP2_VIR
-
-
+     1      -0.2660276598E-01    AF_MP2_VIR
+     2      -0.6692401326E-01    AF_MP2_VIR
+ 
+ 
  =================================================================
  MP2 Lagrangian single energies
  =================================================================
-
+ 
  Fragment       Energy
-     1      -0.4550661689E-01    AF_MP2_LAG
-     2      -0.4892659372E-01    AF_MP2_LAG
-
-
+     1      -0.4580644714E-01    AF_MP2_LAG
+     2      -0.4919057906E-01    AF_MP2_LAG
+ 
+ 
  =================================================================
  MP2 occupied pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.1899         -0.5247514314E-01    PF_MP2_OCC
-
-
+     1       2      1.1899         -0.5267739483E-01    PF_MP2_OCC
+ 
+ 
  =================================================================
  MP2 virtual pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.1899         -0.5376887157E-01    PF_MP2_VIR
-
-
+     1       2      1.1899         -0.5404609846E-01    PF_MP2_VIR
+ 
+ 
  =================================================================
  MP2 Lagrangian pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.1899         -0.5236422549E-01    PF_MP2_LAG
-
- MP2 occupied   correlation energy :    -0.1467974361    
- MP2 virtual    correlation energy :    -0.1467974361    
- MP2 Lagrangian correlation energy :    -0.1467974361    
-
-
-
+     1       2      1.1899         -0.5257585151E-01    PF_MP2_LAG
+ 
+ MP2 occupied   correlation energy :    -0.1475728777    
+ MP2 virtual    correlation energy :    -0.1475728777    
+ MP2 Lagrangian correlation energy :    -0.1475728777    
+ 
+ 
+ 
  =================================================================
  MP2F12 occupied single energies
  =================================================================
-
+ 
  Fragment       Energy
-     1      -0.1285248806        AF_MP2f12_OCC
-     2      -0.6129425357E-01    AF_MP2f12_OCC
-
-
+     1      -0.2238627118        AF_MP2f12_OCC
+     2      -0.1541768310        AF_MP2f12_OCC
+ 
+ 
  =================================================================
  CCSDf12 occupied pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      1.1899         -0.9557805224E-01    PF_CCSDf12_OCC
-
+     1       2      1.1899         -0.1060870327        PF_CCSDf12_OCC
+ 
  **********************************************************
  *                  DEC ENERGY SUMMARY                    *
  **********************************************************
- MP2 CORRECTION TO ENERGY:             -0.1467974361
- F12 CORRECTION TO MP2 ENERGY:         -0.2853971864
- MP2-F12 CORRELATION ENERGY:           -0.4321946225
-
-
-
+ MP2 CORRECTION TO ENERGY:             -0.1475728777
+ F12 CORRECTION TO MP2 ENERGY:         -0.4841265756
+ MP2-F12 CORRELATION ENERGY:           -0.6316994533
+ 
+ 
+ 
  =============================================================================
- >>>  CPU Time used in CS15_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.03 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.03 seconds
  >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
  >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
- >>>  CPU Time used in NucElec is   0.02 seconds
- >>> wall Time used in NucElec is   0.01 seconds
+ >>>  CPU Time used in NucElec is   0.04 seconds
+ >>> wall Time used in NucElec is   0.04 seconds
  >>>  CPU Time used in Kinetic is   0.00 seconds
  >>> wall Time used in Kinetic is   0.00 seconds
-
-
-
-
+ 
+ 
+ 
+ 
              **********************************************************
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
-
+ 
                E: Hartree-Fock energy :      -75.8549333012
-               E: Correlation energy  :       -0.4321946225
-               E: Estimated DEC err 1 :        0.0000000000
-               E: Estimated DEC err 2 :        0.0008000000
-               E: Estimated DEC err 3 :        0.0000000000
-               E: Total MP2-F12 energy:      -76.2871279236
-
-
- >>>  CPU Time used in DEC FINAL is   0.02 seconds
- >>> wall Time used in DEC FINAL is   0.01 seconds
-
+               E: Correlation energy  :       -0.6316994533
+               E: Estimated DEC err 1      :        0.0000000000
+               E: Estimated DEC err 2      :        0.0008000000
+               E: Estimated DEC err 3      :        0.0000000000
+               E: Total MP2-F12 energy     :      -76.4866327544
+ 
+ 
+ >>>  CPU Time used in DEC FINAL is   0.05 seconds
+ >>> wall Time used in DEC FINAL is   0.05 seconds
+ 
  CC Memory summary
  -----------------
- Allocated memory for array4   :  0.5040E-04 GB
+ Allocated memory for array4   :  0.9859E-04 GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :  0.2000E-04 GB
+ Max memory in use for array4  :  0.3920E-04 GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
  Max memory in use for array3  :   0.000     GB
  ------------------
-
+ 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         26.7724     s
-Total Wall time used in DEC          :         13.8930     s
+Total CPU  time used in DEC          :         73.4620     s
+Total Wall time used in DEC          :         73.6730     s
 ------------------------------------------------------
 
-
-Hostname       : funmac.st.client.au.dk                            
-Job finished   : Date: 18/02/2015   Time: 13:50:50
-
-
+ 
+Job finished   : Date: 24/05/2015   Time: 21:57:15
+ 
+ 
 
 =============================================================================
                           -- end of DEC program --
 =============================================================================
 
-
-
- >>>  CPU Time used in *SCF is  29.30 seconds
- >>> wall Time used in *SCF is  15.47 seconds
-
-Total no. of matmuls used:                     15027
+ 
+ 
+ >>>  CPU Time used in *SCF is  1 minute  25 seconds
+ >>> wall Time used in *SCF is  1 minute  26 seconds
+ 
+Total no. of matmuls used:                     15024
 Total no. of Fock/KS matrix evaluations:          11
-Max no. of matrices allocated in Level 3:         98
+Max no. of matrices allocated in Level 3:         95
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -2212,63 +2180,107 @@ Max no. of matrices allocated in Level 3:         98
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Additional Memory information          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         67.765 MB
-  Max allocated memory, type(matrix)                  74.736 kB
-  Max allocated memory, real(realk)                    8.883 MB
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                          4.826 MB
+  Max allocated memory, type(matrix)                  82.936 kB
+  Max allocated memory, real(realk)                    4.441 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       33.438 kB
-  Max allocated memory, logical                      201.580 kB
-  Max allocated memory, character                      4.992 kB
-  Max allocated memory, AOBATCH                       39.816 kB
-  Max allocated memory, DECORBITAL                     3.968 kB
-  Max allocated memory, DECFRAG                      123.968 kB
-  Max allocated memory, BATCHTOORB                     0.504 kB
+  Max allocated memory, integer                       66.976 kB
+  Max allocated memory, logical                        3.676 kB
+  Max allocated memory, character                      7.248 kB
+  Max allocated memory, AOBATCH                       54.936 kB
+  Max allocated memory, DECORBITAL                     6.336 kB
+  Max allocated memory, DECFRAG                      145.536 kB
+  Max allocated memory, BATCHTOORB                     0.480 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      1.152 kB
+  Max allocated memory, MYPOINTER                      0.768 kB
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.400 MB
+  Max allocated memory, ARRAY                        852.000 kB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                       13.024 kB
-  Max allocated memory, LSAOTENSOR                     9.728 kB
-  Max allocated memory, SLSAOTENSOR                   21.344 kB
+  Max allocated memory, ODBATCH                       25.432 kB
+  Max allocated memory, LSAOTENSOR                    13.568 kB
+  Max allocated memory, SLSAOTENSOR                   46.080 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 306.112 kB
+  Max allocated memory, ATOMTYPEITEM                 675.168 kB
   Max allocated memory, ATOMITEM                       4.352 kB
-  Max allocated memory, LSMATRIX                       4.536 kB
-  Max allocated memory, OverlapT                     327.168 kB
-  Max allocated memory, linkshell                      2.400 kB
-  Max allocated memory, integrand                    129.024 kB
-  Max allocated memory, integralitem                   8.820 MB
-  Max allocated memory, IntWork                       70.992 kB
-  Max allocated memory, Overlap                      775.984 kB
-  Max allocated memory, ODitem                         9.472 kB
-  Max allocated memory, LStensor                      25.286 kB
+  Max allocated memory, LSMATRIX                       8.880 kB
+  Max allocated memory, OverlapT                     793.408 kB
+  Max allocated memory, linkshell                      3.424 kB
+  Max allocated memory, integrand                     64.512 kB
+  Max allocated memory, integralitem                   4.410 MB
+  Max allocated memory, IntWork                       53.136 kB
+  Max allocated memory, Overlap                      387.992 kB
+  Max allocated memory, ODitem                        18.496 kB
+  Max allocated memory, LStensor                      48.174 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
+ 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  29.34 seconds
- >>> wall Time used in LSDALTON is  15.55 seconds
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L3 mat_set_from_full       12            0.0000            0.0000
+   L3 mat_to_full             32            0.0000            0.0000
+   L3 mat_trans             8161            0.0400            0.0250
+   L3 mat_assign            1314            0.0000            0.0020
+   L3 mat_copy               100            0.0000            0.0000
+   L3 mat_mul              15013            0.0190            0.0180
+   L3 mat_add                 78            0.0000            0.0010
+   L3 mat_daxpy            24926            0.0190            0.0310
+   L3 mat_dotproduct        3211            0.0040            0.0020
+   L3 mat_sqnorm2           4037            0.0040            0.0050
+   L3 mat_diag_f              14            0.0030            0.0020
+   L3 mat_create_block         3            0.0000            0.0000
+   L3 mat_retrieve_block      14            0.0000            0.0010
+   L3 mat_scal               873            0.0010            0.0010
+   L3 mat_zero              5873            0.0060            0.0040
+   L3 mat_density_from_o      11            0.0000            0.0000
+   L3 mat_scal_dia_vec         2            0.0000            0.0000
+   L3 mat_scal_dia            23            0.0000            0.0000
+   L3 mat_dmul             42255            0.0560            0.0560
+   L3 mat_hmul              1196            0.0010            0.0020
+   L3 mat_dger              1863            0.0010            0.0000
+   L3 mat_dsyev                1            0.0000            0.0000
+   L3 mat_identity           123            0.0010            0.0000
+   L3 mat_write_to_disk       14            0.0010            0.0000
+      ==============================================================
+   L3 TOTAL MAT                             0.0970            0.0920
+      ==============================================================
+   L3     II_get_overlap       2            0.0040            0.0040
+   L3     II_get_kinetic      10            0.0620            0.0610
+   L3   II_get_nucel_mat      10            0.7150            0.7160
+   L3 II_precalc_ScreenM       1            0.2470            0.2480
+   L3      II_get_nucpot       2            0.0000            0.0010
+   L3 II_GET_EXCHANGE_MA      19            7.4970            7.5210
+   L3 II_get_coulomb_mat      19            2.4770            2.4870
+   L3 II_GET_DECPACKED4C     104           68.6920           68.8960
+   L3           homolumo       1            0.6720            0.6740
+      ==============================================================
+   L3 TOTAL INTEGRAL                      143.4500          143.8720
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is  1 minute  26 seconds
+ >>> wall Time used in LSDALTON is  1 minute  26 seconds
 
 End simulation
-     Date and time (Linux)  : Wed Feb 18 13:50:50 2015
-     Host name              : funmac.st.client.au.dk                  
+     Date and time (Linux)  : Sun May 24 21:57:15 2015
+     Host name              : localhost.localdomain                   

@@ -496,6 +496,9 @@ DO I=1,nAtoms
    case(AOdfAux)
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbAUX
    case(AOdfCABS)
+     nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbCABS &
+          & + setting%molecule(1)%p%ATOM(I)%nContOrbREG
+   case(AOdfCABO)!CABS only 
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbCABS
    case(AOdfJK)
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbJK

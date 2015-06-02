@@ -15,8 +15,6 @@ module papi_module
 use precision
 !> EPAPI vent set which is initiated at the very beginning of LSDALTON.
 integer,save :: eventset
-!> module variable to count the FLOPs done on the GPU
-real(realk),save :: FLOPonGPU
 
 contains
 
@@ -133,35 +131,11 @@ contains
     write(lupri,*) 'FLOPS for both dgemm = ', flops
 
   end subroutine papi_example
+#else
+  subroutine papi_dummy()
+    implicit none
+
+  end subroutine papi_dummy
 #endif
-
-  subroutine AddFLOP_FLOPonGPUaccouting(inputFLOPonGPU)
-    implicit none
-    real(realk),intent(in) :: inputFLOPonGPU
-    FLOPonGPU = FLOPonGPU + inputFLOPonGPU
-  end subroutine AddFLOP_FLOPonGPUaccouting
-
-  subroutine addDGEMM_FLOPonGPUaccouting(M,N,K,beta)
-    implicit none
-    integer,intent(in) :: M,N,K
-    real(realk),intent(in) :: beta
-    IF(ABS(beta).GT.1.0E-10_realk)THEN
-       FLOPonGPU = FLOPonGPU + 2*M*N*K
-    ELSE
-       FLOPonGPU = FLOPonGPU + M*N*(2*K-1)
-    ENDIF
-  end subroutine AddDGEMM_FLOPonGPUaccouting
-  
-  subroutine init_FLOPonGPUaccouting()
-    implicit none
-    FLOPonGPU = 0.0E0_realk
-    
-  end subroutine Init_FLOPonGPUaccouting
-
-  subroutine extract_FLOPonGPUaccouting(outFLOPonGPU)
-    implicit none
-    real(realk),intent(inout) :: outFLOPonGPU
-    outFLOPonGPU = FLOPonGPU
-  end subroutine Extract_FLOPonGPUaccouting
 
 end module papi_module

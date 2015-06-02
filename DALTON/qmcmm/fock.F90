@@ -43,35 +43,35 @@ contains
 
       real(8) :: eqmnp
       integer :: i
-      integer :: idim
+      integer :: idimension
 !
-      CALL  GETDIM_RELMAT(IDIM,.FALSE.)
+      idimension = getdim_relmat(.false.)
 !
       EQMNP = 0.0d0
 !
       IF (.NOT.MQITER) THEN
          IF (.NOT.(DOMMSUB.AND.DOMMPOL)) THEN
-            allocate(mqvec(idim))
-            allocate(fvvec(idim))
+            allocate(mqvec(idimension))
+            allocate(fvvec(idimension))
             allocate(fao(nnbasx))
 !           Determine electric field/potential vector
-            CALL GET_FVVEC(DCAO,DVAO,FVVEC,IDIM,WORK,     &
+            CALL GET_FVVEC(DCAO,DVAO,FVVEC,idimension,WORK,     &
      &                     lwork)
 !           Determine induced momemnts/charges
             ! rcpmat becomes complex -> complex fock operator
-            CALL DGEMV('N',IDIM,IDIM,1.0d0,RCPMAT,IDIM,FVVEC,1,0.0d0,  &
+            CALL DGEMV('N',idimension,idimension,1.0d0,RCPMAT,idimension,FVVEC,1,0.0d0,  &
      &                 MQVEC,1)
             deallocate(fvvec)
           if (iprtlvl > 14) then
              write(lupri, '(/,2x,a)') '*** Computed MQ vector start ***'
-             do i = 1, idim
+             do i = 1, idimension
                 write(lupri, '(i8, f18.8)') i, mqvec(i)
              end do
              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
           end if
 !           Compute induced dipoles & charges contribution to
 !           Fock/Kohn-Sham matrix
-            CALL GET_INDMQ_FOCK(DCAO,DVAO,MQVEC,IDIM,FAO, &
+            CALL GET_INDMQ_FOCK(DCAO,DVAO,MQVEC,idimension,FAO, &
      &                          WORK,lwork)
             deallocate(mqvec)
 !           Add energy contributions
@@ -93,7 +93,7 @@ contains
       END IF
 
       end subroutine
-      SUBROUTINE GET_FVVEC(DCAO,DVAO,FVVEC,IDIM,WORK,LWORK)
+      SUBROUTINE GET_FVVEC(DCAO,DVAO,FVVEC,idimension,WORK,LWORK)
 !
 ! Purpose:
 !     Computes electric field/potential vector.
@@ -105,45 +105,45 @@ contains
 !   LWORK  - Size of temporary memory array.
 ! Output:
 !   FVVEC  - Electric field/potential vector at NP/MM centers.
-!   IDIM   - Size of electric field/potential vector
+!   idimension   - Size of electric field/potential vector
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
 #include "priunit.h"
 #include "qmnpmm.h"
 !
-      integer :: idim, lwork
-      real(8) :: DCAO(*), DVAO(*), FVVEC(IDIM), WORK(LWORK)
+      integer :: idimension, lwork
+      real(8) :: DCAO(*), DVAO(*), FVVEC(idimension), WORK(LWORK)
 !
       integer :: i
 !
       fvvec = 0.0d0
 !     determine QM region contributions to FV vector
-      CALL GET_QMNUCFV(FVVEC,IDIM)
-      CALL GET_QMELEFV(FVVEC,IDIM,DCAO,DVAO,WORK,lwork)
+      CALL GET_QMNUCFV(FVVEC,idimension)
+      CALL GET_QMELEFV(FVVEC,idimension,DCAO,DVAO,WORK,lwork)
 !
-      CALL GET_QLAGRAN(FVVEC,IDIM)
+      CALL GET_QLAGRAN(FVVEC,idimension)
 !     Print final FV vector
       IF ((IPRTLVL.GE.15).AND.(.NOT.MQITER)) THEN
          write(lupri, '(/,2x,a)') '*** Computed FV vector start ***'
-         do i = 1, idim
+         do i = 1, idimension
             write(lupri, '(i8, f18.8)') i, fvvec(i)
          end do
          write(lupri, '(/,2x,a)') '*** Computed FV vector end ***'
       END IF
 !     Add MM region contribution to FV vector
       IF (DOMMSUB.AND.(.NOT.DOMMPOL)) THEN
-         CALL GET_MMFV(FVVEC,IDIM)
+         CALL GET_MMFV(FVVEC,idimension)
 !         Print final FV vector with MM contribution
           IF ((IPRTLVL.GE.15).AND.(.NOT.MQITER)) THEN
             WRITE(LUPRI,'(/,2X,A)') '*** Computed FV+MM vector ***'
-           CALL OUTPUT(FVVEC,1,IDIM,1,1,IDIM,1,1,LUPRI)
+           CALL OUTPUT(FVVEC,1,idimension,1,1,idimension,1,1,LUPRI)
           END IF
       END IF
 !
       end subroutine
 
-   pure subroutine get_qmnucfv(fvvec, idim)
+   pure subroutine get_qmnucfv(fvvec, idimension)
 !
 ! Purpose:
 !     Computes contribution to electric field/potential vector from
@@ -151,7 +151,7 @@ contains
 !
 ! Output:
 !   FVVEC  - Electric field/potential vector at NP/MM centers.
-!   IDIM   - Size of electric field/potential vector
+!   idimension   - Size of electric field/potential vector
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
@@ -160,8 +160,8 @@ contains
 #include "mxcent.h"
 #include "nuclei.h"
 !
-      integer, intent(in)    :: idim
-      real(8), intent(inout) :: fvvec(idim)
+      integer, intent(in)    :: idimension
+      real(8), intent(inout) :: fvvec(idimension)
 
       real(8) :: rij(3)
       real(8) :: fact, rad, rad3
@@ -205,7 +205,7 @@ contains
       END IF
 !
       end subroutine
-      SUBROUTINE GET_QMELEFV(FVVEC,IDIM,DCAO,DVAO,WORK,LWORK)
+      SUBROUTINE GET_QMELEFV(FVVEC,idimension,DCAO,DVAO,WORK,LWORK)
 !
 ! Purpose:
 !     Computes contributio to electric field/potential vector
@@ -218,7 +218,7 @@ contains
 !   LWORK  - Size of temporary memory array.
 ! Output:
 !   FVVEC  - Electric field/potential vector at NP/MM centers.
-!   IDIM   - Size of electric field/potential vector
+!   idimension   - Size of electric field/potential vector
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
@@ -233,8 +233,8 @@ contains
 #include "qm3.h"
 
 !
-      integer :: idim, lwork
-      real(8) :: DCAO(*), DVAO(*), FVVEC(IDIM), WORK(LWORK)
+      integer :: idimension, lwork
+      real(8) :: DCAO(*), DVAO(*), FVVEC(idimension), WORK(LWORK)
 !
       LOGICAL TOFILE,TRIMAT,EXP1VL
       integer :: INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -333,34 +333,34 @@ contains
 !
       end subroutine
 
-   pure subroutine get_qlagran(fvvec, idim)
+   pure subroutine get_qlagran(fvvec, idimension)
 !
 ! Purpose:
 !     Determines charge contrain fro electric/field potential vector.
 !
 ! Output:
 !   FVVEC  - Electric field/potential vector at NP/MM centers.
-!   IDIM   - Size of electric field/potential vector
+!   idimension   - Size of electric field/potential vector
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
 #include "qmnpmm.h"
 !
-      integer, intent(in)    :: idim
-      real(8), intent(inout) :: FVVEC(IDIM)
+      integer, intent(in)    :: idimension
+      real(8), intent(inout) :: FVVEC(idimension)
 
       integer :: i
 !
       IF (DONPCAP) THEN
          DO I=1,TNPBLK
-            FVVEC(IDIM) = FVVEC(IDIM)+NPCHRG(I)
+            FVVEC(idimension) = FVVEC(idimension)+NPCHRG(I)
          END DO
       END IF
 !
    end subroutine
 
 
-   pure subroutine get_mmfv(fvvec, idim)
+   pure subroutine get_mmfv(fvvec, idimension)
 !
 ! Purpose:
 !     Computes contribution to electric field/potential vector from
@@ -368,15 +368,15 @@ contains
 !
 ! Output:
 !   FVVEC  - Electric field/potential vector at NP/MM centers.
-!   IDIM   - Size of electric field/potential vector
+!   idimension   - Size of electric field/potential vector
 !
 ! Last updated: 22/03/2013 by Z. Rinkevicius.
 !
 #include "priunit.h"
 #include "qmnpmm.h"
 !
-      integer, intent(in)    :: idim
-      real(8), intent(inout) :: fvvec(idim)
+      integer, intent(in)    :: idimension
+      real(8), intent(inout) :: fvvec(idimension)
 
       real(8) :: rij(3)
       real(8) :: fact, rad, rad3
@@ -422,7 +422,7 @@ contains
    end subroutine
 
 
-      SUBROUTINE GET_INDMQ_FOCK(DCAO,DVAO,MQVEC,IDIM,FCAO,WORK,LWORK)
+      SUBROUTINE GET_INDMQ_FOCK(DCAO,DVAO,MQVEC,idimension,FCAO,WORK,LWORK)
 !
 ! Purpose:
 !     Computes electric field/potential vector.
@@ -431,7 +431,7 @@ contains
 !   DCAO   - Inactive density matrix.
 !   DVAO   - Active density matrix.
 !   MQVEC  - Induced dipoles & charges vector.
-!   IDIM   - Size of induced dipoles & charges vector.
+!   idimension   - Size of induced dipoles & charges vector.
 !   WORK   - Temporary memory array
 !   LWORK  - Size of temporary memory array.
 ! Output:
@@ -452,8 +452,8 @@ contains
 #include "qm3.h"
 #include "pi.h"
 !
-      integer :: lwork, idim
-      real(8) :: DCAO(*), DVAO(*), MQVEC(IDIM), FCAO(*), WORK(LWORK)
+      integer :: lwork, idimension
+      real(8) :: DCAO(*), DVAO(*), MQVEC(idimension), FCAO(*), WORK(LWORK)
 !
       LOGICAL TOFILE,TRIMAT,EXP1VL
       integer :: INTREP(9*MXCENT), INTADR(9*MXCENT)

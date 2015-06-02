@@ -47,7 +47,7 @@ contains
       real(8) :: BOVECS(*), CMO(*), UDV(NASHDI,NASHDI)
       real(8) :: UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
       real(8) :: WORK(*), DV(*), CREF(*)
-      integer :: i, j, idim, idimx, ioff
+      integer :: i, j, idimension, ioff
 
       real(8), allocatable :: mqvec(:)
       real(8), allocatable :: fvvec(:)
@@ -75,7 +75,7 @@ contains
       if (mqiter) then ! iterative method
          call quit('mqiter not implemented in rspqmnp.F90')
       else ! non iterative method
-         CALL GETDIM_RELMAT(IDIM,.FALSE.)
+         idimension = getdim_relmat(.false.)
 
          ! Zero & unpack CMO and ZY vectors
          CALL UPKCMO(CMO,uCMO)
@@ -84,14 +84,14 @@ contains
             CALL DSCAL(NOSIM*N2ORBX,-1.0d0,BOV,1)
          END IF
 
-         allocate(mqvec(nosim*idim))
+         allocate(mqvec(nosim*idimension))
          mqvec = 0.0d0
-         allocate(fvvec(nosim*idim))
+         allocate(fvvec(nosim*idimension))
          fvvec = 0.0d0
 
          ! Determine electric field/potential vector for perturbed
          ! density matrices
-         call get_fvvec(idim=idim,    &
+         call get_fvvec(idimension=idimension,    &
                         nsim=nosim,   &
                         udv=udv,      &
                         cmo=ucmo,     &
@@ -102,17 +102,17 @@ contains
                         bovecs=bov)
 
          ! Allocate and compute Relay matrix
-         CALL GETDIM_RELMAT(IDIMX,.TRUE.)
-         allocate(relmat(idimx))
+         idimension = getdim_relmat(.true.)
+         allocate(relmat(idimension))
          CALL READ_RELMAT(RELMAT)
          DO I=1,NOSIM
-            IOFF = (I-1)*IDIM
-            CALL DGEMV('N',IDIM,IDIM,1.0d0,RELMAT,IDIM,              &
+            IOFF = (I-1)*idimension
+            CALL DGEMV('N',idimension,idimension,1.0d0,RELMAT,idimension,              &
                        FVVEC(IOFF + 1),1,0.0d0,MQVEC(IOFF + 1),1)
            if (iprtlvl > 14) then
               write(lupri, '(/,2x,a,i0)') &
                   '*** Computed MQ vector start 1st-order density ', i
-              do j = 1, idim
+              do j = 1, idimension
                  write(lupri, '(i8, f18.8)') j, MQVEC(IOFF + j)
               end do
               write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
@@ -123,7 +123,7 @@ contains
          ! compute xy contributions from induced dipoles and charges
          if (trplet) then
             call get_xyvec(ucmo,  &
-                           idim,  &
+                           idimension,  &
                            nosim, &
                            rxyt,  &
                            work,  &
@@ -131,7 +131,7 @@ contains
                            mqvec)
          else
             call get_xyvec(ucmo,  &
-                           idim,  &
+                           idimension,  &
                            nosim, &
                            rxy,   &
                            work,  &
@@ -196,7 +196,7 @@ contains
       integer :: mjwop(2,maxwop,8)
       integer :: i, j, ioff
       logical   lcon, lorb, lref
-      integer :: idim, idimx
+      integer :: idimension
       integer :: isymt, isymv, isymst, jspin, nsim
       integer :: nzyvec, nzcvec
       integer :: ISYMDN, idum
@@ -243,13 +243,13 @@ contains
       CALL UPKCMO(CMO,UCMO)
 !     Non-iterative method
       IF (.NOT.MQITER) THEN
-        CALL GETDIM_RELMAT(IDIM,.FALSE.)
+        idimension = getdim_relmat(.false.)
 !       Allocate FV and MQ vectors for all perturbed densities
-        allocate(fvvec1(nsim*idim))
-        allocate(fvvec2(nsim*idim))
+        allocate(fvvec1(nsim*idimension))
+        allocate(fvvec2(nsim*idimension))
 
 !       compute fv vectors for second order pertubed densities
-        call get_fvvec(idim=idim,     &
+        call get_fvvec(idimension=idimension,     &
                        nsim=nsim,     &
                        udv=udv,       &
                        cmo=ucmo,      &
@@ -264,30 +264,30 @@ contains
                        zym2=zym2)
 
 !       Allocate and compute Relay matrix
-        CALL GETDIM_RELMAT(IDIMX,.TRUE.)
-        allocate(relmat(idimx))
+        idimension = getdim_relmat(.true.)
+        allocate(relmat(idimension))
         CALL READ_RELMAT(RELMAT)
 !       Determine induced induced dipoles and charges
-        allocate(mqvec1(nsim*idim))
-        allocate(mqvec2(nsim*idim))
+        allocate(mqvec1(nsim*idimension))
+        allocate(mqvec2(nsim*idimension))
         mqvec1 = 0.0d0
         mqvec2 = 0.0d0
         DO I=1,NSIM
-           IOFF = (I-1)*IDIM
-           CALL DGEMV('N',IDIM,IDIM,1.0d0,RELMAT,IDIM,              &
+           IOFF = (I-1)*idimension
+           CALL DGEMV('N',idimension,idimension,1.0d0,RELMAT,idimension,              &
      &                FVVEC1(IOFF + 1),1,0.0d0,MQVEC1(IOFF + 1),1)
-           CALL DGEMV('N',IDIM,IDIM,1.0d0,RELMAT,IDIM,              &
+           CALL DGEMV('N',idimension,idimension,1.0d0,RELMAT,idimension,              &
      &                FVVEC2(IOFF + 1),1,0.0d0,MQVEC2(IOFF + 1),1)
           if (iprtlvl > 14) then
              write(lupri, '(/,2x,a,i0)') &
                  '*** Computed MQ vector start v1 1st-order density ', i
-             do j = 1, idim
+             do j = 1, idimension
                 write(lupri, '(i8, f18.8)') j, MQVEC1(IOFF+j)
              end do
              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
              write(lupri, '(/,2x,a,i0)') &
                  '*** Computed MQ vector start v2 1st-order density ', i
-             do j = 1, idim
+             do j = 1, idimension
                 write(lupri, '(i8, f18.8)') j, MQVEC2(IOFF+j)
              end do
              write(lupri, '(/,2x,a)') '*** Computed MQ vector end ***'
@@ -300,7 +300,7 @@ contains
         ! determine mm region contribution to qm region potential from
         ! second order density
         call get_xyvec(ucmo,   &
-                       idim,   &
+                       idimension,   &
                        nsim,   &
                        tres,   &
                        work,   &
@@ -354,7 +354,7 @@ contains
 
    ! computes electric field/potential vector generated by first or second
    ! order perturbed density matrix
-   subroutine get_fvvec(idim,   &
+   subroutine get_fvvec(idimension,   &
                         nsim,   &
                         udv,    &
                         cmo,    &
@@ -371,7 +371,7 @@ contains
                         zym2)
 
       ! size of electric field/potential vector
-      integer, intent(in)              :: idim
+      integer, intent(in)              :: idimension
       ! number of perturbed density matrices
       integer, intent(in)              :: nsim
       real(8), intent(in)              :: udv(nashdi, nashdi)
@@ -436,9 +436,9 @@ contains
       ! save origin coordinates
       dipole_origin_save = diporg
 
-      call dzero(fvvec1, idim*nsim)
+      call dzero(fvvec1, idimension*nsim)
       if (present(fvvec2)) then
-         call dzero(fvvec2, idim*nsim)
+         call dzero(fvvec2, idimension*nsim)
       end if
 
       allocate(intao(3*nnbasx))
@@ -468,7 +468,7 @@ contains
 
          ! loop over perturbed densities
          do i = 1, nsim
-            ioff = (i-1)*idim
+            ioff = (i-1)*idimension
             isimoff = (i-1)*n2orbx+1
 
             ! loop over np centers
@@ -535,7 +535,7 @@ contains
 
          ! loop over perturbed first order densities
          do i = 1, nsim
-            ioff = (i-1)*idim
+            ioff = (i-1)*idimension
             isimoff = (i-1)*n2orbx+1
 
             ! loop over np centers
@@ -589,11 +589,11 @@ contains
 
             ! set lagrangian for charge equilibration
             do iblk = 1, tnpblk
-               fvvec1(ioff + idim) = fvvec1(ioff + idim) + npchrg(iblk)
+               fvvec1(ioff + idimension) = fvvec1(ioff + idimension) + npchrg(iblk)
             end do
             if (present(fvvec2)) then
                do iblk = 1, tnpblk
-                  fvvec2(ioff + idim) = fvvec2(ioff + idim) + npchrg(iblk)
+                  fvvec2(ioff + idimension) = fvvec2(ioff + idimension) + npchrg(iblk)
                end do
             end if
          end do
@@ -602,17 +602,17 @@ contains
       ! print final fv vector
       do i = 1, nsim
          if (iprtlvl > 14 .and. .not. mqiter) then
-            ioff = (i - 1)*idim + 1
+            ioff = (i - 1)*idimension + 1
             write(lupri, '(/,2x,a,i0)') &
                 '*** Computed FV vector start 1 ', i
-            do j = 1, idim
+            do j = 1, idimension
                write(lupri, '(i8, f18.8)') j, fvvec1(IOFF + j - 1)
             end do
             write(lupri, '(/,2x,a)') '*** Computed FV vector end ***'
             if (present(fvvec2)) then
                write(lupri, '(/,2x,a,i0)') &
                    '*** Computed FV vector start 2 ', i
-               do j = 1, idim
+               do j = 1, idimension
                   write(lupri, '(i8, f18.8)') j, fvvec2(IOFF + j - 1)
                end do
                write(lupri, '(/,2x,a)') '*** Computed FV vector end ***'
@@ -641,7 +641,7 @@ contains
 
    ! computes contribution to xy vector from induced dipoles moments and charge
    subroutine get_xyvec(cmo,     &
-                        idim,    &
+                        idimension,    &
                         nsim,    &
                         fvec,    &
                         work,    &
@@ -655,7 +655,7 @@ contains
       ! molecular orbital coefficients
       real(8), intent(in)           :: cmo(*)
       ! size of electric field/potential vector
-      integer, intent(in)           :: idim
+      integer, intent(in)           :: idimension
       ! number of perturbed density matrice
       integer, intent(in)           :: nsim
       integer, intent(in)           :: lwork
@@ -727,7 +727,7 @@ contains
       if (donppol .and. novdamp) then
          nocomp = 3
          do i = 1, nsim
-            ioff = (i - 1)*idim
+            ioff = (i - 1)*idimension
             isimoff = (i - 1)*n2orbx + 1
             do j = 1, tnpatm
                joff = ioff + (j - 1)*3
@@ -768,7 +768,7 @@ contains
          if (donppol) istart = 3*tnpatm
          nocomp = 1
          do i = 1, nsim
-            ioff = (i - 1)*idim
+            ioff = (i - 1)*idimension
             isimoff = (i - 1)*n2orbx + 1
             do j = 1, tnpatm
                joff = ioff + istart + j

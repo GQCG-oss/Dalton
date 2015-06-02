@@ -681,7 +681,7 @@ contains
     character(5),intent(IN) :: intSpec
     integer :: dummy
     TYPE(DECscreenITEM)   :: DecScreen
-    logical :: doscreen
+    logical :: doscreen,doMPI
     integer :: ndim(4),i,AO(4),Oper,ndmat
     TYPE(Matrix) :: h,Jarr(1)
     character(1) :: intSpecConvert(5)
@@ -721,9 +721,13 @@ contains
     call mat_zero(Jarr(1))
 
     call mat_init(h,ndim(1),ndim(2))
+    doMPI = MyLsitem%SETTING%scheme%doMPI
+    MyLsitem%SETTING%scheme%doMPI = .NOT.(((AO(1).EQ.AOdfCABS).OR.(AO(2).EQ.AOdfCABS)).OR.&
+         & ((AO(3).EQ.AOdfCABS).OR.(AO(4).EQ.AOdfCABS)))
     CALL II_get_h1_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,h,AO(1),AO(2))
     CALL II_get_coulomb_mat_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,(/D/),Jarr,ndmat,&
          &                            AO(1),AO(2),AO(3),AO(4),Oper)
+    MyLsitem%SETTING%scheme%doMPI = doMPI
 
     call mat_assign(hJ,Jarr(1))
     call mat_free(Jarr(1))
@@ -755,7 +759,7 @@ contains
     integer :: ndim(4),i,AO(4),Oper,ndmat
     TYPE(Matrix) :: h
     character(1) :: intSpecConvert(5)
-    logical :: Dsym
+    logical :: Dsym,doMPI
     type(matrix) :: Karr(1)
 
     Dsym=.true.
@@ -792,8 +796,12 @@ contains
     ! Quick fix because we need to pass an array
     call mat_init(Karr(1),K%nrow,K%ncol)
     call mat_zero(Karr(1))
+    doMPI = MyLsitem%SETTING%scheme%doMPI
+    MyLsitem%SETTING%scheme%doMPI = .NOT.(((AO(1).EQ.AOdfCABS).OR.(AO(2).EQ.AOdfCABS)).OR.&
+         & ((AO(3).EQ.AOdfCABS).OR.(AO(4).EQ.AOdfCABS)))
     CALL ii_get_exchange_mat_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,(/D/),ndmat,Dsym,&
          &                             Karr,AO(1),AO(3),AO(2),AO(4),Oper)
+    MyLsitem%SETTING%scheme%doMPI = doMPI
     call mat_assign(K,Karr(1)) 
     call mat_free(Karr(1))
 
@@ -864,6 +872,7 @@ contains
 
     ! MPI variables:
     logical :: master, local, gdi_lk, gup_lk, use_bg_buf
+    integer(kind=8) :: nbu
     integer :: myload, win
     integer(kind=ls_mpik) :: ierr, myrank, nnod, dest
     integer, pointer      :: tasks(:)
@@ -875,6 +884,11 @@ contains
     call time_start_phase(PHASE_WORK)
     ntot = no + nv
     use_bg_buf = mem_is_background_buf_init()
+    if(use_bg_buf)then
+       nbu = mem_get_bg_buf_free()
+    else
+       nbu = 0
+    endif
 
     ! Set integral info
     ! *****************
@@ -1127,7 +1141,10 @@ contains
     tmp_size2 = int(i8*ntot*ntot*tmp_size2, kind=long)
 
     if(use_bg_buf)then
-       call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
+       if(tmp_size1+tmp_size2 > nbu) then
+          print *, "Warning(get_t1_free_gmo):  This should not happen, if the memory counting is correct"
+          !call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
+       endif
 
        call mem_pseudo_alloc(tmp1, tmp_size1)
        call mem_pseudo_alloc(tmp2, tmp_size2)
@@ -2119,11 +2136,12 @@ contains
   end subroutine unpack_gmo
 #endif
 
-  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective)
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,INTSPEC,local,collective)
     implicit none
-    type(tensor),intent(inout)   :: integral
-    type(tensor),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
+    type(tensor),intent(inout)  :: integral
+    type(tensor),intent(inout)  :: trafo1,trafo2,trafo3,trafo4
     type(lsitem), intent(inout) :: mylsitem
+    character, intent(inout)    :: INTSPEC(5)
     logical, intent(in) :: local
     logical, intent(inout) :: collective
     !Integral stuff
@@ -2147,7 +2165,6 @@ contains
     integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)  :: DecScreen
     integer, pointer :: batchdimAlpha(:),batchdimGamma(:)
-    Character        :: INTSPEC(5)
     logical :: fullRHS
     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
@@ -2252,22 +2269,7 @@ contains
        call lsquit("EEROR(get_mo_integral_par)wrong dimensions of the integrals&
             & or the transformation matrices",-1)
     endif
-    bs            = get_split_scheme_0(nb)
-
-    ! Set integral info
-    ! *****************
-    !R = Regular Basis set on the 1th center 
-    !R = Regular Basis set on the 2th center 
-    !R = Regular Basis set on the 3th center 
-    !R = Regular Basis set on the 4th center 
-    !C = Coulomb operator
-    !E = Long-Range Erf operator
-    if (mylsitem%setting%scheme%CAM) then
-       INTSPEC = ['R','R','R','R','E'] 
-    else
-       INTSPEC = ['R','R','R','R','C'] 
-    endif
-    
+    bs = get_split_scheme_0(nb)
 
     IF(DECinfo%useIchor)THEN
        iprint     = 0       !print level for Ichor Integral code
@@ -2354,13 +2356,17 @@ contains
        trafo4%access_type   = AT_ALL_ACCESS
 #ifdef VAR_MPI
        call time_start_phase( PHASE_COMM )
-       call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(MaxAllowedDimGamma,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(scheme,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(nbuffs,infpar%master,infpar%lg_comm)
+       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+       call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
+       call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
+       call ls_mpi_buffer(scheme,infpar%master)
+       call ls_mpi_buffer(nbuffs,infpar%master)
+       call ls_mpi_buffer(INTSPEC,5,infpar%master)
+       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
        call time_start_phase( PHASE_WORK )
 #endif
     endif
+
 
     select case(scheme)
     case(0)
@@ -2519,7 +2525,7 @@ contains
     if( mem_saving ) addsize = nbuffs*(i8*n1s)*n2s*n3s*n4s
     maxsize = maxsize + addsize
     
-    if(.not.master)then
+    if(master)then
        print *,"INFO(get_mo_integral_par): Getting Alpha:",MaxActualDimGamma," Gamma:",MaxActualDimGamma
        print *,"INFO(get_mo_integral_par): with elements:",maxsize,"in buffer",nbu
     endif
@@ -2527,7 +2533,7 @@ contains
     if( use_bg_buf ) then
        if(maxsize > nbu) then
           print *, "Warning(get_mo_integral_par):  This should not happen, if the memory counting is correct"
-          call mem_change_background_alloc(maxsize*8_long)
+          !call mem_change_background_alloc(maxsize*8_long)
        endif
 
        call mem_pseudo_alloc( w1, w1size )
@@ -3344,7 +3350,7 @@ contains
      integer(kind=ls_mpik) :: nnod
      logical :: check_next
      nnod  = 1
-     magic = 3
+     magic = 1
 #ifdef VAR_MPI
      nnod  = infpar%lg_nodtot
 #endif
@@ -3636,9 +3642,26 @@ subroutine get_mo_integral_par_slave()
   type(tensor) :: integral,trafo1,trafo2,trafo3,trafo4
   type(lsitem) :: mylsitem
   logical :: c
+  character :: is(5)
+
 
   call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
-  call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,.false.,c)
+
+  ! Set integral info
+  ! *****************
+  !R = Regular Basis set on the 1th center 
+  !R = Regular Basis set on the 2th center 
+  !R = Regular Basis set on the 3th center 
+  !R = Regular Basis set on the 4th center 
+  !C = Coulomb operator
+  !E = Long-Range Erf operator
+  if (mylsitem%setting%scheme%CAM) then
+     is = ['R','R','R','R','E'] 
+  else
+     is = ['R','R','R','R','C'] 
+  endif
+
+  call get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,is,.false.,c)
   call ls_free(mylsitem)
 
 end subroutine get_mo_integral_par_slave

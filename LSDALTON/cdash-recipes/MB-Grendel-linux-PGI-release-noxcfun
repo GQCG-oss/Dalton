@@ -9,7 +9,7 @@ export LD_LIBRARY_PATH=/com/pgi/linux86-64/14.7/bin:$LD_LIBRARY_PATH
 #export LD_LIBRARY_PATH=/com/pgi/linux86-64/11.10/bin:/com/pgi/linux86-64/11.10/lib:/com/acml-4.1.0-pgi/pgi64_mp_int64/lib:/com/pgi/linux86-64/11.10:/com/pgi/linux86-64/11.10/libso:/com/pgi/linux86-64/11.10/bin:/com/pgi/linux86-64/11.10/lib
 #libpgbind.so is only in the old version of pgi 11.10 instead of 12.4 (see path) but acml seem to need this file 
 #so it must be built for/with the old pgi version:  needs /com/pgi/linux86-64/11.10/libso/libpgbind.so  
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 #git checkout linsca-develop
 #git checkout Dalton2013_release

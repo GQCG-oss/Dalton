@@ -6,7 +6,7 @@ rm -rf $SCRATCH_DIR
 PATH=/opt/pgi/linux86-64/14.9/bin:$PATH
 export LM_LICENSE_FILE=/opt/pgi/linux86-64/14.1/license.file
 
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 export OMP_NUM_THREADS=6
 #export MATH_ROOT=
