@@ -155,6 +155,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    != These are special since                                       =
    != 1. the have a very simple structure(B1 does require robust DF)=
    != 2. They could all be done in a Linear scaling way outside DEC =
+   !=    without density fitting. 
    != 3. The intermediates are only used once                       =
    != 4. Due to noccEOS,noccEOS,noccEOS,noccEOS very small mem req  =
    != Note                                                          =
@@ -242,7 +243,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
         & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
    !Build the U matrix in Eq. 88 of J Comput Chem 32: 2492–2513, 2011
    call mem_alloc(Umat,nAux,nAux)
-   !perform this suborutine on the GPU 
+   !perform this suborutine on the GPU (Async)
    call Build_RobustERImatU(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
         & mynum,numnodes,ABdecompR,'D',Umat)
@@ -250,11 +251,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    M = NBA          !rows of Output Matrix
    N = nocc*nocc    !columns of Output Matrix
    K = NBA          !summation dimension
-   !perform this suborutine on the GPU 
+   !perform this suborutine on the GPU (Async)
    call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR,K,-0.5E0_realk,CalphaD,M)
    call mem_dealloc(Umat)
    !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
-   !perform this suborutine on the GPU 
+   !perform this suborutine on the GPU (Async)
    call ContractOne4CenterF12IntegralsRobustRI(nAux,nocc,CalphaD,CalphaR,EB1)
 
    !The minus is due to the Valeev factor
@@ -321,7 +322,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
         & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
    ABdecompCreateG = .FALSE.
 
-   !Do on GPU (Async)
+   !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
    call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,EV2)
    mp2f12_energy = mp2f12_energy  + EV2
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ',EV2       
@@ -335,7 +336,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    != Dim(nocc,nbasis,nocc,nbasis)                           =
    !=                                                        =
    !==========================================================
-   !Do on GPU (Async)
+   !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
    call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nbasis,CalphaG,Fii%elms,EX2)
    mp2f12_energy = mp2f12_energy  + EX2
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
@@ -396,7 +397,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !==========================================================
 !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
    
-   !Do on GPU (Async)
+   !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
    call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,nbasis,&
         & CalphaGcabs,CalphaG,Fii%elms,EX3,EX4)
    
@@ -451,59 +452,33 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call mem_dealloc(CalphaG)
 
    !==============================================================
-   !=  B4:                                                       =
+   !=  B4: (ir|f12|jt)Kst(ir|f12|js)      (r,s,t=CabsAO)         =
    !==============================================================
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
    intspec(3) = 'C' !Regular AO basis function on center 4
    intspec(4) = 'G' !The f12 Operator
    intspec(5) = 'G' !The f12 Operator
-   !Build the R coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
    call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_RI%elms,ncabsAO,&
-        & mynum,numnodes,CalphaR,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
-   
-   !CalphaR(NBA,nocc,ncabsMO)
-   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-   intspec(2) = 'R' !Regular AO basis function on center 3
-   intspec(3) = 'C' !CABS AO basis function on center 4
-   intspec(4) = 'G' !The f12 Operator
-   intspec(5) = 'G' !The f12 Operator
-   call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_RI%elms,ncabsAO,&
-        & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
-   
+        & mynum,numnodes,CalphaGcabs,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
+      
    nsize = nBA*nocc*ncabsAO
    call mem_alloc(CalphaD, nsize)
    m =  nBA*nocc                    ! C_mn = A_mk B_kn
    k =  ncabsAO
    n =  ncabsAO
    
-   !NB! Changed T to N, dont think it will matter but...
-   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Krr%elms,k,0.0E0_realk,CalphaD,m)
-   call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaR,CalphaG,CalphaD,EB4)
+   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabs,m,Krr%elms,k,0.0E0_realk,CalphaD,m)
+   call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabs,CalphaD,EB4)
    
    mp2f12_energy = mp2f12_energy  + EB4
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
    
-   call mem_dealloc(CalphaD)
-   call mem_dealloc(CalphaG)
-   call mem_dealloc(CalphaR)
-   
    !==============================================================
-   !=  B5:                                                       =
-   !==============================================================
-   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-   intspec(2) = 'R' !Regular AO basis function on center 3
-   intspec(3) = 'C' !CABS RI basis function on center 4
-   intspec(4) = 'G' !
-   intspec(5) = 'G' !
-   !Build the R coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
-   call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_RI%elms,ncabsAO,&
-        & mynum,numnodes,CalphaR,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
-   
+   !=  B5: (ir|f12|jm)Fsr(si|f12|mj)        (r,s=CabsAO)         =
+   !==============================================================   
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
    intspec(3) = 'R' !Regular AO basis function on center 4
@@ -515,14 +490,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    
    !> Dgemm 
    nsize = nBA*nocc*ncabsAO
-   call mem_alloc(CalphaD, nsize)
+   IF(size(CalphaD).NE.nsize)call lsquit('dim mismatch CalphaD',-1)
    m =  nBA*nocc                    ! D_jq = C_jp F_qp
    k =  ncabsAO
    n =  ncabsAO
    
-   !NB! Changed T to N, dont think it will matter but...
-   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
-   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,CalphaR,CalphaG,CalphaD,EB5)
+   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabs,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
+   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,CalphaGcabs,CalphaG,CalphaD,EB5)
    
    mp2f12_energy = mp2f12_energy  + EB5
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
@@ -530,10 +504,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    
    call mem_dealloc(CalphaD)
    call mem_dealloc(CalphaG)
-   call mem_dealloc(CalphaR)
+   call mem_dealloc(CalphaGcabs)
    
    !==============================================================
-   !=  B6:                                                       =
+   !=  B6: (ip|f12|ja)Fqp(qi|f12|aj)                             =
    !==============================================================
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
@@ -1401,11 +1375,10 @@ subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
 end subroutine ContractTwo4CenterF12IntegralsRI2
 
 
-subroutine ContractTwo4CenterF12IntegralsRIB4(nBA,n1,n2,CalphaR,CalphaG,CalphaD,EJK)
+subroutine ContractTwo4CenterF12IntegralsRIB4(nBA,n1,n2,CalphaG,CalphaD,EJK)
    implicit none
    integer,intent(in)        :: nBA,n1,n2
    real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
-   real(realk),intent(in)    :: CalphaR(nBA,n1,n2)
    real(realk),intent(in)    :: CalphaD(nBa,n1,n2)
    real(realk),intent(inout) :: EJK
    real(realk)               :: EJ, EK, ED
@@ -1419,57 +1392,40 @@ subroutine ContractTwo4CenterF12IntegralsRIB4(nBA,n1,n2,CalphaR,CalphaG,CalphaD,
    EJ = 0.0E0_realk
    EK = 0.0E0_realk
   
-      DO q=1,n2 !ncabsAO
-         DO r=1,n2 !ncabsAO
-            DO j=1,n1 !nocc
-
-               !Diagonal
-               tmpR = 0.0E0_realk
-               tmpG = 0.0E0_realk
-
-               DO alpha = 1,nBA
-                  tmpR = tmpR + CalphaR(alpha,j,r)*CalphaD(alpha,j,q)
+   DO q=1,n2 !ncabsAO
+      DO r=1,n2 !ncabsAO
+         DO j=1,n1 !nocc
+            
+            !Diagonal
+            tmpR = 0.0E0_realk
+            tmpG = 0.0E0_realk
+            DO beta = 1,nBA
+               tmpR = tmpR + CalphaG(beta,j,r)*CalphaD(beta,j,q)
+               tmpG = tmpG + CalphaG(beta,j,r)*CalphaG(beta,j,q)
+            ENDDO
+            
+            ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            
+            !Non Diagonal
+            DO i=j+1,n1
+               tmpRJ1 = 0.0E0_realk
+               tmpGJ1 = 0.0E0_realk
+               DO alpha1 = 1, nBA
+                  tmpRJ1 = tmpRJ1 + CalphaG(alpha1,i,r)*CalphaD(alpha1,j,q) 
+                  tmpGJ1 = tmpGJ1 + CalphaG(alpha1,i,r)*CalphaG(alpha1,j,q)
                ENDDO
-               DO beta = 1,nBA
-                  tmpG = tmpG + CalphaG(beta,j,r)*CalphaG(beta,j,q)
+               tmpRJ2 = 0.0E0_realk
+               tmpGJ2 = 0.0E0_realk
+               DO alpha2 = 1, nBA
+                  tmpRJ2 = tmpRJ2 + CalphaG(alpha2,j,r)*CalphaD(alpha2,i,q)
+                  tmpGJ2 = tmpGJ2 + CalphaG(alpha2,j,r)*CalphaG(alpha2,i,q)
                ENDDO
-
-               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
-
-               !Non Diagonal
-               DO i=j+1,n1
-                  tmpRJ1 = 0.0E0_realk
-                  DO alpha1 = 1, nBA
-                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,r)*CalphaD(alpha1,j,q) 
-                  ENDDO      
-                  tmpRJ2 = 0.0E0_realk
-                  DO alpha2 = 1, nBA
-                    tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,r)*CalphaD(alpha2,i,q)
-                 ENDDO
-                 ! tmpRK1 = 0.0E0_realk
-                 ! DO alpha3 = 1, nBA
-                 !    tmpRK1 = tmpRK1 + CalphaR(alpha3,j,r)*CalphaR(alpha3,i,p) 
-                 ! ENDDO
-                 ! tmpRK2 = 0.0E0_realk
-                 ! DO alpha4 = 1, nBA
-                 !    tmpRK2 = tmpRK2 + CalphaR(alpha4,j,p)*CalphaR(alpha4,i,r)
-                 ! ENDDO
-           
-                 tmpGJ1 = 0.0E0_realk
-                  DO beta1 = 1, nBA
-                     tmpGJ1 = tmpGJ1 + CalphaG(beta1,i,r)*CalphaG(beta1,j,q)
-                  ENDDO
-                  tmpGJ2 = 0.0E0_realk
-                  DO beta2 = 1, nBA
-                     tmpGJ2 = tmpGJ2 + CalphaG(beta2,j,r)*CalphaG(beta2,i,q)
-                  ENDDO
-                 EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
-                 EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
-               ENDDO
+               EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+               EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
             ENDDO
          ENDDO
       ENDDO
-   
+   ENDDO   
    EJK = ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIB4                
 
@@ -1819,7 +1775,7 @@ subroutine ContractTwo4CenterF12IntegralsRI2X(nBA,n1,n3,n2,nbasis,&
   EK4 =  0.0E0_realk
   EJK4 = 0.0E0_realk
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
-  !$OMP tmpG13,tmpG23,tmp) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
+  !$OMP tmpG13,tmpG23,tmp) SHARED(CalphaG,CalphaGcabs,n3,n2,n1,&
   !$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
   DO m=1,n3
      DO c=1,n2
