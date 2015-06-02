@@ -194,6 +194,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    LS = .FALSE.
    if (LS) THEN
+      !This is how the V1 Fijkl can be done in a linear scaling manner
       call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
            & [Dmat],Econt,1,GGemCouOperator)
       CoulombF12V1 = Econt(1) 
@@ -429,7 +430,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
 
 
-   call mem_dealloc(CalphaG)
    call mem_dealloc(CalphaGcabs)
 
    !=================================================================
@@ -465,17 +465,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !=  B5: (ir|f12|jm)Fsr(si|f12|mj)        (r,s=CabsAO)         =
    !==============================================================   
    !We need CalphaG(NBA,nocc,noccfull) but this is a subset of 
-   !CalphaG(NBA,nocc,nbasis) which we need in B6 so we construct
-   !CalphaG(NBA,nocc,nbasis) here 
-   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-   intspec(2) = 'R' !Regular AO basis function on center 3
-   intspec(3) = 'R' !Regular AO basis function on center 4
-   intspec(4) = 'G' !The Gaussian geminal operator g
-   intspec(5) = 'G' !The Gaussian geminal operator g
-   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,&
-        & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
-   
+   !CalphaG(NBA,nocc,nbasis) which we already have
    !> Dgemm 
    nsize = nBA*nocc*ncabsAO
    IF(size(CalphaD).NE.nsize)call lsquit('dim mismatch CalphaD',-1)
