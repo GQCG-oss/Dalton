@@ -2704,7 +2704,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call print_norm(tmp1,t2fnorm2,.true.)
    if(use_singles)then
-      call print_norm(p2,t1fnorm2,.true.)
+      call print_norm(tmp3,t1fnorm2,.true.)
    endif
 
    call print_ccjob_summary(break_iterations,(JOB==SOLVE_MULTIPLIERS),fragment_job,&

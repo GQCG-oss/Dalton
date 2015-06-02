@@ -6836,7 +6836,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
     tmp_size2 = int(i8*tmp_size2, kind=long)
     if (use_bg_buf) then
-       call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
+       !call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
 
        call mem_pseudo_alloc(tmp0, tmp_size0)
        call mem_pseudo_alloc(tmp1, tmp_size1)
