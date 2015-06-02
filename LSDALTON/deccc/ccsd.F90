@@ -1498,8 +1498,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
-        call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', &
-           &tdims=[vs,vs,os,os], bg=(use_bg_buf.and..not.scheme==2) )
+        call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=use_bg_buf )
         call tensor_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 

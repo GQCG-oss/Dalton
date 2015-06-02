@@ -2134,9 +2134,9 @@ contains
 
     if(use_bg_buf)then
        ! init triples tuples structure
-       call mem_pseudo_alloc(trip_ampl,nvirt,nvirt,nvirt)
+       call mem_pseudo_alloc(trip_ampl,i8*nvirt,i8*nvirt,i8*nvirt)
        ! init 3d wrk array
-       call mem_pseudo_alloc(trip_tmp,nvirt,nvirt,nvirt)
+       call mem_pseudo_alloc(trip_tmp,i8*nvirt,i8*nvirt,i8*nvirt)
     else
        ! init triples tuples structure
        call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
@@ -2659,8 +2659,8 @@ contains
     tiles_in_buf_oovv = -1
 
     if( use_bg_buf )then
-    call mem_pseudo_alloc(trip_ampl,nvirt,nocc,nocc)
-    call mem_pseudo_alloc(trip_tmp,nvirt,nocc,nocc)
+    call mem_pseudo_alloc(trip_ampl,i8*nvirt,i8*nocc,i8*nocc)
+    call mem_pseudo_alloc(trip_tmp,i8*nvirt,i8*nocc,i8*nocc)
     else
     ! init triples tuples structure
     call mem_alloc(trip_ampl,nvirt,nocc,nocc)
@@ -3497,8 +3497,8 @@ contains
     if (present(e4)) full_no_frags = .true.
 
     if(use_bg_buf)then
-       call mem_pseudo_alloc(trip_ampl,nvirt,nocc,nocc)
-       call mem_pseudo_alloc(trip_tmp,nvirt,nocc,nocc)
+       call mem_pseudo_alloc(trip_ampl,i8*nvirt,i8*nocc,i8*nocc)
+       call mem_pseudo_alloc(trip_tmp,i8*nvirt,i8*nocc,i8*nocc)
     else
        ! init triples tuples structure
        call mem_alloc(trip_ampl,nvirt,nocc,nocc)
@@ -12133,7 +12133,6 @@ contains
           end do
 
        endif
-       endif
 
 #else
 
@@ -12149,11 +12148,12 @@ contains
        end do
 
 #endif
+       endif
 
     end do BatchLoop
 
-#ifdef VAR_MPI
 
+#ifdef VAR_MPI
     if (infpar%lg_nodtot .gt. 1) then
 
 #ifdef VAR_PTR_RESHAPE
