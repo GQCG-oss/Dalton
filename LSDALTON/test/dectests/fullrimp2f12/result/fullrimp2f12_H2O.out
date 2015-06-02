@@ -115,12 +115,12 @@
                           | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
                           | o
  Static linking           | OFF
- Last Git revision        | 758784111c611868304820e928b45a5a43f85adb
+ Last Git revision        | bfd20bb2d3dc5e3c97922f20168d0dcd43fc0293
  Git branch               | master
- Configuration time       | 2015-06-01 22:30:49.153029
+ Configuration time       | 2015-06-02 10:28:38.596775
 
 Start simulation
-     Date and time (Linux)  : Mon Jun  1 22:36:46 2015
+     Date and time (Linux)  : Tue Jun  2 10:30:20 2015
      Host name              : localhost.localdomain                   
                       
  -----------------------------------------
@@ -339,8 +339,8 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.21 seconds
- >>> wall Time used in SCF iteration is   0.21 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   2
  The Coulomb energy contribution    50.1289592655638     
  The Exchange energy contribution    9.35545813323836     
@@ -349,8 +349,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.14 seconds
- >>> wall Time used in SCF iteration is   0.14 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   3
  The Coulomb energy contribution    46.8181653482796     
  The Exchange energy contribution    8.95964538361149     
@@ -400,7 +400,7 @@ No. of matmuls in get_density:     1
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.14 seconds
- >>> wall Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   8
  The Coulomb energy contribution    46.7489331884055     
  The Exchange energy contribution    8.95236800305289     
@@ -419,8 +419,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.14 seconds
- >>> wall Time used in SCF iteration is   0.14 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number  10
  The Coulomb energy contribution    46.7489247013388     
  The Exchange energy contribution    8.95236704606101     
@@ -429,8 +429,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.14 seconds
- >>> wall Time used in SCF iteration is   0.14 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number  11
  The Coulomb energy contribution    46.7489248367294     
  The Exchange energy contribution    8.95236706251314     
@@ -447,8 +447,8 @@ No. of matmuls in get_density:     1
  The Fock energy contribution   -37.7965577797239     
  12    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
 SCF converged in     12 iterations
- >>>  CPU Time used in **ITER is   1.75 seconds
- >>> wall Time used in **ITER is   1.76 seconds
+ >>>  CPU Time used in **ITER is   1.73 seconds
+ >>> wall Time used in **ITER is   1.74 seconds
  
 Total no. of matmuls in SCF optimization:         52
  
@@ -570,14 +570,14 @@ Full molecular calculation is carried out...
  >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.24 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.24 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.23 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.23 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.24 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.24 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.47 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.47 seconds
- >>>  CPU Time used in RIMP2: EnergyCont is   0.48 seconds
- >>> wall Time used in RIMP2: EnergyCont is   0.48 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.48 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.48 seconds
+ >>>  CPU Time used in RIMP2: EnergyCont is   0.49 seconds
+ >>> wall Time used in RIMP2: EnergyCont is   0.49 seconds
  RIMP2 CORRELATION ENERGY =  -0.128850799093031     
  LEAK TOOL STATISTICS IN full_canonical_rimp2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -598,51 +598,51 @@ Full molecular calculation is carried out...
   
 
  ================================================ 
-            DEC-RI-MP2F12 ENERGY TERMS            
+            FULL-RI-MP2F12 ENERGY TERMS            
  ================================================ 
 
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.34 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.34 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.35 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.35 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
  >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.35 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.35 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.40 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.41 seconds
  >>> wall Time used in DF_Calpha:3CenterInt is   0.41 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.75 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.76 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.76 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.77 seconds
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.26 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.26 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.27 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.35 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.35 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.28 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.28 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.36 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.36 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.62 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.62 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.64 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.64 seconds
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.23 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.23 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
  >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.23 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.24 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.24 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.39 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.39 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.41 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.63 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.63 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.64 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.65 seconds
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
@@ -664,154 +664,62 @@ Full molecular calculation is carried out...
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.24 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.24 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.25 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.25 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.24 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.24 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.28 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.28 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.53 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.53 seconds
-         RIMP2F12 Energy contribution: E(V2,RI) =     10.5466455159755
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.23 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.23 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.24 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.24 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.21 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.21 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.21 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.22 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.64 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.64 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.64 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.65 seconds
-         RIMP2F12 Energy contribution: E(V3,RI) =      0.0600126430366
-         RIMP2F12 Energy contribution: E(V4,RI) =      0.2106730609816
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.24 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.28 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.28 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.53 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.53 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.28 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.28 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
-         RIMP2F12 Energy contribution: E(X2,RI) =    -10.7113473489034
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.52 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.52 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.39 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.40 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.40 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.40 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.39 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.39 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.39 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.40 seconds
-         RIMP2F12 Energy contribution: E(X3,RI) =     -0.0185588074779
-         RIMP2F12 Energy contribution: E(X4,RI) =     -0.0723971736859
+ >>>  CPU Time used in Build_CalphaMO2 is   0.25 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.25 seconds
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.26 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.26 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
  >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.27 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.75 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.76 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.26 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.26 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.29 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.29 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   2.03 seconds
- >>> wall Time used in Build_CalphaMO2 is   2.03 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.55 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.55 seconds
+         RIMP2F12 Energy contribution: E(V2,RI) =     10.5466455159755
+         RIMP2F12 Energy contribution: E(X2,RI) =    -10.7113473489034
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.25 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.25 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.25 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.26 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.70 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.70 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.70 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.71 seconds
+         RIMP2F12 Energy contribution: E(V3,RI) =      0.0600126430366
+         RIMP2F12 Energy contribution: E(V4,RI) =      0.2106730609816
+         RIMP2F12 Energy contribution: E(X3,RI) =     -0.0185588074779
+         RIMP2F12 Energy contribution: E(X4,RI) =     -0.0723971736859
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.78 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.79 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.79 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.79 seconds
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
@@ -826,35 +734,10 @@ Full molecular calculation is carried out...
          RIMP2F12 Energy contribution: E(B3,RI) =     -5.6273850947297
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.26 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.26 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.44 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.45 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.71 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.71 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:3CenterInt is   1.42 seconds
  >>> wall Time used in DF_Calpha:3CenterInt is   1.43 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.43 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.43 seconds
-         RIMP2F12 Energy contribution: E(B4,RI) =     -3.1831177086910
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.43 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.44 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
  >>>  CPU Time used in Build_CalphaMO2 is   1.43 seconds
@@ -863,13 +746,23 @@ Full molecular calculation is carried out...
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.27 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.59 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.60 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
-         RIMP2F12 Energy contribution: E(B5,RI) =      9.4764555695363
+ >>>  CPU Time used in Build_CalphaMO2 is   1.60 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.61 seconds
+         RIMP2F12 Energy contribution: E(B4,RI) =     -3.1831177086910
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.45 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.46 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.45 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.46 seconds
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
@@ -878,40 +771,30 @@ Full molecular calculation is carried out...
  >>> wall Time used in DF_Calpha:3CenterInt is   0.28 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.29 seconds
  >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+         RIMP2F12 Energy contribution: E(B5,RI) =      9.4764555695363
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.27 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.28 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.29 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.29 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.29 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.30 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.30 seconds
          RIMP2F12 Energy contribution: E(B6,RI) =      0.9283636919078
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.39 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.39 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.39 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.40 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
-         RIMP2F12 Energy contribution: E(B7,RI) =     -0.0691798023038
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
@@ -927,42 +810,22 @@ Full molecular calculation is carried out...
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.27 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.28 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
  >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+         RIMP2F12 Energy contribution: E(B7,RI) =     -0.0691798023038
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.41 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.41 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.43 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.43 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.41 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.42 seconds
-         RIMP2F12 Energy contribution: E(B8,RI) =      0.1385399606824
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   1.38 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   1.38 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   1.38 seconds
- >>> wall Time used in Build_CalphaMO2 is   1.38 seconds
- >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
- >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.27 seconds
- >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
- >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.43 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.44 seconds
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
@@ -973,6 +836,47 @@ Full molecular calculation is carried out...
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
  >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
  >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.42 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.42 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.42 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.43 seconds
+         RIMP2F12 Energy contribution: E(B8,RI) =      0.1385399606824
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.42 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.42 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.42 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.43 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.28 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.28 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.29 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.29 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.29 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.29 seconds
          RIMP2F12 Energy contribution: E(B9,RI) =     -0.0016029817123
 
  ================================================ 
@@ -1008,12 +912,12 @@ Full molecular calculation is carried out...
  
 
 ------------------------------------------------------
-Total CPU  time used in CC           :         41.9810     s
-Total Wall time used in CC           :         42.1280     s
+Total CPU  time used in CC           :         36.9230     s
+Total Wall time used in CC           :         37.0690     s
 ------------------------------------------------------
 
  
-Job finished   : Date: 01/06/2015   Time: 22:37:31
+Job finished   : Date: 02/06/2015   Time: 10:31:00
  
  
 
@@ -1023,8 +927,8 @@ Job finished   : Date: 01/06/2015   Time: 22:37:31
 
  
  
- >>>  CPU Time used in *SCF is  44.46 seconds
- >>> wall Time used in *SCF is  44.61 seconds
+ >>>  CPU Time used in *SCF is  39.44 seconds
+ >>> wall Time used in *SCF is  39.60 seconds
  
 Total no. of matmuls used:                       109
 Total no. of Fock/KS matrix evaluations:          13
@@ -1128,39 +1032,39 @@ Max no. of matrices allocated in Level 3:         45
       ===============================================================
    L3 mat_set_from_full        6            0.0000            0.0000
    L3 mat_to_full             26            0.0000            0.0000
-   L3 mat_trans               71            0.0010            0.0020
+   L3 mat_trans               71            0.0010            0.0000
    L3 mat_assign              91            0.0000            0.0000
    L3 mat_copy                20            0.0000            0.0000
-   L3 mat_mul                 97            0.0000            0.0020
-   L3 mat_add                 78            0.0000            0.0000
+   L3 mat_mul                 97            0.0030            0.0010
+   L3 mat_add                 78            0.0000            0.0050
    L3 mat_daxpy              176            0.0000            0.0000
    L3 mat_dotproduct         121            0.0000            0.0000
-   L3 mat_sqnorm2            103            0.0000            0.0000
-   L3 mat_diag_f              13            0.0040            0.0020
-   L3 mat_retrieve_block       5            0.0010            0.0000
-   L3 mat_zero                76            0.0000            0.0010
+   L3 mat_sqnorm2            103            0.0000            0.0010
+   L3 mat_diag_f              13            0.0020            0.0220
+   L3 mat_retrieve_block       5            0.0000            0.0000
+   L3 mat_zero                76            0.0000            0.0000
    L3 mat_density_from_o      12            0.0000            0.0000
-   L3 mat_scal_dia_vec         2            0.0010            0.0000
+   L3 mat_scal_dia_vec         2            0.0000            0.0000
    L3 mat_dsyev                1            0.0000            0.0000
    L3 mat_identity             2            0.0000            0.0000
-   L3 mat_write_to_disk       14            0.0010            0.0020
+   L3 mat_write_to_disk       14            0.0000            0.0010
       ==============================================================
-   L3 TOTAL MAT                             0.0070            0.0090
+   L3 TOTAL MAT                             0.0060            0.0300
       ==============================================================
-   L3     II_get_overlap       1            0.0030            0.0020
-   L3     II_get_kinetic       9            0.0820            0.0800
-   L3   II_get_nucel_mat       9            1.2380            1.2440
-   L3 II_precalc_ScreenM       1            0.3010            0.3020
+   L3     II_get_overlap       1            0.0020            0.0080
+   L3     II_get_kinetic       9            0.0840            0.0820
+   L3   II_get_nucel_mat       9            1.1520            1.1570
+   L3 II_precalc_ScreenM       1            0.2930            0.2940
    L3      II_get_nucpot       2            0.0000            0.0000
-   L3 II_GET_EXCHANGE_MA      20           11.0910           11.1300
-   L3 II_get_coulomb_mat      20            2.3070            2.3150
-   L3           homolumo       1            0.6110            0.6120
+   L3 II_GET_EXCHANGE_MA      20           11.0330           11.0780
+   L3 II_get_coulomb_mat      20            2.2560            2.2620
+   L3           homolumo       1            0.6650            0.6660
       ==============================================================
-   L3 TOTAL INTEGRAL                       18.3740           18.4340
+   L3 TOTAL INTEGRAL                       18.2520           18.3590
       ==============================================================
- >>>  CPU Time used in LSDALTON is  44.83 seconds
- >>> wall Time used in LSDALTON is  44.99 seconds
+ >>>  CPU Time used in LSDALTON is  39.80 seconds
+ >>> wall Time used in LSDALTON is  40.00 seconds
 
 End simulation
-     Date and time (Linux)  : Mon Jun  1 22:37:31 2015
+     Date and time (Linux)  : Tue Jun  2 10:31:00 2015
      Host name              : localhost.localdomain                   
