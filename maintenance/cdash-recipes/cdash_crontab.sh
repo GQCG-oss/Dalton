@@ -41,7 +41,7 @@ mkdir -p $CTEST_TEMP_DIR
 
 export DALTON_TMPDIR=$CTEST_TEMP_DIR/run
 
-git clone git@gitlab.com:dalton/dalton.git $CTEST_TEMP_DIR/compile
+git clone --recursive git@gitlab.com:dalton/dalton.git $CTEST_TEMP_DIR/compile
 
 cd $CTEST_TEMP_DIR/compile
 git checkout $BRANCH &> /dev/null

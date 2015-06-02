@@ -681,7 +681,7 @@ contains
     character(5),intent(IN) :: intSpec
     integer :: dummy
     TYPE(DECscreenITEM)   :: DecScreen
-    logical :: doscreen
+    logical :: doscreen,doMPI
     integer :: ndim(4),i,AO(4),Oper,ndmat
     TYPE(Matrix) :: h,Jarr(1)
     character(1) :: intSpecConvert(5)
@@ -721,9 +721,13 @@ contains
     call mat_zero(Jarr(1))
 
     call mat_init(h,ndim(1),ndim(2))
+    doMPI = MyLsitem%SETTING%scheme%doMPI
+    MyLsitem%SETTING%scheme%doMPI = .NOT.(((AO(1).EQ.AOdfCABS).OR.(AO(2).EQ.AOdfCABS)).OR.&
+         & ((AO(3).EQ.AOdfCABS).OR.(AO(4).EQ.AOdfCABS)))
     CALL II_get_h1_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,h,AO(1),AO(2))
     CALL II_get_coulomb_mat_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,(/D/),Jarr,ndmat,&
          &                            AO(1),AO(2),AO(3),AO(4),Oper)
+    MyLsitem%SETTING%scheme%doMPI = doMPI
 
     call mat_assign(hJ,Jarr(1))
     call mat_free(Jarr(1))
@@ -755,7 +759,7 @@ contains
     integer :: ndim(4),i,AO(4),Oper,ndmat
     TYPE(Matrix) :: h
     character(1) :: intSpecConvert(5)
-    logical :: Dsym
+    logical :: Dsym,doMPI
     type(matrix) :: Karr(1)
 
     Dsym=.true.
@@ -792,8 +796,12 @@ contains
     ! Quick fix because we need to pass an array
     call mat_init(Karr(1),K%nrow,K%ncol)
     call mat_zero(Karr(1))
+    doMPI = MyLsitem%SETTING%scheme%doMPI
+    MyLsitem%SETTING%scheme%doMPI = .NOT.(((AO(1).EQ.AOdfCABS).OR.(AO(2).EQ.AOdfCABS)).OR.&
+         & ((AO(3).EQ.AOdfCABS).OR.(AO(4).EQ.AOdfCABS)))
     CALL ii_get_exchange_mat_mixed(DECinfo%output,DECinfo%output,MyLsitem%SETTING,(/D/),ndmat,Dsym,&
          &                             Karr,AO(1),AO(3),AO(2),AO(4),Oper)
+    MyLsitem%SETTING%scheme%doMPI = doMPI
     call mat_assign(K,Karr(1)) 
     call mat_free(Karr(1))
 

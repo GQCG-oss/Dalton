@@ -147,8 +147,6 @@ ELSE
  CASE('GCTRANS  ')!identical to BasParamLABEL(GCTBasParam)
     !build as a transformation basis in trilevel algorithm
     call LSQUIT('GCTRANS no legal keyword in Build_Basis.',lupri)  
- CASE('CABSP    ') !identical to BasParamLABEL(CAPBasParam)
-    BASINFO%Labelindex = CAPBasParam
  CASE DEFAULT
     WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
     WRITE (LUPRI,'(a80)') ' not recognized in Build_basis.'

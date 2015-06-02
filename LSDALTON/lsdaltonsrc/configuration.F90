@@ -3717,7 +3717,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
 
-   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam) .OR. config%integral%basis(CAPBasParam)
+   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam)
 
    if(config%doF12)THEN
       if(.NOT. CABS_BASIS_PRESENT)then         
