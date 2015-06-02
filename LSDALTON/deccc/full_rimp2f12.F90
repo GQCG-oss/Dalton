@@ -82,7 +82,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    integer :: nAux,NBA,N,K
    real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:)
    real(realk),pointer :: CalphaRcabs(:),CalphaGcabs(:),CalphaX(:)
-   real(realk),pointer :: CalphaGcabsMO(:)
+   real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabs(:)
    real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:)
    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:),ABdecompX(:,:)
    logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF
@@ -274,12 +274,36 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
 
+   call mem_dealloc(CalphaD)
+
+   !==============================================================
+   !=  B2: sum_c' (ic'|f12^2|jj) hJ_ic' - (jc'|f12^2|ij) hJ_ic'  =
+   !=  B3: sum_c' (ii|f12^2|jc') hJ_jc' - (ij|f12^2|ic') hJ_ic'  =
+   !==============================================================
+   !CalphaR(NBA,nocc,ncabsMO)
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'R' !Regular AO basis function on center 3
+   intspec(3) = 'C' !CABS AO basis function on center 4
+   intspec(4) = '2' !The f12 Operator
+   intspec(5) = '2' !The f12 Operator
+   call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
+        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_RI%elms,ncabsAO,&
+        & mynum,numnodes,CalphaXcabs,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)   
+   
+   call ContractOne4CenterF12IntegralsRIB23(nBA,nocc,ncabsAO,CalphaXcabs,CalphaX,hJir%elms,1.0E0_realk,EB2,EB3)
+   !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
+   mp2f12_energy = mp2f12_energy  + EB2
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
+   mp2f12_energy = mp2f12_energy  + EB3
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
+   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
+   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
 
    call mem_dealloc(CalphaR)
-   call mem_dealloc(CalphaD)
+   call mem_dealloc(CalphaXcabs)
    call mem_dealloc(CalphaX)
    call mem_dealloc(CalphaF)
-!   call mem_dealloc(ABdecompX)
+   call mem_dealloc(ABdecompX)
    call mem_dealloc(ABdecompF)
    !ABdecompR still exists
 
@@ -413,44 +437,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call mem_dealloc(CalphaGcabs)
 
    !=================================================================
-   != Step 3: The B terms                                           =
+   != Step 3: The remaining B terms                                 =
    !=================================================================
-
-   !==============================================================
-   !=  B2: sum_c' (ic'|f12^2|jj) hJ_ic' - (jc'|f12^2|ij) hJ_ic'  =
-   !=  B3: sum_c' (ii|f12^2|jc') hJ_jc' - (ij|f12^2|ic') hJ_ic'  =
-   !==============================================================
-   !CalphaR(NBA,nocc,ncabsMO)
-   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-   intspec(2) = 'R' !Regular AO basis function on center 3
-   intspec(3) = 'C' !CABS AO basis function on center 4
-   intspec(4) = '2' !The f12 Operator
-   intspec(5) = '2' !The f12 Operator
-   call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_RI%elms,ncabsAO,&
-        & mynum,numnodes,CalphaR,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
-   
-   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-   intspec(2) = 'R' !Regular AO basis function on center 3
-   intspec(3) = 'R' !Regular AO basis function on center 4
-   intspec(4) = '2' !The Gaussian geminal operator g
-   intspec(5) = '2' !The Gaussian geminal operator g
-   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,nocc,&
-        & mynum,numnodes,CalphaG,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
-
-   call mem_dealloc(ABdecompX)
-   
-   call ContractOne4CenterF12IntegralsRIB23(nBA,nocc,ncabsAO,CalphaR,CalphaG,hJir%elms,1.0E0_realk,EB2,EB3)
-   !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
-   mp2f12_energy = mp2f12_energy  + EB2
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
-   mp2f12_energy = mp2f12_energy  + EB3
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
-   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
-   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
-   call mem_dealloc(CalphaR)
-   call mem_dealloc(CalphaG)
 
    !==============================================================
    !=  B4: (ir|f12|jt)Kst(ir|f12|js)      (r,s,t=CabsAO)         =
