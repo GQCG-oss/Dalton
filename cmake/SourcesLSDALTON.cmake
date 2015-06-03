@@ -874,15 +874,6 @@ set(LSDALTON_OWN_LAPACK_SOURCES
     LSDALTON/pdpack/gp_dlapack.F
     LSDALTON/pdpack/gp_zlapack.F
     )
-# backend matrix module and interface of QMatrix library
-if(ENABLE_QMATRIX)
-    set(LSUTIL_MATRIXU_SOURCES
-        ${LSUTIL_MATRIXU_SOURCES}
-        LSDALTON/qmatrix/qmatrix_backend.F90
-        )
-    set(LS_QMATRIX_SOURCES
-        LSDALTON/qmatrix/ls_qmatrix.F90)
-endif()
 # collect all free fortran sources
 set(LSDALTON_FREE_FORTRAN_SOURCES
     ${CUDA_GPU_INTERFACE_SOURCES}
@@ -910,7 +901,6 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${LSUTILLIB_SOURCES}
     ${LSLIB_SOURCES}
     ${ICHORLIB_SOURCES}
-    ${LS_QMATRIX_SOURCES}
  )
 if(ENABLE_PCMSOLVER)
     set(LSDALTON_FREE_FORTRAN_SOURCES

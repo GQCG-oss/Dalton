@@ -16,9 +16,6 @@
 [submodule "external/efs"]
 	path = external/efs
 	url = git@repo.ctcc.no:efs.git
-[submodule "external/qmatrix"]
-	path = external/qmatrix
-	url = git://repo.ctcc.no/qmatrix.git
 [submodule "external/pcmsolver"]
 	path = external/pcmsolver
 	url = https://github.com/PCMSolver/pcmsolver.git

@@ -245,10 +245,6 @@ end subroutine config_free
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
 use IIDFTINT, only: II_DFTsetFunc
-#if defined(ENABLE_QMATRIX)
-use ls_qmatrix, only: ls_qmatrix_init, &
-                      ls_qmatrix_input
-#endif
 
 implicit none
 !> Logical unit number for LSDALTON.OUT
@@ -821,18 +817,6 @@ DO
   ENDDO
 
    ENDIF
-#endif
-
-#if defined(ENABLE_QMATRIX)
-   ! QMatrix library
-   if (WORD=='**QMATRIX') then
-       config%do_qmatrix = .true.
-       ! initializes the QMatrix interface
-       call ls_qmatrix_init(config%ls_qmat)
-       ! processes input
-       READWORD = .true.
-       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
-   end if
 #endif
 
    IF (WORD == '*END OF INPUT') THEN
