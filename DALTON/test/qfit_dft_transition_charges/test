@@ -13,6 +13,7 @@ f = Filter()
 
 f.add(from_re = 'Potential fitted charges \(QFITLIB\)',
       num_lines = 7,
+      ignore_sign = True,
       rel_tolerance = 1.0e-3)
 
 test.run(['qfit.dal'], ['h2o.mol'], f={'out': f}, args='')
