@@ -1,4 +1,4 @@
-module ccsd_lhtr_module
+module cc_response_tools_module
 
    use precision
    use typedef
@@ -1588,4 +1588,4 @@ module ccsd_lhtr_module
 !          WRITE(DECinfo%output,'(A,f9.3,A)')'Expected Memory Used ',ActuallyUsed,' GB'
 !       endif
     end subroutine get_ccsd_lhtr_integral_driven
-end module ccsd_lhtr_module
+  end module cc_response_tools_module
