@@ -160,7 +160,11 @@ module tensor_interface_module
         &print_norm_fort_wrapper4_customprint,&
         &tensor_print_norm_customprint,&
         &array2_print_norm_customprint,&
-        &array4_print_norm_customprint
+        &array4_print_norm_customprint,&
+        &print_norm_fort_nolen1_customprint,&
+        &print_norm_fort_nolen2_customprint,&
+        &print_norm_fort_nolen3_customprint,&
+        &print_norm_fort_nolen4_customprint
   end interface print_norm
 
 
@@ -2946,6 +2950,38 @@ contains
     if(present(nrm).and.present(square))call print_norm_fort_nrm(fort,nelms,nrm,square)
     if(.not.present(nrm).and..not.present(square))call print_norm_fort_nrm(fort,nelms)
   end subroutine print_norm_fort_wrapper4_nrm
+  subroutine print_norm_fort_nolen1_customprint(fort,msg)
+    implicit none
+    real(realk),intent(in) :: fort(:)
+    character*(*),intent(in) :: msg
+    integer(kind=8) ::  nelms
+    nelms = size(fort)
+    call print_norm_fort_customprint(fort,nelms,msg)
+  end subroutine print_norm_fort_nolen1_customprint
+  subroutine print_norm_fort_nolen2_customprint(fort,msg)
+    implicit none
+    real(realk),intent(in) :: fort(:,:)
+    character*(*),intent(in) :: msg
+    integer(kind=8) ::  nelms
+    nelms = size(fort)
+    call print_norm_fort_customprint(fort,nelms,msg)
+  end subroutine print_norm_fort_nolen2_customprint
+  subroutine print_norm_fort_nolen3_customprint(fort,msg)
+    implicit none
+    real(realk),intent(in) :: fort(:,:,:)
+    character*(*),intent(in) :: msg
+    integer(kind=8) ::  nelms
+    nelms = size(fort)
+    call print_norm_fort_customprint(fort,nelms,msg)
+  end subroutine print_norm_fort_nolen3_customprint
+  subroutine print_norm_fort_nolen4_customprint(fort,msg)
+    implicit none
+    real(realk),intent(in) :: fort(:,:,:,:)
+    character*(*),intent(in) :: msg
+    integer(kind=8) ::  nelms
+    nelms = size(fort)
+    call print_norm_fort_customprint(fort,nelms,msg)
+  end subroutine print_norm_fort_nolen4_customprint
   subroutine print_norm_fort_wrapper1_customprint(fort,nelms,msg,square)
     implicit none
     real(realk),intent(in) :: fort(:)

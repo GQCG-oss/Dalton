@@ -103,10 +103,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
-#if defined(ENABLE_QMATRIX)
-  use ls_qmatrix, only: ls_qmatrix_test, &
-                        ls_qmatrix_finalize
-#endif
 #ifdef HAS_PCMSOLVER
   use ls_pcm_utils, only: init_molecule
   use ls_pcm_scf, only: ls_pcm_scf_initialize, ls_pcm_scf_finalize
@@ -626,18 +622,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
-
-#if defined(ENABLE_QMATRIX)
-        if (config%do_qmatrix) then
-            ! performs the Fortran test of the QMatrix library
-            call ls_qmatrix_test(config%ls_qmat)
-            !- performs Delta-SCF using the QMatrix library (NB! this is not linear-scaling)
-            !-call ls_qmatrix_scf()
-            ! finalizes the QMatrix interface
-            call ls_qmatrix_finalize(config%ls_qmat)
-            config%do_qmatrix = .false.
-        end if
-#endif
 
 #ifdef MOD_UNRELEASED
         ! Numerical Derivatives

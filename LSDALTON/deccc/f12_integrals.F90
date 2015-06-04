@@ -2835,6 +2835,17 @@ contains
        print *, '----------------------------------------'
        print *, " E21_Vsum:     ", E_21
        print *, " E21_Vsum_noC: ", E_21noC
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) ' E21 V term                             '
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " E21_V_term1:  ", Venergy(1)
+       write(DECinfo%output,*) " E21_V_term2:  ", Venergy(2)
+       write(DECinfo%output,*) " E21_V_term3:  ", Venergy(3)
+       write(DECinfo%output,*) " E21_V_term4:  ", Venergy(4)
+       write(DECinfo%output,*) " E21_V_term5:  ", Venergy(5)
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " E21_Vsum:     ", E_21
+       write(DECinfo%output,*) " E21_Vsum_noC: ", E_21noC
     end if
 
     call mem_dealloc(Venergy)
@@ -2921,6 +2932,16 @@ contains
        print *, " E22_X_term4: ", Xenergy(4)
        print *, '----------------------------------------'
        print *, " E22_Xsum: ", E_22
+
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) ' E_22 X term                            '
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " E22_X_term1: ", Xenergy(1)
+       write(DECinfo%output,*) " E22_X_term2: ", Xenergy(2)
+       write(DECinfo%output,*) " E22_X_term3: ", Xenergy(3)
+       write(DECinfo%output,*) " E22_X_term4: ", Xenergy(4)
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " E22_Xsum: ", E_22
     end if
 
     call mem_dealloc(Xenergy)
@@ -3028,6 +3049,21 @@ contains
        print *, " E23_B_term9: ", B9energy   
        print *, '----------------------------------------'
        print *, " E23_B_sum: ", E_23
+
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) ' E_22 B term                            '
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " E23_B_term1: ", B1energy
+       write(DECinfo%output,*) " E23_B_term2: ", B2energy   
+       write(DECinfo%output,*) " E23_B_term3: ", B3energy   
+       write(DECinfo%output,*) " E23_B_term4: ", B4energy   
+       write(DECinfo%output,*) " E23_B_term5: ", B5energy   
+       write(DECinfo%output,*) " E23_B_term6: ", B6energy   
+       write(DECinfo%output,*) " E23_B_term7: ", B7energy   
+       write(DECinfo%output,*) " E23_B_term8: ", B8energy   
+       write(DECinfo%output,*) " E23_B_term9: ", B9energy   
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " E23_B_sum: ", E_23
     end if
 
     E_F12 = 0.0E0_realk
@@ -3130,6 +3166,17 @@ contains
        print *, " ECCSD_Vijab_term5: ", ECCSD_Vijab(5)
        print *, '----------------------------------------'
        print *, " sum: ", ECCSD_Vijab(1) + ECCSD_Vijab(2) + ECCSD_Vijab(3) + ECCSD_Vijab(4) + ECCSD_Vijab(5) 
+
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) ' E_CCSD_Vijab energies                  '
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " ECCSD_Vijab_term1: ", ECCSD_Vijab(1)
+       write(DECinfo%output,*) " ECCSD_Vijab_term2: ", ECCSD_Vijab(2)
+       write(DECinfo%output,*) " ECCSD_Vijab_term3: ", ECCSD_Vijab(3)
+       write(DECinfo%output,*) " ECCSD_Vijab_term4: ", ECCSD_Vijab(4)
+       write(DECinfo%output,*) " ECCSD_Vijab_term5: ", ECCSD_Vijab(5)
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " sum: ", ECCSD_Vijab(1) + ECCSD_Vijab(2) + ECCSD_Vijab(3) + ECCSD_Vijab(4) + ECCSD_Vijab(5) 
        ECCSD_E21 = ECCSD_Vijab(1) + ECCSD_Vijab(2) + ECCSD_Vijab(3) + ECCSD_Vijab(4) + ECCSD_Vijab(5) 
 
        call mem_dealloc(ECCSD_Vijab)
@@ -3171,6 +3218,16 @@ contains
        print *, " ECCSD_Vijia_term4: ", ECCSD_Vijia(4)
        print *, '----------------------------------------'
        print *, " sum: ", ECCSD_Vijia(1) + ECCSD_Vijia(2) + ECCSD_Vijia(3) + ECCSD_Vijia(4) 
+
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) ' E_CCSD_Vijia energies                  '
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " ECCSD_Vijia_term1: ", ECCSD_Vijia(1)
+       write(DECinfo%output,*) " ECCSD_Vijia_term2: ", ECCSD_Vijia(2)
+       write(DECinfo%output,*) " ECCSD_Vijia_term3: ", ECCSD_Vijia(3)
+       write(DECinfo%output,*) " ECCSD_Vijia_term4: ", ECCSD_Vijia(4)
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " sum: ", ECCSD_Vijia(1) + ECCSD_Vijia(2) + ECCSD_Vijia(3) + ECCSD_Vijia(4) 
        ECCSD_E21 = ECCSD_E21 + ECCSD_Vijia(1) + ECCSD_Vijia(2) + ECCSD_Vijia(3) + ECCSD_Vijia(4) 
 
        call mem_dealloc(ECCSD_Vijia)
@@ -3212,6 +3269,16 @@ contains
        print *, " ECCSD_Vijaj_term4: ", ECCSD_Vijaj(4)
        print *, '----------------------------------------'
        print *, " sum: ", ECCSD_Vijaj(1) + ECCSD_Vijaj(2) + ECCSD_Vijaj(3) + ECCSD_Vijaj(4) 
+
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) ' E_CCSD_Vijaj energies                  '
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " ECCSD_Vijaj_term1: ", ECCSD_Vijaj(1)
+       write(DECinfo%output,*) " ECCSD_Vijaj_term2: ", ECCSD_Vijaj(2)
+       write(DECinfo%output,*) " ECCSD_Vijaj_term3: ", ECCSD_Vijaj(3)
+       write(DECinfo%output,*) " ECCSD_Vijaj_term4: ", ECCSD_Vijaj(4)
+       write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " sum: ", ECCSD_Vijaj(1) + ECCSD_Vijaj(2) + ECCSD_Vijaj(3) + ECCSD_Vijaj(4) 
        ECCSD_E21 = ECCSD_E21 + ECCSD_Vijaj(1) + ECCSD_Vijaj(2) + ECCSD_Vijaj(3) + ECCSD_Vijaj(4) 
 
     call mem_dealloc(ECCSD_Vijaj)

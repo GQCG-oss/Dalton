@@ -3,12 +3,11 @@ SCRATCH_DIR=/tmp/sisyphos/DaltonPGIRelease3
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
-export PATH=/opt/pgi/linux86-64/2014/mpi/mpich/bin:$PATH
-#export PATH=/opt/pgi/linux86-64/14.9/bin:$PATH
-export PATH=/opt/pgi/linux86-64/15.3/bin:$PATH
+export PATH=/opt/pgi/linux86-64/15.5/mpi/mpich/bin:$PATH
+export PATH=/opt/pgi/linux86-64/15.5/bin:$PATH
 export LM_LICENSE_FILE=/opt/pgi/linux86-64/14.3/license.dat
 
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 export OMP_NUM_THREADS=1
 #export MATH_ROOT=

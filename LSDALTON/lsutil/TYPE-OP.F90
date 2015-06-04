@@ -74,6 +74,9 @@ ELSEIF (AOtype.EQ.AOdfAux) THEN
   nc = MOLECULE%nbastAUX
   np = MOLECULE%nprimbastAUX
 ELSEIF (AOtype.EQ.AOdfCABS) THEN
+  nc = MOLECULE%nbastCABS + MOLECULE%nbastREG
+  np = MOLECULE%nprimbastCABS + MOLECULE%nprimbastREG
+ELSEIF (AOtype.EQ.AOdfCABO) THEN
   nc = MOLECULE%nbastCABS
   np = MOLECULE%nprimbastCABS
 ELSEIF (AOtype.EQ.AOdfJK) THEN

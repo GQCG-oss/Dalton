@@ -245,10 +245,6 @@ end subroutine config_free
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
 use IIDFTINT, only: II_DFTsetFunc
-#if defined(ENABLE_QMATRIX)
-use ls_qmatrix, only: ls_qmatrix_init, &
-                      ls_qmatrix_input
-#endif
 
 implicit none
 !> Logical unit number for LSDALTON.OUT
@@ -821,18 +817,6 @@ DO
   ENDDO
 
    ENDIF
-#endif
-
-#if defined(ENABLE_QMATRIX)
-   ! QMatrix library
-   if (WORD=='**QMATRIX') then
-       config%do_qmatrix = .true.
-       ! initializes the QMatrix interface
-       call ls_qmatrix_init(config%ls_qmat)
-       ! processes input
-       READWORD = .true.
-       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
-   end if
 #endif
 
    IF (WORD == '*END OF INPUT') THEN
@@ -3706,7 +3690,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
 
-   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam) .OR. config%integral%basis(CAPBasParam)
+   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam)
 
    if(config%doF12)THEN
       if(.NOT. CABS_BASIS_PRESENT)then         

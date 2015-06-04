@@ -131,6 +131,11 @@ contains
     write(lupri,*) 'FLOPS for both dgemm = ', flops
 
   end subroutine papi_example
+#else
+  subroutine papi_dummy()
+    implicit none
+
+  end subroutine papi_dummy
 #endif
 
 end module papi_module

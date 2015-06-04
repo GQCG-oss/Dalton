@@ -364,6 +364,7 @@ contains
     integer :: vs, os,offset
     logical :: local
     local = .true.
+    ES2=0.0E0_realk
 #ifdef VAR_MPI
     local = (infpar%lg_nodtot==1)
 #endif
@@ -396,6 +397,8 @@ contains
     !           Not frozen core: 0
     offset = noccfull - nocc
 
+    !> Singles correction
+    call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
 
     ! Get all F12 Fock Matrices
     ! ********************
@@ -434,7 +437,8 @@ contains
   !            Fab(i,j) = MyMolecule%vvfock(i,j)
   !     enddo
   !  enddo
-    ES2 = 0.0E0_realk
+    
+   !ES2 = 0.0E0_realk
     !call get_ES2(ES2,Fic,Fii,MyMolecule%vvfock%elm2,Fcd,nocc,nvirt,ncabs)
    
     !call mat_free(Fab)
@@ -1353,7 +1357,6 @@ contains
     nbasis = MyMolecule%nbasis
     noccfull = nocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-
     ! Get full CCSD singles (Tai) and doubles (Taibj) amplitudes
     call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai,Taibj)
 
@@ -1735,6 +1738,7 @@ contains
 
     !> CCSD Specific MP2-F12 energy
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
+    ES2=0.0E0_realk
 
     ! F12 Specific
     call mem_dealloc(Vijij)

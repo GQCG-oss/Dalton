@@ -798,11 +798,6 @@ if(ENABLE_PCMSOLVER)
    )
    set(DALTON_FREE_FORTRAN_SOURCES "${DALTON_FREE_FORTRAN_SOURCES} ${DAL_PCM_SOURCES}")
 endif()
-# interface of QMatrix library
-if(ENABLE_QMATRIX)
-    set(DAL_QMATRIX_SOURCES
-        DALTON/qmatrix/dalton_qmatrix.F90)
-endif()
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F
     )
