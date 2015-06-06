@@ -7145,6 +7145,7 @@ C
 #include "mxcent.h"
 #include "molinp.h"
 #include "gnrinf.h"
+#include "inftap.h"
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
@@ -7203,6 +7204,10 @@ C
       CALL IZERO(IPTCNT, MXCENT*48)
       CALL IZERO(NAXREP, 16)
       CALL IZERO(INDHES, 8)
+      IF (LUIT1 .LT. 0)
+     &CALL GPOPEN(LUIT1,'SIRIUS.RST','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      CALL GPCLOSE(LUIT1,'DELETE')
       RETURN
       END
 
