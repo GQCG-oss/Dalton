@@ -1264,11 +1264,11 @@ C           are they for same basisset and same no. of symmetries ?
          END IF
          IF (NERROR .GT. 0) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,'(/A/5X,A,I3,5X,8I5)')
-     &         'Input ERROR in connection with ".MOSTART"',
-     &         'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
+            WRITE (LUPRI,'(/A,I5/5X,A,I3,5X,8I5)')
+     &        'Input ERROR in connection with ".MOSTART" of type',IRDMO,
+     &        'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
             WRITE (LUPRI,'(5X,A,I3,5X,8I5)')
-     &         'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
+     &        'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
          ELSE IF (NDELT .NE. 0) THEN
             NINFO = NINFO + 1
             WRITE (LUPRI,'(/5X,A/I10,A)')
