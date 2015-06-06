@@ -2348,14 +2348,15 @@ C
  678  FORMAT(A,F14.6)
       IF ((ITRNMR .GT. 0) .AND. (ITRBRK .LT. (ITRNMR - 1))) THEN
          ERGDIF = ENERGY - ERGOLD
+         WRITE(LUPRI,678)' Energy change from last geom.  : ', ERGDIF
          IF (ABS(ERGPRO) .GT. 1.0D-10) THEN
             RATIO = ERGDIF / ERGPRO
+            WRITE(LUPRI,678)' Predicted change               : ', ERGPRO
+            WRITE(LUPRI,678)' Ratio, actual/predicted change : ', RATIO
          ELSE
             RATIO = 1.0D0
+            WRITE(LUPRI,'(A)') ' New basis set specifications'
          END IF
-         WRITE(LUPRI,678)' Energy change from last geom.  : ', ERGDIF
-         WRITE(LUPRI,678)' Predicted change               : ', ERGPRO
-         WRITE(LUPRI,678)' Ratio, actual/predicted change : ', RATIO
       END IF
       WRITE(LUPRI,678) ' Norm of gradient               : ', GRADNM
       WRITE(LUPRI,678) ' Norm of step                   : ', STPNRM
@@ -2369,8 +2370,10 @@ C
       WRITE(LUPRI,'(A,I8//)')' Total Hessian index            :', INDTOT
       IF (BRKSYM .AND. GECONV) THEN
          WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
+         ERGPRD = 0.0D0
       ELSE IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) THEN
          WRITE(LUPRI,'(/A)') ' *) End of preoptimization.'
+         ERGPRD = 0.0D0
       END IF
       START = 1
       NCRD = NCRTOT
