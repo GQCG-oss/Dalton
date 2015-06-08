@@ -1614,8 +1614,9 @@ module cc_response_tools_module
       type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
       integer :: nbasis,nocc,nvirt,i,j,k,l,m,a,b,c,d,e
       integer,dimension(2) :: bo,bv,bb,oo,ov,vo,vv
-      real(realk) :: u
-      
+      real(realk) :: u,Lldkc
+      real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
+
 
       ! Dimensions
       nbasis = xo_tensor%dims(1)
@@ -1633,7 +1634,7 @@ module cc_response_tools_module
       ! Inputs x and y do NOT include the contribution from pure MO coefficients!
       ! --> xo = Co,        xv = Cv - Co t^T
       !     yo = Co+Cvt,    yv = Cv 
-      
+
 
       ! Calculate full AO integrals
       call get_full_eri(mylsitem,nbasis,gao)
@@ -1681,14 +1682,17 @@ module cc_response_tools_module
       ! Calculate terms in CCSD residual
       ! ********************************
       ! Notation according to THE BOOK
-      ! Corresponding notation in JCP 105, 6921 (1996) is given in parenthesis
+      ! Corresponding notation in Table I of JCP 105, 6921 (1996) is given in parenthesis
       rho1%elm2=0.0_realk
       rho2%elm4=0.0_realk
 
 
+      ! SINGLES RESIDUAL
+      ! ================
+
       do i=1,nocc
          do a=1,nvirt
-            
+
             ! A1 term (G term in JCP 105, 6921 (1996))
             do c=1,nvirt
                do d=1,nvirt
@@ -1709,7 +1713,7 @@ module cc_response_tools_module
                end do
             end do
 
-            ! C1 term
+            ! C1 term (I)
             do c=1,nvirt
                do k=1,nocc
                   u = 2.0_realk*t2%elm4(a,c,i,k) - t2%elm4(a,c,k,i)
@@ -1717,7 +1721,7 @@ module cc_response_tools_module
                end do
             end do
 
-            ! D1 term
+            ! D1 term (J)
             rho1%elm2(a,i) = rho1%elm2(a,i) + fvo%val(a,i)
 
          end do
@@ -1725,7 +1729,245 @@ module cc_response_tools_module
 
 
 
+      ! DOUBLES RESIDUAL
+      ! ================
+
+      ! A2 (F and B)
+      ! ************
+      do i=1,nocc
+         do a=1,nvirt
+            do j=1,nocc
+               do b=1,nvirt
+
+                  ! A2.1 term (F term in JCP 105, 6921 (1996))
+                  rho2%elm4(a,b,i,j) = gvovo%val(a,i,b,j)
+
+                  ! A2.2 term (B)
+                  do c=1,nvirt
+                     do d=1,nvirt
+                        rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + &
+                             & t2%elm4(c,d,i,j)*gvvvv%val(a,c,b,d)
+                     end do
+                  end do
+
+               end do
+            end do
+         end do
+      end do
+
+
+      ! B2 (A)
+      ! ******
+      call mem_alloc(tmp,nocc,nocc,nocc,nocc)
+      do i=1,nocc
+         do j=1,nocc
+
+            do k=1,nocc
+               do l=1,nocc
+
+                  ! Temporary quantity: tmp(k,i,l,j) = g(k,i,l,j) + sum_{cd} t2(c,d,i,j) * g(k,c,l,d)
+                  tmp(k,i,l,j) = goooo%val(k,i,l,j)
+                  do c=1,nvirt
+                     do d=1,nvirt
+                        tmp(k,i,l,j) = tmp(k,i,l,j) + t2%elm4(c,d,i,j)*govov%val(k,c,l,d)
+                     end do
+                  end do
+
+                  ! Residual: 
+                  ! rho2(a,b,i,j) = sum_{kl} t2(a,b,k,l) tmp(k,i,l,j)
+                  do a=1,nvirt
+                     do b=1,nvirt
+                        rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + t2%elm4(a,b,k,l)*tmp(k,i,l,j) 
+                     end do
+                  end do
+
+               end do
+            end do
+
+         end do
+      end do
+      call mem_dealloc(tmp)
+
+
+      ! C2 (C)
+      ! ******
+      call mem_alloc(tmp,nocc,nocc,nvirt,nvirt)
+      call mem_alloc(tmp2,nvirt,nvirt,nocc,nocc)
+      tmp2=0.0_realk
+      do i=1,nocc
+         do a=1,nvirt
+
+            do k=1,nocc
+               do c=1,nvirt
+
+                  ! tmp(k,i,a,c) = g(k,i,a,c) - 0.5 * sum_{dl} t2(a,d,l,i) * govov(k,d,l,c)
+                  tmp(k,i,a,c) = goovv%val(k,i,a,c)
+                  do l=1,nocc
+                     do d=1,nvirt
+                        tmp(k,i,a,c) = tmp(k,i,a,c) - 0.5_realk*t2%elm4(a,d,l,i)*govov%val(k,d,l,c)
+                     end do
+                  end do
+
+                  ! Residual intemediate: 
+                  ! tmp2(a,b,i,j) = - sum_{kc} t2(b,c,k,j) * tmp(k,i,a,c)
+                  do j=1,nocc
+                     do b=1,nvirt
+                        tmp2(a,b,i,j) = tmp2(a,b,i,j) - t2%elm4(b,c,k,j) * tmp(k,i,a,c)
+                     end do
+                  end do
+
+               end do
+            end do
+
+         end do
+      end do
+
+      ! Add component with i<-->j scaled properly to get final C2 residual component
+      ! (although still missing final symmetrization which is done commonly for C,D, and E
+      !  terms at the very end)
+      ! rho2CDE(a,b,i,j) = (0.5 + P_{ij}) * tmp2(a,b,i,j)
+      call mem_alloc(rho2CDE,nvirt,nvirt,nocc,nocc)
+      do j=1,nocc
+         do i=1,nocc
+            do a=1,nvirt
+               do b=1,nvirt
+                  rho2CDE(a,b,i,j) = 0.5_realk*tmp2(a,b,i,j) + tmp2(a,b,j,i)
+               end do
+            end do
+         end do
+      end do
+      call mem_dealloc(tmp)
+      call mem_dealloc(tmp2)
+
+
+      ! D2 (D)
+      ! ******  
+      call mem_alloc(tmp,nvirt,nocc,nocc,nvirt)
+      do i=1,nocc
+         do a=1,nvirt
+
+
+            do c=1,nvirt
+               do k=1,nocc
+
+                  ! tmp(a,i,k,c) = L(a,i,k,c) + 0.5 sum_{dl} u(a,d,i,l)*L(l,d,k,c)
+                  ! --------------------------------------------------------------
+
+                  ! L(a,i,k,c) = 2*g(a,i,k,c) - g(a,c,k,i) = 2*g(a,i,k,c) - g(k,i,a,c) 
+                  tmp(a,i,k,c) = 2.0_realk*gvoov%val(a,i,k,c) - goovv%val(k,i,a,c)
+                  do d=1,nvirt
+                     do l=1,nocc
+                        ! L(l,d,k,c) = 2*g(l,d,k,c) - g(l,c,k,d)
+                        Lldkc = 2.0_realk*govov%val(l,d,k,c) - govov%val(l,c,k,d)
+                        ! u(a,d,i,l) = 2*t2(a,d,i,l) - t2(a,d,l,i)
+                        u = 2.0_realk*t2%elm4(a,d,i,l) - t2%elm4(a,d,l,i)
+                        ! tmp(a,i,k,c) = L(a,i,k,c) + 0.5 sum_{dl} u(a,d,i,l)*L(l,d,k,c) 
+                        tmp(a,i,k,c) = tmp(a,i,k,c) + 0.5_realk*u*Lldkc
+                     end do
+                  end do
+
+                  ! Update residual for C, D, and E terms:
+                  ! rho2(a,b,i,j) = rho2(a,b,i,j) + 0.5 * sum_{ck} u(b,c,j,k) * tmp(a,i,k,c)
+                  do b=1,nvirt
+                     do j=1,nocc
+                        u = 2.0_realk*t2%elm4(b,c,j,k) - t2%elm4(b,c,k,j)
+                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + 0.5_realk*u*tmp(a,i,k,c)
+                     end do
+                  end do
+
+               end do
+            end do
+
+
+         end do
+      end do
+      call mem_dealloc(tmp)
+
+
+      ! E2 (E1 and E2)
+      ! **************
+
+      ! Construct 2-dimensional intermediates
+      call mem_alloc(tmpoo,nocc,nocc)
+      call mem_alloc(tmpvv,nvirt,nvirt)
+
+      ! tmpoo(k,j) = F(k,j) + sum_{cdl} u(c,d,l,j) * g(k,d,l,c)
+      do j=1,nocc
+         do k=1,nocc
+            tmpoo(k,j) = foo%val(k,j)
+
+            do l=1,nocc
+               do d=1,nvirt
+                  do c=1,nvirt
+                     u = 2.0_realk*t2%elm4(c,d,l,j) - t2%elm4(c,d,j,l)
+                     tmpoo(k,j) = tmpoo(k,j) + u * govov%val(k,d,l,c)
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      ! tmpvv(b,c) = F(b,c) - sum_{dkl} u(b,d,k,l) * g(l,d,k,c)
+      do b=1,nvirt
+         do c=1,nvirt
+            tmpvv(b,c) = fvv%val(b,c)
+
+            do l=1,nocc
+               do d=1,nvirt
+                  do k=1,nocc
+                     u = 2.0_realk*t2%elm4(b,d,k,l) - t2%elm4(b,d,l,k)
+                     tmpvv(b,c) = tmpvv(b,c) - u * govov%val(l,d,k,c)
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      ! E2.1
+      do j=1,nocc
+         do c=1,nvirt
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + t2%elm4(a,c,i,j)*tmpvv(b,c)
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      ! E2.2
+      do j=1,nocc
+         do k=1,nocc
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) - t2%elm4(a,b,i,k)*tmpoo(k,j)
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+
+      ! Symmetrize C, D, and E terms and add to A and B terms
+      ! *****************************************************
+      do j=1,nocc
+         do b=1,nvirt
+            do i=1,nocc
+               do a=1,nvirt
+                  rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + rho2CDE(a,b,i,j) + rho2CDE(b,a,j,i)
+               end do
+            end do
+         end do
+      end do
+
+
+
       ! Clean up
+      call mem_dealloc(tmpoo)
+      call mem_dealloc(tmpvv)
+      call mem_dealloc(rho2CDE)
       call array4_free(gvvov)
       call array4_free(gooov)
       call array4_free(gvovo)
@@ -1744,6 +1986,7 @@ module cc_response_tools_module
       call array2_free(fov)
       call array2_free(fvo)
       call array2_free(fvv)
+      call array4_free(gao)
 
     end subroutine cc_jacobian_rhtr
 
