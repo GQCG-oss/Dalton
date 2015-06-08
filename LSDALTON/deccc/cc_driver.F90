@@ -3070,6 +3070,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
    type(PNOSpaceInfo), intent(in), pointer :: pno_cv(:), pno_S(:)
    type(decfrag), intent(inout), optional    :: frag
    integer :: use_i
+   real(realk) :: old1,old2,new1,new2  ! KKHACK remove again
    !FIXME: remove these by implementing a massively parallel version of the
    !multipliers residual
    type(tensor) :: o2,tl2,ml4, ppfock, qqfock,pqfock,qpfock
@@ -3105,6 +3106,27 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
             & fock,t1fock,iajb,no,nv,xo,xv,yo,yv,nb,&
             & MyLsItem,omega1(use_i),t1(use_i),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
             & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
+
+
+            old1 = tensor_ddot(omega1(use_i),omega1(use_i))
+            old2 = tensor_ddot(omega2(use_i),omega2(use_i))
+            omega1(use_i)%elm2=0.d0
+            omega2(use_i)%elm4=0.d0
+            call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),t2(use_i),omega1(use_i),&
+                 & omega2(use_i))
+            new1 = tensor_ddot(omega1(use_i),omega1(use_i))
+            new2 = tensor_ddot(omega2(use_i),omega2(use_i))
+            print *
+            print *, 'OLD NORM1', old1
+            print *, 'NEW NORM1', new1
+            print *, 'OLD NORM2', old2
+            print *, 'NEW NORM2', new2
+            print *
+
+         ! KKHACK
+         if(iter==2) then
+            stop 'KKHACK'
+         end if
 
 #ifdef MOD_UNRELEASED
       case( SOLVE_MULTIPLIERS )

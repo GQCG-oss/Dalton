@@ -496,6 +496,45 @@ contains
   end function get_exchange_as_oopq
 
 
+  !> \brief Wrapper for dec_fock_transformation using fortran arrays, only to be used
+  !> for testing purposes!
+  !> \author Kasper Kristensen
+  !> \date June 2015
+  subroutine dec_fock_transformation_fortran_array(nbasis,FockU,U,MyLsitem,symmetric,incl_h)
+
+    implicit none
+    !> Number of basis functions
+    integer,intent(in) :: nbasis
+    !> Fock transformation on U matrix
+    real(realk), intent(inout) :: FockU(nbasis,nbasis)
+    !> Matrix to carry out Fock transformation on
+    real(realk), intent(inout) :: U(nbasis,nbasis)
+    !> LS DALTON info
+    type(lsitem), intent(inout) :: MyLsItem
+    !> Is U symmetric (true) or not (false)?
+    logical, intent(in) :: symmetric
+    !> Include one-electron contribution to Fock matrix (default: not include)
+    logical,intent(in),optional :: incl_h
+    type(matrix) :: FockU_mat, U_mat
+
+    call mat_init(FockU_mat,nbasis,nbasis)
+    call mat_init(U_mat,nbasis,nbasis)
+    call mat_set_from_full(FockU,1E0_realk, FockU_mat)
+    call mat_set_from_full(U,1E0_realk, U_mat)
+    if(present(incl_h)) then
+       call dec_fock_transformation(FockU_mat,U_mat,MyLsitem,symmetric,incl_h=incl_h)
+    else
+       call dec_fock_transformation(FockU_mat,U_mat,MyLsitem,symmetric)
+    end if
+    call mat_to_full(FockU_mat, 1.0_realk, FockU)
+    call mat_to_full(U_mat, 1.0_realk, U)
+
+    call mat_free(FockU_mat)
+    call mat_free(U_mat)
+
+  end subroutine dec_fock_transformation_fortran_array
+
+
   !> \brief Carry out 2-electron Fock transformation on matrix U, i.e.
   !> FockU = 2J(U) - K(U)
   !> where J(U) and K(U) are the coulomb and exchange transformations, respectively.

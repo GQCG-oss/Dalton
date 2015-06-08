@@ -11,7 +11,7 @@ module cc_response_tools_module
    use cc_tools_module
    use ccintegrals
 
-   public get_ccsd_multipliers_simple
+   public get_ccsd_multipliers_simple,cc_jacobian_rhtr
    private
    contains
 
@@ -1588,4 +1588,164 @@ module cc_response_tools_module
 !          WRITE(DECinfo%output,'(A,f9.3,A)')'Expected Memory Used ',ActuallyUsed,' GB'
 !       endif
     end subroutine get_ccsd_lhtr_integral_driven
+
+
+    !> \brief Right-hand transformation of CC Jacobian on trial vector: A (t1,t2) = (rho1,rho2)
+    !> This is currently a noddy code, and for testing purposes it is also
+    !> possible to evaluate the CCSD residual with this code.
+    !> FIXME: Currently only CCSD residual test code.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,yv_tensor,t2,R1,R2,rho1,rho2)
+      implicit none
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
+      !> and virt (dimension nbasis,nvirt) transformations
+      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Doubles amplitudes
+      type(tensor),intent(in) :: t2
+      !> Singles (R1) and doubles (R2) components of trial vector
+      type(tensor),intent(in) :: R1,R2
+      !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
+      type(tensor),intent(inout) :: rho1,rho2
+      type(array4) :: gao
+      type(array2) :: xo,xv,yo,yv,fao,fvo,fov,fvv,foo,Dt1
+      type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
+      integer :: nbasis,nocc,nvirt,i,j,k,l,m,a,b,c,d,e
+      integer,dimension(2) :: bo,bv,bb,oo,ov,vo,vv
+      real(realk) :: u
+      
+
+      ! Dimensions
+      nbasis = xo_tensor%dims(1)
+      nocc = xo_tensor%dims(2)
+      nvirt = xv_tensor%dims(2)
+      print *,'nbasis,nocc,nvirt', nbasis,nocc,nvirt
+
+      ! Transformation matrices in array2 format
+      bo(1) = nbasis; bo(2) = nocc
+      bv(1) = nbasis; bv(2) = nvirt
+      xo = array2_init(bo,xo_tensor%elm2)
+      xv = array2_init(bv,xv_tensor%elm2)
+      yo = array2_init(bo,yo_tensor%elm2)
+      yv = array2_init(bv,yv_tensor%elm2)
+      ! Inputs x and y do NOT include the contribution from pure MO coefficients!
+      ! --> xo = Co,        xv = Cv - Co t^T
+      !     yo = Co+Cvt,    yv = Cv 
+      
+
+      ! Calculate full AO integrals
+      call get_full_eri(mylsitem,nbasis,gao)
+
+      ! Get MO integrals
+      gvvov = get_gmo_simple(gao,xv,yv,xo,yv)
+      gooov = get_gmo_simple(gao,xo,yo,xo,yv)
+      gvovo = get_gmo_simple(gao,xv,yo,xv,yo)
+      gvvvv = get_gmo_simple(gao,xv,yv,xv,yv)
+      goooo = get_gmo_simple(gao,xo,yo,xo,yo)
+      govov = get_gmo_simple(gao,xo,yv,xo,yv)
+      goovv = get_gmo_simple(gao,xo,yo,xv,yv)
+      gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
+
+
+      ! T1-transformed Fock matrix
+      ! **************************
+      ! T1-transformed density: 
+      ! Dt1(rho,sigma) = sum_i Y_{rho i} X_{sigma i}
+      ! (some might say that this is the transposed of the T1-transposed density matrix,
+      !  however, this convention is chosen in accordance with the way Fock matrices
+      !  are built for nonsymmetric density matrices)
+      bb(1) = nbasis; bb(2)=nbasis
+      Dt1 = array2_init(bb)
+      call array2_matmul(yo,xo,Dt1,'N','T',1.0_realk,0.0_realk)
+      ! T1-transformed Fock matrix in AO basis
+      fao = array2_init(bb)
+      call dec_fock_transformation_fortran_array(nbasis,fao%val,Dt1%val,MyLsitem,.false.,incl_h=.true.)
+
+      ! T1-transformed Fock matrix in MO basis partioned into the four blocks
+      oo(1)=nocc; oo(2)=nocc
+      ov(1)=nocc; ov(2)=nvirt
+      vo(1)=nvirt; vo(2)=nocc
+      vv(1)=nvirt; vv(2)=nvirt
+      foo = array2_init(oo)
+      fov = array2_init(ov)
+      fvo = array2_init(vo)
+      fvv = array2_init(vv)
+      foo = array2_similarity_transformation(xo,fao,yo,oo)
+      fov = array2_similarity_transformation(xo,fao,yv,ov)
+      fvo = array2_similarity_transformation(xv,fao,yo,vo)
+      fvv = array2_similarity_transformation(xv,fao,yv,vv)
+
+
+      ! Calculate terms in CCSD residual
+      ! ********************************
+      ! Notation according to THE BOOK
+      ! Corresponding notation in JCP 105, 6921 (1996) is given in parenthesis
+      rho1%elm2=0.0_realk
+      rho2%elm4=0.0_realk
+
+
+      do i=1,nocc
+         do a=1,nvirt
+            
+            ! A1 term (G term in JCP 105, 6921 (1996))
+            do c=1,nvirt
+               do d=1,nvirt
+                  do k=1,nocc
+                     u = 2.0_realk*t2%elm4(c,d,k,i) - t2%elm4(c,d,i,k)
+                     rho1%elm2(a,i) = rho1%elm2(a,i) + u*gvvov%val(a,d,k,c)
+                  end do
+               end do
+            end do
+
+            ! B1 term (H)
+            do c=1,nvirt
+               do k=1,nocc
+                  do l=1,nocc
+                     u = 2.0_realk*t2%elm4(a,c,k,l) - t2%elm4(a,c,l,k)
+                     rho1%elm2(a,i) = rho1%elm2(a,i) - u*gooov%val(k,i,l,c)
+                  end do
+               end do
+            end do
+
+            ! C1 term
+            do c=1,nvirt
+               do k=1,nocc
+                  u = 2.0_realk*t2%elm4(a,c,i,k) - t2%elm4(a,c,k,i)
+                  rho1%elm2(a,i) = rho1%elm2(a,i) + u*fov%val(k,c)
+               end do
+            end do
+
+            ! D1 term
+            rho1%elm2(a,i) = rho1%elm2(a,i) + fvo%val(a,i)
+
+         end do
+      end do
+
+
+
+      ! Clean up
+      call array4_free(gvvov)
+      call array4_free(gooov)
+      call array4_free(gvovo)
+      call array4_free(gvvvv)
+      call array4_free(goooo)
+      call array4_free(govov)
+      call array4_free(goovv)
+      call array4_free(gvoov)
+      call array2_free(xo)
+      call array2_free(xv)
+      call array2_free(yo)
+      call array2_free(yv)
+      call array2_free(Dt1)
+      call array2_free(fao)
+      call array2_free(foo)
+      call array2_free(fov)
+      call array2_free(fvo)
+      call array2_free(fvv)
+
+    end subroutine cc_jacobian_rhtr
+
+
   end module cc_response_tools_module

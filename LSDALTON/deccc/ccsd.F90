@@ -737,6 +737,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
+
     !PART OF THE FIXME
     call tensor_free(ppfock)
     call tensor_free(pqfock)
