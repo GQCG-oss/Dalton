@@ -6,6 +6,13 @@
 !     - SCF specific input is in scbrhf.h
 !     - orbital specifications are in inforb.h
 !
+!  MCTYPE     Calculation Type
+!   -1     HSROHF
+!    0     single configuration (SCF)
+!    1     CASSCF
+!    2     RASSCF
+!   11     APSG
+!
       INTEGER         NFLAG, MAXRTS, MXFELT
       PARAMETER (NFLAG = 80, MAXRTS = 150, MXFELT = 20) ! MAXRTS ==> max. number of roots; has to be equal to MAXRTS_LU in lucita/cstate.inc
 !
@@ -31,7 +38,7 @@
      &                FCVORB,LNOROT,LMOORD,DIRFCK,CORHOL,CORRLX,RESPHP, &
      &                JOLSEN,ABAIPH,INERSI,INERSF,DODFT,DONEVPT,HSROHF, &
      &                BOYORB,PIPORB,ADDMP2,DOFCI,DOCISD,DOLUCITA,DOMEP, &
-     &                DO_CUBE
+     &                DO_CUBE, DOAPSG
 !     variables for srDFT /hjaaj
       LOGICAL         DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR
       COMMON /LOGINP/ FLAG(NFLAG), DOSCF,DOMP2,DOCINO,DOCI,DOMC,DORSP,  &
@@ -39,7 +46,7 @@
      &                JOLSEN,ABAIPH,INERSI,INERSF,DODFT,DONEVPT,HSROHF, &
      &                BOYORB,PIPORB,ADDMP2,DOFCI,DOCISD,DOLUCITA,DOMEP, &
      &                DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR,      &
-     &                DO_CUBE
+     &                DO_CUBE, DOAPSG
       LOGICAL         SUPSYM, DORHF
       EQUIVALENCE (SUPSYM,FLAG(17)), (DOSCF,DORHF)
 !

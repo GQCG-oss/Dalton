@@ -415,6 +415,7 @@ C
       DOMC      = .FALSE.
       DONEVPT   = .FALSE.
       DOLUCITA  = .FALSE.
+      DOAPSG    = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -1273,11 +1274,11 @@ C           are they for same basisset and same no. of symmetries ?
          END IF
          IF (NERROR .GT. 0) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,'(/A/5X,A,I3,5X,8I5)')
-     &         'Input ERROR in connection with ".MOSTART"',
-     &         'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
+            WRITE (LUPRI,'(/A,I5/5X,A,I3,5X,8I5)')
+     &        'Input ERROR in connection with ".MOSTART" of type',IRDMO,
+     &        'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
             WRITE (LUPRI,'(5X,A,I3,5X,8I5)')
-     &         'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
+     &        'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
          ELSE IF (NDELT .NE. 0) THEN
             NINFO = NINFO + 1
             WRITE (LUPRI,'(/5X,A/I10,A)')
@@ -1935,6 +1936,7 @@ C  *SOLVENT CALCULATION
 C  *PRINT LEVELS
 C  *AUXILIARY INPUT
 C  *LUCITA CALCULATION     ! large-scale CI
+C  *APSG INPUT
 C  *STEX INPUT
 C  *END OF (marks end of keyword input)
 C
@@ -2043,7 +2045,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTBMOD = 26)
+      PARAMETER (NTBMOD = 27)
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
       LOGICAL   ensemble_input_provided
@@ -2060,7 +2062,7 @@ C
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',   ! 11:15
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',   ! 16:20
      *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',   ! 21:25
-     *            '*ENSEMB'/
+     *            '*APSG I','*ENSEMB'/
 C
 C
 C  ***************************************************
@@ -2081,7 +2083,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (8000,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2900,3000,2400,3200,3300,3400,3500,3600), I
+     *                2900,3000,2400,3200,3300,3400,3500,3600,3700), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2169,12 +2171,15 @@ C      added by Bin Gao, to generate cube files to visualize the results (March 
        goto 910
  3500  CALL CC_ACTINP(WORD,NSYM)         ! *CHOACT
        GO TO 910
- 3600  ensemble_input_provided = .true.  ! *ENSEMB
+!      *APSG INPUT
+!3600  CALL APSG_INPUT(WORD,INPERR,ALLOPT)
+ 3600  CALL QUIT('*APSG INPUT not available in this version.')
+       GO TO 910
+ 3700  ensemble_input_provided = .true.  ! *ENSEMB
 !      this is to keep backwards compatibility - ensemble dft input is now
 !      processed via the new input reader module.
        call move_to_next_star(word,lucmd)
        GO TO 910
-
 C  Here if "*END OF"
  8000  CONTINUE
        IF (ALLOPT .AND. .NOT.PTABMO) THEN
@@ -2231,7 +2236,7 @@ C
 #endif
 
 #include "implicit.h"
-      PARAMETER (NTABLE = 37)
+      PARAMETER (NTABLE = 40)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
@@ -2268,8 +2273,8 @@ C
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',  ! 16:20
      *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',  ! 21:25
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',  ! 26:30
-     *            '.SRHYBR','.COPFAC','.MULOFA','.DSFAC ','.PVALUE',  ! 31:35
-     *            '.STEX  ','.HFXFAC'/
+     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','xXXXXXX',  ! 31:35
+     *            '.MULOFA','.DSFAC ','.PVALUE','.HFXFAC','xXXXXXX'/  ! 36:40
 C
 
       functional_line_read = .false.
@@ -2291,7 +2296,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,106,117,118,119,120,
      &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135,136,137), II
+     &                   131,132,133,134,135,136,137,138,139,140), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2565,16 +2570,16 @@ C *** Option 22: .GASCI
         NUMRUN   = NUMRUN + 1
       GO TO 100
 
-      ! .XCINT
+      ! Option 23: .XCINT
   123 continue
 #ifdef ENABLE_XCINT
-      call xcint_activate()
+        call xcint_activate()
 #else
-      call quit('.XCINT is not available in this version')
+        call quit('.XCINT is not available in this version')
 #endif
       go to 100
 
-      ! .NUMGRID
+      ! Option 24: .NUMGRID
   124 continue
 #ifdef ENABLE_XCINT
       ! radial precision threshold
@@ -2593,8 +2598,7 @@ C *** Option 22: .GASCI
       call quit('.NUMGRID is not available in this version')
 #endif
       go to 100
-
-
+C *** Option 25 not used
   125 CONTINUE
       GO TO 100
 C
@@ -2658,24 +2662,36 @@ C
 C     .COPFAC (for some srDFT testing)
   132 READ (LUCMD,*) COPFAC
       GO TO 100
+C *** Option 32: .STEX
+  133 CONTINUE
+      DOSTEX = .TRUE.
+      GO TO 100
+C *** Option 34: .APSG
+  134 CONTINUE
+        DOAPSG = .TRUE.
+        MCTYPE = 11
+        NUMRUN   = NUMRUN + 1
+      GO TO 100
+  135 CONTINUE   ! not used yet
+      GO TO 100
 C
-  133 READ (LUCMD,*) XMULFAC_READIN
+  136 READ (LUCMD,*) XMULFAC_READIN   ! .MULOFA
       SRCMULOFAC = .TRUE. 
       GO TO 100 
 C     Multiplication factor for DS in the localspin model 
-  134 READ (LUCMD,*) DSFAC
+  137 READ (LUCMD,*) DSFAC            ! .DSFAC
       DSLOCALFAC = .TRUE.
       GO TO 100
-  135 READ (LUCMD,*) HEAVISIDE_PVALUE
+  138 READ (LUCMD,*) HEAVISIDE_PVALUE ! .PVALUE
       GO TO 100
-  136 CONTINUE
-      DOSTEX = .TRUE.
-      GO TO 100
-  137 CONTINUE  ! .HFXFAC
+  139 CONTINUE  ! .HFXFAC
       IF (HFXSET) WRITE(LUPRI,*)
      &   'Default HFXFAC = ',HFXFAC,' is reset by .HFXFAC input.'
       READ (LUCMD,*) HFXFAC
+      IF (HFXSET) WRITE(LUPRI,*)
+     &   'New     HFXFAC = ',HFXFAC
       HFXSET = .TRUE.
+  140 CONTINUE ! not used yet
       GO TO 100
 C
  8000 CONTINUE
@@ -2685,9 +2701,8 @@ C
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
 #else
-      IF (ADDSRI) CALL QUIT('srDFT not implemented in this version')
+      IF (ADDSRI) CALL QUIT('srDFT is not available in this version')
 #endif
-
 
       ! here we parse the functional
       if (functional_line_read) then
@@ -2729,11 +2744,19 @@ C
 #endif /* BUILD_OPENRSP */
       end if
 
-
+C
+      IF (DOAPSG) THEN
+         IF (DOMC) THEN
+            WRITE(LUPRI,'(/2A)') WORD1,
+     &      ' input error: .MCSCF and .APSG not both allowed.'
+            INPERR = INPERR + 1
+         END IF
+         DOMC = .TRUE.
+         call quit('APSG is not available in this version')
+      END IF
+C
+      RETURN
       END
-
-
-
 
 C  /* Deck haminp */
       SUBROUTINE HAMINP(WORD,INPERR,ALLOPT)
@@ -2893,7 +2916,7 @@ C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
-         MCTYPE = 1
+         IF (MCTYPE .NE. 11) MCTYPE = 1 ! if (not APSG) then CASSCF
          READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
          DO 25 ISYM = 1,NSYM
             NAS1(ISYM) = 0
@@ -5394,6 +5417,7 @@ C
       WFTYPE = ' '
       NUMRUN_LOCAL = NUMRUN
       IF (DOLUCITA) THEN
+         IF (WFTYPE .EQ. ' ') WFTYPE='LUCITA'
          WRITE (IWUNIT,1050) 'Generalized Active Space CI (with LUCITA)'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
          IF (NUMRUN_LOCAL .GT. 0) WRITE (IWUNIT,1051) 'preceded by :'
@@ -5414,7 +5438,12 @@ C     formulation of NEVPT.
            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
            IF (NUMRUN_LOCAL .GT. 0) WRITE (IWUNIT,1051) 'preceded by :'
          ENDIF
-         IF ( DOMC ) THEN
+         IF (DOAPSG) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='APSG'
+            WRITE (IWUNIT,1050)
+     &      'Antisymmetrized Product of Strongly Orthogonal Geminals'
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+         ELSE IF ( DOMC ) THEN
             IF (WFTYPE .EQ. ' ') WFTYPE='MC-SCF'
             WRITE (IWUNIT,1050) 'MC-SCF optimization.'
             NUMRUN_LOCAL = NUMRUN_LOCAL - 1
@@ -5656,6 +5685,10 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
+      IF (DOAPSG) THEN
+         WRITE(IWUNIT,'(/5X,A/)')
+     &   'For the specification of the APSG: see later.'
+      END IF
       IF (PEQM) THEN
          WRITE(IWUNIT,'(/5X,A/5X,A/)')
      &   'Wave function environment is modeled using the',
@@ -5814,7 +5847,9 @@ C
             NWOPT_print = 0
          END IF
          NVAR_print = NCONF + NWOPT_print
-         IF (FLAG(27)) THEN
+         IF (DOAPSG) THEN
+            WRITE (IWUNIT,5020) NCONF,NWOPT_print,NVAR_print
+         ELSE IF (FLAG(27)) THEN
             WRITE (IWUNIT,5010) NCONF,NWOPT_print,NVAR_print
          ELSE
             WRITE (IWUNIT,5000) NCONF,NWOPT_print,NVAR_print
@@ -5829,6 +5864,12 @@ C
  5010 FORMAT (/,5X, 'Optimization information',
      *        /,5X, '========================',
      *        /'@    Number of determinants     ',I15,
+     *        /'@    Number of orbital rotations',I15,
+     *        /,5X, '------------------------------------------',
+     *        /'@    Total number of variables  ',I15)
+ 5020 FORMAT (/,5X, 'Optimization information',
+     *        /,5X, '========================',
+     *        /'@    Number of geminal coeffients',I14,
      *        /'@    Number of orbital rotations',I15,
      *        /,5X, '------------------------------------------',
      *        /'@    Total number of variables  ',I15)
