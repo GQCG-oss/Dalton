@@ -3117,10 +3117,8 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
             new1 = tensor_ddot(omega1(use_i),omega1(use_i))
             new2 = tensor_ddot(omega2(use_i),omega2(use_i))
             print *
-            print *, 'OLD NORM1', old1
-            print *, 'NEW NORM1', new1
-            print *, 'OLD NORM2', old2
-            print *, 'NEW NORM2', new2
+            print '(a,3g20.10)', 'NORM1', old1,new1,old1-new1
+            print '(a,3g20.10)', 'NORM2', old2,new2,old2-new2
             print *
 
          ! KKHACK
