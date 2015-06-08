@@ -3123,7 +3123,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
 
          ! KKHACK
          if(iter==2) then
-            stop 'KKHACK'
+!            stop 'KKHACK'
          end if
 
 #ifdef MOD_UNRELEASED

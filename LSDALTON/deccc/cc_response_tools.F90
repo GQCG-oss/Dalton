@@ -1648,6 +1648,7 @@ module cc_response_tools_module
       govov = get_gmo_simple(gao,xo,yv,xo,yv)
       goovv = get_gmo_simple(gao,xo,yo,xv,yv)
       gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
+      call array4_free(gao)
 
 
       ! T1-transformed Fock matrix
@@ -1669,10 +1670,6 @@ module cc_response_tools_module
       ov(1)=nocc; ov(2)=nvirt
       vo(1)=nvirt; vo(2)=nocc
       vv(1)=nvirt; vv(2)=nvirt
-      foo = array2_init(oo)
-      fov = array2_init(ov)
-      fvo = array2_init(vo)
-      fvv = array2_init(vv)
       foo = array2_similarity_transformation(xo,fao,yo,oo)
       fov = array2_similarity_transformation(xo,fao,yv,ov)
       fvo = array2_similarity_transformation(xv,fao,yo,vo)
@@ -1986,7 +1983,6 @@ module cc_response_tools_module
       call array2_free(fov)
       call array2_free(fvo)
       call array2_free(fvv)
-      call array4_free(gao)
 
     end subroutine cc_jacobian_rhtr
 
