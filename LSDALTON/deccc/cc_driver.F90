@@ -3108,23 +3108,23 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
             & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
 
 
-            old1 = tensor_ddot(omega1(use_i),omega1(use_i))
-            old2 = tensor_ddot(omega2(use_i),omega2(use_i))
-            omega1(use_i)%elm2=0.d0
-            omega2(use_i)%elm4=0.d0
-            call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),t2(use_i),omega1(use_i),&
-                 & omega2(use_i))
-            new1 = tensor_ddot(omega1(use_i),omega1(use_i))
-            new2 = tensor_ddot(omega2(use_i),omega2(use_i))
-            print *
-            print '(a,3g20.10)', 'NORM1', old1,new1,old1-new1
-            print '(a,3g20.10)', 'NORM2', old2,new2,old2-new2
-            print *
+         ! KKHACK - remove!
+         old1 = tensor_ddot(omega1(use_i),omega1(use_i))
+         old2 = tensor_ddot(omega2(use_i),omega2(use_i))
+         omega1(use_i)%elm2=0.d0
+         omega2(use_i)%elm4=0.d0
+         call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),&
+              & t2(use_i),omega1(use_i), omega2(use_i),3)
+         new1 = tensor_ddot(omega1(use_i),omega1(use_i))
+         new2 = tensor_ddot(omega2(use_i),omega2(use_i))
+         call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),&
+              & t2(use_i),omega1(use_i), omega2(use_i))
+         print *
+         print '(a,3g20.10)', 'NORM1', old1,new1,old1-new1
+         print '(a,3g20.10)', 'NORM2', old2,new2,old2-new2
+         print *
 
-         ! KKHACK
-         if(iter==2) then
-!            stop 'KKHACK'
-         end if
+
 
 #ifdef MOD_UNRELEASED
       case( SOLVE_MULTIPLIERS )

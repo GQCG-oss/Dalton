@@ -11,7 +11,7 @@ module cc_response_tools_module
    use cc_tools_module
    use ccintegrals
 
-   public get_ccsd_multipliers_simple,cc_jacobian_rhtr
+   public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr
    private
    contains
 
@@ -1590,13 +1590,11 @@ module cc_response_tools_module
     end subroutine get_ccsd_lhtr_integral_driven
 
 
-    !> \brief Right-hand transformation of CC Jacobian on trial vector: A (t1,t2) = (rho1,rho2)
-    !> This is currently a noddy code, and for testing purposes it is also
-    !> possible to evaluate the CCSD residual with this code.
-    !> FIXME: Currently only CCSD residual test code.
+    !> \brief Calculate CCSD Jacobian right-hand transformation.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,yv_tensor,t2,R1,R2,rho1,rho2)
+    subroutine cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+         & yv_tensor,t2,R1,R2,rho1,rho2)
       implicit none
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem      
@@ -1609,6 +1607,84 @@ module cc_response_tools_module
       type(tensor),intent(in) :: R1,R2
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
       type(tensor),intent(inout) :: rho1,rho2
+      type(tensor) :: rho11,rho12,rho21,rho22
+      integer :: nbasis,nocc,nvirt,whattodo
+
+      ! Dimensions
+      nbasis = xo_tensor%dims(1)
+      nocc = xo_tensor%dims(2)
+      nvirt = xv_tensor%dims(2)
+      
+      ! Calculate 1^rho components for Jacobian RHS transformation,
+      ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
+      ! Singles component: rho11  (Eq. 55)
+      ! Doubles component: rho12  (Eq. 57)
+      call tensor_minit(rho11,[nvirt,nocc],2)
+      call tensor_minit(rho12,[nvirt,nvirt,nocc,nocc],4)
+      whattodo=1
+      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
+
+      ! Calculate 2^rho components for Jacobian RHS transformation,
+      ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
+      ! Singles component: rho21  (Eq. 56)
+      ! Doubles component: rho22  (Eq. 58)
+      call tensor_minit(rho21,[nvirt,nocc],2)
+      call tensor_minit(rho22,[nvirt,nvirt,nocc,nocc],4)
+      whattodo=2
+      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+           & yv_tensor,t2,R1,R2,rho21,rho22,whattodo)
+      
+      ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
+      call tensor_zero(rho1)
+      call tensor_zero(rho2)
+      call tensor_add(rho1,1.0_realk,rho11)
+      call tensor_add(rho1,1.0_realk,rho21)
+      call tensor_add(rho2,1.0_realk,rho12)
+      call tensor_add(rho2,1.0_realk,rho22)
+      
+      call tensor_free(rho11)
+      call tensor_free(rho12)
+      call tensor_free(rho21)
+      call tensor_free(rho22)
+
+    end subroutine cc_jacobian_rhtr
+
+
+    !> \brief Noddy implementation of CCSD residual made more general such that the components of 
+    !> the Jacobinan right-hand transformation can also be calculated.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+         & yv_tensor,t2,R1,R2,rho1,rho2,whattodo)
+      implicit none
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
+      !> and virt (dimension nbasis,nvirt) transformations
+      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Doubles amplitudes
+      type(tensor),intent(in) :: t2
+      !> Singles (R1) and doubles (R2) components of trial vector
+      type(tensor),intent(in) :: R1,R2
+      !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
+      type(tensor),intent(inout) :: rho1,rho2
+      !> What to do?
+      !> 1. Calculate 1^rho components for Jacobian RH transformation (singles and doubles), 
+      !>    see Eqs. 55 and 57 in JCP 105, 6921 (1996)
+      !> 2. Calculate 2^rho components for Jacobian RH transformation (singles and doubles), 
+      !>    see Eqs. 56 and 58 in JCP 105, 6921 (1996)
+      !> 3. Calculate standard CCSD residual (then R1=CCSD singles, R2=CCSD doubles=t2), 
+      !>    see Eqs. 13.7.80-83 and 13.7.101-105 in THE BOOK 
+      !> NOTE: This implies that we use truly biorthogonal basis 
+      !>       in Eqs. 13.7.58 and 13.7.60 in THE BOOK for (1) and (2), while we use 
+      !>       the "almost bioortogonal basis" in Eqs. 13.7.58 and 13.7.59 in THE BOOK for (3).
+      !>       Effectively this means that we scale by (1 + delta_ab delta_ij)^-1 for the (1) and (2)
+      !>       doubles components but not for the (3) doubles component. 
+      !>       This distinction is necessary to ensure that the Jacobian is
+      !>       correct but also that the noddy CCSD residual implementation here 
+      !>       is consistent with Patrick's efficient CCSD residual implementation.
+      integer,intent(in) :: whattodo
       type(array4) :: gao
       type(array2) :: xo,xv,yo,yv,fao,fvo,fov,fvv,foo,Dt1
       type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
@@ -1617,12 +1693,16 @@ module cc_response_tools_module
       real(realk) :: u,Lldkc
       real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
 
+      ! Sanity check
+      if(whattodo/=1 .and. whattodo/=2 .and. whattodo/=3) then
+         print *, 'whattodo ', whattodo
+         call lsquit('noddy_generalized_ccsd_residual: Ill-defined whattodo!',-1)
+      end if
 
       ! Dimensions
       nbasis = xo_tensor%dims(1)
       nocc = xo_tensor%dims(2)
       nvirt = xv_tensor%dims(2)
-      print *,'nbasis,nocc,nvirt', nbasis,nocc,nvirt
 
       ! Transformation matrices in array2 format
       bo(1) = nbasis; bo(2) = nocc
@@ -1960,6 +2040,17 @@ module cc_response_tools_module
       end do
 
 
+      ! For Jacobian RHTR components: Multiply by (1 + delta_ab delta_ij)^-1
+      ! ********************************************************************
+      ! - see comment on bioorthogonal basis at the beginning of this subroutine
+      JacobianRHTR: if(whattodo==1 .or. whattodo==2) then
+         do i=1,nocc
+            do a=1,nvirt
+               rho2%elm4(a,a,i,i) = 0.5_realk*rho2%elm4(a,a,i,i)
+            end do
+         end do
+      end if JacobianRHTR
+
 
       ! Clean up
       call mem_dealloc(tmpoo)
@@ -1984,7 +2075,7 @@ module cc_response_tools_module
       call array2_free(fvo)
       call array2_free(fvv)
 
-    end subroutine cc_jacobian_rhtr
+    end subroutine noddy_generalized_ccsd_residual
 
 
   end module cc_response_tools_module
