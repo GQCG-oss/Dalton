@@ -14,7 +14,7 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ --check --type=debug -D BUILDNAME="MB-Sisyphos-pgi-debug" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF -D ENABLE_GEN1INT=OFF build
+./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ --check --type=debug -D BUILDNAME="MB-Sisyphos-pgi-debug" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF build
 
 cd build
 ctest -D Nightly -L linsca

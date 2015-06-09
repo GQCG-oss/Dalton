@@ -15,14 +15,10 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-#this setup line does not use openacc !
-#./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp -D BUILDNAME="MB-Sisyphos-pgi-release" -D ENABLE_EFS=OFF -D ENABLE_GEN1INT=OFF build
-
-#Janus this setup should be used (I think) when the async stuff from pgi works
-./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --gpu --cublas --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi15.3-acc-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF build
+./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --gpu --cublas --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi15.3-acc-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF build
 
 # POSSIBLE MPI STUFF
-#./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --openacc --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi15.3-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF build
+#./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --openacc --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi15.3-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF build
 
 cd build
 ctest -D Nightly -L linsca
