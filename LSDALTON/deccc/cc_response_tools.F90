@@ -1689,9 +1689,10 @@ module cc_response_tools_module
       type(array2) :: fvo,fov,fvv,foo
       type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
       integer :: nbasis,nocc,nvirt,i,j,k,l,m,a,b,c,d,e
-      real(realk) :: uR,ut,Lldkc,fac
+      real(realk) :: uA,uB,Lldkc,fac
       real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
       logical :: somethingwrong
+      real(realk),pointer :: A2(:,:,:,:), B2(:,:,:,:)
 
 
       ! Dimensions
@@ -1742,6 +1743,13 @@ module cc_response_tools_module
       ! SINGLES RESIDUAL
       ! ================
 
+      ! We use generic doubles array A2, see Table I of JCP 105, 6921 (1996):
+      ! whattodo = 1: Doubles array is t2
+      ! whattodo = 2: Doubles array is R2
+      ! whattodo = 3: Doubles array is t2
+      if(whattodo==1 .or. whattodo==3) A2 => t2%elm4
+      if(whattodo==2) A2 => R2%elm4
+
       do i=1,nocc
          do a=1,nvirt
 
@@ -1749,8 +1757,8 @@ module cc_response_tools_module
             do c=1,nvirt
                do d=1,nvirt
                   do k=1,nocc
-                     uR = 2.0_realk*R2%elm4(c,d,k,i) - R2%elm4(c,d,i,k)
-                     rho1%elm2(a,i) = rho1%elm2(a,i) + uR*gvvov%val(a,d,k,c)
+                     uA = 2.0_realk*A2(c,d,k,i) - A2(c,d,i,k)
+                     rho1%elm2(a,i) = rho1%elm2(a,i) + uA*gvvov%val(a,d,k,c)
                   end do
                end do
             end do
@@ -1759,8 +1767,8 @@ module cc_response_tools_module
             do c=1,nvirt
                do k=1,nocc
                   do l=1,nocc
-                     uR = 2.0_realk*R2%elm4(a,c,k,l) - R2%elm4(a,c,l,k)
-                     rho1%elm2(a,i) = rho1%elm2(a,i) - uR*gooov%val(k,i,l,c)
+                     uA = 2.0_realk*A2(a,c,k,l) - A2(a,c,l,k)
+                     rho1%elm2(a,i) = rho1%elm2(a,i) - uA*gooov%val(k,i,l,c)
                   end do
                end do
             end do
@@ -1768,8 +1776,8 @@ module cc_response_tools_module
             ! C1 term (I)
             do c=1,nvirt
                do k=1,nocc
-                  uR = 2.0_realk*R2%elm4(a,c,i,k) - R2%elm4(a,c,k,i)
-                  rho1%elm2(a,i) = rho1%elm2(a,i) + uR*fov%val(k,c)
+                  uA = 2.0_realk*A2(a,c,i,k) - A2(a,c,k,i)
+                  rho1%elm2(a,i) = rho1%elm2(a,i) + uA*fov%val(k,c)
                end do
             end do
 
@@ -1791,6 +1799,19 @@ module cc_response_tools_module
 
       ! DOUBLES RESIDUAL
       ! ================
+
+      ! We use generic doubles arrays A2 and B2, see Table I of JCP 105, 6921 (1996):
+      ! whattodo = 1: Doubles arrays A2 and B2 are both t2
+      ! whattodo = 2: Doubles arrays A2 and B2 are R2 and t2, respectively
+      ! whattodo = 3: Doubles arrays A2 and B2 are both t2
+      if(whattodo==1 .or. whattodo==3) then
+         A2 => t2%elm4
+         B2 => t2%elm4
+      else
+         A2 => R2%elm4
+         B2 => t2%elm4
+      end if
+
 
       ! A2 (F and B)
       ! ************
@@ -1821,7 +1842,7 @@ module cc_response_tools_module
                   do c=1,nvirt
                      do d=1,nvirt
                         rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + &
-                             & R2%elm4(c,d,i,j)*gvvvv%val(a,c,b,d)
+                             & A2(c,d,i,j)*gvvvv%val(a,c,b,d)
                      end do
                   end do
 
@@ -1833,6 +1854,9 @@ module cc_response_tools_module
 
       ! B2 (A)
       ! ******
+      ! Scaling of quadratic term (not present for 1^rho)
+      if(whattodo==1) fac=0.0_realk
+      if(whattodo==2 .or. whattodo==3) fac=1.0_realk
       call mem_alloc(tmp,nocc,nocc,nocc,nocc)
       do i=1,nocc
          do j=1,nocc
@@ -1840,20 +1864,21 @@ module cc_response_tools_module
             do k=1,nocc
                do l=1,nocc
 
-                  ! Temporary quantity: tmp(k,i,l,j) = g(k,i,l,j) + sum_{cd} t2(c,d,i,j) * g(k,c,l,d)
+                  ! Temporary quantity: 
+                  ! tmp(k,i,l,j) = g(k,i,l,j) + fac * sum_{cd} B2(c,d,i,j) * g(k,c,l,d)
                   tmp(k,i,l,j) = goooo%val(k,i,l,j)
                   do c=1,nvirt
                      do d=1,nvirt
-                        tmp(k,i,l,j) = tmp(k,i,l,j) + t2%elm4(c,d,i,j)*govov%val(k,c,l,d)
+                        tmp(k,i,l,j) = tmp(k,i,l,j) + fac*B2(c,d,i,j)*govov%val(k,c,l,d)
                      end do
                   end do
 
-                  ! rho2(a,b,i,j) += sum_{kl} R2(a,b,k,l) tmp(k,i,l,j)
-                  ! Note that the linear term is then included with R2, not t2:
-                  ! sum_{kl} R2(a,b,k,l) g(k,i,l,j)
+                  ! rho2(a,b,i,j) += sum_{kl} A2(a,b,k,l) tmp(k,i,l,j)
+                  ! Note that the linear term is then included with A2, not B2:
+                  ! sum_{kl} A2(a,b,k,l) g(k,i,l,j)
                   do a=1,nvirt
                      do b=1,nvirt
-                        rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + R2%elm4(a,b,k,l)*tmp(k,i,l,j) 
+                        rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + A2(a,b,k,l)*tmp(k,i,l,j) 
                      end do
                   end do
 
@@ -1863,7 +1888,7 @@ module cc_response_tools_module
          end do
       end do
 
-      ! For 2^rho, add quadratic term with t2 and R2 switched around,
+      ! For 2^rho, add quadratic term with B2 and A2 switched around,
       ! see Table I in JCP 105, 6921 (1996)
       Bquadratic: if(whattodo==2) then
          do i=1,nocc
@@ -1872,18 +1897,18 @@ module cc_response_tools_module
                do k=1,nocc
                   do l=1,nocc
 
-                     ! Temporary quantity: tmp(k,i,l,j) = sum_{cd} R2(c,d,i,j) * g(k,c,l,d)
+                     ! Temporary quantity: tmp(k,i,l,j) = sum_{cd} A2(c,d,i,j) * g(k,c,l,d)
                      tmp(k,i,l,j) = 0.0_realk
                      do c=1,nvirt
                         do d=1,nvirt
-                           tmp(k,i,l,j) = tmp(k,i,l,j) + R2%elm4(c,d,i,j)*govov%val(k,c,l,d)
+                           tmp(k,i,l,j) = tmp(k,i,l,j) + fac*A2(c,d,i,j)*govov%val(k,c,l,d)
                         end do
                      end do
 
-                     ! rho2(a,b,i,j) += sum_{kl} t2(a,b,k,l) tmp(k,i,l,j)
+                     ! rho2(a,b,i,j) += sum_{kl} B2(a,b,k,l) tmp(k,i,l,j)
                      do a=1,nvirt
                         do b=1,nvirt
-                           rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + t2%elm4(a,b,k,l)*tmp(k,i,l,j) 
+                           rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + B2(a,b,k,l)*tmp(k,i,l,j) 
                         end do
                      end do
 
@@ -1899,8 +1924,9 @@ module cc_response_tools_module
 
       ! C2 (C)
       ! ******
-      ! NOTE: Here the quadratic term is scaled by 0.5 for CCSD residual and by
-      ! 1.0 for 2^rho, see Table I in JCP 105, 6921 (1996)
+      ! NOTE: Here the quadratic term is scaled by 0.5 for CCSD residual, 
+      ! by 1.0 for 2^rho, and it is not present for 1^rho, see Table I in JCP 105, 6921 (1996)
+      ! 
       if(whattodo==1) fac=0.0_realk
       if(whattodo==2) fac=1.0_realk
       if(whattodo==3) fac=0.5_realk
@@ -1913,18 +1939,18 @@ module cc_response_tools_module
             do k=1,nocc
                do c=1,nvirt
 
-                  ! tmp(k,i,a,c) = g(k,i,a,c) - fac * sum_{dl} t2(a,d,l,i) * govov(k,d,l,c)
+                  ! tmp(k,i,a,c) = g(k,i,a,c) - fac * sum_{dl} B2(a,d,l,i) * govov(k,d,l,c)
                   tmp(k,i,a,c) = goovv%val(k,i,a,c)
                   do l=1,nocc
                      do d=1,nvirt
-                        tmp(k,i,a,c) = tmp(k,i,a,c) - fac*t2%elm4(a,d,l,i)*govov%val(k,d,l,c)
+                        tmp(k,i,a,c) = tmp(k,i,a,c) - fac*B2(a,d,l,i)*govov%val(k,d,l,c)
                      end do
                   end do
 
-                  ! tmp2(a,b,i,j) += - sum_{kc} R2(b,c,k,j) * tmp(k,i,a,c)
+                  ! tmp2(a,b,i,j) += - sum_{kc} A2(b,c,k,j) * tmp(k,i,a,c)
                   do j=1,nocc
                      do b=1,nvirt
-                        tmp2(a,b,i,j) = tmp2(a,b,i,j) - R2%elm4(b,c,k,j) * tmp(k,i,a,c)
+                        tmp2(a,b,i,j) = tmp2(a,b,i,j) - A2(b,c,k,j) * tmp(k,i,a,c)
                      end do
                   end do
 
@@ -1962,7 +1988,7 @@ module cc_response_tools_module
             do c=1,nvirt
                do k=1,nocc
 
-                  ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} ut(a,d,i,l)*L(l,d,k,c)
+                  ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,d,i,l)*L(l,d,k,c)
                   ! ----------------------------------------------------------------
 
                   ! L(a,i,k,c) = 2*g(a,i,k,c) - g(a,c,k,i) = 2*g(a,i,k,c) - g(k,i,a,c) 
@@ -1971,19 +1997,19 @@ module cc_response_tools_module
                      do l=1,nocc
                         ! L(l,d,k,c) = 2*g(l,d,k,c) - g(l,c,k,d)
                         Lldkc = 2.0_realk*govov%val(l,d,k,c) - govov%val(l,c,k,d)
-                        ! ut(a,d,i,l) = 2*t2(a,d,i,l) - t2(a,d,l,i)
-                        ut = 2.0_realk*t2%elm4(a,d,i,l) - t2%elm4(a,d,l,i)
-                        ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} ut(a,d,i,l)*L(l,d,k,c) 
-                        tmp(a,i,k,c) = tmp(a,i,k,c) + fac*ut*Lldkc
+                        ! uB(a,d,i,l) = 2*B2(a,d,i,l) - B2(a,d,l,i)
+                        uB = 2.0_realk*B2(a,d,i,l) - B2(a,d,l,i)
+                        ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,d,i,l)*L(l,d,k,c) 
+                        tmp(a,i,k,c) = tmp(a,i,k,c) + fac*uB*Lldkc
                      end do
                   end do
 
-                  ! Update residual for C, D, and E terms:
-                  ! rho2(a,b,i,j) = rho2(a,b,i,j) + 0.5 * sum_{ck} uR(b,c,j,k) * tmp(a,i,k,c)
+                  ! Update:
+                  ! rho2(a,b,i,j) += rho2(a,b,i,j) + 0.5 * sum_{ck} uA(b,c,j,k) * tmp(a,i,k,c)
                   do b=1,nvirt
                      do j=1,nocc
-                        uR = 2.0_realk*R2%elm4(b,c,j,k) - R2%elm4(b,c,k,j)
-                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + 0.5_realk*uR*tmp(a,i,k,c)
+                        uA = 2.0_realk*A2(b,c,j,k) - A2(b,c,k,j)
+                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + 0.5_realk*uA*tmp(a,i,k,c)
                      end do
                   end do
 
@@ -1998,12 +2024,15 @@ module cc_response_tools_module
 
       ! E2 (E1 and E2)
       ! **************
+      ! Scaling of quadratic term (not present for 1^rho)
+      if(whattodo==1) fac=0.0_realk
+      if(whattodo==2 .or. whattodo==3) fac=1.0_realk
 
       ! Construct 2-dimensional intermediates
       call mem_alloc(tmpoo,nocc,nocc)
       call mem_alloc(tmpvv,nvirt,nvirt)
 
-      ! tmpoo(k,j) = F(k,j) + sum_{cdl} ut(c,d,l,j) * g(k,d,l,c)
+      ! tmpoo(k,j) = F(k,j) + sum_{cdl} uB(c,d,l,j) * g(k,d,l,c)
       do j=1,nocc
          do k=1,nocc
             tmpoo(k,j) = foo%val(k,j)
@@ -2011,15 +2040,15 @@ module cc_response_tools_module
             do l=1,nocc
                do d=1,nvirt
                   do c=1,nvirt
-                     ut = 2.0_realk*t2%elm4(c,d,l,j) - t2%elm4(c,d,j,l)
-                     tmpoo(k,j) = tmpoo(k,j) + ut * govov%val(k,d,l,c)
+                     uB = 2.0_realk*B2(c,d,l,j) - B2(c,d,j,l)
+                     tmpoo(k,j) = tmpoo(k,j) + fac * uB * govov%val(k,d,l,c)
                   end do
                end do
             end do
          end do
       end do
 
-      ! tmpvv(b,c) = F(b,c) - sum_{dkl} ut(b,d,k,l) * g(l,d,k,c)
+      ! tmpvv(b,c) = F(b,c) - sum_{dkl} uB(b,d,k,l) * g(l,d,k,c)
       do b=1,nvirt
          do c=1,nvirt
             tmpvv(b,c) = fvv%val(b,c)
@@ -2027,8 +2056,8 @@ module cc_response_tools_module
             do l=1,nocc
                do d=1,nvirt
                   do k=1,nocc
-                     ut = 2.0_realk*t2%elm4(b,d,k,l) - t2%elm4(b,d,l,k)
-                     tmpvv(b,c) = tmpvv(b,c) - ut * govov%val(l,d,k,c)
+                     uB = 2.0_realk*B2(b,d,k,l) - B2(b,d,l,k)
+                     tmpvv(b,c) = tmpvv(b,c) - fac * uB * govov%val(l,d,k,c)
                   end do
                end do
             end do
@@ -2041,7 +2070,7 @@ module cc_response_tools_module
             do b=1,nvirt
                do i=1,nocc
                   do a=1,nvirt
-                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + R2%elm4(a,c,i,j)*tmpvv(b,c)
+                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + A2(a,c,i,j)*tmpvv(b,c)
                   end do
                end do
             end do
@@ -2054,7 +2083,7 @@ module cc_response_tools_module
             do b=1,nvirt
                do i=1,nocc
                   do a=1,nvirt
-                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) - R2%elm4(a,b,i,k)*tmpoo(k,j)
+                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) - A2(a,b,i,k)*tmpoo(k,j)
                   end do
                end do
             end do
@@ -2063,25 +2092,25 @@ module cc_response_tools_module
 
 
 
-      ! Add quadratic E terms with t2 and R2 switched around
+      ! Add quadratic E terms with B2 and A2 switched around
       ! ----------------------------------------------------
       Equadratic: if(whattodo==2) then
-         ! tmpoo(k,j) = sum_{cdl} uR(c,d,l,j) * g(k,d,l,c)
+         ! tmpoo(k,j) = sum_{cdl} uA(c,d,l,j) * g(k,d,l,c)
          do j=1,nocc
             do k=1,nocc
                tmpoo(k,j) = 0.0_realk
                do l=1,nocc
                   do d=1,nvirt
                      do c=1,nvirt
-                        uR = 2.0_realk*R2%elm4(c,d,l,j) - R2%elm4(c,d,j,l)
-                        tmpoo(k,j) = tmpoo(k,j) + uR * govov%val(k,d,l,c)
+                        uA = 2.0_realk*A2(c,d,l,j) - A2(c,d,j,l)
+                        tmpoo(k,j) = tmpoo(k,j) + fac * uA * govov%val(k,d,l,c)
                      end do
                   end do
                end do
             end do
          end do
 
-         ! tmpvv(b,c) = - sum_{dkl} uR(b,d,k,l) * g(l,d,k,c)
+         ! tmpvv(b,c) = - sum_{dkl} uA(b,d,k,l) * g(l,d,k,c)
          do b=1,nvirt
             do c=1,nvirt
                tmpvv(b,c) = 0.0_realk
@@ -2089,8 +2118,8 @@ module cc_response_tools_module
                do l=1,nocc
                   do d=1,nvirt
                      do k=1,nocc
-                        uR = 2.0_realk*R2%elm4(b,d,k,l) - R2%elm4(b,d,l,k)
-                        tmpvv(b,c) = tmpvv(b,c) - uR * govov%val(l,d,k,c)
+                        uA = 2.0_realk*A2(b,d,k,l) - A2(b,d,l,k)
+                        tmpvv(b,c) = tmpvv(b,c) - fac * uA * govov%val(l,d,k,c)
                      end do
                   end do
                end do
@@ -2103,7 +2132,7 @@ module cc_response_tools_module
                do b=1,nvirt
                   do i=1,nocc
                      do a=1,nvirt
-                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + t2%elm4(a,c,i,j)*tmpvv(b,c)
+                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + B2(a,c,i,j)*tmpvv(b,c)
                      end do
                   end do
                end do
@@ -2116,7 +2145,7 @@ module cc_response_tools_module
                do b=1,nvirt
                   do i=1,nocc
                      do a=1,nvirt
-                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) - t2%elm4(a,b,i,k)*tmpoo(k,j)
+                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) - B2(a,b,i,k)*tmpoo(k,j)
                      end do
                   end do
                end do
@@ -2167,6 +2196,8 @@ module cc_response_tools_module
       call array2_free(fov)
       call array2_free(fvo)
       call array2_free(fvv)
+      nullify(A2)
+      nullify(B2)
 
     end subroutine noddy_generalized_ccsd_residual
 
