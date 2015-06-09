@@ -1757,6 +1757,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    logical                :: diag_oo_block, diag_vv_block, prec, prec_not1, prec_in_b
    character(4)           :: atype
    character              :: intspec(5)
+   type(tensor) :: rho1,rho2 ! kkhack
+   real(realk) :: new1,new2
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
@@ -2617,6 +2619,22 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
+
+
+
+         ! KKHACK - remove!
+         call tensor_minit(rho1,[nv,no],2)
+         call tensor_minit(rho2,[nv,nv,no,no],4)
+         print *, 'Calling Jacobian RHTR'
+         call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t2(iter_idx),t1(iter_idx),t2(iter_idx),rho1,rho2)
+         new1 = tensor_ddot(rho1,rho1)
+         new2 = tensor_ddot(rho2,rho2)
+         print *, 'Jacobian1: ', new1
+         print *, 'Jacobian2: ', new2
+         call tensor_free(rho1)
+         call tensor_free(rho2)
+
+
          call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", bg=bg_was_init)
          call tensor_cp_data(t2(iter_idx), p4, order = [1,3,2,4] )
 
@@ -2692,6 +2710,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_free(oofock_prec)
    call tensor_free(vvfock_prec)
 
+
    if(use_singles) then
       !call array2_free(h1)
       call tensor_free(xo)
@@ -2707,6 +2726,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart_from_converged,&
       &mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
+
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !transform back to original basis!
@@ -3070,7 +3090,8 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
    type(PNOSpaceInfo), intent(in), pointer :: pno_cv(:), pno_S(:)
    type(decfrag), intent(inout), optional    :: frag
    integer :: use_i
-   real(realk) :: old1,old2,new1,new2  ! KKHACK remove again
+   real(realk) :: old1,old2,new1,new2,diff1,diff2  ! KKHACK remove again
+   type(tensor) :: d1,d2,rho1,rho2 ! kkhack
    !FIXME: remove these by implementing a massively parallel version of the
    !multipliers residual
    type(tensor) :: o2,tl2,ml4, ppfock, qqfock,pqfock,qpfock
@@ -3109,21 +3130,29 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
 
 
          ! KKHACK - remove!
+         call tensor_minit(rho1,[nv,no],2)
+         call tensor_minit(rho2,[nv,nv,no,no],4)
+         call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),&
+              & t2(use_i),rho1, rho2,3)
+!              & t2(use_i),rho1, rho2,3)
+         call tensor_minit(d1,[nv,no],2)
+         call tensor_minit(d2,[nv,nv,no,no],4)
+         d1%elm2 = omega1(use_i)%elm2 - rho1%elm2
+         d2%elm4 = omega2(use_i)%elm4 - rho2%elm4
          old1 = tensor_ddot(omega1(use_i),omega1(use_i))
          old2 = tensor_ddot(omega2(use_i),omega2(use_i))
-         omega1(use_i)%elm2=0.d0
-         omega2(use_i)%elm4=0.d0
-         call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),&
-              & t2(use_i),omega1(use_i), omega2(use_i),3)
-         new1 = tensor_ddot(omega1(use_i),omega1(use_i))
-         new2 = tensor_ddot(omega2(use_i),omega2(use_i))
-         call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),&
-              & t2(use_i),omega1(use_i), omega2(use_i))
+         new1 = tensor_ddot(rho1,rho1)
+         new2 = tensor_ddot(rho2,rho2)
+         diff1 = tensor_ddot(d1,d1)
+         diff2 = tensor_ddot(d2,d2)
          print *
-         print '(a,3g20.10)', 'NORM1', old1,new1,old1-new1
-         print '(a,3g20.10)', 'NORM2', old2,new2,old2-new2
+         print '(a,3g20.10)', 'NORM1: old,new,diff', sqrt(old1),sqrt(new1),sqrt(diff1)
+         print '(a,3g20.10)', 'NORM2: old,new,diff', sqrt(old2),sqrt(new2),sqrt(diff2)
          print *
-
+         call tensor_free(rho1)
+         call tensor_free(rho2)
+         call tensor_free(d1)
+         call tensor_free(d2)
 
 
 #ifdef MOD_UNRELEASED

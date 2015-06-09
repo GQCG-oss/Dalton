@@ -1652,7 +1652,7 @@ module cc_response_tools_module
 
 
     !> \brief Noddy implementation of CCSD residual made more general such that the components of 
-    !> the Jacobinan right-hand transformation can also be calculated.
+    !> the Jacobian right-hand transformation can also be calculated.
     !> \author Kasper Kristensen
     !> \date June 2015
     subroutine noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
@@ -1760,8 +1760,8 @@ module cc_response_tools_module
       ! ********************************
       ! Notation according to THE BOOK
       ! Corresponding notation in Table I of JCP 105, 6921 (1996) is given in parenthesis
-      rho1%elm2=0.0_realk
-      rho2%elm4=0.0_realk
+      call tensor_zero(rho1)
+      call tensor_zero(rho2)
 
 
       ! SINGLES RESIDUAL
