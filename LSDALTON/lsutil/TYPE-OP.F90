@@ -290,7 +290,8 @@ CALL DFT_set_default_config(DALTON%DFT)
 ! DEC TEST PARAMETERS
 DALTON%run_dec_gradient_test=.false.
 DALTON%ForceRIMP2memReduced = .FALSE.
-
+DALTON%SolveNMRResponseSimultan = .FALSE.
+DALTON%ResponseMatNormConvTest = .FALSE.
 dalton%LU_LUINTM=0
 dalton%LU_LUINTR=0
 dalton%LU_LUINDM=0
@@ -1005,7 +1006,8 @@ call WRITE_FORMATTET_DFT_param(LUPRI,DALTON%DFT)
 !EXCHANGE FACTOR
 WRITE(LUPRI,'(2X,A35,F16.8)') 'exchangeFactor',DALTON%exchangeFactor
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ForceRIMP2memReduced ',DALTON%ForceRIMP2memReduced
-
+WRITE(LUPRI,'(2X,A35,7X,L1)')'SolveNMRResponseSimultan ',DALTON%SolveNMRResponseSimultan
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ResponseMatNormConvTest ',DALTON%ResponseMatNormConvTest
 END SUBROUTINE PRINT_DALTONITEM
 
 !> \brief print the IO item structure

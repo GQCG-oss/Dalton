@@ -4495,7 +4495,7 @@ IF (ABS(SETTING%SCHEME%exchangeFactor).LT.1.0E0-15_realk)RETURN
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(1.0E0_realk/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(2.0E0_realk/maxCoor)
 IF(matrix_type .EQ. mtype_unres_dense)call lsquit('unres magderiv K not testet- not implemented',-1)
 IF(setting%IntegralTransformGC)THEN
    do idmat=1,ndmat
@@ -4506,7 +4506,6 @@ IF(setting%IntegralTransformGC)THEN
 ELSE
    CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'RHS',2,4,.FALSE.,lupri)
 ENDIF
-
 
 IF (SETTING%SCHEME%CAM) THEN
   Oper = CAMOperator       !Coulomb attenuated method

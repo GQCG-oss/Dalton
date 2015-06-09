@@ -2467,6 +2467,28 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*INASHIELD')
           config%response%tasks%doNMRshield_selected=.true.
           config%response%tasks%doResponse=.true.
+          do
+             READ(LUCMD,'(A40)') word
+             if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+             if(word(1:1) == '*')THEN
+                READWORD=.FALSE.
+                exit
+             endif
+             SELECT CASE(word)
+             CASE('.SOLVERESPONSESIMULTANT')
+                !Solve the response equations at the same time. 
+                config%integral%SolveNMRResponseSimultan = .TRUE.
+             CASE('.RESPONSEMATRIXNORMCONVTEST')
+                !Use a Matrix Norm TrAB(matA,matX) Convergence Test
+                !Where matX is the solution of the response Eq. 
+                !and TrAB(matA,matX) is related to the desired property
+                config%integral%ResponseMatNormConvTest = .TRUE.
+             CASE DEFAULT
+                WRITE (config%LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
+                     & '" not recognized in RESPONSE *INASHIELD input.'
+                CALL lsQUIT('Illegal keyword in config_rsp_input.',config%lupri)
+             END SELECT
+          enddo
        !THOMAS_NEW
        CASE('*SHIELD')
           config%response%tasks%doNMRshield=.true.

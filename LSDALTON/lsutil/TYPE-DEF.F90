@@ -217,6 +217,9 @@ INTEGER     :: molcharge
 ! TESTING FUNCTIONALITIES FOR DEC
 LOGICAL     :: run_dec_gradient_test
 LOGICAL     :: ForceRIMP2memReduced
+!NMR shielding 
+logical     :: SolveNMRResponseSimultan
+logical     :: ResponseMatNormConvTest
 END TYPE integralconfig
 
 ! WARNING WARNING  WARNING WARNING 

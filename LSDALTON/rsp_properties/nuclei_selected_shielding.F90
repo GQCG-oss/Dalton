@@ -917,14 +917,14 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   type(Matrix),intent(in) :: F(1),D(1),S
 !  logical :: Dsym
   real(realk),pointer          ::expval(:,:)
-  real(realk),pointer          ::NucSpecNMSTtotal(:,:),Prodtotal(:,:)
-  real(realk)                  :: Factor,eivalk(1)
+  real(realk),pointer          ::NucSpecNMSTtotal(:,:),Prodtotal(:,:),eivalkF(:)
+  real(realk)                  :: Factor
   real(realk)                  :: TS,TE
   integer                      :: natoms,icoor,jcoor,lupri,nbast,luerr,k
   Character(len=4),allocatable :: atomName(:)
-  type(Matrix)     :: NDX(3),Sx(3),tempm1,Xk(1),GbJ(3), GbK(3),GbDX(3)
+  type(Matrix)     :: NDX(3),Sx(3),tempm1,GbJ(3), GbK(3),GbDX(3)
   type(Matrix) :: GbXc(3), GbDXc(3)
-  type(Matrix),pointer ::  RHSk(:), DXk(:),hk(:),hb(:)
+  type(Matrix),pointer ::  RHSk(:), DXk(:),hk(:),hb(:),Xk(:)
   type(Matrix),pointer :: ProdA(:)
   type(matrix) :: DS,SD
   integer              :: ntrial,nrhs,nsol,nomega,nstart,nAtomsSelected
@@ -1030,9 +1030,11 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   !############################################################################
      
   call mem_alloc(ProdA,3)
+  do icoor=1,3      
+     call mat_init(ProdA(icoor),nbast,nbast)
+  enddo
   call mem_alloc(NucSpecNMSTtotal,3,3*nAtomsSelected)
   call mem_alloc(Prodtotal,3,3*nAtomsSelected)
-  call mat_init(Xk(1),nbast,nbast)                           
   allocate(hb(3))   ! Allocation to matrix h^b 
   call mat_init(GbDX(1),nbast,nbast)
   call mat_init(GbDX(2),nbast,nbast)  
@@ -1061,6 +1063,13 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      call mat_mul(SX(icoor),D(1),'n','n',1E0_realk,0.E0_realk,tempm1)     !tempm1 = SX*D
      call mat_init(NDX(icoor),nbast,nbast)        
      call mat_mul(D(1),tempm1,'n','n',-1.0E0_realk,0.E0_realk,NDX(icoor))  !NDX = -D*SX*D
+
+     !Contribution To RHS: -FD0SB 
+     call mat_mul(D(1),SX(icoor), 'n','n',1E0_realk,0E0_realk,tempm1) 
+     call mat_mul(F(1),tempm1,'n','n',1E0_realk,0E0_realk,ProdA(icoor)) 
+     !Contribution To RHS: SBD0F
+     call mat_mul(D(1),F(1), 'n','n',1E0_realk,0E0_realk,tempm1) 
+     call mat_mul(SX(icoor),tempm1,'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
   enddo
   call mat_free(tempm1)
   call di_GET_GbDs(lupri,luerr,NDX,GbDX,3,molcfg%setting)  ! G(D0^B)
@@ -1068,7 +1077,7 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      call II_get_xc_linrsp(lupri,luerr,molcfg%setting,nbast,NDX,D(1),GbDXc,3) 
   endif          
   do icoor=1,3 
-        call mat_init(GbXc(icoor),nbast,nbast)
+     call mat_init(GbXc(icoor),nbast,nbast)
   enddo
   if(molcfg%setting%do_dft)then  
      call II_get_xc_magderiv_kohnsham_mat(LUPRI,LUERR,molcfg%SETTING,nbast,D(1),GbXc)
@@ -1078,90 +1087,126 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
    
   call mat_init(tempm1,nbast,nbast) 
   do icoor=1,3      
-        call mat_init(ProdA(icoor),nbast,nbast)
-        !FD0^bS 
-        call mat_mul(NDX(icoor),S,'n','n',1E0_realk,0E0_realk,tempm1) 
-        call mat_mul(F(1),tempm1,'n','n',-1E0_realk,0E0_realk,ProdA(icoor))
-        !-SDOBF
-        call mat_mul(NDX(icoor),F(1),'n','n',1E0_realk,0E0_realk,tempm1) 
-        call mat_mul(S,tempm1,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
-        !-FD0SB 
-        call mat_mul(D(1),SX(icoor), 'n','n',1E0_realk,0E0_realk,tempm1) 
-        call mat_mul(F(1),tempm1,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-        ! SBD0F
-        call mat_mul(D(1),F(1), 'n','n',1E0_realk,0E0_realk,tempm1) 
-        call mat_mul(SX(icoor),tempm1,'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-        ! -hbDS 
-        call mat_mul(hb(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-        ! SDhb
-        call mat_mul(SD,hb(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-        !-J^b(D)D0S 
-
-        call mat_mul(GbJ(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-        !  - SD0J^b(D)
-        call mat_mul(SD,GbJ(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-        
-        !-K^b(D)D0S  
-        call mat_mul(GbK(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
-        !SD0K^b(D) 
-        call mat_mul(SD,Gbk(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-        !G(D0B)D0S
-        call mat_mul(GbDX(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-        !-SD0G(D0B)
-        call mat_mul(SD,GbDX(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-        !G^bDOS (DFT XC) - SD0G^b (DFT XC)
-        if(molcfg%setting%do_dft)then  
-           call mat_mul(GbXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-           call mat_mul(SD,GbXc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-        endif
-        IF(molcfg%setting%do_dft)THEN
-           call mat_mul(GbDXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-           call mat_mul(SD,GbDxc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-        endif 
+     !Contribution To RHS: FD0^bS 
+     call mat_mul(NDX(icoor),S,'n','n',1E0_realk,0E0_realk,tempm1) 
+     call mat_mul(F(1),tempm1,'n','n',-1E0_realk,1E0_realk,ProdA(icoor))
+     !Contribution To RHS: -SDOBF
+     call mat_mul(NDX(icoor),F(1),'n','n',1E0_realk,0E0_realk,tempm1) 
+     call mat_mul(S,tempm1,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
+     !Contribution To RHS: -FD0SB 
+!     call mat_mul(D(1),SX(icoor), 'n','n',1E0_realk,0E0_realk,tempm1) 
+!     call mat_mul(F(1),tempm1,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+     !Contribution To RHS:  SBD0F
+!     call mat_mul(D(1),F(1), 'n','n',1E0_realk,0E0_realk,tempm1) 
+!     call mat_mul(SX(icoor),tempm1,'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     !Contribution To RHS:  -hbDS 
+     call mat_mul(hb(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+     !Contribution To RHS:  SDhb
+     call mat_mul(SD,hb(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     !Contribution To RHS: -J^b(D)D0S 
+     
+     call mat_mul(GbJ(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+     !Contribution To RHS:   - SD0J^b(D)
+     call mat_mul(SD,GbJ(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     
+     !Contribution To RHS: -K^b(D)D0S  
+     call mat_mul(GbK(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor))
+     !Contribution To RHS: SD0K^b(D) 
+     call mat_mul(SD,Gbk(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     !Contribution To RHS: G(D0B)D0S
+     call mat_mul(GbDX(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+     !Contribution To RHS: -SD0G(D0B)
+     call mat_mul(SD,GbDX(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     !Contribution To RHS: G^bDOS (DFT XC) - SD0G^b (DFT XC)
+     if(molcfg%setting%do_dft)then  
+        call mat_mul(GbXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+        call mat_mul(SD,GbXc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     endif
+     !??????????????????????????????????????????+
+     IF(molcfg%setting%do_dft)THEN
+        call mat_mul(GbDXc(icoor),DS,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+        call mat_mul(SD,GbDxc(icoor),'n','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+     endif
   enddo
   call mat_free(tempm1)
   call mat_free(DS)
   call mat_free(SD)
-  call mat_free(SX(1))
-  call mat_free(SX(2))
-  call mat_free(SX(3))                                     
   do icoor=1,3
-    call mat_free(GbJ(icoor))
-    call mat_free(GbK(icoor))
-    call mat_free(GbDX(icoor))
-    call mat_free(GbXc(icoor))
-    call mat_free(GbDXc(icoor))                                  
-    call mat_free(hb(icoor))
+     call mat_free(SX(icoor))
+     call mat_free(GbJ(icoor))
+     call mat_free(GbK(icoor))
+     call mat_free(GbDX(icoor))
+     call mat_free(GbXc(icoor))
+     call mat_free(GbDXc(icoor))                                  
+     call mat_free(hb(icoor))
   enddo 
-  do jcoor=1,3*nAtomsSelected
-     !print *, 'test line 1',jcoor
-     eivalk(1)=0.0E0_realk
-     write(lupri,*)'Calling rsp solver for Xk  '
-     call util_scriptPx('T',D(1),S,RHSk(jcoor))
-     if ( mat_dotproduct(RHSk(jcoor),RHSk(jcoor))>1.0d-10) then
-
-        ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
-        nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
-        nsol = 1   !# of solution (output) vectors
-        nomega = 1 !If lineq_x, number of laser freqs (input)
-                   !Otherwise number of excitation energies (output) 
-        nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
-        !ntrial and nstart seem to be obsolete 
-        call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
-        call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk(jcoor:jcoor),EIVALK,Xk)
-     else
-        write(lupri,*) 'WARNING: RHSk norm is less than threshold'
-        write(lupri,*) 'LIN RSP equations NOT solved for this RHS    '
-        call mat_zero(Xk(1))
-     end if
-     call mat_free(RHSk(jcoor))
-     
-     do icoor = 1,3 
-        Prodtotal(icoor,jcoor)=-4E0_realk*factor*mat_trAB(Xk(1),ProdA(icoor))
+  IF(ls%input%DALTON%SolveNMRResponseSimultan)THEN
+     call mem_alloc(eivalkF,3*nAtomsSelected)
+     eivalkF=0.0E0_realk
+     write(lupri,*)'Calling rsp solver for all Xk  '
+     allocate(Xk(3*nAtomsSelected))   
+     do jcoor=1,3*nAtomsSelected
+        call mat_init(Xk(jcoor),nbast,nbast)                           
+        call util_scriptPx('T',D(1),S,RHSk(jcoor))     
+        if ( mat_dotproduct(RHSk(jcoor),RHSk(jcoor)).LT.1.0d-10) then
+           print*,'WARNING RHS(jcoor=',jcoor,') = Zero '
+        endif
      enddo
-  enddo
+     ntrial = 3*nAtomsSelected !# of trial vectors in a given iteration (number of RHS)
+     nrhs = 3*nAtomsSelected   !# of RHS only relevant for linear equations (lineq_x = TRUE)
+     nsol = 3*nAtomsSelected   !# of solution (output) vectors
+     nomega = 3*nAtomsSelected !If lineq_x, number of laser freqs (input)
+     !Otherwise number of excitation energies (output) 
+     nstart = 3*nAtomsSelected !Number of start vectors. Only relevant for eigenvalue problem
+     !ntrial and nstart seem to be obsolete 
+     call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+     call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk,EIVALKF,Xk)
+     do jcoor=1,3*nAtomsSelected
+        do icoor = 1,3 
+           Prodtotal(icoor,jcoor)=-4E0_realk*factor*mat_trAB(Xk(jcoor),ProdA(icoor))
+        enddo
+     enddo
+     print*,'FINAL -4E0_realk*factor*mat_trAB(Xk(jcoor),ProdA(icoor))'
+     call ls_output(Prodtotal,1,3,1,3*nAtomsSelected,3,3*nAtomsSelected,1,6)
 
-  call mat_free(Xk(1)) 
+     do jcoor=1,3*nAtomsSelected
+        call mat_free(RHSk(jcoor))
+        call mat_free(Xk(jcoor))
+     enddo
+     deallocate(Xk)
+     call mem_dealloc(eivalkF)
+  ELSE
+     allocate(Xk(1))   
+     call mat_init(Xk(1),nbast,nbast)                                
+     call mem_alloc(eivalkF,1)
+     eivalkF=0.0E0_realk
+     do jcoor=1,3*nAtomsSelected
+        write(lupri,*)'Calling rsp solver for Xk  '
+        call util_scriptPx('T',D(1),S,RHSk(jcoor))
+        if ( mat_dotproduct(RHSk(jcoor),RHSk(jcoor))>1.0d-10) then
+           ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
+           nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
+           nsol = 1   !# of solution (output) vectors
+           nomega = 1 !If lineq_x, number of laser freqs (input)
+           !Otherwise number of excitation energies (output) 
+           nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
+           !ntrial and nstart seem to be obsolete 
+           call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+           call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk(jcoor:jcoor),EIVALKF,Xk)
+        else
+           write(lupri,*) 'WARNING: RHSk norm is less than threshold'
+           write(lupri,*) 'LIN RSP equations NOT solved for this RHS    '
+           call mat_zero(Xk(1))
+        end if
+        call mat_free(RHSk(jcoor))     
+        do icoor = 1,3 
+           Prodtotal(icoor,jcoor)=-4E0_realk*factor*mat_trAB(Xk(1),ProdA(icoor))
+        enddo
+     enddo
+     call mat_free(Xk(1)) 
+     deallocate(Xk)           
+     call mem_dealloc(eivalkF)
+  ENDIF
   do icoor=1,3
     call mat_free(ProdA(icoor))
   enddo 
