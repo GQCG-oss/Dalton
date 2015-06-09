@@ -1690,7 +1690,7 @@ module cc_response_tools_module
       type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
       integer :: nbasis,nocc,nvirt,i,j,k,l,m,a,b,c,d,e
       integer,dimension(2) :: bo,bv,bb,oo,ov,vo,vv
-      real(realk) :: u,Lldkc
+      real(realk) :: uR,ut,Lldkc,fac
       real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
       logical :: somethingwrong
 
@@ -1797,8 +1797,8 @@ module cc_response_tools_module
             do c=1,nvirt
                do d=1,nvirt
                   do k=1,nocc
-                     u = 2.0_realk*t2%elm4(c,d,k,i) - t2%elm4(c,d,i,k)
-                     rho1%elm2(a,i) = rho1%elm2(a,i) + u*gvvov%val(a,d,k,c)
+                     uR = 2.0_realk*R2%elm4(c,d,k,i) - R2%elm4(c,d,i,k)
+                     rho1%elm2(a,i) = rho1%elm2(a,i) + uR*gvvov%val(a,d,k,c)
                   end do
                end do
             end do
@@ -1807,8 +1807,8 @@ module cc_response_tools_module
             do c=1,nvirt
                do k=1,nocc
                   do l=1,nocc
-                     u = 2.0_realk*t2%elm4(a,c,k,l) - t2%elm4(a,c,l,k)
-                     rho1%elm2(a,i) = rho1%elm2(a,i) - u*gooov%val(k,i,l,c)
+                     uR = 2.0_realk*R2%elm4(a,c,k,l) - R2%elm4(a,c,l,k)
+                     rho1%elm2(a,i) = rho1%elm2(a,i) - uR*gooov%val(k,i,l,c)
                   end do
                end do
             end do
@@ -1816,16 +1816,24 @@ module cc_response_tools_module
             ! C1 term (I)
             do c=1,nvirt
                do k=1,nocc
-                  u = 2.0_realk*t2%elm4(a,c,i,k) - t2%elm4(a,c,k,i)
-                  rho1%elm2(a,i) = rho1%elm2(a,i) + u*fov%val(k,c)
+                  uR = 2.0_realk*R2%elm4(a,c,i,k) - R2%elm4(a,c,k,i)
+                  rho1%elm2(a,i) = rho1%elm2(a,i) + uR*fov%val(k,c)
                end do
             end do
 
-            ! D1 term (J)
-            rho1%elm2(a,i) = rho1%elm2(a,i) + fvo%val(a,i)
-
          end do
       end do
+
+      ! D1 term (J)
+      if(whattodo/=2) then
+         ! Not include zero-order term for 2^rho singles component 
+         ! (Eq. 37 in JCP 105, 6921 (1996))
+         do i=1,nocc
+            do a=1,nvirt
+               rho1%elm2(a,i) = rho1%elm2(a,i) + fvo%val(a,i)
+            end do
+         end do
+      end if
 
 
 
@@ -1834,19 +1842,34 @@ module cc_response_tools_module
 
       ! A2 (F and B)
       ! ************
+
+      ! A2.1 term (F term in JCP 105, 6921 (1996))
+      if(whattodo/=2) then
+         ! Not include zero-order term for 2^rho doubles component 
+         ! (Eq. 38 in JCP 105, 6921 (1996))
+         do i=1,nocc
+            do a=1,nvirt
+               do j=1,nocc
+                  do b=1,nvirt
+
+                     rho2%elm4(a,b,i,j) = gvovo%val(a,i,b,j)
+
+                  end do
+               end do
+            end do
+         end do
+      end if
+
+      ! A2.2 term (B)
       do i=1,nocc
          do a=1,nvirt
             do j=1,nocc
                do b=1,nvirt
 
-                  ! A2.1 term (F term in JCP 105, 6921 (1996))
-                  rho2%elm4(a,b,i,j) = gvovo%val(a,i,b,j)
-
-                  ! A2.2 term (B)
                   do c=1,nvirt
                      do d=1,nvirt
                         rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + &
-                             & t2%elm4(c,d,i,j)*gvvvv%val(a,c,b,d)
+                             & R2%elm4(c,d,i,j)*gvvvv%val(a,c,b,d)
                      end do
                   end do
 
@@ -1873,11 +1896,12 @@ module cc_response_tools_module
                      end do
                   end do
 
-                  ! Residual: 
-                  ! rho2(a,b,i,j) = sum_{kl} t2(a,b,k,l) tmp(k,i,l,j)
+                  ! rho2(a,b,i,j) += sum_{kl} R2(a,b,k,l) tmp(k,i,l,j)
+                  ! Note that the linear term is then included with R2, not t2:
+                  ! sum_{kl} R2(a,b,k,l) g(k,i,l,j)
                   do a=1,nvirt
                      do b=1,nvirt
-                        rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + t2%elm4(a,b,k,l)*tmp(k,i,l,j) 
+                        rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + R2%elm4(a,b,k,l)*tmp(k,i,l,j) 
                      end do
                   end do
 
@@ -1886,11 +1910,48 @@ module cc_response_tools_module
 
          end do
       end do
+
+      ! For 2^rho, add quadratic term with t2 and R2 switched around,
+      ! see Table I in JCP 105, 6921 (1996)
+      Bquadratic: if(whattodo==2) then
+         do i=1,nocc
+            do j=1,nocc
+
+               do k=1,nocc
+                  do l=1,nocc
+
+                     ! Temporary quantity: tmp(k,i,l,j) = sum_{cd} R2(c,d,i,j) * g(k,c,l,d)
+                     tmp(k,i,l,j) = 0.0_realk
+                     do c=1,nvirt
+                        do d=1,nvirt
+                           tmp(k,i,l,j) = tmp(k,i,l,j) + R2%elm4(c,d,i,j)*govov%val(k,c,l,d)
+                        end do
+                     end do
+
+                     ! rho2(a,b,i,j) += sum_{kl} t2(a,b,k,l) tmp(k,i,l,j)
+                     do a=1,nvirt
+                        do b=1,nvirt
+                           rho2%elm4(a,b,i,j) = rho2%elm4(a,b,i,j) + t2%elm4(a,b,k,l)*tmp(k,i,l,j) 
+                        end do
+                     end do
+
+                  end do
+               end do
+
+            end do
+         end do
+      end if Bquadratic
       call mem_dealloc(tmp)
+
 
 
       ! C2 (C)
       ! ******
+      ! NOTE: Here the quadratic term is scaled by 0.5 for CCSD residual and by
+      ! 1.0 for 2^rho, see Table I in JCP 105, 6921 (1996)
+      if(whattodo==1) fac=0.0_realk
+      if(whattodo==2) fac=1.0_realk
+      if(whattodo==3) fac=0.5_realk
       call mem_alloc(tmp,nocc,nocc,nvirt,nvirt)
       call mem_alloc(tmp2,nvirt,nvirt,nocc,nocc)
       tmp2=0.0_realk
@@ -1900,19 +1961,18 @@ module cc_response_tools_module
             do k=1,nocc
                do c=1,nvirt
 
-                  ! tmp(k,i,a,c) = g(k,i,a,c) - 0.5 * sum_{dl} t2(a,d,l,i) * govov(k,d,l,c)
+                  ! tmp(k,i,a,c) = g(k,i,a,c) - fac * sum_{dl} t2(a,d,l,i) * govov(k,d,l,c)
                   tmp(k,i,a,c) = goovv%val(k,i,a,c)
                   do l=1,nocc
                      do d=1,nvirt
-                        tmp(k,i,a,c) = tmp(k,i,a,c) - 0.5_realk*t2%elm4(a,d,l,i)*govov%val(k,d,l,c)
+                        tmp(k,i,a,c) = tmp(k,i,a,c) - fac*t2%elm4(a,d,l,i)*govov%val(k,d,l,c)
                      end do
                   end do
 
-                  ! Residual intemediate: 
-                  ! tmp2(a,b,i,j) = - sum_{kc} t2(b,c,k,j) * tmp(k,i,a,c)
+                  ! tmp2(a,b,i,j) += - sum_{kc} R2(b,c,k,j) * tmp(k,i,a,c)
                   do j=1,nocc
                      do b=1,nvirt
-                        tmp2(a,b,i,j) = tmp2(a,b,i,j) - t2%elm4(b,c,k,j) * tmp(k,i,a,c)
+                        tmp2(a,b,i,j) = tmp2(a,b,i,j) - R2%elm4(b,c,k,j) * tmp(k,i,a,c)
                      end do
                   end do
 
@@ -1950,8 +2010,8 @@ module cc_response_tools_module
             do c=1,nvirt
                do k=1,nocc
 
-                  ! tmp(a,i,k,c) = L(a,i,k,c) + 0.5 sum_{dl} u(a,d,i,l)*L(l,d,k,c)
-                  ! --------------------------------------------------------------
+                  ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} ut(a,d,i,l)*L(l,d,k,c)
+                  ! ----------------------------------------------------------------
 
                   ! L(a,i,k,c) = 2*g(a,i,k,c) - g(a,c,k,i) = 2*g(a,i,k,c) - g(k,i,a,c) 
                   tmp(a,i,k,c) = 2.0_realk*gvoov%val(a,i,k,c) - goovv%val(k,i,a,c)
@@ -1959,19 +2019,19 @@ module cc_response_tools_module
                      do l=1,nocc
                         ! L(l,d,k,c) = 2*g(l,d,k,c) - g(l,c,k,d)
                         Lldkc = 2.0_realk*govov%val(l,d,k,c) - govov%val(l,c,k,d)
-                        ! u(a,d,i,l) = 2*t2(a,d,i,l) - t2(a,d,l,i)
-                        u = 2.0_realk*t2%elm4(a,d,i,l) - t2%elm4(a,d,l,i)
-                        ! tmp(a,i,k,c) = L(a,i,k,c) + 0.5 sum_{dl} u(a,d,i,l)*L(l,d,k,c) 
-                        tmp(a,i,k,c) = tmp(a,i,k,c) + 0.5_realk*u*Lldkc
+                        ! ut(a,d,i,l) = 2*t2(a,d,i,l) - t2(a,d,l,i)
+                        ut = 2.0_realk*t2%elm4(a,d,i,l) - t2%elm4(a,d,l,i)
+                        ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} ut(a,d,i,l)*L(l,d,k,c) 
+                        tmp(a,i,k,c) = tmp(a,i,k,c) + fac*ut*Lldkc
                      end do
                   end do
 
                   ! Update residual for C, D, and E terms:
-                  ! rho2(a,b,i,j) = rho2(a,b,i,j) + 0.5 * sum_{ck} u(b,c,j,k) * tmp(a,i,k,c)
+                  ! rho2(a,b,i,j) = rho2(a,b,i,j) + 0.5 * sum_{ck} uR(b,c,j,k) * tmp(a,i,k,c)
                   do b=1,nvirt
                      do j=1,nocc
-                        u = 2.0_realk*t2%elm4(b,c,j,k) - t2%elm4(b,c,k,j)
-                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + 0.5_realk*u*tmp(a,i,k,c)
+                        uR = 2.0_realk*R2%elm4(b,c,j,k) - R2%elm4(b,c,k,j)
+                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + 0.5_realk*uR*tmp(a,i,k,c)
                      end do
                   end do
 
@@ -1991,7 +2051,7 @@ module cc_response_tools_module
       call mem_alloc(tmpoo,nocc,nocc)
       call mem_alloc(tmpvv,nvirt,nvirt)
 
-      ! tmpoo(k,j) = F(k,j) + sum_{cdl} u(c,d,l,j) * g(k,d,l,c)
+      ! tmpoo(k,j) = F(k,j) + sum_{cdl} ut(c,d,l,j) * g(k,d,l,c)
       do j=1,nocc
          do k=1,nocc
             tmpoo(k,j) = foo%val(k,j)
@@ -1999,15 +2059,15 @@ module cc_response_tools_module
             do l=1,nocc
                do d=1,nvirt
                   do c=1,nvirt
-                     u = 2.0_realk*t2%elm4(c,d,l,j) - t2%elm4(c,d,j,l)
-                     tmpoo(k,j) = tmpoo(k,j) + u * govov%val(k,d,l,c)
+                     ut = 2.0_realk*t2%elm4(c,d,l,j) - t2%elm4(c,d,j,l)
+                     tmpoo(k,j) = tmpoo(k,j) + ut * govov%val(k,d,l,c)
                   end do
                end do
             end do
          end do
       end do
 
-      ! tmpvv(b,c) = F(b,c) - sum_{dkl} u(b,d,k,l) * g(l,d,k,c)
+      ! tmpvv(b,c) = F(b,c) - sum_{dkl} ut(b,d,k,l) * g(l,d,k,c)
       do b=1,nvirt
          do c=1,nvirt
             tmpvv(b,c) = fvv%val(b,c)
@@ -2015,39 +2075,103 @@ module cc_response_tools_module
             do l=1,nocc
                do d=1,nvirt
                   do k=1,nocc
-                     u = 2.0_realk*t2%elm4(b,d,k,l) - t2%elm4(b,d,l,k)
-                     tmpvv(b,c) = tmpvv(b,c) - u * govov%val(l,d,k,c)
+                     ut = 2.0_realk*t2%elm4(b,d,k,l) - t2%elm4(b,d,l,k)
+                     tmpvv(b,c) = tmpvv(b,c) - ut * govov%val(l,d,k,c)
                   end do
                end do
             end do
          end do
       end do
 
-      ! E2.1
+      ! E2.1 (E1)
       do j=1,nocc
          do c=1,nvirt
             do b=1,nvirt
                do i=1,nocc
                   do a=1,nvirt
-                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + t2%elm4(a,c,i,j)*tmpvv(b,c)
+                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + R2%elm4(a,c,i,j)*tmpvv(b,c)
                   end do
                end do
             end do
          end do
       end do
 
-      ! E2.2
+      ! E2.2 (E2)
       do j=1,nocc
          do k=1,nocc
             do b=1,nvirt
                do i=1,nocc
                   do a=1,nvirt
-                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) - t2%elm4(a,b,i,k)*tmpoo(k,j)
+                     rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) - R2%elm4(a,b,i,k)*tmpoo(k,j)
                   end do
                end do
             end do
          end do
       end do
+
+
+
+      ! Add quadratic E terms with t2 and R2 switched around
+      ! ----------------------------------------------------
+      Equadratic: if(whattodo==2) then
+         ! tmpoo(k,j) = sum_{cdl} uR(c,d,l,j) * g(k,d,l,c)
+         do j=1,nocc
+            do k=1,nocc
+               tmpoo(k,j) = 0.0_realk
+               do l=1,nocc
+                  do d=1,nvirt
+                     do c=1,nvirt
+                        uR = 2.0_realk*R2%elm4(c,d,l,j) - R2%elm4(c,d,j,l)
+                        tmpoo(k,j) = tmpoo(k,j) + uR * govov%val(k,d,l,c)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+         ! tmpvv(b,c) = - sum_{dkl} uR(b,d,k,l) * g(l,d,k,c)
+         do b=1,nvirt
+            do c=1,nvirt
+               tmpvv(b,c) = 0.0_realk
+
+               do l=1,nocc
+                  do d=1,nvirt
+                     do k=1,nocc
+                        uR = 2.0_realk*R2%elm4(b,d,k,l) - R2%elm4(b,d,l,k)
+                        tmpvv(b,c) = tmpvv(b,c) - uR * govov%val(l,d,k,c)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+         ! E2.1 (E1)
+         do j=1,nocc
+            do c=1,nvirt
+               do b=1,nvirt
+                  do i=1,nocc
+                     do a=1,nvirt
+                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) + t2%elm4(a,c,i,j)*tmpvv(b,c)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+         ! E2.2 (E2)
+         do j=1,nocc
+            do k=1,nocc
+               do b=1,nvirt
+                  do i=1,nocc
+                     do a=1,nvirt
+                        rho2CDE(a,b,i,j) = rho2CDE(a,b,i,j) - t2%elm4(a,b,i,k)*tmpoo(k,j)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+      end if Equadratic
 
 
       ! Symmetrize C, D, and E terms and add to A and B terms
