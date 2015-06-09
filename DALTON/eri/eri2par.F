@@ -62,7 +62,7 @@ C
       END IF
       IF (IPRPAR .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
-      IF (DBG) THEN
+      IF (DEBUG) THEN
          IPRNOD = IPRINT
       ELSE
          IPRNOD = 0
