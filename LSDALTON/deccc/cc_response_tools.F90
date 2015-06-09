@@ -1692,17 +1692,40 @@ module cc_response_tools_module
       integer,dimension(2) :: bo,bv,bb,oo,ov,vo,vv
       real(realk) :: u,Lldkc
       real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
+      logical :: somethingwrong
 
-      ! Sanity check
-      if(whattodo/=1 .and. whattodo/=2 .and. whattodo/=3) then
-         print *, 'whattodo ', whattodo
-         call lsquit('noddy_generalized_ccsd_residual: Ill-defined whattodo!',-1)
-      end if
 
       ! Dimensions
       nbasis = xo_tensor%dims(1)
       nocc = xo_tensor%dims(2)
       nvirt = xv_tensor%dims(2)
+
+      ! Sanity check 1
+      if(whattodo/=1 .and. whattodo/=2 .and. whattodo/=3) then
+         print *, 'whattodo ', whattodo
+         call lsquit('noddy_generalized_ccsd_residual: Ill-defined whattodo!',-1)
+      end if
+
+      ! Sanity check 2: Dimensions
+      somethingwrong=.false.
+      if(t2%dims(1)/=nvirt .or. t2%dims(2)/=nvirt) somethingwrong=.true.
+      if(t2%dims(3)/=nocc .or. t2%dims(4)/=nocc) somethingwrong=.true.
+      if(R2%dims(1)/=nvirt .or. R2%dims(2)/=nvirt) somethingwrong=.true.
+      if(R2%dims(3)/=nocc .or. R2%dims(4)/=nocc) somethingwrong=.true.
+      if(rho2%dims(1)/=nvirt .or. rho2%dims(2)/=nvirt) somethingwrong=.true.
+      if(rho2%dims(3)/=nocc .or. rho2%dims(4)/=nocc) somethingwrong=.true.
+      if(R1%dims(1)/=nvirt .or. R1%dims(2)/=nocc) somethingwrong=.true.
+      if(rho1%dims(1)/=nvirt .or. rho1%dims(2)/=nocc) somethingwrong=.true.
+      if(somethingwrong) then
+         print *, 't2   ', t2%dims
+         print *, 'R2   ', R2%dims
+         print *, 'rho2 ', rho2%dims
+         print *, 'rho1 ', rho1%dims
+         print *, 'R1   ', R1%dims
+         call lsquit('noddy_generalized_ccsd_residual: Dimension error!',-1)
+      end if
+
+
 
       ! Transformation matrices in array2 format
       bo(1) = nbasis; bo(2) = nocc
