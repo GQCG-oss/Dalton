@@ -4,6 +4,7 @@ module cc_response_tools_module
    use typedef
    use typedeftype
    use dec_typedef_module
+   use IntegralInterfaceMOD
 
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
@@ -1726,7 +1727,7 @@ module cc_response_tools_module
 
       ! Calculate all integrals 
       call noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
+           & yv_tensor,R1,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
            & fvo,fov,fvv,foo,whattodo)
 
 
@@ -2174,7 +2175,7 @@ module cc_response_tools_module
     !> \author Kasper Kristensen
     !> \date June 2015
     subroutine noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-         & yv_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
+         & yv_tensor,R1_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
          & fvo,fov,fvv,foo,whattodo)
       implicit none
       !> LS item structure
@@ -2182,86 +2183,306 @@ module cc_response_tools_module
       !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
       !> and virt (dimension nbasis,nvirt) transformations
       type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Singles (R1) component of trial vector
+      type(tensor),intent(in) :: R1_tensor
       !> Two-electron integrals in obvious notation (e.g. gvvov = (a b | i c) integrals)
       !> These are allocated inside this subroutine!
       type(array4),intent(inout) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
       !> Fock matrix elements in MO basis, e.g. fvo = < a | F | i >,
-      !> using either T1-transformed integrals or residual-T1 transformed integrals (see below).
+      !> using either T1-transformed integrals or trial-T1 transformed integrals (see below).
       !> These are allocated inside this subroutine!
       type(array2),intent(inout) :: fvo,fov,fvv,foo
       !> What to do? See noddy_generalized_ccsd_residual.
-      !> whattodo=1: Use residual-T1 transformed integrals
+      !> whattodo=1: Use trial-T1 transformed integrals 
+      !>             (Hamiltonian is Eq. 45 in JCP 105, 6921 (1996))
       !> whattodo=2: Use T1-transformed integrals
       !> whattodo=3: Use T1-transformed integrals
       integer,intent(in) :: whattodo
-      type(array2) :: xo,xv,yo,yv,fao,Dt1
-      type(array4) :: gao
-      integer :: nbasis,nocc,nvirt
+      type(array2) :: xo,xv,yo,yv,fao,Dt1,hao,hoo,hvo,hov,hvv,xoR,xvR,yoR,yvR,R1
+      type(array4) :: gao,gvooo
+      integer :: nbasis,nocc,nvirt,i,j,a,b,k
       integer,dimension(2) :: bo,bv,bb,oo,ov,vo,vv
-
+      real(realk) :: s
 
       ! Dimensions
       nbasis = xo_tensor%dims(1)
       nocc = xo_tensor%dims(2)
       nvirt = xv_tensor%dims(2)
-
-      ! Transformation matrices in array2 format
       bo(1) = nbasis; bo(2) = nocc
       bv(1) = nbasis; bv(2) = nvirt
+      bb(1) = nbasis; bb(2)=nbasis
+      oo(1)=nocc; oo(2)=nocc
+      ov(1)=nocc; ov(2)=nvirt
+      vo(1)=nvirt; vo(2)=nocc
+      vv(1)=nvirt; vv(2)=nvirt
+
+      ! Transformation matrices in array2 format
       xo = array2_init(bo,xo_tensor%elm2)
       xv = array2_init(bv,xv_tensor%elm2)
       yo = array2_init(bo,yo_tensor%elm2)
       yv = array2_init(bv,yv_tensor%elm2)
+      R1 = array2_init(vo,R1_tensor%elm2)
 
       ! Calculate full AO integrals
       call get_full_eri(mylsitem,nbasis,gao)
 
       ! Get MO integrals
-      gvvov = get_gmo_simple(gao,xv,yv,xo,yv)
-      gooov = get_gmo_simple(gao,xo,yo,xo,yv)
-      gvovo = get_gmo_simple(gao,xv,yo,xv,yo)
-      gvvvv = get_gmo_simple(gao,xv,yv,xv,yv)
-      goooo = get_gmo_simple(gao,xo,yo,xo,yo)
-      govov = get_gmo_simple(gao,xo,yv,xo,yv)
-      goovv = get_gmo_simple(gao,xo,yo,xv,yv)
-      gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
+      ! ****************
+      ResidualT1_twoel: if(whattodo==1) then  ! Residual-T1 transformed integrals
+
+         ! See Eq. 47 in JCP 105, 6921 (1996) for two-electron trial-T1 transformed integrals
+
+         ! Residual-transformed coefficient matrices (Eqs. 49 and 50 in JCP 105, 6921 (1996))
+         xoR = array2_init(bo)   ! zero, see Eqs. 49-51 in JCP 105, 6921 (1996) 
+         xvR = array2_init(bv)
+         yoR = array2_init(bo)   
+         yvR = array2_init(bv)   ! zero, see Eqs. 49-51 in JCP 105, 6921 (1996) 
+         call array2_matmul(xo,R1,xvR,'N','T',-1.0_realk,0.0_realk)
+         call array2_matmul(yv,R1,yoR,'N','N',1.0_realk,0.0_realk)
+
+         ! Calculate integrals according to Eq. 47 in JCP 105, 6921 (1996)
+         call two_electron_trial_T1_integrals(gao,xv,yv,xo,yv,xvR,yvR,xoR,yvR,gvvov)
+         call two_electron_trial_T1_integrals(gao,xo,yo,xo,yv,xoR,yoR,xoR,yvR,gooov)
+         call two_electron_trial_T1_integrals(gao,xv,yo,xv,yo,xvR,yoR,xvR,yoR,gvovo)
+         call two_electron_trial_T1_integrals(gao,xv,yv,xv,yv,xvR,yvR,xvR,yvR,gvvvv)
+         call two_electron_trial_T1_integrals(gao,xo,yo,xo,yo,xoR,yoR,xoR,yoR,goooo)
+         call two_electron_trial_T1_integrals(gao,xo,yv,xo,yv,xoR,yvR,xoR,yvR,govov)
+         call two_electron_trial_T1_integrals(gao,xo,yo,xv,yv,xoR,yoR,xvR,yvR,goovv)
+         call two_electron_trial_T1_integrals(gao,xv,yo,xo,yv,xvR,yoR,xoR,yvR,gvoov)
+         call two_electron_trial_T1_integrals(gao,xv,yo,xo,yo,xvR,yoR,xoR,yoR,gvooo)
+
+      else ! T1-transformed integrals
+
+         gvvov = get_gmo_simple(gao,xv,yv,xo,yv)
+         gooov = get_gmo_simple(gao,xo,yo,xo,yv)
+         gvovo = get_gmo_simple(gao,xv,yo,xv,yo)
+         gvvvv = get_gmo_simple(gao,xv,yv,xv,yv)
+         goooo = get_gmo_simple(gao,xo,yo,xo,yo)
+         govov = get_gmo_simple(gao,xo,yv,xo,yv)
+         goovv = get_gmo_simple(gao,xo,yo,xv,yv)
+         gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
+         gvooo = get_gmo_simple(gao,xv,yo,xo,yo)
+
+      end if ResidualT1_twoel
+
       call array4_free(gao)
 
 
-      ! T1-transformed Fock matrix
-      ! **************************
-      ! T1-transformed density: 
-      ! Dt1(rho,sigma) = sum_i Y_{rho i} X_{sigma i}
-      ! (some might say that this is the transposed of the T1-transposed density matrix,
-      !  however, this convention is chosen in accordance with the way Fock matrices
-      !  are built for nonsymmetric density matrices)
-      bb(1) = nbasis; bb(2)=nbasis
-      Dt1 = array2_init(bb)
-      call array2_matmul(yo,xo,Dt1,'N','T',1.0_realk,0.0_realk)
-      ! T1-transformed Fock matrix in AO basis
-      fao = array2_init(bb)
-      call dec_fock_transformation_fortran_array(nbasis,fao%val,Dt1%val,MyLsitem,.false.,incl_h=.true.)
+      ! Fock matrix
+      ! ***********
 
-      ! T1-transformed Fock matrix in MO basis partioned into the four blocks
-      oo(1)=nocc; oo(2)=nocc
-      ov(1)=nocc; ov(2)=nvirt
-      vo(1)=nvirt; vo(2)=nocc
-      vv(1)=nvirt; vv(2)=nvirt
-      foo = array2_similarity_transformation(xo,fao,yo,oo)
-      fov = array2_similarity_transformation(xo,fao,yv,ov)
-      fvo = array2_similarity_transformation(xv,fao,yo,vo)
-      fvv = array2_similarity_transformation(xv,fao,yv,vv)
+      ! One-electron contribution
+      hao = array2_init(bb)
+      call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+           & hao%val,nbasis,nbasis,AORdefault,AORdefault)
+
+      ResidualT1_oneel: if(whattodo==1) then  ! Residual-T1 transformed integrals
+         call one_electron_trial_T1_integrals(hao,xo,yo,xoR,yoR,hoo)
+         call one_electron_trial_T1_integrals(hao,xo,yv,xoR,yvR,hov)
+         call one_electron_trial_T1_integrals(hao,xv,yo,xvR,yoR,hvo)
+         call one_electron_trial_T1_integrals(hao,xv,yv,xvR,yvR,hvv)
+      else
+         hoo = array2_similarity_transformation(xo,hao,yo,oo)
+         hov = array2_similarity_transformation(xo,hao,yv,ov)
+         hvo = array2_similarity_transformation(xv,hao,yo,vo)
+         hvv = array2_similarity_transformation(xv,hao,yv,vv)
+      end if ResidualT1_oneel
+
+      ! Occ-occ Fock matrix
+      s = 2.0_realk
+      foo = array2_init(oo,hoo%val)
+      do j=1,nocc
+         do i=1,nocc
+            do k=1,nocc
+               foo%val(i,j) = foo%val(i,j) + (s*goooo%val(i,j,k,k) - goooo%val(i,k,k,j))
+            end do
+         end do
+      end do
+
+      ! Occ-virt Fock matrix
+      fov = array2_init(ov,hov%val)
+      do a=1,nvirt
+         do i=1,nocc
+            do k=1,nocc
+               fov%val(i,a) = fov%val(i,a) + (s*gooov%val(k,k,i,a) - gooov%val(i,k,k,a))
+            end do
+         end do
+      end do
+
+      ! Virt-occ Fock matrix
+      fvo = array2_init(vo,hvo%val)
+      do i=1,nocc
+         do a=1,nvirt
+            do k=1,nocc
+               fvo%val(a,i) = fvo%val(a,i) + (s*gvooo%val(a,i,k,k) - gvooo%val(a,k,k,i))
+            end do
+         end do
+      end do
+
+      ! Virt-virt Fock matrix
+      fvv = array2_init(vv,hvv%val)
+      do b=1,nvirt
+         do a=1,nvirt
+            do k=1,nocc
+               fvv%val(a,b) = fvv%val(a,b) + (s*goovv%val(k,k,a,b) - gvoov%val(a,k,k,b))
+            end do
+         end do
+      end do
+
+      call array2_free(hao)
+      call array2_free(hoo)
+      call array2_free(hov)
+      call array2_free(hvo)
+      call array2_free(hvv)
+      if(whattodo==1) then  ! Residual-T1 transformed integrals
+         call array2_free(xoR)
+         call array2_free(xvR)
+         call array2_free(yoR)
+         call array2_free(yvR)
+      end if
+
+
+!!$         ! Fock matrix from T1-transformed density (not needed now but keep it commented out)
+!!$
+!!$         ! T1-transformed density: 
+!!$         ! Dt1(rho,sigma) = sum_i Y_{rho i} X_{sigma i}
+!!$         ! (some might say that this is the transposed of the T1-transposed density matrix,
+!!$         !  however, this convention is chosen in accordance with the way Fock matrices
+!!$         !  are built for nonsymmetric density matrices)
+!!$         Dt1 = array2_init(bb)
+!!$         call array2_matmul(yo,xo,Dt1,'N','T',1.0_realk,0.0_realk)
+!!$         ! T1-transformed Fock matrix in AO basis
+!!$         fao = array2_init(bb)
+!!$         call dec_fock_transformation_fortran_array(nbasis,fao%val,Dt1%val,MyLsitem,.false.,incl_h=.true.)
+!!$
+!!$         ! T1-transformed Fock matrix in MO basis partioned into the four blocks
+!!$         foo = array2_similarity_transformation(xo,fao,yo,oo)
+!!$         fov = array2_similarity_transformation(xo,fao,yv,ov)
+!!$         fvo = array2_similarity_transformation(xv,fao,yo,vo)
+!!$         fvv = array2_similarity_transformation(xv,fao,yv,vv)
+!!$
+!!$         call array2_free(Dt1)
+!!$         call array2_free(fao)
+
 
       ! Clean up
       call array2_free(xo)
       call array2_free(xv)
       call array2_free(yo)
       call array2_free(yv)
-      call array2_free(Dt1)
-      call array2_free(fao)
-
+      call array2_free(R1)
+      call array4_free(gvooo)
 
     end subroutine noddy_generalized_ccsd_residual_integrals
+
+
+    !> \brief Calculate two-electron trial-T1 transformed integrals, 
+    !>        see Eq. 47 in JCP 105, 6921 (1996):
+    !>
+    !> g(p,q,r,s) = g1(p',q,r,s) + g2(p,q',r,s) + g3(p,q,r',s) + g4(p,q,r,s') 
+    !>
+    !> where primed index "n" is transformed with the znR transformation matrix,
+    !> while the nonprimed indices are transformed with the z1,z2,z3,z4 input matrices.
+    !>
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine two_electron_trial_T1_integrals(gao,z1,z2,z3,z4,z1R,z2R,z3R,z4R,g)
+
+      implicit none
+      !> Two-electron integrals in AO basis (not modified although intent(inout))
+      type(array4),intent(inout) :: gao
+      !> Transformation matrices as described above
+      type(array2),intent(in) :: z1,z2,z3,z4,z1R,z2R,z3R,z4R
+      !> Output two-electron integrals as described above
+      !> Note: Also initialized here!
+      type(array4),intent(inout) :: g
+      type(array4) :: g1,g2,g3,g4
+      integer :: i,j,k,l
+      logical :: somethingwrong
+
+
+      ! Sanity check
+      somethingwrong=.false.
+      if(z1%dims(1)/=z1R%dims(1) .or. z1%dims(2)/=z1R%dims(2)) somethingwrong=.true.
+      if(z2%dims(1)/=z2R%dims(1) .or. z2%dims(2)/=z2R%dims(2)) somethingwrong=.true.
+      if(z3%dims(1)/=z3R%dims(1) .or. z3%dims(2)/=z3R%dims(2)) somethingwrong=.true.
+      if(z4%dims(1)/=z4R%dims(1) .or. z4%dims(2)/=z4R%dims(2)) somethingwrong=.true.
+      if(somethingwrong) then
+         call lsquit('two_electron_trial_T1_integrals: dimension mismatch!',-1)
+      end if
+
+      ! Calculate g1,g2,g3,g4 as described above
+      g1 = get_gmo_simple(gao,z1R,z2,z3,z4)
+      g2 = get_gmo_simple(gao,z1,z2R,z3,z4)
+      g3 = get_gmo_simple(gao,z1,z2,z3R,z4)
+      g4 = get_gmo_simple(gao,z1,z2,z3,z4R)
+
+      ! Add up contributions to construct final two-electron integrals
+      g = array4_init([z1%dims(2),z2%dims(2),z3%dims(2),z4%dims(2)])
+      do l=1,z4%dims(2)
+         do k=1,z3%dims(2)
+            do j=1,z2%dims(2)
+               do i=1,z1%dims(2)
+                  g%val(i,j,k,l) = g1%val(i,j,k,l) + g2%val(i,j,k,l) + &
+                       & g3%val(i,j,k,l) + g4%val(i,j,k,l)
+               end do
+            end do
+         end do
+      end do
+      call array4_free(g1)
+      call array4_free(g2)
+      call array4_free(g3)
+      call array4_free(g4)
+
+    end subroutine two_electron_trial_T1_integrals
+
+
+
+    !> \brief Calculate one-electron trial-T1 transformed integrals, 
+    !>        see Eq. 46 in JCP 105, 6921 (1996):
+    !>
+    !> h(p,q) = h1(p',q) + h2(p,q') 
+    !>
+    !> where primed index "n" is transformed with the znR transformation matrix,
+    !> while the nonprimed indices are transformed with the z1 and z2 input matrices.
+    !>
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine one_electron_trial_T1_integrals(hao,z1,z2,z1R,z2R,h)
+
+      implicit none
+      !> One-electron integrals in AO basis (not modified although intent(inout))
+      type(array2),intent(inout) :: hao
+      !> Transformation matrices as described above (not modified although intent(inout))
+      type(array2),intent(inout) :: z1,z2,z1R,z2R
+      !> Output one-electron integrals as described above
+      !> Note: Also initialized here!
+      type(array2),intent(inout) :: h
+      type(array2) :: h1,h2
+      integer :: i,j
+      logical :: somethingwrong
+
+
+      ! Sanity check
+      somethingwrong=.false.
+      if(z1%dims(1)/=z1R%dims(1) .or. z1%dims(2)/=z1R%dims(2)) somethingwrong=.true.
+      if(z2%dims(1)/=z2R%dims(1) .or. z2%dims(2)/=z2R%dims(2)) somethingwrong=.true.
+      if(somethingwrong) then
+         call lsquit('one_electron_trial_T1_integrals: dimension mismatch!',-1)
+      end if
+
+      ! Calculate h1 and h2 as described above
+      h1 = array2_similarity_transformation(z1R,hao,z2,[z1%dims(2),z2%dims(2)])
+      h2 = array2_similarity_transformation(z1,hao,z2R,[z1%dims(2),z2%dims(2)])
+
+      ! Add up contributions to construct final one-electron integrals
+      h = array2_add(h1,h2)
+
+      call array2_free(h1)
+      call array2_free(h2)
+
+    end subroutine one_electron_trial_T1_integrals
+
 
 
   end module cc_response_tools_module
