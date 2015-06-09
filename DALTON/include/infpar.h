@@ -24,11 +24,11 @@
 extern struct common_infpar {
 #if defined (VAR_INT64)
     long iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
-    long nodtot, nodeid[MAXNOD+1], nfmat, mtottk, parher, dbg, pario;
+    long nodtot, nodeid[MAXNOD+1], nfmat, mtottk, parher, debug, pario;
     long timing, slave, rma_model;
 #else
     int  iprpar, ntask, ncode, ndegdi, master, mynum, mytid;
-    int  nodtot, nodeid[MAXNOD+1], nfmat, mtottk, parher, dbg, pario;
+    int  nodtot, nodeid[MAXNOD+1], nfmat, mtottk, parher, debug, pario;
     int  timing, slave, rma_model;
 #endif
     char nodnam[MAXNOD][20], myname[20];
@@ -48,11 +48,11 @@ extern struct common_infpar {
       PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
-      LOGICAL PARHER, PARIO, DBG, TIMING, SLAVE, rma_model
+      LOGICAL PARHER, PARIO, DEBUG, TIMING, SLAVE, rma_model
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
       COMMON /DALTONINFPAR/                                              &
      &        IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID         &
-     &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, DBG, PARIO          &
+     &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, DEBUG, PARIO        &
      &       ,rma_model, TIMING, SLAVE , NODNAM, MYNAME
 #ifdef PRG_DIRAC
       EQUIVALENCE (NODTOT, NUMNOD)
