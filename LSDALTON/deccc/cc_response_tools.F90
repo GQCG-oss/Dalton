@@ -1685,11 +1685,9 @@ module cc_response_tools_module
       !>       correct but also that the noddy CCSD residual implementation here 
       !>       is consistent with Patrick's efficient CCSD residual implementation.
       integer,intent(in) :: whattodo
-      type(array4) :: gao
-      type(array2) :: xo,xv,yo,yv,fao,fvo,fov,fvv,foo,Dt1
+      type(array2) :: fvo,fov,fvv,foo
       type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
       integer :: nbasis,nocc,nvirt,i,j,k,l,m,a,b,c,d,e
-      integer,dimension(2) :: bo,bv,bb,oo,ov,vo,vv
       real(realk) :: uR,ut,Lldkc,fac
       real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
       logical :: somethingwrong
@@ -1726,57 +1724,10 @@ module cc_response_tools_module
       end if
 
 
-
-      ! Transformation matrices in array2 format
-      bo(1) = nbasis; bo(2) = nocc
-      bv(1) = nbasis; bv(2) = nvirt
-      xo = array2_init(bo,xo_tensor%elm2)
-      xv = array2_init(bv,xv_tensor%elm2)
-      yo = array2_init(bo,yo_tensor%elm2)
-      yv = array2_init(bv,yv_tensor%elm2)
-      ! Inputs x and y do NOT include the contribution from pure MO coefficients!
-      ! --> xo = Co,        xv = Cv - Co t^T
-      !     yo = Co+Cvt,    yv = Cv 
-
-
-      ! Calculate full AO integrals
-      call get_full_eri(mylsitem,nbasis,gao)
-
-      ! Get MO integrals
-      gvvov = get_gmo_simple(gao,xv,yv,xo,yv)
-      gooov = get_gmo_simple(gao,xo,yo,xo,yv)
-      gvovo = get_gmo_simple(gao,xv,yo,xv,yo)
-      gvvvv = get_gmo_simple(gao,xv,yv,xv,yv)
-      goooo = get_gmo_simple(gao,xo,yo,xo,yo)
-      govov = get_gmo_simple(gao,xo,yv,xo,yv)
-      goovv = get_gmo_simple(gao,xo,yo,xv,yv)
-      gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
-      call array4_free(gao)
-
-
-      ! T1-transformed Fock matrix
-      ! **************************
-      ! T1-transformed density: 
-      ! Dt1(rho,sigma) = sum_i Y_{rho i} X_{sigma i}
-      ! (some might say that this is the transposed of the T1-transposed density matrix,
-      !  however, this convention is chosen in accordance with the way Fock matrices
-      !  are built for nonsymmetric density matrices)
-      bb(1) = nbasis; bb(2)=nbasis
-      Dt1 = array2_init(bb)
-      call array2_matmul(yo,xo,Dt1,'N','T',1.0_realk,0.0_realk)
-      ! T1-transformed Fock matrix in AO basis
-      fao = array2_init(bb)
-      call dec_fock_transformation_fortran_array(nbasis,fao%val,Dt1%val,MyLsitem,.false.,incl_h=.true.)
-
-      ! T1-transformed Fock matrix in MO basis partioned into the four blocks
-      oo(1)=nocc; oo(2)=nocc
-      ov(1)=nocc; ov(2)=nvirt
-      vo(1)=nvirt; vo(2)=nocc
-      vv(1)=nvirt; vv(2)=nvirt
-      foo = array2_similarity_transformation(xo,fao,yo,oo)
-      fov = array2_similarity_transformation(xo,fao,yv,ov)
-      fvo = array2_similarity_transformation(xv,fao,yo,vo)
-      fvv = array2_similarity_transformation(xv,fao,yv,vv)
+      ! Calculate all integrals 
+      call noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+           & yv_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
+           & fvo,fov,fvv,foo,whattodo)
 
 
       ! Calculate terms in CCSD residual
@@ -2211,18 +2162,106 @@ module cc_response_tools_module
       call array4_free(govov)
       call array4_free(goovv)
       call array4_free(gvoov)
-      call array2_free(xo)
-      call array2_free(xv)
-      call array2_free(yo)
-      call array2_free(yv)
-      call array2_free(Dt1)
-      call array2_free(fao)
       call array2_free(foo)
       call array2_free(fov)
       call array2_free(fvo)
       call array2_free(fvv)
 
     end subroutine noddy_generalized_ccsd_residual
+
+
+    !> \brief Calculate integrals for noddy_generalized_ccsd_residual.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+         & yv_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
+         & fvo,fov,fvv,foo,whattodo)
+      implicit none
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
+      !> and virt (dimension nbasis,nvirt) transformations
+      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Two-electron integrals in obvious notation (e.g. gvvov = (a b | i c) integrals)
+      !> These are allocated inside this subroutine!
+      type(array4),intent(inout) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
+      !> Fock matrix elements in MO basis, e.g. fvo = < a | F | i >,
+      !> using either T1-transformed integrals or residual-T1 transformed integrals (see below).
+      !> These are allocated inside this subroutine!
+      type(array2),intent(inout) :: fvo,fov,fvv,foo
+      !> What to do? See noddy_generalized_ccsd_residual.
+      !> whattodo=1: Use residual-T1 transformed integrals
+      !> whattodo=2: Use T1-transformed integrals
+      !> whattodo=3: Use T1-transformed integrals
+      integer,intent(in) :: whattodo
+      type(array2) :: xo,xv,yo,yv,fao,Dt1
+      type(array4) :: gao
+      integer :: nbasis,nocc,nvirt
+      integer,dimension(2) :: bo,bv,bb,oo,ov,vo,vv
+
+
+      ! Dimensions
+      nbasis = xo_tensor%dims(1)
+      nocc = xo_tensor%dims(2)
+      nvirt = xv_tensor%dims(2)
+
+      ! Transformation matrices in array2 format
+      bo(1) = nbasis; bo(2) = nocc
+      bv(1) = nbasis; bv(2) = nvirt
+      xo = array2_init(bo,xo_tensor%elm2)
+      xv = array2_init(bv,xv_tensor%elm2)
+      yo = array2_init(bo,yo_tensor%elm2)
+      yv = array2_init(bv,yv_tensor%elm2)
+
+      ! Calculate full AO integrals
+      call get_full_eri(mylsitem,nbasis,gao)
+
+      ! Get MO integrals
+      gvvov = get_gmo_simple(gao,xv,yv,xo,yv)
+      gooov = get_gmo_simple(gao,xo,yo,xo,yv)
+      gvovo = get_gmo_simple(gao,xv,yo,xv,yo)
+      gvvvv = get_gmo_simple(gao,xv,yv,xv,yv)
+      goooo = get_gmo_simple(gao,xo,yo,xo,yo)
+      govov = get_gmo_simple(gao,xo,yv,xo,yv)
+      goovv = get_gmo_simple(gao,xo,yo,xv,yv)
+      gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
+      call array4_free(gao)
+
+
+      ! T1-transformed Fock matrix
+      ! **************************
+      ! T1-transformed density: 
+      ! Dt1(rho,sigma) = sum_i Y_{rho i} X_{sigma i}
+      ! (some might say that this is the transposed of the T1-transposed density matrix,
+      !  however, this convention is chosen in accordance with the way Fock matrices
+      !  are built for nonsymmetric density matrices)
+      bb(1) = nbasis; bb(2)=nbasis
+      Dt1 = array2_init(bb)
+      call array2_matmul(yo,xo,Dt1,'N','T',1.0_realk,0.0_realk)
+      ! T1-transformed Fock matrix in AO basis
+      fao = array2_init(bb)
+      call dec_fock_transformation_fortran_array(nbasis,fao%val,Dt1%val,MyLsitem,.false.,incl_h=.true.)
+
+      ! T1-transformed Fock matrix in MO basis partioned into the four blocks
+      oo(1)=nocc; oo(2)=nocc
+      ov(1)=nocc; ov(2)=nvirt
+      vo(1)=nvirt; vo(2)=nocc
+      vv(1)=nvirt; vv(2)=nvirt
+      foo = array2_similarity_transformation(xo,fao,yo,oo)
+      fov = array2_similarity_transformation(xo,fao,yv,ov)
+      fvo = array2_similarity_transformation(xv,fao,yo,vo)
+      fvv = array2_similarity_transformation(xv,fao,yv,vv)
+
+      ! Clean up
+      call array2_free(xo)
+      call array2_free(xv)
+      call array2_free(yo)
+      call array2_free(yv)
+      call array2_free(Dt1)
+      call array2_free(fao)
+
+
+    end subroutine noddy_generalized_ccsd_residual_integrals
 
 
   end module cc_response_tools_module
