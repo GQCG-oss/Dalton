@@ -916,9 +916,15 @@ C
       SUBROUTINE ABS_LINE2(KZVAR,XTMP,ZYMB,ISYMDM,ISYMB,NNMAX,
      &                     CMO,FC,FCAC,FV,UDV,XINDX,MJWOP,WRK,LWRK)
 C
+#ifdef ENABLE_XCINT_RESPONSE
+      use dalton_xcint_interface, only: xcint_is_active,
+     &                                  xcint_integrate_rks_lr
+#endif
+c
 C PURPOSE:
 C
-C 
+C
+c 
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"
@@ -955,6 +961,14 @@ C     local
       INTEGER IDUMMY
       PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
 C
+#ifdef ENABLE_XCINT_RESPONSE
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: xc_mat(:)
+      real(8), allocatable :: fmat_mo(:)
+      real(8)              :: num_electrons
+      logical              :: file_exists
+#endif
+c
       CALL QENTER('ABS_LINE2')
 C
 C     Allocate work space for density and Fock matrices
@@ -1137,11 +1151,60 @@ C         Proceed normal way otherwise
      &                            ZYMB(1,1,NKD-NASIM+1),.FALSE.,
      &                            ISYMB,WRK(KFREE),LFREE,IPRDFT)
           ELSE
+#ifdef ENABLE_XCINT_RESPONSE
+             if (xcint_is_active()) then
+
+c             if (nasim > 1) then
+c                call quit('NASIM > 1 not implemented with ENABLE_XCINT')
+c             end if
+
+             inquire(file='num_grid', exist=file_exists)
+             if (.not. file_exists) then
+                call quit('ERROR: num_grid file not found')
+             end if
+             allocate(dmat_ao(nbast*nbast*2))
+             allocate(xc_mat(nbast*nbast))
+             allocate(fmat_mo(norbt*norbt))
+             do iosim =1,nasim
+               dmat_ao = 0.0d0
+               xc_mat = 0.0d0
+               fmat_mo = 0.0d0
+             ! get unperturbed ao density matrix
+               call dft_get_ao_dens_mat(cmo, dmat_ao,
+     &                                  wrk(kfree), lfree)
+             ! get perturbed ao density matrix
+               call deq27(cmo, zymb(1,1,nkd-nasim+iosim), (/0.0d0/), 
+     &                    dmat_ao(nbast*nbast + 1),
+     &                    (/0.0d0/), wrk(kfree), lfree)
+
+             ! scale density matrices
+               call dscal(nbast*nbast*2, 0.5d0, dmat_ao, 1)
+
+               call xcint_integrate_rks_lr(dmat_ao, xc_mat)
+
+             ! transform ao fock matrix contribution to mo
+               call lrao2mo(cmo, isymb, xc_mat,
+     &                      fmat_mo, wrk(kfree), lfree)
+
+             ! scale and copy on top of fcx
+!               call daxpy(norbt*norbt, 0.5d0, fmat_mo, 1, fcx, 1)
+               call daxpy(norbt*norbt, 0.5d0, fmat_mo, 1,
+     &                    wrk(kfmmo(nkd-nasim+iosim)), 1)
+             enddo
+
+             deallocate(dmat_ao)
+             deallocate(xc_mat)
+             deallocate(fmat_mo)
+         else
+#endif /* ENABLE_XCINT_RESPONSE */
 c         call dft_lin_respf(NNMAX,WRK(KFMMO(1)),CMO,ZYMB,
 c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
             call dft_lin_respf(NASIM,WRK(KFMMO(NKD-NASIM+1)),CMO,
      &                         ZYMB(1,1,NKD-NASIM+1),
      &                        .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
+#ifdef ENABLE_XCINT_RESPONSE
+             endif
+#endif
           END IF
         END IF
       END DO

@@ -166,12 +166,14 @@ implicit none
 #endif
   ! PLT info
   call pltinfo_set_default_config(config%Plt)
-  config%doplt=.false.
+  config%doplt         = .false.
   !F12 calc?
-  config%doF12=.false.
-  config%doRIMP2=.false.
+  config%doF12         = .false.
+  config%doRIMP2       = .false.
   config%doTestMPIcopy = .false.
-  config%skipscfloop = .false.
+  config%doTestHodi    = .false.
+  config%skipscfloop   = .false.
+  config%papitest      = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
   print*,'config_set_default_config:',infpar%inputBLOCKSIZE
@@ -205,7 +207,7 @@ implicit none
    !read the MOLECULE.INP and set input
    call read_molfile_and_build_molecule(lupri,config%molecule,config%LIB,&
         & .FALSE.,0,config%integral%DoSpherical,config%integral%basis,&
-        & config%latt_config)
+        & config%latt_config,config%integral%atombasis)
    config%integral%nelectrons = config%molecule%nelectrons 
    config%integral%molcharge = INT(config%molecule%charge)
    !read the LSDALTON.INP and set input
@@ -243,10 +245,6 @@ end subroutine config_free
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
 use IIDFTINT, only: II_DFTsetFunc
-#if defined(ENABLE_QMATRIX)
-use ls_qmatrix, only: ls_qmatrix_init, &
-                      ls_qmatrix_input
-#endif
 
 implicit none
 !> Logical unit number for LSDALTON.OUT
@@ -821,18 +819,6 @@ DO
    ENDIF
 #endif
 
-#if defined(ENABLE_QMATRIX)
-   ! QMatrix library
-   if (WORD=='**QMATRIX') then
-       config%do_qmatrix = .true.
-       ! initializes the QMatrix interface
-       call ls_qmatrix_init(config%ls_qmat)
-       ! processes input
-       READWORD = .true.
-       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
-   end if
-#endif
-
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.
    ENDIF
@@ -1253,6 +1239,8 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            !Calculated the Interaction energy 
            !using Counter Poise Correction
            config%InteractionEnergy = .true.
+        CASE('.PAPITEST')
+           config%papitest=.true.
         CASE('.ACCESS_STREAM')
            ! Use stream access on all files open with lsopen
            config%access_stream = .true.
@@ -1296,6 +1284,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
+        CASE('.TESTHODI');              config%doTestHodi            = .true.
            ! Max memory available on gpu measured in GB. By default set to 2 GB
         CASE('.GPUMAXMEM');             
            READ(LUCMD,*) config%GPUMAXMEM
@@ -3141,7 +3130,7 @@ implicit none
 !
    integer                         :: i
 !   integer                         :: omp_get_num_threads
-   logical                         :: file_exists,CABS_BASIS_PRESENT
+   logical                         :: file_exists,CABS_BASIS_PRESENT,Phantom
    real(realk)                     :: conv_factor, potnuc, cutoff,inverse_std_conv_factor
    CHARACTER*24, PARAMETER :: AVG_NAMES(5) = &
         &  (/ 'None                    ', &
@@ -3672,7 +3661,19 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 
 ! Check Counter Poise Input :
    IF(config%InteractionEnergy.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
-      call lsquit('.INTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
+      Phantom = .FALSE.
+      IF(ls%input%molecule%nSubSystems.EQ.3)THEN
+         DO I=1,ls%input%molecule%nAtoms
+            IF(ls%input%molecule%Atom(I)%SubSystemIndex.EQ.-2)Phantom = .TRUE.
+         ENDDO
+      ENDIF
+      IF(Phantom)THEN
+         WRITE(config%lupri,*)'Molecule contains Phantom atoms (basis functions without nuclei)'
+         WRITE(config%lupri,*)'Since not all Phantom atoms have been assigned a SubSystemLabel'
+         WRITE(config%lupri,*)'it is assumed that both Subsystems needs these Phantom atoms'          
+      ELSE
+         call lsquit('.INTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
+      ENDIF
    ENDIF
 
 ! Check integral input:
@@ -3689,12 +3690,19 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
 
-   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam) .OR. config%integral%basis(CAPBasParam)
+   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam)
 
-   if(config%doF12 .AND. (.NOT. CABS_BASIS_PRESENT))then
-      WRITE(config%LUPRI,'(/A)') &
-           &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
-      CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+   if(config%doF12)THEN
+      if(.NOT. CABS_BASIS_PRESENT)then         
+         WRITE(config%LUPRI,'(/A)') &
+              &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+         CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+      endif
+      WRITE(config%LUPRI,'(A,F7.1)')'The F12 Geminal exponent for the Regular Basis = ',&
+           & ls%setting%basis(1)%p%BINFO(REGBASPARAM)%GeminalScalingFactor
+      IF(config%integral%ATOMBASIS)THEN
+         WRITE(config%LUPRI,'(A)') 'WARNING BASIS (NOT ATOMBASIS) is required to auto detect the Geminal exponent'
+      ENDIF
    endif
 !ADMM basis input
    if(config%integral%ADMM_EXCHANGE) THEN

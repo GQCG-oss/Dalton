@@ -397,6 +397,7 @@ real(realk)               :: Charges(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: pointcharges(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: phantom(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: DunningsBasis
+real(realk)               :: GeminalScalingFactor
 END TYPE BASISSETLIBRARYITEM
 
 TYPE BLOCK

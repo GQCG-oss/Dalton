@@ -61,7 +61,7 @@ contains
     !*******************
 
     !Service variables
-    integer           :: i,j
+    integer           :: i,j,a
     integer           :: nb,noEOS,nvEOS,noAOS,nvAOS
     type(array2)      :: temp1
 
@@ -73,6 +73,22 @@ contains
 
     !DEBUG Init MP2 gradient structure
     call init_mp2grad(MyFragment,grad)
+ 
+    !DEBUG
+    print *, "Debug print m2_aibj: "
+    do a=1,m2occ%nelms 
+      if (ABS(m2occ%elm1(a))>0.00000001)then 
+        write (*,'(i5,F12.8)') a, m2occ%elm1(a)
+      endif
+    end do 
+
+    !DEBUG
+    print *, "Debug print t2_aibj: "
+    do a=1,t2occ%nelms
+      if (ABS(t2occ%elm1(a))>0.00000001)then
+        write (*,'(i5,F12.8)') a, t2occ%elm1(a)
+      endif
+    end do
 
     !calculate the density
     !**********************
@@ -400,10 +416,11 @@ contains
     !using the virtual partitioning scheme
     !D^sd_ia = Sum_bj z^b_j*(2t^ab_ij - t^ba_ij)
     do iEOS=1,noEOS
-       iMOL=MyFragment%occEOSidx(iEOS)
+       !iMOL=MyFragment%occEOSidx(iEOS)
+       iAOS=MyFragment%idxo(iEOS)
        
       do aAOS=1,nvAOS
-         aMOL=MyFragment%virtAOSidx(aAOS)
+         !aMOL=MyFragment%unoccAOSidx(aAOS)
             
          do jEOS=1,noEOS
             jAOS=MyFragment%idxo(jEOS)
@@ -880,10 +897,11 @@ contains
     !****************
     !D^sd_ia = Sum_bj z^b_j*(2t^ab_ij - t^ba_ij)
     do iEOS=1,noEOS
-       iMOL=PairFragment%occEOSidx(iEOS)
+       !iMOL=PairFragment%occEOSidx(iEOS)
+       iAOS=PairFragment%idxo(iEOS)
 
       do aAOS=1,nvAOS
-         aMOL=PairFragment%virtAOSidx(aAOS)
+         !aMOL=PairFragment%unoccAOSidx(aAOS)
 
            do jEOS=1,noEOS
               jAOS=PairFragment%idxo(jEOS)

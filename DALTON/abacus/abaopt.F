@@ -2390,14 +2390,15 @@ C
  678  FORMAT(A,F14.6)
       IF ((ITRNMR .GT. 0) .AND. (ITRBRK .LT. (ITRNMR - 1))) THEN
          ERGDIF = ENERGY - ERGOLD
+         WRITE(LUPRI,678)' Energy change from last geom.  : ', ERGDIF
          IF (ABS(ERGPRO) .GT. 1.0D-10) THEN
             RATIO = ERGDIF / ERGPRO
+            WRITE(LUPRI,678)' Predicted change               : ', ERGPRO
+            WRITE(LUPRI,678)' Ratio, actual/predicted change : ', RATIO
          ELSE
             RATIO = 1.0D0
+            WRITE(LUPRI,'(A)') ' New basis set specifications'
          END IF
-         WRITE(LUPRI,678)' Energy change from last geom.  : ', ERGDIF
-         WRITE(LUPRI,678)' Predicted change               : ', ERGPRO
-         WRITE(LUPRI,678)' Ratio, actual/predicted change : ', RATIO
       END IF
       WRITE(LUPRI,678) ' Norm of gradient               : ', GRADNM
       WRITE(LUPRI,678) ' Norm of step                   : ', STPNRM
@@ -2411,8 +2412,10 @@ C
       WRITE(LUPRI,'(A,I8//)')' Total effective Hessian index  :',INDTOT
       IF (BRKSYM .AND. GECONV) THEN
          WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
+         ERGPRD = 0.0D0
       ELSE IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) THEN
          WRITE(LUPRI,'(/A)') ' *) End of preoptimization.'
+         ERGPRD = 0.0D0
       END IF
       START = 1
       NCRD = NCRTOT
@@ -7267,6 +7270,7 @@ C
 #include "mxcent.h"
 #include "molinp.h"
 #include "gnrinf.h"
+#include "inftap.h"
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
@@ -7325,6 +7329,10 @@ C
       CALL IZERO(IPTCNT, MXCENT*48)
       CALL IZERO(NAXREP, 16)
       CALL IZERO(INDHES, 8)
+      IF (LUIT1 .LT. 0)
+     &CALL GPOPEN(LUIT1,'SIRIUS.RST','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      CALL GPCLOSE(LUIT1,'DELETE')
       RETURN
       END
 

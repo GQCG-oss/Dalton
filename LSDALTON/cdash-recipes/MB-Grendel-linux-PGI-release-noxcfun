@@ -1,0 +1,35 @@
+#!/bin/bash
+TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonPGIReleaseNOXCFUN
+SCRATCH_DIR=/tmp/tkjaer/DaltonPGIReleaseNOXCFUN
+rm -rf $TMP_DIR 
+rm -rf $SCRATCH_DIR
+export PATH=/usr/local/torque/bin:/com/pgi/linux86-64/2015/bin:/com/bin:/usr/local/bin:/bin:/usr/bin:$PATH
+export LD_LIBRARY_PATH=/com/pgi/linux86-64/2015/bin:$LD_LIBRARY_PATH
+#export PATH=/usr/local/torque/bin:/com/pgi/linux86-64/11.10/bin:/com/pgi/linux86-64/11.10/lib:/com/bin:/usr/local/bin:/bin:/usr/bin:/com/pgi/linux86-64/11.10:/com/pgi/linux86-64/11.10/libso:/com/pgi/linux86-64/11.10/bin:/com/pgi/linux86-64/11.10/lib
+#export LD_LIBRARY_PATH=/com/pgi/linux86-64/11.10/bin:/com/pgi/linux86-64/11.10/lib:/com/acml-4.1.0-pgi/pgi64_mp_int64/lib:/com/pgi/linux86-64/11.10:/com/pgi/linux86-64/11.10/libso:/com/pgi/linux86-64/11.10/bin:/com/pgi/linux86-64/11.10/lib
+#libpgbind.so is only in the old version of pgi 11.10 instead of 12.4 (see path) but acml seem to need this file 
+#so it must be built for/with the old pgi version:  needs /com/pgi/linux86-64/11.10/libso/libpgbind.so  
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
+cd $TMP_DIR
+#git checkout linsca-develop
+#git checkout Dalton2013_release
+git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
+export OMP_NUM_THREADS=3
+export DALTON_TMPDIR=$SCRATCH_DIR
+export DALTON_NUM_MPI_PROCS=1
+export CTEST_PROJECT_NAME=LSDALTON
+./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ --omp -D BUILDNAME="MB-Grendel-linux-PGI-release-noxcfun" -D ENABLE_EFS=OFF -D ENABLE_XCFUN=OFF
+#--explicit-libs="-Llib -L/com/acml-4.1.0-pgi/pgi64_mp_int64/lib -lacml -lacml_mv -lm -lpthread -lrt -pgf90libs"
+#--scratch=$SCRATCH_DIR 
+#./setup --fc=pgf90 --cc=pgcc --internal-math --omp --scratch=$SCRATCH_DIR -D BUILDNAME="Grendel-linux-PGI-release"
+cd $TMP_DIR/build
+#make depend
+#make VERBOSE=1
+#make Nightly 
+ctest -D Nightly -L linsca
+#make -j4 lsdalton.x 
+#ctest -L linsca -D NightlyTest
+#ctest -L linsca -D NightlySubmit
+
+exit 0
+

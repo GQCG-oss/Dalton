@@ -1014,14 +1014,11 @@ C
          IF (SDRTST) THEN
             KTMPGD = 2
             KTMPHS = KTMPGD + MXCOOR
-            KBKPGD = KTMPHS + NCOOR**2
-            KBKPHS = KBKPGD + NCOOR
-            KLAST  = KBKPHS + NCOOR**2
-            LWRK = LWORK - KLAST + 1
+            KLAST  = KTMPHS + NCOOR**2
+            LWRK   = LWORK - KLAST + 1
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in SDERTT')
             CALL SDERTT(TSTSDR,TSTGDR,SYMCOR,WORK(KTMPGD),WORK(KTMPHS),
-     &           WORK(KBKPGD),WORK(KBKPHS),WORK(KLAST),LWRK,
-     &           WRKDLM,IPRINT)
+     &           WORK(KLAST),LWRK, WRKDLM,IPRINT)
          END IF
 C
 C     *** Reevaluate restart parameter ***

@@ -3,26 +3,19 @@ TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonIfortRelease
 SCRATCH_DIR=/tmp/tkjaer/DaltonIfortRelease
 rm -rf $TMP_DIR 
 rm -rf $SCRATCH_DIR
-export PATH=/com/intel/Compiler/11.1/064/bin/intel64:/usr/local/torque/bin:/home/com/intel/composer_xe_2011_sp1.8.273/bin/intel64:/com/bin:/usr/local/bin:/bin:/usr/bin:/home/com/intel/composer_xe_2011_sp1.8.273/mpirt/bin/intel64
-export LD_LIBRARY_PATH=/com/intel/Compiler/11.1/064/mkl/lib/em64t:/com/intel/Compiler/11.1/064/lib/intel64:/com/intel/Compiler/11.1/064/mkl/lib/em64t:/com/intel/Compiler/11.1/064/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/ipp/../compiler/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/ipp/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/mkl/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/tbb/lib/intel64//cc4.1.0_libc2.4_kernel2.6.16.21:/home/com/intel/composer_xe_2011_sp1.8.273/debugger/lib/intel64:/home/com/intel/composer_xe_2011_sp1.8.273/mpirt/lib/intel64
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+export PATH=/usr/local/torque/bin:/com/bin:/usr/local/bin:/bin:/usr/bin
+export LD_LIBRARY_PATH=/com/intel/Compiler/11.1/064/mkl/lib/em64t:/com/intel/Compiler/11.1/064/lib/intel64
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
-#git checkout linsca-develop
-#git checkout Dalton2013_release
-git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
+#git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 export OMP_NUM_THREADS=3
 source /com/intel/Compiler/11.1/064/bin/intel64/ifortvars_intel64.sh
 cd $TMP_DIR
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-./setup --fc=ifort --cc=icc --cxx=icpc --timings --blas=none --lapack=none --explicit-libs="-Llib -L/com/intel/mkl/10.1.1.019/lib/em64t -lmkl -lmkl_core -lmkl_lapack  -lmkl_intel_thread -lguide -lpthread" --omp -D BUILDNAME="MB-Grendel-linux-ifort11.1-omp-release"
-#cp /home/tkjaer/NightlyTestingCdash/git_revision_info.f90 $TMP_DIR/lsutil/.
-#cp /home/tkjaer/NightlyTestingCdash/compilation_info.f90 $TMP_DIR/lsutil/.
+./setup --fc=ifort --cc=icc --cxx=icpc --timings --blas=none --lapack=none --explicit-libs="-Llib -L/com/intel/Compiler/11.1/064/mkl/lib/em64t -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lguide -lpthread -lm" --omp -D BUILDNAME="MB-Grendel-linux-ifort11.1-omp-release"
 cd $TMP_DIR/build
-#make depend
-#make
-#make Nightly
 ctest -D Nightly -L linsca
 
 exit 0

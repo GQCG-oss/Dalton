@@ -1646,7 +1646,7 @@ C     Orthogonalize against trial vectors (Y,Z)
 C
 C     Check linear dependence.
 C
-         BNORM = DNORM2(KZYVAR,WRK(KBVEC),1)
+         BNORM = DNRM2(KZYVAR,WRK(KBVEC),1)
          IF (BNORM.LT.1.0D-6) THEN
             IF (IPRABS.GE.0) WRITE(LUPRI,'(A)')
      &           ' INFO: vector not used as trial vector'//

@@ -86,10 +86,9 @@ contains
          & OccOrbitals, virtOrbitals)
 
     if (DECinfo%only_generate_DECorbs) then
-       print*,' '
-       print*, 'Quitting after DEC orbitals have been written to file'
+       print*, 'Quits after DEC orbitals have been written to file'
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a)') 'Quitting after DEC orbitals have been written to file'
+       write(DECinfo%output,'(1X,a)') 'Quits after DEC orbitals have been written to file'
        call lsquit('Quitting after DEC orbitals have been written to file',DECinfo%output)
     end if
 
@@ -456,7 +455,7 @@ contains
              call read_gradient_and_energies_for_restart(nfrags,FragEnergies,jobs,fullgrad)
           else
              write(DECinfo%output,*) 'Restarting pair fragments - energy...'
-             call read_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
+             call read_fragment_energies_for_restart_driver(nfrags,FragEnergies,jobs,esti)
           end if
        end if
        if(DECinfo%only_n_frag_jobs > 0)then
@@ -631,6 +630,13 @@ contains
           Ecorr = energies(FRAGMODEL_VIRTRIMP2)
        ELSE
           Ecorr = energies(FRAGMODEL_OCCRIMP2)
+       ENDIF
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2, use occ energy
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTLSTHCRIMP2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCLSTHCRIMP2)
        ENDIF
     case(MODEL_RPA)
        ! RPA, use occ energy
@@ -861,6 +867,7 @@ subroutine print_dec_info()
     fragenergy=0.0_realk
     only_update=.true.
     dofragopt=.false.
+    nfragopt = 0
 
     if (jobs%njobs>0) then
        ! Do any fragment optimizations?
@@ -961,6 +968,7 @@ subroutine print_dec_info()
        if(k<=jobs%njobs) then
           if(jobs%jobsdone(k)) cycle JobLoop ! job is already done
        end if
+
 
        ! *********************************************
        ! *    MPI PARALLELIZATION OF FRAGMENT JOBS   *
@@ -1208,6 +1216,17 @@ subroutine print_dec_info()
 #endif
 
 
+       ! Crash calculation on purpose to test restart option
+       if (( jobdone >= 2*nfragopt-1).and.(DECinfo%CrashEsti)) then
+          print*,'Calculation was intentionally crashed due to keyword .CRASHESTI'
+          print*,'This keyword is only used for debug and testing purposes'
+          print*,'We want to be able to test the .RESTART keyword'
+          WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHESTI'
+          WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
+          WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
+          call lsquit('Crashed Calculation due to .CRASHESTI keyword',DECinfo%output)
+       end if
+
 
        RestartStuff: if(jobdone>0) then
 
@@ -1253,8 +1272,8 @@ subroutine print_dec_info()
           !3) DECinfo%only_one_frag_job is requested -- this is only for debugging
 
           backup_files =  (((float(jobdone) < 0.25*float(jobs%njobs)) .or. &
-              &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. & 
-              & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_n_frag_jobs>0) 
+              &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) .or. DECinfo%CRASHESTI) &
+              & .and. (.not. all(jobs%dofragopt))) .or. (DECinfo%only_n_frag_jobs>0) 
 
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
           Backup: if( backup_files )then
@@ -1263,13 +1282,13 @@ subroutine print_dec_info()
 
              if(esti) then
                 ! Save info for estimated pair fragments restart
-                call write_fragment_energies_for_restart(nfrags,FragEnergies,estijobs,esti)
+                call write_fragment_energies_for_restart_driver(nfrags,FragEnergies,estijobs,esti)
              else
                 ! Standard fragments, save info for restart
                 if(DECinfo%first_order) then  ! density and/or gradient 
                    call write_gradient_and_energies_for_restart(nfrags,FragEnergies,jobs,fullgrad)
                 else ! just energy
-                   call write_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
+                   call write_fragment_energies_for_restart_driver(nfrags,FragEnergies,jobs,esti)
                 end if
 
              end if
@@ -1420,7 +1439,7 @@ subroutine print_dec_info()
 
        if(DECinfo%DECrestart) then
           write(DECinfo%output,*) 'Restarting pair fragment estimate calculations...'
-          call read_fragment_energies_for_restart(nfrags,FragEnergies,estijobs,esti)
+          call read_fragment_energies_for_restart_driver(nfrags,FragEnergies,estijobs,esti)
        end if
 
        ! Merge job list of atomic fragment optimization and estimated fragments (in this order)

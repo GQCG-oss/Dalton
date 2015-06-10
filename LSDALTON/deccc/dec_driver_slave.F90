@@ -59,7 +59,6 @@ contains
     integer(kind=ls_mpik) :: master
     master=0
 
-
     ! DEC settings
     ! ************
     ! Just in case, initialize using default settings
@@ -70,6 +69,8 @@ contains
     ! Set output unit number to 0 for slaves
     DECinfo%output=0
 
+    ! Allocate BackGround Buffer
+    call BackGroundBufferAllocate()
 
     ! GET FULL MOLECULAR INFO FROM MASTER
     ! ***********************************
@@ -276,10 +277,47 @@ contains
     call ls_free(MyLsitem)
 
     call molecule_finalize(MyMolecule,.false.)
+    ! Deallocate BackGround Buffer
+    call BackGroundBufferDeallocate()
 
   end subroutine main_fragment_driver_slave
 
+!> \brief allocate the background buffer framework
+!> \author Thomas Kjaergaard
+!> \date April 2015
+  subroutine BackGroundBufferAllocate()
+    implicit none
+    logical :: use_bg_buf
+    integer(kind=8) :: bytes_to_alloc
+    use_bg_buf = .FALSE.
+#ifdef VAR_MPI
+    IF(DECinfo%use_bg_buffer)use_bg_buf = .TRUE.
+#endif
+    IF(use_bg_buf)THEN
+       !DECinfo%memory is in GB we need it in bytes 
+       IF(DECinfo%PL.GT.0)THEN
+          print*,'Background buffer initilizes with ',DECinfo%bg_memory,' GB'
+          !WRITE(DECinfo%output,'(A,F10.2,A)')'Background buffer initilizes with ',DECinfo%bg_memory,' GB'
+          IF(DECinfo%bg_memory.LT.0.OR.DECinfo%bg_memory.GT.DECinfo%memory)THEN
+             print*,'DECinfo%bg_memory=',DECinfo%bg_memory
+             print*,'DECinfo%memory   =',DECinfo%memory
+             call lsquit('.BGMEMORY not set correctly',-1)
+          ENDIF
+          bytes_to_alloc = int(DECinfo%bg_memory*1.0E+9_realk,kind=8)
+          call mem_init_background_alloc(bytes_to_alloc)     
+       ENDIF
+    ENDIF
+  end subroutine BackGroundBufferAllocate
 
+!> \brief deallocate the background buffer framework
+!> \author Thomas Kjaergaard
+!> \date April 2015
+  subroutine BackGroundBufferDeallocate()
+    implicit none    
+    IF(mem_is_background_buf_init())THEN
+       call mem_free_background_alloc()
+    ENDIF
+  end subroutine BackGroundBufferDeallocate
 
 !> \brief For each local master: Carry out  fragment calculations (both single and pair)
 !> for those  fragments requested by main master.
@@ -754,6 +792,8 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.,.false.,memoryneeded)
   elseif(MyFragment%ccmodel==MODEL_RIMP2) then ! RIMP2
      !do nothing ntasks is not used anyway
+  elseif(MyFragment%ccmodel==MODEL_LSTHCRIMP2) then ! LS-THC-RIMP2
+     !do nothing
   else  ! CC2 or CCSD
      mpi_split = .true.
      call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)

@@ -91,6 +91,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
+  use HODItest_module, only: debugTestHODI
 #ifdef VAR_PAPI
   use papi_module
 #endif
@@ -102,10 +103,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
-#if defined(ENABLE_QMATRIX)
-  use ls_qmatrix, only: ls_qmatrix_test, &
-                        ls_qmatrix_finalize
-#endif
 #ifdef HAS_PCMSOLVER
   use ls_pcm_utils, only: init_molecule
   use ls_pcm_scf, only: ls_pcm_scf_initialize, ls_pcm_scf_finalize
@@ -169,7 +166,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      !for now atleast
      RETURN
   ENDIF
-
+  IF(config%papitest)THEN
+#ifdef VAR_PAPI
+     call papi_example(LUPRI)
+#endif
+  ENDIF
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
      CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
@@ -317,6 +318,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mem_alloc(GGem,nbast,nbast,nbast,nbast,1) 
            call II_get_GaussianGeminalFourCenter(lupri,luerr,ls%setting,GGem,nbast,.true.) 
            call mem_dealloc(GGem) 
+        ENDIF
+
+        IF (config%doTestHodi) THEN
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
         ENDIF
 
         CALL mat_init(D(1),nbast,nbast)
@@ -617,18 +623,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
-#if defined(ENABLE_QMATRIX)
-        if (config%do_qmatrix) then
-            ! performs the Fortran test of the QMatrix library
-            call ls_qmatrix_test(config%ls_qmat)
-            !- performs Delta-SCF using the QMatrix library (NB! this is not linear-scaling)
-            !-call ls_qmatrix_scf()
-            ! finalizes the QMatrix interface
-            call ls_qmatrix_finalize(config%ls_qmat)
-            config%do_qmatrix = .false.
-        end if
-#endif
-
 #ifdef MOD_UNRELEASED
         ! Numerical Derivatives
         if(config%response%tasks%doNumHess .or. &
@@ -794,12 +788,21 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
+#ifdef VAR_OPENACC
+  use openacc
+#endif
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
   real(realk), intent(inout) :: t1,t2
+#ifdef VAR_OPENACC
+  !> device type
+  integer(acc_device_kind) :: acc_device_type
+#endif
   
   !INITIALIZING TIMERS SHOULD ALWAYS BE THE FIRST CALL
   call init_timers
@@ -808,6 +811,14 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   call mypapi_init(eventset)
 #endif
+
+#ifdef VAR_OPENACC
+  ! probe for device type
+  acc_device_type = acc_get_device_type()
+  ! initialize the device
+  call acc_init(acc_device_type)
+#endif
+
   call init_globalmemvar  !initialize the global memory counters
   call NullifyMPIbuffers  !initialize the MPI buffers
   call set_matrix_default !initialize global matrix counters
@@ -815,7 +826,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call lstmem_init
   call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
+#ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
+#endif
   call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
   ! MPI initialization
@@ -844,7 +857,12 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
+#ifdef VAR_OPENACC
+  use openacc
+#endif
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
 #ifdef VAR_SCALAPACK
   use matrix_operations_scalapack
 #endif
@@ -854,6 +872,17 @@ implicit none
   integer,intent(inout)      :: lupri,luerr
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
+#ifdef VAR_OPENACC
+  !> device type
+  integer(acc_device_kind) :: acc_device_type
+#endif
+
+#ifdef VAR_OPENACC
+  ! probe for device type
+  acc_device_type = acc_get_device_type()
+  ! shut down the device
+  call acc_shutdown(acc_device_type)
+#endif
   
   IF(OnMaster)THEN
      !these routines free matrices and must be called while the 
@@ -862,7 +891,9 @@ implicit none
      call free_AO2GCAO_GCAO2AO()
   ENDIF
   call lstmem_free
+#ifdef VAR_ICHOR
   if(OnMaster)call FreeIchorSaveGabModule()
+#endif
   
 
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL

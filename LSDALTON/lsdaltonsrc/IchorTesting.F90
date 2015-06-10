@@ -770,6 +770,8 @@ CONTAINS
             
             SameMOL = .FALSE.       
             !          IPRINT = 1000
+            nBatchA = 0 
+            nBatchB = 0 
             call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
             LHS = .TRUE.
             call SCREEN_ICHORERI_RETRIEVE_GABDIM(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS)
