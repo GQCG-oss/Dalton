@@ -1249,7 +1249,6 @@ C
      &   CALL QUIT('X2HSOAO not implemented for open shells')
 
       CALL QENTER('X2HSOAO')
-      write (lupri,*) 'Hello from X2HSOAO',IPRINT,IPRRSP,IPRHSO,DIRFCK
       KFREE=1
       LFREE=LWORK
       CALL MEMGET('REAL',KAO,N2BASX,WORK,KFREE,LFREE)
