@@ -26,7 +26,7 @@ module cc_response_tools_module
    !of occupied orbitals no, the number of virtual orbitals nv and the number of
    !basis functions nb, MyLsItem is required to calculate the Fock matrix in
    !here
-   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,fo,xo,yo,xv,yv,no,nv,nb,MyLsItem,gao_ex)
+   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,fo,xo,yo,xv,yv,no,nv,nb,MyLsItem,JacobianLT,gao_ex)
      implicit none
 
      type(lsitem), intent(inout) :: MyLsItem
@@ -34,6 +34,10 @@ module cc_response_tools_module
      real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:),fo(:,:)
      real(realk),intent(in)    :: xo(:,:),yo(:,:),xv(:,:),yv(:,:)
      integer, intent(in)       :: no,nv,nb
+     !> Calculate Jacobian left transformation.
+     !> This implies that the RHS is not added at the end
+     !> If JacobianLT is not present it is effectively set to false
+     logical,intent(in),optional :: JacobianLT
      type(array4),intent(inout),optional:: gao_ex
      real(realk), pointer      :: w1(:), w2(:), w3(:), w4(:)
      real(realk), pointer      :: Lovov(:),Lvoov(:), Lovoo(:)
@@ -46,12 +50,19 @@ module cc_response_tools_module
      integer                   :: i,a,j,b,ctr
      real(realk)               :: norm,nrmt2,nrmm2
      type(array4)              :: gao
+     logical :: JacLT
 
      if(present(gao_ex))then
         gao = gao_ex
      else
         call get_full_eri(mylsitem,nb,gao)
      endif
+
+     if(present(JacobianLT)) then
+        JacLT = JacobianLT
+     else
+        JacLT=.false.
+     end if
 
      b2   = nb*nb
      v2   = nv*nv
@@ -742,9 +753,11 @@ module cc_response_tools_module
         call print_norm(rho2,int(o2v2,kind=8),msg)
      endif
 
-     !ADD RIGHT HAND SIDES
-     call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
-     call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
+     !ADD RIGHT HAND SIDES  (not for Jacobian left transformation)
+     if(.not. JacLT) then
+        call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
+        call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
+     end if
 
      if( DECinfo%PL > 2) then
         write(*,*)"rho + RHS"

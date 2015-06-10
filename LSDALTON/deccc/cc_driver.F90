@@ -3134,7 +3134,6 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
          call tensor_minit(rho2,[nv,nv,no,no],4)
          call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),&
               & t2(use_i),rho1, rho2,3)
-!              & t2(use_i),rho1, rho2,3)
          call tensor_minit(d1,[nv,no],2)
          call tensor_minit(d2,[nv,nv,no,no],4)
          d1%elm2 = omega1(use_i)%elm2 - rho1%elm2
