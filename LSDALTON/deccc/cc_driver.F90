@@ -2623,16 +2623,16 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
          ! KKHACK - remove!
-         call tensor_minit(rho1,[nv,no],2)
-         call tensor_minit(rho2,[nv,nv,no,no],4)
-         print *, 'Calling Jacobian RHTR'
-         call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t2(iter_idx),t1(iter_idx),t2(iter_idx),rho1,rho2)
-         new1 = tensor_ddot(rho1,rho1)
-         new2 = tensor_ddot(rho2,rho2)
-         print *, 'Jacobian1: ', new1
-         print *, 'Jacobian2: ', new2
-         call tensor_free(rho1)
-         call tensor_free(rho2)
+!!$         call tensor_minit(rho1,[nv,no],2)
+!!$         call tensor_minit(rho2,[nv,nv,no,no],4)
+!!$         print *, 'Calling Jacobian RHTR'
+!!$         call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t2(iter_idx),t1(iter_idx),t2(iter_idx),rho1,rho2)
+!!$         new1 = tensor_ddot(rho1,rho1)
+!!$         new2 = tensor_ddot(rho2,rho2)
+!!$         print *, 'Jacobian1: ', new1
+!!$         print *, 'Jacobian2: ', new2
+!!$         call tensor_free(rho1)
+!!$         call tensor_free(rho2)
 
 
          call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", bg=bg_was_init)
@@ -3094,7 +3094,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
    type(tensor) :: d1,d2,rho1,rho2 ! kkhack
    !FIXME: remove these by implementing a massively parallel version of the
    !multipliers residual
-   type(tensor) :: o2,tl2,ml4, ppfock, qqfock,pqfock,qpfock
+   type(tensor) :: o2,tl2,ml4, ppfock, qqfock,pqfock,qpfock,p4
    ! readme : get residuals, so far this solver supports only singles and doubles
    !          amplitudes (extension to higher iterative model is trivial); differences
    !          are mainly based on the set of residual vectors to be evaluated
@@ -3131,15 +3131,19 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
 
          ! KKHACK - remove!
          call tensor_minit(rho1,[nv,no],2)
-         call tensor_minit(rho2,[nv,nv,no,no],4)
-         call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,yv,t2(use_i),t1(use_i),&
-              & t2(use_i),rho1, rho2,3)
+         call tensor_minit(rho2,[nv,no,nv,no],4)
+         call tensor_minit( p4, [nv,no,nv,no], 4)
+         call tensor_cp_data(t2(use_i), p4, order = [1,3,2,4] )
+         call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,yv,p4,t1(use_i),&
+              & p4,rho1, rho2,3)
          call tensor_minit(d1,[nv,no],2)
-         call tensor_minit(d2,[nv,nv,no,no],4)
+         call tensor_minit(d2,[nv,no,nv,no],4)
+
+         call tensor_cp_data(omega2(use_i), p4, order = [1,3,2,4] )
          d1%elm2 = omega1(use_i)%elm2 - rho1%elm2
-         d2%elm4 = omega2(use_i)%elm4 - rho2%elm4
+         d2%elm4 = p4%elm4 - rho2%elm4
          old1 = tensor_ddot(omega1(use_i),omega1(use_i))
-         old2 = tensor_ddot(omega2(use_i),omega2(use_i))
+         old2 = tensor_ddot(p4,p4)
          new1 = tensor_ddot(rho1,rho1)
          new2 = tensor_ddot(rho2,rho2)
          diff1 = tensor_ddot(d1,d1)
@@ -3150,6 +3154,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
          print *
          call tensor_free(rho1)
          call tensor_free(rho2)
+         call tensor_free(p4)
          call tensor_free(d1)
          call tensor_free(d2)
 
