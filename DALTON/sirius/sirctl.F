@@ -847,10 +847,6 @@ C
          CALL STXCTL(WORK,LWORK)
       END IF
 
-      IF (QFIT) THEN
-         CALL QFITRES
-      ENDIF
-
 #if defined(BUILD_GEN1INT)
 C... added by Bin Gao, to generate cube files
       if (DO_CUBE) then
