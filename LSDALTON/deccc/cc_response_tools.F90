@@ -1621,7 +1621,7 @@ module cc_response_tools_module
       type(tensor),intent(in) :: R1,R2
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
       type(tensor),intent(inout) :: rho1,rho2
-      type(tensor) :: rho11,rho12,rho21,rho22
+      type(tensor) :: rho11,rho12,rho21,rho22,Lrho1,Lrho2
       integer :: nbasis,nocc,nvirt,whattodo
 
       ! Dimensions
@@ -1661,6 +1661,14 @@ module cc_response_tools_module
       call tensor_free(rho12)
       call tensor_free(rho21)
       call tensor_free(rho22)
+
+
+      ! KKHACK - testing
+      call tensor_minit(Lrho1,[nvirt,nocc],2)
+      call tensor_minit(Lrho2,[nvirt,nocc,nvirt,nocc],4)
+
+      call tensor_free(Lrho1)
+      call tensor_free(Lrho2)
 
     end subroutine cc_jacobian_rhtr
 

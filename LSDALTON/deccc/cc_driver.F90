@@ -2620,21 +2620,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
 
-
-
-         ! KKHACK - remove!
-!!$         call tensor_minit(rho1,[nv,no],2)
-!!$         call tensor_minit(rho2,[nv,nv,no,no],4)
-!!$         print *, 'Calling Jacobian RHTR'
-!!$         call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t2(iter_idx),t1(iter_idx),t2(iter_idx),rho1,rho2)
-!!$         new1 = tensor_ddot(rho1,rho1)
-!!$         new2 = tensor_ddot(rho2,rho2)
-!!$         print *, 'Jacobian1: ', new1
-!!$         print *, 'Jacobian2: ', new2
-!!$         call tensor_free(rho1)
-!!$         call tensor_free(rho2)
-
-
          call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", bg=bg_was_init)
          call tensor_cp_data(t2(iter_idx), p4, order = [1,3,2,4] )
 
@@ -2709,6 +2694,19 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! remove preconditioning matrices
    call tensor_free(oofock_prec)
    call tensor_free(vvfock_prec)
+
+   ! KKHACK - remove!
+   call tensor_minit(rho1,[nv,no],2)
+   call tensor_minit(rho2,[nv,no,nv,no],4)
+   print *, 'Calling Jacobian RHTR'
+   call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,p4,p2,p4,rho1,rho2)
+   new1 = tensor_ddot(rho1,rho1)
+   new2 = tensor_ddot(rho2,rho2)
+   print *, 'Jacobian1: ', new1
+   print *, 'Jacobian2: ', new2
+   call tensor_free(rho1)
+   call tensor_free(rho2)
+
 
 
    if(use_singles) then
