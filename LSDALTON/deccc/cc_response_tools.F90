@@ -1651,7 +1651,7 @@ module cc_response_tools_module
       type(tensor),intent(in) :: t1fock
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
       type(tensor),intent(inout) :: rho1,rho2
-      type(tensor) :: rho11,rho12,rho21,rho22,Lrho1,Lrho2,test1,test2
+      type(tensor) :: rho11,rho12,rho21,rho22,Lrho1,Lrho2,Rt1,Rt2,Lt1,Lt2
       integer :: nbasis,nocc,nvirt,whattodo,i1,i2,i3,i4,j1,j2,j3,j4
       real(realk),pointer :: AR(:,:,:,:), AL(:,:,:,:)
 
@@ -1667,109 +1667,85 @@ module cc_response_tools_module
 
       ! KKHACK
 
-      do i2=1,nocc
-         do i1=1,nvirt
+      do j2=1,nocc
+         do j1=1,nvirt
+            do i2=1,nocc
+               do i1=1,nvirt
 
-            call tensor_minit(test1,[nvirt,nocc],2)
-            call tensor_minit(test2,[nvirt,nocc,nvirt,nocc],4)
-            call tensor_zero(test1)
-            call tensor_zero(test2)
-            test1%elm2(i1,i2) = 1.0_realk
-            !test2%elm4(i1,i2,i3,i4) =1.0_realk
+                  call tensor_minit(Rt1,[nvirt,nocc],2)
+                  call tensor_minit(Rt2,[nvirt,nocc,nvirt,nocc],4)
+                  call tensor_zero(Rt1)
+                  call tensor_zero(Rt2)
+                  call tensor_minit(Lt1,[nvirt,nocc],2)
+                  call tensor_minit(Lt2,[nvirt,nocc,nvirt,nocc],4)
+                  call tensor_zero(Lt1)
+                  call tensor_zero(Lt2)
+                  ! Jacobian elements (i1,i2;j1,j2)
+                  Rt1%elm2(j1,j2) = 1.0_realk
+                  Lt1%elm2(i1,i2) = 1.0_realk
 
-            ! Calculate 1^rho components for Jacobian RHS transformation,
-            ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
-            ! Singles component: rho11  (Eq. 55)
-            ! Doubles component: rho12  (Eq. 57)
-            call tensor_minit(rho11,[nvirt,nocc],2)
-            call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
-            whattodo=1
-            call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-                 & yv_tensor,t2,test1,test2,rho11,rho12,whattodo)
-            !           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
+                  ! Calculate 1^rho components for Jacobian RHS transformation,
+                  ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
+                  ! Singles component: rho11  (Eq. 55)
+                  ! Doubles component: rho12  (Eq. 57)
+                  call tensor_minit(rho11,[nvirt,nocc],2)
+                  call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
+                  whattodo=1
+                  call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+                       & yv_tensor,t2,Rt1,Rt2,rho11,rho12,whattodo)
+                  !           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
 
 
 
-            ! Calculate 2^rho components for Jacobian RHS transformation,
-            ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
-            ! Singles component: rho21  (Eq. 56)
-            ! Doubles component: rho22  (Eq. 58)
-            call tensor_minit(rho21,[nvirt,nocc],2)
-            call tensor_minit(rho22,[nvirt,nocc,nvirt,nocc],4)
-            whattodo=2
-            call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-                 & yv_tensor,t2,test1,test2,rho21,rho22,whattodo)
-            !                       & yv_tensor,t2,test1,t2,rho21,rho22,whattodo)
+                  ! Calculate 2^rho components for Jacobian RHS transformation,
+                  ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
+                  ! Singles component: rho21  (Eq. 56)
+                  ! Doubles component: rho22  (Eq. 58)
+                  call tensor_minit(rho21,[nvirt,nocc],2)
+                  call tensor_minit(rho22,[nvirt,nocc,nvirt,nocc],4)
+                  whattodo=2
+                  call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+                       & yv_tensor,t2,Rt1,Rt2,rho21,rho22,whattodo)
 
-            !                       & yv_tensor,t2,test1,test2,rho21,rho22,whattodo)
+                  ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
+                  call tensor_zero(rho1)
+                  call tensor_zero(rho2)
+                  call tensor_add(rho1,1.0_realk,rho11)
+                  call tensor_add(rho1,1.0_realk,rho21)
+                  call tensor_add(rho2,1.0_realk,rho12)
+                  call tensor_add(rho2,1.0_realk,rho22)
 
-            ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
-            call tensor_zero(rho1)
-            call tensor_zero(rho2)
-            call tensor_add(rho1,1.0_realk,rho11)
-            call tensor_add(rho1,1.0_realk,rho21)
-            call tensor_add(rho2,1.0_realk,rho12)
-            call tensor_add(rho2,1.0_realk,rho22)
+                  ! KKHACK - testing
+                  call tensor_minit(Lrho1,[nvirt,nocc],2)
+                  call tensor_minit(Lrho2,[nvirt,nocc,nvirt,nocc],4)
+                  call tensor_zero(Lrho1)
+                  call tensor_zero(Lrho2)
 
-            ! KKHACK - testing
-            call tensor_minit(Lrho1,[nvirt,nocc],2)
-            call tensor_minit(Lrho2,[nvirt,nocc,nvirt,nocc],4)
-            call tensor_zero(Lrho1)
-            call tensor_zero(Lrho2)
+                  call get_ccsd_multipliers_simple(Lrho1%elm2,Lrho2%elm4,t1%elm2,t2%elm4,&
+                       & Lt1%elm2,Lt2%elm4,&
+                       & t1fock%elm2,xo_tensor%elm2,yo_tensor%elm2,xv_tensor%elm2,yv_tensor%elm2,&
+                       & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
 
-            call get_ccsd_multipliers_simple(Lrho1%elm2,Lrho2%elm4,t1%elm2,t2%elm4,test1%elm2,test2%elm4,&
-                 & t1fock%elm2,xo_tensor%elm2,yo_tensor%elm2,xv_tensor%elm2,yv_tensor%elm2,&
-                 & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
+                  write(DECinfo%output,'(1X,a,4i5,2F20.12)') 'JACOBIAN ',&
+                       & i1,i2,j1,j2,rho1%elm2(i1,i2),Lrho1%elm2(j1,j2)
 
-!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'rho11 ', i1,i2,rho11%elm2(i1,i2)
-!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'rho21 ', i1,i2,rho21%elm2(i1,i2)
-!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'rho1  ', i1,i2,rho1%elm2(i1,i2)
-!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'Lrho1 ', i1,i2,Lrho1%elm2(i1,i2)
-!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'DIFF1 ', i1,i2,&
-!!$                       & Lrho1%elm2(i1,i2)-rho1%elm2(i1,i2)
 
-!!$                  write(DECinfo%output,*) 'JACOBIAN ',i1,i2,i3,i4
-!!$                  do j4=1,nocc
-!!$                     do j3=1,nvirt
-!!$                        do j2=1,nocc
-!!$                           do j1=1,nvirt
-!!$                              write(DECinfo%output,'(1X,4i5,3g17.8)') j1,j2,j3,j4,&
-!!$                                   & rho2%elm4(j1,j2,j3,j4),Lrho2%elm4(j1,j2,j3,j4),&
-!!$                                   & rho2%elm4(j1,j2,j3,j4) - Lrho2%elm4(j1,j2,j3,j4)
-!!$                           end do
-!!$                        end do
-!!$                     end do
-!!$                  end do
+                  call tensor_free(Lrho1)
+                  call tensor_free(Lrho2)
+                  call tensor_free(Rt1)
+                  call tensor_free(Rt2)
+                  call tensor_free(Lt1)
+                  call tensor_free(Lt2)
 
-            do j2=1,nocc
-               do j1=1,nvirt
-                  AL(i1,i2,j1,j2) = Lrho1%elm2(j1,j2)
-                  AR(j1,j2,i1,i2) = rho1%elm2(j1,j2)
+                  call tensor_free(rho11)
+                  call tensor_free(rho12)
+                  call tensor_free(rho21)
+                  call tensor_free(rho22)
+
                end do
             end do
-
-!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'rho12 ', i1,i2,i3,i4,rho12%elm4(i1,i2,i3,i4)
-!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'rho22 ', i1,i2,i3,i4,rho22%elm4(i1,i2,i3,i4)
-!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'rho2  ', i1,i2,i3,i4,rho2%elm4(i1,i2,i3,i4)
-!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'Lrho2 ', i1,i2,i3,i4,Lrho2%elm4(i1,i2,i3,i4)
-!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'DIFF2 ', i1,i2,i3,i4,&
-!!$                       & Lrho2%elm4(i1,i2,i3,i4)-rho2%elm4(i1,i2,i3,i4)
-
-
-            call tensor_free(Lrho1)
-            call tensor_free(Lrho2)
-            call tensor_free(test1)
-            call tensor_free(test2)
-
-            call tensor_free(rho11)
-            call tensor_free(rho12)
-            call tensor_free(rho21)
-            call tensor_free(rho22)
-
          end do
       end do
-      !         end do
-      !      end do
 
 
       write(DECinfo%output,*) 'JACOBIAN '
