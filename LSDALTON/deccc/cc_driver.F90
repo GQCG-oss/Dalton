@@ -2699,7 +2699,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(rho1,[nv,no],2)
    call tensor_minit(rho2,[nv,no,nv,no],4)
    print *, 'Calling Jacobian RHTR'
-   call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,p4,p2,p4,rho1,rho2)
+   call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,p2,p4,p2,p4,t1fock,rho1,rho2)
    new1 = tensor_ddot(rho1,rho1)
    new2 = tensor_ddot(rho2,rho2)
    print *, 'Jacobian1: ', new1

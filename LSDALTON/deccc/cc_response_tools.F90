@@ -42,7 +42,7 @@ module cc_response_tools_module
      real(realk), pointer      :: w1(:), w2(:), w3(:), w4(:)
      real(realk), pointer      :: Lovov(:),Lvoov(:), Lovoo(:)
      real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), govov(:)
-     real(realk), pointer      :: goovv(:)
+     real(realk), pointer      :: goovv(:),tmp(:,:,:,:) ! KKHACK remove tmp
      real(realk), pointer      :: oof(:),ovf(:),vof(:),vvf(:)
      character(tensor_MSG_LEN)    :: msg
      integer                   :: v4,o4,o3v,ov3,o2v2,ov,b2,v2,o2
@@ -754,7 +754,35 @@ module cc_response_tools_module
      endif
 
      !ADD RIGHT HAND SIDES  (not for Jacobian left transformation)
-     if(.not. JacLT) then
+     if(JacLT) then
+        ! Scale to use bioorthogonal basis in Eq. 13.7.60 in THE BOOK
+        do a=1,nv
+           do i=1,no
+              rho2(a,i,a,i) = 0.5_realk*rho2(a,i,a,i)
+           end do
+        end do
+!!$        call mem_alloc(tmp,nv,no,nv,no)
+!!$        do j=1,no
+!!$           do b=1,nv
+!!$              do i=1,no
+!!$                 do a=1,nv
+!!$                    tmp(a,i,b,j) = rho2(a,i,b,j)
+!!$                 end do
+!!$              end do
+!!$           end do
+!!$        end do
+!!$        do j=1,no
+!!$           do b=1,nv
+!!$              do i=1,no
+!!$                 do a=1,nv
+!!$                    rho2(a,i,b,j) = tmp(a,i,b,j) + tmp(b,j,a,i)
+!!$                 end do
+!!$              end do
+!!$           end do
+!!$        end do
+!!$        call mem_dealloc(tmp)
+     else
+        ! Add Right hand sides - but not for Jacobian
         call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
         call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
      end if
@@ -1608,67 +1636,156 @@ module cc_response_tools_module
     !> \author Kasper Kristensen
     !> \date June 2015
     subroutine cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-         & yv_tensor,t2,R1,R2,rho1,rho2)
+         & yv_tensor,t1,t2,R1,R2,t1fock,rho1,rho2)
       implicit none
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem      
       !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
       !> and virt (dimension nbasis,nvirt) transformations
       type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
-      !> Doubles amplitudes
-      type(tensor),intent(in) :: t2
+      !> Singles and doubles amplitudes
+      type(tensor),intent(in) :: t1,t2
       !> Singles (R1) and doubles (R2) components of trial vector
       type(tensor),intent(in) :: R1,R2
+      !> KKHACK remove!
+      type(tensor),intent(in) :: t1fock
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
       type(tensor),intent(inout) :: rho1,rho2
-      type(tensor) :: rho11,rho12,rho21,rho22,Lrho1,Lrho2
-      integer :: nbasis,nocc,nvirt,whattodo
+      type(tensor) :: rho11,rho12,rho21,rho22,Lrho1,Lrho2,test1,test2
+      integer :: nbasis,nocc,nvirt,whattodo,i1,i2,i3,i4,j1,j2,j3,j4
+      real(realk),pointer :: AR(:,:,:,:), AL(:,:,:,:)
 
       ! Dimensions
       nbasis = xo_tensor%dims(1)
       nocc = xo_tensor%dims(2)
       nvirt = xv_tensor%dims(2)
-      
-      ! Calculate 1^rho components for Jacobian RHS transformation,
-      ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
-      ! Singles component: rho11  (Eq. 55)
-      ! Doubles component: rho12  (Eq. 57)
-      call tensor_minit(rho11,[nvirt,nocc],2)
-      call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
-      whattodo=1
-      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
 
-      ! Calculate 2^rho components for Jacobian RHS transformation,
-      ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
-      ! Singles component: rho21  (Eq. 56)
-      ! Doubles component: rho22  (Eq. 58)
-      call tensor_minit(rho21,[nvirt,nocc],2)
-      call tensor_minit(rho22,[nvirt,nocc,nvirt,nocc],4)
-      whattodo=2
-      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,t2,R1,R2,rho21,rho22,whattodo)
-      
-      ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
-      call tensor_zero(rho1)
-      call tensor_zero(rho2)
-      call tensor_add(rho1,1.0_realk,rho11)
-      call tensor_add(rho1,1.0_realk,rho21)
-      call tensor_add(rho2,1.0_realk,rho12)
-      call tensor_add(rho2,1.0_realk,rho22)
-      
-      call tensor_free(rho11)
-      call tensor_free(rho12)
-      call tensor_free(rho21)
-      call tensor_free(rho22)
+      call mem_alloc(AR,nvirt,nocc,nvirt,nocc)
+      call mem_alloc(AL,nvirt,nocc,nvirt,nocc)
+      AR=0.0_realk
+      AL=0.0_realk
+
+      ! KKHACK
+
+      do i2=1,nocc
+         do i1=1,nvirt
+
+            call tensor_minit(test1,[nvirt,nocc],2)
+            call tensor_minit(test2,[nvirt,nocc,nvirt,nocc],4)
+            call tensor_zero(test1)
+            call tensor_zero(test2)
+            test1%elm2(i1,i2) = 1.0_realk
+            !test2%elm4(i1,i2,i3,i4) =1.0_realk
+
+            ! Calculate 1^rho components for Jacobian RHS transformation,
+            ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
+            ! Singles component: rho11  (Eq. 55)
+            ! Doubles component: rho12  (Eq. 57)
+            call tensor_minit(rho11,[nvirt,nocc],2)
+            call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
+            whattodo=1
+            call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+                 & yv_tensor,t2,test1,test2,rho11,rho12,whattodo)
+            !           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
 
 
-      ! KKHACK - testing
-      call tensor_minit(Lrho1,[nvirt,nocc],2)
-      call tensor_minit(Lrho2,[nvirt,nocc,nvirt,nocc],4)
 
-      call tensor_free(Lrho1)
-      call tensor_free(Lrho2)
+            ! Calculate 2^rho components for Jacobian RHS transformation,
+            ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
+            ! Singles component: rho21  (Eq. 56)
+            ! Doubles component: rho22  (Eq. 58)
+            call tensor_minit(rho21,[nvirt,nocc],2)
+            call tensor_minit(rho22,[nvirt,nocc,nvirt,nocc],4)
+            whattodo=2
+            call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+                 & yv_tensor,t2,test1,test2,rho21,rho22,whattodo)
+            !                       & yv_tensor,t2,test1,t2,rho21,rho22,whattodo)
+
+            !                       & yv_tensor,t2,test1,test2,rho21,rho22,whattodo)
+
+            ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
+            call tensor_zero(rho1)
+            call tensor_zero(rho2)
+            call tensor_add(rho1,1.0_realk,rho11)
+            call tensor_add(rho1,1.0_realk,rho21)
+            call tensor_add(rho2,1.0_realk,rho12)
+            call tensor_add(rho2,1.0_realk,rho22)
+
+            ! KKHACK - testing
+            call tensor_minit(Lrho1,[nvirt,nocc],2)
+            call tensor_minit(Lrho2,[nvirt,nocc,nvirt,nocc],4)
+            call tensor_zero(Lrho1)
+            call tensor_zero(Lrho2)
+
+            call get_ccsd_multipliers_simple(Lrho1%elm2,Lrho2%elm4,t1%elm2,t2%elm4,test1%elm2,test2%elm4,&
+                 & t1fock%elm2,xo_tensor%elm2,yo_tensor%elm2,xv_tensor%elm2,yv_tensor%elm2,&
+                 & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
+
+!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'rho11 ', i1,i2,rho11%elm2(i1,i2)
+!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'rho21 ', i1,i2,rho21%elm2(i1,i2)
+!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'rho1  ', i1,i2,rho1%elm2(i1,i2)
+!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'Lrho1 ', i1,i2,Lrho1%elm2(i1,i2)
+!!$                  write(DECinfo%output,'(1X,a,2i5,g20.10)') 'DIFF1 ', i1,i2,&
+!!$                       & Lrho1%elm2(i1,i2)-rho1%elm2(i1,i2)
+
+!!$                  write(DECinfo%output,*) 'JACOBIAN ',i1,i2,i3,i4
+!!$                  do j4=1,nocc
+!!$                     do j3=1,nvirt
+!!$                        do j2=1,nocc
+!!$                           do j1=1,nvirt
+!!$                              write(DECinfo%output,'(1X,4i5,3g17.8)') j1,j2,j3,j4,&
+!!$                                   & rho2%elm4(j1,j2,j3,j4),Lrho2%elm4(j1,j2,j3,j4),&
+!!$                                   & rho2%elm4(j1,j2,j3,j4) - Lrho2%elm4(j1,j2,j3,j4)
+!!$                           end do
+!!$                        end do
+!!$                     end do
+!!$                  end do
+
+            do j2=1,nocc
+               do j1=1,nvirt
+                  AL(i1,i2,j1,j2) = Lrho1%elm2(j1,j2)
+                  AR(j1,j2,i1,i2) = rho1%elm2(j1,j2)
+               end do
+            end do
+
+!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'rho12 ', i1,i2,i3,i4,rho12%elm4(i1,i2,i3,i4)
+!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'rho22 ', i1,i2,i3,i4,rho22%elm4(i1,i2,i3,i4)
+!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'rho2  ', i1,i2,i3,i4,rho2%elm4(i1,i2,i3,i4)
+!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'Lrho2 ', i1,i2,i3,i4,Lrho2%elm4(i1,i2,i3,i4)
+!!$                  write(DECinfo%output,'(1X,a,4i5,g20.10)') 'DIFF2 ', i1,i2,i3,i4,&
+!!$                       & Lrho2%elm4(i1,i2,i3,i4)-rho2%elm4(i1,i2,i3,i4)
+
+
+            call tensor_free(Lrho1)
+            call tensor_free(Lrho2)
+            call tensor_free(test1)
+            call tensor_free(test2)
+
+            call tensor_free(rho11)
+            call tensor_free(rho12)
+            call tensor_free(rho21)
+            call tensor_free(rho22)
+
+         end do
+      end do
+      !         end do
+      !      end do
+
+
+      write(DECinfo%output,*) 'JACOBIAN '
+      do j2=1,nocc
+         do j1=1,nvirt
+            do i2=1,nocc
+               do i1=1,nvirt
+                  write(DECinfo%output,'(4i5,2F20.12)') i1,i2,j1,j2,AR(i1,i2,j1,j2),AL(i1,i2,j1,j2)
+               end do
+            end do
+         end do
+      end do
+
+
+      call mem_dealloc(AL)
+      call mem_dealloc(AR)
 
     end subroutine cc_jacobian_rhtr
 
@@ -1981,7 +2098,7 @@ module cc_response_tools_module
          end do
       end do
 
-      ! Add component with i<-->j scaled properly to get final C2 residual component
+      ! Add component with i<-->j scaled properly to get final C2 component
       ! (although still missing final symmetrization which is done commonly for C,D, and E
       !  terms at the very end)
       ! rho2CDE(a,i,b,j) = (0.5 + P_{ij}) * tmp2(a,b,i,j)
