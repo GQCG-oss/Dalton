@@ -91,12 +91,13 @@ contains
 
 
 
-function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
+function precondition_doubles_newarr(omega2,ppfock,qqfock,loc,bg) result(prec)
 
    implicit none
    type(tensor), intent(in) :: omega2
    type(tensor), intent(inout) :: ppfock, qqfock
    logical, intent(in) :: loc
+   logical, intent(in), optional :: bg
    type(tensor) :: prec
    integer, dimension(4) :: dims
    integer :: a,i,b,j
@@ -112,7 +113,7 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
 
    !make sure all data is local
    if(loc)then
-      call tensor_init(prec,dims,4)
+      call tensor_init(prec,dims,4,bg=bg)
 
       !$OMP PARALLEL DEFAULT(NONE) SHARED(prec,dims,omega2,ppfock,qqfock) &
       !$OMP PRIVATE(i,j,a,b)
@@ -138,7 +139,7 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
       !make sure all data is in the correct for this routine, that is omega2 is
       !TT_TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      call tensor_minit(prec,dims,4,atype="TDAR",tdims=omega2%tdim,fo=omega2%offset)
+      call tensor_minit(prec,dims,4,atype="TDAR",tdims=omega2%tdim,fo=omega2%offset,bg=bg)
       call tensor_change_atype_to_rep(ppfock,loc)
       call tensor_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -2828,7 +2829,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(.not. master) then
         call mem_dealloc(Had)
         call mem_dealloc(Gbi)
-        if(scheme==4.or.scheme==3)call tensor_free(u2)
+        if(scheme==4.or.scheme==3)then
+
+           call tensor_free(u2)
+
+           if( .not.local )then
+
+              call tensor_deallocate_dense( omega2 )
+              call tensor_deallocate_dense( t2 )
+
+           endif
+        endif
 
         return
 
@@ -5783,7 +5794,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         tszesio4 = nvrs*nors
 
      else
-        tsze=no*no*nv*nv
+        tsze      = no*no*nv*nv
+        nloctiles = 1
      endif
 
 
@@ -5833,7 +5845,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi
-           memin = memin + (i8*nors)*nvrs*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
@@ -6824,7 +6836,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
     tmp_size2 = int(i8*tmp_size2, kind=long)
     if (use_bg_buf) then
-       call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
+       !call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
 
        call mem_pseudo_alloc(tmp0, tmp_size0)
        call mem_pseudo_alloc(tmp1, tmp_size1)
@@ -8292,7 +8304,8 @@ subroutine ccsd_data_preparation()
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free
-  use memory_handling, only: mem_alloc, mem_dealloc
+  use memory_handling, only: mem_alloc, mem_dealloc,mem_is_background_buf_init,mem_pseudo_alloc,&
+     & mem_pseudo_dealloc
   use tensor_interface_module, only: tensor_ainit,tensor_free,&
       &tensor_allocate_dense,tensor_deallocate_dense,&
       &get_tensor_from_parr,TT_DENSE,AT_ALL_ACCESS,AT_MASTER_ACCESS
@@ -8322,13 +8335,14 @@ subroutine ccsd_data_preparation()
   integer(kind=ls_mpik) :: xow,xvw,yow,yvw,&
                          & dfw,fw,ppfw,qqfw,pqfw,qpfw,om1w,t2w,&
                          & t2dw,xodw,xvdw,yodw,yvdw
-  logical :: parent
+  logical :: parent, bg
   integer :: addr01(infpar%pc_nodtot)
   integer :: addr02(infpar%pc_nodtot)
   integer :: addr03(infpar%pc_nodtot)
   integer(kind=ls_mpik) :: lg_me,lg_nnod
   integer(kind=8) :: ne
 
+  bg = mem_is_background_buf_init()
 
   lg_me   = infpar%lg_mynum
   lg_nnod = infpar%lg_nodtot
@@ -8341,9 +8355,9 @@ subroutine ccsd_data_preparation()
      &MyLsItem,nbas,nvirt,nocc,iter,local,res_nr)
 
   if(local)then
-      call tensor_ainit(t2,    [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
-      call tensor_ainit(govov, [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR' )
-      call tensor_ainit(om2,   [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
+      call tensor_ainit(t2,    [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR', bg=bg )
+      call tensor_ainit(govov, [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR', bg=bg )
+      call tensor_ainit(om2,   [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR', bg=bg )
   endif
   
   ! Quantities, that need to be defined and setset
@@ -8354,14 +8368,24 @@ subroutine ccsd_data_preparation()
   !mpi_communicate_ccsd_calcdate
 
   nelms = nbas*nocc
-  call mem_alloc( yodata, nelms )
-  call mem_alloc( xodata, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( yodata, nelms )
+     call mem_pseudo_alloc( xodata, nelms )
+  else
+     call mem_alloc( yodata, nelms )
+     call mem_alloc( xodata, nelms )
+  endif
   call ls_mpibcast( xodata, nelms, infpar%master, infpar%lg_comm)
   call ls_mpibcast( yodata, nelms, infpar%master, infpar%lg_comm)
 
   nelms = nbas*nvirt
-  call mem_alloc( xvdata, nelms )
-  call mem_alloc( yvdata, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( xvdata, nelms )
+     call mem_pseudo_alloc( yvdata, nelms )
+  else
+     call mem_alloc( xvdata, nelms )
+     call mem_alloc( yvdata, nelms )
+  endif
   call ls_mpibcast( xvdata, nelms, infpar%master, infpar%lg_comm )
   call ls_mpibcast( yvdata, nelms, infpar%master, infpar%lg_comm )
   
@@ -8370,19 +8394,38 @@ subroutine ccsd_data_preparation()
   ! Quantities, that need to be defined but not set
   ! ********************************************************
   nelms=nbas*nbas
-  call mem_alloc(  f,  nelms )
-  call mem_alloc( t1f, nelms )
+  if(bg)then
+     call mem_pseudo_alloc(  f,  nelms )
+     call mem_pseudo_alloc( t1f, nelms )
+  else
+     call mem_alloc(  f,  nelms )
+     call mem_alloc( t1f, nelms )
+  endif
 
   nelms=nocc*nocc
-  call mem_alloc( ppf, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( ppf, nelms )
+  else
+     call mem_alloc( ppf, nelms )
+  endif
 
   nelms=nvirt*nocc
-  call mem_alloc( pqf, nelms )
-  call mem_alloc( qpf, nelms )
-  call mem_alloc( om1, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( pqf, nelms )
+     call mem_pseudo_alloc( qpf, nelms )
+     call mem_pseudo_alloc( om1, nelms )
+  else
+     call mem_alloc( pqf, nelms )
+     call mem_alloc( qpf, nelms )
+     call mem_alloc( om1, nelms )
+  endif
 
   nelms=nvirt*nvirt
-  call mem_alloc( qqf, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( qqf, nelms )
+  else
+     call mem_alloc( qqf, nelms )
+  endif
 
   ! Calculate contribution to integrals/amplitudes for slave
   ! ********************************************************
@@ -8397,27 +8440,36 @@ subroutine ccsd_data_preparation()
 
   ! FREE EVERYTHING
   ! ***************
+  if(bg)then
+     call mem_pseudo_dealloc(    qqf, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    om1, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    qpf, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    pqf, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    ppf, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    t1f, mark_deleted=.true. )
+     call mem_pseudo_dealloc(      f, mark_deleted=.true. )
+     call mem_pseudo_dealloc( yvdata, mark_deleted=.true. )
+     call mem_pseudo_dealloc( xvdata, mark_deleted=.true. )
+     call mem_pseudo_dealloc( xodata, mark_deleted=.true. )
+     call mem_pseudo_dealloc( yodata, mark_deleted=.true. )
+  else
+     call mem_dealloc(    qqf )
+     call mem_dealloc(    om1 )
+     call mem_dealloc(    qpf )
+     call mem_dealloc(    pqf )
+     call mem_dealloc(    ppf )
+     call mem_dealloc(    t1f )
+     call mem_dealloc(      f )
+     call mem_dealloc( yvdata )
+     call mem_dealloc( xvdata )
+     call mem_dealloc( xodata )
+     call mem_dealloc( yodata )
+  endif
   if(local)then
      call tensor_free(om2)
-     call tensor_free(t2)
      call tensor_free(govov)
-  else
-     !FIXME : IS THIS DEALLOC CORRECT AND IF YES DO IT SOMEWHERE ELSE
-     call tensor_deallocate_dense(om2)
-     call tensor_deallocate_dense(t2)
+     call tensor_free(t2)
   endif
-
-  call mem_dealloc(      f )
-  call mem_dealloc(    t1f )
-  call mem_dealloc(    ppf )
-  call mem_dealloc(    pqf )
-  call mem_dealloc(    qpf )
-  call mem_dealloc(    qqf )
-  call mem_dealloc(    om1 )
-  call mem_dealloc( xodata )
-  call mem_dealloc( yodata )
-  call mem_dealloc( yvdata )
-  call mem_dealloc( xvdata )
 
   call ls_free(MyLsItem)
 

@@ -1990,7 +1990,7 @@ CONTAINS
 !!$           &nBast,orb2Batch,nBatches,lupri,luerr)
 !!$
 !!$      call BUILD_AO(LUPRI,ls%setting%SCHEME,0,ls%setting%MOLECULE(1)%p,ls%setting%BASIS(1)%p%REGULAR,AO&
-!!$     &,.false.,.false.)
+!!$     &,.false.,.false.,.false.)
 !!$
 !!$      call mem_alloc(orb2atom,nbast)
 !!$      do iorb = 1,nbast
@@ -3168,6 +3168,9 @@ CONTAINS
       IF(ls%setting%IntegralTransformGC)THEN
          call lsquit('di_decpackedJ requires .NOGCBASIS',-1)
       ENDIF
+      MinimumAllowedAObatchSize = 0
+      MaxAObatchesOrbDim = 0
+      nbatchesofAOS = 0
       ForcePrint = .TRUE.
       NoSymmetry = .FALSE. !activate permutational symmetry
       call mem_alloc(Dfull,D%nrow,D%ncol)
@@ -3666,7 +3669,7 @@ CONTAINS
       type(lsitem),intent(inout) :: ls
       real(realk),pointer   :: integrals(:,:,:,:)
       integer :: iA,funit
-      integer(kind=long) :: begin_add,nbast3
+      integer(kind=long) :: begin_add,nbast3,n1
       character :: intspec(5)
       character(len=26) :: Filename
       !
@@ -3674,7 +3677,6 @@ CONTAINS
       integer :: nthreads,idx,nbatchesXY
       integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,j,MinAObatch,MaxAllowedDim
       integer :: MaxActualDim,ib,id,ix,iy,ic
-      integer(kind=8) :: n1
       logical :: doscreen,fullrhs
       TYPE(DECscreenITEM)    :: DecScreen
       integer, pointer :: orb2batch(:), batchdim(:),batchsize(:), batchindex(:)

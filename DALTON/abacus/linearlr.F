@@ -154,27 +154,27 @@ C
       KWORK1 = KFREE
       LWORK1 = LFREE
       IF (JIMPRT.GT.5) Then 
-          write(lupri,*) '   '     
+          write(lupri,*) '   '
           write(lupri,*) ' AFTER MEMGET  '
           write(lupri,*) ' ----------------------------'
           write(lupri,*) '        KCMO, NCMOT     =  ', KCMO,NCMOT
           write(lupri,*) '        KUDV, LUDV      =  ', KUDV,LUDV
           write(lupri,*) '        KPVX, LPVX      =  ', KPVX,LPVX
           write(lupri,*) '        KPXINDX, LCINDX =  ', KXINDX,KXINDX
-          write(lupri,*) '        KWORK1 = KFREE :   ', KFREE 
-          write(lupri,*) '        WORK1  = LFREE :   ', LFREE 
-          write(lupri,*) '   '     
-      ENDIF 
+          write(lupri,*) '        KWORK1 = KFREE :   ', KFREE
+          write(lupri,*) '        LWORK1 = LFREE :   ', LFREE
+          write(lupri,*) '   '
+      ENDIF
 
       CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KFREE),LFREE)
 C          RD_SIRIFC( KEY ,FOUND,   AMAT   ,  WRK      ,LWRK)
       IF (.NOT.FOUND) CALL QUIT('LRSCLIN error: CMO not on SIRIFC')
-cx      write(lupri,*)' CMOS :  dan bien !!!' 
+cx      write(lupri,*)' CMOS :  dan bien !!!'
 cx      Do i =1, NORBT*NORBT
 cx      write(LUPRI,*) ' orb ', I,WORK(KCMO+I)
-cx      enddo 
+cx      enddo
 cx      CALL OUTPUT(WORK(KCMO),1,NORBT*NORBT,1,1,NORBT*NORBT,1,1,LUPRI)
-cx      write(lupri,*) '   '     
+cx      write(lupri,*) '   '
 
 cx ACA es para alguna capa activa
 cx      IF (NASHT .GT. 0) THEN
@@ -186,14 +186,14 @@ cx         CALL DSPTSI(NASHT,WORK(KWORK1),WORK(KUDV))
 cx      END IF
 C
       ISYM = 1
-      IF (JIMPRT.GT.5) Then 
-          write(lupri,*) '   ' 
-          write(lupri,*) ' about to call LNRVAR' 
+      IF (JIMPRT.GT.5) Then
+          write(lupri,*) '   '
+          write(lupri,*) ' about to call LNRVAR'
           write(lupri,*) ' ----------------------------'
-          write(lupri,*) '           ISYM   : ', ISYM 
+          write(lupri,*) '           ISYM   : ', ISYM
           write(lupri,*) '   KWORK1=KFREE   : ', KWORK1
-          write(lupri,*) '    WORK1=LFREE   : ', WORK1
-          write(lupri,*) '   '     
+          write(lupri,*) '   LWORK1=LFREE   : ', LWORK1
+          write(lupri,*) '   '
       ENDIF
       CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
 C
@@ -240,7 +240,7 @@ cdx            ENDIF
 cdx            CALL OUTPUT(WORK(KPVX),1,LPVMAT,1,1,LPVMAT,1,1,LUPRI)
 cdx         END IF
 C
-C        reads the MP2 or CCSD second order one particle density matrix 
+C        reads the MP2 or CCSD second order one particle density matrix
 C
 cdx         CALL READT (LUSIFC,NORBT*NORBT,WORK(KUDV))
 C
@@ -270,7 +270,7 @@ C
       KIDADR = KIDSYM + 9*MXCENT
       KWORK2 = KIDADR + 9*MXCENT
       LWORK2 = LWORK1  - KWORK2
-      IF (JIMPRT.GT.5) Then 
+      IF (JIMPRT.GT.5) Then
           write(lupri,*) '        '
           write(lupri,*) ' sigo alocando : '
           write(lupri,*) ' ----------------------------'
@@ -299,7 +299,7 @@ cxz       NLAB = 3
 cxz       CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 cxz                        LAB1   ISYM1 -->   LAB2  ISYM2
 cxz     NLAB   = local  numero de labels?
-cxz     NLBTOT = local  
+cxz     NLBTOT = local
 cxz     LABINT = LABINT(4*MXCOOR+9) LISTA1Y2 character *8
 cxz     WORK
 cxz     LABAPP = common cbiexe, cbiqr, LABAPP(MAXPP) character *8
@@ -316,7 +316,7 @@ cxz          NLAB = 9
 cxz          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 cxz          NLBSHIS = 13
 cxz       ENDIF
-C  blanquear todas las labels antes 
+C  blanquear todas las labels antes
        NLAB1 = 0
        NLAB2 = 0 
 c       LISTA1

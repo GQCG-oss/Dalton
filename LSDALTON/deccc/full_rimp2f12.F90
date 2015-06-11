@@ -133,7 +133,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:)
    logical :: Test 
    logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF
-   logical :: RIF12,FORCEPRINT,use_bg_buf
+   logical :: RIF12,FORCEPRINT,use_bg_buf,LS
    character :: intspec(5)
    type(matrix) :: CMO_CABS,CMO_RI
    if(MyMolecule%mem_distributed)then
@@ -207,17 +207,30 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    != The Gaussian geminal divided by the Coulomb operator g/r12 =     
    !=                                                            =
    !==============================================================
-   call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
-      & [Dmat],Econt,1,GGemCouOperator)
-   CoulombF12 = Econt(1) 
-   Econt(1) = 0.0E0_realk
-   call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
-      & [Dmat],Econt,1,GGemCouOperator)
-   ExchangeF12 = Econt(1)       
-   E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E0_realk)
-   WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V1,LS) = ',E21
-   WRITE(*,'(A30,F20.13)')'E(V1,LS) = ', E21
-   !WRITE(*,'(A30,F20.13)')'E(Fijkl,LS) = ',E21
+
+   write(DECinfo%output,'(/,a)') ' ================================================ '
+   write(DECinfo%output,'(a)')   '            DEC-RI-MP2F12 ENERGY TERMS            '
+   write(DECinfo%output,'(a,/)') ' ================================================ '
+   write(*,'(/,a)') ' ================================================ '
+   write(*,'(a)')   '           DEC-RI-MP2F12 ENERGY TERMS             '
+   write(*,'(a,/)') ' ================================================ '
+
+   LS = .FALSE.
+   if (LS) THEN
+      call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+           & [Dmat],Econt,1,GGemCouOperator)
+      CoulombF12 = Econt(1) 
+      Econt(1) = 0.0E0_realk
+      call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+           & [Dmat],Econt,1,GGemCouOperator)
+      ExchangeF12 = Econt(1)       
+      E21 = -0.5E0_realk*((5.0E0_realk/4.0E0_realk)*CoulombF12+ExchangeF12*0.5E0_realk)
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ',E21
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ', E21
+   ENDIF
+   
+   !WRITE(*,'(A50,F20.13)')'E(Fijkl,LS) = ',E21
+
    use_bg_buf = .FALSE.
    mp2f12_energy = 0.0E0_realk 
    IF(RIF12)THEN       !Use RI 
@@ -239,10 +252,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !The minus is due to the Valeev factor
       EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12-ExchangeF12*0.25E0_realk)
       mp2f12_energy = mp2f12_energy  + EV1
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V1,RI) = ',EV1
-      WRITE(*,'(A30,F20.13)')'E(V1,RI) = ',EV1
-      !       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Coulomb) = ',CoulombF12
-      !       WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(Fijkl,RI,Exchange) = ',ExchangeF12
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ',EV1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ',EV1
+      !       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'E(Fijkl,RI,Coulomb) = ',CoulombF12
+      !       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'E(Fijkl,RI,Exchange) = ',ExchangeF12
       call mem_dealloc(CalphaF)
       call mem_dealloc(ABdecompF)
    ENDIF
@@ -269,8 +282,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       E21 = mp2f12_E21(Vijij,Vjiij,nocc)
       call mem_dealloc(Vijij)
       call mem_dealloc(Vjiij)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V1,Full) = ',EV1
-      WRITE(*,'(A30,F20.13)')'E(V1,Full) = ',EV1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,Full) = ',EV1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,Full) = ',EV1
 
    ENDIF
    !==========================================================
@@ -307,8 +320,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       ABdecompCreateG = .FALSE.
       call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,EV2)
       mp2f12_energy = mp2f12_energy  + EV2
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V2,RI) = ',EV2       
-      WRITE(*,'(A30,F20.13)')'E(V2,RI) = ',EV2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ',EV2       
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
       !       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
       !       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Exchange) = ',ExchangeF12
       call mem_dealloc(CalphaR)
@@ -355,8 +368,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Gipjq)
 
       E21 = mp2f12_E21(Vijij,Vjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V2,Full) = ',EV2
-      WRITE(*,'(A30,F20.13)')'E(V2,Full) = ',EV2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,Full) = ',EV2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,Full) = ',EV2
       call mem_dealloc(Vijij)
       call mem_dealloc(Vjiij)
    ENDIF
@@ -421,10 +434,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          & CalphaRocc,CalphaGocc,EV3,EV4)
 
       mp2f12_energy = mp2f12_energy  + EV3 + EV4
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V3,RI) = ',EV3       
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V4,RI) = ',EV4       
-      WRITE(*,'(A30,F20.13)')'E(V3,RI) = ',EV3       
-      WRITE(*,'(A30,F20.13)')'E(V4,RI) = ',EV4       
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
       call mem_dealloc(CalphaRocc)
       call mem_dealloc(CalphaGocc)
       call mem_dealloc(CalphaR)
@@ -470,8 +483,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          enddo
       enddo
       EV3 = mp2f12_E21(Vijij,Vjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V3,Full) = ', EV3
-      WRITE(*,'(A30,F20.13)')'E(V3,Full) = ',EV3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,Full) = ', EV3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,Full) = ',EV3
 
       !V-term 4
       Vijij = 0.0E0_realk
@@ -496,8 +509,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       enddo
 
       EV4 = mp2f12_E21(Vijij,Vjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(V4,Full) = ', EV4
-      WRITE(*,'(A30,F20.13)')'E(V4,Full) = ',EV4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,Full) = ', EV4
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,Full) = ',EV4
 
       call mem_dealloc(Rimjc)
       call mem_dealloc(Gimjc)
@@ -530,8 +543,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !contribution from the \bar{B}_{ij}^{ij}
       EX1 = -1.0E0_realk*(0.21875E0_realk*CoulombF12 + 0.03125E0_realk*ExchangeF12)
       mp2f12_energy = mp2f12_energy  + EX1
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X1,RI) = ',EX1
-      WRITE(*,'(A30,F20.13)')'E(X1,RI) = ',EX1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ',EX1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ',EX1
       call mem_dealloc(CalphaF)
       call mem_dealloc(ABdecompF)
    ENDIF
@@ -558,8 +571,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       EX1 = mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
       call mem_dealloc(Xijij)
       call mem_dealloc(Xjiij)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X1,Full) = ',EX1
-      WRITE(*,'(A30,F20.13)')'E(X1,Full) = ',EX1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,Full) = ',EX1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,Full) = ',EX1
 
    ENDIF
 
@@ -596,8 +609,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       ABdecompCreateG = .FALSE.
       call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nbasis,CalphaR,CalphaG,Fii%elms,EX2)
       mp2f12_energy = mp2f12_energy  + EX2
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X2,RI) = ',EX2       
-      WRITE(*,'(A30,F20.13)')'E(X2,RI) = ',EX2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2
       !       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Coulomb) = ',CoulombF12
       !       WRITE(DECINFO%OUTPUT,*)'E(Ripjq*Gjpiq,RI,Exchange) = ',ExchangeF12
       call mem_dealloc(CalphaR)
@@ -640,8 +653,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Gipjq)
 
       EX2 = mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X2,Full) = ',EX2
-      WRITE(*,'(A30,F20.13)')'E(X2,Full) = ',EX2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,Full) = ',EX2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,Full) = ',EX2
       call mem_dealloc(Xijij)
       call mem_dealloc(Xjiij)
    ENDIF
@@ -706,10 +719,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          & CalphaRocc,CalphaGocc,Fii%elms,EX3,EX4)
 
       mp2f12_energy = mp2f12_energy  + EX3 + EX4
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X3,RI) = ',EX3       
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X4,RI) = ',EX4       
-      WRITE(*,'(A30,F20.13)')'E(X3,RI) = ',EX3       
-      WRITE(*,'(A30,F20.13)')'E(X4,RI) = ',EX4       
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
       call mem_dealloc(CalphaRocc)
       call mem_dealloc(CalphaGocc)
       call mem_dealloc(CalphaR)
@@ -751,8 +764,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          enddo
       enddo
       EX3 = mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X3,Full) = ', EX3
-      WRITE(*,'(A30,F20.13)')'E(X3,Full) = ',EX3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,Full) = ', EX3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,Full) = ',EX3
 
       !X-term 4
       Xijij = 0.0E0_realk
@@ -773,8 +786,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mp2f12_Xjiij_term4(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabsMO)
 
       EX4 = mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(X4,Full) = ', EX4
-      WRITE(*,'(A30,F20.13)')'E(X4,Full) = ',EX4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,Full) = ', EX4
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,Full) = ',EX4
 
       call mem_dealloc(Tijkl)
       call mem_dealloc(Gipjq)
@@ -831,8 +844,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
       call ContractOne4CenterF12IntegralsRobustRI(nAux,nocc,CalphaD,CalphaR,EB1)
       mp2f12_energy = mp2f12_energy  + EB1
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B1,RI) = ', EB1
-      WRITE(*,'(A30,F20.13)')'E(B1,RI) = ', EB1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
       call mem_dealloc(CalphaD)
       call mem_dealloc(CalphaR)
    ENDIF
@@ -857,8 +870,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       enddo
       EB1 = mp2f12_E23(Bijij,Bjiij,nocc)
       call mem_dealloc(Dijkl)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B1,Full) = ',EB1
-      WRITE(*,'(A30,F20.13)')'E(B1,Full) = ', EB1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,Full) = ',EB1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,Full) = ', EB1
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
    ENDIF
@@ -899,10 +912,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call ContractOne4CenterF12IntegralsRIB23(nBA,nocc,ncabsAO,CalphaR,CalphaG,hJir%elms,1.0E0_realk,EB2,EB3)
       !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
       mp2f12_energy = mp2f12_energy  + EB2
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B2,RI) = ',EB2
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B3,RI) = ',EB3
-      WRITE(*,'(A30,F20.13)')'E(B2,RI) = ',EB2
-      WRITE(*,'(A30,F20.13)')'E(B3,RI) = ',EB3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
+      mp2f12_energy = mp2f12_energy  + EB3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
       call mem_dealloc(CalphaR)
       call mem_dealloc(CalphaG)
    ELSE
@@ -921,8 +935,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mp2f12_Bijij_term2(Bijij,Bjiij,nocc,ncabsAO,Tirjk,hJir%elms)
       call mem_dealloc(Tirjk)
       EB2 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B2,Full) = ',EB2
-      WRITE(*,'(A30,F20.13)')'E(B2,Full) = ', EB2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,Full) = ',EB2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,Full) = ', EB2
 
       call mem_alloc(gao,nbasis,nbasis,nbasis,ncabsAO)
       call mem_alloc(Tijkr,nocc,nocc,noccfull,ncabsAO)
@@ -934,8 +948,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mp2f12_Bijij_term3(Bijij,Bjiij,nocc,ncabsAO,Tijkr,hJir%elms)
       call mem_dealloc(Tijkr)
       EB2 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B3,Full) = ', EB3
-      WRITE(*,'(A30,F20.13)')'E(B3,Full) = ', EB3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,Full) = ', EB3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,Full) = ', EB3
 
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
@@ -982,9 +996,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !NB! Changed T to N, dont think it will matter but...
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Krr%elms,k,0.0E0_realk,CalphaD,m)
       call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaR,CalphaG,CalphaD,EB4)
-     
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B4,RI) = ',EB4
-      WRITE(*,'(A30,F20.13)')'E(B4,RI) = ', EB4
+
+      mp2f12_energy = mp2f12_energy  + EB4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
       
       call mem_dealloc(CalphaD)
       call mem_dealloc(CalphaG)
@@ -1009,8 +1024,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Girjs)
 
       EB4 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B4,Full) = ',EB4
-      WRITE(*,'(A30,F20.13)')'E(B4,Full) = ', EB4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,Full) = ',EB4
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,Full) = ', EB4
 
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
@@ -1057,9 +1072,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !NB! Changed T to N, dont think it will matter but...
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
       call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,CalphaR,CalphaG,CalphaD,EB5)
-     
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B5,RI) = ',EB5
-      WRITE(*,'(A30,F20.13)')'E(B5,RI) = ', EB5
+
+      mp2f12_energy = mp2f12_energy  + EB5
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
       
       call mem_dealloc(CalphaD)
       call mem_dealloc(CalphaG)
@@ -1093,8 +1109,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Girjm)
       call mem_dealloc(Grimj)   
       EB5 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B5,Full) = ',EB5
-      WRITE(*,'(A30,F20.13)')'E(B5,Full) = ', EB5
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,Full) = ',EB5
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,Full) = ', EB5
 
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
@@ -1141,9 +1157,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaR,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)
       
       call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaR,CalphaG,CalphaD,EB6)
-      
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B6,RI) = ',EB6
-      WRITE(*,'(A30,F20.13)')'E(B6,RI) = ', EB6
+
+      mp2f12_energy = mp2f12_energy  + EB6
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
       
       call mem_dealloc(CalphaD)
       call mem_dealloc(CalphaG)
@@ -1174,9 +1191,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Gipja)
       call mem_dealloc(Gpiaj)   
       EB5 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B6,Full) = ',EB5
-      WRITE(*,'(A30,F20.13)')'E(B6,Full) = ', EB5
-
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,Full) = ',EB6
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,Full) = ', EB6
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
    ENDIF
@@ -1223,9 +1239,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fii%elms,k,0.0E0_realk,CalphaD,m)
       
       call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,CalphaR,CalphaG,CalphaD,EB7)
-      
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B7,RI) = ',EB7
-      WRITE(*,'(A30,F20.13)')'E(B7,RI) = ', EB7
+
+      mp2f12_energy = mp2f12_energy  + EB7
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
       
       call mem_dealloc(CalphaD)
       call mem_dealloc(CalphaG)
@@ -1261,8 +1278,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Gcimj) 
 
       EB7 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B7,Full) = ',EB7
-      WRITE(*,'(A30,F20.13)')'E(B7,Full) = ', EB7
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,Full) = ',EB7
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,Full) = ', EB7
 
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
@@ -1273,7 +1290,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !==============================================================
    IF(RIF12)THEN       !Use R12
       call mem_alloc(ABdecompR,nAux,nAux)
-     ! ABdecompCreateR = .TRUE.
+      ABdecompCreateR = .TRUE.
       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
       intspec(2) = 'R' !Regular AO basis function on center 3
       intspec(3) = 'C' !CABS RI basis function on center 4
@@ -1283,7 +1300,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
          & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_RI%elms,ncabsAO,&
          & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
-     call mem_dealloc(ABdecompR)
+      call mem_dealloc(ABdecompR)
       ABdecompCreateR = .FALSE.
 
       !> Dgemm 
@@ -1323,11 +1340,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
       call mem_dealloc(ABdecompR)
       ABdecompCreateR = .FALSE.
-
+      EB8 = 0.0E0_realk
       call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,CalphaR,CalphaG,CalphaD,EB8)
-      
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B8,RI) = ', EB8
-      WRITE(*,'(A30,F20.13)')'E(B8,RI) = ', EB8
+
+      mp2f12_energy = mp2f12_energy  + EB8
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
       
       call mem_dealloc(CalphaD)
       call mem_dealloc(CalphaG)
@@ -1363,8 +1381,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Gcirj) 
 
       EB8 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B8,Full) = ',EB8
-      WRITE(*,'(A30,F20.13)')'E(B8,Full) = ', EB8
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,Full) = ',EB8
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,Full) = ', EB8
 
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
@@ -1425,14 +1443,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(ABdecompR)
       ABdecompCreateR = .FALSE.
 
-      !print *, "norm(CalphaR)", norm2(CalphaR)
-      !print *, "norm(CalphaD)", norm2(CalphaD)
-      !print *, "norm(CalphaG)", norm2(CalphaG)
-
       call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaR,CalphaG,CalphaD,EB9)
-      
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B9,RI) = ', EB9
-      WRITE(*,'(A30,F20.13)')'E(B9,RI) = ', EB9
+
+      mp2f12_energy = mp2f12_energy  + EB9
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
       
       call mem_dealloc(CalphaD)
       call mem_dealloc(CalphaG)
@@ -1468,20 +1483,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Gciaj) 
 
       EB9 = mp2f12_E23(Bijij,Bjiij,nocc)
-      WRITE(DECINFO%OUTPUT,'(A30,F20.13)')'E(B9,Full) = ',EB9
-      WRITE(*,'(A30,F20.13)')'E(B9,Full) = ', EB9
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,Full) = ',EB9
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,Full) = ', EB9
 
       call mem_dealloc(Bijij)
       call mem_dealloc(Bjiij)
    ENDIF
-
-
-
-
-
-
-
-
 
 
    call mem_dealloc(Cfull)
@@ -1680,7 +1687,7 @@ function mp2f12_E22X_ri(Xijij,Xjiij,Fii,nocc) result(energy)
    !
    integer     :: i,j
    real(realk) :: tmp
-
+   tmp = 0.0E0_realk
    DO i=1,nocc
       DO j=1,nocc
          tmp = tmp - (7.0E0_realk * Xijij(i,j) + Xjiij(i,j))*(Fii(i,i) +Fii(j,j))
@@ -2366,7 +2373,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,CalphaR,CalphaG,CalphaD,
          ENDDO
       ENDDO
    
-   EJK = ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK
+   EJK = ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK
 
 end subroutine ContractTwo4CenterF12IntegralsRIB7
 
@@ -2387,50 +2394,54 @@ subroutine ContractTwo4CenterF12IntegralsRIB8(nBA,n1,n2,CalphaR,CalphaG,CalphaD,
    ED = 0.0E0_realk
    EK = 0.0E0_realk
    EJ = 0.0E0_realk
-
+   
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(p,m,i,j,alpha,beta,alpha1,&
+   !$OMP beta1,alpha2,beta2,tmpR,tmpRJ1,tmpRJ2,tmpRK1,tmpRK2,tmpG,tmpGJ1,tmpGJ2,&
+   !$OMP tmpGK1,tmpGK2) SHARED(CalphaR,CalphaG,CalphaD,n2,n1,nba) REDUCTION(+:ED,EJ,EK)
+   DO j=1,n1 !nocc
       DO p=1,n2 !ncabs
          DO m=1,n1 !noccfull
-            DO j=1,n1 !nocc
-
-               !Diagonal
-               tmpR = 0.0E0_realk
-               tmpG = 0.0E0_realk
-
-               DO alpha = 1,nBA
-                  tmpR = tmpR + CalphaR(alpha,j,p)*CalphaG(alpha,j,m)
+            
+            !Diagonal
+            tmpR = 0.0E0_realk
+            tmpG = 0.0E0_realk
+            
+            DO alpha = 1,nBA
+               tmpR = tmpR + CalphaR(alpha,j,p)*CalphaG(alpha,j,m)
+            ENDDO
+            DO beta = 1,nBA
+               tmpG = tmpG + CalphaR(beta,j,p)*CalphaD(beta,j,m)
+            ENDDO
+            
+            ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            
+            !Non Diagonal
+            DO i=j+1,n1
+               tmpRJ1 = 0.0E0_realk
+               DO alpha1 = 1, nBA
+                  tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,p)*CalphaG(alpha1,j,m) 
                ENDDO
-               DO beta = 1,nBA
-                  tmpG = tmpG + CalphaR(beta,j,p)*CalphaD(beta,j,m)
+               tmpRJ2 = 0.0E0_realk
+               DO alpha2 = 1, nBA
+                  tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,p)*CalphaG(alpha2,i,m)
                ENDDO
-
-               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
-
-               !Non Diagonal
-               DO i=j+1,n1
-                  tmpRJ1 = 0.0E0_realk
-                  DO alpha1 = 1, nBA
-                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,p)*CalphaG(alpha1,j,m) 
-                  ENDDO      
-                  tmpRJ2 = 0.0E0_realk
-                  DO alpha2 = 1, nBA
-                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,p)*CalphaG(alpha2,i,m)
-                  ENDDO
-                  tmpGJ1 = 0.0E0_realk
-                  DO beta1 = 1, nBA
-                     tmpGJ1 = tmpGJ1 + CalphaR(beta1,i,p)*CalphaD(beta1,j,m)
-                  ENDDO
-                  tmpGJ2 = 0.0E0_realk
-                  DO beta2 = 1, nBA
-                     tmpGJ2 = tmpGJ2 + CalphaR(beta2,j,p)*CalphaD(beta2,i,m)
-                  ENDDO
-                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
-                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               tmpGJ1 = 0.0E0_realk
+               DO beta1 = 1, nBA
+                  tmpGJ1 = tmpGJ1 + CalphaR(beta1,i,p)*CalphaD(beta1,j,m)
                ENDDO
+               tmpGJ2 = 0.0E0_realk
+               DO beta2 = 1, nBA
+                  tmpGJ2 = tmpGJ2 + CalphaR(beta2,j,p)*CalphaD(beta2,i,m)
+               ENDDO
+               EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+               EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
             ENDDO
          ENDDO
       ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
    
-   EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK)
+   EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
 
 end subroutine ContractTwo4CenterF12IntegralsRIB8
 
@@ -2493,7 +2504,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB9(nBA,n1,n2,n3,CalphaR,CalphaG,Calph
          ENDDO
       ENDDO
    
-   EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK)
+   EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
 
 end subroutine ContractTwo4CenterF12IntegralsRIB9
 
@@ -2563,8 +2574,8 @@ subroutine ContractTwo4CenterF12IntegralsRI2X(nBA,n1,n3,n2,CalphaR,CalphaG,&
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK3 = ED*0.5E0_realk + (7.0/16.0*EJ3+1.0/16.0*EK3)
-   EJK4 = ED*0.5E0_realk + (7.0/16.0*EJ4+1.0/16.0*EK4)
+   EJK3 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ3+1.0_realk/16.0_realk*EK3)
+   EJK4 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ4+1.0_realk/16.0_realk*EK4)
 
 end subroutine ContractTwo4CenterF12IntegralsRI2X
 

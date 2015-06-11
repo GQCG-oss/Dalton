@@ -534,9 +534,9 @@ contains
 #ifdef MOD_UNRELEASED
 
     !> F12 Specific Variables
-    integer :: nbasis, noccEOS, nvirtEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
-    integer :: noccAOS
-    integer :: ix, iy
+    integer :: nbasis, noccEOS, nvirtEOS, noccfull, nocvAOStot, nvirtAOS, ncabsAO, ncabsMO
+    integer :: noccAOS,noccAOStot
+    integer :: ix, iy,offset
     real(realk),pointer :: Fcp(:,:) 
 
     ! ============================================================
@@ -549,16 +549,23 @@ contains
 
     noccAOS   = fragment%noccAOS
     nvirtAOS = fragment%nvirtAOS  
-    nocvAOS   = fragment%noccAOS + fragment%nvirtAOS
+    nocvAOStot = fragment%nocctot + fragment%nvirtAOS
     nvirtAOS  = fragment%nvirtAOS
+    noccAOStot = fragment%nocctot
+
+    if(DECinfo%frozencore) then
+       offset = fragment%ncore
+    else
+       offset = 0
+    end if
     
     !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
     !to the CABS-MO and RI-MO basis which happens in this routine 
 
-    ncabsAO   = fragment%ncabsAO !size(fragment%Ccabs,1)
+    ncabsAO   = fragment%nbasis + fragment%ncabsAO !size(fragment%Ccabs,1)
     ncabsMO   = size(fragment%Ccabs,2)
     
-    IF(fragment%nCabsAO.NE.size(fragment%Ccabs,1))THEN
+    IF(ncabsAO.NE.size(fragment%Ccabs,1))THEN      
        call lsquit('Dimension mismatch in atomic_fragment_init_f12',-1)
     ENDIF
 
@@ -570,7 +577,7 @@ contains
        print *, "noccEOS: ", noccEOS
        print *, "nvirtEOS: ", nvirtEOS
        print *, "---------------------------------------"
-       print *, "nocvAOS", nocvAOS
+       print *, "nocvAOStot", nocvAOStot
        print *, "noccAOS", noccAOS
        print *, "nvirtAOS", nvirtAOS
        print *, "ncabsAO", ncabsAO
@@ -580,12 +587,18 @@ contains
 
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
-    
-    do j=1, fragment%ncabsAO   
+    do j=1, fragment%nbasis
        do i=1, fragment%noccEOS
-          iy = fragment%cabsbasis_idx(j)
+          iy = fragment%basis_idx(j)
           ix = fragment%occEOSidx(i)
           fragment%hJir(i,j) = MyMolecule%hJir(ix,iy)
+       enddo
+    enddo
+    do j=1, fragment%ncabsAO   
+       iy = fragment%nbasis+fragment%cabsbasis_idx(j)
+       do i=1, fragment%noccEOS
+          ix = fragment%occEOSidx(i)
+          fragment%hJir(i,fragment%nbasis+j) = MyMolecule%hJir(ix,iy)          
        enddo
     enddo
 
@@ -593,63 +606,90 @@ contains
 
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
-    
-    do j=1, fragment%ncabsAO
-       do i=1, fragment%ncabsAO
-          ix = fragment%cabsbasis_idx(i)
-          iy = fragment%cabsbasis_idx(j)
-          fragment%Krs(i,j) = MyMolecule%Krs(ix,iy)
-       enddo
-    enddo   
+    call BuildFragmentKrs(fragment%Krs,fragment,ncabsAO,MyMolecule,MyMolecule%Krs,MyMolecule%nCabsAO)
+
     !call dcopy(ncabsAO*ncabsAO, MyMolecule%Krs, 1, fragment%Krs, 1)
     call F12_RI_transform_realMat(fragment%Krs,ncabsAO, ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frs
     call mem_alloc(fragment%Frs, ncabsAO, ncabsAO)
-    do j=1, fragment%ncabsAO
-       do i=1, fragment%ncabsAO
-          ix = fragment%cabsbasis_idx(i)
-          iy = fragment%cabsbasis_idx(j)
-          fragment%Frs(i,j) = MyMolecule%Frs(ix,iy)
-       enddo
-    enddo
+    call BuildFragmentKrs(fragment%Frs,fragment,ncabsAO,MyMolecule,MyMolecule%Frs,MyMolecule%nCabsAO)
+
     !call dcopy(ncabsAO*ncabsAO, MyMolecule%Frs, 1, fragment%Frs, 1)
     call F12_RI_transform_realMat(fragment%Frs,ncabsAO,ncabsAO,fragment%Cri,ncabsAO)
 
     ! Frm
-    call mem_alloc(fragment%Frm, ncabsAO, noccAOS)
-    do j=1, fragment%noccAOS
-       do i=1, fragment%ncabsAO
-          ix = fragment%cabsbasis_idx(i)
-          iy = fragment%occAOSidx(j)
+    call mem_alloc(fragment%Frm, ncabsAO, noccAOStot)
+
+    ! Copy core orbitals explicitly for frozen core 
+    ! (not necessary without frozen core)
+    do j=1,offset
+       iy = fragment%coreidx(j)
+       do i=1, fragment%nbasis
+          ix = fragment%basis_idx(i)
           fragment%Frm(i,j) = MyMolecule%Frm(ix,iy)
        enddo
+       do i=1, fragment%ncabsAO
+          ix = fragment%nbasis+fragment%cabsbasis_idx(i)
+          fragment%Frm(fragment%nbasis+i,j) = MyMolecule%Frm(ix,iy)
+       enddo
     enddo
-    call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOS,fragment%Cri,ncabsAO)
+
+    do j=1,noccAOS
+       iy = fragment%occAOSidx(j)
+       do i=1, fragment%nbasis
+          ix = fragment%basis_idx(i)
+          ! Add offset to valence orbital index for frozen fore
+          fragment%Frm(i,j+offset) = MyMolecule%Frm(ix,iy)
+       enddo
+       do i=1, fragment%ncabsAO
+          ix = fragment%nbasis+fragment%cabsbasis_idx(i)
+          ! Add offset to valence orbital index for frozen fore
+          fragment%Frm(fragment%nbasis+i,j+offset) = MyMolecule%Frm(ix,iy)
+       enddo
+    enddo
+    call F12_RI_transform_realMat(fragment%Frm,ncabsAO,noccAOStot,fragment%Cri,ncabsAO)
     
     ! Fcp in the order of the index (occ to virt)
-    ! Extracting from the full in molecule_mo_f12, needs to be changed 
-    ! HACK NOT fragment%Fcp, ncabsMO, nocvAOS)
-    call mem_alloc(Fcp, ncabsAO, nocvAOS)
-    
-     do j=1, fragment%noccAOS
-       do i=1, fragment%ncabsAO
-          ix = fragment%cabsbasis_idx(i)
-          iy = fragment%occAOSidx(j)
+    call mem_alloc(Fcp, ncabsAO, nocvAOStot)
+
+    ! Copy core orbitals explicitly for frozen core (as above)
+    do j=1,offset
+       iy = fragment%coreidx(j)
+       do i=1, fragment%nbasis
+          ix = fragment%basis_idx(i)
           Fcp(i,j) = MyMolecule%Fcp(ix,iy)
        enddo
-    enddo
-
-    do j=fragment%noccAOS+1, fragment%nvirtAOS+fragment%noccAOS
        do i=1, fragment%ncabsAO
-          ix = fragment%cabsbasis_idx(i)         
-          iy = fragment%virtAOSidx(j-fragment%noccAOS)
-          Fcp(i,j) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
+          ix = fragment%nbasis+fragment%cabsbasis_idx(i)
+          Fcp(fragment%nbasis+i,j) = MyMolecule%Fcp(ix,iy)
+       enddo
+    enddo
+    do j=1, fragment%noccAOS
+       iy = fragment%occAOSidx(j)
+       do i=1, fragment%nbasis
+          ix = fragment%basis_idx(i)
+          Fcp(i,j+offset) = MyMolecule%Fcp(ix,iy)
+       enddo
+       do i=1, fragment%ncabsAO
+          ix = fragment%nbasis+fragment%cabsbasis_idx(i)
+          Fcp(fragment%nbasis+i,j+offset) = MyMolecule%Fcp(ix,iy)
+       enddo
+    enddo
+    do j=1,nvirtAOS
+       iy = fragment%virtAOSidx(j)
+       do i=1, fragment%nbasis
+          ix = fragment%basis_idx(i)         
+          Fcp(i,j+noccAOStot) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
+       enddo
+       do i=1, fragment%ncabsAO
+          ix = fragment%nbasis+fragment%cabsbasis_idx(i)                
+          Fcp(fragment%nbasis+i,j+noccAOStot) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
        enddo
     enddo
 
-    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOS)
-    call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOS,fragment%Ccabs,ncabsAO,ncabsMO)
+    call mem_alloc(fragment%Fcp, ncabsMO, nocvAOStot)
+    call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOStot,fragment%Ccabs,ncabsAO,ncabsMO)
     call mem_dealloc(Fcp)
 
     if(DECinfo%F12debug) then
@@ -667,6 +707,37 @@ contains
 
   end subroutine atomic_fragment_init_f12
 
+  subroutine BuildFragmentKrs(Krs,fragment,ncabsAO,MyMolecule,MKrs,MnCABSAO)
+    integer, intent(in) :: ncabsAO,MnCABSAO
+    type(decfrag), intent(inout) :: fragment
+    type(fullmolecule), intent(in) :: MyMolecule
+    real(realk),intent(in) :: MKrs(MnCABSAO,MnCABSAO)
+    real(realk),intent(inout) :: Krs(nCABSAO,nCABSAO)
+    !
+    integer :: i,j,ix,iy
+    do j=1, fragment%nbasis
+       iy = fragment%basis_idx(j)
+       do i=1, fragment%nbasis
+          ix = fragment%basis_idx(i)
+          Krs(i,j) = MKrs(ix,iy)
+       enddo
+       do i=1, fragment%ncabsAO
+          ix = fragment%nbasis+fragment%cabsbasis_idx(i)
+          Krs(fragment%nbasis+i,j) = MKrs(ix,iy)
+       enddo
+    enddo   
+    do j=1, fragment%ncabsAO
+       iy = fragment%nbasis+fragment%cabsbasis_idx(j)
+       do i=1, fragment%nbasis
+          ix = fragment%basis_idx(i)
+          Krs(i,fragment%nbasis+j) = MKrs(ix,iy)
+       enddo
+       do i=1, fragment%ncabsAO
+          ix = fragment%nbasis+fragment%cabsbasis_idx(i)
+          Krs(fragment%nbasis+i,fragment%nbasis+j) = MKrs(ix,iy)
+       enddo
+    enddo   
+  end subroutine BuildFragmentKrs
   !> \brief Initialize atomic fragments by simply including neighbouring atoms within
   !> a certain distance.
   !> \author Kasper Kristensen

@@ -50,7 +50,8 @@ MODULE ls_Integral_Interface
   use MBIEintegraldriver, only: mbie_integral_driver
   use BUILDAOBATCH, only: build_empty_ao, build_empty_nuclear_ao,&
        & build_empty_pcharge_ao, build_ao, build_shellbatch_ao, &
-       & BUILD_EMPTY_ELFIELD_AO, build_empty_single_nuclear_ao
+       & BUILD_EMPTY_ELFIELD_AO, build_empty_single_nuclear_ao,&
+       & determinenaobatches
   use lstiming, only: lstimer, print_timers
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
@@ -3085,6 +3086,7 @@ IF(attach_to_input)THEN
    saveGABtoMem = SETTING%SCHEME%saveGABtoMem
    recalcGab = SETTING%SCHEME%recalcGab
    IF(.NOT.saveGABtoMem) ReCalcGab=.TRUE. 
+   IF(AO1.EQ.AOpCharge) ReCalcGab = .TRUE.
    IntegralTransformGC = .FALSE.
    iprint = SETTING%SCHEME%intPrint
 
@@ -3748,9 +3750,9 @@ Type(MOLECULEINFO),pointer        :: Molecule
 Type(BASISINFO),pointer           :: Basis
 Integer,intent(IN)                :: LUPRI,LUERR
 !
-TYPE(BASISSETINFO),pointer :: AObasis
-Logical :: uncont,intnrm,emptyAO
-integer :: AObatchdim,iATOM
+TYPE(BASISSETINFO),pointer :: AObasis,AObasis2
+Logical :: uncont,intnrm,emptyAO,AddBasis2
+integer :: AObatchdim,iATOM,nAObatches,batchindex2
 Character(len=8)     :: AOstring
 uncont = scheme%uncont
 IF (intType.EQ.Primitiveinttype) THEN
@@ -3762,6 +3764,7 @@ ELSE
   CALL LSQUIT('Error - wrong intType in SetAObatch',lupri)
 ENDIF
 
+AddBasis2 = .FALSE.
 emptyAO = .false.
 SELECT CASE(AO)
 CASE (AORegular)
@@ -3769,7 +3772,11 @@ CASE (AORegular)
 CASE (AOdfAux)
    AObasis => Basis%BINFO(AUXBasParam)  !AUXILIARY Basis
 CASE (AOdfCABS)
-   AObasis => Basis%BINFO(CABBasParam)  !CABS Basis
+   AObasis => Basis%BINFO(RegBasParam)  !Regular Basis
+   AObasis2 => Basis%BINFO(CABBasParam)  !CABS Basis
+   AddBasis2 = .TRUE.
+CASE (AOdfCABO)
+   AObasis => Basis%BINFO(CABBasParam)  !CABS Basis only 
 CASE (AOdfJK)
    AObasis => Basis%BINFO(JKBasParam)   !JK Basis
 CASE (AOVAL)
@@ -3809,12 +3816,34 @@ IF (.not.emptyAO) THEN
    IF(batchindex.EQ. 0)THEN
       CALL BUILD_AO(LUPRI,SCHEME,SCHEME%AOPRINT,&
            &              Molecule,AObasis,AObatch,&
-           &              uncont,intnrm)
+           &              uncont,intnrm,.FALSE.)
+      IF(AddBasis2)THEN
+         CALL BUILD_AO(LUPRI,SCHEME,SCHEME%AOPRINT,&
+              &              Molecule,AObasis2,AObatch,&
+              &              uncont,intnrm,AddBasis2)
+      ENDIF
       nDim = getNbasis(AO,intType,Molecule,LUPRI)
    ELSE
-      CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
-           & SCHEME%AOPRINT,molecule,AObasis,AObatch,&
-           & uncont,intnrm,batchindex,AObatchdim,batchsize)
+      IF(AddBasis2)THEN
+         Call determinenAObatches(nAObatches,LUPRI,SCHEME,&
+              & SCHEME%AOPRINT,molecule,AObasis,uncont,intnrm)
+         print*,'batchindex',batchindex,'nAObatches',nAObatches
+         IF(batchindex.LE.nAObatches)THEN
+            CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
+                 & SCHEME%AOPRINT,molecule,AObasis,AObatch,&
+                 & uncont,intnrm,batchindex,AObatchdim,batchsize)
+         ELSE
+            batchindex2=batchindex-nAObatches
+            print*,'batchindex2',batchindex2,'nAObatches',nAObatches
+            CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
+                 & SCHEME%AOPRINT,molecule,AObasis2,AObatch,&
+                 & uncont,intnrm,batchindex2,AObatchdim,batchsize)
+         ENDIF
+      ELSE
+         CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
+              & SCHEME%AOPRINT,molecule,AObasis,AObatch,&
+              & uncont,intnrm,batchindex,AObatchdim,batchsize)
+      ENDIF
       nDim = AObatchdim
    ENDIF
 ENDIF

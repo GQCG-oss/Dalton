@@ -78,6 +78,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_LAGLSTHCRIMP2  = 24 ! LS-THC-RI-MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCLSTHCRIMP2  = 25 ! LS-THC-RI-MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTLSTHCRIMP2 = 26 ! LS-THC-RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_RIMP2f12 = 27  ! RI-MP2F12 energy correction
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -312,6 +313,8 @@ module dec_typedef_module
      logical :: F12
      !> Do F12 also for fragment optimization
      logical :: F12fragopt
+     !> Do C coupling in F12 scheme
+     logical :: F12Ccoupling
 
      !> F12 debug settings
      !> ******************
@@ -573,6 +576,7 @@ module dec_typedef_module
 
      !> THC keywords
      logical     :: THCNOPRUN
+     logical     :: THCDUMP
      real(realk) :: THCradint
      integer     :: THC_MIN_RAD_PT
      integer     :: THCangint

@@ -75,7 +75,7 @@ contains
       if (mqiter) then ! iterative method
          call quit('mqiter not implemented in rspqmnp.F90')
       else ! non iterative method
-         CALL GETDIM_RELMAT(idimension,.FALSE.)
+         idimension = getdim_relmat(.false.)
 
          ! Zero & unpack CMO and ZY vectors
          CALL UPKCMO(CMO,uCMO)
@@ -102,7 +102,7 @@ contains
                         bovecs=bov)
 
          ! Allocate and compute Relay matrix
-         CALL GETDIM_RELMAT(idimension,.TRUE.)
+         idimension = getdim_relmat(.true.)
          allocate(relmat(idimension))
          CALL READ_RELMAT(RELMAT)
          DO I=1,NOSIM
@@ -243,7 +243,7 @@ contains
       CALL UPKCMO(CMO,UCMO)
 !     Non-iterative method
       IF (.NOT.MQITER) THEN
-        CALL GETDIM_RELMAT(idimension,.FALSE.)
+        idimension = getdim_relmat(.false.)
 !       Allocate FV and MQ vectors for all perturbed densities
         allocate(fvvec1(nsim*idimension))
         allocate(fvvec2(nsim*idimension))
@@ -264,7 +264,7 @@ contains
                        zym2=zym2)
 
 !       Allocate and compute Relay matrix
-        CALL GETDIM_RELMAT(idimension,.TRUE.)
+        idimension = getdim_relmat(.true.)
         allocate(relmat(idimension))
         CALL READ_RELMAT(RELMAT)
 !       Determine induced induced dipoles and charges

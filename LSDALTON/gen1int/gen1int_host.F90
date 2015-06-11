@@ -80,7 +80,8 @@ module gen1int_host
                   AO=ao_items,                             &
                   UNCONTRACTED=.false.,                    &
                   INTNRM=.false.,                          &
-                  NORMA=.false.)
+                  NORMA=.false.,                           &
+                  EXTEND=.false.)
 
     ! normalizes the basis sets
     call gen1int_host_norm_gto(ao_items=ao_items, io_viewer=io_viewer)
