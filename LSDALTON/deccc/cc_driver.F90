@@ -363,6 +363,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    !> local variables 
    character(len=30) :: CorrEnergyString
    integer :: iCorrLen, nsingle, npair, njobs
+   real(realk) :: norm_pt_1,norm_pt_2
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
@@ -421,28 +422,32 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
    if (print_frags) then ! should we print fragment energies?
 
-      call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
-         & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
-         & m1f=m1_final, m2f=m2_final)
+      if (.not. DECinfo%pt_hack) then
 
-      if(DECinfo%CCSDmultipliers)then
-         call tensor_free(m2_final)
-         if(DECinfo%use_singles)then
-            call tensor_free(m1_final)
+         call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel, &
+            & oof,vvf,ccenergies(cc_sol_o),VOVO,.false.,local,t1_final,t2_final, &
+            & m1f=m1_final, m2f=m2_final)
+   
+         if(DECinfo%CCSDmultipliers)then
+            call tensor_free(m2_final)
+            if(DECinfo%use_singles)then
+               call tensor_free(m1_final)
+            endif
          endif
+      
+         if(DECinfo%PL>1)then
+            call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
+               &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
+               &labeldwwork = 'MASTER WORK CC solver: ',&
+               &labeldwcomm = 'MASTER COMM CC solver: ',&
+               &labeldwidle = 'MASTER IDLE CC solver: ') 
+         endif
+      
+         natoms   = MyMolecule%natoms
+         nfrags   = MyMolecule%nfrags
+         nocc_tot = MyMolecule%nocc
+
       endif
-   
-      if(DECinfo%PL>1)then
-         call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
-            &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
-            &labeldwwork = 'MASTER WORK CC solver: ',&
-            &labeldwcomm = 'MASTER COMM CC solver: ',&
-            &labeldwidle = 'MASTER IDLE CC solver: ') 
-      endif
-   
-      natoms   = MyMolecule%natoms
-      nfrags   = MyMolecule%nfrags
-      nocc_tot = MyMolecule%nocc
 
       if(ccmodel == MODEL_CCSDpT)then
  
@@ -460,6 +465,19 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
          call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,&
             & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+
+         if (DECinfo%pt_hack) then
+
+            call tensor_print_norm_nrm(ccsdpt_t1,norm_pt_1)
+            call tensor_print_norm_nrm(ccsdpt_t2,norm_pt_2)
+            call tensor_free(ccsdpt_t1)
+            call tensor_free(ccsdpt_t2)
+            call mem_dealloc(ccenergies)
+            ccenergy = (norm_pt_1 + norm_pt_2) * 1.0E-3_realk ! arbitrary value - only for testing...
+
+            return
+
+         endif
   
          ! now, reorder amplitude and integral arrays
          if (abc) then
@@ -771,6 +789,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call tensor_free(t2_final)
       call tensor_free(VOVO)
    endif
+
 end function ccsolver_justenergy
 
 !> \brief For a given fragment, calculate singles and doubles amplitudes and
