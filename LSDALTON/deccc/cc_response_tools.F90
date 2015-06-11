@@ -1653,31 +1653,31 @@ module cc_response_tools_module
       type(tensor),intent(inout) :: rho1,rho2
       type(tensor) :: rho11,rho12,rho21,rho22,Lrho1,Lrho2,Rt1,Rt2,Lt1,Lt2
       integer :: nbasis,nocc,nvirt,whattodo,i1,i2,i3,i4,j1,j2,j3,j4
-      real(realk),pointer :: AR(:,:,:,:), AL(:,:,:,:)
 
       ! Dimensions
       nbasis = xo_tensor%dims(1)
       nocc = xo_tensor%dims(2)
       nvirt = xv_tensor%dims(2)
 
-      call mem_alloc(AR,nvirt,nocc,nvirt,nocc)
-      call mem_alloc(AL,nvirt,nocc,nvirt,nocc)
-      AR=0.0_realk
-      AL=0.0_realk
+      call tensor_minit(Rt1,[nvirt,nocc],2)
+      call tensor_minit(Rt2,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(Lt1,[nvirt,nocc],2)
+      call tensor_minit(Lt2,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(rho11,[nvirt,nocc],2)
+      call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(rho21,[nvirt,nocc],2)
+      call tensor_minit(rho22,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(Lrho1,[nvirt,nocc],2)
+      call tensor_minit(Lrho2,[nvirt,nocc,nvirt,nocc],4)
 
-      ! KKHACK
 
       do j2=1,nocc
          do j1=1,nvirt
             do i2=1,nocc
                do i1=1,nvirt
 
-                  call tensor_minit(Rt1,[nvirt,nocc],2)
-                  call tensor_minit(Rt2,[nvirt,nocc,nvirt,nocc],4)
                   call tensor_zero(Rt1)
                   call tensor_zero(Rt2)
-                  call tensor_minit(Lt1,[nvirt,nocc],2)
-                  call tensor_minit(Lt2,[nvirt,nocc,nvirt,nocc],4)
                   call tensor_zero(Lt1)
                   call tensor_zero(Lt2)
                   ! Jacobian elements (i1,i2;j1,j2)
@@ -1688,8 +1688,6 @@ module cc_response_tools_module
                   ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
                   ! Singles component: rho11  (Eq. 55)
                   ! Doubles component: rho12  (Eq. 57)
-                  call tensor_minit(rho11,[nvirt,nocc],2)
-                  call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
                   whattodo=1
                   call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
                        & yv_tensor,t2,Rt1,Rt2,rho11,rho12,whattodo)
@@ -1701,8 +1699,6 @@ module cc_response_tools_module
                   ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
                   ! Singles component: rho21  (Eq. 56)
                   ! Doubles component: rho22  (Eq. 58)
-                  call tensor_minit(rho21,[nvirt,nocc],2)
-                  call tensor_minit(rho22,[nvirt,nocc,nvirt,nocc],4)
                   whattodo=2
                   call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
                        & yv_tensor,t2,Rt1,Rt2,rho21,rho22,whattodo)
@@ -1716,8 +1712,6 @@ module cc_response_tools_module
                   call tensor_add(rho2,1.0_realk,rho22)
 
                   ! KKHACK - testing
-                  call tensor_minit(Lrho1,[nvirt,nocc],2)
-                  call tensor_minit(Lrho2,[nvirt,nocc,nvirt,nocc],4)
                   call tensor_zero(Lrho1)
                   call tensor_zero(Lrho2)
 
@@ -1730,17 +1724,6 @@ module cc_response_tools_module
                        & i1,i2,j1,j2,rho1%elm2(i1,i2),Lrho1%elm2(j1,j2)
 
 
-                  call tensor_free(Lrho1)
-                  call tensor_free(Lrho2)
-                  call tensor_free(Rt1)
-                  call tensor_free(Rt2)
-                  call tensor_free(Lt1)
-                  call tensor_free(Lt2)
-
-                  call tensor_free(rho11)
-                  call tensor_free(rho12)
-                  call tensor_free(rho21)
-                  call tensor_free(rho22)
 
                end do
             end do
@@ -1748,20 +1731,17 @@ module cc_response_tools_module
       end do
 
 
-      write(DECinfo%output,*) 'JACOBIAN '
-      do j2=1,nocc
-         do j1=1,nvirt
-            do i2=1,nocc
-               do i1=1,nvirt
-                  write(DECinfo%output,'(4i5,2F20.12)') i1,i2,j1,j2,AR(i1,i2,j1,j2),AL(i1,i2,j1,j2)
-               end do
-            end do
-         end do
-      end do
+      call tensor_free(Lrho1)
+      call tensor_free(Lrho2)
+      call tensor_free(Rt1)
+      call tensor_free(Rt2)
+      call tensor_free(Lt1)
+      call tensor_free(Lt2)
+      call tensor_free(rho11)
+      call tensor_free(rho12)
+      call tensor_free(rho21)
+      call tensor_free(rho22)
 
-
-      call mem_dealloc(AL)
-      call mem_dealloc(AR)
 
     end subroutine cc_jacobian_rhtr
 
