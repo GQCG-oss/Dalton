@@ -218,79 +218,94 @@ contains
     SNOOPLOOP: do i=1,nsub
 
        this = i
-       write(DECinfo%output,*) 'STARTING SNOOP FOR SUBSYSTEM', this
+       IdenticalSubsystems: if(config%samesubsystems .and. this>1) then
+          ! Same subsystems, we can skip calculation for all but subsystem 1 and 
+          ! just copy HF and correlation energies.
+          write(DECinfo%output,*) 'IDENTICAL SUBSYSTEMS - NO CALCULATION FOR SUBSYSTEM', this
+          EHFsnoop(this) = EHFsnoop(1)
+          Ecorrsnoop(this) = Ecorrsnoop(1)
 
-       ! LSitem for subsystem using ghost functions on the other subsystems
-       call build_subsystem_lsitem_ghost(this,lsfull,lssnoop)
-
-       ! Number of electrons/orbitals for subsystem 
-       ! ==========================================
-       nelsnoop = get_num_electrons(lssnoop)
-       ! Currently SNOOP assumes closed-shell subsystem
-       if(mod(nelsnoop,2)/=0) then
-          call lsquit('SNOOP only implemented for closed-shell systems with zero ',-1)
        else
-          noccsnoop = nelsnoop/2
-       end if
 
+          write(DECinfo%output,*) 'STARTING SNOOP FOR SUBSYSTEM', this
 
-       ! Initial occ and virt MO coefficients for subsystem
-       ! --------------------------------------------------
-       ! 1. Take occ and virt MOs from isolated monomer calculations augmented 
-       !    with zeros for basis functions on the other subsystems
-       ! 2. Add virtual orbitals (Cvirtother) from other subsystems augmented with zeros
-       !    for basis functions on this subsystem
-       ! 3. Orthogonalize Cvirtother againts MOs on this subsystem while keeping occ and virt
-       !    MOs for this subsystem fixed (they are already orthogonal).
+          ! LSitem for subsystem using ghost functions on the other subsystems
+          call build_subsystem_lsitem_ghost(this,lsfull,lssnoop)
 
-       ! NOTE: Coccsnoop is initialized here, but Cvirtsnoop is
-       !       initialized inside subroutine because we
-       !       do not yet know the dimensions!
-
-       call mat_init(Coccsnoop(this),nbasis,noccsnoop)
-
-       call get_orthogonal_basis_for_subsystem(this,nsub,&
-            & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsnoop(this),Cvirtsnoop(this),S)
-
-       ! Sanity check for initial orbitals
-       call subsystem_orbitals_sanity_check(Coccsnoop(this),&
-            & Cvirtsnoop(this),MyMoleculeFULL,S)
-
-       ! SCF optimization for subsystem "this"
-       call solve_subsystem_scf_rh(lssnoop,Coccsnoop(this),&
-            & Cvirtsnoop(this),FAOsnoop,EHFsnoop(this))
-
-       ! Sanity check for optimized orbitals
-       call subsystem_orbitals_sanity_check(Coccsnoop(this),&
-            & Cvirtsnoop(this),MyMoleculeFULL,S)
-
-       ! Determine orbitals for correlated SNOOP monomer calculations
-
-       ! SNOOP-DEC stuff
-       DECcalc: if(.not. DECinfo%full_molecular_cc) then
-          if(DECinfo%SNOOPlocalize) then
-             ! Localize orbitals
-             ! -----------------
-             nMO = Coccsnoop(this)%ncol + Cvirtsnoop(this)%ncol
-             call mat_init(C,nbasis,nMO)
-             call collect_MO_coeff_in_one_matrix(Coccsnoop(this),Cvirtsnoop(this),C) 
-             call optimloc(C,noccsnoop,config%decomp%cfg_mlo_m,lssnoop,&
-                  & config%davidOrbLoc)
-             call partition_MO_coeff_into_two_matrices(C,Coccsnoop(this),Cvirtsnoop(this))
-             call mat_free(C)
+          ! Number of electrons/orbitals for subsystem 
+          ! ==========================================
+          nelsnoop = get_num_electrons(lssnoop)
+          ! Currently SNOOP assumes closed-shell subsystem
+          if(mod(nelsnoop,2)/=0) then
+             call lsquit('SNOOP only implemented for closed-shell systems with zero ',-1)
           else
-             ! Rotate subsystem orbitals using natural connection such that they are as
-             ! close as possible to the full orbitals in a least-squares sense.
-             call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,this,&
-                  & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop(this), Cvirtsnoop(this),S)
+             noccsnoop = nelsnoop/2
           end if
-       end if DECcalc
 
-       ! Correlation energy for subsystem
-       if(.not. DECinfo%SNOOPjustHF) then
-          call subsystem_correlation_energy(this,MyMoleculeFULL,OccOrbitals,VirtOrbitals,AFfull,&
-               & Coccsnoop(this),Cvirtsnoop(this),FAOsnoop,lssnoop,Ecorrsnoop(this))
-       end if
+
+          ! Initial occ and virt MO coefficients for subsystem
+          ! --------------------------------------------------
+          ! 1. Take occ and virt MOs from isolated monomer calculations augmented 
+          !    with zeros for basis functions on the other subsystems
+          ! 2. Add virtual orbitals (Cvirtother) from other subsystems augmented with zeros
+          !    for basis functions on this subsystem
+          ! 3. Orthogonalize Cvirtother againts MOs on this subsystem while keeping occ and virt
+          !    MOs for this subsystem fixed (they are already orthogonal).
+
+          ! NOTE: Coccsnoop is initialized here, but Cvirtsnoop is
+          !       initialized inside subroutine because we
+          !       do not yet know the dimensions!
+
+          call mat_init(Coccsnoop(this),nbasis,noccsnoop)
+
+          call get_orthogonal_basis_for_subsystem(this,nsub,&
+               & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsnoop(this),Cvirtsnoop(this),S)
+
+          ! Sanity check for initial orbitals
+          call subsystem_orbitals_sanity_check(Coccsnoop(this),&
+               & Cvirtsnoop(this),MyMoleculeFULL,S)
+
+          ! SCF optimization for subsystem "this"
+          call solve_subsystem_scf_rh(lssnoop,Coccsnoop(this),&
+               & Cvirtsnoop(this),FAOsnoop,EHFsnoop(this))
+
+          ! Sanity check for optimized orbitals
+          call subsystem_orbitals_sanity_check(Coccsnoop(this),&
+               & Cvirtsnoop(this),MyMoleculeFULL,S)
+
+          ! Determine orbitals for correlated SNOOP monomer calculations
+
+          ! SNOOP-DEC stuff
+          DECcalc: if(.not. DECinfo%full_molecular_cc) then
+             if(DECinfo%SNOOPlocalize) then
+                ! Localize orbitals
+                ! -----------------
+                nMO = Coccsnoop(this)%ncol + Cvirtsnoop(this)%ncol
+                call mat_init(C,nbasis,nMO)
+                call collect_MO_coeff_in_one_matrix(Coccsnoop(this),Cvirtsnoop(this),C) 
+                call optimloc(C,noccsnoop,config%decomp%cfg_mlo_m,lssnoop,&
+                     & config%davidOrbLoc)
+                call partition_MO_coeff_into_two_matrices(C,Coccsnoop(this),Cvirtsnoop(this))
+                call mat_free(C)
+             else
+                ! Rotate subsystem orbitals using natural connection such that they are as
+                ! close as possible to the full orbitals in a least-squares sense.
+                call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,this,&
+                     & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop(this), Cvirtsnoop(this),S)
+             end if
+          end if DECcalc
+
+          ! Correlation energy for subsystem
+          if(.not. DECinfo%SNOOPjustHF) then
+             call subsystem_correlation_energy(this,MyMoleculeFULL,OccOrbitals,VirtOrbitals,AFfull,&
+                  & Coccsnoop(this),Cvirtsnoop(this),FAOsnoop,lssnoop,Ecorrsnoop(this))
+          end if
+
+          ! Free stuff for subsystem
+          call ls_free(lssnoop)
+
+
+       end if IdenticalSubsystems
 
 
        print '(1X,a,i5,a,3g20.12)', 'SNOOP subsystem: ', this, &
@@ -299,9 +314,6 @@ contains
        write(DECinfo%output,'(1X,a,i5,a,3g20.12)') 'SNOOP subsystem: ', this, &
             & '  *** HF/corr/HFdiff energy: ', EHFsnoop(this), Ecorrsnoop(this),EHFsnoop(this)-EHFiso(this)
 
-
-       ! Free stuff for subsystem
-       call ls_free(lssnoop)
 
     End do SNOOPLOOP
 
@@ -315,8 +327,10 @@ contains
     call mem_dealloc(EHFiso)
     call mem_dealloc(Ecorrsnoop)
     do i=1,nsub
-       call mat_free(Coccsnoop(i))
-       call mat_free(Cvirtsnoop(i))
+       if(i==1 .or. (.not. config%samesubsystems) ) then
+          call mat_free(Coccsnoop(i))
+          call mat_free(Cvirtsnoop(i))
+       end if
        call mat_free(Cocciso(i))
        call mat_free(Cvirtiso(i))
     end do
