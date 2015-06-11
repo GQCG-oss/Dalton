@@ -1654,6 +1654,7 @@ module cc_response_tools_module
       type(tensor) :: rho11,rho12,rho21,rho22,Lrho1,Lrho2,Rt1,Rt2,Lt1,Lt2
       integer :: nbasis,nocc,nvirt,whattodo,i1,i2,i3,i4,j1,j2,j3,j4
 
+
       ! Dimensions
       nbasis = xo_tensor%dims(1)
       nocc = xo_tensor%dims(2)
@@ -1673,58 +1674,67 @@ module cc_response_tools_module
 
       do j2=1,nocc
          do j1=1,nvirt
-            do i2=1,nocc
-               do i1=1,nvirt
+            do i4=1,nocc
+               do i3=1,nvirt
+                  do i2=1,nocc
+                     do i1=1,nvirt
 
-                  call tensor_zero(Rt1)
-                  call tensor_zero(Rt2)
-                  call tensor_zero(Lt1)
-                  call tensor_zero(Lt2)
-                  ! Jacobian elements (i1,i2;j1,j2)
-                  Rt1%elm2(j1,j2) = 1.0_realk
-                  Lt1%elm2(i1,i2) = 1.0_realk
+                        call tensor_zero(Rt1)
+                        call tensor_zero(Rt2)
+                        call tensor_zero(Lt1)
+                        call tensor_zero(Lt2)
+                        ! Jacobian elements (i1,i2;j1,j2)
+                        !                  Rt1%elm2(j1,j2) = 1.0_realk
+                        !                  Lt1%elm2(i1,i2) = 1.0_realk
+                        Rt1%elm2(j1,j2) = 1.0_realk
+                        Lt2%elm4(i1,i2,i3,i4) = 1.0_realk
 
-                  ! Calculate 1^rho components for Jacobian RHS transformation,
-                  ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
-                  ! Singles component: rho11  (Eq. 55)
-                  ! Doubles component: rho12  (Eq. 57)
-                  whattodo=1
-                  call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-                       & yv_tensor,t2,Rt1,Rt2,rho11,rho12,whattodo)
-                  !           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
-
-
-
-                  ! Calculate 2^rho components for Jacobian RHS transformation,
-                  ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
-                  ! Singles component: rho21  (Eq. 56)
-                  ! Doubles component: rho22  (Eq. 58)
-                  whattodo=2
-                  call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-                       & yv_tensor,t2,Rt1,Rt2,rho21,rho22,whattodo)
-
-                  ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
-                  call tensor_zero(rho1)
-                  call tensor_zero(rho2)
-                  call tensor_add(rho1,1.0_realk,rho11)
-                  call tensor_add(rho1,1.0_realk,rho21)
-                  call tensor_add(rho2,1.0_realk,rho12)
-                  call tensor_add(rho2,1.0_realk,rho22)
-
-                  ! KKHACK - testing
-                  call tensor_zero(Lrho1)
-                  call tensor_zero(Lrho2)
-
-                  call get_ccsd_multipliers_simple(Lrho1%elm2,Lrho2%elm4,t1%elm2,t2%elm4,&
-                       & Lt1%elm2,Lt2%elm4,&
-                       & t1fock%elm2,xo_tensor%elm2,yo_tensor%elm2,xv_tensor%elm2,yv_tensor%elm2,&
-                       & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
-
-                  write(DECinfo%output,'(1X,a,4i5,2F20.12)') 'JACOBIAN ',&
-                       & i1,i2,j1,j2,rho1%elm2(i1,i2),Lrho1%elm2(j1,j2)
+                        ! Calculate 1^rho components for Jacobian RHS transformation,
+                        ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
+                        ! Singles component: rho11  (Eq. 55)
+                        ! Doubles component: rho12  (Eq. 57)
+                        whattodo=1
+                        call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+                             & yv_tensor,t2,Rt1,Rt2,rho11,rho12,whattodo)
+                        !           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
 
 
 
+                        ! Calculate 2^rho components for Jacobian RHS transformation,
+                        ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
+                        ! Singles component: rho21  (Eq. 56)
+                        ! Doubles component: rho22  (Eq. 58)
+                        whattodo=2
+                        call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+                             & yv_tensor,t2,Rt1,Rt2,rho21,rho22,whattodo)
+
+                        ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
+                        call tensor_zero(rho1)
+                        call tensor_zero(rho2)
+                        call tensor_add(rho1,1.0_realk,rho11)
+                        call tensor_add(rho1,1.0_realk,rho21)
+                        call tensor_add(rho2,1.0_realk,rho12)
+                        call tensor_add(rho2,1.0_realk,rho22)
+
+                        ! KKHACK - testing
+                        call tensor_zero(Lrho1)
+                        call tensor_zero(Lrho2)
+
+                        call get_ccsd_multipliers_simple(Lrho1%elm2,Lrho2%elm4,t1%elm2,t2%elm4,&
+                             & Lt1%elm2,Lt2%elm4,&
+                             & t1fock%elm2,xo_tensor%elm2,yo_tensor%elm2,xv_tensor%elm2,yv_tensor%elm2,&
+                             & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
+
+                        !                  write(DECinfo%output,'(1X,a,4i5,2F20.12)') 'JACOBIAN ',&
+                        !                       & i1,i2,j1,j2,rho1%elm2(i1,i2),Lrho1%elm2(j1,j2)
+
+                        write(DECinfo%output,'(a,6i4,3F16.9)') 'JACOBIAN ',&
+                             & i1,i2,i3,i4,j1,j2,rho2%elm4(i1,i2,i3,i4),&
+                             & Lrho1%elm2(j1,j2), &
+                             & rho2%elm4(i1,i2,i3,i4) - Lrho1%elm2(j1,j2)
+
+                     end do
+                  end do
                end do
             end do
          end do
@@ -1946,6 +1956,7 @@ module cc_response_tools_module
       end do
 
 
+
       ! B2 (A)
       ! ******
       ! Scaling of quadratic term (not present for 1^rho)
@@ -1981,6 +1992,8 @@ module cc_response_tools_module
 
          end do
       end do
+
+
 
       ! For 2^rho, add quadratic term with B2 and A2 switched around,
       ! see Table I in JCP 105, 6921 (1996)

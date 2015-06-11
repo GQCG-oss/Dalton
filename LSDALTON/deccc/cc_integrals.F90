@@ -71,7 +71,6 @@ contains
     intspec(5) = 'C'
     ao_dims=[nbasis,nbasis,nbasis,nbasis]
 
-    write(DECinfo%output,'(a)') 'info :: calculating two-electron integrals'
     g_ao = array4_init_standard(ao_dims)
     ! KK Quick fix: Filename associated with g_ao
     g_ao%filename = 'gao'
