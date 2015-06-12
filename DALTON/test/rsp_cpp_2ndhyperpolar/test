@@ -1,9 +1,9 @@
-#!/usr/bin/env python                                                                             
+#!/usr/bin/env python
 #    rsp_cpp_2ndhyperpolar
-#    ---------------------                                                                       
-#    Molecule:         Ne                                                                        
+#    ---------------------
+#    Molecule:         Neon
 #    Wave Function:    HF/6-31G
-#    Test Purpose:     Damped second-order hyperpolarizability
+#    Test Purpose:     Second-order damped hyperpolarizability calculation
 
 import os
 import sys
@@ -14,15 +14,12 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(scf_string    = 'SCF energy         :',
-      num_lines     = 1,
+f.add(string = 'Final HF energy:',
       rel_tolerance = 1.0e-8)
 
-f.add(crf_string    = '@ <<Z;Z,Z,Z>>',
-      num_lines     = 1,
-      rel_tolerance = 1.0e-3,
-      ignore_below  = 1.0e-3)
+f.add(re = '@ <<Z;Z,Z,Z>>',
+      rel_tolerance = 1.0e-4, ignore_below = 1.0e-3)
 
-test.run(['GAMMA_ZZZZ_HF_CPP.dal'], ['neon_6-31G.mol'], {'out': f})
+test.run(['GAMMA_ZZZZ_HF_CPP.dal'], ['neon_6-31G.mol'], f={'out': f})
 
 sys.exit(test.return_code)

@@ -136,35 +136,32 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed May 27 14:33:28 2015
-     Host name              : n69                                     
+     Date and time (Linux)  : Fri Jun 12 13:13:07 2015
+     Host name              : n1439                                   
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/x_tobfa/dalton_testruns/debugging
-   2) /home/x_tobfa/dalton-new-cpp/build-kappa-serial/basis
+   1) /home/x_tobfa/dalton_testruns/neon-taylor
+   2) /home/x_tobfa/dalton-new-cpp/build-triloth-serial/basis
 
 
 Compilation information
 -----------------------
 
  Who compiled             | x_tobfa
- Host                     | kappa
- System                   | Linux-2.6.18-402.el5.nsc1
+ Host                     | triolith1
+ System                   | Linux-2.6.32-504.16.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /software/intel/composer_xe_2011_sp1.10.319/bin/in
-                          | tel64/ifort
+ Fortran compiler         | /software/apps/comp_wrapper/intel/ifort
  Fortran compiler version | ifort (IFORT) 12.1.4 20120410
- C compiler               | /software/intel/composer_xe_2011_sp1.10.319/bin/in
-                          | tel64/icc
+ C compiler               | /software/apps/comp_wrapper/intel/icc
  C compiler version       | icc (ICC) 12.1.4 20120410
- C++ compiler             | /software/intel/composer_xe_2011_sp1.10.319/bin/in
-                          | tel64/icpc
- C++ compiler version     | icpc (ICC) 12.1.4 20120410
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.4.7 20120313 (Red Hat 4.4.7-11)
  BLAS                     | /software/intel/composer_xe_2011_sp1.10.319/mkl/li
                           | b/intel64/libmkl_intel_lp64.so;/software/intel/com
                           | poser_xe_2011_sp1.10.319/mkl/lib/intel64/libmkl_se
@@ -176,9 +173,8 @@ Compilation information
                           | omposer_xe_2011_sp1.10.319/mkl/lib/intel64/libmkl_
                           | intel_lp64.so
  Static linking           | OFF
- Last Git revision        | 5d09d32079018a3ea43250bd8788196498539256
- Git branch               | crfcpp
- Configuration time       | 2015-05-27 13:25:04.437541
+ Last Git revision        | ff49938e851ac5e497fad185dfd9da503b03be30
+ Configuration time       | 2015-06-12 09:39:23.638979
 
 
    Content of the .dal input file
@@ -201,13 +197,15 @@ Compilation information
 ZZZZ                                              
 .BFREQ                                            
  1                                                
- 0.65                                             
+ 0.5                                              
 .CFREQ                                            
  1                                                
- 0.75                                             
+-0.5                                              
 .DFREQ                                            
  1                                                
- 0.85                                             
+ 0.5                                              
+.THCLR                                            
+ 1.0D-4                                           
 **END OF DALTON INPUT                             
 
 
@@ -260,7 +258,7 @@ Charge=10 Atoms=1
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =  10 :
-     "/home/x_tobfa/dalton-new-cpp/build-kappa-serial/basis/6-31G"
+     "/home/x_tobfa/dalton-new-cpp/build-triloth-serial/basis/6-31G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-31G                                                                           
@@ -461,8 +459,8 @@ Charge=10 Atoms=1
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.22 seconds
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.15 seconds
 
 
                         .----------------------------------.
@@ -503,8 +501,8 @@ Charge=10 Atoms=1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed May 27 14:33:28 2015
-     Host name              : n69                                     
+     Date and time (Linux)  : Fri Jun 12 13:13:07 2015
+     Host name              : n1439                                   
 
  Title lines from ".mol" input file:
      Neon atom                                                               
@@ -562,27 +560,27 @@ Charge=10 Atoms=1
 
  Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    T  1.00D-03  1.00D-03
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    T  0.00D+00  0.00D+00
 @  1  -128.472136542       2.17D-01  -1.28D+02     2   1   1   0   1   0   0   0
       Virial theorem: -V/T =      2.002790
 @      MULPOP  Ne     0.00; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    2    T  1.00D-03  1.00D-03
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    2    T  0.00D+00  0.00D+00
 @  2  -128.473589288       9.97D-02  -1.45D-03     2   1   1   0   1   0   0   0
       Virial theorem: -V/T =      1.998486
 @      MULPOP  Ne     0.00; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  9.99D-04  1.00D-03
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  0.00D+00  0.00D+00
 @  3  -128.473873936       8.17D-03  -2.85D-04     2   1   1   0   1   0   0   0
       Virial theorem: -V/T =      2.000002
 @      MULPOP  Ne     0.00; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    T  0.00D+00  0.00D+00
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    T  0.00D+00  1.00D-03
 @  4  -128.473876870       9.80D-05  -2.93D-06     2   1   1   0   1   0   0   0
       Virial theorem: -V/T =      2.000005
 @      MULPOP  Ne     0.00; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    T  1.00D-03  1.00D-03
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    T  0.00D+00  0.00D+00
 @  5  -128.473876871       2.27D-07  -3.61D-10     2   1   1   0   1   0   0   0
 
 @ *** DIIS converged in   5 iterations !
@@ -612,7 +610,7 @@ Charge=10 Atoms=1
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.008       0.041
+ >>>> CPU and wall time for SCF :       0.004       0.005
 
 
                        .-----------------------------------.
@@ -631,10 +629,10 @@ Charge=10 Atoms=1
 @    Final gradient norm:           0.000000227014
 
  
-     Date and time (Linux)  : Wed May 27 14:33:29 2015
-     Host name              : n69                                     
+     Date and time (Linux)  : Fri Jun 12 13:13:07 2015
+     Host name              : n1439                                   
 
-File label for MO orbitals:  27May15   FOCKDIIS
+File label for MO orbitals:  12Jun15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -670,11 +668,11 @@ File label for MO orbitals:  27May15   FOCKDIIS
 
 
  >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.18 seconds
+ >>>> Total wall time used in SIRIUS :      0.01 seconds
 
  
-     Date and time (Linux)  : Wed May 27 14:33:29 2015
-     Host name              : n69                                     
+     Date and time (Linux)  : Fri Jun 12 13:13:07 2015
+     Host name              : n1439                                   
 
 
                      .---------------------------------------.
@@ -703,13 +701,13 @@ File label for MO orbitals:  27May15   FOCKDIIS
                   +----------------------------------------------+
 
  Nonlinear polarizability calculation requested:ABSLRS_GAMMA =   T
- B-FREQ:  0.65000000
- C-FREQ:  0.75000000
- D-FREQ:  0.85000000
+ B-FREQ:  0.50000000
+ C-FREQ: -0.50000000
+ D-FREQ:  0.50000000
  Absorption calc over frequency interval  :            ABSLRS_INTERVAL =   F
  Start: 0.00000Stop: 0.00000   Step: 1.00000
  Damping parameter (a.u. and cm-1)        : DAMPING      = 0.004556  1000.0
- Threshold of convergence in LR solver    : THCLR        = 1.0D-03
+ Threshold of convergence in LR solver    : THCLR        = 1.0D-04
  Maximum iterations in complex LR solver  : MAXIT        = 150
  Maximum size of reduced space            : MAXRM        =1000
  Print level in absorption modules        : PRINT        =   1
@@ -734,14 +732,14 @@ File label for MO orbitals:  27May15   FOCKDIIS
  This calculations requires the solution of linear response
  equations for electric dipole operators at    1 frequencies:
 
- LR FREQ:  0.65000000
+ LR FREQ:  0.50000000
 
  and the evaluation of    1 cubic response functions:
 
 ---------------------------------------------------------------------------------------------------
  No      A-oper      B-oper      C-oper      D-oper      A-freq      B-freq      C-freq      D-freq
 ---------------------------------------------------------------------------------------------------
-  1    ZDIPLEN     ZDIPLEN     ZDIPLEN     ZDIPLEN  -2.25000000  0.65000000  0.75000000  0.85000000
+  1    ZDIPLEN     ZDIPLEN     ZDIPLEN     ZDIPLEN  -0.50000000  0.50000000 -0.50000000  0.50000000
 ---------------------------------------------------------------------------------------------------
 
 
@@ -759,16 +757,12 @@ File label for MO orbitals:  27May15   FOCKDIIS
 
  ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator XDIPLEN  of symmetry 2 at frequencies:
- ABSLRS --  0.00000000  0.65000000  0.75000000  0.85000000
-             2.25000000
+ ABSLRS --  0.00000000  0.50000000
 Number of linear transformations   3 in batch    1
-ITER, IVEC:   1   1  XDIPLEN   0.0000   RESID, RESID/X:  0.2099308D-15  0.4684607D-15
-ITER, IVEC:   1   2  XDIPLEN   0.6500   RESID, RESID/X:  0.2018980D-15  0.4214464D-15
-ITER, IVEC:   1   3  XDIPLEN   0.7500   RESID, RESID/X:  0.3948933D-15  0.8056575D-15
-ITER, IVEC:   1   4  XDIPLEN   0.8500   RESID, RESID/X:  0.3992015D-15  0.7929639D-15
-ITER, IVEC:   1   5  XDIPLEN   2.2500   RESID, RESID/X:  0.2442533D-14  0.1644008D-14
+ITER, IVEC:   1   1  XDIPLEN      0.00000   RESID, RESID/X:  0.1296844D-15  0.2893909D-15
+ITER, IVEC:   1   2  XDIPLEN      0.50000   RESID, RESID/X:  0.1816116D-15  0.3897220D-15
 
- *** ABSCTL: REQUESTED   5 SOLUTION VECTORS CONVERGED IN RED SPACES OF   3   3
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF   3   3
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -779,16 +773,12 @@ ITER, IVEC:   1   5  XDIPLEN   2.2500   RESID, RESID/X:  0.2442533D-14  0.164400
 
  ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator YDIPLEN  of symmetry 3 at frequencies:
- ABSLRS --  0.00000000  0.65000000  0.75000000  0.85000000
-             2.25000000
+ ABSLRS --  0.00000000  0.50000000
 Number of linear transformations   3 in batch    1
-ITER, IVEC:   1   1  YDIPLEN   0.0000   RESID, RESID/X:  0.5004513D-15  0.1116757D-14
-ITER, IVEC:   1   2  YDIPLEN   0.6500   RESID, RESID/X:  0.4590359D-15  0.9582018D-15
-ITER, IVEC:   1   3  YDIPLEN   0.7500   RESID, RESID/X:  0.4617929D-15  0.9421455D-15
-ITER, IVEC:   1   4  YDIPLEN   0.8500   RESID, RESID/X:  0.5815191D-15  0.1155115D-14
-ITER, IVEC:   1   5  YDIPLEN   2.2500   RESID, RESID/X:  0.3441897D-14  0.2316655D-14
+ITER, IVEC:   1   1  YDIPLEN      0.00000   RESID, RESID/X:  0.8635772D-16  0.1927073D-15
+ITER, IVEC:   1   2  YDIPLEN      0.50000   RESID, RESID/X:  0.1552414D-15  0.3331340D-15
 
- *** ABSCTL: REQUESTED   5 SOLUTION VECTORS CONVERGED IN RED SPACES OF   3   3
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF   3   3
 
 
  Perturbation symmetry.     KSYMOP:       5
@@ -799,16 +789,12 @@ ITER, IVEC:   1   5  YDIPLEN   2.2500   RESID, RESID/X:  0.3441897D-14  0.231665
 
  ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator ZDIPLEN  of symmetry 5 at frequencies:
- ABSLRS --  0.00000000  0.65000000  0.75000000  0.85000000
-             2.25000000
+ ABSLRS --  0.00000000  0.50000000
 Number of linear transformations   3 in batch    1
-ITER, IVEC:   1   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.1216244D-15  0.2714049D-15
-ITER, IVEC:   1   2  ZDIPLEN   0.6500   RESID, RESID/X:  0.2472364D-15  0.5160869D-15
-ITER, IVEC:   1   3  ZDIPLEN   0.7500   RESID, RESID/X:  0.3527400D-15  0.7196567D-15
-ITER, IVEC:   1   4  ZDIPLEN   0.8500   RESID, RESID/X:  0.2638019D-15  0.5240095D-15
-ITER, IVEC:   1   5  ZDIPLEN   2.2500   RESID, RESID/X:  0.2500368D-14  0.1682935D-14
+ITER, IVEC:   1   1  ZDIPLEN      0.00000   RESID, RESID/X:  0.2241896D-15  0.5002792D-15
+ITER, IVEC:   1   2  ZDIPLEN      0.50000   RESID, RESID/X:  0.9112932D-16  0.1955553D-15
 
- *** ABSCTL: REQUESTED   5 SOLUTION VECTORS CONVERGED IN RED SPACES OF   3   3
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF   3   3
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -872,29 +858,16 @@ ITER, IVEC:   1   5  ZDIPLEN   2.2500   RESID, RESID/X:  0.2500368D-14  0.168293
  Orbital variables.         KZWOPT:       5
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       5
-Number of linear transformations   2 in batch    1
-ITER, IVEC:   1   1  XYLAB     1.4000   RESID, RESID/X:  0.6511561D+00  0.5840182D+00
- Warning : Unknown operator! XYLAB   
-Number of linear transformations   2 in batch    1
-ITER, IVEC:   2   1  XYLAB     1.4000   RESID, RESID/X:  0.2350180D-14  0.1885823D-14
- Warning : Unknown operator! XYLAB   
+Number of linear transformations   1 in batch    1
+ITER, IVEC:   1   1  XYLAB        0.00000   RESID, RESID/X:  0.3083778D+00  0.4306783D+00
+Number of linear transformations   1 in batch    1
+ITER, IVEC:   2   1  XYLAB        0.00000   RESID, RESID/X:  0.3733906D-01  0.5047410D-01
+Number of linear transformations   1 in batch    1
+ITER, IVEC:   3   1  XYLAB        0.00000   RESID, RESID/X:  0.4127452D-02  0.5566436D-02
+Number of linear transformations   1 in batch    1
+ITER, IVEC:   4   1  XYLAB        0.00000   RESID, RESID/X:  0.4411564D-06  0.5949616D-06
 
- *** ABSCTL: REQUESTED   5 SOLUTION VECTORS CONVERGED IN RED SPACES OF   4   4
-
-
- Perturbation symmetry.     KSYMOP:       1
- Perturbation spin symmetry.TRPLET:       F
- Orbital variables.         KZWOPT:       5
- Configuration variables.   KZCONF:       0
- Total number of variables. KZVAR :       5
-Number of linear transformations   2 in batch    1
-ITER, IVEC:   1   1  XYLAB     1.5000   RESID, RESID/X:  0.7554887D+00  0.6356967D+00
- Warning : Unknown operator! XYLAB   
-Number of linear transformations   2 in batch    1
-ITER, IVEC:   2   1  XYLAB     1.5000   RESID, RESID/X:  0.1594687D-14  0.1159055D-14
- Warning : Unknown operator! XYLAB   
-
- *** ABSCTL: REQUESTED   5 SOLUTION VECTORS CONVERGED IN RED SPACES OF   4   4
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF   3   4
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -903,13 +876,28 @@ ITER, IVEC:   2   1  XYLAB     1.5000   RESID, RESID/X:  0.1594687D-14  0.115905
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       5
 Number of linear transformations   2 in batch    1
-ITER, IVEC:   1   1  XYLAB     1.6000   RESID, RESID/X:  0.9086617D+00  0.7044834D+00
- Warning : Unknown operator! XYLAB   
+ITER, IVEC:   1   1  XYLAB        1.00000   RESID, RESID/X:  0.4411933D+00  0.4783069D+00
 Number of linear transformations   2 in batch    1
-ITER, IVEC:   2   1  XYLAB     1.6000   RESID, RESID/X:  0.4510252D-14  0.2846382D-14
- Warning : Unknown operator! XYLAB   
+ITER, IVEC:   2   1  XYLAB        1.00000   RESID, RESID/X:  0.1749347D-14  0.1797231D-14
 
- *** ABSCTL: REQUESTED   5 SOLUTION VECTORS CONVERGED IN RED SPACES OF   4   4
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF   4   4
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:       5
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :       5
+Number of linear transformations   1 in batch    1
+ITER, IVEC:   1   1  XYLAB        0.00000   RESID, RESID/X:  0.3083778D+00  0.4306783D+00
+Number of linear transformations   1 in batch    1
+ITER, IVEC:   2   1  XYLAB        0.00000   RESID, RESID/X:  0.3733906D-01  0.5047410D-01
+Number of linear transformations   1 in batch    1
+ITER, IVEC:   3   1  XYLAB        0.00000   RESID, RESID/X:  0.4127452D-02  0.5566436D-02
+Number of linear transformations   1 in batch    1
+ITER, IVEC:   4   1  XYLAB        0.00000   RESID, RESID/X:  0.4411564D-06  0.5949616D-06
+
+ *** ABSCTL: REQUESTED   2 SOLUTION VECTORS CONVERGED IN RED SPACES OF   3   4
 
 
                        +-----------------------------------+
@@ -918,41 +906,24 @@ ITER, IVEC:   2   1  XYLAB     1.6000   RESID, RESID/X:  0.4510252D-14  0.284638
 
 
  Cubic response function no   1 of   1.
- A operator, symmetry, frequency:   ZDIPLEN    5 -2.250000
- B operator, symmetry, frequency:   ZDIPLEN    5  0.650000
- C operator, symmetry, frequency:   ZDIPLEN    5  0.750000
- D operator, symmetry, frequency:   ZDIPLEN    5  0.850000
-
- @WARNING>>>> Response label ZDIPLEN ZDIPLEN  with frequencies    0.65000   0.75000
- and symmetries  5  5 not converged on file LUABSVECS
-
- @WARNING>>>> Response label ZDIPLEN ZDIPLEN  with frequencies    0.65000   0.85000
- and symmetries  5  5 not converged on file LUABSVECS
-
- @WARNING>>>> Response label ZDIPLEN ZDIPLEN  with frequencies    0.75000   0.85000
- and symmetries  5  5 not converged on file LUABSVECS
+ A operator, symmetry, frequency:   ZDIPLEN    5 -0.500000
+ B operator, symmetry, frequency:   ZDIPLEN    5  0.500000
+ C operator, symmetry, frequency:   ZDIPLEN    5 -0.500000
+ D operator, symmetry, frequency:   ZDIPLEN    5  0.500000
 
 
  Contribution                                Term                         Accumulated
                            ----------------------              ----------------------
                            Real              Imag              Real              Imag
  ------------------------------------------------------------------------------------
-Na T[3] NbNcd        0.08984420       -0.00084448        0.08984420       -0.00084448
-Contribution from C4FOCK:     -0.223158711576
-Contribution from C4FOCK:     -0.000000340922
-Contribution from C4FOCK:     -0.000000132183
-Contribution from C4FOCK:      0.000000029520
-Contribution from C4FOCK:     -0.000484087174
-Contribution from C4FOCK:     -0.000400365048
-Contribution from C4FOCK:     -0.000322108642
-Contribution from C4FOCK:      0.000000003611
-Na T[4] NbNcN        0.22264245       -0.00629408        0.31248665       -0.00713857
-  Na B[2] Ncd        7.16110091       -0.14123398        7.47358756       -0.14837255
- Na B[3] NcNd       -0.66039136        0.02041368        6.81319620       -0.12795887
-  Nb A[2] Ncd       -0.19881954       -0.00197847        6.61437665       -0.12993734
- Nb A[3] NcNd        0.02135624        0.00007103        6.63573290       -0.12986631
+Na T[3] NbNcd        0.00019876       -0.00000066        0.00019876       -0.00000066
+Na T[4] NbNcN       -0.01915000       -0.00006154       -0.01895124       -0.00006219
+  Na B[2] Ncd       -0.09560123       -0.00042294       -0.11455247       -0.00048513
+ Na B[3] NcNd        0.05938028        0.00014432       -0.05517218       -0.00034081
+  Nb A[2] Ncd       -0.09560321       -0.00009641       -0.15077539       -0.00043722
+ Nb A[3] NcNd        0.01979367        0.00001399       -0.13098172       -0.00042323
 
-@ <<Z;Z,Z,Z>>   0.650000   0.750000   0.850000                  6.635733                 -0.129866
+@ <<Z;Z,Z,Z>>   0.500000  -0.500000   0.500000                 -0.130982                 -0.000423
 
 
       **********************************************************************
@@ -978,56 +949,29 @@ Na T[4] NbNcN        0.22264245       -0.00629408        0.31248665       -0.007
 
       Averaged value       0.000000        0.242416        0.000000
 
-  7   XDIPLEN   XDIPLEN    0.650000        0.264608        0.000341
-  8   YDIPLEN   YDIPLEN    0.650000        0.264608        0.000341
-  9   ZDIPLEN   ZDIPLEN    0.650000        0.264608        0.000341
- 10   XDIPLEN   YDIPLEN    0.650000        0.000000        0.000000
- 11   XDIPLEN   ZDIPLEN    0.650000        0.000000        0.000000
- 12   YDIPLEN   ZDIPLEN    0.650000        0.000000        0.000000
+  7   XDIPLEN   XDIPLEN    0.500000        0.255047        0.000243
+  8   YDIPLEN   YDIPLEN    0.500000        0.255047        0.000243
+  9   ZDIPLEN   ZDIPLEN    0.500000        0.255047        0.000243
+ 10   XDIPLEN   YDIPLEN    0.500000        0.000000        0.000000
+ 11   XDIPLEN   ZDIPLEN    0.500000        0.000000        0.000000
+ 12   YDIPLEN   ZDIPLEN    0.500000        0.000000        0.000000
 
-      Averaged value       0.650000        0.264608        0.000341
-
- 13   XDIPLEN   XDIPLEN    0.750000        0.272945        0.000421
- 14   YDIPLEN   YDIPLEN    0.750000        0.272945        0.000421
- 15   ZDIPLEN   ZDIPLEN    0.750000        0.272945        0.000421
- 16   XDIPLEN   YDIPLEN    0.750000        0.000000        0.000000
- 17   XDIPLEN   ZDIPLEN    0.750000        0.000000        0.000000
- 18   YDIPLEN   ZDIPLEN    0.750000        0.000000        0.000000
-
-      Averaged value       0.750000        0.272945        0.000421
-
- 19   XDIPLEN   XDIPLEN    0.850000        0.283183        0.000515
- 20   YDIPLEN   YDIPLEN    0.850000        0.283183        0.000515
- 21   ZDIPLEN   ZDIPLEN    0.850000        0.283183        0.000515
- 22   XDIPLEN   YDIPLEN    0.850000        0.000000        0.000000
- 23   XDIPLEN   ZDIPLEN    0.850000        0.000000        0.000000
- 24   YDIPLEN   ZDIPLEN    0.850000        0.000000        0.000000
-
-      Averaged value       0.850000        0.283183        0.000515
-
- 25   XDIPLEN   XDIPLEN    2.250000       -1.355834        0.054392
- 26   YDIPLEN   YDIPLEN    2.250000       -1.355834        0.054392
- 27   ZDIPLEN   ZDIPLEN    2.250000       -1.355834        0.054392
- 28   XDIPLEN   YDIPLEN    2.250000        0.000000        0.000000
- 29   XDIPLEN   ZDIPLEN    2.250000        0.000000        0.000000
- 30   YDIPLEN   ZDIPLEN    2.250000        0.000000        0.000000
-
-      Averaged value       2.250000       -1.355834        0.054392
+      Averaged value       0.500000        0.255047        0.000243
  
  ------------------------------------------------------------------
  Damping parameter equals  0.004556 au = 0.1240 eV = 1000.0 cm-1
 
- >>>> Total CPU  time used in RESPONSE:   0.11 seconds
- >>>> Total wall time used in RESPONSE:   1.40 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.07 seconds
+ >>>> Total wall time used in RESPONSE:   0.07 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.15 seconds
- >>>> Total wall time used in DALTON:   2.14 seconds
+ >>>> Total CPU  time used in DALTON:   0.09 seconds
+ >>>> Total wall time used in DALTON:   0.36 seconds
 
  
-     Date and time (Linux)  : Wed May 27 14:33:30 2015
-     Host name              : n69                                     
+     Date and time (Linux)  : Fri Jun 12 13:13:07 2015
+     Host name              : n1439                                   
