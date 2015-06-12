@@ -329,9 +329,10 @@ module lspdm_basic_module
   !> \brief Allocate memory for general arrays with memory statistics and tiled
   !structure of the data
   !> \author Patrick Ettenhuber 
-  subroutine memory_allocate_tiles(arr)
+  subroutine memory_allocate_tiles(arr,bg)
     implicit none
     type(tensor) :: arr
+    logical, intent(in) :: bg
     real(realk) :: vector_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: i,counter
@@ -357,13 +358,13 @@ module lspdm_basic_module
 
     !get zero dummy matrix in size of largest tile --> size(dummy)=tsize
     if( alloc_in_dummy )then
-       call memory_allocate_dummy(arr, nel = arr%tsize*arr%nlti)
+       call memory_allocate_dummy(arr,bg, nel = arr%tsize*arr%nlti)
 #ifdef VAR_MPI
        call memory_allocate_window(arr,nwins = 1)
        call lsmpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,infpar%lg_comm) 
 #endif
     else
-       call memory_allocate_dummy( arr, nel = 1)
+       call memory_allocate_dummy( arr,bg, nel = 1)
        !prepare the integer window in the array --> ntiles windows should be created
        call memory_allocate_window(arr)
     endif
@@ -456,6 +457,7 @@ module lspdm_basic_module
             tooo = from + arr%ti(loc_idx)%e - 1
             arr%ti(loc_idx)%t => arr%dummy(from:tooo)
          else
+            if(bg)call lsquit("ERROR(allocate tiles): this is not yet implemented",-1)
             call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
             vector_size = dble(arr%ti(loc_idx)%e)*realk
             !$OMP CRITICAL
@@ -497,9 +499,10 @@ module lspdm_basic_module
 
   end subroutine memory_allocate_tiles
 
-    subroutine memory_allocate_dummy(arr,nel)
+    subroutine memory_allocate_dummy(arr,bg,nel)
       implicit none
       type(tensor),intent(inout) :: arr
+      logical, intent(in) :: bg
       integer, intent(in),optional :: nel
       integer(kind=8) :: nelms
       real(realk)     :: vector_size
@@ -507,6 +510,10 @@ module lspdm_basic_module
       integer(kind=8) :: ne
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
+
+      if(bg.and..not.mem_is_background_buf_init())then
+         call lsquit("ERROR(memory_allocate_dummy): allocation in bg buffer requested, but not bg buffer is allocated",-1)
+      endif
 
       if(associated(arr%dummy)) then
         call lsquit("ERROR(memory_allocate_dummy):array already initialized, please free first",lspdm_errout)
@@ -521,11 +528,16 @@ module lspdm_basic_module
 
 #ifdef VAR_MPI
       if( lspdm_use_comm_proc )then
+         if(bg) call lsquit("ERROR(memory_allocate_dummy): this is not implemented",-1)
         ne = 0_long
         if(infpar%pc_mynum==infpar%pc_nodtot-1) ne = arr%nelms
         call mem_alloc(arr%dummy,arr%dummyc,ne,arr%dummyw,infpar%pc_comm,nelms)
       else
-        call mem_alloc(arr%dummy,arr%dummyc,nelms)
+         if( bg )then
+            call mem_pseudo_alloc(arr%dummy,nelms)
+         else
+            call mem_alloc(arr%dummy,arr%dummyc,nelms)
+         endif
       endif
 
       if( tensor_debug_mode )then
@@ -556,7 +568,11 @@ module lspdm_basic_module
          dim1 = dble(size(arr%dummy(:)))
          vector_size = dim1*realk
 #ifdef VAR_MPI
-         call mem_dealloc(arr%dummy,arr%dummyc)
+         if(arr%bg_alloc)then
+            call mem_pseudo_dealloc(arr%dummy)
+         else
+            call mem_dealloc(arr%dummy,arr%dummyc)
+         endif
 #endif
          nullify(arr%dummy)
 

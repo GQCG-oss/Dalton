@@ -21,9 +21,8 @@ module decmpi_module
   use array2_simple_operations
 
 contains
+
 #ifdef VAR_MPI
-
-
 
   !> \brief Send three fragment energies (for occupied, virtual, and Lagrangian schemes)
   !> from given sender (typically a slave) to given receiver (typically the master).
@@ -608,7 +607,7 @@ contains
 
     IF(infpar%mynum==0)THEN ! Global master
        gm=.true.
-    else ! Local master
+    else ! global slave
        gm=.false.
     end IF
 
@@ -635,7 +634,7 @@ contains
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
 
-    ! Allocate pointers if local master
+    ! Allocate pointers if global slave
     if(.not. gm) then
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
@@ -665,17 +664,19 @@ contains
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nvirt)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
        call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
-       IF(DECinfo%F12)THEN
-          call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
-          call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
-          call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-          call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-          !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
-          call mem_alloc(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO)
-          !Warning MyMolecule%Frm is allocated with noccfull ?????
-          call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
-          !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
-          call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
+       IF(DECinfo%F12)THEN          
+          IF(.NOT.DECinfo%full_molecular_cc)THEN
+             call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
+             call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
+             call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+             call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+             !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
+             call mem_alloc(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO)
+             !Warning MyMolecule%Frm is allocated with noccfull ?????
+             call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
+             !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
+             call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
+          ENDIF
        ENDIF
        call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
@@ -756,16 +757,18 @@ contains
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
-       call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
-       call ls_mpibcast(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       !Warning MyMolecule%Frm is allocated with noccfull ?????
-       call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-       !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
-       call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+       IF(.NOT.DECinfo%full_molecular_cc)THEN
+          call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
+          call ls_mpibcast(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          !Warning MyMolecule%Frm is allocated with noccfull ?????
+          call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+          !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
+          call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+       ENDIF
     ENDIF
     call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
@@ -847,9 +850,6 @@ contains
     ! (Note: This - and much else MPI stuff - must be modified for single precision to work!)
     call ls_mpi_buffer(MyFragment%energies,ndecenergies,master)
     call ls_mpi_buffer(MyFragment%pairdist,master)
-    call ls_mpi_buffer(MyFragment%EoccFOP,master)
-    call ls_mpi_buffer(MyFragment%EvirtFOP,master)
-    call ls_mpi_buffer(MyFragment%LagFOP,master)
     call ls_mpi_buffer(MyFragment%Eocc_err,master)
     call ls_mpi_buffer(MyFragment%Evir_err,master)
     call ls_mpi_buffer(MyFragment%Elag_err,master)
@@ -1332,10 +1332,11 @@ contains
 
     implicit none
 
-    integer            :: nocc,nvirt,nbasis,ierr
-    real(realk)        :: vovo(:,:,:,:),ccsd_t2(:,:,:,:)
-    type(lsitem)       :: mylsitem
-    logical            :: print_frags,abc
+    integer                             :: nocc,nvirt,nbasis,ierr
+    type(tensor), intent(inout)         :: vovo,ccsd_t2
+    type(lsitem)                        :: mylsitem
+    logical                             :: print_frags,abc
+    integer,dimension(infpar%lg_nodtot) :: vovo_addr,t2_addr
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1345,24 +1346,22 @@ contains
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(print_frags,infpar%master)
     call ls_mpi_buffer(abc,infpar%master)
+    if (infpar%lg_mynum .eq. infpar%master) t2_addr = ccsd_t2%addr_p_arr
+    call ls_mpi_buffer(t2_addr,infpar%lg_nodtot,infpar%master)
+    if (infpar%lg_mynum .eq. infpar%master) vovo_addr = vovo%addr_p_arr
+    call ls_mpi_buffer(vovo_addr,infpar%lg_nodtot,infpar%master)
     call mpicopy_lsitem(mylsitem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    ! communicate rest of the quantities, master here, slaves back in the slave
-    ! routine, due to crappy pointer/non-pointer issues (->allocations)
-    if (infpar%lg_mynum .eq. infpar%master) then
-       if (abc) then
+    if (infpar%lg_mynum .ne. infpar%master) then
 
-          call ls_mpibcast(vovo,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
-          call ls_mpibcast(ccsd_t2,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+       ccsd_t2 = get_tensor_from_parr(t2_addr(infpar%lg_mynum+1))
+       vovo = get_tensor_from_parr(vovo_addr(infpar%lg_mynum+1))
 
-       else
-
-          call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-          call ls_mpibcast(ccsd_t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-
-       endif
     endif
+
+    ccsd_t2%access_type = AT_ALL_ACCESS
+    vovo%access_type = AT_ALL_ACCESS
 
   end subroutine mpi_communicate_ccsdpt_calcdata
 
@@ -2356,6 +2355,7 @@ contains
     call ls_mpi_buffer(DECitem%gcbasis,Master)
     call ls_mpi_buffer(DECitem%HFrestart,Master)
     call ls_mpi_buffer(DECitem%DECrestart,Master)
+    call ls_mpi_buffer(DECitem%EnforceRestart,Master)
     call ls_mpi_buffer(DECitem%TimeBackup,Master)
     call ls_mpi_buffer(DECitem%read_dec_orbitals,Master)
     call ls_mpi_buffer(DECitem%only_generate_DECorbs,Master)
@@ -2375,10 +2375,12 @@ contains
     call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%print_frags,Master)
     call ls_mpi_buffer(DECitem%abc,Master)
+    call ls_mpi_buffer(DECitem%ijk_tile_size,Master)
     call ls_mpi_buffer(DECitem%abc_tile_size,Master)
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
     call ls_mpi_buffer(DECitem%acc_sync,Master)
+    call ls_mpi_buffer(DECitem%pt_hack,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
@@ -2399,6 +2401,7 @@ contains
     call ls_mpi_buffer(DECitem%CCSDmultipliers,Master)
     call ls_mpi_buffer(DECitem%simple_multipler_residual,Master)
     call ls_mpi_buffer(DECitem%CRASHCALC,Master)
+    call ls_mpi_buffer(DECitem%CRASHESTI,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
     call ls_mpi_buffer(DECitem%use_bg_buffer,Master)
     call ls_mpi_buffer(DECitem%cc_solver_tile_mem,Master)
@@ -2416,6 +2419,7 @@ contains
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
+    call ls_mpi_buffer(DECitem%F12Ccoupling,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
@@ -2428,6 +2432,7 @@ contains
     call ls_mpi_buffer(DECitem%RIMP2PDMTENSOR,Master)
     call ls_mpi_buffer(DECinfo%RIMP2ForcePDMCalpha,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_tiling,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_lowdin,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%rimpisplit,Master)
@@ -2477,7 +2482,6 @@ contains
     call ls_mpi_buffer(DECitem%Frag_red_virt,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
     call ls_mpi_buffer(DECitem%fragopt_red_model,Master)
-    call ls_mpi_buffer(DECitem%no_orb_based_fragopt,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%OnlyVirtPart,Master)
     call ls_mpi_buffer(DECitem%all_init_radius,Master)
@@ -2524,6 +2528,16 @@ contains
     call ls_mpi_buffer(DECitem%UseIchor,Master)
     call ls_mpi_buffer(DECitem%IntegralThreshold,Master)
     call ls_mpi_buffer(DECitem%noaofock,Master)
+    call ls_mpi_buffer(DECitem%THCNOPRUN,Master)
+    call ls_mpi_buffer(DECitem%THCDUMP,Master)
+    call ls_mpi_buffer(DECitem%THCradint,Master)
+    call ls_mpi_buffer(DECitem%THC_MIN_RAD_PT,Master)
+    call ls_mpi_buffer(DECitem%THCangint,Master)
+    call ls_mpi_buffer(DECitem%THCHRDNES,Master)
+    call ls_mpi_buffer(DECitem%THCTURBO,Master)
+    call ls_mpi_buffer(DECitem%THCRADIALGRID,Master)
+    call ls_mpi_buffer(DECitem%THCZdependenMaxAng,Master)
+    call ls_mpi_buffer(DECitem%THCPARTITIONING,Master)
 
   end subroutine mpicopy_dec_settings
 
@@ -2826,12 +2840,110 @@ contains
 
   end subroutine get_slaves_to_simple_par_mp2_res
 
+#endif
+
+  !> \brief this routine is used to decide wheter a job has to be carried out on
+  !a given node and enables a dynamic load balance for the nodes in an integral
+  !direct loop
+  !> \author Patrick Ettenhuber
+  !> \date unknown
+  subroutine check_job(batch,fr,dyn,a,g,nA,nG,static,win,prnt)
+     implicit none
+     !> combined index in the alpha-gamma counter regime
+     integer, intent(inout) :: batch
+     !> logical to check whether this routine is called for the first time-this
+     !is important for the dynamic load balancing
+     logical, intent(inout) :: fr
+     !> is dynamic load balancing requested, is print requested
+     logical,intent(in) :: dyn,prnt
+     !> number of alpha and gamma batches
+     integer,intent(in) :: nA,nG
+     !> current alpha and gamma counters
+     integer,intent(inout) :: a,g
+     ! if not dynamic lload balancing this array contains the ranks of the nodes
+     ! that have to do a particular job, with gamma as the fast counter!!
+     integer, pointer, intent(inout) :: static(:)
+     ! this is the window handle used in the dynamic load balancing scheme
+     integer(kind=ls_mpik) :: win
+     !> internal variables
+     real(realk) :: mpi_buf
+     integer :: GammaAlpha(2)
+     integer :: one
+#ifdef VAR_MPI
+     one  = 1
+
+     !GET MPI batch number
+     if(.not.dyn)then
+
+        !Check the static array for my_rank and return
+        batch=batch+1
+        FindJobLoop: do while(batch<=nA*nG)
+
+           call get_midx(batch,GammaAlpha,[nA,nG],2)
+
+           a = GammaAlpha(1)
+           g = GammaAlpha(2)
+
+           !check whether this job has been assigned to me
+           if(static((a-1)*nG+g)/=infpar%lg_mynum)then
+              batch=batch+1
+           else
+
+              exit FindJobLoop
+
+           endif
+
+        enddo FindJobLoop
+
+     else
+
+        if(fr)then
+
+           !in the first call we just take the rank as the job to be carried out
+           fr   = .false.
+           batch = infpar%lg_mynum + 1
+
+        else
+
+           ! in all subsequent calls we use lsmpi_get_acc to get the new job
+           ! identifier
+           call time_start_phase( PHASE_COMM )
+#ifdef VAR_HAVE_MPI3
+           call lsmpi_get_acc(one,batch,infpar%master,1,win)
+           call lsmpi_win_flush(win,rank = infpar%master, local=.true.)
+#else
+           call lsmpi_win_lock(infpar%master,win,'e')
+           call lsmpi_get_acc(one,batch,infpar%master,1,win)
+           call lsmpi_win_unlock(infpar%master,win)
+#endif
+           call time_start_phase( PHASE_WORK )
+        endif
+     endif
 
 #else
-  !Added to avoid "has no symbols" linking warning
-  subroutine decmpi_module_void()
-  end subroutine decmpi_module_void
+     !Non--MPI job counting, only increment
+     batch = batch + 1
 #endif
+
+     ! No more jobs to be done exit
+     if(batch > nG*nA )return
+
+     call get_midx(batch,GammaAlpha,[nA,nG],2)
+
+     a = GammaAlpha(1)
+     g = GammaAlpha(2)
+
+#ifdef VAR_MPI
+     if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
+        &a,na,g,ng
+#else
+     if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
+        &na,g,ng
+#endif
+     call lsmpi_poke()
+
+  end subroutine check_job
+
 end module decmpi_module
 
 

@@ -147,8 +147,6 @@ ELSE
  CASE('GCTRANS  ')!identical to BasParamLABEL(GCTBasParam)
     !build as a transformation basis in trilevel algorithm
     call LSQUIT('GCTRANS no legal keyword in Build_Basis.',lupri)  
- CASE('CABSP    ') !identical to BasParamLABEL(CAPBasParam)
-    BASINFO%Labelindex = CAPBasParam
  CASE DEFAULT
     WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
     WRITE (LUPRI,'(a80)') ' not recognized in Build_basis.'
@@ -1282,7 +1280,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     !WRITE(LUPRI,*) 'INSIDE UNCONTRACTED'
                     !uncontracted basis set are forced uncontracted with .UNCONT
                     IF(NUMBER_OF_LINES.EQ.1)THEN
-                       READ (STRING, '(F16.9)') Exp
+                       READ (STRING, *) Exp
                        BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%Exponents(1) = Exp
                        BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%elms(1)= &
                             &(4*Exp)**(0.5E0_realk*nang+0.25E0_realk)*PIPPI 

@@ -435,8 +435,11 @@ IF (IPOS .NE. 0) THEN
 ENDIF
 
 IPOS = INDEX(WORD,'CABSP')
+IF (IPOS .NE. 0)Call LSQUIT('CABSP have been renamed to CABS',-1)
+
+IPOS = INDEX(WORD,'CABS')
 IF (IPOS .NE. 0) THEN
-   BASIS(CAPBasParam)=.TRUE.
+   BASIS(CABBasParam)=.TRUE.
    IPOS2 = INDEX(WORD(IPOS:80),'=')
    DO I=IPOS+IPOS2,80
       IF(WORD(I:I).EQ.' ')THEN
@@ -445,21 +448,7 @@ IF (IPOS .NE. 0) THEN
       ENDIF
    ENDDO
    LEN = IPOS3-(IPOS+IPOS2)
-   BASISSET(CAPBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
-ELSE
-   IPOS = INDEX(WORD,'CABS')
-   IF (IPOS .NE. 0) THEN
-      BASIS(CABBasParam)=.TRUE.
-      IPOS2 = INDEX(WORD(IPOS:80),'=')
-      DO I=IPOS+IPOS2,80
-         IF(WORD(I:I).EQ.' ')THEN
-            IPOS3=I
-            EXIT
-         ENDIF
-      ENDDO
-      LEN = IPOS3-(IPOS+IPOS2)
-      BASISSET(CABBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
-   ENDIF
+   BASISSET(CABBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
 ENDIF
 
 IPOS = INDEX(WORD,'JK')
@@ -832,7 +821,7 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
   INTEGER            :: LUPRI
   INTEGER            :: unique1(nBasisBasParam),unique2,uniqueCharge,IPRINT
   LOGICAL            :: PRINTATOMCOORD,pointcharge,phantom,DunningsBasis
-  LOGICAL            :: UniqueLabel
+  LOGICAL            :: UniqueLabel,PhantomLabel
   INTEGER :: basunique2(nBasisBasParam),basissetnumber2(nBasisBasParam)
   INTEGER :: basissetnumber(nBasisBasParam),basissetnumber1(nBasisBasParam)
   INTEGER :: nSubsystemLabels,iSubsystemLabels,iBas
@@ -841,6 +830,7 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
   atomnumber=0
   basissetnumber=0
   DunningsBasis = .TRUE.
+  PhantomLabel = .FALSE.
   nSubsystemLabels = 0 
   DO I=1,Atomtypes
    CALL READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,ATOMBASIS,&
@@ -849,9 +839,14 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
       Call DetermineUniqueLabel(UniqueLabel,SubsystemLabels,Atomtypes,SubsystemLabel,&
            & nSubsystemLabels,iSubsystemLabels)
       IF(UniqueLabel)THEN
-         nSubsystemLabels = nSubsystemLabels + 1 
-         iSubsystemLabels = nSubsystemLabels
-         SubsystemLabels(nSubsystemLabels) = SubsystemLabel
+         IF(SubsystemLabel(1:5).EQ.'     ')THEN
+            PhantomLabel = .TRUE.
+            iSubsystemLabels = -2
+         ELSE
+            nSubsystemLabels = nSubsystemLabels + 1 
+            iSubsystemLabels = nSubsystemLabels
+            SubsystemLabels(nSubsystemLabels) = SubsystemLabel
+         ENDIF
       ENDIF
    ELSE
       iSubsystemLabels = -1
@@ -1017,6 +1012,15 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
 ENDDO
 
   IF(Subsystems)THEN
+!     IF(PhantomLabel)THEN
+!        nSubsystemLabels = nSubsystemLabels + 1 
+!        SubsystemLabels(nSubsystemLabels) = ' '
+!        DO J=1,nAtoms             
+!           IF(MOLECULE%ATOM(J)%Phantom.AND.MOLECULE%ATOM(J)%SubSystemIndex.EQ.-2)THEN
+!              MOLECULE%ATOM(J)%SubSystemIndex = nSubsystemLabels
+!           ENDIF
+!        ENDDO
+!     ENDIF
      MOLECULE%nSubSystems = nSubsystemLabels
      call mem_alloc(MOLECULE%SubSystemLabel,nSubsystemLabels)
      DO I=1,nSubsystemLabels
@@ -1348,7 +1352,9 @@ ELSE
    ENDIF
 ENDIF
 
+
 IF (SubSystems) THEN
+   SubsystemLabel = ' '
    IPOS = INDEX(TEMPLINE,'SubSystem')
    IF (IPOS .NE. 0) THEN
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
@@ -1366,9 +1372,11 @@ IF (SubSystems) THEN
          READ (TEMPLINE((IPOS + IPOS2):),StringFormat) SubsystemLabel
       ENDIF
    ELSE
-      WRITE (LUPRI,*) 'SubSystems selected, but no SubSystem Label specified for one atom type'
-      CALL LSQUIT( 'SubSystems selected, but no SubSystem Label &
-           &specified for one atom type',lupri)
+      if(.not. phantom) then
+         WRITE (LUPRI,*) 'SubSystems selected, but no SubSystem Label specified for one atom type'
+         CALL LSQUIT( 'SubSystems selected, but no SubSystem Label &
+              &specified for one atom type',lupri)
+      end if
    ENDIF
 ENDIF
 
@@ -1457,47 +1465,27 @@ IF (ATOMBASIS) THEN
 
    !CABSP basisset - Complementary Auxiliary basis set PLUS regular
    IPOS = INDEX(TEMPLINE,'CABSP')
+   IF (IPOS .NE. 0) CALL LSQUIT('CABSP have been renamed to CABS',-1)
+   !CABS basisset - Complementary Auxiliary basis set
+   IPOS = INDEX(TEMPLINE,'CABS')
    IF (IPOS .NE. 0) THEN
-      BASIS(CAPBasParam)=.TRUE.
+      BASIS(CABBasParam)=.TRUE.
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
-      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
          WRITE (LUPRI,*) 'Incorrect input for choice of Complementary auxiliary atomic basis set'
-         WRITE (LUPRI,*) ' Format is "CABSP=? ? ?"'
+         WRITE (LUPRI,*) ' Format is "CABS=? ? ?"'
          CALL LSQUIT('Incorrect input for choice of Complementary auxiliary atomic basis set',lupri)
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
-!         IF (IPOS3 .LT. 10) THEN
-!            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
-!         ELSE
-!            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
-!         ENDIF
-!         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CAPBasParam)
-         call StringInit80(AtomicBasisset(CAPBasParam))
-         AtomicBasisset(CAPBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
-
-      ENDIF
-   ELSE
-      !CABS basisset - Complementary Auxiliary basis set
-      IPOS = INDEX(TEMPLINE,'CABS')
-      IF (IPOS .NE. 0) THEN
-         BASIS(CABBasParam)=.TRUE.
-         IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
-         IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
-            WRITE (LUPRI,*) 'Incorrect input for choice of Complementary auxiliary atomic basis set'
-            WRITE (LUPRI,*) ' Format is "CABS=? ? ?"'
-            CALL LSQUIT('Incorrect input for choice of Complementary auxiliary atomic basis set',lupri)
-         ELSE
-            IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
-            !         IF (IPOS3 .LT. 10) THEN
-            !            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
-            !         ELSE
-            !            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
-            !         ENDIF
-            !         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CABBasParam)
-            call StringInit80(AtomicBasisset(CABBasParam))
-            AtomicBasisset(CABBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
+         !         IF (IPOS3 .LT. 10) THEN
+         !            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+         !         ELSE
+         !            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
+         !         ENDIF
+         !         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CABBasParam)
+         call StringInit80(AtomicBasisset(CABBasParam))
+         AtomicBasisset(CABBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
             
-         ENDIF
       ENDIF
    ENDIF
 

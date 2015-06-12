@@ -325,10 +325,10 @@ integer :: i,j,tmp
 real(realk) :: rtmp
 
 
- call mem_alloc(occnum,n)
 
- ! 1. Order orbitals according to core+valence occupation
+ ! 1. Order orbitals according to occupied/virtual occupation
  ! --> "occupied" OAOs before "virtual" OAOs
+ call mem_alloc(occnum,n)
  do i=1,n
    occnum(i) = ddot(nocc,CMO(i,1),n,CMO(i,1),n) 
  enddo
@@ -342,16 +342,18 @@ real(realk) :: rtmp
         rtmp=occnum(i); occnum(i)=occnum(j); occnum(j)=rtmp
        endif
  enddo
+ call mem_dealloc(occnum)
 
 
- ! 2. Order orbitals according to core occupation
+ ! 2. Order orbitals according to core/valence occupation
  ! --> "core" OAOs before "valence" OAOs
- do i=1,n
+ call mem_alloc(occnum,nocc)
+ do i=1,nocc
    occnum(i) = ddot(ncore,CMO(i,1),n,CMO(i,1),n) 
  enddo
 
  do i=1,ncore
-       j=idamax(n-i+1,occnum(i),1)
+       j=idamax(nocc-i+1,occnum(i),1)
        j=j+i-1
        if (j.gt.i) then
         call dswap(n, CMO(j,1),n,CMO(i,1),n)   
@@ -359,9 +361,6 @@ real(realk) :: rtmp
         rtmp=occnum(i); occnum(i)=occnum(j); occnum(j)=rtmp
        endif
  enddo
- 
-
-
  call mem_dealloc(occnum)
  
 end subroutine leastchange_rowsort_occup

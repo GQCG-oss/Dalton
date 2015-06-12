@@ -11,6 +11,8 @@
 **CC
 .CCSD(T)
 .NBUFFS_IJK
+2
+.IJK_TILE
 3
 .CCTHR
 1.0d-9

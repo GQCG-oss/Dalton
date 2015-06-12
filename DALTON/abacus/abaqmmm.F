@@ -621,7 +621,7 @@ C     1. Construct the charge contribution for all MM centers
 
           IF (IPRINT .GE. 4) THEN
              WRITE (LUPRI,'(/A,I3,A)')
-     *       ' N(',L,') QMMM correction matrix '
+     *       ' N(',I,') QMMM correction matrix '
              CALL OUTPAK(WORK(KTMP),3,1,LUPRI)
           END IF
 
@@ -2121,7 +2121,7 @@ C
 
          IF (IPRINT .GE. 4) THEN
             WRITE (LUPRI,'(/A,I3,A)')
-     *       ' N(',L,') QMMM correction matrix '
+     *       ' N(',I,') QMMM correction matrix '
             CALL OUTPAK(WORK(KTMP),3,1,LUPRI)
          END IF
 

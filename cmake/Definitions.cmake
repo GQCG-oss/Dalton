@@ -89,6 +89,6 @@ if(ENABLE_ICHOR)
     add_definitions(-DVAR_ICHOR)
 endif()
 
-if(ENABLE_QMATRIX)
-    add_definitions(-DENABLE_QMATRIX)
+if(ENABLE_QCMATRIX)
+    add_definitions(-DENABLE_QCMATRIX)
 endif()

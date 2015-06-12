@@ -41,6 +41,8 @@ ELSEIF(AORdefault.EQ.AOVAL)THEN
 ELSEIF(AORdefault.EQ.AOdfAux)THEN
    nbast = MOLECULE%nBastAUX
 ELSEIF(AORdefault.EQ.AOdfCABS)THEN
+   nbast = MOLECULE%nBastCABS + MOLECULE%nbastREG
+ELSEIF(AORdefault.EQ.AOdfCABO)THEN !CABS only
    nbast = MOLECULE%nBastCABS
 ELSEIF(AORdefault.EQ.AOdfJK)THEN
    nbast = MOLECULE%nBastJK
@@ -57,6 +59,8 @@ ELSEIF(AODFdefault.EQ.AOVAL)THEN
 ELSEIF(AODFdefault.EQ.AOdfAux)THEN
    nBastAux = MOLECULE%nBastAUX
 ELSEIF(AODFdefault.EQ.AOdfCABS)THEN
+   nBastAux = MOLECULE%nBastCABS + MOLECULE%nbastREG
+ELSEIF(AODFdefault.EQ.AOdfCABO)THEN !CABS only
    nBastAux = MOLECULE%nBastCABS
 ELSEIF(AODFdefault.EQ.AOdfJK)THEN
    nBastAux = MOLECULE%nBastJK
@@ -96,6 +100,8 @@ DO iAtom=1,orbitalInfo%nAtoms
    ELSEIF(AORdefault.EQ.AOdfAux)THEN
       nOrbReg = MOLECULE%ATOM(iAtom)%nContOrbAUX
    ELSEIF(AORdefault.EQ.AOdfCABS)THEN
+      nOrbReg = MOLECULE%ATOM(iAtom)%nContOrbCABS+MOLECULE%ATOM(iAtom)%nContOrbREG
+   ELSEIF(AORdefault.EQ.AOdfCABO)THEN !CABS only
       nOrbReg = MOLECULE%ATOM(iAtom)%nContOrbCABS
    ELSEIF(AORdefault.EQ.AOADMM)THEN
       nOrbReg = MOLECULE%ATOM(iAtom)%nContOrbADMM
@@ -109,6 +115,8 @@ DO iAtom=1,orbitalInfo%nAtoms
    ELSEIF(AODFdefault.EQ.AOdfAux)THEN
       nOrbAux = MOLECULE%ATOM(iAtom)%nContOrbAUX
    ELSEIF(AODFdefault.EQ.AOdfCABS)THEN
+      nOrbAux = MOLECULE%ATOM(iAtom)%nContOrbCABS+MOLECULE%ATOM(iAtom)%nContOrbREG
+   ELSEIF(AODFdefault.EQ.AOdfCABO)THEN !CABS only
       nOrbAux = MOLECULE%ATOM(iAtom)%nContOrbCABS
    ELSEIF(AODFdefault.EQ.AOADMM)THEN
       nOrbAux = MOLECULE%ATOM(iAtom)%nContOrbADMM

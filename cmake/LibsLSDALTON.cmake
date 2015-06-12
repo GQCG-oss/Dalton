@@ -381,18 +381,6 @@ add_library(
 
 target_link_libraries(geooptlib lsintlib)
 
-# QMatrix
-if(ENABLE_QMATRIX)
-    add_library(
-        ls_qmatrix_interface
-        ${LS_QMATRIX_SOURCES}
-        )
-    include(LibsQMatrix)
-    add_dependencies(ls_qmatrix_interface matrixulib)
-    add_dependencies(ls_qmatrix_interface qmatrix)
-    add_dependencies(linearslib ls_qmatrix_interface)
-endif()
-
 add_library(
     lsdaltonmain 
     ${LSDALTONMAIN_FORTRAN_SOURCES}
@@ -406,12 +394,6 @@ target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
-if(ENABLE_QMATRIX)
-    target_link_libraries(ls_qmatrix_interface
-                          ${LIB_LS_QMATRIX}
-                          matrixulib)
-    target_link_libraries(lsdaltonmain ls_qmatrix_interface)
-endif()
 
 if(ENABLE_PCMSOLVER)
     target_link_libraries(lsdaltonmain lspcm)

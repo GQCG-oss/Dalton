@@ -77,11 +77,12 @@ set(DEC_SOURCES
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
     LSDALTON/deccc/rimp2.F90
+    LSDALTON/deccc/ri_util.F90
     LSDALTON/deccc/ls_thc_rimp2.F90
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
-    LSDALTON/deccc/ccsd_lhtr.F90
+    LSDALTON/deccc/cc_response_tools.F90
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/pno_ccsd.F90
     LSDALTON/deccc/rpa.F90
@@ -723,6 +724,7 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ls_IntegralInterface.F90
     LSDALTON/LSint/pari.F90
     LSDALTON/LSint/lsmpi.F90
+    LSDALTON/LSint/HODItest.F90
     LSDALTON/LSint/II_dft_dftd.F90
     )
 #####################################################
@@ -872,15 +874,6 @@ set(LSDALTON_OWN_LAPACK_SOURCES
     LSDALTON/pdpack/gp_dlapack.F
     LSDALTON/pdpack/gp_zlapack.F
     )
-# backend matrix module and interface of QMatrix library
-if(ENABLE_QMATRIX)
-    set(LSUTIL_MATRIXU_SOURCES
-        ${LSUTIL_MATRIXU_SOURCES}
-        LSDALTON/qmatrix/qmatrix_backend.F90
-        )
-    set(LS_QMATRIX_SOURCES
-        LSDALTON/qmatrix/ls_qmatrix.F90)
-endif()
 # collect all free fortran sources
 set(LSDALTON_FREE_FORTRAN_SOURCES
     ${CUDA_GPU_INTERFACE_SOURCES}
@@ -908,7 +901,6 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${LSUTILLIB_SOURCES}
     ${LSLIB_SOURCES}
     ${ICHORLIB_SOURCES}
-    ${LS_QMATRIX_SOURCES}
  )
 if(ENABLE_PCMSOLVER)
     set(LSDALTON_FREE_FORTRAN_SOURCES
