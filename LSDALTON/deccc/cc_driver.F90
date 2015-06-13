@@ -33,7 +33,7 @@ use mp2_module!,only: get_VOVO_integrals
 use atomic_fragment_operations
 use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
-use ccsd_lhtr_module
+use cc_response_tools_module
 use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
@@ -2617,6 +2617,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
+
          call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", bg=bg_was_init)
          call tensor_cp_data(t2(iter_idx), p4, order = [1,3,2,4] )
 
@@ -2692,6 +2693,9 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_free(oofock_prec)
    call tensor_free(vvfock_prec)
 
+
+
+
    if(use_singles) then
       !call array2_free(h1)
       call tensor_free(xo)
@@ -2707,6 +2711,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart_from_converged,&
       &mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
+
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !transform back to original basis!
@@ -3105,6 +3110,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
             & fock,t1fock,iajb,no,nv,xo,xv,yo,yv,nb,&
             & MyLsItem,omega1(use_i),t1(use_i),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
             & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
+
 
 #ifdef MOD_UNRELEASED
       case( SOLVE_MULTIPLIERS )

@@ -7132,6 +7132,13 @@ C
      &        WORK(KEVC1),WORK(KEVC2))
 
       END IF
+C
+C     reduce convergence thresholds for the preoptimization steps
+C     (THRFAC_PRE is parameter in optinf.h)
+C
+      THRERG = THRERG * THRFAC_PRE**2
+      GRDTHR = GRDTHR * THRFAC_PRE
+      THRSTP = THRSTP * THRFAC_PRE
       RETURN
       END
 
@@ -7168,7 +7175,19 @@ C
          MLINE(2) = PREBTX(IPRE)
          PREBTX(IPRE) = TMPLIN
          FINPRE = .TRUE.
+C
+C        reset convergence thresholds to the full optimzation values;
+C        they were reduced in INIPRE
+C        (THRFAC_PRE is parameter in optinf.h)
+C
+         THRERG = THRERG / THRFAC_PRE**2
+         GRDTHR = GRDTHR / THRFAC_PRE
+         THRSTP = THRSTP / THRFAC_PRE
       END IF
+C
+C     reset trust radius to default value
+C
+      TRSTRA = 0.5D0
 C
 C     If all symmetry has been removed during preoptimization, we try
 C     to detect it again after each preoptimization phase.

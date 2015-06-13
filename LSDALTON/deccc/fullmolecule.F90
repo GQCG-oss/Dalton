@@ -153,7 +153,8 @@ contains
     call molecule_mo_fock(molecule)
 
  
-    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+    if(DECinfo%use_canonical) then
+       ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule,mylsitem)
     end if
      
@@ -532,6 +533,15 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     integer :: nbasis,i,nocc,nvirt
     real(realk), pointer :: eival(:), C(:,:), S(:,:)
+
+    ! KK quick fix: Do NOT call this subroutine when nMO/=nbasis,
+    !               this is the case for SNOOP subsystems. 
+    !               A proper fix is needed here, on my todo-list... 
+    if(molecule%nMO/=molecule%nbasis) then
+       write(DECinfo%output,*) 'WARNING: Quitting dec_get_canonical_orbitals because nMO/=nbasis!'
+       write(DECinfo%output,*) 'WARNING: Proper solution is required!'
+       return
+    end if
 
     if(DECinfo%noaofock) then
        call lsquit('ERROR(dec_get_canonical_orbitals): You cannot use canonical orbitals &
