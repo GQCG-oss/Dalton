@@ -12,7 +12,8 @@ module cc_response_tools_module
    use cc_tools_module
    use ccintegrals
 
-   public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr
+   public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr,& 
+        & ccsd_eigenvalue_solver
    private
    contains
 
@@ -2544,5 +2545,231 @@ module cc_response_tools_module
     end subroutine one_electron_trial_T1_integrals
 
 
+    !> \brief Noddy code implementation of Davidson eigenvalue solver (J. Comp. Phys. 17, 87 (1975))
+    !> for Jacobian right-hand side eigenvalue problem to get CCSD excitation energies.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine ccsd_eigenvalue_solver(nocc,nvirt,foo,fvv,mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+         & yv_tensor,t1,t2)
+      implicit none
+      !> Number of occupied/virtual orbitals in molecule
+      integer,intent(in) :: nocc,nvirt
+      !> Occ-occ and virt-virt Fock matrix blocks in MO basis
+      real(realk),intent(in) :: foo(nocc,nocc),fvv(nvirt,nvirt)
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem
+      !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
+      !> and virt (dimension nbasis,nvirt) transformations
+      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Singles and doubles amplitudes
+      type(tensor),intent(in) :: t1,t2
+      real(realk),pointer :: lambda(:)
+      type(tensor) :: ASSdiag,ADDdiag,tmp
+      integer :: k,M,p,maxdim
+      integer(kind=long) :: maxnumeival
+      type(tensor),pointer :: bS(:), bD(:)
+
+      print *, 'Inside CCSD eigenvalue solver'
+
+      ! KK FIXME
+      ! Maximum number of vectors allowed. Should be thought about more carefully 
+      ! and be possible to control by input
+      maxdim=1000
+
+      ! Notation and implementation is exactly like p. 91 of J. Comp. Phys. 17, 87 (1975), 
+      ! except that we may solve for more than one eigenvalue at the same time.
+
+      ! How many eigenvalues k?
+      k=1
+
+      ! Size of zero-order orthonormal subspace (M must be equal to or larger than k)
+      M=5
+
+      ! Sanity check: Requested number of initial eigenvalues/start vectors is not
+      ! larger than the maximum possible number of singles+doubles excitations.
+      maxnumeival = int(nocc,kind=8)*int(nvirt,kind=8)  &   ! singles ex
+           & + int(nocc,kind=8)*int(nvirt,kind=8)*int(nocc-1,kind=8)*int(nvirt-1,kind=8) ! doubles ex
+      if( int(M,kind=8) > maxnumeival) then
+         print *, 'Number of startvectors ', M
+         print *, 'Max number of eigenvalues ',maxnumeival
+         call lsquit('ccsd_eigenvalue_solver: Number of requested &
+              & start vectors is too large!',-1)
+      end if
+      ! KKHACK: Also check maxdim??
+
+      ! Get start vectors and associated eigenvalues
+      call mem_alloc(bS,maxdim)
+      call mem_alloc(bD,maxdim)
+      call mem_alloc(lambda,maxdim)
+      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,bS(1:M),bD(1:M),lambda(1:M))
+                               
+
+      call mem_dealloc(lambda)
+      call mem_dealloc(bS)
+      call mem_dealloc(bD)
+      
+    end subroutine ccsd_eigenvalue_solver
+
+
+    !> \brief Calculate start vector and associated eigenvalues for CCSD eigenvalue solver.
+    !> We simply take the lowest M orbital energies differences in singles and doubles spaces.
+    !> Note: Start vectors are also initialized here.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,bS,bD,eival)
+      implicit none
+      !> Number of start vectors requested
+      integer,intent(in) :: M
+      !> Number of occupied/virtual orbitals in molecule
+      integer,intent(in) :: nocc,nvirt
+      !> Occ-occ and virt-virt Fock matrix blocks in MO basis
+      real(realk),intent(in) ::  foo(nocc,nocc),fvv(nvirt,nvirt)
+      !> Singles and Doubles components of start vectors
+      type(tensor),intent(inout) :: bS(M), bD(M)
+      !> Eigenvalues (orbital energy differences) for start vectors
+      real(realk),intent(inout) :: eival(M)
+      integer :: i,j,a,b,maxidx(1),MS,MD,idxS,idxD
+      real(realk) :: ex,maxeival,eivalS(M),eivalD(M),mineivalD,mineivalS
+      integer,dimension(M) :: s1,s2,d1,d2,d3,d4,sd
+      logical,dimension(M) :: inclS, inclD
+
+
+      ! M lowest singles excitation energies
+      ! ************************************
+      eivalS = huge(1.0)
+      maxeival = huge(1.0)
+      maxidx=1
+      s1=0; s2=0
+      do i=1,nocc
+         do a=1,nvirt
+
+            ! Zero-order excitation energy (orbital difference)
+            ex = fvv(a,a) - foo(i,i)
+
+            ! Is excitation energy lower than current maximum eigenvalue?
+            if(ex < maxeival) then
+               ! Replace largest excitation energy by excitation energy under consideration
+               ! and also save indices
+               eivalS( maxidx(1) ) = ex  
+               s1( maxidx(1) ) = a
+               s2( maxidx(1) ) = i
+
+               ! New maximum eigenvalue and position of it
+               maxeival = maxval(eivalS)
+               maxidx = maxloc(eivalS)
+            end if
+
+         end do
+      end do
+
+      ! M lowest doubles excitation energies: Same strategy as for singles
+      ! ******************************************************************
+      eivalD = huge(1.0)
+      maxeival = huge(1.0)
+      maxidx=1
+      d1=0; d2=0; d3=0; d4=0
+      do i=1,nocc
+         do j=i,nocc
+            do a=1,nvirt
+               do b=a,nvirt
+                  ex = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j)
+
+                  if(ex < maxeival) then
+                     eivalD( maxidx(1) ) = ex
+                     d1( maxidx(1) ) = a
+                     d2( maxidx(1) ) = i
+                     d3( maxidx(1) ) = b
+                     d4( maxidx(1) ) = j
+
+                     maxeival = maxval(eivalD)
+                     maxidx = maxloc(eivalD)
+                  end if
+
+               end do
+            end do
+         end do
+      end do
+
+
+      ! M lowest excitation energies - singles OR doubles
+      ! *************************************************
+      inclS = .false.
+      inclD = .false.
+
+      do i=1,M  
+         ! Find i'th lowest eigenvalue, regardless of whether it's singles or doubles
+         mineivalS = huge(1.0)
+         mineivalD = huge(1.0)
+
+
+         do j=1,M
+
+            ! Find minimum singles eigenvalue and corresponding index not already included
+            if(.not. inclS(j)) then
+               if(eivalS(j) < mineivalS) then
+                  idxS = j   
+                  mineivalS = eivalS(j)
+               end if
+            end if
+
+            ! Find minimum doubles eigenvalue and corresponding index not already included
+            if(.not. inclD(j)) then
+               if(eivalD(j) < mineivalD) then
+                  idxD = j
+                  mineivalD = eivalD(j)
+               end if
+            end if
+
+         end do
+
+         ! Initialize singles and doubles start vectors
+         call tensor_minit(bS(i),[nvirt,nocc],2)
+         call tensor_minit(bD(i),[nvirt,nocc,nvirt,nocc],4)
+         call tensor_zero(bS(i))
+         call tensor_zero(bD(i))
+
+         ! Set i'th eigenvalue
+         ! -------------------
+         if(mineivalS < mineivalD) then ! the singles eigenvalue is the lowest
+
+            ! this eigenvalue is now included and cannot be considered again
+            inclS(idxS) = .true.  
+            eival(i) = mineivalS
+
+            ! Singles vector - 1 in position of eigenvalue, zero elsewhere
+            ! Doubles vector - zero 
+            bS(i)%elm2(s1(idxS),s2(idxS)) = 1.0_realk
+            print *, 'Including singles ',s1(idxS),s2(idxS),eival(i)
+
+         else ! the doubles eigenvalue is the lowest
+
+            ! this eigenvalue is now included and cannot be considered again
+            inclD(idxD) = .true.
+            eival(i) = mineivalD
+
+            ! Singles vector - zero
+            ! Doubles vector - 1 in position of eigenvalue, zero elsewhere
+            ! However, since doubles vector must have symmetry:
+            ! X_bjai = X_aibj
+            ! we need to set X_bjai = X_aibj = 1/sqrt(2)
+            ! unless a=b and i=j
+            if(d1(idxD)==d3(idxD) .and. d2(idxD)==d4(idxD)) then
+               bD(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk
+            else
+               bD(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk/sqrt(2.0_realk)
+               bD(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = & 
+                    & bD(i)%elm4(d3(idxD),d4(idxD),d1(idxD),d2(idxD))
+            end if
+            print *, 'Including doubles ',d1(idxD),d2(idxD),d3(idxD),d4(idxD),eival(i)
+
+         end if
+         
+
+      end do
+      print *, 'eivalS',eivalS
+      print *, 'eivalD',eivalD
+
+
+    end subroutine ccsd_eigenvalue_solver_startguess
 
   end module cc_response_tools_module
