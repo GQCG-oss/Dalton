@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2015.alpha
+    This is output from DALTON 2016.alpha
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+       Release Dalton2016.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,13 +136,13 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:33:11 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/build/test/pehf_restart
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pehf_restart
    2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
@@ -151,23 +151,25 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.18.3-201.fc21.x86_64
+ System                   | Linux-4.0.4-303.fc22.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- BLAS                     | /lib64/libopenblas.so
+ MPI                      | ON
+ Fortran compiler         | /usr/lib64/openmpi/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 5.1.1 20150422 (Red Hat 5.1.1-1)
+ C compiler               | /usr/lib64/openmpi/bin/mpicc
+ C compiler version       | gcc (GCC) 5.1.1 20150422 (Red Hat 5.1.1-1)
+ C++ compiler             | /usr/lib64/openmpi/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | bef16b7f7b41ad5d88f242388f57080fa27ee10d
+ Last Git revision        | beeb2214658a3e0ccf80f4d037078a5fa38f329c
  Git branch               | [32mpe/develop[m
- Configuration time       | 2015-02-11 20:52:30.989974
+ Configuration time       | 2015-06-15 09:56:40.593492
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -451,7 +453,7 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
- >>>  Time used in TWOINT     is   0.22 seconds
+ >>>  Time used in TWOINT     is   0.21 seconds
  >>>> Total CPU  time used in HERMIT:   0.26 seconds
  >>>> Total wall time used in HERMIT:   0.26 seconds
 
@@ -472,7 +474,7 @@ H              2.675323   -2.516779   -0.000673
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:33:12 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -551,7 +553,7 @@ H              2.675323   -2.516779   -0.000673
                        X              Y              Z
                  -0.01989481     0.02419892     0.00003676
 
-@  1  -188.317391916     -1.918439589978E-02    9.30417D-06   -1.88D+02
+@  1  -188.317391916     -1.918439589978E-02    9.30418D-06   -1.88D+02
 
 @ *** DIIS converged in   1 iterations !
 @     Converged SCF energy, gradient:   -188.317391916158    9.30D-06
@@ -621,7 +623,7 @@ H              2.675323   -2.516779   -0.000673
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.112       0.112
+ >>>> CPU and wall time for SCF :       0.115       0.115
 
 
                        .-----------------------------------.
@@ -635,16 +637,16 @@ H              2.675323   -2.516779   -0.000673
 
 @    Final HF energy:            -188.317391916158                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.963054380774
+@    Electronic energy:          -290.963054380773
 @    Embedding energy:             -0.019184395900
 
 @    Final gradient norm:           0.000009304175
 
  
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:33:12 2015
      Host name              : foeroyar                                
 
-File label for MO orbitals:  11Feb15   FOCKDIIS
+File label for MO orbitals:  15Jun15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -749,11 +751,11 @@ File label for MO orbitals:  11Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
- >>>> Total wall time used in SIRIUS :      0.11 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.12 seconds
+ >>>> Total wall time used in SIRIUS :      0.12 seconds
 
  
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:33:12 2015
      Host name              : foeroyar                                
 
 
@@ -765,5 +767,5 @@ File label for MO orbitals:  11Feb15   FOCKDIIS
  >>>> Total wall time used in DALTON:   0.38 seconds
 
  
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:33:12 2015
      Host name              : foeroyar                                

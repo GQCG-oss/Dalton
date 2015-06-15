@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2015.alpha
+    This is output from DALTON 2016.alpha
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+       Release Dalton2016.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,13 +136,13 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Feb 11 20:53:48 2015
+     Date and time (Linux)  : Mon Jun 15 11:31:21 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/build/test/pehf_restart
+   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pehf_restart
    2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
@@ -151,23 +151,25 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.18.3-201.fc21.x86_64
+ System                   | Linux-4.0.4-303.fc22.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- BLAS                     | /lib64/libopenblas.so
+ MPI                      | ON
+ Fortran compiler         | /usr/lib64/openmpi/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 5.1.1 20150422 (Red Hat 5.1.1-1)
+ C compiler               | /usr/lib64/openmpi/bin/mpicc
+ C compiler version       | gcc (GCC) 5.1.1 20150422 (Red Hat 5.1.1-1)
+ C++ compiler             | /usr/lib64/openmpi/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | bef16b7f7b41ad5d88f242388f57080fa27ee10d
+ Last Git revision        | beeb2214658a3e0ccf80f4d037078a5fa38f329c
  Git branch               | [32mpe/develop[m
- Configuration time       | 2015-02-11 20:52:30.989974
+ Configuration time       | 2015-06-15 09:56:40.593492
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -177,13 +179,11 @@ Compilation information
 .RUN WAVE FUNCTION                                
 .PEQM                                             
 *PEQM                                             
-.RESTART                                          
 .VERBOSE                                          
 .ITERATIVE                                        
 1.0d-10                                           
 **WAVE FUNCTIONS                                  
 .HF                                               
-.RESTART                                          
 **END OF                                          
 
 
@@ -416,8 +416,6 @@ H              2.675323   -2.516779   -0.000673
       Iterative solver for induced moments will be used
       with convergence threshold: 1.0E-10
 
-      Existing files will be used to restart if possible.
-
 
                      .---------------------------------------.
                      | Starting in Integral Section (HERMIT) |
@@ -453,7 +451,7 @@ H              2.675323   -2.516779   -0.000673
  HERMIT - Number of two-electron integrals written:       43383 ( 96.1% )
  HERMIT - Megabytes written:                              0.502
 
- >>>  Time used in TWOINT     is   0.22 seconds
+ >>>  Time used in TWOINT     is   0.21 seconds
  >>>> Total CPU  time used in HERMIT:   0.26 seconds
  >>>> Total wall time used in HERMIT:   0.26 seconds
 
@@ -469,12 +467,29 @@ H              2.675323   -2.516779   -0.000673
                    `--------------------------------------------'
 
 
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:   24
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -20.684561     -11.357400     -11.351264     -11.346036      -1.724840
+           -1.477979      -1.046134      -1.031570      -0.744448      -0.729231
+           -0.672044      -0.551742      -0.540543      -0.516178      -0.438809
+           -0.319925      -0.220785      -0.162868      -0.131432      -0.129120
+           -0.123435      -0.114530      -0.093199      -0.085427
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:31:21 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -487,7 +502,7 @@ H              2.675323   -2.516779   -0.000673
 @    Restricted, closed shell Hartree-Fock calculation.
 
  Initial molecular orbitals are obtained according to
- ".MOSTART NEWORB" input option
+ ".MOSTART EWMO  " input option
 
 @    QM part is embedded in an environment :
 
@@ -530,8 +545,6 @@ H              2.675323   -2.516779   -0.000673
      Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-05
 
-     This is a restarted calculation.
-
 
  ***********************************************
  ***** DIIS acceleration of SCF iterations *****
@@ -543,7 +556,142 @@ H              2.675323   -2.516779   -0.000673
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-      Induced dipole moments converged in  1 iterations.
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.03677511     0.04735015     0.00010765
+
+@  1  -187.948496600     -4.868374348978E-02    2.01259D+00   -1.88D+02
+      Virial theorem: -V/T =      2.003056
+@      MULPOP C       0.93; C       0.24; C       0.42; O      -1.03; H      -0.16; H      -0.14; H      -0.12; H      -0.13; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  5 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.00474408    -0.00556659    -0.00001214
+
+@  2  -188.184841194      2.344779659309E-03    1.36791D+00   -2.36D-01
+      Virial theorem: -V/T =      2.009438
+@      MULPOP C      -0.39; C      -0.18; C      -0.25; O       0.36; H       0.07; H       0.15; H       0.12; H       0.12; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  5 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.02178772     0.02525304     0.00004071
+
+@  3  -188.315331361     -1.994605857626E-02    1.22120D-01   -1.30D-01
+      Virial theorem: -V/T =      2.007786
+@      MULPOP C       0.19; C      -0.10; C      -0.11; O      -0.30; H       0.05; H       0.09; H       0.08; H       0.08; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01985696     0.02372190     0.00003965
+
+@  4  -188.317223363     -1.920849914129E-02    2.80029D-02   -1.89D-03
+      Virial theorem: -V/T =      2.007876
+@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.09; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01991470     0.02430599     0.00003869
+
+@  5  -188.317376539     -1.916797097241E-02    9.68984D-03   -1.53D-04
+      Virial theorem: -V/T =      2.007837
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989768     0.02414325     0.00003776
+
+@  6  -188.317390806     -1.918432906121E-02    2.78666D-03   -1.43D-05
+      Virial theorem: -V/T =      2.007836
+@      MULPOP C       0.14; C      -0.09; C      -0.09; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01988749     0.02420029     0.00003719
+
+@  7  -188.317391847     -1.918174369107E-02    7.23105D-04   -1.04D-06
+      Virial theorem: -V/T =      2.007836
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  4 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989377     0.02419759     0.00003689
+
+@  8  -188.317391913     -1.918427369673E-02    1.50542D-04   -6.63D-08
+      Virial theorem: -V/T =      2.007835
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  3 iterations.
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.01989455     0.02419857     0.00003679
+
+@  9  -188.317391916     -1.918426510508E-02    3.46603D-05   -3.15D-09
+      Virial theorem: -V/T =      2.007835
+@      MULPOP C       0.14; C      -0.09; C      -0.10; O      -0.27; H       0.07; H       0.10; H       0.07; H       0.08; 
+ -----------------------------------------------------------------------------
+      Induced dipole moments converged in  3 iterations.
 
       Info from polarizable embedding library:
      ------------------------------------------
@@ -554,9 +702,9 @@ H              2.675323   -2.516779   -0.000673
                        X              Y              Z
                  -0.01989481     0.02419892     0.00003676
 
-@  1  -188.317391916     -1.918439589978E-02    9.30417D-06   -1.88D+02
+@ 10  -188.317391916     -1.918439589978E-02    9.30417D-06   -2.12D-10
 
-@ *** DIIS converged in   1 iterations !
+@ *** DIIS converged in  10 iterations !
 @     Converged SCF energy, gradient:   -188.317391916158    9.30D-06
     - total time used in SIRFCK :              0.00 seconds
 
@@ -624,7 +772,7 @@ H              2.675323   -2.516779   -0.000673
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.111       0.111
+ >>>> CPU and wall time for SCF :       0.469       0.469
 
 
                        .-----------------------------------.
@@ -638,16 +786,16 @@ H              2.675323   -2.516779   -0.000673
 
 @    Final HF energy:            -188.317391916158                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -290.963054380774
+@    Electronic energy:          -290.963054380773
 @    Embedding energy:             -0.019184395900
 
 @    Final gradient norm:           0.000009304175
 
  
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:31:22 2015
      Host name              : foeroyar                                
 
-File label for MO orbitals:  11Feb15   FOCKDIIS
+File label for MO orbitals:  15Jun15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -752,11 +900,11 @@ File label for MO orbitals:  11Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
- >>>> Total wall time used in SIRIUS :      0.11 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.47 seconds
+ >>>> Total wall time used in SIRIUS :      0.47 seconds
 
  
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:31:22 2015
      Host name              : foeroyar                                
 
 
@@ -764,9 +912,9 @@ File label for MO orbitals:  11Feb15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.38 seconds
- >>>> Total wall time used in DALTON:   0.38 seconds
+ >>>> Total CPU  time used in DALTON:   0.73 seconds
+ >>>> Total wall time used in DALTON:   0.73 seconds
 
  
-     Date and time (Linux)  : Wed Feb 11 20:53:49 2015
+     Date and time (Linux)  : Mon Jun 15 11:31:22 2015
      Host name              : foeroyar                                
