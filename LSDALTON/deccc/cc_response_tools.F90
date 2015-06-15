@@ -2563,18 +2563,24 @@ module cc_response_tools_module
       type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
       !> Singles and doubles amplitudes
       type(tensor),intent(in) :: t1,t2
-      real(realk),pointer :: lambda(:)
+      real(realk),pointer :: lambda(:),Arbig(:,:),alpha(:,:),Ar(:,:),q(:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
-      integer :: k,M,p,maxdim
+      integer :: k,M,p,maxdim,i,j
       integer(kind=long) :: maxnumeival
-      type(tensor),pointer :: bS(:), bD(:)
+      type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
+      type(tensor) :: q1,zeta1,d1,q2,zeta2,d2
+      real(realk) :: tmp1,tmp2,thr
+
 
       print *, 'Inside CCSD eigenvalue solver'
+
+      ! Convergence threshold
+      thr = 1.0_e-10
 
       ! KK FIXME
       ! Maximum number of vectors allowed. Should be thought about more carefully 
       ! and be possible to control by input
-      maxdim=1000
+      maxdim=200
 
       ! Notation and implementation is exactly like p. 91 of J. Comp. Phys. 17, 87 (1975), 
       ! except that we may solve for more than one eigenvalue at the same time.
@@ -2583,7 +2589,7 @@ module cc_response_tools_module
       k=1
 
       ! Size of zero-order orthonormal subspace (M must be equal to or larger than k)
-      M=5
+      M=3
 
       ! Sanity check: Requested number of initial eigenvalues/start vectors is not
       ! larger than the maximum possible number of singles+doubles excitations.
@@ -2597,26 +2603,144 @@ module cc_response_tools_module
       end if
       ! KKHACK: Also check maxdim??
 
-      ! Get start vectors and associated eigenvalues
-      call mem_alloc(bS,maxdim)
-      call mem_alloc(bD,maxdim)
-      call mem_alloc(lambda,maxdim)
-      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,bS(1:M),bD(1:M),lambda(1:M))
-                               
 
+      ! ********************************************************************************
+      !                         INITIALIZATION BEFORE SOLVER LOOP                      !
+      ! ********************************************************************************
+
+      ! Allocate space for residual-related stuff
+      ! -----------------------------------------
+      call tensor_minit(q1,[nvirt,nocc],2)
+      call tensor_minit(zeta1,[nvirt,nocc],2)
+      call tensor_minit(d1,[nvirt,nocc],2)
+      call tensor_minit(q2,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(zeta2,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(d2,[nvirt,nocc,nvirt,nocc],4)
+      
+
+
+      ! Get start vectors and associated eigenvalues
+      ! --------------------------------------------
+      call mem_alloc(b1,maxdim)
+      call mem_alloc(b2,maxdim)
+      call mem_alloc(Ab1,maxdim)
+      call mem_alloc(Ab2,maxdim)
+      do i=1,M
+         call tensor_minit(b1(i),[nvirt,nocc],2)
+         call tensor_minit(b2(i),[nvirt,nocc,nvirt,nocc],4)
+         call tensor_minit(Ab1(i),[nvirt,nocc],2)
+         call tensor_minit(Ab2(i),[nvirt,nocc,nvirt,nocc],4)
+      end do
+      call mem_alloc(lambda,maxdim)
+      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambda(1:M))
+      do i=1,M
+         print *, 'Eival from orbdiff ',i,lambda(i)
+      end do
+
+
+      ! Form Jacobian right-hand transformations A b on initial M trial vectors b
+      ! --------------------------------------------------------------------------
+      do i=1,M
+         call cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+              & yv_tensor,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+      end do
+
+
+      ! Form Jacobian in reduced space
+      ! -------------------------------
+      ! Note: Arbig always contains the components of the Jacobian constructed at the given time,
+      !       and it is allocated such that there is room for more elements.
+      !       Ar contains the same elements but with the current dimensions.
+
+      call mem_alloc(Arbig,maxdim,maxdim)
+      call mem_alloc(Ar,M,M)
+      Arbig=0.0_realk
+      do j=1,M
+         do i=j,M
+            ! Note b(i) and Ab(i) both have structures (singles, doubles)
+            ! The reduced matrix is the dotproduct <b(i),Ab(j)>,
+            ! and it therefore becomes a sum of dot products of the singles
+            ! and doubles components
+
+            ! KKHACK - ask Poul if this is the way to do it!
+            tmp1 = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+            tmp2 = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
+            Arbig(i,j) = tmp1 !0.5_realk*(tmp1+tmp2)
+            Arbig(j,i) = tmp2 ! Arbig(i,j)
+            Ar(i,j) = Arbig(i,j)
+            Ar(j,i) = Arbig(j,i)
+
+         end do
+      end do
+
+      do j=1,M
+         do i=1,M
+            print *, 'Jacobian red',i,j,Ar(i,j)            
+         end do
+      end do
+
+
+     
+      ! KKHACK - is this the proper place to start the general loop???
+
+
+      ! Diagonalize reduced matrix Arbig 
+      ! --------------------------------
+      call mem_alloc(alpha,M,M)
+      call solve_eigenvalue_problem_unitoverlap(M,Ar,lambda,alpha)
+      do i=1,M
+         print *, 'Eival from Jacobian diag ',i,lambda(i)
+      end do
+
+
+      ! ****************************************************
+      ! Residual and convergence check for the p eigenvalues
+      ! ****************************************************
+      do p=1,M
+         
+         ! Residual 
+         ! --------
+         do i=1,M
+            KK: We are here!
+            call tensor_zero(q1)
+            call tensor_zero(q2)
+            call tensor_add(q1,alpha(,p),Ab(i))
+            
+            call tensor_add(rho1,1.0_realk,rho21)
+            call tensor_add(rho2,1.0_realk,rho12)
+            call tensor_add(rho2,1.0_realk,rho22)
+         end do
+         
+
+
+      end do
+
+
+
+
+      ! Calculate residual
+
+
+      ! Place this the proper place...
+      call mem_dealloc(alpha)
+
+
+      ! KKHACK fixme - deallocate Ab1,Ab2,b1,b2 properly!
       call mem_dealloc(lambda)
-      call mem_dealloc(bS)
-      call mem_dealloc(bD)
+      call mem_dealloc(b1)
+      call mem_dealloc(b2)
+      call mem_dealloc(Ab1)
+      call mem_dealloc(Ab2)
+      call mem_dealloc(Arbig)
       
     end subroutine ccsd_eigenvalue_solver
 
 
     !> \brief Calculate start vector and associated eigenvalues for CCSD eigenvalue solver.
     !> We simply take the lowest M orbital energies differences in singles and doubles spaces.
-    !> Note: Start vectors are also initialized here.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,bS,bD,eival)
+    subroutine ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1,b2,eival)
       implicit none
       !> Number of start vectors requested
       integer,intent(in) :: M
@@ -2625,7 +2749,7 @@ module cc_response_tools_module
       !> Occ-occ and virt-virt Fock matrix blocks in MO basis
       real(realk),intent(in) ::  foo(nocc,nocc),fvv(nvirt,nvirt)
       !> Singles and Doubles components of start vectors
-      type(tensor),intent(inout) :: bS(M), bD(M)
+      type(tensor),intent(inout) :: b1(M), b2(M)
       !> Eigenvalues (orbital energy differences) for start vectors
       real(realk),intent(inout) :: eival(M)
       integer :: i,j,a,b,maxidx(1),MS,MD,idxS,idxD
@@ -2723,10 +2847,8 @@ module cc_response_tools_module
          end do
 
          ! Initialize singles and doubles start vectors
-         call tensor_minit(bS(i),[nvirt,nocc],2)
-         call tensor_minit(bD(i),[nvirt,nocc,nvirt,nocc],4)
-         call tensor_zero(bS(i))
-         call tensor_zero(bD(i))
+         call tensor_zero(b1(i))
+         call tensor_zero(b2(i))
 
          ! Set i'th eigenvalue
          ! -------------------
@@ -2738,7 +2860,7 @@ module cc_response_tools_module
 
             ! Singles vector - 1 in position of eigenvalue, zero elsewhere
             ! Doubles vector - zero 
-            bS(i)%elm2(s1(idxS),s2(idxS)) = 1.0_realk
+            b1(i)%elm2(s1(idxS),s2(idxS)) = 1.0_realk
             print *, 'Including singles ',s1(idxS),s2(idxS),eival(i)
 
          else ! the doubles eigenvalue is the lowest
@@ -2754,11 +2876,11 @@ module cc_response_tools_module
             ! we need to set X_bjai = X_aibj = 1/sqrt(2)
             ! unless a=b and i=j
             if(d1(idxD)==d3(idxD) .and. d2(idxD)==d4(idxD)) then
-               bD(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk
+               b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk
             else
-               bD(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk/sqrt(2.0_realk)
-               bD(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = & 
-                    & bD(i)%elm4(d3(idxD),d4(idxD),d1(idxD),d2(idxD))
+               b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk/sqrt(2.0_realk)
+               b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = & 
+                    & b2(i)%elm4(d3(idxD),d4(idxD),d1(idxD),d2(idxD))
             end if
             print *, 'Including doubles ',d1(idxD),d2(idxD),d3(idxD),d4(idxD),eival(i)
 
@@ -2766,8 +2888,6 @@ module cc_response_tools_module
          
 
       end do
-      print *, 'eivalS',eivalS
-      print *, 'eivalD',eivalD
 
 
     end subroutine ccsd_eigenvalue_solver_startguess
