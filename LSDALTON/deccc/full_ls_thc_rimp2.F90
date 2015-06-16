@@ -258,7 +258,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   CALL LSTIMER('THC:Eps',TS2,TE2,DECINFO%OUTPUT)
   IF(WriteToDisk)THEN
      !verify
-     call TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA)
+     call TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA,lupri)
      call mem_dealloc(Calpha)
 
      call mem_alloc(IntAO,nbasis,nbasis,nbasis,nbasis)
@@ -269,7 +269,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
      intspec(5) = 'C'
      call II_get_4center_eri(DECINFO%OUTPUT,DECINFO%OUTPUT,mylsitem%SETTING,&
           & IntAO,nbasis,nbasis,nbasis,nbasis,intspec)     
-     call TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid)
+     call TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid,lupri)
      call mem_dealloc(IntAO)
 
      call LS_THC_AO_RIMP2_Ecorr(nocc,nvirt,ngrid,X,Zpq,EpsOcc,EpsVirt,&
@@ -356,17 +356,18 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   CALL LSTIMER('LS_THC_RIMP2 ',TS,TE,DECINFO%OUTPUT)
 end subroutine full_canonical_ls_thc_rimp2
 
-subroutine TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA)
+subroutine TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA,lupri)
   implicit none
-  integer :: nbasis,nocc,nvirt,ngrid,nba
+  integer :: nbasis,nocc,nvirt,ngrid,nba,lupri
   real(realk) :: X(ngrid,nbasis)
   real(realk) :: Zpq(ngrid,ngrid)
   real(realk) :: Calpha(NBA,nbasis,nbasis)
   !
   integer :: ALPHA,BETA,GAMMA,DELTA,P,Q
-  real(realk) :: TMP,TMPRI
+  real(realk) :: TMP,TMPRI,DIFFsq
+  DIFFsq = 0.0E0_realk
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(ALPHA,BETA,GAMMA,DELTA,P,Q,&
-  !$OMP TMP,TMPRI) SHARED(X,ZPQ,nbasis,nocc,nvirt,ngrid,nba,Calpha)
+  !$OMP TMP,TMPRI) SHARED(X,ZPQ,nbasis,nocc,nvirt,ngrid,nba,Calpha) REDUCTION(+:DIFFsq)
   DO DELTA=1,nbasis
      DO GAMMA=1,nbasis
         DO BETA=1,nbasis
@@ -381,6 +382,7 @@ subroutine TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA)
               DO P=1,NBA
                  TMPRI = TMPRI + Calpha(P,ALPHA,BETA)*Calpha(P,GAMMA,DELTA)
               ENDDO
+              DIFFSQ = DIFFSQ  + (TMP-TMPRI)**2
               IF(ABS(TMP-TMPRI).GT.1.0E-5_realk)THEN
                  print*,'ALPHA,BETA,GAMMA,DELTA',ALPHA,BETA,GAMMA,DELTA,'RIINT DIFF',ABS(TMP-TMPRI)
                  print*,'TMP',TMP
@@ -391,19 +393,21 @@ subroutine TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA)
      ENDDO
   ENDDO
   !$OMP END PARALLEL DO
+  WRITE(lupri,*)'DIFF(THC-RI) = ',SQRT(DIFFsq)
 end subroutine TestTHCRIAOintegrals
 
-subroutine TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid)
+subroutine TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid,lupri)
   implicit none
-  integer :: nbasis,nocc,nvirt,ngrid
+  integer :: nbasis,nocc,nvirt,ngrid,lupri
   real(realk) :: X(ngrid,nbasis)
   real(realk) :: Zpq(ngrid,ngrid)
   real(realk) :: IntAO(nbasis,nbasis,nbasis,nbasis)
   !
   integer :: ALPHA,BETA,GAMMA,DELTA,P,Q
-  real(realk) :: TMP
+  real(realk) :: TMP,DIFFsq
+  DIFFsq = 0.0E0_realk
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(ALPHA,BETA,GAMMA,DELTA,P,Q,&
-  !$OMP TMP) SHARED(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid)
+  !$OMP TMP) SHARED(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid) REDUCTION(+:DIFFsq)
   DO DELTA=1,nbasis
      DO GAMMA=1,nbasis
         DO BETA=1,nbasis
@@ -414,6 +418,7 @@ subroutine TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid)
                     TMP=TMP + X(P,ALPHA)*X(P,BETA)*Zpq(P,Q)*X(Q,GAMMA)*X(Q,DELTA)
                  ENDDO
               ENDDO
+              DIFFSQ = DIFFSQ  + (TMP-IntAO(ALPHA,BETA,GAMMA,DELTA))**2
               !              IntAOTHC(ALPHA,BETA,GAMMA,DELTA) = TMP
               IF(ABS(TMP-IntAO(ALPHA,BETA,GAMMA,DELTA)).GT.1.0E-5_realk)THEN
                  print*,'ALPHA,BETA,GAMMA,DELTA',ALPHA,BETA,GAMMA,DELTA,'AOINT DIFF',&
@@ -426,6 +431,7 @@ subroutine TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid)
      ENDDO
   ENDDO
   !$OMP END PARALLEL DO
+  WRITE(lupri,*)'DIFF(THC-AOINT) = ',SQRT(DIFFsq)
 end subroutine TestTHCAOintegrals
 !  Coulomb: AB(P,R,l)*ZCD(P,S,l)*Z(R,S)  (Ngrid**3)
 subroutine LS_THC_RIMP2_LaplaceEcorr(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,mp2_energy)
