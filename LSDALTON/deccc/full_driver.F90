@@ -397,8 +397,8 @@ contains
     !           Not frozen core: 0
     offset = noccfull - nocc
 
-    !> Singles correction
-    call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
+    !> Singles correction some issues with MPI and gives different values
+    ! call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
 
     ! Get all F12 Fock Matrices
     ! ********************
