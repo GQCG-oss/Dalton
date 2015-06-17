@@ -415,7 +415,7 @@ contains
     !> Atomic fragment
     type(decfrag),intent(inout) :: MyFragment
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
-    type(array4),intent(in) :: ThetaOCC
+    type(array4),intent(inout) :: ThetaOCC
     !> Theta array Theta_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order:  (A,K,B,L)
     type(array4),intent(in) :: ThetaVIRT
     !> (C I | D J) integrals stored as (C,I,J,D)   [using occ partitioning]
@@ -534,7 +534,7 @@ contains
 
     implicit none
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
-    type(array4),intent(in) :: ThetaOCC
+    type(array4),intent(inout) :: ThetaOCC
     !> Atomic fragment
     type(decfrag),intent(inout) :: MyFragment
     !> Structure containing MP2 gradient info, including Ltheta.
@@ -1030,7 +1030,7 @@ contains
 
     implicit none
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
-    type(array4),intent(in) :: ThetaOCC
+    type(array4),intent(inout) :: ThetaOCC
     !> Pair fragment
     type(decfrag),intent(inout) :: PairFragment
     !> Number of occupied EOS orbitals
