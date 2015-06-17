@@ -1474,7 +1474,7 @@ integer,intent(inout) :: MaxOrbitals
 character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,norbitals,nbatLoc,iOrb,tmporb,allocnbatches
-logical :: uncont,intnrm,extend
+logical :: uncont,intnrm,extend,Family
 type(AOITEM) :: AO
 TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 uncont=.FALSE.
@@ -1496,6 +1496,8 @@ ELSEIF(AOspec.EQ.'O')THEN
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
+Family = setting%SCHEME%NOFAMILY
+setting%SCHEME%NOFAMILY = .TRUE.
 IF(extend)THEN
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
@@ -1505,6 +1507,7 @@ ELSE
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
 ENDIF
+setting%SCHEME%NOFAMILY = Family
 
 norbitals = 0
 MaxOrbitals = 0
@@ -1571,6 +1574,8 @@ ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 
+Family = setting%SCHEME%NOFAMILY
+setting%SCHEME%NOFAMILY = .TRUE.
 IF(extend)THEN
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
@@ -1580,6 +1585,7 @@ ELSE
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
 ENDIF
+setting%SCHEME%NOFAMILY = Family
 
 Family = .FALSE.
 do I=1,AO%nbatches
@@ -1673,7 +1679,7 @@ ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 Family = setting%SCHEME%NOFAMILY
-setting%SCHEME%NOFAMILY = .FALSE.
+setting%SCHEME%NOFAMILY = .TRUE.
 IF(extend)THEN
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
@@ -1758,7 +1764,7 @@ ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 Family = setting%SCHEME%NOFAMILY
-setting%SCHEME%NOFAMILY = .FALSE.
+setting%SCHEME%NOFAMILY = .TRUE.
 IF(extend)THEN
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
