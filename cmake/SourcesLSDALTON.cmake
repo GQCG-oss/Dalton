@@ -82,7 +82,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsdpt.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
-    LSDALTON/deccc/ccsd_lhtr.F90
+    LSDALTON/deccc/cc_response_tools.F90
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/pno_ccsd.F90
     LSDALTON/deccc/rpa.F90

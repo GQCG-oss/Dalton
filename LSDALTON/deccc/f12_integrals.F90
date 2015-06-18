@@ -228,8 +228,10 @@ contains
 
     call mem_alloc(V4ijkl, noccEOS, noccEOS, noccEOS, noccEOS) 
 
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
-    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc) !*
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS, &
+       & CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iimc','RCRRC',Gijmc)    
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS, &
+       & CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc) 
 
     m = noccEOS*noccEOS  ! <ij G mc> <mc R kl> = <m V3 n> 
     k = noccAOStot*ncabsMO  ! m x k * k x n = m x n
