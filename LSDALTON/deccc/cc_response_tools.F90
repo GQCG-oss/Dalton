@@ -2576,8 +2576,6 @@ module cc_response_tools_module
       logical :: allconv
 
 
-      print *, 'Inside CCSD eigenvalue solver'
-
       ! Convergence threshold
       thr = 1.0e-7_realk
 
@@ -2587,7 +2585,7 @@ module cc_response_tools_module
       maxdim=200
 
       ! KK FIXME - maximum number of iterations
-      maxiter = 1
+      maxiter = 20
 
       ! Notation and implementation is exactly like p. 91 of J. Comp. Phys. 17, 87 (1975), 
       ! except that we may solve for more than one eigenvalue at the same time.
@@ -2651,9 +2649,6 @@ module cc_response_tools_module
       end do
       call mem_alloc(lambda,maxdim)
       call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambda(1:M))
-      do i=1,M
-         print *, 'Eival from orbdiff ',i,lambda(i)
-      end do
 
 
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
@@ -2690,6 +2685,11 @@ module cc_response_tools_module
       ! ***************************************************************************************
 
 
+      write(DECinfo%output,'(1X,a)') '###'
+      write(DECinfo%output,'(1X,a)') '### Jacobian eigenvalue solver'
+      write(DECinfo%output,'(1X,a)') '###'
+      write(DECinfo%output,'(1X,a)') '### Number     eival    residual    conv?  #'
+
       SolverLoop: do iter=1,maxiter
 
          ! Copy elements of reduced Jacobian into array having the proper dimensions
@@ -2698,11 +2698,6 @@ module cc_response_tools_module
          do j=1,M
             do i=1,M
                Ar(i,j) = Arbig(i,j)
-            end do
-         end do
-         do j=1,M
-            do i=1,M
-               print *, 'Jacobian red',i,j,Ar(i,j)            
             end do
          end do
 
@@ -2748,7 +2743,7 @@ module cc_response_tools_module
 
             ! Check for convergence
             conv(p) = (res(p)<thr) 
-            print '(1X,a,i6,2g18.8,L2)', '###',p,lambda(p),res(p),conv(p)
+            write(DECinfo%output,'(1X,a,i6,2g18.8,L2)') '###',p,lambda(p),res(p),conv(p)
 
          end do
          call mem_dealloc(alphaR)
