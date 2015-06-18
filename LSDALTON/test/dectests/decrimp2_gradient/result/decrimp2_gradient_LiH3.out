@@ -1,0 +1,3345 @@
+ THIS IS A DEBUG BUILD
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+  
+      This is output from LSDALTON 2016.alpha
+  
+  
+      IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
+      THE FOLLOWING PAPER SHOULD BE CITED:
+      
+      K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+      L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+      P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+      J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+      L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,
+      A. Halkier, C. Haettig, H. Heiberg,
+      T. Helgaker, A. C. Hennum, H. Hettema,
+      E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+      M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,
+      D. Jonsson, P. Joergensen, J. Kauczor,
+      S. Kirpekar, T. Kjaergaard, W. Klopper,
+      S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,
+      A. Krapp, K. Kristensen, A. Ligabue,
+      O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+      C. Neiss, C. B. Nielsen, P. Norman,
+      J. Olsen, J. M. H. Olsen, A. Osted,
+      M. J. Packer, F. Pawlowski, T. B. Pedersen,
+      P. F. Provasi, S. Reine, Z. Rinkevicius,
+      T. A. Ruden, K. Ruud, V. Rybkin,
+      P. Salek, C. C. M. Samson, A. Sanchez de Meras,
+      T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+      K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,
+      P. R. Taylor, A. M. Teale, E. I. Tellgren,
+      D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+      O. Vahtras, M. A. Watson, D. J. D. Wilson,
+      M. Ziolkowski, and H. AAgren,
+      "The Dalton quantum chemistry program system",
+      WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)
+  
+  
+                                                
+      LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
+      ----------------------------------------------------------------------------
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
+      Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
+      Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
+      Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
+      Robert Izsak,            University of Oslo,        Norway    (ADMM)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
+      Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
+      Patrick Merlot,          University of Oslo,        Norway    (ADMM)
+      Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
+      Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
+      Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
+      Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
+      Mark Watson,             University of Oslo,        Norway    (FMM)
+      Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
+  
+  
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     energies and properties using various electronic structure models.
+     The authors accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+  
+  
+ Who compiled             | tkjaer
+ Host                     | localhost.localdomain
+ System                   | Linux-3.16.6-200.fc20.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
+ Static linking           | OFF
+ Last Git revision        | 9994f629f780c05d8bc00604a570272f3905a14f
+ Git branch               | master
+ Configuration time       | 2015-06-17 14:50:51.821530
+
+Start simulation
+     Date and time (Linux)  : Wed Jun 17 15:38:21 2015
+     Host name              : localhost.localdomain                   
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  STO-3G Aux=cc-pVDZ-RI                   
+                                          
+                                          
+  Atomtypes=2 NoSymmetry                                      
+  Charge=3.0 Atoms=3                                          
+  Li         0.000000      0.0000000    0.0000000             
+  Li         3.500000      0.0000000    2.0000000             
+  Li         10.00000      0.0000000    0.0000000             
+  Charge=1.0 Atoms=3                                          
+  H          0.000000      2.0000000    0.0000000             
+  H          3.500000      0.0000000    0.0000000             
+  H          10.00000      0.0000000    2.0000000             
+                      
+ -----------------------------------------
+          PRINTING THE LSDALTON.INP FILE 
+ -----------------------------------------
+                      
+  **WAVE FUNCTIONS                                                                                    
+  .HF                                                                                                 
+  *DENSOPT                                                                                            
+  .ARH                                                                                                
+  .START                                                                                              
+  TRILEVEL                                                                                            
+  .CONVDYN                                                                                            
+  TIGHT                                                                                               
+  **INFO                                                                                              
+  .DEBUG_MPI_MEM                                                                                      
+  **DEC                                                                                               
+  .FRAGEXPMODEL                                                                                       
+  .RIMP2                                                                                              
+  .FRAGREDMODEL                                                                                       
+  .RIMP2                                                                                              
+  .PAIRESTIMATEMODEL                                                                                  
+  .RIMP2                                                                                              
+  .RIMP2                                                                                              
+  .GRADIENT                                                                                           
+  .FOT                                                                                                
+  5.0e-4                                                                                              
+  .FROZENCORE                                                                                         
+  .MEMORY                                                                                             
+  2.0                                                                                                 
+  *END OF INPUT                                                                                       
+  
+  MOLPRINT IS SET TO       0
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates: 18
+   Written in atomic units    
+ 
+   1   Li       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+ 
+   4   Li       x      3.5000000000
+   5            y      0.0000000000
+   6            z      2.0000000000
+ 
+   7   Li       x     10.0000000000
+   8            y      0.0000000000
+   9            z      0.0000000000
+ 
+  10   H        x      0.0000000000
+  11            y      2.0000000000
+  12            z      0.0000000000
+ 
+  13   H        x      3.5000000000
+  14            y      0.0000000000
+  15            z      0.0000000000
+ 
+  16   H        x     10.0000000000
+  17            y      0.0000000000
+  18            z      2.0000000000
+ 
+ 
+ BASISSETLIBRARY  : REGULAR  
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  STO-3G                                            
+  CHARGES:    3.0000    1.0000
+                      
+ BASISSETLIBRARY  : AUXILIARY
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  cc-pVDZ-RI                                        
+  CHARGES:    3.0000    1.0000
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
+   
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/RIMP2gradNew/build-debug/basis/STO-3G
+   
+  CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
+   
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/RIMP2gradNew/build-debug/basis/cc-pVDZ-RI
+ WARNING This basis format violate the old dalton basis format
+ Which consist of 1 Exponent F16.9 and up to 6 contraction
+ coefficients on the first line followed by a up to 7 contraction coefficients
+ on the following lines until the full number of contraction coefficients are gi
+ ven
+ We will try to this basis set, but this code is not very well testet. TK
+ WARNING This basis format violate the old dalton basis format
+ Which consist of 1 Exponent F16.9 and up to 6 contraction
+ coefficients on the first line followed by a up to 7 contraction coefficients
+ on the following lines until the full number of contraction coefficients are gi
+ ven
+ We will try to this basis set, but this code is not very well testet. TK
+ WARNING This basis format violate the old dalton basis format
+ Which consist of 1 Exponent F16.9 and up to 6 contraction
+ coefficients on the first line followed by a up to 7 contraction coefficients
+ on the following lines until the full number of contraction coefficients are gi
+ ven
+ We will try to this basis set, but this code is not very well testet. TK
+ WARNING This basis format violate the old dalton basis format
+ Which consist of 1 Exponent F16.9 and up to 6 contraction
+ coefficients on the first line followed by a up to 7 contraction coefficients
+ on the following lines until the full number of contraction coefficients are gi
+ ven
+ We will try to this basis set, but this code is not very well testet. TK
+ WARNING This basis format violate the old dalton basis format
+ Which consist of 1 Exponent F16.9 and up to 6 contraction
+ coefficients on the first line followed by a up to 7 contraction coefficients
+ on the following lines until the full number of contraction coefficients are gi
+ ven
+ We will try to this basis set, but this code is not very well testet. TK
+ WARNING This basis format violate the old dalton basis format
+ Which consist of 1 Exponent F16.9 and up to 6 contraction
+ coefficients on the first line followed by a up to 7 contraction coefficients
+ on the following lines until the full number of contraction coefficients are gi
+ ven
+ We will try to this basis set, but this code is not very well testet. TK
+ WARNING This basis format violate the old dalton basis format
+ Which consist of 1 Exponent F16.9 and up to 6 contraction
+ coefficients on the first line followed by a up to 7 contraction coefficients
+ on the following lines until the full number of contraction coefficients are gi
+ ven
+ We will try to this basis set, but this code is not very well testet. TK
+ PRINT MOLECULE AND BASIS IN FULL INPUT
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+ Molecular Charge                    :    0.0000
+    Regular basisfunctions             :       18
+    Auxiliary basisfunctions           :      210
+    Valence basisfunctions             :        0
+    Primitive Regular basisfunctions   :       54
+    Primitive Auxiliary basisfunctions :      210
+    Primitive Valence basisfunctions   :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis      Auxiliarybasisset   Phantom   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   3.000  STO-3G        cc-pVDZ-RI              F             15           5
+     2   3.000  STO-3G        cc-pVDZ-RI              F             15           5
+     3   3.000  STO-3G        cc-pVDZ-RI              F             15           5
+     4   1.000  STO-3G        cc-pVDZ-RI              F              3           1
+     5   1.000  STO-3G        cc-pVDZ-RI              F              3           1
+     6   1.000  STO-3G        cc-pVDZ-RI              F              3           1
+                      
+ The cartesian centers in Atomic units. 
+  ATOM  NAME  ISOTOPE            X                 Y                 Z     
+     1  Li          1        0.00000000        0.00000000        0.00000000
+     2  Li          1        3.50000000        0.00000000        2.00000000
+     3  Li          1       10.00000000        0.00000000        0.00000000
+     4  H           1        0.00000000        2.00000000        0.00000000
+     5  H           1        3.50000000        0.00000000        0.00000000
+     6  H           1       10.00000000        0.00000000        2.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      6
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 Li     3.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      2 Li     3.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      3 Li     3.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      4 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+      5 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+      6 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+---------------------------------------------------------------------
+total         12                               54       18
+---------------------------------------------------------------------
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      6
+  THE  AUXILIARY is on R =   2
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 Li     3.000 cc-pVDZ-RI                56       56 [7s5p4d2f|7s5p4d2f]                          
+      2 Li     3.000 cc-pVDZ-RI                56       56 [7s5p4d2f|7s5p4d2f]                          
+      3 Li     3.000 cc-pVDZ-RI                56       56 [7s5p4d2f|7s5p4d2f]                          
+      4 H      1.000 cc-pVDZ-RI                14       14 [3s2p1d|3s2p1d]                              
+      5 H      1.000 cc-pVDZ-RI                14       14 [3s2p1d|3s2p1d]                              
+      6 H      1.000 cc-pVDZ-RI                14       14 [3s2p1d|3s2p1d]                              
+---------------------------------------------------------------------
+total         12                              210      210
+---------------------------------------------------------------------
+                      
+ Configuration:
+ ==============
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
+ 
+   You have requested Augmented Roothaan-Hall optimization
+   => explicit averaging is turned off!
+ 
+Expand trust radius if ratio is larger than:            0.75
+Contract trust radius if ratio is smaller than:         0.25
+On expansion, trust radius is expanded by a factor      1.20
+On contraction, trust radius is contracted by a factor  0.70
+ 
+ Maximum size of subspace in ARH linear equations:           2
+ 
+Density subspace min. method    : None                    
+Density optimization : Augmented RH optimization          
+ 
+ Maximum size of Fock/density queue in averaging:          10
+ 
+ Due to the tightend SCF convergence threshold we also tighten the integral Threshold
+ with a factor:  0.100000000000000     
+ 
+Dynamic convergence threshold for gradient:   0.35E-05
+ 
+We perform the calculation in the Grand Canonical basis
+(see PCCP 2009, 11, 5805-5813)
+To use the standard input basis use .NOGCBASIS
+ 
+Due to the presence of the keyword (default for correlation)
+.NOGCINTEGRALTRANSFORM
+We transform the input basis to the Grand Canonical
+basis and perform integral evaluation using this basis
+ 
+    The Overall Screening threshold is set to              :  1.0000E-09
+    The Screening threshold used for Coulomb               :  1.0000E-11
+    The Screening threshold used for Exchange              :  1.0000E-09
+    The Screening threshold used for One-electron operators:  1.0000E-16
+ The SCF Convergence Criteria is applied to the gradnorm in OAO basis
+ Warning **DEC and **CC enforces the use of the .LCM keyword
+ 
+ End of configuration!
+ 
+ 
+Matrix type: mtype_dense
+ 
+ A set of atomic calculations are performed in order to construct
+ the Grand Canonical Basis set (see PCCP 11, 5805-5813 (2009))
+ as well as JCTC 5, 1027 (2009)
+ This is done in order to use the TRILEVEL starting guess and 
+ perform orbital localization
+ This is Level 1 of the TRILEVEL starting guess and is performed per default.
+ The use of the Grand Canonical Basis can be deactivated using .NOGCBASIS
+ under the **GENERAL section. This is NOT recommended if you do TRILEVEL 
+ or orbital localization.
+ 
+ 
+ Level 1 atomic calculation on STO-3G Charge   3
+ ================================================
+ The Coulomb energy contribution    4.29387019879292     
+ The Exchange energy contribution    1.77767857930608     
+ The Fock energy contribution   -2.51619161948684     
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
+******************************************************************  ********************###
+  1     -7.2386855826    0.00000000000    0.00      0.00000    0.00    3.17E-01  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+ The Coulomb energy contribution    4.26396587612644     
+ The Exchange energy contribution    1.76272641797284     
+ The Fock energy contribution   -2.50123945815360     
+  2     -7.2449023172   -0.00621673460    0.00      0.00000    0.00    2.20E-02  ###
+ The Coulomb energy contribution    4.26122748541207     
+ The Exchange energy contribution    1.76135722261565     
+ The Fock energy contribution   -2.49987026279642     
+  3     -7.2449319818   -0.00002966462   -1.00      0.00000    0.00    5.27E-05  ###
+ 
+ Level 1 atomic calculation on STO-3G Charge   1
+ ================================================
+ The Coulomb energy contribution   0.387302965356771     
+ The Exchange energy contribution   0.193651482678385     
+ The Fock energy contribution  -0.193651482678385     
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
+******************************************************************  ********************###
+  1     -0.2729303720    0.00000000000    0.00      0.00000    0.00    0.00E+00  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+ 
+Matrix type: mtype_dense
+ 
+ First density: Trilevel procedure 
+ 
+ Level 2 molecular calculation
+=============================
+ 
+ We now perform the 2. Level of the TRILEVEL starting guess 
+ see PCCP 11, 5805-5813 (2009) as well as JCTC 5, 1027 (2009)
+ The 2. level is a full molecular calculation done in a minimal basis
+ 
+  The 2. Level Basis
+  Total number of atoms        :      6
+---------------------------------------------------------------------
+  atom label  charge basisset                cont   basis
+---------------------------------------------------------------------
+      1 Li     3.000 GC Minimal Basis           2   [2s]                                         
+      2 Li     3.000 GC Minimal Basis           2   [2s]                                         
+      3 Li     3.000 GC Minimal Basis           2   [2s]                                         
+      4 H      1.000 GC Minimal Basis           1   [1s]                                         
+      5 H      1.000 GC Minimal Basis           1   [1s]                                         
+      6 H      1.000 GC Minimal Basis           1   [1s]                                         
+---------------------------------------------------------------------
+total         12                                9
+---------------------------------------------------------------------
+                      
+ The Coulomb energy contribution    25.6642947116286     
+ The Exchange energy contribution    6.27889352389400     
+ The Fock energy contribution   -19.3854011877345     
+  Iteration 0 energy:  -23.0459587306580     
+ Preparing to do S^1/2 decomposition...
+Matrix S     has nnz=        75 sparsity:     92.593 %
+Matrix AO D  has nnz=        81 sparsity:    100.000 %
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  3.464101615137754E-005
+** Get Fock matrix number   1
+ The Coulomb energy contribution    26.9605696481181     
+ The Exchange energy contribution    6.88730728474653     
+ The Fock energy contribution   -20.0732623633715     
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1    -23.1152596241    0.00000000000    0.00      0.00000    0.00    7.95E-02  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        81 sparsity:    100.000 %
+Matrix AO F  has nnz=        81 sparsity:    100.000 %
+Matrix OAO D has nnz=        81 sparsity:    100.000 %
+Matrix OAO F has nnz=        81 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  7.953594772069258E-002
+ Number of densities in queue:           0
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.184311 au
+   -E(HOMO):                     -0.178797 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.363107 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0163221457 (mu =       0.00, xmax =   0.620141E-01, xnorm =   0.122932E+00, THR =   0.795359E-03)
+  Error of red space iteration  2:        0.0048369664 (mu =       0.00, xmax =   0.739642E-01, xnorm =   0.146315E+00, THR =   0.795359E-03)
+  Error of red space iteration  3:        0.0009057331 (mu =       0.00, xmax =   0.750915E-01, xnorm =   0.150820E+00, THR =   0.795359E-03)
+  Error of red space iteration  4:        0.0001409668 (mu =       0.00, xmax =   0.753565E-01, xnorm =   0.151552E+00, THR =   0.795359E-03)
+Newton equations converged in  4 iterations!
+No. of matmuls in get_density:    52
+ >>>  CPU Time used in SCF iteration is   0.13 seconds
+ >>> wall Time used in SCF iteration is   0.13 seconds
+** Get Fock matrix number   2
+ The Coulomb energy contribution    26.7159619376155     
+ The Exchange energy contribution    6.80196107954682     
+ The Fock energy contribution   -19.9140008580686     
+ 0.60000 (xnorm)    0.07536    0.15155    0.00        1.1732    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  2    -23.1272274767   -0.01196785259    0.00      0.00000    0.00    1.50E-02  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        81 sparsity:    100.000 %
+Matrix AO F  has nnz=        81 sparsity:    100.000 %
+Matrix OAO D has nnz=        81 sparsity:    100.000 %
+Matrix OAO F has nnz=        81 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  1.497005837814498E-002
+ Number of densities in queue:           1
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.183556 au
+   -E(HOMO):                     -0.209810 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.393367 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0044045191 (mu =       0.00, xmax =   0.138031E-01, xnorm =   0.308398E-01, THR =   0.149701E-03)
+  Error of red space iteration  2:        0.0012188320 (mu =       0.00, xmax =   0.166428E-01, xnorm =   0.377572E-01, THR =   0.149701E-03)
+  Error of red space iteration  3:        0.0001007613 (mu =       0.00, xmax =   0.178901E-01, xnorm =   0.404201E-01, THR =   0.149701E-03)
+Newton equations converged in  3 iterations!
+No. of matmuls in get_density:    54
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
+** Get Fock matrix number   3
+ The Coulomb energy contribution    26.6877568324966     
+ The Exchange energy contribution    6.79375157449500     
+ The Fock energy contribution   -19.8940052580016     
+ 0.60000 (xnorm)    0.01789    0.04042    0.00        1.2473    0.7462         1          2    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  3    -23.1279555853   -0.00072810868    0.00      0.00000    0.00    4.14E-03  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        81 sparsity:    100.000 %
+Matrix AO F  has nnz=        81 sparsity:    100.000 %
+Matrix OAO D has nnz=        81 sparsity:    100.000 %
+Matrix OAO F has nnz=        81 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  4.142047945410586E-003
+ Number of densities in queue:           2
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.183479 au
+   -E(HOMO):                     -0.212917 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.396396 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0016155365 (mu =       0.00, xmax =   0.434360E-02, xnorm =   0.904306E-02, THR =   0.414205E-04)
+  Error of red space iteration  2:        0.0004414753 (mu =       0.00, xmax =   0.597098E-02, xnorm =   0.123498E-01, THR =   0.414205E-04)
+  Error of red space iteration  3:        0.0000433396 (mu =       0.00, xmax =   0.663517E-02, xnorm =   0.137268E-01, THR =   0.414205E-04)
+  Error of red space iteration  4:        0.0000086785 (mu =       0.00, xmax =   0.666516E-02, xnorm =   0.137900E-01, THR =   0.414205E-04)
+Newton equations converged in  4 iterations!
+No. of matmuls in get_density:    62
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
+** Get Fock matrix number   4
+ The Coulomb energy contribution    26.6859469366765     
+ The Exchange energy contribution    6.79362580061549     
+ The Fock energy contribution   -19.8923211360610     
+ 0.60000 (xnorm)    0.00667    0.01379    0.00        1.0366    0.9810         2          3    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  4    -23.1280127141   -0.00005712876    0.00      0.00000    0.00    3.43E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        81 sparsity:    100.000 %
+Matrix AO F  has nnz=        81 sparsity:    100.000 %
+Matrix OAO D has nnz=        81 sparsity:    100.000 %
+Matrix OAO F has nnz=        81 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  3.434690563094156E-004
+ Number of densities in queue:           3
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.183651 au
+   -E(HOMO):                     -0.213099 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.396750 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0001090182 (mu =       0.00, xmax =   0.268415E-03, xnorm =   0.687569E-03, THR =   0.343469E-06)
+  Error of red space iteration  2:        0.0000363876 (mu =       0.00, xmax =   0.343700E-03, xnorm =   0.836310E-03, THR =   0.343469E-06)
+  Error of red space iteration  3:        0.0000120821 (mu =       0.00, xmax =   0.390319E-03, xnorm =   0.914725E-03, THR =   0.343469E-06)
+  Error of red space iteration  4:        0.0000019688 (mu =       0.00, xmax =   0.404571E-03, xnorm =   0.931172E-03, THR =   0.343469E-06)
+Error went down by   94.59%
+  Error of red space iteration  5:        0.0000002764 (mu =       0.00, xmax =   0.406017E-03, xnorm =   0.932189E-03, THR =   0.343469E-06)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    71
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
+** Get Fock matrix number   5
+ The Coulomb energy contribution    26.6858839621717     
+ The Exchange energy contribution    6.79361608973691     
+ The Fock energy contribution   -19.8922678724348     
+ 0.60000 (xnorm)    0.00041    0.00093    0.00        1.1426    0.8235         3          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  5    -23.1280130476   -0.00000033348    0.00      0.00000    0.00    6.67E-05  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        81 sparsity:    100.000 %
+Matrix AO F  has nnz=        81 sparsity:    100.000 %
+Matrix OAO D has nnz=        81 sparsity:    100.000 %
+Matrix OAO F has nnz=        81 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  6.674555850832451E-005
+ Number of densities in queue:           4
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.183653 au
+   -E(HOMO):                     -0.213096 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.396749 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0000228933 (mu =       0.00, xmax =   0.563333E-04, xnorm =   0.145838E-03, THR =   0.667456E-07)
+  Error of red space iteration  2:        0.0000046968 (mu =       0.00, xmax =   0.704749E-04, xnorm =   0.187711E-03, THR =   0.667456E-07)
+  Error of red space iteration  3:        0.0000009917 (mu =       0.00, xmax =   0.749135E-04, xnorm =   0.199364E-03, THR =   0.667456E-07)
+  Error of red space iteration  4:        0.0000003583 (mu =       0.00, xmax =   0.751356E-04, xnorm =   0.200007E-03, THR =   0.667456E-07)
+Error went down by   92.37%
+  Error of red space iteration  5:        0.0000000786 (mu =       0.00, xmax =   0.752663E-04, xnorm =   0.200176E-03, THR =   0.667456E-07)
+  Error of red space iteration  6:        0.0000000079 (mu =       0.00, xmax =   0.752942E-04, xnorm =   0.200194E-03, THR =   0.667456E-07)
+Newton equations converged in  6 iterations!
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
+** Get Fock matrix number   6
+ The Coulomb energy contribution    26.6858552778258     
+ The Exchange energy contribution    6.79360319511392     
+ The Fock energy contribution   -19.8922520827119     
+ 0.60000 (xnorm)    0.00008    0.00020    0.00        1.0397    0.9686         4          5    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  6    -23.1280130613   -0.00000001371    0.00      0.00000    0.00    7.62E-06  ###
+SCF converged in      6 iterations
+ >>>  CPU Time used in **ITER is   0.81 seconds
+ >>> wall Time used in **ITER is   0.81 seconds
+ 
+Total no. of matmuls in SCF optimization:        429
+ 
+ Number of occupied orbitals:           6
+ Number of virtual orbitals:           3
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+Calculation of occupied orbital energies converged in     6 iterations!
+ 
+Calculation of virtual orbital energies converged in     3 iterations!
+ 
+    E(LUMO):                         0.183650 au
+   -E(HOMO):                        -0.213092 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.396742 au
+ 
+ 
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.01196785259    0.0000    0.0000    0.0000000
+  3   -0.00072810868    0.0000    0.0000    0.0000000
+  4   -0.00005712876    0.0000    0.0000    0.0000000
+  5   -0.00000033348    0.0000    0.0000    0.0000000
+  6   -0.00000001371    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 OAO Gradient norm
+======================================================================
+    1           -23.11525962407785783626      0.795359477206926D-01
+    2           -23.12722747666460776372      0.149700583781450D-01
+    3           -23.12795558534251227911      0.414204794541059D-02
+    4           -23.12801271409897907461      0.343469056309416D-03
+    5           -23.12801304758189502309      0.667455585083245D-04
+    6           -23.12801306129097156372      0.762355448371988D-05
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                       -23.128013061291
+      Nuclear repulsion:                      12.482583833138
+      Electronic energy:                     -35.610596894429
+ 
+ Level 2 minimization done! Starting Level 3 minimization...
+ Level 3 is the final level of the TRILEVEL algorithm 
+ and is the standard calculation using the TRILEVEL starting guess
+ obtained from Level 2.
+ 
+  %LOC%   
+  %LOC%   ********************************************
+  %LOC%   *       LEVEL 2 ORBITAL LOCALIZATION       *
+  %LOC%   ********************************************
+  %LOC%   
+  %LOC%  
+  %LOC% *******  LOCALIZE     3 CORE ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  0.67 mu =  0.0E+00 grd =  1.9E-02 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:             1.4
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  0.67 mu =  0.0E+00 grd =  7.6E-08 it =  3 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+  %LOC%  
+  %LOC% *******  LOCALIZE     3 VALENCE ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  2.37 mu =  0.0E+00 grd =  1.1E+01 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:            85.0
+Linesearch  :   1 Diff. in function value:            -0.4
+Linesearch  :   2 Diff. in function value:             1.5
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  2.37 mu =  0.0E+00 grd =  2.1E-02 it =  4 trust-region =  0.50 step = 0.09
+Linesearch  :   0 Original function value:            84.6
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  3 sigma_2 =  2.37 mu =  0.0E+00 grd =  3.2E-05 it =  3 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+  %LOC%  
+  %LOC% *******  LOCALIZE     3 VIRTUAL ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  3.43 mu =  0.0E+00 grd =  4.2E+01 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:           405.0
+Linesearch  :   1 Diff. in function value:            -0.7
+Linesearch  :   2 Diff. in function value:             2.9
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  3.41 mu =  0.0E+00 grd =  1.4E-01 it =  4 trust-region =  0.50 step = 0.06
+Linesearch  :   0 Original function value:           404.3
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  3 sigma_2 =  3.41 mu =  0.0E+00 grd =  9.3E-05 it =  3 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+ 
+  %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    0.67    2
+  %LOC%   Max. sigma_4 and orb.number:    0.95    2
+  %LOC%   Min. sigma_2 and orb.number:    0.67    1
+  %LOC%   Min. sigma_4 and orb.number:    0.93    3
+ 
+ 
+  %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    2.37    6
+  %LOC%   Max. sigma_4 and orb.number:    3.16    6
+  %LOC%   Min. sigma_2 and orb.number:    2.24    4
+  %LOC%   Min. sigma_4 and orb.number:    3.01    4
+ 
+ 
+  %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    3.41    9
+  %LOC%   Max. sigma_4 and orb.number:    4.15    8
+  %LOC%   Min. sigma_2 and orb.number:    3.40    7
+  %LOC%   Min. sigma_4 and orb.number:    4.08    7
+ 
+ >>>  CPU Time used in Orbital Localization is   2.22 seconds
+ >>> wall Time used in Orbital Localization is   2.22 seconds
+ 
+ Number of electrons  in molecule =           12
+ Number of occ. orb.  in molecule =            6
+ Number of virt. orb. in molecule =           12
+ 
+ 
+ OCCUPIED: (Orbital index, MOS) =            6   2.37264731477753     
+ VIRTUAL : (Orbital index, MOS) =           10   3.42785119451608     
+ 
+ 
+ 
+Max no. of matrices allocated in Level 2 / get_initial_dens:         40
+ Preparing to do S^1/2 decomposition...
+Matrix S     has nnz=       175 sparsity:     54.321 %
+Matrix AO D  has nnz=        81 sparsity:     25.000 %
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  3.464101615137754E-006
+ The Coulomb energy contribution    25.6642947116286     
+ The Exchange energy contribution    6.27889352389400     
+ The Fock energy contribution   -19.3854011877345     
+  Iteration 0 energy:  -23.0459587306580     
+ The Coulomb energy contribution    26.6162226418013     
+ The Coulomb energy contribution    26.6858552778258     
+ The Exchange energy contribution    6.76094429382516     
+ The Exchange energy contribution    6.79360319511392     
+ The Fock energy contribution   -19.8552783479761     
+ The Fock energy contribution   -19.8922520827119     
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+Atoms    -23.3555795817    0.00000000000    0.00      0.00000    0.00    1.30E-01  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1    -23.1280130613    0.00000000000    0.00      0.00000    0.00    3.23E-01  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+Matrix AO D  has nnz=       324 sparsity:    100.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+Matrix AO D  has nnz=        81 sparsity:     25.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+ OAO gradnorm  0.323437678238767     
+ Number of densities in queue:           1
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.050707 au
+   -E(HOMO):                     -0.213092 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.263800 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.1148846577 (mu =       0.00, xmax =   0.199980E+00, xnorm =   0.529306E+00, THR =   0.323438E-02)
+  Error of red space iteration  2:        0.0756752440 (mu =       0.00, xmax =   0.274500E+00, xnorm =   0.744910E+00, THR =   0.323438E-02)
+  Error of red space iteration  3:        0.0285823720 (mu =       0.00, xmax =   0.377315E+00, xnorm =   0.105958E+01, THR =   0.323438E-02)
+  Error of red space iteration  4:        0.0108268598 (mu =       0.00, xmax =   0.409811E+00, xnorm =   0.115923E+01, THR =   0.323438E-02)
+Error went down by   85.69%
+ Solution vector too large, increase level shift
+ Current level shift is  0.000000000000000E+000
+ New level shift set to: -0.500000000000000     
+  Error of red space iteration  5:        0.2459961375 (mu =      -0.50, xmax =   0.235977E+00, xnorm =   0.670040E+00, THR =   0.323438E-02)
+  Error of red space iteration  6:        0.0486404221 (mu =      -0.50, xmax =   0.148554E+00, xnorm =   0.392291E+00, THR =   0.323438E-02)
+  Error of red space iteration  7:        0.0072419395 (mu =      -0.50, xmax =   0.129274E+00, xnorm =   0.340823E+00, THR =   0.323438E-02)
+Error went down by   97.06%
+  Error of red space iteration  8:        0.0011191126 (mu =      -0.50, xmax =   0.128459E+00, xnorm =   0.338838E+00, THR =   0.323438E-02)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   107
+** Get Fock matrix number   2
+ The Coulomb energy contribution    26.5276144247853     
+ The Exchange energy contribution    6.73877298939628     
+ The Fock energy contribution   -19.7888414353890     
+ 0.60000 (xnorm)    0.12846    0.33884    0.50        1.0166    0.9255         1          1    %%%
+ Trust radius based on max norm!
+ % Too large difference between trust-radius and actual step. Reduce trust-radiu
+ s
+ % h(old), h(new):  0.600000000000000       0.420000000000000     
+  2    -23.2903001794   -0.16228711809    0.00      0.00000    0.50    1.74E-01  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       324 sparsity:    100.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  0.173736726588383     
+ Number of densities in queue:           2
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.053177 au
+   -E(HOMO):                     -0.259080 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.312256 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0752123065 (mu =       0.00, xmax =   0.118252E+00, xnorm =   0.319810E+00, THR =   0.173737E-02)
+  Error of red space iteration  2:        0.0360599667 (mu =       0.00, xmax =   0.181555E+00, xnorm =   0.520134E+00, THR =   0.173737E-02)
+  Error of red space iteration  3:        0.0143745077 (mu =       0.00, xmax =   0.220267E+00, xnorm =   0.642528E+00, THR =   0.173737E-02)
+  Error of red space iteration  4:        0.0053459630 (mu =       0.00, xmax =   0.231597E+00, xnorm =   0.679797E+00, THR =   0.173737E-02)
+Error went down by   85.17%
+  Error of red space iteration  5:        0.0012262353 (mu =       0.00, xmax =   0.234642E+00, xnorm =   0.689860E+00, THR =   0.173737E-02)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    79
+ >>>  CPU Time used in SCF iteration is   0.92 seconds
+ >>> wall Time used in SCF iteration is   0.93 seconds
+** Get Fock matrix number   3
+ The Coulomb energy contribution    26.2978406566821     
+ The Exchange energy contribution    6.65112916327487     
+ The Fock energy contribution   -19.6467114934072     
+ 0.42000 (xnorm)    0.23464    0.68986    0.00        0.9272    0.9546         2          2    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.420000000000000       0.504000000000000     
+  3    -23.3871635499   -0.09686337049    0.00      0.00000    0.00    4.38E-02  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       324 sparsity:    100.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  4.376265776075322E-002
+ Number of densities in queue:           3
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.063259 au
+   -E(HOMO):                     -0.291200 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.354459 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0069671581 (mu =       0.00, xmax =   0.172041E-01, xnorm =   0.576414E-01, THR =   0.437627E-03)
+  Error of red space iteration  2:        0.0042007076 (mu =       0.00, xmax =   0.190043E-01, xnorm =   0.636792E-01, THR =   0.437627E-03)
+  Error of red space iteration  3:        0.0018297782 (mu =       0.00, xmax =   0.210889E-01, xnorm =   0.705705E-01, THR =   0.437627E-03)
+  Error of red space iteration  4:        0.0008175220 (mu =       0.00, xmax =   0.216077E-01, xnorm =   0.737051E-01, THR =   0.437627E-03)
+Error went down by   80.54%
+  Error of red space iteration  5:        0.0002750986 (mu =       0.00, xmax =   0.217699E-01, xnorm =   0.747117E-01, THR =   0.437627E-03)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    75
+ >>>  CPU Time used in SCF iteration is   0.92 seconds
+ >>> wall Time used in SCF iteration is   0.93 seconds
+** Get Fock matrix number   4
+ The Coulomb energy contribution    26.4133952516788     
+ The Exchange energy contribution    6.69217683056531     
+ The Fock energy contribution   -19.7212184211135     
+ 0.50400 (xnorm)    0.02177    0.07471    0.00        1.0918    0.6541         3          3    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  4    -23.3902450915   -0.00308154160    0.00      0.00000    0.00    7.95E-03  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       324 sparsity:    100.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  7.948999909404463E-003
+ Number of densities in queue:           4
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.063526 au
+   -E(HOMO):                     -0.284605 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.348131 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0032814569 (mu =       0.00, xmax =   0.407341E-02, xnorm =   0.145101E-01, THR =   0.794900E-04)
+  Error of red space iteration  2:        0.0013616322 (mu =       0.00, xmax =   0.614925E-02, xnorm =   0.216741E-01, THR =   0.794900E-04)
+  Error of red space iteration  3:        0.0002700003 (mu =       0.00, xmax =   0.745231E-02, xnorm =   0.259860E-01, THR =   0.794900E-04)
+  Error of red space iteration  4:        0.0000955293 (mu =       0.00, xmax =   0.752809E-02, xnorm =   0.263256E-01, THR =   0.794900E-04)
+Error went down by   92.98%
+  Error of red space iteration  5:        0.0000522504 (mu =       0.00, xmax =   0.754467E-02, xnorm =   0.263665E-01, THR =   0.794900E-04)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    73
+ >>>  CPU Time used in SCF iteration is   0.92 seconds
+ >>> wall Time used in SCF iteration is   0.93 seconds
+** Get Fock matrix number   5
+ The Coulomb energy contribution    26.4172530636974     
+ The Exchange energy contribution    6.69464799041122     
+ The Fock energy contribution   -19.7226050732862     
+ 0.60000 (xnorm)    0.00754    0.02637    0.00        1.0637    0.9644         4          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  5    -23.3904550780   -0.00020998650    0.00      0.00000    0.00    1.30E-03  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       324 sparsity:    100.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  1.299491494266203E-003
+ Number of densities in queue:           5
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.063379 au
+   -E(HOMO):                     -0.284626 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.348005 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0004884756 (mu =       0.00, xmax =   0.828339E-03, xnorm =   0.227791E-02, THR =   0.129949E-04)
+  Error of red space iteration  2:        0.0002657955 (mu =       0.00, xmax =   0.114118E-02, xnorm =   0.305512E-02, THR =   0.129949E-04)
+  Error of red space iteration  3:        0.0000638730 (mu =       0.00, xmax =   0.150415E-02, xnorm =   0.390551E-02, THR =   0.129949E-04)
+  Error of red space iteration  4:        0.0000295595 (mu =       0.00, xmax =   0.154832E-02, xnorm =   0.402185E-02, THR =   0.129949E-04)
+Error went down by   88.88%
+  Error of red space iteration  5:        0.0000111592 (mu =       0.00, xmax =   0.156337E-02, xnorm =   0.404938E-02, THR =   0.129949E-04)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    72
+ >>>  CPU Time used in SCF iteration is   0.92 seconds
+ >>> wall Time used in SCF iteration is   0.93 seconds
+** Get Fock matrix number   6
+ The Coulomb energy contribution    26.4175161947165     
+ The Exchange energy contribution    6.69498859026852     
+ The Fock energy contribution   -19.7225276044480     
+ 0.60000 (xnorm)    0.00156    0.00405    0.00        1.1724    0.8877         5          5    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  6    -23.3904605360   -0.00000545800    0.00      0.00000    0.00    3.15E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       324 sparsity:    100.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  3.146587137526387E-004
+ Number of densities in queue:           6
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.063250 au
+   -E(HOMO):                     -0.284669 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.347919 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0001404616 (mu =       0.00, xmax =   0.232869E-03, xnorm =   0.581061E-03, THR =   0.314659E-06)
+  Error of red space iteration  2:        0.0000785448 (mu =       0.00, xmax =   0.330999E-03, xnorm =   0.832913E-03, THR =   0.314659E-06)
+  Error of red space iteration  3:        0.0000180317 (mu =       0.00, xmax =   0.440974E-03, xnorm =   0.111367E-02, THR =   0.314659E-06)
+  Error of red space iteration  4:        0.0000088265 (mu =       0.00, xmax =   0.455420E-03, xnorm =   0.114820E-02, THR =   0.314659E-06)
+Error went down by   88.76%
+  Error of red space iteration  5:        0.0000040262 (mu =       0.00, xmax =   0.460217E-03, xnorm =   0.115717E-02, THR =   0.314659E-06)
+  Error of red space iteration  6:        0.0000011495 (mu =       0.00, xmax =   0.462586E-03, xnorm =   0.116064E-02, THR =   0.314659E-06)
+  Error of red space iteration  7:        0.0000004391 (mu =       0.00, xmax =   0.463178E-03, xnorm =   0.116123E-02, THR =   0.314659E-06)
+Error went down by   89.09%
+  Error of red space iteration  8:        0.0000001327 (mu =       0.00, xmax =   0.463344E-03, xnorm =   0.116137E-02, THR =   0.314659E-06)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   101
+ >>>  CPU Time used in SCF iteration is   0.91 seconds
+ >>> wall Time used in SCF iteration is   0.92 seconds
+** Get Fock matrix number   7
+ The Coulomb energy contribution    26.4172968168345     
+ The Exchange energy contribution    6.69495180283892     
+ The Fock energy contribution   -19.7223450139956     
+ 0.60000 (xnorm)    0.00046    0.00116    0.00        1.0779    0.9578         6          6    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  7    -23.3904608916   -0.00000035558    0.00      0.00000    0.00    6.68E-05  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       324 sparsity:    100.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  6.678639596750644E-005
+ Number of densities in queue:           7
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.063220 au
+   -E(HOMO):                     -0.284687 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.347907 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0000203534 (mu =       0.00, xmax =   0.262451E-04, xnorm =   0.105448E-03, THR =   0.667864E-07)
+  Error of red space iteration  2:        0.0000115323 (mu =       0.00, xmax =   0.340985E-04, xnorm =   0.131660E-03, THR =   0.667864E-07)
+  Error of red space iteration  3:        0.0000043338 (mu =       0.00, xmax =   0.455257E-04, xnorm =   0.161585E-03, THR =   0.667864E-07)
+  Error of red space iteration  4:        0.0000020478 (mu =       0.00, xmax =   0.497833E-04, xnorm =   0.169978E-03, THR =   0.667864E-07)
+Error went down by   82.24%
+  Error of red space iteration  5:        0.0000007909 (mu =       0.00, xmax =   0.518960E-04, xnorm =   0.172989E-03, THR =   0.667864E-07)
+  Error of red space iteration  6:        0.0000002760 (mu =       0.00, xmax =   0.526668E-04, xnorm =   0.173826E-03, THR =   0.667864E-07)
+  Error of red space iteration  7:        0.0000001147 (mu =       0.00, xmax =   0.528843E-04, xnorm =   0.173995E-03, THR =   0.667864E-07)
+Error went down by   85.49%
+  Error of red space iteration  8:        0.0000000403 (mu =       0.00, xmax =   0.529496E-04, xnorm =   0.174048E-03, THR =   0.667864E-07)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   101
+ >>>  CPU Time used in SCF iteration is   0.91 seconds
+ >>> wall Time used in SCF iteration is   0.91 seconds
+** Get Fock matrix number   8
+ The Coulomb energy contribution    26.4173414057696     
+ The Exchange energy contribution    6.69495863825297     
+ The Fock energy contribution   -19.7223827675166     
+ 0.60000 (xnorm)    0.00005    0.00017    0.00        1.0946    0.9210         7          7    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  8    -23.3904609019   -0.00000001037    0.00      0.00000    0.00    1.45E-05  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       324 sparsity:    100.000 %
+Matrix AO F  has nnz=       324 sparsity:    100.000 %
+Matrix OAO D has nnz=       324 sparsity:    100.000 %
+Matrix OAO F has nnz=       324 sparsity:    100.000 %
+** Get new density 
+ OAO gradnorm  1.450069167517935E-005
+ Number of densities in queue:           8
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.063224 au
+   -E(HOMO):                     -0.284683 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.347908 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:        0.0000049845 (mu =       0.00, xmax =   0.756131E-05, xnorm =   0.230348E-04, THR =   0.145007E-07)
+  Error of red space iteration  2:        0.0000028618 (mu =       0.00, xmax =   0.950566E-05, xnorm =   0.293248E-04, THR =   0.145007E-07)
+  Error of red space iteration  3:        0.0000010968 (mu =       0.00, xmax =   0.115561E-04, xnorm =   0.369967E-04, THR =   0.145007E-07)
+  Error of red space iteration  4:        0.0000004606 (mu =       0.00, xmax =   0.121067E-04, xnorm =   0.394049E-04, THR =   0.145007E-07)
+Error went down by   83.90%
+  Error of red space iteration  5:        0.0000002179 (mu =       0.00, xmax =   0.121012E-04, xnorm =   0.400463E-04, THR =   0.145007E-07)
+  Error of red space iteration  6:        0.0000000948 (mu =       0.00, xmax =   0.120747E-04, xnorm =   0.402318E-04, THR =   0.145007E-07)
+  Error of red space iteration  7:        0.0000000367 (mu =       0.00, xmax =   0.120498E-04, xnorm =   0.402890E-04, THR =   0.145007E-07)
+Error went down by   83.14%
+  Error of red space iteration  8:        0.0000000108 (mu =       0.00, xmax =   0.120476E-04, xnorm =   0.403069E-04, THR =   0.145007E-07)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   100
+ >>>  CPU Time used in SCF iteration is   0.91 seconds
+ >>> wall Time used in SCF iteration is   0.92 seconds
+** Get Fock matrix number   9
+ The Coulomb energy contribution    26.4173562088444     
+ The Exchange energy contribution    6.69496073906960     
+ The Fock energy contribution   -19.7223954697748     
+ 0.60000 (xnorm)    0.00001    0.00004    0.00        1.1193    0.9283         8          8    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  9    -23.3904609024   -0.00000000052    0.00      0.00000    0.00    2.79E-06  ###
+SCF converged in      9 iterations
+ >>>  CPU Time used in **ITER is   8.57 seconds
+ >>> wall Time used in **ITER is   8.63 seconds
+ 
+Total no. of matmuls in SCF optimization:       1815
+ 
+ Number of occupied orbitals:           6
+ Number of virtual orbitals:          12
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+Calculation of occupied orbital energies converged in     6 iterations!
+ 
+Calculation of virtual orbital energies converged in    10 iterations!
+ 
+    E(LUMO):                         0.063226 au
+   -E(HOMO):                        -0.284682 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.347908 au
+ 
+ 
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.16228711809    0.0000    0.5000    0.0000000
+  3   -0.09686337049    0.0000    0.0000    0.0000000
+  4   -0.00308154160    0.0000    0.0000    0.0000000
+  5   -0.00020998650    0.0000    0.0000    0.0000000
+  6   -0.00000545800    0.0000    0.0000    0.0000000
+  7   -0.00000035558    0.0000    0.0000    0.0000000
+  8   -0.00000001037    0.0000    0.0000    0.0000000
+  9   -0.00000000052    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 OAO Gradient norm
+======================================================================
+  Atoms         -23.35557958168874392868      0.130379222176015D+00
+    1           -23.12801306129097866915      0.323437678238767D+00
+    2           -23.29030017938286789558      0.173736726588383D+00
+    3           -23.38716354987001011523      0.437626577607532D-01
+    4           -23.39024509147067476533      0.794899990940446D-02
+    5           -23.39045507797292344776      0.129949149426620D-02
+    6           -23.39046053597553509462      0.314658713752639D-03
+    7           -23.39046089155315399921      0.667863959675064D-04
+    8           -23.39046090192297810972      0.145006916751794D-04
+    9           -23.39046090244229247901      0.279428412664350D-05
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                       -23.390460902442
+      Nuclear repulsion:                      12.482583833138
+      Electronic energy:                     -35.873044735580
+ 
+ inside leastchange_lcm
+  %LOC%   
+  %LOC%   ********************************************
+  %LOC%   *       LEVEL 3 ORBITAL LOCALIZATION       *
+  %LOC%   ********************************************
+  %LOC%   
+  %LOC%  
+  %LOC% *******  LOCALIZE     3 CORE ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  0.68 mu =  0.0E+00 grd =  8.4E-03 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:             1.4
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  0.68 mu =  0.0E+00 grd =  1.2E-07 it =  3 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+  %LOC%  
+  %LOC% *******  LOCALIZE     3 VALENCE ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  2.23 mu =  0.0E+00 grd =  6.9E+00 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:            68.5
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:             0.2
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  2.24 mu =  0.0E+00 grd =  4.0E-02 it =  3 trust-region =  0.50 step = 0.03
+Linesearch  :   0 Original function value:            68.4
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  3 sigma_2 =  2.24 mu =  0.0E+00 grd =  2.6E-05 it =  3 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+  %LOC%  
+  %LOC% *******  LOCALIZE    12 VIRTUAL ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  3.47 mu =  0.0E+00 grd =  6.5E+01 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:          1440.2
+Linesearch  :   1 Diff. in function value:          -167.1
+Linesearch  :   2 Diff. in function value:          -145.7
+Linesearch  :   3 Diff. in function value:           412.3
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  3.41 mu = -1.8E+03 grd =  5.6E+01 it =  7 trust-region =  0.50 step = 1.50
+Linesearch  :   0 Original function value:          1127.4
+Linesearch  :   1 Diff. in function value:           -69.6
+Linesearch  :   2 Diff. in function value:            95.5
+Linesearch done, we choose previous point 
+  %LOC%  3 sigma_2 =  3.41 mu = -7.9E+02 grd =  1.6E+01 it =  8 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          1057.8
+Linesearch  :   1 Diff. in function value:           -43.4
+Linesearch  :   2 Diff. in function value:           -32.4
+Linesearch  :   3 Diff. in function value:           269.6
+Linesearch done, we choose previous point 
+  %LOC%  4 sigma_2 =  3.24 mu = -5.6E+02 grd =  2.2E+01 it =  9 trust-region =  0.50 step = 1.50
+Linesearch  :   0 Original function value:           981.9
+Linesearch  :   1 Diff. in function value:           -37.3
+Linesearch  :   2 Diff. in function value:            21.0
+Linesearch done, we choose previous point 
+  %LOC%  5 sigma_2 =  3.16 mu = -2.9E+02 grd =  9.4E+00 it =  9 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:           944.6
+Linesearch  :   1 Diff. in function value:           -20.3
+Linesearch  :   2 Diff. in function value:            15.8
+Linesearch done, we choose previous point 
+  %LOC%  6 sigma_2 =  3.09 mu = -1.8E+02 grd =  5.1E+00 it =  9 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:           924.3
+Linesearch  :   1 Diff. in function value:           -10.1
+Linesearch  :   2 Diff. in function value:            13.0
+Linesearch done, we choose previous point 
+  %LOC%  7 sigma_2 =  3.08 mu = -6.6E+01 grd =  1.9E+00 it =  9 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:           914.2
+Linesearch  :   1 Diff. in function value:            -1.7
+Linesearch  :   2 Diff. in function value:             6.6
+Linesearch done, we choose previous point 
+  %LOC%  8 sigma_2 =  3.07 mu =  0.0E+00 grd =  2.5E-01 it = 11 trust-region =  0.50 step = 0.67
+Linesearch  :   0 Original function value:           912.6
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  9 sigma_2 =  3.06 mu =  0.0E+00 grd =  3.6E-03 it = 14 trust-region =  0.50 step = 0.05
+Linesearch  :   0 Original function value:           912.6
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC% 10 sigma_2 =  3.06 mu =  0.0E+00 grd =  1.1E-05 it = 13 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+ 
+  %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    0.68    3
+  %LOC%   Max. sigma_4 and orb.number:    0.94    3
+  %LOC%   Min. sigma_2 and orb.number:    0.67    1
+  %LOC%   Min. sigma_4 and orb.number:    0.93    1
+ 
+ 
+  %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    2.24    5
+  %LOC%   Max. sigma_4 and orb.number:    3.01    5
+  %LOC%   Min. sigma_2 and orb.number:    2.15    4
+  %LOC%   Min. sigma_4 and orb.number:    2.84    6
+ 
+ 
+  %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    3.06    9
+  %LOC%   Max. sigma_4 and orb.number:    3.87   18
+  %LOC%   Min. sigma_2 and orb.number:    2.73   13
+  %LOC%   Min. sigma_4 and orb.number:    3.54   12
+ 
+ >>>  CPU Time used in Orbital Localization is   5.89 seconds
+ >>> wall Time used in Orbital Localization is   5.93 seconds
+  %LOC%
+  %LOC% Localized orbitals written to lcm_orbitals.u
+  %LOC%
+ 
+
+-- Full molecular info --
+
+FULL: Overall charge of molecule :      0
+
+FULL: Number of electrons        :     12
+FULL: Number of atoms            :      6
+FULL: Number of basis func.      :     18
+FULL: Number of aux. basis func. :    210
+FULL: Number of core orbitals    :      3
+FULL: Number of valence orbitals :      3
+FULL: Number of occ. orbitals    :      6
+FULL: Number of virt. orbitals   :     12
+FULL: Local memory use type full :  0.66E-05
+FULL: Distribute matrices        :  F
+ 
+ Calculating carmom matrix for DEC calculation...
+ Memory set in input to be:    2.000     GB
+ 
+ 
+=============================================================================
+             -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
+=============================================================================
+ 
+
+DEC calculation is carried out...
+
+
+ ================================================ 
+                  DEC-CC driver                   
+ ================================================ 
+
+
+--------------------------
+   DEC input parameters   
+--------------------------
+
+FOT (Fragment Optimization Threshold)               =        0.50E-03
+Use Pair Estimates to screen pairs                  =            TRUE
+Pair distance cutoff threshold (Angstrom)           =       0.100E+04
+Use Pair Estimate initialisation radius (Angstrom)  =       0.200E+01
+Pair estimate model                                 =     RIMP2   
+Simple orbital thr.                                 =       0.500E-01
+Expansion step size                                 =               5
+Print level                                         =               0
+Fragment-adapted orbitals                           =           FALSE
+Fit Molecular Orbitals                              =            TRUE
+The Integral Screening threshold                    =             1.0000E-10
+ 
+DEC orbitals will be generated using  simple Lowdin charge analysis
+Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis
+ 
+The wave function Model used for Atomic Fragment expansion scheme = RIMP2   
+Wave function Model used for Atomic Fragment reduction scheme = RIMP2   
+ 
+
+--------------------------
+  Coupled-cluster input   
+--------------------------
+
+Wave function                =           RIMP2   
+Maximum number of iterations =             100
+Convergence threshold        =       0.500E-05
+Use CROP                     =            TRUE
+CROP subspace                =               3
+Use Preconditioner           =            TRUE
+Precond. B                   =            TRUE
+Debug mode                   =           FALSE
+CC Solver distributes Memory =           FALSE
+Memory Usage Allowed(GB)     =            2.00
+Backup Time Interval(s)      =          300.00
+Use F12 correction           =           FALSE
+ 
+ Generating DEC orbitals using simple Lowdin charge analysis
+ 
+ 
+ Simple Lowdin-based orbital assignment: Summary
+ -----------------------------------------------
+ 
+ 
+ ORBITAL DISTRIBUTION INFORMATION
+ ********************************
+ 
+ --- using frozen core approximation, only valence orbitals are printed
+ 
+    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Sec
+ ondary
+     1    Li           1                4                1                4
+     2    Li           1                4                1                4
+     3    Li           1                4                1                4
+     4    H            0                0                0                0
+     5    H            0                0                0                0
+     6    H            0                0                0                0
+ Total:                3               12
+ 
+ 
+ 
+ ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
+ **********************************************************************
+ 
+ Maximum occ orbital extent (#AOs) =      9   -- Orbital index     4
+ Maximum virt orbital extent (#AOs) =      7   -- Orbital index     4
+ Average occ orbital extent (#AOs)  =       6.5000
+ Average virt orbital extent (#AOs) =       6.0833
+ 
+ 
+ >>>  CPU Time used in DEC INIT is   0.00 seconds
+ >>> wall Time used in DEC INIT is   0.00 seconds
+ 
+ 
+ ******************************************************************
+        ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       
+ ******************************************************************
+ 
+ JobNumber  AtomType  AtomIndex  SizeMeasure
+      1       Li         2         324
+      2       Li         1         216
+      3       Li         3         216
+      4       H          4           0
+      5       H          5           0
+      6       H          6           0
+ 
+ 
+ 
+ 
+ *** Initiating optimization of atomic fragments ***
+ 
+ 
+ FOP Occ Radius for initial fragment:  3.78
+ FOP Virt Radius for initial fragment:  3.78
+ FOP Occ Radius for initial fragment:  3.78
+ FOP Virt Radius for initial fragment:  3.78
+ FOP Occ Radius for initial fragment:  3.78
+ FOP Virt Radius for initial fragment:  3.78
+ Preparing job list...
+ 
+ 
+ 
+ *******************************************************************************
+              Atomic fragments listed according to total size
+ *******************************************************************************
+    Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
+      1      1      4     12     0.00    /  2.13       0.00    /  2.38              FRAG_SIZE
+      2      1      4     11     0.00    /  2.13       0.00    /  2.13              FRAG_SIZE
+      3      1      4      6     0.00    /  1.06       0.00    /  1.06              FRAG_SIZE
+ 
+ FRAGANALYSIS: Max/Ave/Min occ         :        1       /     1.0000    /       1
+ FRAGANALYSIS: Max/Ave/Min virt        :        4       /     4.0000    /       4
+ FRAGANALYSIS: Max/Ave/Min basis       :       12       /     9.6667    /       6
+ FRAGANALYSIS: Max/Ave/Min Radius AOS  :      0.0000    /     0.0000    /     0.0000    
+ FRAGANALYSIS: Max/Ave/Min Radius AE   :      2.1332    /     1.7749    /     1.0584    
+ FRAGANALYSIS: Max/Ave/Min Diameter AOS:      0.0000    /     0.0000    /     0.0000    
+ FRAGANALYSIS: Max/Ave/Min Diameter AE :      2.3813    /     1.8576    /     1.0584    
+ 
+ 
+ 
+ *****************************************************
+ *      DEC ESTIMATED FRAGMENT JOB LIST              *
+ *****************************************************
+ Number of jobs =            3
+ 
+ JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
+        1                288              1       3        2        8       18
+        2                272              2       3        2        8       17
+        3                192              1       2        2        8       12
+ 
+ 
+ DEC JOB SUMMARY: Number of single jobs =          3
+ DEC JOB SUMMARY: Number of pair jobs   =          3
+ DEC JOB SUMMARY: Total number of jobs  =          3
+ 
+ 
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   2
+ FOP ===============================================
+ FOP
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.18 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.49 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.49 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.66 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.67 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.66 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.67 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.01 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.01 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.01 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.01 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.01 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.01 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.02 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.02 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.69 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.70 seconds
+ FOP Expansion Include Full Molecule !!!
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   0
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :  12
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0114487829
+ FOP Loop: Virtual Fragment energy          :   -0.0071786784
+ FOP Loop: Lagrangian Fragment energy       :   -0.0114487829
+ FOP=========================================================
+ FOP
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.56 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.57 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.56 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.57 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.57 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.58 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  17
+ FOP Loop: Occupied Fragment energy         :   -0.0110185134
+ FOP Loop: Virtual Fragment energy          :   -0.0069118056
+ FOP Loop: Lagrangian Fragment energy       :   -0.0110185134
+ FOP Loop: Occupied energy diff             :    0.0004302695
+ FOP Loop: Virtual energy diff              :    0.0002668728
+ FOP Loop: Lagrangian energy diff           :    0.0004302695
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000430269
+ FOP: Occupied energy converged, energydiff   =   0.000430269
+ FOP: Virtual energy converged, energydiff    =   0.000266873
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.27 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.28 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :   6
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  12
+ FOP Loop: Occupied Fragment energy         :   -0.0094076804
+ FOP Loop: Virtual Fragment energy          :   -0.0058496969
+ FOP Loop: Lagrangian Fragment energy       :   -0.0094076804
+ FOP Loop: Occupied energy diff             :    0.0020411025
+ FOP Loop: Virtual energy diff              :    0.0013289815
+ FOP Loop: Lagrangian energy diff           :    0.0020411025
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy NOT converged
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.27 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.27 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :   7
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  12
+ FOP Loop: Occupied Fragment energy         :   -0.0098419310
+ FOP Loop: Virtual Fragment energy          :   -0.0058801791
+ FOP Loop: Lagrangian Fragment energy       :   -0.0098419310
+ FOP Loop: Occupied energy diff             :    0.0016068519
+ FOP Loop: Virtual energy diff              :    0.0012984993
+ FOP Loop: Lagrangian energy diff           :    0.0016068519
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy NOT converged
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
+ FOP
+
+ FOP=========================================================
+ FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   2
+ FOP---------------------------------------------------------
+ FOP Done: Fragment number                  :   2
+ FOP Done: Number of orbitals in virt total :   8
+ FOP Done: Number of orbitals in occ total  :   2
+ FOP Done: Number of basis functions        :  17
+ FOP Done: Occupied Fragment energy         :   -0.0110185134
+ FOP Done: Virtual Fragment energy          :   -0.0069118056
+ FOP Done: Lagrangian Fragment energy       :   -0.0110185134
+ FOP Done: Occupied reduction removed      1 of      3 orbitals ( 33.33 %)
+ FOP Done: Virtual  reduction removed      4 of     12 orbitals ( 33.33 %)
+ FOP=========================================================
+ FOP
+
+ FOP reduction: Atom,FOT,O,V,B      2     0.500E-03      2      8     17
+
+ FOP SUMMARY: Fragment,   2  converged after    0 expansion and    3 reduction steps
+
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   1
+ FOP ===============================================
+ FOP
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.49 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.49 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.66 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.67 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.66 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.67 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.01 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.01 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.01 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.01 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.01 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.01 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.02 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.02 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.69 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.69 seconds
+ FOP Expansion Include Full Molecule !!!
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   0
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :  12
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0112599736
+ FOP Loop: Virtual Fragment energy          :   -0.0119347720
+ FOP Loop: Lagrangian Fragment energy       :   -0.0112599736
+ FOP=========================================================
+ FOP
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.28 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.28 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  12
+ FOP Loop: Occupied Fragment energy         :   -0.0112260199
+ FOP Loop: Virtual Fragment energy          :   -0.0119539150
+ FOP Loop: Lagrangian Fragment energy       :   -0.0112260199
+ FOP Loop: Occupied energy diff             :    0.0000339537
+ FOP Loop: Virtual energy diff              :    0.0000191430
+ FOP Loop: Lagrangian energy diff           :    0.0000339537
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000033954
+ FOP: Occupied energy converged, energydiff   =   0.000033954
+ FOP: Virtual energy converged, energydiff    =   0.000019143
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.19 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.28 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.27 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.28 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :   6
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  12
+ FOP Loop: Occupied Fragment energy         :   -0.0107357922
+ FOP Loop: Virtual Fragment energy          :   -0.0118817524
+ FOP Loop: Lagrangian Fragment energy       :   -0.0107357922
+ FOP Loop: Occupied energy diff             :    0.0005241814
+ FOP Loop: Virtual energy diff              :    0.0000530196
+ FOP Loop: Lagrangian energy diff           :    0.0005241814
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy converged, energydiff    =   0.000053020
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.27 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.27 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :   7
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  12
+ FOP Loop: Occupied Fragment energy         :   -0.0111801616
+ FOP Loop: Virtual Fragment energy          :   -0.0119044233
+ FOP Loop: Lagrangian Fragment energy       :   -0.0111801616
+ FOP Loop: Occupied energy diff             :    0.0000798120
+ FOP Loop: Virtual energy diff              :    0.0000303487
+ FOP Loop: Lagrangian energy diff           :    0.0000798120
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000079812
+ FOP: Occupied energy converged, energydiff   =   0.000079812
+ FOP: Virtual energy converged, energydiff    =   0.000030349
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
+ FOP
+
+ FOP=========================================================
+ FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   1
+ FOP---------------------------------------------------------
+ FOP Done: Fragment number                  :   1
+ FOP Done: Number of orbitals in virt total :   7
+ FOP Done: Number of orbitals in occ total  :   2
+ FOP Done: Number of basis functions        :  12
+ FOP Done: Occupied Fragment energy         :   -0.0111801616
+ FOP Done: Virtual Fragment energy          :   -0.0119044233
+ FOP Done: Lagrangian Fragment energy       :   -0.0111801616
+ FOP Done: Occupied reduction removed      1 of      3 orbitals ( 33.33 %)
+ FOP Done: Virtual  reduction removed      5 of     12 orbitals ( 41.67 %)
+ FOP=========================================================
+ FOP
+
+ FOP reduction: Atom,FOT,O,V,B      1     0.500E-03      2      7     12
+
+ FOP SUMMARY: Fragment,   1  converged after    0 expansion and    3 reduction steps
+
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   3
+ FOP ===============================================
+ FOP
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.48 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.49 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.65 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.66 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.65 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.66 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.01 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.01 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.01 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.01 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.01 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.01 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.02 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.02 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.68 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.68 seconds
+ FOP Expansion Include Full Molecule !!!
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   0
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :  12
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0108529935
+ FOP Loop: Virtual Fragment energy          :   -0.0102624678
+ FOP Loop: Lagrangian Fragment energy       :   -0.0108529935
+ FOP=========================================================
+ FOP
+ FOP
+ FOP =============================================
+ FOP  Expansion has converged. We start reduction 
+ FOP =============================================
+ FOP
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.48 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.48 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.65 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.66 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.65 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.66 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.66 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.66 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  18
+ FOP Loop: Occupied Fragment energy         :   -0.0108379907
+ FOP Loop: Virtual Fragment energy          :   -0.0102510573
+ FOP Loop: Lagrangian Fragment energy       :   -0.0108379907
+ FOP Loop: Occupied energy diff             :    0.0000150028
+ FOP Loop: Virtual energy diff              :    0.0000114105
+ FOP Loop: Lagrangian energy diff           :    0.0000150028
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000015003
+ FOP: Occupied energy converged, energydiff   =   0.000015003
+ FOP: Virtual energy converged, energydiff    =   0.000011410
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.14 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.44 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.56 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.59 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.56 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.59 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.56 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.59 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :   6
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  17
+ FOP Loop: Occupied Fragment energy         :   -0.0107178115
+ FOP Loop: Virtual Fragment energy          :   -0.0102108055
+ FOP Loop: Lagrangian Fragment energy       :   -0.0107178115
+ FOP Loop: Occupied energy diff             :    0.0001351820
+ FOP Loop: Virtual energy diff              :    0.0000516623
+ FOP Loop: Lagrangian energy diff           :    0.0001351820
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000135182
+ FOP: Occupied energy converged, energydiff   =   0.000135182
+ FOP: Virtual energy converged, energydiff    =   0.000051662
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.14 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.14 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.14 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.40 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.55 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.55 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.55 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.55 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.55 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.56 seconds
+ FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :   5
+ FOP Loop: Number of orbitals in occ total  :   2
+ FOP Loop: Number of basis functions        :  17
+ FOP Loop: Occupied Fragment energy         :   -0.0105803227
+ FOP Loop: Virtual Fragment energy          :   -0.0101669499
+ FOP Loop: Lagrangian Fragment energy       :   -0.0105803227
+ FOP Loop: Occupied energy diff             :    0.0002726708
+ FOP Loop: Virtual energy diff              :    0.0000955179
+ FOP Loop: Lagrangian energy diff           :    0.0002726708
+ FOP=========================================================
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000272671
+ FOP: Occupied energy converged, energydiff   =   0.000272671
+ FOP: Virtual energy converged, energydiff    =   0.000095518
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
+ FOP
+
+ FOP=========================================================
+ FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   3
+ FOP---------------------------------------------------------
+ FOP Done: Fragment number                  :   3
+ FOP Done: Number of orbitals in virt total :   5
+ FOP Done: Number of orbitals in occ total  :   2
+ FOP Done: Number of basis functions        :  17
+ FOP Done: Occupied Fragment energy         :   -0.0105803227
+ FOP Done: Virtual Fragment energy          :   -0.0101669499
+ FOP Done: Lagrangian Fragment energy       :   -0.0105803227
+ FOP Done: Occupied reduction removed      1 of      3 orbitals ( 33.33 %)
+ FOP Done: Virtual  reduction removed      7 of     12 orbitals ( 58.33 %)
+ FOP=========================================================
+ FOP
+
+ FOP reduction: Atom,FOT,O,V,B      3     0.500E-03      2      5     17
+
+ FOP SUMMARY: Fragment,   3  converged after    0 expansion and    3 reduction steps
+
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.17 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.48 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.48 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.65 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.65 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.65 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.65 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.01 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.01 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.66 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.66 seconds
+ 
+ 
+ *****************************************************************************
+ Energy summary for pair fragment:       1      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       5.2918       -0.5985033945E-05
+ Distance(Ang), pair virt energy =       5.2918       -0.2894466682E-04
+ Distance(Ang), pair lagr. occ term  =       5.2918        0.2964928569E-05
+ Distance(Ang), pair lagr. virt term =       5.2918        0.1201318410E-04
+ 
+ 
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.56 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.56 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.56 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.56 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.01 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.01 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.57 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.57 seconds
+ 
+ 
+ *****************************************************************************
+ Energy summary for pair fragment:       2      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       3.5988       -0.1144674982E-03
+ Distance(Ang), pair virt energy =       3.5988       -0.9094509282E-03
+ Distance(Ang), pair lagr. occ term  =       3.5988        0.4867360479E-04
+ Distance(Ang), pair lagr. virt term =       3.5988        0.5836547234E-03
+ 
+ 
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.01 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.27 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.28 seconds
+ 
+ 
+ *****************************************************************************
+ Energy summary for pair fragment:       1      2
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       2.1332       -0.1006433666E-02
+ Distance(Ang), pair virt energy =       2.1332       -0.4327612875E-02
+ Distance(Ang), pair lagr. occ term  =       2.1332        0.5273602405E-03
+ Distance(Ang), pair lagr. virt term =       2.1332        0.2005459536E-02
+ 
+ 
+ 
+ 
+ ******************************************************************
+ *                SUMMARY ATOMIC FRAGMENT ERROR                   *
+ ******************************************************************
+ 
+ Total number of fragments:                                               6
+ 
+ Estimated contribution beyond the fragment energy contribution:     0.7827523140E-03
+ 
+ 
+ 
+ ******************************************************************
+ *            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *
+ ******************************************************************
+ 
+ Total number of pairs:                         3
+ Number of pairs to calculate:                  1
+ Pairs to be skipped from calculation           2
+ 
+ Pairs to be treated using input FOT            1
+ 
+ Estimated pair correlation energy:            -0.1126886198E-02
+ Estimated contribution from skipped pairs:    -0.1204525322E-03
+ 
+ 
+ 
+ =================================================================
+ Estimated occupied pair energies
+ =================================================================
+ 
+  Frag1  Frag2     Dist(Ang)        Energy
+     1       2      2.1332         -0.1006433666E-02    PF_ESTIMATE
+     1       3      5.2918         -0.5985033945E-05    PF_ESTIMATE
+     2       3      3.5988         -0.1144674982E-03    PF_ESTIMATE
+ 
+ 
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   7.49 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   7.60 seconds
+ Preparing job list...
+ 
+ 
+ 
+ *******************************************************************************
+              Atomic fragments listed according to total size
+ *******************************************************************************
+    Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
+      2      2      8     17     3.60    /  3.60       5.29    /  5.40              FRAG_SIZE
+      3      2      5     17     3.60    /  5.29       3.60    /  5.40              FRAG_SIZE
+      1      2      7     12     2.13    /  2.13       2.13    /  2.38              FRAG_SIZE
+ 
+ FRAGANALYSIS: Max/Ave/Min occ         :        2       /     2.0000    /       2
+ FRAGANALYSIS: Max/Ave/Min virt        :        8       /     6.6667    /       5
+ FRAGANALYSIS: Max/Ave/Min basis       :       17       /     15.333    /      12
+ FRAGANALYSIS: Max/Ave/Min Radius AOS  :      3.5988    /     3.1103    /     2.1332    
+ FRAGANALYSIS: Max/Ave/Min Radius AE   :      5.2918    /     3.6746    /     2.1332    
+ FRAGANALYSIS: Max/Ave/Min Diameter AOS:      5.2918    /     3.6746    /     2.1332    
+ FRAGANALYSIS: Max/Ave/Min Diameter AE :      5.3966    /     4.3915    /     2.3813    
+ 
+ 
+ 
+ *****************************************************
+ *               DEC FRAGMENT JOB LIST               *
+ *****************************************************
+ Number of jobs =            4
+ 
+ JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
+        1                306              1       2        2        9       17
+        2                272              2                2        8       17
+        3                170              3                2        5       17
+        4                168              1                2        7       12
+ 
+ 
+ DEC JOB SUMMARY: Number of single jobs =          3
+ DEC JOB SUMMARY: Number of pair jobs   =          1
+ DEC JOB SUMMARY: Total number of jobs  =          4
+ 
+ 
+ 
+ *** Calculating single and pair interaction energies ***
+ 
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.56 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.56 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.56 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.56 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.01 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.01 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.30 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.30 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaOO is   0.30 seconds
+ >>> wall Time used in DECRIMP2: CalphaOO is   0.30 seconds
+ >>>  CPU Time used in RIMP2: djik is   0.30 seconds
+ >>> wall Time used in RIMP2: djik is   0.30 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.31 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.31 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.31 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.31 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaVV is   0.31 seconds
+ >>> wall Time used in DECRIMP2: CalphaVV is   0.31 seconds
+ >>>  CPU Time used in RIMP2: blad is   0.32 seconds
+ >>> wall Time used in RIMP2: blad is   0.32 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.01 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.01 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   1.19 seconds
+ >>> wall Time used in DEC-RIMP2 is   1.20 seconds
+ 
+ 
+ *****************************************************************************
+ Energy summary for pair fragment:       1      2
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       2.1332       -0.1047610096E-02
+ Distance(Ang), pair virt energy =       2.1332       -0.4312082346E-02
+ Distance(Ang), pair lagr. occ term  =       2.1332        0.5452191596E-03
+ Distance(Ang), pair lagr. virt term =       2.1332        0.1997293376E-02
+ 
+ 
+ Calculating MP2 gradient for pair fragment           1           2
+ Initiating MP2 gradient structure for pair fragment            1           2
+ Initiating MP2 density matrix...
+RIMP2: Full (alpha|cd) integral requires      0.0 GB
+RIMP2: Memory available                       2.0 GB
+RIMP2 Calpha Scheme 1: Using Allreduce on (alpha|cd) integral
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.41 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.56 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.56 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.56 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.56 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.30 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.30 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaOO is   0.30 seconds
+ >>> wall Time used in DECRIMP2: CalphaOO is   0.30 seconds
+ >>>  CPU Time used in RIMP2: djik is   0.30 seconds
+ >>> wall Time used in RIMP2: djik is   0.31 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.31 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.30 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.31 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaVV is   0.30 seconds
+ >>> wall Time used in DECRIMP2: CalphaVV is   0.31 seconds
+ >>>  CPU Time used in RIMP2: blad is   0.31 seconds
+ >>> wall Time used in RIMP2: blad is   0.31 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   1.17 seconds
+ >>> wall Time used in DEC-RIMP2 is   1.18 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.1101851339E-01
+ Single virtual  energy =    -0.6911805644E-02
+ Single Lagrangian occ term  =     0.6334195567E-02
+ Single Lagrangian virt term =     0.2768547697E-02
+ 
+ 
+ Calculating MP2 gradient for fragment           2
+ Initiating MP2 gradient structure for single fragment            2
+ Initiating MP2 density matrix...
+RIMP2: Full (alpha|cd) integral requires      0.0 GB
+RIMP2: Memory available                       2.0 GB
+RIMP2 Calpha Scheme 1: Using Allreduce on (alpha|cd) integral
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.14 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.15 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.39 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.40 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.54 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.55 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.54 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.55 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.30 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.30 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaOO is   0.30 seconds
+ >>> wall Time used in DECRIMP2: CalphaOO is   0.30 seconds
+ >>>  CPU Time used in RIMP2: djik is   0.30 seconds
+ >>> wall Time used in RIMP2: djik is   0.30 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.30 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.30 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.30 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaVV is   0.30 seconds
+ >>> wall Time used in DECRIMP2: CalphaVV is   0.30 seconds
+ >>>  CPU Time used in RIMP2: blad is   0.30 seconds
+ >>> wall Time used in RIMP2: blad is   0.30 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   1.15 seconds
+ >>> wall Time used in DEC-RIMP2 is   1.16 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       3
+ **********************************************************************
+ Single occupied energy =    -0.1058032269E-01
+ Single virtual  energy =    -0.1016694988E-01
+ Single Lagrangian occ term  =     0.6359872492E-02
+ Single Lagrangian virt term =     0.4001314281E-02
+ 
+ 
+ Calculating MP2 gradient for fragment           3
+ Initiating MP2 gradient structure for single fragment            3
+ Initiating MP2 density matrix...
+RIMP2: Full (alpha|cd) integral requires      0.0 GB
+RIMP2: Memory available                       2.0 GB
+RIMP2 Calpha Scheme 1: Using Allreduce on (alpha|cd) integral
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.08 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.08 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.08 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.09 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.18 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.27 seconds
+ >>>  CPU Time used in RIMP2: toccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: toccEOS is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: tocc is   0.00 seconds
+ >>> wall Time used in DECRIMP2: tocc is   0.00 seconds
+ >>>  CPU Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: tvirtEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: goccEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: goccEOS is   0.00 seconds
+ >>>  CPU Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>> wall Time used in RIMP2: gvirtEOS is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.12 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.12 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.12 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.12 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaOO is   0.12 seconds
+ >>> wall Time used in DECRIMP2: CalphaOO is   0.12 seconds
+ >>>  CPU Time used in RIMP2: djik is   0.12 seconds
+ >>> wall Time used in RIMP2: djik is   0.12 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.12 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.12 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.12 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.12 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaVV is   0.12 seconds
+ >>> wall Time used in DECRIMP2: CalphaVV is   0.12 seconds
+ >>>  CPU Time used in RIMP2: blad is   0.12 seconds
+ >>> wall Time used in RIMP2: blad is   0.13 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.52 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.52 seconds
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.1118016158E-01
+ Single virtual  energy =    -0.1190442332E-01
+ Single Lagrangian occ term  =     0.6810023149E-02
+ Single Lagrangian virt term =     0.4646059606E-02
+ 
+ 
+ Calculating MP2 gradient for fragment           1
+ Initiating MP2 gradient structure for single fragment            1
+ Initiating MP2 density matrix...
+RIMP2: Full (alpha|cd) integral requires      0.0 GB
+RIMP2: Memory available                       2.0 GB
+RIMP2 Calpha Scheme 1: Using Allreduce on (alpha|cd) integral
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  18.43 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  18.60 seconds
+ 
+ 
+              ===============================================
+              |   Print single and pair fragment energies   |
+              ===============================================
+ 
+ 
+ 
+ =================================================================
+ RI-MP2 occupied single energies
+ =================================================================
+ 
+ Fragment       Energy
+     1      -0.1118016158E-01    AF_RI_MP2_OCC
+     2      -0.1101851339E-01    AF_RI_MP2_OCC
+     3      -0.1058032269E-01    AF_RI_MP2_OCC
+ 
+ 
+ =================================================================
+ RI-MP2 virtual single energies
+ =================================================================
+ 
+ Fragment       Energy
+     1      -0.1190442332E-01    AF_RI_MP2_VIR
+     2      -0.6911805644E-02    AF_RI_MP2_VIR
+     3      -0.1016694988E-01    AF_RI_MP2_VIR
+ 
+ 
+ =================================================================
+ RI-MP2 Lagrangian single energies
+ =================================================================
+ 
+ Fragment       Energy
+     1      -0.1162850215E-01    AF_RI_MP2_LAG
+     2      -0.8827575772E-02    AF_RI_MP2_LAG
+     3      -0.1038608580E-01    AF_RI_MP2_LAG
+ 
+ 
+ =================================================================
+ RI-MP2 occupied pair energies
+ =================================================================
+ 
+  Frag1  Frag2     Dist(Ang)        Energy
+     1       2      2.1332         -0.1047610096E-02    PF_RI_MP2_OCC
+ 
+ 
+ =================================================================
+ RI-MP2 virtual pair energies
+ =================================================================
+ 
+  Frag1  Frag2     Dist(Ang)        Energy
+     1       2      2.1332         -0.4312082346E-02    PF_RI_MP2_VIR
+ 
+ 
+ =================================================================
+ RI-MP2 Lagrangian pair energies
+ =================================================================
+ 
+  Frag1  Frag2     Dist(Ang)        Energy
+     1       2      2.1332         -0.2817179907E-02    PF_RI_MP2_LAG
+ 
+ RI-MP2 occupied   correlation energy :    -0.3382660776E-01
+ RI-MP2 virtual    correlation energy :    -0.3329526120E-01
+ RI-MP2 Lagrangian correlation energy :    -0.3365934363E-01
+ 
+ 
+ 
+ =============================================================================
+ 
+ Starting frozen core kappabar multiplier solver for zeroth order equation...
+ 
+Frozen core kappabar multiplier equation: Conv. thr. set to    0.100000E-03
+ 
+ Starting kappabar iterations
+ -------------------------
+ ***  Iteration     Residual norm
+ ***      1         0.79461037E-02
+ ***      2         0.13351881E-03
+ ***      3         0.16098389E-05
+Zeroth order kappabar multiplier equation solved     3 iterations!
+ Residual norm:  1.609838906213883E-006
+ The Coulomb energy contribution   2.138016881488544E-004
+ The Exchange energy contribution   1.384165531210217E-003
+ The Fock energy contribution   1.170363843061362E-003
+ 
+ Starting kappabar multiplier solver for zeroth order equation...
+ 
+Virt-occ kappabar multiplier equation: Conv. thr. set to    0.100000E-03
+ 
+ Starting kappabar iterations
+ -------------------------
+ ***  Iteration     Residual norm
+ ***      1         0.29514832E-01
+ ***      2         0.94566389E-02
+ ***      3         0.21232532E-02
+ ***      4         0.53433090E-03
+ ***      5         0.13837708E-03
+ ***      6         0.36928143E-04
+Zeroth order kappabar multiplier equation solved     6 iterations!
+ Residual norm:  3.692814312327848E-005
+ 
+ Starting kappabar multiplier solver for full equation...
+ 
+Virt-occ kappabar multiplier equation: Conv. thr. set to    0.100000E-03
+ 
+ Starting kappabar iterations
+ -------------------------
+ ***  Iteration     Residual norm
+ The Coulomb energy contribution   1.442156356268054E-004
+ The Exchange energy contribution   4.686940963195914E-004
+ The Fock energy contribution   3.244784606927860E-004
+ ***      1         0.12124429E-01
+ The Coulomb energy contribution   2.513604440029498E-004
+ The Exchange energy contribution   1.247056169345876E-003
+ The Fock energy contribution   9.956957253429261E-004
+ ***      2         0.59159840E-02
+ The Coulomb energy contribution   3.838480320688204E-004
+ The Exchange energy contribution   1.340885396195753E-003
+ The Fock energy contribution   9.570373641269330E-004
+ ***      3         0.14605991E-02
+ The Coulomb energy contribution   3.336724752592839E-004
+ The Exchange energy contribution   1.393627443317197E-003
+ The Fock energy contribution   1.059954968057913E-003
+ ***      4         0.62452115E-03
+ The Coulomb energy contribution   3.507996956381906E-004
+ The Exchange energy contribution   1.423032022331956E-003
+ The Fock energy contribution   1.072232326693765E-003
+ ***      5         0.19518095E-03
+ The Coulomb energy contribution   3.512259150341001E-004
+ The Exchange energy contribution   1.428028735649001E-003
+ The Fock energy contribution   1.076802820614900E-003
+ ***      6         0.86451427E-04
+Full kappabar multiplier equation solved     6 iterations!
+ Residual norm:  8.645142734702805E-005
+ 
+ 
+ *****************************************************************
+ *                     MP2 DENSITY SANITY CHECK                  *
+ *****************************************************************
+ HF state : Number of electrons =      12.00000000    
+ MP2 state: Number of electrons =      12.00108353    
+ Number of electrons from input =          12
+ 
+ 
+ 
+ 
+     DIPOLE MOMENTS AT THE HARTREE-FOCK AND MP2 LEVELS OF THEORY 
+     =========================================================== 
+ 
+ 
+                       HF: Permanent dipole moment
+                       ---------------------------
+               au              Debye           10**-30 C m
+            1.50554           3.82670           12.7645    
+ 
+ 
+                       HF: Dipole moment components
+                       ----------------------------
+               au              Debye           10**-30 C m
+ x         0.303080          0.770355           2.56962    
+ y         -1.45192          -3.69042          -12.3099    
+ z        -0.258305         -0.656546          -2.19000    
+ 
+ 
+ 
+ 
+                       MP2: Permanent dipole moment
+                       ----------------------------
+               au              Debye           10**-30 C m
+            1.46773           3.73059           12.4439    
+ 
+ 
+                       MP2: Dipole moment components
+                       -----------------------------
+               au              Debye           10**-30 C m
+ x         0.311743          0.792373           2.64307    
+ y         -1.40298          -3.56602          -11.8949    
+ z        -0.297802         -0.756938          -2.52487    
+ 
+ 
+ 
+ Writing full molecular MP2 density to file....
+ The Coulomb energy contribution   5.777686778921132E-004
+ The Exchange energy contribution   1.936547331191750E-003
+ The Fock energy contribution   1.358778653299637E-003
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   Li       0.8114878029            0.3684245174            0.0910331306
+   Li      -0.1422899286            0.1392319516           -0.5093304411
+   Li      -0.3381433063            0.0104344459            0.2971369422
+   H        0.0821537765           -0.3177405683            0.2144550276
+   H       -0.2507408871           -0.2002407385            0.1936544052
+   H       -0.1624674573           -0.0001096081           -0.2869490645
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   Li      -0.0230126412           -0.0148423344            0.0236991954
+   Li      -0.0174095857           -0.0157269919           -0.0171452196
+   Li      -0.0011869679           -0.0007183710            0.0081464850
+   H        0.0209106872           -0.0107639603           -0.0301151956
+   H        0.0186797512            0.0413880550            0.0254813492
+   H        0.0020187563            0.0006636025           -0.0100666143
+     ********************************************************************************
+     *                 RI-MP2 MOLECULAR GRADIENT FROM DEC CALCULATION                  *
+     ********************************************************************************
+ 
+     DEC-RI-MP2 GRADIENT NORM:       0.51363543    
+     DEC-RI-MP2 GRADIENT RMS :       0.12457489    
+ 
+ 
+                         TOTAL RI-MP2 MOLECULAR GRADIENT
+                         ****************************
+ 
+    Li         -0.0002947825        0.1976683480        0.0275583322
+    Li         -0.0217233654       -0.0183012864       -0.2183651388
+    Li          0.0037045515       -0.0003971141        0.2088443226
+    H           0.0147194370       -0.2060845739       -0.0179595668
+    H           0.0020636378        0.0267408841        0.2098861885
+    H           0.0015305216        0.0003737423       -0.2099641376
+ 
+ 
+ 
+ 
+                         Individual contributions
+                         ************************
+ 
+ 
+ 
+                         Nuclear repulsion gradient
+                         --------------------------
+ 
+    Li          0.8440570651        0.7500000000        0.2804418390
+    Li         -0.3391041164        0.0658436214       -1.1478557807
+    Li         -0.3752813269        0.0056571962        0.8072275165
+    H           0.2058523921       -0.8538143899        0.0676255667
+    H          -0.2066568972        0.0305316270        0.7563586129
+    H          -0.1288671166        0.0017819453       -0.7637977544
+ 
+ 
+ 
+                        One-electron integral gradient
+                        ------------------------------
+ 
+    Li         -1.6228580052       -0.9630446315       -0.3455952167
+    Li          0.4497793342       -0.2152090723        1.4835444281
+    Li          0.7158927975       -0.0161374598       -0.9524337370
+    H          -0.2894285367        1.0217345668       -0.2854093197
+    H           0.4543025421        0.1742566428       -0.7988576282
+    H           0.2923118681       -0.0016000460        0.8987514735
+ 
+ 
+ 
+                        Reorthonormalization gradient
+                        -----------------------------
+ 
+    Li         -0.0140686854        0.0503565565       -0.0202346921
+    Li          0.0295656011        0.0051121431       -0.0201849024
+    Li          0.0018809979        0.0003397141        0.0421398142
+    H          -0.0041016825       -0.0389137471        0.0129895678
+    H          -0.0119681294       -0.0165873341        0.0266852974
+    H          -0.0013081017       -0.0003073326       -0.0413950850
+ 
+ 
+ 
+                       Two-electron integral gradient 1
+                    (Fock matrix derivative contribution)
+                    -------------------------------------
+ 
+    Li          0.7884751617        0.3535821830        0.1147323260
+    Li         -0.1596995143        0.1235049597       -0.5264756607
+    Li         -0.3393302742        0.0097160749        0.3052834272
+    H           0.1030644637       -0.3285045286        0.1843398320
+    H          -0.2320611359       -0.1588526835        0.2191357543
+    H          -0.1604487010        0.0005539944       -0.2970156788
+ 
+ 
+ 
+                       Two-electron integral gradient 2
+                             (Ltheta contribution)
+                       --------------------------------
+ 
+    Li          0.0040996814        0.0067742400       -0.0017859240
+    Li         -0.0022646700        0.0024470617       -0.0073932231
+    Li          0.0005423573        0.0000273604        0.0066273016
+    H          -0.0006671995       -0.0065864752        0.0024947864
+    H          -0.0015527420       -0.0026073681        0.0065641520
+    H          -0.0001574272       -0.0000548188       -0.0065070929
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+             **********************************************************
+             *                   DEC ENERGY SUMMARY                   *
+             **********************************************************
+ 
+               G: Hartree-Fock energy      :      -23.3904609024
+               G: Correlation energy       :       -0.0338266078
+               G: Estimated DEC err 1      :        0.0005313466
+               G: Estimated DEC err 2      :        0.0060000000
+               G: Estimated DEC err 3      :        0.0006622998
+               G: Total RIMP2 energy       :      -23.4242875102
+ 
+ 
+ >>>  CPU Time used in DEC FINAL is  11.17 seconds
+ >>> wall Time used in DEC FINAL is  11.36 seconds
+ 
+ DEC CALCULATION BOOK KEEPING
+ ============================
+ 
+ # calculations done for FOTlevel      1 is      1
+ 
+ 
+ CC Memory summary
+ -----------------
+ Allocated memory for array4   :  0.1098E-04 GB
+ Memory in use for array4      :   0.000     GB
+ Max memory in use for array4  :  0.4640E-05 GB
+ ------------------
+ Allocated memory for array3   :   0.000     GB
+ Memory in use for array3      :   0.000     GB
+ Max memory in use for array3  :   0.000     GB
+ ------------------
+ 
+
+------------------------------------------------------
+Total CPU  time used in DEC          :         37.1060     s
+Total Wall time used in DEC          :         37.5650     s
+------------------------------------------------------
+
+ 
+Job finished   : Date: 17/06/2015   Time: 15:39:18
+ 
+ 
+
+=============================================================================
+                          -- end of DEC program --
+=============================================================================
+
+ 
+ 
+ >>>  CPU Time used in *SCF is  52.47 seconds
+ >>> wall Time used in *SCF is  53.06 seconds
+ 
+Total no. of matmuls used:                      3407
+Total no. of Fock/KS matrix evaluations:          17
+Max no. of matrices allocated in Level 3:         55
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                      0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MPI):                       0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (complex):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (character):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (AOBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSAOTENSOR):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (SLSAOTENSOR):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMTYPEITEM):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMITEM):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSMATRIX):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECORBITAL):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECFRAG):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlapType):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (fragmentAOS):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (PNOSpaceInfo):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2DENS):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (TRACEBACK):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2GRAD):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lvec_data)):           0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lattice_cell)):        0 byte  - Should be zero - otherwise a leakage is present
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Additional Memory information          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                         20.518 MB
+  Max allocated memory, type(matrix)                 171.056 kB
+  Max allocated memory, real(realk)                   18.562 MB
+  Max allocated memory, MPI                            0.000 Byte
+  Max allocated memory, complex(complexk)              0.000 Byte
+  Max allocated memory, integer                      126.096 kB
+  Max allocated memory, logical                        4.032 kB
+  Max allocated memory, character                      4.352 kB
+  Max allocated memory, AOBATCH                      129.536 kB
+  Max allocated memory, DECORBITAL                     6.072 kB
+  Max allocated memory, DECFRAG                      218.208 kB
+  Max allocated memory, BATCHTOORB                     0.000 Byte
+  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
+  Max allocated memory, MYPOINTER                      0.000 Byte
+  Max allocated memory, fragmentAOS                    0.000 Byte
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, ARRAY                        852.000 kB
+  Max allocated memory, PNOSpaceInfo                   0.000 Byte
+  Max allocated memory, MP2DENS                        0.000 Byte
+  Max allocated memory, TRACEBACK                      0.000 Byte
+  Max allocated memory, MP2GRAD                        0.000 Byte
+  Max allocated memory, ODBATCH                       11.616 kB
+  Max allocated memory, LSAOTENSOR                    53.000 kB
+  Max allocated memory, SLSAOTENSOR                   32.256 kB
+  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
+  Max allocated memory, ATOMTYPEITEM                 900.224 kB
+  Max allocated memory, ATOMITEM                       7.168 kB
+  Max allocated memory, LSMATRIX                      14.720 kB
+  Max allocated memory, OverlapT                     225.792 kB
+  Max allocated memory, linkshell                      2.052 kB
+  Max allocated memory, integrand                    290.304 kB
+  Max allocated memory, integralitem                   7.465 MB
+  Max allocated memory, IntWork                      174.888 kB
+  Max allocated memory, Overlap                        4.390 MB
+  Max allocated memory, ODitem                         8.448 kB
+  Max allocated memory, LStensor                       4.642 MB
+  Max allocated memory, FMM                            0.000 Byte
+  Max allocated memory, XC                             0.000 Byte
+  Max allocated memory, Lvec_data                      0.000 Byte
+  Max allocated memory, Lattice_cell                   0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+  Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 1 The Atomic Calculation                     
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L1 mat_trans               10            0.0000            0.0000
+   L1 mat_assign              10            0.0000            0.0000
+   L1 mat_copy                 2            0.0000            0.0000
+   L1 mat_mul                 12            0.0000            0.0000
+   L1 mat_add                 14            0.0010            0.0000
+   L1 mat_daxpy               16            0.0000            0.0010
+   L1 mat_dotproduct          21            0.0000            0.0000
+   L1 mat_sqnorm2             22            0.0000            0.0000
+   L1 mat_zero                12            0.0000            0.0000
+      ==============================================================
+   L1 TOTAL MAT                             0.0010            0.0010
+      ==============================================================
+   L1     II_get_overlap       2            0.0030            0.0020
+   L1     II_get_kinetic       2            0.0010            0.0010
+   L1   II_get_nucel_mat       2            0.0040            0.0040
+   L1 II_GET_EXCHANGE_MA       4            0.0250            0.0330
+   L1 II_get_coulomb_mat       4            0.0220            0.0430
+      ==============================================================
+   L1 TOTAL INTEGRAL                        0.0550            0.0830
+      ==============================================================
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 2 The Valence Calculation                    
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L2 mat_set_from_full        8            0.0000            0.0000
+   L2 mat_to_full             10            0.0000            0.0000
+   L2 mat_trans              214            0.0000            0.0050
+   L2 mat_assign             345            0.0000            0.0000
+   L2 mat_copy                 5            0.0000            0.0000
+   L2 mat_mul                925            0.0020            0.0030
+   L2 mat_add                518            0.0010            0.0010
+   L2 mat_daxpy              828            0.0010            0.0000
+   L2 mat_dotproduct         508            0.0010            0.0020
+   L2 mat_sqnorm2            343            0.0000            0.0010
+   L2 mat_diag_f               2            0.0000            0.0000
+   L2 mat_create_block         3            0.0000            0.0000
+   L2 mat_retrieve_block       6            0.0000            0.0000
+   L2 mat_scal               212            0.0000            0.0000
+   L2 mat_zero               254            0.0020            0.0000
+   L2 mat_density_from_o       1            0.0000            0.0000
+   L2 mat_scal_dia_vec         2            0.0000            0.0000
+   L2 mat_scal_dia             8            0.0000            0.0000
+   L2 mat_dmul               563            0.0000            0.0020
+   L2 mat_hmul                54            0.0000            0.0000
+   L2 mat_dger                64            0.0000            0.0000
+   L2 mat_dsyev                1            0.0000            0.0000
+   L2 mat_dsyevx              10            0.0000            0.0010
+   L2 mat_identity            18            0.0000            0.0000
+   L2 mat_write_to_disk        5            0.0000            0.0000
+      ==============================================================
+   L2 TOTAL MAT                             0.0070            0.0120
+      ==============================================================
+   L2     II_get_overlap       2            0.0050            0.0040
+   L2     II_get_kinetic       1            0.0020            0.0020
+   L2   II_get_nucel_mat       1            0.0130            0.0130
+   L2 II_precalc_ScreenM       1            0.0470            0.0470
+   L2 II_GET_EXCHANGE_MA       7            0.4300            0.4330
+   L2 II_get_coulomb_mat       7            0.4200            0.4210
+   L2           homolumo       1            0.8550            0.8620
+      ==============================================================
+   L2 TOTAL INTEGRAL                        1.7720            1.7850
+      ==============================================================
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L3 mat_set_from_full       37            0.0000            0.0000
+   L3 mat_to_full             17            0.0000            0.0000
+   L3 mat_trans              596            0.0120            0.0180
+   L3 mat_assign            1051            0.0040            0.0020
+   L3 mat_copy                22            0.0010            0.0000
+   L3 mat_mul               2468            0.0080            0.0100
+   L3 mat_add               2079            0.0030            0.0050
+   L3 mat_daxpy             9041            0.0160            0.0160
+   L3 mat_dotproduct        3343            0.0040            0.0080
+   L3 mat_sqnorm2           1672            0.0030            0.0020
+   L3 mat_diag_f               2            0.0000            0.0000
+   L3 mat_create_block        13            0.0000            0.0000
+   L3 mat_retrieve_block       9            0.0000            0.0000
+   L3 mat_scal               670            0.0010            0.0000
+   L3 mat_zero              1580            0.0050            0.0090
+   L3 mat_density_from_o       1            0.0000            0.0000
+   L3 mat_scal_dia_vec         2            0.0000            0.0000
+   L3 mat_scal_dia            15            0.0000            0.0000
+   L3 mat_dmul              3098            0.0110            0.0060
+   L3 mat_hmul               110            0.0000            0.0000
+   L3 mat_hdiv                78            0.0000            0.0000
+   L3 mat_dger               120            0.0000            0.0000
+   L3 mat_dsyev                1            0.0000            0.0130
+   L3 mat_dsyevx              16            0.0000            0.0010
+   L3 mat_identity            35            0.0000            0.0000
+   L3 mat_write_to_disk       15            0.0020            0.0000
+      ==============================================================
+   L3 TOTAL MAT                             0.0590            0.0700
+      ==============================================================
+   L3     II_get_overlap       3            0.0140            0.0130
+   L3     II_get_kinetic       2            0.0100            0.0100
+   L3   II_get_nucel_mat       2            0.1750            0.1770
+   L3 II_GET_NN_GRADIENT       1            0.0000            0.0000
+   L3 II_precalc_ScreenM       2            0.2800            0.2860
+   L3 II_get_ne_gradient       1            0.1060            0.1070
+   L3 II_GET_KINETIC_GRA       1            0.0120            0.0130
+   L3 II_GET_REORTHONORM       1            0.0200            0.0210
+   L3  II_get_J_gradient       1            0.9480            0.9580
+   L3  II_get_K_gradient       1            2.7560            2.7840
+   L3  II_GET_K_GRADIENT       1            2.7560            2.7840
+   L3      II_get_nucpot       2            0.0000            0.0000
+   L3 II_GET_EXCHANGE_MA      18            8.8900            9.0180
+   L3 II_get_coulomb_mat      18            6.7600            6.8330
+   L3           homolumo       1            0.8870            0.9010
+      ==============================================================
+   L3 TOTAL INTEGRAL                       64.7660           65.5050
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is  56.89 seconds
+ >>> wall Time used in LSDALTON is  57.55 seconds
+
+End simulation
+     Date and time (Linux)  : Wed Jun 17 15:39:18 2015
+     Host name              : localhost.localdomain                   

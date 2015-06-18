@@ -1743,7 +1743,7 @@ contains
     call dec_simple_dgemm(m,nvirt,nvirt, tmp2%p(1:dim2), Uvirt%val, tmp1%p(1:dim1), 'n', 't')
 
 
-    ! Put amplitudes into output array in the correct order
+    ! Put amplitudes into output array in the correct order toccEOS(d,j,c,i)
     toccEOS=array4_init(dimocc)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,toccEOS%val)
 

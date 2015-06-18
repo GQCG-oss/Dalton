@@ -378,6 +378,42 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_mp2_int_and_amp
 
+  !> \brief MPI communcation of MyFragment
+  !> \author Thomas Kjaergaard
+  !> \date March 2015
+  subroutine mpi_communicate_MyFragment(MyFragment)
+    implicit none
+    !> Fragment under consideration
+    type(decfrag),intent(inout) :: MyFragment
+    !local variables
+    integer(kind=ls_mpik) :: master
+    logical :: DoBasis
+    DoBasis = .TRUE.
+    
+    call time_start_phase( PHASE_COMM )
+    master = 0
+    ! Init MPI buffer which eventually will contain all fragment info
+    ! ***************************************************************
+    ! MASTER: Prepare for writing to buffer
+    ! SLAVE: Receive buffer
+    call ls_mpiInitBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    ! Buffer handling
+    ! ***************
+    ! MASTER: Put information info buffer
+    ! SLAVE: Put buffer information into decfrag structure
+    ! Fragment information
+    call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
+
+    ! Finalize MPI buffer
+    ! *******************
+    ! MASTER: Send stuff to slaves and deallocate temp. buffers
+    ! SLAVE: Deallocate buffer etc.
+   call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    call time_start_phase( PHASE_WORK )
+  end subroutine mpi_communicate_MyFragment 
+
   !> \brief MPI communcation where the information in the decfrag type
   !> is send (for local master) or received (for local slaves).
   !> In addition, other information required for calculating F12 integrals
