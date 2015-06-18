@@ -2564,15 +2564,16 @@ module cc_response_tools_module
       type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
       !> Singles and doubles amplitudes
       type(tensor),intent(in) :: t1,t2
-      real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:),q(:)
+      real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
-      integer :: k,M,p,maxdim,i,j
+      integer :: k,M,p,maxdim,i,j,iter,maxiter
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
-      type(tensor) :: q1,zeta1,d1,q2,zeta2,d2
-      real(realk) :: tmp1,tmp2,thr,fac
+      type(tensor) :: q1,zeta1,q2,zeta2
+      real(realk) :: tmp1,tmp2,thr,fac,bTzeta,bnorm,sc
       real(realk),pointer :: res(:)
       logical,pointer :: conv(:)
+      logical :: allconv
 
 
       print *, 'Inside CCSD eigenvalue solver'
@@ -2585,14 +2586,18 @@ module cc_response_tools_module
       ! and be possible to control by input
       maxdim=200
 
+      ! KK FIXME - maximum number of iterations
+      maxiter = 1
+
       ! Notation and implementation is exactly like p. 91 of J. Comp. Phys. 17, 87 (1975), 
       ! except that we may solve for more than one eigenvalue at the same time.
+      ! Also the convergence check is different.
 
       ! How many eigenvalues k?
-      k=9
+      k=2
 
       ! Size of zero-order orthonormal subspace (M must be equal to or larger than k)
-      M=9
+      M=3
 
       ! Sanity check: Requested number of initial eigenvalues/start vectors is not
       ! larger than the maximum possible number of singles+doubles excitations.
@@ -2625,13 +2630,12 @@ module cc_response_tools_module
       ! -----------------------------------------
       call tensor_minit(q1,[nvirt,nocc],2)
       call tensor_minit(zeta1,[nvirt,nocc],2)
-      call tensor_minit(d1,[nvirt,nocc],2)
       call tensor_minit(q2,[nvirt,nocc,nvirt,nocc],4)
       call tensor_minit(zeta2,[nvirt,nocc,nvirt,nocc],4)
-      call tensor_minit(d2,[nvirt,nocc,nvirt,nocc],4)
       call mem_alloc(res,k)
       call mem_alloc(conv,k)
       conv=.false.
+      allconv=.false.
 
       ! Get start vectors and associated eigenvalues
       ! --------------------------------------------
@@ -2667,7 +2671,6 @@ module cc_response_tools_module
       !       Ar contains the same elements but with the current dimensions.
 
       call mem_alloc(Arbig,maxdim,maxdim)
-      call mem_alloc(Ar,M,M)
       Arbig=0.0_realk
       do j=1,M
          do i=j,M
@@ -2676,94 +2679,219 @@ module cc_response_tools_module
             ! and it therefore becomes a sum of dot products of the singles
             ! and doubles components
             Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
-            Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
-            Ar(i,j) = Arbig(i,j)
-            Ar(j,i) = Arbig(j,i)
-
+            if(i/=j) Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
          end do
-         tmp1=tensor_ddot(b1(j),b1(j)); print *,   'b1b1  ',j,tmp1 
-         tmp1=tensor_ddot(b2(j),b2(j)); print *,   'b2b2  ',j,tmp1 
-         tmp1=tensor_ddot(Ab1(j),Ab1(j)); print *, 'Ab1Ab1',j,tmp1 
-         tmp1=tensor_ddot(Ab2(j),Ab2(j)); print *, 'Ab1Ab1',j,tmp1 
       end do
 
-      do j=1,M
+
+
+      ! ***************************************************************************************
+      ! *                                MAIN SOLVER ITERATIONS                               *
+      ! ***************************************************************************************
+
+
+      SolverLoop: do iter=1,maxiter
+
+         ! Copy elements of reduced Jacobian into array having the proper dimensions
+         call mem_alloc(Ar,M,M)
+
+         do j=1,M
+            do i=1,M
+               Ar(i,j) = Arbig(i,j)
+            end do
+         end do
+         do j=1,M
+            do i=1,M
+               print *, 'Jacobian red',i,j,Ar(i,j)            
+            end do
+         end do
+
+
+         ! Diagonalize reduced matrix Ar 
+         ! -----------------------------
+         ! A alphaR = lambda alphaR
+         ! alphaL A = alphaL lambda
+         ! (lambda is a diagonal matrix with eigenvalues on the diagonal)
+         call mem_alloc(alphaR,M,M)
+         call mem_alloc(alphaL,M,M)
+         call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambda,alphaR,alphaL)
+         call mem_dealloc(Ar)
          do i=1,M
-            print *, 'Jacobian red',i,j,Ar(i,j)            
-         end do
-      end do
-
-
-     
-      ! KKHACK - is this the proper place to start the general loop???
-
-
-      ! Diagonalize reduced matrix Arbig 
-      ! --------------------------------
-      ! A alphaR = lambda alphaR
-      ! alphaL A = alphaL lambda
-      ! (lambda is a diagonal matrix with eigenvalues on the diagonal)
-      call mem_alloc(alphaR,M,M)
-      call mem_alloc(alphaL,M,M)
-      call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambda,alphaR,alphaL)
-      do i=1,M
-         print *, 'Eival nonsymm ',i,lambda(i)
-      end do
-
-
-
-
-      ! Residual and convergence check for the p eigenvalues
-      ! ----------------------------------------------------
-      ! Note. Here we check for k residuals (p=1,k), while in J. Comp. Phys. 17, 87 (1975)
-      ! only the k'th eigenvalue is considered.
-      do p=1,k
-         
-         ! Two components: singles (q1) and doubles (q2)
-         call tensor_zero(q1)
-         call tensor_zero(q2)
-         do i=1,M
-            call tensor_add(q1,alphaR(i,p),Ab1(i))
-            fac = - alphaR(i,p)*lambda(p)
-            call tensor_add(q1,fac,b1(i))
-
-            call tensor_add(q2,alphaR(i,p),Ab2(i))
-            fac = - alphaR(i,p)*lambda(p)
-            call tensor_add(q2,fac,b2(i))
+            print *, 'Eival nonsymm ',i,lambda(i)
          end do
 
-         ! Residual norm
-         res(p) = tensor_ddot(q1,q1) + tensor_ddot(q2,q2)
-         res(p) = sqrt(res(p))
-
-         ! Check for convergence
-         conv(p) = (res(p)<thr) 
-         print '(1X,a,i6,2g18.8,L2)', '###',p,lambda(p),res(p),conv(p)
-
-      end do
 
 
 
+         ! Residual and convergence check for the p eigenvalues
+         ! ----------------------------------------------------
+         ! Note. Here we check for k residuals (p=1,k), while in J. Comp. Phys. 17, 87 (1975)
+         ! only the k'th eigenvalue is considered.
+         do p=1,k
 
-      ! Calculate residual
+            ! Two components: singles (q1) and doubles (q2)
+            call tensor_zero(q1)
+            call tensor_zero(q2)
+            do i=1,M
+               call tensor_add(q1,alphaR(i,p),Ab1(i))
+               fac = - alphaR(i,p)*lambda(p)
+               call tensor_add(q1,fac,b1(i))
+
+               call tensor_add(q2,alphaR(i,p),Ab2(i))
+               fac = - alphaR(i,p)*lambda(p)
+               call tensor_add(q2,fac,b2(i))
+            end do
+
+            ! Residual norm
+            res(p) = tensor_ddot(q1,q1) + tensor_ddot(q2,q2)
+            res(p) = sqrt(res(p))
+
+            ! Check for convergence
+            conv(p) = (res(p)<thr) 
+            print '(1X,a,i6,2g18.8,L2)', '###',p,lambda(p),res(p),conv(p)
+
+         end do
+         call mem_dealloc(alphaR)
+         call mem_dealloc(alphaL)
 
 
-      ! Place this the proper place...
-      call mem_dealloc(alphaR)
-      call mem_dealloc(alphaL)
+         ! Are all eigenvalues converged?
+         allconv = all(conv)
+         if(allconv) then
+            exit SolverLoop
+         end if
+
+         ! Sanity check for dimensions
+         if(M+p > maxdim) then
+            call lsquit('ccsd_eigenvalue_solver: M+p too large! Not possible to extend subspace!',-1)
+         end if
+
+         ! Loop over excitation energies
+         ! -----------------------------
+         do p=1,k
+            ! Preconditioning: b(M+p) = precond(q)
+            call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambda(p),q1,q2,zeta1,zeta2)
+
+            ! Component of precondioned residual orthogonal to current trial vectors:
+            !
+            ! b(M+p) = [ 1 - b(i) b(i)^T ] zeta
+            !
+            call tensor_minit(b1(M+p),[nvirt,nocc],2)
+            call tensor_minit(b2(M+p),[nvirt,nocc,nvirt,nocc],4)
+            call tensor_minit(Ab1(M+p),[nvirt,nocc],2)
+            call tensor_minit(Ab2(M+p),[nvirt,nocc,nvirt,nocc],4)
+            call tensor_zero(b1(M+p))
+            call tensor_zero(b2(M+p))
+            ! b(M+p) = zeta
+            call tensor_add(b1(M+p),1.0_realk,zeta1)
+            call tensor_add(b2(M+p),1.0_realk,zeta2)
+            do i=1,M
+               ! b(i)^T zeta
+               bTzeta = - ( tensor_ddot(b1(i),zeta1) + tensor_ddot(b2(i),zeta2) )
+               ! b(M+p) += - b(i) { b(i)^T zeta }
+               call tensor_add(b1(M+p),bTzeta,zeta1)
+               call tensor_add(b2(M+p),bTzeta,zeta2)
+            end do
+
+            ! Normalize b(M+p)
+            bnorm = tensor_ddot(b1(M+p),b1(M+p)) + tensor_ddot(b2(M+p),b2(M+p))
+            if(bnorm < 1.0e-14_realk) then
+               print *, 'p, bnorm', p,bnorm
+               call lsquit('ccsd_eigenvalue_solver: Zero norm after projection!',-1)
+            end if
+            sc = 1.0_realk/sqrt(bnorm)
+            call tensor_scale(b1(M+p),sc)
+            call tensor_scale(b2(M+p),sc)
+
+            ! Form Ab(M+p)
+            call cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+                 & yv_tensor,t1,t2,b1(M+p),b2(M+p),Ab1(M+p),Ab2(M+p))
+         end do
+
+         ! Calculate new blocks of reduced Jacobian matrix, i.e.,
+         !
+         !      |   A(1:M , 1:M)         A(1:M , M+1:M+k)        |
+         ! A =  |   A(M+1:M+k , 1:M)     A(M+1:M+k , M+1:M+k)    |
+         ! 
+         ! A(1:M , 1:M) has already been calculated, while the other blocks are
+         ! calculated here.
+         do i=1,M+k
+            do j=M+1,M+k
+               Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+               if(i/=j) Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
+            end do
+         end do
+
+         ! Update M for next iteration (we've included k new vectors to subspace)
+         M = M+k
+
+      end do SolverLoop
 
 
       ! KKHACK fixme - deallocate Ab1,Ab2,b1,b2 properly!
-      call mem_dealloc(res)
-      call mem_dealloc(conv)
-      call mem_dealloc(lambda)
+      do i=1,M
+         call tensor_free(b1(i))
+         call tensor_free(b2(i))
+         call tensor_free(Ab1(i))
+         call tensor_free(Ab2(i))
+      end do
       call mem_dealloc(b1)
       call mem_dealloc(b2)
       call mem_dealloc(Ab1)
       call mem_dealloc(Ab2)
+
+      call mem_dealloc(res)
+      call mem_dealloc(conv)
+      call mem_dealloc(lambda)
       call mem_dealloc(Arbig)
-      
+      call tensor_free(zeta1)
+      call tensor_free(zeta2)
+      call tensor_free(q1)
+      call tensor_free(q2)
+
     end subroutine ccsd_eigenvalue_solver
+
+
+
+    !> Precondition singles and doubles block for Jacobian trial vectors.
+    !> This corresponds to step D of J. Comp. Phys. 17, 87 (1975) where we simply use
+    !> Fock matrix differences to represent Jacobian diagonal.
+    subroutine precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambda,q1,q2,zeta1,zeta2)
+      implicit none
+      !> Number of occupied/virtual orbitals in molecule
+      integer,intent(in) :: nocc,nvirt
+      !> Occ-occ and virt-virt Fock matrix blocks in MO basis
+      real(realk),intent(in) ::  foo(nocc,nocc),fvv(nvirt,nvirt)
+      !> Eigenvalue lambda
+      real(realk),intent(in) :: lambda
+      !> Residual before preconditioning (singles "1" and doubles "2" components)
+      type(tensor),intent(in) :: q1,q2
+      !> Preconditioned residual (singles "1" and doubles "2" components)
+      type(tensor),intent(inout) :: zeta1,zeta2
+      integer :: i,j,a,b
+      real(realk) :: Aelm
+
+      ! Singles preconditioning
+      do i=1,nocc
+         do a=1,nvirt
+            Aelm = fvv(a,a) - foo(i,i)
+            zeta1%elm2(a,i) = ( 1.0_realk/(lambda-Aelm) ) * q1%elm2(a,i)
+         end do
+      end do
+
+      ! Doubles preconditioning
+      do j=1,nocc
+         do b=1,nvirt
+            do i=1,nocc
+               do a=1,nvirt
+                  Aelm = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j)
+                  zeta2%elm4(a,i,b,j) = ( 1.0_realk/(lambda-Aelm) ) * q2%elm4(a,i,b,j)
+               end do
+            end do
+         end do
+      end do
+
+    end subroutine precondition_jacobian_residual
 
 
     !> \brief Calculate start vector and associated eigenvalues for CCSD eigenvalue solver.
