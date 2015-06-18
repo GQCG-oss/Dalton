@@ -11,6 +11,7 @@ module cc_response_tools_module
    use array4_simple_operations
    use cc_tools_module
    use ccintegrals
+   use dec_tools_module
 
    public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr,& 
         & ccsd_eigenvalue_solver
@@ -2563,19 +2564,21 @@ module cc_response_tools_module
       type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
       !> Singles and doubles amplitudes
       type(tensor),intent(in) :: t1,t2
-      real(realk),pointer :: lambda(:),Arbig(:,:),alpha(:,:),Ar(:,:),q(:)
+      real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:),q(:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
       integer :: k,M,p,maxdim,i,j
-      integer(kind=long) :: maxnumeival
+      integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
       type(tensor) :: q1,zeta1,d1,q2,zeta2,d2
-      real(realk) :: tmp1,tmp2,thr
+      real(realk) :: tmp1,tmp2,thr,fac
+      real(realk),pointer :: res(:)
+      logical,pointer :: conv(:)
 
 
       print *, 'Inside CCSD eigenvalue solver'
 
       ! Convergence threshold
-      thr = 1.0_e-10
+      thr = 1.0e-7_realk
 
       ! KK FIXME
       ! Maximum number of vectors allowed. Should be thought about more carefully 
@@ -2586,15 +2589,25 @@ module cc_response_tools_module
       ! except that we may solve for more than one eigenvalue at the same time.
 
       ! How many eigenvalues k?
-      k=1
+      k=9
 
       ! Size of zero-order orthonormal subspace (M must be equal to or larger than k)
-      M=3
+      M=9
 
       ! Sanity check: Requested number of initial eigenvalues/start vectors is not
       ! larger than the maximum possible number of singles+doubles excitations.
-      maxnumeival = int(nocc,kind=8)*int(nvirt,kind=8)  &   ! singles ex
-           & + int(nocc,kind=8)*int(nvirt,kind=8)*int(nocc-1,kind=8)*int(nvirt-1,kind=8) ! doubles ex
+      O = int(nocc,kind=8)
+      V = int(nvirt,kind=8)
+      ! Different unique exciations (i/=j and a/=b):
+      ! Singles: t_i^a  --> O*V
+      ! Doubles: t_ii^aa --> O*V
+      !          t_ij^aa --> O*(O-1)*V / 2
+      !          t_ii^ab --> O*V*(V-1) / 2
+      !          t_ij^ab --> O*(O-1)*V*(V-1) / 4
+      !          
+      ! Division by 2 or 4 is due to symmetry: t_ij^ab = t_ji^ba
+      ! 
+      maxnumeival = O*V + O*V + O*(O-1)*V/2 + O*V*(V-1)/2 + O*(O-1)*V*(V-1)/4
       if( int(M,kind=8) > maxnumeival) then
          print *, 'Number of startvectors ', M
          print *, 'Max number of eigenvalues ',maxnumeival
@@ -2616,8 +2629,9 @@ module cc_response_tools_module
       call tensor_minit(q2,[nvirt,nocc,nvirt,nocc],4)
       call tensor_minit(zeta2,[nvirt,nocc,nvirt,nocc],4)
       call tensor_minit(d2,[nvirt,nocc,nvirt,nocc],4)
-      
-
+      call mem_alloc(res,k)
+      call mem_alloc(conv,k)
+      conv=.false.
 
       ! Get start vectors and associated eigenvalues
       ! --------------------------------------------
@@ -2661,16 +2675,16 @@ module cc_response_tools_module
             ! The reduced matrix is the dotproduct <b(i),Ab(j)>,
             ! and it therefore becomes a sum of dot products of the singles
             ! and doubles components
-
-            ! KKHACK - ask Poul if this is the way to do it!
-            tmp1 = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
-            tmp2 = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
-            Arbig(i,j) = tmp1 !0.5_realk*(tmp1+tmp2)
-            Arbig(j,i) = tmp2 ! Arbig(i,j)
+            Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+            Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
             Ar(i,j) = Arbig(i,j)
             Ar(j,i) = Arbig(j,i)
 
          end do
+         tmp1=tensor_ddot(b1(j),b1(j)); print *,   'b1b1  ',j,tmp1 
+         tmp1=tensor_ddot(b2(j),b2(j)); print *,   'b2b2  ',j,tmp1 
+         tmp1=tensor_ddot(Ab1(j),Ab1(j)); print *, 'Ab1Ab1',j,tmp1 
+         tmp1=tensor_ddot(Ab2(j),Ab2(j)); print *, 'Ab1Ab1',j,tmp1 
       end do
 
       do j=1,M
@@ -2686,32 +2700,45 @@ module cc_response_tools_module
 
       ! Diagonalize reduced matrix Arbig 
       ! --------------------------------
-      call mem_alloc(alpha,M,M)
-      call solve_eigenvalue_problem_unitoverlap(M,Ar,lambda,alpha)
+      ! A alphaR = lambda alphaR
+      ! alphaL A = alphaL lambda
+      ! (lambda is a diagonal matrix with eigenvalues on the diagonal)
+      call mem_alloc(alphaR,M,M)
+      call mem_alloc(alphaL,M,M)
+      call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambda,alphaR,alphaL)
       do i=1,M
-         print *, 'Eival from Jacobian diag ',i,lambda(i)
+         print *, 'Eival nonsymm ',i,lambda(i)
       end do
 
 
-      ! ****************************************************
-      ! Residual and convergence check for the p eigenvalues
-      ! ****************************************************
-      do p=1,M
-         
-         ! Residual 
-         ! --------
-         do i=1,M
-            KK: We are here!
-            call tensor_zero(q1)
-            call tensor_zero(q2)
-            call tensor_add(q1,alpha(,p),Ab(i))
-            
-            call tensor_add(rho1,1.0_realk,rho21)
-            call tensor_add(rho2,1.0_realk,rho12)
-            call tensor_add(rho2,1.0_realk,rho22)
-         end do
-         
 
+
+      ! Residual and convergence check for the p eigenvalues
+      ! ----------------------------------------------------
+      ! Note. Here we check for k residuals (p=1,k), while in J. Comp. Phys. 17, 87 (1975)
+      ! only the k'th eigenvalue is considered.
+      do p=1,k
+         
+         ! Two components: singles (q1) and doubles (q2)
+         call tensor_zero(q1)
+         call tensor_zero(q2)
+         do i=1,M
+            call tensor_add(q1,alphaR(i,p),Ab1(i))
+            fac = - alphaR(i,p)*lambda(p)
+            call tensor_add(q1,fac,b1(i))
+
+            call tensor_add(q2,alphaR(i,p),Ab2(i))
+            fac = - alphaR(i,p)*lambda(p)
+            call tensor_add(q2,fac,b2(i))
+         end do
+
+         ! Residual norm
+         res(p) = tensor_ddot(q1,q1) + tensor_ddot(q2,q2)
+         res(p) = sqrt(res(p))
+
+         ! Check for convergence
+         conv(p) = (res(p)<thr) 
+         print '(1X,a,i6,2g18.8,L2)', '###',p,lambda(p),res(p),conv(p)
 
       end do
 
@@ -2722,10 +2749,13 @@ module cc_response_tools_module
 
 
       ! Place this the proper place...
-      call mem_dealloc(alpha)
+      call mem_dealloc(alphaR)
+      call mem_dealloc(alphaL)
 
 
       ! KKHACK fixme - deallocate Ab1,Ab2,b1,b2 properly!
+      call mem_dealloc(res)
+      call mem_dealloc(conv)
       call mem_dealloc(lambda)
       call mem_dealloc(b1)
       call mem_dealloc(b2)
@@ -2879,8 +2909,7 @@ module cc_response_tools_module
                b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk
             else
                b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk/sqrt(2.0_realk)
-               b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = & 
-                    & b2(i)%elm4(d3(idxD),d4(idxD),d1(idxD),d2(idxD))
+               b2(i)%elm4(d3(idxD),d4(idxD),d1(idxD),d2(idxD)) = 1.0_realk/sqrt(2.0_realk)
             end if
             print *, 'Including doubles ',d1(idxD),d2(idxD),d3(idxD),d4(idxD),eival(i)
 

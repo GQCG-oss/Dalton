@@ -120,6 +120,97 @@ module dec_tools_module
 
   end subroutine solve_eigenvalue_problem_unitoverlap
 
+
+  !> \brief Solve nonsymmetric eigenvalue problem: 
+  !> A R = eival R   
+  !> L A = L eival
+  !> where A is a nonsymmetrix matrix and R and L are the left and right
+  !> eigenvectors, respectively.
+  !> Note: Currently we quit if the eigenvalues are complex. This could be generalized.
+  !> \author Kasper Kristensen
+  !> \date February 2011
+  subroutine solve_nonsymmetric_eigenvalue_problem_unitoverlap(n,A,eival,R,L)
+    implicit none
+
+    !> Dimension of matrices (Number of eigenvalues)
+    integer,intent(in) :: n
+    !> A matrix in eigenvalue problem 
+    real(realk),intent(in) :: A(n,n)
+    !> Right (R) and left (L) eigenvectors
+    real(realk),intent(inout) :: R(n,n), L(n,n)
+    !> Eigenvalues
+    real(realk),intent(inout) :: eival(n)
+    real(realk), pointer :: B(:,:),Atmp(:,:)
+    integer :: i,j,lwork,info
+    real(realk),pointer :: alphaR(:), alphaI(:), beta(:),work(:)
+    real(realk),parameter :: thr=1.0e-9_realk
+
+    ! Overlap matrix is unit matrix
+    call mem_alloc(B,n,n)
+    B = 0.0_realk
+    do i=1,n
+       B(i,i) = 1.0_realk
+    end do
+
+    ! Copy A matrix to avoid overwriting it
+    call mem_alloc(Atmp,n,n)
+    do j=1,n
+       do i=1,n
+          Atmp(i,j) = A(i,j)
+       end do
+    end do
+
+    ! Allocate stuff
+    call mem_alloc(alphaR,n)
+    call mem_alloc(alphaI,n)
+    call mem_alloc(beta,n)
+    call mem_alloc(work,1)
+
+    ! Determine optimal workspace
+    lwork=-1
+    info=0
+    call DGGEV('V', 'V', n, Atmp, n, B, n, ALPHAR, ALPHAI,&
+         & BETA, L, n, R, n, WORK, LWORK, INFO )
+    lwork = int(work(1))
+
+    ! Allocate work space
+    call mem_dealloc(work)
+    call mem_alloc(work,lwork)
+
+    ! Solve eigenvalue problem
+    call DGGEV('V', 'V', n, Atmp, n, B, n, ALPHAR, ALPHAI,&
+         & BETA, L, n, R, n, WORK, LWORK, INFO )
+
+    if(info/=0) then
+       print *, 'INFO = ', INFO
+       call lsquit('solve_nonsymmetric_eigenvalue_problem_unitoverlap: &
+            & Error in DGGEV!',-1)
+    end if
+
+    ! Check that eigenvalues are real and well-defined
+    do i=1,n
+       if( (abs(alphaI(i)) > thr) .or. (abs(beta(i))<thr )  ) then
+          print *, 'Eigenvalue number ',i 
+          print *, 'Eigenvalue, real part ',alphaR(i)
+          print *, 'Eigenvalue, imag part ',alphaI(i)
+          print *, 'Division factor beta  ',beta(i)
+          call lsquit('solve_nonsymmetric_eigenvalue_problem_unitoverlap: &
+               & Complex or ill-defined eigenvalues!',-1)          
+       end if
+       eival(i) = alphaR(i) / beta(i)
+    end do
+
+    ! Free stuff
+    call mem_dealloc(alphaR)
+    call mem_dealloc(alphaI)
+    call mem_dealloc(beta)
+    call mem_dealloc(work)
+    call mem_dealloc(B)
+    call mem_dealloc(Atmp)
+
+  end subroutine solve_nonsymmetric_eigenvalue_problem_unitoverlap
+
+
   subroutine init_batch_info(mylsitem,batch,max_allowed,nb)
      implicit none
      type(lsitem), intent(inout) :: mylsitem
