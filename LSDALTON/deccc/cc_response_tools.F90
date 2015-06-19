@@ -5,6 +5,7 @@ module cc_response_tools_module
    use typedeftype
    use dec_typedef_module
    use IntegralInterfaceMOD
+   use tensor_interface_module
 
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
@@ -2688,36 +2689,11 @@ module cc_response_tools_module
       write(DECinfo%output,'(1X,a)') '###'
       write(DECinfo%output,'(1X,a)') '### Jacobian eigenvalue solver'
       write(DECinfo%output,'(1X,a)') '###'
-      write(DECinfo%output,'(1X,a)') '### subspacedim    EivalNumber     eival    residual    conv?  #'
+      write(DECinfo%output,'(1X,a)') '### Subspace  Which     Eigenvalue         Residual       Conv?  '
 
       SolverLoop: do iter=1,maxiter
-
-
-         do p=1,M
-            print *
-            print *
-            print *, 'iter,p = ',iter,p
-            do i=1,nocc
-               do a=1,nvirt
-                  print *, 'b1 ',a,i,b1(p)%elm2(a,i)
-               end do
-            end do
-
-            do j=1,nocc
-               do b=1,nvirt
-                  do i=1,nocc
-                     do a=1,nvirt
-                        print *, 'b2 ',a,i,b,j,b2(p)%elm4(a,i,b,j)
-                     end do
-                  end do
-               end do
-            end do
-
-            print *
-            print *
-         end do
-
-
+         
+         ! Save current subspace dimension
          Mold = M
 
          ! Copy elements of reduced Jacobian into array having the proper dimensions
@@ -2769,37 +2745,40 @@ module cc_response_tools_module
 
             ! Check for convergence
             conv(p) = (res(p)<thr) 
-            write(DECinfo%output,'(1X,a,2i6,2g18.8,L2)') '###',M,p,lambda(p),res(p),conv(p)
+            write(DECinfo%output,'(1X,a,i6,2X,i6,2X,g18.8,1X,g18.8,3X,L2)') &
+                 & '###',M,p,lambda(p),res(p),conv(p)
             if(conv(p)) cycle ploop
 
             ! Update M
             M=M+1
 
             ! Preconditioning: b(M) = precond(q)
-            zeta1%elm2 = q1%elm2
-            zeta2%elm4 = q2%elm4
-            !            call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambda(p),q1,q2,zeta1,zeta2)
+            if(DECinfo%hack) then
+               zeta1%elm2 = q1%elm2
+               zeta2%elm4 = q2%elm4
+            else
+               call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambda(p),q1,q2,zeta1,zeta2)
+            end if
 
             ! Component of precondioned residual orthogonal to current trial vectors:
             !
-            ! b(M) = [ 1 - sum_{i=1}^Mold b(i) b(i)^T ] zeta
+            ! b(M) = [ 1 - sum_{i=1}^{M-1} b(i) b(i)^T ] zeta
             !
             call tensor_minit(b1(M),[nvirt,nocc],2)
             call tensor_minit(b2(M),[nvirt,nocc,nvirt,nocc],4)
-            call tensor_minit(Ab1(M),[nvirt,nocc],2)
-            call tensor_minit(Ab2(M),[nvirt,nocc,nvirt,nocc],4)
             call tensor_zero(b1(M))
             call tensor_zero(b2(M))
             ! b(M+p) = zeta
             call tensor_add(b1(M),1.0_realk,zeta1)
             call tensor_add(b2(M),1.0_realk,zeta2)
+            ! KKHACK why is copy_array not public? Ask PE.
 
-            do i=1,Mold
-               ! b(i)^T zeta
+            do i=1,M-1
+               ! b(i)^T zeta  (just a number when b(i) and zeta are considered as vectors)
                bTzeta = - ( tensor_ddot(b1(i),zeta1) + tensor_ddot(b2(i),zeta2) )
                ! b(M+p) += - b(i) { b(i)^T zeta }
-               call tensor_add(b1(M),bTzeta,zeta1)
-               call tensor_add(b2(M),bTzeta,zeta2)
+               call tensor_add(b1(M),bTzeta,b1(i))
+               call tensor_add(b2(M),bTzeta,b2(i))
             end do
 
             ! Normalize b(M)
@@ -2813,6 +2792,8 @@ module cc_response_tools_module
             call tensor_scale(b2(M),sc)
 
             ! Form Ab(M)
+            call tensor_minit(Ab1(M),[nvirt,nocc],2)
+            call tensor_minit(Ab2(M),[nvirt,nocc,nvirt,nocc],4)
             call cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
                  & yv_tensor,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
 
@@ -2895,6 +2876,10 @@ module cc_response_tools_module
       do i=1,nocc
          do a=1,nvirt
             Aelm = fvv(a,a) - foo(i,i)
+            if(abs(Aelm-lambda)<1.0e-10) then  !KKHACK fixme
+               print *, Aelm,lambda
+               stop 'unstable Jacobian residual' 
+            end if
             zeta1%elm2(a,i) = ( 1.0_realk/(lambda-Aelm) ) * q1%elm2(a,i)
          end do
       end do
@@ -2905,6 +2890,10 @@ module cc_response_tools_module
             do i=1,nocc
                do a=1,nvirt
                   Aelm = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j)
+                  if(abs(Aelm-lambda)<1.0e-10) then !KKHACK fixme
+                     print *, Aelm,lambda
+                     stop 'unstable Jacobian residual' 
+                  end if
                   zeta2%elm4(a,i,b,j) = ( 1.0_realk/(lambda-Aelm) ) * q2%elm4(a,i,b,j)
                end do
             end do
