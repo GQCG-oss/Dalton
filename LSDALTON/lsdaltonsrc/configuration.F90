@@ -178,6 +178,7 @@ implicit none
   infpar%inputBLOCKSIZE = 0
   print*,'config_set_default_config:',infpar%inputBLOCKSIZE
 #endif
+  config%mat_mem_monitor = .FALSE.
 end subroutine config_set_default_config
 
 !> \brief Wrapper to routines for read input files LSDALTON.INP and MOLECULE.INP.
@@ -1280,6 +1281,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
         CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.MATMEM');                config%mat_mem_monitor = .TRUE.
         CASE('.GCBASIS');               config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
         CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
