@@ -1513,7 +1513,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_zero(gvoova)
 
         if(scheme == 1)then
-           !Maybe we should use the bg buffer here as well
+           !`Maybe we should use the bg buffer here as well
            call tensor_ainit(o2ilej, [nv,nv,nor], 3, local=local, atype='TDAR', tdims=[vs,vs,nor])
            call tensor_zero(o2ilej)
         endif
@@ -1530,15 +1530,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            sio4_tdim(1:sio4_mode) = [os,os,os,os]
            write(def_atype,'(A4)')'TDAR'
         case(1)
-!           print *,"We need to decide what we do with this tensor. It is used after the integral direct loop."
-!           stop 0
            sio4_mode = 3
            sio4_dims(1:sio4_mode) = [no,no,nor]
            sio4_tdim(1:sio4_mode) = [os,os,nor]
            write(def_atype,'(A4)')'TDAR'
         end select
 
-        call tensor_ainit(sio4,sio4_dims(1:sio4_mode),sio4_mode,local=local,atype=def_atype,tdims = sio4_tdim(1:sio4_mode))
+        call tensor_ainit(sio4,sio4_dims(1:sio4_mode),sio4_mode,local=local,atype=def_atype,tdims=sio4_tdim(1:sio4_mode))
         call tensor_zero(sio4)
 #ifdef DIL_ACTIVE
         scheme=2 !``DIL: remove

@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/04/10 (started 2014/09/01).
+!REVISION: 2015/06/18 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -312,6 +312,8 @@
         private merge_sort_key_int4
         private merge_sort_key_int8
         public merge_sort_real8
+        public multord_i
+        private mlndx_cmp
         private str_parse
         public str2int
         public int2str
@@ -337,9 +339,9 @@
         private dil_tens_pack_into_tiles
         public dil_tens_fetch_start
         public dil_tens_fetch_finish_prep
-!        public dil_tens_fetch
         public dil_tens_prep_upload_start
         public dil_tens_upload_finish
+        public dil_tens_fetch
 !        public dil_tens_upload
         private dil_divide_space_int
         private dil_divide_space_int4
@@ -358,6 +360,7 @@
         public dil_array_print
         public dil_mm_pipe_efficient
         public dil_will_malloc_succeed
+        public dil_distr_tens_insert_sym2
         public dil_test
 
        contains
@@ -1368,8 +1371,8 @@
           endif
  !Pinned malloc:
          case(DIL_ALLOC_PINNED)
-          val=0E0_tensor_dp; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
-          !`Write (call C wrapper for cudaMallocHost)
+          val=0E0_realk; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
+          !`Write: call C wrapper for cudaMallocHost(&caddr)
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
  !MPI malloc:
          case(DIL_ALLOC_MPI)
@@ -1395,8 +1398,6 @@
 !-----------------------------------------------
         subroutine cpu_ptr_free_r(arr,ierr,attr) !SERIAL
 !This subroutine deallocates memory assigned to a 1d pointer array (default real).
-!WARNING: This subroutine assumes that MPI_FREE_MEM has an explicitly declared interface in MPI.mod!
-!If not, it may NOT work correctly!!!
         implicit none
         real(tensor_dp), pointer, contiguous, intent(inout):: arr(:) !inout: 1d array
         integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
@@ -1404,16 +1405,6 @@
         type(C_PTR):: caddr
         integer(INTD):: flags
         integer(tensor_mpi_kind):: errc
-
-!#ifdef PROTO_MPI_FREE_MEM
-!        interface
-!         subroutine MPI_FREE_MEM(base_ptr,ierr)
-!          import
-!          type(C_PTR), value:: base_ptr
-!          integer(INTD), intent(out):: ierr
-!         end subroutine MPI_FREE_MEM
-!        end interface
-!#endif
 
         ierr=0
         if(associated(arr)) then
@@ -1425,13 +1416,12 @@
           deallocate(arr,STAT=ierr)
           if(ierr.ne.0) ierr=2
          case(DIL_ALLOC_PINNED)
-          caddr=c_loc(arr(1));
-          !`Write (call C wrapper for cudaMallocHost)
-          if(ierr.ne.0) ierr=3
+          caddr=c_loc(arr(lbound(arr,1)))
+          !`Write: call C wrapper for cudaFreeHost(caddr)
           nullify(arr)
+          if(ierr.ne.0) ierr=3
          case(DIL_ALLOC_MPI)
           errc=0
-!         caddr=c_loc(arr); call MPI_FREE_MEM(caddr,errc) !<caddr> must be passed by value!!!
           call MPI_FREE_MEM(arr,errc)
           if(errc.ne.0) ierr=4
           nullify(arr)
@@ -1665,6 +1655,127 @@
         endif
         return
         end subroutine merge_sort_real8
+!---------------------------------------------------
+	subroutine multord_i(n,nl,mov,ip1,iv,v,ierr) !SERIAL
+!Linear-scaling ascending-order sort for key-value pairs where
+!the key is an integer multi-index and the value is an integer.
+!Array <ip1(1:n)> contains key index priorities for sorting and
+!the first encountered zero will terminate the sorting, thus enabling
+!sortings with respect to fewer than <n> indices specified in <ip1>.
+!This subroutine allocates memory in the amount equal to the size of the input.
+        implicit none
+        integer(INTD), intent(in):: n                      !in: number of integer indices in the multi-index key (multi-index length)
+        integer(INTD), intent(in):: nl                     !in: max possible key value (upper bound), lower bound is always 0
+        integer(INTD), intent(in):: mov                    !in: number of key-value pairs (items) to sort
+        integer(INTD), intent(in):: ip1(1:n)               !in: key index priorities: ip(1) = highest priority index, 0 terminates sorting
+        integer(INTD), intent(inout), target:: iv(1:n,1:*) !inout: list of multi-index keys
+        integer(INTD), intent(inout), target:: v(1:*)      !inout: list of values
+        integer(INTD), intent(inout), optional:: ierr      !out: error code (0:success)
+        integer(INTD), parameter:: index_base=2**6         !a base for index splitting: MUST BE EVEN!
+        integer(INTD) i,j,k,l,m,k1,k2,k3,ks,kf,errc
+        integer(INTD) isp(0:index_base-1),ibp(0:index_base-1),m1,m2,np,kp,index_split,index_part
+        integer(INTD), allocatable, target:: ivb(:,:),ifv(:)
+        integer(INTD), allocatable, target:: vb(:)
+        integer(INTD), pointer, contiguous:: iv1(:,:),iv2(:,:)
+        integer(INTD), pointer, contiguous:: v1(:),v2(:)
+        logical final_copy
+
+        index_part(i,j)=mod(i/(index_base**(j-1)),index_base)
+
+        errc=0
+        if(n.gt.0.and.nl.gt.0.and.mov.gt.1) then !at least one index with a non-zero limit, and two items
+!Determine index splitting:
+         index_split=0; k=nl; do while(k.gt.0); k=k/index_base; index_split=index_split+1; enddo
+!Array allocation:
+         allocate(ifv(mov+1),ivb(n,mov),vb(mov),STAT=errc) !work arrays
+         if(errc.eq.0) then
+!Init:
+          isp(:)=0; ifv(:)=0; ifv(1)=1; ifv(mov+1)=1 !init + special bound values
+!Begin:
+          iv1=>iv(:,1:mov); iv2=>ivb(:,1:mov); v1=>v(1:mov); v2=>vb(1:mov); final_copy=.false.
+          iloop: do np=1,n
+           kp=ip1(np) !index to sort over
+           if(kp.gt.0.and.kp.le.n) then
+            do l=index_split,1,-1
+             k=1
+ !Sort pass:
+             do while(k.le.mov)
+              ibp(0)=k
+  !count:
+              do
+               k2=index_part(iv1(kp,k),l); isp(k2)=isp(k2)+1
+               k=k+1; if(ifv(k).ne.0) exit
+              enddo
+  !mark:
+              do k1=1,index_base-3,2
+               j=ibp(k1-1)+isp(k1-1)
+               ibp(k1)=j; ibp(k1+1)=j+isp(k1)
+               ifv(j)=1; ifv(ibp(k1+1))=1
+              enddo
+              j=ibp(index_base-2)+isp(index_base-2); ibp(index_base-1)=j
+              ifv(j)=1; ifv(j+isp(index_base-1))=1
+              isp(0:index_base-1)=0
+  !resort:
+              do k1=ibp(0),k-1
+               k2=index_part(iv1(kp,k1),l); k3=ibp(k2); ibp(k2)=ibp(k2)+1
+               v2(k3)=v1(k1); iv2(1:n,k3)=iv1(1:n,k1)
+              enddo
+             enddo !next k
+ !Switch buffers:
+             if(.not.final_copy) then
+              iv1=>ivb(:,1:mov); iv2=>iv(:,1:mov); v1=>vb(1:mov); v2=>v(1:mov); final_copy=.true.
+             else
+              iv1=>iv(:,1:mov); iv2=>ivb(:,1:mov); v1=>v(1:mov); v2=>vb(1:mov); final_copy=.false.
+             endif
+            enddo !next l: index part being analyzed
+           elseif(kp.le.0) then !all other indices are irrelevant for this sorting
+            exit iloop
+           else
+            if(VERBOSE) write(CONS_OUT,*)'#ERROR(DIL::multord_i): invalid index priority value: ',kp,np
+            errc=1
+           endif
+          enddo iloop !next np: prioritized index-position
+!Save results:
+          if(final_copy) then
+           iv(1:n,1:mov)=ivb(1:n,1:mov); v(1:mov)=vb(1:mov)
+          endif
+          nullify(iv1,iv2,v1,v2); deallocate(ifv,ivb,vb)
+         else
+          if(VERBOSE) write(CONS_OUT,*)'#ERROR(DIL::multord_i): memory allocation failed: ',mov
+          errc=2
+         endif
+        endif
+        if(present(ierr)) ierr=errc
+        return
+        end subroutine multord_i
+!---------------------------------------------
+        integer function mlndx_cmp(m1,m2,ierr) !SERIAL
+!This function compares two integer multi-indices and returns:
+! -1 if m1 is less than m2;
+!  0 if m1 is equal to m2;
+! +1 if m1 is greater than m2;
+        implicit none
+        integer(INTD), intent(in):: m1(1:),m2(1:)     !in: multi-indices of the same length
+        integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
+        integer(INTD):: i,n,errc
+
+        errc=0; mlndx_cmp=0; n=size(m1)
+        if(size(m2).eq.n) then
+         if(n.gt.0) then
+          do i=1,n
+           if(m1(i).lt.m2(i)) then
+            mlndx_cmp=-1; exit
+           elseif(m1(i).gt.m2(i)) then
+            mlndx_cmp=+1; exit
+           endif
+          enddo
+         endif
+        else
+         errc=1
+        endif
+        if(present(ierr)) ierr=errc
+        return
+        end function mlndx_cmp
 !----------------------------------------------------------------------
         subroutine str_parse(str,sep,nwords,words,ierr,str_len,sep_len) !SERIAL
 !This subroutine extracts separable "words" from a string.
@@ -2979,6 +3090,76 @@
         enddo
         return
         end subroutine dil_tens_upload_finish
+!--------------------------------------------------------------------------
+        subroutine dil_tens_fetch(tens_arr,tens_part,bufo,ierr,locked,bufe) !BLOCKING
+!Fetches a tensor slice from a distributed tensor.
+        implicit none
+        type(tensor), intent(in):: tens_arr                  !in: tensor stored distributively in terms of tiles
+        type(subtens_t), intent(in):: tens_part              !in: tensor slice specification
+        real(realk), intent(inout):: bufo(1:*)               !out: local buffer that will contain the dense tensor slice
+        integer(INTD), intent(inout):: ierr                  !out: error code (0:success)
+        logical, intent(in), optional:: locked               !in: if .TRUE., MPI windows are assumed already locked
+        real(realk), intent(in), target, optional:: bufe(1:) !in: external temporary buffer of a single-tile size
+        real(realk), pointer, contiguous:: bufi(:)           !single-tile buffer
+        integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
+        integer(INTL):: tile_vol
+        integer:: tile_num,tile_win
+        type(rank_win_cont_t):: rwc
+        logical:: new_rw,win_lck
+
+        ierr=0; call dil_rank_window_clean(rwc)
+        if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
+        if(present(bufe)) then
+         if(size(bufe).lt.tens_arr%tsize) then; ierr=-4; return; endif
+         bufi=>bufe !use an externally provided buffer
+        else
+         call cpu_ptr_alloc(bufi,int(tens_arr%tsize,INTL),i) !allocate buffer here
+         if(i.ne.0) then; ierr=-3; nullify(bufi); return; endif
+        endif
+        n=tens_arr%mode; k=DIL_FIRST_CALL
+        do while(k.ge.0) !k<0: iterations are over
+         call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
+         if(k.eq.0) then
+          tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
+          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+!           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
+          call tensor_get_tile(tens_arr,tile_num,bufi(1:tile_vol),tile_vol,lock_set=.true.)
+!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:n)
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+!           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+          if(new_rw) then
+           if(win_lck) then
+            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+           else
+            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+           endif
+          endif
+!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:n)
+!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",16(1x,i6))',ADVANCE='NO') signa(1:n)
+          call dil_tensor_insert(n,bufo,tens_part%dims,bufi(1:tile_vol),tile_dims,signa(1:n)-tens_part%lbnd(1:n),i)
+!          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
+          if(i.ne.0) then; ierr=-2; call proc_clean(); return; endif
+         elseif(k.gt.0) then
+          ierr=-1; call proc_clean(); return
+         endif
+        enddo
+        return
+
+        contains
+
+         subroutine proc_clean()
+         if(present(bufe)) then
+          nullify(bufi)
+         else
+          call cpu_ptr_free(bufi,ierr); if(ierr.ne.0) ierr=-4
+         endif
+         return
+         end subroutine proc_clean
+
+        end subroutine dil_tens_fetch
 !------------------------------------------------------------------------
         subroutine dil_divide_space_int4(ndim,dims,subvol,segs,ierr,algn) !SERIAL
 !This subroutine divides an ndim-dimensional block with extents dims(1:ndim)
@@ -4121,7 +4302,7 @@
          else
           call cleanup(38_INTD); return
          endif !trap
- !CPU (multicore): !`Implement REUSE for tensor arguments
+ !CPU (multicore):
          dev=dil_dev_num(DEV_HOST_CPU,0_INTD); buf_conf(1:BUFS_PER_DEV,dev)=(/(i,i=1,BUFS_PER_DEV)/)
          tasks_done(dev)=0; task_curr(dev)=0; task_prev(dev)=0; task_next(dev)=0
          task_curr(dev)=dil_get_next_task(DEV_HOST_CPU,0_INTD); first_task=.true.
@@ -5232,6 +5413,165 @@
          end subroutine fill_buddy_info
 
         end function dil_will_malloc_succeed
+!--------------------------------------------------------------------------------
+        subroutine dil_distr_tens_insert_sym2(dtens,stens,ud1,ud2,fd,ierr,locked) !PARALLEL
+!This subroutine upacks a symmetrically packed pair of indices, that is,
+!it implements the following operation on distributed tensors: D(p,q,..,r,s)+=S(p,q,..,r<=s),
+!where the positioning of indices r,s, and (r<=s) can be arbitrary in general,
+!as well as the tensor ranks, but the relative order of other indices must coincide!
+        implicit none
+        type(tensor), intent(inout):: dtens    !inout: destination tensor (rank>0)
+        type(tensor), intent(in):: stens       !in: source tensor (rank one less than <dtens>)
+        integer(INTD), intent(in):: ud1,ud2    !in: unfolded dimension positions in <dtens> (position of r and s)
+        integer(INTD), intent(in):: fd         !in: folded dimension position in <stens> (position of [r<=s])
+        integer(INTD), intent(inout):: ierr    !out: error code (0:success)
+        logical, intent(in), optional:: locked !in: if .true., <stens> MPI windows are already locked
+        integer(INTD):: i,j,k,l,m,n,ntl,ntb,bd1,bd2,i1,i2,l1,l2,l12
+        integer(INTD):: ip1(MAX_TENSOR_RANK),ip2(MAX_TENSOR_RANK),cml(MAX_TENSOR_RANK),nml(MAX_TENSOR_RANK)
+        integer(INTD):: sbas(MAX_TENSOR_RANK),sdim(MAX_TENSOR_RANK)
+        integer:: mlndx(MAX_TENSOR_RANK)
+        integer(INTL):: ll,ld,ls,max_slice_vol,db(MAX_TENSOR_RANK),sb(MAX_TENSOR_RANK)
+        integer(INTD), allocatable:: tkey(:,:),tnum(:)
+        type(subtens_t):: subt
+        real(realk), pointer, contiguous:: slice(:),tile(:)
+        real(realk):: dsgn
+
+        ierr=0; nullify(slice); nullify(tile)
+        if(stens%mode.lt.1.or.dtens%mode.ne.stens%mode+1) then; call proc_clean(1_INTD); return; endif
+        n=dtens%mode !n: destination tensor rank
+        if(ud1.le.0.or.ud1.gt.n.or.ud2.le.0.or.ud2.gt.n.or.ud1.eq.ud2.or.fd.le.0.or.fd.gt.stens%mode) then
+         call proc_clean(2_INTD); return
+        endif
+        ntb=0; do i=1,n; ntb=max(ntb,int(dtens%ntpm(i),INTD)); enddo
+        if(ntb.le.0) then; call proc_clean(3_INTD); return; endif
+        ntl=dtens%nlti; if(ntl.le.0.or.ntl.gt.dtens%ntiles) then; call proc_clean(4_INTD); return; endif
+        allocate(tkey(n,ntl),tnum(ntl),STAT=ierr); if(ierr.ne.0) then; call proc_clean(5_INTD); return; endif
+!Create a list of local tiles of <dtens>:
+        do i=1,ntl
+         tnum(i)=dtens%ti(i)%gt !global tile number is the value
+         call get_midx(dtens%ti(i)%gt,mlndx,dtens%ntpm,dtens%mode)
+         do j=1,n; tkey(j,i)=int(mlndx(j),INTD); enddo !tile multi-index is the key
+        enddo
+!Set dimension priorities for sorting:
+        j=0
+        do i=1,stens%mode
+         if(i.ne.fd) then; j=j+1; ip2(j)=i; endif
+        enddo
+        if(j.ne.n-2) then; call proc_clean(6_INTD); return; endif
+        j=0
+        do i=1,n
+         if(i.ne.ud1.and.i.ne.ud2) then; j=j+1; ip1(j)=i; endif !these are external dimensions (common between <dtens> and <stens>)
+        enddo
+        ip1(j+1:n)=0 !two internal dimensions (ud1,ud2) do not participate in sorting
+        if(j.ne.n-2) then; call proc_clean(7_INTD); return; endif
+!Sort the list of local tiles:
+        if(n-2.gt.0) call multord_i(n,ntb,ntl,ip1,tkey,tnum,ierr)
+        if(ierr.ne.0) then; call proc_clean(8_INTD); return; endif
+!Allocate temporary buffers:
+        max_slice_vol=stens%dims(fd) !the composite dimension (r<=s) is taken fully
+        do i=1,stens%mode
+         if(i.ne.fd) max_slice_vol=max_slice_vol*stens%tdim(i)
+        enddo
+        call cpu_ptr_alloc(slice,max_slice_vol,ierr)
+        if(ierr.ne.0) then; call proc_clean(9_INTD); return; endif
+        call cpu_ptr_alloc(tile,int(stens%tsize,INTL),ierr)
+        if(ierr.ne.0) then; call proc_clean(10_INTD); return; endif
+!Process local tiles:
+        l=1; cml(1:n-2)=-1; m=+1
+        tloop: do while(l.le.ntl) !loop over local <dtens> tiles
+         do i=1,n-2; nml(i)=tkey(ip1(i),l); enddo !get external multi-index
+         if(n-2.gt.0) then; m=mlndx_cmp(nml(1:n-2),cml(1:n-2),ierr); if(ierr.ne.0) exit tloop; endif
+         if(m.gt.0) then !new external multi-index --> fetch a new <stens> slice
+          cml(1:n-2)=nml(1:n-2)
+ !Fetch a new <stens> slice (gather and prepare):
+  !Set slice bounds:
+          sbas(fd)=1              !sbas(1:n-1): slice bases (dimension #fd starts from the beginning)
+          sdim(fd)=stens%dims(fd) !sdim(1:n-1): slice dimension extents (dimension #fd is full)
+          j=0
+          do i=1,n-2 !loop over the external dimensions
+           k=ip1(i) !k: position in <dtens>
+           j=j+1; if(j.eq.fd) j=j+1 !j: corresponding position in <stens>
+           sbas(j)=(tkey(k,l)-1)*dtens%tdim(k)+1 !dimension base offset (numeration from 1)
+           sdim(j)=dtens%ti(tnum(l))%d(k)        !dimension extent
+          enddo
+          ll=1; do i=1,stens%mode; sb(i)=ll; ll=ll*sdim(i); enddo !addressing bases for the current <stens> slice
+          call dil_subtensor_set(subt,int(stens%mode,INTD),sbas(1:stens%mode),sbas(1:stens%mode)+sdim(1:stens%mode)-1_INTD,ierr)
+          if(ierr.ne.0) exit tloop
+  !Fetch/prepare the slice:
+          if(present(locked)) then
+           call dil_tens_fetch(stens,subt,slice,ierr,locked,tile); if(ierr.ne.0) exit tloop
+          else
+           call dil_tens_fetch(stens,subt,slice,ierr,bufe=tile); if(ierr.ne.0) exit tloop
+          endif
+         elseif(m.lt.0) then !invalid order of external multi-indices (not sorted)
+          ierr=1; exit tloop
+         endif
+ !Set addressing arithmetic:
+         bd1=(tkey(ud1,l)-1)*dtens%tdim(ud1)+1 !base orbital for index r (numeration from 1)
+         bd2=(tkey(ud2,l)-1)*dtens%tdim(ud2)+1 !base orbital for index s (numeration from 1)
+         ll=1; do i=1,n; db(i)=ll; ll=ll*dtens%ti(tnum(l))%d(i); enddo !addressing bases for the current <dtens> tile
+ !Accumulate:
+         ld=0; ls=0
+  !Loop over symmetric indices:
+         do i2=0,dtens%ti(tnum(l))%d(ud2)-1 !tile offset for index s
+          l2=bd2+i2 !absolute value of index s
+          ld=ld+i2*db(ud2) !mount into the destination address
+          do i1=0,dtens%ti(tnum(l))%d(ud1)-1 !tile offset for index r
+           l1=bd1+i1 !absolute value of index r
+           ld=ld+i1*db(ud1) !mount into the destination address
+           if(l1.le.l2) then
+            l12=((l2-1)*l2/2)+(l1-1) !composite index value (numeration from 0)
+            dsgn=+1E0_realk
+           else !l2<l1
+            l12=((l1-1)*l1/2)+(l2-1) !composite index value (numeration from 0)
+            dsgn=-1E0_realk
+           endif
+           ls=ls+l12*sb(fd) !mount into the source address
+  !Loop over external indices:
+           if(n-2.gt.0) then !non-empty external multi-index
+            mlndx(1:n-2)=0; m=tnum(l); i=1
+            do while(i.le.n-2)
+             dtens%ti(m)%t(ld)=dtens%ti(m)%t(ld)+slice(ls)*dsgn
+             k=ip1(i) !position of the index in <dtens>
+             j=ip2(i) !position of the index in <stens>
+             if(mlndx(i).lt.sdim(j)-1) then
+              mlndx(i)=mlndx(i)+1
+              ld=ld+db(k)
+              ls=ls+sb(j)
+             else
+              ld=ld-mlndx(i)*db(k)
+              ls=ls-mlndx(i)*sb(j)
+              mlndx(i)=0
+              i=i+1
+             endif
+            enddo
+           else !empty external multi-index
+            dtens%ti(m)%t(ld)=dtens%ti(m)%t(ld)+slice(ls)*dsgn
+           endif
+           ls=ls-l12*sb(fd) !unmount
+           ld=ld-i1*db(ud1) !unmount
+          enddo !i1
+          ld=ld-i2*db(ud2) !unmount
+         enddo !i2
+         m=0; l=l+1 !next local tile
+        enddo tloop
+        if(ierr.eq.0) then; call proc_clean(0_INTD); else; call proc_clean(11_INTD); endif
+        return
+
+        contains
+
+         subroutine proc_clean(jerr)
+         integer(INTD), intent(in):: jerr !error code
+         integer(INTD):: je
+         ierr=jerr
+         if(associated(tile)) call cpu_ptr_free(tile,je)
+         if(associated(slice)) call cpu_ptr_free(slice,je)
+         if(allocated(tnum)) deallocate(tnum)
+         if(allocated(tkey)) deallocate(tkey)
+         return
+         end subroutine proc_clean
+
+        end subroutine dil_distr_tens_insert_sym2
 !=============================================
         subroutine dil_test(dtens,ltens,rtens)
         implicit none
