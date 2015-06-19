@@ -2566,7 +2566,7 @@ module cc_response_tools_module
       type(tensor),intent(in) :: t1,t2
       real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
-      integer :: k,M,p,maxdim,i,j,iter,maxiter
+      integer :: Mold,k,M,p,maxdim,i,j,iter,maxiter,a,b   ! KKHACK remove a,b
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
       type(tensor) :: q1,zeta1,q2,zeta2
@@ -2592,10 +2592,10 @@ module cc_response_tools_module
       ! Also the convergence check is different.
 
       ! How many eigenvalues k?
-      k=2
+      k=1
 
       ! Size of zero-order orthonormal subspace (M must be equal to or larger than k)
-      M=3
+      M=DECinfo%SNOOPMaxDIIS  ! KKHACK fix me
 
       ! Sanity check: Requested number of initial eigenvalues/start vectors is not
       ! larger than the maximum possible number of singles+doubles excitations.
@@ -2647,9 +2647,9 @@ module cc_response_tools_module
          call tensor_minit(Ab1(i),[nvirt,nocc],2)
          call tensor_minit(Ab2(i),[nvirt,nocc,nvirt,nocc],4)
       end do
-      call mem_alloc(lambda,maxdim)
+      call mem_alloc(lambda,M)
       call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambda(1:M))
-
+      call mem_dealloc(lambda)
 
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
       ! --------------------------------------------------------------------------
@@ -2688,13 +2688,40 @@ module cc_response_tools_module
       write(DECinfo%output,'(1X,a)') '###'
       write(DECinfo%output,'(1X,a)') '### Jacobian eigenvalue solver'
       write(DECinfo%output,'(1X,a)') '###'
-      write(DECinfo%output,'(1X,a)') '### Number     eival    residual    conv?  #'
+      write(DECinfo%output,'(1X,a)') '### subspacedim    EivalNumber     eival    residual    conv?  #'
 
       SolverLoop: do iter=1,maxiter
 
+
+         do p=1,M
+            print *
+            print *
+            print *, 'iter,p = ',iter,p
+            do i=1,nocc
+               do a=1,nvirt
+                  print *, 'b1 ',a,i,b1(p)%elm2(a,i)
+               end do
+            end do
+
+            do j=1,nocc
+               do b=1,nvirt
+                  do i=1,nocc
+                     do a=1,nvirt
+                        print *, 'b2 ',a,i,b,j,b2(p)%elm4(a,i,b,j)
+                     end do
+                  end do
+               end do
+            end do
+
+            print *
+            print *
+         end do
+
+
+         Mold = M
+
          ! Copy elements of reduced Jacobian into array having the proper dimensions
          call mem_alloc(Ar,M,M)
-
          do j=1,M
             do i=1,M
                Ar(i,j) = Arbig(i,j)
@@ -2709,22 +2736,22 @@ module cc_response_tools_module
          ! (lambda is a diagonal matrix with eigenvalues on the diagonal)
          call mem_alloc(alphaR,M,M)
          call mem_alloc(alphaL,M,M)
+         call mem_alloc(lambda,M)
          call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambda,alphaR,alphaL)
          call mem_dealloc(Ar)
-         do i=1,M
-            print *, 'Eival nonsymm ',i,lambda(i)
-         end do
 
+         ! Sanity check for dimensions
+         if(M+k > maxdim) then
+            call lsquit('ccsd_eigenvalue_solver: M+k too large! Not possible to extend subspace!',-1)
+         end if
 
-
-
-         ! Residual and convergence check for the p eigenvalues
-         ! ----------------------------------------------------
+         ! Residual, precondioning and new trial vectors
+         ! ---------------------------------------------
          ! Note. Here we check for k residuals (p=1,k), while in J. Comp. Phys. 17, 87 (1975)
          ! only the k'th eigenvalue is considered.
-         do p=1,k
+         ploop: do p=1,k
 
-            ! Two components: singles (q1) and doubles (q2)
+            ! Residual - two components: singles (q1) and doubles (q2)
             call tensor_zero(q1)
             call tensor_zero(q2)
             do i=1,M
@@ -2733,7 +2760,6 @@ module cc_response_tools_module
                call tensor_add(q1,fac,b1(i))
 
                call tensor_add(q2,alphaR(i,p),Ab2(i))
-               fac = - alphaR(i,p)*lambda(p)
                call tensor_add(q2,fac,b2(i))
             end do
 
@@ -2743,12 +2769,59 @@ module cc_response_tools_module
 
             ! Check for convergence
             conv(p) = (res(p)<thr) 
-            write(DECinfo%output,'(1X,a,i6,2g18.8,L2)') '###',p,lambda(p),res(p),conv(p)
+            write(DECinfo%output,'(1X,a,2i6,2g18.8,L2)') '###',M,p,lambda(p),res(p),conv(p)
+            if(conv(p)) cycle ploop
 
-         end do
+            ! Update M
+            M=M+1
+
+            ! Preconditioning: b(M) = precond(q)
+            zeta1%elm2 = q1%elm2
+            zeta2%elm4 = q2%elm4
+            !            call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambda(p),q1,q2,zeta1,zeta2)
+
+            ! Component of precondioned residual orthogonal to current trial vectors:
+            !
+            ! b(M) = [ 1 - sum_{i=1}^Mold b(i) b(i)^T ] zeta
+            !
+            call tensor_minit(b1(M),[nvirt,nocc],2)
+            call tensor_minit(b2(M),[nvirt,nocc,nvirt,nocc],4)
+            call tensor_minit(Ab1(M),[nvirt,nocc],2)
+            call tensor_minit(Ab2(M),[nvirt,nocc,nvirt,nocc],4)
+            call tensor_zero(b1(M))
+            call tensor_zero(b2(M))
+            ! b(M+p) = zeta
+            call tensor_add(b1(M),1.0_realk,zeta1)
+            call tensor_add(b2(M),1.0_realk,zeta2)
+
+            do i=1,Mold
+               ! b(i)^T zeta
+               bTzeta = - ( tensor_ddot(b1(i),zeta1) + tensor_ddot(b2(i),zeta2) )
+               ! b(M+p) += - b(i) { b(i)^T zeta }
+               call tensor_add(b1(M),bTzeta,zeta1)
+               call tensor_add(b2(M),bTzeta,zeta2)
+            end do
+
+            ! Normalize b(M)
+            bnorm = tensor_ddot(b1(M),b1(M)) + tensor_ddot(b2(M),b2(M))
+            if(bnorm < 1.0e-14_realk) then
+               print *, 'p, bnorm', p,bnorm
+               call lsquit('ccsd_eigenvalue_solver: Zero norm after projection!',-1)
+            end if
+            sc = 1.0_realk/sqrt(bnorm)
+            call tensor_scale(b1(M),sc)
+            call tensor_scale(b2(M),sc)
+
+            ! Form Ab(M)
+            call cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+                 & yv_tensor,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
+
+         end do ploop
+
+         ! Free stuff
          call mem_dealloc(alphaR)
          call mem_dealloc(alphaL)
-
+         call mem_dealloc(lambda)
 
          ! Are all eigenvalues converged?
          allconv = all(conv)
@@ -2756,72 +2829,25 @@ module cc_response_tools_module
             exit SolverLoop
          end if
 
-         ! Sanity check for dimensions
-         if(M+p > maxdim) then
-            call lsquit('ccsd_eigenvalue_solver: M+p too large! Not possible to extend subspace!',-1)
-         end if
-
-         ! Loop over excitation energies
-         ! -----------------------------
-         do p=1,k
-            ! Preconditioning: b(M+p) = precond(q)
-            call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambda(p),q1,q2,zeta1,zeta2)
-
-            ! Component of precondioned residual orthogonal to current trial vectors:
-            !
-            ! b(M+p) = [ 1 - b(i) b(i)^T ] zeta
-            !
-            call tensor_minit(b1(M+p),[nvirt,nocc],2)
-            call tensor_minit(b2(M+p),[nvirt,nocc,nvirt,nocc],4)
-            call tensor_minit(Ab1(M+p),[nvirt,nocc],2)
-            call tensor_minit(Ab2(M+p),[nvirt,nocc,nvirt,nocc],4)
-            call tensor_zero(b1(M+p))
-            call tensor_zero(b2(M+p))
-            ! b(M+p) = zeta
-            call tensor_add(b1(M+p),1.0_realk,zeta1)
-            call tensor_add(b2(M+p),1.0_realk,zeta2)
-            do i=1,M
-               ! b(i)^T zeta
-               bTzeta = - ( tensor_ddot(b1(i),zeta1) + tensor_ddot(b2(i),zeta2) )
-               ! b(M+p) += - b(i) { b(i)^T zeta }
-               call tensor_add(b1(M+p),bTzeta,zeta1)
-               call tensor_add(b2(M+p),bTzeta,zeta2)
-            end do
-
-            ! Normalize b(M+p)
-            bnorm = tensor_ddot(b1(M+p),b1(M+p)) + tensor_ddot(b2(M+p),b2(M+p))
-            if(bnorm < 1.0e-14_realk) then
-               print *, 'p, bnorm', p,bnorm
-               call lsquit('ccsd_eigenvalue_solver: Zero norm after projection!',-1)
-            end if
-            sc = 1.0_realk/sqrt(bnorm)
-            call tensor_scale(b1(M+p),sc)
-            call tensor_scale(b2(M+p),sc)
-
-            ! Form Ab(M+p)
-            call cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-                 & yv_tensor,t1,t2,b1(M+p),b2(M+p),Ab1(M+p),Ab2(M+p))
-         end do
-
-         ! Calculate new blocks of reduced Jacobian matrix, i.e.,
+         ! Calculate new blocks of reduced Jacobian matrix A with new M. A is:
          !
-         !      |   A(1:M , 1:M)         A(1:M , M+1:M+k)        |
-         ! A =  |   A(M+1:M+k , 1:M)     A(M+1:M+k , M+1:M+k)    |
+         !      |   A(1:Mold ,   1:Mold)       A(1:Mold ,   Mold+1:M)    |
+         ! A =  |   A(Mold+1:M , 1:Mold)       A(Mold+1:M , Mold+1:M)    |
          ! 
-         ! A(1:M , 1:M) has already been calculated, while the other blocks are
+         ! A(1:Mold , 1:Mold) has already been calculated, while the other blocks are
          ! calculated here.
-         do i=1,M+k
-            do j=M+1,M+k
+         do i=1,M
+            do j=Mold+1,M
                Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
                if(i/=j) Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
             end do
          end do
 
-         ! Update M for next iteration (we've included k new vectors to subspace)
-         M = M+k
-
       end do SolverLoop
 
+      if(.not. allconv) then
+         call lsquit('Jacobian eigenvalue solver did not converge!',-1)
+      end if
 
       ! KKHACK fixme - deallocate Ab1,Ab2,b1,b2 properly!
       do i=1,M
@@ -2837,7 +2863,6 @@ module cc_response_tools_module
 
       call mem_dealloc(res)
       call mem_dealloc(conv)
-      call mem_dealloc(lambda)
       call mem_dealloc(Arbig)
       call tensor_free(zeta1)
       call tensor_free(zeta2)
