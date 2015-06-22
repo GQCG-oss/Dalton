@@ -6666,56 +6666,61 @@ IF(.NOT.DSYM)THEN
       ENDIF
    enddo
    ndmat2 = idmat2
-   if(ndmat2.GT.0)THEN
-      call mem_alloc(D2,ndmat2)
-      do idmat2=1,ndmat2
-         call mat_init(D2(idmat2),D(1)%nrow,D(1)%ncol)
-      enddo
-      idmat2 = 0
-      do idmat=1,ndmat
-         IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
-            idmat2 = idmat2 + 1
-            call mat_copy(1.0E0_realk,D(idmat), D2(idmat2))
-         ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym
-            call mat_assign(D2(idmat2+1),D(idmat))
-            call util_get_symm_part(D2(idmat2+1))
-            call util_get_antisymm_part(D(idmat),D2(idmat2+2))
-            idmat2 = idmat2 + 2 !we split up into sym and anti sym part
-         ELSE
-            !do nothing
-         ENDIF
-      enddo
-      call mem_alloc(F2,ndmat2)
-      do idmat2=1,ndmat2
-         call mat_init(F2(idmat2),F(1)%nrow,F(1)%ncol)
-         call mat_zero(F2(idmat2)) 
-      enddo
-      call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D2,ndmat2,F2,AO1,AO3,AO2,AO4,Oper)
-      do idmat2=1,ndmat2
-         call mat_free(D2(idmat2))
-      enddo
-      call mem_dealloc(D2)
-      idmat2 = 0
-      do idmat=1,ndmat
-         IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
-            idmat2 = idmat2 + 1
-            call mat_copy(1.0E0_realk,F2(idmat2), F(idmat))
-         ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym
-            call mat_add(1E0_realk,F2(idmat2+1),1E0_realk,F2(idmat2+2),F(idmat))
-            idmat2 = idmat2 + 2
-         ELSE
+   IF(ndmat2.EQ.ndmat)THEN
+      !all matrices are sym or asym 
+      call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D,ndmat,F,AO1,AO3,AO2,AO4,Oper)
+   ELSE
+      if(ndmat2.GT.0)THEN
+         call mem_alloc(D2,ndmat2)
+         do idmat2=1,ndmat2
+            call mat_init(D2(idmat2),D(1)%nrow,D(1)%ncol)
+         enddo
+         idmat2 = 0
+         do idmat=1,ndmat
+            IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
+               idmat2 = idmat2 + 1
+               call mat_copy(1.0E0_realk,D(idmat), D2(idmat2))
+            ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym
+               call mat_assign(D2(idmat2+1),D(idmat))
+               call util_get_symm_part(D2(idmat2+1))
+               call util_get_antisymm_part(D(idmat),D2(idmat2+2))
+               idmat2 = idmat2 + 2 !we split up into sym and anti sym part
+            ELSE
+               !do nothing
+            ENDIF
+         enddo
+         call mem_alloc(F2,ndmat2)
+         do idmat2=1,ndmat2
+            call mat_init(F2(idmat2),F(1)%nrow,F(1)%ncol)
+            call mat_zero(F2(idmat2)) 
+         enddo
+         call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D2,ndmat2,F2,AO1,AO3,AO2,AO4,Oper)
+         do idmat2=1,ndmat2
+            call mat_free(D2(idmat2))
+         enddo
+         call mem_dealloc(D2)
+         idmat2 = 0
+         do idmat=1,ndmat
+            IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
+               idmat2 = idmat2 + 1
+               call mat_copy(1.0E0_realk,F2(idmat2), F(idmat))
+            ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym
+               call mat_add(1E0_realk,F2(idmat2+1),1E0_realk,F2(idmat2+2),F(idmat))
+               idmat2 = idmat2 + 2
+            ELSE
+               call mat_zero(F(idmat))
+            ENDIF
+         enddo
+         do idmat2=1,ndmat2
+            call mat_free(F2(idmat2))
+         enddo
+         call mem_dealloc(F2)
+      else
+         do idmat=1,ndmat
             call mat_zero(F(idmat))
-         ENDIF
-      enddo
-      do idmat2=1,ndmat2
-         call mat_free(F2(idmat2))
-      enddo
-      call mem_dealloc(F2)
-   else
-      do idmat=1,ndmat
-         call mat_zero(F(idmat))
-      enddo
-   endif
+         enddo
+      endif
+   ENDIF
 ELSE
    call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D,ndmat,F,AO1,AO3,AO2,AO4,Oper)
 ENDIF
