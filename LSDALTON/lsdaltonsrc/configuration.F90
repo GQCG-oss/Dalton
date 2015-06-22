@@ -2478,11 +2478,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
              CASE('.SOLVERESPONSESIMULTANT')
                 !Solve the response equations at the same time. 
                 config%integral%SolveNMRResponseSimultan = .TRUE.
-             CASE('.RESPONSEMATRIXNORMCONVTEST')
-                !Use a Matrix Norm TrAB(matA,matX) Convergence Test
-                !Where matX is the solution of the response Eq. 
-                !and TrAB(matA,matX) is related to the desired property
-                config%integral%ResponseMatNormConvTest = .TRUE.
              CASE DEFAULT
                 WRITE (config%LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                      & '" not recognized in RESPONSE *INASHIELD input.'

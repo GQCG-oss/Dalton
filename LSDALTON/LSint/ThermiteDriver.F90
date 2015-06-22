@@ -1674,10 +1674,10 @@ integer,pointer     :: atomC(:),atomD(:),batchC(:),batchD(:),atomIndexC(:),atomI
 real(realk),pointer :: X3(:),Y3(:),Z3(:),X4(:),Y4(:),Z4(:)
 real(realk) :: TMP,factor,CS_THRESHOLD
 integer :: IRHSI(1),nLHSbatches,nA,node,numnodes
-integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS,IOMPLHSCOUNT
+integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS,IOMPLHSCOUNT,nEcont
 integer,pointer :: Belms(:)
 integer,pointer :: IODelms(:)
-real(realk)           :: ReductionECONT(input%NDMAT_RHS)
+real(realk)           :: ReductionECONT(input%NDMAT_RHS*3)
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -1960,7 +1960,7 @@ IF(PerformCALC)THEN
 !$OMP cs_thrlog,lsoutput,drhs_sym,dalink,dalink_thrlog,&
 !$OMP batchindex1,batchindex2,red_gab_lhs,red_gab_rhs,inputdo_passes,&
 !$OMP nRHSoverlaps,ndmat_rhs,factor,nograd,ILHSCOUNTINDEX,&
-!$OMP ODtypeIndex,nLHSbatches,ReductionECONT)
+!$OMP ODtypeIndex,nLHSbatches,ReductionECONT,nEcont)
  IF(.NOT.INPUT%noOMP) call init_threadmemvar()
 #ifdef VAR_MPI
  node = input%node
@@ -2040,8 +2040,10 @@ IF(PerformCALC)THEN
  CALL INIT_OVERLAP(P,Allocations,iODtype,Input,1,IPRINT,LUPRI)
  CALL allocIntegralsWRAP(PQ,Integral,Input,Allocations,iODtype,nPassTypes,&
       &maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
- call mem_alloc(Integral%Econt,input%NDMAT_RHS)
- IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk   
+ nEcont = input%NDMAT_RHS
+ IF(INPUT%magderivorder.EQ.1)nEcont = input%NDMAT_RHS*3
+ call mem_alloc(Integral%Econt,nEcont) 
+ IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk
  TOTmaxpasses = 0
  call INIT_BUFCOUNTERS(3)
  DO iPassType=1,nPassTypes
@@ -2330,7 +2332,7 @@ IF(PerformCALC)THEN
 
  IF(INPUT%fullcontraction)THEN
  !$OMP CRITICAL
-  do i=1,input%NDMAT_RHS
+  do i=1,nEcont
    ReductionECONT(i) = ReductionECONT(i) + Integral%Econt(i)
   enddo
  !$OMP END CRITICAL
@@ -2370,7 +2372,7 @@ IF(PerformCALC)THEN
  IF(.NOT.INPUT%noOMP)call mem_TurnOffThread_Memory()
 
  IF(INPUT%fullcontraction)THEN
-  do ILHS=1,input%NDMAT_RHS
+  do ILHS=1,nEcont
    LsOutput%ResultTensor%LSAO(1)%elms(ILHS) = ReductionECONT(ILHS)
   enddo
  ENDIF
@@ -2894,9 +2896,16 @@ ELSE
          call distributeKgrad(OUTPUT%resultTensor,integral%integralsABCD,input%LST_DLHS,&
               & input%LST_DRHS,input%NDMAT_RHS,PQ,Input,output,LUPRI,IPRINT)
         ELSEIF(INPUT%fullcontraction)THEN
-           call distributeKcont(&
-                & integral%integralsABCD,input%LST_DLHS,input%LST_DRHS,&
-                & input%NDMAT_RHS,PQ,Input,output,Integral%Econt,LUPRI,IPRINT)
+           IF(INPUT%magderivorder.EQ.1)THEN
+              IF(input%NDMAT_RHS.NE.1)CALL LSQUIT('FFFFFFFFFFF',-1)
+              call distributemagKcont(integral%integralsABCD,input%LST_DLHS,&
+                   & input%LST_DRHS,input%NDMAT_LHS,PQ,Input,output,&
+                   & Integral%Econt,LUPRI,IPRINT)
+           ELSE
+              call distributeKcont(integral%integralsABCD,input%LST_DLHS,&
+                   & input%LST_DRHS,input%NDMAT_RHS,PQ,Input,output,&
+                   & Integral%Econt,LUPRI,IPRINT)
+           ENDIF
         ELSE
            call distributeExchange(OUTPUT%resultTensor,integral%integralsABCD,input%LST_DRHS,&
                 & input%NDMAT_RHS,INPUT%exchangeFactor,PQ,Input,output,LUPRI,IPRINT)

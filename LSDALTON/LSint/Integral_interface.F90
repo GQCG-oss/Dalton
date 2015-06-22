@@ -4527,6 +4527,63 @@ CALL retrieve_Output(lupri,setting,Kx,setting%IntegralTransformGC)
 CALL ls_freeDmatFromSetting(setting)
 END SUBROUTINE II_get_magderivK1
 
+SUBROUTINE II_get_magderivKcont(LUPRI,LUERR,SETTING,DLHS,nLHS,Econt,DRHS)
+IMPLICIT NONE
+Integer               :: nLHS
+TYPE(MATRIX),target   :: DLHS(nLHS)
+TYPE(MATRIX),target   :: DRHS(1)
+real(realk)           :: Econt(3,nLHS)
+TYPE(LSSETTING)       :: SETTING
+INTEGER               :: LUPRI,LUERR
+!
+Integer             :: idmat,incdmat,nrow,ncol
+Real(realk),pointer :: DfullLHS(:,:,:)
+Real(realk),pointer :: DfullRHS(:,:,:)
+Real(realk)         :: fac,KFAC,maxCoor,OLDTHRESH,TS,TE
+integer    :: Oper,dascreen_thrlog
+Logical :: DaLink,LSDaLink,LSDaScreen
+IF (ABS(SETTING%SCHEME%exchangeFactor).LT.1.0E0-15_realk)RETURN
+!The size of the magnetic derivative integral will increase with 
+!the size of the system so we modify the threshold with the 
+!largest X,Y or Z distance in the molecule. 
+call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(2.0E0_realk/maxCoor)
+IF(matrix_type .EQ. mtype_unres_dense)call lsquit('unres magderiv K not testet- not implemented',-1)
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC in II_get_magderivKcont use .NOGCBASIS',-1)
+ENDIF
+LSDaLink = setting%scheme%LSdaLinK
+DaLink = setting%scheme%daLinK
+LSDaScreen = setting%scheme%LSDASCREEN 
+Dascreen_thrlog = setting%scheme%Dascreen_thrlog
+setting%scheme%LSDASCREEN = .TRUE.
+setting%scheme%daLinK = .TRUE.
+setting%scheme%LSdaLinK = .TRUE.
+setting%scheme%Dascreen_thrlog = 0 !do not tighten 
+CALL LSTIMER('START ',TS,TE,LUPRI)
+!attach matrices
+CALL ls_attachDmatToSetting(DLHS,nLHS,setting,'RHS',1,3,.FALSE.,lupri)
+CALL ls_attachDmatToSetting(DRHS,1,setting,'LHS',2,4,.FALSE.,lupri)
+IF (SETTING%SCHEME%CAM) THEN
+  Oper = CAMOperator       !Coulomb attenuated method
+ELSEIF (SETTING%SCHEME%SR_EXCHANGE) THEN
+  Oper = ErfcOperator      !Short-Range Coulomb screened exchange
+ELSE
+  Oper = CoulombOperator   !Regular Coulomb metric 
+ENDIF
+!Calculates the HF-exchange contribution
+call initIntegralOutputDims(setting%Output,1,1,1,1,3*nLHS)
+call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,Oper,&
+     & magderivEcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,Econt,setting%IntegralTransformGC)
+CALL ls_freeDmatFromSetting(setting)
+CALL LSTIMER('magderivKcont',TS,TE,LUPRI)
+setting%scheme%LSdaLinK = LSDaLink
+setting%scheme%daLinK = DaLink
+setting%scheme%LSDASCREEN  = LSDaScreen
+setting%scheme%Dascreen_thrlog = Dascreen_thrlog
+END SUBROUTINE II_get_magderivKcont
+
 !> \brief Calculates the magnetic derivative Coulomb integrals
 !> \author T. Kjaergaard
 !> \date 2010

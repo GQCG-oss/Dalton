@@ -49,11 +49,11 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
    real(realk) :: DUMMY(1,1)
 
    ! Initializations 
-#ifdef VAR_LSDEBUGINT
+!#ifdef VAR_LSDEBUG
    mem_monitor = .true.  !Mostly for memory debugging
-#else
-   mem_monitor = .false. !Mostly for memory debugging
-#endif
+!#else
+!   mem_monitor = .false. !Mostly for memory debugging
+!#endif
    CALL PRINT_INTRO(LUPRI)
    call lsmpi_print(lupri)
 #ifdef BINARY_INFO_AVAILABLE
