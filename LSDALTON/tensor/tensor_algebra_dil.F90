@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/06/18 (started 2014/09/01).
+!REVISION: 2015/06/22 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -3107,17 +3107,17 @@
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
-        ierr=0; call dil_rank_window_clean(rwc)
+        ierr=0; call dil_rank_window_clean(rwc); nullify(bufi)
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         if(present(bufe)) then
-         if(size(bufe).lt.tens_arr%tsize) then; ierr=-4; return; endif
+         if(size(bufe).lt.tens_arr%tsize) then; call proc_clean(-4_INTD); return; endif
          bufi=>bufe !use an externally provided buffer
         else
          call cpu_ptr_alloc(bufi,int(tens_arr%tsize,INTL),i) !allocate buffer here
-         if(i.ne.0) then; ierr=-3; nullify(bufi); return; endif
+         if(i.ne.0) then; call proc_clean(-3_INTD); return; endif
         endif
         n=tens_arr%mode; k=DIL_FIRST_CALL
-        do while(k.ge.0) !k<0: iterations are over
+        do while(k.ge.0.and.ierr.eq.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
@@ -3125,36 +3125,37 @@
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
+          if(.not.win_lck) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
           call tensor_get_tile(tens_arr,tile_num,bufi(1:tile_vol),tile_vol,lock_set=.true.)
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:n)
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if(new_rw) then
-           if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
-           else
-            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
-           endif
+          if(win_lck) then
+           call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+          else
+           call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
           endif
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:n)
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",16(1x,i6))',ADVANCE='NO') signa(1:n)
           call dil_tensor_insert(n,bufo,tens_part%dims,bufi(1:tile_vol),tile_dims,signa(1:n)-tens_part%lbnd(1:n),i)
 !          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
-          if(i.ne.0) then; ierr=-2; call proc_clean(); return; endif
+          if(i.ne.0) then; call proc_clean(-2_INTD); return; endif
          elseif(k.gt.0) then
-          ierr=-1; call proc_clean(); return
+          call proc_clean(-1_INTD); return
          endif
         enddo
+        call proc_clean(0_INTD)
         return
 
         contains
 
-         subroutine proc_clean()
+         subroutine proc_clean(jerr)
+         integer(INTD), intent(in):: jerr
+         ierr=jerr
          if(present(bufe)) then
           nullify(bufi)
          else
-          call cpu_ptr_free(bufi,ierr); if(ierr.ne.0) ierr=-4
+          if(associated(bufi)) then; call cpu_ptr_free(bufi,ierr); if(ierr.ne.0) ierr=-5; endif
          endif
          return
          end subroutine proc_clean
@@ -5415,10 +5416,12 @@
         end function dil_will_malloc_succeed
 !--------------------------------------------------------------------------------
         subroutine dil_distr_tens_insert_sym2(dtens,stens,ud1,ud2,fd,ierr,locked) !PARALLEL
-!This subroutine upacks a symmetrically packed pair of indices, that is,
+!This subroutine upacks a symmetrically packed pair of indices in a distributed tensor, that is,
 !it implements the following operation on distributed tensors: D(p,q,..,r,s)+=S(p,q,..,r<=s),
 !where the positioning of indices r,s, and (r<=s) can be arbitrary in general,
 !as well as the tensor ranks, but the relative order of other indices must coincide!
+!Performance will suffer if either r or s (or both) is the leading (first) index in <dtens>
+!and/or the composite index (r<=s) is the leading (first) index in <stens>.
         implicit none
         type(tensor), intent(inout):: dtens    !inout: destination tensor (rank>0)
         type(tensor), intent(in):: stens       !in: source tensor (rank one less than <dtens>)
@@ -5438,7 +5441,7 @@
 
         ierr=0; nullify(slice); nullify(tile)
         if(stens%mode.lt.1.or.dtens%mode.ne.stens%mode+1) then; call proc_clean(1_INTD); return; endif
-        n=dtens%mode !n: destination tensor rank
+        n=dtens%mode !n: destination tensor rank, (n-1): source tensor rank
         if(ud1.le.0.or.ud1.gt.n.or.ud2.le.0.or.ud2.gt.n.or.ud1.eq.ud2.or.fd.le.0.or.fd.gt.stens%mode) then
          call proc_clean(2_INTD); return
         endif
@@ -5511,7 +5514,7 @@
          bd2=(tkey(ud2,l)-1)*dtens%tdim(ud2)+1 !base orbital for index s (numeration from 1)
          ll=1; do i=1,n; db(i)=ll; ll=ll*dtens%ti(tnum(l))%d(i); enddo !addressing bases for the current <dtens> tile
  !Accumulate:
-         ld=0; ls=0
+         ld=1; ls=1 !destination/source addresses (start from 1)
   !Loop over symmetric indices:
          do i2=0,dtens%ti(tnum(l))%d(ud2)-1 !tile offset for index s
           l2=bd2+i2 !absolute value of index s
@@ -5538,6 +5541,7 @@
               mlndx(i)=mlndx(i)+1
               ld=ld+db(k)
               ls=ls+sb(j)
+              i=1
              else
               ld=ld-mlndx(i)*db(k)
               ls=ls-mlndx(i)*sb(j)
@@ -5546,7 +5550,7 @@
              endif
             enddo
            else !empty external multi-index
-            dtens%ti(m)%t(ld)=dtens%ti(m)%t(ld)+slice(ls)*dsgn
+            dtens%ti(tnum(l))%t(ld)=dtens%ti(tnum(l))%t(ld)+slice(ls)*dsgn
            endif
            ls=ls-l12*sb(fd) !unmount
            ld=ld-i1*db(ud1) !unmount
