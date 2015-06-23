@@ -83,6 +83,7 @@ module tensor_interface_module
   public tensor_transform_basis, tensor_ddot
   public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
+  public tensor_print_norm_nrm
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, init_persistent_array, free_persistent_array, new_group_reset_persistent_array
