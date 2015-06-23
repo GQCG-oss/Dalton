@@ -136,10 +136,10 @@ module dec_tools_module
     integer,intent(in) :: n
     !> A matrix in eigenvalue problem 
     real(realk),intent(in) :: A(n,n)
-    !> Right (R) and left (L) eigenvectors
-    real(realk),intent(inout) :: R(n,n), L(n,n)
     !> Eigenvalues
     real(realk),intent(inout) :: eival(n)
+    !> Right (R) and left (L) eigenvectors
+    real(realk),intent(inout) :: R(n,n), L(n,n)
     real(realk), pointer :: B(:,:),Atmp(:,:)
     integer :: i,j,lwork,info
     real(realk),pointer :: alphaR(:), alphaI(:), beta(:),work(:)
@@ -173,6 +173,12 @@ module dec_tools_module
          & BETA, L, n, R, n, WORK, LWORK, INFO )
     lwork = int(work(1))
 
+    if(info/=0) then
+       print *, 'INFO = ', INFO
+       call lsquit('solve_nonsymmetric_eigenvalue_problem_unitoverlap: &
+            & Error1 in DGGEV!',-1)
+    end if
+
     ! Allocate work space
     call mem_dealloc(work)
     call mem_alloc(work,lwork)
@@ -184,7 +190,7 @@ module dec_tools_module
     if(info/=0) then
        print *, 'INFO = ', INFO
        call lsquit('solve_nonsymmetric_eigenvalue_problem_unitoverlap: &
-            & Error in DGGEV!',-1)
+            & Error2 in DGGEV!',-1)
     end if
 
     ! Check that eigenvalues are real and well-defined

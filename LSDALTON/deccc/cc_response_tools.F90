@@ -1616,17 +1616,78 @@ module cc_response_tools_module
     end subroutine get_ccsd_lhtr_integral_driven
 
 
+    !> \brief Wrapper to calculate Calculate CCSD Jacobian left-hand transformation.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,Co,Cv,fAO,t1,t2,L1,L2,rho1,rho2)
+      implicit none
+      !> Number of atomic/occupied/virtual orbitals
+      integer,intent(in) :: nbasis,nocc,nvirt
+      !> Fock matrix in AO basis
+      real(realk),intent(in) :: fAO(nbasis,nbasis)
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Occ and virt MO coefficients
+      type(tensor),intent(inout) :: Co,Cv
+      !> Singles and doubles amplitudes  (in practice these are intent(in))
+      type(tensor),intent(inout) :: t1,t2
+      !> Singles (L1) and doubles (L2) components of trial vector
+      type(tensor),intent(in) :: L1,L2
+      !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
+      type(tensor),intent(inout) :: rho1,rho2
+      type(tensor) :: xo,xv,yo,yv,t1fock,fAO_tensor
+      integer :: i,j
+
+
+      ! Init tensors for hole and particle transformation coefficients + T1-transformed Fock
+      call tensor_minit(xo,[nbasis,nocc],2)
+      call tensor_minit(xv,[nbasis,nvirt],2)
+      call tensor_minit(yo,[nbasis,nocc],2)
+      call tensor_minit(yv,[nbasis,nvirt],2)
+      call tensor_minit(yv,[nbasis,nvirt],2)
+      call tensor_minit(t1fock,[nbasis,nbasis],2)
+
+      ! Dirty workaround due to input in get_t1_matrices
+      call tensor_minit(fAO_tensor,[nbasis,nbasis],2)
+      do j=1,nbasis
+         do i=1,nbasis
+            fAO_tensor%elm2(i,j) = fAO(i,j)
+         end do
+      end do
+      
+
+      ! Calculate T1-transformed Fock matrix
+      call get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fAO_tensor,t1fock,.false.)
+
+      ! Calculate left-hand transformation for Jacobian
+      call get_ccsd_multipliers_simple(rho1%elm2,rho2%elm4,t1%elm2,t2%elm4,&
+           & L1%elm2,L2%elm4,&
+           & t1fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2,&
+           & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
+
+      call tensor_free(xo)
+      call tensor_free(xv)
+      call tensor_free(yo)
+      call tensor_free(yv)
+      call tensor_free(t1fock)
+      call tensor_free(fAO_tensor)
+
+
+    end subroutine cc_jacobian_lhtr
+
+
+
     !> \brief Calculate CCSD Jacobian right-hand transformation.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-         & yv_tensor,t1,t2,R1,R2,rho1,rho2)
+    subroutine cc_jacobian_rhtr(mylsitem,xo,xv,yo,&
+         & yv,t1,t2,R1,R2,rho1,rho2)
       implicit none
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem      
       !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
       !> and virt (dimension nbasis,nvirt) transformations
-      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      type(tensor),intent(in) :: xo,xv,yo,yv
       !> Singles and doubles amplitudes
       type(tensor),intent(in) :: t1,t2
       !> Singles (R1) and doubles (R2) components of trial vector
@@ -1638,9 +1699,9 @@ module cc_response_tools_module
 
 
       ! Dimensions
-      nbasis = xo_tensor%dims(1)
-      nocc = xo_tensor%dims(2)
-      nvirt = xv_tensor%dims(2)
+      nbasis = xo%dims(1)
+      nocc = xo%dims(2)
+      nvirt = xv%dims(2)
 
       call tensor_minit(rho11,[nvirt,nocc],2)
       call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
@@ -1653,16 +1714,16 @@ module cc_response_tools_module
       ! Singles component: rho11  (Eq. 55)
       ! Doubles component: rho12  (Eq. 57)
       whattodo=1
-      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
+      call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+           & yv,t2,R1,R2,rho11,rho12,whattodo)
 
       ! Calculate 2^rho components for Jacobian RHS transformation,
       ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
       ! Singles component: rho21  (Eq. 56)
       ! Doubles component: rho22  (Eq. 58)
       whattodo=2
-      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,t2,R1,R2,rho21,rho22,whattodo)
+      call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+           & yv,t2,R1,R2,rho21,rho22,whattodo)
 
       ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
       call tensor_zero(rho1)
@@ -1685,14 +1746,14 @@ module cc_response_tools_module
     !> the Jacobian right-hand transformation can also be calculated.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-         & yv_tensor,t2,R1,R2,rho1,rho2,whattodo)
+    subroutine noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+         & yv,t2,R1,R2,rho1,rho2,whattodo)
       implicit none
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem      
       !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
       !> and virt (dimension nbasis,nvirt) transformations
-      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      type(tensor),intent(in) :: xo,xv,yo,yv
       !> Doubles amplitudes
       type(tensor),intent(in) :: t2
       !> Singles (R1) and doubles (R2) components of trial vector
@@ -1725,9 +1786,9 @@ module cc_response_tools_module
 
 
       ! Dimensions
-      nbasis = xo_tensor%dims(1)
-      nocc = xo_tensor%dims(2)
-      nvirt = xv_tensor%dims(2)
+      nbasis = xo%dims(1)
+      nocc = xo%dims(2)
+      nvirt = xv%dims(2)
 
       ! Sanity check 1
       if(whattodo/=1 .and. whattodo/=2 .and. whattodo/=3) then
@@ -1756,8 +1817,8 @@ module cc_response_tools_module
 
 
       ! Calculate all integrals 
-      call noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,R1,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
+      call noddy_generalized_ccsd_residual_integrals(mylsitem,xo,xv,yo,&
+           & yv,R1,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
            & fvo,fov,fvv,foo,whattodo)
 
 
@@ -2551,13 +2612,15 @@ module cc_response_tools_module
     !> for Jacobian right-hand side eigenvalue problem to get CCSD excitation energies.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine ccsd_eigenvalue_solver(nocc,nvirt,foo,fvv,mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-         & yv_tensor,t1,t2)
+    subroutine ccsd_eigenvalue_solver(nbasis,nocc,nvirt,fAO,foo,fvv,mylsitem,&
+         & xo_tensor,xv_tensor,yo_tensor,yv_tensor,t1,t2)
       implicit none
-      !> Number of occupied/virtual orbitals in molecule
-      integer,intent(in) :: nocc,nvirt
+      !> Number of atomic/occupied/virtual orbitals
+      integer,intent(in) :: nbasis,nocc,nvirt
+      !> Fock matrix in AO basis
+      real(realk),intent(in) :: fAO(nbasis,nbasis)
       !> Occ-occ and virt-virt Fock matrix blocks in MO basis
-      real(realk),intent(in) :: foo(nocc,nocc),fvv(nvirt,nvirt)
+      real(realk),intent(in) :: foo(nocc,nocc), fvv(nvirt,nvirt)
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem
       !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
@@ -2567,7 +2630,7 @@ module cc_response_tools_module
       type(tensor),intent(in) :: t1,t2
       real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
-      integer :: Mold,k,M,p,maxdim,i,j,iter,maxiter,a,b   ! KKHACK remove a,b
+      integer :: Mold,k,M,p,maxdim,i,j,iter,maxiter
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
       type(tensor) :: q1,zeta1,q2,zeta2
@@ -2575,7 +2638,6 @@ module cc_response_tools_module
       real(realk),pointer :: res(:)
       logical,pointer :: conv(:)
       logical :: allconv
-
 
       ! Convergence threshold
       thr = 1.0e-7_realk
@@ -2649,7 +2711,7 @@ module cc_response_tools_module
          call tensor_minit(Ab2(i),[nvirt,nocc,nvirt,nocc],4)
       end do
       call mem_alloc(lambda,M)
-      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambda(1:M))
+      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambda)
       call mem_dealloc(lambda)
 
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
@@ -2664,18 +2726,17 @@ module cc_response_tools_module
       ! -------------------------------
       ! Note: Arbig always contains the components of the Jacobian constructed at the given time,
       !       and it is allocated such that there is room for more elements.
-      !       Ar contains the same elements but with the current dimensions.
+      !       Ar below will contain the same elements but with the current dimensions.
 
       call mem_alloc(Arbig,maxdim,maxdim)
       Arbig=0.0_realk
       do j=1,M
-         do i=j,M
-            ! Note b(i) and Ab(i) both have structures (singles, doubles)
+         do i=1,M
+            ! Note that b(i) and Ab(i) both have structures (singles, doubles).
             ! The reduced matrix is the dotproduct <b(i),Ab(j)>,
             ! and it therefore becomes a sum of dot products of the singles
             ! and doubles components
             Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
-            if(i/=j) Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
          end do
       end do
 
@@ -2693,9 +2754,6 @@ module cc_response_tools_module
 
       SolverLoop: do iter=1,maxiter
          
-         ! Save current subspace dimension
-         Mold = M
-
          ! Copy elements of reduced Jacobian into array having the proper dimensions
          call mem_alloc(Ar,M,M)
          do j=1,M
@@ -2716,13 +2774,11 @@ module cc_response_tools_module
          call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambda,alphaR,alphaL)
          call mem_dealloc(Ar)
 
-         ! Sanity check for dimensions
-         if(M+k > maxdim) then
-            call lsquit('ccsd_eigenvalue_solver: M+k too large! Not possible to extend subspace!',-1)
-         end if
+         ! Save current subspace dimension
+         Mold = M
 
-         ! Residual, precondioning and new trial vectors
-         ! ---------------------------------------------
+         ! Residual, preconditioning and new trial vectors
+         ! -----------------------------------------------
          ! Note. Here we check for k residuals (p=1,k), while in J. Comp. Phys. 17, 87 (1975)
          ! only the k'th eigenvalue is considered.
          ploop: do p=1,k
@@ -2748,9 +2804,15 @@ module cc_response_tools_module
             write(DECinfo%output,'(1X,a,i6,2X,i6,2X,g18.8,1X,g18.8,3X,L2)') &
                  & '###',M,p,lambda(p),res(p),conv(p)
             if(conv(p)) cycle ploop
+            ! KKHACK - also store optimal vector if converged!
 
             ! Update M
             M=M+1
+
+            ! Sanity check for dimensions
+            if(M > maxdim) then
+               call lsquit('ccsd_eigenvalue_solver: M is too large! Not possible to extend subspace!',-1)
+            end if
 
             ! Preconditioning: b(M) = precond(q)
             if(DECinfo%hack) then
