@@ -7,31 +7,6 @@
 !> that it belongs somewhere else than here.
 !> 
 
-
-   !> \brief LSDALTON wrapper to DGEMM C := alpha*op( A )*op( B ) + beta*C
-   !> \author T. Kjaergaard
-   !> \date 2015
-   subroutine LSDGEMM(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
-     implicit none
-     character   :: TRANSA
-     character   :: TRANSB
-     Integer     :: M    !number of rows of the output matrix C
-     Integer     :: N    !number of columns of the output matrix C
-     Integer     :: K    !size of summation index 
-     real(8)     :: Alpha 
-     real(8)     :: A(:,:)
-     Integer     :: LDA  !first dimension of matrix A
-     real(8)     :: B(:,:)
-     Integer     :: LDB  !first dimension of matrix B
-     real(8)     :: Beta 
-     real(8)     :: C(:,:)
-     Integer     :: LDC  !first dimension of matrix C
-     !possible replace this with some GPU accelerated version
-     !or debug version to ensure no out of bounds errors. 
-     call DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
-
-   end subroutine LSDGEMM
-
    !> \brief Interface to RGG for diagonalization of real general matrix, A*x = mu*S*X. Return eigenvalues and eigenvectors.
    !> \author S. Host
    !> \date 2005
