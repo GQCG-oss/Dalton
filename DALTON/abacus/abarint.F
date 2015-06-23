@@ -5032,6 +5032,9 @@ C
 C
       CALL DZERO(HESINT,MXRCRD*MXRCRD)
       CALL ATMINI(ATMARR,IATOM,.TRUE.)
+
+      WRITE(LUPRI,'(/A)')
+     &   'Building simple model Hessian by Roland Lindh ...'
 C
 C     We loop over all the internal coordinates and build up the
 C     diagonal Hessian.
