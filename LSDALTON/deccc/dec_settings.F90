@@ -239,13 +239,14 @@ contains
     DECinfo%RIMP2PDMTENSOR           = .false.
     DECinfo%RIMP2ForcePDMCalpha      = .false.
     DECinfo%RIMP2_tiling             = .false.
-    DECinfo%RIMP2_lowdin             = .false.
+    DECinfo%RIMP2_lowdin             = .true.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
     DECinfo%CCthrSpecified           = .false.
     DECinfo%use_singles              = .false.
     DECinfo%use_preconditioner       = .true.
+    DECinfo%ccsolverskip             = .false.
     DECinfo%use_preconditioner_in_b  = .true.
     DECinfo%use_crop                 = .true.
     DECinfo%array4OnFile             = .false.
@@ -260,6 +261,7 @@ contains
     DECinfo%abc_nbuffs        = 1000000
     DECinfo%acc_sync          = .false.
     DECinfo%pt_hack           = .false.
+    DECinfo%pt_hack2          = .false.
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -520,6 +522,7 @@ contains
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
        case('.ACC_SYNC'); DECinfo%acc_sync = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
+       case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
 
        ! DEC CALCULATION 
        ! ===============
@@ -768,8 +771,8 @@ contains
           DECinfo%RIMP2ForcePDMCalpha = .true.
        case('.RIMP2_TILING')
           DECinfo%RIMP2_tiling        = .true.
-       case('.RIMP2_LOWDIN')
-          DECinfo%RIMP2_lowdin        = .true.
+       case('.RIMP2_CHOL')
+          DECinfo%RIMP2_lowdin        = .false.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -813,6 +816,8 @@ contains
        case('.PRECWITHFULL')
           DECinfo%precondition_with_full=.true.
           DECinfo%ccsolver_overwrite_prec = .true.
+       case('.CCSOLVERSKIP')
+          DECinfo%ccsolverskip = .true.
        case('.MAXITER')
           read(input,*) DECinfo%MaxIter
        case('.TENSOR_SEGMENTING_SCHEME')
@@ -1294,6 +1299,11 @@ contains
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
+
+       if(DECinfo%use_bg_buffer)then
+          call lsquit("ERROR: bg buffer not implemented for fragment adapted orbitals",-1)
+       endif
+
     end if
 
     if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)

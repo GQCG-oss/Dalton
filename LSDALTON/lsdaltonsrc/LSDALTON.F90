@@ -121,7 +121,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   REAL(REALK)         :: mx
   ! Energy
   REAL(REALK)         :: E(1),ExcitE
-  logical             :: mem_monitor,do_decomp
+  logical             :: do_decomp
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
   integer     :: lusoeo,funit
@@ -144,7 +144,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures, and perform
   ! basic tests
-  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config)
 
 #ifdef HAS_PCMSOLVER
         !
@@ -351,7 +351,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call II_ichor_LinK_test(lupri,luerr,ls%setting,D)
         ENDIF
 
-        if (mem_monitor) then
+        if (config%mat_mem_monitor) then
            write(lupri,*)
            WRITE(LUPRI,'("Max no. of matrices allocated in Level 2 / get_initial_dens: ",I10)') max_no_of_matrices
            max_no_of_matrices = no_of_matrices
@@ -751,7 +751,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   call mat_no_of_matmuls(no_of_matmuls)
   WRITE(LUPRI,'("Total no. of matmuls used:                ",I10)') no_of_matmuls
   WRITE(LUPRI,'("Total no. of Fock/KS matrix evaluations:  ",I10)') ls%input%nfock
-  if (mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
+  if (config%mat_mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
 
   if(.not. HFdone) then  ! ensure there's no memory leak when HF calc was skipped
      call config_shutdown(config)
