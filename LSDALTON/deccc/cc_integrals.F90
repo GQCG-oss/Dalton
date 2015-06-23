@@ -2578,7 +2578,7 @@ contains
     if( use_bg_buf ) then
        if(maxsize > nbu) then
           print *, "Warning(get_mo_integral_par):  This should not happen, if the memory counting is correct&
-             &, Node:",infpar%lg_mynum," requests ",maxsize," in buffer ",nbu
+             &, Node:",me," requests ",maxsize," in buffer ",nbu
           !call mem_change_background_alloc(maxsize*8_long)
        endif
 
