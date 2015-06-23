@@ -6845,12 +6845,11 @@ C     Memory allocation
       RETURN
       END
 
+#ifdef BUILD_QFITLIB
 C  /* Deck QFIT_TRCHAR */
       SUBROUTINE QFIT_TRCHAR(trdipole, density)
 C
-#ifdef BUILD_QFITLIB
       use qfit
-#endif
 
 #include "inforb.h"
 
@@ -6863,5 +6862,6 @@ C
       
       return
       end
+#endif
 
 ! -- end of rspe2c.F --
