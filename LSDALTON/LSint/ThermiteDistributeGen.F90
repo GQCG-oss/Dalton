@@ -481,6 +481,15 @@ if(input%geoDerivOrder.GE.1)then
      nDimGeo = 1
    ELSE IF (input%geoDerivOrder.EQ.2) THEN
      nDimGeo = 2
+     call mem_alloc(packIndex,3*nAtoms,3*nAtoms,1)
+     iPack=0
+     DO i1=1,3*nAtoms
+       DO i2=i1,3*nAtoms
+           iPack=iPack+1
+           packIndex(i1,i2,1) = iPack
+           packIndex(i2,i1,1) = iPack
+       ENDDO
+     ENDDO
    ELSE IF (input%geoDerivOrder.EQ.3) THEN
      nDimGeo = 6
      call mem_alloc(packIndex,3*nAtoms,3*nAtoms,3*nAtoms)
@@ -663,13 +672,13 @@ DO iPassP=1,P%nPasses
        ELSEIF (input%geoDerivOrder.EQ. 2)THEN
           iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
           iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
-          i1 = derivInfo%dirComp(1,iDeriv)
-          i2 = derivInfo%dirComp(2,iDeriv)
-          Dim5(1) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
-          Dim5(2) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
-          nPermute=2
-          same12 = (Dim5(1).EQ.Dim5(2)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
-          IF (same12) nPermute=1
+          i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
+          i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
+          Dim5(1) = packIndex(i1,i2,1)
+          Dim5(2) = packIndex(i1,i2,1)
+          same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+          nPermute=1
+          IF ((i1.EQ.i2).AND..NOT.same12) nPermute=2
           IF (translate) THEN
             IF (iAtom1.EQ.iAtom2) THEN
               IF ((.NOT.same12).AND.(iAtom1.EQ.iTrans)) THEN
@@ -923,7 +932,7 @@ IF(Input%LinComCarmomType.GT.0)THEN
 ELSEIF(PQ%reverseOrder)THEN
    call mem_workpointer_dealloc(QPmat4)
 ENDIF
-IF (input%geoDerivOrder.EQ.3) call mem_dealloc(packIndex)
+IF (input%geoDerivOrder.GE.2) call mem_dealloc(packIndex)
 
 end SUBROUTINE GeneraldistributePQ
 

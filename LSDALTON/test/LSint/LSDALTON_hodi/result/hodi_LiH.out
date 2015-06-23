@@ -1,4 +1,3 @@
- THIS IS A DEBUG BUILD
   
      ******************************************************************    
      **********  LSDALTON - An electronic structure program  **********    
@@ -44,29 +43,30 @@
                                                 
       LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
       ----------------------------------------------------------------------------
-      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
-      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
       Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
-      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
       Robert Izsak,            University of Oslo,        Norway    (ADMM)
-      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
-      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
-      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
-      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
       Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
-      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
       Patrick Merlot,          University of Oslo,        Norway    (ADMM)
       Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
-      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
-      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
-      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
       Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
       Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
-      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
-      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
       Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
       Mark Watson,             University of Oslo,        Norway    (FMM)
       Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
@@ -88,8 +88,8 @@
   
   
  Who compiled             | simensr
- Host                     | 1x-193-157-248-96.uio.no
- System                   | Darwin-14.0.0
+ Host                     | 1x-193-157-202-75.uio.no
+ System                   | Darwin-14.3.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
@@ -103,13 +103,13 @@
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 75a5e0b3229e689ef2f26f04e5042162694a8746
+ Last Git revision        | db6ff5a5e15a28a7bf1587856332789daeea6e5f
  Git branch               | master
- Configuration time       | 2015-04-20 14:47:07.172668
+ Configuration time       | 2015-06-23 12:13:23.126918
 
 Start simulation
-     Date and time (Linux)  : Mon Apr 20 14:49:52 2015
-     Host name              : 1x-193-157-255-61.uio.no                
+     Date and time (Linux)  : Tue Jun 23 12:19:24 2015
+     Host name              : 1x-193-157-202-75.uio.no                
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -168,7 +168,7 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/simensr/Dalton/2014/build-debug/basis/3-21G
+ OPENING FILE/Users/simensr/Dalton/2015/build-omp/basis/3-21G
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -207,7 +207,7 @@ total          4                               18       11
                       
  Configuration:
  ==============
-    This is a Single core calculation. (no OpenMP)
+    This is an OpenMP calculation using   4 threads.
     This is a serial calculation (no MPI)
 
    You have requested Augmented Roothaan-Hall optimization
@@ -236,6 +236,7 @@ We perform the calculation in the standard input basis
 
  End of configuration!
 
+WARNING: Turning off MPI for HODI test
  HODI contract1 expectation values: first-order geometrical-derivative Coulomb matrix
    Contraction number   1
        1         0.00000000
@@ -278,37 +279,22 @@ We perform the calculation in the standard input basis
        4        15.58229180
        5        -0.00000000
        6         0.00000000
-       7         0.00000000
-       8       -11.84502669
-       9         0.00000000
-      10        -0.00000000
-      11        11.84502669
-      12         0.00000000
+       7       -11.84502669
+       8         0.00000000
+       9        -0.00000000
+      10        11.84502669
+      11         0.00000000
+      12       -15.58229180
       13         0.00000000
       14         0.00000000
-      15       -15.58229180
-      16         0.00000000
+      15        15.58229180
+      16       -15.58229180
       17         0.00000000
-      18        15.58229180
-      19        15.58229180
-      20        -0.00000000
-      21         0.00000000
-      22       -15.58229180
-      23         0.00000000
-      24         0.00000000
-      25        -0.00000000
-      26        11.84502669
-      27         0.00000000
-      28         0.00000000
-      29       -11.84502669
-      30         0.00000000
-      31         0.00000000
-      32         0.00000000
-      33        15.58229180
-      34         0.00000000
-      35         0.00000000
-      36       -15.58229180
- RMS value for second-order geometrical-derivative Coulomb matrix          8.33946636
+      18         0.00000000
+      19       -11.84502669
+      20         0.00000000
+      21       -15.58229180
+ RMS value for second-order geometrical-derivative Coulomb matrix          9.45606603
    Contraction number   2
        1       -62.32916720
        2         0.00000000
@@ -316,37 +302,22 @@ We perform the calculation in the standard input basis
        4        62.32916720
        5        -0.00000000
        6         0.00000000
-       7         0.00000000
-       8       -47.38010675
-       9         0.00000000
-      10        -0.00000000
-      11        47.38010675
-      12         0.00000000
+       7       -47.38010675
+       8         0.00000000
+       9        -0.00000000
+      10        47.38010675
+      11         0.00000000
+      12       -62.32916720
       13         0.00000000
       14         0.00000000
-      15       -62.32916720
-      16         0.00000000
+      15        62.32916720
+      16       -62.32916720
       17         0.00000000
-      18        62.32916720
-      19        62.32916720
-      20        -0.00000000
-      21         0.00000000
-      22       -62.32916720
-      23         0.00000000
-      24         0.00000000
-      25        -0.00000000
-      26        47.38010675
-      27         0.00000000
-      28         0.00000000
-      29       -47.38010675
-      30         0.00000000
-      31         0.00000000
-      32         0.00000000
-      33        62.32916720
-      34         0.00000000
-      35         0.00000000
-      36       -62.32916720
- RMS value for second-order geometrical-derivative Coulomb matrix         33.35786544
+      18         0.00000000
+      19       -47.38010675
+      20         0.00000000
+      21       -62.32916720
+ RMS value for second-order geometrical-derivative Coulomb matrix         37.82426410
  HODI contract1 expectation values: third-order geometrical-derivative Coulomb matrix
    Contraction number   1
        1        -0.00000000
@@ -472,10 +443,10 @@ We perform the calculation in the standard input basis
        4         0.00000000
        5         1.33412514
        6         0.00000000
-       7         0.00000000
+       7        -0.00000000
        8         0.00000000
        9         1.33412514
-      10        -0.00000000
+      10         0.00000000
       11         0.00000000
       12        -0.00000000
       13         0.00000000
@@ -484,12 +455,12 @@ We perform the calculation in the standard input basis
       16        -0.00000000
       17        -1.33412514
       18         0.00000000
-      19         0.00000000
+      19        -0.00000000
       20         0.00000000
       21        -0.00000000
       22        -0.67642839
       23         0.00000000
-      24        -0.00000000
+      24         0.00000000
       25         0.67642839
       26         0.00000000
       27        -1.33412514
@@ -497,7 +468,7 @@ We perform the calculation in the standard input basis
       29         0.00000000
       30         1.33412514
       31        -1.33412514
-      32         0.00000000
+      32        -0.00000000
       33         0.00000000
       34        -0.67642839
       35         0.00000000
@@ -515,7 +486,7 @@ We perform the calculation in the standard input basis
       47         0.00000000
       48         1.33412514
       49         0.00000000
-      50        -0.00000000
+      50         0.00000000
       51         0.00000000
       52         0.00000000
       53         0.67642839
@@ -530,10 +501,10 @@ We perform the calculation in the standard input basis
        4         0.00000000
        5         5.33650056
        6         0.00000000
-       7         0.00000000
+       7        -0.00000000
        8         0.00000000
        9         5.33650056
-      10        -0.00000000
+      10         0.00000000
       11         0.00000000
       12        -0.00000000
       13         0.00000000
@@ -542,12 +513,12 @@ We perform the calculation in the standard input basis
       16        -0.00000000
       17        -5.33650056
       18         0.00000000
-      19         0.00000000
+      19        -0.00000000
       20         0.00000000
       21        -0.00000000
       22        -2.70571356
       23         0.00000000
-      24        -0.00000000
+      24         0.00000000
       25         2.70571356
       26         0.00000000
       27        -5.33650056
@@ -555,7 +526,7 @@ We perform the calculation in the standard input basis
       29         0.00000000
       30         5.33650056
       31        -5.33650056
-      32         0.00000000
+      32        -0.00000000
       33         0.00000000
       34        -2.70571356
       35         0.00000000
@@ -573,7 +544,7 @@ We perform the calculation in the standard input basis
       47         0.00000000
       48         5.33650056
       49         0.00000000
-      50        -0.00000000
+      50         0.00000000
       51         0.00000000
       52         0.00000000
       53         2.70571356
@@ -706,10 +677,10 @@ We perform the calculation in the standard input basis
        4         0.00000000
        5         1.33412514
        6         0.00000000
-       7         0.00000000
+       7        -0.00000000
        8         0.00000000
        9         1.33412514
-      10        -0.00000000
+      10         0.00000000
       11         0.00000000
       12        -0.00000000
       13         0.00000000
@@ -718,12 +689,12 @@ We perform the calculation in the standard input basis
       16        -0.00000000
       17        -1.33412514
       18         0.00000000
-      19         0.00000000
+      19        -0.00000000
       20         0.00000000
       21        -0.00000000
       22        -0.67642839
       23         0.00000000
-      24        -0.00000000
+      24         0.00000000
       25         0.67642839
       26         0.00000000
       27        -1.33412514
@@ -731,7 +702,7 @@ We perform the calculation in the standard input basis
       29         0.00000000
       30         1.33412514
       31        -1.33412514
-      32         0.00000000
+      32        -0.00000000
       33         0.00000000
       34        -0.67642839
       35         0.00000000
@@ -749,7 +720,7 @@ We perform the calculation in the standard input basis
       47         0.00000000
       48         1.33412514
       49         0.00000000
-      50        -0.00000000
+      50         0.00000000
       51         0.00000000
       52         0.00000000
       53         0.67642839
@@ -764,10 +735,10 @@ We perform the calculation in the standard input basis
        4         0.00000000
        5         5.33650056
        6         0.00000000
-       7         0.00000000
+       7        -0.00000000
        8         0.00000000
        9         5.33650056
-      10        -0.00000000
+      10         0.00000000
       11         0.00000000
       12        -0.00000000
       13         0.00000000
@@ -776,12 +747,12 @@ We perform the calculation in the standard input basis
       16        -0.00000000
       17        -5.33650056
       18         0.00000000
-      19         0.00000000
+      19        -0.00000000
       20         0.00000000
       21        -0.00000000
       22        -2.70571356
       23         0.00000000
-      24        -0.00000000
+      24         0.00000000
       25         2.70571356
       26         0.00000000
       27        -5.33650056
@@ -789,7 +760,7 @@ We perform the calculation in the standard input basis
       29         0.00000000
       30         5.33650056
       31        -5.33650056
-      32         0.00000000
+      32        -0.00000000
       33         0.00000000
       34        -2.70571356
       35         0.00000000
@@ -807,7 +778,7 @@ We perform the calculation in the standard input basis
       47         0.00000000
       48         5.33650056
       49         0.00000000
-      50        -0.00000000
+      50         0.00000000
       51         0.00000000
       52         0.00000000
       53         2.70571356
@@ -1502,21 +1473,19 @@ We perform the calculation in the standard input basis
 
  First density: Atoms in molecule guess
 
- The Coulomb energy contribution    6.2231219746023365     
- The Exchange energy contribution    2.1129189350526989     
- The Fock energy contribution   -4.1102030395496376     
-  Iteration 0 energy:  -7.3189242799262626     
-
-Max no. of matrices allocated in Level 2 / get_initial_dens:        115
+ The Coulomb energy contribution    6.2231219746023418     
+ The Exchange energy contribution    2.1129189350527002     
+ The Fock energy contribution   -4.1102030395496421     
+  Iteration 0 energy:  -7.3189242799262573     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        45 sparsity:     37.190 %
-Matrix AO D  has nnz=        48 sparsity:     40.496 %
+Matrix AO D  has nnz=        49 sparsity:     40.496 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   9.9999997473787516E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    5.9686484066668406     
- The Exchange energy contribution    2.1697768486608853     
- The Fock energy contribution   -3.7988715580059544     
+ The Coulomb energy contribution    5.9686484066668370     
+ The Exchange energy contribution    2.1697768486608848     
+ The Fock energy contribution   -3.7988715580059531     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -1525,12 +1494,12 @@ Matrix AO D  has nnz=        48 sparsity:     40.496 %
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
 ** Make average of the last F and D matrices
-Matrix AO D  has nnz=        48 sparsity:     40.496 %
+Matrix AO D  has nnz=        49 sparsity:     40.496 %
 Matrix AO F  has nnz=        57 sparsity:     47.107 %
-Matrix OAO D has nnz=        48 sparsity:     40.496 %
+Matrix OAO D has nnz=        49 sparsity:     40.496 %
 Matrix OAO F has nnz=        57 sparsity:     47.107 %
 ** Get new density 
- OAO gradnorm   6.9304112473968185E-002
+ OAO gradnorm   6.9304112473967019E-002
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -1551,21 +1520,21 @@ No. of matmuls in get_density:    59
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    6.0441611383524556     
- The Exchange energy contribution    2.1970564515685704     
- The Fock energy contribution   -3.8471046867838847     
+ The Coulomb energy contribution    6.0441611383524592     
+ The Exchange energy contribution    2.1970564515685727     
+ The Fock energy contribution   -3.8471046867838870     
  0.60000 (xnorm)    0.04325    0.13929   -0.00        1.3881    0.0000         0          1    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   2     -7.8561661410   -0.01131697938    0.00      0.00000   -0.00    2.68E-02  ###
 ** Make average of the last F and D matrices
-Matrix AO D  has nnz=        48 sparsity:     40.496 %
+Matrix AO D  has nnz=        49 sparsity:     40.496 %
 Matrix AO F  has nnz=        57 sparsity:     47.107 %
-Matrix OAO D has nnz=        48 sparsity:     40.496 %
+Matrix OAO D has nnz=        49 sparsity:     40.496 %
 Matrix OAO F has nnz=        57 sparsity:     47.107 %
 ** Get new density 
- OAO gradnorm   2.6829998376197428E-002
+ OAO gradnorm   2.6829998376197359E-002
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -1584,23 +1553,23 @@ Error went down by   96.11%
 Newton equations converged in  5 iterations!
 No. of matmuls in get_density:    76
  >>>  CPU Time used in SCF iteration is   0.01 seconds
- >>> wall Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.00 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    6.0635221307645750     
- The Exchange energy contribution    2.2041504910281469     
- The Fock energy contribution   -3.8593716397364282     
+ The Coulomb energy contribution    6.0635221307645679     
+ The Exchange energy contribution    2.2041504910281446     
+ The Fock energy contribution   -3.8593716397364237     
  0.60000 (xnorm)    0.03239    0.10394   -0.00        1.1130    0.9660         1          2    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   3     -7.8589515814   -0.00278544041    0.00      0.00000   -0.00    5.52E-03  ###
 ** Make average of the last F and D matrices
-Matrix AO D  has nnz=        48 sparsity:     40.496 %
+Matrix AO D  has nnz=        49 sparsity:     40.496 %
 Matrix AO F  has nnz=        57 sparsity:     47.107 %
-Matrix OAO D has nnz=        48 sparsity:     40.496 %
+Matrix OAO D has nnz=        49 sparsity:     40.496 %
 Matrix OAO F has nnz=        57 sparsity:     47.107 %
 ** Get new density 
- OAO gradnorm   5.5200732468318548E-003
+ OAO gradnorm   5.5200732468334455E-003
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -1619,23 +1588,23 @@ Error went down by   93.39%
 Newton equations converged in  5 iterations!
 No. of matmuls in get_density:    73
  >>>  CPU Time used in SCF iteration is   0.01 seconds
- >>> wall Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.00 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    6.0659167356773462     
+ The Coulomb energy contribution    6.0659167356773427     
  The Exchange energy contribution    2.2052979421295711     
- The Fock energy contribution   -3.8606187935477738     
+ The Fock energy contribution   -3.8606187935477720     
  0.60000 (xnorm)    0.00669    0.02048   -0.00        1.0327    0.9712         2          3    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   4     -7.8590377970   -0.00008621564    0.00      0.00000   -0.00    8.48E-04  ###
 ** Make average of the last F and D matrices
-Matrix AO D  has nnz=        48 sparsity:     40.496 %
+Matrix AO D  has nnz=        49 sparsity:     40.496 %
 Matrix AO F  has nnz=        57 sparsity:     47.107 %
-Matrix OAO D has nnz=        48 sparsity:     40.496 %
+Matrix OAO D has nnz=        49 sparsity:     40.496 %
 Matrix OAO F has nnz=        57 sparsity:     47.107 %
 ** Get new density 
- OAO gradnorm   8.4756720609997164E-004
+ OAO gradnorm   8.4756720609826825E-004
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -1658,21 +1627,21 @@ No. of matmuls in get_density:    91
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    6.0651323320011112     
- The Exchange energy contribution    2.2051518425012806     
- The Fock energy contribution   -3.8599804894998324     
+ The Coulomb energy contribution    6.0651323320011077     
+ The Exchange energy contribution    2.2051518425012784     
+ The Fock energy contribution   -3.8599804894998293     
  0.60000 (xnorm)    0.00053    0.00170   -0.00        1.0654    0.8558         3          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   5     -7.8590391235   -0.00000132648    0.00      0.00000   -0.00    1.45E-04  ###
 ** Make average of the last F and D matrices
-Matrix AO D  has nnz=        48 sparsity:     40.496 %
+Matrix AO D  has nnz=        49 sparsity:     40.496 %
 Matrix AO F  has nnz=        57 sparsity:     47.107 %
-Matrix OAO D has nnz=        48 sparsity:     40.496 %
+Matrix OAO D has nnz=        49 sparsity:     40.496 %
 Matrix OAO F has nnz=        57 sparsity:     47.107 %
 ** Get new density 
- OAO gradnorm   1.4547693729974863E-004
+ OAO gradnorm   1.4547693729860975E-004
  Number of densities in queue:           4
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -1693,19 +1662,19 @@ Error went down by   95.56%
 Newton equations converged in  7 iterations!
 No. of matmuls in get_density:    91
  >>>  CPU Time used in SCF iteration is   0.01 seconds
- >>> wall Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.00 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    6.0648503409596763     
- The Exchange energy contribution    2.2050721180394586     
- The Fock energy contribution   -3.8597782229202191     
+ The Coulomb energy contribution    6.0648503409596772     
+ The Exchange energy contribution    2.2050721180394595     
+ The Fock energy contribution   -3.8597782229202195     
  0.60000 (xnorm)    0.00008    0.00027   -0.00        1.0071    0.9887         4          5    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   6     -7.8590391534   -0.00000002994    0.00      0.00000   -0.00    9.84E-06  ###
 SCF converged in      6 iterations
- >>>  CPU Time used in **ITER is   0.05 seconds
- >>> wall Time used in **ITER is   0.05 seconds
+ >>>  CPU Time used in **ITER is   0.06 seconds
+ >>> wall Time used in **ITER is   0.03 seconds
 
 Total no. of matmuls in SCF optimization:        487
 
@@ -1743,12 +1712,12 @@ Calculation of virtual orbital energies converged in     5 iterations!
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1            -7.84484916160252332418      0.693041124739682D-01
+    1            -7.84484916160252154782      0.693041124739670D-01
     2            -7.85616614098427490376      0.268299983761974D-01
-    3            -7.85895158139026861477      0.552007324683185D-02
-    4            -7.85903779702850080469      0.847567206099972D-03
-    5            -7.85903912351281519477      0.145476937299749D-03
-    6            -7.85903915344868941872      0.983915038379830D-05
+    3            -7.85895158139026506205      0.552007324683345D-02
+    4            -7.85903779702850080469      0.847567206098268D-03
+    5            -7.85903912351280986570      0.145476937298610D-03
+    6            -7.85903915344868764237      0.983915038489307D-05
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -1759,11 +1728,10 @@ Calculation of virtual orbital energies converged in     5 iterations!
       Electronic energy:                      -9.315490185467
 
  >>>  CPU Time used in *SCF is   0.23 seconds
- >>> wall Time used in *SCF is   0.23 seconds
+ >>> wall Time used in *SCF is   0.21 seconds
 
 Total no. of matmuls used:                       503
 Total no. of Fock/KS matrix evaluations:           7
-Max no. of matrices allocated in Level 3:         35
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -1802,24 +1770,24 @@ Max no. of matrices allocated in Level 3:         35
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Additional Memory information          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                        566.800 MB
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                          1.699 GB
   Max allocated memory, type(matrix)                 111.624 kB
-  Max allocated memory, real(realk)                  566.733 MB
+  Max allocated memory, real(realk)                    1.698 GB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       17.817 kB
+  Max allocated memory, integer                       55.424 kB
   Max allocated memory, logical                        2.688 kB
   Max allocated memory, character                      2.048 kB
-  Max allocated memory, AOBATCH                       10.080 kB
+  Max allocated memory, AOBATCH                       10.240 kB
   Max allocated memory, DECORBITAL                     0.000 Byte
   Max allocated memory, DECFRAG                        0.000 Byte
   Max allocated memory, BATCHTOORB                     0.000 Byte
@@ -1828,7 +1796,7 @@ Max no. of matrices allocated in Level 3:         35
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                        668.000 kB
+  Max allocated memory, ARRAY                        672.000 kB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
@@ -1838,14 +1806,14 @@ Max no. of matrices allocated in Level 3:         35
   Max allocated memory, SLSAOTENSOR                    2.576 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
   Max allocated memory, ATOMTYPEITEM                  76.528 kB
-  Max allocated memory, ATOMITEM                       1.088 kB
+  Max allocated memory, ATOMITEM                       1.024 kB
   Max allocated memory, LSMATRIX                       1.792 kB
-  Max allocated memory, OverlapT                     127.232 kB
+  Max allocated memory, OverlapT                     508.928 kB
   Max allocated memory, linkshell                      1.260 kB
-  Max allocated memory, integrand                     64.512 kB
-  Max allocated memory, integralitem                 564.480 MB
-  Max allocated memory, IntWork                        1.106 MB
-  Max allocated memory, Overlap                      387.992 kB
+  Max allocated memory, integrand                    258.048 kB
+  Max allocated memory, integralitem                   1.689 GB
+  Max allocated memory, IntWork                        4.424 MB
+  Max allocated memory, Overlap                        1.552 MB
   Max allocated memory, ODitem                         3.584 kB
   Max allocated memory, LStensor                       6.566 MB
   Max allocated memory, FMM                            0.000 Byte
@@ -1856,9 +1824,9 @@ Max no. of matrices allocated in Level 3:         35
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is   3.62 seconds
- >>> wall Time used in LSDALTON is   3.62 seconds
+ >>>  CPU Time used in LSDALTON is  18.09 seconds
+ >>> wall Time used in LSDALTON is  16.37 seconds
 
 End simulation
-     Date and time (Linux)  : Mon Apr 20 14:49:56 2015
-     Host name              : 1x-193-157-255-61.uio.no                
+     Date and time (Linux)  : Tue Jun 23 12:19:40 2015
+     Host name              : 1x-193-157-202-75.uio.no                
