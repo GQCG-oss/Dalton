@@ -97,7 +97,7 @@ contains
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
     !> MOs and unitary transformation matrices
-    type(array2) :: C_can_occ, C_can_virt, Uocc, Uvirt
+    type(tensor) :: C_can_occ, C_can_virt, Uocc, Uvirt
     !> dimensions
     integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
@@ -172,8 +172,6 @@ contains
 
     call mem_alloc(eivalocc,nocc)
     call mem_alloc(eivalvirt,nvirt)
-    C_can_occ  = array2_init(occAO)
-    C_can_virt = array2_init(virtAO)
 
     if (master) then
       ! *************************************
@@ -183,22 +181,25 @@ contains
       ! Uocc, Uvirt: unitary transformation matrices for canonical --> local basis (and vice versa)
       ! note: Uocc and Uvirt have indices (local,canonical)
 
-      Uocc       = array2_init(occdims)
-      Uvirt      = array2_init(virtdims)
+      call tensor_init(Uocc  ,occdims,  2, bg=use_bg )
+      call tensor_init(Uvirt ,virtdims, 2, bg=use_bg )
+
+      call tensor_init(C_can_occ  ,occAO , 2, bg=use_bg )
+      call tensor_init(C_can_virt ,virtAO, 2, bg=use_bg )
 
       if (.not. DECinfo%pt_hack) then
 
          call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
-                            & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
+                            & C_can_occ%elm2,C_can_virt%elm2,Uocc%elm2,Uvirt%elm2,eivalocc,eivalvirt)
 
       else
 
          call random_seed()
-         call random_number(C_can_occ%val)
-         call dscal(nbasis*nocc,1.0E-2_realk,C_can_occ%val,1)
+         call random_number(C_can_occ%elm2)
+         call dscal(nbasis*nocc,1.0E-2_realk,C_can_occ%elm2,1)
          call random_seed()
-         call random_number(C_can_virt%val)
-         call dscal(nbasis*nvirt,1.0E-2_realk,C_can_virt%val,1)
+         call random_number(C_can_virt%elm2)
+         call dscal(nbasis*nvirt,1.0E-2_realk,C_can_virt%elm2,1)
          call random_seed()
          call random_number(eivalocc)
          call dscal(nocc,-1.0E-2_realk,eivalocc,1)
@@ -207,6 +208,11 @@ contains
          call dscal(nvirt,1.0E-2_realk,eivalvirt,1)
 
       endif
+
+    else !Slave only allocate
+
+      call tensor_init(C_can_occ  ,occAO , 2, bg=use_bg )
+      call tensor_init(C_can_virt ,virtAO, 2, bg=use_bg )
 
     endif
 
@@ -267,8 +273,8 @@ contains
        call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
        call ls_mpi_buffer(eivalocc,nocc,infpar%master)
        call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
-       call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
-       call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
+       call ls_mpi_buffer(C_can_occ%elm2,nbasis,nocc,infpar%master)
+       call ls_mpi_buffer(C_can_virt%elm2,nbasis,nvirt,infpar%master)
        call ls_mpi_buffer(ijk_nbuffs,infpar%master)
        call ls_mpi_buffer(abc_nbuffs,infpar%master)
        call ls_mpi_buffer(ijk_tile_size,infpar%master)
@@ -293,11 +299,11 @@ contains
 
     if (abc) then
 
-       call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ooov,vovv,abc_tile_size)
+       call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%elm2,C_can_virt%elm2,ooov,vovv,abc_tile_size)
 
     else
 
-       call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ovoo,vvvo,ijk_tile_size)
+       call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%elm2,C_can_virt%elm2,ovoo,vvvo,ijk_tile_size)
 
     endif
 
@@ -309,8 +315,8 @@ contains
     write(DECinfo%output,*) ''
 
     ! release occ and virt canonical MOs
-    call array2_free(C_can_occ)
-    call array2_free(C_can_virt)
+    call tensor_free(C_can_virt)
+    call tensor_free(C_can_occ)
 
 
     ! ********************************
@@ -513,7 +519,6 @@ contains
 
     endif
 
-    ! now everything resides on the master...
     call tensor_free(ccsd_doubles)
     call tensor_free(vovo)
 
@@ -568,11 +573,11 @@ contains
 
        if (abc) then
 
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
 
        else
 
-          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
 
        endif
 
@@ -582,11 +587,11 @@ contains
 
           if (abc) then
   
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,ov=ccsdpt_singles%elm1)
+             call can_local_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,ov=ccsdpt_singles%elm1)
    
           else
    
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vo=ccsdpt_singles%elm1)
+             call can_local_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vo=ccsdpt_singles%elm1)
    
           endif
 
@@ -595,8 +600,8 @@ contains
     endif
 
     ! now, release Uocc and Uvirt
-    call array2_free(Uocc)
-    call array2_free(Uvirt)
+    call tensor_free(Uvirt)
+    call tensor_free(Uocc)
 
     ! clean up
     call mem_dealloc(eivalocc)
@@ -13729,7 +13734,7 @@ contains
     integer, intent(in) :: nocc,nvirt,nbasis,nodtotal
     logical, intent(in) :: abc,use_bg
     integer, intent(in) :: ijk_tile_size,abc_tile_size
-    type(array2), intent(inout) :: Uocc,Uvirt
+    type(tensor), intent(inout) :: Uocc,Uvirt
     type(tensor), intent(inout) :: ccsd_doubles_in,vovo_in
     type(tensor), intent(inout) :: ccsd_doubles,vovo
     ! tmp tensors
@@ -13816,7 +13821,7 @@ contains
              call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4,bg=transform_bg)
              call tensor_cp_data(vovo_in,tmp_tensor_1,order=[2,4,1,3])
              !call tensor_reorder(tmp_tensor_1,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_1%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=tmp_tensor_1%elm1)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
              call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
@@ -13824,7 +13829,7 @@ contains
              call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4,bg=transform_bg)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[2,4,3,1])
              !call tensor_reorder(tmp_tensor_2,[2,4,3,1]) ! ccsd_doubles in the order (i,j,b,a)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_2%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=tmp_tensor_2%elm1)
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
              call tensor_free(tmp_tensor_2)
 
@@ -13836,7 +13841,7 @@ contains
              call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4,bg=transform_bg)
              call tensor_cp_data(vovo_in,tmp_tensor_1,order=[1,3,2,4])
              !call tensor_reorder(tmp_tensor_1,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_1%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=tmp_tensor_1%elm1)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
              call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
@@ -13845,7 +13850,7 @@ contains
              call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4,bg=transform_bg)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[1,3,4,2])
              !call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_2%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=tmp_tensor_2%elm1)
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
              call tensor_free(tmp_tensor_2)
 
@@ -13857,19 +13862,19 @@ contains
 
              call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
              call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=vovo%elm1)
              call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
              call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=ccsd_doubles%elm1)
 
           else
 
              call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
              call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=vovo%elm1)
              call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
              call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=ccsd_doubles%elm1)
 
           endif
 
@@ -13879,19 +13884,19 @@ contains
 
           call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
           call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=vovo%elm1)
           call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
           call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=ccsd_doubles%elm1)
 
        else
 
           call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
           call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=vovo%elm1)
           call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
           call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=ccsd_doubles%elm1)
 
        endif
 #endif

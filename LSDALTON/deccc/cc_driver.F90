@@ -2337,10 +2337,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          !Get the residual r = Ax - b for any of the implemented models
          !-------------------------------------------------------------
-         if(.not.DECinfo%ccsolverskip)then
-           call ccsolver_get_residual(ccmodel,JOB,omega2,t2,fock,t1fock,iajb,no,nv,oofock_prec,vvfock_prec,xo,xv,yo,yv,nb,MyLsItem,&
-              &omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
-         endif
+         call ccsolver_get_residual(ccmodel,JOB,omega2,t2,fock,t1fock,iajb,no,nv,oofock_prec,vvfock_prec,xo,xv,yo,yv,nb,MyLsItem,&
+            &omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
@@ -2405,7 +2403,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          ! intentionally quit prematurely
          ! ------------------------------
-         if((iter==5.and.DECinfo%CRASHCALC.and.DECinfo%full_molecular_cc).or.DECinfo%ccsolverskip)then
+         if(iter==5.and.((DECinfo%CRASHCALC.and.DECinfo%full_molecular_cc).or.DECinfo%ccsolverskip))then
             if(.not.DECinfo%ccsolverskip)then
                print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
                print*,'This keyword is only used for debug and testing purposes'

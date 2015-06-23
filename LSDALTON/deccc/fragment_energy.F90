@@ -616,7 +616,7 @@ contains
         call tensor_init(ccsdpt_t2,[frag%noccAOS,frag%noccAOS,&
              &frag%nvirtAOS,frag%nvirtAOS],4,bg=bg)
      else
-        call tensor_init(ccsdpt_t1, [frag%nvirtAOS,frag%noccAOS],2)
+        call tensor_init(ccsdpt_t1, [frag%nvirtAOS,frag%noccAOS],2,bg=bg)
         call tensor_init(ccsdpt_t2, [frag%nvirtAOS,frag%nvirtAOS,&
              &frag%noccAOS,frag%noccAOS],4,bg=bg)
      endif

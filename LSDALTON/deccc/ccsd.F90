@@ -938,7 +938,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
      integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os
-     integer(kind=8) :: nb4,o2v2,no4,buf_size
+     integer(kind=8) :: nb4,o2v2,no4,buf_size,nbuffer
      integer :: tlen,tred,nor,nvr,goffs,aoffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy,batch
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
@@ -1077,6 +1077,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         doscreen = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
      ENDIF
 
+     use_bg_buf = mem_is_background_buf_init()
+     if(use_bg_buf)then
+        nbuffer    = mem_get_bg_buf_free()
+     else
+        nbuffer=0
+     endif
+
      ! Set MPI related info
      ! ********************
      master                   = .true.
@@ -1105,7 +1112,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, at = time_init_comm)
      endif StartUpSlaves
 
-     call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
+     call lsmpi_reduce_min(MemFree,infpar%master,infpar%lg_comm)
+     call lsmpi_reduce_min(nbuffer,infpar%master,infpar%lg_comm)
 #endif
 
      if(master.and.print_debug)then
@@ -1156,7 +1164,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
         ENDIF
         call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.,mylsitem%setting,intspec)
+           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,nbuffer,.true.,els2add,local,.false.,&
+           &mylsitem%setting,intspec)
 
         !SOME WORDS ABOUT THE CHOSEN SCHEME:
         ! Depending on the availability of memory on the nodes a certain scheme
@@ -1178,7 +1187,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      endif
 
-     use_bg_buf = mem_is_background_buf_init()
 
 #ifdef DIL_ACTIVE
      scheme=scheme_tmp !```DIL: remove
@@ -1814,6 +1822,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            fg         = GammaStart
            lg         = dimGamma
 
+           if(.not.DECinfo%ccsolverskip)then
            !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
 #ifdef DIL_ACTIVE
            scheme=scheme_tmp !``DIL: remove
@@ -1890,6 +1899,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
            scheme=2 !``DIL: remove
 #endif
+        endif
         endif NewGammaBatch
 
 
@@ -1926,6 +1936,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 #endif
 #endif
+        if(.not.DECinfo%ccsolverskip)then
 
         !u[k gamma  c j] * Lambda^p [alpha j] ^T = u [k gamma c alpha]
         call dgemm('n','t',no*nv*lg,la,no,1.0E0_realk,uigcj%d,no*nv*lg,xo(fa),nb,0.0E0_realk,w1%d,nv*no*lg) !`DIL: uigcj,w1 used
@@ -2344,6 +2355,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
         if(scheme/=1) call lsmpi_poke()
 
+     endif
 
         !end do BatchAlpha
      end do BatchLoop
@@ -2356,6 +2368,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 #endif
+     if(DECinfo%ccsolverskip)then
+        call random_number(w0%d)
+        call random_number(w1%d)
+        call random_number(w2%d)
+        call random_number(w3%d)
+        call tensor_random(sio4)
+        call tensor_random(gvoova)
+        call tensor_random(gvvooa)
+     endif
 
      ! Free integral stuff
      ! *******************
@@ -2479,7 +2500,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      if((scheme==4.or.scheme==3).and.(ccmodel > MODEL_CC2).and.(.not.local))then
 
-        if(scheme == 3.and.use_bg_buf)then
+        call tensor_allocate_dense( govov, bg=use_bg_buf )
+
+        if(scheme==3.and.use_bg_buf)then
            call mem_pseudo_alloc( gvvoo, o2v2, simple=.true. )
            call mem_pseudo_alloc( gvoov, o2v2, simple=.true. )
         endif
@@ -2494,7 +2517,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_lock_wins( govov, 's', mode, all_nodes = alloc_in_dummy )
         endif
 
-        call tensor_allocate_dense( govov )
 
         call time_start_phase(PHASE_COMM, twall = time_Bcnd )
         call tensor_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2,wrk=buf1,iwrk=buf_size)
@@ -2739,10 +2761,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call mem_pseudo_dealloc(gvoov)
               call mem_pseudo_dealloc(gvvoo)
            else
-              call mem_dealloc(gvvoo)
               call mem_dealloc(gvoov)
+              call mem_dealloc(gvvoo)
            endif
         endif
+     endif
+
+     !free local part
+     if(.not.local)then
+        if(scheme==4.or.scheme==3) call tensor_deallocate_dense(govov)
+        govov%itype      = TT_TILED_DIST
      endif
 
      if( use_bg_buf )then
@@ -2804,13 +2832,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_WORK, dt = time_reduction2)
 
-     !convert stuff
-     !set for correct access again, save as i a j b
-     if(.not.local)then
-        if(scheme==4.or.scheme==3) call tensor_deallocate_dense(govov)
-        govov%itype      = TT_TILED_DIST
-     endif
 
+     !set for correct access again
      govov%access_type  = AT_MASTER_ACCESS
      omega2%access_type = AT_MASTER_ACCESS
      t2%access_type     = AT_MASTER_ACCESS
@@ -3431,7 +3454,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! Get free memory and determine maximum batch sizes
         ! -------------------------------------------------
         call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxActualDimAlpha,MaxActualDimGamma,MinAObatch,&
-           &DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.,mylsitem%setting,intspec,&
+           &DECinfo%manual_batchsizes,iter,MemFreeMin,0_long,.true.,els2add,local,.false.,mylsitem%setting,intspec,&
            &nbuf=nbuffs)
         call time_start_phase(PHASE_WORK, ttot = time_get_batch_sizes )
 
@@ -5345,8 +5368,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk) :: MemFree
     integer :: scheme, nbas, nocc, nvir, MinAObatch, iter
     integer :: dimMO, nMObatch, ntot,os,vs
-    integer(kind=8) :: dummy
-    logical :: mo_ccsd, local_moccsd, mpi_split
+    integer(kind=8) :: dummy, nbg_buf
+    logical :: mo_ccsd, local_moccsd, mpi_split, bg
     integer :: bs
 
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
@@ -5354,6 +5377,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     nocc = MyFragment%noccAOS
     nvir = MyFragment%nvirtAOS 
     bs   = get_split_scheme_0(MyFragment%nbasis)
+    bg   = mem_is_background_buf_init()
+    if(bg)then
+       nbg_buf = mem_get_bg_buf_free()
+    else
+       nbg_buf = 0
+    endif
 
     ! For MO-CCSD part
     ntot    = nocc + nvir
@@ -5391,7 +5420,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,MyFragment%nbasis,bs,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
-           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree, &
+           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,nbg_buf, &
            & .true.,dummy,(.not.DECinfo%solver_par),mpi_split,MyFragment%mylsitem%setting,['R','R','R','R','C'])
     end if
 
@@ -5401,10 +5430,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \author Patrick Ettenhuber
   !> \date January 2012
   subroutine get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,nba,nbg,&
-        &minbsize,manual,iter,MemIn,first,e2a,local,mpi_split,se,is,nbuf)
+        &minbsize,manual,iter,MemIn,nbg_buf,first,e2a,local,mpi_split,se,is,nbuf)
      implicit none
      integer, intent(inout) :: scheme
      integer, intent(in)    :: nb,bs,nv,vs,no,os
+     integer(kind=8)        :: nbg_buf
      integer :: iter
      integer, intent(inout) :: nba,nbg,minbsize
      real(realk),intent(in) :: MemIn
@@ -5440,7 +5470,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !they will be associated to the backtground buffer
      checkbg = mem_is_background_buf_init()
      if( checkbg )then
-        bg_buf_size = mem_get_bg_buf_free()
+        bg_buf_size = nbg_buf
         choice = 4
         MemFree = MemIn*frac_of_total_mem + (dble(bg_buf_size)*8.0E0_realk)/(1024.0E0_realk**3)
      else
@@ -5878,15 +5908,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
            ! w1/Fock
            memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
-           ! w2 w3
-           memout = memout + 2.0E0_realk*(i8*no*no)*nv*nv
+           ! w2 w3 govov
+           memout = memout + 3.0E0_realk*(i8*no*no)*nv*nv
         endif
 
         ! not in bg buf
-        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
-           ! govov
-           memout = memout + (1.0E0_realk*no*no)*nv*nv
-        endif
+        !if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+        !   ! govov
+        !   memout = memout + (1.0E0_realk*no*no)*nv*nv
+        !endif
 
      case(3)
 
@@ -5941,15 +5971,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
            ! w2 w3
            memout = memout + 1.0E0_realk*max(i8*nb*nb,max(2_long*tl1,i8*tl2))
-           ! gvoov-local gvvoo-local
-           memout = memout + 2.0E0_realk*(i8*nv*nv)*no*no
+           ! gvoov-local gvvoo-local govov
+           memout = memout + 3.0E0_realk*(i8*nv*nv)*no*no
         endif
 
         ! not in bg buf
-        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
-           ! govov
-           memout = memout + (1.0E0_realk*no*no)*nv*nv
-        endif
+        !if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+        !   ! govov
+        !   memout = memout + (1.0E0_realk*no*no)*nv*nv
+        !endif
 
 
      case(2)
