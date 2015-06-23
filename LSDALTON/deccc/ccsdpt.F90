@@ -647,7 +647,7 @@ contains
     !> orbital energiesi
     real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt) 
     !> loop integers
-    integer :: b_size,njobs,ij_comp,ij_count,ij_max_count
+    integer :: b_size,njobs,ij_comp,ij_count
     integer, pointer :: ij_array(:),jobs(:)
     integer :: i,j,k,tuple_type
     integer :: i_tile,j_tile,k_tile,i_pos,j_pos,k_pos,i_count,j_count,k_count
@@ -702,8 +702,7 @@ contains
 
     full_no_frags = .false.
     use_bg_buf    = mem_is_background_buf_init()
-    dynamic_load  = DECinfo%dyn_load
-
+    dynamic_load  = .false.
     plus_one      = 1
 
     if (present(e4)) full_no_frags = .true.
@@ -828,7 +827,7 @@ contains
        call mem_alloc( dyn_i, dyn_c, 1)
 
        dyn_i = 0
-       if(infpar%lg_mynum == 0) dyn_i(1) = infpar%lg_nodtot
+       if(infpar%lg_mynum == 0) dyn_i(1) = infpar%lg_nodtot+1
 
        call lsmpi_win_create(dyn_i,dyn_w,1,infpar%lg_comm)
 #ifdef VAR_HAVE_MPI3
@@ -836,10 +835,8 @@ contains
 #else
        call lsquit("ERROR(ijk_loop_par): dynamic load only implemented for MPI3",-1)
 #endif
-       ij_max_count = njobs
     else
-       ij_count=0
-       ij_max_count = b_size + 1
+       ij_count=1
     endif
 
     ! now follows the main loop, which is collapsed.
@@ -852,36 +849,40 @@ contains
 
 !$acc wait
 
-    ijrun_par: do while (ij_count <= ij_max_count)
+!    ijrun_par: do while (ij_count <= b_size + 1)
+!
+!          !Get Job index
+!          if(dynamic_load)then
+!
+!             if(ij_count == 0) then
+!                ij_count = infpar%lg_mynum + 1
+!             else
+!                call lsmpi_get_acc(plus_one,ij_count,infpar%master,1,dyn_w)
+!                call lsmpi_win_flush(dyn_w,local=.true.)
+!                ij_count = ij_count + 1
+!             endif
+!
+!             if(ij_count <= njobs)then
+!                ij_comp  = ij_array(ij_count)
+!             else
+!                ij_comp  = -1
+!             endif
+!
+!          else
+!             ij_count = ij_count + 1
+!             ij_comp  = jobs(ij_count)
+!          endif
+!
+!          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5,")")') &
+!             &infpar%lg_mynum,ij_comp,njobs
 
-          !Get Job index
-          if(dynamic_load)then
+ ijrun_par: do ij_count = 1,b_size + 1
 
-             if(ij_count == 0) then
-                ij_count = infpar%lg_mynum + 1
-             else
-                call lsmpi_get_acc(plus_one,ij_count,infpar%master,1,dyn_w)
-                call lsmpi_win_flush(dyn_w,local=.true.)
-                ij_count = ij_count + 1
-             endif
+          ! get value of ij from job disttribution list
+          ij_comp = jobs(ij_count)
 
-             if(ij_count <= njobs)then
-                ij_comp  = ij_array(ij_count)
-             else
-                exit ijrun_par
-             endif
-
-          else
-             ij_count = ij_count + 1
-             if (ij_count > b_size + 1) exit ijrun_par
-             ij_comp  = jobs(ij_count)
-             ! no more jobs to be done? otherwise leave the loop
-             if (ij_comp .lt. 0) exit ijrun_par
-          endif
-
-          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5,")")') &
-             &infpar%lg_mynum,ij_comp,njobs
-
+          ! no more jobs to be done? otherwise leave the loop
+          if (ij_comp .lt. 0) exit
 
           ! calculate i and j from composite ij value
           call calc_i_leq_j(ij_comp,dim_ts,i_tile,j_tile)
