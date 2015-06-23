@@ -131,15 +131,7 @@ Integer                  :: nGeoderivComp,nc,i,j,k
 real(realk),pointer      :: expectation(:)
 real(realk),pointer      :: RMS(:)
 
-IF (geoderiv.EQ.1) THEN
-  nGeoderivComp = 3*nAtoms
-ELSE IF (geoderiv.EQ.2) THEN
-  nGeoderivComp = 9*nAtoms*nAtoms
-ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
-ELSE
-  write(lupri,'(X,A,I3)') 'Error in debugTestHODIcontract1 - unknown case geoderiv=',geoderiv
-ENDIF
+nGeoderivComp = debugTestHODI_nGeoderivPack(geoderiv,3*nAtoms)
 
 nc=ncontract
 IF (add) nc=1
@@ -193,15 +185,7 @@ Integer                  :: nGeoderivComp,nc,i,j,k
 real(realk),pointer      :: expectation(:)
 real(realk),pointer      :: RMS(:)
 
-IF (geoderiv.EQ.1) THEN
-  nGeoderivComp = 3*nAtoms
-ELSE IF (geoderiv.EQ.2) THEN
-  nGeoderivComp = 9*nAtoms*nAtoms
-ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
-ELSE
-  write(lupri,'(X,A,I3)') 'Error in debugTestHODIcontract2 - unknown case geoderiv=',geoderiv
-ENDIF
+nGeoderivComp = debugTestHODI_nGeoderivPack(geoderiv,3*nAtoms)
 
 nc=ncontract
 IF (add) nc=1
@@ -245,16 +229,7 @@ TYPE(Matrix),pointer :: oneElMat(:)
 real(realk),pointer  :: expectation(:),RMS(:)
 Integer :: n,m,mn,nGeoderivComp,nc
 
-
-IF (geoderiv.EQ.1) THEN
-  nGeoderivComp = 3*nAtoms
-ELSE IF (geoderiv.EQ.2) THEN
-  nGeoderivComp = 9*nAtoms*nAtoms
-ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
-ELSE
-  write(lupri,'(X,A,I3)') 'Error in debugTestHODIone - unknown case geoderiv=',geoderiv
-ENDIF
+nGeoderivComp = debugTestHODI_nGeoderivPack(geoderiv,3*nAtoms)
 
 nc=ncontract
 IF (add) nc=1
@@ -347,8 +322,24 @@ ENDDO
 call mem_dealloc(expectation)
 call mem_dealloc(RMS)
 
-
-
 END SUBROUTINE debugTestHODIoneContract
+
+! Number of triangularly packed geometrical components
+! n(n+1)(n+2)...(n+g-1)/g!
+FUNCTION debugTestHODI_nGeoderivPack(g,n)
+implicit none
+integer,intent(in) :: g,n
+integer :: debugTestHODI_nGeoderivPack
+!
+integer :: c,i,m
+c = 1
+m = n
+DO i=1,g
+  c = c * m / i
+  m = m + 1
+ENDDO
+!if (g.EQ.2) c=n*n
+debugTestHODI_nGeoderivPack = c
+END FUNCTION debugTestHODI_nGeoderivPack
 
 END MODULE HODItest_module
