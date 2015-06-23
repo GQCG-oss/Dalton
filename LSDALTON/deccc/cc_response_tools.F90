@@ -1,9 +1,10 @@
-module ccsd_lhtr_module
+module cc_response_tools_module
 
    use precision
    use typedef
    use typedeftype
    use dec_typedef_module
+   use IntegralInterfaceMOD
 
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
@@ -11,7 +12,7 @@ module ccsd_lhtr_module
    use cc_tools_module
    use ccintegrals
 
-   public get_ccsd_multipliers_simple
+   public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr
    private
    contains
 
@@ -25,7 +26,7 @@ module ccsd_lhtr_module
    !of occupied orbitals no, the number of virtual orbitals nv and the number of
    !basis functions nb, MyLsItem is required to calculate the Fock matrix in
    !here
-   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,fo,xo,yo,xv,yv,no,nv,nb,MyLsItem,gao_ex)
+   subroutine get_ccsd_multipliers_simple(rho1,rho2,t1f,t2f,m1,m2,fo,xo,yo,xv,yv,no,nv,nb,MyLsItem,JacobianLT,gao_ex)
      implicit none
 
      type(lsitem), intent(inout) :: MyLsItem
@@ -33,6 +34,10 @@ module ccsd_lhtr_module
      real(realk),intent(inout) :: t1f(:,:),t2f(:,:,:,:),m1(:,:),m2(:,:,:,:),fo(:,:)
      real(realk),intent(in)    :: xo(:,:),yo(:,:),xv(:,:),yv(:,:)
      integer, intent(in)       :: no,nv,nb
+     !> Calculate Jacobian left transformation.
+     !> This implies that the RHS is not added at the end
+     !> If JacobianLT is not present it is effectively set to false
+     logical,intent(in),optional :: JacobianLT
      type(array4),intent(inout),optional:: gao_ex
      real(realk), pointer      :: w1(:), w2(:), w3(:), w4(:)
      real(realk), pointer      :: Lovov(:),Lvoov(:), Lovoo(:)
@@ -45,12 +50,19 @@ module ccsd_lhtr_module
      integer                   :: i,a,j,b,ctr
      real(realk)               :: norm,nrmt2,nrmm2
      type(array4)              :: gao
+     logical :: JacLT
 
      if(present(gao_ex))then
         gao = gao_ex
      else
         call get_full_eri(mylsitem,nb,gao)
      endif
+
+     if(present(JacobianLT)) then
+        JacLT = JacobianLT
+     else
+        JacLT=.false.
+     end if
 
      b2   = nb*nb
      v2   = nv*nv
@@ -741,9 +753,20 @@ module ccsd_lhtr_module
         call print_norm(rho2,int(o2v2,kind=8),msg)
      endif
 
-     !ADD RIGHT HAND SIDES
-     call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
-     call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
+     !ADD RIGHT HAND SIDES  (not for Jacobian left transformation)
+     if(JacLT) then
+        ! Scale to use bioorthogonal basis in Eq. 13.7.60 in THE BOOK
+        ! But do not add right hand side
+        do a=1,nv
+           do i=1,no
+              rho2(a,i,a,i) = 0.5_realk*rho2(a,i,a,i)
+           end do
+        end do
+     else
+        ! Add Right hand sides but do not scale to bioorthogonal basis in Eq. 13.7.60 in THE BOOK
+        call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
+        call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
+     end if
 
      if( DECinfo%PL > 2) then
         write(*,*)"rho + RHS"
@@ -1588,4 +1611,938 @@ module ccsd_lhtr_module
 !          WRITE(DECinfo%output,'(A,f9.3,A)')'Expected Memory Used ',ActuallyUsed,' GB'
 !       endif
     end subroutine get_ccsd_lhtr_integral_driven
-end module ccsd_lhtr_module
+
+
+    !> \brief Calculate CCSD Jacobian right-hand transformation.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+         & yv_tensor,t1,t2,R1,R2,rho1,rho2)
+      implicit none
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
+      !> and virt (dimension nbasis,nvirt) transformations
+      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Singles and doubles amplitudes
+      type(tensor),intent(in) :: t1,t2
+      !> Singles (R1) and doubles (R2) components of trial vector
+      type(tensor),intent(in) :: R1,R2
+      !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
+      type(tensor),intent(inout) :: rho1,rho2
+      type(tensor) :: rho11,rho12,rho21,rho22
+      integer :: nbasis,nocc,nvirt,whattodo
+
+
+      ! Dimensions
+      nbasis = xo_tensor%dims(1)
+      nocc = xo_tensor%dims(2)
+      nvirt = xv_tensor%dims(2)
+
+      call tensor_minit(rho11,[nvirt,nocc],2)
+      call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(rho21,[nvirt,nocc],2)
+      call tensor_minit(rho22,[nvirt,nocc,nvirt,nocc],4)
+
+
+      ! Calculate 1^rho components for Jacobian RHS transformation,
+      ! see Eqs. 55 and 57 in JCP 105, 6921 (1996)     
+      ! Singles component: rho11  (Eq. 55)
+      ! Doubles component: rho12  (Eq. 57)
+      whattodo=1
+      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
+
+      ! Calculate 2^rho components for Jacobian RHS transformation,
+      ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
+      ! Singles component: rho21  (Eq. 56)
+      ! Doubles component: rho22  (Eq. 58)
+      whattodo=2
+      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+           & yv_tensor,t2,R1,R2,rho21,rho22,whattodo)
+
+      ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
+      call tensor_zero(rho1)
+      call tensor_zero(rho2)
+      call tensor_add(rho1,1.0_realk,rho11)
+      call tensor_add(rho1,1.0_realk,rho21)
+      call tensor_add(rho2,1.0_realk,rho12)
+      call tensor_add(rho2,1.0_realk,rho22)
+
+      call tensor_free(rho11)
+      call tensor_free(rho12)
+      call tensor_free(rho21)
+      call tensor_free(rho22)
+
+
+    end subroutine cc_jacobian_rhtr
+
+
+    !> \brief Noddy implementation of CCSD residual made more general such that the components of 
+    !> the Jacobian right-hand transformation can also be calculated.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+         & yv_tensor,t2,R1,R2,rho1,rho2,whattodo)
+      implicit none
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
+      !> and virt (dimension nbasis,nvirt) transformations
+      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Doubles amplitudes
+      type(tensor),intent(in) :: t2
+      !> Singles (R1) and doubles (R2) components of trial vector
+      type(tensor),intent(in) :: R1,R2
+      !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
+      type(tensor),intent(inout) :: rho1,rho2
+      !> What to do?
+      !> 1. Calculate 1^rho components for Jacobian RH transformation (singles and doubles), 
+      !>    see Eqs. 55 and 57 in JCP 105, 6921 (1996)
+      !> 2. Calculate 2^rho components for Jacobian RH transformation (singles and doubles), 
+      !>    see Eqs. 56 and 58 in JCP 105, 6921 (1996)
+      !> 3. Calculate standard CCSD residual (then R1=CCSD singles, R2=CCSD doubles=t2), 
+      !>    see Eqs. 13.7.80-83 and 13.7.101-105 in THE BOOK 
+      !> NOTE: This implies that we use truly biorthogonal basis 
+      !>       in Eqs. 13.7.58 and 13.7.60 in THE BOOK for (1) and (2), while we use 
+      !>       the "almost bioortogonal basis" in Eqs. 13.7.58 and 13.7.59 in THE BOOK for (3).
+      !>       Effectively this means that we scale by (1 + delta_ab delta_ij)^-1 for the (1) and (2)
+      !>       doubles components but not for the (3) doubles component. 
+      !>       This distinction is necessary to ensure that the Jacobian is
+      !>       correct but also that the noddy CCSD residual implementation here 
+      !>       is consistent with Patrick's efficient CCSD residual implementation.
+      integer,intent(in) :: whattodo
+      type(array2) :: fvo,fov,fvv,foo
+      type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
+      integer :: nbasis,nocc,nvirt,i,j,k,l,m,a,b,c,d,e
+      real(realk) :: uA,uB,Lldkc,fac
+      real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
+      logical :: somethingwrong
+      real(realk),pointer :: A2(:,:,:,:), B2(:,:,:,:)
+
+
+      ! Dimensions
+      nbasis = xo_tensor%dims(1)
+      nocc = xo_tensor%dims(2)
+      nvirt = xv_tensor%dims(2)
+
+      ! Sanity check 1
+      if(whattodo/=1 .and. whattodo/=2 .and. whattodo/=3) then
+         print *, 'whattodo ', whattodo
+         call lsquit('noddy_generalized_ccsd_residual: Ill-defined whattodo!',-1)
+      end if
+
+      ! Sanity check 2: Dimensions
+      somethingwrong=.false.
+      if(t2%dims(1)/=nvirt .or. t2%dims(3)/=nvirt) somethingwrong=.true.
+      if(t2%dims(2)/=nocc .or. t2%dims(4)/=nocc) somethingwrong=.true.
+      if(R2%dims(1)/=nvirt .or. R2%dims(3)/=nvirt) somethingwrong=.true.
+      if(R2%dims(2)/=nocc .or. R2%dims(4)/=nocc) somethingwrong=.true.
+      if(rho2%dims(1)/=nvirt .or. rho2%dims(3)/=nvirt) somethingwrong=.true.
+      if(rho2%dims(2)/=nocc .or. rho2%dims(4)/=nocc) somethingwrong=.true.
+      if(R1%dims(1)/=nvirt .or. R1%dims(2)/=nocc) somethingwrong=.true.
+      if(rho1%dims(1)/=nvirt .or. rho1%dims(2)/=nocc) somethingwrong=.true.
+      if(somethingwrong) then
+         print *, 't2   ', t2%dims
+         print *, 'R2   ', R2%dims
+         print *, 'rho2 ', rho2%dims
+         print *, 'rho1 ', rho1%dims
+         print *, 'R1   ', R1%dims
+         call lsquit('noddy_generalized_ccsd_residual: Dimension error!',-1)
+      end if
+
+
+      ! Calculate all integrals 
+      call noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+           & yv_tensor,R1,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
+           & fvo,fov,fvv,foo,whattodo)
+
+
+      ! Calculate terms in CCSD residual
+      ! ********************************
+      ! Notation according to THE BOOK
+      ! Corresponding notation in Table I of JCP 105, 6921 (1996) is given in parenthesis
+      call tensor_zero(rho1)
+      call tensor_zero(rho2)
+
+
+      ! SINGLES RESIDUAL
+      ! ================
+
+      ! We use generic doubles array A2, see Table I of JCP 105, 6921 (1996):
+      ! whattodo = 1: Doubles array is t2
+      ! whattodo = 2: Doubles array is R2
+      ! whattodo = 3: Doubles array is t2
+      if(whattodo==1 .or. whattodo==3) A2 => t2%elm4
+      if(whattodo==2) A2 => R2%elm4
+
+      do i=1,nocc
+         do a=1,nvirt
+
+            ! A1 term (G term in JCP 105, 6921 (1996))
+            do c=1,nvirt
+               do d=1,nvirt
+                  do k=1,nocc
+                     uA = 2.0_realk*A2(c,k,d,i) - A2(c,i,d,k)
+                     rho1%elm2(a,i) = rho1%elm2(a,i) + uA*gvvov%val(a,d,k,c)
+                  end do
+               end do
+            end do
+
+            ! B1 term (H)
+            do c=1,nvirt
+               do k=1,nocc
+                  do l=1,nocc
+                     uA = 2.0_realk*A2(a,k,c,l) - A2(a,l,c,k)
+                     rho1%elm2(a,i) = rho1%elm2(a,i) - uA*gooov%val(k,i,l,c)
+                  end do
+               end do
+            end do
+
+            ! C1 term (I)
+            do c=1,nvirt
+               do k=1,nocc
+                  uA = 2.0_realk*A2(a,i,c,k) - A2(a,k,c,i)
+                  rho1%elm2(a,i) = rho1%elm2(a,i) + uA*fov%val(k,c)
+               end do
+            end do
+
+         end do
+      end do
+
+      ! D1 term (J)
+      if(whattodo/=2) then
+         ! Not include zero-order term for 2^rho singles component 
+         ! (Eq. 37 in JCP 105, 6921 (1996))
+         do i=1,nocc
+            do a=1,nvirt
+               rho1%elm2(a,i) = rho1%elm2(a,i) + fvo%val(a,i)
+            end do
+         end do
+      end if
+
+
+
+      ! DOUBLES RESIDUAL
+      ! ================
+
+      ! We use generic doubles arrays A2 and B2, see Table I of JCP 105, 6921 (1996):
+      ! whattodo = 1: Doubles arrays A2 and B2 are both t2
+      ! whattodo = 2: Doubles arrays A2 and B2 are R2 and t2, respectively
+      ! whattodo = 3: Doubles arrays A2 and B2 are both t2
+      if(whattodo==1 .or. whattodo==3) then
+         A2 => t2%elm4
+         B2 => t2%elm4
+      else
+         A2 => R2%elm4
+         B2 => t2%elm4
+      end if
+
+
+      ! A2 (F and B)
+      ! ************
+
+      ! A2.1 term (F term in JCP 105, 6921 (1996))
+      if(whattodo/=2) then
+         ! Not include zero-order term for 2^rho doubles component 
+         ! (Eq. 38 in JCP 105, 6921 (1996))
+         do i=1,nocc
+            do a=1,nvirt
+               do j=1,nocc
+                  do b=1,nvirt
+
+                     rho2%elm4(a,i,b,j) = gvovo%val(a,i,b,j)
+
+                  end do
+               end do
+            end do
+         end do
+      end if
+
+      ! A2.2 term (B)
+      do i=1,nocc
+         do a=1,nvirt
+            do j=1,nocc
+               do b=1,nvirt
+
+                  do c=1,nvirt
+                     do d=1,nvirt
+                        rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + &
+                             & A2(c,i,d,j)*gvvvv%val(a,c,b,d)
+                     end do
+                  end do
+
+               end do
+            end do
+         end do
+      end do
+
+
+
+      ! B2 (A)
+      ! ******
+      ! Scaling of quadratic term (not present for 1^rho)
+      if(whattodo==1) fac=0.0_realk
+      if(whattodo==2 .or. whattodo==3) fac=1.0_realk
+      call mem_alloc(tmp,nocc,nocc,nocc,nocc)
+      do i=1,nocc
+         do j=1,nocc
+
+            do k=1,nocc
+               do l=1,nocc
+
+                  ! Temporary quantity: 
+                  ! tmp(k,i,l,j) = g(k,i,l,j) + fac * sum_{cd} B2(c,i,d,j) * g(k,c,l,d)
+                  tmp(k,i,l,j) = goooo%val(k,i,l,j)
+                  do c=1,nvirt
+                     do d=1,nvirt
+                        tmp(k,i,l,j) = tmp(k,i,l,j) + fac*B2(c,i,d,j)*govov%val(k,c,l,d)
+                     end do
+                  end do
+
+                  ! rho2(a,b,i,j) += sum_{kl} A2(a,k,b,l) tmp(k,i,l,j)
+                  ! Note that the linear term is then included with A2, not B2:
+                  ! sum_{kl} A2(a,k,b,l) g(k,i,l,j)
+                  do a=1,nvirt
+                     do b=1,nvirt
+                        rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + A2(a,k,b,l)*tmp(k,i,l,j) 
+                     end do
+                  end do
+
+               end do
+            end do
+
+         end do
+      end do
+
+
+
+      ! For 2^rho, add quadratic term with B2 and A2 switched around,
+      ! see Table I in JCP 105, 6921 (1996)
+      Bquadratic: if(whattodo==2) then
+         do i=1,nocc
+            do j=1,nocc
+
+               do k=1,nocc
+                  do l=1,nocc
+
+                     ! Temporary quantity: tmp(k,i,l,j) = sum_{cd} A2(c,i,d,j) * g(k,c,l,d)
+                     tmp(k,i,l,j) = 0.0_realk
+                     do c=1,nvirt
+                        do d=1,nvirt
+                           tmp(k,i,l,j) = tmp(k,i,l,j) + fac*A2(c,i,d,j)*govov%val(k,c,l,d)
+                        end do
+                     end do
+
+                     ! rho2(a,i,b,j) += sum_{kl} B2(a,k,b,l) tmp(k,i,l,j)
+                     do a=1,nvirt
+                        do b=1,nvirt
+                           rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + B2(a,k,b,l)*tmp(k,i,l,j) 
+                        end do
+                     end do
+
+                  end do
+               end do
+
+            end do
+         end do
+      end if Bquadratic
+      call mem_dealloc(tmp)
+
+
+
+      ! C2 (C)
+      ! ******
+      ! NOTE: Here the quadratic term is scaled by 0.5 for CCSD residual, 
+      ! by 1.0 for 2^rho, and it is not present for 1^rho, see Table I in JCP 105, 6921 (1996)
+      ! 
+      if(whattodo==1) fac=0.0_realk
+      if(whattodo==2) fac=1.0_realk
+      if(whattodo==3) fac=0.5_realk
+      call mem_alloc(tmp,nocc,nocc,nvirt,nvirt)
+      call mem_alloc(tmp2,nvirt,nvirt,nocc,nocc)
+      tmp2=0.0_realk
+      do i=1,nocc
+         do a=1,nvirt
+
+            do k=1,nocc
+               do c=1,nvirt
+
+                  ! tmp(k,i,a,c) = g(k,i,a,c) - fac * sum_{dl} B2(a,l,d,i) * govov(k,d,l,c)
+                  tmp(k,i,a,c) = goovv%val(k,i,a,c)
+                  do l=1,nocc
+                     do d=1,nvirt
+                        tmp(k,i,a,c) = tmp(k,i,a,c) - fac*B2(a,l,d,i)*govov%val(k,d,l,c)
+                     end do
+                  end do
+
+                  ! tmp2(a,b,i,j) += - sum_{kc} A2(b,k,c,j) * tmp(k,i,a,c)
+                  do j=1,nocc
+                     do b=1,nvirt
+                        tmp2(a,b,i,j) = tmp2(a,b,i,j) - A2(b,k,c,j) * tmp(k,i,a,c)
+                     end do
+                  end do
+
+               end do
+            end do
+
+         end do
+      end do
+
+      ! Add component with i<-->j scaled properly to get final C2 component
+      ! (although still missing final symmetrization which is done commonly for C,D, and E
+      !  terms at the very end)
+      ! rho2CDE(a,i,b,j) = (0.5 + P_{ij}) * tmp2(a,b,i,j)
+      call mem_alloc(rho2CDE,nvirt,nocc,nvirt,nocc)
+      do j=1,nocc
+         do i=1,nocc
+            do a=1,nvirt
+               do b=1,nvirt
+                  rho2CDE(a,i,b,j) = 0.5_realk*tmp2(a,b,i,j) + tmp2(a,b,j,i)
+               end do
+            end do
+         end do
+      end do
+      call mem_dealloc(tmp)
+      call mem_dealloc(tmp2)
+
+
+      ! D2 (D)
+      ! ******  
+      call mem_alloc(tmp,nvirt,nocc,nocc,nvirt)
+      do i=1,nocc
+         do a=1,nvirt
+
+
+            do c=1,nvirt
+               do k=1,nocc
+
+                  ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c)
+                  ! ----------------------------------------------------------------
+
+                  ! L(a,i,k,c) = 2*g(a,i,k,c) - g(a,c,k,i) = 2*g(a,i,k,c) - g(k,i,a,c) 
+                  tmp(a,i,k,c) = 2.0_realk*gvoov%val(a,i,k,c) - goovv%val(k,i,a,c)
+                  do d=1,nvirt
+                     do l=1,nocc
+                        ! L(l,d,k,c) = 2*g(l,d,k,c) - g(l,c,k,d)
+                        Lldkc = 2.0_realk*govov%val(l,d,k,c) - govov%val(l,c,k,d)
+                        ! uB(a,d,i,l) = 2*B2(a,i,d,l) - B2(a,l,d,i)
+                        uB = 2.0_realk*B2(a,i,d,l) - B2(a,l,d,i)
+                        ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c) 
+                        tmp(a,i,k,c) = tmp(a,i,k,c) + fac*uB*Lldkc
+                     end do
+                  end do
+
+                  ! Update:
+                  ! rho2(a,b,i,j) += rho2(a,b,i,j) + 0.5 * sum_{ck} uA(b,j,c,k) * tmp(a,i,k,c)
+                  do b=1,nvirt
+                     do j=1,nocc
+                        uA = 2.0_realk*A2(b,j,c,k) - A2(b,k,c,j)
+                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + 0.5_realk*uA*tmp(a,i,k,c)
+                     end do
+                  end do
+
+               end do
+            end do
+
+
+         end do
+      end do
+      call mem_dealloc(tmp)
+
+
+      ! E2 (E1 and E2)
+      ! **************
+      ! Scaling of quadratic term (not present for 1^rho)
+      if(whattodo==1) fac=0.0_realk
+      if(whattodo==2 .or. whattodo==3) fac=1.0_realk
+
+      ! Construct 2-dimensional intermediates
+      call mem_alloc(tmpoo,nocc,nocc)
+      call mem_alloc(tmpvv,nvirt,nvirt)
+
+      ! tmpoo(k,j) = F(k,j) + sum_{cdl} uB(c,l,d,j) * g(k,d,l,c)
+      do j=1,nocc
+         do k=1,nocc
+            tmpoo(k,j) = foo%val(k,j)
+
+            do l=1,nocc
+               do d=1,nvirt
+                  do c=1,nvirt
+                     uB = 2.0_realk*B2(c,l,d,j) - B2(c,j,d,l)
+                     tmpoo(k,j) = tmpoo(k,j) + fac * uB * govov%val(k,d,l,c)
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      ! tmpvv(b,c) = F(b,c) - sum_{dkl} uB(b,k,d,l) * g(l,d,k,c)
+      do b=1,nvirt
+         do c=1,nvirt
+            tmpvv(b,c) = fvv%val(b,c)
+
+            do l=1,nocc
+               do d=1,nvirt
+                  do k=1,nocc
+                     uB = 2.0_realk*B2(b,k,d,l) - B2(b,l,d,k)
+                     tmpvv(b,c) = tmpvv(b,c) - fac * uB * govov%val(l,d,k,c)
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      ! E2.1 (E1)
+      do j=1,nocc
+         do c=1,nvirt
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + A2(a,i,c,j)*tmpvv(b,c)
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      ! E2.2 (E2)
+      do j=1,nocc
+         do k=1,nocc
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - A2(a,i,b,k)*tmpoo(k,j)
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+
+
+      ! Add quadratic E terms with B2 and A2 switched around
+      ! ----------------------------------------------------
+      Equadratic: if(whattodo==2) then
+         ! tmpoo(k,j) = sum_{cdl} uA(c,l,d,j) * g(k,d,l,c)
+         do j=1,nocc
+            do k=1,nocc
+               tmpoo(k,j) = 0.0_realk
+               do l=1,nocc
+                  do d=1,nvirt
+                     do c=1,nvirt
+                        uA = 2.0_realk*A2(c,l,d,j) - A2(c,j,d,l)
+                        tmpoo(k,j) = tmpoo(k,j) + fac * uA * govov%val(k,d,l,c)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+         ! tmpvv(b,c) = - sum_{dkl} uA(b,k,d,l) * g(l,d,k,c)
+         do b=1,nvirt
+            do c=1,nvirt
+               tmpvv(b,c) = 0.0_realk
+
+               do l=1,nocc
+                  do d=1,nvirt
+                     do k=1,nocc
+                        uA = 2.0_realk*A2(b,k,d,l) - A2(b,l,d,k)
+                        tmpvv(b,c) = tmpvv(b,c) - fac * uA * govov%val(l,d,k,c)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+         ! E2.1 (E1)
+         do j=1,nocc
+            do c=1,nvirt
+               do b=1,nvirt
+                  do i=1,nocc
+                     do a=1,nvirt
+                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + B2(a,i,c,j)*tmpvv(b,c)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+         ! E2.2 (E2)
+         do j=1,nocc
+            do k=1,nocc
+               do b=1,nvirt
+                  do i=1,nocc
+                     do a=1,nvirt
+                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - B2(a,i,b,k)*tmpoo(k,j)
+                     end do
+                  end do
+               end do
+            end do
+         end do
+
+      end if Equadratic
+
+
+      ! Symmetrize C, D, and E terms and add to A and B terms
+      ! *****************************************************
+      do j=1,nocc
+         do b=1,nvirt
+            do i=1,nocc
+               do a=1,nvirt
+                  rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + rho2CDE(a,i,b,j) + rho2CDE(b,j,a,i)
+               end do
+            end do
+         end do
+      end do
+
+
+      ! For Jacobian RHTR components: Multiply by (1 + delta_ab delta_ij)^-1
+      ! ********************************************************************
+      ! - see comment on bioorthogonal basis at the beginning of this subroutine
+      JacobianRHTR: if(whattodo==1 .or. whattodo==2) then
+         do i=1,nocc
+            do a=1,nvirt
+               rho2%elm4(a,i,a,i) = 0.5_realk*rho2%elm4(a,i,a,i)
+            end do
+         end do
+      end if JacobianRHTR
+
+
+      ! Clean up
+      call mem_dealloc(tmpoo)
+      call mem_dealloc(tmpvv)
+      call mem_dealloc(rho2CDE)
+      call array4_free(gvvov)
+      call array4_free(gooov)
+      call array4_free(gvovo)
+      call array4_free(gvvvv)
+      call array4_free(goooo)
+      call array4_free(govov)
+      call array4_free(goovv)
+      call array4_free(gvoov)
+      call array2_free(foo)
+      call array2_free(fov)
+      call array2_free(fvo)
+      call array2_free(fvv)
+      nullify(A2)
+      nullify(B2)
+
+    end subroutine noddy_generalized_ccsd_residual
+
+
+    !> \brief Calculate integrals for noddy_generalized_ccsd_residual.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+         & yv_tensor,R1_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
+         & fvo,fov,fvv,foo,whattodo)
+      implicit none
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
+      !> and virt (dimension nbasis,nvirt) transformations
+      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Singles (R1) component of trial vector
+      type(tensor),intent(in) :: R1_tensor
+      !> Two-electron integrals in obvious notation (e.g. gvvov = (a b | i c) integrals)
+      !> These are allocated inside this subroutine!
+      type(array4),intent(inout) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
+      !> Fock matrix elements in MO basis, e.g. fvo = < a | F | i >,
+      !> using either T1-transformed integrals or trial-T1 transformed integrals (see below).
+      !> These are allocated inside this subroutine!
+      type(array2),intent(inout) :: fvo,fov,fvv,foo
+      !> What to do? See noddy_generalized_ccsd_residual.
+      !> whattodo=1: Use trial-T1 transformed integrals 
+      !>             (Hamiltonian is Eq. 45 in JCP 105, 6921 (1996))
+      !> whattodo=2: Use T1-transformed integrals
+      !> whattodo=3: Use T1-transformed integrals
+      integer,intent(in) :: whattodo
+      type(array2) :: xo,xv,yo,yv,fao,Dt1,hao,hoo,hvo,hov,hvv,xoR,xvR,yoR,yvR,R1
+      type(array4) :: gao,gvooo
+      integer :: nbasis,nocc,nvirt,i,j,a,b,k
+      integer,dimension(2) :: bo,bv,bb,oo,ov,vo,vv
+      real(realk) :: s
+
+      ! Dimensions
+      nbasis = xo_tensor%dims(1)
+      nocc = xo_tensor%dims(2)
+      nvirt = xv_tensor%dims(2)
+      bo(1) = nbasis; bo(2) = nocc
+      bv(1) = nbasis; bv(2) = nvirt
+      bb(1) = nbasis; bb(2)=nbasis
+      oo(1)=nocc; oo(2)=nocc
+      ov(1)=nocc; ov(2)=nvirt
+      vo(1)=nvirt; vo(2)=nocc
+      vv(1)=nvirt; vv(2)=nvirt
+
+      ! Transformation matrices in array2 format
+      xo = array2_init(bo,xo_tensor%elm2)
+      xv = array2_init(bv,xv_tensor%elm2)
+      yo = array2_init(bo,yo_tensor%elm2)
+      yv = array2_init(bv,yv_tensor%elm2)
+      R1 = array2_init(vo,R1_tensor%elm2)
+
+      ! Calculate full AO integrals
+      call get_full_eri(mylsitem,nbasis,gao)
+
+      ! Get MO integrals
+      ! ****************
+      ResidualT1_twoel: if(whattodo==1) then  ! Residual-T1 transformed integrals
+
+         ! See Eq. 47 in JCP 105, 6921 (1996) for two-electron trial-T1 transformed integrals
+
+         ! Residual-transformed coefficient matrices (Eqs. 49 and 50 in JCP 105, 6921 (1996))
+         xoR = array2_init(bo)   ! zero, see Eqs. 49-51 in JCP 105, 6921 (1996) 
+         xvR = array2_init(bv)
+         yoR = array2_init(bo)   
+         yvR = array2_init(bv)   ! zero, see Eqs. 49-51 in JCP 105, 6921 (1996) 
+         call array2_matmul(xo,R1,xvR,'N','T',-1.0_realk,0.0_realk)
+         call array2_matmul(yv,R1,yoR,'N','N',1.0_realk,0.0_realk)
+
+         ! Calculate integrals according to Eq. 47 in JCP 105, 6921 (1996)
+         call two_electron_trial_T1_integrals(gao,xv,yv,xo,yv,xvR,yvR,xoR,yvR,gvvov)
+         call two_electron_trial_T1_integrals(gao,xo,yo,xo,yv,xoR,yoR,xoR,yvR,gooov)
+         call two_electron_trial_T1_integrals(gao,xv,yo,xv,yo,xvR,yoR,xvR,yoR,gvovo)
+         call two_electron_trial_T1_integrals(gao,xv,yv,xv,yv,xvR,yvR,xvR,yvR,gvvvv)
+         call two_electron_trial_T1_integrals(gao,xo,yo,xo,yo,xoR,yoR,xoR,yoR,goooo)
+         call two_electron_trial_T1_integrals(gao,xo,yv,xo,yv,xoR,yvR,xoR,yvR,govov)
+         call two_electron_trial_T1_integrals(gao,xo,yo,xv,yv,xoR,yoR,xvR,yvR,goovv)
+         call two_electron_trial_T1_integrals(gao,xv,yo,xo,yv,xvR,yoR,xoR,yvR,gvoov)
+         call two_electron_trial_T1_integrals(gao,xv,yo,xo,yo,xvR,yoR,xoR,yoR,gvooo)
+
+      else ! T1-transformed integrals
+
+         gvvov = get_gmo_simple(gao,xv,yv,xo,yv)
+         gooov = get_gmo_simple(gao,xo,yo,xo,yv)
+         gvovo = get_gmo_simple(gao,xv,yo,xv,yo)
+         gvvvv = get_gmo_simple(gao,xv,yv,xv,yv)
+         goooo = get_gmo_simple(gao,xo,yo,xo,yo)
+         govov = get_gmo_simple(gao,xo,yv,xo,yv)
+         goovv = get_gmo_simple(gao,xo,yo,xv,yv)
+         gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
+         gvooo = get_gmo_simple(gao,xv,yo,xo,yo)
+
+      end if ResidualT1_twoel
+
+      call array4_free(gao)
+
+
+      ! Fock matrix
+      ! ***********
+
+      ! One-electron contribution
+      hao = array2_init(bb)
+      call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
+           & hao%val,nbasis,nbasis,AORdefault,AORdefault)
+
+      ResidualT1_oneel: if(whattodo==1) then  ! Residual-T1 transformed integrals
+         call one_electron_trial_T1_integrals(hao,xo,yo,xoR,yoR,hoo)
+         call one_electron_trial_T1_integrals(hao,xo,yv,xoR,yvR,hov)
+         call one_electron_trial_T1_integrals(hao,xv,yo,xvR,yoR,hvo)
+         call one_electron_trial_T1_integrals(hao,xv,yv,xvR,yvR,hvv)
+      else
+         hoo = array2_similarity_transformation(xo,hao,yo,oo)
+         hov = array2_similarity_transformation(xo,hao,yv,ov)
+         hvo = array2_similarity_transformation(xv,hao,yo,vo)
+         hvv = array2_similarity_transformation(xv,hao,yv,vv)
+      end if ResidualT1_oneel
+
+      ! Occ-occ Fock matrix
+      s = 2.0_realk
+      foo = array2_init(oo,hoo%val)
+      do j=1,nocc
+         do i=1,nocc
+            do k=1,nocc
+               foo%val(i,j) = foo%val(i,j) + (s*goooo%val(i,j,k,k) - goooo%val(i,k,k,j))
+            end do
+         end do
+      end do
+
+      ! Occ-virt Fock matrix
+      fov = array2_init(ov,hov%val)
+      do a=1,nvirt
+         do i=1,nocc
+            do k=1,nocc
+               fov%val(i,a) = fov%val(i,a) + (s*gooov%val(k,k,i,a) - gooov%val(i,k,k,a))
+            end do
+         end do
+      end do
+
+      ! Virt-occ Fock matrix
+      fvo = array2_init(vo,hvo%val)
+      do i=1,nocc
+         do a=1,nvirt
+            do k=1,nocc
+               fvo%val(a,i) = fvo%val(a,i) + (s*gvooo%val(a,i,k,k) - gvooo%val(a,k,k,i))
+            end do
+         end do
+      end do
+
+      ! Virt-virt Fock matrix
+      fvv = array2_init(vv,hvv%val)
+      do b=1,nvirt
+         do a=1,nvirt
+            do k=1,nocc
+               fvv%val(a,b) = fvv%val(a,b) + (s*goovv%val(k,k,a,b) - gvoov%val(a,k,k,b))
+            end do
+         end do
+      end do
+
+      call array2_free(hao)
+      call array2_free(hoo)
+      call array2_free(hov)
+      call array2_free(hvo)
+      call array2_free(hvv)
+      if(whattodo==1) then  ! Residual-T1 transformed integrals
+         call array2_free(xoR)
+         call array2_free(xvR)
+         call array2_free(yoR)
+         call array2_free(yvR)
+      end if
+
+
+!!$         ! Fock matrix from T1-transformed density (not needed now but keep it commented out)
+!!$
+!!$         ! T1-transformed density: 
+!!$         ! Dt1(rho,sigma) = sum_i Y_{rho i} X_{sigma i}
+!!$         ! (some might say that this is the transposed of the T1-transposed density matrix,
+!!$         !  however, this convention is chosen in accordance with the way Fock matrices
+!!$         !  are built for nonsymmetric density matrices)
+!!$         Dt1 = array2_init(bb)
+!!$         call array2_matmul(yo,xo,Dt1,'N','T',1.0_realk,0.0_realk)
+!!$         ! T1-transformed Fock matrix in AO basis
+!!$         fao = array2_init(bb)
+!!$         call dec_fock_transformation_fortran_array(nbasis,fao%val,Dt1%val,MyLsitem,.false.,incl_h=.true.)
+!!$
+!!$         ! T1-transformed Fock matrix in MO basis partioned into the four blocks
+!!$         foo = array2_similarity_transformation(xo,fao,yo,oo)
+!!$         fov = array2_similarity_transformation(xo,fao,yv,ov)
+!!$         fvo = array2_similarity_transformation(xv,fao,yo,vo)
+!!$         fvv = array2_similarity_transformation(xv,fao,yv,vv)
+!!$
+!!$         call array2_free(Dt1)
+!!$         call array2_free(fao)
+
+
+      ! Clean up
+      call array2_free(xo)
+      call array2_free(xv)
+      call array2_free(yo)
+      call array2_free(yv)
+      call array2_free(R1)
+      call array4_free(gvooo)
+
+    end subroutine noddy_generalized_ccsd_residual_integrals
+
+
+    !> \brief Calculate two-electron trial-T1 transformed integrals, 
+    !>        see Eq. 47 in JCP 105, 6921 (1996):
+    !>
+    !> g(p,q,r,s) = g1(p',q,r,s) + g2(p,q',r,s) + g3(p,q,r',s) + g4(p,q,r,s') 
+    !>
+    !> where primed index "n" is transformed with the znR transformation matrix,
+    !> while the nonprimed indices are transformed with the z1,z2,z3,z4 input matrices.
+    !>
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine two_electron_trial_T1_integrals(gao,z1,z2,z3,z4,z1R,z2R,z3R,z4R,g)
+
+      implicit none
+      !> Two-electron integrals in AO basis (not modified although intent(inout))
+      type(array4),intent(inout) :: gao
+      !> Transformation matrices as described above
+      type(array2),intent(in) :: z1,z2,z3,z4,z1R,z2R,z3R,z4R
+      !> Output two-electron integrals as described above
+      !> Note: Also initialized here!
+      type(array4),intent(inout) :: g
+      type(array4) :: g1,g2,g3,g4
+      integer :: i,j,k,l
+      logical :: somethingwrong
+
+
+      ! Sanity check
+      somethingwrong=.false.
+      if(z1%dims(1)/=z1R%dims(1) .or. z1%dims(2)/=z1R%dims(2)) somethingwrong=.true.
+      if(z2%dims(1)/=z2R%dims(1) .or. z2%dims(2)/=z2R%dims(2)) somethingwrong=.true.
+      if(z3%dims(1)/=z3R%dims(1) .or. z3%dims(2)/=z3R%dims(2)) somethingwrong=.true.
+      if(z4%dims(1)/=z4R%dims(1) .or. z4%dims(2)/=z4R%dims(2)) somethingwrong=.true.
+      if(somethingwrong) then
+         call lsquit('two_electron_trial_T1_integrals: dimension mismatch!',-1)
+      end if
+
+      ! Calculate g1,g2,g3,g4 as described above
+      g1 = get_gmo_simple(gao,z1R,z2,z3,z4)
+      g2 = get_gmo_simple(gao,z1,z2R,z3,z4)
+      g3 = get_gmo_simple(gao,z1,z2,z3R,z4)
+      g4 = get_gmo_simple(gao,z1,z2,z3,z4R)
+
+      ! Add up contributions to construct final two-electron integrals
+      g = array4_init([z1%dims(2),z2%dims(2),z3%dims(2),z4%dims(2)])
+      do l=1,z4%dims(2)
+         do k=1,z3%dims(2)
+            do j=1,z2%dims(2)
+               do i=1,z1%dims(2)
+                  g%val(i,j,k,l) = g1%val(i,j,k,l) + g2%val(i,j,k,l) + &
+                       & g3%val(i,j,k,l) + g4%val(i,j,k,l)
+               end do
+            end do
+         end do
+      end do
+      call array4_free(g1)
+      call array4_free(g2)
+      call array4_free(g3)
+      call array4_free(g4)
+
+    end subroutine two_electron_trial_T1_integrals
+
+
+
+    !> \brief Calculate one-electron trial-T1 transformed integrals, 
+    !>        see Eq. 46 in JCP 105, 6921 (1996):
+    !>
+    !> h(p,q) = h1(p',q) + h2(p,q') 
+    !>
+    !> where primed index "n" is transformed with the znR transformation matrix,
+    !> while the nonprimed indices are transformed with the z1 and z2 input matrices.
+    !>
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine one_electron_trial_T1_integrals(hao,z1,z2,z1R,z2R,h)
+
+      implicit none
+      !> One-electron integrals in AO basis (not modified although intent(inout))
+      type(array2),intent(inout) :: hao
+      !> Transformation matrices as described above (not modified although intent(inout))
+      type(array2),intent(inout) :: z1,z2,z1R,z2R
+      !> Output one-electron integrals as described above
+      !> Note: Also initialized here!
+      type(array2),intent(inout) :: h
+      type(array2) :: h1,h2
+      integer :: i,j
+      logical :: somethingwrong
+
+
+      ! Sanity check
+      somethingwrong=.false.
+      if(z1%dims(1)/=z1R%dims(1) .or. z1%dims(2)/=z1R%dims(2)) somethingwrong=.true.
+      if(z2%dims(1)/=z2R%dims(1) .or. z2%dims(2)/=z2R%dims(2)) somethingwrong=.true.
+      if(somethingwrong) then
+         call lsquit('one_electron_trial_T1_integrals: dimension mismatch!',-1)
+      end if
+
+      ! Calculate h1 and h2 as described above
+      h1 = array2_similarity_transformation(z1R,hao,z2,[z1%dims(2),z2%dims(2)])
+      h2 = array2_similarity_transformation(z1,hao,z2R,[z1%dims(2),z2%dims(2)])
+
+      ! Add up contributions to construct final one-electron integrals
+      h = array2_add(h1,h2)
+
+      call array2_free(h1)
+      call array2_free(h2)
+
+    end subroutine one_electron_trial_T1_integrals
+
+
+
+  end module cc_response_tools_module

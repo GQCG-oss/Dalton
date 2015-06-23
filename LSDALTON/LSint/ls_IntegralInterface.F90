@@ -37,7 +37,7 @@ MODULE ls_Integral_Interface
        & memdist_lstensor_buildfromscalapack, &
        & Build_lst_from_matarray, build_empty_sublstensor,&
        & alloc_build_empty_sublstensor
-  use integraloutput_type, only: initintegraloutputdims1
+  use integraloutput_type, only: initintegraloutputdims1,nullifyintegraloutput
   use TYPEDEF, only: getNbasis, set_sameallfrag, LS_FREEMMBUF, ls_emptyibuf,&
        & ls_emptyrbuf, ls_emptynucbuf, ls_fillnucbuf, ls_initmmbuf,&
        & retrieve_screen_output, typedef_free_setting,&
@@ -3908,6 +3908,8 @@ Integer               :: nrowLHS,ncolLHS,nrowRHS,ncolRHS
 !
 TYPE(INTEGRALOUTPUT)  :: INT_OUTPUT
 !
+!initialize the Integral Output structure.
+call nullifyIntegralOutput(INT_OUTPUT)
 IDUMMY=1
 LHSDENSFIT = .FALSE.
 RHSDENSFIT = .FALSE.

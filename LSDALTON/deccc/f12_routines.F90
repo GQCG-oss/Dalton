@@ -2274,72 +2274,6 @@ module f12_routines_module
 
   end subroutine get_maxstepmem
  
-!!$  subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
-!!$    implicit none
-!!$
-!!$    type(fullmolecule),intent(inout) :: MyMolecule
-!!$    type(lsitem), intent(inout) :: Mylsitem
-!!$    real(realk), intent(inout) :: ES2
-!!$    type(matrix), intent(in) :: Dmat
-!!$
-!!$    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-!!$
-!!$    !> Singles contribution
-!!$    type(matrix) :: Fic
-!!$    type(matrix) :: Fpp
-!!$    type(matrix) :: Fij
-!!$
-!!$    type(matrix) :: Fcc
-!!$    type(matrix) :: Frc
-!!$
-!!$    !Need to build Cabs
-!!$    ! Init stuff
-!!$    ! **********
-!!$    nbasis = MyMolecule%nbasis
-!!$    nocc   = MyMolecule%nocc
-!!$    nvirt  = MyMolecule%nvirt
-!!$    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-!!$    noccfull = nocc
-!!$
-!!$    !Fcd
-!!$    call mat_init(Fcc,ncabsAO,ncabsAO)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
-!!$
-!!$    !call mat_init(Fcd,ncabs,ncabs)
-!!$    !  call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$    !     & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
-!!$    !call mat_free(Fcc)
-!!$
-!!$    !Fic
-!!$    call mat_init(Frc,nbasis,ncabsAO)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
-!!$
-!!$    call mat_init(Fic,nocc,ncabsAO)
-!!$
-!!$    !  call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$    !       & MyMolecule%Co, MyMolecule%Cv,'ic',Frc,Fic)
-!!$
-!!$    call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$         & MyMolecule%Co, MyMolecule%Cv,'i',Frc,Fic,1)
-!!$
-!!$    call mat_free(Frc)
-!!$
-!!$    !Fii
-!!$    call mat_init(Fpp,nbasis,nbasis)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Fpp,Dmat,MyLsitem,'RRRRC')
-!!$    call mat_init(Fij,nocc,nocc)
-!!$    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$         & MyMolecule%Co, MyMolecule%Cv,'ii',Fpp,Fij)
-!!$    call mat_free(Fpp)
-!!$
-!!$    call get_ES2_AO(ES2,Fic,Fij,Fcc,nocc,ncabsAO)
-!!$
-!!$    call mat_free(Fic)
-!!$    call mat_free(Fij)
-!!$    call mat_free(Fcc)
-!!$
-!!$  end subroutine get_ES2_from_dec_main
-
   subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
     implicit none
     
@@ -2425,7 +2359,7 @@ module f12_routines_module
   end subroutine get_ES2_from_dec_main
   
   subroutine get_ES2(ES2,Fic,Fij,Fab,Fcd,Fac,nocc,nvirt,ncabs,ncabsAO)
-  
+    implicit none
     
     real(realk), target, intent(in) :: Fcd(:,:)
     real(realk), target, intent(in) :: Fab(:,:)
@@ -2433,16 +2367,9 @@ module f12_routines_module
     real(realk), target, intent(in) :: Fac(:,:)
     real(realk), target, intent(in) :: Fic(:,:)
     
-    real(realk), pointer :: eps_c(:)
-    real(realk), pointer :: eps_i(:)
-    real(realk), pointer :: eps_a(:)
-
-    real(realk), pointer :: C_cd(:,:)
-    real(realk), pointer :: C_ij(:,:)
-    real(realk), pointer :: C_ab(:,:)
-
     real(realk), intent(inout) :: ES2
-    real(realk) :: tmp
+    real(realk) :: tmp1,tmp2,tmp3,tmp4
+    real(realk) :: gamma0, gamma1, beta1, beta0, sigma1, alpha1, alpha2
     real(realk) :: denom
     real(realk) :: Ecorr
     real(realk) :: Ecorr_old
@@ -2450,121 +2377,239 @@ module f12_routines_module
     integer, intent(inout) :: nocc,ncabs,nvirt,ncabsAO
     integer :: i,j,a,c,iter
    
-    real(realk), pointer :: tia(:,:) 
-    real(realk), pointer :: tic(:,:)
+    !xk
+    real(realk), pointer :: x1ia(:,:) 
+    real(realk), pointer :: x1ic(:,:)
+    real(realk), pointer :: x2ia(:,:) 
+    real(realk), pointer :: x2ic(:,:)
 
-    ! \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
-    ! subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
+    !rk 
+    real(realk), pointer :: r1ia(:,:) 
+    real(realk), pointer :: r1ic(:,:)
+    real(realk), pointer :: r2ia(:,:) 
+    real(realk), pointer :: r2ic(:,:)
 
-    !Fcd
-    call mem_alloc(C_cd,ncabs,ncabs)
-    call mem_alloc(eps_c,ncabs)
-    call solve_eigenvalue_problem_unitoverlap(ncabs,Fcd,eps_c,C_cd)    
-
-    !Fij
-    call mem_alloc(C_ij,nocc,nocc)
-    call mem_alloc(eps_i,nocc)
-    call solve_eigenvalue_problem_unitoverlap(nocc,Fij,eps_i,C_ij)     
-
-    !Fab
-    call mem_alloc(C_ab,nvirt,nvirt)
-    call mem_alloc(eps_a,nvirt)
-    call solve_eigenvalue_problem_unitoverlap(nvirt,Fab,eps_a,C_ab)     
-! YANG DO NOT USE NORM2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   
-!    print *, "norm2(eps_i): ", norm2(eps_i)
-!    print *, "norm2(eps_a): ", norm2(eps_a)
-!    print *, "norm2(eps_c): ", norm2(eps_c)
-
-    !t-matrices
-    call mem_alloc(tia,nocc,nvirt)
-    call mem_alloc(tic,nocc,ncabs)
-
-    !iter=0
-    do c=1,ncabs
-       do i=1,nocc
-          tic(i,c) = Fic(i,c)/(eps_i(i)-eps_c(c))
-       enddo
-    enddo
-
-    do a=1,nvirt
-       do i=1,nocc
-          denom = (eps_i(i)-eps_a(a))
-          tmp = 0.0E0_realk
-          do c=1,ncabs
-             tmp = tmp + Fac(a,c)*tic(i,c)
-          enddo
-          tia(i,a) = tmp/denom 
-       enddo
-    enddo
-
-
-    !Starting iterations
-    do iter=1,20
-       
-       Ecorr = 0.0E0_realk
-       Ecorr_old = 0.0E0_realk
-       
-       do c=1,ncabs
-          do i=1,nocc
-             Ecorr_old = Ecorr_old + Fic(i,c)*tic(i,c)
-          enddo
-       enddo
-
-      !make tic
-       do c=1,ncabs
-          do i=1,nocc
-             denom = (eps_i(i)-eps_c(c))
-             tmp = 0.0E0_realk
-             do a=1,nvirt
-                tmp = tmp + Fac(a,c)*tia(i,a)
-             enddo
-             tic(i,c) = (Fic(i,c)+tmp)/denom 
-          enddo
-       enddo
-
-       !make tia
-       do a=1,nvirt
-          do i=1,nocc
-             denom = (eps_i(i)-eps_a(a))
-             tmp = 0.0E0_realk
-             do c=1,ncabs
-                tmp = tmp + Fac(a,c)*tic(i,c)
-             enddo
-             tia(i,a) = tmp/denom 
-          enddo
-       enddo
-
-       Ecorr = 0.0E0_realk
-       do c=1,ncabs
-          do i=1,nocc
-             Ecorr = Ecorr + Fic(i,c)*tic(i,c)
-          enddo
-       enddo
-
-       print *, "----------------------------------"
-       print *, "Ecorr: ", iter, Ecorr
-       print *, "deltA_E: ", iter, abs(Ecorr-Ecorr_old)
-! YANG DO NOT USE NORM2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   
-!       print *, "norm2(tic): ", iter, norm2(tic)
-!       print *, "norm2(tia): ", iter, norm2(tia)
-
-    enddo
+    !vk
+    real(realk), pointer :: v1ia(:,:) 
+    real(realk), pointer :: v1ic(:,:)
     
-    call mem_dealloc(tic)
-    call mem_dealloc(tia)
+    !pk
+    real(realk), pointer :: p1ia(:,:) 
+    real(realk), pointer :: p1ic(:,:) 
+    real(realk), pointer :: p0ia(:,:) 
+    real(realk), pointer :: p0ic(:,:)
 
-    call mem_dealloc(eps_c)
-    call mem_dealloc(C_cd)
+    !vectors
+    call mem_alloc(x1ia,nocc,nvirt)
+    call mem_alloc(x1ic,nocc,ncabs)
+    call mem_alloc(x2ia,nocc,nvirt)
+    call mem_alloc(x2ic,nocc,ncabs)
+    
+    call mem_alloc(r1ia,nocc,nvirt)
+    call mem_alloc(r1ic,nocc,ncabs)
+    call mem_alloc(r2ia,nocc,nvirt)
+    call mem_alloc(r2ic,nocc,ncabs)
 
-    call mem_dealloc(eps_i)
-    call mem_dealloc(C_ij)
+    call mem_alloc(p1ia,nocc,nvirt)
+    call mem_alloc(p1ic,nocc,ncabs)
+    call mem_alloc(p0ia,nocc,nvirt)
+    call mem_alloc(p0ic,nocc,ncabs)
 
-    call mem_dealloc(eps_a)    
-    call mem_dealloc(C_ab)
+    call mem_alloc(v1ia,nocc,nvirt)
+    call mem_alloc(v1ic,nocc,ncabs)
 
+    !Initial start
+    Ecorr_old = 0.0E0_realk
+
+    r1ia = 0.0E0_realk
+    r1ic = -1.0E0_realk*Fic
+
+    x1ia = 0.0E0_realk
+    x1ic = 0.0E0_realk
+
+    gamma1 = 0.0E0_realk
+    gamma0 = 1.0E0_realk
+
+    !pk0 
+    p0ia = r1ia
+    p0ic = r1ic
+
+    !CG algorithm
+    CG_loop: do iter=1,1000
+
+
+       gamma1 = inner_prod(r1ia,r1ic,r1ia,r1ic,nocc,nvirt,ncabs)
+       beta1 = gamma1/gamma0
+
+       !Update pk1 vector - needs to be changed to type_matrix later
+       p1ia = r1ia + beta1*p0ia
+       p1ic = r1ic + beta1*p0ic
+
+       call mat_prod(Fij,Fab,Fac,Fcd,p1ia,p1ic,nocc,nvirt,ncabs,v1ia,v1ic)
+
+       sigma1 = inner_prod(p1ia,p1ic,v1ia,v1ic,nocc,nvirt,ncabs)
+         
+       alpha1 = gamma1/sigma1
+
+       x2ia = x1ia + alpha1*p1ia 
+       x2ic = x1ic + alpha1*p1ic
+
+       r2ia = r1ia - alpha1*v1ia
+       r2ic = r1ic - alpha1*v1ic
+
+       !Energy summation
+      ! Ecorr = 0.0E0_realk
+      ! do c=1,ncabs
+      !    do i=1,nocc
+      !       Ecorr = Ecorr + Fic(i,c)*x2ic(i,c)
+      !    enddo
+      ! enddo
+
+       ! print *, "iter norm2(r2ia) norm2(r2ic) Ecorr", iter, norm2(r2ia), norm2(r2ic), Ecorr  
+       ! print *, "iter norm2(x2ia) norm2(x2ic) ", iter, norm2(x2ia), norm2(x2ic) 
+
+       !Update variables
+       r1ia = r2ia
+       r1ic = r2ic
+    
+       gamma0 = gamma1
+
+       p0ia = p1ia
+       p0ic = p1ic
+       
+       x1ia = x2ia
+       x1ic = x2ic
+       
+       Ecorr = 0.0E0_realk
+       do c=1,ncabs
+          do i=1,nocc
+             Ecorr = Ecorr + Fic(i,c)*x2ic(i,c)
+          enddo
+       enddo
+
+       !print*, "iter Ecorr Ecorr_old: ", iter, Ecorr, Ecorr_old
+       if(abs(Ecorr-Ecorr_old)<1.0E-9) then
+          exit 
+       endif
+
+       !Update the energy
+       Ecorr_old = Ecorr  
+
+    enddo CG_loop
+
+    !Energy summation
+    Ecorr = 0.0E0_realk 
+    do c=1,ncabs 
+       do i=1,nocc 
+          Ecorr = Ecorr + Fic(i,c)*x2ic(i,c) 
+       enddo
+    enddo
+
+    ES2 = 2.0E0_realk*Ecorr
+
+    !Twice due to spinorbitals
+    print *,"Singles Energy Contribution: ", 2.0E0_realk*Ecorr   
+    print *,"Number of iterations: ", iter
+
+    call mem_dealloc(x1ic)
+    call mem_dealloc(x1ia)
+    call mem_dealloc(x2ic)
+    call mem_dealloc(x2ia)
+    
+    call mem_dealloc(p1ic)
+    call mem_dealloc(p1ia)
+    call mem_dealloc(p0ic)
+    call mem_dealloc(p0ia)
+
+    call mem_dealloc(r1ic)
+    call mem_dealloc(r1ia)
+    call mem_dealloc(r2ic)
+    call mem_dealloc(r2ia)
+    
+    call mem_dealloc(v1ic)
+    call mem_dealloc(v1ia)
+    
  end subroutine get_ES2
 
-  subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
+ function inner_prod(t1ia,t1ic,t2ia,t2ic,nocc,nvirt,ncabs) 
+    implicit none
+    integer, intent(inout) :: nocc,ncabs,nvirt
+    real(realk), target, intent(in) :: t1ia(:,:)
+    real(realk), target, intent(in) :: t1ic(:,:)
+    real(realk), target, intent(in) :: t2ia(:,:)
+    real(realk), target, intent(in) :: t2ic(:,:)
+    real(realk) :: inner_prod
+ 
+    integer i,a,c
+
+    do i=1,nocc
+       do a=1,nvirt
+          inner_prod = inner_prod + t1ia(i,a)*t2ia(i,a)
+       enddo
+    enddo
+
+    do i=1,nocc
+       do c=1,ncabs
+          inner_prod = inner_prod + t1ic(i,c)*t2ic(i,c)
+       enddo
+    enddo
+
+ end function inner_prod
+
+ subroutine mat_prod(Fij,Fab,Fac,Fcd,t1ia,t1ic,nocc,nvirt,ncabs,t2ia,t2ic) 
+    integer, intent(inout) :: nocc,ncabs,nvirt
+    real(realk), target, intent(in) :: t1ia(:,:)
+    real(realk), target, intent(in) :: t1ic(:,:)
+
+    real(realk), target, intent(in) :: Fij(:,:)
+    real(realk), target, intent(in) :: Fab(:,:)
+    real(realk), target, intent(in) :: Fac(:,:)
+    real(realk), target, intent(in) :: Fcd(:,:)
+
+    real(realk), target, intent(inout) :: t2ia(:,:)
+    real(realk), target, intent(inout) :: t2ic(:,:)
+
+    integer i,j,a,b,c,d
+    real(realk) :: tmp1,tmp2
+
+    do i=1,nocc
+       do a=1,nvirt
+          tmp1 = 0.0E0_realk
+          do b=1, nvirt 
+             tmp1 = tmp1 + Fab(a,b)*t1ia(i,b)
+          enddo
+          do d=1, ncabs
+             tmp1 = tmp1 + Fac(a,d)*t1ic(i,d)
+          enddo
+          do j=1, nocc
+             tmp1 = tmp1 - Fij(i,j)*t1ia(j,a)
+          enddo
+          t2ia(i,a) = tmp1
+       enddo
+    enddo
+
+    do i=1,nocc
+       do c=1,ncabs
+          tmp2 = 0.0E0_realk
+          do b=1,nvirt
+             tmp2 = tmp2 + Fac(b,c)*t1ia(i,b)
+          enddo
+          do d=1,ncabs
+             tmp2 = tmp2 + Fcd(c,d)*t1ic(i,d)
+          enddo
+          do j=1,nocc
+             tmp2 = tmp2 - Fij(i,j)*t1ic(j,c)
+          enddo
+          t2ic(i,c) = tmp2
+       enddo
+    enddo
+
+ end subroutine mat_prod
+
+
+
+
+ subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
     implicit none
 
     !> Full molecule structure to be initialized
@@ -2574,7 +2619,7 @@ module f12_routines_module
 
     type(matrix) :: CMO_cabs
     integer :: ncabsAO,ncabs
-    
+
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     molecule%nCabsAO = ncabsAO
     molecule%nCabsMO = ncabs
@@ -2589,7 +2634,7 @@ module f12_routines_module
     !    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
     call mat_free(CMO_cabs)
 
-  end subroutine dec_get_CABS_orbitals
+ end subroutine dec_get_CABS_orbitals
 
   subroutine  dec_get_RI_orbitals(molecule,mylsitem)
     implicit none

@@ -51,7 +51,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   real(realk),pointer :: XV(:,:),TZpq(:,:),IntTHC(:,:,:,:),IntRI(:,:,:,:)
   real(realk),pointer :: SC(:,:),Identity(:,:)
   real(realk),pointer :: Tvirt(:,:),Tocc(:,:),BmatPR(:,:,:),AmatPR(:,:,:)
-  real(realk),pointer :: ABmatPR(:,:,:),ZCDmat(:,:,:)!,IntAO(:,:,:,:)
+  real(realk),pointer :: ABmatPR(:,:,:),ZCDmat(:,:,:),IntAO(:,:,:,:)
 !  integer :: BETA,GAMMA,DELTA
   logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate,WriteToDisk
   character :: intspec(5)
@@ -201,7 +201,6 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
      call mem_alloc(Mmat,ngrid,NBA)
      CALL build_THC_MalphaP(Calpha,NBA,nbasis,nbasis,X,ngrid,X,Mmat)
      CALL LSTIMER('THC:build_THC_MalphaP',TS2,TE2,DECINFO%OUTPUT)
-     call mem_dealloc(Calpha)
   ELSE
      !step 6 construct M(P,alpha) 
      !M(P,alpha) = (alpha|ai)*X(P,a)*X(P,i)   !scaling: O*V*Nalpha*Ngrid
@@ -259,42 +258,22 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   CALL LSTIMER('THC:Eps',TS2,TE2,DECINFO%OUTPUT)
   IF(WriteToDisk)THEN
      !verify
-!     call mem_alloc(IntAO,nbasis,nbasis,nbasis,nbasis)
-!     intspec(1) = 'R'
-!     intspec(2) = 'R'
-!     intspec(3) = 'R'
-!     intspec(4) = 'R'
-!     intspec(5) = 'C'
-!     call II_get_4center_eri(DECINFO%OUTPUT,DECINFO%OUTPUT,mylsitem%SETTING,&
-!          & IntAO,nbasis,nbasis,nbasis,nbasis,intspec)
-     
-     !  call mem_alloc(IntAOTHC,nbasis,nbasis,nbasis,nbasis)
-!     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(ALPHA,BETA,GAMMA,DELTA,P,Q,&
-!     !$OMP TMP) SHARED(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid)
-!     DO DELTA=1,nbasis
-!        DO GAMMA=1,nbasis
-!           DO BETA=1,nbasis
-!              DO ALPHA=1,nbasis
-!                 TMP=0.0E0_realk
-!                 DO P=1,ngrid
-!                    DO Q=1,ngrid
-!                       TMP=TMP + X(P,ALPHA)*X(P,BETA)*Zpq(P,Q)*X(Q,GAMMA)*X(Q,DELTA)
-!                    ENDDO
-!                 ENDDO
-!                 !              IntAOTHC(ALPHA,BETA,GAMMA,DELTA) = TMP
-!                 print*,'DIFF',ABS(TMP-IntAO(ALPHA,BETA,GAMMA,DELTA))
-!                 IF(ABS(TMP-IntAO(ALPHA,BETA,GAMMA,DELTA)).GT.1.0E-2_realk)THEN
-!                    print*,'TMP',TMP
-!                    print*,'IntAO(ALPHA,BETA,GAMMA,DELTA)',IntAO(ALPHA,BETA,GAMMA,DELTA)
-!                 ENDIF
-!              ENDDO
-!           ENDDO
-!        ENDDO
-!     ENDDO
-!     !$OMP END PARALLEL DO
-!
-!     !  call mem_dealloc(IntAOTHC)
-!     call mem_dealloc(IntAO)
+     call TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA,lupri)
+     call mem_dealloc(Calpha)
+
+     call mem_alloc(IntAO,nbasis,nbasis,nbasis,nbasis)
+     intspec(1) = 'R'
+     intspec(2) = 'R'
+     intspec(3) = 'R'
+     intspec(4) = 'R'
+     intspec(5) = 'C'
+     call II_get_4center_eri(DECINFO%OUTPUT,DECINFO%OUTPUT,mylsitem%SETTING,&
+          & IntAO,nbasis,nbasis,nbasis,nbasis,intspec)     
+     call TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid,lupri)
+     call mem_dealloc(IntAO)
+
+     call LS_THC_AO_RIMP2_Ecorr(nocc,nvirt,ngrid,X,Zpq,EpsOcc,EpsVirt,&
+          & mp2_energy,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,nbasis)
   ELSE
      call LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,mp2_energy)
   ENDIF
@@ -377,6 +356,83 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   CALL LSTIMER('LS_THC_RIMP2 ',TS,TE,DECINFO%OUTPUT)
 end subroutine full_canonical_ls_thc_rimp2
 
+subroutine TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA,lupri)
+  implicit none
+  integer :: nbasis,nocc,nvirt,ngrid,nba,lupri
+  real(realk) :: X(ngrid,nbasis)
+  real(realk) :: Zpq(ngrid,ngrid)
+  real(realk) :: Calpha(NBA,nbasis,nbasis)
+  !
+  integer :: ALPHA,BETA,GAMMA,DELTA,P,Q
+  real(realk) :: TMP,TMPRI,DIFFsq
+  DIFFsq = 0.0E0_realk
+  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(ALPHA,BETA,GAMMA,DELTA,P,Q,&
+  !$OMP TMP,TMPRI) SHARED(X,ZPQ,nbasis,nocc,nvirt,ngrid,nba,Calpha) REDUCTION(+:DIFFsq)
+  DO DELTA=1,nbasis
+     DO GAMMA=1,nbasis
+        DO BETA=1,nbasis
+           DO ALPHA=1,nbasis
+              TMP=0.0E0_realk
+              DO P=1,ngrid
+                 DO Q=1,ngrid
+                    TMP=TMP + X(P,ALPHA)*X(P,BETA)*Zpq(P,Q)*X(Q,GAMMA)*X(Q,DELTA)
+                 ENDDO
+              ENDDO
+              TMPRI = 0.0E0_realk
+              DO P=1,NBA
+                 TMPRI = TMPRI + Calpha(P,ALPHA,BETA)*Calpha(P,GAMMA,DELTA)
+              ENDDO
+              DIFFSQ = DIFFSQ  + (TMP-TMPRI)**2
+              IF(ABS(TMP-TMPRI).GT.1.0E-5_realk)THEN
+                 print*,'ALPHA,BETA,GAMMA,DELTA',ALPHA,BETA,GAMMA,DELTA,'RIINT DIFF',ABS(TMP-TMPRI)
+                 print*,'TMP',TMP
+                 print*,'RI Int',TMPRI
+              ENDIF
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+  WRITE(lupri,*)'DIFF(THC-RI) = ',SQRT(DIFFsq)
+end subroutine TestTHCRIAOintegrals
+
+subroutine TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid,lupri)
+  implicit none
+  integer :: nbasis,nocc,nvirt,ngrid,lupri
+  real(realk) :: X(ngrid,nbasis)
+  real(realk) :: Zpq(ngrid,ngrid)
+  real(realk) :: IntAO(nbasis,nbasis,nbasis,nbasis)
+  !
+  integer :: ALPHA,BETA,GAMMA,DELTA,P,Q
+  real(realk) :: TMP,DIFFsq
+  DIFFsq = 0.0E0_realk
+  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(ALPHA,BETA,GAMMA,DELTA,P,Q,&
+  !$OMP TMP) SHARED(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid) REDUCTION(+:DIFFsq)
+  DO DELTA=1,nbasis
+     DO GAMMA=1,nbasis
+        DO BETA=1,nbasis
+           DO ALPHA=1,nbasis
+              TMP=0.0E0_realk
+              DO P=1,ngrid
+                 DO Q=1,ngrid
+                    TMP=TMP + X(P,ALPHA)*X(P,BETA)*Zpq(P,Q)*X(Q,GAMMA)*X(Q,DELTA)
+                 ENDDO
+              ENDDO
+              DIFFSQ = DIFFSQ  + (TMP-IntAO(ALPHA,BETA,GAMMA,DELTA))**2
+              !              IntAOTHC(ALPHA,BETA,GAMMA,DELTA) = TMP
+              IF(ABS(TMP-IntAO(ALPHA,BETA,GAMMA,DELTA)).GT.1.0E-5_realk)THEN
+                 print*,'ALPHA,BETA,GAMMA,DELTA',ALPHA,BETA,GAMMA,DELTA,'AOINT DIFF',&
+                      & ABS(TMP-IntAO(ALPHA,BETA,GAMMA,DELTA))
+                 print*,'TMP',TMP
+                 print*,'IntAO(ALPHA,BETA,GAMMA,DELTA)',IntAO(ALPHA,BETA,GAMMA,DELTA)
+              ENDIF
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+  WRITE(lupri,*)'DIFF(THC-AOINT) = ',SQRT(DIFFsq)
+end subroutine TestTHCAOintegrals
 !  Coulomb: AB(P,R,l)*ZCD(P,S,l)*Z(R,S)  (Ngrid**3)
 subroutine LS_THC_RIMP2_LaplaceEcorr(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,mp2_energy)
   implicit none
@@ -573,6 +629,101 @@ subroutine LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,Ecorr)
   print*,'EcorrJ',EcorrJ
   call mem_dealloc(Z)
 end subroutine LS_THC_RIMP2_Ecorr
+
+subroutine LS_THC_AO_RIMP2_Ecorr(nocc,nvirt,ngrid,X,Zpq,EpsOcc,EpsVirt,Ecorr,Cocc,Cvirt,nbasis)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,ngrid,nbasis
+  real(realk),intent(in) :: X(ngrid,nbasis),Cvirt(nbasis,nvirt),Cocc(nbasis,nocc)
+  real(realk),intent(in) :: Zpq(ngrid,ngrid),EpsOcc(nocc),EpsVirt(nvirt)
+  real(realk),intent(inout) :: Ecorr
+  !
+  integer :: A,B,I,J,P,Q,M,N,K
+  real(realk) :: gaibj,gbiaj,TMP,EpsIAB,EcorrJ
+  real(realk),pointer :: Z(:,:,:),Z1(:,:,:),Z2(:,:,:),XO(:,:),XV(:,:)
+  call mem_alloc(Z,ngrid,nbasis,nbasis)
+  Ecorr=0.0E0_realk
+  EcorrJ=0.0E0_realk
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(I,A,Q,P,&
+!$OMP TMP) SHARED(X,Z,Zpq,nbasis,ngrid)
+  DO I=1,nbasis
+   DO A=1,nbasis
+    DO Q=1,ngrid
+     TMP = 0.0E0_realk
+     DO P=1,ngrid
+      TMP = TMP + X(P,A)*X(P,I)*Zpq(P,Q)
+     ENDDO
+     Z(Q,A,I) = TMP
+    ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO
+  call mem_alloc(Z1,ngrid,nbasis,nocc)
+  M = ngrid*nbasis   !rows of Output Matrix
+  N = nocc   !columns of Output Matrix
+  K = nbasis  !summation dimension
+  call dgemm('N','N',M,N,K,1.0E0_realk,Z,M,Cocc,K,0.0E0_realk,Z1,M)
+  call mem_dealloc(Z)
+  call mem_alloc(Z2,ngrid,nvirt,nocc)
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(2) PRIVATE(I,A,Q,P,&
+!$OMP TMP) SHARED(X,Z1,Z2,nocc,nvirt,ngrid,nbasis,Cvirt)
+  DO I=1,nocc
+     DO A=1,nvirt
+        DO Q=1,ngrid
+           Z2(Q,A,I) = Z1(Q,1,I)*Cvirt(1,A)
+        ENDDO
+        DO P=2,nbasis
+           TMP = Cvirt(P,A)
+           DO Q=1,ngrid
+              Z2(Q,A,I) = Z2(Q,A,I)+Z1(Q,P,I)*TMP
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+!$OMP END PARALLEL DO
+  call mem_dealloc(Z1)
+
+  !XO(ngrid,nocc) = X(ngrid,nbasis)*Cocc(nbasis,nocc)
+  call mem_alloc(XO,ngrid,nocc)
+  M = ngrid   !rows of Output Matrix
+  N = nocc    !columns of Output Matrix
+  K = nbasis  !summation dimension
+  call dgemm('N','N',M,N,K,1.0E0_realk,X,M,Cocc,K,0.0E0_realk,XO,M)
+
+  !XV(ngrid,nvirt) = X(ngrid,nbasis)*Cvirt(nbasis,nvirt)
+  call mem_alloc(XV,ngrid,nvirt)
+  M = ngrid   !rows of Output Matrix
+  N = nvirt   !columns of Output Matrix
+  K = nbasis  !summation dimension
+  call dgemm('N','N',M,N,K,1.0E0_realk,X,M,Cvirt,K,0.0E0_realk,XV,M)
+
+!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(I,A,B,J,Q,EpsIAB,&
+!$OMP gaibj,gbiaj) SHARED(XO,XV,Z,EpsOcc,EpsVirt,nocc,nvirt,&
+!$OMP ngrid,Z2) REDUCTION(+:Ecorr,EcorrJ) 
+  DO I=1,nocc
+   DO A=1,nvirt
+    DO B=1,nvirt
+     EpsIAB = EpsOcc(I)-EpsVirt(A)-EpsVirt(B)
+     DO J=1,nocc
+      gaibj = 0.0E0_realk
+      DO Q=1,ngrid
+         gaibj = gaibj + Z2(Q,A,I)*XV(Q,B)*XO(Q,J)
+      ENDDO
+      gbiaj = 0.0E0_realk
+      DO Q=1,ngrid
+         gbiaj = gbiaj + Z2(Q,B,I)*XV(Q,A)*XO(Q,J)
+      ENDDO
+      Ecorr = Ecorr + gaibj*(2.0E0_realk*gaibj-gbiaj)/(EpsOcc(J)+EpsIAB)
+      EcorrJ = EcorrJ + gaibj*(2.0E0_realk*gaibj)/(EpsOcc(J)+EpsIAB)
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO
+  call mem_dealloc(XO)
+  call mem_dealloc(XV)
+  print*,'EcorrJ',EcorrJ
+  call mem_dealloc(Z2)
+end subroutine LS_THC_AO_RIMP2_Ecorr
 
 subroutine build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,M)
   implicit none

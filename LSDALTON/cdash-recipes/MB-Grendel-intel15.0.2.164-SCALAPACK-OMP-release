@@ -8,7 +8,7 @@ rm -rf /home/tkjaer/NightlyTestingCdash/tmp/tmp3
 #due to launch with crontab PATH is empty. We need PATH to git and cmake etc.
 export PATH=/usr/local/torque/bin:/com/bin:/usr/local/bin:/bin:/usr/bin
 
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 export MATH_ROOT=$MKLROOT #/com/intel/composer_xe_2015.2.164/mkl
 source /com/OpenMPI/1.4.5/intel/load.sh
