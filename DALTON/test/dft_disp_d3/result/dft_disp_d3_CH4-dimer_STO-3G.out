@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2016.alpha
+    This is output from DALTON 2013.2
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -24,33 +24,32 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
-       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
-       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
-       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
-       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
-       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
-       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
-       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
-       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
-       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
-       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
-       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
-       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
-       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
-       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
-       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
-       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
-       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
-       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
-       and H. Agren,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Agren,
        "The Dalton quantum chemistry program system",
        WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -65,11 +64,10 @@
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
-  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
-  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -78,7 +76,6 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
-  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
@@ -89,16 +86,14 @@
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
-  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
   Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
   Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
   Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
   Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
   Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
   Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
-  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
@@ -107,26 +102,25 @@
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
   Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
-  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
   Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
-  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
-  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
@@ -136,38 +130,37 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Feb 24 17:21:59 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:49 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/dft_disp_d3
-   2) /home/magnus/Projects/dalton_devel/dalton/build_pedevel/basis
+   1) /Users/ast018/dalton/DALTON/test/runtest_dft_disp_d3
+   2) /Users/ast018/dalton/build-master/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | magnus
- Host                     | foeroyar
- System                   | Linux-3.18.6-200.fc21.x86_64
+ Who compiled             | ast018
+ Host                     | rfb-ntf-m0022.bargi.uit.no
+ System                   | Darwin-13.1.0
  CMake generator          | Unix Makefiles
- Processor                | x86_64
+ Processor                | i386
  64-bit integers          | OFF
  MPI                      | ON
  Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ Fortran compiler version | GNU Fortran (MacPorts gcc48 4.8.2_0) 4.8.2
  C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
+ C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
  C++ compiler             | /usr/local/bin/mpicxx
  C++ compiler version     | unknown
- BLAS                     | /lib64/libblas.so
- LAPACK                   | /lib64/liblapack.so
+ BLAS                     | /usr/lib/libblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 18a0c05722d85cb89ac56b556159f40233a08cd3
- Git branch               | [32mpe/develop[m
- Configuration time       | 2015-02-24 17:08:32.805142
+ Last Git revision        | 96a1e89da4678fb871726ee093bc60ba06b3337e
+ Configuration time       | 2014-05-15 11:03:39.221895
 
  * Sequential calculation.
 
@@ -287,7 +280,7 @@ H   0.000000   1.026339  -1.494868
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pedevel/basis/STO-3G"
+     "/Users/ast018/dalton/build-master/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -295,7 +288,7 @@ H   0.000000   1.026339  -1.494868
   Number of symmetry independent centers:    8
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pedevel/basis/STO-3G"
+     "/Users/ast018/dalton/build-master/basis/STO-3G"
 
 
                       SYMADD: Requested addition of symmetry
@@ -547,7 +540,7 @@ H   0.000000   1.026339  -1.494868
             2.647576            0.143874            0.143872 cm-1
 
 
-@  Nuclear repulsion energy :   41.000263966493 Hartree
+@  Nuclear repulsion energy :   41.000263966492 Hartree
 
 
   Symmetry Orbitals
@@ -623,8 +616,8 @@ H   0.000000   1.026339  -1.494868
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -671,8 +664,8 @@ H   0.000000   1.026339  -1.494868
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 24 17:21:59 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:49 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
  Title lines from ".mol" input file:
      CH4 Dimer                                                               
@@ -706,11 +699,11 @@ H   0.000000   1.026339  -1.494868
 
      Orbital specifications
      ======================
-@    Abelian symmetry species          All |    1    2    3    4
-@                                          |  Ag   Au   Bu   Bg 
+     Abelian symmetry species          All |    1    2    3    4
+                                           |  Ag   Au   Bu   Bg 
                                        --- |  ---  ---  ---  ---
-@    Total number of orbitals           18 |    7    2    7    2
-@    Number of basis functions          18 |    7    2    7    2
+     Total number of orbitals           18 |    7    2    7    2
+     Number of basis functions          18 |    7    2    7    2
 
       ** Automatic occupation of RKS orbitals **
 
@@ -730,9 +723,9 @@ H   0.000000   1.026339  -1.494868
                     Slater:    1.00000
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -765,89 +758,91 @@ H   0.000000   1.026339  -1.494868
 
  Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  4.28D-02  4.30D-02
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  2.15D-02  2.20D-02
       K-S energy, electrons, error :    -13.692627433244  20.0000258231    2.58D-05
 @  1  -79.8436439967       2.03D+00  -7.98D+01     4   1   4   1
       Virial theorem: -V/T =      2.015517
 @      MULPOP C   _1  0.37; C   _2  0.37; H   _1 -0.09; H   _2 -0.09; H   _3 -0.09; H   _4 -0.09; H   _1 -0.09; H   _2 -0.09; H   _1 -0.10; H   _2 -0.10; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  3.40D-02  3.40D-02
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  1.91D-02  1.90D-02
       K-S energy, electrons, error :    -13.923208631774  20.0000199580    2.00D-05
 @  2  -79.8922698489       1.13D+00  -4.86D-02     4   1   4   1
       Virial theorem: -V/T =      2.000415
 @      MULPOP C   _1 -0.97; C   _2 -0.97; H   _1  0.24; H   _2  0.24; H   _3  0.24; H   _4  0.24; H   _1  0.24; H   _2  0.24; H   _1  0.24; H   _2  0.24; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    3    F  3.59D-02  3.60D-02
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    3    F  1.90D-02  1.90D-02
       K-S energy, electrons, error :    -13.713799003215  20.0000238468    2.38D-05
 @  3  -79.9735415349       4.74D-01  -8.13D-02     4   1   4   1
       Virial theorem: -V/T =      2.020078
 @      MULPOP C   _1 -0.05; C   _2 -0.05; H   _1  0.01; H   _2  0.01; H   _3  0.01; H   _4  0.01; H   _1  0.01; H   _2  0.01; H   _1  0.01; H   _2  0.01; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  3.93D-02  3.90D-02
-      K-S energy, electrons, error :    -13.767482483210  20.0000227034    2.27D-05
-@  4  -79.9906971859       2.05D-03  -1.72D-02     4   1   4   1
-      Virial theorem: -V/T =      2.014998
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  2.21D-02  2.20D-02
+      K-S energy, electrons, error :    -13.767474977599  20.0000227032    2.27D-05
+@  4  -79.9906957388       4.24D-03  -1.72D-02     4   1   4   1
+      Virial theorem: -V/T =      2.015000
 @      MULPOP C   _1 -0.32; C   _2 -0.32; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  4.30D-02  4.30D-02
-      K-S energy, electrons, error :    -13.767634868486  20.0000226999    2.27D-05
-@  5  -79.9906974946       1.03D-04  -3.09D-07     4   1   4   1
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  2.43D-02  2.40D-02
+      K-S energy, electrons, error :    -13.767615259933  20.0000226998    2.27D-05
+@  5  -79.9906974844       3.26D-04  -1.75D-06     4   1   4   1
+      Virial theorem: -V/T =      2.014985
+@      MULPOP C   _1 -0.32; C   _2 -0.32; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
+@
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  2.48D-02  2.50D-02
+      K-S energy, electrons, error :    -13.767635214535  20.0000226999    2.27D-05
+@  6  -79.9906974946       9.69D-05  -1.02D-08     4   1   4   1
       Virial theorem: -V/T =      2.014983
 @      MULPOP C   _1 -0.32; C   _2 -0.32; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  4.49D-02  4.50D-02
-      K-S energy, electrons, error :    -13.767635938095  20.0000226998    2.27D-05
-@  6  -79.9906974956       1.78D-05  -9.94D-10     4   1   4   1
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    F  2.50D-02  2.50D-02
+      K-S energy, electrons, error :    -13.767635951727  20.0000226998    2.27D-05
+@  7  -79.9906974957       3.93D-06  -1.11D-09     4   1   4   1
       Virial theorem: -V/T =      2.014982
 @      MULPOP C   _1 -0.32; C   _2 -0.32; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    F  4.40D-02  4.40D-02
-      K-S energy, electrons, error :    -13.767635983685  20.0000226998    2.27D-05
-@  7  -79.9906974957       1.90D-06  -3.48D-11     4   1   4   1
-      Virial theorem: -V/T =      2.014982
-@      MULPOP C   _1 -0.32; C   _2 -0.32; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
-@
- -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    8    F  4.40D-02  4.40D-02
-      K-S energy, electrons, error :    -13.767635979811  20.0000226998    2.27D-05
-@  8  -79.9906974957       1.83D-07  -4.26D-13     4   1   4   1
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    8    F  2.52D-02  2.50D-02
+      K-S energy, electrons, error :    -13.767635990970  20.0000226998    2.27D-05
+@  8  -79.9906974957       2.04D-07  -1.75D-12     4   1   4   1
 
 @ *** DIIS converged in   8 iterations !
-@     Converged SCF energy, gradient:    -79.990697495658    1.83D-07
+@     Converged SCF energy, gradient:    -79.990697495657    2.04D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73344704    -0.58892054    -0.31223335    -0.30523826     0.41309295
+1 Ag     -9.73344704    -0.58892054    -0.31223336    -0.30523826     0.41309295
           0.41833689     0.43908106
 
-2 Au     -0.30951139     0.40962366
+2 Au     -0.30951138     0.40962367
 
-3 Bu     -9.73344880    -0.58446414    -0.30957025    -0.30304046     0.40971767
-          0.41579998     0.46282655
+3 Bu     -9.73344879    -0.58446414    -0.30957025    -0.30304046     0.40971767
+          0.41579997     0.46282656
 
 4 Bg     -0.30517790     0.41824309
 
-    E(LUMO) :     0.40962366 au (symmetry 2)
+    E(LUMO) :     0.40962367 au (symmetry 2)
   - E(HOMO) :    -0.30304046 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.71266412 au
+    gap     :     0.71266413 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       5.211       5.209
+ >>>> CPU and wall time for SCF :       2.445       2.490
 
 
                        .-----------------------------------.
@@ -859,31 +854,29 @@ H   0.000000   1.026339  -1.494868
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.990697495658                 
-@    Nuclear repulsion:            41.000263966493
+@    Final DFT energy:            -79.990697495657                 
+@    Nuclear repulsion:            41.000263966492
 @    Electronic energy:          -120.990961462150
 
-@    Final gradient norm:           0.000000182961
+@    Final gradient norm:           0.000000203654
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:04 2015
-     Host name              : foeroyar                                
-
-File label for MO orbitals:  24Feb15   FOCKDIIS
+     Date and time (Linux)  : Thu May 15 15:10:52 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
  (Only coefficients >0.0100 are printed.)
 
  Molecular orbitals for symmetry species 1  (Ag )
  ------------------------------------------------
 
-    Orbital         1        2        3        4        5        6        7
-   1 C   :1s     0.7000  -0.1584  -0.0033  -0.0000  -0.0001   0.0005   0.1817
-   2 C   :1s     0.0342   0.4456   0.0121   0.0001   0.0010  -0.0031  -1.1395
-   3 C   :2px   -0.0000  -0.0034   0.4076  -0.0002  -0.7765  -0.0023   0.0057
-   4 C   :2py   -0.0000  -0.0000   0.0002   0.4121   0.0023  -0.7752   0.0022
-   5 H   :1s    -0.0069   0.1271  -0.1207  -0.1712  -0.2494  -0.3557   0.4637
-   6 H   :1s    -0.0069   0.1271  -0.1203   0.3427  -0.2523   0.7130   0.4607
-   7 H   :1s    -0.0069   0.1241   0.3618  -0.0002   0.7500   0.0034   0.4721
+    Orbital         1        2        3        4        5        6
+   1 C   :1s     0.7000  -0.1584  -0.0033  -0.0000  -0.0001   0.0005
+   2 C   :1s     0.0342   0.4456   0.0121   0.0001   0.0010  -0.0031
+   3 C   :2px   -0.0000  -0.0034   0.4076  -0.0002  -0.7765  -0.0023
+   4 C   :2py   -0.0000  -0.0000   0.0002   0.4121   0.0023  -0.7752
+   5 H   :1s    -0.0069   0.1271  -0.1207  -0.1712  -0.2494  -0.3557
+   6 H   :1s    -0.0069   0.1271  -0.1203   0.3427  -0.2523   0.7130
+   7 H   :1s    -0.0069   0.1241   0.3618  -0.0002   0.7500   0.0034
 
  Molecular orbitals for symmetry species 2  (Au )
  ------------------------------------------------
@@ -895,14 +888,14 @@ File label for MO orbitals:  24Feb15   FOCKDIIS
  Molecular orbitals for symmetry species 3  (Bu )
  ------------------------------------------------
 
-    Orbital         1        2        3        4        5        6        7
-   1 C   :1s     0.7000  -0.1599  -0.0000   0.0033   0.0002   0.0053   0.1805
-   2 C   :1s     0.0343   0.4511   0.0001  -0.0121  -0.0012  -0.0333  -1.1442
-   3 C   :2px    0.0000   0.0036   0.0002   0.4100   0.0008  -0.7776   0.0182
-   4 C   :2py   -0.0000  -0.0000   0.4064  -0.0002  -0.7778  -0.0008   0.0010
-   5 H   :1s    -0.0070   0.1255  -0.1720  -0.1222  -0.3507  -0.2370   0.4844
-   6 H   :1s    -0.0070   0.1255   0.3440  -0.1224   0.7039  -0.2357   0.4832
-   7 H   :1s    -0.0069   0.1289   0.0001   0.3668  -0.0004   0.7640   0.4453
+    Orbital         1        2        3        4        5        6
+   1 C   :1s     0.7000  -0.1599  -0.0000   0.0033   0.0002   0.0053
+   2 C   :1s     0.0343   0.4511   0.0001  -0.0121  -0.0012  -0.0333
+   3 C   :2px    0.0000   0.0036   0.0002   0.4100   0.0008  -0.7776
+   4 C   :2py   -0.0000  -0.0000   0.4064  -0.0002  -0.7778  -0.0008
+   5 H   :1s    -0.0070   0.1255  -0.1720  -0.1222  -0.3507  -0.2370
+   6 H   :1s    -0.0070   0.1255   0.3440  -0.1224   0.7039  -0.2357
+   7 H   :1s    -0.0069   0.1289   0.0001   0.3668  -0.0004   0.7640
 
  Molecular orbitals for symmetry species 4  (Bg )
  ------------------------------------------------
@@ -913,12 +906,12 @@ File label for MO orbitals:  24Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      5.21 seconds
- >>>> Total wall time used in SIRIUS :      5.21 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.45 seconds
+ >>>> Total wall time used in SIRIUS :      2.50 seconds
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:04 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:52 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -940,8 +933,8 @@ File label for MO orbitals:  24Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:04 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:52 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                       DFT-D Empirical Dispersion Correction
@@ -1023,8 +1016,8 @@ File label for MO orbitals:  24Feb15   FOCKDIIS
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:06 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:52 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                              Molecular geometry (au)
@@ -1048,57 +1041,50 @@ File label for MO orbitals:  24Feb15   FOCKDIIS
                         Molecular wave function and energy
                         ----------------------------------
 
-     Spatial symmetry   1 ( Ag  )
-     Spin multiplicity  1
-     2 * M_S            0
-     State number       1
-     Total charge       0
+     Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -79.9906974957 au (Hartrees)
                          -2176.65760278 eV
                            -210015.5439 kJ/mol
-                            -50194.9197 kcal/mol
 
 
-                   Scalar Breit-Pauli relativistic corrections
-                   -------------------------------------------
+                             Relativistic corrections
+                             ------------------------
 
-     Darwin correction:                          0.0775849075 au
-     Mass-velocity correction:                  -0.0978097490 au
+     Darwin correction:                          0.0775849078 au
+     Mass-velocity correction:                  -0.0978097494 au
 
-     Total relativistic correction:             -0.0202248415 au (0.0253%)
-     Non-relativistic + relativistic energy:   -80.0109223371 au
+     Total relativistic correction:             -0.0202248416 au (0.0253%)
+     Non-relativistic + relativistic energy:   -80.0109223373 au
 
 
-
-      (Note that these corrections are NOT included in the results below.)
 
 
                              Molecular gradient (au)
                              -----------------------
 
-                         C   x      0.0005287552
-                         C   y      0.0000616337
-                         H   x      0.0162600872
-                         H   y      0.0222956340
-                         H   z     -0.0388771637
-                         H   x      0.0081192363
-                         H   y     -0.0223458834
-                         H   x     -0.0236534954
-                         H   y     -0.0000119031
+                         C   x      0.0005287432
+                         C   y      0.0000616379
+                         H   x      0.0162601048
+                         H   y      0.0222956564
+                         H   z     -0.0388772103
+                         H   x      0.0081192384
+                         H   y     -0.0223459045
+                         H   x     -0.0236535024
+                         H   y     -0.0000119087
 
 
 
- C   _1     0.0002643776            0.0000308169            0.0000000000
- C   _2    -0.0002643776           -0.0000308169            0.0000000000
- H   _1     0.0040650218            0.0055739085           -0.0097192909
- H   _2     0.0040650218            0.0055739085            0.0097192909
- H   _3    -0.0040650218           -0.0055739085           -0.0097192909
- H   _4    -0.0040650218           -0.0055739085            0.0097192909
- H   _1     0.0040596181           -0.0111729417            0.0000000000
- H   _2    -0.0040596181            0.0111729417            0.0000000000
- H   _1    -0.0118267477           -0.0000059516            0.0000000000
- H   _2     0.0118267477            0.0000059516            0.0000000000
+ C   _1     0.0002643716            0.0000308190            0.0000000000
+ C   _2    -0.0002643716           -0.0000308190            0.0000000000
+ H   _1     0.0040650262            0.0055739141           -0.0097193026
+ H   _2     0.0040650262            0.0055739141            0.0097193026
+ H   _3    -0.0040650262           -0.0055739141           -0.0097193026
+ H   _4    -0.0040650262           -0.0055739141            0.0097193026
+ H   _1     0.0040596192           -0.0111729523            0.0000000000
+ H   _2    -0.0040596192            0.0111729523            0.0000000000
+ H   _1    -0.0118267512           -0.0000059544            0.0000000000
+ H   _2     0.0118267512            0.0000059544            0.0000000000
 
 
 
@@ -1194,23 +1180,17 @@ File label for MO orbitals:  24Feb15   FOCKDIIS
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:01      92 %
-
- TOTAL      00:00:01     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   1.46 seconds
- >>>> Total wall time used in ABACUS:   1.46 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.81 seconds
+ >>>> Total wall time used in ABACUS:   0.82 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
-
-Building simple model Hessian by Roland Lindh ...
-
-Initial model Hessian in internal coordinates has been calculated
 
 
            :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1222,16 +1202,16 @@ Initial model Hessian in internal coordinates has been calculated
                                 Next geometry (au)
                                 ------------------
 
- C   _1     3.2897888955           -0.0192385081            0.0000000000
- C   _2    -3.2897888955            0.0192385081            0.0000000000
- H   _1     2.6207233388           -1.0204981150            1.6988945569
- H   _2     2.6207233388           -1.0204981150           -1.6988945569
- H   _3    -2.6207233388            1.0204981150            1.6988945569
- H   _4    -2.6207233388            1.0204981150           -1.6988945569
- H   _1     2.5347304354            1.9221616659            0.0000000000
- H   _2    -2.5347304354           -1.9221616659            0.0000000000
- H   _1     5.3721637424            0.0415762304            0.0000000000
- H   _2    -5.3721637424           -0.0415762304            0.0000000000
+ C   _1     3.2897889056           -0.0192384788            0.0000000000
+ C   _2    -3.2897889056            0.0192384788            0.0000000000
+ H   _1     2.6207232822           -1.0204980434            1.6988945879
+ H   _2     2.6207232822           -1.0204980434           -1.6988945879
+ H   _3    -2.6207232822            1.0204980434            1.6988945879
+ H   _4    -2.6207232822            1.0204980434           -1.6988945879
+ H   _1     2.5347305860            1.9221617674            0.0000000000
+ H   _2    -2.5347305860           -1.9221617674            0.0000000000
+ H   _1     5.3721637594            0.0415761599            0.0000000000
+ H   _2    -5.3721637594           -0.0415761599            0.0000000000
 
 
 
@@ -1246,7 +1226,7 @@ Initial model Hessian in internal coordinates has been calculated
  Norm of gradient               :       0.033627
  Norm of step                   :       0.500008
  Updated trust radius           :       0.500000
- Total effective Hessian index  :       0
+ Total Hessian index            :       0
 
 
 
@@ -1281,7 +1261,7 @@ Initial model Hessian in internal coordinates has been calculated
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
 
 
                         .----------------------------------.
@@ -1302,9 +1282,9 @@ Initial model Hessian in internal coordinates has been calculated
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -1331,86 +1311,88 @@ Initial model Hessian in internal coordinates has been calculated
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003059825688
+                      E_disp :         -0.003059825645
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  4.47D-02  4.50D-02
-      K-S energy, electrons, error :    -13.744873756075  19.9999987007   -1.30D-06
-@  1    -79.9918226841        5.49510D-02   -1.13D-03    1
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  3.31D-02  3.80D-02
+      K-S energy, electrons, error :    -13.744873749930  19.9999987007   -1.30D-06
+@  1    -79.9918226864        5.49509D-02   -1.13D-03    1
       Virial theorem: -V/T =      2.015948
 @      MULPOP C   _1 -0.32; C   _2 -0.32; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    F  4.35D-02  4.40D-02
-      K-S energy, electrons, error :    -13.740583288382  19.9999986387   -1.36D-06
-@  2    -79.9921802806        2.57691D-02   -3.58D-04    2
-      Virial theorem: -V/T =      2.016209
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    F  2.46D-02  2.40D-02
+      K-S energy, electrons, error :    -13.740583349140  19.9999986387   -1.36D-06
+@  2    -79.9921802804        2.57699D-02   -3.58D-04    2
+      Virial theorem: -V/T =      2.016208
 @      MULPOP C   _1 -0.29; C   _2 -0.29; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  4.42D-02  4.40D-02
-      K-S energy, electrons, error :    -13.745444513506  19.9999986383   -1.36D-06
-@  3    -79.9922143591        1.49419D-02   -3.41D-05    3
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  2.45D-02  2.50D-02
+      K-S energy, electrons, error :    -13.745443638602  19.9999986391   -1.36D-06
+@  3    -79.9922143670        1.49362D-02   -3.41D-05    3
       Virial theorem: -V/T =      2.015752
 @      MULPOP C   _1 -0.31; C   _2 -0.31; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  4.35D-02  4.30D-02
-      K-S energy, electrons, error :    -13.743647712166  19.9999986383   -1.36D-06
-@  4    -79.9922314793        4.30426D-05   -1.71D-05    4
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  2.49D-02  2.40D-02
+      K-S energy, electrons, error :    -13.743648027405  19.9999986383   -1.36D-06
+@  4    -79.9922314746        2.32714D-04   -1.71D-05    4
       Virial theorem: -V/T =      2.015922
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  5.36D-02  5.30D-02
-      K-S energy, electrons, error :    -13.743646253293  19.9999986384   -1.36D-06
-@  5    -79.9922314815        6.91665D-06   -2.22D-09    5
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    5    F  2.51D-02  2.50D-02
+      K-S energy, electrons, error :    -13.743646304766  19.9999986384   -1.36D-06
+@  5    -79.9922314817        2.83122D-05   -7.05D-09    5
       Virial theorem: -V/T =      2.015922
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  4.55D-02  4.50D-02
-      K-S energy, electrons, error :    -13.743646160057  19.9999986383   -1.36D-06
-@  6    -79.9922314815        1.60197D-06   -5.30D-12    6
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  2.51D-02  2.50D-02
+      K-S energy, electrons, error :    -13.743646159405  19.9999986383   -1.36D-06
+@  6    -79.9922314818        3.74638D-06   -9.33D-11    6
       Virial theorem: -V/T =      2.015922
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    F  4.49D-02  4.40D-02
-      K-S energy, electrons, error :    -13.743646155622  19.9999986383   -1.36D-06
-@  7    -79.9922314815        4.17263D-07   -2.84D-13    7
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    F  2.51D-02  2.50D-02
+      K-S energy, electrons, error :    -13.743646135559  19.9999986383   -1.36D-06
+@  7    -79.9922314818        6.07132D-07   -1.76D-12    7
 
 @ *** DIIS converged in   7 iterations !
-@     Converged SCF energy, gradient:    -79.992231481513    4.17D-07
+@     Converged SCF energy, gradient:    -79.992231481775    6.07D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73407205    -0.58495483    -0.31080560    -0.29953601     0.40147714
-          0.41039365     0.41804031
+1 Ag     -9.73407207    -0.58495483    -0.31080559    -0.29953602     0.40147714
+          0.41039363     0.41804029
 
-2 Au     -0.30679985     0.39886927
+2 Au     -0.30679986     0.39886924
 
-3 Bu     -9.73407820    -0.57766603    -0.30718492    -0.29634994     0.39702897
-          0.40719728     0.45047642
+3 Bu     -9.73407822    -0.57766603    -0.30718493    -0.29634993     0.39702895
+          0.40719728     0.45047640
 
-4 Bg     -0.29992291     0.40864251
+4 Bg     -0.29992293     0.40864249
 
-    E(LUMO) :     0.39702897 au (symmetry 3)
-  - E(HOMO) :    -0.29634994 au (symmetry 3)
+    E(LUMO) :     0.39702895 au (symmetry 3)
+  - E(HOMO) :    -0.29634993 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69337890 au
+    gap     :     0.69337888 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.789       4.786
+ >>>> CPU and wall time for SCF :       2.154       2.176
 
 
                        .-----------------------------------.
@@ -1422,24 +1404,24 @@ Initial model Hessian in internal coordinates has been calculated
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992231481513                 
-@    Nuclear repulsion:            41.605975495934
-@    Electronic energy:          -121.598206977447
+@    Final DFT energy:            -79.992231481775                 
+@    Nuclear repulsion:            41.605975197902
+@    Electronic energy:          -121.598206679677
 
-@    Final gradient norm:           0.000000417263
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:22:11 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.79 seconds
- >>>> Total wall time used in SIRIUS :      4.79 seconds
+@    Final gradient norm:           0.000000607132
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:11 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:55 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.16 seconds
+ >>>> Total wall time used in SIRIUS :      2.18 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:10:55 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -1463,8 +1445,8 @@ Initial model Hessian in internal coordinates has been calculated
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:11 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:55 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                       DFT-D Empirical Dispersion Correction
@@ -1489,7 +1471,7 @@ Initial model Hessian in internal coordinates has been calculated
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003059825688
+                      E_disp :         -0.003059825645
 
 
   Symmetry Coordinates
@@ -1546,20 +1528,19 @@ Initial model Hessian in internal coordinates has been calculated
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:13 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:56 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:02      94 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:02     284 %
 
 
- >>>> Total CPU  time used in ABACUS:   1.97 seconds
- >>>> Total wall time used in ABACUS:   1.97 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.87 seconds
+ >>>> Total wall time used in ABACUS:   0.89 seconds
 
 
                    .-------------------------------------------.
@@ -1577,16 +1558,16 @@ Initial model Hessian in internal coordinates has been calculated
                                 Next geometry (au)
                                 ------------------
 
- C   _1     3.5689421787            0.0260366439            0.0000000000
- C   _2    -3.5689421787           -0.0260366439            0.0000000000
- H   _1     2.8290212390           -0.9340244450            1.7086511456
- H   _2     2.8290212390           -0.9340244450           -1.7086511456
- H   _3    -2.8290212390            0.9340244450            1.7086511456
- H   _4    -2.8290212390            0.9340244450           -1.7086511456
- H   _1     2.9388613672            2.0256741270            0.0000000000
- H   _2    -2.9388613672           -2.0256741270            0.0000000000
- H   _1     5.6669099026           -0.0526158559            0.0000000000
- H   _2    -5.6669099026            0.0526158559            0.0000000000
+ C   _1     3.5719608832            0.0265235550            0.0000000000
+ C   _2    -3.5719608832           -0.0265235550            0.0000000000
+ H   _1     2.8313008236           -0.9330763190            1.7086969758
+ H   _2     2.8313008236           -0.9330763190           -1.7086969758
+ H   _3    -2.8313008236            0.9330763190            1.7086969758
+ H   _4    -2.8313008236            0.9330763190           -1.7086969758
+ H   _1     2.9432515071            2.0267449684            0.0000000000
+ H   _2    -2.9432515071           -2.0267449684            0.0000000000
+ H   _1     5.6700298378           -0.0536262694            0.0000000000
+ H   _2    -5.6700298378            0.0536262694            0.0000000000
 
 
 
@@ -1600,11 +1581,11 @@ Initial model Hessian in internal coordinates has been calculated
  Energy at this geometry is     :     -79.992231
  Energy change from last geom.  :      -0.001534
  Predicted change               :      -0.001452
- Ratio, actual/predicted change :       1.056672
+ Ratio, actual/predicted change :       1.056671
  Norm of gradient               :       0.004854
- Norm of step                   :       0.599969
+ Norm of step                   :       0.606417
  Updated trust radius           :       0.600009
- Total effective Hessian index  :       0
+ Total Hessian index            :       0
 
 
 
@@ -1660,9 +1641,9 @@ Initial model Hessian in internal coordinates has been calculated
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -1689,79 +1670,88 @@ Initial model Hessian in internal coordinates has been calculated
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.002146547521
+                      E_disp :         -0.002138273996
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  4.68D-02  4.70D-02
-      K-S energy, electrons, error :    -13.730036315804  20.0000129399    1.29D-05
-@  1    -79.9901926055        9.82354D-02    2.04D-03    1
-      Virial theorem: -V/T =      2.016446
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.55D-02  2.50D-02
+      K-S energy, electrons, error :    -13.729924032187  20.0000126277    1.26D-05
+@  1    -79.9901493715        9.92729D-02    2.08D-03    1
+      Virial theorem: -V/T =      2.016450
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    F  4.66D-02  4.70D-02
-      K-S energy, electrons, error :    -13.728081150848  20.0000129817    1.30D-05
-@  2    -79.9918656466        1.24890D-02   -1.67D-03    2
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    F  2.41D-02  2.40D-02
+      K-S energy, electrons, error :    -13.728003089759  20.0000126696    1.27D-05
+@  2    -79.9918588274        1.22823D-02   -1.71D-03    2
       Virial theorem: -V/T =      2.016603
 @      MULPOP C   _1 -0.29; C   _2 -0.29; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  4.30D-02  4.30D-02
-      K-S energy, electrons, error :    -13.731160869419  20.0000129655    1.30D-05
-@  3    -79.9918641766        1.32573D-02    1.47D-06    3
-      Virial theorem: -V/T =      2.016314
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  2.57D-02  2.60D-02
+      K-S energy, electrons, error :    -13.731023370621  20.0000126540    1.27D-05
+@  3    -79.9918573515        1.31001D-02    1.48D-06    3
+      Virial theorem: -V/T =      2.016320
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  4.25D-02  4.20D-02
-      K-S energy, electrons, error :    -13.729568962658  20.0000129739    1.30D-05
-@  4    -79.9918777219        4.02541D-05   -1.35D-05    4
-      Virial theorem: -V/T =      2.016464
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  2.37D-02  2.30D-02
+      K-S energy, electrons, error :    -13.729453332402  20.0000126617    1.27D-05
+@  4    -79.9918705746        1.81298D-04   -1.32D-05    4
+      Virial theorem: -V/T =      2.016468
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  4.43D-02  4.40D-02
-      K-S energy, electrons, error :    -13.729568395262  20.0000129739    1.30D-05
-@  5    -79.9918777252        8.28098D-06   -3.29D-09    5
-      Virial theorem: -V/T =      2.016464
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    5    F  2.56D-02  2.50D-02
+      K-S energy, electrons, error :    -13.729449938085  20.0000126620    1.27D-05
+@  5    -79.9918705822        2.00691D-05   -7.56D-09    5
+      Virial theorem: -V/T =      2.016469
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  5.49D-02  5.50D-02
-      K-S energy, electrons, error :    -13.729568308087  20.0000129739    1.30D-05
-@  6    -79.9918777252        6.30438D-07   -8.47D-12    6
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  2.71D-02  2.70D-02
+      K-S energy, electrons, error :    -13.729449906726  20.0000126620    1.27D-05
+@  6    -79.9918705822        5.63436D-06   -5.00D-12    6
+      Virial theorem: -V/T =      2.016469
+@      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
+@
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    F  2.61D-02  2.60D-02
+      K-S energy, electrons, error :    -13.729449920788  20.0000126620    1.27D-05
+@  7    -79.9918705822        4.69582D-07   -3.84D-12    7
 
-@ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -79.991877725239    6.30D-07
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -79.991870582165    4.70D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73500534    -0.58081458    -0.30610376    -0.29972467     0.39664072
-          0.40100117     0.41341452
+1 Ag     -9.73501332    -0.58077997    -0.30606378    -0.29972565     0.39658817
+          0.40092333     0.41337914
 
-2 Au     -0.30380561     0.39355976
+2 Au     -0.30377947     0.39352237
 
-3 Bu     -9.73500698    -0.57669590    -0.30343905    -0.29772978     0.39468146
-          0.39883575     0.43490943
+3 Bu     -9.73501495    -0.57668683    -0.30340973    -0.29773942     0.39465828
+          0.39876003     0.43477644
 
-4 Bg     -0.29947945     0.40300427
+4 Bg     -0.29947539     0.40295454
 
-    E(LUMO) :     0.39355976 au (symmetry 2)
-  - E(HOMO) :    -0.29772978 au (symmetry 3)
+    E(LUMO) :     0.39352237 au (symmetry 2)
+  - E(HOMO) :    -0.29773942 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69128955 au
+    gap     :     0.69126178 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.065       4.062
+ >>>> CPU and wall time for SCF :       2.127       2.135
 
 
                        .-----------------------------------.
@@ -1773,24 +1763,24 @@ Initial model Hessian in internal coordinates has been calculated
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.991877725239                 
-@    Nuclear repulsion:            40.287324825593
-@    Electronic energy:          -120.279202550832
+@    Final DFT energy:            -79.991870582165                 
+@    Nuclear repulsion:            40.274386383940
+@    Electronic energy:          -120.266256966104
 
-@    Final gradient norm:           0.000000630438
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:22:17 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.07 seconds
- >>>> Total wall time used in SIRIUS :      4.06 seconds
+@    Final gradient norm:           0.000000469582
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:17 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:10:58 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.13 seconds
+ >>>> Total wall time used in SIRIUS :      2.14 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:10:58 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -1799,11 +1789,11 @@ Initial model Hessian in internal coordinates has been calculated
 
 
  Step rejected because ratio between
-        actual energy change :    0.00035376
- and predicted energy change :   -0.00015430
-                          is :         -2.29
- Minimum for quadratic model :     0.233809
- Norm of new step            :     0.140278
+        actual energy change :    0.00036090
+ and predicted energy change :   -0.00015552
+                          is :         -2.32
+ Minimum for quadratic model :     0.230806
+ Norm of new step            :     0.139965
 
 
  **************************************************************************************
@@ -1835,8 +1825,8 @@ Initial model Hessian in internal coordinates has been calculated
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -1857,9 +1847,9 @@ Initial model Hessian in internal coordinates has been calculated
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -1886,79 +1876,88 @@ Initial model Hessian in internal coordinates has been calculated
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.002822247868
+                      E_disp :         -0.002822725174
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  8.47D-02  8.50D-02
-      K-S energy, electrons, error :    -13.740574680724  20.0000075144    7.51D-06
-@  1    -79.9912592275        7.54438D-02    6.18D-04    1
-      Virial theorem: -V/T =      2.015972
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.56D-02  2.60D-02
+      K-S energy, electrons, error :    -13.740593745448  20.0000074947    7.49D-06
+@  1    -79.9912302575        7.65425D-02    6.40D-04    1
+      Virial theorem: -V/T =      2.015970
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    F  4.39D-02  4.40D-02
-      K-S energy, electrons, error :    -13.741908239138  20.0000074283    7.43D-06
-@  2    -79.9922360354        9.47198D-03   -9.77D-04    2
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    F  2.48D-02  2.50D-02
+      K-S energy, electrons, error :    -13.741926377739  20.0000074076    7.41D-06
+@  2    -79.9922358042        9.56972D-03   -1.01D-03    2
       Virial theorem: -V/T =      2.015930
 @      MULPOP C   _1 -0.31; C   _2 -0.31; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  4.81D-02  4.90D-02
-      K-S energy, electrons, error :    -13.739585659843  20.0000074439    7.44D-06
-@  3    -79.9922353802        9.93230D-03    6.55D-07    3
-      Virial theorem: -V/T =      2.016148
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  2.75D-02  2.70D-02
+      K-S energy, electrons, error :    -13.739585087531  20.0000074232    7.42D-06
+@  3    -79.9922350780        1.01088D-02    7.26D-07    3
+      Virial theorem: -V/T =      2.016149
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  4.63D-02  4.80D-02
-      K-S energy, electrons, error :    -13.740775109353  20.0000074359    7.44D-06
-@  4    -79.9922429628        4.16149D-05   -7.58D-06    4
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  2.54D-02  2.50D-02
+      K-S energy, electrons, error :    -13.740792663620  20.0000074151    7.42D-06
+@  4    -79.9922429261        2.27510D-04   -7.85D-06    4
       Virial theorem: -V/T =      2.016036
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  4.68D-02  4.70D-02
-      K-S energy, electrons, error :    -13.740775239875  20.0000074359    7.44D-06
-@  5    -79.9922429623        3.98511D-06    4.66D-10    5
-      Virial theorem: -V/T =      2.016036
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    5    F  2.74D-02  2.70D-02
+      K-S energy, electrons, error :    -13.740794954523  20.0000074151    7.42D-06
+@  5    -79.9922429332        1.34890D-05   -7.07D-09    5
+      Virial theorem: -V/T =      2.016035
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  8.03D-02  8.00D-02
-      K-S energy, electrons, error :    -13.740775323372  20.0000074359    7.44D-06
-@  6    -79.9922429623        4.48837D-07   -1.92D-12    6
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  2.65D-02  2.70D-02
+      K-S energy, electrons, error :    -13.740795765551  20.0000074151    7.42D-06
+@  6    -79.9922429332        3.65413D-06   -1.76D-11    6
+      Virial theorem: -V/T =      2.016035
+@      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
+@
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    F  2.58D-02  2.60D-02
+      K-S energy, electrons, error :    -13.740795761047  20.0000074151    7.42D-06
+@  7    -79.9922429332        3.53604D-07   -1.45D-12    7
 
-@ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -79.992242962327    4.49D-07
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -79.992242933187    3.54D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73428750    -0.58401306    -0.30967029    -0.29976687     0.40077308
-          0.40826028     0.41737550
+1 Ag     -9.73428645    -0.58401798    -0.30967478    -0.29976883     0.40078108
+          0.40827071     0.41738695
 
-2 Au     -0.30613087     0.39770382
+2 Au     -0.30613427     0.39771222
 
-3 Bu     -9.73429178    -0.57764065    -0.30625917    -0.29694880     0.39685994
-          0.40540689     0.44695843
+3 Bu     -9.73429073    -0.57764381    -0.30626336    -0.29694983     0.39686621
+          0.40541710     0.44697598
 
-4 Bg     -0.29995912     0.40757011
+4 Bg     -0.29996119     0.40757840
 
-    E(LUMO) :     0.39685994 au (symmetry 3)
-  - E(HOMO) :    -0.29694880 au (symmetry 3)
+    E(LUMO) :     0.39686621 au (symmetry 3)
+  - E(HOMO) :    -0.29694983 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69380874 au
+    gap     :     0.69381604 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.403       4.403
+ >>>> CPU and wall time for SCF :       2.123       2.130
 
 
                        .-----------------------------------.
@@ -1970,24 +1969,24 @@ Initial model Hessian in internal coordinates has been calculated
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992242962327                 
-@    Nuclear repulsion:            41.288055550327
-@    Electronic energy:          -121.280298512654
+@    Final DFT energy:            -79.992242933187                 
+@    Nuclear repulsion:            41.288920351774
+@    Electronic energy:          -121.281163284961
 
-@    Final gradient norm:           0.000000448837
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:22:22 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.40 seconds
- >>>> Total wall time used in SIRIUS :      4.41 seconds
+@    Final gradient norm:           0.000000353604
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:22 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:00 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.12 seconds
+ >>>> Total wall time used in SIRIUS :      2.13 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:00 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -2011,8 +2010,8 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:22 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:00 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                       DFT-D Empirical Dispersion Correction
@@ -2037,7 +2036,7 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.002822247868
+                      E_disp :         -0.002822725174
 
 
   Symmetry Coordinates
@@ -2094,20 +2093,19 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:23 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:01 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:02      93 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:02     201 %
 
 
- >>>> Total CPU  time used in ABACUS:   1.70 seconds
- >>>> Total wall time used in ABACUS:   1.70 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.87 seconds
+ >>>> Total wall time used in ABACUS:   0.89 seconds
 
 
                    .-------------------------------------------.
@@ -2125,16 +2123,16 @@ Acceptable step has been found.
                                 Next geometry (au)
                                 ------------------
 
- C   _1     3.2969219653           -0.0137034055            0.0000000000
- C   _2    -3.2969219653            0.0137034055            0.0000000000
- H   _1     2.6141159424           -1.0134940505            1.7097997129
- H   _2     2.6141159424           -1.0134940505           -1.7097997129
- H   _3    -2.6141159424            1.0134940505            1.7097997129
- H   _4    -2.6141159424            1.0134940505           -1.7097997129
- H   _1     2.5520549960            1.9409689922            0.0000000000
- H   _2    -2.5520549960           -1.9409689922            0.0000000000
- H   _1     5.3953420373            0.0309013323            0.0000000000
- H   _2    -5.3953420373           -0.0309013323            0.0000000000
+ C   _1     3.2971110087           -0.0136901676            0.0000000000
+ C   _2    -3.2971110087            0.0136901676            0.0000000000
+ H   _1     2.6142469799           -1.0134878807            1.7098563093
+ H   _2     2.6142469799           -1.0134878807           -1.7098563093
+ H   _3    -2.6142469799            1.0134878807            1.7098563093
+ H   _4    -2.6142469799            1.0134878807           -1.7098563093
+ H   _1     2.5522484040            1.9410174261            0.0000000000
+ H   _2    -2.5522484040           -1.9410174261            0.0000000000
+ H   _1     5.3956513005            0.0308863641            0.0000000000
+ H   _2    -5.3956513005           -0.0308863641            0.0000000000
 
 
 
@@ -2147,12 +2145,12 @@ Acceptable step has been found.
  End of optimization            :       F 
  Energy at this geometry is     :     -79.992243
  Energy change from last geom.  :      -0.000011
- Predicted change               :      -0.000154
- Ratio, actual/predicted change :       0.074407
- Norm of gradient               :       0.002031
- Norm of step                   :       0.140277
- Updated trust radius           :       0.140278
- Total effective Hessian index  :       0
+ Predicted change               :      -0.000156
+ Ratio, actual/predicted change :       0.073632
+ Norm of gradient               :       0.002053
+ Norm of step                   :       0.139977
+ Updated trust radius           :       0.139965
+ Total Hessian index            :       0
 
 
 
@@ -2208,9 +2206,9 @@ Acceptable step has been found.
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -2237,79 +2235,88 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003057720559
+                      E_disp :         -0.003057175817
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  4.59D-02  4.60D-02
-      K-S energy, electrons, error :    -13.731941048266  19.9999966356   -3.36D-06
-@  1    -79.9921203516        1.70928D-02    1.23D-04    1
-      Virial theorem: -V/T =      2.016397
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.57D-02  2.60D-02
+      K-S energy, electrons, error :    -13.731873551272  19.9999966352   -3.36D-06
+@  1    -79.9921184600        1.71312D-02    1.24D-04    1
+      Virial theorem: -V/T =      2.016400
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    F  4.33D-02  4.30D-02
-      K-S energy, electrons, error :    -13.730351576732  19.9999966116   -3.39D-06
-@  2    -79.9921461406        9.79072D-03   -2.58D-05    2
-      Virial theorem: -V/T =      2.016489
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    2    F  2.45D-02  2.40D-02
+      K-S energy, electrons, error :    -13.730273802123  19.9999966113   -3.39D-06
+@  2    -79.9921440142        9.86155D-03   -2.56D-05    2
+      Virial theorem: -V/T =      2.016492
 @      MULPOP C   _1 -0.29; C   _2 -0.29; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  4.43D-02  4.40D-02
-      K-S energy, electrons, error :    -13.732047703890  19.9999966179   -3.38D-06
-@  3    -79.9921520542        4.42265D-03   -5.91D-06    3
-      Virial theorem: -V/T =      2.016330
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  2.52D-02  2.50D-02
+      K-S energy, electrons, error :    -13.731975857673  19.9999966176   -3.38D-06
+@  3    -79.9921500455        4.41459D-03   -6.03D-06    3
+      Virial theorem: -V/T =      2.016332
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  4.84D-02  4.80D-02
-      K-S energy, electrons, error :    -13.731516140141  19.9999966159   -3.38D-06
-@  4    -79.9921535561        3.43490D-05   -1.50D-06    4
-      Virial theorem: -V/T =      2.016380
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  2.51D-02  2.50D-02
+      K-S energy, electrons, error :    -13.731445763452  19.9999966155   -3.38D-06
+@  4    -79.9921515424        6.67460D-05   -1.50D-06    4
+      Virial theorem: -V/T =      2.016383
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  4.91D-02  4.90D-02
-      K-S energy, electrons, error :    -13.731516157199  19.9999966159   -3.38D-06
-@  5    -79.9921535554        4.51373D-06    6.23D-10    5
-      Virial theorem: -V/T =      2.016380
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  2.75D-02  2.70D-02
+      K-S energy, electrons, error :    -13.731445576244  19.9999966156   -3.38D-06
+@  5    -79.9921515421        6.20872D-06    2.91D-10    5
+      Virial theorem: -V/T =      2.016383
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  1.87D-01  1.86D-01
-      K-S energy, electrons, error :    -13.731516048485  19.9999966159   -3.38D-06
-@  6    -79.9921535554        2.75112D-07   -2.76D-12    6
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  2.76D-02  2.80D-02
+      K-S energy, electrons, error :    -13.731445443535  19.9999966156   -3.38D-06
+@  6    -79.9921515421        1.38879D-06   -4.19D-12    6
+      Virial theorem: -V/T =      2.016383
+@      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
+@
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    7    F  2.72D-02  2.80D-02
+      K-S energy, electrons, error :    -13.731445428399  19.9999966156   -3.38D-06
+@  7    -79.9921515421        2.85317D-07    0.00D+00    7
 
-@ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -79.992153555437    2.75D-07
+@ *** DIIS converged in   7 iterations !
+@     Converged SCF energy, gradient:    -79.992151542115    2.85D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73459791    -0.58243759    -0.30881560    -0.29779230     0.39555734
-          0.40558660     0.40978719
+1 Ag     -9.73460145    -0.58242242    -0.30880074    -0.29778508     0.39551449
+          0.40556127     0.40974739
 
-2 Au     -0.30509705     0.39358825
+2 Au     -0.30508651     0.39356044
 
-3 Bu     -9.73460405    -0.57514886    -0.30533389    -0.29454013     0.39283855
-          0.40109508     0.44192349
+3 Bu     -9.73460759    -0.57513569    -0.30532406    -0.29453054     0.39281972
+          0.40104888     0.44187293
 
-4 Bg     -0.29810551     0.40376910
+4 Bg     -0.29809683     0.40374047
 
-    E(LUMO) :     0.39283855 au (symmetry 3)
-  - E(HOMO) :    -0.29454013 au (symmetry 3)
+    E(LUMO) :     0.39281972 au (symmetry 3)
+  - E(HOMO) :    -0.29453054 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.68737867 au
+    gap     :     0.68735026 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.714       4.711
+ >>>> CPU and wall time for SCF :       2.127       2.134
 
 
                        .-----------------------------------.
@@ -2321,24 +2328,24 @@ Acceptable step has been found.
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992153555437                 
-@    Nuclear repulsion:            41.416295374960
-@    Electronic energy:          -121.408448930397
+@    Final DFT energy:            -79.992151542115                 
+@    Nuclear repulsion:            41.414555553703
+@    Electronic energy:          -121.406707095819
 
-@    Final gradient norm:           0.000000275112
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:22:28 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.72 seconds
- >>>> Total wall time used in SIRIUS :      4.71 seconds
+@    Final gradient norm:           0.000000285317
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:28 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:03 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.13 seconds
+ >>>> Total wall time used in SIRIUS :      2.14 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:03 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -2347,11 +2354,11 @@ Acceptable step has been found.
 
 
  Step rejected because ratio between
-        actual energy change :    0.00008941
- and predicted energy change :   -0.00007394
-                          is :         -1.21
- Minimum for quadratic model :     0.435100
- Norm of new step            :     0.061035
+        actual energy change :    0.00009139
+ and predicted energy change :   -0.00007457
+                          is :         -1.23
+ Minimum for quadratic model :     0.434581
+ Norm of new step            :     0.060832
 
 
  **************************************************************************************
@@ -2405,9 +2412,9 @@ Acceptable step has been found.
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -2434,79 +2441,81 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.002923738098
+                      E_disp :         -0.002923657992
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  5.49D-02  5.50D-02
-      K-S energy, electrons, error :    -13.736502287785  20.0000022992    2.30D-06
-@  1    -79.9922374311        9.64454D-03   -8.39D-05    1
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.55D-02  2.60D-02
+      K-S energy, electrons, error :    -13.736485786120  20.0000022998    2.30D-06
+@  1    -79.9922372828        9.67415D-03   -8.57D-05    1
       Virial theorem: -V/T =      2.016177
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  6.46D-02  6.50D-02
-      K-S energy, electrons, error :    -13.737392006523  20.0000023049    2.30D-06
-@  2    -79.9922456855        5.48081D-03   -8.25D-06    2
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  2.77D-02  2.70D-02
+      K-S energy, electrons, error :    -13.737385298450  20.0000023053    2.31D-06
+@  2    -79.9922454694        5.53866D-03   -8.19D-06    2
       Virial theorem: -V/T =      2.016126
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  5.89D-02  5.90D-02
-      K-S energy, electrons, error :    -13.736440623252  20.0000023070    2.31D-06
-@  3    -79.9922475352        2.47795D-03   -1.85D-06    3
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  2.69D-02  2.70D-02
+      K-S energy, electrons, error :    -13.736426228404  20.0000023075    2.31D-06
+@  3    -79.9922473659        2.47815D-03   -1.90D-06    3
       Virial theorem: -V/T =      2.016216
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  5.64D-02  5.60D-02
-      K-S energy, electrons, error :    -13.736738451832  20.0000023064    2.31D-06
-@  4    -79.9922480062        2.19177D-05   -4.71D-07    4
-      Virial theorem: -V/T =      2.016187
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  2.53D-02  2.50D-02
+      K-S energy, electrons, error :    -13.736723913564  20.0000023069    2.31D-06
+@  4    -79.9922478370        4.86910D-05   -4.71D-07    4
+      Virial theorem: -V/T =      2.016188
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  1.01D-01  1.01D-01
-      K-S energy, electrons, error :    -13.736738460359  20.0000023064    2.31D-06
-@  5    -79.9922480054        2.32176D-06    7.42D-10    5
-      Virial theorem: -V/T =      2.016187
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  2.54D-02  2.50D-02
+      K-S energy, electrons, error :    -13.736723967423  20.0000023069    2.31D-06
+@  5    -79.9922478365        3.03134D-06    4.97D-10    5
+      Virial theorem: -V/T =      2.016188
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  5.60D-02  5.60D-02
-      K-S energy, electrons, error :    -13.736738500937  20.0000023064    2.31D-06
-@  6    -79.9922480054        3.64539D-07   -6.54D-13    6
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  2.53D-02  2.50D-02
+      K-S energy, electrons, error :    -13.736723942060  20.0000023069    2.31D-06
+@  6    -79.9922478365        4.35177D-07   -1.12D-12    6
 
 @ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -79.992248005420    3.65D-07
+@     Converged SCF energy, gradient:    -79.992247836532    4.35D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73442248    -0.58331975    -0.30928913    -0.29891809     0.39853493
-          0.40712442     0.41402123
+1 Ag     -9.73442320    -0.58331673    -0.30928569    -0.29891696     0.39852392
+          0.40712212     0.41401192
 
-2 Au     -0.30567478     0.39590710
+2 Au     -0.30567262     0.39590188
 
-3 Bu     -9.73442749    -0.57656379    -0.30584811    -0.29591277     0.39512596
-          0.40353020     0.44473495
+3 Bu     -9.73442822    -0.57656099    -0.30584670    -0.29591026     0.39512346
+          0.40351827     0.44472497
 
-4 Bg     -0.29915801     0.40591722
+4 Bg     -0.29915623     0.40591133
 
-    E(LUMO) :     0.39512596 au (symmetry 3)
-  - E(HOMO) :    -0.29591277 au (symmetry 3)
+    E(LUMO) :     0.39512346 au (symmetry 3)
+  - E(HOMO) :    -0.29591026 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69103873 au
+    gap     :     0.69103372 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       5.659       5.655
+ >>>> CPU and wall time for SCF :       1.845       1.852
 
 
                        .-----------------------------------.
@@ -2518,24 +2527,24 @@ Acceptable step has been found.
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992248005420                 
-@    Nuclear repulsion:            41.342816410129
-@    Electronic energy:          -121.335064415549
+@    Final DFT energy:            -79.992247836532                 
+@    Nuclear repulsion:            41.342490243852
+@    Electronic energy:          -121.334738080384
 
-@    Final gradient norm:           0.000000364539
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:22:34 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      5.66 seconds
- >>>> Total wall time used in SIRIUS :      5.66 seconds
+@    Final gradient norm:           0.000000435177
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:34 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:05 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.85 seconds
+ >>>> Total wall time used in SIRIUS :      1.86 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:05 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -2559,8 +2568,8 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:34 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:05 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                       DFT-D Empirical Dispersion Correction
@@ -2585,7 +2594,7 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.002923738098
+                      E_disp :         -0.002923657992
 
 
   Symmetry Coordinates
@@ -2642,20 +2651,19 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:36 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:06 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:02      93 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:02     199 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.49 seconds
- >>>> Total wall time used in ABACUS:   2.49 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.87 seconds
+ >>>> Total wall time used in ABACUS:   0.89 seconds
 
 
                    .-------------------------------------------.
@@ -2673,16 +2681,16 @@ Acceptable step has been found.
                                 Next geometry (au)
                                 ------------------
 
- C   _1     3.3025396432           -0.0130267475            0.0000000000
- C   _2    -3.3025396432            0.0130267475            0.0000000000
- H   _1     2.6228785821           -1.0095115218            1.7020444733
- H   _2     2.6228785821           -1.0095115218           -1.7020444733
- H   _3    -2.6228785821            1.0095115218            1.7020444733
- H   _4    -2.6228785821            1.0095115218           -1.7020444733
- H   _1     2.5637084533            1.9381519808            0.0000000000
- H   _2    -2.5637084533           -1.9381519808            0.0000000000
- H   _1     5.3893915558            0.0288363364            0.0000000000
- H   _2    -5.3893915558           -0.0288363364            0.0000000000
+ C   _1     3.3025797695           -0.0130320364            0.0000000000
+ C   _2    -3.3025797695            0.0130320364            0.0000000000
+ H   _1     2.6229198667           -1.0095256384            1.7020562329
+ H   _2     2.6229198667           -1.0095256384           -1.7020562329
+ H   _3    -2.6229198667            1.0095256384            1.7020562329
+ H   _4    -2.6229198667            1.0095256384           -1.7020562329
+ H   _1     2.5637265997            1.9381450112            0.0000000000
+ H   _2    -2.5637265997           -1.9381450112            0.0000000000
+ H   _1     5.3894440837            0.0288485661            0.0000000000
+ H   _2    -5.3894440837           -0.0288485661            0.0000000000
 
 
 
@@ -2695,12 +2703,12 @@ Acceptable step has been found.
  End of optimization            :       F 
  Energy at this geometry is     :     -79.992248
  Energy change from last geom.  :      -0.000005
- Predicted change               :      -0.000074
- Ratio, actual/predicted change :       0.068207
- Norm of gradient               :       0.003123
- Norm of step                   :       0.061036
- Updated trust radius           :       0.061035
- Total effective Hessian index  :       0
+ Predicted change               :      -0.000075
+ Ratio, actual/predicted change :       0.065754
+ Norm of gradient               :       0.003146
+ Norm of step                   :       0.061032
+ Updated trust radius           :       0.060832
+ Total Hessian index            :       0
 
 
 
@@ -2734,8 +2742,8 @@ Acceptable step has been found.
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -2756,9 +2764,9 @@ Acceptable step has been found.
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -2785,79 +2793,81 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003018325075
+                      E_disp :         -0.003018202030
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  9.73D-02  9.70D-02
-      K-S energy, electrons, error :    -13.739881635062  19.9999993755   -6.24D-07
-@  1    -79.9922577790        6.27201D-03   -9.77D-06    1
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.57D-02  2.60D-02
+      K-S energy, electrons, error :    -13.739870145777  19.9999993769   -6.23D-07
+@  1    -79.9922578023        6.27551D-03   -9.97D-06    1
       Virial theorem: -V/T =      2.016055
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  6.91D-02  6.90D-02
-      K-S energy, electrons, error :    -13.740324711747  19.9999993670   -6.33D-07
-@  2    -79.9922620971        2.92123D-03   -4.32D-06    2
-      Virial theorem: -V/T =      2.016030
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  2.53D-02  2.50D-02
+      K-S energy, electrons, error :    -13.740313555427  19.9999993684   -6.32D-07
+@  2    -79.9922621204        2.92434D-03   -4.32D-06    2
+      Virial theorem: -V/T =      2.016031
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.08; H   _2  0.08; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  6.51D-02  6.50D-02
-      K-S energy, electrons, error :    -13.739768558944  19.9999993672   -6.33D-07
-@  3    -79.9922625261        1.72783D-03   -4.29D-07    3
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  2.63D-02  2.70D-02
+      K-S energy, electrons, error :    -13.739757347457  19.9999993686   -6.31D-07
+@  3    -79.9922625516        1.72601D-03   -4.31D-07    3
       Virial theorem: -V/T =      2.016083
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  6.90D-02  6.80D-02
-      K-S energy, electrons, error :    -13.739975949406  19.9999993672   -6.33D-07
-@  4    -79.9922627552        8.03473D-06   -2.29D-07    4
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    F  2.76D-02  2.80D-02
+      K-S energy, electrons, error :    -13.739964394604  19.9999993686   -6.31D-07
+@  4    -79.9922627802        2.95236D-05   -2.29D-07    4
       Virial theorem: -V/T =      2.016063
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  6.11D-02  6.10D-02
-      K-S energy, electrons, error :    -13.739976022608  19.9999993672   -6.33D-07
-@  5    -79.9922627544        1.37217D-06    7.42D-10    5
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  2.74D-02  2.70D-02
+      K-S energy, electrons, error :    -13.739964662935  19.9999993686   -6.31D-07
+@  5    -79.9922627796        1.68789D-06    6.31D-10    5
       Virial theorem: -V/T =      2.016063
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  5.56D-02  5.60D-02
-      K-S energy, electrons, error :    -13.739976037191  19.9999993672   -6.33D-07
-@  6    -79.9922627544        3.46345D-07   -1.99D-13    6
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  2.75D-02  2.70D-02
+      K-S energy, electrons, error :    -13.739964681846  19.9999993686   -6.31D-07
+@  6    -79.9922627796        4.34469D-07   -1.14D-13    6
 
 @ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -79.992262754447    3.46D-07
+@     Converged SCF energy, gradient:    -79.992262779553    4.34D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73424195    -0.58412479    -0.31010835    -0.29912459     0.39998257
-          0.40850627     0.41572207
+1 Ag     -9.73424247    -0.58412224    -0.31010642    -0.29912306     0.39997814
+          0.40850228     0.41571473
 
-2 Au     -0.30625680     0.39717348
+2 Au     -0.30625474     0.39716843
 
-3 Bu     -9.73424779    -0.57700475    -0.30648517    -0.29600917     0.39591264
-          0.40546921     0.44758011
+3 Bu     -9.73424830    -0.57700269    -0.30648322    -0.29600826     0.39590858
+          0.40546397     0.44757132
 
-4 Bg     -0.29941895     0.40732384
+4 Bg     -0.29941745     0.40731789
 
-    E(LUMO) :     0.39591264 au (symmetry 3)
-  - E(HOMO) :    -0.29600917 au (symmetry 3)
+    E(LUMO) :     0.39590858 au (symmetry 3)
+  - E(HOMO) :    -0.29600826 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69192180 au
+    gap     :     0.69191684 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       5.937       5.937
+ >>>> CPU and wall time for SCF :       1.843       1.850
 
 
                        .-----------------------------------.
@@ -2869,24 +2879,24 @@ Acceptable step has been found.
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992262754447                 
-@    Nuclear repulsion:            41.502215025747
-@    Electronic energy:          -121.494477780194
+@    Final DFT energy:            -79.992262779553                 
+@    Nuclear repulsion:            41.501895002273
+@    Electronic energy:          -121.494157781825
 
-@    Final gradient norm:           0.000000346345
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:22:43 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      5.94 seconds
- >>>> Total wall time used in SIRIUS :      5.94 seconds
+@    Final gradient norm:           0.000000434469
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:43 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:08 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.84 seconds
+ >>>> Total wall time used in SIRIUS :      1.85 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:08 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -2894,7 +2904,7 @@ Acceptable step has been found.
                      `---------------------------------------'
 
  Trust radius set equal to norm of step.
- Updated trust radius   0.06104
+ Updated trust radius   0.06103
 
      Order of analytical energy-derivatives available:   1
      This will be the default.
@@ -2910,8 +2920,8 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:43 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:08 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                       DFT-D Empirical Dispersion Correction
@@ -2936,7 +2946,7 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003018325075
+                      E_disp :         -0.003018202030
 
 
   Symmetry Coordinates
@@ -2993,20 +3003,19 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:45 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:09 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:02      94 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:02     201 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.34 seconds
- >>>> Total wall time used in ABACUS:   2.34 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.87 seconds
+ >>>> Total wall time used in ABACUS:   0.89 seconds
 
 
                    .-------------------------------------------.
@@ -3024,16 +3033,16 @@ Acceptable step has been found.
                                 Next geometry (au)
                                 ------------------
 
- C   _1     3.2871105598           -0.0146586133            0.0000000000
- C   _2    -3.2871105598            0.0146586133            0.0000000000
- H   _1     2.6095039527           -1.0131328365            1.7031445305
- H   _2     2.6095039527           -1.0131328365           -1.7031445305
- H   _3    -2.6095039527            1.0131328365            1.7031445305
- H   _4    -2.6095039527            1.0131328365           -1.7031445305
- H   _1     2.5430943423            1.9352476984            0.0000000000
- H   _2    -2.5430943423           -1.9352476984            0.0000000000
- H   _1     5.3751970893            0.0323012269            0.0000000000
- H   _2    -5.3751970893           -0.0323012269            0.0000000000
+ C   _1     3.2871665081           -0.0146623178            0.0000000000
+ C   _2    -3.2871665081            0.0146623178            0.0000000000
+ H   _1     2.6095654775           -1.0131402697            1.7031418968
+ H   _2     2.6095654775           -1.0131402697           -1.7031418968
+ H   _3    -2.6095654775            1.0131402697            1.7031418968
+ H   _4    -2.6095654775            1.0131402697           -1.7031418968
+ H   _1     2.5431404856            1.9352377508            0.0000000000
+ H   _2    -2.5431404856           -1.9352377508            0.0000000000
+ H   _1     5.3752476672            0.0323099572            0.0000000000
+ H   _2    -5.3752476672           -0.0323099572            0.0000000000
 
 
 
@@ -3047,11 +3056,11 @@ Acceptable step has been found.
  Energy at this geometry is     :     -79.992263
  Energy change from last geom.  :      -0.000015
  Predicted change               :      -0.000023
- Ratio, actual/predicted change :       0.636057
- Norm of gradient               :       0.000893
- Norm of step                   :       0.033633
- Updated trust radius           :       0.061036
- Total effective Hessian index  :       0
+ Ratio, actual/predicted change :       0.641097
+ Norm of gradient               :       0.000881
+ Norm of step                   :       0.033579
+ Updated trust radius           :       0.061032
+ Total Hessian index            :       0
 
 
 
@@ -3107,9 +3116,9 @@ Acceptable step has been found.
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -3136,72 +3145,81 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003078260088
+                      E_disp :         -0.003078046226
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  5.89D-02  5.80D-02
-      K-S energy, electrons, error :    -13.739044829199  19.9999975985   -2.40D-06
-@  1    -79.9922581740        3.92536D-03    4.58D-06    1
-      Virial theorem: -V/T =      2.016101
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.57D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739046875332  19.9999976034   -2.40D-06
+@  1    -79.9922582014        3.91502D-03    4.58D-06    1
+      Virial theorem: -V/T =      2.016100
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  7.95D-02  8.00D-02
-      K-S energy, electrons, error :    -13.738850495343  19.9999975935   -2.41D-06
-@  2    -79.9922605547        1.14825D-03   -2.38D-06    2
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  2.73D-02  2.70D-02
+      K-S energy, electrons, error :    -13.738854746463  19.9999975985   -2.40D-06
+@  2    -79.9922605764        1.13444D-03   -2.37D-06    2
       Virial theorem: -V/T =      2.016112
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  7.01D-02  7.00D-02
-      K-S energy, electrons, error :    -13.739104063104  19.9999975939   -2.41D-06
-@  3    -79.9922605836        9.74414D-04   -2.89D-08    3
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  2.54D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739105797687  19.9999975988   -2.40D-06
+@  3    -79.9922606039        9.67345D-04   -2.75D-08    3
       Virial theorem: -V/T =      2.016088
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  1.24D-01  1.25D-01
-      K-S energy, electrons, error :    -13.738987262998  19.9999975937   -2.41D-06
-@  4    -79.9922606558        6.31193D-06   -7.23D-08    4
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  2.55D-02  2.60D-02
+      K-S energy, electrons, error :    -13.738989972503  19.9999975986   -2.40D-06
+@  4    -79.9922606750        1.87894D-05   -7.12D-08    4
       Virial theorem: -V/T =      2.016099
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  5.80D-02  5.80D-02
-      K-S energy, electrons, error :    -13.738987247180  19.9999975937   -2.41D-06
-@  5    -79.9922606558        5.43015D-07   -1.08D-11    5
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  2.55D-02  2.60D-02
+      K-S energy, electrons, error :    -13.738989851401  19.9999975986   -2.40D-06
+@  5    -79.9922606751        1.53341D-06   -5.93D-11    5
+      Virial theorem: -V/T =      2.016099
+@      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
+@
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    6    F  2.55D-02  2.60D-02
+      K-S energy, electrons, error :    -13.738989813641  19.9999975986   -2.40D-06
+@  6    -79.9922606751        4.78281D-07   -4.26D-13    6
 
-@ *** DIIS converged in   5 iterations !
-@     Converged SCF energy, gradient:    -79.992260655838    5.43D-07
+@ *** DIIS converged in   6 iterations !
+@     Converged SCF energy, gradient:    -79.992260675086    4.78D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73425813    -0.58400894    -0.31011670    -0.29880802     0.39933753
-          0.40836804     0.41468682
+1 Ag     -9.73425818    -0.58400917    -0.31011672    -0.29880897     0.39933992
+          0.40836877     0.41468984
 
-2 Au     -0.30619462     0.39671380
+2 Au     -0.30619444     0.39671482
 
-3 Bu     -9.73426452    -0.57664601    -0.30645574    -0.29558473     0.39536535
-          0.40509079     0.44724714
+3 Bu     -9.73426457    -0.57664712    -0.30645583    -0.29558629     0.39536659
+          0.40509219     0.44724764
 
-4 Bg     -0.29914895     0.40690592
+4 Bg     -0.29914970     0.40690594
 
-    E(LUMO) :     0.39536535 au (symmetry 3)
-  - E(HOMO) :    -0.29558473 au (symmetry 3)
+    E(LUMO) :     0.39536659 au (symmetry 3)
+  - E(HOMO) :    -0.29558629 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69095008 au
+    gap     :     0.69095288 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.894       4.890
+ >>>> CPU and wall time for SCF :       1.844       1.852
 
 
                        .-----------------------------------.
@@ -3213,24 +3231,24 @@ Acceptable step has been found.
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992260655838                 
-@    Nuclear repulsion:            41.556318640340
-@    Electronic energy:          -121.548579296178
+@    Final DFT energy:            -79.992260675086                 
+@    Nuclear repulsion:            41.556109860270
+@    Electronic energy:          -121.548370535356
 
-@    Final gradient norm:           0.000000543015
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:22:50 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.90 seconds
- >>>> Total wall time used in SIRIUS :      4.89 seconds
+@    Final gradient norm:           0.000000478281
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:50 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:11 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.85 seconds
+ >>>> Total wall time used in SIRIUS :      1.85 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:11 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -3240,10 +3258,10 @@ Acceptable step has been found.
 
  Step rejected because ratio between
         actual energy change :    0.00000210
- and predicted energy change :   -0.00000111
-                          is :         -1.89
- Minimum for quadratic model :     0.469805
- Norm of new step            :     0.015801
+ and predicted energy change :   -0.00000108
+                          is :         -1.95
+ Minimum for quadratic model :     0.468875
+ Norm of new step            :     0.015745
 
 
  **************************************************************************************
@@ -3297,9 +3315,9 @@ Acceptable step has been found.
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -3326,72 +3344,74 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003046439241
+                      E_disp :         -0.003046217995
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  5.59D-02  5.60D-02
-      K-S energy, electrons, error :    -13.739481338642  19.9999984690   -1.53D-06
-@  1    -79.9922620169        2.08204D-03   -1.36D-06    1
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.56D-02  2.60D-02
+      K-S energy, electrons, error :    -13.739477654776  19.9999984739   -1.53D-06
+@  1    -79.9922620266        2.08024D-03   -1.35D-06    1
       Virial theorem: -V/T =      2.016079
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  7.05D-02  7.10D-02
-      K-S energy, electrons, error :    -13.739584367713  19.9999984715   -1.53D-06
-@  2    -79.9922626868        6.09544D-04   -6.70D-07    2
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  2.68D-02  2.70D-02
+      K-S energy, electrons, error :    -13.739579752637  19.9999984764   -1.52D-06
+@  2    -79.9922626973        6.03548D-04   -6.71D-07    2
       Virial theorem: -V/T =      2.016073
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  5.76D-02  5.80D-02
-      K-S energy, electrons, error :    -13.739449828295  19.9999984715   -1.53D-06
-@  3    -79.9922626942        5.16460D-04   -7.42D-09    3
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  2.61D-02  2.60D-02
+      K-S energy, electrons, error :    -13.739446269901  19.9999984764   -1.52D-06
+@  3    -79.9922627043        5.13754D-04   -7.07D-09    3
       Virial theorem: -V/T =      2.016086
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  5.54D-02  5.50D-02
-      K-S energy, electrons, error :    -13.739511730428  19.9999984715   -1.53D-06
-@  4    -79.9922627147        3.48797D-06   -2.05D-08    4
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  2.76D-02  2.70D-02
+      K-S energy, electrons, error :    -13.739507816059  19.9999984764   -1.52D-06
+@  4    -79.9922627246        1.09364D-05   -2.03D-08    4
       Virial theorem: -V/T =      2.016080
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  6.13D-02  6.10D-02
-      K-S energy, electrons, error :    -13.739511739090  19.9999984715   -1.53D-06
-@  5    -79.9922627147        2.87445D-07   -4.83D-12    5
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  2.94D-02  2.90D-02
+      K-S energy, electrons, error :    -13.739507838100  19.9999984764   -1.52D-06
+@  5    -79.9922627246        8.37493D-07   -1.83D-11    5
 
 @ *** DIIS converged in   5 iterations !
-@     Converged SCF energy, gradient:    -79.992262714710    2.87D-07
+@     Converged SCF energy, gradient:    -79.992262724623    8.37D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73424967    -0.58407005    -0.31011175    -0.29897671     0.39968100
-          0.40844084     0.41523651
+1 Ag     -9.73424995    -0.58406892    -0.31011071    -0.29897668     0.39968038
+          0.40843915     0.41523499
 
-2 Au     -0.30622737     0.39695737
+2 Au     -0.30622626     0.39695559
 
-3 Bu     -9.73425576    -0.57683694    -0.30647089    -0.29581084     0.39565654
-          0.40529122     0.44742306
+3 Bu     -9.73425604    -0.57683671    -0.30646996    -0.29581146     0.39565543
+          0.40528947     0.44741893
 
-4 Bg     -0.29929262     0.40712802
+4 Bg     -0.29929244     0.40712525
 
-    E(LUMO) :     0.39565654 au (symmetry 3)
-  - E(HOMO) :    -0.29581084 au (symmetry 3)
+    E(LUMO) :     0.39565543 au (symmetry 3)
+  - E(HOMO) :    -0.29581146 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69146738 au
+    gap     :     0.69146688 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.339       4.336
+ >>>> CPU and wall time for SCF :       1.567       1.574
 
 
                        .-----------------------------------.
@@ -3403,24 +3423,24 @@ Acceptable step has been found.
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992262714710                 
-@    Nuclear repulsion:            41.527569700777
-@    Electronic energy:          -121.519832415487
+@    Final DFT energy:            -79.992262724623                 
+@    Nuclear repulsion:            41.527251745334
+@    Electronic energy:          -121.519514469957
 
-@    Final gradient norm:           0.000000287445
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:22:55 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.34 seconds
- >>>> Total wall time used in SIRIUS :      4.34 seconds
+@    Final gradient norm:           0.000000837493
 
  
-     Date and time (Linux)  : Tue Feb 24 17:22:55 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:12 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.57 seconds
+ >>>> Total wall time used in SIRIUS :      1.58 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:12 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -3429,9 +3449,9 @@ Acceptable step has been found.
 
 
 Step rejected because energy is increasing.
- Updated trust radius   0.01580
- Minimum for quadratic model :     0.499392
- Norm of new step            :     0.007891
+ Updated trust radius   0.01574
+ Minimum for quadratic model :     0.499135
+ Norm of new step            :     0.007859
 
 
  **************************************************************************************
@@ -3485,9 +3505,9 @@ Step rejected because energy is increasing.
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -3514,72 +3534,74 @@ Step rejected because energy is increasing.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003032354767
+                      E_disp :         -0.003032175538
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  5.57D-02  5.50D-02
-      K-S energy, electrons, error :    -13.739730790577  19.9999989056   -1.09D-06
-@  1    -79.9922628044        9.23173D-04   -8.97D-08    1
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.54D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739723420051  19.9999989091   -1.09D-06
+@  1    -79.9922628188        9.19411D-04   -9.42D-08    1
       Virial theorem: -V/T =      2.016071
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    2    F  5.98D-02  6.00D-02
-      K-S energy, electrons, error :    -13.739776353690  19.9999989067   -1.09D-06
-@  2    -79.9922629360        2.69560D-04   -1.32D-07    2
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    2    F  2.54D-02  2.60D-02
+      K-S energy, electrons, error :    -13.739768395089  19.9999989102   -1.09D-06
+@  2    -79.9922629497        2.65912D-04   -1.31D-07    2
       Virial theorem: -V/T =      2.016069
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  5.55D-02  5.60D-02
-      K-S energy, electrons, error :    -13.739716829471  19.9999989067   -1.09D-06
-@  3    -79.9922629376        2.28599D-04   -1.60D-09    3
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  2.54D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739709555922  19.9999989102   -1.09D-06
+@  3    -79.9922629513        2.26590D-04   -1.52D-09    3
       Virial theorem: -V/T =      2.016074
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  5.82D-02  5.80D-02
-      K-S energy, electrons, error :    -13.739744231440  19.9999989067   -1.09D-06
-@  4    -79.9922629416        1.53444D-06   -4.02D-09    4
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  2.52D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739736702619  19.9999989102   -1.09D-06
+@  4    -79.9922629552        4.26343D-06   -3.94D-09    4
       Virial theorem: -V/T =      2.016072
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  5.55D-02  5.50D-02
-      K-S energy, electrons, error :    -13.739744215801  19.9999989067   -1.09D-06
-@  5    -79.9922629416        3.48068D-07   -3.91D-12    5
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  2.52D-02  2.60D-02
+      K-S energy, electrons, error :    -13.739736693582  19.9999989102   -1.09D-06
+@  5    -79.9922629552        5.66175D-07   -6.08D-12    5
 
 @ *** DIIS converged in   5 iterations !
-@     Converged SCF energy, gradient:    -79.992262941614    3.48D-07
+@     Converged SCF energy, gradient:    -79.992262955209    5.66D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73424585    -0.58409739    -0.31010994    -0.29905094     0.39983230
-          0.40847347     0.41547976
+1 Ag     -9.73424626    -0.58409557    -0.31010846    -0.29905020     0.39982983
+          0.40847064     0.41547545
 
-2 Au     -0.30624206     0.39706552
+2 Au     -0.30624047     0.39706217
 
-3 Bu     -9.73425182    -0.57692112    -0.30647795    -0.29591037     0.39578496
-          0.40538027     0.44750154
+3 Bu     -9.73425222    -0.57692002    -0.30647652    -0.29591028     0.39578243
+          0.40537681     0.44749512
 
-4 Bg     -0.29935598     0.40722616
+4 Bg     -0.29935516     0.40722186
 
-    E(LUMO) :     0.39578496 au (symmetry 3)
-  - E(HOMO) :    -0.29591037 au (symmetry 3)
+    E(LUMO) :     0.39578243 au (symmetry 3)
+  - E(HOMO) :    -0.29591028 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69169533 au
+    gap     :     0.69169271 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.849       4.846
+ >>>> CPU and wall time for SCF :       1.544       1.550
 
 
                        .-----------------------------------.
@@ -3591,24 +3613,24 @@ Step rejected because energy is increasing.
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992262941614                 
-@    Nuclear repulsion:            41.514862956052
-@    Electronic energy:          -121.507125897666
+@    Final DFT energy:            -79.992262955209                 
+@    Nuclear repulsion:            41.514537540569
+@    Electronic energy:          -121.506800495778
 
-@    Final gradient norm:           0.000000348068
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:23:00 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.85 seconds
- >>>> Total wall time used in SIRIUS :      4.85 seconds
+@    Final gradient norm:           0.000000566175
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:00 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:14 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.55 seconds
+ >>>> Total wall time used in SIRIUS :      1.56 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:14 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -3632,8 +3654,8 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:00 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:14 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                       DFT-D Empirical Dispersion Correction
@@ -3658,7 +3680,7 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003032354767
+                      E_disp :         -0.003032175538
 
 
   Symmetry Coordinates
@@ -3715,20 +3737,19 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:02 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:15 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:02      93 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:02     200 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.32 seconds
- >>>> Total wall time used in ABACUS:   2.31 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.87 seconds
+ >>>> Total wall time used in ABACUS:   0.88 seconds
 
 
                    .-------------------------------------------.
@@ -3746,16 +3767,16 @@ Acceptable step has been found.
                                 Next geometry (au)
                                 ------------------
 
- C   _1     3.3016376034           -0.0124531533            0.0000000000
- C   _2    -3.3016376034            0.0124531533            0.0000000000
- H   _1     2.6210911636           -1.0089893962            1.7032486664
- H   _2     2.6210911636           -1.0089893962           -1.7032486664
- H   _3    -2.6210911636            1.0089893962            1.7032486664
- H   _4    -2.6210911636            1.0089893962           -1.7032486664
- H   _1     2.5639281652            1.9400817207            0.0000000000
- H   _2    -2.5639281652           -1.9400817207            0.0000000000
- H   _1     5.3888895311            0.0278094092            0.0000000000
- H   _2    -5.3888895311           -0.0278094092            0.0000000000
+ C   _1     3.3018149522           -0.0124112791            0.0000000000
+ C   _2    -3.3018149522            0.0124112791            0.0000000000
+ H   _1     2.6212114243           -1.0089152546            1.7032655077
+ H   _2     2.6212114243           -1.0089152546           -1.7032655077
+ H   _3    -2.6212114243            1.0089152546            1.7032655077
+ H   _4    -2.6212114243            1.0089152546           -1.7032655077
+ H   _1     2.5642202539            1.9401816490            0.0000000000
+ H   _2    -2.5642202539           -1.9401816490            0.0000000000
+ H   _1     5.3890700807            0.0277253711            0.0000000000
+ H   _2    -5.3890700807           -0.0277253711            0.0000000000
 
 
 
@@ -3769,11 +3790,11 @@ Acceptable step has been found.
  Energy at this geometry is     :     -79.992263
  Energy change from last geom.  :      -0.000000
  Predicted change               :      -0.000001
- Ratio, actual/predicted change :       0.168489
- Norm of gradient               :       0.000678
- Norm of step                   :       0.007891
- Updated trust radius           :       0.007891
- Total effective Hessian index  :       0
+ Ratio, actual/predicted change :       0.162960
+ Norm of gradient               :       0.000672
+ Norm of step                   :       0.008151
+ Updated trust radius           :       0.007859
+ Total Hessian index            :       0
 
 
 
@@ -3829,9 +3850,9 @@ Acceptable step has been found.
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -3858,72 +3879,74 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003022814034
+                      E_disp :         -0.003022151271
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  5.83D-02  5.80D-02
-      K-S energy, electrons, error :    -13.739068192449  19.9999990955   -9.04D-07
-@  1    -79.9922627840        2.09389D-03    1.58D-07    1
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.54D-02  2.60D-02
+      K-S energy, electrons, error :    -13.739055570228  19.9999991146   -8.85D-07
+@  1    -79.9922627173        2.18203D-03    2.38D-07    1
       Virial theorem: -V/T =      2.016100
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  5.55D-02  5.60D-02
-      K-S energy, electrons, error :    -13.738964600583  19.9999990972   -9.03D-07
-@  2    -79.9922634159        6.65899D-04   -6.32D-07    2
-      Virial theorem: -V/T =      2.016106
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  2.54D-02  2.50D-02
+      K-S energy, electrons, error :    -13.738948920332  19.9999991164   -8.84D-07
+@  2    -79.9922634120        6.85718D-04   -6.95D-07    2
+      Virial theorem: -V/T =      2.016107
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  5.58D-02  5.50D-02
-      K-S energy, electrons, error :    -13.739108625102  19.9999990973   -9.03D-07
-@  3    -79.9922634270        5.40037D-04   -1.11D-08    3
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  2.54D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739098613914  19.9999991165   -8.83D-07
+@  3    -79.9922634231        5.62306D-04   -1.11D-08    3
       Virial theorem: -V/T =      2.016092
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  5.62D-02  5.60D-02
-      K-S energy, electrons, error :    -13.739043837189  19.9999990973   -9.03D-07
-@  4    -79.9922634494        5.53308D-06   -2.24D-08    4
-      Virial theorem: -V/T =      2.016098
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  2.53D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739031098758  19.9999991165   -8.84D-07
+@  4    -79.9922634474        1.26451D-05   -2.43D-08    4
+      Virial theorem: -V/T =      2.016099
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  5.85D-02  5.80D-02
-      K-S energy, electrons, error :    -13.739043854981  19.9999990973   -9.03D-07
-@  5    -79.9922634494        4.37187D-07   -7.19D-12    5
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  2.53D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739031104029  19.9999991165   -8.84D-07
+@  5    -79.9922634474        5.92402D-07   -2.69D-11    5
 
 @ *** DIIS converged in   5 iterations !
-@     Converged SCF energy, gradient:    -79.992263449393    4.37D-07
+@     Converged SCF energy, gradient:    -79.992263447393    5.92D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73427534    -0.58393046    -0.31001143    -0.29895781     0.39972402
-          0.40806977     0.41506226
+1 Ag     -9.73427620    -0.58392674    -0.31000791    -0.29895769     0.39972263
+          0.40806015     0.41505765
 
-2 Au     -0.30610429     0.39664636
+2 Au     -0.30610155     0.39663929
 
-3 Bu     -9.73428123    -0.57679685    -0.30632962    -0.29587826     0.39551078
-          0.40525530     0.44691005
+3 Bu     -9.73428208    -0.57679585    -0.30632599    -0.29587951     0.39550792
+          0.40525149     0.44689620
 
-4 Bg     -0.29923672     0.40683799
+4 Bg     -0.29923579     0.40683195
 
-    E(LUMO) :     0.39551078 au (symmetry 3)
-  - E(HOMO) :    -0.29587826 au (symmetry 3)
+    E(LUMO) :     0.39550792 au (symmetry 3)
+  - E(HOMO) :    -0.29587951 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69138904 au
+    gap     :     0.69138743 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.224       4.220
+ >>>> CPU and wall time for SCF :       1.548       1.555
 
 
                        .-----------------------------------.
@@ -3935,24 +3958,24 @@ Acceptable step has been found.
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992263449393                 
-@    Nuclear repulsion:            41.493662944026
-@    Electronic energy:          -121.485926393419
+@    Final DFT energy:            -79.992263447393                 
+@    Nuclear repulsion:            41.492718838665
+@    Electronic energy:          -121.484982286058
 
-@    Final gradient norm:           0.000000437187
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:23:06 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.23 seconds
- >>>> Total wall time used in SIRIUS :      4.22 seconds
+@    Final gradient norm:           0.000000592402
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:06 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:17 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.55 seconds
+ >>>> Total wall time used in SIRIUS :      1.56 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:17 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -3960,7 +3983,7 @@ Acceptable step has been found.
                      `---------------------------------------'
 
  Trust radius set equal to norm of step.
- Updated trust radius   0.00789
+ Updated trust radius   0.00815
 
      Order of analytical energy-derivatives available:   1
      This will be the default.
@@ -3976,8 +3999,8 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:06 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:17 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                       DFT-D Empirical Dispersion Correction
@@ -4002,7 +4025,7 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003022814034
+                      E_disp :         -0.003022151271
 
 
   Symmetry Coordinates
@@ -4059,20 +4082,19 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:09 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:17 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:02      93 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:02     200 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.18 seconds
- >>>> Total wall time used in ABACUS:   2.18 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.87 seconds
+ >>>> Total wall time used in ABACUS:   0.89 seconds
 
 
                    .-------------------------------------------.
@@ -4090,16 +4112,16 @@ Acceptable step has been found.
                                 Next geometry (au)
                                 ------------------
 
- C   _1     3.3031347213           -0.0107478010            0.0000000000
- C   _2    -3.3031347213            0.0107478010            0.0000000000
- H   _1     2.6201088724           -1.0054343322            1.7028906132
- H   _2     2.6201088724           -1.0054343322           -1.7028906132
- H   _3    -2.6201088724            1.0054343322            1.7028906132
- H   _4    -2.6201088724            1.0054343322           -1.7028906132
- H   _1     2.5702718090            1.9433539762            0.0000000000
- H   _2    -2.5702718090           -1.9433539762            0.0000000000
- H   _1     5.3904400738            0.0244056150            0.0000000000
- H   _2    -5.3904400738           -0.0244056150            0.0000000000
+ C   _1     3.3052997280           -0.0120859609            0.0000000000
+ C   _2    -3.3052997280            0.0120859609            0.0000000000
+ H   _1     2.6241485796           -1.0080609788            1.7028729916
+ H   _2     2.6241485796           -1.0080609788           -1.7028729916
+ H   _3    -2.6241485796            1.0080609788            1.7028729916
+ H   _4    -2.6241485796            1.0080609788           -1.7028729916
+ H   _1     2.5687345751            1.9406201389            0.0000000000
+ H   _2    -2.5687345751           -1.9406201389            0.0000000000
+ H   _1     5.3925238715            0.0270216186            0.0000000000
+ H   _2    -5.3925238715           -0.0270216186            0.0000000000
 
 
 
@@ -4111,13 +4133,13 @@ Acceptable step has been found.
  Iteration number               :       6
  End of optimization            :       F 
  Energy at this geometry is     :     -79.992263
- Energy change from last geom.  :      -0.000001
+ Energy change from last geom.  :      -0.000000
  Predicted change               :      -0.000001
- Ratio, actual/predicted change :       0.505280
- Norm of gradient               :       0.000332
- Norm of step                   :       0.007891
- Updated trust radius           :       0.007891
- Total effective Hessian index  :       0
+ Ratio, actual/predicted change :       0.488246
+ Norm of gradient               :       0.000349
+ Norm of step                   :       0.007685
+ Updated trust radius           :       0.008151
+ Total Hessian index            :       0
 
 
 
@@ -4151,8 +4173,8 @@ Acceptable step has been found.
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -4173,9 +4195,9 @@ Acceptable step has been found.
  (Wave function specification suppressed here, see output above for initial geometry.)
 
 
- ***********************************************
- ***** DIIS acceleration of SCF iterations *****
- ***********************************************
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -4202,72 +4224,74 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003017007268
+                      E_disp :         -0.003008984808
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  7.50D-02  7.50D-02
-      K-S energy, electrons, error :    -13.739271929014  19.9999993881   -6.12D-07
-@  1    -79.9922615534        3.60023D-03    1.90D-06    1
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    1    F  2.54D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739268959353  19.9999995767   -4.23D-07
+@  1    -79.9922635953        8.67815D-04   -1.48D-07    1
       Virial theorem: -V/T =      2.016089
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    2    F  5.55D-02  5.60D-02
-      K-S energy, electrons, error :    -13.739313020345  19.9999993906   -6.09D-07
-@  2    -79.9922638270        2.52924D-04   -2.27D-06    2
-      Virial theorem: -V/T =      2.016087
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    2    F  2.74D-02  2.80D-02
+      K-S energy, electrons, error :    -13.739316709870  19.9999995777   -4.22D-07
+@  2    -79.9922637045        2.82145D-04   -1.09D-07    2
+      Virial theorem: -V/T =      2.016086
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  5.61D-02  5.60D-02
-      K-S energy, electrons, error :    -13.739250016673  19.9999993906   -6.09D-07
-@  3    -79.9922638253        2.75323D-04    1.61D-09    3
-      Virial theorem: -V/T =      2.016093
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    3    F  2.55D-02  2.50D-02
+      K-S energy, electrons, error :    -13.739256260864  19.9999995777   -4.22D-07
+@  3    -79.9922637068        2.23238D-04   -2.32D-09    3
+      Virial theorem: -V/T =      2.016092
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  6.95D-02  6.90D-02
-      K-S energy, electrons, error :    -13.739283039166  19.9999993906   -6.09D-07
-@  4    -79.9922638312        3.07551D-06   -5.83D-09    4
-      Virial theorem: -V/T =      2.016089
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    4    F  2.61D-02  2.60D-02
+      K-S energy, electrons, error :    -13.739283025085  19.9999995777   -4.22D-07
+@  4    -79.9922637107        4.72865D-06   -3.83D-09    4
+      Virial theorem: -V/T =      2.016090
 @      MULPOP C   _1 -0.30; C   _2 -0.30; H   _1  0.08; H   _2  0.08; H   _3  0.08; H   _4  0.08; H   _1  0.08; H   _2  0.08; H   _1  0.07; H   _2  0.07; 
 @
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  6.00D-02  6.00D-02
-      K-S energy, electrons, error :    -13.739283006470  19.9999993906   -6.09D-07
-@  5    -79.9922638312        2.11467D-07   -4.16D-12    5
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    5    F  2.55D-02  2.60D-02
+      K-S energy, electrons, error :    -13.739283018697  19.9999995777   -4.22D-07
+@  5    -79.9922637107        2.84289D-07   -6.11D-12    5
 
 @ *** DIIS converged in   5 iterations !
-@     Converged SCF energy, gradient:    -79.992263831180    2.11D-07
+@     Converged SCF energy, gradient:    -79.992263710665    2.84D-07
     - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   20
  Orbital occupations :    4    1    4    1
 
  Sym       Kohn-Sham orbital energies
 
-1 Ag     -9.73426928    -0.58397396    -0.31002195    -0.29902960     0.39979501
-          0.40809210     0.41525042
+1 Ag     -9.73427281    -0.58396253    -0.31000134    -0.29903750     0.39981808
+          0.40813392     0.41529920
 
-2 Au     -0.30615321     0.39671908
+2 Au     -0.30612849     0.39678659
 
-3 Bu     -9.73427513    -0.57686238    -0.30634505    -0.29593723     0.39570533
-          0.40528995     0.44705614
+3 Bu     -9.73427857    -0.57688250    -0.30634340    -0.29597187     0.39566454
+          0.40527318     0.44700835
 
-4 Bg     -0.29927673     0.40704542
+4 Bg     -0.29930863     0.40697322
 
-    E(LUMO) :     0.39570533 au (symmetry 3)
-  - E(HOMO) :    -0.29593723 au (symmetry 3)
+    E(LUMO) :     0.39566454 au (symmetry 3)
+  - E(HOMO) :    -0.29597187 au (symmetry 3)
   ------------------------------------------
-    gap     :     0.69164256 au
+    gap     :     0.69163641 au
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       4.187       4.184
+ >>>> CPU and wall time for SCF :       1.553       1.561
 
 
                        .-----------------------------------.
@@ -4279,24 +4303,24 @@ Acceptable step has been found.
 @    Spatial symmetry:            1 ( irrep  Ag  in C2h )
 @    Total charge of molecule:    0
 
-@    Final DFT energy:            -79.992263831180                 
-@    Nuclear repulsion:            41.490439768994
-@    Electronic energy:          -121.482703600174
+@    Final DFT energy:            -79.992263710665                 
+@    Nuclear repulsion:            41.481096270124
+@    Electronic energy:          -121.473359980789
 
-@    Final gradient norm:           0.000000211467
-
- 
-     Date and time (Linux)  : Tue Feb 24 17:23:13 2015
-     Host name              : foeroyar                                
-
-
-
- >>>> Total CPU  time used in SIRIUS :      4.19 seconds
- >>>> Total wall time used in SIRIUS :      4.19 seconds
+@    Final gradient norm:           0.000000284289
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:13 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:19 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.55 seconds
+ >>>> Total wall time used in SIRIUS :      1.57 seconds
+
+ 
+     Date and time (Linux)  : Thu May 15 15:11:19 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                      .---------------------------------------.
@@ -4304,7 +4328,7 @@ Acceptable step has been found.
                      `---------------------------------------'
 
  Trust radius increased due to good ratio.
- Updated trust radius   0.00947
+ Updated trust radius   0.00922
 
      Order of analytical energy-derivatives available:   1
      This will be the default.
@@ -4320,8 +4344,8 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:13 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:19 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                       DFT-D Empirical Dispersion Correction
@@ -4346,7 +4370,7 @@ Acceptable step has been found.
                           ! Dispersion Energy Correction !
                           +------------------------------+
 
-                      E_disp :         -0.003017007268
+                      E_disp :         -0.003008984808
 
 
   Symmetry Coordinates
@@ -4403,21 +4427,19 @@ Acceptable step has been found.
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:15 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:20 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:02      93 %
- REST       00:00:01      50 %
-
- TOTAL      00:00:02     100 %
+ REST       00:00:02     200 %
 
 
- >>>> Total CPU  time used in ABACUS:   2.22 seconds
- >>>> Total wall time used in ABACUS:   2.22 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.87 seconds
+ >>>> Total wall time used in ABACUS:   0.88 seconds
 
 
                    .-------------------------------------------.
@@ -4435,16 +4457,16 @@ Acceptable step has been found.
                                Final geometry (au)
                                -------------------
 
- C   _1     3.3031347213           -0.0107478010            0.0000000000
- C   _2    -3.3031347213            0.0107478010            0.0000000000
- H   _1     2.6201088724           -1.0054343322            1.7028906132
- H   _2     2.6201088724           -1.0054343322           -1.7028906132
- H   _3    -2.6201088724            1.0054343322            1.7028906132
- H   _4    -2.6201088724            1.0054343322           -1.7028906132
- H   _1     2.5702718090            1.9433539762            0.0000000000
- H   _2    -2.5702718090           -1.9433539762            0.0000000000
- H   _1     5.3904400738            0.0244056150            0.0000000000
- H   _2    -5.3904400738           -0.0244056150            0.0000000000
+ C   _1     3.3052997280           -0.0120859609            0.0000000000
+ C   _2    -3.3052997280            0.0120859609            0.0000000000
+ H   _1     2.6241485796           -1.0080609788            1.7028729916
+ H   _2     2.6241485796           -1.0080609788           -1.7028729916
+ H   _3    -2.6241485796            1.0080609788            1.7028729916
+ H   _4    -2.6241485796            1.0080609788           -1.7028729916
+ H   _1     2.5687345751            1.9406201389            0.0000000000
+ H   _2    -2.5687345751           -1.9406201389            0.0000000000
+ H   _1     5.3925238715            0.0270216186            0.0000000000
+ H   _2    -5.3925238715           -0.0270216186            0.0000000000
 
 
 
@@ -4458,151 +4480,17 @@ Acceptable step has been found.
  Energy at this geometry is     :     -79.992264
  Energy change from last geom.  :      -0.000000
  Predicted change               :      -0.000000
- Ratio, actual/predicted change :       1.429184
- Norm of gradient               :       0.000023
- Norm of step                   :       0.001337
- Updated trust radius           :       0.009469
- Total effective Hessian index  :       0
+ Ratio, actual/predicted change :       1.395242
+ Norm of gradient               :       0.000028
+ Norm of step                   :       0.003751
+ Updated trust radius           :       0.009221
+ Total Hessian index            :       0
 
-
-
-
-          <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-          <<<<<<<<<<<<<<<<<<<<  End of Optimization <<<<<<<<<<<<<<<<<<<<
-          <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-
-                              Final geometry (bohr)
-                              ---------------------
-
- C   _1     3.3031347213           -0.0107478010            0.0000000000
- C   _2    -3.3031347213            0.0107478010            0.0000000000
- H   _1     2.6201088724           -1.0054343322            1.7028906132
- H   _2     2.6201088724           -1.0054343322           -1.7028906132
- H   _3    -2.6201088724            1.0054343322            1.7028906132
- H   _4    -2.6201088724            1.0054343322           -1.7028906132
- H   _1     2.5702718090            1.9433539762            0.0000000000
- H   _2    -2.5702718090           -1.9433539762            0.0000000000
- H   _1     5.3904400738            0.0244056150            0.0000000000
- H   _2    -5.3904400738           -0.0244056150            0.0000000000
-
-
-
-
-
-                      Final geometry (xyz format; angstrom)
-                      -------------------------------------
-
-10
-
-C        1.7479436187           -0.0056874914            0.0000000000
-C       -1.7479436187            0.0056874914            0.0000000000
-H        1.3865019051           -0.5320529356            0.9011309050
-H        1.3865019051           -0.5320529356           -0.9011309050
-H       -1.3865019051            0.5320529356            0.9011309050
-H       -1.3865019051            0.5320529356           -0.9011309050
-H        1.3601292669            1.0283786367            0.0000000000
-H       -1.3601292669           -1.0283786367            0.0000000000
-H        2.8524980433            0.0129148953            0.0000000000
-H       -2.8524980433           -0.0129148953            0.0000000000
-
-
-
-@ Iter     Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
-@ ------------------------------------------------------------------------------
-@   0      -79.990697     0.000000     0.033627    0    0.500008    0.500000   0 
-@   1      -79.992231    -0.001534     0.004854    0    0.140278*   0.600009   1 
-@   2      -79.992243    -0.000011     0.002031    0    0.061035*   0.140278   1 
-@   3      -79.992248    -0.000005     0.003123    0    0.061036    0.061035   0 
-@   4      -79.992263    -0.000015     0.000893    0    0.007891*   0.061036   2 
-@   5      -79.992263    -0.000000     0.000678    0    0.007891    0.007891   0 
-@   6      -79.992263    -0.000001     0.000332    0    0.007891    0.007891   0 
-@   7      -79.992264    -0.000000     0.000023    0    0.001337*   0.009469   0 
-
-@  *) Newton step taken.
-
-
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            C   _1      C   _2      H   _1      H   _2      H   _3      H   _4
-            ------      ------      ------      ------      ------      ------
- C   _1:    0.000000
- C   _2:    3.495906    0.000000
- H   _1:    1.104417    3.305443    0.000000
- H   _2:    1.104417    3.305443    1.802262    0.000000
- H   _3:    3.305443    1.104417    2.970164    3.474193    0.000000
- H   _4:    3.305443    1.104417    3.474193    2.970164    1.802262    0.000000
- H   _1:    1.104397    3.272005    1.802132    1.802132    2.932978    2.932978
- H   _2:    3.272005    1.104397    2.932978    2.932978    1.802132    1.802132
- H   _1:    1.104711    4.600447    1.805041    1.805041    4.364706    4.364706
- H   _2:    4.600447    1.104711    4.364706    4.364706    1.805041    1.805041
-
-            H   _1      H   _2      H   _1      H   _2
-            ------      ------      ------      ------
- H   _1:    0.000000
- H   _2:    3.410287    0.000000
- H   _1:    1.805085    4.339415    0.000000
- H   _2:    4.339415    1.805085    5.705055    0.000000
-
-
-  Max    interatomic separation is    5.7051 Angstrom (   10.7810 Bohr)
-  between atoms   10 and    9, "H   _2" and "H   _1".
-
-  Min HX interatomic separation is    1.1044 Angstrom (    2.0870 Bohr)
-
-  Min YX interatomic separation is    3.4959 Angstrom (    6.6063 Bohr)
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H   _1     C   _1       1.104417
-  bond distance:  H   _2     C   _1       1.104417
-  bond distance:  H   _3     C   _2       1.104417
-  bond distance:  H   _4     C   _2       1.104417
-  bond distance:  H   _1     C   _1       1.104397
-  bond distance:  H   _2     C   _2       1.104397
-  bond distance:  H   _1     C   _1       1.104711
-  bond distance:  H   _2     C   _2       1.104711
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H   _1     C   _1     H   _2       109.360
-  bond angle:     H   _1     C   _1     H   _1       109.349
-  bond angle:     H   _1     C   _1     H   _1       109.588
-  bond angle:     H   _2     C   _1     H   _1       109.349
-  bond angle:     H   _2     C   _1     H   _1       109.588
-  bond angle:     H   _1     C   _1     H   _1       109.593
-  bond angle:     H   _3     C   _2     H   _4       109.360
-  bond angle:     H   _3     C   _2     H   _2       109.349
-  bond angle:     H   _3     C   _2     H   _2       109.588
-  bond angle:     H   _4     C   _2     H   _2       109.349
-  bond angle:     H   _4     C   _2     H   _2       109.588
-  bond angle:     H   _2     C   _2     H   _2       109.593
-
-
-
-@ Geometry converged in  8 iterations!
-
-@ Energy at final geometry is       :     -79.992264 a.u.
-@ Energy change during optimization :      -0.001566 a.u.
-@                                             -4.112 kJ/mol
 
 
  Center of mass dipole origin  :    0.000000    0.000000    0.000000
 
  Center of mass gauge origin   :    0.000000    0.000000    0.000000
-
-     Order of analytical energy-derivatives available:   1
-     This will be the default.
 
 
                  .------------------------------------------------.
@@ -4611,8 +4499,8 @@ H       -2.8524980433           -0.0129148953            0.0000000000
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:16 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:20 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
    ***************************************************************************
@@ -4621,23 +4509,23 @@ H       -2.8524980433           -0.0129148953            0.0000000000
 
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:16 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:20 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
 
 
                              Molecular geometry (au)
                              -----------------------
 
- C   _1     3.3031347213           -0.0107478010            0.0000000000
- C   _2    -3.3031347213            0.0107478010            0.0000000000
- H   _1     2.6201088724           -1.0054343322            1.7028906132
- H   _2     2.6201088724           -1.0054343322           -1.7028906132
- H   _3    -2.6201088724            1.0054343322            1.7028906132
- H   _4    -2.6201088724            1.0054343322           -1.7028906132
- H   _1     2.5702718090            1.9433539762            0.0000000000
- H   _2    -2.5702718090           -1.9433539762            0.0000000000
- H   _1     5.3904400738            0.0244056150            0.0000000000
- H   _2    -5.3904400738           -0.0244056150            0.0000000000
+ C   _1     3.3052997280           -0.0120859609            0.0000000000
+ C   _2    -3.3052997280            0.0120859609            0.0000000000
+ H   _1     2.6241485796           -1.0080609788            1.7028729916
+ H   _2     2.6241485796           -1.0080609788           -1.7028729916
+ H   _3    -2.6241485796            1.0080609788            1.7028729916
+ H   _4    -2.6241485796            1.0080609788           -1.7028729916
+ H   _1     2.5687345751            1.9406201389            0.0000000000
+ H   _2    -2.5687345751           -1.9406201389            0.0000000000
+ H   _1     5.3925238715            0.0270216186            0.0000000000
+ H   _2    -5.3925238715           -0.0270216186            0.0000000000
 
 
 
@@ -4646,30 +4534,23 @@ H       -2.8524980433           -0.0129148953            0.0000000000
                         Molecular wave function and energy
                         ----------------------------------
 
-     Spatial symmetry   1 ( Ag  )
-     Spin multiplicity  1
-     2 * M_S            0
-     State number       1
-     Total charge       0
+     Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy        -79.9922638312 au (Hartrees)
-                         -2176.70022493 eV
-                           -210019.6563 kJ/mol
-                            -50195.9026 kcal/mol
+     Total energy        -79.9922637107 au (Hartrees)
+                         -2176.70022166 eV
+                           -210019.6560 kJ/mol
 
 
-                   Scalar Breit-Pauli relativistic corrections
-                   -------------------------------------------
+                             Relativistic corrections
+                             ------------------------
 
-     Darwin correction:                          0.0775861224 au
-     Mass-velocity correction:                  -0.0978074988 au
+     Darwin correction:                          0.0775861091 au
+     Mass-velocity correction:                  -0.0978074782 au
 
-     Total relativistic correction:             -0.0202213764 au (0.0253%)
-     Non-relativistic + relativistic energy:   -80.0124852076 au
+     Total relativistic correction:             -0.0202213691 au (0.0253%)
+     Non-relativistic + relativistic energy:   -80.0124850798 au
 
 
-
-      (Note that these corrections are NOT included in the results below.)
 
 
                                   Dipole moment
@@ -4697,30 +4578,30 @@ H       -2.8524980433           -0.0129148953            0.0000000000
             C   _1      C   _2      H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------      ------      ------
  C   _1:    0.000000
- C   _2:    3.495906    0.000000
- H   _1:    1.104417    3.305443    0.000000
- H   _2:    1.104417    3.305443    1.802262    0.000000
- H   _3:    3.305443    1.104417    2.970164    3.474193    0.000000
- H   _4:    3.305443    1.104417    3.474193    2.970164    1.802262    0.000000
- H   _1:    1.104397    3.272005    1.802132    1.802132    2.932978    2.932978
- H   _2:    3.272005    1.104397    2.932978    2.932978    1.802132    1.802132
- H   _1:    1.104711    4.600447    1.805041    1.805041    4.364706    4.364706
- H   _2:    4.600447    1.104711    4.364706    4.364706    1.805041    1.805041
+ C   _2:    3.498202    0.000000
+ H   _1:    1.104411    3.308895    0.000000
+ H   _2:    1.104411    3.308895    1.802243    0.000000
+ H   _3:    3.308895    1.104411    2.975151    3.478449    0.000000
+ H   _4:    3.308895    1.104411    3.478449    2.975151    1.802243    0.000000
+ H   _1:    1.104395    3.271647    1.802124    1.802124    2.933737    2.933737
+ H   _2:    3.271647    1.104395    2.933737    2.933737    1.802124    1.802124
+ H   _1:    1.104705    4.602697    1.805035    1.805035    4.367852    4.367852
+ H   _2:    4.602697    1.104705    4.367852    4.367852    1.805035    1.805035
 
             H   _1      H   _2      H   _1      H   _2
             ------      ------      ------      ------
  H   _1:    0.000000
- H   _2:    3.410287    0.000000
- H   _1:    1.805085    4.339415    0.000000
- H   _2:    4.339415    1.805085    5.705055    0.000000
+ H   _2:    3.407244    0.000000
+ H   _1:    1.805080    4.339681    0.000000
+ H   _2:    4.339681    1.805080    5.707273    0.000000
 
 
-  Max    interatomic separation is    5.7051 Angstrom (   10.7810 Bohr)
+  Max    interatomic separation is    5.7073 Angstrom (   10.7852 Bohr)
   between atoms   10 and    9, "H   _2" and "H   _1".
 
   Min HX interatomic separation is    1.1044 Angstrom (    2.0870 Bohr)
 
-  Min YX interatomic separation is    3.4959 Angstrom (    6.6063 Bohr)
+  Min YX interatomic separation is    3.4982 Angstrom (    6.6106 Bohr)
 
 
   Bond distances (Angstrom):
@@ -4728,14 +4609,14 @@ H       -2.8524980433           -0.0129148953            0.0000000000
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H   _1     C   _1       1.104417
-  bond distance:  H   _2     C   _1       1.104417
-  bond distance:  H   _3     C   _2       1.104417
-  bond distance:  H   _4     C   _2       1.104417
-  bond distance:  H   _1     C   _1       1.104397
-  bond distance:  H   _2     C   _2       1.104397
-  bond distance:  H   _1     C   _1       1.104711
-  bond distance:  H   _2     C   _2       1.104711
+  bond distance:  H   _1     C   _1       1.104411
+  bond distance:  H   _2     C   _1       1.104411
+  bond distance:  H   _3     C   _2       1.104411
+  bond distance:  H   _4     C   _2       1.104411
+  bond distance:  H   _1     C   _1       1.104395
+  bond distance:  H   _2     C   _2       1.104395
+  bond distance:  H   _1     C   _1       1.104705
+  bond distance:  H   _2     C   _2       1.104705
 
 
   Bond angles (degrees):
@@ -4743,13 +4624,13 @@ H       -2.8524980433           -0.0129148953            0.0000000000
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H   _1     C   _1     H   _2       109.360
+  bond angle:     H   _1     C   _1     H   _2       109.359
   bond angle:     H   _1     C   _1     H   _1       109.349
   bond angle:     H   _1     C   _1     H   _1       109.588
   bond angle:     H   _2     C   _1     H   _1       109.349
   bond angle:     H   _2     C   _1     H   _1       109.588
   bond angle:     H   _1     C   _1     H   _1       109.593
-  bond angle:     H   _3     C   _2     H   _4       109.360
+  bond angle:     H   _3     C   _2     H   _4       109.359
   bond angle:     H   _3     C   _2     H   _2       109.349
   bond angle:     H   _3     C   _2     H   _2       109.588
   bond angle:     H   _4     C   _2     H   _2       109.349
@@ -4773,9 +4654,140 @@ H       -2.8524980433           -0.0129148953            0.0000000000
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  1 minute  17 seconds
- >>>> Total wall time used in DALTON:  1 minute  17 seconds
+
+
+          <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+          <<<<<<<<<<<<<<<<<<<<  End of Optimization <<<<<<<<<<<<<<<<<<<<
+          <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+
+                              Final geometry (bohr)
+                              ---------------------
+
+ C   _1     3.3052997280           -0.0120859609            0.0000000000
+ C   _2    -3.3052997280            0.0120859609            0.0000000000
+ H   _1     2.6241485796           -1.0080609788            1.7028729916
+ H   _2     2.6241485796           -1.0080609788           -1.7028729916
+ H   _3    -2.6241485796            1.0080609788            1.7028729916
+ H   _4    -2.6241485796            1.0080609788           -1.7028729916
+ H   _1     2.5687345751            1.9406201389            0.0000000000
+ H   _2    -2.5687345751           -1.9406201389            0.0000000000
+ H   _1     5.3925238715            0.0270216186            0.0000000000
+ H   _2    -5.3925238715           -0.0270216186            0.0000000000
+
+
+
+
+
+                      Final geometry (xyz format; angstrom)
+                      -------------------------------------
+
+10
+
+C        1.7490892909           -0.0063956151            0.0000000000
+C       -1.7490892909            0.0063956151            0.0000000000
+H        1.3886396261           -0.5334428971            0.9011215800
+H        1.3886396261           -0.5334428971           -0.9011215800
+H       -1.3886396261            0.5334428971            0.9011215800
+H       -1.3886396261            0.5334428971           -0.9011215800
+H        1.3593157977            1.0269319523            0.0000000000
+H       -1.3593157977           -1.0269319523            0.0000000000
+H        2.8536007415            0.0142992248            0.0000000000
+H       -2.8536007415           -0.0142992248            0.0000000000
+
+
+
+@ Iter     Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
+@ ------------------------------------------------------------------------------
+@   0      -79.990697     0.000000     0.033627    0    0.500008    0.500000   0 
+@   1      -79.992231    -0.001534     0.004854    0    0.139965*   0.600009   1 
+@   2      -79.992243    -0.000011     0.002053    0    0.060832*   0.139965   1 
+@   3      -79.992248    -0.000005     0.003146    0    0.061032    0.060832   0 
+@   4      -79.992263    -0.000015     0.000881    0    0.007859*   0.061032   2 
+@   5      -79.992263    -0.000000     0.000672    0    0.008151    0.007859   0 
+@   6      -79.992263    -0.000000     0.000349    0    0.007685*   0.008151   0 
+@   7      -79.992264    -0.000000     0.000028    0    0.003751*   0.009221   0 
+
+@  *) Newton step taken.
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C   _1      C   _2      H   _1      H   _2      H   _3      H   _4
+            ------      ------      ------      ------      ------      ------
+ C   _1:    0.000000
+ C   _2:    3.498202    0.000000
+ H   _1:    1.104411    3.308895    0.000000
+ H   _2:    1.104411    3.308895    1.802243    0.000000
+ H   _3:    3.308895    1.104411    2.975151    3.478449    0.000000
+ H   _4:    3.308895    1.104411    3.478449    2.975151    1.802243    0.000000
+ H   _1:    1.104395    3.271647    1.802124    1.802124    2.933737    2.933737
+ H   _2:    3.271647    1.104395    2.933737    2.933737    1.802124    1.802124
+ H   _1:    1.104705    4.602697    1.805035    1.805035    4.367852    4.367852
+ H   _2:    4.602697    1.104705    4.367852    4.367852    1.805035    1.805035
+
+            H   _1      H   _2      H   _1      H   _2
+            ------      ------      ------      ------
+ H   _1:    0.000000
+ H   _2:    3.407244    0.000000
+ H   _1:    1.805080    4.339681    0.000000
+ H   _2:    4.339681    1.805080    5.707273    0.000000
+
+
+  Max    interatomic separation is    5.7073 Angstrom (   10.7852 Bohr)
+  between atoms   10 and    9, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    1.1044 Angstrom (    2.0870 Bohr)
+
+  Min YX interatomic separation is    3.4982 Angstrom (    6.6106 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H   _1     C   _1       1.104411
+  bond distance:  H   _2     C   _1       1.104411
+  bond distance:  H   _3     C   _2       1.104411
+  bond distance:  H   _4     C   _2       1.104411
+  bond distance:  H   _1     C   _1       1.104395
+  bond distance:  H   _2     C   _2       1.104395
+  bond distance:  H   _1     C   _1       1.104705
+  bond distance:  H   _2     C   _2       1.104705
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     C   _1     H   _2       109.359
+  bond angle:     H   _1     C   _1     H   _1       109.349
+  bond angle:     H   _1     C   _1     H   _1       109.588
+  bond angle:     H   _2     C   _1     H   _1       109.349
+  bond angle:     H   _2     C   _1     H   _1       109.588
+  bond angle:     H   _1     C   _1     H   _1       109.593
+  bond angle:     H   _3     C   _2     H   _4       109.359
+  bond angle:     H   _3     C   _2     H   _2       109.349
+  bond angle:     H   _3     C   _2     H   _2       109.588
+  bond angle:     H   _4     C   _2     H   _2       109.349
+  bond angle:     H   _4     C   _2     H   _2       109.588
+  bond angle:     H   _2     C   _2     H   _2       109.593
+
+
+
+@ Geometry converged in  8 iterations!
+
+@ Energy at final geometry is       :     -79.992264 a.u.
+@ Energy change during optimization :      -0.001566 a.u.
+@                                             -4.112 kJ/mol
+
+ >>>> Total CPU  time used in DALTON:  30.24 seconds
+ >>>> Total wall time used in DALTON:  31.17 seconds
 
  
-     Date and time (Linux)  : Tue Feb 24 17:23:16 2015
-     Host name              : foeroyar                                
+     Date and time (Linux)  : Thu May 15 15:11:20 2014
+     Host name              : rfb-ntf-m0022.bargi.uit.no              
